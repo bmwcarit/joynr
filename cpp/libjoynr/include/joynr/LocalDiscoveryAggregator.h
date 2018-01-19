@@ -57,7 +57,7 @@ public:
             const joynr::types::DiscoveryEntry& discoveryEntry,
             std::function<void()> onSuccess = nullptr,
             std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
-                    onRuntimeError = nullptr) override;
+                    onRuntimeError = nullptr) noexcept override;
 
     // inherited from joynr::system::IDiscoveryAsync
     std::shared_ptr<joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>
@@ -68,7 +68,7 @@ public:
             std::function<void(const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result)>
                     onSuccess = nullptr,
             std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
-                    onRuntimeError = nullptr) override;
+                    onRuntimeError = nullptr) noexcept override;
 
     // inherited from joynr::system::IDiscoveryAsync
     std::shared_ptr<joynr::Future<joynr::types::DiscoveryEntryWithMetaInfo>> lookupAsync(
@@ -76,14 +76,14 @@ public:
             std::function<void(const joynr::types::DiscoveryEntryWithMetaInfo& result)> onSuccess =
                     nullptr,
             std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
-                    onRuntimeError = nullptr) override;
+                    onRuntimeError = nullptr) noexcept override;
 
     // inherited from joynr::system::IDiscoveryAsync
     std::shared_ptr<joynr::Future<void>> removeAsync(
             const std::string& participantId,
             std::function<void()> onSuccess = nullptr,
             std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
-                    onRuntimeError = nullptr) override;
+                    onRuntimeError = nullptr) noexcept override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LocalDiscoveryAggregator);

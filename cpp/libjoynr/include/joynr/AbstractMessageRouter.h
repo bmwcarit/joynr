@@ -133,16 +133,16 @@ protected:
                                           MessageQueue<std::shared_ptr<ITransportStatus>>>());
 
     virtual bool publishToGlobal(const ImmutableMessage& message) = 0;
-    AddressUnorderedSet getDestinationAddresses(const ImmutableMessage& message);
+    AddressUnorderedSet getDestinationAddresses(const ImmutableMessage& message,
+                                                const ReadLocker& messageQueueRetryReadLock);
 
     void registerGlobalRoutingEntryIfRequired(const ImmutableMessage& message);
     virtual void routeInternal(std::shared_ptr<ImmutableMessage> message,
                                std::uint32_t tryCount) = 0;
 
-    AddressUnorderedSet lookupAddresses(const std::unordered_set<std::string>& participantIds);
-
     void sendMessages(const std::string& destinationPartId,
-                      std::shared_ptr<const joynr::system::RoutingTypes::Address> address);
+                      std::shared_ptr<const joynr::system::RoutingTypes::Address> address,
+                      const WriteLocker& messageQueueRetryWriteLock);
 
     void sendMessages(std::shared_ptr<const joynr::system::RoutingTypes::Address> address) final;
 
@@ -166,6 +166,9 @@ protected:
                                       const boost::system::error_code& errorCode);
     void onRoutingTableCleanerTimerExpired(const boost::system::error_code& errorCode);
 
+    virtual void queueMessage(std::shared_ptr<ImmutableMessage> message,
+                              const ReadLocker& messageQueueRetryReadLock);
+
     RoutingTable routingTable;
     ReadWriteLock routingTableLock;
     MulticastReceiverDirectory multicastReceiverDirectory;
@@ -174,7 +177,16 @@ protected:
     std::shared_ptr<IMessagingStubFactory> messagingStubFactory;
     std::shared_ptr<ThreadPoolDelayedScheduler> messageScheduler;
     std::unique_ptr<MessageQueue<std::string>> messageQueue;
+    // MessageQueue ReadLocker is required to protect calls to queueMessage and
+    // getDestinationAddresses:
+    // The routing table must not be modified between getDestinationAddresses and queueMessage.
+    // MessageQueue WriterLocker is required to protect calls to addNextHop/addProvisionedNextHop
+    // and sendMessages:
+    // Routing table look ups and insertions to the messageQueue must not be done between addNextHop
+    // and sendMessages calls.
+    ReadWriteLock messageQueueRetryLock;
     std::unique_ptr<MessageQueue<std::shared_ptr<ITransportStatus>>> transportNotAvailableQueue;
+    std::mutex transportAvailabilityMutex;
     std::string routingTableFileName;
     std::unique_ptr<IMulticastAddressCalculator> addressCalculator;
     SteadyTimer messageQueueCleanerTimer;
@@ -182,13 +194,12 @@ protected:
     SteadyTimer routingTableCleanerTimer;
     std::vector<std::shared_ptr<ITransportStatus>> transportStatuses;
 
-    void queueMessage(std::shared_ptr<ImmutableMessage> message) override;
-
 private:
     DISALLOW_COPY_AND_ASSIGN(AbstractMessageRouter);
     ADD_LOGGER(AbstractMessageRouter)
 
     void checkExpiryDate(const ImmutableMessage& message);
+    AddressUnorderedSet lookupAddresses(const std::unordered_set<std::string>& participantIds);
 };
 
 /**

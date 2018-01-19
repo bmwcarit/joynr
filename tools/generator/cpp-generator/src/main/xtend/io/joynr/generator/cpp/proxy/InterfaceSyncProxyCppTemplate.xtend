@@ -54,7 +54,7 @@ class InterfaceSyncProxyCppTemplate extends InterfaceTemplate {
 // the connectors will contain the JSON related code
 
 «syncClassName»::«syncClassName»(
-		std::weak_ptr<joynr::JoynrRuntime> runtime,
+		std::weak_ptr<joynr::JoynrRuntimeImpl> runtime,
 		joynr::ConnectorFactory* connectorFactory,
 		const std::string &domain,
 		const joynr::MessagingQos &qosSettings

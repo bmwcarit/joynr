@@ -52,6 +52,14 @@ created in the local capabilities directory.
 * **User property**: `joynr.messaging.discoverydirectoriesdomain`
 * **Default value**: `io.joynr`
 
+### `PROPERTY_DISCOVERY_GLOBAL_ADD_AND_REMOVE_TTL_MS`
+TTL used for adding and removing global discovery entries.
+
+* **OPTIONAL**
+* **Type**: long
+* **User property**: `joynr.discovery.globaladdandremovettlms`
+* **Default value**: `2592000000` (30 days)
+
 ### `PROPERTY_DOMAIN_ACCESS_CONTROLLER_CHANNEL_ID`
 The channel ID of the global domain access controller (backend). To be able to connect to the global
 domain access controller a disovery entry is created in the local capabilities directory as well as

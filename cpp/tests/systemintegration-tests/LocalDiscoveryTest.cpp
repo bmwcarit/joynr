@@ -76,12 +76,12 @@ public:
         messagingQos.setTtl(500);
     }
 
-    ~LocalDiscoveryTest()
-    {
-        const bool deleteChannel = true;
-        runtime1->stop(deleteChannel);
+    ~LocalDiscoveryTest() override {
+
+        runtime1->shutdown();
         test::util::resetAndWaitUntilDestroyed(runtime1);
-        runtime2->stop(deleteChannel);
+
+        runtime2->shutdown();
         test::util::resetAndWaitUntilDestroyed(runtime2);
 
         test::util::removeAllCreatedSettingsAndPersistencyFiles();
@@ -113,7 +113,7 @@ class LocalDiscoveryTestTestProxy : public tests::testProxy
 public:
 
     LocalDiscoveryTestTestProxy(
-        std::weak_ptr<joynr::JoynrRuntime> runtime,
+        std::weak_ptr<joynr::JoynrRuntimeImpl> runtime,
         joynr::ConnectorFactory* connectorFactory,
         const std::string& domain,
         const joynr::MessagingQos& qosSettings) :

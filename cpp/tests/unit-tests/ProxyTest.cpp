@@ -16,6 +16,7 @@
  * limitations under the License.
  * #L%
  */
+#include "joynr/JoynrRuntimeImpl.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrMessagingConnectorFactory.h"
 #include "joynr/ConnectorFactory.h"
@@ -107,7 +108,7 @@ public:
 protected:
     ConnectorFactory* mockConnectorFactory;
     std::shared_ptr<MockInProcessConnectorFactory> mockInProcessConnectorFactory;
-    std::shared_ptr<JoynrRuntime> runtime;
+    std::shared_ptr<JoynrRuntimeImpl> runtime;
 private:
     DISALLOW_COPY_AND_ASSIGN(ProxyTest);
 };

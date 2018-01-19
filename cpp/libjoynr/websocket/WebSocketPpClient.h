@@ -102,14 +102,20 @@ public:
 
     ~WebSocketPpClient() override
     {
+        stop();
+    }
+
+    void stop() final
+    {
         endpoint.stop_perpetual();
         close();
         // prior to destruction of the endpoint, the background thread
         // must have finished its work, thus wait for it here
-        assert(webSocketPpSingleThreadedIOService);
-        webSocketPpSingleThreadedIOService->stop();
-        webSocketPpSingleThreadedIOService.reset();
-        webSocketPpSingleThreadedIOServiceDestructed->wait();
+        if (webSocketPpSingleThreadedIOService) {
+            webSocketPpSingleThreadedIOService->stop();
+            webSocketPpSingleThreadedIOService.reset();
+            webSocketPpSingleThreadedIOServiceDestructed->wait();
+        }
     }
 
     void registerConnectCallback(std::function<void()> callback) final

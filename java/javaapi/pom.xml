@@ -26,7 +26,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>java</artifactId>
-		<version>0.32.2</version>
+		<version>0.33.0-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -130,6 +130,21 @@
 							<model>${basedir}/../../basemodel/src/test/franca</model>
 							<generationLanguage>java</generationLanguage>
 							<outputPath>${basedir}/src/test/generated</outputPath>
+						</configuration>
+					</execution>
+					<execution>
+						<id>testSources2</id>
+						<phase>generate-test-sources</phase>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<configuration>
+							<model>${basedir}/../../basemodel/src/test/franca2</model>
+							<generationLanguage>java</generationLanguage>
+							<outputPath>${basedir}/src/test/generated</outputPath>
+							<parameter>>
+								<ignoreInvalidNullClassMembers>true</ignoreInvalidNullClassMembers>
+							</parameter>>
 						</configuration>
 					</execution>
 				</executions>

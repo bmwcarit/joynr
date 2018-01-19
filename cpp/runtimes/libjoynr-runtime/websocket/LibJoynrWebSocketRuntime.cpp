@@ -49,14 +49,20 @@ LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(std::unique_ptr<Settings> set
 
 LibJoynrWebSocketRuntime::~LibJoynrWebSocketRuntime()
 {
+    shutdown();
+}
+
+void LibJoynrWebSocketRuntime::shutdown()
+{
     assert(websocket);
-    websocket->close();
+    websocket->stop();
 
     // synchronously stop the underlying boost::asio::io_service
     // this ensures all asynchronous operations are stopped now
     // which allows a safe shutdown
     assert(singleThreadIOService);
     singleThreadIOService->stop();
+    LibJoynrRuntime::shutdown();
 }
 
 void LibJoynrWebSocketRuntime::connect(

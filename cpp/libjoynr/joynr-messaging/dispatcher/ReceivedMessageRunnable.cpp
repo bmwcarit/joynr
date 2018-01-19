@@ -30,7 +30,7 @@ namespace joynr
 {
 
 ReceivedMessageRunnable::ReceivedMessageRunnable(std::shared_ptr<ImmutableMessage> message,
-                                                 Dispatcher& dispatcher)
+                                                 std::weak_ptr<Dispatcher> dispatcher)
         : Runnable(),
           ObjectWithDecayTime(message->getExpiryDate()),
           message(std::move(message)),
@@ -59,7 +59,15 @@ void ReceivedMessageRunnable::run()
                     message->getId());
     if (isExpired()) {
         JOYNR_LOG_DEBUG(
-                logger(), "Dropping ReceivedMessageRunnable message, because it is expired: ");
+                logger(), "Dropping ReceivedMessageRunnable message, because it is expired");
+        return;
+    }
+
+    auto dispatcherSharedPtr = dispatcher.lock();
+    if (!dispatcherSharedPtr) {
+        JOYNR_LOG_DEBUG(
+                logger(),
+                "Dropping ReceivedMessageRunnable message, because dispatcher not available");
         return;
     }
 
@@ -69,25 +77,25 @@ void ReceivedMessageRunnable::run()
     CallContextStorage::set(std::move(callContext));
 
     if (messageType == Message::VALUE_MESSAGE_TYPE_REQUEST()) {
-        dispatcher.handleRequestReceived(std::move(message));
+        dispatcherSharedPtr->handleRequestReceived(std::move(message));
     } else if (messageType == Message::VALUE_MESSAGE_TYPE_REPLY()) {
-        dispatcher.handleReplyReceived(std::move(message));
+        dispatcherSharedPtr->handleReplyReceived(std::move(message));
     } else if (messageType == Message::VALUE_MESSAGE_TYPE_ONE_WAY()) {
-        dispatcher.handleOneWayRequestReceived(std::move(message));
+        dispatcherSharedPtr->handleOneWayRequestReceived(std::move(message));
     } else if (messageType == Message::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST()) {
-        dispatcher.handleSubscriptionRequestReceived(std::move(message));
+        dispatcherSharedPtr->handleSubscriptionRequestReceived(std::move(message));
     } else if (messageType == Message::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST()) {
-        dispatcher.handleBroadcastSubscriptionRequestReceived(std::move(message));
+        dispatcherSharedPtr->handleBroadcastSubscriptionRequestReceived(std::move(message));
     } else if (messageType == Message::VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST()) {
-        dispatcher.handleMulticastSubscriptionRequestReceived(std::move(message));
+        dispatcherSharedPtr->handleMulticastSubscriptionRequestReceived(std::move(message));
     } else if (messageType == Message::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY()) {
-        dispatcher.handleSubscriptionReplyReceived(std::move(message));
+        dispatcherSharedPtr->handleSubscriptionReplyReceived(std::move(message));
     } else if (messageType == Message::VALUE_MESSAGE_TYPE_MULTICAST()) {
-        dispatcher.handleMulticastReceived(std::move(message));
+        dispatcherSharedPtr->handleMulticastReceived(std::move(message));
     } else if (messageType == Message::VALUE_MESSAGE_TYPE_PUBLICATION()) {
-        dispatcher.handlePublicationReceived(std::move(message));
+        dispatcherSharedPtr->handlePublicationReceived(std::move(message));
     } else if (messageType == Message::VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP()) {
-        dispatcher.handleSubscriptionStopReceived(std::move(message));
+        dispatcherSharedPtr->handleSubscriptionStopReceived(std::move(message));
     } else {
         JOYNR_LOG_ERROR(logger(), "unknown message type: {}", messageType);
     }

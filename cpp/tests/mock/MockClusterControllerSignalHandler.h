@@ -26,7 +26,7 @@
 class MockClusterControllerSignalHandler: public joynr::IClusterControllerSignalHandler
 {
 public:
-    MOCK_METHOD0(shutdown, void());
+    MOCK_METHOD0(shutdownClusterController, void());
     MOCK_METHOD0(startExternalCommunication, void());
     MOCK_METHOD0(stopExternalCommunication, void());
 };

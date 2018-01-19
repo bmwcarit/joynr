@@ -85,7 +85,10 @@ const std::uint32_t «typeName»::MINOR_VERSION = «minorVersion»;
 			«FOR member: getMembersRecursive(extendedType) SEPARATOR ','»
 				«member.joynrName»
 			«ENDFOR»
-			),
+			)
+			«IF !getMembers(type).isEmpty()»
+				,
+			«ENDIF»
 		«ENDIF»
 		«FOR member: getMembers(type) SEPARATOR ','»
 			«member.joynrName»(«member.joynrName»)

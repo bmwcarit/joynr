@@ -37,7 +37,6 @@ libjoynrClusterControllerExports = [
     "./joynr/types/ArbitrationStrategyCollection",
     "./joynr/system/RoutingTypes/BrowserAddress",
     "./joynr/system/RoutingTypes/ChannelAddress",
-    "./joynr/system/RoutingTypes/CommonApiDbusAddress",
     "./joynr/system/RoutingTypes/WebSocketAddress",
     "./joynr/system/RoutingTypes/WebSocketClientAddress",
     "./joynr/util/Util"
@@ -53,7 +52,6 @@ var OnChangeWithKeepAliveSubscriptionQos = require("./joynr/proxy/OnChangeWithKe
 var ArbitrationStrategyCollection = require("./joynr/types/ArbitrationStrategyCollection");
 var BrowserAddress = require("./joynr/system/RoutingTypes/BrowserAddress");
 var ChannelAddress = require("./joynr/system/RoutingTypes/ChannelAddress");
-var CommonApiDbusAddress = require("./joynr/system/RoutingTypes/CommonApiDbusAddress");
 var WebSocketAddress = require("./joynr/system/RoutingTypes/WebSocketAddress");
 var WebSocketClientAddress = require("./joynr/system/RoutingTypes/WebSocketClientAddress");
 var Util = require("./joynr/util/Util");

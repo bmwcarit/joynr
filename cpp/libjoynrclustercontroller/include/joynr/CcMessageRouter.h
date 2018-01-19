@@ -117,8 +117,6 @@ public:
                     std::function<void(const joynr::exceptions::ProviderRuntimeException&)>
                             onError = nullptr) final;
 
-    void queueMessage(std::shared_ptr<ImmutableMessage> message) final;
-
     /*
      * Implement methods from RoutingAbstractProvider
      */
@@ -132,13 +130,6 @@ public:
     void addNextHop(
             const std::string& participantId,
             const joynr::system::RoutingTypes::MqttAddress& mqttAddress,
-            const bool& isGloballyVisible,
-            std::function<void()> onSuccess,
-            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) final;
-
-    void addNextHop(
-            const std::string& participantId,
-            const joynr::system::RoutingTypes::CommonApiDbusAddress& commonApiDbusAddress,
             const bool& isGloballyVisible,
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) final;
@@ -220,6 +211,9 @@ private:
             std::shared_ptr<const joynr::system::RoutingTypes::Address> providerAddress,
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onError);
+
+    void queueMessage(std::shared_ptr<ImmutableMessage> message,
+                      const ReadLocker& messageQueueRetryReadLock) final;
 
     DISALLOW_COPY_AND_ASSIGN(CcMessageRouter);
     ADD_LOGGER(CcMessageRouter)

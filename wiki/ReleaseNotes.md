@@ -1,3 +1,21 @@
+# joynr 0.33.0
+
+## API relevant change
+None.
+
+## Configuration property changes
+* **[Java]** See the [Java Configuration Reference](JavaSettings.md) for
+  details about the newly introduced property:
+  * `PROPERTY_DISCOVERY_GLOBAL_ADD_AND_REMOVE_TTL_MS`
+
+## Other changes
+* **[[C++,Generator]** Fixed a problem with the generator when empty structures
+  with extends were specified in the FIDL files.
+* **[C++, JAVA, JS]** Removed DBUS and CommonAPI support
+* **[[Java,Generator]** Allow disabling of null checks in complex type member setters
+  See the [joynr code Generator Reference](generator.md) for details.
+  Note: Using types containing null values is incompatible with joynr C++.
+
 # joynr 0.32.2
 
 ## API relevant changes

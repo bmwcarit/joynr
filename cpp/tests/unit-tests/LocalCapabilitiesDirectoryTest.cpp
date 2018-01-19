@@ -59,6 +59,7 @@ public:
     LocalCapabilitiesDirectoryTest()
             : settings(),
               clusterControllerSettings(settings),
+              purgeExpiredDiscoveryEntriesIntervalMs(100),
               capabilitiesClient(std::make_shared<MockCapabilitiesClient>()),
               singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
               mockMessageRouter(std::make_shared<MockMessageRouter>(singleThreadedIOService->getIOService())),
@@ -75,7 +76,7 @@ public:
               defaultProviderVersion(26, 05)
     {
         singleThreadedIOService->start();
-        clusterControllerSettings.setPurgeExpiredDiscoveryEntriesIntervalMs(100);
+        clusterControllerSettings.setPurgeExpiredDiscoveryEntriesIntervalMs(purgeExpiredDiscoveryEntriesIntervalMs);
         settings.set(ClusterControllerSettings::SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS(), 200);
         settings.set(ClusterControllerSettings::SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCY_ENABLED(), true);
         localCapabilitiesDirectory =
@@ -270,6 +271,7 @@ public:
 protected:
     Settings settings;
     ClusterControllerSettings clusterControllerSettings;
+    const int purgeExpiredDiscoveryEntriesIntervalMs;
     std::shared_ptr<MockCapabilitiesClient> capabilitiesClient;
     std::shared_ptr<SingleThreadedIOService> singleThreadedIOService;
     std::shared_ptr<MockMessageRouter> mockMessageRouter;
@@ -401,6 +403,50 @@ TEST_F(LocalCapabilitiesDirectoryTest, reregisterGlobalCapabilities) {
     );
 
     Mock::VerifyAndClearExpectations(capabilitiesClient.get());
+    EXPECT_TRUE(onSuccessCalled);
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, doNotReregisterDiscoveryEntriesFromGlobalCapabilitiesDirectory) {
+    joynr::types::DiscoveryEntry entry1(defaultProviderVersion,
+                                       DOMAIN_1_NAME,
+                                       INTERFACE_1_NAME,
+                                       dummyParticipantId1,
+                                       types::ProviderQos(),
+                                       lastSeenDateMs,
+                                       expiryDateMs,
+                                       PUBLIC_KEY_ID);
+
+    EXPECT_CALL(*capabilitiesClient,
+             add(Matcher<const joynr::types::GlobalDiscoveryEntry&>(AnConvertedGlobalDiscoveryEntry(entry1)),_,_))
+            .Times(1);
+
+    localCapabilitiesDirectory->add(entry1,
+                                    defaultOnSuccess,
+                                    defaultOnError);
+
+    joynr::types::DiscoveryEntry entry2(defaultProviderVersion,
+                                       DOMAIN_2_NAME,
+                                       INTERFACE_2_NAME,
+                                       dummyParticipantId2,
+                                       types::ProviderQos(),
+                                       lastSeenDateMs,
+                                       expiryDateMs,
+                                       PUBLIC_KEY_ID);
+
+    localCapabilitiesDirectory->registerReceivedCapabilities({ {EXTERNAL_ADDRESS, entry2 } });
+
+    Mock::VerifyAndClearExpectations(capabilitiesClient.get());
+
+    EXPECT_CALL(*capabilitiesClient,
+             add(Matcher<const joynr::types::GlobalDiscoveryEntry&>(AnConvertedGlobalDiscoveryEntry(entry1)),_,_))
+            .Times(1);
+
+    bool onSuccessCalled = false;
+    localCapabilitiesDirectory->triggerGlobalProviderReregistration(
+            [&onSuccessCalled]() { onSuccessCalled=true; },
+            [](const joynr::exceptions::ProviderRuntimeException&) { FAIL(); }
+    );
+
     EXPECT_TRUE(onSuccessCalled);
 }
 
@@ -1145,6 +1191,96 @@ TEST_F(LocalCapabilitiesDirectoryTest,
     EXPECT_FALSE(localCapabilitiesDirectory->hasPendingLookups());
 }
 
+TEST_F(LocalCapabilitiesDirectoryTest, removeGlobalExpiredEntires_ReturnNonExpiredGlobalEntries)
+{
+    // add a few entries
+    types::ProviderQos providerQos;
+    providerQos.setScope(types::ProviderScope::GLOBAL);
+
+    expiryDateMs = std::chrono::duration_cast<std::chrono::milliseconds>(
+                std::chrono::system_clock::now().time_since_epoch()).count() +
+                purgeExpiredDiscoveryEntriesIntervalMs;
+
+    std::int64_t longerExpiryDateMs = std::chrono::duration_cast<std::chrono::milliseconds>(
+                std::chrono::system_clock::now().time_since_epoch()).count() +
+                purgeExpiredDiscoveryEntriesIntervalMs * 10;
+
+    joynr::types::DiscoveryEntry entry1(defaultProviderVersion,
+                                       DOMAIN_1_NAME,
+                                       INTERFACE_1_NAME,
+                                       dummyParticipantId1,
+                                       providerQos,
+                                       lastSeenDateMs,
+                                       longerExpiryDateMs,
+                                       PUBLIC_KEY_ID);
+
+    joynr::types::DiscoveryEntry entry2(defaultProviderVersion,
+                                       DOMAIN_1_NAME,
+                                       INTERFACE_1_NAME,
+                                       dummyParticipantId2,
+                                       providerQos,
+                                       lastSeenDateMs,
+                                       expiryDateMs,
+                                       PUBLIC_KEY_ID);
+
+    joynr::types::DiscoveryEntry entry3(defaultProviderVersion,
+                                       DOMAIN_1_NAME,
+                                       INTERFACE_3_NAME,
+                                       dummyParticipantId3,
+                                       providerQos,
+                                       lastSeenDateMs,
+                                       expiryDateMs,
+                                       PUBLIC_KEY_ID);
+
+    EXPECT_CALL(*capabilitiesClient, add(Matcher<const joynr::types::GlobalDiscoveryEntry&>(_),_,_)).Times(3);
+
+    localCapabilitiesDirectory->add(entry1,
+                                    defaultOnSuccess,
+                                    defaultOnError);
+
+    localCapabilitiesDirectory->add(entry2,
+                                    defaultOnSuccess,
+                                    defaultOnError);
+
+    localCapabilitiesDirectory->add(entry3,
+                                    defaultOnSuccess,
+                                    defaultOnError);
+
+    // Check Cached Global Discovery Entries
+    EXPECT_CALL(*capabilitiesClient, lookup(_, _, _, _, _)).Times(0);
+
+    joynr::types::DiscoveryQos discoveryQos;
+    discoveryQos.setCacheMaxAge(5000);
+    discoveryQos.setDiscoveryTimeout(10000);
+    discoveryQos.setDiscoveryScope(joynr::types::DiscoveryScope::GLOBAL_ONLY);
+
+    localCapabilitiesDirectory->lookup(
+            {DOMAIN_1_NAME}, INTERFACE_1_NAME, callback, discoveryQos);
+
+    EXPECT_EQ(2, callback->getResults(100).size());
+    callback->clearResults();
+
+    localCapabilitiesDirectory->lookup(
+            {DOMAIN_1_NAME}, INTERFACE_3_NAME, callback, discoveryQos);
+    EXPECT_EQ(1, callback->getResults(100).size());
+    callback->clearResults();
+
+    // wait for cleanup timer to run
+    std::this_thread::sleep_for(std::chrono::milliseconds(purgeExpiredDiscoveryEntriesIntervalMs * 2));
+
+    localCapabilitiesDirectory->lookup(
+            {DOMAIN_1_NAME}, INTERFACE_1_NAME, callback, discoveryQos);
+
+    EXPECT_EQ(1, callback->getResults(100).size());
+    callback->clearResults();
+
+    Mock::VerifyAndClearExpectations(capabilitiesClient.get());
+    EXPECT_CALL(*capabilitiesClient, lookup(_, _, _, _, _)).Times(1);
+    localCapabilitiesDirectory->lookup(
+            {DOMAIN_1_NAME}, INTERFACE_3_NAME, callback, discoveryQos);
+    EXPECT_EQ(0, callback->getResults(100).size());
+}
+
 TEST_F(LocalCapabilitiesDirectoryTest, lookupGlobalOnly_GlobalFailsNoLocalEntries_ReturnsNoEntries)
 {
     joynr::types::DiscoveryQos discoveryQos;
@@ -1430,7 +1566,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupLocalThenG
     EXPECT_EQ(1, callback->getResults(10).size());
     callback->clearResults();
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    // wait for cleanup timer to run
+    std::this_thread::sleep_for(std::chrono::milliseconds(purgeExpiredDiscoveryEntriesIntervalMs * 2));
 
     // get the global, but timeout occured
     EXPECT_CALL(*capabilitiesClient, lookup(_, _, _, _, _)).Times(1).WillOnce(
@@ -1764,7 +1901,8 @@ TEST_P(LocalCapabilitiesDirectoryWithProviderScope, purgeTimedOutEntries)
     EXPECT_EQ(1, callback->getResults(10).size());
     callback->clearResults();
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    // wait for cleanup timer to run
+    std::this_thread::sleep_for(std::chrono::milliseconds(purgeExpiredDiscoveryEntriesIntervalMs * 2));
 
     localCapabilitiesDirectory->lookup({DOMAIN_1_NAME}, INTERFACE_1_NAME, callback, discoveryQos);
     EXPECT_EQ(0, callback->getResults(10).size());

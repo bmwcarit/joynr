@@ -29,6 +29,7 @@ ClusterControllerCallContext::ClusterControllerCallContext()
 void ClusterControllerCallContext::setIsValid(bool isValid)
 {
     this->isValid = isValid;
+    JOYNR_LOG_TRACE(logger(), "setValid: {}", this->isValid);
 }
 
 bool ClusterControllerCallContext::getIsValid() const
@@ -40,6 +41,9 @@ void ClusterControllerCallContext::setIsInternalProviderRegistration(
         bool isInternalProviderRegistration)
 {
     this->isInternalProviderRegistration = isInternalProviderRegistration;
+    JOYNR_LOG_TRACE(logger(),
+                    "setIsInternalProviderRegistration: {}",
+                    this->isInternalProviderRegistration);
 }
 
 bool ClusterControllerCallContext::getIsInternalProviderRegistration() const
@@ -49,6 +53,7 @@ bool ClusterControllerCallContext::getIsInternalProviderRegistration() const
 
 void ClusterControllerCallContext::invalidate()
 {
+    JOYNR_LOG_TRACE(logger(), "invalidate");
     isValid = false;
     isInternalProviderRegistration = false;
 }

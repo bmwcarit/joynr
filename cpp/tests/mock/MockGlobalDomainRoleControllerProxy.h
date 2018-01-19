@@ -21,11 +21,12 @@
 
 #include <gmock/gmock.h>
 
+#include "joynr/JoynrRuntimeImpl.h"
 #include "joynr/infrastructure/GlobalDomainRoleControllerProxy.h"
 
 class MockGlobalDomainRoleControllerProxy : public virtual joynr::infrastructure::GlobalDomainRoleControllerProxy {
 public:
-    MockGlobalDomainRoleControllerProxy(std::weak_ptr<joynr::JoynrRuntime> runtime) :
+    MockGlobalDomainRoleControllerProxy(std::weak_ptr<joynr::JoynrRuntimeImpl> runtime) :
         ProxyBase(
                 runtime,
                 nullptr,
@@ -54,8 +55,19 @@ public:
     {
     }
 
+    std::shared_ptr<joynr::Future<std::vector<joynr::infrastructure::DacTypes::DomainRoleEntry>>>
+            getDomainRolesAsync(
+                const std::string& uid,
+                std::function<void(
+                    const std::vector<joynr::infrastructure::DacTypes::DomainRoleEntry>& domainRoleEntries
+                )> onSuccess,
+                std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onError
+            ) noexcept override
+    {
+        return getDomainRolesAsyncMock(uid, std::move(onSuccess), std::move(onError));
+    }
     MOCK_METHOD3(
-            getDomainRolesAsync,
+            getDomainRolesAsyncMock,
             std::shared_ptr<joynr::Future<std::vector<joynr::infrastructure::DacTypes::DomainRoleEntry>>>(
                 const std::string& uid,
                 std::function<void(

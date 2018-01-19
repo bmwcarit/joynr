@@ -54,7 +54,6 @@ libjoynrExports = [
     "./joynr/types/DiscoveryScope",
     "./joynr/system/RoutingTypes/BrowserAddress",
     "./joynr/system/RoutingTypes/ChannelAddress",
-    "./joynr/system/RoutingTypes/CommonApiDbusAddress",
     "./joynr/system/RoutingTypes/WebSocketAddress",
     "./joynr/system/RoutingTypes/WebSocketClientAddress",
     "./joynr/util/LongTimer"
@@ -86,7 +85,6 @@ var DiscoveryQos = require("./joynr/proxy/DiscoveryQos");
 var DiscoveryScope = require("./joynr/types/DiscoveryScope");
 var BrowserAddress = require("./joynr/system/RoutingTypes/BrowserAddress");
 var ChannelAddress = require("./joynr/system/RoutingTypes/ChannelAddress");
-var CommonApiDbusAddress = require("./joynr/system/RoutingTypes/CommonApiDbusAddress");
 var WebSocketAddress = require("./joynr/system/RoutingTypes/WebSocketAddress");
 var WebSocketClientAddress = require("./joynr/system/RoutingTypes/WebSocketClientAddress");
 var LongTimer = require("./joynr/util/LongTimer");

@@ -32,14 +32,8 @@
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
-#include "joynr/RuntimeConfig.h"
 #include "joynr/Semaphore.h"
 #include "joynr/WebSocketSettings.h"
-
-#ifdef USE_DBUS_COMMONAPI_COMMUNICATION
-#include "joynr/DBusMessageRouterAdapter.h"
-#include "libjoynr/common/dbus/DbusSettings.h"
-#endif // USE_DBUS_COMMONAPI_COMMUNICATION
 
 class JoynrClusterControllerRuntimeTest;
 
@@ -80,7 +74,7 @@ class GlobalDomainAccessControllerProxy;
 } // namespace infrastructure
 
 class JOYNRCLUSTERCONTROLLERRUNTIME_EXPORT JoynrClusterControllerRuntime
-        : public JoynrRuntime,
+        : public JoynrRuntimeImpl,
           public IClusterControllerSignalHandler
 {
 public:
@@ -114,13 +108,13 @@ public:
 
     void start();
     void stop(bool deleteChannel = false);
-
+    void shutdown() final;
     void runForever();
 
     // Implement IClusterControllerSignalHandler
     void startExternalCommunication() final;
     void stopExternalCommunication() final;
-    void shutdown() final;
+    void shutdownClusterController() final;
 
     // Functions used by integration tests
     void deleteChannel();
@@ -169,10 +163,6 @@ protected:
     std::shared_ptr<LocalDomainAccessController> localDomainAccessController;
     ClusterControllerSettings clusterControllerSettings;
 
-#ifdef USE_DBUS_COMMONAPI_COMMUNICATION
-    DbusSettings* dbusSettings;
-    DBusMessageRouterAdapter* ccDbusMessageRouterAdapter;
-#endif // USE_DBUS_COMMONAPI_COMMUNICATION
     WebSocketSettings wsSettings;
     std::shared_ptr<IWebsocketCcMessagingSkeleton> wsCcMessagingSkeleton;
     std::shared_ptr<IWebsocketCcMessagingSkeleton> wsTLSCcMessagingSkeleton;
@@ -205,7 +195,7 @@ private:
 
     void registerInternalSystemServiceProviders();
     void unregisterInternalSystemServiceProviders();
-    void createWsCCMessagingSkeletons();
+    void startLocalCommunication();
     std::shared_ptr<joynr::infrastructure::GlobalDomainAccessControllerProxy>
     createGlobalDomainAccessControllerProxy();
 

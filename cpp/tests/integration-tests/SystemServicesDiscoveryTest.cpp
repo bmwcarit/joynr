@@ -120,6 +120,7 @@ public:
         runtime->deleteChannel();
         runtime->stopExternalCommunication();
 
+        runtime->shutdown();
         test::util::resetAndWaitUntilDestroyed(runtime);
         test::util::resetAndWaitUntilDestroyed(mockMessageReceiverHttp);
         test::util::resetAndWaitUntilDestroyed(mockMessageReceiverMqtt);

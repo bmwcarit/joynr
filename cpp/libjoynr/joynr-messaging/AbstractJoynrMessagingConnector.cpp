@@ -24,8 +24,8 @@ namespace joynr
 {
 
 AbstractJoynrMessagingConnector::AbstractJoynrMessagingConnector(
-        std::shared_ptr<IMessageSender> messageSender,
-        std::shared_ptr<ISubscriptionManager> subscriptionManager,
+        std::weak_ptr<IMessageSender> messageSender,
+        std::weak_ptr<ISubscriptionManager> subscriptionManager,
         const std::string& domain,
         const std::string& interfaceName,
         const std::string& proxyParticipantId,
@@ -45,21 +45,25 @@ AbstractJoynrMessagingConnector::AbstractJoynrMessagingConnector(
 void AbstractJoynrMessagingConnector::operationRequest(std::shared_ptr<IReplyCaller> replyCaller,
                                                        Request&& request)
 {
-    messageSender->sendRequest(proxyParticipantId,
-                               providerParticipantId,
-                               qosSettings,
-                               request,
-                               std::move(replyCaller),
-                               providerDiscoveryEntry.getIsLocal());
+    if (auto ptr = messageSender.lock()) {
+        ptr->sendRequest(proxyParticipantId,
+                         providerParticipantId,
+                         qosSettings,
+                         request,
+                         std::move(replyCaller),
+                         providerDiscoveryEntry.getIsLocal());
+    }
 }
 
 void AbstractJoynrMessagingConnector::operationOneWayRequest(OneWayRequest&& request)
 {
-    messageSender->sendOneWayRequest(proxyParticipantId,
-                                     providerParticipantId,
-                                     qosSettings,
-                                     request,
-                                     providerDiscoveryEntry.getIsLocal());
+    if (auto ptr = messageSender.lock()) {
+        ptr->sendOneWayRequest(proxyParticipantId,
+                               providerParticipantId,
+                               qosSettings,
+                               request,
+                               providerDiscoveryEntry.getIsLocal());
+    }
 }
 
 } // namespace joynr

@@ -30,7 +30,6 @@
 #include "joynr/IMessagingStub.h"
 #include "joynr/IMessagingStubFactory.h"
 #include "joynr/PrivateCopyAssign.h"
-#include "joynr/RuntimeConfig.h"
 #include "joynr/ThreadSafeMap.h"
 #include "joynr/system/RoutingTypes/Address.h"
 

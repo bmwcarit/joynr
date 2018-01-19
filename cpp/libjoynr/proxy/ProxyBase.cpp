@@ -24,9 +24,7 @@
 namespace joynr
 {
 
-class JoynrRuntime;
-
-ProxyBase::ProxyBase(std::weak_ptr<JoynrRuntime> runtime,
+ProxyBase::ProxyBase(std::weak_ptr<JoynrRuntimeImpl> runtime,
                      ConnectorFactory* connectorFactory,
                      const std::string& domain,
                      const MessagingQos& qosSettings)

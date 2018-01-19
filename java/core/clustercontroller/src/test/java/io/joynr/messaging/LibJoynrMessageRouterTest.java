@@ -18,6 +18,8 @@
  */
 package io.joynr.messaging;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
 import java.util.concurrent.DelayQueue;
@@ -26,9 +28,6 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
-import io.joynr.messaging.routing.AddressManager;
-import io.joynr.messaging.routing.DelayableImmutableMessage;
-import io.joynr.messaging.routing.MulticastReceiverRegistry;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,9 +38,12 @@ import org.mockito.runners.MockitoJUnitRunner;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import io.joynr.common.ExpiryDate;
-
+import io.joynr.messaging.inprocess.InProcessAddress;
+import io.joynr.messaging.routing.AddressManager;
+import io.joynr.messaging.routing.DelayableImmutableMessage;
 import io.joynr.messaging.routing.LibJoynrMessageRouter;
 import io.joynr.messaging.routing.MessagingStubFactory;
+import io.joynr.messaging.routing.MulticastReceiverRegistry;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.runtime.ShutdownNotifier;
 import joynr.ImmutableMessage;
@@ -156,5 +158,48 @@ public class LibJoynrMessageRouterTest {
         scheduler.setKeepAliveTime(100, TimeUnit.SECONDS);
         scheduler.allowCoreThreadTimeOut(true);
         return scheduler;
+    }
+
+    @Test
+    public void addMulticastReceiverForUnknownNotInProcessProvider() {
+        final String multicastId = "multicastIdTest";
+        final String subscriberParticipantId = "subscriberParticipantIdTest";
+        final String providerParticipantId = "providerParticipantIdTest";
+        when(routingTable.get(providerParticipantId)).thenReturn(null);
+
+        messageRouter.addMulticastReceiver(multicastId, subscriberParticipantId, providerParticipantId);
+        // we expect this to be called because the provider is not reachable via an InProcessAddress
+        Mockito.verify(messageRouterParent).addMulticastReceiver(Mockito.eq(multicastId),
+                                                                 Mockito.eq(subscriberParticipantId),
+                                                                 Mockito.eq(providerParticipantId));
+    }
+
+    @Test
+    public void addMulticastReceiverForInProcessProvider() {
+        InProcessAddress mockInProcessAddress = mock(InProcessAddress.class);
+        final String multicastId = "multicastIdTest";
+        final String subscriberParticipantId = "subscriberParticipantIdTest";
+        final String providerParticipantId = "providerParticipantIdTest";
+        when(routingTable.get(providerParticipantId)).thenReturn(mockInProcessAddress);
+
+        messageRouter.addMulticastReceiver(multicastId, subscriberParticipantId, providerParticipantId);
+        // we don't expect this to be called
+        Mockito.verify(messageRouterParent, times(0)).addMulticastReceiver(Mockito.any(String.class),
+                                                                           Mockito.any(String.class),
+                                                                           Mockito.any(String.class));
+    }
+
+    @Test
+    public void addMulticastReceiverForNotInProcessProvider() {
+        WebSocketAddress mockWebSocketAddress = mock(WebSocketAddress.class);
+        final String multicastId = "multicastIdTest";
+        final String subscriberParticipantId = "subscriberParticipantIdTest";
+        final String providerParticipantId = "providerParticipantIdTest";
+        when(routingTable.get(providerParticipantId)).thenReturn(mockWebSocketAddress);
+
+        messageRouter.addMulticastReceiver(multicastId, subscriberParticipantId, providerParticipantId);
+        Mockito.verify(messageRouterParent).addMulticastReceiver(Mockito.eq(multicastId),
+                                                                 Mockito.eq(subscriberParticipantId),
+                                                                 Mockito.eq(providerParticipantId));
     }
 }

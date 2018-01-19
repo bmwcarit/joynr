@@ -77,7 +77,7 @@ public:
         requestReplyId("TEST-requestReplyId"),
         messageFactory(),
         messageSender(std::make_shared<MessageSender>(mockMessageRouter, nullptr)),
-        dispatcher(messageSender, singleThreadIOService->getIOService()),
+        dispatcher(std::make_shared<Dispatcher>(messageSender, singleThreadIOService->getIOService())),
         callContext(),
         getLocationCalledSemaphore(0),
         isLocalMessage(true)
@@ -126,7 +126,7 @@ protected:
 
     MutableMessageFactory messageFactory;
     std::shared_ptr<MessageSender> messageSender;
-    Dispatcher dispatcher;
+    std::shared_ptr<Dispatcher> dispatcher;
     joynr::CallContext callContext;
     joynr::Semaphore getLocationCalledSemaphore;
     const bool isLocalMessage;
@@ -190,11 +190,11 @@ TEST_F(DispatcherTest, receive_interpreteRequestAndCallOperation) {
                 )
     ).WillOnce(ReleaseSemaphore(&getLocationCalledSemaphore));
 
-    // test code: send the request through the dispatcher.
+    // test code: send the request through the dispatcher->
     // This should cause our mock messaging to receive a reply from the mock provider
-    dispatcher.addRequestCaller(providerParticipantId, mockRequestCaller);
+    dispatcher->addRequestCaller(providerParticipantId, mockRequestCaller);
 
-    dispatcher.receive(mutableMessage.getImmutableMessage());
+    dispatcher->receive(mutableMessage.getImmutableMessage());
     EXPECT_TRUE(getLocationCalledSemaphore.waitFor(std::chrono::milliseconds(5000)));
 }
 
@@ -237,8 +237,8 @@ TEST_F(DispatcherTest, receive_customHeadersCopied) {
                 )
     ).WillOnce(ReleaseSemaphore(&getLocationCalledSemaphore));
 
-    dispatcher.addRequestCaller(providerParticipantId, mockRequestCaller);
-    dispatcher.receive(mutableMessage.getImmutableMessage());
+    dispatcher->addRequestCaller(providerParticipantId, mockRequestCaller);
+    dispatcher->receive(mutableMessage.getImmutableMessage());
 
     EXPECT_TRUE(getLocationCalledSemaphore.waitFor(std::chrono::milliseconds(5000)));
 }
@@ -266,10 +266,10 @@ TEST_F(DispatcherTest, receive_interpreteReplyAndCallReplyCaller) {
                 reply
     );
 
-    // test code: send the reply through the dispatcher.
+    // test code: send the reply through the dispatcher->
     // This should cause our reply caller to be called
-    dispatcher.addReplyCaller(requestReplyId, mockReplyCaller, qos);
-    dispatcher.receive(mutableMessage.getImmutableMessage());
+    dispatcher->addReplyCaller(requestReplyId, mockReplyCaller, qos);
+    dispatcher->receive(mutableMessage.getImmutableMessage());
 
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(5000)));
 }
@@ -295,19 +295,19 @@ TEST_F(DispatcherTest, receive_interpreteSubscriptionReplyAndCallSubscriptionCal
 
     EXPECT_CALL(*mockSubscriptionCallback, execute(Eq(reply))).WillOnce(ReleaseSemaphore(&semaphore));
 
-    // test code: send the subscription reply through the dispatcher.
+    // test code: send the subscription reply through the dispatcher->
     // This should cause our subscription callback to be called
-    dispatcher.registerSubscriptionManager(mockSubscriptionManager);
-    dispatcher.receive(mutableMessage.getImmutableMessage());
+    dispatcher->registerSubscriptionManager(mockSubscriptionManager);
+    dispatcher->receive(mutableMessage.getImmutableMessage());
 
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(5000)));
-    dispatcher.registerSubscriptionManager(nullptr);
+    dispatcher->registerSubscriptionManager(nullptr);
 }
 
 TEST_F(DispatcherTest, receiveMulticastPublication_callSubscriptionCallback) {
     auto mockSubscriptionManager = std::make_shared<MockSubscriptionManager>(
                 singleThreadIOService->getIOService(), mockMessageRouter);
-    dispatcher.registerSubscriptionManager(mockSubscriptionManager);
+    dispatcher->registerSubscriptionManager(mockSubscriptionManager);
 
     const std::string senderParticipantId("senderParticipantId");
     const std::string multicastId = joynr::util::createMulticastId(
@@ -330,10 +330,10 @@ TEST_F(DispatcherTest, receiveMulticastPublication_callSubscriptionCallback) {
     EXPECT_CALL(*mockSubscriptionCallback, executePublication(_))
         .WillOnce(ReleaseSemaphore(&getLocationCalledSemaphore));
 
-    dispatcher.receive(message.getImmutableMessage());
+    dispatcher->receive(message.getImmutableMessage());
 
     EXPECT_TRUE(getLocationCalledSemaphore.waitFor(std::chrono::milliseconds(5000)));
-    dispatcher.registerSubscriptionManager(nullptr);
+    dispatcher->registerSubscriptionManager(nullptr);
 }
 
 
@@ -355,7 +355,7 @@ TEST_F(DispatcherTest, receive_setCallContext) {
     );
     std::shared_ptr<ImmutableMessage> immutableMessage = mutableMessage.getImmutableMessage();
     immutableMessage->setCreator(expectedPrincipal);
-    dispatcher.addRequestCaller(providerParticipantId, mockRequestCaller);
+    dispatcher->addRequestCaller(providerParticipantId, mockRequestCaller);
 
     EXPECT_CALL(
                 *mockRequestCaller,
@@ -365,7 +365,7 @@ TEST_F(DispatcherTest, receive_setCallContext) {
                 )
     ).WillOnce(Invoke(this, &DispatcherTest::invokeLocationAndSaveCallContext));
 
-    dispatcher.receive(immutableMessage);
+    dispatcher->receive(immutableMessage);
     EXPECT_TRUE(getLocationCalledSemaphore.waitFor(std::chrono::milliseconds(5000)));
 
     EXPECT_EQ(expectedPrincipal, callContext.getPrincipal());

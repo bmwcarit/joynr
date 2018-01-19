@@ -20,6 +20,8 @@
 #ifndef CLUSTERCONTROLLERCALLCONTEXT_H
 #define CLUSTERCONTROLLERCALLCONTEXT_H
 
+#include "joynr/Logger.h"
+
 namespace joynr
 {
 class ClusterControllerCallContext
@@ -42,6 +44,8 @@ public:
 private:
     bool isValid;
     bool isInternalProviderRegistration;
+
+    ADD_LOGGER(ClusterControllerCallContext)
 };
 } // namespace joynr
 

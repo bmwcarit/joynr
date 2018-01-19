@@ -30,6 +30,7 @@ import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingSkeletonFactory;
+import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.runtime.ShutdownNotifier;
 import io.joynr.runtime.SystemServicesSettings;
 import joynr.ImmutableMessage;
@@ -38,7 +39,6 @@ import joynr.system.RoutingProxy;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.BrowserAddress;
 import joynr.system.RoutingTypes.ChannelAddress;
-import joynr.system.RoutingTypes.CommonApiDbusAddress;
 import joynr.system.RoutingTypes.WebSocketAddress;
 import joynr.system.RoutingTypes.WebSocketClientAddress;
 import org.slf4j.Logger;
@@ -133,8 +133,6 @@ public class LibJoynrMessageRouter extends AbstractMessageRouter {
         logger.trace("Adding next hop with participant id " + participantId + " to parent router");
         if (incomingAddress instanceof ChannelAddress) {
             parentRouter.addNextHop(participantId, (ChannelAddress) incomingAddress, isGloballyVisible);
-        } else if (incomingAddress instanceof CommonApiDbusAddress) {
-            parentRouter.addNextHop(participantId, (CommonApiDbusAddress) incomingAddress, isGloballyVisible);
         } else if (incomingAddress instanceof BrowserAddress) {
             parentRouter.addNextHop(participantId, (BrowserAddress) incomingAddress, isGloballyVisible);
         } else if (incomingAddress instanceof WebSocketAddress) {
@@ -155,7 +153,10 @@ public class LibJoynrMessageRouter extends AbstractMessageRouter {
         DeferrableRegistration registerWithParent = new DeferrableRegistration() {
             @Override
             public void register() {
-                parentRouter.addMulticastReceiver(multicastId, subscriberParticipantId, providerParticipantId);
+                Address providerAddress = routingTable.get(providerParticipantId);
+                if (providerAddress == null || !(providerAddress instanceof InProcessAddress)) {
+                    parentRouter.addMulticastReceiver(multicastId, subscriberParticipantId, providerParticipantId);
+                }
             }
         };
         if (parentRouter != null) {

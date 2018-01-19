@@ -43,7 +43,7 @@ void PosixSignalHandler::handleSignal(int signal)
         switch (signal) {
         case SIGTERM:
             JOYNR_LOG_TRACE(logger(), "Received signal: SIGTERM");
-            ptr->shutdown();
+            ptr->shutdownClusterController();
             break;
         case SIGUSR1:
             JOYNR_LOG_TRACE(logger(), "Received signal: SIGUSR1");

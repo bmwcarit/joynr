@@ -2,7 +2,6 @@
 
 source /data/src/docker/joynr-base/scripts/global.sh
 
-DBUS='OFF'
 GCOV='OFF'
 ENABLE_CLANG_FORMATTER='ON'
 BUILD_TESTS='ON'
@@ -10,17 +9,14 @@ ADDITIONAL_CMAKE_ARGS=''
 
 function usage
 {
-    echo "usage: cpp-clean-build.sh [--dbus ON|OFF --gcov ON|OFF --jobs X \
+    echo "usage: cpp-clean-build.sh [--gcov ON|OFF --jobs X \
     --enableclangformatter ON|OFF --buildtests ON|OFF --additionalcmakeargs <args>]"
-    echo "default dbus is $DBUS, gcov is $GCOV, jobs is $JOBS, additionalcmakeargs is \
+    echo "default gcov is $GCOV, jobs is $JOBS, additionalcmakeargs is \
     $ADDITIONAL_CMAKE_ARGS"
 }
 
 while [ "$1" != "" ]; do
     case $1 in
-        --dbus )                 shift
-                                 DBUS=$1
-                                 ;;
         --gcov )                 shift
                                  GCOV=$1
                                  ;;
@@ -42,7 +38,7 @@ while [ "$1" != "" ]; do
     shift
 done
 
-log "CPP CLEAN BUILD DBUS: $DBUS GCOV: $GCOV JOBS: $JOBS"
+log "CPP CLEAN BUILD GCOV: $GCOV JOBS: $JOBS"
 
 log "Enable core dumps"
 ulimit -c unlimited
@@ -65,8 +61,7 @@ log "RUN CMAKE"
 
 # fail on first error
 set -e -x
-cmake -DUSE_DBUS_COMMONAPI_COMMUNICATION=$DBUS \
-      -DENABLE_GCOV=$GCOV \
+cmake -DENABLE_GCOV=$GCOV \
       -DPYTHON_EXECUTABLE=/usr/bin/python \
       -DJOYNR_SERVER=localhost:8080 \
       -DCMAKE_BUILD_TYPE=Debug \

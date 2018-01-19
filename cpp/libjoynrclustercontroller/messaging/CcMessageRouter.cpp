@@ -43,7 +43,6 @@
 #include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/system/RoutingTypes/BrowserAddress.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
-#include "joynr/system/RoutingTypes/CommonApiDbusAddress.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
@@ -301,24 +300,28 @@ void CcMessageRouter::routeInternal(std::shared_ptr<ImmutableMessage> message,
     registerGlobalRoutingEntryIfRequired(*message);
 
     JOYNR_LOG_TRACE(logger(), "Route message with Id {}", message->getId());
-    // search for the destination addresses
-    AbstractMessageRouter::AddressUnorderedSet destAddresses = getDestinationAddresses(*message);
-    // if destination address is not known
-    if (destAddresses.empty()) {
-        if (message->getType() == Message::VALUE_MESSAGE_TYPE_MULTICAST()) {
-            // Do not queue multicast messages for future multicast receivers.
+    AbstractMessageRouter::AddressUnorderedSet destAddresses;
+    {
+        ReadLocker lock(messageQueueRetryLock);
+        // search for the destination addresses
+        destAddresses = getDestinationAddresses(*message, lock);
+        // if destination address is not known
+        if (destAddresses.empty()) {
+            if (message->getType() == Message::VALUE_MESSAGE_TYPE_MULTICAST()) {
+                // Do not queue multicast messages for future multicast receivers.
+                return;
+            }
+
+            // save the message for later delivery
+            JOYNR_LOG_WARN(logger(),
+                           "No routing information found for destination participant ID \"{}\" "
+                           "so far. Waiting for participant registration. "
+                           "Queueing message (ID : {})",
+                           message->getRecipient(),
+                           message->getId());
+            queueMessage(std::move(message), lock);
             return;
         }
-
-        // save the message for later delivery
-        JOYNR_LOG_WARN(logger(),
-                       "No routing information found for destination participant ID \"{}\" "
-                       "so far. Waiting for participant registration. "
-                       "Queueing message (ID : {})",
-                       message->getRecipient(),
-                       message->getId());
-        queueMessage(std::move(message));
-        return;
     }
 
     for (std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress : destAddresses) {
@@ -383,9 +386,11 @@ void CcMessageRouter::addNextHop(
 {
     std::ignore = onError;
     assert(address);
+    WriteLocker lock(messageQueueRetryLock);
     addToRoutingTable(
             participantId, isGloballyVisible, address, expiryDateMs, isSticky, allowUpdate);
-    sendMessages(participantId, address);
+    sendMessages(participantId, address, lock);
+    lock.unlock();
     if (onSuccess) {
         onSuccess();
     }
@@ -425,28 +430,6 @@ void CcMessageRouter::addNextHop(
     constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
     const bool isSticky = false;
     auto address = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>(mqttAddress);
-    addNextHop(participantId,
-               std::move(address),
-               isGloballyVisible,
-               expiryDateMs,
-               isSticky,
-               false,
-               std::move(onSuccess));
-}
-
-// inherited from joynr::system::RoutingProvider
-void CcMessageRouter::addNextHop(
-        const std::string& participantId,
-        const system::RoutingTypes::CommonApiDbusAddress& commonApiDbusAddress,
-        const bool& isGloballyVisible,
-        std::function<void()> onSuccess,
-        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
-{
-    std::ignore = onError;
-    constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
-    const bool isSticky = false;
-    auto address = std::make_shared<const joynr::system::RoutingTypes::CommonApiDbusAddress>(
-            commonApiDbusAddress);
     addNextHop(participantId,
                std::move(address),
                isGloballyVisible,
@@ -682,8 +665,10 @@ void CcMessageRouter::removeMulticastReceiver(
     }
 }
 
-void CcMessageRouter::queueMessage(std::shared_ptr<ImmutableMessage> message)
+void CcMessageRouter::queueMessage(std::shared_ptr<ImmutableMessage> message,
+                                   const ReadLocker& messageQueueRetryReadLock)
 {
+    assert(messageQueueRetryReadLock.owns_lock());
     JOYNR_LOG_TRACE(logger(), "message queued: {}", message->toLogMessage());
     // do not fire a broadcast for an undeliverable message sent by
     // messageNotificationProvider (e.g. messageQueueForDelivery publication)

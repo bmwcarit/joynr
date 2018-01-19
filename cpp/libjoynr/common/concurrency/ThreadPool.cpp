@@ -27,13 +27,14 @@
 namespace joynr
 {
 
-ThreadPool::ThreadPool(const std::string& /*name*/, std::uint8_t numberOfThreads)
+ThreadPool::ThreadPool(const std::string& name, std::uint8_t numberOfThreads)
         : threads(),
           scheduler(),
           keepRunning(true),
           currentlyRunning(),
           mutex(),
-          numberOfThreads(numberOfThreads)
+          numberOfThreads(numberOfThreads),
+          name(name)
 {
 }
 
@@ -65,6 +66,7 @@ ThreadPool::~ThreadPool()
 
 void ThreadPool::shutdown()
 {
+    JOYNR_LOG_DEBUG(logger(), "Shutting down thread pool of {}", name);
     keepRunning = false;
 
     // Signal scheduler that pending Runnables will not be

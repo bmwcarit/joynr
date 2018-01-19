@@ -70,9 +70,8 @@ public:
         runtime->start();
     }
 
-    ~CapabilitiesClientTest() {
-        bool deleteChannel = true;
-        runtime->stop(deleteChannel);
+    ~CapabilitiesClientTest() override {
+        runtime->shutdown();
         test::util::resetAndWaitUntilDestroyed(runtime);
 
         // Delete persisted files

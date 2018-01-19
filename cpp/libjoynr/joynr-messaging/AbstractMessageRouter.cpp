@@ -36,7 +36,6 @@
 #include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/system/RoutingTypes/BrowserAddress.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
-#include "joynr/system/RoutingTypes/CommonApiDbusAddress.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
@@ -67,7 +66,9 @@ AbstractMessageRouter::AbstractMessageRouter(
                                                                         "AbstractMessageRouter",
                                                                         ioService)),
           messageQueue(std::move(messageQueue)),
+          messageQueueRetryLock(),
           transportNotAvailableQueue(std::move(transportNotAvailableQueue)),
+          transportAvailabilityMutex(),
           routingTableFileName(),
           addressCalculator(std::move(addressCalculator)),
           messageQueueCleanerTimer(ioService),
@@ -132,8 +133,10 @@ AbstractMessageRouter::AddressUnorderedSet AbstractMessageRouter::lookupAddresse
 }
 
 AbstractMessageRouter::AddressUnorderedSet AbstractMessageRouter::getDestinationAddresses(
-        const ImmutableMessage& message)
+        const ImmutableMessage& message,
+        const ReadLocker& messageQueueRetryReadLock)
 {
+    assert(messageQueueRetryReadLock.owns_lock());
     ReadLocker lock(routingTableLock);
     AbstractMessageRouter::AddressUnorderedSet addresses;
     if (message.getType() == Message::VALUE_MESSAGE_TYPE_MULTICAST()) {
@@ -249,16 +252,19 @@ void AbstractMessageRouter::sendMessages(
         participantIdSet = routingTable.lookupParticipantIdsByAddress(address);
     }
     if (participantIdSet.size() > 0) {
+        WriteLocker lock(messageQueueRetryLock);
         for (const auto& participantId : participantIdSet) {
-            sendMessages(participantId, address);
+            sendMessages(participantId, address, lock);
         }
     }
 }
 
 void AbstractMessageRouter::sendMessages(
         const std::string& destinationPartId,
-        std::shared_ptr<const joynr::system::RoutingTypes::Address> address)
+        std::shared_ptr<const joynr::system::RoutingTypes::Address> address,
+        const WriteLocker& messageQueueRetryWriteLock)
 {
+    assert(messageQueueRetryWriteLock.owns_lock());
     JOYNR_LOG_TRACE(logger(),
                     "sendMessages: sending messages for destinationPartId {} and {}",
                     destinationPartId,
@@ -305,12 +311,16 @@ void AbstractMessageRouter::scheduleMessage(
     for (const auto& transportStatus : transportStatuses) {
         if (transportStatus->isReponsibleFor(destAddress)) {
             if (!transportStatus->isAvailable()) {
-                JOYNR_LOG_TRACE(logger(),
-                                "Transport not available. Message queued: {}",
-                                message->toLogMessage());
+                // We need to lock the mutex to ensure that the queue isn't processed right now.
+                std::lock_guard<std::mutex> lock(transportAvailabilityMutex);
+                if (!transportStatus->isAvailable()) {
+                    JOYNR_LOG_TRACE(logger(),
+                                    "Transport not available. Message queued: {}",
+                                    message->toLogMessage());
 
-                transportNotAvailableQueue->queueMessage(transportStatus, std::move(message));
-                return;
+                    transportNotAvailableQueue->queueMessage(transportStatus, std::move(message));
+                    return;
+                }
             }
         }
     }
@@ -330,8 +340,9 @@ void AbstractMessageRouter::scheduleMessage(
                 "message.",
                 message->getId(),
                 destAddress->toString());
+        ReadLocker lock(messageQueueRetryLock);
         // save the message for later delivery
-        queueMessage(std::move(message));
+        queueMessage(std::move(message), lock);
     }
 }
 
@@ -376,6 +387,9 @@ void AbstractMessageRouter::registerTransportStatusCallbacks()
 void AbstractMessageRouter::rescheduleQueuedMessagesForTransport(
         std::shared_ptr<ITransportStatus> transportStatus)
 {
+    // We need to lock the mutex to prevent other threads from adding new content for the queue
+    // while we process it.
+    std::lock_guard<std::mutex> lock(transportAvailabilityMutex);
     while (auto nextImmutableMessage =
                    transportNotAvailableQueue->getNextMessageFor(transportStatus)) {
         std::shared_ptr<ImmutableMessage> message = nextImmutableMessage->getContent();
@@ -395,7 +409,9 @@ void AbstractMessageRouter::onMessageCleanerTimerExpired(
         const boost::system::error_code& errorCode)
 {
     if (!errorCode) {
+        WriteLocker lock(thisSharedPtr->messageQueueRetryLock);
         thisSharedPtr->messageQueue->removeOutdatedMessages();
+        thisSharedPtr->transportNotAvailableQueue->removeOutdatedMessages();
         thisSharedPtr->activateMessageCleanerTimer();
     } else if (errorCode != boost::system::errc::operation_canceled) {
         JOYNR_LOG_ERROR(logger(),
@@ -420,8 +436,10 @@ void AbstractMessageRouter::onRoutingTableCleanerTimerExpired(
     }
 }
 
-void AbstractMessageRouter::queueMessage(std::shared_ptr<ImmutableMessage> message)
+void AbstractMessageRouter::queueMessage(std::shared_ptr<ImmutableMessage> message,
+                                         const ReadLocker& messageQueueRetryReadLock)
 {
+    assert(messageQueueRetryReadLock.owns_lock());
     JOYNR_LOG_TRACE(logger(), "message queued: {}", message->toLogMessage());
     std::string recipient = message->getRecipient();
     messageQueue->queueMessage(std::move(recipient), std::move(message));

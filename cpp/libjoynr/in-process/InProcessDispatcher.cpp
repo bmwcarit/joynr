@@ -48,11 +48,6 @@ void InProcessDispatcher::addReplyCaller(const std::string& requestReplyId,
     replyCallerDirectory.add(requestReplyId, replyCaller, qosSettings.getTtl());
 }
 
-void InProcessDispatcher::removeReplyCaller(const std::string& requestReplyId)
-{
-    replyCallerDirectory.remove(requestReplyId);
-}
-
 void InProcessDispatcher::addRequestCaller(const std::string& participantId,
                                            std::shared_ptr<RequestCaller> requestCaller)
 {

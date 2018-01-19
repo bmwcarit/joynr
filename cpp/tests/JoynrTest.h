@@ -145,4 +145,9 @@ MATCHER_P(MessageHasRecipient, recipient, "") {
 MATCHER_P(MessageHasExpiryDate, expiryDate, "") {
     return arg->getExpiryDate() == expiryDate;
 }
+
+MATCHER_P2(joynrException, typeName, msg, "") {
+    return arg.getTypeName() == typeName && arg.getMessage() == msg;
+}
+
 #endif // JOYNRTEST_H_

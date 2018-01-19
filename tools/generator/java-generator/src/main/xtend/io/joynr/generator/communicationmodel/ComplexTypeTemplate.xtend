@@ -164,9 +164,11 @@ public class «typeName»«IF hasExtendsDeclaration(type)» extends «type.exten
 	«IF isArray(member)»@SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "joynr object not used for storing internal state")«ENDIF»
 	@JsonIgnore
 	public void set«memberName.toFirstUpper»(«memberType» «member.joynrName») {
-		if («member.joynrName» == null) {
-			throw new IllegalArgumentException("setting «member.joynrName» to null is not allowed");
-		}
+		«IF !ignoreInvalidNullClassMembersExtension»
+			if («member.joynrName» == null) {
+				throw new IllegalArgumentException("setting «member.joynrName» to null is not allowed");
+			}
+		«ENDIF»
 		this.«member.joynrName» = «member.joynrName»;
 	}
 

@@ -865,43 +865,21 @@ EXCLUDE                = libjoynr/LibjoynrSettings.cpp \
                          libjoynrclustercontroller/messaging/joynr-messaging/HttpMessagingStub.h \
                          libjoynrclustercontroller/messaging/MessagingPropertiesPersistence.cpp \
                          libjoynrclustercontroller/messaging/MessagingPropertiesPersistence.h \
-                         common-api/joynr/messaging/IMessaging.cpp \
-                         common-api/joynr/messaging/IMessagingDBusProxy.cpp \
-                         common-api/joynr/messaging/IMessagingDBusProxy.h \
-                         common-api/joynr/messaging/IMessagingDBusStubAdapter.cpp \
-                         common-api/joynr/messaging/IMessagingDBusStubAdapter.h \
-                         common-api/joynr/messaging/IMessaging.h \
-                         common-api/joynr/messaging/IMessagingProxyBase.h \
-                         common-api/joynr/messaging/IMessagingProxy.h \
-                         common-api/joynr/messaging/IMessagingStubDefault.cpp \
-                         common-api/joynr/messaging/IMessagingStubDefault.h \
-                         common-api/joynr/messaging/IMessagingStub.h \
-                         common-api/joynr/messaging/types/Types.h \
                          common/cache/ClientMultiQCache.cpp \
                          common/cache/ClientMultiQCache.h \
                          common/cache/ClientQCache.cpp \
                          common/cache/IClientMultiCache.h \
                          common/capabilities/CapabilitiesMetaTypes.cpp \
                          common/capabilities/CapabilitiesMetaTypes.h \
-                         common/dbus/DbusMessagingSkeleton.cpp \
-                         common/dbus/DbusMessagingStubAdapter.cpp \
-                         common/dbus/DbusMessagingStubAdapter.h \
-                         common/dbus/DbusMessagingUtil.cpp \
-                         common/dbus/DbusMessagingUtil.h \
-                         common/dbus/DbusSettings.cpp \
-                         common/dbus/DbusSettings.h \
-                         common/dbus/IDbusStubWrapper.h \
                          common/DispatcherUtils.cpp \
                          common/exceptions/exceptions.cpp \
                          common/include/joynr/CachedValue.h \
                          common/include/joynr/ClientQCache.h \
                          common/include/joynr/ContentWithDecayTime.h \
-                         common/include/joynr/DbusMessagingSkeleton.h \
                          common/include/joynr/DeclareMetatypeUtil.h \
                          common/include/joynr/Directory.h \
                          common/include/joynr/DispatcherUtils.h \
                          common/include/joynr/IClientCache.h \
-                         common/include/joynr/IDbusSkeletonWrapper.h \
                          common/include/joynr/IMessaging.h \
                          common/include/joynr/IMiddlewareMessagingStubFactory.h \
                          common/include/joynr/IReplyCaller.h \
@@ -915,7 +893,6 @@ EXCLUDE                = libjoynr/LibjoynrSettings.cpp \
                          common/include/joynr/PrivateCopyAssign.h \
                          common/include/joynr/Reply.h \
                          common/include/joynr/Request.h \
-                         common/include/joynr/RuntimeConfig.h \
                          common/include/joynr/SettingsMerger.h \
                          common/include/joynr/SubscriptionUtil.h \
                          common/include/joynr/SystemServicesSettings.h \
@@ -966,7 +943,6 @@ EXCLUDE                = libjoynr/LibjoynrSettings.cpp \
                          libjoynr/communication-model/generated/datatypes/system/RoutingTypes/Address.cpp \
                          libjoynr/communication-model/generated/datatypes/system/RoutingTypes/BrowserAddress.cpp \
                          libjoynr/communication-model/generated/datatypes/system/RoutingTypes/ChannelAddress.cpp \
-                         libjoynr/communication-model/generated/datatypes/system/RoutingTypes/CommonApiDbusAddress.cpp \
                          libjoynr/communication-model/generated/datatypes/system/RoutingTypes/WebSocketAddress.cpp \
                          libjoynr/communication-model/generated/datatypes/system/RoutingTypes/WebSocketClientAddress.cpp \
                          libjoynr/communication-model/generated/datatypes/system/RoutingTypes/WebSocketProtocol.cpp \
@@ -981,9 +957,6 @@ EXCLUDE                = libjoynr/LibjoynrSettings.cpp \
                          libjoynr/communication-model/generated/interfaces/system/IDiscovery.cpp \
                          libjoynr/communication-model/generated/interfaces/system/ILogging.cpp \
                          libjoynr/communication-model/generated/interfaces/system/IRouting.cpp \
-                         libjoynr/dbus/DBusMessageRouterAdapter.cpp \
-                         libjoynr/dbus/DbusMessagingStubFactory.cpp \
-                         libjoynr/dbus/DbusMessagingStubFactory.h \
                          libjoynr/include/joynr/AbstractJoynrMessagingConnector.h \
                          libjoynr/include/joynr/ArbitrationStatus.h \
                          libjoynr/include/joynr/BrokerUrl.h \
@@ -992,7 +965,6 @@ EXCLUDE                = libjoynr/LibjoynrSettings.cpp \
                          libjoynr/include/joynr/CapabilitiesRegistrar.h \
                          libjoynr/include/joynr/CapabilityEntry.h \
                          libjoynr/include/joynr/ConnectorFactory.h \
-                         libjoynr/include/joynr/DBusMessageRouterAdapter.h \
                          libjoynr/include/joynr/DefaultArbitrator.h \
                          libjoynr/include/joynr/Dispatcher.h \
                          libjoynr/include/joynr/FixedParticipantArbitrator.h \
@@ -1154,7 +1126,6 @@ EXCLUDE                = libjoynr/LibjoynrSettings.cpp \
                          libjoynr/include/joynr/system/RoutingTypes/Address.h \
                          libjoynr/include/joynr/system/RoutingTypes/BrowserAddress.h \
                          libjoynr/include/joynr/system/RoutingTypes/ChannelAddress.h \
-                         libjoynr/include/joynr/system/RoutingTypes/CommonApiDbusAddress.h \
                          libjoynr/include/joynr/ThreadSafeMap.h \
                          libjoynr/include/joynr/types/CapabilityInformation.h \
                          libjoynr/include/joynr/types/ChannelUrlInformation.h \
@@ -1294,11 +1265,6 @@ EXCLUDE                = libjoynr/LibjoynrSettings.cpp \
                          runtimes/include/joynr/JoynrRuntimeExport.h \
                          runtimes/JoynrMetaTypes.cpp \
                          runtimes/JoynrMetaTypes.h \
-                         runtimes/libjoynr-runtime/dbus/JoynrDbusRuntimeExecutor.cpp \
-                         runtimes/libjoynr-runtime/dbus/JoynrDbusRuntimeExecutor.h \
-                         runtimes/libjoynr-runtime/dbus/JoynrRuntime.cpp \
-                         runtimes/libjoynr-runtime/dbus/LibJoynrDbusRuntime.cpp \
-                         runtimes/libjoynr-runtime/dbus/LibJoynrDbusRuntime.h \
                          runtimes/libjoynr-runtime/JoynrRuntimeExecutor.cpp \
                          runtimes/libjoynr-runtime/JoynrRuntimeExecutor.h \
                          runtimes/libjoynr-runtime/LibJoynrRuntime.cpp \

@@ -24,6 +24,7 @@
 
 #include <boost/asio/io_service.hpp>
 #include "joynr/Semaphore.h"
+#include "joynr/Logger.h"
 
 namespace joynr
 {
@@ -38,6 +39,7 @@ public:
               ioServiceThread(),
               destructed(destructed)
     {
+        JOYNR_LOG_TRACE(logger(), "Created.");
     }
 
     ~SingleThreadedIOService()
@@ -51,10 +53,12 @@ public:
     {
         ioServiceWork = std::make_unique<boost::asio::io_service::work>(ioService);
         ioServiceThread = std::thread(&runIOService, shared_from_this());
+        JOYNR_LOG_TRACE(logger(), "Started.");
     }
 
     void stop()
     {
+        JOYNR_LOG_TRACE(logger(), "Stopping.");
         ioServiceWork.reset();
         ioService.stop();
 
@@ -64,7 +68,9 @@ public:
 
         if (std::this_thread::get_id() == ioServiceThread.get_id()) {
             ioServiceThread.detach();
+            JOYNR_LOG_TRACE(logger(), "Same thread: detach!");
         } else if (ioServiceThread.joinable()) {
+            JOYNR_LOG_TRACE(logger(), "Other thread: join!");
             ioServiceThread.join();
         }
     }
@@ -81,6 +87,7 @@ private:
     }
 
 private:
+    ADD_LOGGER(SingleThreadedIOService)
     boost::asio::io_service ioService;
     std::unique_ptr<boost::asio::io_service::work> ioServiceWork;
     std::thread ioServiceThread;

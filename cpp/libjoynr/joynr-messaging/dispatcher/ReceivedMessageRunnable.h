@@ -40,7 +40,9 @@ class ImmutableMessage;
 class ReceivedMessageRunnable : public Runnable, public ObjectWithDecayTime
 {
 public:
-    ReceivedMessageRunnable(std::shared_ptr<ImmutableMessage> message, Dispatcher& dispatcher);
+    ReceivedMessageRunnable(std::shared_ptr<ImmutableMessage> message,
+                            std::weak_ptr<Dispatcher> dispatcher);
+    ~ReceivedMessageRunnable() = default;
 
     void shutdown() override;
     void run() override;
@@ -48,7 +50,7 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(ReceivedMessageRunnable);
     std::shared_ptr<ImmutableMessage> message;
-    Dispatcher& dispatcher;
+    std::weak_ptr<Dispatcher> dispatcher;
     ADD_LOGGER(ReceivedMessageRunnable)
 };
 

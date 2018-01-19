@@ -26,11 +26,16 @@ have to be provided in the Maven configuration:
                 <generationLanguage><GENERATION_LANGUAGE></generationLanguage>
                 <!-- specify the output directory -->
                 <outputPath><PATH_TO_OUTPUT_DIRECTORY></outputPath>
-                <!-- for Jee code generation use generation language "java"
-                     and set the following parameter
-                     (see also documentation of joynr JEE Integration -->
+                <!-- optional parameters -->
                 <parameter>
+                    <!-- for Jee code generation use generation language "java"
+                         and set the following parameter
+                         (see also documentation of joynr JEE Integration -->
                     <jee>true</jee>
+                    <!-- for Java/Jee code generation with null values in
+                         complex types use generation language "java"
+                         and set the following parameter -->
+                    <ignoreInvalidNullClassMembers>true</ignoreInvalidNullClassMembers>
                 </parameter>
             </configuration>
         </execution>

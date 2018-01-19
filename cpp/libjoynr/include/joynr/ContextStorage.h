@@ -16,26 +16,39 @@
  * limitations under the License.
  * #L%
  */
-package joynr.messaging
 
-import joynr.messaging.types.* from "Types.fidl"
+#ifndef CONTEXTSTORAGE_H
+#define CONTEXTSTORAGE_H
 
-interface IMessaging {
+namespace joynr
+{
 
-	version {
-		major 0
-		minor 1
-	}
+template <typename T>
+class ContextStorage
+{
+public:
+    static void set(const T& context)
+    {
+        get() = context;
+    }
 
-	method transmit {
-		in {
-			JoynrMessage message
-		}
-	}
+    static void set(T&& context)
+    {
+        get() = std::move(context);
+    }
 
-	struct JoynrMessage {
-		String type
-		Types.JoynrMessageHeader header
-		String payload
-	}
-}
+    static T& get()
+    {
+        static T context;
+        return context;
+    }
+
+    static void invalidate()
+    {
+        get().invalidate();
+    }
+};
+
+} // namespace joynr
+
+#endif // CONTEXTSTORAGE_H

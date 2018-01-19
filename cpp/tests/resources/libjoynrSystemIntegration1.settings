@@ -1,3 +1,3 @@
 [lib-joynr]
-participantids-persistence-file = joynr_participantIds1.persist
+participant-ids-persistence-file = joynr_participantIds1.persist
 message-router-persistence-file = message-router-persistence-file1.persist

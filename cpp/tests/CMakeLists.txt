@@ -160,20 +160,6 @@ target_include_directories(
     ${JoynrTest_SYSTEM_INCLUDE_DIRECTORIES}
 )
 
-if(${USE_DBUS_COMMONAPI_COMMUNICATION})
-    set(
-        OPTIONAL_DBUS_LIBRARIES
-        JoynrDbusRuntime
-    )
-    get_target_property(common_api_PUBLIC_INCLUDE_DIRECTORY JoynrCommonAPI PUBLIC_INCLUDE_DIRECTORY)
-    list(
-        APPEND test_INCLUDE_DIRECTORIES
-        ${common_api_PUBLIC_INCLUDE_DIRECTORY}
-    )
-else()
-    set(OPTIONAL_DBUS_LIBRARIES "")
-endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
-
 ## Collect link targets for tests
 set(
     test_TARGET_LIBRARIES
@@ -219,9 +205,6 @@ include(CheckBoostImportTargets)
 list(
     APPEND test_TARGET_LIBRARIES
     Boost::regex
-    # Link the Dbus runtime last so that the cluster controller
-    # runtime is the default runtime
-    ${OPTIONAL_DBUS_LIBRARIES}
 )
 
 ## Collect common header files for tests
@@ -352,13 +335,6 @@ if(${BUILD_UNIT_TESTS})
         "unit-tests/*.h"
     )
 
-    if(${USE_DBUS_COMMONAPI_COMMUNICATION})
-        list(
-            APPEND g_UnitTests_SOURCES
-            "unit-tests/dbus/DbusSettingsTest.cpp"
-        )
-    endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
-
     AddTest(
         g_UnitTests
         ${test_HEADERS}
@@ -394,14 +370,6 @@ if(${BUILD_INTEGRATION_TESTS})
        GLOB g_IntegrationTests_SOURCES
        "integration-tests/*.cpp"
     )
-
-    if(${USE_DBUS_COMMONAPI_COMMUNICATION})
-       list(
-           APPEND g_IntegrationTests_SOURCES
-           "integration-tests/dbus/LibJoynrRuntimeTest.cpp"
-           "integration-tests/dbus/LibJoynrDbusCommunicationTests.cpp"
-       )
-    endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
     AddTest(
        g_IntegrationTests
@@ -441,13 +409,6 @@ if(${BUILD_SYSTEM_INTEGRATION_TESTS})
        GLOB g_SystemIntegrationTests_SOURCES
        "systemintegration-tests/*.cpp"
     )
-
-    if(${USE_DBUS_COMMONAPI_COMMUNICATION})
-       list(
-           APPEND g_SystemIntegrationTests_SOURCES
-           "systemintegration-tests/dbus/End2EndDbusTest.cpp"
-       )
-    endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
     AddTest(
        g_SystemIntegrationTests

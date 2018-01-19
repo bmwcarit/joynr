@@ -46,7 +46,7 @@ class MessagingQos;
 class RequestCaller;
 class IMessageSender;
 
-class JOYNR_EXPORT Dispatcher : public IDispatcher
+class JOYNR_EXPORT Dispatcher : public std::enable_shared_from_this<Dispatcher>, public IDispatcher
 {
 
 public:
@@ -59,8 +59,6 @@ public:
     void addReplyCaller(const std::string& requestReplyId,
                         std::shared_ptr<IReplyCaller> replyCaller,
                         const MessagingQos& qosSettings) override;
-
-    void removeReplyCaller(const std::string& requestReplyId) override;
 
     void addRequestCaller(const std::string& participantId,
                           std::shared_ptr<RequestCaller> requestCaller) override;

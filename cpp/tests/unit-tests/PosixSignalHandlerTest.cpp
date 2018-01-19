@@ -42,9 +42,9 @@ public:
     std::shared_ptr<MockClusterControllerSignalHandler> mockSignalHandler;
 };
 
-TEST_F(PosixSignalHandlerTest, shutdown)
+TEST_F(PosixSignalHandlerTest, shutdownClusterController)
 {
-    EXPECT_CALL(*mockSignalHandler, shutdown()).Times(1);
+    EXPECT_CALL(*mockSignalHandler, shutdownClusterController()).Times(1);
     raise(SIGTERM);
 }
 

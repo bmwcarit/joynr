@@ -19,9 +19,12 @@
 
 #include "joynr/JoynrRuntime.h"
 
+#include "joynr/JoynrRuntimeImpl.h"
+
 #include "joynr/Future.h"
 #include "joynr/IKeychain.h"
 #include "joynr/Settings.h"
+#include "joynr/exceptions/JoynrException.h"
 #include "runtimes/libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.h"
 
 namespace joynr
@@ -34,7 +37,8 @@ std::shared_ptr<JoynrRuntime> JoynrRuntime::createRuntime(
 {
 
     return createRuntime(
-            createSettings(pathToLibjoynrSettings, pathToMessagingSettings), std::move(keyChain));
+            JoynrRuntimeImpl::createSettings(pathToLibjoynrSettings, pathToMessagingSettings),
+            std::move(keyChain));
 }
 
 std::shared_ptr<JoynrRuntime> JoynrRuntime::createRuntime(std::unique_ptr<Settings> settings,
@@ -62,28 +66,38 @@ std::shared_ptr<JoynrRuntime> JoynrRuntime::createRuntimeAsync(
         std::function<void()> onSuccess,
         std::function<void(const exceptions::JoynrRuntimeException& exception)> onError,
         const std::string& pathToMessagingSettings,
-        std::shared_ptr<IKeychain> keyChain)
+        std::shared_ptr<IKeychain> keyChain) noexcept
 {
-    return createRuntimeAsync(createSettings(pathToLibjoynrSettings, pathToMessagingSettings),
-                              std::move(onSuccess),
-                              std::move(onError),
-                              std::move(keyChain));
+    return createRuntimeAsync(
+            JoynrRuntimeImpl::createSettings(pathToLibjoynrSettings, pathToMessagingSettings),
+            std::move(onSuccess),
+            std::move(onError),
+            std::move(keyChain));
 }
 
 std::shared_ptr<JoynrRuntime> JoynrRuntime::createRuntimeAsync(
         std::unique_ptr<Settings> settings,
         std::function<void()> onSuccess,
         std::function<void(const exceptions::JoynrRuntimeException& exception)> onError,
-        std::shared_ptr<IKeychain> keyChain)
+        std::shared_ptr<IKeychain> keyChain) noexcept
 {
-    auto runtime =
-            std::make_shared<LibJoynrWebSocketRuntime>(std::move(settings), std::move(keyChain));
-    runtime->connect(std::move(onSuccess), std::move(onError));
-    return runtime;
+    std::shared_ptr<LibJoynrWebSocketRuntime> runtimeImpl;
+
+    try {
+        runtimeImpl = std::make_shared<LibJoynrWebSocketRuntime>(
+                std::move(settings), std::move(keyChain));
+        runtimeImpl->connect(std::move(onSuccess), onError);
+    } catch (exceptions::JoynrRuntimeException& exception) {
+        if (onError) {
+            onError(exception);
+        }
+    }
+    return std::make_shared<JoynrRuntime>(runtimeImpl);
 }
 
-std::unique_ptr<Settings> JoynrRuntime::createSettings(const std::string& pathToLibjoynrSettings,
-                                                       const std::string& pathToMessagingSettings)
+std::unique_ptr<Settings> JoynrRuntimeImpl::createSettings(
+        const std::string& pathToLibjoynrSettings,
+        const std::string& pathToMessagingSettings)
 {
     auto settings = std::make_unique<Settings>(pathToLibjoynrSettings);
 

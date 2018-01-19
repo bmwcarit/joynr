@@ -4,7 +4,7 @@ A variable number of **Provider** applications can be registered to provide serv
 
 Joynr supports several programming languages (Java, C\+\+, JavaScript) within the same system, i.e. a Java Consumer can interact with a C\+\+ Provider etc.
 
-Data serialisation and transfer is transparent to the application. The current implementation supports a number of different transport mechanisms (dbus, Web Sockets, HTTP Long Polling), and serialises to JSON.
+Data serialisation and transfer is transparent to the application. The current implementation supports a number of different transport mechanisms (Web Sockets, HTTP Long Polling), and serialises to JSON.
 
 
 ## Provider

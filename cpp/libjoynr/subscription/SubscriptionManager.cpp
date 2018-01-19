@@ -29,7 +29,7 @@
 #include "joynr/ISubscriptionListener.h"
 #include "joynr/MulticastReceiverDirectory.h"
 #include "joynr/MulticastSubscriptionRequest.h"
-#include "joynr/SingleThreadedDelayedScheduler.h"
+#include "joynr/ThreadPoolDelayedScheduler.h"
 #include "joynr/SubscriptionQos.h"
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/SubscriptionUtil.h"
@@ -81,13 +81,15 @@ SubscriptionManager::SubscriptionManager(boost::asio::io_service& ioService,
           multicastSubscribersMutex(),
           messageRouter(messageRouter),
           missedPublicationScheduler(
-                  std::make_shared<SingleThreadedDelayedScheduler>("MissedPublications", ioService))
+                  std::make_shared<ThreadPoolDelayedScheduler>(1, "MissedPublications", ioService))
 {
 }
 
 SubscriptionManager::SubscriptionManager(std::shared_ptr<DelayedScheduler> scheduler,
                                          std::shared_ptr<IMessageRouter> messageRouter)
-        : subscriptions(),
+        : ISubscriptionManager(),
+          enable_shared_from_this<SubscriptionManager>(),
+          subscriptions(),
           multicastSubscribers(),
           multicastSubscribersMutex(),
           messageRouter(messageRouter),

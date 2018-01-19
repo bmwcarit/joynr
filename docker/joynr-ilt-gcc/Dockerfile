@@ -149,6 +149,19 @@ RUN export SMRF_VERSION=0.2.2 \
     && rm -rf smrf
 
 ###################################################
+# install valgrind
+###################################################
+
+RUN export VALGRIND_VERSION=3.13.0 \
+        && cd /tmp \
+        && wget https://sourceware.org/pub/valgrind/valgrind-$VALGRIND_VERSION.tar.bz2 \
+        && tar xf valgrind-$VALGRIND_VERSION.tar.bz2 \
+        && cd valgrind-$VALGRIND_VERSION \
+        && ./configure \
+        && make install -j"$(nproc)" \
+        && rm -rf /tmp/valgrind-$VALGRIND_VERSION /tmp/valgrind-$VALGRIND_VERSION.tar.bz2
+
+###################################################
 # Copy build scripts
 ###################################################
 COPY scripts /data/scripts
@@ -157,7 +170,6 @@ COPY scripts /data/scripts
 # setup build environment
 ###################################################
 RUN mkdir -p /home/joynr/
-RUN echo "source /data/scripts/bashrc.sh" >> /home/joynr/.bashrc
 RUN mkdir /home/joynr/build
 RUN date -R > /data/timestamp
 RUN chmod -R a+rwx /usr/local

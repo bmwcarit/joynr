@@ -74,7 +74,7 @@ public:
     void execute(std::shared_ptr<Runnable> runnable);
 
     /**
-     * @brief Does an ordinary shutdown of @ref SingleThreadedDelayedScheduler
+     * @brief Does an ordinary shutdown of @ref ThreadPoolDelayedScheduler
      *      and its parent @ref DelayedScheduler and child @ref Thread
      * @note Must be called before destructor is called
      */

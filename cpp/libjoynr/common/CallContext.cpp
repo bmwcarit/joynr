@@ -25,11 +25,13 @@ namespace joynr
 void CallContext::setPrincipal(const std::string& principal)
 {
     this->principal = principal;
+    JOYNR_LOG_TRACE(logger(), "setPrincipal '{}'", this->principal);
 }
 
 void CallContext::setPrincipal(std::string&& principal)
 {
     this->principal = std::move(principal);
+    JOYNR_LOG_TRACE(logger(), "setPrincipal '{}'", this->principal);
 }
 
 const std::string& CallContext::getPrincipal() const
@@ -39,6 +41,7 @@ const std::string& CallContext::getPrincipal() const
 
 void CallContext::invalidate()
 {
+    JOYNR_LOG_TRACE(logger(), "invalidate");
     principal = std::string();
 }
 

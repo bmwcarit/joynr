@@ -60,6 +60,9 @@ log "CC_BINDIR" $CC_BINDIR
 # fail on first error
 set -e
 
+# add debugging output
+set -x
+
 log "Generate test TLS certificates"
 SSLPATH="/data/build/tests/ssl-data"
 mkdir -p $SSLPATH
@@ -69,6 +72,9 @@ createCACertAndPrivateKey
 createCertAndPrivateKey "cluster-controller" "cc.key.pem" "cc.cert.pem"
 createCertAndPrivateKey "sit-provider" "provider.key.pem" "provider.cert.pem"
 createCertAndPrivateKey "sit-consumer" "consumer.key.pem" "consumer.cert.pem"
+
+# Disable "fail on first error" in case the test itself fails
+set +e
 
 TEST_BINDIR="/data/build/tests/bin"
 
@@ -89,13 +95,17 @@ cd $TEST_BINDIR
     --ssl-privatekey-pem $SSLPATH/consumer.key.pem \
     --ssl-ca-cert-pem $SSLPATH/ca.cert.pem
 
-if [ "$?" == "-1" ]
-then
-    echo "ERROR joynr system integration test failed with error code $?"
-else
-    echo "joynr system integration test succeeded"
-fi
+TESTRESULT=$?
 
 # Clean up
 wait $PROVIDER_PID
 kill $CLUSTER_CONTROLLER_PID
+
+if [ $TESTRESULT == 0 ]
+then
+    echo "joynr system integration test succeeded"
+else
+    echo "ERROR joynr system integration test failed with error code $TESTRESULT"
+fi
+
+exit $TESTRESULT

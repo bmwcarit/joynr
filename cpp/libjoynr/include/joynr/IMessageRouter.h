@@ -82,8 +82,6 @@ public:
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)>
                     onError = nullptr) = 0;
 
-    virtual void queueMessage(std::shared_ptr<ImmutableMessage> message) = 0;
-
     virtual void sendMessages(
             std::shared_ptr<const joynr::system::RoutingTypes::Address> address) = 0;
 };

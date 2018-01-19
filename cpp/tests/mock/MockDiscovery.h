@@ -53,16 +53,33 @@ public:
                 const std::string& participantId
             )
     );
+    std::shared_ptr<joynr::Future<void>> addAsync (
+                const joynr::types::DiscoveryEntry& discoveryEntry,
+                std::function<void(void)> onSuccess,
+                std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError
+            ) noexcept override
+    {
+        return addAsyncMock(discoveryEntry, std::move(onSuccess), std::move(onRuntimeError));
+    }
     MOCK_METHOD3(
-            addAsync,
+            addAsyncMock,
             std::shared_ptr<joynr::Future<void>>(
                 const joynr::types::DiscoveryEntry& discoveryEntry,
                 std::function<void(void)> onSuccess,
                 std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError
             )
     );
+    std::shared_ptr<joynr::Future<joynr::types::DiscoveryEntryWithMetaInfo>> lookupAsync(
+                const std::string& participantId,
+                std::function<void(const joynr::types::DiscoveryEntryWithMetaInfo& result)>
+                        onSuccess,
+                std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError
+            ) noexcept override
+    {
+        return lookupAsyncMock(participantId, std::move(onSuccess), std::move(onRuntimeError));
+    }
     MOCK_METHOD3(
-            lookupAsync,
+            lookupAsyncMock,
             std::shared_ptr<joynr::Future<joynr::types::DiscoveryEntryWithMetaInfo>>(
                 const std::string& participantId,
                 std::function<void(const joynr::types::DiscoveryEntryWithMetaInfo& result)>
@@ -70,8 +87,19 @@ public:
                 std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError
             )
     );
+    std::shared_ptr<joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>> lookupAsync(
+                const std::vector<std::string>& domain,
+                const std::string& interfaceName,
+                const joynr::types::DiscoveryQos& discoveryQos,
+                std::function<void(const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result)>
+                        onSuccess,
+                std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError
+            ) noexcept override
+    {
+        return lookupAsyncMock(domain, interfaceName, discoveryQos, std::move(onSuccess), std::move(onRuntimeError));
+    }
     MOCK_METHOD5(
-            lookupAsync,
+            lookupAsyncMock,
             std::shared_ptr<joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>(
                 const std::vector<std::string>& domain,
                 const std::string& interfaceName,
@@ -81,8 +109,16 @@ public:
                 std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError
             )
     );
+    std::shared_ptr<joynr::Future<void>> removeAsync(
+                const std::string& participantId,
+                std::function<void(void)> onSuccess,
+                std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError
+            ) noexcept override
+    {
+        return removeAsyncMock(participantId, std::move(onSuccess), std::move(onRuntimeError));
+    }
     MOCK_METHOD3(
-            removeAsync,
+            removeAsyncMock,
             std::shared_ptr<joynr::Future<void>>(
                 const std::string& participantId,
                 std::function<void(void)> onSuccess,

@@ -29,8 +29,13 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Singleton;
 
+import org.apache.commons.lang.time.FastDateFormat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+
 import io.joynr.exceptions.JoynrDelayMessageException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
@@ -50,16 +55,11 @@ import joynr.Message;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.RoutingTypesUtil;
 
-import org.apache.commons.lang.time.FastDateFormat;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 abstract public class AbstractMessageRouter implements MessageRouter, ShutdownListener {
     private static final Logger logger = LoggerFactory.getLogger(AbstractMessageRouter.class);
     private static final FastDateFormat dateFormatter = FastDateFormat.getInstance("dd/MM/yyyy HH:mm:ss:sss z",
                                                                                    TimeZone.getTimeZone("UTC"));
-
-    private final RoutingTable routingTable;
+    protected final RoutingTable routingTable;
     private ScheduledExecutorService scheduler;
     private long sendMsgRetryIntervalMs;
     private long routingTableGracePeriodMs;

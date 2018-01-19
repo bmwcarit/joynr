@@ -26,7 +26,7 @@
 
 #include "joynr/CapabilitiesRegistrar.h"
 #include "joynr/IKeychain.h"
-#include "joynr/JoynrRuntime.h"
+#include "joynr/JoynrRuntimeImpl.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/Semaphore.h"
@@ -45,13 +45,15 @@ class InProcessMessagingSkeleton;
 class LibJoynrMessageRouter;
 class Settings;
 
-class LibJoynrRuntime : public JoynrRuntime
+class LibJoynrRuntime : public JoynrRuntimeImpl
 {
 
 public:
     explicit LibJoynrRuntime(std::unique_ptr<Settings> settings,
                              std::shared_ptr<IKeychain> keyChain = nullptr);
     ~LibJoynrRuntime() override;
+
+    void shutdown() override;
 
 protected:
     std::shared_ptr<IMessageRouter> getMessageRouter() final;

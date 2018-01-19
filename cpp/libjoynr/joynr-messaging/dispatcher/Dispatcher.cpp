@@ -50,7 +50,9 @@ namespace joynr
 Dispatcher::Dispatcher(std::shared_ptr<IMessageSender> messageSender,
                        boost::asio::io_service& ioService,
                        int maxThreads)
-        : messageSender(std::move(messageSender)),
+        : std::enable_shared_from_this<Dispatcher>(),
+          IDispatcher(),
+          messageSender(std::move(messageSender)),
           requestCallerDirectory("Dispatcher-RequestCallerDirectory", ioService),
           replyCallerDirectory("Dispatcher-ReplyCallerDirectory", ioService),
           publicationManager(),
@@ -107,19 +109,13 @@ void Dispatcher::addReplyCaller(const std::string& requestReplyId,
     replyCallerDirectory.add(requestReplyId, std::move(replyCaller), qosSettings.getTtl());
 }
 
-void Dispatcher::removeReplyCaller(const std::string& requestReplyId)
-{
-    JOYNR_LOG_TRACE(logger(), "removeReplyCaller id= {}", requestReplyId);
-    replyCallerDirectory.remove(requestReplyId);
-}
-
 void Dispatcher::receive(std::shared_ptr<ImmutableMessage> message)
 {
     JOYNR_LOG_TRACE(logger(), "received message: {}", message->toLogMessage());
     // we only support non-encrypted messages for now
     assert(!message->isEncrypted());
     std::shared_ptr<ReceivedMessageRunnable> receivedMessageRunnable =
-            std::make_shared<ReceivedMessageRunnable>(std::move(message), *this);
+            std::make_shared<ReceivedMessageRunnable>(std::move(message), shared_from_this());
     handleReceivedMessageThreadPool->execute(receivedMessageRunnable);
 }
 
@@ -164,42 +160,62 @@ void Dispatcher::handleRequestReceived(std::shared_ptr<ImmutableMessage> message
     const std::string& requestReplyId = request.getRequestReplyId();
     JoynrTimePoint requestExpiryDate = message->getExpiryDate();
 
-    auto onSuccess = [requestReplyId, requestExpiryDate, this, senderId, receiverId, message](
-            Reply&& reply) mutable {
-        JOYNR_LOG_TRACE(logger(),
-                        "Got reply from RequestInterpreter for requestReplyId {}",
-                        requestReplyId);
-        reply.setRequestReplyId(std::move(requestReplyId));
-        // send reply back to the original sender (ie. sender and receiver ids are reversed
-        // on purpose)
-        JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(
-                std::chrono::system_clock::now());
-        std::int64_t ttl = std::chrono::duration_cast<std::chrono::milliseconds>(requestExpiryDate -
-                                                                                 now).count();
-        messageSender->sendReply(receiverId, // receiver of the request is sender of reply
-                                 senderId,   // sender of request is receiver of reply
-                                 MessagingQos(ttl),
-                                 message->getPrefixedCustomHeaders(),
-                                 std::move(reply));
+    auto onSuccess = [
+        requestReplyId,
+        requestExpiryDate,
+        thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this()),
+        senderId,
+        receiverId,
+        message
+    ](Reply && reply) mutable
+    {
+        if (auto thisSharedPtr = thisWeakPtr.lock()) {
+            JOYNR_LOG_TRACE(logger(),
+                            "Got reply from RequestInterpreter for requestReplyId {}",
+                            requestReplyId);
+            reply.setRequestReplyId(std::move(requestReplyId));
+            // send reply back to the original sender (ie. sender and receiver ids are reversed
+            // on purpose)
+            JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(
+                    std::chrono::system_clock::now());
+            std::int64_t ttl = std::chrono::duration_cast<std::chrono::milliseconds>(
+                                       requestExpiryDate - now).count();
+            thisSharedPtr->messageSender->sendReply(
+                    receiverId, // receiver of the request is sender of reply
+                    senderId,   // sender of request is receiver of reply
+                    MessagingQos(ttl),
+                    message->getPrefixedCustomHeaders(),
+                    std::move(reply));
+        }
     };
 
-    auto onError = [requestReplyId, requestExpiryDate, this, senderId, receiverId, message](
-            const std::shared_ptr<exceptions::JoynrException>& exception) mutable {
-        JOYNR_LOG_WARN(logger(),
-                       "Got error reply from RequestInterpreter for requestReplyId {}",
-                       requestReplyId);
-        Reply reply;
-        reply.setRequestReplyId(std::move(requestReplyId));
-        reply.setError(exception);
-        JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(
-                std::chrono::system_clock::now());
-        std::int64_t ttl = std::chrono::duration_cast<std::chrono::milliseconds>(requestExpiryDate -
-                                                                                 now).count();
-        messageSender->sendReply(receiverId, // receiver of the request is sender of reply
-                                 senderId,   // sender of request is receiver of reply
-                                 MessagingQos(ttl),
-                                 message->getPrefixedCustomHeaders(),
-                                 std::move(reply));
+    auto onError = [
+        requestReplyId,
+        requestExpiryDate,
+        thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this()),
+        senderId,
+        receiverId,
+        message
+    ](const std::shared_ptr<exceptions::JoynrException>& exception) mutable
+    {
+        if (auto thisSharedPtr = thisWeakPtr.lock()) {
+            JOYNR_LOG_WARN(logger(),
+                           "Got error reply from RequestInterpreter for requestReplyId {}",
+                           requestReplyId);
+            Reply reply;
+            reply.setRequestReplyId(std::move(requestReplyId));
+            reply.setError(exception);
+            JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(
+                    std::chrono::system_clock::now());
+            std::int64_t ttl = std::chrono::duration_cast<std::chrono::milliseconds>(
+                                       requestExpiryDate - now).count();
+            thisSharedPtr->messageSender->sendReply(
+                    receiverId, // receiver of the request is sender of reply
+                    senderId,   // sender of request is receiver of reply
+                    MessagingQos(ttl),
+                    message->getPrefixedCustomHeaders(),
+                    std::move(reply));
+        }
     };
     // execute request
     requestInterpreter->execute(
@@ -265,8 +281,8 @@ void Dispatcher::handleReplyReceived(std::shared_ptr<ImmutableMessage> message)
     }
 
     std::string requestReplyId = reply.getRequestReplyId();
-    std::shared_ptr<IReplyCaller> caller = replyCallerDirectory.lookup(requestReplyId);
-    if (caller == nullptr) {
+    std::shared_ptr<IReplyCaller> caller = replyCallerDirectory.take(requestReplyId);
+    if (!caller) {
         // This used to be a fatal error, but it is possible that the replyCallerDirectory
         // removed
         // the caller
@@ -278,9 +294,6 @@ void Dispatcher::handleReplyReceived(std::shared_ptr<ImmutableMessage> message)
     }
 
     caller->execute(std::move(reply));
-
-    // Clean up
-    removeReplyCaller(requestReplyId);
 }
 
 void Dispatcher::handleSubscriptionRequestReceived(std::shared_ptr<ImmutableMessage> message)

@@ -16,19 +16,20 @@
  * limitations under the License.
  * #L%
  */
+#include <cstdint>
 #include <memory>
 #include <string>
-#include <cstdint>
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "joynr/JoynrClusterControllerRuntime.h"
-#include "joynr/tests/testProxy.h"
-#include "joynr/Future.h"
 #include "joynr/DispatcherUtils.h"
+#include "joynr/Future.h"
+#include "joynr/JoynrClusterControllerRuntime.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/tests/testProxy.h"
+
 #include "tests/JoynrTest.h"
 #include "tests/mock/MockSubscriptionListener.h"
 #include "tests/mock/MockTestProvider.h"
@@ -44,7 +45,6 @@ using namespace joynr;
   * between the two Runtimes via HttpReceiver
   *
   */
-
 class End2EndPerformanceTest : public TestWithParam< std::tuple<std::string, std::string> > {
 public:
     ADD_LOGGER(End2EndPerformanceTest)
@@ -78,11 +78,10 @@ public:
         runtime2->start();
     }
 
-    ~End2EndPerformanceTest()
-    {
-        bool deleteChannel = true;
-        runtime1->stop(deleteChannel);
-        runtime2->stop(deleteChannel);
+    ~End2EndPerformanceTest() override {
+        runtime1->shutdown();
+        runtime2->shutdown();
+
         test::util::resetAndWaitUntilDestroyed(runtime1);
         test::util::resetAndWaitUntilDestroyed(runtime2);
 

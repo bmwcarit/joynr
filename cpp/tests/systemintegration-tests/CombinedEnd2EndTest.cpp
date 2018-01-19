@@ -106,9 +106,11 @@ void CombinedEnd2EndTest::SetUp()
 
 void CombinedEnd2EndTest::TearDown()
 {
+    runtime1->shutdown();
     test::util::resetAndWaitUntilDestroyed(runtime1);
 
     if (runtime2) {
+        runtime2->shutdown();
         test::util::resetAndWaitUntilDestroyed(runtime2);
     }
 

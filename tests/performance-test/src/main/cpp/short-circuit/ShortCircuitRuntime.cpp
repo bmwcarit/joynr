@@ -42,7 +42,7 @@ namespace joynr
 
 ShortCircuitRuntime::ShortCircuitRuntime(std::unique_ptr<Settings> settings,
                                          std::shared_ptr<IKeychain> keyChain)
-        : JoynrRuntime(*settings),
+        : JoynrRuntimeImpl(*settings),
           keyChain(std::move(keyChain)),
           clusterControllerSettings(*settings),
           enablePersistency(true)
@@ -109,10 +109,10 @@ ShortCircuitRuntime::ShortCircuitRuntime(std::unique_ptr<Settings> settings,
     joynrDispatcher->registerPublicationManager(publicationManager);
     joynrDispatcher->registerSubscriptionManager(subscriptionManager);
 
-    discoveryProxy = std::make_unique<DummyDiscovery>();
+    discoveryProxy = std::make_shared<DummyDiscovery>();
     capabilitiesRegistrar =
             std::make_unique<CapabilitiesRegistrar>(dispatcherList,
-                                                    *discoveryProxy,
+                                                    discoveryProxy,
                                                     participantIdStorage,
                                                     dispatcherAddress,
                                                     messageRouter,

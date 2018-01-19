@@ -84,13 +84,13 @@ public:
         runtime2->start();
     }
 
-    ~End2EndSubscriptionTest() {
+    ~End2EndSubscriptionTest() override {
         if (!providerParticipantId.empty()) {
             runtime1->unregisterProvider(providerParticipantId);
         }
-        bool deleteChannel = true;
-        runtime1->stop(deleteChannel);
-        runtime2->stop(deleteChannel);
+
+        runtime1->shutdown();
+        runtime2->shutdown();
 
         test::util::resetAndWaitUntilDestroyed(runtime1);
         test::util::resetAndWaitUntilDestroyed(runtime2);

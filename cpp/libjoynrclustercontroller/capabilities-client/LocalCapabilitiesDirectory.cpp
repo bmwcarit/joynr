@@ -262,9 +262,9 @@ void LocalCapabilitiesDirectory::triggerGlobalProviderReregistration(
 
     {
         std::lock_guard<std::mutex> lock(cacheLock);
-        for (const auto& globalCapability : globalCapabilities) {
-            if (globalCapability.getQos().getScope() == types::ProviderScope::GLOBAL) {
-                capabilitiesClient->add(toGlobalDiscoveryEntry(globalCapability), nullptr, nullptr);
+        for (const auto& capability : localCapabilities) {
+            if (capability.getQos().getScope() == types::ProviderScope::GLOBAL) {
+                capabilitiesClient->add(toGlobalDiscoveryEntry(capability), nullptr, nullptr);
             }
         }
     }
@@ -661,6 +661,7 @@ bool LocalCapabilitiesDirectory::hasProviderPermission(const types::DiscoveryEnt
     if (auto gotAccessController = accessController.lock()) {
         const CallContext& callContext = CallContextStorage::get();
         const std::string& ownerId = callContext.getPrincipal();
+        JOYNR_LOG_TRACE(logger(), "hasProviderPermission for ownerId={}", ownerId);
         const bool result = gotAccessController->hasProviderPermission(
                 ownerId,
                 infrastructure::DacTypes::TrustLevel::HIGH,

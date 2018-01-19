@@ -41,7 +41,6 @@
 #include "joynr/Util.h"
 #include "joynr/system/DiscoveryProxy.h"
 #include "joynr/system/RoutingProxy.h"
-#include "joynr/system/RoutingTypes/CommonApiDbusAddress.h"
 #include "libjoynr/in-process/InProcessMessagingSkeleton.h"
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
 
@@ -50,7 +49,7 @@ namespace joynr
 
 LibJoynrRuntime::LibJoynrRuntime(std::unique_ptr<Settings> settings,
                                  std::shared_ptr<IKeychain> keyChain)
-        : JoynrRuntime(*settings, std::move(keyChain)),
+        : JoynrRuntimeImpl(*settings, std::move(keyChain)),
           subscriptionManager(nullptr),
           inProcessPublicationSender(),
           messageSender(nullptr),
@@ -67,6 +66,18 @@ LibJoynrRuntime::LibJoynrRuntime(std::unique_ptr<Settings> settings,
 
 LibJoynrRuntime::~LibJoynrRuntime()
 {
+    shutdown();
+}
+
+void LibJoynrRuntime::shutdown()
+{
+    std::lock_guard<std::mutex> lock(proxyBuildersMutex);
+    for (auto proxyBuilder : proxyBuilders) {
+        proxyBuilder->stop();
+        proxyBuilder.reset();
+    }
+    proxyBuilders.clear();
+
     if (inProcessDispatcher) {
         inProcessDispatcher->shutdown();
         inProcessDispatcher.reset();
@@ -172,7 +183,7 @@ void LibJoynrRuntime::init(
     joynrDispatcher->registerPublicationManager(publicationManager);
     joynrDispatcher->registerSubscriptionManager(subscriptionManager);
 
-    discoveryProxy = std::make_unique<LocalDiscoveryAggregator>(getProvisionedEntries());
+    discoveryProxy = std::make_shared<LocalDiscoveryAggregator>(getProvisionedEntries());
 
     requestCallerDirectory =
             std::dynamic_pointer_cast<IRequestCallerDirectory>(inProcessDispatcher);
@@ -226,7 +237,7 @@ void LibJoynrRuntime::init(
 
         capabilitiesRegistrar = std::make_unique<CapabilitiesRegistrar>(
                 dispatcherList,
-                *discoveryProxy,
+                discoveryProxy,
                 participantIdStorage,
                 dispatcherAddress,
                 libJoynrMessageRouter,

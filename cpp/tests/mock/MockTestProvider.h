@@ -19,9 +19,9 @@
 #ifndef TESTS_MOCK_MOCKTESTPROVIDER_H
 #define TESTS_MOCK_MOCKTESTPROVIDER_H
 
-#include <vector>
-#include <string>
 #include <numeric>
+#include <string>
+#include <vector>
 
 #include <gmock/gmock.h>
 
@@ -40,6 +40,8 @@ public:
                 .WillRepeatedly(testing::Invoke(this, &MockTestProvider::invokeLocationOnSuccess));
         EXPECT_CALL(*this, getListOfStrings(_,_))
                 .WillRepeatedly(testing::Invoke(this, &MockTestProvider::invokeListOfStringsOnSuccess));
+        EXPECT_CALL(*this, getAttributeWithProviderRuntimeException(_,_))
+                .WillRepeatedly(testing::Invoke(this, &MockTestProvider::invokeAttributeWithProviderRuntimeExceptionOnError));
     }
 
     ~MockTestProvider()
@@ -58,6 +60,11 @@ public:
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError)
     {
         onSuccess(listOfStrings);
+    }
+
+    void invokeAttributeWithProviderRuntimeExceptionOnError(std::function<void(const int32_t&)> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError) {
+        onError(joynr::exceptions::ProviderRuntimeException(providerRuntimeExceptionTestMsg));
     }
 
     void fireLocationUpdateSelective(const joynr::types::Localisation::GpsLocation& location) override
@@ -127,6 +134,13 @@ public:
                     const std::int32_t& intIn,
                     const std::string& stringIn,
                     const joynr::tests::testTypes::ComplexTestType& complexTestTypeIn
+            )
+    );
+    MOCK_METHOD2(
+            getAttributeWithProviderRuntimeException,
+            void(
+                    std::function<void(const int32_t& result)> onSuccess,
+                    std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError
             )
     );
 
@@ -266,6 +280,7 @@ public:
                 tStringMapIn
         );
     }
+    const std::string providerRuntimeExceptionTestMsg = "ProviderRuntimeExceptionTestMessage";
 
 private:
     std::vector<std::string> listOfStrings;

@@ -17,9 +17,11 @@
  * #L%
  */
 
-#ifndef PROVIDERARBITRATOR_H
-#define PROVIDERARBITRATOR_H
+#ifndef ARBITRATOR_H
+#define ARBITRATOR_H
+
 #include <atomic>
+#include <chrono>
 #include <functional>
 #include <string>
 #include <thread>
@@ -75,6 +77,8 @@ public:
                     onSuccess,
             std::function<void(const exceptions::DiscoveryException& exception)> onError);
 
+    void stopArbitration();
+
 private:
     /*
      *  attemptArbitration() has to be implemented by the concrete arbitration strategy.
@@ -86,6 +90,7 @@ private:
     virtual void receiveCapabilitiesLookupResults(
             const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& discoveryEntries);
 
+    std::int64_t getDurationMs() const;
     std::weak_ptr<joynr::system::IDiscoveryAsync> discoveryProxy;
     DiscoveryQos discoveryQos;
     joynr::types::DiscoveryQos systemDiscoveryQos;
@@ -104,8 +109,9 @@ private:
     std::atomic<bool> arbitrationRunning;
     std::atomic<bool> keepArbitrationRunning;
     std::thread arbitrationThread;
+    std::chrono::system_clock::time_point startTimePoint;
     ADD_LOGGER(Arbitrator)
 };
 
 } // namespace joynr
-#endif // PROVIDERARBITRATOR_H
+#endif // ARBITRATOR_H

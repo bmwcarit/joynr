@@ -31,13 +31,13 @@ namespace joynr
 {
 
 class ConnectorFactory;
-class JoynrRuntime;
+class JoynrRuntimeImpl;
 
 class JOYNR_EXPORT ProxyBase : public std::enable_shared_from_this<ProxyBase>
 {
 
 public:
-    ProxyBase(std::weak_ptr<JoynrRuntime> runtime,
+    ProxyBase(std::weak_ptr<JoynrRuntimeImpl> runtime,
               ConnectorFactory* connectorFactory,
               const std::string& domain,
               const MessagingQos& qosSettings);
@@ -61,7 +61,7 @@ protected:
             const types::DiscoveryEntryWithMetaInfo& providerDiscoveryEntry,
             bool useInProcessConnector);
 
-    std::weak_ptr<JoynrRuntime> runtime;
+    std::weak_ptr<JoynrRuntimeImpl> runtime;
     ConnectorFactory* connectorFactory;
     std::string domain;
     MessagingQos qosSettings;
