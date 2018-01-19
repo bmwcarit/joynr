@@ -87,7 +87,7 @@ var handler = function(msg) {
                 var memoryUsage = process.memoryUsage();
                 totalMemory += memoryUsage.rss;
                 totalMemoryMeasurements++;
-            }, 1000);
+            }, 500);
         }
         cpuUsage = process.cpuUsage();
     } else if (msg.msg === "stopMeasurement") {
