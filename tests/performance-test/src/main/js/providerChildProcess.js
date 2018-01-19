@@ -20,6 +20,7 @@
  */
 
 var PerformanceUtilities = require("./performanceutilities");
+var heapdump = require("heapdump");
 
 var options = PerformanceUtilities.getCommandLineOptionsOrDefaults(process.env);
 PerformanceUtilities.overrideRequire();
@@ -32,6 +33,7 @@ joynr.selectRuntime("websocket.libjoynr");
 var testbase = require("test-base");
 var provisioning = testbase.provisioning_common;
 var log = testbase.logging.log;
+let error = testbase.logging.error;
 log("domain: " + domain);
 
 provisioning.logging.configuration.loggers.root.level = "error";
@@ -94,6 +96,11 @@ var handler = function(msg) {
             clearInterval(memoryIntervalId);
         }
         process.send({ msg: "gotMeasurement", data: diff });
+    } else if (msg.msg === "takeHeapSnapShot") {
+        var fileName = msg.name;
+        heapdump.writeSnapshot(fileName, function(err, filename) {
+            error("dump written to: " + filename);
+        });
     }
 };
 process.on("message", handler);

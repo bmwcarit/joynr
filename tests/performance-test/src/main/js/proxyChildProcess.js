@@ -43,6 +43,8 @@ joynr.selectRuntime("websocket.libjoynr");
 
 provisioning.logging.configuration.loggers.root.level = "error";
 
+var heapdump = require("heapdump");
+
 var echoProxy;
 
 joynr
@@ -119,6 +121,11 @@ var handler = function(msg) {
         } else {
             throw new Error("unknown testType");
         }
+    } else if (msg.msg === "takeHeapSnapShot") {
+        var fileName = msg.name;
+        heapdump.writeSnapshot(fileName, function(err, filename) {
+            error("dump written to: " + filename);
+        });
     }
 };
 process.on("message", handler);

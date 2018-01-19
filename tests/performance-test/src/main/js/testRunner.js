@@ -87,6 +87,11 @@ var testRunner = {
 
     executeSubRunsWithWarmUp: function(benchmarkConfig) {
         error("warming up: " + benchmarkConfig.name);
+        if (options.measureMemory == "true") {
+            setTimeout(function() {
+                ProcessManager.takeHeapSnapShot(Date.now() + "start" + benchmarkConfig.name);
+            }, 500);
+        }
         return testRunner
             .executeSubRuns(benchmarkConfig, -1)
             .then(() => testRunner.executeMultipleSubRuns(benchmarkConfig));

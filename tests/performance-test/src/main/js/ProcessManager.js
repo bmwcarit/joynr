@@ -91,4 +91,9 @@ ProcessManager.initializeChildProcesses = function() {
     return Promise.all([providerPromise, proxyPromise]);
 };
 
+ProcessManager.takeHeapSnapShot = function(name) {
+    this.proxy.process.send({ msg: "takeHeapSnapShot", name: "./proxy" + name + ".heapsnapshot" });
+    this.provider.process.send({ msg: "takeHeapSnapShot", name: "./provider" + name + ".heapsnapshot" });
+};
+
 module.exports = ProcessManager;
