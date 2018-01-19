@@ -20,6 +20,7 @@
 #define CAPABILITIESCLIENT_H
 
 #include <memory>
+#include <mutex>
 #include <string>
 #include <vector>
 
@@ -114,6 +115,7 @@ private:
     std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> defaultCapabilitiesProxy;
     std::shared_ptr<IProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>>
             capabilitiesProxyBuilder;
+    std::mutex capabilitiesProxyBuilderMutex;
     ADD_LOGGER(CapabilitiesClient)
 };
 

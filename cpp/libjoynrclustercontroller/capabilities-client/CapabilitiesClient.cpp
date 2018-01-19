@@ -54,6 +54,7 @@ std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> CapabilitiesCl
         getGlobalCapabilitiesDirectoryProxy(std::int64_t messagingTtl)
 {
     assert(capabilitiesProxyBuilder);
+    std::lock_guard<std::mutex> lock(capabilitiesProxyBuilderMutex);
     return std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy>(
             capabilitiesProxyBuilder->setMessagingQos(MessagingQos(messagingTtl))->build());
 }
@@ -132,6 +133,7 @@ void CapabilitiesClient::setProxyBuilder(std::shared_ptr<
         IProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>> inCapabilitiesProxyBuilder)
 {
     assert(inCapabilitiesProxyBuilder);
+    std::lock_guard<std::mutex> lock(capabilitiesProxyBuilderMutex);
     capabilitiesProxyBuilder = std::move(inCapabilitiesProxyBuilder);
     defaultCapabilitiesProxy = capabilitiesProxyBuilder->build();
 }
