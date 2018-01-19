@@ -25,6 +25,7 @@
 #include "joynr/Settings.h"
 #include "joynr/SystemServicesSettings.h"
 #include "joynr/system/ProviderReregistrationControllerProxy.h"
+#include "joynr/DiscoveryQos.h"
 #include "utils/TestLibJoynrWebSocketRuntime.h"
 
 using namespace ::testing;
@@ -40,8 +41,11 @@ TEST(ProviderReregistrationControllerTest, queryProviderReregistrationController
     runtime->init();
     runtime->start();
 
+    DiscoveryQos discoveryQos;
+    discoveryQos.setDiscoveryTimeoutMs(3000);
+
     auto providerReregistrationControllerProxyBuilder = runtime->createProxyBuilder<joynr::system::ProviderReregistrationControllerProxy>(domain);
-    auto providerReregistrationControllerProxy = providerReregistrationControllerProxyBuilder->build();
+    auto providerReregistrationControllerProxy = providerReregistrationControllerProxyBuilder->setDiscoveryQos(discoveryQos)->build();
 
     Semaphore finishedSemaphore;
     providerReregistrationControllerProxy->triggerGlobalProviderReregistrationAsync([&finishedSemaphore]() { finishedSemaphore.notify(); }, nullptr);
@@ -61,12 +65,15 @@ TEST(ProviderReregistrationControllerTest, queryProviderReregistrationController
     ccRuntime->init();
     ccRuntime->start();
 
+    DiscoveryQos discoveryQos;
+    discoveryQos.setDiscoveryTimeoutMs(3000);
+
     auto wsRuntimeSettings = std::make_unique<Settings>("test-resources/libjoynrSystemIntegration1.settings");
     auto wsRuntime = std::make_shared<TestLibJoynrWebSocketRuntime>(std::move(wsRuntimeSettings), nullptr);
     ASSERT_TRUE(wsRuntime->connect(std::chrono::seconds(2)));
 
     auto providerReregistrationControllerProxyBuilder = wsRuntime->createProxyBuilder<joynr::system::ProviderReregistrationControllerProxy>(domain);
-    auto providerReregistrationControllerProxy = providerReregistrationControllerProxyBuilder->build();
+    auto providerReregistrationControllerProxy = providerReregistrationControllerProxyBuilder->setDiscoveryQos(discoveryQos)->build();
 
     Semaphore finishedSemaphore;
     providerReregistrationControllerProxy->triggerGlobalProviderReregistrationAsync([&finishedSemaphore]() { finishedSemaphore.notify(); }, [](const joynr::exceptions::JoynrRuntimeException&) { FAIL(); });
