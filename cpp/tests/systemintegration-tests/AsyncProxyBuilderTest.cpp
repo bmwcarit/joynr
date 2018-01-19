@@ -38,7 +38,7 @@ using namespace joynr;
 class AsyncProxyBuilderTest : public ::testing::Test
 {
 public:
-    void SetUp()
+    void SetUp() override
     {
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
         discoveryQos.setDiscoveryTimeoutMs(100);

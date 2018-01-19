@@ -66,7 +66,7 @@ public:
         runtime->init();
     }
 
-    void SetUp() {
+    void SetUp() override {
         runtime->start();
     }
 

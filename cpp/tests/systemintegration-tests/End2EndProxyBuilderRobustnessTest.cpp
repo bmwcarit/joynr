@@ -78,7 +78,7 @@ public:
     }
 
     // Sets up the test fixture.
-    void SetUp()
+    void SetUp() override
     {
         ASSERT_TRUE(consumerRuntime->connect(std::chrono::milliseconds(10000)));
         ASSERT_TRUE(providerRuntime->connect(std::chrono::milliseconds(10000)));
