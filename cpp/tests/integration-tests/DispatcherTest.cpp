@@ -335,38 +335,3 @@ TEST_F(DispatcherTest, receiveMulticastPublication_callSubscriptionCallback) {
     EXPECT_TRUE(getLocationCalledSemaphore.waitFor(std::chrono::milliseconds(5000)));
     dispatcher->registerSubscriptionManager(nullptr);
 }
-
-
-TEST_F(DispatcherTest, receive_setCallContext) {
-    const std::string expectedPrincipal("creatorUserId");
-
-    Request request;
-    request.setRequestReplyId(requestReplyId);
-    request.setMethodName("getLocation");
-    request.setParams();
-    request.setParamDatatypes(std::vector<std::string>());
-
-    MutableMessage mutableMessage = messageFactory.createRequest(
-                proxyParticipantId,
-                providerParticipantId,
-                qos,
-                request,
-                isLocalMessage
-    );
-    std::shared_ptr<ImmutableMessage> immutableMessage = mutableMessage.getImmutableMessage();
-    immutableMessage->setCreator(expectedPrincipal);
-    dispatcher->addRequestCaller(providerParticipantId, mockRequestCaller);
-
-    EXPECT_CALL(
-                *mockRequestCaller,
-                getLocationMock(
-                    A<std::function<void(const joynr::types::Localisation::GpsLocation&)>>(),
-                    A<std::function<void(const std::shared_ptr<joynr::exceptions::ProviderRuntimeException>&)>>()
-                )
-    ).WillOnce(Invoke(this, &DispatcherTest::invokeLocationAndSaveCallContext));
-
-    dispatcher->receive(immutableMessage);
-    EXPECT_TRUE(getLocationCalledSemaphore.waitFor(std::chrono::milliseconds(5000)));
-
-    EXPECT_EQ(expectedPrincipal, callContext.getPrincipal());
-}
