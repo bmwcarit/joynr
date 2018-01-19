@@ -20,6 +20,7 @@
 #ifndef PROVIDERARBITRATOR_H
 #define PROVIDERARBITRATOR_H
 #include <atomic>
+#include <chrono>
 #include <functional>
 #include <string>
 #include <thread>
@@ -88,6 +89,7 @@ private:
     virtual void receiveCapabilitiesLookupResults(
             const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& discoveryEntries);
 
+    std::int64_t getDurationMs() const;
     std::weak_ptr<joynr::system::IDiscoveryAsync> discoveryProxy;
     DiscoveryQos discoveryQos;
     joynr::types::DiscoveryQos systemDiscoveryQos;
@@ -106,6 +108,7 @@ private:
     std::atomic<bool> arbitrationRunning;
     std::atomic<bool> keepArbitrationRunning;
     std::thread arbitrationThread;
+    std::chrono::system_clock::time_point startTimePoint;
     ADD_LOGGER(Arbitrator)
 };
 
