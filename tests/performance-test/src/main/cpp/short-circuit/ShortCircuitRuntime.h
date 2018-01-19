@@ -28,7 +28,7 @@
 #include "joynr/IMessageRouter.h"
 #include "joynr/InProcessPublicationSender.h"
 #include "joynr/IPlatformSecurityManager.h"
-#include "joynr/JoynrRuntime.h"
+#include "joynr/JoynrRuntimeImpl.h"
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/types/ProviderQos.h"
 
@@ -139,7 +139,7 @@ public:
 /**
  * @brief Very reduced Runtime which uses DummyDiscovery as the discovery proxy.
  */
-class ShortCircuitRuntime : public JoynrRuntime
+class ShortCircuitRuntime : public JoynrRuntimeImpl
 {
 public:
     ShortCircuitRuntime(std::unique_ptr<Settings> settings,

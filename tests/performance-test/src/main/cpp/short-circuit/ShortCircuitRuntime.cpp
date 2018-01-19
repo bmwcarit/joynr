@@ -42,7 +42,7 @@ namespace joynr
 
 ShortCircuitRuntime::ShortCircuitRuntime(std::unique_ptr<Settings> settings,
                                          std::shared_ptr<IKeychain> keyChain)
-        : JoynrRuntime(*settings),
+        : JoynrRuntimeImpl(*settings),
           keyChain(std::move(keyChain)),
           clusterControllerSettings(*settings),
           enablePersistency(true)
