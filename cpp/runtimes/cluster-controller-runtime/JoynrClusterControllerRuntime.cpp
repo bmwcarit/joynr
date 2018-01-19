@@ -115,7 +115,7 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
         std::shared_ptr<ITransportMessageSender> httpMessageSender,
         std::shared_ptr<ITransportMessageReceiver> mqttMessageReceiver,
         std::shared_ptr<ITransportMessageSender> mqttMessageSender)
-        : JoynrRuntime(*settings, std::move(keyChain)),
+        : JoynrRuntimeImpl(*settings, std::move(keyChain)),
           joynrDispatcher(),
           inProcessDispatcher(),
           subscriptionManager(),
@@ -609,7 +609,7 @@ std::map<std::string, joynr::types::DiscoveryEntryWithMetaInfo> JoynrClusterCont
     std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
     std::string defaultPublicKeyId("");
 
-    auto provisionedDiscoveryEntries = JoynrRuntime::getProvisionedEntries();
+    auto provisionedDiscoveryEntries = JoynrRuntimeImpl::getProvisionedEntries();
     // setting up the provisioned values for GlobalCapabilitiesClient
     // The GlobalCapabilitiesServer is also provisioned in MessageRouter
     types::ProviderQos capabilityProviderQos;

@@ -41,8 +41,8 @@ std::shared_ptr<JoynrRuntime> JoynrRuntime::createRuntime(std::unique_ptr<Settin
                                                           std::shared_ptr<IKeychain> keyChain)
 {
     const std::string discoveryEntriesFile("");
-    return JoynrClusterControllerRuntime::create(
-            std::move(settings), discoveryEntriesFile, std::move(keyChain));
+    return std::make_shared<JoynrRuntime>(JoynrClusterControllerRuntime::create(
+            std::move(settings), discoveryEntriesFile, std::move(keyChain)));
 }
 
 std::shared_ptr<JoynrRuntime> JoynrRuntime::createRuntimeAsync(

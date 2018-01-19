@@ -26,7 +26,7 @@
 
 #include "joynr/CapabilitiesRegistrar.h"
 #include "joynr/IKeychain.h"
-#include "joynr/JoynrRuntime.h"
+#include "joynr/JoynrRuntimeImpl.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/Semaphore.h"
@@ -45,7 +45,7 @@ class InProcessMessagingSkeleton;
 class LibJoynrMessageRouter;
 class Settings;
 
-class LibJoynrRuntime : public JoynrRuntime
+class LibJoynrRuntime : public JoynrRuntimeImpl
 {
 
 public:

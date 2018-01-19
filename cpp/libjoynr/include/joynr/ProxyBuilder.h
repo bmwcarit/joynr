@@ -45,7 +45,7 @@ namespace joynr
 {
 
 class ICapabilities;
-class JoynrRuntime;
+class JoynrRuntimeImpl;
 class MessagingSettings;
 
 /**
@@ -70,7 +70,7 @@ public:
      * @param messageRouter A shared pointer to the message router object
      * @param messagingSettings Reference to the messaging settings object
      */
-    ProxyBuilder(std::weak_ptr<JoynrRuntime> runtime,
+    ProxyBuilder(std::weak_ptr<JoynrRuntimeImpl> runtime,
                  ProxyFactory& proxyFactory,
                  std::shared_ptr<IRequestCallerDirectory> requestCallerDirectory,
                  std::weak_ptr<joynr::system::IDiscoveryAsync> discoveryProxy,
@@ -127,7 +127,7 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(ProxyBuilder);
 
-    std::weak_ptr<JoynrRuntime> runtime;
+    std::weak_ptr<JoynrRuntimeImpl> runtime;
     std::string domain;
     MessagingQos messagingQos;
     ProxyFactory& proxyFactory;
@@ -148,7 +148,7 @@ private:
 
 template <class T>
 ProxyBuilder<T>::ProxyBuilder(
-        std::weak_ptr<JoynrRuntime> runtime,
+        std::weak_ptr<JoynrRuntimeImpl> runtime,
         ProxyFactory& proxyFactory,
         std::shared_ptr<IRequestCallerDirectory> requestCallerDirectory,
         std::weak_ptr<system::IDiscoveryAsync> discoveryProxy,

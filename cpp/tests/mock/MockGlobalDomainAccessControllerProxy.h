@@ -21,11 +21,12 @@
 
 #include <gmock/gmock.h>
 
+#include "joynr/JoynrRuntimeImpl.h"
 #include "joynr/infrastructure/GlobalDomainAccessControllerProxy.h"
 
 class MockGlobalDomainAccessControllerProxy : public virtual joynr::infrastructure::GlobalDomainAccessControllerProxy {
 public:
-    MockGlobalDomainAccessControllerProxy(std::weak_ptr<joynr::JoynrRuntime> runtime) :
+    MockGlobalDomainAccessControllerProxy(std::weak_ptr<joynr::JoynrRuntimeImpl> runtime) :
         ProxyBase(
                 runtime,
                 nullptr,

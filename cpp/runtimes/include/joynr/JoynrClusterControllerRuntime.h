@@ -74,7 +74,7 @@ class GlobalDomainAccessControllerProxy;
 } // namespace infrastructure
 
 class JOYNRCLUSTERCONTROLLERRUNTIME_EXPORT JoynrClusterControllerRuntime
-        : public JoynrRuntime,
+        : public JoynrRuntimeImpl,
           public IClusterControllerSignalHandler
 {
 public:

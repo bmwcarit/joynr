@@ -21,13 +21,13 @@
 
 #include <gmock/gmock.h>
 
-#include "joynr/JoynrRuntime.h"
+#include "joynr/JoynrRuntimeImpl.h"
 
-class MockJoynrRuntime : public joynr::JoynrRuntime
+class MockJoynrRuntime : public joynr::JoynrRuntimeImpl
 {
 public:
-    MockJoynrRuntime(joynr::Settings& settings) : joynr::JoynrRuntime(settings) {}
-    MockJoynrRuntime(std::unique_ptr<joynr::Settings> settings) : joynr::JoynrRuntime(*settings) {}
+    MockJoynrRuntime(joynr::Settings& settings) : joynr::JoynrRuntimeImpl(settings) {}
+    MockJoynrRuntime(std::unique_ptr<joynr::Settings> settings) : joynr::JoynrRuntimeImpl(*settings) {}
     MOCK_METHOD0(getMessageRouter, std::shared_ptr<joynr::IMessageRouter>());
     MOCK_METHOD0(shutdown, void());
 };

@@ -23,10 +23,11 @@
 
 #include "joynr/MessagingQos.h"
 #include "joynr/system/RoutingProxy.h"
+#include "joynr/JoynrRuntimeImpl.h"
 
 class MockRoutingProxy : public virtual joynr::system::RoutingProxy {
 public:
-    MockRoutingProxy(std::weak_ptr<joynr::JoynrRuntime> runtime) :
+    MockRoutingProxy(std::weak_ptr<joynr::JoynrRuntimeImpl> runtime) :
         ProxyBase(
                 runtime,
                 nullptr,

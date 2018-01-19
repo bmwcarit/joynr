@@ -49,7 +49,7 @@ namespace joynr
 
 LibJoynrRuntime::LibJoynrRuntime(std::unique_ptr<Settings> settings,
                                  std::shared_ptr<IKeychain> keyChain)
-        : JoynrRuntime(*settings, std::move(keyChain)),
+        : JoynrRuntimeImpl(*settings, std::move(keyChain)),
           subscriptionManager(nullptr),
           inProcessPublicationSender(),
           messageSender(nullptr),

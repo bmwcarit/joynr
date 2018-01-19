@@ -16,32 +16,46 @@
  * limitations under the License.
  * #L%
  */
-#ifndef JOYNRUNTIME_H
-#define JOYNRUNTIME_H
+#ifndef JOYNRUNTIMEIMPL_H
+#define JOYNRUNTIMEIMPL_H
 
-#include "joynr/JoynrRuntimeImpl.h"
+#include <cassert>
+#include <functional>
+#include <memory>
+#include <string>
+
+#include "joynr/CapabilitiesRegistrar.h"
+#include "joynr/IKeychain.h"
+#include "joynr/JoynrClusterControllerRuntimeExport.h"
+#include "joynr/LocalDiscoveryAggregator.h"
+#include "joynr/MessagingSettings.h"
+#include "joynr/ParticipantIdStorage.h"
+#include "joynr/PrivateCopyAssign.h"
+#include "joynr/ProxyBuilder.h"
+#include "joynr/ProxyFactory.h"
+#include "joynr/PublicationManager.h"
+#include "joynr/SystemServicesSettings.h"
+#include "joynr/exceptions/JoynrException.h"
+#include "joynr/system/DiscoveryProxy.h"
 
 namespace joynr
 {
+
+class SingleThreadedIOService;
 
 /**
  * @brief Class representing the central Joynr Api object,
  * used to register / unregister providers and create proxy builders
  */
-class JOYNRCLUSTERCONTROLLERRUNTIME_EXPORT JoynrRuntime
+class JOYNRCLUSTERCONTROLLERRUNTIME_EXPORT JoynrRuntimeImpl
+        : public std::enable_shared_from_this<JoynrRuntimeImpl>
 {
 public:
     /**
      * @brief Destroys a JoynrRuntime instance
      */
-    ~JoynrRuntime()
-    {
-        shutdown();
-    }
-    void shutdown()
-    {
-        runtimeImpl->shutdown();
-    }
+    virtual ~JoynrRuntimeImpl();
+    virtual void shutdown();
 
     /**
      * @brief Registers a provider with the joynr communication framework asynchronously.
@@ -65,7 +79,9 @@ public:
             std::function<void()> onSuccess,
             std::function<void(const exceptions::JoynrRuntimeException&)> onError) noexcept
     {
-        return runtimeImpl->registerProviderAsync(
+        assert(capabilitiesRegistrar);
+        assert(!domain.empty());
+        return capabilitiesRegistrar->addAsync(
                 domain, provider, providerQos, std::move(onSuccess), std::move(onError));
     }
 
@@ -112,8 +128,8 @@ public:
             std::function<void()> onSuccess,
             std::function<void(const exceptions::JoynrRuntimeException&)> onError) noexcept
     {
-        return runtimeImpl->unregisterProviderAsync(
-                participantId, std::move(onSuccess), std::move(onError));
+        assert(capabilitiesRegistrar);
+        capabilitiesRegistrar->removeAsync(participantId, std::move(onSuccess), std::move(onError));
     }
 
     /**
@@ -136,7 +152,9 @@ public:
             std::function<void()> onSuccess,
             std::function<void(const exceptions::JoynrRuntimeException&)> onError) noexcept
     {
-        return runtimeImpl->unregisterProviderAsync(
+        assert(capabilitiesRegistrar);
+        assert(!domain.empty());
+        return capabilitiesRegistrar->removeAsync(
                 domain, provider, std::move(onSuccess), std::move(onError));
     }
 
@@ -201,79 +219,83 @@ public:
     template <class TIntfProxy>
     std::shared_ptr<ProxyBuilder<TIntfProxy>> createProxyBuilder(const std::string& domain)
     {
-        return runtimeImpl->createProxyBuilder<TIntfProxy>(domain);
+        if (!proxyFactory) {
+            throw exceptions::JoynrRuntimeException(
+                    "Exception in JoynrRuntime: Cannot perform arbitration as "
+                    "runtime is not yet fully initialized.");
+        }
+
+        auto proxyBuilder = std::make_shared<ProxyBuilder<TIntfProxy>>(shared_from_this(),
+                                                                       *proxyFactory,
+                                                                       requestCallerDirectory,
+                                                                       discoveryProxy,
+                                                                       domain,
+                                                                       dispatcherAddress,
+                                                                       getMessageRouter(),
+                                                                       messagingSettings);
+        proxyBuilders.push_back(proxyBuilder);
+        return proxyBuilder;
     }
 
-    /**
-     * @brief Create a JoynrRuntime object. The call blocks until the runtime is created.
-     * @param pathToLibjoynrSettings
-     * @param pathToMessagingSettings
-     * @param An optional key chain that is used for websocket connections
-     * @return pointer to a JoynrRuntime instance
-     */
-    static std::shared_ptr<JoynrRuntime> createRuntime(
-            const std::string& pathToLibjoynrSettings,
-            const std::string& pathToMessagingSettings = "",
-            std::shared_ptr<IKeychain> keyChain = nullptr);
+    static std::unique_ptr<Settings> createSettings(const std::string& pathToLibjoynrSettings,
+                                                    const std::string& pathToMessagingSettings);
 
-    /**
-     * @brief Create a JoynrRuntime object. The call blocks until the runtime is created.
-     * @param settings settings object
-     * @param An optional key chain that is used for websocket connections
-     * @return pointer to a JoynrRuntime instance
-     */
-    static std::shared_ptr<JoynrRuntime> createRuntime(
-            std::unique_ptr<Settings> settings,
-            std::shared_ptr<IKeychain> keyChain = nullptr);
-
-    /**
-     * @brief Create a JoynrRuntime object asynchronously. The call does not block. A callback
-     * will be called when the runtime creation finished.
-     * @param pathToLibjoynrSettings Path to lib joynr setting files
-     * @param onSuccess Is called when the runtime is available for use
-     * @param onError Is called when an error occurs
-     * @param pathToMessagingSettings
-     * @param An optional key chain that is used for websocket connections
-     * @return shared_ptr to the JoynrRuntime instance; this instance MUST NOT be used before
-     * onSuccess is called
-     */
-    static std::shared_ptr<JoynrRuntime> createRuntimeAsync(
-            const std::string& pathToLibjoynrSettings,
-            std::function<void()> onSuccess,
-            std::function<void(const exceptions::JoynrRuntimeException& exception)> onError,
-            const std::string& pathToMessagingSettings = "",
-            std::shared_ptr<IKeychain> keyChain = nullptr) noexcept;
-
-    /**
-     * @brief Create a JoynrRuntime object asynchronously. The call does not block. A callback
-     * will be called when the runtime creation finished.
-     * @param settings settings object
-     * @param onSuccess Is called when the runtime is available for use
-     * @param onError Is called when an error occurs
-     * @param An optional key chain that is used for websocket connections
-     * @return shared_ptr to the JoynrRuntime instance; this instance MUST NOT be used before
-     * onSuccess is called
-     */
-    static std::shared_ptr<JoynrRuntime> createRuntimeAsync(
-            std::unique_ptr<Settings> settings,
-            std::function<void()> onSuccess,
-            std::function<void(const exceptions::JoynrRuntimeException& exception)> onError,
-            std::shared_ptr<IKeychain> keyChain = nullptr) noexcept;
+protected:
+    // NOTE: The implementation of the constructor and destructor must be inside this
+    // header file because there are multiple implementations (cpp files) in folder
+    // cluster-controller-runtime and libjoynr-runtime.
 
     /**
      * @brief Constructs a JoynrRuntime instance
      * @param settings The system service settings
      */
-    explicit JoynrRuntime(std::shared_ptr<JoynrRuntimeImpl> runtimeImpl)
-            : runtimeImpl(std::move(runtimeImpl))
-    {
-    }
+    explicit JoynrRuntimeImpl(Settings& settings, std::shared_ptr<IKeychain> keyChain = nullptr);
 
-protected:
+    /** @brief Return an IMessageRouter instance */
+    virtual std::shared_ptr<IMessageRouter> getMessageRouter() = 0;
+
+    bool checkAndLogCryptoFileExistence(const std::string& caPemFile,
+                                        const std::string& certPemFile,
+                                        const std::string& privateKeyPemFile,
+                                        Logger& logger);
+
+    /** @brief Get provisioned entries.
+     *  @return A map participantId -> DiscoveryEntryWithMetaInfo.
+     */
+    virtual std::map<std::string, joynr::types::DiscoveryEntryWithMetaInfo> getProvisionedEntries()
+            const;
+
+    std::shared_ptr<SingleThreadedIOService> singleThreadIOService;
+
+    /** @brief Factory for creating proxy instances */
+    std::unique_ptr<ProxyFactory> proxyFactory;
+    /** Is forwarded to proxy builder objects. They use it to identify in-process providers **/
+    std::shared_ptr<IRequestCallerDirectory> requestCallerDirectory;
+    /** @brief Creates and persists participant id */
+    std::shared_ptr<ParticipantIdStorage> participantIdStorage;
+    /** @brief Class that handles provider registration/deregistration */
+    std::unique_ptr<CapabilitiesRegistrar> capabilitiesRegistrar;
+    /**
+     * @brief Messaging settings
+     */
+    MessagingSettings messagingSettings;
+    /** @brief System services settings */
+    SystemServicesSettings systemServicesSettings;
+    /** @brief Address of the dispatcher */
+    std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress;
+    /** @brief Wrapper for discovery proxies */
+    std::shared_ptr<LocalDiscoveryAggregator> discoveryProxy;
+    /**
+     * @brief Publication manager receives subscription requests and prepares publications
+     * which are send back to the subscription manager.
+     */
+    std::shared_ptr<PublicationManager> publicationManager;
+    std::shared_ptr<IKeychain> keyChain;
+    std::vector<std::shared_ptr<IProxyBuilderBase>> proxyBuilders;
+
 private:
-    std::shared_ptr<JoynrRuntimeImpl> runtimeImpl;
-    DISALLOW_COPY_AND_ASSIGN(JoynrRuntime);
+    DISALLOW_COPY_AND_ASSIGN(JoynrRuntimeImpl);
 };
 
 } // namespace joynr
-#endif // JOYNRUNTIME_H
+#endif // JOYNRUNTIMEIMPL_H

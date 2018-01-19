@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-#include "joynr/JoynrRuntime.h"
+#include "joynr/JoynrRuntimeImpl.h"
 
 #include "joynr/IKeychain.h"
 #include "joynr/SingleThreadedIOService.h"
@@ -27,7 +27,7 @@
 namespace joynr
 {
 
-JoynrRuntime::JoynrRuntime(Settings& settings, std::shared_ptr<IKeychain> keyChain)
+JoynrRuntimeImpl::JoynrRuntimeImpl(Settings& settings, std::shared_ptr<IKeychain> keyChain)
         : singleThreadIOService(std::make_shared<SingleThreadedIOService>()),
           proxyFactory(nullptr),
           requestCallerDirectory(nullptr),
@@ -44,18 +44,18 @@ JoynrRuntime::JoynrRuntime(Settings& settings, std::shared_ptr<IKeychain> keyCha
     systemServicesSettings.printSettings();
 }
 
-JoynrRuntime::~JoynrRuntime()
+JoynrRuntimeImpl::~JoynrRuntimeImpl()
 {
 }
 
-void JoynrRuntime::shutdown()
+void JoynrRuntimeImpl::shutdown()
 {
 }
 
-bool JoynrRuntime::checkAndLogCryptoFileExistence(const std::string& caPemFile,
-                                                  const std::string& certPemFile,
-                                                  const std::string& privateKeyPemFile,
-                                                  Logger& logger)
+bool JoynrRuntimeImpl::checkAndLogCryptoFileExistence(const std::string& caPemFile,
+                                                      const std::string& certPemFile,
+                                                      const std::string& privateKeyPemFile,
+                                                      Logger& logger)
 {
     if (!util::fileExists(caPemFile)) {
         JOYNR_LOG_ERROR(logger, "CA PEM file {} does not exist", caPemFile);
@@ -75,7 +75,7 @@ bool JoynrRuntime::checkAndLogCryptoFileExistence(const std::string& caPemFile,
     return true;
 }
 
-std::map<std::string, joynr::types::DiscoveryEntryWithMetaInfo> JoynrRuntime::
+std::map<std::string, joynr::types::DiscoveryEntryWithMetaInfo> JoynrRuntimeImpl::
         getProvisionedEntries() const
 {
     std::int64_t lastSeenDateMs = 0;
