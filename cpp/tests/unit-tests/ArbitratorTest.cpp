@@ -148,6 +148,7 @@ TEST_F(ArbitratorTest, arbitrationTimeout) {
 
     JOYNR_LOG_DEBUG(logger(), "Time elapsed for unsuccessful arbitration : {}", elapsed.count());
     ASSERT_GE(elapsed.count(), discoveryTimeoutMs);
+    mockArbitrator->stopArbitration();
 }
 
 // Test that the Arbitrator selects the last seen provider
