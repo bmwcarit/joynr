@@ -38,6 +38,10 @@ public:
     {
         shutdown();
     }
+
+    /**
+     * @brief Synchronously shuts down this runtime
+     */
     void shutdown()
     {
         runtimeImpl->shutdown();
