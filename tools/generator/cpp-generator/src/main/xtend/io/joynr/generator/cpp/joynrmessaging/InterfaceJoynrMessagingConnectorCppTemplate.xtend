@@ -341,14 +341,14 @@ request.setParams(
 			auto future = std::make_shared<Future<std::string>>();
 			auto subscriptionCallback = std::make_shared<joynr::UnicastSubscriptionCallback<«returnType»>
 			>(subscriptionRequest.getSubscriptionId(), future, subscriptionManager);
-      if (auto ptr = subscriptionManager.lock()) {
-        ptr->registerSubscription(
-  						attributeName,
-  						subscriptionCallback,
-  						subscriptionListener,
-  						subscriptionQos,
-  						subscriptionRequest);
-      }
+			if (auto ptr = subscriptionManager.lock()) {
+				ptr->registerSubscription(
+						attributeName,
+						subscriptionCallback,
+						subscriptionListener,
+						subscriptionQos,
+						subscriptionRequest);
+			}
 			JOYNR_LOG_DEBUG(logger(),
 					"SUBSCRIPTION call proxy: subscriptionId: {}, attribute: {}, qos: {}, proxy "
 					"participantId: {}, provider participantId: [{}]",
@@ -358,15 +358,15 @@ request.setParams(
 					proxyParticipantId,
 					providerParticipantId);
 
-      if (auto ptr = messageSender.lock()) {
-        ptr->sendSubscriptionRequest(
-  						proxyParticipantId,
-  						providerParticipantId,
-  						clonedMessagingQos,
-  						subscriptionRequest,
-  						providerDiscoveryEntry.getIsLocal()
-  			);
-      }
+			if (auto ptr = messageSender.lock()) {
+				ptr->sendSubscriptionRequest(
+						proxyParticipantId,
+						providerParticipantId,
+						clonedMessagingQos,
+						subscriptionRequest,
+						providerDiscoveryEntry.getIsLocal()
+						);
+			}
 			return future;
 		}
 
@@ -374,17 +374,17 @@ request.setParams(
 			joynr::SubscriptionStop subscriptionStop;
 			subscriptionStop.setSubscriptionId(subscriptionId);
 
-      if (auto ptr = subscriptionManager.lock()) {
-        ptr->unregisterSubscription(subscriptionId);
-      }
-      if (auto ptr = messageSender.lock()) {
-        ptr->sendSubscriptionStop(
-  						proxyParticipantId,
-  						providerParticipantId,
-  						qosSettings,
-  						subscriptionStop
-  			);
-      }
+			if (auto ptr = subscriptionManager.lock()) {
+				ptr->unregisterSubscription(subscriptionId);
+			}
+			if (auto ptr = messageSender.lock()) {
+				ptr->sendSubscriptionStop(
+						proxyParticipantId,
+						providerParticipantId,
+						qosSettings,
+						subscriptionStop
+						);
+			}
 		}
 
 	«ENDIF»
@@ -539,24 +539,24 @@ request.setParams(
 		«IF broadcast.selective»
 			auto subscriptionCallback = std::make_shared<joynr::UnicastSubscriptionCallback<«returnTypes»>
 			>(subscriptionRequest.getSubscriptionId(), future, subscriptionManager);
-      if (auto ptr = subscriptionManager.lock()) {
-        ptr->registerSubscription(
-  							broadcastName,
-  							subscriptionCallback,
-  							subscriptionListener,
-  							subscriptionQos,
-  							subscriptionRequest);
-      }
+			if (auto ptr = subscriptionManager.lock()) {
+				ptr->registerSubscription(
+						broadcastName,
+						subscriptionCallback,
+						subscriptionListener,
+						subscriptionQos,
+						subscriptionRequest);
+			}
 
-      if (auto ptr = messageSender.lock()) {
-        ptr->sendBroadcastSubscriptionRequest(
-  						proxyParticipantId,
-  						providerParticipantId,
-  						clonedMessagingQos,
-  						subscriptionRequest,
-  						providerDiscoveryEntry.getIsLocal()
-  			);
-      }
+			if (auto ptr = messageSender.lock()) {
+				ptr->sendBroadcastSubscriptionRequest(
+						proxyParticipantId,
+						providerParticipantId,
+						clonedMessagingQos,
+						subscriptionRequest,
+						providerDiscoveryEntry.getIsLocal()
+						);
+			}
 		«ELSE»
 			auto subscriptionCallback = std::make_shared<joynr::MulticastSubscriptionCallback<«returnTypes»>
 			>(subscriptionRequest->getSubscriptionId(), future, subscriptionManager);
@@ -594,19 +594,19 @@ request.setParams(
 						}
 				};
 
-      if (auto ptr = subscriptionManager.lock()) {
-  			ptr->registerSubscription(
-  							broadcastName,
-  							proxyParticipantId,
-  							providerParticipantId,
-  							partitions,
-  							subscriptionCallback,
-  							subscriptionListener,
-  							subscriptionQos,
-  							*subscriptionRequest,
-  							std::move(onSuccess),
-  							std::move(onError));
-      }
+			if (auto ptr = subscriptionManager.lock()) {
+				ptr->registerSubscription(
+						broadcastName,
+						proxyParticipantId,
+						providerParticipantId,
+						partitions,
+						subscriptionCallback,
+						subscriptionListener,
+						subscriptionQos,
+						*subscriptionRequest,
+						std::move(onSuccess),
+						std::move(onError));
+			}
 		«ENDIF»
 		JOYNR_LOG_DEBUG(logger(),
 				"SUBSCRIPTION call proxy: subscriptionId: {}, attribute: {}, qos: {}, proxy "
@@ -627,17 +627,17 @@ request.setParams(
 		joynr::SubscriptionStop subscriptionStop;
 		subscriptionStop.setSubscriptionId(subscriptionId);
 
-    if (auto ptr = subscriptionManager.lock()) {
+		if (auto ptr = subscriptionManager.lock()) {
 		  ptr->unregisterSubscription(subscriptionId);
-    }
-    if (auto ptr = messageSender.lock()) {
-      ptr->sendSubscriptionStop(
-  					proxyParticipantId,
-  					providerParticipantId,
-  					qosSettings,
-  					subscriptionStop
-  		);
-    }
+		}
+		if (auto ptr = messageSender.lock()) {
+			ptr->sendSubscriptionStop(
+					proxyParticipantId,
+					providerParticipantId,
+					qosSettings,
+					subscriptionStop
+					);
+		}
 	}
 
 «ENDFOR»
