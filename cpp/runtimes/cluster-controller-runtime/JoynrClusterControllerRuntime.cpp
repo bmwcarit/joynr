@@ -917,14 +917,7 @@ void JoynrClusterControllerRuntime::shutdown()
         localCapabilitiesDirectory->shutdown();
     }
 
-    stopExternalCommunication();
-
-    // synchronously stop the underlying boost::asio::io_service
-    // this ensures all asynchronous operations are stopped now
-    // which allows a safe shutdown
-    if (singleThreadIOService) {
-        singleThreadIOService->stop();
-    }
+    stop(true);
 
     if (multicastMessagingSkeletonDirectory) {
         multicastMessagingSkeletonDirectory
@@ -974,13 +967,20 @@ void JoynrClusterControllerRuntime::start()
     startLocalCommunication();
 }
 
-void JoynrClusterControllerRuntime::stop(bool deleteChannel)
+void JoynrClusterControllerRuntime::stop(bool deleteHttpChannel)
 {
-    if (deleteChannel) {
-        this->deleteChannel();
+    if (deleteHttpChannel) {
+        deleteChannel();
     }
+
     stopExternalCommunication();
-    singleThreadIOService->stop();
+
+    // synchronously stop the underlying boost::asio::io_service
+    // this ensures all asynchronous operations are stopped now
+    // which allows a safe shutdown
+    if (singleThreadIOService) {
+        singleThreadIOService->stop();
+    }
 }
 
 void JoynrClusterControllerRuntime::deleteChannel()
