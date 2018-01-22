@@ -87,6 +87,7 @@ public:
     }
 
     ~DispatcherTest() {
+        dispatcher->shutdown();
         singleThreadIOService->stop();
     }
 
