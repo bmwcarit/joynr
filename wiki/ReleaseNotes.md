@@ -1,3 +1,9 @@
+# joynr 0.34.0
+
+## Other changes
+
+* **[JS]** Updated wscpp version to 0.2.7
+
 # joynr 0.33.0
 
 ## API relevant change
