@@ -66,7 +66,6 @@ Dispatcher::Dispatcher(std::shared_ptr<IMessageSender> messageSender,
 Dispatcher::~Dispatcher()
 {
     JOYNR_LOG_TRACE(logger(), "Destructing Dispatcher");
-    handleReceivedMessageThreadPool->shutdown();
     JOYNR_LOG_TRACE(logger(), "Destructing finished");
 }
 
@@ -555,6 +554,7 @@ void Dispatcher::registerPublicationManager(std::weak_ptr<PublicationManager> pu
 
 void Dispatcher::shutdown()
 {
+    handleReceivedMessageThreadPool->shutdown();
     replyCallerDirectory.shutdown();
     requestCallerDirectory.shutdown();
 }
