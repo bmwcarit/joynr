@@ -76,18 +76,6 @@ defaultSettings = {
 };
 
 /**
- * resets the queue
- *
- * @name MessageQueue#reset()
- * @function
- *
- */
-MessageQueue.prototype.reset = function reset() {
-    this.currentQueueSize = 0;
-    this._participantQueues = {};
-};
-
-/**
  * @name MessageQueue#putMessage
  * @function
  *
