@@ -21,7 +21,6 @@
 
 var testbase = require("test-base");
 var PerformanceUtilities = require("./performanceutilities.js");
-var Promise = require("bluebird").Promise;
 
 var error = testbase.logging.error;
 var log = testbase.logging.log;

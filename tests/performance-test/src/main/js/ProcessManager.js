@@ -22,7 +22,6 @@
 var child_process = require("child_process");
 var exitHook = require("exit-hook");
 var PerformanceUtilities = require("./performanceutilities");
-var Promise = require("bluebird").Promise;
 
 var ProcessManager = {};
 

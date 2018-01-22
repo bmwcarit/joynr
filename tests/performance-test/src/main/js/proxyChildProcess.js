@@ -23,7 +23,6 @@ var joynr = require("joynr");
 var testbase = require("test-base");
 var PerformanceUtilities = require("./performanceutilities.js");
 PerformanceUtilities.overrideRequire();
-var Promise = require("bluebird").Promise;
 
 var error = testbase.logging.error;
 var log = testbase.logging.log;

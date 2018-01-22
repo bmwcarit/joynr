@@ -19,7 +19,6 @@
  * #L%
  */
 
-var Promise = require("bluebird").Promise;
 var config = require("./config/config");
 
 var PerformanceUtilities = {};
