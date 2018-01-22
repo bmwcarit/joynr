@@ -88,6 +88,7 @@ public:
     {
         testProxy.reset();
         ccRuntime->unregisterProvider(providerParticipantId);
+        ccRuntime->shutdown();
 
         test::util::resetAndWaitUntilDestroyed(testProvider);
         test::util::resetAndWaitUntilDestroyed(ccRuntime);
