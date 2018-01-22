@@ -94,6 +94,7 @@ public:
     ~SubscriptionTest()
     {
         publicationManager->shutdown();
+        dispatcher->shutdown();
         singleThreadedIOService->stop();
     }
 
