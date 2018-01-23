@@ -175,11 +175,11 @@ function MessageRouter(settings) {
         }
         if (parentMessageRouterAddress !== undefined) {
             var deferred = Util.createDeferred();
-            queuedRemoveNextHopCalls[queuedRemoveNextHopCalls.length] = {
+            queuedRemoveNextHopCalls.push({
                 participantId: participantId,
                 resolve: deferred.resolve,
                 reject: deferred.reject
-            };
+            });
             return deferred.promise;
         }
         return Promise.resolve();
@@ -260,44 +260,41 @@ function MessageRouter(settings) {
         }
     }
     function processQueuedRoutingProxyCalls() {
-        var hop, participantId, receiver, queuedCall;
-        for (hop in queuedAddNextHopCalls) {
-            if (queuedAddNextHopCalls.hasOwnProperty(hop)) {
-                queuedCall = queuedAddNextHopCalls[hop];
-                if (queuedCall.participantId !== routingProxy.proxyParticipantId) {
-                    that
-                        .addNextHopToParentRoutingTable(queuedCall.participantId, queuedCall.isGloballyVisible)
-                        .then(queuedCall.resolve)
-                        .catch(queuedCall.reject);
-                }
-            }
-        }
-        for (hop in queuedRemoveNextHopCalls) {
-            if (queuedRemoveNextHopCalls.hasOwnProperty(hop)) {
-                queuedCall = queuedRemoveNextHopCalls[hop];
+        var hopIndex, receiverIndex, queuedCall, length;
+
+        length = queuedAddNextHopCalls.length;
+        for (hopIndex = 0; hopIndex < length; hopIndex++) {
+            queuedCall = queuedAddNextHopCalls[hopIndex];
+            if (queuedCall.participantId !== routingProxy.proxyParticipantId) {
                 that
-                    .removeNextHop(queuedCall.participantId)
+                    .addNextHopToParentRoutingTable(queuedCall.participantId, queuedCall.isGloballyVisible)
                     .then(queuedCall.resolve)
                     .catch(queuedCall.reject);
             }
         }
-        for (receiver in queuedAddMulticastReceiverCalls) {
-            if (queuedAddMulticastReceiverCalls.hasOwnProperty(receiver)) {
-                queuedCall = queuedAddMulticastReceiverCalls[receiver];
-                routingProxy
-                    .addMulticastReceiver(queuedCall.parameters)
-                    .then(queuedCall.resolve)
-                    .catch(queuedCall.reject);
-            }
+        length = queuedRemoveNextHopCalls.length;
+        for (hopIndex = 0; hopIndex < length; hopIndex++) {
+            queuedCall = queuedRemoveNextHopCalls[hopIndex];
+            that
+                .removeNextHop(queuedCall.participantId)
+                .then(queuedCall.resolve)
+                .catch(queuedCall.reject);
         }
-        for (receiver in queuedRemoveMulticastReceiverCalls) {
-            if (queuedRemoveMulticastReceiverCalls.hasOwnProperty(receiver)) {
-                queuedCall = queuedRemoveMulticastReceiverCalls[receiver];
-                routingProxy
-                    .removeMulticastReceiver(queuedCall.parameters)
-                    .then(queuedCall.resolve)
-                    .catch(queuedCall.reject);
-            }
+        length = queuedAddMulticastReceiverCalls.length;
+        for (receiverIndex = 0; receiverIndex < length; receiverIndex++) {
+            queuedCall = queuedAddMulticastReceiverCalls[receiverIndex];
+            routingProxy
+                .addMulticastReceiver(queuedCall.parameters)
+                .then(queuedCall.resolve)
+                .catch(queuedCall.reject);
+        }
+        length = queuedRemoveMulticastReceiverCalls.length;
+        for (receiverIndex = 0; receiverIndex < length; receiverIndex++) {
+            queuedCall = queuedRemoveMulticastReceiverCalls[receiverIndex];
+            routingProxy
+                .removeMulticastReceiver(queuedCall.parameters)
+                .then(queuedCall.resolve)
+                .catch(queuedCall.reject);
         }
         queuedAddNextHopCalls = undefined;
         queuedRemoveNextHopCalls = undefined;
@@ -622,12 +619,12 @@ function MessageRouter(settings) {
             promise = that.addNextHopToParentRoutingTable(participantId, isGloballyVisible);
         } else if (parentMessageRouterAddress !== undefined) {
             var deferred = Util.createDeferred();
-            queuedAddNextHopCalls[queuedAddNextHopCalls.length] = {
+            queuedAddNextHopCalls.push({
                 participantId: participantId,
                 isGloballyVisible: isGloballyVisible,
                 resolve: deferred.resolve,
                 reject: deferred.reject
-            };
+            });
             promise = deferred.promise;
         } else {
             promise = Promise.resolve();
@@ -683,11 +680,11 @@ function MessageRouter(settings) {
         }
 
         var deferred = Util.createDeferred();
-        queuedAddMulticastReceiverCalls[queuedAddMulticastReceiverCalls.length] = {
+        queuedAddMulticastReceiverCalls.push({
             parameters: parameters,
             resolve: deferred.resolve,
             reject: deferred.reject
-        };
+        });
 
         return deferred.promise;
     };
@@ -746,11 +743,11 @@ function MessageRouter(settings) {
         }
 
         var deferred = Util.createDeferred();
-        queuedRemoveMulticastReceiverCalls[queuedRemoveMulticastReceiverCalls.length] = {
+        queuedRemoveMulticastReceiverCalls.push({
             parameters: parameters,
             resolve: deferred.resolve,
             reject: deferred.reject
-        };
+        });
 
         return deferred.promise;
     };
