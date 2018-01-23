@@ -228,10 +228,7 @@ describe("libjoynr-js.joynr.types.ArbitrationStrategyCollection", function() {
             if (discoveryEntryList.hasOwnProperty(discoveryEntryId)) {
                 var capInfo = discoveryEntryList[discoveryEntryId];
                 found = false;
-                if (
-                    capInfo.qos.customParameters &&
-                    Object.prototype.toString.call(capInfo.qos.customParameters) === "[object Array]"
-                ) {
+                if (capInfo.qos.customParameters && Array.isArray(capInfo.qos.customParameters)) {
                     for (qosId in capInfo.qos.customParameters) {
                         if (capInfo.qos.customParameters.hasOwnProperty(qosId)) {
                             qosParam = capInfo.qos.customParameters[qosId];

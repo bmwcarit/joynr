@@ -59,7 +59,7 @@ ArbitrationStrategyCollection.Nothing = function(capabilities) {
  * @returns {Array} an array of capabilities sorted by the highest priority
  */
 ArbitrationStrategyCollection.HighestPriority = function(capabilities) {
-    if (!(Object.prototype.toString.call(capabilities) === "[object Array]")) {
+    if (!Array.isArray(capabilities)) {
         throw new Error("provided argument capabilities is not of type Array");
     }
 
@@ -94,10 +94,7 @@ ArbitrationStrategyCollection.Keyword = function(keyword, capabilities) {
     for (capId in capabilities) {
         if (capabilities.hasOwnProperty(capId)) {
             cap = capabilities[capId];
-            if (
-                cap.qos.customParameters &&
-                Object.prototype.toString.call(cap.qos.customParameters) === "[object Array]"
-            ) {
+            if (cap.qos.customParameters && Array.isArray(cap.qos.customParameters)) {
                 for (qosId in cap.qos.customParameters) {
                     if (cap.qos.customParameters.hasOwnProperty(qosId)) {
                         qosParam = cap.qos.customParameters[qosId];
@@ -124,7 +121,7 @@ ArbitrationStrategyCollection.Keyword = function(keyword, capabilities) {
  * @returns {Array} an array of capabilities sorted by the lastSeenDateMs
  */
 ArbitrationStrategyCollection.LastSeen = function(capabilities) {
-    if (!(Object.prototype.toString.call(capabilities) === "[object Array]")) {
+    if (!Array.isArray(capabilities)) {
         throw new Error("provided argument capabilities is not of type Array");
     }
 

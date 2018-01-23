@@ -149,7 +149,7 @@ function LoggingManager() {
         if (config.AppenderRef !== undefined) {
             if (config.AppenderRef.ref !== undefined) {
                 appenderRefs.push(config.AppenderRef);
-            } else if (Object.prototype.toString.call(config.AppenderRef) === "[object Array]") {
+            } else if (Array.isArray(config.AppenderRef)) {
                 appenderRefs = config.AppenderRef;
             }
 
@@ -270,7 +270,7 @@ function LoggingManager() {
     function createConfiguredLoggers(configuration) {
         var i, loggerConfigs, keyConfig, config, loggerKey;
 
-        if (Object.prototype.toString.call(configuration.logger) === "[object Array]") {
+        if (Array.isArray(configuration.logger)) {
             loggerConfigs = configuration.logger;
         } else {
             loggerConfigs = [];
