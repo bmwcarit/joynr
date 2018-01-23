@@ -28,10 +28,6 @@ var UtilExternal = require("./Util");
  */
 var UtilInternal = {};
 
-var isArray = function isArray(object) {
-    return Object.prototype.toString.call(object) === "[object Array]";
-};
-
 function extend(to, from, deep) {
     var i, key, args;
 
@@ -85,12 +81,6 @@ UtilInternal.forward = function forward(receiver, provider) {
 
     return receiver;
 };
-
-/**
- * @function UtilInternal#isArray
- * @param {?} object
- */
-UtilInternal.isArray = isArray;
 
 /**
  * Deeply copies all attributes to a given out parameter from optional in parameters
