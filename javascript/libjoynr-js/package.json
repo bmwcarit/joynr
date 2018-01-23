@@ -30,7 +30,7 @@
     "atmosphere.js": "2.3.2",
     "xmlhttprequest" : "1.8.0",
     "ws" : "1.0.1",
-    "mqtt" : "2.0.1",
+    "mqtt" : "2.15.0",
     "bluebird" : "3.3.5",
     "smrf-native": "0.2.2",
     "wscpp" : "1.0.0"
