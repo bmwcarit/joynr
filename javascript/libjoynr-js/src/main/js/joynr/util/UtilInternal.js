@@ -39,7 +39,7 @@ function extend(to, from, deep) {
         for (key in from) {
             if (from.hasOwnProperty(key)) {
                 if (deep && typeof from[key] === "object") {
-                    if (isArray(from[key]) && !isArray(to[key])) {
+                    if (Array.isArray(from[key]) && !Array.isArray(to[key])) {
                         to[key] = [];
                     } else if (typeof to[key] !== "object") {
                         to[key] = {};
