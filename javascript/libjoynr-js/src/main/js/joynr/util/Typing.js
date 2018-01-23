@@ -85,6 +85,9 @@ Typing.getObjectType = function(obj) {
     if (obj === null || obj === undefined) {
         throw new Error("cannot determine the type of an undefined object");
     }
+    if (Array.isArray(obj)) {
+        return "Array";
+    }
     return obj.constructor.name || "";
 };
 
