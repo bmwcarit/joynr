@@ -21,7 +21,7 @@
 
 var ComplexStruct = require("../generated-javascript/joynr/tests/performance/Types/ComplexStruct.js");
 var PerformanceUtilities = require("./performanceutilities.js");
-var options = PerformanceUtilities.getCommandLineOptionsOrDefaults(process.env);
+var options = PerformanceUtilities.getCommandLineOptionsOrDefaults();
 
 function Benchmarks(proxy, loadedJoynr) {
     return {

@@ -19,9 +19,10 @@
  * #L%
  */
 
-var config = require("./config/config");
-
 var PerformanceUtilities = {};
+
+var configName = process.env.configName || "config";
+var config = require("./config/" + configName);
 
 PerformanceUtilities.createByteArray = function(size, defaultValue) {
     var result = [];
@@ -54,7 +55,7 @@ PerformanceUtilities.forceGC = function() {
  * Reads command line arguments from environment. If an argument is not
  * available, a default value will be used.
  */
-PerformanceUtilities.getCommandLineOptionsOrDefaults = function(environment) {
+PerformanceUtilities.getCommandLineOptionsOrDefaults = function() {
     var domain,
         stringLength,
         byteArrayLength,
@@ -65,6 +66,8 @@ PerformanceUtilities.getCommandLineOptionsOrDefaults = function(environment) {
         testRuns,
         measureMemory,
         testType;
+
+    var environment = process.env;
 
     var global = config.global;
     testRuns = global.testRuns || 100;

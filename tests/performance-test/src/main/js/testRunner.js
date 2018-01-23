@@ -24,7 +24,7 @@ var PerformanceUtilities = require("./performanceutilities.js");
 
 var error = testbase.logging.error;
 var log = testbase.logging.log;
-var options = PerformanceUtilities.getCommandLineOptionsOrDefaults(process.env);
+var options = PerformanceUtilities.getCommandLineOptionsOrDefaults();
 var measureMemory = options.measureMemory == "true";
 var summary = [];
 var benchmarks = null;

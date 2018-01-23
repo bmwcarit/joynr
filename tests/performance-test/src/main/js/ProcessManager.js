@@ -31,6 +31,7 @@ function ChildProcessStuff(type) {
 ChildProcessStuff.prototype.initialize = function() {
     const port = PerformanceUtilities.getRandomInt(1000, 9000);
     const config = process.env.debug == "true" ? { execArgv: ["--inspect-brk=" + port] } : {};
+    config.env = Object.create(process.env);
 
     this.process = child_process.fork("src/main/js/" + this.file, [], config);
     this.ready = PerformanceUtilities.createPromise();

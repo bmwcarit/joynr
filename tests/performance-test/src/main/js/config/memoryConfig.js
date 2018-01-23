@@ -52,7 +52,7 @@ module.exports = {
             host: "localhost",
             port: "4242"
         },
-        measureMemory: "false",
+        measureMemory: "true",
         stringLength: 10,
         timeout: 3600000,
         byteArraySize: 1000,

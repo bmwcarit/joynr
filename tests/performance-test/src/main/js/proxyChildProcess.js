@@ -26,7 +26,7 @@ PerformanceUtilities.overrideRequire();
 
 var error = testbase.logging.error;
 var log = testbase.logging.log;
-var options = PerformanceUtilities.getCommandLineOptionsOrDefaults(process.env);
+var options = PerformanceUtilities.getCommandLineOptionsOrDefaults();
 var timeout = 600000;
 var Benchmarks = require("./Benchmarks");
 var benchmarks;

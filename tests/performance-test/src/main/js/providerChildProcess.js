@@ -22,7 +22,7 @@
 var PerformanceUtilities = require("./performanceutilities");
 var heapdump = require("heapdump");
 
-var options = PerformanceUtilities.getCommandLineOptionsOrDefaults(process.env);
+var options = PerformanceUtilities.getCommandLineOptionsOrDefaults();
 PerformanceUtilities.overrideRequire();
 
 var domain = options.domain;
