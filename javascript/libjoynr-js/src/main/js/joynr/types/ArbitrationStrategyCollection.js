@@ -91,6 +91,10 @@ ArbitrationStrategyCollection.Keyword = function(keyword, capabilities) {
         cap,
         keywordCaps = [];
 
+    if (!Array.isArray(capabilities)) {
+        throw new Error("provided argument capabilities is not of type Array");
+    }
+
     for (capId in capabilities) {
         if (capabilities.hasOwnProperty(capId)) {
             cap = capabilities[capId];
