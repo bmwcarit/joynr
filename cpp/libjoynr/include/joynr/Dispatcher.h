@@ -27,6 +27,7 @@
 #include "joynr/LibJoynrDirectories.h"
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/ReadWriteLock.h"
 #include "joynr/ThreadPool.h"
 
 namespace boost
@@ -96,6 +97,8 @@ private:
     std::shared_ptr<ThreadPool> handleReceivedMessageThreadPool;
     ADD_LOGGER(Dispatcher)
     std::mutex subscriptionHandlingMutex;
+    bool isShuttingDown;
+    ReadWriteLock isShuttingDownLock;
 
     friend class ReceivedMessageRunnable;
 };
