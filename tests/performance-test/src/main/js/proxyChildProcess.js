@@ -74,6 +74,37 @@ joynr
         throw e;
     });
 
+var count = 0;
+var totalBroadcastToReceive = 0;
+function countReceivedBroadCasts() {
+    count++;
+    if (count === totalBroadcastToReceive) {
+        process.send({ msg: "receivedBroadcasts" });
+    }
+}
+
+var broadCastsPreparedOnce = false;
+
+function prepareBroadcast(amount) {
+    if (broadCastsPreparedOnce) {
+        count = 0;
+        return Promise.resolve();
+    }
+    broadCastsPreparedOnce = true;
+    var promise = PerformanceUtilities.createPromise();
+    totalBroadcastToReceive = amount;
+
+    var subscriptionQosOnChange = new joynr.proxy.MulticastSubscriptionQos({ validityMs: 60000 });
+
+    echoProxy.broadcastWithSinglePrimitiveParameter.subscribe({
+        subscriptionQos: subscriptionQosOnChange,
+        onReceive: countReceivedBroadCasts,
+        onError: promise.reject,
+        onSubscribed: promise.resolve
+    });
+    return promise.promise;
+}
+
 var cpuUsage;
 var memoryIntervalId;
 var measureMemory = options.measureMemory == "true";
@@ -81,51 +112,64 @@ var totalMemory = 0;
 var totalMemoryMeasurements = 0;
 var testData;
 var handler = function(msg) {
-    if (msg.msg === "terminate") {
-        joynr.shutdown();
-    } else if (msg.msg === "startMeasurement") {
-        if (measureMemory) {
-            memoryIntervalId = setInterval(function() {
-                var memoryUsage = process.memoryUsage();
-                totalMemory += memoryUsage.rss;
-                totalMemoryMeasurements++;
-            }, 500);
-        }
-        cpuUsage = process.cpuUsage();
-    } else if (msg.msg === "stopMeasurement") {
-        var diff = process.cpuUsage(cpuUsage);
-        if (measureMemory) {
-            diff.averageMemory = totalMemory / totalMemoryMeasurements;
-            clearInterval(memoryIntervalId);
-        }
-        process.send({ msg: "gotMeasurement", data: diff });
-    } else if (msg.msg === "prepareBenchmark") {
-        testData = [];
-        var numRuns = msg.config.numRuns;
-        for (var i = 0; i < numRuns; i++) {
-            testData.push(benchmarks[msg.config.name].generateData(i));
-        }
-        process.send({ msg: "prepareBenchmarkFinished" });
-    } else if (msg.msg === "executeBenchmark") {
-        // TODO: add different types of tests -> one request after another, all parallel, etc.
+    switch (msg.msg) {
+        case "terminate":
+            joynr.shutdown();
+            break;
+        case "startMeasurement":
+            if (measureMemory) {
+                memoryIntervalId = setInterval(function() {
+                    var memoryUsage = process.memoryUsage();
+                    totalMemory += memoryUsage.rss;
+                    totalMemoryMeasurements++;
+                }, 500);
+            }
+            cpuUsage = process.cpuUsage();
+            break;
+        case "stopMeasurement":
+            var diff = process.cpuUsage(cpuUsage);
+            if (measureMemory) {
+                diff.averageMemory = totalMemory / totalMemoryMeasurements;
+                clearInterval(memoryIntervalId);
+            }
+            process.send({ msg: "gotMeasurement", data: diff });
+            break;
+        case "prepareBenchmark":
+            testData = [];
+            var numRuns = msg.config.numRuns;
+            for (var i = 0; i < numRuns; i++) {
+                testData.push(benchmarks[msg.config.name].generateData(i));
+            }
+            process.send({ msg: "prepareBenchmarkFinished" });
+            break;
+        case "executeBenchmark":
+            // TODO: add different types of tests -> one request after another, all parallel, etc.
 
-        if (testType === "burst") {
-            var promiseArray = testData.map(item => benchmarks[msg.config.name].testProcedure(item));
-            Promise.all(promiseArray).then(() => process.send({ msg: "executeBenchmarkFinished" }));
-        } else if (testType === "single") {
-            testData
-                .reduce((accumulator, item) => {
-                    return accumulator.then(() => benchmarks[msg.config.name].testProcedure(item));
-                }, Promise.resolve())
-                .then(() => process.send({ msg: "executeBenchmarkFinished" }));
-        } else {
-            throw new Error("unknown testType");
-        }
-    } else if (msg.msg === "takeHeapSnapShot") {
-        var fileName = msg.name;
-        heapdump.writeSnapshot(fileName, function(err, filename) {
-            error("dump written to: " + filename);
-        });
+            if (testType === "burst") {
+                var promiseArray = testData.map(item => benchmarks[msg.config.name].testProcedure(item));
+                Promise.all(promiseArray).then(() => process.send({ msg: "executeBenchmarkFinished" }));
+            } else if (testType === "single") {
+                testData
+                    .reduce((accumulator, item) => {
+                        return accumulator.then(() => benchmarks[msg.config.name].testProcedure(item));
+                    }, Promise.resolve())
+                    .then(() => process.send({ msg: "executeBenchmarkFinished" }));
+            } else {
+                throw new Error("unknown testType");
+            }
+            break;
+        case "takeHeapSnapShot":
+            var fileName = msg.name;
+            heapdump.writeSnapshot(fileName, function(err, filename) {
+                error("dump written to: " + filename);
+            });
+            break;
+        case "subscribeBroadcast":
+            prepareBroadcast(msg.amount).then(() => process.send({ msg: "subscriptionFinished" }));
+            break;
+        default:
+            throw new Error("unknown messageType");
+            break;
     }
 };
 process.on("message", handler);

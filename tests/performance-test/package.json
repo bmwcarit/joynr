@@ -20,6 +20,7 @@
   "scripts": {
     "startPerformance": "export configName=\"config\" && node --expose-gc src/main/js/runPerformanceTests.js",
     "startMemory": "export configName=\"memoryConfig\" && node --expose-gc src/main/js/runPerformanceTests.js",
+    "startBroadcast": "export configName=\"broadcastConfig\" && node --expose-gc src/main/js/runPerformanceTests.js",
     "base64performancetest": "jasmine-node --verbose --forceexit --junitreport src/main/js/serializerperformancetest.spec.js"
   }
 }

@@ -21,32 +21,32 @@ module.exports = {
     benchmarks: [
         {
             name: "attributeString",
-            enabled: "true",
+            enabled: "false",
             numRuns: 5000
         },
         {
             name: "echoComplexStruct",
-            enabled: "true",
+            enabled: "false",
             numRuns: 300
         },
         {
             name: "echoString",
-            enabled: "true",
+            enabled: "false",
             numRuns: 5000
         },
         {
             name: "echoByteArray",
-            enabled: "true",
+            enabled: "false",
             numRuns: 500
         },
         {
             name: "registerPlentyOfConsumers",
-            enabled: "true",
+            enabled: "false",
             numRuns: 500
         },
         {
             name: "simpleBroadcast",
-            enabled: "false",
+            enabled: "true",
             numRuns: 5000,
             type: "broadcast",
             numProxies: 4

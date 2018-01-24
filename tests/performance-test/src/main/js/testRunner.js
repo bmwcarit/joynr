@@ -55,6 +55,12 @@ var testRunner = {
         var startTime;
         var numRuns = benchmarkConfig.numRuns;
 
+        if (benchmarkConfig.type === "broadcast") {
+            return ProcessManager.prepareBroadcasts(benchmarkConfig).then(() =>
+                ProcessManager.executeBroadcasts(benchmarkConfig)
+            );
+        }
+
         return ProcessManager.proxy
             .prepareBenchmark(benchmarkConfig)
             .then(() => {

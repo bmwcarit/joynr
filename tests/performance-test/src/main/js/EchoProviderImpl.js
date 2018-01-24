@@ -55,7 +55,8 @@ exports.implementation = {
         } else {
             return { responseData: opArgs.data };
         }
-    }
+    },
+    broadcastWithSinglePrimitiveParameter: {}
 };
 
 self = exports.implementation;

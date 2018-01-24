@@ -61,4 +61,10 @@ interface Echo {
             Types.ComplexStruct responseData
         }
     }
+
+    broadcast broadcastWithSinglePrimitiveParameter {
+        out {
+            String stringOut
+        }
+    }
 }

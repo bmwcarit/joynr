@@ -25,6 +25,9 @@ var heapdump = require("heapdump");
 var options = PerformanceUtilities.getCommandLineOptionsOrDefaults();
 PerformanceUtilities.overrideRequire();
 
+var EchoProvider = require("../generated-javascript/joynr/tests/performance/EchoProvider.js");
+var EchoProviderImpl = require("./EchoProviderImpl.js");
+
 var domain = options.domain;
 
 var joynr = require("joynr");
@@ -50,8 +53,6 @@ joynr
             supportsOnChangeSubscriptions: true
         });
 
-        var EchoProvider = require("../generated-javascript/joynr/tests/performance/EchoProvider.js");
-        var EchoProviderImpl = require("./EchoProviderImpl.js");
         var echoProvider = joynr.providerBuilder.build(EchoProvider, EchoProviderImpl.implementation);
 
         joynr.registration
@@ -71,6 +72,17 @@ joynr
     .catch(function(error) {
         throw error;
     });
+
+function fireBroadcasts(numberOfBroadCasts) {
+    var implementation = EchoProviderImpl.implementation;
+
+    for (let i = 0; i < numberOfBroadCasts; i++) {
+        var stringOut = "boom" + i;
+        var outputParameters = implementation.broadcastWithSinglePrimitiveParameter.createBroadcastOutputParameters();
+        outputParameters.setStringOut(stringOut);
+        implementation.broadcastWithSinglePrimitiveParameter.fire(outputParameters);
+    }
+}
 
 var cpuUsage;
 var memoryIntervalId;
@@ -101,6 +113,9 @@ var handler = function(msg) {
         heapdump.writeSnapshot(fileName, function(err, filename) {
             error("dump written to: " + filename);
         });
+    } else if (msg.msg === "fireBroadCast") {
+        let numberOfBroadCasts = msg.amount;
+        fireBroadcasts(numberOfBroadCasts);
     }
 };
 process.on("message", handler);
