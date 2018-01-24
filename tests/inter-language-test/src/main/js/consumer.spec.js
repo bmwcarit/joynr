@@ -2791,7 +2791,7 @@ describe("Consumer test", function() {
 
         runs(function() {
             log("callSubscribeBroadcastWithFiltering");
-            var filterParameters = new testInterfaceProxy.broadcastWithFiltering.createFilterParameters();
+            var filterParameters = testInterfaceProxy.broadcastWithFiltering.createFilterParameters();
             var stringOfInterest = "fireBroadcast";
             filterParameters.setStringOfInterest(stringOfInterest);
             //filterParameters.setStringArrayOfInterest(JSON.stringify(IltUtil.createStringArray()));
