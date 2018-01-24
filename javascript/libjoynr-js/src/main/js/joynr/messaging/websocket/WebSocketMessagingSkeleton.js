@@ -21,6 +21,7 @@
 var JoynrMessage = require("../JoynrMessage");
 var Typing = require("../../util/Typing");
 var LoggerFactory = require("../../system/LoggerFactory");
+var log = LoggerFactory.getLogger("joynr.messaging.websocket.WebSocketMessagingSkeleton");
 
 /**
  * @constructor WebSocketMessagingSkeleton
@@ -38,6 +39,7 @@ var WebSocketMessagingSkeleton = function WebSocketMessagingSkeleton(settings) {
     var listener;
 
     settings.sharedWebSocket.onmessage = function(joynrMessage) {
+        log.debug("<<< INCOMING <<< message with ID " + joynrMessage.msgId);
         if (listener !== undefined) {
             if (joynrMessage.type === JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST && settings.mainTransport) {
                 joynrMessage.setReceivedFromGlobal(true);
