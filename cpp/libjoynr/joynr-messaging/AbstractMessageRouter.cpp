@@ -279,7 +279,7 @@ void AbstractMessageRouter::sendMessages(
             break;
         }
 
-        std::unique_ptr<MessageQueueItem> item(messageQueue->getNextMessageFor(destinationPartId));
+        std::shared_ptr<ImmutableMessage> item(messageQueue->getNextMessageFor(destinationPartId));
 
         if (!item) {
             break;
@@ -287,16 +287,14 @@ void AbstractMessageRouter::sendMessages(
 
         try {
             const std::uint32_t tryCount = 0;
-            messageScheduler->schedule(std::make_shared<MessageRunnable>(item->getContent(),
-                                                                         std::move(messagingStub),
-                                                                         address,
-                                                                         shared_from_this(),
-                                                                         tryCount),
-                                       std::chrono::milliseconds(0));
+            messageScheduler->schedule(
+                    std::make_shared<MessageRunnable>(
+                            item, std::move(messagingStub), address, shared_from_this(), tryCount),
+                    std::chrono::milliseconds(0));
         } catch (const exceptions::JoynrMessageNotSentException& e) {
             JOYNR_LOG_ERROR(logger(),
                             "Message with Id {} could not be sent. Error: {}",
-                            item->getContent()->getId(),
+                            item->getId(),
                             e.getMessage());
         }
     }
@@ -392,13 +390,12 @@ void AbstractMessageRouter::rescheduleQueuedMessagesForTransport(
     std::lock_guard<std::mutex> lock(transportAvailabilityMutex);
     while (auto nextImmutableMessage =
                    transportNotAvailableQueue->getNextMessageFor(transportStatus)) {
-        std::shared_ptr<ImmutableMessage> message = nextImmutableMessage->getContent();
         try {
-            route(message);
+            route(nextImmutableMessage);
         } catch (const exceptions::JoynrRuntimeException& e) {
             JOYNR_LOG_DEBUG(logger(),
                             "could not route queued message '{}' due to '{}'",
-                            message->toLogMessage(),
+                            nextImmutableMessage->toLogMessage(),
                             e.getMessage());
         }
     }

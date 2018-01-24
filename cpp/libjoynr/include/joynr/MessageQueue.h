@@ -66,14 +66,14 @@ public:
         return queue.size();
     }
 
-    std::unique_ptr<MessageQueueItem> getNextMessageFor(const T& key)
+    std::shared_ptr<ImmutableMessage> getNextMessageFor(const T& key)
     {
         std::lock_guard<std::mutex> lock(queueMutex);
         auto queueElement = queue.find(key);
         if (queueElement != queue.end()) {
-            auto item = std::move(queueElement->second);
+            auto message = std::move(queueElement->second->getContent());
             queue.erase(queueElement);
-            return item;
+            return message;
         }
         return nullptr;
     }

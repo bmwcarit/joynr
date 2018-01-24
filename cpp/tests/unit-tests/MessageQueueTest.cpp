@@ -99,11 +99,11 @@ TEST_F(MessageQueueTest, queueDequeueMessages) {
 
     // get messages from queue
     auto item = messageQueue.getNextMessageFor(recipient1);
-    compareMutableImmutableMessage(mutableMsg1, item->getContent());
+    compareMutableImmutableMessage(mutableMsg1, item);
     EXPECT_EQ(messageQueue.getQueueLength(), 1);
 
     item = messageQueue.getNextMessageFor(recipient2);
-    compareMutableImmutableMessage(mutableMsg2, item->getContent());
+    compareMutableImmutableMessage(mutableMsg2, item);
     EXPECT_EQ(messageQueue.getQueueLength(), 0);
 }
 
@@ -119,11 +119,11 @@ TEST_F(MessageQueueTest, queueDequeueMultipleMessagesForOneParticipant) {
 
     // get messages from queue
     auto item = messageQueue.getNextMessageFor(participantId);
-    compareMutableImmutableMessage(mutableMessage, item->getContent());
+    compareMutableImmutableMessage(mutableMessage, item);
     EXPECT_EQ(messageQueue.getQueueLength(), 1);
 
     item = messageQueue.getNextMessageFor(participantId);
-    compareMutableImmutableMessage(mutableMessage, item->getContent());
+    compareMutableImmutableMessage(mutableMessage, item);
     EXPECT_EQ(messageQueue.getQueueLength(), 0);
 }
 
@@ -186,9 +186,9 @@ TEST_F(MessageQueueWithLimitTest, testAddingMessages)
     EXPECT_EQ(messageQueue.getQueueLength(), MessageQueueWithLimitTest::messageQueueLimit);
 
     // Check if the message with the lowest TTL (message3) was removed.
-    EXPECT_EQ(messageQueue.getNextMessageFor(recipient[0])->getContent()->getRecipient(), recipient[0]);
-    EXPECT_EQ(messageQueue.getNextMessageFor(recipient[1])->getContent()->getRecipient(), recipient[1]);
+    EXPECT_EQ(messageQueue.getNextMessageFor(recipient[0])->getRecipient(), recipient[0]);
+    EXPECT_EQ(messageQueue.getNextMessageFor(recipient[1])->getRecipient(), recipient[1]);
     EXPECT_EQ(messageQueue.getNextMessageFor(recipient[2]), nullptr);
-    EXPECT_EQ(messageQueue.getNextMessageFor(recipient[3])->getContent()->getRecipient(), recipient[3]);
-    EXPECT_EQ(messageQueue.getNextMessageFor(recipient[4])->getContent()->getRecipient(), recipient[4]);
+    EXPECT_EQ(messageQueue.getNextMessageFor(recipient[3])->getRecipient(), recipient[3]);
+    EXPECT_EQ(messageQueue.getNextMessageFor(recipient[4])->getRecipient(), recipient[4]);
 }
