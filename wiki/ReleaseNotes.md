@@ -1,8 +1,9 @@
 # joynr 0.34.0
 
 ## Other changes
-
 * **[JS]** Updated wscpp version to 0.2.7
+* **[JS]** Verify arrays with Array.isArray() built-in function instead of
+  "object.constructor === Array".
 
 # joynr 0.33.0
 
