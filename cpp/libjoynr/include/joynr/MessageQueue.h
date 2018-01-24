@@ -78,13 +78,12 @@ public:
         return nullptr;
     }
 
-    std::int64_t removeOutdatedMessages()
+    void removeOutdatedMessages()
     {
         std::lock_guard<std::mutex> lock(queueMutex);
 
-        std::int64_t counter = 0;
         if (queue.empty()) {
-            return counter;
+            return;
         }
 
         JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(
@@ -93,13 +92,10 @@ public:
         for (auto queueIterator = queue.begin(); queueIterator != queue.end();) {
             if (queueIterator->second->getDecayTime() < now) {
                 queueIterator = queue.erase(queueIterator);
-                counter++;
             } else {
                 ++queueIterator;
             }
         }
-
-        return counter;
     }
 
 protected:
