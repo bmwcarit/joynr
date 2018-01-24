@@ -55,7 +55,7 @@ public:
         clusterControllerRuntime->start();
     }
 
-    void SetUp() {
+    void SetUp() override {
         libjoynrProviderRuntime = std::make_shared<TestLibJoynrWebSocketRuntime>(std::make_unique<Settings>("test-resources/libjoynrSystemIntegration1.settings"));
         ASSERT_TRUE(libjoynrProviderRuntime->connect(std::chrono::milliseconds(2000)));
 
