@@ -50,7 +50,7 @@ public:
         return queue.size();
     }
 
-    std::size_t queueMessage(T key, std::shared_ptr<ImmutableMessage> message)
+    void queueMessage(T key, std::shared_ptr<ImmutableMessage> message)
     {
         JoynrTimePoint absTtl = message->getExpiryDate();
         auto item = std::make_unique<MessageQueueItem>(std::move(message), absTtl);
@@ -62,8 +62,6 @@ public:
 
         std::lock_guard<std::mutex> lock(queueMutex);
         queue.insert(std::make_pair(std::move(key), std::move(item)));
-
-        return queue.size();
     }
 
     std::shared_ptr<ImmutableMessage> getNextMessageFor(const T& key)

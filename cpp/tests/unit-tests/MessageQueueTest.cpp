@@ -59,25 +59,29 @@ TEST_F(MessageQueueTest, addMultipleMessages) {
     mutableMsg1.setExpiryDate(expiryDate);
     auto immutableMsg1 = mutableMsg1.getImmutableMessage();
     auto recipient1 = immutableMsg1->getRecipient();
-    EXPECT_EQ(messageQueue.queueMessage(recipient1, std::move(immutableMsg1)), 1);
+    messageQueue.queueMessage(recipient1, std::move(immutableMsg1));
+    EXPECT_EQ(1, messageQueue.getQueueLength());
 
     MutableMessage mutableMsg2;
     mutableMsg2.setExpiryDate(expiryDate);
     auto immutableMsg2 = mutableMsg2.getImmutableMessage();
     auto recipient2 = immutableMsg2->getRecipient();
-    EXPECT_EQ(messageQueue.queueMessage(recipient2, std::move(immutableMsg2)), 2);
+    messageQueue.queueMessage(recipient2, std::move(immutableMsg2));
+    EXPECT_EQ(2, messageQueue.getQueueLength());
 
     MutableMessage mutableMsg3;
     mutableMsg3.setExpiryDate(expiryDate);
     auto immutableMsg3 = mutableMsg3.getImmutableMessage();
     auto recipient3 = immutableMsg3->getRecipient();
-    EXPECT_EQ(messageQueue.queueMessage(recipient3, std::move(immutableMsg3)), 3);
+    messageQueue.queueMessage(recipient3, std::move(immutableMsg3));
+    EXPECT_EQ(3, messageQueue.getQueueLength());
 
     MutableMessage mutableMsg4;
     mutableMsg4.setExpiryDate(expiryDate);
     auto immutableMsg4 = mutableMsg4.getImmutableMessage();
     auto recipient4 = immutableMsg4->getRecipient();
-    EXPECT_EQ(messageQueue.queueMessage(recipient4, std::move(immutableMsg4)), 4);
+    messageQueue.queueMessage(recipient4, std::move(immutableMsg4));
+    EXPECT_EQ(4, messageQueue.getQueueLength());
 }
 
 TEST_F(MessageQueueTest, queueDequeueMessages) {
