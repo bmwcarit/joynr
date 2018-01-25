@@ -75,6 +75,7 @@ public:
     }
 
     ~BroadcastSubscriptionTest() {
+        dispatcher->shutdown();
         singleThreadIOService->stop();
     }
 

@@ -43,7 +43,6 @@ class PersistencyCreationTest : public testing::Test
 {
 public:
     PersistencyCreationTest() :
-        runtime(nullptr),
         testProvider(nullptr),
         testProxy(nullptr),
         domain("PersistencyCreationTest"),
@@ -64,7 +63,7 @@ public:
         testProvider = std::make_shared<MockTestProvider>();
         providerParticipantId = ccRuntime->registerProvider<tests::testProvider>(domain, testProvider, providerQos);
 
-        // Create a proxy on runtimeAcOFF
+        // Create a proxy
         auto testProxyBuilder = ccRuntime->createProxyBuilder<tests::testProxy>(domain);
         DiscoveryQos discoveryQos;
         discoveryQos.setDiscoveryScope(types::DiscoveryScope::LOCAL_ONLY);
@@ -88,6 +87,7 @@ public:
     {
         testProxy.reset();
         ccRuntime->unregisterProvider(providerParticipantId);
+        ccRuntime->shutdown();
 
         test::util::resetAndWaitUntilDestroyed(testProvider);
         test::util::resetAndWaitUntilDestroyed(ccRuntime);
@@ -99,7 +99,6 @@ public:
     }
 
 protected:
-    std::shared_ptr<JoynrRuntime> runtime;
     std::shared_ptr<JoynrClusterControllerRuntime> ccRuntime;
 
     std::shared_ptr<MockTestProvider> testProvider;

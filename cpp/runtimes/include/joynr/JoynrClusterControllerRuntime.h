@@ -218,6 +218,7 @@ private:
     std::string providerReregistrationControllerParticipantId;
     std::string messageNotificationProviderParticipantId;
     std::string accessControlListEditorProviderParticipantId;
+    bool isShuttingDown;
 };
 
 } // namespace joynr
