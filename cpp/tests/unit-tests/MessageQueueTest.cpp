@@ -46,6 +46,14 @@ protected:
     MessageQueue<std::string> messageQueue;
     JoynrTimePoint expiryDate;
 
+    void createAndQueueMessage(const JoynrTimePoint& expiryDate) {
+        MutableMessage mutableMsg;
+        mutableMsg.setExpiryDate(expiryDate);
+        auto immutableMessage = mutableMsg.getImmutableMessage();
+        auto recipient = immutableMessage->getRecipient();
+        messageQueue.queueMessage(recipient, std::move(immutableMessage));
+    }
+
 private:
     DISALLOW_COPY_AND_ASSIGN(MessageQueueTest);
 };
@@ -55,32 +63,16 @@ TEST_F(MessageQueueTest, initialQueueIsEmpty) {
 }
 
 TEST_F(MessageQueueTest, addMultipleMessages) {
-    MutableMessage mutableMsg1;
-    mutableMsg1.setExpiryDate(expiryDate);
-    auto immutableMsg1 = mutableMsg1.getImmutableMessage();
-    auto recipient1 = immutableMsg1->getRecipient();
-    messageQueue.queueMessage(recipient1, std::move(immutableMsg1));
+    createAndQueueMessage(expiryDate);
     EXPECT_EQ(1, messageQueue.getQueueLength());
 
-    MutableMessage mutableMsg2;
-    mutableMsg2.setExpiryDate(expiryDate);
-    auto immutableMsg2 = mutableMsg2.getImmutableMessage();
-    auto recipient2 = immutableMsg2->getRecipient();
-    messageQueue.queueMessage(recipient2, std::move(immutableMsg2));
+    createAndQueueMessage(expiryDate);
     EXPECT_EQ(2, messageQueue.getQueueLength());
 
-    MutableMessage mutableMsg3;
-    mutableMsg3.setExpiryDate(expiryDate);
-    auto immutableMsg3 = mutableMsg3.getImmutableMessage();
-    auto recipient3 = immutableMsg3->getRecipient();
-    messageQueue.queueMessage(recipient3, std::move(immutableMsg3));
+    createAndQueueMessage(expiryDate);
     EXPECT_EQ(3, messageQueue.getQueueLength());
 
-    MutableMessage mutableMsg4;
-    mutableMsg4.setExpiryDate(expiryDate);
-    auto immutableMsg4 = mutableMsg4.getImmutableMessage();
-    auto recipient4 = immutableMsg4->getRecipient();
-    messageQueue.queueMessage(recipient4, std::move(immutableMsg4));
+    createAndQueueMessage(expiryDate);
     EXPECT_EQ(4, messageQueue.getQueueLength());
 }
 
