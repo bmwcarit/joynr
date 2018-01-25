@@ -42,18 +42,21 @@ LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(std::unique_ptr<Settings> set
         : LibJoynrRuntime(std::move(settings), std::move(keyChain)),
           wsSettings(*this->settings),
           websocket(nullptr),
-          initializationMsg()
+          initializationMsg(),
+          isShuttingDown(false)
 {
     createWebsocketClient();
 }
 
 LibJoynrWebSocketRuntime::~LibJoynrWebSocketRuntime()
 {
-    shutdown();
+    assert(isShuttingDown);
 }
 
 void LibJoynrWebSocketRuntime::shutdown()
 {
+    assert(!isShuttingDown);
+    isShuttingDown = true;
     assert(websocket);
     websocket->stop();
 
