@@ -1,6 +1,10 @@
 # joynr 0.34.0
 
 ## Other changes
+* **[C++]** It is now possible to add a limit to the message queue. When this limit
+  is reached, the message with the smallest TTL will be removed. By default
+  the limit is disabled and can be enabled with the property:
+  * `cluster-controller/message-queue-limit`
 * **[JS]** Updated wscpp version to 0.2.7
 * **[JS]** Verify arrays with Array.isArray() built-in function instead of
   "object.constructor === Array".
