@@ -19,6 +19,6 @@ This project has dependencies to:
   Hamcrest Core under New BSD License
   io.joynr.java.backend-services:discovery-directory-jee under The Apache Software License, Version 2.0
   io.joynr.java.backend-services:domain-access-controller-jee under The Apache Software License, Version 2.0
-  JUnit under Common Public License Version 1.0
+  JUnit under Eclipse Public License 1.0
   radio-jee-backend-services under The Apache Software License, Version 2.0
 
