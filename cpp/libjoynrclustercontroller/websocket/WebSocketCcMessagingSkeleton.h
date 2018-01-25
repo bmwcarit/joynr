@@ -84,12 +84,10 @@ public:
             : IWebsocketCcMessagingSkeleton(),
               std::enable_shared_from_this<WebSocketCcMessagingSkeleton<Config>>(),
               ioService(ioService),
+              webSocketPpSingleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
               endpoint(),
               clientsMutex(),
               clients(),
-              webSocketPpSingleThreadedIOServiceDestructed(std::make_shared<Semaphore>(0)),
-              webSocketPpSingleThreadedIOService(std::make_shared<SingleThreadedIOService>(
-                      webSocketPpSingleThreadedIOServiceDestructed)),
               receiver(),
               messageRouter(std::move(messageRouter)),
               messagingStubFactory(std::move(messagingStubFactory)),
@@ -145,10 +143,21 @@ public:
     /**
      * @brief Destructor
      */
-    ~WebSocketCcMessagingSkeleton() override = default;
+    ~WebSocketCcMessagingSkeleton() override
+    {
+        // make sure shutdown() has been invoked earlier
+        assert(shuttingDown);
+    }
 
     void shutdown() override
     {
+        // make sure shutdown() is called only once
+        {
+            std::lock_guard<std::mutex> lock(clientsMutex);
+            assert(!shuttingDown);
+            shuttingDown = true;
+        }
+
         websocketpp::lib::error_code shutdownError;
         endpoint.stop_listening(shutdownError);
         if (shutdownError) {
@@ -157,10 +166,6 @@ public:
                             shutdownError.message());
         }
 
-        {
-            std::lock_guard<std::mutex> lock(clientsMutex);
-            shuttingDown = true;
-        }
         for (const auto& elem : clients) {
             websocketpp::lib::error_code websocketError;
             endpoint.close(elem.first, websocketpp::close::status::normal, "", websocketError);
@@ -173,11 +178,14 @@ public:
             }
         }
 
-        if (webSocketPpSingleThreadedIOService) {
-            webSocketPpSingleThreadedIOService->stop();
-            webSocketPpSingleThreadedIOService.reset();
-            webSocketPpSingleThreadedIOServiceDestructed->wait();
-        }
+        // prior to destruction of the endpoint, the background thread
+        // under direct control of the webSocketPpSingleThreadedIOService
+        // must have finished its work, thus wait for it here;
+        // however do not destruct the ioService since it is still
+        // referenced within the endpoint by an internally created
+        // thread from tcp::resolver which is joined by the endpoint
+        // destructor
+        webSocketPpSingleThreadedIOService->stop();
     }
 
     void transmit(
@@ -198,6 +206,7 @@ protected:
 
     ADD_LOGGER(WebSocketCcMessagingSkeleton)
     boost::asio::io_service& ioService;
+    std::shared_ptr<SingleThreadedIOService> webSocketPpSingleThreadedIOService;
     Server endpoint;
 
     virtual bool validateIncomingMessage(const ConnectionHandle& hdl,
@@ -358,7 +367,6 @@ private:
     }
 
     std::shared_ptr<Semaphore> webSocketPpSingleThreadedIOServiceDestructed;
-    std::shared_ptr<SingleThreadedIOService> webSocketPpSingleThreadedIOService;
     WebSocketPpReceiver<Server> receiver;
 
     /*! Router for incoming messages */
@@ -366,7 +374,7 @@ private:
     /*! Factory to build outgoing messaging stubs */
     std::shared_ptr<WebSocketMessagingStubFactory> messagingStubFactory;
     std::uint16_t port;
-    bool shuttingDown;
+    std::atomic<bool> shuttingDown;
 
     DISALLOW_COPY_AND_ASSIGN(WebSocketCcMessagingSkeleton);
 };
