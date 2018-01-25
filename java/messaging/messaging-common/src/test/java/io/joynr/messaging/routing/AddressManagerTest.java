@@ -42,7 +42,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class AddressManagerTest {
     private static final String NO_PRIMARY_GLOBAL_TRANSPORT_SELECTED = null;
-    private static final String PRIMARY_GLOBAL_TRANSPORT_MQTT = "mqtt";
+    private static final String GLOBAL_TRANSPORT_MQTT = "mqtt";
 
     @Mock
     private RoutingTable routingTable;
@@ -84,7 +84,7 @@ public class AddressManagerTest {
         when(routingTable.getIsGloballyVisible(participantId)).thenReturn(true);
         when(joynrMessage.getRecipient()).thenReturn(participantId + "/multicastname");
         when(joynrMessage.getSender()).thenReturn(participantId);
-        when(multicastAddressCalculator.supports(PRIMARY_GLOBAL_TRANSPORT_MQTT)).thenReturn(true);
+        when(multicastAddressCalculator.supports(GLOBAL_TRANSPORT_MQTT)).thenReturn(true);
         when(multicastAddressCalculator.createsGlobalTransportAddresses()).thenReturn(true);
         when(multicastAddressCalculator.calculate(joynrMessage)).thenReturn(address);
 
@@ -107,11 +107,9 @@ public class AddressManagerTest {
     @Test
     public void testGetAddressFromMultipleCalculators() {
         MulticastAddressCalculator anotherMulticastAddressCalculator = mock(MulticastAddressCalculator.class);
-        when(anotherMulticastAddressCalculator.supports(PRIMARY_GLOBAL_TRANSPORT_MQTT)).thenReturn(true);
+        when(anotherMulticastAddressCalculator.supports(GLOBAL_TRANSPORT_MQTT)).thenReturn(true);
         when(anotherMulticastAddressCalculator.calculate(joynrMessage)).thenReturn(address);
-        createAddressManager(PRIMARY_GLOBAL_TRANSPORT_MQTT,
-                             multicastAddressCalculator,
-                             anotherMulticastAddressCalculator);
+        createAddressManager(GLOBAL_TRANSPORT_MQTT, multicastAddressCalculator, anotherMulticastAddressCalculator);
 
         when(routingTable.getIsGloballyVisible(participantId)).thenReturn(true);
         when(joynrMessage.getSender()).thenReturn(participantId);
@@ -125,7 +123,7 @@ public class AddressManagerTest {
 
     @Test
     public void testGetLocalMulticastParticipantAddresses() {
-        createAddressManager(PRIMARY_GLOBAL_TRANSPORT_MQTT, multicastAddressCalculator);
+        createAddressManager(GLOBAL_TRANSPORT_MQTT, multicastAddressCalculator);
 
         when(joynrMessage.isReceivedFromGlobal()).thenReturn(true);
         when(joynrMessage.getSender()).thenReturn("from");
@@ -137,7 +135,7 @@ public class AddressManagerTest {
         when(routingTable.get("one")).thenReturn(addressOne);
         Address addressTwo = mock(Address.class);
         when(routingTable.get("two")).thenReturn(addressTwo);
-        when(multicastAddressCalculator.supports(PRIMARY_GLOBAL_TRANSPORT_MQTT)).thenReturn(true);
+        when(multicastAddressCalculator.supports(GLOBAL_TRANSPORT_MQTT)).thenReturn(true);
 
         Set<Address> result = subject.getAddresses(joynrMessage);
         assertNotNull(result);
@@ -166,7 +164,7 @@ public class AddressManagerTest {
 
     @Test
     public void testGetLocalAndGlobalAddressesForGloballyVisibleProvider() {
-        createAddressManager(PRIMARY_GLOBAL_TRANSPORT_MQTT, multicastAddressCalculator);
+        createAddressManager(GLOBAL_TRANSPORT_MQTT, multicastAddressCalculator);
 
         String multicastId = participantId + "/to";
         when(joynrMessage.getSender()).thenReturn(participantId);
@@ -177,7 +175,7 @@ public class AddressManagerTest {
         Address localAddress = mock(Address.class);
         when(routingTable.get("one")).thenReturn(localAddress);
         Address globalAddress = mock(Address.class);
-        when(multicastAddressCalculator.supports(PRIMARY_GLOBAL_TRANSPORT_MQTT)).thenReturn(true);
+        when(multicastAddressCalculator.supports(GLOBAL_TRANSPORT_MQTT)).thenReturn(true);
         when(multicastAddressCalculator.createsGlobalTransportAddresses()).thenReturn(true);
         when(multicastAddressCalculator.calculate(joynrMessage)).thenReturn(globalAddress);
 
@@ -190,7 +188,7 @@ public class AddressManagerTest {
 
     @Test
     public void testGetLocalAndGlobalAddressesForGloballyInvisibleProvider() {
-        createAddressManager(PRIMARY_GLOBAL_TRANSPORT_MQTT, multicastAddressCalculator);
+        createAddressManager(GLOBAL_TRANSPORT_MQTT, multicastAddressCalculator);
 
         when(joynrMessage.getSender()).thenReturn("participantId");
         String multicastId = participantId + "/to";
@@ -201,7 +199,7 @@ public class AddressManagerTest {
         Address localAddress = mock(Address.class);
         when(routingTable.get("one")).thenReturn(localAddress);
         Address globalAddress = mock(Address.class);
-        when(multicastAddressCalculator.supports(PRIMARY_GLOBAL_TRANSPORT_MQTT)).thenReturn(true);
+        when(multicastAddressCalculator.supports(GLOBAL_TRANSPORT_MQTT)).thenReturn(true);
         when(multicastAddressCalculator.createsGlobalTransportAddresses()).thenReturn(true);
         when(multicastAddressCalculator.calculate(joynrMessage)).thenReturn(globalAddress);
 
@@ -214,7 +212,7 @@ public class AddressManagerTest {
 
     @Test
     public void testGetLocalAndGlobalAddressesForNonExistingProvider() {
-        createAddressManager(PRIMARY_GLOBAL_TRANSPORT_MQTT, multicastAddressCalculator);
+        createAddressManager(GLOBAL_TRANSPORT_MQTT, multicastAddressCalculator);
 
         when(joynrMessage.getSender()).thenReturn("participantId");
         String multicastId = participantId + "/to";
@@ -225,7 +223,7 @@ public class AddressManagerTest {
         Address localAddress = mock(Address.class);
         when(routingTable.get("one")).thenReturn(localAddress);
         Address globalAddress = mock(Address.class);
-        when(multicastAddressCalculator.supports(PRIMARY_GLOBAL_TRANSPORT_MQTT)).thenReturn(true);
+        when(multicastAddressCalculator.supports(GLOBAL_TRANSPORT_MQTT)).thenReturn(true);
         when(multicastAddressCalculator.createsGlobalTransportAddresses()).thenReturn(true);
         when(multicastAddressCalculator.calculate(joynrMessage)).thenReturn(globalAddress);
 
