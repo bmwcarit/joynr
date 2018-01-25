@@ -41,7 +41,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AddressManagerTest {
-    private static final String NO_PRIMARY_GLOBAL_TRANSPORT = null;
+    private static final String NO_PRIMARY_GLOBAL_TRANSPORT_SELECTED = null;
     private static final String PRIMARY_GLOBAL_TRANSPORT_MQTT = "mqtt";
 
     @Mock
@@ -71,7 +71,7 @@ public class AddressManagerTest {
 
     @Test
     public void testNoAddressAvailableForMulticast() {
-        createAddressManager(NO_PRIMARY_GLOBAL_TRANSPORT);
+        createAddressManager(NO_PRIMARY_GLOBAL_TRANSPORT_SELECTED);
 
         Set<Address> result = subject.getAddresses(joynrMessage);
         assertEquals(0, result.size());
@@ -79,7 +79,7 @@ public class AddressManagerTest {
 
     @Test
     public void testGetMulticastAddressFromSingleCalculatorForGloballyVisibleProvider() {
-        createAddressManager(NO_PRIMARY_GLOBAL_TRANSPORT, multicastAddressCalculator);
+        createAddressManager(NO_PRIMARY_GLOBAL_TRANSPORT_SELECTED, multicastAddressCalculator);
 
         when(routingTable.getIsGloballyVisible(participantId)).thenReturn(true);
         when(joynrMessage.getRecipient()).thenReturn(participantId + "/multicastname");
@@ -97,7 +97,9 @@ public class AddressManagerTest {
     @Test(expected = JoynrIllegalStateException.class)
     public void testMultipleCalculatorsNoPrimaryGlobalTransport() {
         MulticastAddressCalculator anotherMulticastAddressCalculator = mock(MulticastAddressCalculator.class);
-        createAddressManager(NO_PRIMARY_GLOBAL_TRANSPORT, multicastAddressCalculator, anotherMulticastAddressCalculator);
+        createAddressManager(NO_PRIMARY_GLOBAL_TRANSPORT_SELECTED,
+                             multicastAddressCalculator,
+                             anotherMulticastAddressCalculator);
 
         subject.getAddresses(joynrMessage);
     }
@@ -146,7 +148,7 @@ public class AddressManagerTest {
 
     @Test
     public void testGetLocalMulticastParticipantWithoutGlobalTransports() {
-        createAddressManager(NO_PRIMARY_GLOBAL_TRANSPORT);
+        createAddressManager(NO_PRIMARY_GLOBAL_TRANSPORT_SELECTED);
 
         when(joynrMessage.getSender()).thenReturn("from");
         String multicastId = "from/to";
@@ -236,7 +238,7 @@ public class AddressManagerTest {
 
     @Test
     public void testGetMulticastAddressFromSingleCalculatorForGloballyInvisibleProvider() {
-        createAddressManager(NO_PRIMARY_GLOBAL_TRANSPORT, multicastAddressCalculator);
+        createAddressManager(NO_PRIMARY_GLOBAL_TRANSPORT_SELECTED, multicastAddressCalculator);
 
         when(routingTable.getIsGloballyVisible(participantId)).thenReturn(false);
         when(joynrMessage.getSender()).thenReturn(participantId + "/multicastname");
@@ -249,7 +251,7 @@ public class AddressManagerTest {
 
     @Test
     public void testGetMulticastAddressFromSingleCalculatorForGloballyInvisibleProviderNoGlobalTransport() {
-        createAddressManager(NO_PRIMARY_GLOBAL_TRANSPORT, multicastAddressCalculator);
+        createAddressManager(NO_PRIMARY_GLOBAL_TRANSPORT_SELECTED, multicastAddressCalculator);
 
         when(routingTable.getIsGloballyVisible(participantId)).thenReturn(false);
         when(joynrMessage.getSender()).thenReturn(participantId + "/multicastname");
@@ -262,7 +264,7 @@ public class AddressManagerTest {
 
     @Test
     public void testGetMulticastAddressGlobalVisibilityCheckThrowsException() {
-        createAddressManager(NO_PRIMARY_GLOBAL_TRANSPORT, multicastAddressCalculator);
+        createAddressManager(NO_PRIMARY_GLOBAL_TRANSPORT_SELECTED, multicastAddressCalculator);
 
         when(joynrMessage.getSender()).thenReturn(participantId + "/multicastname");
         when(routingTable.getIsGloballyVisible(participantId)).thenThrow(new JoynrRuntimeException());
