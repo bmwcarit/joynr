@@ -67,8 +67,14 @@ public:
     {
         const bool deleteChannel = true;
         clusterControllerRuntime->stop(deleteChannel);
+        clusterControllerRuntime->shutdown();
+        libjoynrProxyRuntime->shutdown();
 
         libjoynrProxyRuntime.reset();
+        if (libjoynrProviderRuntime) {
+            libjoynrProviderRuntime->shutdown();
+            libjoynrProviderRuntime.reset();
+        }
         clusterControllerRuntime.reset();
 
         // Delete persisted files
@@ -149,6 +155,7 @@ TEST_F(MessageNotificationTest, messageToDisconnectedProviderCausesBroadcast) {
     future->get(subscriptionId);
 
     // 4. disconnect provider runtime
+    libjoynrProviderRuntime->shutdown();
     libjoynrProviderRuntime.reset();
 
     // 5. execute call on proxy while provider is not connected to cluster-controller

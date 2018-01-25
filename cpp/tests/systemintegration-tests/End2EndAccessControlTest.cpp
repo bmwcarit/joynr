@@ -87,9 +87,7 @@ public:
     ~End2EndAccessControlTest() override {
         runtimeAcON->unregisterProvider(providerParticipantId);
 
-        runtimeAcON->shutdown();
         test::util::resetAndWaitUntilDestroyed(runtimeAcON);
-        runtimeAcOFF->shutdown();
         test::util::resetAndWaitUntilDestroyed(runtimeAcOFF);
 
         // Delete test specific files

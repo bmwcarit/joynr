@@ -9,6 +9,14 @@
 * **[JS]** Verify arrays with Array.isArray() built-in function instead of
   "object.constructor === Array".
 
+# joynr 0.33.1
+
+## API relevant change
+None.
+
+## Other changes
+* **[C++]** fixed crash that could occur during shutdown of joynr runtime
+
 # joynr 0.33.0
 
 ## API relevant change

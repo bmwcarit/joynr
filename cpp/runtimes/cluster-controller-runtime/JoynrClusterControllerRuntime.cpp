@@ -155,7 +155,8 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
           providerReregistrationControllerParticipantId(
                   "providerReregistrationController_participantId"),
           messageNotificationProviderParticipantId(),
-          accessControlListEditorProviderParticipantId()
+          accessControlListEditorProviderParticipantId(),
+          isShuttingDown(false)
 {
 }
 
@@ -849,7 +850,7 @@ void JoynrClusterControllerRuntime::startLocalCommunication()
 JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime()
 {
     JOYNR_LOG_TRACE(logger(), "entering ~JoynrClusterControllerRuntime");
-    shutdown();
+    assert(isShuttingDown);
     JOYNR_LOG_TRACE(logger(), "leaving ~JoynrClusterControllerRuntime");
 }
 
@@ -892,6 +893,8 @@ void JoynrClusterControllerRuntime::stopExternalCommunication()
 
 void JoynrClusterControllerRuntime::shutdown()
 {
+    assert(!isShuttingDown);
+    isShuttingDown = true;
     std::lock_guard<std::mutex> lock(proxyBuildersMutex);
     for (auto proxyBuilder : proxyBuilders) {
         proxyBuilder->stop();

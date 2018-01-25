@@ -35,5 +35,6 @@ TEST(LibJoynrRuntimeTest, destroyRuntimeWithoutInitCall)
     // The init method won't be called until a websocket connection is established.
     // Therefore the destructor must be able to deinitialize the object correctly
     // when most members were not initialized yet.
-    joynr::LibJoynrWebSocketRuntime runtime(std::move(settings));
+    auto runtime = std::make_shared<joynr::LibJoynrWebSocketRuntime>(std::move(settings));
+    runtime->shutdown();
 }

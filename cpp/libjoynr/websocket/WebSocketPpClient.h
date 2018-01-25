@@ -53,10 +53,8 @@ public:
     using ConnectionPtr = typename Client::connection_ptr;
 
     WebSocketPpClient(const WebSocketSettings& wsSettings, boost::asio::io_service& ioService)
-            : endpoint(),
-              webSocketPpSingleThreadedIOServiceDestructed(std::make_shared<Semaphore>(0)),
-              webSocketPpSingleThreadedIOService(std::make_shared<SingleThreadedIOService>(
-                      webSocketPpSingleThreadedIOServiceDestructed)),
+            : webSocketPpSingleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
+              endpoint(),
               connection(),
               isRunning(true),
               reconnectTimer(ioService),
@@ -65,7 +63,9 @@ public:
               address(),
               reconnectSleepTimeMs(wsSettings.getReconnectSleepTimeMs()),
               sender(nullptr),
-              receiver()
+              receiver(),
+              isShuttingDown(false),
+              isShuttingDownLock()
     {
         webSocketPpSingleThreadedIOService->start();
         boost::asio::io_service& endpointIoService =
@@ -102,20 +102,27 @@ public:
 
     ~WebSocketPpClient() override
     {
-        stop();
+        // make sure stop() has been invoked earlier
+        assert(isShuttingDown);
     }
 
     void stop() final
     {
+        // make sure stop() is not called multiple times
+        std::lock_guard<std::mutex> lock(isShuttingDownLock);
+        assert(!isShuttingDown);
+        isShuttingDown = true;
+
         endpoint.stop_perpetual();
         close();
         // prior to destruction of the endpoint, the background thread
-        // must have finished its work, thus wait for it here
-        if (webSocketPpSingleThreadedIOService) {
-            webSocketPpSingleThreadedIOService->stop();
-            webSocketPpSingleThreadedIOService.reset();
-            webSocketPpSingleThreadedIOServiceDestructed->wait();
-        }
+        // under direct control of the webSocketPpSingleThreadedIOService
+        // must have finished its work, thus wait for it here;
+        // however do not destruct the ioService since it is still
+        // referenced within the endpoint by an internally created
+        // thread from tcp::resolver which is joined by the endpoint
+        // destructor
+        webSocketPpSingleThreadedIOService->stop();
     }
 
     void registerConnectCallback(std::function<void()> callback) final
@@ -196,6 +203,7 @@ public:
 protected:
     enum class State { Disconnected, Disconnecting, Connecting, Connected };
 
+    std::shared_ptr<SingleThreadedIOService> webSocketPpSingleThreadedIOService;
     Client endpoint;
     ADD_LOGGER(WebSocketPpClient)
 
@@ -321,8 +329,6 @@ private:
         }
     }
 
-    std::shared_ptr<Semaphore> webSocketPpSingleThreadedIOServiceDestructed;
-    std::shared_ptr<SingleThreadedIOService> webSocketPpSingleThreadedIOService;
     ConnectionHandle connection;
     std::atomic<bool> isRunning;
     boost::asio::steady_timer reconnectTimer;
@@ -339,6 +345,8 @@ private:
 
     std::shared_ptr<WebSocketPpSender<Client>> sender;
     WebSocketPpReceiver<Client> receiver;
+    std::atomic<bool> isShuttingDown;
+    std::mutex isShuttingDownLock;
 };
 
 } // namespace joynr

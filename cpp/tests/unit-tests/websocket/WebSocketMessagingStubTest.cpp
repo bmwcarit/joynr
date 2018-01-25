@@ -131,6 +131,7 @@ public:
     }
 
     ~WebSocketMessagingStubTest() {
+        webSocket->stop();
         singleThreadedIOService->stop();
     }
 
