@@ -40,4 +40,11 @@ public interface MulticastAddressCalculator {
      * @return <code>true</code> if it does, <code>false</code> otherwise.
      */
     boolean supports(String transport);
+
+    /**
+     * Used to determine if the addresses created by this calculator are global transport addresses.
+     *
+     * @return <code>true</code> if it does, <code>false</code> otherwise.
+     */
+    boolean createsGlobalTransportAddresses();
 }

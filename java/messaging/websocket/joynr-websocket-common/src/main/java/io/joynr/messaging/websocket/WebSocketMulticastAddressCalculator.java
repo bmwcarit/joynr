@@ -46,4 +46,9 @@ public class WebSocketMulticastAddressCalculator implements MulticastAddressCalc
     public boolean supports(String transport) {
         return transport != null && transport.toLowerCase().contains("websocket");
     }
+
+    @Override
+    public boolean createsGlobalTransportAddresses() {
+        return false;
+    }
 }
