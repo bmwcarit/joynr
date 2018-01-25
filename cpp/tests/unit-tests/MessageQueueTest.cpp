@@ -76,6 +76,39 @@ TEST_F(MessageQueueTest, addMultipleMessages) {
     EXPECT_EQ(4, messageQueue.getQueueLength());
 }
 
+TEST_F(MessageQueueTest, removeExpiredMessages_AllMessagesExpired) {
+    const JoynrTimePoint zeroTimepoint(std::chrono::milliseconds::zero());
+
+    createAndQueueMessage(zeroTimepoint);
+    createAndQueueMessage(zeroTimepoint);
+    EXPECT_EQ(2, messageQueue.getQueueLength());
+
+    messageQueue.removeOutdatedMessages();
+    EXPECT_EQ(0, messageQueue.getQueueLength());
+}
+
+TEST_F(MessageQueueTest, removeExpiredMessages_SomeMessagesExpired) {
+    const JoynrTimePoint zeroTimepoint(std::chrono::milliseconds::zero());
+
+    createAndQueueMessage(zeroTimepoint);
+    createAndQueueMessage(zeroTimepoint);
+    createAndQueueMessage(expiryDate);
+    createAndQueueMessage(expiryDate);
+    EXPECT_EQ(4, messageQueue.getQueueLength());
+
+    messageQueue.removeOutdatedMessages();
+    EXPECT_EQ(2, messageQueue.getQueueLength());
+}
+
+TEST_F(MessageQueueTest, removeExpiredMessages_NoMessageExpired) {
+    createAndQueueMessage(expiryDate);
+    createAndQueueMessage(expiryDate);
+    EXPECT_EQ(2, messageQueue.getQueueLength());
+
+    messageQueue.removeOutdatedMessages();
+    EXPECT_EQ(2, messageQueue.getQueueLength());
+}
+
 TEST_F(MessageQueueTest, queueDequeueMessages) {
     // add messages to the queue
     MutableMessage mutableMsg1;

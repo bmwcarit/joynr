@@ -20,10 +20,14 @@
 #define MESSAGEQUEUE_H
 
 #include <cstdint>
-#include <map>
 #include <memory>
 #include <mutex>
 #include <string>
+
+#include <boost/multi_index_container.hpp>
+#include <boost/multi_index/hashed_index.hpp>
+#include <boost/multi_index/member.hpp>
+#include <boost/multi_index/ordered_index.hpp>
 
 #include "joynr/ContentWithDecayTime.h"
 #include "joynr/JoynrExport.h"
@@ -34,6 +38,12 @@
 namespace joynr
 {
 using MessageQueueItem = ContentWithDecayTime<std::shared_ptr<ImmutableMessage>>;
+
+namespace messagequeuetags
+{
+struct key;
+struct ttlAbsolute;
+}
 
 template <typename T>
 class JOYNR_EXPORT MessageQueue
@@ -47,13 +57,15 @@ public:
     std::size_t getQueueLength() const
     {
         std::lock_guard<std::mutex> lock(queueMutex);
-        return queue.size();
+        return boost::multi_index::get<messagequeuetags::key>(queue).size();
     }
 
     void queueMessage(T key, std::shared_ptr<ImmutableMessage> message)
     {
-        JoynrTimePoint absTtl = message->getExpiryDate();
-        auto item = std::make_unique<MessageQueueItem>(std::move(message), absTtl);
+        MessageQueueItem item;
+        item.key = std::move(key);
+        item.ttlAbsolute = message->getExpiryDate();
+        item.message = std::move(message);
 
         if (messageQueueLimit > 0)
             if (getQueueLength() == messageQueueLimit) {
@@ -61,15 +73,17 @@ public:
             }
 
         std::lock_guard<std::mutex> lock(queueMutex);
-        queue.insert(std::make_pair(std::move(key), std::move(item)));
+        queue.insert(std::move(item));
     }
 
     std::shared_ptr<ImmutableMessage> getNextMessageFor(const T& key)
     {
         std::lock_guard<std::mutex> lock(queueMutex);
-        auto queueElement = queue.find(key);
-        if (queueElement != queue.end()) {
-            auto message = std::move(queueElement->second->getContent());
+        auto& keyIndex = boost::multi_index::get<messagequeuetags::key>(queue);
+
+        auto queueElement = keyIndex.find(key);
+        if (queueElement != keyIndex.cend()) {
+            auto message = std::move(queueElement->message);
             queue.erase(queueElement);
             return message;
         }
@@ -84,25 +98,39 @@ public:
             return;
         }
 
-        JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(
-                std::chrono::system_clock::now());
+        auto& ttlIndex = boost::multi_index::get<messagequeuetags::ttlAbsolute>(queue);
 
-        for (auto queueIterator = queue.begin(); queueIterator != queue.end();) {
-            if (queueIterator->second->getDecayTime() < now) {
-                queueIterator = queue.erase(queueIterator);
-            } else {
-                ++queueIterator;
-            }
-        }
+        const JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(
+                std::chrono::system_clock::now());
+        auto onePastOutdatedMsgIt = ttlIndex.lower_bound(now);
+
+        ttlIndex.erase(ttlIndex.begin(), onePastOutdatedMsgIt);
     }
 
 protected:
     DISALLOW_COPY_AND_ASSIGN(MessageQueue);
     ADD_LOGGER(MessageQueue);
 
-    // TODO should we replace by std::unordered_multimap?
-    // or a boost multi_index table because we need to store the TTL
-    std::multimap<T, std::unique_ptr<MessageQueueItem>> queue;
+    struct MessageQueueItem
+    {
+        T key;
+        JoynrTimePoint ttlAbsolute;
+        std::shared_ptr<ImmutableMessage> message;
+    };
+
+    using QueueMultiIndexContainer = boost::multi_index_container<
+            MessageQueueItem,
+            boost::multi_index::indexed_by<
+                    boost::multi_index::hashed_non_unique<
+                            boost::multi_index::tag<messagequeuetags::key>,
+                            BOOST_MULTI_INDEX_MEMBER(MessageQueueItem, T, key)>,
+                    boost::multi_index::ordered_non_unique<
+                            boost::multi_index::tag<messagequeuetags::ttlAbsolute>,
+                            BOOST_MULTI_INDEX_MEMBER(MessageQueueItem,
+                                                     JoynrTimePoint,
+                                                     ttlAbsolute)>>>;
+
+    QueueMultiIndexContainer queue;
     mutable std::mutex queueMutex;
 
 private:
@@ -111,22 +139,20 @@ private:
     void removeMessageWithLeastTtl()
     {
         std::lock_guard<std::mutex> lock(queueMutex);
-        assert(!queue.empty());
-
-        auto queueIteratorHold = queue.begin();
-        for (auto queueIterator = queue.begin(); queueIterator != queue.end(); queueIterator++) {
-            if (queueIterator->second->getDecayTime() < queueIteratorHold->second->getDecayTime()) {
-                queueIteratorHold = queueIterator;
-            }
+        if (queue.empty()) {
+            return;
         }
 
-        auto message = std::move(queueIteratorHold->second->getContent());
+        auto& ttlIndex = boost::multi_index::get<messagequeuetags::ttlAbsolute>(queue);
+        auto msgWithLowestTtl = ttlIndex.cbegin();
+        assert(msgWithLowestTtl != ttlIndex.cend());
+
         JOYNR_LOG_WARN(logger(),
                        "erasing message with id {} since queue limit of {} was reached",
-                       message->getId(),
+                       msgWithLowestTtl->message->getId(),
                        messageQueueLimit);
 
-        queue.erase(queueIteratorHold);
+        ttlIndex.erase(msgWithLowestTtl);
     }
 };
 } // namespace joynr
