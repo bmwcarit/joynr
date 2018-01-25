@@ -52,7 +52,7 @@ TEST(ProviderReregistrationControllerTest, queryProviderReregistrationController
     EXPECT_TRUE(finishedSemaphore.waitFor(std::chrono::seconds(10)));
 
     runtime->stop();
-    runtime = nullptr;
+    runtime->shutdown();
 }
 
 TEST(ProviderReregistrationControllerTest, queryProviderReregistrationControllerSucceedsOnWsRuntime)
@@ -79,7 +79,8 @@ TEST(ProviderReregistrationControllerTest, queryProviderReregistrationController
     providerReregistrationControllerProxy->triggerGlobalProviderReregistrationAsync([&finishedSemaphore]() { finishedSemaphore.notify(); }, [](const joynr::exceptions::JoynrRuntimeException&) { FAIL(); });
     EXPECT_TRUE(finishedSemaphore.waitFor(std::chrono::seconds(10)));
 
-    wsRuntime = nullptr;
+    wsRuntime->shutdown();
+    wsRuntime.reset();
     ccRuntime->stop();
-    ccRuntime = nullptr;
+    ccRuntime->shutdown();
 }
