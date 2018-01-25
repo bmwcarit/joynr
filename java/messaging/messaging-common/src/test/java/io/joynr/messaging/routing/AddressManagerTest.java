@@ -25,9 +25,6 @@ import static org.junit.Assert.assertFalse;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 
 import com.google.common.collect.Sets;
@@ -78,33 +75,6 @@ public class AddressManagerTest {
 
         Set<Address> result = subject.getAddresses(joynrMessage);
         assertEquals(0, result.size());
-    }
-
-    @Test
-    public void testNoAddressFoundForNonMulticastMessage() {
-        createAddressManager(NO_PRIMARY_GLOBAL_TRANSPORT);
-
-        // overwrite the message type
-        when(joynrMessage.getType()).thenReturn(getRandomNonMulticastMessageType());
-
-        Set<Address> result = subject.getAddresses(joynrMessage);
-        assertEquals(0, result.size());
-    }
-
-    @Test
-    public void testGetAddressFromRoutingTable() {
-        createAddressManager(NO_PRIMARY_GLOBAL_TRANSPORT);
-
-        when(routingTable.containsKey(participantId)).thenReturn(true);
-        when(routingTable.get(participantId)).thenReturn(address);
-        when(joynrMessage.getRecipient()).thenReturn(participantId);
-        // overwrite the message type
-        when(joynrMessage.getType()).thenReturn(getRandomNonMulticastMessageType());
-
-        Set<Address> result = subject.getAddresses(joynrMessage);
-        assertNotNull(result);
-        assertEquals(1, result.size());
-        assertEquals(address, result.iterator().next());
     }
 
     @Test
@@ -284,17 +254,5 @@ public class AddressManagerTest {
                                      new AddressManager.PrimaryGlobalTransportHolder(primaryGlobalTransport),
                                      Sets.newHashSet(multicastAddressCalculators),
                                      multicastReceiverRegistry);
-    }
-
-    private String getRandomNonMulticastMessageType() {
-        List<String> nonMulticastMessageType = new ArrayList<>();
-        nonMulticastMessageType.add(Message.VALUE_MESSAGE_TYPE_REQUEST);
-        nonMulticastMessageType.add(Message.VALUE_MESSAGE_TYPE_REPLY);
-        nonMulticastMessageType.add(Message.VALUE_MESSAGE_TYPE_PUBLICATION);
-        nonMulticastMessageType.add(Message.VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST);
-        nonMulticastMessageType.add(Message.VALUE_MESSAGE_TYPE_ONE_WAY);
-
-        Collections.shuffle(nonMulticastMessageType);
-        return nonMulticastMessageType.get(0);
     }
 }
