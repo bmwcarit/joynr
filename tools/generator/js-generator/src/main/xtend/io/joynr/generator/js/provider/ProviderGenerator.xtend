@@ -214,11 +214,7 @@ class ProviderGenerator extends InterfaceJsTemplate {
 					«ENDIF»
 					}
 				});
-				if (implementation.«eventName») {
-					implementation.«eventName».createBroadcastOutputParameters = this.«eventName».createBroadcastOutputParameters;
-					implementation.«eventName».fire = this.«eventName».fire;
-					implementation.«eventName».addBroadcastFilter = this.«eventName».addBroadcastFilter;
-				}
+                implementation.«eventName» = this.«eventName»;
 			«ENDFOR»
 
 			Object.defineProperty(this, 'checkImplementation', {
