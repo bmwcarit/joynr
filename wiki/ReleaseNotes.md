@@ -1,3 +1,12 @@
+# joynr 1.1.0-SNAPSHOT
+
+## API relevant changes
+None.
+
+## Other changes
+* **[C++]** moved settings `local-capabilities-directory-persistence-file` and
+  `local-capabilities-directory-persistency-enabled` from section [lib-joynr] to [cluster-controller].
+
 # joynr 1.0.2
 
 ## API relevant changes
