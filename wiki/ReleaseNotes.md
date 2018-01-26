@@ -5,6 +5,12 @@
   is reached, the message with the smallest TTL will be removed. By default
   the limit is disabled and can be enabled with the property:
   * `cluster-controller/message-queue-limit`
+* **[C++]** The message queue can also be limited per participant id (message's recipient).
+  If the limit for a certain recipient is reached, the message with the smallest TTL
+  for this recipient will be removed. By default the limit is disabled. In order to
+  enable it, set following property: `cluster-controller/per-participantid-message-queue-limit`.
+  The same limit value is used for all participant ids. This mechanism works in parallel
+  with the message queue limit set by `cluster-controller/message-queue-limit`.
 * **[JS]** Updated wscpp version to 0.2.7
 * **[JS]** Verify arrays with Array.isArray() built-in function instead of
   "object.constructor === Array".

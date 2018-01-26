@@ -67,6 +67,10 @@ void ClusterControllerSettings::checkSettings()
         setMessageQueueLimit(DEFAULT_MESSAGE_QUEUE_LIMIT());
     }
 
+    if (!settings.contains(SETTING_PER_PARTICIPANTID_MESSAGE_QUEUE_LIMIT())) {
+        setPerParticipantIdMessageQueueLimit(DEFAULT_PER_PARTICIPANTID_MESSAGE_QUEUE_LIMIT());
+    }
+
     if (!settings.contains(SETTING_MQTT_MULTICAST_TOPIC_PREFIX())) {
         setMqttMulticastTopicPrefix(DEFAULT_MQTT_MULTICAST_TOPIC_PREFIX());
     }
@@ -325,6 +329,11 @@ std::uint64_t ClusterControllerSettings::DEFAULT_MESSAGE_QUEUE_LIMIT()
     return 0;
 }
 
+std::uint64_t ClusterControllerSettings::DEFAULT_PER_PARTICIPANTID_MESSAGE_QUEUE_LIMIT()
+{
+    return 0;
+}
+
 const std::string& ClusterControllerSettings::DEFAULT_MQTT_MULTICAST_TOPIC_PREFIX()
 {
     static const std::string value("");
@@ -532,6 +541,12 @@ const std::string& ClusterControllerSettings::SETTING_MESSAGE_QUEUE_LIMIT()
     return value;
 }
 
+const std::string& ClusterControllerSettings::SETTING_PER_PARTICIPANTID_MESSAGE_QUEUE_LIMIT()
+{
+    static const std::string value("cluster-controller/per-participantid-message-queue-limit");
+    return value;
+}
+
 const std::string& ClusterControllerSettings::
         SETTING_LOCAL_DOMAIN_ACCESS_STORE_PERSISTENCE_FILENAME()
 {
@@ -564,6 +579,16 @@ std::uint64_t ClusterControllerSettings::getMessageQueueLimit() const
 void ClusterControllerSettings::setMessageQueueLimit(std::uint64_t limit)
 {
     settings.set(SETTING_MESSAGE_QUEUE_LIMIT(), limit);
+}
+
+std::uint64_t ClusterControllerSettings::getPerParticipantIdMessageQueueLimit() const
+{
+    return settings.get<std::uint64_t>(SETTING_PER_PARTICIPANTID_MESSAGE_QUEUE_LIMIT());
+}
+
+void ClusterControllerSettings::setPerParticipantIdMessageQueueLimit(std::uint64_t limit)
+{
+    settings.set(SETTING_PER_PARTICIPANTID_MESSAGE_QUEUE_LIMIT(), limit);
 }
 
 void ClusterControllerSettings::setAclEntriesDirectory(const std::string& directoryPath)
