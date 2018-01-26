@@ -96,10 +96,6 @@ void ClusterControllerSettings::checkSettings()
         settings.set(SETTING_ACCESS_CONTROL_AUDIT(), DEFAULT_ACCESS_CONTROL_AUDIT());
     }
 
-    if (!settings.contains(SETTING_MESSAGE_QUEUE_LIMIT())) {
-        settings.set(SETTING_MESSAGE_QUEUE_LIMIT(), DEFAULT_MESSAGE_QUEUE_LIMIT());
-    }
-
     if (isMqttTlsEnabled()) {
         if (!isMqttCertificateAuthorityCertificateFolderPathSet() &&
             !isMqttCertificateAuthorityPemFilenameSet()) {
