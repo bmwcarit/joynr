@@ -19,12 +19,14 @@
 #ifndef MESSAGEQUEUE_H
 #define MESSAGEQUEUE_H
 
+#include <algorithm>
 #include <cstdint>
 #include <memory>
 #include <mutex>
 #include <string>
 
 #include <boost/multi_index_container.hpp>
+#include <boost/multi_index/composite_key.hpp>
 #include <boost/multi_index/hashed_index.hpp>
 #include <boost/multi_index/member.hpp>
 #include <boost/multi_index/ordered_index.hpp>
@@ -43,14 +45,18 @@ namespace messagequeuetags
 {
 struct key;
 struct ttlAbsolute;
+struct key_and_ttlAbsolute;
 }
 
 template <typename T>
 class JOYNR_EXPORT MessageQueue
 {
 public:
-    MessageQueue(std::uint64_t messageLimit = 0)
-            : queue(), queueMutex(), messageQueueLimit(messageLimit)
+    MessageQueue(std::uint64_t messageLimit = 0, std::uint64_t perKeyMessageQueueLimit = 0)
+            : queue(),
+              queueMutex(),
+              messageQueueLimit(messageLimit),
+              perKeyMessageQueueLimit(perKeyMessageQueueLimit)
     {
     }
 
@@ -62,15 +68,12 @@ public:
 
     void queueMessage(T key, std::shared_ptr<ImmutableMessage> message)
     {
+        ensureFreeQueueSlot(key);
+
         MessageQueueItem item;
         item.key = std::move(key);
         item.ttlAbsolute = message->getExpiryDate();
         item.message = std::move(message);
-
-        if (messageQueueLimit > 0)
-            if (getQueueLength() == messageQueueLimit) {
-                removeMessageWithLeastTtl();
-            }
 
         std::lock_guard<std::mutex> lock(queueMutex);
         queue.insert(std::move(item));
@@ -128,13 +131,55 @@ protected:
                             boost::multi_index::tag<messagequeuetags::ttlAbsolute>,
                             BOOST_MULTI_INDEX_MEMBER(MessageQueueItem,
                                                      JoynrTimePoint,
-                                                     ttlAbsolute)>>>;
+                                                     ttlAbsolute)>,
+                    boost::multi_index::ordered_non_unique<
+                            boost::multi_index::tag<messagequeuetags::key_and_ttlAbsolute>,
+                            boost::multi_index::composite_key<
+                                    MessageQueueItem,
+                                    boost::multi_index::
+                                            member<MessageQueueItem, T, &MessageQueueItem::key>,
+                                    BOOST_MULTI_INDEX_MEMBER(MessageQueueItem,
+                                                             JoynrTimePoint,
+                                                             ttlAbsolute)>>>>;
 
     QueueMultiIndexContainer queue;
     mutable std::mutex queueMutex;
 
 private:
-    std::uint64_t messageQueueLimit;
+    const std::uint64_t messageQueueLimit;
+    const std::uint64_t perKeyMessageQueueLimit;
+
+    void ensureFreeQueueSlot(const T& key)
+    {
+        const bool queueLimitActive = messageQueueLimit > 0;
+        if (!queueLimitActive) {
+            return;
+        }
+
+        const bool perKeyQueueLimitActive = perKeyMessageQueueLimit > 0;
+        if (perKeyQueueLimitActive) {
+            ensureFreePerKeyQueueSlot(key);
+        }
+
+        if (getQueueLength() >= messageQueueLimit) {
+            removeMessageWithLeastTtl();
+        }
+    }
+
+    void ensureFreePerKeyQueueSlot(const T& key)
+    {
+        assert(perKeyMessageQueueLimit > 0);
+
+        std::lock_guard<std::mutex> lock(queueMutex);
+        auto& keyAndTtlIndex =
+                boost::multi_index::get<messagequeuetags::key_and_ttlAbsolute>(queue);
+        auto range = keyAndTtlIndex.equal_range(key);
+        const std::size_t numEntriesForKey = std::distance(range.first, range.second);
+
+        if (numEntriesForKey >= perKeyMessageQueueLimit) {
+            keyAndTtlIndex.erase(range.first);
+        }
+    }
 
     void removeMessageWithLeastTtl()
     {

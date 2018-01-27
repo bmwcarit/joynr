@@ -163,21 +163,28 @@ TEST_F(MessageQueueTest, dequeueInvalidParticipantId) {
 class MessageQueueWithLimitTest : public ::testing::Test
 {
 public:
-    MessageQueueWithLimitTest(): messageQueue(messageQueueLimit) {}
+    MessageQueueWithLimitTest() { }
     ~MessageQueueWithLimitTest() = default;
 
 protected:
-    MessageQueue<std::string> messageQueue;
-    static constexpr std::uint64_t messageQueueLimit = 4;
+
+    void createAndQueueMessage(MessageQueue<std::string>& queue, const JoynrTimePoint& expiryDate, const std::string& recipient, const std::string& payload = "") {
+        MutableMessage mutableMsg;
+        mutableMsg.setExpiryDate(expiryDate);
+        mutableMsg.setRecipient(recipient);
+        mutableMsg.setPayload(payload);
+        auto immutableMessage = mutableMsg.getImmutableMessage();
+        queue.queueMessage(recipient, std::move(immutableMessage));
+    }
+
+    std::string payloadAsString(std::shared_ptr<ImmutableMessage> message) {
+        const smrf::ByteArrayView& byteArrayView = message->getUnencryptedBody();
+        return std::string(reinterpret_cast<const char*>(byteArrayView.data()), byteArrayView.size());
+    }
 
 private:
     DISALLOW_COPY_AND_ASSIGN(MessageQueueWithLimitTest);
 };
-
-// Why this definition needs to be here:
-// https://github.com/google/googletest/blob/master/googletest/docs/FAQ.md#the-compiler-complains-about-undefined-references-to-some-static-const-member-variables-but-i-did-define-them-in-the-class-body-whats-wrong
-// http://en.cppreference.com/w/cpp/language/definition#ODR-use
-constexpr std::uint64_t MessageQueueWithLimitTest::messageQueueLimit;
 
 JoynrTimePoint getExpiryDateFromNow(long long offset)
 {
@@ -186,6 +193,9 @@ JoynrTimePoint getExpiryDateFromNow(long long offset)
 
 TEST_F(MessageQueueWithLimitTest, testAddingMessages)
 {
+    constexpr std::uint64_t messageQueueLimit = 4;
+    MessageQueue<std::string> messageQueue(messageQueueLimit);
+
     const int messageCount = 5;
     // Keep in mind that message 1 expires later than message 3. This is done in order to check
     // if removal deletes the message with lowest ttl and not the first inserted message.
@@ -205,14 +215,10 @@ TEST_F(MessageQueueWithLimitTest, testAddingMessages)
         "TEST5"};
 
     for (int i=0; i < messageCount; i++) {
-        MutableMessage mutableMsg;
-        mutableMsg.setRecipient(recipient[i]);
-        mutableMsg.setExpiryDate(expiryDate[i]);
-        auto immutableMsg = mutableMsg.getImmutableMessage();
-        messageQueue.queueMessage(recipient[i], std::move(immutableMsg));
+        this->createAndQueueMessage(messageQueue, expiryDate[i], recipient[i]);
     }
 
-    EXPECT_EQ(messageQueue.getQueueLength(), MessageQueueWithLimitTest::messageQueueLimit);
+    EXPECT_EQ(messageQueue.getQueueLength(), messageQueueLimit);
 
     // Check if the message with the lowest TTL (message3) was removed.
     EXPECT_EQ(messageQueue.getNextMessageFor(recipient[0])->getRecipient(), recipient[0]);
@@ -220,4 +226,66 @@ TEST_F(MessageQueueWithLimitTest, testAddingMessages)
     EXPECT_EQ(messageQueue.getNextMessageFor(recipient[2]), nullptr);
     EXPECT_EQ(messageQueue.getNextMessageFor(recipient[3])->getRecipient(), recipient[3]);
     EXPECT_EQ(messageQueue.getNextMessageFor(recipient[4])->getRecipient(), recipient[4]);
+}
+
+TEST_F(MessageQueueWithLimitTest, testPerKeyQueueLimit_lowestTtlRemoved)
+{
+    const std::string recipient1("recipient1");
+    const std::string recipient2("recipient2");
+    const std::string msgRecipient1Payload1("payload1.1");
+    const std::string msgRecipient1Payload2("payload1.2");
+    const std::string msgRecipient2Payload1("payload2.1");
+
+    constexpr std::uint64_t messageQueueLimit = 10;
+    constexpr std::uint64_t perKeyQueueLimit = 1;
+
+    MessageQueue<std::string> queue(messageQueueLimit, perKeyQueueLimit);
+    createAndQueueMessage(queue, getExpiryDateFromNow(1000), recipient1, msgRecipient1Payload1);
+    createAndQueueMessage(queue, getExpiryDateFromNow(2000), recipient1, msgRecipient1Payload2);
+    createAndQueueMessage(queue, getExpiryDateFromNow(1000), recipient2, msgRecipient2Payload1);
+
+    EXPECT_EQ(2, queue.getQueueLength());
+
+    auto recipient1Message = queue.getNextMessageFor(recipient1);
+    auto recipient2Message = queue.getNextMessageFor(recipient2);
+
+    EXPECT_NE(nullptr, recipient1Message);
+    EXPECT_NE(nullptr, recipient2Message);
+
+    // When the per-key queue is full, the entry with the lowest TTL shall be removed.
+    EXPECT_EQ(msgRecipient1Payload2, payloadAsString(recipient1Message));
+    EXPECT_EQ(msgRecipient2Payload1, payloadAsString(recipient2Message));
+}
+
+TEST_F(MessageQueueWithLimitTest, testPerKeyQueueLimit_overallQueueIsFull)
+{
+    const std::string recipient1("recipient1");
+    const std::string recipient2("recipient2");
+    const std::string msgRecipient1Payload1("payload1.1");
+    const std::string msgRecipient1Payload2("payload1.2");
+    const std::string msgRecipient2Payload1("payload2.1");
+
+    constexpr std::uint64_t messageQueueLimit = 2;
+    constexpr std::uint64_t perKeyQueueLimit = 2;
+
+    MessageQueue<std::string> queue(messageQueueLimit, perKeyQueueLimit);
+    createAndQueueMessage(queue, getExpiryDateFromNow(1000), recipient1, msgRecipient1Payload1);
+    createAndQueueMessage(queue, getExpiryDateFromNow(100), recipient2, msgRecipient2Payload1);
+
+    // The overall queue is full. However, there is still space in the per-key-queue. Therefore
+    // the message for recipient 2 must be removed.
+    createAndQueueMessage(queue, getExpiryDateFromNow(2000), recipient1, msgRecipient1Payload2);
+
+    EXPECT_EQ(2, queue.getQueueLength());
+
+    auto recipient1Message1 = queue.getNextMessageFor(recipient1);
+    auto recipient1Message2 = queue.getNextMessageFor(recipient1);
+    auto recipient2Message1 = queue.getNextMessageFor(recipient2);
+
+    EXPECT_NE(nullptr, recipient1Message1);
+    EXPECT_NE(nullptr, recipient1Message2);
+    EXPECT_EQ(nullptr, recipient2Message1);
+
+    EXPECT_EQ(msgRecipient1Payload2, payloadAsString(recipient1Message1));
+    EXPECT_EQ(msgRecipient1Payload1, payloadAsString(recipient1Message2));
 }

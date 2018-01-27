@@ -338,7 +338,8 @@ void JoynrClusterControllerRuntime::init()
     const int maxThreads = 1;
     std::unique_ptr<MessageQueue<std::string>> messageQueue =
             std::make_unique<MessageQueue<std::string>>(
-                    clusterControllerSettings.getMessageQueueLimit());
+                    clusterControllerSettings.getMessageQueueLimit(),
+                    clusterControllerSettings.getPerParticipantIdMessageQueueLimit());
     // init message router
     ccMessageRouter = std::make_shared<CcMessageRouter>(
             messagingSettings,

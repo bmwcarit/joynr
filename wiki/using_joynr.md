@@ -49,7 +49,7 @@ A capabilities directory is a list of capabilities for providers currently regis
 The Cluster Controller (CC) is a collective term used to group a group of services that assist one or more applications with joynr discovery, registration and communication. Services that fall under the category of belonging to a Cluster Controller include:
 
 * Registration and discovery – manages the registration of local and global capabilities.
-* Message routing – on message receipt, processes the message and distributes it to the intended recipient.
+* Message routing – on message receipt, processes the message and distributes it to the intended recipient. Please note that joynr does not guarantee that messages are delivered in the order in which they were sent.
 * Access Control
 
 
