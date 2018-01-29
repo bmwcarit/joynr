@@ -1,4 +1,5 @@
-# joynr 0.34.0
+# joynr 1.0.0
+API Stable
 
 ## Other changes
 * **[C++]** It is now possible to add a limit to the message queue. When this limit

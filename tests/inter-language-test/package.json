@@ -1,13 +1,13 @@
 {
   "name": "inter-language-test",
-  "version": "0.34.0-SNAPSHOT",
+  "version": "1.0.0-SNAPSHOT",
   "license": "Apache-2.0",
   "description": "Inter-Language Tests",
   "main": "src/main/js/consumer.js",
   "private": true,
   "dependencies": {
       "bluebird" : "3.3.5",
-      "joynr" : ">=0.34.0-SNAPSHOT"
+      "joynr" : ">=1.0.0-SNAPSHOT"
   },
   "config": {
     "domain": "joynr-inter-language-test-domain"
