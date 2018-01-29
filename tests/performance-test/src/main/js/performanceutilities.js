@@ -19,12 +19,14 @@
  * #L%
  */
 
+var config = require("./config/config");
+
 var PerformanceUtilities = {};
 
 PerformanceUtilities.createByteArray = function(size, defaultValue) {
     var result = [];
 
-    for (var i = 0 ; i < size ; i++) {
+    for (var i = 0; i < size; i++) {
         result.push(defaultValue);
     }
 
@@ -40,8 +42,8 @@ PerformanceUtilities.createRandomNumber = function createRandomNumber(max) {
     return Math.floor(Math.random() * (max + 1));
 };
 
-PerformanceUtilities.forceGC = function(){
-    if (global.gc){
+PerformanceUtilities.forceGC = function() {
+    if (global.gc) {
         global.gc();
     } else {
         console.error("no gc hook! (Start node with --expose-gc  -> use npm run startconsumer)");
@@ -53,21 +55,27 @@ PerformanceUtilities.forceGC = function(){
  * available, a default value will be used.
  */
 PerformanceUtilities.getCommandLineOptionsOrDefaults = function(environment) {
-    var bounceProxyBaseUrl, domain, stringLength, byteArrayLength, numRuns, timeout, brokerUri, viacc, cchost, ccport,
-        skipByteArraySizeTimesK, testRuns, measureMemory;
+    var domain,
+        stringLength,
+        byteArrayLength,
+        timeout,
+        cchost,
+        ccport,
+        skipByteArraySizeTimesK,
+        testRuns,
+        measureMemory,
+        testType;
 
-    testRuns = environment.testRuns || 100;
-    domain = environment.domain || "performance_test_domain";
-    stringLength = environment.stringlength || 10;
-    byteArrayLength = environment.bytearraylength || 100;
-    numRuns = environment.runs || 1000;
-    timeout = environment.timeout || 3600000;
-    viacc = environment.viacc || "true";
-    brokerUri = environment.brokerUri || "tcp://localhost:1883";
-    bounceProxyBaseUrl = environment.bounceProxyBaseUrl || "http://localhost:8080";
-    cchost = environment.cchost || "localhost";
-    ccport = environment.ccport || 4242;
-    measureMemory = environment.measureMemory || "true";
+    var global = config.global;
+    testRuns = global.testRuns || 100;
+    domain = global.domain || "performance_test_domain";
+    stringLength = global.stringLength || 10;
+    byteArrayLength = global.byteArraySize || 100;
+    timeout = global.timeout || 3600000;
+    measureMemory = global.measureMemory || "true";
+    cchost = global.cc.host || "localhost";
+    ccport = global.cc.port || 4242;
+    testType = global.testType || "burst";
 
     if (environment.skipByteArraySizeTimesK !== undefined) {
         skipByteArraySizeTimesK = environment.skipByteArraySizeTimesK;
@@ -76,20 +84,69 @@ PerformanceUtilities.getCommandLineOptionsOrDefaults = function(environment) {
     }
 
     return {
-        stringLength           : stringLength,
-        byteArrayLength        : byteArrayLength,
-        testRuns               : testRuns,
-        numRuns                : numRuns,
-        timeout                : timeout,
-        domain                 : domain,
-        brokerUri              : brokerUri,
-        viacc                  : viacc,
-        cchost                 : cchost,
-        ccport                 : ccport,
-        bounceProxyBaseUrl     : bounceProxyBaseUrl,
+        stringLength: stringLength,
+        byteArrayLength: byteArrayLength,
+        testRuns: testRuns,
+        timeout: timeout,
+        domain: domain,
+        cchost: cchost,
+        ccport: ccport,
         skipByteArraySizeTimesK: skipByteArraySizeTimesK,
-        measureMemory          : measureMemory
+        measureMemory: measureMemory,
+        testType
     };
+};
+
+PerformanceUtilities.getRandomInt = function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+};
+
+PerformanceUtilities.overrideRequire = function() {
+    var LocalStorageMock = function() {
+        this.map = {};
+    };
+
+    LocalStorageMock.prototype.setItem = function(key, value) {
+        this.map[key] = value;
+    };
+
+    LocalStorageMock.prototype.getItem = function(key) {
+        return this.map[key];
+    };
+
+    LocalStorageMock.prototype.removeItem = function(key) {
+        delete this.map[key];
+    };
+
+    LocalStorageMock.prototype.clear = function() {
+        this.map = {};
+    };
+
+    var mod = require("module");
+    var req = mod.prototype.require;
+    mod.prototype.require = function(md) {
+        // mock localStorage
+        if (md.endsWith("LocalStorageNode")) {
+            return LocalStorageMock;
+        }
+
+        return req.apply(this, arguments);
+    };
+};
+
+PerformanceUtilities.createPromise = function createPromise() {
+    var map = {};
+    map.promise = new Promise(function(resolve, reject) {
+        map.resolve = resolve;
+        map.reject = reject;
+    });
+    return map;
+};
+
+PerformanceUtilities.findBenchmarks = function() {
+    var benchmarks = config.benchmarks.filter(item => item.enabled === "true");
+
+    return benchmarks;
 };
 
 module.exports = PerformanceUtilities;

@@ -32,8 +32,6 @@ describe("libjoynr-js.integration.end2end.datatypes", function() {
     var abstractTest = new End2EndAbstractTest("End2EndDatatypesTest", true);
 
     beforeEach(function(done) {
-        jasmine.getEnv().defaultTimeoutInterval = 150000; //15 secs default timeout for async tests;
-        jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000000;
         abstractTest.beforeEach().then(function(settings) {
             datatypesProxy = settings.dataProxy;
             done();

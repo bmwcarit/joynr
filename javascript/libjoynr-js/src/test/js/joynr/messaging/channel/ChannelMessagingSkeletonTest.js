@@ -42,7 +42,7 @@ describe("libjoynr-js.joynr.messaging.channel.ChannelMessagingSkeleton", functio
         };
         joynrMessage2 = {
             key: "joynrMessage1",
-            replyChannelId: JSON.stringify(channelAddress)
+            replyChannelId: JSON.stringify(channelAddress) // TODO: check why replyChannelId is not in header
         };
         done();
     });

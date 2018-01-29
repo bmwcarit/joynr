@@ -20,6 +20,7 @@
  */
 var Promise = require("../../global/Promise");
 var UtilExternal = require("./Util");
+var LongTimer = require("./LongTimer");
 
 /**
  * @name UtilInternal
@@ -80,6 +81,27 @@ UtilInternal.forward = function forward(receiver, provider) {
     }
 
     return receiver;
+};
+
+/**
+ * Create a wrapper which has all functions of the provider prototype and is frozen and thus creating privacy
+ * @param provider
+ * @returns {Readonly<{}>}
+ */
+UtilInternal.forwardPrototype = function(provider) {
+    var providerWrapper = {};
+    /*jslint sub: true*/
+    var proto = provider["__proto__"];
+    providerWrapper["__proto__"] = proto;
+    /*jslint sub: false*/
+    var key;
+    for (key in proto) {
+        if (proto.hasOwnProperty(key)) {
+            var func = proto[key];
+            providerWrapper[key] = func.bind(provider);
+        }
+    }
+    return providerWrapper;
 };
 
 /**
@@ -277,17 +299,34 @@ UtilInternal.enrichObjectWithSetPrototypeOf = function() {
         };
 };
 
+UtilInternal.setPrototypeOf = function(object, prototype) {
+    /*jslint sub: true*/
+    object["__proto__"] = prototype;
+    /*jslint sub: false*/
+};
+
 function timeoutToPromise(time) {
-    return new Promise(function(resolve, reject) {
-        setTimeout(resolve, time);
-    });
+    var deferred = UtilInternal.createDeferred();
+    LongTimer.setTimeout(deferred.resolve, time);
+    return deferred.promise;
 }
 
 UtilInternal.timeoutPromise = function(promise, timeoutMs) {
-    return new Promise(function(resolve, reject) {
-        promise.then(resolve).catch(reject);
-        timeoutToPromise(timeoutMs).then(reject);
-    });
+    var deferred = UtilInternal.createDeferred();
+    promise.then(deferred.resolve).catch(deferred.reject);
+    timeoutToPromise(timeoutMs).then(deferred.reject);
+    return deferred.promise;
+};
+
+function defer(resolve, reject) {
+    this.resolve = resolve;
+    this.reject = reject;
+}
+
+UtilInternal.createDeferred = function() {
+    var deferred = {};
+    deferred.promise = new Promise(defer.bind(deferred));
+    return deferred;
 };
 
 UtilInternal.extend(UtilInternal, UtilExternal);

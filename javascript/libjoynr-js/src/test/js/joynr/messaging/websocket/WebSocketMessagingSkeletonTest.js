@@ -64,7 +64,7 @@ describe("libjoynr-js.joynr.messaging.websocket.WebSocketMessagingSkeleton", fun
         listener = jasmine.createSpy("listener");
         function MessageEvent() {}
         event = new MessageEvent();
-        data = new JoynrMessage({
+        data = JoynrMessage.parseMessage({
             type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
         });
         multicastEvent = new MessageEvent();

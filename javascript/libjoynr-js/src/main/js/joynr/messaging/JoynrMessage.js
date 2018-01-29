@@ -1,4 +1,4 @@
-/*jslint node: true */
+/*jslint node: true, nomen: true */
 /*
  * #%L
  * %%
@@ -24,8 +24,6 @@ var uuid = require("../../lib/uuid-annotated");
 var jmBase = uuid();
 var jmIndex = 0;
 
-Util.enrichObjectWithSetPrototypeOf();
-
 /**
  * @name JoynrMessage
  * @constructor
@@ -36,16 +34,26 @@ Util.enrichObjectWithSetPrototypeOf();
  *            settings.type the message type as defined by JoynrMessage.JOYNRMESSAGE_TYPE_*
  */
 function JoynrMessage(settings) {
-    settings.header = settings.header || {};
-    /*jslint nomen: true*/
-    settings._typeName = "joynr.JoynrMessage";
-    settings.header[JoynrMessage.JOYNRMESSAGE_HEADER_CONTENT_TYPE] = "application/json";
-    settings.header[JoynrMessage.JOYNRMESSAGE_HEADER_MESSAGE_ID] =
-        settings.header[JoynrMessage.JOYNRMESSAGE_HEADER_MESSAGE_ID] || jmBase + "_" + jmIndex++;
-    Object.setPrototypeOf(settings, JoynrMessage.prototype);
-    /*jslint nomen: false*/
-    return settings;
+    this.payload = settings.payload;
+    this.headers = {};
+    this.type = settings.type;
+    this.msgId = settings.msgId || jmBase + "_" + jmIndex++;
+    // TODO: check whether it makes sense to add more properties to the constructor
 }
+
+JoynrMessage.parseMessage = function(settings) {
+    settings.headers = settings.headers || {};
+    settings.headers.id = settings.headers.id || jmBase + "_" + jmIndex++;
+    Util.setPrototypeOf(settings, JoynrMessage.prototype);
+    return settings;
+};
+
+JoynrMessage.prototype._typeName = "joynr.JoynrMessage";
+
+JoynrMessage.prototype.isTtlAbsolute = true;
+JoynrMessage.prototype.encryptionCert = null;
+JoynrMessage.prototype.signingCert = null;
+JoynrMessage.prototype.signingKey = null;
 
 /**
  * @static
@@ -121,23 +129,9 @@ JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_STOP = "sst";
  * @static
  * @readonly
  * @type String
- * @name JoynrMessage.JOYNRMESSAGE_HEADER_MESSAGE_ID
- */
-JoynrMessage.JOYNRMESSAGE_HEADER_MESSAGE_ID = "msgId";
-/**
- * @static
- * @readonly
- * @type String
  * @name JoynrMessage.JOYNRMESSAGE_HEADER_CREATOR_USER_ID
  */
 JoynrMessage.JOYNRMESSAGE_HEADER_CREATOR_USER_ID = "creator";
-/**
- * @static
- * @readonly
- * @type String
- * @name JoynrMessage.JOYNRMESSAGE_HEADER_EXPIRYDATE
- */
-JoynrMessage.JOYNRMESSAGE_HEADER_EXPIRYDATE = "expiryDate";
 /**
  * @static
  * @readonly
@@ -166,33 +160,6 @@ JoynrMessage.JOYNRMESSAGE_HEADER_CONTENT_TYPE = "contentType";
  * @name JoynrMessage.JOYNRMESSAGE_HEADER_TO_PARTICIPANT_ID
  */
 JoynrMessage.JOYNRMESSAGE_HEADER_TO_PARTICIPANT_ID = "to";
-/**
- * @static
- * @readonly
- * @type String
- * @name JoynrMessage.JOYNRMESSAGE_HEADER_FROM_PARTICIPANT_ID
- */
-JoynrMessage.JOYNRMESSAGE_HEADER_FROM_PARTICIPANT_ID = "from";
-
-/**
- * @name JoynrMessage#setHeader
- * @function
- *
- * @param {String}
- *            key is one of the header keys defined in JoynrMessagingDefines
- * @param {Any}
- *            value of the header
- * @returns {JoynrMessage}
- */
-Object.defineProperty(JoynrMessage.prototype, "setHeader", {
-    enumerable: false,
-    configurable: false,
-    writable: false,
-    value: function(key, value) {
-        this.header[key] = value;
-        return this;
-    }
-});
 
 /**
  * @name JoynrMessage#setCustomHeaders
@@ -211,7 +178,7 @@ Object.defineProperty(JoynrMessage.prototype, "setCustomHeaders", {
         var headerKey;
         for (headerKey in customHeaders) {
             if (customHeaders.hasOwnProperty(headerKey)) {
-                this.header[MESSAGE_CUSTOM_HEADER_PREFIX + headerKey] = customHeaders[headerKey];
+                this.headers[MESSAGE_CUSTOM_HEADER_PREFIX + headerKey] = customHeaders[headerKey];
             }
         }
         return this;
@@ -232,107 +199,169 @@ Object.defineProperty(JoynrMessage.prototype, "getCustomHeaders", {
         var headerKey,
             trimmedKey,
             customHeaders = {};
-        for (headerKey in this.header) {
+        for (headerKey in this.headers) {
             if (
-                this.header.hasOwnProperty(headerKey) &&
+                this.headers.hasOwnProperty(headerKey) &&
                 headerKey.substr(0, MESSAGE_CUSTOM_HEADER_PREFIX.length) === MESSAGE_CUSTOM_HEADER_PREFIX
             ) {
                 trimmedKey = headerKey.substr(MESSAGE_CUSTOM_HEADER_PREFIX.length);
 
-                customHeaders[trimmedKey] = this.header[headerKey];
+                customHeaders[trimmedKey] = this.headers[headerKey];
             }
         }
         return customHeaders;
     }
 });
 
-var headerProperties = [
-    JoynrMessage.JOYNRMESSAGE_HEADER_MESSAGE_ID,
-    JoynrMessage.JOYNRMESSAGE_HEADER_CREATOR_USER_ID,
-    JoynrMessage.JOYNRMESSAGE_HEADER_FROM_PARTICIPANT_ID,
-    JoynrMessage.JOYNRMESSAGE_HEADER_TO_PARTICIPANT_ID,
-    JoynrMessage.JOYNRMESSAGE_HEADER_REPLY_CHANNELID,
-    JoynrMessage.JOYNRMESSAGE_HEADER_EXPIRYDATE,
-    JoynrMessage.JOYNRMESSAGE_HEADER_EFFORT
-];
+/**
+ * @name JoynrMessage#setHeader
+ * @function
+ *
+ * @param {String}
+ *            key is one of the header keys defined in JoynrMessagingDefines
+ * @param {Any}
+ *            value of the header
+ * @returns {JoynrMessage}
+ */
+Object.defineProperty(JoynrMessage.prototype, "setHeader", {
+    enumerable: false,
+    configurable: false,
+    writable: false,
+    value: function(key, value) {
+        this.headers[key] = value;
+        return this;
+    }
+});
 
 /**
- * The user ID of the message creator
+ * @name JoynrMessage#getHeader
+ * @function
  *
- * @name JoynrMessage#creator
- * @type String
+ * @param {String}
+ *            key is one of the header keys defined in JoynrMessagingDefines
+ * @returns {Object}
  */
-/**
- * The participant id the message is from
- *
- * @name JoynrMessage#from
- * @type String
- */
+Object.defineProperty(JoynrMessage.prototype, "getHeader", {
+    enumerable: false,
+    configurable: false,
+    writable: false,
+    value: function(key) {
+        return this.headers[key];
+    }
+});
+
+JoynrMessage.prototype.payload = undefined;
+
+Object.defineProperty(JoynrMessage.prototype, "type", {
+    set: function(value) {
+        this.headers.t = value;
+    },
+    get: function() {
+        return this.headers.t;
+    }
+});
+
 /**
  * The participant id the message is to
  *
  * @name JoynrMessage#to
  * @type String
  */
+Object.defineProperty(JoynrMessage.prototype, "to", {
+    set: function(value) {
+        this.recipient = value;
+    },
+    get: function() {
+        return this.recipient;
+    }
+});
+
 /**
- * The reply channel Id to return response messages to
+ * The participant id the message is from
  *
- * @name JoynrMessage#replyChannelId
+ * @name JoynrMessage#from
  * @type String
  */
+Object.defineProperty(JoynrMessage.prototype, "from", {
+    set: function(value) {
+        this.sender = value;
+    },
+    get: function() {
+        return this.sender;
+    }
+});
+
 /**
  * The expiry date of the message
  *
  * @name JoynrMessage#expiryDate
  * @type String
  */
+Object.defineProperty(JoynrMessage.prototype, "expiryDate", {
+    set: function(value) {
+        this.ttlMs = value;
+    },
+    get: function() {
+        return this.ttlMs;
+    }
+});
+
+JoynrMessage.prototype.creator = undefined; // TODO: check for some reason creator was basically unused
+
+/**
+ * The reply channel Id to return response messages to
+ *
+ * @name JoynrMessage#replyChannelId
+ * @type String
+ */
+Object.defineProperty(JoynrMessage.prototype, "replyChannelId", {
+    set: function(value) {
+        this.headers.re = value;
+    },
+    get: function() {
+        return this.headers.re;
+    }
+});
+
+JoynrMessage.prototype.isReceivedFromGlobal = false;
+// writing the variable on the prototype acts as a default value
+
+JoynrMessage.prototype.isLocalMessage = false;
+// no defineProperty for localMessage since the variable may simply be used
+
+Object.defineProperty(JoynrMessage.prototype, "msgId", {
+    set: function(value) {
+        this.headers.id = value;
+    },
+    get: function() {
+        return this.headers.id;
+    }
+});
+
+JoynrMessage.prototype.isCompressed = false;
+
+Object.defineProperty(JoynrMessage.prototype, "compress", {
+    set: function(value) {
+        this.isCompressed = value;
+    },
+    get: function() {
+        return this.isCompressed;
+    }
+});
+
 /**
  * The effort to be expent while delivering the message
  *
  * @name JoynrMessage#effort
  * @type String
  */
-headerProperties.forEach(function(headerProperty) {
-    Object.defineProperty(JoynrMessage.prototype, headerProperty, {
-        set: function(value) {
-            this.header[headerProperty] = value;
-        },
-        get: function() {
-            return this.header[headerProperty];
-        }
-    });
-});
 
-JoynrMessage.prototype.isReceivedFromGlobal = false;
-
-Object.defineProperty(JoynrMessage.prototype, "setReceivedFromGlobal", {
-    enumerable: false,
-    configurable: false,
-    writable: false,
-    value: function(receivedFromGlobal) {
-        this.isReceivedFromGlobal = receivedFromGlobal;
-    }
-});
-
-JoynrMessage.prototype.isLocalMessage = false;
-
-Object.defineProperty(JoynrMessage.prototype, "setIsLocalMessage", {
-    enumerable: false,
-    configurable: false,
-    writable: false,
-    value: function(isLocalMessage) {
-        this.isLocalMessage = isLocalMessage;
-    }
-});
-
-JoynrMessage.prototype.compress = false;
-
-Object.defineProperty(JoynrMessage.prototype, "setCompress", {
-    enumerable: false,
-    configurable: false,
-    writable: false,
-    value: function(compress) {
-        this.compress = compress;
+Object.defineProperty(JoynrMessage.prototype, "effort", {
+    set: function(value) {
+        this.headers.ef = value;
+    },
+    get: function() {
+        return this.headers.ef;
     }
 });
 

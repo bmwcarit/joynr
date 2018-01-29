@@ -28,6 +28,13 @@ var Typing = require("./Typing");
  */
 var JSONSerializer = {};
 
+function replacerFunction(key, src) {
+    if (Typing.isEnumType(src)) {
+        return src.name;
+    }
+    return src;
+}
+
 /**
  * This function wraps the JSON.stringify call, by altering the stringification process
  * for joynr types
@@ -40,16 +47,10 @@ var JSONSerializer = {};
  *          the value in JSON notation
  */
 JSONSerializer.stringify = function stringify(value, omitJoynrStringReplacement) {
-    var replacerFunction; /* undefined by default */
     if (omitJoynrStringReplacement === undefined || !omitJoynrStringReplacement) {
-        replacerFunction = function replacerFunction(key, src) {
-            if (Typing.isEnumType(src)) {
-                return src.name;
-            }
-            return src;
-        };
+        return JSON.stringify(value, replacerFunction);
     }
-    return JSON.stringify(value, replacerFunction);
+    return JSON.stringify(value);
 };
 
 module.exports = JSONSerializer;

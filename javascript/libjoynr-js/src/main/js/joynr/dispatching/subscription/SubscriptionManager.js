@@ -276,83 +276,81 @@ function SubscriptionManager(dispatcher) {
      *          an error upon failure
      */
     this.registerSubscription = function registerSubscription(settings) {
-        function registerSubstriptionResolver(resolve, reject) {
-            if (!isReady()) {
-                reject(new Error("SubscriptionManager is already shut down"));
-            }
-            var subscriptionId = settings.subscriptionId || uuid();
-            // log.debug("Registering Subscription Id " + subscriptionId);
+        if (!isReady()) {
+            return Promise.reject(new Error("SubscriptionManager is already shut down"));
+        }
+        var subscriptionId = settings.subscriptionId || uuid();
+        // log.debug("Registering Subscription Id " + subscriptionId);
 
-            if (settings.attributeName === undefined) {
-                reject(
-                    new Error(
-                        "Error: attributeName not provided in call to registerSubscription, settings = " +
-                            JSON.stringify(settings)
-                    )
-                );
-                return;
-            }
-            if (settings.attributeType === undefined) {
-                reject(
-                    new Error(
-                        "Error: attributeType not provided in call to registerSubscription, settings = " +
-                            JSON.stringify(settings)
-                    )
-                );
-                return;
-            }
-
-            if (settings.onError === undefined) {
-                log.warn(
-                    'Warning: subscription for attribute "' +
-                        settings.attributeName +
-                        '" has been done without error callback function. You will not be informed about missed publications. Please specify the "onError" parameter while subscribing!'
-                );
-            }
-            if (settings.onReceive === undefined) {
-                log.warn(
-                    'Warning: subscription for attribute "' +
-                        settings.attributeName +
-                        '" has been done without receive callback function. You will not be informed about incoming publications. Please specify the "onReceive" parameter while subscribing!'
-                );
-            }
-            var subscriptionRequest = new SubscriptionRequest({
-                subscriptionId: subscriptionId,
-                subscribedToName: settings.attributeName,
-                qos: settings.qos
-            });
-
-            var messagingQos = new MessagingQos({
-                ttl: calculateTtl(subscriptionRequest.qos)
-            });
-
-            subscriptionReplyCallers[subscriptionId] = {
-                resolve: resolve,
-                reject: reject
-            };
-
-            storeSubscriptionRequest(settings, subscriptionRequest);
-
-            function sendSubscriptionRequestCatcher(error) {
-                cleanupSubscription(subscriptionId);
-                if (settings.onError) {
-                    settings.onError(error);
-                }
-                reject(error);
-                return;
-            }
-
-            dispatcher
-                .sendSubscriptionRequest({
-                    from: settings.proxyId,
-                    toDiscoveryEntry: settings.providerDiscoveryEntry,
-                    messagingQos: messagingQos,
-                    subscriptionRequest: subscriptionRequest
-                })
-                .catch(sendSubscriptionRequestCatcher);
+        if (settings.attributeName === undefined) {
+            return Promise.reject(
+                new Error(
+                    "Error: attributeName not provided in call to registerSubscription, settings = " +
+                        JSON.stringify(settings)
+                )
+            );
+        }
+        if (settings.attributeType === undefined) {
+            return Promise.reject(
+                new Error(
+                    "Error: attributeType not provided in call to registerSubscription, settings = " +
+                        JSON.stringify(settings)
+                )
+            );
         }
 
-        return new Promise(registerSubstriptionResolver);
+        if (settings.onError === undefined) {
+            log.warn(
+                'Warning: subscription for attribute "' +
+                    settings.attributeName +
+                    '" has been done without error callback function. You will not be informed about missed publications. Please specify the "onError" parameter while subscribing!'
+            );
+        }
+        if (settings.onReceive === undefined) {
+            log.warn(
+                'Warning: subscription for attribute "' +
+                    settings.attributeName +
+                    '" has been done without receive callback function. You will not be informed about incoming publications. Please specify the "onReceive" parameter while subscribing!'
+            );
+        }
+        var subscriptionRequest = new SubscriptionRequest({
+            subscriptionId: subscriptionId,
+            subscribedToName: settings.attributeName,
+            qos: settings.qos
+        });
+
+        var messagingQos = new MessagingQos({
+            ttl: calculateTtl(subscriptionRequest.qos)
+        });
+
+        var deferred = Util.createDeferred();
+
+        subscriptionReplyCallers[subscriptionId] = {
+            resolve: deferred.resolve,
+            reject: deferred.reject
+        };
+
+        storeSubscriptionRequest(settings, subscriptionRequest);
+
+        function sendSubscriptionRequestCatcher(error) {
+            cleanupSubscription(subscriptionId);
+            if (settings.onError) {
+                settings.onError(error);
+            }
+            deferred.reject(error);
+            return deferred.promise;
+        }
+
+        dispatcher
+            .sendSubscriptionRequest({
+                from: settings.proxyId,
+                toDiscoveryEntry: settings.providerDiscoveryEntry,
+                messagingQos: messagingQos,
+                subscriptionRequest: subscriptionRequest
+            })
+            .catch(sendSubscriptionRequestCatcher);
+
+        return deferred.promise;
     };
 
     function addRequestToMulticastSubscribers(multicastId, subscriptionId) {
@@ -433,44 +431,43 @@ function SubscriptionManager(dispatcher) {
     this.registerBroadcastSubscription = function(parameters) {
         var messagingQos;
 
-        function registerBroadcastSubscriptionResolver(resolve, reject) {
-            if (!isReady()) {
-                reject(new Error("SubscriptionManager is already shut down"));
-            }
-
-            var subscriptionRequest = createBroadcastSubscriptionRequest(parameters);
-
-            messagingQos = new MessagingQos({
-                ttl: calculateTtl(subscriptionRequest.qos)
-            });
-
-            subscriptionReplyCallers[subscriptionRequest.subscriptionId] = {
-                resolve: resolve,
-                reject: reject
-            };
-
-            storeSubscriptionRequest(parameters, subscriptionRequest);
-
-            function sendBroadcastSubscriptionRequestOnError(error) {
-                cleanupSubscription(subscriptionRequest.subscriptionId);
-                if (parameters.onError) {
-                    parameters.onError(error);
-                }
-                reject(error);
-                return;
-            }
-
-            dispatcher
-                .sendBroadcastSubscriptionRequest({
-                    from: parameters.proxyId,
-                    toDiscoveryEntry: parameters.providerDiscoveryEntry,
-                    messagingQos: messagingQos,
-                    subscriptionRequest: subscriptionRequest
-                })
-                .catch(sendBroadcastSubscriptionRequestOnError);
+        if (!isReady()) {
+            return Promise.reject(new Error("SubscriptionManager is already shut down"));
         }
 
-        return new Promise(registerBroadcastSubscriptionResolver);
+        var deferred = Util.createDeferred();
+        var subscriptionRequest = createBroadcastSubscriptionRequest(parameters);
+
+        messagingQos = new MessagingQos({
+            ttl: calculateTtl(subscriptionRequest.qos)
+        });
+
+        subscriptionReplyCallers[subscriptionRequest.subscriptionId] = {
+            resolve: deferred.resolve,
+            reject: deferred.reject
+        };
+
+        storeSubscriptionRequest(parameters, subscriptionRequest);
+
+        function sendBroadcastSubscriptionRequestOnError(error) {
+            cleanupSubscription(subscriptionRequest.subscriptionId);
+            if (parameters.onError) {
+                parameters.onError(error);
+            }
+            deferred.reject(error);
+            return deferred.promise;
+        }
+
+        dispatcher
+            .sendBroadcastSubscriptionRequest({
+                from: parameters.proxyId,
+                toDiscoveryEntry: parameters.providerDiscoveryEntry,
+                messagingQos: messagingQos,
+                subscriptionRequest: subscriptionRequest
+            })
+            .catch(sendBroadcastSubscriptionRequestOnError);
+
+        return deferred.promise;
     };
 
     /**

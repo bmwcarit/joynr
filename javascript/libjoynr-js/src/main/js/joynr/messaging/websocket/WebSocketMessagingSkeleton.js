@@ -42,7 +42,7 @@ var WebSocketMessagingSkeleton = function WebSocketMessagingSkeleton(settings) {
         log.debug("<<< INCOMING <<< message with ID " + joynrMessage.msgId);
         if (listener !== undefined) {
             if (joynrMessage.type === JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST && settings.mainTransport) {
-                joynrMessage.setReceivedFromGlobal(true);
+                joynrMessage.isReceivedFromGlobal = true;
             }
             listener(joynrMessage);
         }

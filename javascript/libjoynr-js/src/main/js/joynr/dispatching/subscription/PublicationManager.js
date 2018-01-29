@@ -1,4 +1,5 @@
 /*jslint es5: true, node: true, node: true */
+/*global triggerPublicationTimer: true */
 /*
  * #%L
  * %%
@@ -111,8 +112,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
      * @returns {ProviderAttribute} the provider attribute
      */
     function getAttribute(participantId, attributeName) {
-        var provider = participantIdToProvider[participantId],
-            attribute;
+        var provider = participantIdToProvider[participantId];
         return provider[attributeName];
     }
 
@@ -264,8 +264,28 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         }
     }
 
+    function triggerPublication(subscriptionInfo, callback) {
+        if (callback !== undefined) {
+            callback();
+        }
+
+        function getAttributeValueSuccess(value) {
+            prepareAttributePublication(subscriptionInfo, value, triggerPublicationTimer);
+            return value;
+        }
+
+        function getAttributeValueFailure(exception) {
+            sendPublication(subscriptionInfo, undefined, exception);
+            return exception;
+        }
+
+        getAttributeValue(subscriptionInfo)
+            .then(getAttributeValueSuccess)
+            .catch(getAttributeValueFailure);
+    }
+
     /**
-     * This functions waits the delay time before pubslishing the value of the attribute
+     * This functions waits the delay time before publishing the value of the attribute
      * specified in the subscription information
      *
      * @name PublicationManager#triggerPublicationTimer
@@ -283,28 +303,12 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
      *            callback to be invoked by this function once the timer has been exceeded
      */
     function triggerPublicationTimer(subscriptionInfo, delay, callback) {
-        function getAttributeValueSuccess(value) {
-            prepareAttributePublication(subscriptionInfo, value, triggerPublicationTimer);
-            return value;
-        }
-
-        function getAttributeValueFailure(exception) {
-            sendPublication(subscriptionInfo, undefined, exception);
-            return exception;
-        }
-
-        function getAttributeFromProviderTimeout() {
-            if (callback !== undefined) {
-                callback();
-            }
-            getAttributeValue(subscriptionInfo)
-                .then(getAttributeValueSuccess)
-                .catch(getAttributeValueFailure);
-        }
-
         if (!isNaN(delay)) {
-            return LongTimer.setTimeout(getAttributeFromProviderTimeout, delay);
+            return LongTimer.setTimeout(triggerPublication, delay, subscriptionInfo, callback);
+            // the last two arguments get to triggerPublication
         }
+        // TODO: what kind of recursive design is this? triggerPublication calls triggerPublicationTimer on Success ...
+        // why not use Intervals?
 
         // TODO:why is nothing returned here in the else case?
     }
@@ -876,16 +880,16 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         return false;
     };
 
+    function asyncCallbackDispatcher(reply, callbackDispatcher) {
+        callbackDispatcher(new SubscriptionReply(reply));
+    }
+
     /* the parameter "callbackDispatcher" is optional, as in case of restoring
      * subscriptions, no reply must be sent back via the dispatcher
      */
     function callbackDispatcherAsync(reply, callbackDispatcher) {
-        function asyncCallbackDispatcher() {
-            callbackDispatcher(new SubscriptionReply(reply));
-        }
-
         if (callbackDispatcher !== undefined) {
-            LongTimer.setTimeout(asyncCallbackDispatcher, 0);
+            LongTimer.setTimeout(asyncCallbackDispatcher, 0, reply, callbackDispatcher);
         }
     }
 
@@ -1100,13 +1104,9 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
             }
         }
 
-        function subscriptionReachedEndDate() {
-            removeSubscription(subscriptionId);
-        }
-
         if (timeToEndDate > 0) {
             // schedule to remove subscription from internal maps
-            subscriptionInfo.endDateTimeout = LongTimer.setTimeout(subscriptionReachedEndDate, timeToEndDate);
+            subscriptionInfo.endDateTimeout = LongTimer.setTimeout(removeSubscription, timeToEndDate, subscriptionId);
         }
 
         // call the get method on the provider at the set interval
@@ -1120,21 +1120,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         persistency.setItem(subscriptionId, JSON.stringify(subscriptionInfo));
         storeSubscriptions();
 
-        function getAttributeValueSuccess(value) {
-            prepareAttributePublication(subscriptionInfo, value, triggerPublicationTimer);
-            return value;
-        }
-
-        function getAttributeValueException(getValueException) {
-            sendPublication(subscriptionInfo, undefined, getValueException);
-            return getValueException;
-        }
-
-        // publish value immediately
-        getAttributeValue(subscriptionInfo)
-            .then(getAttributeValueSuccess)
-            .catch(getAttributeValueException);
-
+        triggerPublication(subscriptionInfo);
         callbackDispatcherAsync({ subscriptionId: subscriptionId }, callbackDispatcher);
     };
 
@@ -1345,13 +1331,9 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
             }
         }
 
-        function subscriptionReachedEndDate() {
-            removeSubscription(subscriptionId);
-        }
-
         if (timeToEndDate > 0) {
             // schedule to remove subscription from internal maps
-            subscriptionInfo.endDateTimeout = LongTimer.setTimeout(subscriptionReachedEndDate, timeToEndDate);
+            subscriptionInfo.endDateTimeout = LongTimer.setTimeout(removeSubscription, timeToEndDate, subscriptionId);
         }
 
         // save subscriptionInfo to subscriptionId => subscription and

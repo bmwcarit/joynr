@@ -24,6 +24,7 @@ var LongTimer = require("../../util/LongTimer");
 var Typing = require("../../util/Typing");
 var LoggerFactory = require("../../system/LoggerFactory");
 var MessageSerializer = require("../MessageSerializer");
+var Util = require("../../util/UtilInternal");
 var log = LoggerFactory.getLogger("joynr.messaging.mqtt.SharedMqttClient");
 
 /**
@@ -57,45 +58,42 @@ function sendQueuedUnsubscriptions(client, queuedUnsubscriptions) {
 }
 
 function sendQueuedSubscriptions(client, queuedSubscriptions, qosLevel) {
-    function sendQueuedSubscriptionsResolver(resolve, reject) {
-        var i,
-            topic,
-            subscribeObject = {};
-        for (i = 0; i < queuedSubscriptions.length; i++) {
-            topic = queuedSubscriptions[i];
-            subscribeObject[topic] = qosLevel;
-        }
-        client.subscribe(subscribeObject, undefined, function(err, granted) {
-            //TODO error handling
-            queuedSubscriptions = [];
-            resolve();
-        });
+    var deferred = Util.createDeferred();
+    var i,
+        topic,
+        subscribeObject = {};
+    for (i = 0; i < queuedSubscriptions.length; i++) {
+        topic = queuedSubscriptions[i];
+        subscribeObject[topic] = qosLevel;
     }
-
-    return new Promise(sendQueuedSubscriptionsResolver);
+    client.subscribe(subscribeObject, undefined, function(err, granted) {
+        //TODO error handling
+        queuedSubscriptions = [];
+        deferred.resolve();
+    });
+    return deferred.promise;
 }
 
 function sendMessage(client, topic, joynrMessage, sendQosLevel, queuedMessages) {
-    function sendMessageResolver(resolve, reject) {
-        try {
-            client.publish(topic, MessageSerializer.stringify(joynrMessage), { qos: sendQosLevel });
-            resolve();
-            // Error is thrown if the socket is no longer open, so requeue to the front
-        } catch (e) {
-            // add the message back to the front of the queue
-            queuedMessages.unshift({
-                message: joynrMessage,
-                resolve: resolve,
-                options: {
-                    qos: sendQosLevel
-                },
-                topic: topic
-            });
-            throw e;
-        }
+    var deferred = Util.createDeferred();
+    try {
+        client.publish(topic, MessageSerializer.stringify(joynrMessage), { qos: sendQosLevel });
+        deferred.resolve();
+        // Error is thrown if the socket is no longer open, so requeue to the front
+    } catch (e) {
+        // add the message back to the front of the queue
+        queuedMessages.unshift({
+            message: joynrMessage,
+            resolve: deferred.resolve,
+            options: {
+                qos: sendQosLevel
+            },
+            topic: topic
+        });
+        throw e;
     }
 
-    return new Promise(sendMessageResolver);
+    return deferred.promise;
 }
 
 /**
@@ -116,11 +114,7 @@ var SharedMqttClient = function SharedMqttClient(settings) {
     this._queuedMessages = [];
     this._closed = false;
     this._connected = false;
-    this._onConnectedPromise = new Promise(
-        function(resolve, reject) {
-            this._onConnectedPromiseResolve = resolve;
-        }.bind(this)
-    );
+    this._onConnectedDeferred = Util.createDeferred();
 
     this._qosLevel =
         settings.provisioning.qosLevel !== undefined
@@ -165,7 +159,7 @@ SharedMqttClient.prototype._resetConnection = function resetConnection() {
 };
 
 SharedMqttClient.prototype.onConnected = function() {
-    return this._onConnectedPromise;
+    return this._onConnectedDeferred.promise;
 };
 
 // send all queued messages, requeuing to the front in case of a problem
@@ -175,7 +169,7 @@ SharedMqttClient.prototype._onOpen = function onOpen() {
         sendQueuedMessages(this._client, this._queuedMessages);
         sendQueuedUnsubscriptions(this._client, this._queuedUnsubscriptions);
         sendQueuedSubscriptions(this._client, this._queuedSubscriptions, this._qosLevel).then(
-            this._onConnectedPromiseResolve
+            this._onConnectedDeferred.resolve
         );
     } catch (e) {
         this._resetConnection();

@@ -41,16 +41,17 @@ describe("libjoynr-js.joynr.messaging.mqtt.MqttMessagingStub", function() {
             client: mqttClient
         });
 
-        joynrMessage = {
+        joynrMessage = new JoynrMessage({
             key: "joynrMessage",
-            to: "toParticipantId",
             type: "request"
-        };
-        multicastMessage = {
+        });
+        joynrMessage.to = "toParticipantId";
+
+        multicastMessage = new JoynrMessage({
             key: "multicastMessage",
-            to: "toParticipantId",
             type: JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST
-        };
+        });
+        multicastMessage.to = "toParticipantId";
 
         done();
     });

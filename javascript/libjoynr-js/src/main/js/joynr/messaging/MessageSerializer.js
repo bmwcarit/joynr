@@ -27,112 +27,48 @@ var MessageSerializer = {};
 function useSmrf() {
     var smrf = require("../../global/SmrfNode");
 
-    var skipJoynrHeaderKeys = {
-        contentType: true,
-        creator: true,
-        effort: true,
-        from: true,
-        msgId: true,
-        replyChannelId: true,
-        to: true,
-        expiryDate: true
-    };
-
-    var skipSmrfHeaderKeys = {
-        // headers already converted manually
-        t: true,
-        id: true,
-        re: true,
-        ef: true,
-        // reserved headers, prevent overwriting
-        from: true,
-        to: true,
-        msgId: true,
-        replyChannelId: true,
-        expiryDate: true,
-        effort: true
-    };
-
-    MessageSerializer.stringify = function(joynrMessage, signingCallback) {
-        var smrfMsg = {};
-        var headerKey;
-        smrfMsg.sender = joynrMessage.header.from;
-        smrfMsg.recipient = joynrMessage.header.to;
-        smrfMsg.ttlMs = joynrMessage.header.expiryDate;
-        smrfMsg.isTtlAbsolute = true;
-        smrfMsg.isCompressed = joynrMessage.compress;
-        smrfMsg.body = new Buffer(joynrMessage.payload);
-        smrfMsg.encryptionCert = null;
-        smrfMsg.signingCert = null;
-        smrfMsg.signingKey = null;
-        smrfMsg.headers = {};
-        smrfMsg.headers.t = joynrMessage.type;
-        smrfMsg.headers.id = joynrMessage.header.msgId;
-        if (signingCallback) {
-            smrfMsg.signingCallback = signingCallback;
-        }
-        if (joynrMessage.header.replyChannelId) {
-            smrfMsg.headers.re = joynrMessage.header.replyChannelId;
-        }
-        if (joynrMessage.header.effort) {
-            smrfMsg.headers.ef = joynrMessage.header.effort;
-        }
-        for (headerKey in joynrMessage.header) {
-            if (joynrMessage.header.hasOwnProperty(headerKey)) {
-                if (!skipJoynrHeaderKeys[headerKey]) {
-                    smrfMsg.headers[headerKey] = joynrMessage.header[headerKey];
-                }
-            }
-        }
-        var serializedMsg;
+    function serializeSmrfMessage(smrfMsg) {
         try {
-            serializedMsg = smrf.serialize(smrfMsg);
+            return smrf.serialize(smrfMsg);
         } catch (e) {
             throw new Error("ws.marshalJoynrMessage: got exception " + e);
         }
-        return serializedMsg;
+    }
+
+    function deserializeSmrfMessage(data) {
+        try {
+            return smrf.deserialize(data);
+        } catch (e) {
+            throw new Error("ws.marshalJoynrMessage: got exception " + e);
+        }
+    }
+
+    MessageSerializer.stringify = function(joynrMessage, signingCallback) {
+        joynrMessage.body = joynrMessage.body || new Buffer(joynrMessage.payload);
+
+        if (signingCallback) {
+            joynrMessage.signingCallback = signingCallback;
+        }
+
+        return serializeSmrfMessage(joynrMessage);
     };
 
     MessageSerializer.parse = function(data) {
         if (typeof data !== "object") {
             log.error("MessageSerializer received unsupported message.");
         } else {
-            var headerKey;
-            var smrfMsg;
-            try {
-                smrfMsg = smrf.deserialize(data);
-            } catch (e) {
-                throw new Error("ws.marshalJoynrMessage: got exception " + e);
-            }
-            var convertedMsg = {};
-            convertedMsg.header = {};
-            convertedMsg.header.from = smrfMsg.sender;
-            convertedMsg.header.to = smrfMsg.recipient;
-            convertedMsg.header.msgId = smrfMsg.headers.id;
-            if (smrfMsg.headers.re) {
-                convertedMsg.header.replyChannelId = smrfMsg.headers.re;
-            }
-            convertedMsg.type = smrfMsg.headers.t;
-            // ignore for now:
-            //   smrfMsg.headers.isCompressed
-            //   smrfMsg.headers.encryptionCert
-            //   smrfMsg.headers.signingKey
-            //   smrfMsg.headers.signingCert
-            if (smrfMsg.isTtlAbsolute === true) {
-                convertedMsg.header.expiryDate = smrfMsg.ttlMs;
-            } else {
-                convertedMsg.header.expiryDate = smrfMsg.ttlMs + Date.now();
-            }
-            convertedMsg.header.effort = smrfMsg.headers.ef;
-            convertedMsg.payload = smrfMsg.body.toString();
-            for (headerKey in smrfMsg.headers) {
-                if (smrfMsg.headers.hasOwnProperty(headerKey)) {
-                    if (!skipSmrfHeaderKeys[headerKey]) {
-                        convertedMsg.header[headerKey] = smrfMsg.headers[headerKey];
-                    }
-                }
-            }
-            return new JoynrMessage(convertedMsg);
+            var smrfMsg = deserializeSmrfMessage(data);
+            var expiryDate = smrfMsg.isTtlAbsolute === true ? smrfMsg.ttlMs : smrfMsg.ttlMs + Date.now();
+
+            // smrfMsg has two attributes we need to throw away -> create new Object
+            var messageWithoutRest = {
+                headers: smrfMsg.headers,
+                sender: smrfMsg.sender,
+                recipient: smrfMsg.recipient,
+                ttlMs: expiryDate,
+                payload: smrfMsg.body.toString()
+            };
+            return JoynrMessage.parseMessage(messageWithoutRest);
         }
     };
 }

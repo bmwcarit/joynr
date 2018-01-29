@@ -100,10 +100,10 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
             type: parameters.type,
             payload: JSON.stringify(parameters.payload)
         });
-        joynrMessage.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_FROM_PARTICIPANT_ID, proxyId);
-        joynrMessage.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_TO_PARTICIPANT_ID, providerId);
-        joynrMessage.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_EXPIRYDATE, parameters.expiryDate);
-        dispatcher.receive(joynrMessage);
+        joynrMessage.from = proxyId;
+        joynrMessage.to = providerId;
+        joynrMessage.expiryDate = parameters.expiryDate;
+        return dispatcher.receive(joynrMessage);
     }
 
     function receiveJoynrMessageTtlUplift(parameters) {
@@ -111,28 +111,28 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
             type: parameters.type,
             payload: JSON.stringify(parameters.payload)
         });
-        joynrMessage.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_FROM_PARTICIPANT_ID, proxyId);
-        joynrMessage.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_TO_PARTICIPANT_ID, providerId);
-        joynrMessage.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_EXPIRYDATE, parameters.expiryDate);
-        dispatcherWithTtlUplift.receive(joynrMessage);
+        joynrMessage.from = proxyId;
+        joynrMessage.to = providerId;
+        joynrMessage.expiryDate = parameters.expiryDate;
+        return dispatcherWithTtlUplift.receive(joynrMessage);
     }
 
     function checkMessageFromProxyWithTolerance(messageType, expectedExpiryDate) {
         expect(clusterControllerMessagingStub.transmit).toHaveBeenCalled();
         var msg = clusterControllerMessagingStub.transmit.calls.mostRecent().args[0];
         expect(msg.type).toEqual(messageType);
-        expect(msg.header.from).toEqual(proxyId);
-        expect(msg.header.to).toEqual(providerId);
-        expect(msg.header.expiryDate).toEqualWithPositiveTolerance(expectedExpiryDate);
+        expect(msg.from).toEqual(proxyId);
+        expect(msg.to).toEqual(providerId);
+        expect(msg.expiryDate).toEqualWithPositiveTolerance(expectedExpiryDate);
     }
 
     function checkMessageFromProvider(messageType, expectedExpiryDate) {
         expect(clusterControllerMessagingStub.transmit).toHaveBeenCalled();
         var msg = clusterControllerMessagingStub.transmit.calls.mostRecent().args[0];
         expect(msg.type).toEqual(messageType);
-        expect(msg.header.from).toEqual(providerId);
-        expect(msg.header.to).toEqual(proxyId);
-        expect(msg.header.expiryDate).toEqual(expectedExpiryDate);
+        expect(msg.from).toEqual(providerId);
+        expect(msg.to).toEqual(proxyId);
+        expect(msg.expiryDate).toEqual(expectedExpiryDate);
     }
 
     function checkRequestReplyMessage(expectedExpiryDate) {
@@ -146,8 +146,8 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
     beforeEach(function() {
         jasmine.addMatchers(customMatchers);
 
-        var sendRequestReply = function(providerParticipantId, request, callbackDispatcher) {
-            callbackDispatcher(
+        var sendRequestReply = function(providerParticipantId, request) {
+            return Promise.resolve(
                 new Reply({
                     response: "response",
                     requestReplyId: request.requestReplyId
@@ -365,12 +365,12 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
             expect(clusterControllerMessagingStub.transmit).toHaveBeenCalled();
             var msg = clusterControllerMessagingStub.transmit.calls.mostRecent().args[0];
             expect(msg.type).toEqual(JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST);
-            expect(msg.header.from).toEqual(providerId);
-            expect(msg.header.to).toEqual(multicastId);
-            expect(msg.header.expiryDate).toEqualWithPositiveTolerance(expiryDateMs);
+            expect(msg.from).toEqual(providerId);
+            expect(msg.to).toEqual(multicastId);
+            expect(msg.expiryDate).toEqualWithPositiveTolerance(expiryDateMs);
         });
 
-        it("request and reply", function() {
+        it("request and reply", function(done) {
             var payload = {
                 methodName: "methodName"
             };
@@ -379,16 +379,18 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
                 type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
                 payload: payload,
                 expiryDate: expiryDateMs
+            }).then(function() {
+                expect(requestReplyManager.handleRequest).toHaveBeenCalled();
+                expect(requestReplyManager.handleRequest).toHaveBeenCalledWith(
+                    providerId,
+                    jasmine.objectContaining({
+                        _typeName: "joynr.Request"
+                    })
+                );
+
+                checkRequestReplyMessage(expiryDateMs);
+                done();
             });
-
-            expect(requestReplyManager.handleRequest).toHaveBeenCalled();
-            expect(requestReplyManager.handleRequest).toHaveBeenCalledWith(
-                providerId,
-                jasmine.any(Request),
-                jasmine.any(Function)
-            );
-
-            checkRequestReplyMessage(expiryDateMs);
         });
 
         it("subscription expiry date and subscription reply", function() {
@@ -636,12 +638,12 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
             expect(clusterControllerMessagingStub.transmit).toHaveBeenCalled();
             var msg = clusterControllerMessagingStub.transmit.calls.mostRecent().args[0];
             expect(msg.type).toEqual(JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST);
-            expect(msg.header.from).toEqual(providerId);
-            expect(msg.header.to).toEqual(multicastId);
-            expect(msg.header.expiryDate).toEqualWithPositiveTolerance(expiryDateWithTtlUplift);
+            expect(msg.from).toEqual(providerId);
+            expect(msg.to).toEqual(multicastId);
+            expect(msg.expiryDate).toEqualWithPositiveTolerance(expiryDateWithTtlUplift);
         });
 
-        it("request and reply", function() {
+        it("request and reply", function(done) {
             var payload = {
                 methodName: "methodName"
             };
@@ -650,16 +652,18 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
                 type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
                 payload: payload,
                 expiryDate: expiryDateMs + ttlUpliftMs
+            }).then(function() {
+                expect(requestReplyManager.handleRequest).toHaveBeenCalled();
+                expect(requestReplyManager.handleRequest).toHaveBeenCalledWith(
+                    providerId,
+                    jasmine.objectContaining({
+                        _typeName: "joynr.Request"
+                    })
+                );
+
+                checkRequestReplyMessage(expiryDateWithTtlUplift);
+                done();
             });
-
-            expect(requestReplyManager.handleRequest).toHaveBeenCalled();
-            expect(requestReplyManager.handleRequest).toHaveBeenCalledWith(
-                providerId,
-                jasmine.any(Request),
-                jasmine.any(Function)
-            );
-
-            checkRequestReplyMessage(expiryDateWithTtlUplift);
         });
 
         it("subscription expiry date and subscription reply", function() {

@@ -72,8 +72,8 @@ define([
             var joynrMessage = new JoynrMessage({
                 type : JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
             });
-            joynrMessage.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_EXPIRYDATE, 9360686108031);
-            joynrMessage.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_REPLY_CHANNELID, "me");
+            joynrMessage.expiryDate = 9360686108031;
+            joynrMessage.replyChannelId ="me";
             joynrMessage.payload = "hello";
 
             mr.create(channelId).then(function() {

@@ -21,6 +21,7 @@ var Promise = require("../../../../classes/global/Promise");
 var SharedMqttClient = require("../../../../classes/joynr/messaging/mqtt/SharedMqttClient");
 var MqttAddress = require("../../../../classes/joynr/system/RoutingTypes/MqttAddress");
 var MqttMessagingStubFactory = require("../../../../classes/joynr/messaging/mqtt/MqttMessagingStubFactory");
+var JoynrMessage = require("../../../../classes/joynr/messaging/JoynrMessage");
 
 describe("libjoynr-js.joynr.messaging.mqtt.MqttMessagingStubFactory", function() {
     var mqttMessagingStubFactory, mqttClient;
@@ -41,9 +42,9 @@ describe("libjoynr-js.joynr.messaging.mqtt.MqttMessagingStubFactory", function()
             brokerUri: brokerUri,
             topic: topic
         });
-        joynrMessage = {
-            key: "joynrMessage"
-        };
+        joynrMessage = new JoynrMessage({
+            key: "joynrMessage" // TODO understand what is this key thing?
+        });
 
         done();
     });

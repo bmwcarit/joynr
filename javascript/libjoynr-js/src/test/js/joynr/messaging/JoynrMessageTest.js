@@ -72,11 +72,11 @@ describe("libjoynr-js.joynr.messaging.JoynrMessage", function() {
         });
         var fields = getTestMessageFields();
 
-        joynrMessage.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_EXPIRYDATE, fields.expiryDate);
-        joynrMessage.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_REPLY_CHANNELID, fields.replyChannelId);
+        joynrMessage.expiryDate = fields.expiryDate;
+        joynrMessage.replyChannelId = fields.replyChannelId;
 
-        expect(joynrMessage.header[JoynrMessage.JOYNRMESSAGE_HEADER_EXPIRYDATE]).toEqual(fields.expiryDate);
-        expect(joynrMessage.header[JoynrMessage.JOYNRMESSAGE_HEADER_REPLY_CHANNELID]).toEqual(fields.replyChannelId);
+        expect(joynrMessage.expiryDate).toEqual(fields.expiryDate);
+        expect(joynrMessage.replyChannelId).toEqual(fields.replyChannelId);
 
         expect(joynrMessage.payload).toEqual(payload);
         done();
@@ -92,7 +92,7 @@ describe("libjoynr-js.joynr.messaging.JoynrMessage", function() {
         customHeaders[headerKey] = "customHeaderValue";
 
         joynrMessage.setCustomHeaders(customHeaders);
-        expect(joynrMessage.header[customHeaderKey]).toEqual(customHeaders.headerKey);
+        expect(joynrMessage.getHeader(customHeaderKey)).toEqual(customHeaders.headerKey);
         done();
     });
 
@@ -114,8 +114,8 @@ describe("libjoynr-js.joynr.messaging.JoynrMessage", function() {
 
         expect(retrievedCustomHeaders[headerKey]).toEqual(myCustomHeaders[headerKey]);
         expect(retrievedCustomHeaders[customHeaderKey]).not.toBeDefined();
-        expect(joynrMessage.header[customHeaderKey]).toEqual(myCustomHeaders[headerKey]);
-        expect(joynrMessage.header[headerKey]).toEqual(headerValue);
+        expect(joynrMessage.getHeader(customHeaderKey)).toEqual(myCustomHeaders[headerKey]);
+        expect(joynrMessage.getHeader(headerKey)).toEqual(headerValue);
         done();
     });
 
@@ -134,7 +134,7 @@ describe("libjoynr-js.joynr.messaging.JoynrMessage", function() {
             payload: "hello"
         });
         expect(joynrMessage.isReceivedFromGlobal).toBe(false);
-        joynrMessage.setReceivedFromGlobal(true);
+        joynrMessage.isReceivedFromGlobal = true;
         expect(joynrMessage.isReceivedFromGlobal).toBe(true);
     });
 
@@ -144,7 +144,7 @@ describe("libjoynr-js.joynr.messaging.JoynrMessage", function() {
             payload: "hello"
         });
         expect(joynrMessage.isLocalMessage).toBe(false);
-        joynrMessage.setIsLocalMessage(true);
+        joynrMessage.isLocalMessage = true;
         expect(joynrMessage.isLocalMessage).toBe(true);
     });
 
@@ -154,7 +154,7 @@ describe("libjoynr-js.joynr.messaging.JoynrMessage", function() {
             payload: "hello"
         });
         expect(joynrMessage.compress).toBe(false);
-        joynrMessage.setCompress(true);
+        joynrMessage.compress = true;
         expect(joynrMessage.compress).toBe(true);
     });
 
@@ -179,19 +179,19 @@ describe("libjoynr-js.joynr.messaging.JoynrMessage", function() {
         joynrMessage.to = fields.to;
         joynrMessage.from = fields.from;
 
-        joynrMessage.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_EXPIRYDATE, fields.expiryDate);
-        joynrMessage.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_REPLY_CHANNELID, fields.replyChannelId);
+        joynrMessage.expiryDate = fields.expiryDate;
+        joynrMessage.replyChannelId = fields.replyChannelId;
 
         // stringify and parse to create a new copy
         var json = JSON.stringify(joynrMessage);
-        var newJoynrMessage = JSON.parse(json);
+        var newJoynrMessage = JoynrMessage.parseMessage(JSON.parse(json));
 
-        expect(newJoynrMessage.header[JoynrMessage.JOYNRMESSAGE_HEADER_EXPIRYDATE]).toEqual(fields.expiryDate);
+        expect(newJoynrMessage.expiryDate).toEqual(fields.expiryDate);
 
-        expect(newJoynrMessage.header[JoynrMessage.JOYNRMESSAGE_HEADER_REPLY_CHANNELID]).toEqual(fields.replyChannelId);
+        expect(newJoynrMessage.replyChannelId).toEqual(fields.replyChannelId);
 
-        expect(newJoynrMessage.header[JoynrMessage.JOYNRMESSAGE_HEADER_FROM_PARTICIPANT_ID]).toEqual(fields.from);
+        expect(newJoynrMessage.from).toEqual(fields.from);
 
-        expect(newJoynrMessage.header[JoynrMessage.JOYNRMESSAGE_HEADER_TO_PARTICIPANT_ID]).toEqual(fields.to);
+        expect(newJoynrMessage.to).toEqual(fields.to);
     });
 });

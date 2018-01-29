@@ -146,26 +146,31 @@ function MessageRouter(settings) {
         routingTable[participantId] = undefined;
         persistency.removeItem(that.getStorageKey(participantId));
 
-        function handleParentMessageRouter(resolve, reject) {
-            queuedRemoveNextHopCalls[queuedRemoveNextHopCalls.length] = {
-                participantId: participantId,
-                resolve: resolve,
-                reject: reject
-            };
-        }
-
-        var promise;
         if (routingProxy !== undefined) {
-            promise = routingProxy.removeNextHop({
+            return routingProxy.removeNextHop({
                 participantId: participantId
             });
-        } else if (parentMessageRouterAddress !== undefined) {
-            promise = new Promise(handleParentMessageRouter);
-        } else {
-            promise = Promise.resolve();
         }
-        return promise;
+        if (parentMessageRouterAddress !== undefined) {
+            var deferred = Util.createDeferred();
+            queuedRemoveNextHopCalls[queuedRemoveNextHopCalls.length] = {
+                participantId: participantId,
+                resolve: deferred.resolve,
+                reject: deferred.reject
+            };
+            return deferred.promise;
+        }
+        return Promise.resolve();
     };
+
+    // helper functions for setRoutingProxy
+    function getReplyToAddressOnError(error) {
+        throw new Error(
+            "Failed to get replyToAddress from parent router: " +
+                error +
+                (error instanceof JoynrException ? " " + error.detailMessage : "")
+        );
+    }
 
     /**
      * @function MessageRouter#addNextHopToParentRoutingTable
@@ -210,14 +215,6 @@ function MessageRouter(settings) {
         return Promise.reject(new JoynrRuntimeException({ detailMessage: errorMsg }));
     };
 
-    // helper functions for setRoutingProxy
-    function getReplyToAddressOnError(error) {
-        throw new Error(
-            "Failed to get replyToAddress from parent router: " +
-                error +
-                (error instanceof JoynrException ? " " + error.detailMessage : "")
-        );
-    }
     function handleAddNextHopToParentError(error) {
         if (!isReady()) {
             //in this case, the error is expected, e.g. during shut down
@@ -375,6 +372,20 @@ function MessageRouter(settings) {
         return Promise.resolve(address);
     };
 
+    function containsAddress(array, address) {
+        //each address class provides an equals method, e.g. InProcessAddress
+        var j;
+        if (array === undefined) {
+            return false;
+        }
+        for (j = 0; j < array.length; j++) {
+            if (array[j].equals(address)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * Get the address to which the passed in message should be sent to.
      * This is a multicast address calculated from the header content of the message.
@@ -391,20 +402,6 @@ function MessageRouter(settings) {
             if (address !== undefined) {
                 result.push(address);
             }
-        }
-
-        function containsAddress(array, address) {
-            //each address class provides an equals method, e.g. InProcessAddress
-            var j;
-            if (array === undefined) {
-                return false;
-            }
-            for (j = 0; j < array.length; j++) {
-                if (array[j].equals(address)) {
-                    return true;
-                }
-            }
-            return false;
         }
 
         var multicastIdPattern, receivers;
@@ -424,6 +421,16 @@ function MessageRouter(settings) {
             }
         }
         return result;
+    }
+
+    function routeInternalTransmitOnError(error) {
+        //error while transmitting message
+        log.debug(
+            "Error while transmitting message: " +
+                error +
+                (error instanceof JoynrException ? " " + error.detailMessage : "")
+        );
+        //TODO queue message and retry later
     }
 
     /**
@@ -455,17 +462,6 @@ function MessageRouter(settings) {
             }
         }
 
-        function transmitOnError(error) {
-            //error while transmitting message
-            log.debug(
-                "Error while transmitting message: " +
-                    error +
-                    (error instanceof JoynrException ? " " + error.detailMessage : "")
-            );
-            //TODO queue message and retry later
-            return null;
-        }
-
         messagingStub = settings.messagingStubFactory.createMessagingStub(address);
         if (messagingStub === undefined) {
             errorMsg = "No message receiver found for participantId: " + joynrMessage.to + " queuing message.";
@@ -473,7 +469,7 @@ function MessageRouter(settings) {
             // TODO queue message and retry later
             return Promise.resolve();
         }
-        return messagingStub.transmit(joynrMessage).catch(transmitOnError);
+        return messagingStub.transmit(joynrMessage).catch(routeInternalTransmitOnError);
     }
 
     function registerGlobalRoutingEntryIfRequired(joynrMessage) {
@@ -525,6 +521,7 @@ function MessageRouter(settings) {
         function forwardToRouteInternal(address) {
             return routeInternal(address, joynrMessage);
         }
+
         if (joynrMessage.type === JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST) {
             return Promise.all(getAddressesForMulticast(joynrMessage).map(forwardToRouteInternal));
         }
@@ -572,20 +569,18 @@ function MessageRouter(settings) {
             persistency.setItem(that.getStorageKey(participantId), serializedAddress);
         }
 
-        function parentResolver(resolve, reject) {
-            queuedAddNextHopCalls[queuedAddNextHopCalls.length] = {
-                participantId: participantId,
-                isGloballyVisible: isGloballyVisible,
-                resolve: resolve,
-                reject: reject
-            };
-        }
-
         if (routingProxy !== undefined) {
             // register remotely
             promise = that.addNextHopToParentRoutingTable(participantId, isGloballyVisible);
         } else if (parentMessageRouterAddress !== undefined) {
-            promise = new Promise(parentResolver);
+            var deferred = Util.createDeferred();
+            queuedAddNextHopCalls[queuedAddNextHopCalls.length] = {
+                participantId: participantId,
+                isGloballyVisible: isGloballyVisible,
+                resolve: deferred.resolve,
+                reject: deferred.reject
+            };
+            promise = deferred.promise;
         } else {
             promise = Promise.resolve();
         }
@@ -639,15 +634,14 @@ function MessageRouter(settings) {
             return routingProxy.addMulticastReceiver(parameters);
         }
 
-        function addMulticastReceiverResolver(resolve, reject) {
-            queuedAddMulticastReceiverCalls[queuedAddMulticastReceiverCalls.length] = {
-                parameters: parameters,
-                resolve: resolve,
-                reject: reject
-            };
-        }
+        var deferred = Util.createDeferred();
+        queuedAddMulticastReceiverCalls[queuedAddMulticastReceiverCalls.length] = {
+            parameters: parameters,
+            resolve: deferred.resolve,
+            reject: deferred.reject
+        };
 
-        return new Promise(addMulticastReceiverResolver);
+        return deferred.promise;
     };
 
     /**
@@ -703,14 +697,14 @@ function MessageRouter(settings) {
             return routingProxy.removeMulticastReceiver(parameters);
         }
 
-        function removeMulticastReceiverResolver(resolve, reject) {
-            queuedRemoveMulticastReceiverCalls[queuedRemoveMulticastReceiverCalls.length] = {
-                parameters: parameters,
-                resolve: resolve,
-                reject: reject
-            };
-        }
-        return new Promise(removeMulticastReceiverResolver);
+        var deferred = Util.createDeferred();
+        queuedRemoveMulticastReceiverCalls[queuedRemoveMulticastReceiverCalls.length] = {
+            parameters: parameters,
+            resolve: deferred.resolve,
+            reject: deferred.reject
+        };
+
+        return deferred.promise;
     };
 
     /**

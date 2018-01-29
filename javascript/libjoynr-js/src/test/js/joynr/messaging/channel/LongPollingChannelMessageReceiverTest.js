@@ -85,8 +85,8 @@ describe("libjoynr-js.joynr.messaging.LongPollingChannelMessageReceiver", functi
             type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
             payload: "hello"
         });
-        joynrMessage.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_EXPIRYDATE, 9360686108031);
-        joynrMessage.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_REPLY_CHANNELID, "me");
+        joynrMessage.expiryDate = 9360686108031;
+        joynrMessage.replyChannelId = "me";
 
         // instantiate CommunicationModule spy
         atmosphereSpy = jasmine.createSpyObj("atmosphere", ["subscribe", "unsubscribeUrl"]);

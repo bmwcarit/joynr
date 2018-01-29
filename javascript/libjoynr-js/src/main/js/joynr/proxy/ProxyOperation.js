@@ -109,6 +109,159 @@ function checkArguments(operationArguments) {
 }
 
 /**
+ * Generic operation implementation
+ *
+ * @name ProxyOperation#operationFunction
+ * @function
+ * @private
+ *
+ * @param {Object}
+ *            operationArguments: this object contains all parameters
+ * @param {?}
+ *            operationArguments.OPERATIONARGUMENTNAME: CUSTOM DOC FROM IDL GOES
+ *            HERE, contains the argument value
+ * @param {DiscoveryQos}
+ *            proxyOperation.settings.discoveryQos the Quality of Service parameters
+ *            for arbitration
+ * @param {MessagingQos}
+ *            proxyOperation.settings.messagingQos the Quality of Service parameters
+ *            for messaging
+ *
+ * @param {ProxyOperation}
+ *            proxyOperation the ProxyOperation object in which context the
+ *            operation is called
+ * @param {Array}
+ *            operationSignatures a list holding multiple versions of the signature
+ *            for the overloaded operation
+ * @param {Object}
+ *            operationSignatures.array an object with the argument name as key and
+ *            an object as value defining the type
+ * @param {Object}
+ *            operationSignatures.array.PARAMETERNAME an object describing the
+ *            single parameter
+ * @param {String}
+ *            operationSignatures.array.PARAMETERNAME.type the type of the parameter
+ *
+ * @returns {Object} returns an A+ promise object that will alternatively accept the
+ *            callback functions through its
+ *            functions "then(function (){..}).catch(function ({string}error){..})"
+ *            in A+ promise style instead of using the function parameters
+ */
+function operationFunction(operationArguments) {
+    var i;
+
+    // ensure operationArguments variable holds a valid object and initialize promise object
+    var argumentErrors = checkArguments(operationArguments);
+    if (argumentErrors.length > 0) {
+        return Promise.reject(
+            new Error("error calling operation: " + this.operationName + ": " + argumentErrors.toString())
+        );
+    }
+
+    try {
+        var foundValidOperationSignature,
+            checkResult,
+            caughtErrors = [];
+
+        // cycle through multiple available operation signatures
+        for (i = 0; i < this.operationSignatures.length && foundValidOperationSignature === undefined; ++i) {
+            // check if the parameters from the operation signature is valid for
+            // the provided arguments
+            checkResult = checkSignatureMatch(this.operationSignatures[i], operationArguments || {});
+            if (checkResult !== undefined) {
+                if (checkResult.errorMessage !== undefined) {
+                    caughtErrors.push(checkResult.errorMessage);
+                } else {
+                    foundValidOperationSignature = checkResult.signature;
+                }
+            }
+        }
+
+        // operation was not called because there was no signature found that
+        // matches given arguments
+        if (foundValidOperationSignature === undefined) {
+            return Promise.reject(
+                new Error(
+                    "Could not find a valid operation signature in '" +
+                        JSON.stringify(this.operationSignatures) +
+                        "' for a call to operation '" +
+                        this.operationName +
+                        "' with the arguments: '" +
+                        JSON.stringify(operationArguments) +
+                        "'. The following errors occured during signature check: " +
+                        JSON.stringify(caughtErrors)
+                )
+            );
+        }
+
+        // send it through request reply manager
+        if (foundValidOperationSignature.fireAndForget === true) {
+            // build outgoing request
+            var oneWayRequest = new OneWayRequest({
+                methodName: this.operationName,
+                paramDatatypes: foundValidOperationSignature.inputParameter.paramDatatypes,
+                params: foundValidOperationSignature.inputParameter.params
+            });
+
+            return this.settings.dependencies.requestReplyManager.sendOneWayRequest({
+                toDiscoveryEntry: this.parent.providerDiscoveryEntry,
+                from: this.parent.proxyParticipantId,
+                messagingQos: this.messagingQos,
+                request: oneWayRequest
+            });
+        }
+        if (foundValidOperationSignature.fireAndForget !== true) {
+            // build outgoing request
+            var request = new Request({
+                methodName: this.operationName,
+                paramDatatypes: foundValidOperationSignature.inputParameter.paramDatatypes,
+                params: foundValidOperationSignature.inputParameter.params
+            });
+
+            return this.settings.dependencies.requestReplyManager
+                .sendRequest({
+                    toDiscoveryEntry: this.parent.providerDiscoveryEntry,
+                    from: this.parent.proxyParticipantId,
+                    messagingQos: this.messagingQos,
+                    request: request
+                })
+                .then(function(response) {
+                    var responseKey, argumentValue;
+                    if (
+                        foundValidOperationSignature.outputParameter &&
+                        foundValidOperationSignature.outputParameter.length > 0
+                    ) {
+                        argumentValue = {};
+                        for (responseKey in response) {
+                            if (response.hasOwnProperty(responseKey)) {
+                                if (foundValidOperationSignature.outputParameter[responseKey] !== undefined) {
+                                    argumentValue[
+                                        foundValidOperationSignature.outputParameter[responseKey].name
+                                    ] = Typing.augmentTypes(
+                                        response[responseKey],
+                                        typeRegistry,
+                                        foundValidOperationSignature.outputParameter[responseKey].type
+                                    );
+                                } else {
+                                    return Promise.reject(
+                                        new Error(
+                                            "Unexpected response: " + JSONSerializer.stringify(response[responseKey])
+                                        )
+                                    );
+                                }
+                            }
+                        }
+                    }
+
+                    return argumentValue;
+                });
+        }
+    } catch (e) {
+        return Promise.reject(new Error("error calling operation: " + e.toString()));
+    }
+}
+
+/**
  * Constructor of ProxyOperation object that is used in the generation of proxy objects
  *
  * @constructor
@@ -157,181 +310,9 @@ function ProxyOperation(parent, settings, operationName, operationSignatures) {
 
     // passed in (right-most) messagingQos have precedence; undefined values are
     // ignored
-    var messagingQos = new MessagingQos(Util.extend({}, parent.messagingQos, settings.messagingQos));
+    this.messagingQos = new MessagingQos(Util.extend({}, parent.messagingQos, settings.messagingQos));
 
-    /**
-     * Generic operation implementation
-     *
-     * @name ProxyOperation#operationFunction
-     * @function
-     * @private
-     *
-     * @param {Object}
-     *            operationArguments: this object contains all parameters
-     * @param {?}
-     *            operationArguments.OPERATIONARGUMENTNAME: CUSTOM DOC FROM IDL GOES
-     *            HERE, contains the argument value
-     * @param {DiscoveryQos}
-     *            proxyOperation.settings.discoveryQos the Quality of Service parameters
-     *            for arbitration
-     * @param {MessagingQos}
-     *            proxyOperation.settings.messagingQos the Quality of Service parameters
-     *            for messaging
-     *
-     * @param {ProxyOperation}
-     *            proxyOperation the ProxyOperation object in which context the
-     *            operation is called
-     * @param {Array}
-     *            operationSignatures a list holding multiple versions of the signature
-     *            for the overloaded operation
-     * @param {Object}
-     *            operationSignatures.array an object with the argument name as key and
-     *            an object as value defining the type
-     * @param {Object}
-     *            operationSignatures.array.PARAMETERNAME an object describing the
-     *            single parameter
-     * @param {String}
-     *            operationSignatures.array.PARAMETERNAME.type the type of the parameter
-     *
-     * @returns {Object} returns an A+ promise object that will alternatively accept the
-     *            callback functions through its
-     *            functions "then(function (){..}).catch(function ({string}error){..})"
-     *            in A+ promise style instead of using the function parameters
-     */
-    function operationFunction(operationArguments, proxyOperation, operationSignatures) {
-        var i;
-
-        // ensure operationArguments variable holds a valid object and initialize promise object
-        var argumentErrors = checkArguments(operationArguments);
-        if (argumentErrors.length > 0) {
-            return Promise.reject(
-                new Error("error calling operation: " + operationName + ": " + argumentErrors.toString())
-            );
-        }
-
-        try {
-            var foundValidOperationSignature,
-                checkResult,
-                caughtErrors = [];
-
-            // cycle through multiple available operation signatures
-            for (
-                i = 0;
-                i < proxyOperation.operationSignatures.length && foundValidOperationSignature === undefined;
-                ++i
-            ) {
-                // check if the parameters from the operation signature is valid for
-                // the provided arguments
-                checkResult = checkSignatureMatch(proxyOperation.operationSignatures[i], operationArguments || {});
-                if (checkResult !== undefined) {
-                    if (checkResult.errorMessage !== undefined) {
-                        caughtErrors.push(checkResult.errorMessage);
-                    } else {
-                        foundValidOperationSignature = checkResult.signature;
-                    }
-                }
-            }
-
-            // operation was not called because there was no signature found that
-            // matches given arguments
-            if (foundValidOperationSignature === undefined) {
-                return Promise.reject(
-                    new Error(
-                        "Could not find a valid operation signature in '" +
-                            JSON.stringify(proxyOperation.operationSignatures) +
-                            "' for a call to operation '" +
-                            proxyOperation.operationName +
-                            "' with the arguments: '" +
-                            JSON.stringify(operationArguments) +
-                            "'. The following errors occured during signature check: " +
-                            JSON.stringify(caughtErrors)
-                    )
-                );
-            }
-
-            // send it through request reply manager
-            if (foundValidOperationSignature.fireAndForget === true) {
-                // build outgoing request
-                var oneWayRequest = new OneWayRequest({
-                    methodName: proxyOperation.operationName,
-                    paramDatatypes: foundValidOperationSignature.inputParameter.paramDatatypes,
-                    params: foundValidOperationSignature.inputParameter.params
-                });
-
-                return settings.dependencies.requestReplyManager.sendOneWayRequest({
-                    toDiscoveryEntry: proxyOperation.parent.providerDiscoveryEntry,
-                    from: proxyOperation.parent.proxyParticipantId,
-                    messagingQos: messagingQos,
-                    request: oneWayRequest
-                });
-            }
-            if (foundValidOperationSignature.fireAndForget !== true) {
-                // build outgoing request
-                var request = new Request({
-                    methodName: proxyOperation.operationName,
-                    paramDatatypes: foundValidOperationSignature.inputParameter.paramDatatypes,
-                    params: foundValidOperationSignature.inputParameter.params
-                });
-
-                return settings.dependencies.requestReplyManager
-                    .sendRequest({
-                        toDiscoveryEntry: proxyOperation.parent.providerDiscoveryEntry,
-                        from: proxyOperation.parent.proxyParticipantId,
-                        messagingQos: messagingQos,
-                        request: request
-                    })
-                    .then(function(response) {
-                        var responseKey, argumentValue;
-                        if (
-                            foundValidOperationSignature.outputParameter &&
-                            foundValidOperationSignature.outputParameter.length > 0
-                        ) {
-                            argumentValue = {};
-                            for (responseKey in response) {
-                                if (response.hasOwnProperty(responseKey)) {
-                                    if (foundValidOperationSignature.outputParameter[responseKey] !== undefined) {
-                                        argumentValue[
-                                            foundValidOperationSignature.outputParameter[responseKey].name
-                                        ] = Typing.augmentTypes(
-                                            response[responseKey],
-                                            typeRegistry,
-                                            foundValidOperationSignature.outputParameter[responseKey].type
-                                        );
-                                    } else {
-                                        return Promise.reject(
-                                            new Error(
-                                                "Unexpected response: " +
-                                                    JSONSerializer.stringify(response[responseKey])
-                                            )
-                                        );
-                                    }
-                                }
-                            }
-                        }
-
-                        return argumentValue;
-                    });
-            }
-        } catch (e) {
-            return Promise.reject(new Error("error calling operation: " + e.toString()));
-        }
-    }
-
-    /**
-     * Operation Function builder
-     *
-     * @name ProxyOperation#buildFunction
-     * @function
-     *
-     * @returns {Function} returns the operation function that can be assigned to a
-     *            member of the proxy
-     */
-    this.buildFunction = function buildFunction() {
-        var self = this;
-        return function(operationArguments) {
-            return operationFunction(operationArguments, self, operationSignatures);
-        };
-    };
+    this.settings = settings;
 
     /**
      * The parent proxy object
@@ -353,7 +334,23 @@ function ProxyOperation(parent, settings, operationName, operationSignatures) {
      */
     this.operationSignatures = operationSignatures;
 
-    return Object.freeze(this);
+    return Object.freeze(Util.forwardPrototype(this));
 }
+
+/**
+ * Operation Function builder
+ *
+ * @name ProxyOperation#buildFunction
+ * @function
+ *
+ * @returns {Function} returns the operation function that can be assigned to a
+ *            member of the proxy
+ */
+ProxyOperation.prototype.buildFunction = function buildFunction() {
+    var that = this;
+    return function(operationArguments) {
+        return operationFunction.call(that, operationArguments);
+    };
+};
 
 module.exports = ProxyOperation;
