@@ -33,7 +33,6 @@
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/Runnable.h"
-#include "joynr/SingleThreadedDelayedScheduler.h"
 #include "joynr/SteadyTimer.h"
 #include "joynr/serializer/Serializer.h"
 
@@ -110,6 +109,22 @@ public:
             return nullptr;
         }
         return found->second;
+    }
+
+    /*
+     * Returns the element with the given keyId. The element is removed from the internal map.
+     * In case the element could not be found an empty shared_ptr is returned.
+     */
+    std::shared_ptr<T> take(const Key& keyId)
+    {
+        std::shared_ptr<T> value;
+        std::lock_guard<std::mutex> lock(mutex);
+        auto found = callbackMap.find(keyId);
+        if (found != callbackMap.cend()) {
+            value = found->second;
+            callbackMap.erase(keyId);
+        }
+        return value;
     }
 
     /*
@@ -230,11 +245,9 @@ private:
     std::enable_if_t<std::is_same<ValueType, IReplyCaller>::value> removeAfterTimeout(
             const KeyType& keyId)
     {
-        auto value = lookup(keyId);
-
+        auto value = take(keyId);
         if (value) {
             value->timeOut();
-            remove(keyId);
         }
     }
 

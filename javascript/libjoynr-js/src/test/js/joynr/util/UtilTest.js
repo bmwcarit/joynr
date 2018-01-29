@@ -77,7 +77,7 @@ describe("libjoynr-js.joynr.Util.extend", function() {
         expect(merged.level12).toEqual(subobject);
 
         expect(typeof merged.number === "number").toBeTruthy();
-        expect(Util.isArray(merged.array)).toBeTruthy();
+        expect(Array.isArray(merged.array)).toBeTruthy();
         expect(typeof merged.string === "string").toBeTruthy();
         expect(typeof merged.bool === "boolean").toBeTruthy();
     });
@@ -104,7 +104,7 @@ describe("libjoynr-js.joynr.Util.extend", function() {
         expect(typeof merged.subobject.number === "number").toBeTruthy();
         expect(merged.subobject.number).toEqual(2.0);
 
-        expect(Util.isArray(merged.subobject.array)).toBeTruthy();
+        expect(Array.isArray(merged.subobject.array)).toBeTruthy();
         expect(merged.subobject.array[0]).toEqual(0);
         expect(merged.subobject.array[1]).toEqual(1);
         expect(merged.subobject.array[2]).toEqual(2);

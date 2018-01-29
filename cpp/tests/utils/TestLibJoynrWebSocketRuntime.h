@@ -53,7 +53,10 @@ public:
         LibJoynrWebSocketRuntime::connect([&semaphore]()
         {
             semaphore.notify();
-        }, [](const exceptions::JoynrRuntimeException&){ FAIL(); });
+        }, [](const exceptions::JoynrRuntimeException& error)
+        {
+            FAIL() << "LibJoynrWebSocketRuntime::connect failed: " << error.getMessage();
+        });
 
         return semaphore.waitFor(timeoutMs);
     }

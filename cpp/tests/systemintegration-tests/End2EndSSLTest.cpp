@@ -59,8 +59,8 @@ public:
         : domain(),
           ownerId(),
           useTls(std::get<2>(GetParam())),
-          ccRuntime(nullptr),
-          libJoynrRuntime(nullptr)
+          ccRuntime(),
+          libJoynrRuntime()
     {
         std::string uuid = util::createUuid();
         domain = "cppEnd2EndSSLTest_Domain_" + uuid;
@@ -69,9 +69,11 @@ public:
     }
 
     ~End2EndSSLTest() {
+        libJoynrRuntime->shutdown();
         libJoynrRuntime.reset();
         bool deleteChannel = true;
         ccRuntime->stop(deleteChannel);
+        ccRuntime->shutdown();
         ccRuntime.reset();
 
         std::this_thread::sleep_for(std::chrono::milliseconds(550));

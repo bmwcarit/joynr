@@ -216,6 +216,7 @@ This project has dependencies to:
   io.joynr.tests:inter-language-test-jee under The Apache Software License, Version 2.0
   io.joynr.tests:performance-test under The Apache Software License, Version 2.0
   io.joynr.tests:robustness-test under The Apache Software License, Version 2.0
+  io.joynr.tests:robustness-test-base under The Apache Software License, Version 2.0
   io.joynr.tests:system-integration-test under The Apache Software License, Version 2.0
   io.joynr.tests:test-base under The Apache Software License, Version 2.0
   io.joynr.tools.generator:cpp-generator under The Apache Software License, Version 2.0

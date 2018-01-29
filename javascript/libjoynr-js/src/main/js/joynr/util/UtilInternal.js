@@ -29,10 +29,6 @@ var LongTimer = require("./LongTimer");
  */
 var UtilInternal = {};
 
-var isArray = function isArray(object) {
-    return Object.prototype.toString.call(object) === "[object Array]";
-};
-
 function extend(to, from, deep) {
     var i, key, args;
 
@@ -40,7 +36,7 @@ function extend(to, from, deep) {
         for (key in from) {
             if (from.hasOwnProperty(key)) {
                 if (deep && typeof from[key] === "object") {
-                    if (isArray(from[key]) && !isArray(to[key])) {
+                    if (Array.isArray(from[key]) && !Array.isArray(to[key])) {
                         to[key] = [];
                     } else if (typeof to[key] !== "object") {
                         to[key] = {};
@@ -107,12 +103,6 @@ UtilInternal.forwardPrototype = function(provider) {
     }
     return providerWrapper;
 };
-
-/**
- * @function UtilInternal#isArray
- * @param {?} object
- */
-UtilInternal.isArray = isArray;
 
 /**
  * Deeply copies all attributes to a given out parameter from optional in parameters

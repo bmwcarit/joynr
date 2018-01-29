@@ -34,7 +34,6 @@ public:
 
     MOCK_METHOD1(remove, void(std::vector<std::string> participantIdList));
     MOCK_METHOD1(remove, void(const std::string& participantId));
-    MOCK_METHOD3(lookup, std::vector<joynr::types::GlobalDiscoveryEntry>(const std::vector<std::string>& domain, const std::string& interfaceName, std::int64_t messagingTtl));
     MOCK_METHOD5(lookup, void(
                      const std::vector<std::string>& domain,
                      const std::string& interfaceName,

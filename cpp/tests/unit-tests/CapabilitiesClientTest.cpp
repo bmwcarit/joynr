@@ -59,8 +59,8 @@ TEST_F(CapabilitiesClientTestFixture, callWithoutSetProxyBuilder)
     using ::testing::_;
     EXPECT_CALL(*(proxyBuilder.get()), build()).Times(0);
     EXPECT_CALL(*(proxyBuilder.get()), setCached(_)).Times(0);
-    EXPECT_CALL(*(proxyBuilder.get()), setMessagingQos(_)).Times(0);
-    EXPECT_CALL(*(proxyBuilder.get()), setDiscoveryQos(_)).Times(0);
+    EXPECT_CALL(*(proxyBuilder.get()), setMessagingQosMock(_)).Times(0);
+    EXPECT_CALL(*(proxyBuilder.get()), setDiscoveryQosMock(_)).Times(0);
 
     EXPECT_DEATH(capClient->add(aCapabilitiesInformation,
                                 [](){},
@@ -68,7 +68,6 @@ TEST_F(CapabilitiesClientTestFixture, callWithoutSetProxyBuilder)
                  "Assertion.*");
     EXPECT_DEATH(capClient->remove("aParticipantID"), "Assertion.*");
     EXPECT_DEATH(capClient->remove(participantIds), "Assertion.*");
-    EXPECT_DEATH(capClient->lookup({"domain"}, "interface", 0), "Assertion.*");
     EXPECT_DEATH(capClient->lookup({"domain"}, "interface", 0, onSuccess), "Assertion.*");
     EXPECT_DEATH(capClient->lookup("aParticipantID", onSuccess), "Assertion.*");
 }

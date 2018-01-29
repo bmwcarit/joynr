@@ -115,7 +115,7 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
         std::shared_ptr<ITransportMessageSender> httpMessageSender,
         std::shared_ptr<ITransportMessageReceiver> mqttMessageReceiver,
         std::shared_ptr<ITransportMessageSender> mqttMessageSender)
-        : JoynrRuntime(*settings, std::move(keyChain)),
+        : JoynrRuntimeImpl(*settings, std::move(keyChain)),
           joynrDispatcher(),
           inProcessDispatcher(),
           subscriptionManager(),
@@ -155,7 +155,8 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
           providerReregistrationControllerParticipantId(
                   "providerReregistrationController_participantId"),
           messageNotificationProviderParticipantId(),
-          accessControlListEditorProviderParticipantId()
+          accessControlListEditorProviderParticipantId(),
+          isShuttingDown(false)
 {
 }
 
@@ -334,6 +335,10 @@ void JoynrClusterControllerRuntime::init()
             doMqttMessaging ? mqttSerializedGlobalClusterControllerAddress
                             : httpSerializedGlobalClusterControllerAddress;
 
+    const int maxThreads = 1;
+    std::unique_ptr<MessageQueue<std::string>> messageQueue =
+            std::make_unique<MessageQueue<std::string>>(
+                    clusterControllerSettings.getMessageQueueLimit());
     // init message router
     ccMessageRouter = std::make_shared<CcMessageRouter>(
             messagingSettings,
@@ -346,7 +351,10 @@ void JoynrClusterControllerRuntime::init()
             globalClusterControllerAddress,
             systemServicesSettings.getCcMessageNotificationProviderParticipantId(),
             libjoynrSettings.isMessageRouterPersistencyEnabled(),
-            std::move(transportStatuses));
+            std::move(transportStatuses),
+            maxThreads,
+            std::move(messageQueue));
+
     ccMessageRouter->init();
     if (libjoynrSettings.isMessageRouterPersistencyEnabled()) {
         ccMessageRouter->loadRoutingTable(libjoynrSettings.getMessageRouterPersistenceFilename());
@@ -388,8 +396,6 @@ void JoynrClusterControllerRuntime::init()
             const std::shared_ptr<const joynr::system::RoutingTypes::Address>& destinationAddress) {
         messagingStubFactory->remove(destinationAddress);
     });
-
-    createWsCCMessagingSkeletons();
 
     messagingStubFactory->registerStubFactory(wsMessagingStubFactory);
 
@@ -611,7 +617,7 @@ std::map<std::string, joynr::types::DiscoveryEntryWithMetaInfo> JoynrClusterCont
     std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
     std::string defaultPublicKeyId("");
 
-    auto provisionedDiscoveryEntries = JoynrRuntime::getProvisionedEntries();
+    auto provisionedDiscoveryEntries = JoynrRuntimeImpl::getProvisionedEntries();
     // setting up the provisioned values for GlobalCapabilitiesClient
     // The GlobalCapabilitiesServer is also provisioned in MessageRouter
     types::ProviderQos capabilityProviderQos;
@@ -790,7 +796,7 @@ void JoynrClusterControllerRuntime::unregisterInternalSystemServiceProviders()
     unregisterProvider(routingProviderParticipantId);
 }
 
-void JoynrClusterControllerRuntime::createWsCCMessagingSkeletons()
+void JoynrClusterControllerRuntime::startLocalCommunication()
 {
     if (clusterControllerSettings.isWsTLSPortSet()) {
         std::string certificateAuthorityPemFilename =
@@ -844,40 +850,7 @@ void JoynrClusterControllerRuntime::createWsCCMessagingSkeletons()
 JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime()
 {
     JOYNR_LOG_TRACE(logger(), "entering ~JoynrClusterControllerRuntime");
-
-    if (wsCcMessagingSkeleton) {
-        wsCcMessagingSkeleton->shutdown();
-    }
-    if (wsTLSCcMessagingSkeleton) {
-        wsTLSCcMessagingSkeleton->shutdown();
-    }
-
-    unregisterInternalSystemServiceProviders();
-
-    ccMessageRouter->shutdown();
-    inProcessDispatcher->shutdown();
-    publicationManager->shutdown();
-    subscriptionManager->shutdown();
-    localCapabilitiesDirectory->shutdown();
-
-    stopExternalCommunication();
-
-    // synchronously stop the underlying boost::asio::io_service
-    // this ensures all asynchronous operations are stopped now
-    // which allows a safe shutdown
-    singleThreadIOService->stop();
-
-    multicastMessagingSkeletonDirectory->unregisterSkeleton<system::RoutingTypes::MqttAddress>();
-
-    if (joynrDispatcher != nullptr) {
-        joynrDispatcher->shutdown();
-        joynrDispatcher.reset();
-    }
-
-    inProcessDispatcher.reset();
-
-    inProcessPublicationSender.reset();
-
+    assert(isShuttingDown);
     JOYNR_LOG_TRACE(logger(), "leaving ~JoynrClusterControllerRuntime");
 }
 
@@ -920,6 +893,57 @@ void JoynrClusterControllerRuntime::stopExternalCommunication()
 
 void JoynrClusterControllerRuntime::shutdown()
 {
+    assert(!isShuttingDown);
+    isShuttingDown = true;
+    std::lock_guard<std::mutex> lock(proxyBuildersMutex);
+    for (auto proxyBuilder : proxyBuilders) {
+        proxyBuilder->stop();
+        proxyBuilder.reset();
+    }
+    proxyBuilders.clear();
+
+    if (wsCcMessagingSkeleton) {
+        wsCcMessagingSkeleton->shutdown();
+    }
+    if (wsTLSCcMessagingSkeleton) {
+        wsTLSCcMessagingSkeleton->shutdown();
+    }
+
+    unregisterInternalSystemServiceProviders();
+
+    if (ccMessageRouter) {
+        ccMessageRouter->shutdown();
+    }
+    if (inProcessDispatcher) {
+        inProcessDispatcher->shutdown();
+    }
+    if (publicationManager) {
+        publicationManager->shutdown();
+    }
+    if (subscriptionManager) {
+        subscriptionManager->shutdown();
+    }
+    if (localCapabilitiesDirectory) {
+        localCapabilitiesDirectory->shutdown();
+    }
+
+    stop(true);
+
+    if (multicastMessagingSkeletonDirectory) {
+        multicastMessagingSkeletonDirectory
+                ->unregisterSkeleton<system::RoutingTypes::MqttAddress>();
+    }
+
+    if (joynrDispatcher != nullptr) {
+        joynrDispatcher->shutdown();
+        joynrDispatcher.reset();
+    }
+
+    inProcessPublicationSender.reset();
+}
+
+void JoynrClusterControllerRuntime::shutdownClusterController()
+{
     JOYNR_LOG_TRACE(logger(), "Shutdown Cluster Controller");
     lifetimeSemaphore.notify();
 }
@@ -950,15 +974,23 @@ void JoynrClusterControllerRuntime::start()
 {
     singleThreadIOService->start();
     startExternalCommunication();
+    startLocalCommunication();
 }
 
-void JoynrClusterControllerRuntime::stop(bool deleteChannel)
+void JoynrClusterControllerRuntime::stop(bool deleteHttpChannel)
 {
-    if (deleteChannel) {
-        this->deleteChannel();
+    if (deleteHttpChannel) {
+        deleteChannel();
     }
+
     stopExternalCommunication();
-    singleThreadIOService->stop();
+
+    // synchronously stop the underlying boost::asio::io_service
+    // this ensures all asynchronous operations are stopped now
+    // which allows a safe shutdown
+    if (singleThreadIOService) {
+        singleThreadIOService->stop();
+    }
 }
 
 void JoynrClusterControllerRuntime::deleteChannel()

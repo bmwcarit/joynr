@@ -16,46 +16,39 @@
  * limitations under the License.
  * #L%
  */
-package tests.robustness
 
-interface TestInterface {
-	version { major 0 minor 1 }
+#ifndef CONTEXTSTORAGE_H
+#define CONTEXTSTORAGE_H
 
-	// ATTRIBUTES
-	attribute String attributeString
+namespace joynr
+{
 
-	// METHODS
-	method methodWithStringParameters {
-		in {
-			String stringArg
-		}
-		out {
-			String stringOut
-		}
-	}
+template <typename T>
+class ContextStorage
+{
+public:
+    static void set(const T& context)
+    {
+        get() = context;
+    }
 
-	method methodWithDelayedResponse {
-		in {
-			Int32 delayArg
-		}
-		out {
-			String stringOut
-		}
-	}
+    static void set(T&& context)
+    {
+        get() = std::move(context);
+    }
 
-	method methodToFireBroadcastWithSingleStringParameter {
-	}
+    static T& get()
+    {
+        static T context;
+        return context;
+    }
 
-	method startFireBroadcastWithSingleStringParameter {
-	}
+    static void invalidate()
+    {
+        get().invalidate();
+    }
+};
 
-	method stopFireBroadcastWithSingleStringParameter {
-	}
+} // namespace joynr
 
-	// BROADCASTS
-	broadcast broadcastWithSingleStringParameter {
-		out {
-			String stringOut
-		}
-	}
-}
+#endif // CONTEXTSTORAGE_H

@@ -41,8 +41,8 @@ std::shared_ptr<JoynrRuntime> JoynrRuntime::createRuntime(std::unique_ptr<Settin
                                                           std::shared_ptr<IKeychain> keyChain)
 {
     const std::string discoveryEntriesFile("");
-    return JoynrClusterControllerRuntime::create(
-            std::move(settings), discoveryEntriesFile, std::move(keyChain));
+    return std::make_shared<JoynrRuntime>(JoynrClusterControllerRuntime::create(
+            std::move(settings), discoveryEntriesFile, std::move(keyChain)));
 }
 
 std::shared_ptr<JoynrRuntime> JoynrRuntime::createRuntimeAsync(
@@ -50,7 +50,7 @@ std::shared_ptr<JoynrRuntime> JoynrRuntime::createRuntimeAsync(
         std::function<void()> onSuccess,
         std::function<void(const exceptions::JoynrRuntimeException& exception)> onError,
         const std::string& pathToMessagingSettings,
-        std::shared_ptr<IKeychain> keyChain)
+        std::shared_ptr<IKeychain> keyChain) noexcept
 {
     std::shared_ptr<JoynrRuntime> runtime;
 
@@ -72,7 +72,7 @@ std::shared_ptr<JoynrRuntime> JoynrRuntime::createRuntimeAsync(
         std::unique_ptr<Settings> settings,
         std::function<void()> onSuccess,
         std::function<void(const exceptions::JoynrRuntimeException& exception)> onError,
-        std::shared_ptr<IKeychain> keyChain)
+        std::shared_ptr<IKeychain> keyChain) noexcept
 {
     std::shared_ptr<JoynrRuntime> runtime;
     try {

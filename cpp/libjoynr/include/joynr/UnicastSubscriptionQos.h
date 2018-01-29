@@ -30,7 +30,7 @@ namespace joynr
 {
 
 /**
- * @brief Qualtiy of service of unicast subscription.
+ * @brief Quality of service of unicast subscription.
  *
  * Class that stores quality of service settings for subscriptions to
  * <b>selective broadcasts</b>.

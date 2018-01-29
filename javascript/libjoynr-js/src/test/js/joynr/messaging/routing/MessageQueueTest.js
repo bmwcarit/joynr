@@ -1,4 +1,4 @@
-/*jslint node: true */
+/*jslint node: true, nomen: true */
 
 /*
  * #%L
@@ -46,18 +46,16 @@ describe("libjoynr-js.joynr.messaging.routing.MessageQueue", function() {
     joynrMessage2.to = receiverParticipantId;
     joynrMessage2.from = "senderParticipantId2";
 
-    messageQueue = new MessageQueue({
-        maxQueueSizeInKBytes: 0.5
-        // set the qsize to 500 bytes for testing purposes
-    });
-
     beforeEach(function(done) {
         fakeTime = Date.now();
         jasmine.clock().install();
         spyOn(Date, "now").and.callFake(function() {
             return fakeTime;
         });
-        messageQueue.reset();
+        messageQueue = new MessageQueue({
+            maxQueueSizeInKBytes: 0.5
+            // set the qsize to 500 bytes for testing purposes
+        });
         done();
     });
 
@@ -100,6 +98,25 @@ describe("libjoynr-js.joynr.messaging.routing.MessageQueue", function() {
         done();
     });
 
+    it("decreases currentQueueSize upon removing a participantQueue", function(done) {
+        var payload = new Array(10).join("a");
+
+        var joynrMessage = new JoynrMessage({
+            type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
+            payload: payload
+        });
+        joynrMessage.to = receiverParticipantId;
+        joynrMessage.from = "senderParticipantId";
+        var initialQueueSize = messageQueue.currentQueueSize;
+        messageQueue.putMessage(joynrMessage);
+        expect(messageQueue.currentQueueSize).toBe(initialQueueSize + payload.length);
+
+        messageQueue.getAndRemoveMessages(receiverParticipantId);
+        expect(messageQueue.currentQueueSize).toEqual(initialQueueSize);
+
+        done();
+    });
+
     it("put Message adds new queued message, dropped after getAndRemoveMessage call", function(done) {
         var queuedMessages;
         joynrMessage.expiryDate = Date.now() + 1000;
@@ -134,12 +151,14 @@ describe("libjoynr-js.joynr.messaging.routing.MessageQueue", function() {
     it("put Message adds new queued message, dropped after timeout", function(done) {
         var queuedMessages;
         joynrMessage.expiryDate = Date.now() + 1000;
+        var initialQueueSize = messageQueue.currentQueueSize;
         messageQueue.putMessage(joynrMessage);
+        expect(messageQueue.currentQueueSize).toBeGreaterThan(initialQueueSize);
 
         increaseFakeTime(1000 + 1);
 
         queuedMessages = messageQueue.getAndRemoveMessages(receiverParticipantId);
-
+        expect(messageQueue.currentQueueSize).toEqual(initialQueueSize);
         expect(queuedMessages.length).toEqual(0);
         done();
     });
@@ -159,6 +178,13 @@ describe("libjoynr-js.joynr.messaging.routing.MessageQueue", function() {
         expect(queuedMessages[0]).toEqual(joynrMessage2);
         expect(messageQueue.getAndRemoveMessages(receiverParticipantId).length).toEqual(0);
         done();
+    });
+
+    it("deletes a participantQueue in the periodic cleanup after the last message expires", function() {
+        joynrMessage.expiryDate = Date.now() + 1000;
+        messageQueue.putMessage(joynrMessage);
+        increaseFakeTime(10000 + 1); // 10000 is the default cleanup interval
+        expect(messageQueue._participantQueues).toEqual({});
     });
     it(" empty message queue when shut down", function() {
         expect(messageQueue.currentQueueSize).toEqual(0);

@@ -150,6 +150,9 @@ public class InvocationArguments {
             } else if (args[i].equalsIgnoreCase("-jee")) {
                 setParameterElement("jee", args[i + 1].replace("\"", ""));
                 i++;
+            } else if (args[i].equalsIgnoreCase("-ignoreInvalidNullClassMembers")) {
+                setParameterElement("ignoreInvalidNullClassMembers", args[i + 1].replace("\"", ""));
+                i++;
             } else if (args[i].equalsIgnoreCase("-outputHeaderPath")) {
                 setParameterElement("outputHeaderPath", args[i + 1].replace("\"", ""));
                 i++;

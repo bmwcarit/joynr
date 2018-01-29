@@ -41,8 +41,8 @@ class JOYNR_EXPORT AbstractJoynrMessagingConnector
 {
 public:
     AbstractJoynrMessagingConnector(
-            std::shared_ptr<IMessageSender> messageSender,
-            std::shared_ptr<ISubscriptionManager> subscriptionManager,
+            std::weak_ptr<IMessageSender> messageSender,
+            std::weak_ptr<ISubscriptionManager> subscriptionManager,
             const std::string& domain,
             const std::string& interfaceName,
             const std::string& proxyParticipantId,
@@ -61,8 +61,8 @@ public:
     void operationOneWayRequest(OneWayRequest&& request);
 
 protected:
-    std::shared_ptr<IMessageSender> messageSender;
-    std::shared_ptr<ISubscriptionManager> subscriptionManager;
+    std::weak_ptr<IMessageSender> messageSender;
+    std::weak_ptr<ISubscriptionManager> subscriptionManager;
     std::string domain;
     std::string interfaceName;
     std::string proxyParticipantId;

@@ -57,6 +57,10 @@ void LibjoynrSettings::checkSettings()
     if (!settings.contains(SETTING_SUBSCRIPTION_PERSISTENCY_ENABLED())) {
         setSubscriptionPersistencyEnabled(DEFAULT_SUBSCRIPTION_PERSISTENCY_ENABLED());
     }
+
+    if (!settings.contains(SETTING_CLEAR_SUBSCRIPTION_ENABLED())) {
+        setClearSubscriptionEnabled(DEFAULT_CLEAR_SUBSCRIPTION_ENABLED());
+    }
 }
 
 const std::string& LibjoynrSettings::SETTING_BROADCASTSUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME()
@@ -129,6 +133,17 @@ bool LibjoynrSettings::DEFAULT_SUBSCRIPTION_PERSISTENCY_ENABLED()
     return true;
 }
 
+const std::string& LibjoynrSettings::SETTING_CLEAR_SUBSCRIPTION_ENABLED()
+{
+    static const std::string value("lib-joynr/clear-subscription-enabled");
+    return value;
+}
+
+bool LibjoynrSettings::DEFAULT_CLEAR_SUBSCRIPTION_ENABLED()
+{
+    return false;
+}
+
 std::string LibjoynrSettings::getBroadcastSubscriptionRequestPersistenceFilename() const
 {
     return settings.get<std::string>(SETTING_BROADCASTSUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME());
@@ -190,6 +205,16 @@ void LibjoynrSettings::setSubscriptionPersistencyEnabled(bool enable)
     settings.set(SETTING_SUBSCRIPTION_PERSISTENCY_ENABLED(), enable);
 }
 
+void LibjoynrSettings::setClearSubscriptionEnabled(bool enable)
+{
+    settings.set(SETTING_CLEAR_SUBSCRIPTION_ENABLED(), enable);
+}
+
+bool LibjoynrSettings::isClearSubscriptionEnabled() const
+{
+    return settings.get<bool>(SETTING_CLEAR_SUBSCRIPTION_ENABLED());
+}
+
 void LibjoynrSettings::printSettings() const
 {
     JOYNR_LOG_DEBUG(logger(),
@@ -202,6 +227,13 @@ void LibjoynrSettings::printSettings() const
                         "SETTING: {}  = {}",
                         SETTING_MESSAGE_ROUTER_PERSISTENCE_FILENAME(),
                         getMessageRouterPersistenceFilename());
+    }
+
+    if (isClearSubscriptionEnabled()) {
+        JOYNR_LOG_DEBUG(logger(),
+                        "SETTING: {}  = {}",
+                        SETTING_CLEAR_SUBSCRIPTION_ENABLED(),
+                        isClearSubscriptionEnabled());
     }
 
     JOYNR_LOG_DEBUG(logger(),

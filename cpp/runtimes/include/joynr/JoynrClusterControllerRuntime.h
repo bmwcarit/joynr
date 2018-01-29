@@ -74,7 +74,7 @@ class GlobalDomainAccessControllerProxy;
 } // namespace infrastructure
 
 class JOYNRCLUSTERCONTROLLERRUNTIME_EXPORT JoynrClusterControllerRuntime
-        : public JoynrRuntime,
+        : public JoynrRuntimeImpl,
           public IClusterControllerSignalHandler
 {
 public:
@@ -108,13 +108,13 @@ public:
 
     void start();
     void stop(bool deleteChannel = false);
-
+    void shutdown() final;
     void runForever();
 
     // Implement IClusterControllerSignalHandler
     void startExternalCommunication() final;
     void stopExternalCommunication() final;
-    void shutdown() final;
+    void shutdownClusterController() final;
 
     // Functions used by integration tests
     void deleteChannel();
@@ -195,7 +195,7 @@ private:
 
     void registerInternalSystemServiceProviders();
     void unregisterInternalSystemServiceProviders();
-    void createWsCCMessagingSkeletons();
+    void startLocalCommunication();
     std::shared_ptr<joynr::infrastructure::GlobalDomainAccessControllerProxy>
     createGlobalDomainAccessControllerProxy();
 
@@ -218,6 +218,7 @@ private:
     std::string providerReregistrationControllerParticipantId;
     std::string messageNotificationProviderParticipantId;
     std::string accessControlListEditorProviderParticipantId;
+    bool isShuttingDown;
 };
 
 } // namespace joynr

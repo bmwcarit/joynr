@@ -23,6 +23,8 @@
 #include <functional>
 #include <memory>
 
+#include "joynr/IProxyBuilderBase.h"
+
 namespace joynr
 {
 
@@ -37,10 +39,10 @@ class DiscoveryException;
  * @brief Interface to create a proxy object for the given interface T.
  */
 template <class T>
-class IProxyBuilder
+class IProxyBuilder : public IProxyBuilderBase
 {
 public:
-    virtual ~IProxyBuilder() = default;
+    ~IProxyBuilder() override = default;
 
     /**
      * @brief Build the proxy object
@@ -59,22 +61,23 @@ public:
      * @param onError: Will be invoked when the proxy could not be created. An exception, which
      * describes the error, is passed as the parameter.
      */
-    virtual void buildAsync(std::function<void(std::shared_ptr<T> proxy)> onSuccess,
-                            std::function<void(const exceptions::DiscoveryException&)> onError) = 0;
+    virtual void buildAsync(
+            std::function<void(std::shared_ptr<T> proxy)> onSuccess,
+            std::function<void(const exceptions::DiscoveryException&)> onError) noexcept = 0;
 
     /**
      * @brief Sets the messaging qos settings
      * @param messagingQos The message quality of service settings
      * @return The ProxyBuilder object
      */
-    virtual IProxyBuilder* setMessagingQos(const MessagingQos& messagingQos) = 0;
+    virtual IProxyBuilder* setMessagingQos(const MessagingQos& messagingQos) noexcept = 0;
 
     /**
      * @brief Sets the discovery qos settings
      * @param discoveryQos The discovery quality of service settings
      * @return The ProxyBuilder object
      */
-    virtual IProxyBuilder* setDiscoveryQos(const DiscoveryQos& discoveryQos) = 0;
+    virtual IProxyBuilder* setDiscoveryQos(const DiscoveryQos& discoveryQos) noexcept = 0;
 };
 
 } // namespace joynr

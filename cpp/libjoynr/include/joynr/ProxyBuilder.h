@@ -45,7 +45,7 @@ namespace joynr
 {
 
 class ICapabilities;
-class JoynrRuntime;
+class JoynrRuntimeImpl;
 class MessagingSettings;
 
 /**
@@ -70,7 +70,7 @@ public:
      * @param messageRouter A shared pointer to the message router object
      * @param messagingSettings Reference to the messaging settings object
      */
-    ProxyBuilder(std::weak_ptr<JoynrRuntime> runtime,
+    ProxyBuilder(std::weak_ptr<JoynrRuntimeImpl> runtime,
                  ProxyFactory& proxyFactory,
                  std::shared_ptr<IRequestCallerDirectory> requestCallerDirectory,
                  std::weak_ptr<joynr::system::IDiscoveryAsync> discoveryProxy,
@@ -91,6 +91,17 @@ public:
      */
     std::shared_ptr<T> build() override;
 
+    void stop() override
+    {
+        std::lock_guard<std::mutex> lock(arbitratorsMutex);
+        shuttingDown = true;
+        for (auto arbitrator : arbitrators) {
+            arbitrator->stopArbitration();
+            arbitrator.reset();
+        }
+        arbitrators.clear();
+    }
+
     /**
      * @brief Build the proxy object asynchronously
      *
@@ -99,33 +110,36 @@ public:
      * @param onError: Will be invoked when the proxy could not be created. An exception, which
      * describes the error, is passed as the parameter.
      */
-    void buildAsync(std::function<void(std::shared_ptr<T> proxy)> onSuccess,
-                    std::function<void(const exceptions::DiscoveryException&)> onError) override;
+    void buildAsync(
+            std::function<void(std::shared_ptr<T> proxy)> onSuccess,
+            std::function<void(const exceptions::DiscoveryException&)> onError) noexcept override;
 
     /**
      * @brief Sets the messaging qos settings
      * @param messagingQos The message quality of service settings
      * @return The ProxyBuilder object
      */
-    ProxyBuilder* setMessagingQos(const MessagingQos& messagingQos) override;
+    ProxyBuilder* setMessagingQos(const MessagingQos& messagingQos) noexcept override;
 
     /**
      * @brief Sets the discovery qos settings
      * @param discoveryQos The discovery quality of service settings
      * @return The ProxyBuilder object
      */
-    ProxyBuilder* setDiscoveryQos(const DiscoveryQos& discoveryQos) override;
+    ProxyBuilder* setDiscoveryQos(const DiscoveryQos& discoveryQos) noexcept override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(ProxyBuilder);
 
-    std::weak_ptr<JoynrRuntime> runtime;
+    std::weak_ptr<JoynrRuntimeImpl> runtime;
     std::string domain;
     MessagingQos messagingQos;
     ProxyFactory& proxyFactory;
     std::shared_ptr<IRequestCallerDirectory> requestCallerDirectory;
     std::weak_ptr<joynr::system::IDiscoveryAsync> discoveryProxy;
-    std::shared_ptr<Arbitrator> arbitrator;
+    std::vector<std::shared_ptr<Arbitrator>> arbitrators;
+    std::mutex arbitratorsMutex;
+    bool shuttingDown;
 
     std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress;
     std::shared_ptr<IMessageRouter> messageRouter;
@@ -140,7 +154,7 @@ private:
 
 template <class T>
 ProxyBuilder<T>::ProxyBuilder(
-        std::weak_ptr<JoynrRuntime> runtime,
+        std::weak_ptr<JoynrRuntimeImpl> runtime,
         ProxyFactory& proxyFactory,
         std::shared_ptr<IRequestCallerDirectory> requestCallerDirectory,
         std::weak_ptr<system::IDiscoveryAsync> discoveryProxy,
@@ -154,7 +168,9 @@ ProxyBuilder<T>::ProxyBuilder(
           proxyFactory(proxyFactory),
           requestCallerDirectory(requestCallerDirectory),
           discoveryProxy(discoveryProxy),
-          arbitrator(),
+          arbitrators(),
+          arbitratorsMutex(),
+          shuttingDown(false),
           dispatcherAddress(dispatcherAddress),
           messageRouter(messageRouter),
           messagingMaximumTtlMs(messagingSettings.getMaximumTtlMs()),
@@ -195,16 +211,17 @@ std::shared_ptr<T> ProxyBuilder<T>::build()
 template <class T>
 void ProxyBuilder<T>::buildAsync(
         std::function<void(std::shared_ptr<T> proxy)> onSuccess,
-        std::function<void(const exceptions::DiscoveryException& exception)> onError)
+        std::function<void(const exceptions::DiscoveryException& exception)> onError) noexcept
 {
     auto runtimeSharedPtr = runtime.lock();
-    if (runtimeSharedPtr == nullptr) {
+    std::lock_guard<std::mutex> lock(arbitratorsMutex);
+
+    if (runtimeSharedPtr == nullptr || shuttingDown) {
         const exceptions::DiscoveryException error(runtimeAlreadyDestroyed);
         onError(error);
     }
+
     joynr::types::Version interfaceVersion(T::MAJOR_VERSION, T::MINOR_VERSION);
-    arbitrator = ArbitratorFactory::createArbitrator(
-            domain, T::INTERFACE_NAME(), interfaceVersion, discoveryProxy, discoveryQos);
 
     std::shared_ptr<ProxyBuilder<T>> thisSharedPtr = this->shared_from_this();
     auto arbitrationSucceeds = [
@@ -258,11 +275,14 @@ void ProxyBuilder<T>::buildAsync(
         onSuccess(std::move(proxy));
     };
 
+    auto arbitrator = ArbitratorFactory::createArbitrator(
+            domain, T::INTERFACE_NAME(), interfaceVersion, discoveryProxy, discoveryQos);
     arbitrator->startArbitration(std::move(arbitrationSucceeds), std::move(onError));
+    arbitrators.push_back(std::move(arbitrator));
 }
 
 template <class T>
-ProxyBuilder<T>* ProxyBuilder<T>::setMessagingQos(const MessagingQos& messagingQos)
+ProxyBuilder<T>* ProxyBuilder<T>::setMessagingQos(const MessagingQos& messagingQos) noexcept
 {
     this->messagingQos = messagingQos;
     // check validity of messaging maximum TTL
@@ -277,7 +297,7 @@ template <class T>
    ->build() is called on the proxy Builder.
    All parameter that are needed for arbitration should be set, before setDiscoveryQos is called.
 */
-ProxyBuilder<T>* ProxyBuilder<T>::setDiscoveryQos(const DiscoveryQos& discoveryQos)
+ProxyBuilder<T>* ProxyBuilder<T>::setDiscoveryQos(const DiscoveryQos& discoveryQos) noexcept
 {
     this->discoveryQos = discoveryQos;
     if (this->discoveryQos.getDiscoveryTimeoutMs() == DiscoveryQos::NO_VALUE()) {

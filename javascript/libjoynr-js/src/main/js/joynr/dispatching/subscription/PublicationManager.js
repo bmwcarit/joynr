@@ -404,7 +404,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
             throw new Error(
                 'attribute publication for providerId "' +
                     providerId +
-                    "and attribute " +
+                    " and attribute " +
                     attributeName +
                     " is not forwarded to subscribers, as the publication manager is " +
                     "already shut down"
@@ -510,7 +510,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
             throw new Error(
                 'event publication for providerId "' +
                     providerId +
-                    "and eventName " +
+                    " and eventName " +
                     eventName +
                     " is not forwarded to subscribers, as the publication manager is " +
                     "already shut down"
@@ -935,7 +935,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
                         JSONSerializer.stringify(subscriptionRequest) +
                         ". expiryDateMs " +
                         subscriptionRequest.qos.expiryDateMs +
-                        "for ProviderAttribute " +
+                        " for ProviderAttribute " +
                         attributeName +
                         " for providerId " +
                         providerParticipantId +
@@ -959,7 +959,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
                 detailMessage:
                     "error handling subscription request: " +
                     JSONSerializer.stringify(subscriptionRequest) +
-                    "and provider ParticipantId " +
+                    " and provider ParticipantId " +
                     providerParticipantId +
                     ": joynr runtime already shut down",
                 subscriptionId: subscriptionRequest.subscriptionId
@@ -990,7 +990,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         // make sure the provider is registered
         if (provider === undefined) {
             log.info(
-                "Provider with participantId " + providerParticipantId + "not found. Queueing subscription request..."
+                "Provider with participantId " + providerParticipantId + " not found. Queueing subscription request..."
             );
             queuedSubscriptionInfos[subscriptionId] = subscriptionInfo;
             var pendingSubscriptions = queuedProviderParticipantIdToSubscriptionRequestsMapping[providerParticipantId];
@@ -1009,7 +1009,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
                 detailMessage:
                     "error handling subscription request: " +
                     JSONSerializer.stringify(subscriptionRequest) +
-                    ".Provider: " +
+                    ". Provider: " +
                     providerParticipantId +
                     " misses attribute " +
                     attributeName,
@@ -1131,7 +1131,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         callbackDispatcher,
         multicast
     ) {
-        var requestType = multicast ? "multicast" : "broadcast" + " subscription request";
+        var requestType = (multicast ? "multicast" : "broadcast") + " subscription request";
         var exception;
         var timeToEndDate = 0;
         var eventName = subscriptionRequest.subscribedToName;
@@ -1156,7 +1156,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
                         JSONSerializer.stringify(subscriptionRequest) +
                         ". expiryDateMs " +
                         subscriptionRequest.qos.expiryDateMs +
-                        "for ProviderEvent " +
+                        " for ProviderEvent " +
                         eventName +
                         " for providerId " +
                         providerParticipantId +
@@ -1182,7 +1182,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
                     requestType +
                     ": " +
                     JSONSerializer.stringify(subscriptionRequest) +
-                    "and provider ParticipantId " +
+                    " and provider ParticipantId " +
                     providerParticipantId +
                     ": joynr runtime already shut down",
                 subscriptionId: subscriptionRequest.subscriptionId
@@ -1216,7 +1216,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         // make sure the provider is registered
         if (provider === undefined) {
             log.warn(
-                "Provider with participantId " + providerParticipantId + "not found. Queueing " + requestType + "..."
+                "Provider with participantId " + providerParticipantId + " not found. Queueing " + requestType + "..."
             );
             queuedSubscriptionInfos[subscriptionId] = subscriptionInfo;
             var pendingSubscriptions = queuedProviderParticipantIdToSubscriptionRequestsMapping[providerParticipantId];

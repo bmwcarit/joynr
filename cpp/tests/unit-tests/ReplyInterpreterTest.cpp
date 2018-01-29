@@ -28,16 +28,14 @@
 #include "joynr/types/Localisation/Trip.h"
 #include "joynr/types/TestTypes/TEverythingMap.h"
 
+#include "tests/JoynrTest.h"
 #include "tests/mock/MockCallback.h"
 
 using ::testing::A;
 using ::testing::_;
 using ::testing::Property;
 using ::testing::Eq;
-
-MATCHER_P(joynrException, other, "") {
-    return arg->getTypeName() == other.getTypeName() && arg->getMessage() == other.getMessage();
-}
+using ::testing::Pointee;
 
 using namespace joynr;
 
@@ -127,7 +125,10 @@ TEST_F(ReplyInterpreterTest, execute_calls_caller_with_error) {
     auto callback = std::make_shared<MockCallbackWithJoynrException<joynr::types::Localisation::GpsLocation>>();
     EXPECT_CALL(*callback, onSuccess(_))
                 .Times(0);
-    EXPECT_CALL(*callback, onError(joynrException(error)))
+    EXPECT_CALL(*callback, onError(
+                    Pointee(joynrException(
+                                error.getTypeName(),
+                                error.getMessage()))))
                 .Times(1);
 
     // Create a reply caller
@@ -152,7 +153,11 @@ TEST_F(ReplyInterpreterTest, execute_calls_caller_void_with_error) {
     auto callback = std::make_shared<MockCallbackWithJoynrException<void>>();
     EXPECT_CALL(*callback, onSuccess())
                 .Times(0);
-    EXPECT_CALL(*callback, onError(joynrException(error))).Times(1);
+    EXPECT_CALL(*callback, onError(
+                    Pointee(joynrException(
+                                error.getTypeName(),
+                                error.getMessage()))))
+            .Times(1);
 
     // Create a reply caller
     auto icaller = std::make_shared<ReplyCaller<void>> (
@@ -174,7 +179,10 @@ TEST_F(ReplyInterpreterTest, execute_empty_reply) {
     auto callback = std::make_shared<MockCallbackWithJoynrException<joynr::types::Localisation::GpsLocation>>();
     EXPECT_CALL(*callback, onSuccess(_))
                 .Times(0);
-    EXPECT_CALL(*callback, onError(joynrException(error)))
+    EXPECT_CALL(*callback, onError(
+                    Pointee(joynrException(
+                                error.getTypeName(),
+                                error.getMessage()))))
                 .Times(1);
 
     // Create a reply caller

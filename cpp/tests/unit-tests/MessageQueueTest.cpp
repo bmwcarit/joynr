@@ -18,6 +18,7 @@
  */
 #include <chrono>
 #include <cstdint>
+#include <memory>
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
@@ -45,6 +46,14 @@ protected:
     MessageQueue<std::string> messageQueue;
     JoynrTimePoint expiryDate;
 
+    void createAndQueueMessage(const JoynrTimePoint& expiryDate) {
+        MutableMessage mutableMsg;
+        mutableMsg.setExpiryDate(expiryDate);
+        auto immutableMessage = mutableMsg.getImmutableMessage();
+        auto recipient = immutableMessage->getRecipient();
+        messageQueue.queueMessage(recipient, std::move(immutableMessage));
+    }
+
 private:
     DISALLOW_COPY_AND_ASSIGN(MessageQueueTest);
 };
@@ -54,29 +63,50 @@ TEST_F(MessageQueueTest, initialQueueIsEmpty) {
 }
 
 TEST_F(MessageQueueTest, addMultipleMessages) {
-    MutableMessage mutableMsg1;
-    mutableMsg1.setExpiryDate(expiryDate);
-    auto immutableMsg1 = mutableMsg1.getImmutableMessage();
-    auto recipient1 = immutableMsg1->getRecipient();
-    EXPECT_EQ(messageQueue.queueMessage(recipient1, std::move(immutableMsg1)), 1);
+    createAndQueueMessage(expiryDate);
+    EXPECT_EQ(1, messageQueue.getQueueLength());
 
-    MutableMessage mutableMsg2;
-    mutableMsg2.setExpiryDate(expiryDate);
-    auto immutableMsg2 = mutableMsg2.getImmutableMessage();
-    auto recipient2 = immutableMsg2->getRecipient();
-    EXPECT_EQ(messageQueue.queueMessage(recipient2, std::move(immutableMsg2)), 2);
+    createAndQueueMessage(expiryDate);
+    EXPECT_EQ(2, messageQueue.getQueueLength());
 
-    MutableMessage mutableMsg3;
-    mutableMsg3.setExpiryDate(expiryDate);
-    auto immutableMsg3 = mutableMsg3.getImmutableMessage();
-    auto recipient3 = immutableMsg3->getRecipient();
-    EXPECT_EQ(messageQueue.queueMessage(recipient3, std::move(immutableMsg3)), 3);
+    createAndQueueMessage(expiryDate);
+    EXPECT_EQ(3, messageQueue.getQueueLength());
 
-    MutableMessage mutableMsg4;
-    mutableMsg4.setExpiryDate(expiryDate);
-    auto immutableMsg4 = mutableMsg4.getImmutableMessage();
-    auto recipient4 = immutableMsg4->getRecipient();
-    EXPECT_EQ(messageQueue.queueMessage(recipient4, std::move(immutableMsg4)), 4);
+    createAndQueueMessage(expiryDate);
+    EXPECT_EQ(4, messageQueue.getQueueLength());
+}
+
+TEST_F(MessageQueueTest, removeExpiredMessages_AllMessagesExpired) {
+    const JoynrTimePoint zeroTimepoint(std::chrono::milliseconds::zero());
+
+    createAndQueueMessage(zeroTimepoint);
+    createAndQueueMessage(zeroTimepoint);
+    EXPECT_EQ(2, messageQueue.getQueueLength());
+
+    messageQueue.removeOutdatedMessages();
+    EXPECT_EQ(0, messageQueue.getQueueLength());
+}
+
+TEST_F(MessageQueueTest, removeExpiredMessages_SomeMessagesExpired) {
+    const JoynrTimePoint zeroTimepoint(std::chrono::milliseconds::zero());
+
+    createAndQueueMessage(zeroTimepoint);
+    createAndQueueMessage(zeroTimepoint);
+    createAndQueueMessage(expiryDate);
+    createAndQueueMessage(expiryDate);
+    EXPECT_EQ(4, messageQueue.getQueueLength());
+
+    messageQueue.removeOutdatedMessages();
+    EXPECT_EQ(2, messageQueue.getQueueLength());
+}
+
+TEST_F(MessageQueueTest, removeExpiredMessages_NoMessageExpired) {
+    createAndQueueMessage(expiryDate);
+    createAndQueueMessage(expiryDate);
+    EXPECT_EQ(2, messageQueue.getQueueLength());
+
+    messageQueue.removeOutdatedMessages();
+    EXPECT_EQ(2, messageQueue.getQueueLength());
 }
 
 TEST_F(MessageQueueTest, queueDequeueMessages) {
@@ -98,11 +128,11 @@ TEST_F(MessageQueueTest, queueDequeueMessages) {
 
     // get messages from queue
     auto item = messageQueue.getNextMessageFor(recipient1);
-    compareMutableImmutableMessage(mutableMsg1, item->getContent());
+    compareMutableImmutableMessage(mutableMsg1, item);
     EXPECT_EQ(messageQueue.getQueueLength(), 1);
 
     item = messageQueue.getNextMessageFor(recipient2);
-    compareMutableImmutableMessage(mutableMsg2, item->getContent());
+    compareMutableImmutableMessage(mutableMsg2, item);
     EXPECT_EQ(messageQueue.getQueueLength(), 0);
 }
 
@@ -118,14 +148,76 @@ TEST_F(MessageQueueTest, queueDequeueMultipleMessagesForOneParticipant) {
 
     // get messages from queue
     auto item = messageQueue.getNextMessageFor(participantId);
-    compareMutableImmutableMessage(mutableMessage, item->getContent());
+    compareMutableImmutableMessage(mutableMessage, item);
     EXPECT_EQ(messageQueue.getQueueLength(), 1);
 
     item = messageQueue.getNextMessageFor(participantId);
-    compareMutableImmutableMessage(mutableMessage, item->getContent());
+    compareMutableImmutableMessage(mutableMessage, item);
     EXPECT_EQ(messageQueue.getQueueLength(), 0);
 }
 
 TEST_F(MessageQueueTest, dequeueInvalidParticipantId) {
     EXPECT_EQ(messageQueue.getNextMessageFor("TEST"), nullptr);
+}
+
+class MessageQueueWithLimitTest : public ::testing::Test
+{
+public:
+    MessageQueueWithLimitTest(): messageQueue(messageQueueLimit) {}
+    ~MessageQueueWithLimitTest() = default;
+
+protected:
+    MessageQueue<std::string> messageQueue;
+    static constexpr std::uint64_t messageQueueLimit = 4;
+
+private:
+    DISALLOW_COPY_AND_ASSIGN(MessageQueueWithLimitTest);
+};
+
+// Why this definition needs to be here:
+// https://github.com/google/googletest/blob/master/googletest/docs/FAQ.md#the-compiler-complains-about-undefined-references-to-some-static-const-member-variables-but-i-did-define-them-in-the-class-body-whats-wrong
+// http://en.cppreference.com/w/cpp/language/definition#ODR-use
+constexpr std::uint64_t MessageQueueWithLimitTest::messageQueueLimit;
+
+JoynrTimePoint getExpiryDateFromNow(long long offset)
+{
+    return (std::chrono::time_point_cast<std::chrono::milliseconds>( std::chrono::system_clock::now()) + std::chrono::milliseconds(offset));
+}
+
+TEST_F(MessageQueueWithLimitTest, testAddingMessages)
+{
+    const int messageCount = 5;
+    // Keep in mind that message 1 expires later than message 3. This is done in order to check
+    // if removal deletes the message with lowest ttl and not the first inserted message.
+    const JoynrTimePoint expiryDate[messageCount] = {
+        getExpiryDateFromNow(300),
+        getExpiryDateFromNow(200),
+        getExpiryDateFromNow(100),
+        getExpiryDateFromNow(500),
+        getExpiryDateFromNow(600)
+    };
+
+    const std::string recipient[messageCount] = {
+        "TEST1",
+        "TEST2",
+        "TEST3",
+        "TEST4",
+        "TEST5"};
+
+    for (int i=0; i < messageCount; i++) {
+        MutableMessage mutableMsg;
+        mutableMsg.setRecipient(recipient[i]);
+        mutableMsg.setExpiryDate(expiryDate[i]);
+        auto immutableMsg = mutableMsg.getImmutableMessage();
+        messageQueue.queueMessage(recipient[i], std::move(immutableMsg));
+    }
+
+    EXPECT_EQ(messageQueue.getQueueLength(), MessageQueueWithLimitTest::messageQueueLimit);
+
+    // Check if the message with the lowest TTL (message3) was removed.
+    EXPECT_EQ(messageQueue.getNextMessageFor(recipient[0])->getRecipient(), recipient[0]);
+    EXPECT_EQ(messageQueue.getNextMessageFor(recipient[1])->getRecipient(), recipient[1]);
+    EXPECT_EQ(messageQueue.getNextMessageFor(recipient[2]), nullptr);
+    EXPECT_EQ(messageQueue.getNextMessageFor(recipient[3])->getRecipient(), recipient[3]);
+    EXPECT_EQ(messageQueue.getNextMessageFor(recipient[4])->getRecipient(), recipient[4]);
 }

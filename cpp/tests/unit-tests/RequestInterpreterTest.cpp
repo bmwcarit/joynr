@@ -31,16 +31,12 @@
 #include "joynr/IRequestInterpreter.h"
 #include "joynr/exceptions/MethodInvocationException.h"
 
+#include "tests/JoynrTest.h"
 #include "tests/mock/MockCallback.h"
 #include "tests/mock/MockTestRequestCaller.h"
 
 using ::testing::A;
 using ::testing::_;
-
-MATCHER_P(providerRuntimeException, msg, "") {
-    return arg.getTypeName() == joynr::exceptions::ProviderRuntimeException::TYPE_NAME()
-            && arg.getMessage() == msg;
-}
 
 MATCHER_P(methodInvocationExceptionWithProviderVersion, expectedProviderVersion, "") {
     const joynr::exceptions::MethodInvocationException *methodInvocationExceptionPtr;
@@ -148,7 +144,11 @@ TEST_F(RequestInterpreterTest, execute_callsMethodOnRequestCallerWithProviderRun
     auto onError = [callback] (const std::shared_ptr<exceptions::JoynrException>& exception) {
         callback->onError(*exception);
     };
-    EXPECT_CALL(*callback, onError(providerRuntimeException(mockCaller->providerRuntimeExceptionTestMsg))).Times(1);
+    EXPECT_CALL(*callback, onError(
+                    joynrException(
+                        joynr::exceptions::ProviderRuntimeException::TYPE_NAME(),
+                        mockCaller->providerRuntimeExceptionTestMsg)))
+            .Times(1);
 
     Request request = initRequest(methodName, {});
     interpreter.execute(mockCaller, request, onSuccess, onError);
@@ -171,7 +171,11 @@ TEST_F(RequestInterpreterTest, execute_callsGetterMethodOnRequestCallerWithProvi
     auto onError = [callback] (const std::shared_ptr<exceptions::JoynrException>& exception) {
         callback->onError(*exception);
     };
-    EXPECT_CALL(*callback, onError(providerRuntimeException(mockCaller->providerRuntimeExceptionTestMsg))).Times(1);
+    EXPECT_CALL(*callback, onError(
+                    joynrException(
+                        joynr::exceptions::ProviderRuntimeException::TYPE_NAME(),
+                        mockCaller->providerRuntimeExceptionTestMsg)))
+            .Times(1);
 
     Request request = initRequest(methodName, {});
     interpreter.execute(mockCaller, request, onSuccess, onError);

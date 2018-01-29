@@ -78,7 +78,7 @@ TEST_F(LibJoynrMessageRouterTest, routeMulticastMessageFromLocalProvider_multica
     auto mockRoutingProxy = std::make_unique<MockRoutingProxy>(runtime);
     ON_CALL(
         *mockRoutingProxy,
-        addMulticastReceiverAsync(_,_,_,_,_)
+        addMulticastReceiverAsyncMock(_,_,_,_,_)
     ).WillByDefault(
         DoAll(
             InvokeArgument<3>(),
@@ -118,7 +118,7 @@ TEST_F(LibJoynrMessageRouterTest, addMulticastReceiver_callsParentRouterIfProvid
     const std::string subscriberParticipantId("subscriberParticipantId");
     const std::string providerParticipantId("providerParticipantId");
 
-    EXPECT_CALL(*mockRoutingProxy, resolveNextHopAsync(providerParticipantId,_,_))
+    EXPECT_CALL(*mockRoutingProxy, resolveNextHopAsyncMock(providerParticipantId,_,_))
             .WillOnce(
                 DoAll(
                     InvokeArgument<2>(joynr::exceptions::JoynrRuntimeException("testException")),
@@ -126,7 +126,7 @@ TEST_F(LibJoynrMessageRouterTest, addMulticastReceiver_callsParentRouterIfProvid
             .WillOnce(DoAll(InvokeArgument<1>(false), Return(nullptr)))
             .WillOnce(DoAll(InvokeArgument<1>(true), Return(nullptr)));
 
-    EXPECT_CALL(*mockRoutingProxy, addMulticastReceiverAsync(
+    EXPECT_CALL(*mockRoutingProxy, addMulticastReceiverAsyncMock(
                     multicastId,
                     subscriberParticipantId,
                     providerParticipantId,
@@ -193,7 +193,7 @@ TEST_F(LibJoynrMessageRouterTest, removeMulticastReceiver_CallsParentRouter) {
 
     // Call shall be forwarded to the parent proxy
     EXPECT_CALL(*mockRoutingProxyRef,
-        removeMulticastReceiverAsync(multicastId, subscriberParticipantId, providerParticipantId, _, _));
+        removeMulticastReceiverAsyncMock(multicastId, subscriberParticipantId, providerParticipantId, _, _));
 
     messageRouter->removeMulticastReceiver(multicastId,
         subscriberParticipantId,
@@ -225,7 +225,7 @@ TEST_F(LibJoynrMessageRouterTest, removeMulticastReceiverOfInProcessProvider_cal
         [](const joynr::exceptions::ProviderRuntimeException&){ FAIL() << "onError called"; });
 
     EXPECT_CALL(*mockRoutingProxyRef,
-        removeMulticastReceiverAsync(multicastId, subscriberParticipantId, providerParticipantId, _, _))
+        removeMulticastReceiverAsyncMock(multicastId, subscriberParticipantId, providerParticipantId, _, _))
             .Times(1)
             .WillOnce(
                 DoAll(
@@ -257,7 +257,7 @@ TEST_F(LibJoynrMessageRouterTest, addMulticastReceiver_callsParentRouter) {
 
     // Call shall be forwarded to the parent proxy
     EXPECT_CALL(*mockRoutingProxyRef,
-        addMulticastReceiverAsync(multicastId, subscriberParticipantId, providerParticipantId, _, _));
+        addMulticastReceiverAsyncMock(multicastId, subscriberParticipantId, providerParticipantId, _, _));
 
     messageRouter->addMulticastReceiver(multicastId,
         subscriberParticipantId,
@@ -281,7 +281,7 @@ TEST_F(LibJoynrMessageRouterTest, addMulticastReceiverForWebSocketProvider_calls
     messageRouter->addProvisionedNextHop(providerParticipantId, providerAddress, isGloballyVisible);
 
     EXPECT_CALL(*mockRoutingProxyRef,
-        addMulticastReceiverAsync(multicastId, subscriberParticipantId, providerParticipantId, _, _))
+        addMulticastReceiverAsyncMock(multicastId, subscriberParticipantId, providerParticipantId, _, _))
             .Times(1)
             .WillOnce(
                 DoAll(
@@ -316,7 +316,7 @@ TEST_F(LibJoynrMessageRouterTest, addMulticastReceiverForInProcessProvider_DoesN
     messageRouter->addProvisionedNextHop(providerParticipantId, providerAddress, isGloballyVisible);
 
     EXPECT_CALL(*mockRoutingProxyRef,
-        addMulticastReceiverAsync(multicastId,
+        addMulticastReceiverAsyncMock(multicastId,
                                   subscriberParticipantId,
                                   providerParticipantId, _, _)).Times(0);
 
@@ -339,11 +339,11 @@ void LibJoynrMessageRouterTest::testAddNextHopCallsRoutingProxyCorrectly(const b
     {
         InSequence inSequence;
         EXPECT_CALL(*mockRoutingProxy,
-            addNextHopAsync(Eq(proxyParticipantId),_,_,_,_)
+            addNextHopAsyncMock(Eq(proxyParticipantId),_,_,_,_)
         );
         // call under test
         EXPECT_CALL(*mockRoutingProxy,
-            addNextHopAsync(Eq(providerParticipantId),Eq(*webSocketClientAddress),Eq(isGloballyVisible),_,_)
+            addNextHopAsyncMock(Eq(providerParticipantId),Eq(*webSocketClientAddress),Eq(isGloballyVisible),_,_)
         );
     }
 

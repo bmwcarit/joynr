@@ -55,8 +55,6 @@ public:
                         std::shared_ptr<IReplyCaller> replyCaller,
                         const MessagingQos& qosSettings) override;
 
-    void removeReplyCaller(const std::string& requestReplyId) override;
-
     void addRequestCaller(const std::string& participantId,
                           std::shared_ptr<RequestCaller> requestCaller) override;
 

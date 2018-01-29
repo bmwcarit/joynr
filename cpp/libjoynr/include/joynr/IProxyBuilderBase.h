@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2018 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,38 +17,18 @@
  * #L%
  */
 
-#ifndef THREADLOCALCONTEXTSTORAGE_H
-#define THREADLOCALCONTEXTSTORAGE_H
+#ifndef IPROXYBUILDERBASE_H
+#define IPROXYBUILDERBASE_H
 
 namespace joynr
 {
 
-template <typename T>
-class ThreadLocalContextStorage
+class IProxyBuilderBase
 {
 public:
-    static void set(const T& context)
-    {
-        get() = context;
-    }
-
-    static void set(T&& context)
-    {
-        get() = std::move(context);
-    }
-
-    static T& get()
-    {
-        static thread_local T context;
-        return context;
-    }
-
-    static void invalidate()
-    {
-        get().invalidate();
-    }
+    virtual ~IProxyBuilderBase() = default;
+    virtual void stop() = 0;
 };
 
 } // namespace joynr
-
-#endif // THREADLOCALCONTEXTSTORAGE_H
+#endif // IPROXYBUILDERBASE_H

@@ -199,6 +199,7 @@ var SharedWebSocket = function SharedWebSocket(settings) {
     // send all queued messages, requeuing to the front in case of a problem
     onOpen = function onOpen() {
         try {
+            log.debug("connection opened.");
             initializeConnection(websocket, localAddress);
             sendQueuedMessages(websocket, queuedMessages);
         } catch (e) {
@@ -219,6 +220,7 @@ var SharedWebSocket = function SharedWebSocket(settings) {
             resetConnection();
         }
 
+        log.debug(">>> OUTGOING >>> message with ID " + joynrMessage.msgId);
         return sendMessage(websocket, joynrMessage, queuedMessages).catch(sendMessageOnError);
     };
 

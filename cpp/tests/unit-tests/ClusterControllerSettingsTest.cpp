@@ -50,9 +50,32 @@ TEST(ClusterControllerSettingsTest, accessControlIsDisabled)
 
 TEST(ClusterControllerSettingsTest, clusterControllerAclEntriesPathSet)
 {
-    Settings testSettings("test-resources/CCSettingsWithAccessControlEnabledAndAclFilePathSet.settings");
+    Settings testSettings(
+            "test-resources/CCSettingsWithAccessControlEnabledAndAclFilePathSet.settings");
     ASSERT_TRUE(testSettings.isLoaded());
 
     ClusterControllerSettings clusterControllerSettings(testSettings);
     EXPECT_EQ("test-resources", clusterControllerSettings.getAclEntriesDirectory());
+}
+
+TEST(ClusterControllerSettingsTest, initializedWithDefaultSettings)
+{
+    Settings testSettings("test-resources/CCSettings-nonexistent.settings");
+
+    ASSERT_FALSE(testSettings.isLoaded());
+
+    ClusterControllerSettings clusterControllerSettings(testSettings);
+
+    EXPECT_EQ(clusterControllerSettings.getMessageQueueLimit(),
+              ClusterControllerSettings::DEFAULT_MESSAGE_QUEUE_LIMIT());
+}
+
+TEST(ClusterControllerSettingsTest, messageQueueLimitIsSet)
+{
+    Settings testSettings("test-resources/CCSettingsWithMessageQueueLimit.settings");
+    ASSERT_TRUE(testSettings.isLoaded());
+
+    ClusterControllerSettings clusterControllerSettings(testSettings);
+
+    EXPECT_EQ(clusterControllerSettings.getMessageQueueLimit(), std::uint64_t(10));
 }

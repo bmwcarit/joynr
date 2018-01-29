@@ -45,6 +45,12 @@ public:
     std::shared_ptr<exceptions::SubscriptionException> getError() const;
     void setError(std::shared_ptr<exceptions::SubscriptionException> error);
 
+    /**
+     * @brief Stringifies the class
+     * @return stringified class content
+     */
+    std::string toString() const;
+
     template <typename Archive>
     void serialize(Archive& archive)
     {
@@ -52,6 +58,13 @@ public:
     }
 
 private:
+    /**
+     * @brief printing SubscriptionReply with google-test and google-mock
+     * @param subscriptionReply the object to be printed
+     * @param os the destination output stream the print should go into
+     */
+    friend void PrintTo(const SubscriptionReply& subscriptionReply, ::std::ostream* os);
+
     std::string subscriptionId;
     std::shared_ptr<exceptions::SubscriptionException> error;
 };

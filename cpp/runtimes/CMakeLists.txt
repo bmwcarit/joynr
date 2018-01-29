@@ -65,7 +65,7 @@ set(
 file(
     GLOB JoynrClusterControllerRuntime_SOURCES
     RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-    "JoynrRuntime.cpp"
+    "JoynrRuntimeImpl.cpp"
     "cluster-controller-runtime/*.cpp"
     "cluster-controller-runtime/signal-handler/*.cpp"
 )
@@ -132,7 +132,7 @@ set(
 
 set(
     JoynrRuntime_SOURCES
-    "JoynrRuntime.cpp"
+    "JoynrRuntimeImpl.cpp"
     "libjoynr-runtime/LibJoynrRuntime.cpp"
 )
 

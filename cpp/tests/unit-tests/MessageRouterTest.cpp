@@ -353,5 +353,5 @@ TYPED_TEST(MessageRouterTest, cleanupExpiredMessagesFromTransportNotAvailableQue
     std::this_thread::sleep_for(std::chrono::milliseconds(5500));
     EXPECT_EQ(this->transportNotAvailableQueueRef->getQueueLength(), 1); // it remains immutableMessage2
     auto queuedMessage2 = this->transportNotAvailableQueueRef->getNextMessageFor(mockTransportStatus);
-    EXPECT_EQ(queuedMessage2->getContent(), immutableMessage2);
+    EXPECT_EQ(queuedMessage2, immutableMessage2);
 }

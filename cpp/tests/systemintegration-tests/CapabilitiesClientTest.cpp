@@ -66,13 +66,12 @@ public:
         runtime->init();
     }
 
-    void SetUp() {
+    void SetUp() override {
         runtime->start();
     }
 
-    ~CapabilitiesClientTest() {
-        bool deleteChannel = true;
-        runtime->stop(deleteChannel);
+    ~CapabilitiesClientTest() override {
+        runtime->shutdown();
         test::util::resetAndWaitUntilDestroyed(runtime);
 
         // Delete persisted files

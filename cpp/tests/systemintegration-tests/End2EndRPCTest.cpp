@@ -63,14 +63,13 @@ public:
         discoveryQos.setDiscoveryTimeoutMs(3000);
     }
     // Sets up the test fixture.
-    void SetUp(){
+    void SetUp() override {
        runtime->start();
     }
 
     // Tears down the test fixture.
-    void TearDown(){
-        bool deleteChannel = true;
-        runtime->stop(deleteChannel);
+    void TearDown() override {
+        runtime->shutdown();
         test::util::resetAndWaitUntilDestroyed(runtime);
 
         // Delete persisted files

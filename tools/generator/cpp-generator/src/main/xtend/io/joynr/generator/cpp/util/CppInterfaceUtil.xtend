@@ -94,6 +94,7 @@ class CppInterfaceUtil extends InterfaceUtil {
 	std::shared_ptr<joynr::Future<«returnType»> > «IF className != null»«className»::«ENDIF»get«attributeName.toFirstUpper»Async(
 				std::function<void(const «returnType»& «attributeName»)> onSuccess«defaultArg»,
 				std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError«defaultArg»)
+				noexcept
 '''
 
 	def produceAsyncGetterSignature(FAttribute attribute) {
@@ -156,6 +157,7 @@ class CppInterfaceUtil extends InterfaceUtil {
 				«returnType» «attributeName»,
 				std::function<void(void)> onSuccess«defaultArg»,
 				std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError«defaultArg»)
+				noexcept
 '''
 
     def produceAsyncSetterSignature(FAttribute attribute) {
@@ -245,7 +247,7 @@ class CppInterfaceUtil extends InterfaceUtil {
 					std::function<void (const «getMethodErrorEnum(serviceInterface, method)»& errorEnum)> onApplicationError«defaultArg»,
 				«ENDIF»
 				std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError«defaultArg»
-	)
+	) noexcept
 '''
 
 	def produceAsyncMethodSignature(FInterface serviceInterface, FMethod method) {

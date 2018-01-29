@@ -33,95 +33,98 @@ console.log("Jasmine version: " + jasmine.version);
 // when joynr is a submodule and is placed inside node_modules folder. In order to emulate this
 // behavior the require function is adapted here in order to always return the correct joynr while
 // running tests.
-var mod = require('module');
-var joynr = require('../classes/joynr');
+var mod = require("module");
+var joynr = require("../classes/joynr");
 req = mod.prototype.require;
 
-mod.prototype.require = function (md) {
-    if (md === 'joynr') {
+mod.prototype.require = function(md) {
+    if (md === "joynr") {
         return joynr;
     }
     if (md.endsWith("SmrfNode")) {
         return req("../test-classes/global/SmrfMock");
     }
-    if (md.endsWith('WebSocketNode')) {
-        return req('../test-classes/global/WebSocketMock');
+    if (md.endsWith("WebSocketNode")) {
+        return req("../test-classes/global/WebSocketMock");
     }
     return req.apply(this, arguments);
 };
-console.log('require config setup');
-var ProviderOperationTest = require('../test-classes/joynr/provider/ProviderOperationTest');
-var ProviderTest = require('../test-classes/joynr/provider/ProviderTest');
-var BroadcastOutputParametersTest = require('../test-classes/joynr/provider/BroadcastOutputParametersTest');
-var ProviderAttributeTest = require('../test-classes/joynr/provider/ProviderAttributeTest');
-var ProviderQosTest = require('../test-classes/joynr/provider/ProviderQosTest');
-var ProviderBuilderTest = require('../test-classes/joynr/provider/ProviderBuilderTest');
-var ProviderEventTest = require('../test-classes/joynr/provider/ProviderEventTest');
-var WebMessagingSkeletonTest = require('../test-classes/joynr/messaging/webmessaging/WebMessagingSkeletonTest');
-var WebMessagingStubFactoryTest = require('../test-classes/joynr/messaging/webmessaging/WebMessagingStubFactoryTest');
-var WebMessagingAddressTest = require('../test-classes/joynr/messaging/webmessaging/WebMessagingAddressTest');
-var WebMessagingStubTest = require('../test-classes/joynr/messaging/webmessaging/WebMessagingStubTest');
-var ChannelMessagingStubTest = require('../test-classes/joynr/messaging/channel/ChannelMessagingStubTest');
-var ChannelMessagingStubFactoryTest = require('../test-classes/joynr/messaging/channel/ChannelMessagingStubFactoryTest');
-var LongPollingChannelMessageReceiverTest = require('../test-classes/joynr/messaging/channel/LongPollingChannelMessageReceiverTest');
-var ChannelMessagingSkeletonTest = require('../test-classes/joynr/messaging/channel/ChannelMessagingSkeletonTest');
-var ChannelMessagingSenderTest = require('../test-classes/joynr/messaging/channel/ChannelMessagingSenderTest');
-var MqttMessagingSkeletonTest = require('../test-classes/joynr/messaging/mqtt/MqttMessagingSkeletonTest');
-var MqttMessagingStubFactoryTest = require('../test-classes/joynr/messaging/mqtt/MqttMessagingStubFactoryTest');
-var MqttMessagingStubTest = require('../test-classes/joynr/messaging/mqtt/MqttMessagingStubTest');
-var MessageQueueTest = require('../test-classes/joynr/messaging/routing/MessageQueueTest');
-var MessageRouterTest = require('../test-classes/joynr/messaging/routing/MessageRouterTest');
-var InProcessMessagingStubFactoryTest = require('../test-classes/joynr/messaging/inprocess/InProcessMessagingStubFactoryTest');
-var InProcessMessagingSkeletonTest = require('../test-classes/joynr/messaging/inprocess/InProcessMessagingSkeletonTest');
-var InProcessAddressTest = require('../test-classes/joynr/messaging/inprocess/InProcessAddressTest');
-var InProcessMessagingStubTest = require('../test-classes/joynr/messaging/inprocess/InProcessMessagingStubTest');
-var BrowserMessagingStubFactoryTest = require('../test-classes/joynr/messaging/browser/BrowserMessagingStubFactoryTest');
-var BrowserMessagingSkeletonTest = require('../test-classes/joynr/messaging/browser/BrowserMessagingSkeletonTest');
-var BrowserMessagingStubTest = require('../test-classes/joynr/messaging/browser/BrowserMessagingStubTest');
-var WebSocketMessagingSkeletonTest = require('../test-classes/joynr/messaging/websocket/WebSocketMessagingSkeletonTest');
-var SharedWebSocketTest = require('../test-classes/joynr/messaging/websocket/SharedWebSocketTest');
-var WebSocketMessagingStubFactoryTest = require('../test-classes/joynr/messaging/websocket/WebSocketMessagingStubFactoryTest');
-var WebSocketMessagingStubTest = require('../test-classes/joynr/messaging/websocket/WebSocketMessagingStubTest');
-var MessagingStubFactoryTest = require('../test-classes/joynr/messaging/MessagingStubFactoryTest');
-var JoynrMessageTest = require('../test-classes/joynr/messaging/JoynrMessageTest');
-var MessagingQosTest = require('../test-classes/joynr/messaging/MessagingQosTest');
-var MessageReplyToAddressCalculatorTest = require('../test-classes/joynr/messaging/MessageReplyToAddressCalculatorTest');
-var ProxyAttributeTest = require('../test-classes/joynr/proxy/ProxyAttributeTest');
-var ProxyOperationTest = require('../test-classes/joynr/proxy/ProxyOperationTest');
-var ProxyTest = require('../test-classes/joynr/proxy/ProxyTest');
-var ProxyEventTest = require('../test-classes/joynr/proxy/ProxyEventTest');
-var SubscriptionQosTest = require('../test-classes/joynr/proxy/SubscriptionQosTest');
-var ProxyBuilderTest = require('../test-classes/joynr/proxy/ProxyBuilderTest');
-var CapabilitiesUtilTest = require('../test-classes/joynr/util/CapabilitiesUtilTest');
-var InProcessStubAndSkeletonTest = require('../test-classes/joynr/util/InProcessStubAndSkeletonTest');
-var UtilTest = require('../test-classes/joynr/util/UtilTest');
-var JsonSerializerTest = require('../test-classes/joynr/util/JSONSerializerTest');
-var TypingTest = require('../test-classes/joynr/util/TypingTest');
-var LongTimerTest = require('../test-classes/joynr/util/LongTimerTest');
-var TypeGeneratorTest = require('../test-classes/joynr/util/TypeGeneratorTest');
-var DiscoveryQosTest = require('../test-classes/joynr/capabilities/discovery/DiscoveryQosTest');
-var CapabilityDiscoveryTest = require('../test-classes/joynr/capabilities/discovery/CapabilityDiscoveryTest');
-var CapabilityInformationTest = require('../test-classes/joynr/capabilities/CapabilityInformationTest');
-var ArbitrationStrategiesTest = require('../test-classes/joynr/capabilities/arbitration/ArbitrationStrategiesTest');
-var ArbitratorTest = require('../test-classes/joynr/capabilities/arbitration/ArbitratorTest');
-var CapabilitiesRegistrarTest = require('../test-classes/joynr/capabilities/CapabilitiesRegistrarTest');
-var CapabilitiesStoreTest = require('../test-classes/joynr/capabilities/CapabilitiesStoreTest');
-var ParticipantIdStorageTest = require('../test-classes/joynr/capabilities/ParticipantIdStorageTest');
-var MulticastPublicationTest = require('../test-classes/joynr/dispatching/types/MulticastPublicationTest');
-var SubscriptionPublicationTest = require('../test-classes/joynr/dispatching/types/SubscriptionPublicationTest');
-var RequestTest = require('../test-classes/joynr/dispatching/types/RequestTest');
-var SubscriptionRequestTest = require('../test-classes/joynr/dispatching/types/SubscriptionRequestTest');
-var ReplyTest = require('../test-classes/joynr/dispatching/types/ReplyTest');
-var SubscriptionUtilTest = require('../test-classes/joynr/dispatching/subscription/SubscriptionUtilTest');
-var PublicationManagerTest = require('../test-classes/joynr/dispatching/subscription/PublicationManagerTest');
-var SubscriptionManagerTest = require('../test-classes/joynr/dispatching/subscription/SubscriptionManagerTest');
-var DispatcherTest = require('../test-classes/joynr/dispatching/DispatcherTest');
-var TtlUpliftTest = require('../test-classes/joynr/dispatching/TtlUpliftTest');
-var RequestReplyManagerTest = require('../test-classes/joynr/dispatching/RequestReplyManagerTest');
-var LocalStorageNodeTest = require('../test-classes/global/LocalStorageNodeTest');
-var WebSocketNodeTest = require('../test-classes/global/WebSocketNodeTest');
-(function () {
-    console.log("all tests modules loaded");
-    loadingFinished = true;
-    jasmine.execute();
-}(ProviderOperationTest, ProviderTest, BroadcastOutputParametersTest, ProviderAttributeTest, ProviderQosTest, ProviderBuilderTest, ProviderEventTest, WebMessagingSkeletonTest, WebMessagingStubFactoryTest, WebMessagingAddressTest, WebMessagingStubTest, ChannelMessagingStubTest, ChannelMessagingStubFactoryTest, LongPollingChannelMessageReceiverTest, ChannelMessagingSkeletonTest, ChannelMessagingSenderTest, MqttMessagingSkeletonTest, MqttMessagingStubFactoryTest, MqttMessagingStubTest, MessageQueueTest, MessageRouterTest, InProcessMessagingStubFactoryTest, InProcessMessagingSkeletonTest, InProcessAddressTest, InProcessMessagingStubTest, BrowserMessagingStubFactoryTest, BrowserMessagingSkeletonTest, BrowserMessagingStubTest, WebSocketMessagingSkeletonTest, SharedWebSocketTest, WebSocketMessagingStubFactoryTest, WebSocketMessagingStubTest, MessagingStubFactoryTest, JoynrMessageTest, MessagingQosTest, MessageReplyToAddressCalculatorTest, ProxyAttributeTest, ProxyOperationTest, ProxyTest, ProxyEventTest, SubscriptionQosTest, ProxyBuilderTest, CapabilitiesUtilTest, InProcessStubAndSkeletonTest, UtilTest, JsonSerializerTest, TypingTest, LongTimerTest, TypeGeneratorTest, DiscoveryQosTest, CapabilityDiscoveryTest, CapabilityInformationTest, ArbitrationStrategiesTest, ArbitratorTest, CapabilitiesRegistrarTest, CapabilitiesStoreTest, ParticipantIdStorageTest, MulticastPublicationTest, SubscriptionPublicationTest, RequestTest, SubscriptionRequestTest, ReplyTest, SubscriptionUtilTest, PublicationManagerTest, SubscriptionManagerTest, DispatcherTest, TtlUpliftTest, RequestReplyManagerTest, LocalStorageNodeTest, WebSocketNodeTest));
+
+console.log("require config setup");
+
+var ArbitrationStrategiesTest = require("../test-classes/joynr/capabilities/arbitration/ArbitrationStrategiesTest");
+var ArbitratorTest = require("../test-classes/joynr/capabilities/arbitration/ArbitratorTest");
+var BroadcastOutputParametersTest = require("../test-classes/joynr/provider/BroadcastOutputParametersTest");
+var BrowserMessagingSkeletonTest = require("../test-classes/joynr/messaging/browser/BrowserMessagingSkeletonTest");
+var BrowserMessagingStubFactoryTest = require("../test-classes/joynr/messaging/browser/BrowserMessagingStubFactoryTest");
+var BrowserMessagingStubTest = require("../test-classes/joynr/messaging/browser/BrowserMessagingStubTest");
+var CapabilitiesRegistrarTest = require("../test-classes/joynr/capabilities/CapabilitiesRegistrarTest");
+var CapabilitiesStoreTest = require("../test-classes/joynr/capabilities/CapabilitiesStoreTest");
+var CapabilitiesUtilTest = require("../test-classes/joynr/util/CapabilitiesUtilTest");
+var CapabilityDiscoveryTest = require("../test-classes/joynr/capabilities/discovery/CapabilityDiscoveryTest");
+var CapabilityInformationTest = require("../test-classes/joynr/capabilities/CapabilityInformationTest");
+var ChannelMessagingSenderTest = require("../test-classes/joynr/messaging/channel/ChannelMessagingSenderTest");
+var ChannelMessagingSkeletonTest = require("../test-classes/joynr/messaging/channel/ChannelMessagingSkeletonTest");
+var ChannelMessagingStubFactoryTest = require("../test-classes/joynr/messaging/channel/ChannelMessagingStubFactoryTest");
+var ChannelMessagingStubTest = require("../test-classes/joynr/messaging/channel/ChannelMessagingStubTest");
+var DiscoveryQosTest = require("../test-classes/joynr/capabilities/discovery/DiscoveryQosTest");
+var DispatcherTest = require("../test-classes/joynr/dispatching/DispatcherTest");
+var InProcessAddressTest = require("../test-classes/joynr/messaging/inprocess/InProcessAddressTest");
+var InProcessMessagingSkeletonTest = require("../test-classes/joynr/messaging/inprocess/InProcessMessagingSkeletonTest");
+var InProcessMessagingStubFactoryTest = require("../test-classes/joynr/messaging/inprocess/InProcessMessagingStubFactoryTest");
+var InProcessMessagingStubTest = require("../test-classes/joynr/messaging/inprocess/InProcessMessagingStubTest");
+var InProcessStubAndSkeletonTest = require("../test-classes/joynr/util/InProcessStubAndSkeletonTest");
+var JoynrMessageTest = require("../test-classes/joynr/messaging/JoynrMessageTest");
+var JsonSerializerTest = require("../test-classes/joynr/util/JSONSerializerTest");
+var LocalStorageNodeTest = require("../test-classes/global/LocalStorageNodeTest");
+var LongPollingChannelMessageReceiverTest = require("../test-classes/joynr/messaging/channel/LongPollingChannelMessageReceiverTest");
+var LongTimerTest = require("../test-classes/joynr/util/LongTimerTest");
+var MessageQueueTest = require("../test-classes/joynr/messaging/routing/MessageQueueTest");
+var MessageReplyToAddressCalculatorTest = require("../test-classes/joynr/messaging/MessageReplyToAddressCalculatorTest");
+var MessageRouterTest = require("../test-classes/joynr/messaging/routing/MessageRouterTest");
+var MessagingQosTest = require("../test-classes/joynr/messaging/MessagingQosTest");
+var MessagingStubFactoryTest = require("../test-classes/joynr/messaging/MessagingStubFactoryTest");
+var MethodUtilTest = require('../test-classes/joynr/util/MethodUtilTest');
+var MqttMessagingSkeletonTest = require("../test-classes/joynr/messaging/mqtt/MqttMessagingSkeletonTest");
+var MqttMessagingStubFactoryTest = require("../test-classes/joynr/messaging/mqtt/MqttMessagingStubFactoryTest");
+var MqttMessagingStubTest = require("../test-classes/joynr/messaging/mqtt/MqttMessagingStubTest");
+var MulticastPublicationTest = require("../test-classes/joynr/dispatching/types/MulticastPublicationTest");
+var ParticipantIdStorageTest = require("../test-classes/joynr/capabilities/ParticipantIdStorageTest");
+var ParticipantQueueTest = require("../test-classes/joynr/messaging/routing/ParticipantQueueTest");
+var ProviderAttributeTest = require("../test-classes/joynr/provider/ProviderAttributeTest");
+var ProviderBuilderTest = require("../test-classes/joynr/provider/ProviderBuilderTest");
+var ProviderEventTest = require("../test-classes/joynr/provider/ProviderEventTest");
+var ProviderOperationTest = require("../test-classes/joynr/provider/ProviderOperationTest");
+var ProviderQosTest = require("../test-classes/joynr/provider/ProviderQosTest");
+var ProviderTest = require("../test-classes/joynr/provider/ProviderTest");
+var ProxyAttributeTest = require("../test-classes/joynr/proxy/ProxyAttributeTest");
+var ProxyBuilderTest = require("../test-classes/joynr/proxy/ProxyBuilderTest");
+var ProxyEventTest = require("../test-classes/joynr/proxy/ProxyEventTest");
+var ProxyOperationTest = require("../test-classes/joynr/proxy/ProxyOperationTest");
+var ProxyTest = require("../test-classes/joynr/proxy/ProxyTest");
+var PublicationManagerTest = require("../test-classes/joynr/dispatching/subscription/PublicationManagerTest");
+var ReplyTest = require("../test-classes/joynr/dispatching/types/ReplyTest");
+var RequestReplyManagerTest = require("../test-classes/joynr/dispatching/RequestReplyManagerTest");
+var RequestTest = require("../test-classes/joynr/dispatching/types/RequestTest");
+var SharedWebSocketTest = require("../test-classes/joynr/messaging/websocket/SharedWebSocketTest");
+var SubscriptionManagerTest = require("../test-classes/joynr/dispatching/subscription/SubscriptionManagerTest");
+var SubscriptionPublicationTest = require("../test-classes/joynr/dispatching/types/SubscriptionPublicationTest");
+var SubscriptionQosTest = require("../test-classes/joynr/proxy/SubscriptionQosTest");
+var SubscriptionRequestTest = require("../test-classes/joynr/dispatching/types/SubscriptionRequestTest");
+var SubscriptionUtilTest = require("../test-classes/joynr/dispatching/subscription/SubscriptionUtilTest");
+var TtlUpliftTest = require("../test-classes/joynr/dispatching/TtlUpliftTest");
+var TypeGeneratorTest = require("../test-classes/joynr/util/TypeGeneratorTest");
+var TypingTest = require("../test-classes/joynr/util/TypingTest");
+var UtilTest = require("../test-classes/joynr/util/UtilTest");
+var WebMessagingAddressTest = require("../test-classes/joynr/messaging/webmessaging/WebMessagingAddressTest");
+var WebMessagingSkeletonTest = require("../test-classes/joynr/messaging/webmessaging/WebMessagingSkeletonTest");
+var WebMessagingStubFactoryTest = require("../test-classes/joynr/messaging/webmessaging/WebMessagingStubFactoryTest");
+var WebMessagingStubTest = require("../test-classes/joynr/messaging/webmessaging/WebMessagingStubTest");
+var WebSocketMessagingSkeletonTest = require("../test-classes/joynr/messaging/websocket/WebSocketMessagingSkeletonTest");
+var WebSocketMessagingStubFactoryTest = require("../test-classes/joynr/messaging/websocket/WebSocketMessagingStubFactoryTest");
+var WebSocketMessagingStubTest = require("../test-classes/joynr/messaging/websocket/WebSocketMessagingStubTest");
+var WebSocketNodeTest = require("../test-classes/global/WebSocketNodeTest");
+
+console.log("all tests modules loaded");
+loadingFinished = true;
+jasmine.execute();

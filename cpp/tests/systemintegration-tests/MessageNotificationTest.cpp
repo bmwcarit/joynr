@@ -53,20 +53,28 @@ public:
         clusterControllerRuntime = std::make_shared<JoynrClusterControllerRuntime>(std::make_unique<Settings>(settingsPath));
         clusterControllerRuntime->init();
         clusterControllerRuntime->start();
+    }
 
+    void SetUp() override {
         libjoynrProviderRuntime = std::make_shared<TestLibJoynrWebSocketRuntime>(std::make_unique<Settings>("test-resources/libjoynrSystemIntegration1.settings"));
-        EXPECT_TRUE(libjoynrProviderRuntime->connect(std::chrono::milliseconds(2000)));
+        ASSERT_TRUE(libjoynrProviderRuntime->connect(std::chrono::milliseconds(2000)));
 
         libjoynrProxyRuntime = std::make_shared<TestLibJoynrWebSocketRuntime>(std::make_unique<Settings>("test-resources/libjoynrSystemIntegration2.settings"));
-        EXPECT_TRUE(libjoynrProxyRuntime->connect(std::chrono::milliseconds(2000)));
+        ASSERT_TRUE(libjoynrProxyRuntime->connect(std::chrono::milliseconds(2000)));
     }
 
     ~MessageNotificationTest() override
     {
         const bool deleteChannel = true;
         clusterControllerRuntime->stop(deleteChannel);
+        clusterControllerRuntime->shutdown();
+        libjoynrProxyRuntime->shutdown();
 
         libjoynrProxyRuntime.reset();
+        if (libjoynrProviderRuntime) {
+            libjoynrProviderRuntime->shutdown();
+            libjoynrProviderRuntime.reset();
+        }
         clusterControllerRuntime.reset();
 
         // Delete persisted files
@@ -147,6 +155,7 @@ TEST_F(MessageNotificationTest, messageToDisconnectedProviderCausesBroadcast) {
     future->get(subscriptionId);
 
     // 4. disconnect provider runtime
+    libjoynrProviderRuntime->shutdown();
     libjoynrProviderRuntime.reset();
 
     // 5. execute call on proxy while provider is not connected to cluster-controller

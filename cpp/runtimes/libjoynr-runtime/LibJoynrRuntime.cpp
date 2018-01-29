@@ -49,7 +49,7 @@ namespace joynr
 
 LibJoynrRuntime::LibJoynrRuntime(std::unique_ptr<Settings> settings,
                                  std::shared_ptr<IKeychain> keyChain)
-        : JoynrRuntime(*settings, std::move(keyChain)),
+        : JoynrRuntimeImpl(*settings, std::move(keyChain)),
           subscriptionManager(nullptr),
           inProcessPublicationSender(),
           messageSender(nullptr),
@@ -66,6 +66,18 @@ LibJoynrRuntime::LibJoynrRuntime(std::unique_ptr<Settings> settings,
 
 LibJoynrRuntime::~LibJoynrRuntime()
 {
+    shutdown();
+}
+
+void LibJoynrRuntime::shutdown()
+{
+    std::lock_guard<std::mutex> lock(proxyBuildersMutex);
+    for (auto proxyBuilder : proxyBuilders) {
+        proxyBuilder->stop();
+        proxyBuilder.reset();
+    }
+    proxyBuilders.clear();
+
     if (inProcessDispatcher) {
         inProcessDispatcher->shutdown();
         inProcessDispatcher.reset();

@@ -44,6 +44,8 @@ public:
                              std::shared_ptr<IKeychain> keyChain = nullptr);
     ~LibJoynrWebSocketRuntime() override;
 
+    void shutdown() override;
+
 protected:
     void startLibJoynrMessagingSkeleton(std::shared_ptr<IMessageRouter> messageRouter) override;
     void connect(std::function<void()> onSuccess,
@@ -58,6 +60,7 @@ private:
     WebSocketSettings wsSettings;
     std::shared_ptr<IWebSocketPpClient> websocket;
     std::string initializationMsg;
+    bool isShuttingDown;
     ADD_LOGGER(LibJoynrWebSocketRuntime)
 
     friend class JoynrRuntime;

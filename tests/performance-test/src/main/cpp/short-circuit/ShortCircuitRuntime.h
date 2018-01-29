@@ -28,7 +28,7 @@
 #include "joynr/IMessageRouter.h"
 #include "joynr/InProcessPublicationSender.h"
 #include "joynr/IPlatformSecurityManager.h"
-#include "joynr/JoynrRuntime.h"
+#include "joynr/JoynrRuntimeImpl.h"
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/types/ProviderQos.h"
 
@@ -72,7 +72,7 @@ public:
             const joynr::types::DiscoveryEntry& discoveryEntry,
             std::function<void()> onSuccess = nullptr,
             std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
-                    onRuntimeError = nullptr) override
+                    onRuntimeError = nullptr) noexcept override
     {
         std::ignore = onRuntimeError;
         entry = discoveryEntry;
@@ -87,7 +87,7 @@ public:
             std::function<void(const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result)>
                     onSuccess = nullptr,
             std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
-                    onRuntimeError = nullptr) override
+                    onRuntimeError = nullptr) noexcept override
     {
         std::vector<joynr::types::DiscoveryEntryWithMetaInfo> result;
         result.push_back(joynr::util::convert(true, entry));
@@ -99,7 +99,7 @@ public:
             std::function<void(const joynr::types::DiscoveryEntryWithMetaInfo& result)> onSuccess =
                     nullptr,
             std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
-                    onRuntimeError = nullptr) override
+                    onRuntimeError = nullptr) noexcept override
     {
         return resolve(joynr::util::convert(true, entry), onSuccess);
     }
@@ -108,7 +108,7 @@ public:
             const std::string& participantId,
             std::function<void()> onSuccess = nullptr,
             std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
-                    onRuntimeError = nullptr) override
+                    onRuntimeError = nullptr) noexcept override
     {
         return resolve(onSuccess);
     }
@@ -139,7 +139,7 @@ public:
 /**
  * @brief Very reduced Runtime which uses DummyDiscovery as the discovery proxy.
  */
-class ShortCircuitRuntime : public JoynrRuntime
+class ShortCircuitRuntime : public JoynrRuntimeImpl
 {
 public:
     ShortCircuitRuntime(std::unique_ptr<Settings> settings,

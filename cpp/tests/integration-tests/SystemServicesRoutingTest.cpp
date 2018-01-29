@@ -94,6 +94,7 @@ public:
     ~SystemServicesRoutingTest(){
         runtime->deleteChannel();
         runtime->stopExternalCommunication();
+        runtime->shutdown();        
         runtime.reset();
 
         EXPECT_TRUE(Mock::VerifyAndClearExpectations(std::dynamic_pointer_cast<MockTransportMessageReceiver>(mockMessageReceiverMqtt).get()));

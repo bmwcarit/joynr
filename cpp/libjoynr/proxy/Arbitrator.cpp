@@ -19,7 +19,6 @@
 #include "joynr/Arbitrator.h"
 
 #include <cassert>
-#include <chrono>
 #include <vector>
 
 #include <boost/algorithm/string/join.hpp>
@@ -64,16 +63,7 @@ Arbitrator::Arbitrator(
 
 Arbitrator::~Arbitrator()
 {
-    keepArbitrationRunning = false;
-
-    if (arbitrationThread.joinable()) {
-        // do not cause an abort waiting for ourselves
-        if (std::this_thread::get_id() == arbitrationThread.get_id()) {
-            arbitrationThread.detach();
-        } else {
-            arbitrationThread.join();
-        }
-    }
+    stopArbitration();
 }
 
 void Arbitrator::startArbitration(
@@ -83,6 +73,8 @@ void Arbitrator::startArbitration(
     if (arbitrationRunning) {
         return;
     }
+
+    startTimePoint = std::chrono::system_clock::now();
 
     arbitrationRunning = true;
     keepArbitrationRunning = true;
@@ -106,9 +98,6 @@ void Arbitrator::startArbitration(
                         serializedDomainsList,
                         thisSharedPtr->interfaceName);
 
-        // Arbitrate until successful or timed out
-        auto start = std::chrono::system_clock::now();
-
         while (thisSharedPtr->keepArbitrationRunning) {
             thisSharedPtr->attemptArbitration();
 
@@ -118,13 +107,12 @@ void Arbitrator::startArbitration(
 
             // If there are no suitable providers, retry the arbitration after the retry interval
             // elapsed
-            auto now = std::chrono::system_clock::now();
-            auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - start);
+            const std::int64_t durationMs = thisSharedPtr->getDurationMs();
 
-            if (thisSharedPtr->discoveryQos.getDiscoveryTimeoutMs() <= duration.count()) {
+            if (thisSharedPtr->discoveryQos.getDiscoveryTimeoutMs() <= durationMs) {
                 // discovery timeout reached
                 break;
-            } else if (thisSharedPtr->discoveryQos.getDiscoveryTimeoutMs() - duration.count() <=
+            } else if (thisSharedPtr->discoveryQos.getDiscoveryTimeoutMs() - durationMs <=
                        thisSharedPtr->discoveryQos.getRetryIntervalMs()) {
                 /*
                  * no retry possible -> wait until discoveryTimeout is reached and inform caller
@@ -133,7 +121,7 @@ void Arbitrator::startArbitration(
                  */
 
                 auto waitIntervalMs = std::chrono::milliseconds(
-                        thisSharedPtr->discoveryQos.getDiscoveryTimeoutMs() - duration.count());
+                        thisSharedPtr->discoveryQos.getDiscoveryTimeoutMs() - durationMs);
                 thisSharedPtr.reset();
                 semaphore.waitFor(waitIntervalMs);
                 thisSharedPtr = thisWeakPtr.lock();
@@ -168,23 +156,41 @@ void Arbitrator::startArbitration(
     });
 }
 
+void Arbitrator::stopArbitration()
+{
+    JOYNR_LOG_DEBUG(logger(), "StopArbitrator for interface={}", interfaceName);
+    keepArbitrationRunning = false;
+
+    if (arbitrationThread.joinable()) {
+        JOYNR_LOG_DEBUG(logger(), "Thread can be joined. Joining thread...");
+        arbitrationThread.join();
+    }
+}
+
 void Arbitrator::attemptArbitration()
 {
     std::vector<joynr::types::DiscoveryEntryWithMetaInfo> result;
     try {
         if (auto discoveryProxySharedPtr = discoveryProxy.lock()) {
+            const std::int64_t durationMs = getDurationMs();
+            const std::int64_t waitTimeMs = discoveryQos.getDiscoveryTimeoutMs() - durationMs;
+
+            if (waitTimeMs <= 0) {
+                throw exceptions::JoynrTimeOutException("arbitration timed out");
+            }
+
             if (discoveryQos.getArbitrationStrategy() ==
                 DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT) {
                 types::DiscoveryEntryWithMetaInfo fixedParticipantResult;
                 std::string fixedParticipantId =
                         discoveryQos.getCustomParameter("fixedParticipantId").getValue();
                 auto future = discoveryProxySharedPtr->lookupAsync(fixedParticipantId);
-                future->get(fixedParticipantResult);
+                future->get(waitTimeMs, fixedParticipantResult);
                 result.push_back(fixedParticipantResult);
             } else {
                 auto future = discoveryProxySharedPtr->lookupAsync(
                         domains, interfaceName, systemDiscoveryQos);
-                future->get(result);
+                future->get(waitTimeMs, result);
             }
         } else {
             throw exceptions::JoynrRuntimeException("discoveryProxy not available");
@@ -273,6 +279,14 @@ void Arbitrator::receiveCapabilitiesLookupResults(
             arbitrationFinished = true;
         }
     }
+}
+
+std::int64_t Arbitrator::getDurationMs() const
+{
+    auto now = std::chrono::system_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - startTimePoint);
+
+    return duration.count();
 }
 
 } // namespace joynr

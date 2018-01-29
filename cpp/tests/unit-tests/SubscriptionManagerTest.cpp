@@ -30,7 +30,6 @@
 #include "joynr/OnChangeSubscriptionQos.h"
 #include "joynr/PeriodicSubscriptionQos.h"
 #include "joynr/Runnable.h"
-#include "joynr/SingleThreadedDelayedScheduler.h"
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/SubscriptionManager.h"
 #include "joynr/UnicastSubscriptionCallback.h"
