@@ -515,6 +515,27 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", function() {
         done();
     });
 
+    it("addNextHop won't write InProcessAdresses", function() {
+        address = new InProcessAddress();
+        messageRouter.addNextHop(joynrMessage.to, address);
+        expect(persistencySpy.setItem).not.toHaveBeenCalled();
+
+        expect(messageRouter.removeNextHop.bind(null, joynrMessage.to)).not.toThrow();
+    });
+
+    it("addNextHop will work without Persistency", function(done) {
+        messageRouter = createMessageRouter(null, messageQueueSpy);
+        messageRouter.setReplyToAddress(serializedTestGlobalClusterControllerAddress);
+        messageRouter.addNextHop(joynrMessage.to, address);
+        messageRouter
+            .route(joynrMessage)
+            .then(function() {
+                expect(messagingStubSpy.transmit).toHaveBeenCalled();
+                done();
+            })
+            .catch(fail);
+    });
+
     describe("route multicast messages", function() {
         var parameters;
         var multicastMessage;
