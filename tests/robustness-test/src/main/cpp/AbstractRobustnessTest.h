@@ -60,7 +60,7 @@ protected:
         JOYNR_LOG_INFO(logger(), "Creating proxy for provider on domain {}", providerDomain);
 
         // Initialise the JOYn runtime
-        std::string pathToMessagingSettings("resources/robustness-test-consumer.settings");
+        std::string pathToMessagingSettings("resources/robustness-tests-consumer.settings");
 
         runtime = JoynrRuntime::createRuntime(pathToMessagingSettings);
 
