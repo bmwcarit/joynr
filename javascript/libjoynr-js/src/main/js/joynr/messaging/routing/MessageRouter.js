@@ -1,5 +1,5 @@
 /*global JSON: true */
-/*jslint es5: true, node: true, node: true */
+/*jslint es5: true, node: true, nomen: true */
 /*
  * #%L
  * %%
@@ -565,7 +565,8 @@ function MessageRouter(settings) {
                     " will not be persisted for participant id: " +
                     participantId
             );
-        } else {
+        } else if (address._typeName !== "joynr.system.RoutingTypes.InProcessAddress") {
+            // only persist if it's not an InProcessAddress
             persistency.setItem(that.getStorageKey(participantId), serializedAddress);
         }
 
