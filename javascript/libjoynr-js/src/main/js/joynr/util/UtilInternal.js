@@ -329,5 +329,7 @@ UtilInternal.createDeferred = function() {
     return deferred;
 };
 
+UtilInternal.emptyFunction = function() {};
+
 UtilInternal.extend(UtilInternal, UtilExternal);
 module.exports = UtilInternal;

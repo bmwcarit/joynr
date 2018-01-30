@@ -94,9 +94,25 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
      * @private
      *
      */
-    function storeSubscriptions() {
+    var storeSubscriptions = function storeSubscriptions() {
         var item = SubscriptionUtil.serializeSubscriptionIds(subscriptionInfos);
         persistency.setItem(subscriptionPersistenceKey, item);
+    };
+
+    var removeSubscriptionFromPersistency = function removeSubscriptionFromPersistency(subscriptionId) {
+        persistency.removeItem(subscriptionId);
+        storeSubscriptions();
+    };
+
+    var addSubscriptionToPersistency = function(subscriptionId, subscriptionInfo) {
+        persistency.setItem(subscriptionId, JSON.stringify(subscriptionInfo));
+        storeSubscriptions();
+    };
+
+    if (!persistency) {
+        storeSubscriptions = Util.emptyFunction;
+        removeSubscriptionFromPersistency = Util.emptyFunction;
+        addSubscriptionToPersistency = Util.emptyFunction;
     }
 
     /**
@@ -746,8 +762,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
 
         delete subscriptionInfos[subscriptionId];
 
-        persistency.removeItem(subscriptionId);
-        storeSubscriptions();
+        removeSubscriptionFromPersistency(subscriptionId);
     }
 
     /**
@@ -1117,8 +1132,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         subscriptionInfos[subscriptionId] = subscriptionInfo;
         subscriptions[subscriptionId] = subscriptionInfo;
 
-        persistency.setItem(subscriptionId, JSON.stringify(subscriptionInfo));
-        storeSubscriptions();
+        addSubscriptionToPersistency(subscriptionId, subscriptionInfo);
 
         triggerPublication(subscriptionInfo);
         callbackDispatcherAsync({ subscriptionId: subscriptionId }, callbackDispatcher);
@@ -1341,8 +1355,8 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         subscriptionInfos[subscriptionId] = subscriptionInfo;
         subscriptions[subscriptionId] = subscriptionInfo;
 
-        persistency.setItem(subscriptionId, JSON.stringify(subscriptionInfo));
-        storeSubscriptions();
+        addSubscriptionToPersistency(subscriptionId, subscriptionInfo);
+
         callbackDispatcherAsync(
             {
                 subscriptionId: subscriptionId
@@ -1528,6 +1542,10 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
     this.restore = function restore(callbackAsync) {
         if (!isReady()) {
             throw new Error("PublicationManager is already shut down");
+        }
+
+        if (!persistency) {
+            return;
         }
 
         var subscriptions = persistency.getItem(subscriptionPersistenceKey);

@@ -61,5 +61,11 @@ var routingCapability = {
     isLocal: true
 };
 
+defaultSettings.persistencySettings = {
+    routingTable: false,
+    capabilities: false,
+    publications: true
+};
+
 defaultSettings.capabilities = [discoveryCapability, routingCapability];
 module.exports = defaultSettings;

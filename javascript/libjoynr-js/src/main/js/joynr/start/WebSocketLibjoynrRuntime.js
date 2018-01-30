@@ -65,6 +65,7 @@ var defaultSettings = require("./settings/defaultSettings");
 var defaultWebSocketSettings = require("./settings/defaultWebSocketSettings");
 var defaultLibjoynrSettings = require("./settings/defaultLibjoynrSettings");
 var LocalStorage = require("../../global/LocalStorageNode");
+var MemoryStorage = require("../../global/MemoryStorage");
 var JoynrStates = {
     SHUTDOWN: "shut down",
     STARTING: "starting",
@@ -275,11 +276,25 @@ function WebSocketLibjoynrRuntime(provisioning) {
 
         log = LoggerFactory.getLogger("joynr.start.WebSocketLibjoynrRuntime");
 
-        var persistencyProvisioning = provisioning.persistency || {};
-        persistency = new LocalStorage({
-            clearPersistency: persistencyProvisioning.clearPersistency,
-            location: persistencyProvisioning.location
-        });
+        var persistencyProvisioning = Util.extend(
+            {},
+            defaultLibjoynrSettings.persistencySettings,
+            provisioning.persistency
+        );
+
+        if (
+            persistencyProvisioning.routingTable ||
+            persistencyProvisioning.capabilities ||
+            persistencyProvisioning.publications
+        ) {
+            persistency = new LocalStorage({
+                clearPersistency: persistencyProvisioning.clearPersistency,
+                location: persistencyProvisioning.location
+            });
+        }
+        var routingTablePersistency = persistencyProvisioning.routingTable ? persistency : undefined;
+        var capabilitiesPersistency = persistencyProvisioning.capabilities ? persistency : new MemoryStorage();
+        var publicationsPersistency = persistencyProvisioning.publications ? persistency : undefined;
 
         initialRoutingTable = {};
         untypedCapabilities = provisioning.capabilities || [];
@@ -332,7 +347,7 @@ function WebSocketLibjoynrRuntime(provisioning) {
 
         messageRouter = new MessageRouter({
             initialRoutingTable: initialRoutingTable,
-            persistency: persistency,
+            persistency: routingTablePersistency,
             typeRegistry: typeRegistry,
             joynrInstanceId: uuid(),
             messagingSkeletonFactory: messagingSkeletonFactory,
@@ -377,14 +392,14 @@ function WebSocketLibjoynrRuntime(provisioning) {
 
         requestReplyManager = new RequestReplyManager(dispatcher, typeRegistry);
         subscriptionManager = new SubscriptionManager(dispatcher);
-        publicationManager = new PublicationManager(dispatcher, persistency, "joynrInstanceId"); //TODO: create joynrInstanceId
+        publicationManager = new PublicationManager(dispatcher, publicationsPersistency, "joynrInstanceId"); //TODO: create joynrInstanceId
 
         dispatcher.registerRequestReplyManager(requestReplyManager);
         dispatcher.registerSubscriptionManager(subscriptionManager);
         dispatcher.registerPublicationManager(publicationManager);
         dispatcher.registerMessageRouter(messageRouter);
 
-        participantIdStorage = new ParticipantIdStorage(persistency, uuid);
+        participantIdStorage = new ParticipantIdStorage(capabilitiesPersistency, uuid);
         discovery = new InProcessStub();
 
         capabilitiesRegistrar = Object.freeze(

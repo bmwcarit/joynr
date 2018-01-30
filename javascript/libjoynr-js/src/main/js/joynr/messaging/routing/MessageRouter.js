@@ -144,7 +144,9 @@ function MessageRouter(settings) {
         }
 
         routingTable[participantId] = undefined;
-        persistency.removeItem(that.getStorageKey(participantId));
+        if (persistency) {
+            persistency.removeItem(that.getStorageKey(participantId));
+        }
 
         if (routingProxy !== undefined) {
             return routingProxy.removeNextHop({
@@ -311,17 +313,19 @@ function MessageRouter(settings) {
     function resolveNextHopInternal(participantId) {
         var address, addressString;
 
-        try {
-            addressString = persistency.getItem(that.getStorageKey(participantId));
-            if (addressString === undefined || addressString === null || addressString === "{}") {
-                persistency.removeItem(that.getStorageKey(participantId));
-            } else {
-                address = Typing.augmentTypes(JSON.parse(addressString), typeRegistry);
-                routingTable[participantId] = address;
+        if (persistency) {
+            try {
+                addressString = persistency.getItem(that.getStorageKey(participantId));
+                if (addressString === undefined || addressString === null || addressString === "{}") {
+                    persistency.removeItem(that.getStorageKey(participantId));
+                } else {
+                    address = Typing.augmentTypes(JSON.parse(addressString), typeRegistry);
+                    routingTable[participantId] = address;
+                }
+            } catch (error) {
+                log.error("Failed to get address from persisted routing entries for participant " + participantId);
+                return Promise.reject(error);
             }
-        } catch (error) {
-            log.error("Failed to get address from persisted routing entries for participant " + participantId);
-            return Promise.reject(error);
         }
 
         function resolveNextHopOnSuccess(opArgs) {
@@ -565,7 +569,7 @@ function MessageRouter(settings) {
                     " will not be persisted for participant id: " +
                     participantId
             );
-        } else if (address._typeName !== "joynr.system.RoutingTypes.InProcessAddress") {
+        } else if (address._typeName !== InProcessAddress._typeName && persistency) {
             // only persist if it's not an InProcessAddress
             persistency.setItem(that.getStorageKey(participantId), serializedAddress);
         }

@@ -498,6 +498,7 @@
 										<include>libjoynr-deps*.js</include>
 										<include>require.config.node.js</include>
 										<include>joynr/**</include>
+										<include>global/MemoryStorage.js</include>
 										<include>global/LocalStorageNode.js</include>
 										<include>global/LocalStorage.js</include>
 										<include>global/Mqtt.js</include>
