@@ -487,6 +487,7 @@ TEST_F(CcMessageRouterTest, persistMulticastReceiverDirectory) {
     messageRouter->addNextHop(providerParticipantId, providerAddress, isGloballyVisible, expiryDateMs, isSticky);
     messageRouter->addMulticastReceiver(multicastId, subscriberParticipantId, providerParticipantId, []() {}, nullptr);
 
+    messageRouter->shutdown();
     messageRouter = createMessageRouter();
     messageRouter->addNextHop(providerParticipantId, providerAddress, isGloballyVisible, expiryDateMs, isSticky);
 
@@ -507,6 +508,7 @@ TEST_F(CcMessageRouterTest, doNotSaveInProcessMessagingAddressToFile) {
         messageRouter->addProvisionedNextHop(providerParticipantId, providerAddress, DEFAULT_IS_GLOBALLY_VISIBLE);
     }
 
+    messageRouter->shutdown();
     messageRouter = createMessageRouter();
     messageRouter->loadRoutingTable(routingTablePersistenceFilename);
 
@@ -534,6 +536,7 @@ TEST_F(CcMessageRouterTest, routingTableGetsCleaned) {
     const bool isGloballyVisible = true;
     const bool isSticky = false;
     std::int64_t expiryDateMs = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count() + 4000;
+    messageRouter->shutdown();
     messageRouter = createMessageRouter();
     messageRouter->addNextHop(providerParticipantId, providerAddress, isGloballyVisible, expiryDateMs, isSticky);
 

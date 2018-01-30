@@ -86,6 +86,7 @@ public:
     }
 
     ~MessageRouterTest() override {
+        messageRouter->shutdown();
         singleThreadedIOService->stop();
         std::remove(settingsFileName.c_str());
     }

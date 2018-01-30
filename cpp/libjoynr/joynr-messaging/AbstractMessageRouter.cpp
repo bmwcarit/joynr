@@ -74,15 +74,15 @@ AbstractMessageRouter::AbstractMessageRouter(
           messageQueueCleanerTimer(ioService),
           messageQueueCleanerTimerPeriodMs(std::chrono::milliseconds(1000)),
           routingTableCleanerTimer(ioService),
-          transportStatuses(std::move(transportStatuses))
+          transportStatuses(std::move(transportStatuses)),
+          isShuttingDown(false)
 {
 }
 
 AbstractMessageRouter::~AbstractMessageRouter()
 {
-    // make sure this gets called in any case,
-    // even if we might have called shutdown before manually
-    shutdown();
+    // make sure shutdown() has been called earlier
+    assert(isShuttingDown);
 }
 
 void AbstractMessageRouter::init()
@@ -94,6 +94,15 @@ void AbstractMessageRouter::init()
 
 void AbstractMessageRouter::shutdown()
 {
+    // make sure shutdown() code is executed only once
+    bool previousValue =
+            std::atomic_exchange_explicit(&isShuttingDown, true, std::memory_order_acquire);
+    assert(!previousValue);
+    // bail out in case assert is disabled
+    if (previousValue) {
+        return;
+    }
+
     messageQueueCleanerTimer.cancel();
     routingTableCleanerTimer.cancel();
     messageScheduler->shutdown();

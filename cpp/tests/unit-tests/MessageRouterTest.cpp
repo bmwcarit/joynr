@@ -259,6 +259,7 @@ TYPED_TEST(MessageRouterTest, routedMessageQueuedIfTransportIsNotAvailable) {
     std::function<void(bool)> availabilityChangedCallback;
     EXPECT_CALL(*mockTransportStatus, setAvailabilityChangedCallback(_)).WillOnce(SaveArg<0>(&availabilityChangedCallback));
 
+    this->messageRouter->shutdown();
     this->messageRouter = this->createMessageRouter({mockTransportStatus});
 
     const std::string to = "to";
@@ -313,6 +314,7 @@ TYPED_TEST(MessageRouterTest, restoreRoutingTable) {
     this->messageRouter->addProvisionedNextHop(participantId, address, isGloballyVisible); // Saves routingTable to the persistence file.
 
     // create a new MessageRouter
+    this->messageRouter->shutdown();
     this->messageRouter = this->createMessageRouter();
     this->messageRouter->loadRoutingTable(routingTablePersistenceFilename);
 
@@ -335,6 +337,7 @@ TYPED_TEST(MessageRouterTest, cleanupExpiredMessagesFromTransportNotAvailableQue
     transportStatuses.emplace_back(mockTransportStatus);
 
     // create a new MessageRouter
+    this->messageRouter->shutdown();
     this->messageRouter = this->createMessageRouter({transportStatuses});
     this->messageRouter->addProvisionedNextHop(providerParticipantId, providerAddress, isGloballyVisible); // Saves routingTable to the persistence file.
 
