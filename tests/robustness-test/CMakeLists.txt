@@ -85,6 +85,16 @@ set(robustness-tests-consumer_SOURCES
     "src/main/cpp/RobustnessTestProviderCrash.cpp"
 )
 
+# Use the generated header files for the consumer application
+set(robustness-tests-consumer-mqtt_HEADERS
+    "src/main/cpp/RobustnessTestMqttConnectionReset.h"
+)
+
+# Use the generated source files for the consumer application
+set(robustness-tests-consumer-mqtt_SOURCES
+    "src/main/cpp/RobustnessTestMqttConnectionReset.cpp"
+)
+
 # Use the generated header files for the provider application
 set(robustness-tests-provider_HEADERS
     ${GENERATED_HEADERS}
@@ -194,20 +204,20 @@ target_link_libraries(robustness-tests-ws
 # Compile the test application (requires: running cluster controller)
 # Communicates via WebSockets with cluster controller
 AddTest(
-    robustness-tests-cc
-    ${robustness-tests-consumer_HEADERS}
-    ${robustness-tests-consumer_SOURCES}
+    robustness-tests-consumer-mqtt-cc
+    ${robustness-tests-consumer-mqtt_HEADERS}
+    ${robustness-tests-consumer-mqtt_SOURCES}
 )
 
 target_include_directories(
-    robustness-tests-cc
+    robustness-tests-consumer-mqtt-cc
     PRIVATE ${GENERATED_INCLUDE_DIRS}
     PRIVATE ${Joynr_LIB_COMMON_INCLUDE_DIRS}
     PRIVATE ${Joynr_LIB_INPROCESS_INCLUDE_DIRS}
 )
 
 # Link the test application
-target_link_libraries(robustness-tests-cc
+target_link_libraries(robustness-tests-consumer-mqtt-cc
     robustness-tests-generated
     ${robustness-tests_LIBRARIES}
     ${Joynr_LIB_INPROCESS_LIBRARIES}
@@ -226,12 +236,14 @@ install(TARGETS
             robustness-tests-provider-ws
             robustness-tests-provider-cc
             robustness-tests-ws
+            robustness-tests-consumer-mqtt-cc
         RUNTIME DESTINATION bin COMPONENT bin
 )
 
 AddClangFormat(robustness-tests-provider-ws)
 AddClangFormat(robustness-tests-ws)
 AddClangFormat(robustness-tests-provider-cc)
+AddClangFormat(robustness-tests-consumer-mqtt-cc)
 
 if(NOT DEFINED JOYNR_SERVER_HOST)
     set(JOYNR_SERVER_HOST "localhost")
