@@ -58,7 +58,8 @@ LibJoynrRuntime::LibJoynrRuntime(std::unique_ptr<Settings> settings,
           settings(std::move(settings)),
           libjoynrSettings(new LibjoynrSettings(*this->settings)),
           dispatcherMessagingSkeleton(nullptr),
-          libJoynrMessageRouter(nullptr)
+          libJoynrMessageRouter(nullptr),
+          libJoynrRuntimeIsShuttingDown(false)
 {
     libjoynrSettings->printSettings();
     singleThreadIOService->start();
@@ -66,11 +67,21 @@ LibJoynrRuntime::LibJoynrRuntime(std::unique_ptr<Settings> settings,
 
 LibJoynrRuntime::~LibJoynrRuntime()
 {
-    shutdown();
+    // make sure shutdown() has been called earlier
+    assert(libJoynrRuntimeIsShuttingDown);
 }
 
 void LibJoynrRuntime::shutdown()
 {
+    // protect against parallel and multiple calls of shutdown()
+    bool previousValue = std::atomic_exchange_explicit(
+            &libJoynrRuntimeIsShuttingDown, true, std::memory_order_acquire);
+    assert(!previousValue);
+    // bail out in case assert is disabled
+    if (previousValue) {
+        return;
+    }
+
     std::lock_guard<std::mutex> lock(proxyBuildersMutex);
     for (auto proxyBuilder : proxyBuilders) {
         proxyBuilder->stop();

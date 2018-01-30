@@ -20,8 +20,10 @@
 #ifndef LIBJOYNRRUNTIME_H
 #define LIBJOYNRRUNTIME_H
 
+#include <atomic>
 #include <functional>
 #include <memory>
+#include <mutex>
 #include <string>
 
 #include "joynr/CapabilitiesRegistrar.h"
@@ -83,6 +85,7 @@ protected:
 private:
     DISALLOW_COPY_AND_ASSIGN(LibJoynrRuntime);
     std::shared_ptr<LibJoynrMessageRouter> libJoynrMessageRouter;
+    std::atomic<bool> libJoynrRuntimeIsShuttingDown;
 };
 
 } // namespace joynr
