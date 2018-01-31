@@ -16,6 +16,14 @@ API Stable
 * **[JS]** Verify arrays with Array.isArray() built-in function instead of
   "object.constructor === Array".
 
+## Configuration property changes
+* **[JS]** See the [Javascript Configuration Reference](JavaScriptTutorial.md) for
+  details about the newly introduced properties:
+  * `persistency`
+    * `routingTable`
+    * `capabilities`
+    * `publications`
+
 # joynr 0.33.1
 
 ## API relevant change
