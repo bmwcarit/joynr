@@ -45,8 +45,7 @@ function ParticipantIdStorage(persistency, uuid) {
  * @returns {String} the retrieved or generated participantId
  */
 ParticipantIdStorage.prototype.getParticipantId = function getParticipantId(domain, provider) {
-    var interfaceNameDotted = provider.interfaceName.replace("/", ".");
-    var key = "joynr.participant." + domain + "." + interfaceNameDotted;
+    var key = "joynr.participant." + domain + "." + provider.interfaceName;
     var participantId = this._persistency.getItem(key);
     if (!participantId) {
         participantId = this._uuid();

@@ -34,8 +34,7 @@ describe("libjoynr-js.joynr.capabilities.ParticipantIdStorage", function() {
         interfaceName: interfaceName
     };
     storedParticipantId = "storedParticipantId";
-    var interfaceNameDotted = interfaceName.replace("/", ".");
-    key = "joynr.participant." + domain + "." + interfaceNameDotted;
+    key = "joynr.participant." + domain + "." + interfaceName;
     generatedParticipantId = uuid;
 
     describe("with mocked LocalStorage", function() {
