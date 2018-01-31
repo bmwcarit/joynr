@@ -141,10 +141,10 @@ public class RoutingTableImpl implements RoutingTable {
                             participantId,
                             address,
                             isGloballyVisible,
-                            address,
-                            isGloballyVisible,
                             expiryDateMs,
-                            sticky);
+                            sticky,
+                            result.address,
+                            result.isGloballyVisible);
             } else {
                 // address and isGloballyVisible are identical
 
