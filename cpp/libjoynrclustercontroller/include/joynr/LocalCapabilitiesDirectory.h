@@ -291,8 +291,8 @@ private:
     std::vector<types::DiscoveryEntry> optionalToVector(
             boost::optional<types::DiscoveryEntry> optionalEntry);
     std::vector<types::DiscoveryEntryWithMetaInfo> filterDuplicates(
-            const std::vector<types::DiscoveryEntryWithMetaInfo>& globalCapabilitiesWithMetaInfo,
-            const std::vector<types::DiscoveryEntryWithMetaInfo>& localCapabilitiesWithMetaInfo);
+            std::vector<types::DiscoveryEntryWithMetaInfo>&& globalCapabilitiesWithMetaInfo,
+            std::vector<types::DiscoveryEntryWithMetaInfo>&& localCapabilitiesWithMetaInfo);
 };
 
 class LocalCapabilitiesCallback : public ILocalCapabilitiesCallback

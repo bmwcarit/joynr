@@ -331,8 +331,8 @@ bool LocalCapabilitiesDirectory::getLocalAndCachedCapabilities(
 }
 
 std::vector<types::DiscoveryEntryWithMetaInfo> LocalCapabilitiesDirectory::filterDuplicates(
-        const std::vector<types::DiscoveryEntryWithMetaInfo>& localCapabilitiesWithMetaInfo,
-        const std::vector<types::DiscoveryEntryWithMetaInfo>& globalCapabilitiesWithMetaInfo)
+        std::vector<types::DiscoveryEntryWithMetaInfo>&& localCapabilitiesWithMetaInfo,
+        std::vector<types::DiscoveryEntryWithMetaInfo>&& globalCapabilitiesWithMetaInfo)
 {
     // use custom DiscoveryEntryHash and custom DiscoveryEntryKeyEq to compare only the
     // participantId and to ignore the isLocal flag of DiscoveryEntryWithMetaInfo.
@@ -382,9 +382,9 @@ bool LocalCapabilitiesDirectory::callReceiverIfPossible(
     if (scope == joynr::types::DiscoveryScope::LOCAL_AND_GLOBAL) {
         // return if global entries
         if (!globalCapabilities.empty()) {
-            const std::vector<types::DiscoveryEntryWithMetaInfo> localCapabilitiesWithMetaInfo =
+            std::vector<types::DiscoveryEntryWithMetaInfo> localCapabilitiesWithMetaInfo =
                     util::convert(true, localCapabilities);
-            const std::vector<types::DiscoveryEntryWithMetaInfo> globalCapabilitiesWithMetaInfo =
+            std::vector<types::DiscoveryEntryWithMetaInfo> globalCapabilitiesWithMetaInfo =
                     util::convert(false, globalCapabilities);
 
             // remove duplicates
@@ -433,7 +433,8 @@ void LocalCapabilitiesDirectory::capabilitiesReceived(
         // look if in the meantime there are some local providers registered
         // lookup in the local directory to get local providers which were registered in the
         // meantime.
-        globalEntries = filterDuplicates(std::move(localEntriesWithMetaInfo), globalEntries);
+        globalEntries =
+                filterDuplicates(std::move(localEntriesWithMetaInfo), std::move(globalEntries));
     }
     callback->capabilitiesReceived(std::move(globalEntries));
 }
