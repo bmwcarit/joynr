@@ -116,19 +116,6 @@ void MqttMessagingSkeleton::onMessageReceived(smrf::ByteVector&& rawMessage)
 
     JOYNR_LOG_DEBUG(logger(), "<<< INCOMING <<< {}", immutableMessage->toLogMessage());
 
-    /*
-    // TODO remove uplift ???? cannot modify msg here!
-    const JoynrTimePoint maxAbsoluteTime = DispatcherUtils::getMaxAbsoluteTime();
-    JoynrTimePoint msgExpiryDate = msg.getHeaderExpiryDate();
-    std::int64_t maxDiff = std::chrono::duration_cast<std::chrono::milliseconds>(
-                                   maxAbsoluteTime - msgExpiryDate).count();
-    if (static_cast<std::int64_t>(ttlUplift) > maxDiff) {
-        msg.setHeaderExpiryDate(maxAbsoluteTime);
-    } else {
-        JoynrTimePoint newExpiryDate = msgExpiryDate + std::chrono::milliseconds(ttlUplift);
-        msg.setHeaderExpiryDate(newExpiryDate);
-    }
-    */
     auto onFailure = [messageId = immutableMessage->getId()](
             const exceptions::JoynrRuntimeException& e)
     {
