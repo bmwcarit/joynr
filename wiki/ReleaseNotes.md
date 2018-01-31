@@ -12,7 +12,7 @@ API Stable
   enable it, set following property: `cluster-controller/per-participantid-message-queue-limit`.
   The same limit value is used for all participant ids. This mechanism will only be enabled, if
   `cluster-controller/message-queue-limit` is set to a value greater than 0.
-* **[JS]** Updated wscpp version to 0.2.7
+* **[JS]** Updated wscpp version to 1.0.0
 * **[JS]** Verify arrays with Array.isArray() built-in function instead of
   "object.constructor === Array".
 
