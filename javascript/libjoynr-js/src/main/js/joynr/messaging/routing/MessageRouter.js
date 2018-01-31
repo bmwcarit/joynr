@@ -124,10 +124,10 @@ function MessageRouter(settings) {
      *
      * @param {String} participantId
      *
-     * @returns {String}
+     * @returns {String} the storage key
      */
     this.getStorageKey = function getStorageKey(participantId) {
-        return id + "_" + participantId.replace("/", ".");
+        return id + "_" + participantId;
     };
 
     /**
