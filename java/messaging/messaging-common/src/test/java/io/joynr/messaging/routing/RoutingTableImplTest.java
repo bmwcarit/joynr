@@ -169,4 +169,46 @@ public class RoutingTableImplTest {
         assertEquals(address, result);
         assertEquals(isGloballyVisible, subject.getIsGloballyVisible(participantId2));
     }
+
+    @Test
+    public void testUpdateExpiryDateOfExistingRoutingEntry() throws Exception {
+        Address address = new Address();
+        boolean isGloballyVisible = false;
+        boolean isSticky = false;
+        long expiryDateMs1 = 1;
+        long expiryDateMs2 = 2;
+        String participantId = "participantId";
+        final boolean allowUpdate = false;
+
+        subject.put(participantId, address, isGloballyVisible, expiryDateMs1, isSticky, allowUpdate);
+        assertEquals(subject.getExpiryDateMs(participantId), expiryDateMs1);
+
+        subject.put(participantId, address, isGloballyVisible, expiryDateMs2, isSticky, allowUpdate);
+        assertEquals(subject.getExpiryDateMs(participantId), expiryDateMs2);
+
+        // Lower expiry dates shall be ignored
+        subject.put(participantId, address, isGloballyVisible, expiryDateMs1, isSticky, allowUpdate);
+        assertEquals(subject.getExpiryDateMs(participantId), expiryDateMs2);
+    }
+
+    @Test
+    public void testUpdateStickFlagOfExistingRoutingEntry() throws Exception {
+        Address address = new Address();
+        boolean isGloballyVisible = false;
+        boolean isNotSticky = false;
+        boolean isSticky = true;
+        long expiryDateMs = 0;
+        String participantId = "participantId";
+        final boolean allowUpdate = false;
+
+        subject.put(participantId, address, isGloballyVisible, expiryDateMs, isNotSticky, allowUpdate);
+        assertEquals(subject.getIsSticky(participantId), isNotSticky);
+
+        subject.put(participantId, address, isGloballyVisible, expiryDateMs, isSticky, allowUpdate);
+        assertEquals(subject.getIsSticky(participantId), isSticky);
+
+        // Stick flag shall not be removed by an update.
+        subject.put(participantId, address, isGloballyVisible, expiryDateMs, isNotSticky, allowUpdate);
+        assertEquals(subject.getIsSticky(participantId), isSticky);
+    }
 }

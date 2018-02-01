@@ -151,19 +151,22 @@ public class RoutingTableImpl implements RoutingTable {
                         result.isGloballyVisible);
         } else {
             logger.trace("put(participantId={}, address={}, isGloballyVisible={}, expiryDateMs={}, sticky={}): Entry exists. Updating expiryDate and sticky-flag");
-
-            // extend lifetime, if required
-            if (result.getExpiryDateMs() < expiryDateMs) {
-                result.setExpiryDateMs(expiryDateMs);
-            }
-
-            // make entry sticky, if required
-            // if entry already was sticky, and new entry is not, keep the sticky attribute
-            if (sticky && !result.getIsSticky()) {
-                result.setIsSticky(true);
-            }
+            mergeRoutingEntryAttributes(result, expiryDateMs, sticky);
         }
         return result.getAddress();
+    }
+
+    private void mergeRoutingEntryAttributes(RoutingEntry entry, long expiryDateMs, boolean isSticky) {
+        // extend lifetime, if required
+        if (entry.getExpiryDateMs() < expiryDateMs) {
+            entry.setExpiryDateMs(expiryDateMs);
+        }
+
+        // make entry sticky, if required
+        // if entry already was sticky, and new entry is not, keep the sticky attribute
+        if (isSticky && !entry.getIsSticky()) {
+            entry.setIsSticky(true);
+        }
     }
 
     @Override
