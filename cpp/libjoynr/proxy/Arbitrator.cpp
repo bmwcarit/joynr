@@ -34,6 +34,13 @@
 namespace joynr
 {
 
+std::mutex Arbitrator::lockOnPendingFutures;
+
+std::vector<std::shared_ptr<joynr::Future<joynr::types::DiscoveryEntryWithMetaInfo>>>
+        Arbitrator::pendingFuturesFixedParticipant;
+std::vector<std::shared_ptr<joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>>
+        Arbitrator::pendingFutures;
+
 Arbitrator::Arbitrator(
         const std::string& domain,
         const std::string& interfaceName,
@@ -101,7 +108,7 @@ void Arbitrator::startArbitration(
         while (thisSharedPtr->keepArbitrationRunning) {
             thisSharedPtr->attemptArbitration();
 
-            if (thisSharedPtr->arbitrationFinished) {
+            if (thisSharedPtr->arbitrationFinished || (!thisSharedPtr->keepArbitrationRunning)) {
                 return;
             }
 
@@ -161,6 +168,24 @@ void Arbitrator::stopArbitration()
     JOYNR_LOG_DEBUG(logger(), "StopArbitrator for interface={}", interfaceName);
     keepArbitrationRunning = false;
 
+    // iterate over all futures and stop only those that are still in progress
+    auto error = std::make_shared<joynr::exceptions::JoynrRuntimeException>(
+            "Shutting Down Arbitration.");
+    {
+        std::unique_lock<std::mutex> lockList(lockOnPendingFutures);
+        for (auto future : pendingFuturesFixedParticipant) {
+            if (future && future->getStatus() == StatusCodeEnum::IN_PROGRESS) {
+                future->onError(error);
+            }
+        }
+
+        for (auto future : pendingFutures) {
+            if (future && future->getStatus() == StatusCodeEnum::IN_PROGRESS) {
+                future->onError(error);
+            }
+        }
+    }
+
     if (arbitrationThread.joinable()) {
         JOYNR_LOG_DEBUG(logger(), "Thread can be joined. Joining thread...");
         arbitrationThread.join();
@@ -185,11 +210,24 @@ void Arbitrator::attemptArbitration()
                 std::string fixedParticipantId =
                         discoveryQos.getCustomParameter("fixedParticipantId").getValue();
                 auto future = discoveryProxySharedPtr->lookupAsync(fixedParticipantId);
+
+                {
+                    std::unique_lock<std::mutex> lockList(lockOnPendingFutures);
+                    pendingFuturesFixedParticipant.push_back(future);
+                }
+
                 future->get(waitTimeMs, fixedParticipantResult);
                 result.push_back(fixedParticipantResult);
             } else {
                 auto future = discoveryProxySharedPtr->lookupAsync(
                         domains, interfaceName, systemDiscoveryQos);
+
+                // temporarly add future to a shared list of futures
+                {
+                    std::unique_lock<std::mutex> lockList(lockOnPendingFutures);
+                    pendingFutures.push_back(future);
+                }
+
                 future->get(waitTimeMs, result);
             }
         } else {

@@ -30,6 +30,7 @@
 
 #include "joynr/ArbitrationStrategyFunction.h"
 #include "joynr/DiscoveryQos.h"
+#include "joynr/Future.h"
 #include "joynr/JoynrExport.h"
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
@@ -111,6 +112,12 @@ private:
     std::thread arbitrationThread;
     std::chrono::system_clock::time_point startTimePoint;
     ADD_LOGGER(Arbitrator)
+
+    static std::mutex lockOnPendingFutures;
+    static std::vector<std::shared_ptr<joynr::Future<joynr::types::DiscoveryEntryWithMetaInfo>>>
+            pendingFuturesFixedParticipant;
+    static std::vector<std::shared_ptr<
+            joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>> pendingFutures;
 };
 
 } // namespace joynr
