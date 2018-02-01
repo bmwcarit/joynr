@@ -166,7 +166,12 @@ public class RoutingTableImpl implements RoutingTable {
                             result.isGloballyVisible);
             }
         } else {
-            logger.trace("put(participantId={}, address={}, isGloballyVisible={}, expiryDateMs={}, sticky={}): Entry exists. Updating expiryDate and sticky-flag");
+            logger.trace("put(participantId={}, address={}, isGloballyVisible={}, expiryDateMs={}, sticky={}): Entry exists. Updating expiryDate and sticky-flag",
+                         participantId,
+                         address,
+                         isGloballyVisible,
+                         expiryDateMs,
+                         sticky);
             mergeRoutingEntryAttributes(result, expiryDateMs, sticky);
         }
     }
