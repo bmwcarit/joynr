@@ -195,6 +195,24 @@ public class RoutingTableImpl implements RoutingTable {
     }
 
     @Override
+    public long getExpiryDateMs(String participantId) {
+        RoutingEntry routingEntry = hashMap.get(participantId);
+        if (routingEntry == null) {
+            throw new JoynrRuntimeException("participantId doesn't exist in the routing table");
+        }
+        return routingEntry.getExpiryDateMs();
+    }
+
+    @Override
+    public boolean getIsSticky(String participantId) {
+        RoutingEntry routingEntry = hashMap.get(participantId);
+        if (routingEntry == null) {
+            throw new JoynrRuntimeException("participantId doesn't exist in the routing table");
+        }
+        return routingEntry.getIsSticky();
+    }
+
+    @Override
     public void remove(String participantId) {
         RoutingEntry routingEntry = hashMap.get(participantId);
         if (routingEntry != null) {

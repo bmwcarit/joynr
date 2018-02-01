@@ -37,6 +37,20 @@ public interface RoutingTable {
     boolean getIsGloballyVisible(String participantId);
 
     /**
+     * Query the expiry date of a routing entry for a participant id.
+     * @param participantId
+     * @return The routing entry's expiry date in ms.
+     */
+    long getExpiryDateMs(String participantId);
+
+    /**
+     * Query the sticky-flag of a routing entry for a participant id.
+     * @param participantId
+     * @return The routing entry's sticky state.
+     */
+    boolean getIsSticky(String participantId);
+
+    /**
      * Sets the isSticky attribute of the Routing Entry for the participantId.
      * If true, the routing entry will not be get purged from routing table
      * by the cleanup thread.
