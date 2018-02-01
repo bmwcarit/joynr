@@ -108,7 +108,8 @@ void Arbitrator::startArbitration(
         while (thisSharedPtr->keepArbitrationRunning) {
             thisSharedPtr->attemptArbitration();
 
-            if (thisSharedPtr->arbitrationFinished || (!thisSharedPtr->keepArbitrationRunning)) {
+            // exit if arbitration has finished or was stopped
+            if (thisSharedPtr->arbitrationFinished || !thisSharedPtr->keepArbitrationRunning) {
                 return;
             }
 
@@ -160,6 +161,9 @@ void Arbitrator::startArbitration(
         }
 
         thisSharedPtr->arbitrationRunning = false;
+        JOYNR_LOG_DEBUG(logger(),
+                        "Exiting arbitration thread for interface={}",
+                        thisSharedPtr->interfaceName);
     });
 }
 
@@ -170,7 +174,7 @@ void Arbitrator::stopArbitration()
 
     // iterate over all futures and stop only those that are still in progress
     auto error = std::make_shared<joynr::exceptions::JoynrRuntimeException>(
-            "Shutting Down Arbitration.");
+            "Shutting Down Arbitration for interface " + interfaceName);
     {
         std::unique_lock<std::mutex> lockList(lockOnPendingFutures);
         for (auto future : pendingFuturesFixedParticipant) {
@@ -187,7 +191,7 @@ void Arbitrator::stopArbitration()
     }
 
     if (arbitrationThread.joinable()) {
-        JOYNR_LOG_DEBUG(logger(), "Thread can be joined. Joining thread...");
+        JOYNR_LOG_DEBUG(logger(), "Thread can be joined. Joining thread ({}) ...", interfaceName);
         arbitrationThread.join();
     }
 }
