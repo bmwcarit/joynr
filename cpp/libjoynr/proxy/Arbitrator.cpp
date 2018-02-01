@@ -33,14 +33,6 @@
 
 namespace joynr
 {
-
-std::mutex Arbitrator::lockOnPendingFutures;
-
-std::vector<std::shared_ptr<joynr::Future<joynr::types::DiscoveryEntryWithMetaInfo>>>
-        Arbitrator::pendingFuturesFixedParticipant;
-std::vector<std::shared_ptr<joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>>
-        Arbitrator::pendingFutures;
-
 Arbitrator::Arbitrator(
         const std::string& domain,
         const std::string& interfaceName,
@@ -49,6 +41,8 @@ Arbitrator::Arbitrator(
         const DiscoveryQos& discoveryQos,
         std::unique_ptr<const ArbitrationStrategyFunction> arbitrationStrategyFunction)
         : std::enable_shared_from_this<Arbitrator>(),
+          lockOnPendingFutures(),
+          pendingFuture(),
           discoveryProxy(discoveryProxy),
           discoveryQos(discoveryQos),
           systemDiscoveryQos(discoveryQos.getCacheMaxAgeMs(),
@@ -172,28 +166,36 @@ void Arbitrator::stopArbitration()
     JOYNR_LOG_DEBUG(logger(), "StopArbitrator for interface={}", interfaceName);
     keepArbitrationRunning = false;
 
-    // iterate over all futures and stop only those that are still in progress
+    // check if there are pending futures and stop them if still in progress
     auto error = std::make_shared<joynr::exceptions::JoynrRuntimeException>(
             "Shutting Down Arbitration for interface " + interfaceName);
     {
         std::unique_lock<std::mutex> lockList(lockOnPendingFutures);
-        for (auto future : pendingFuturesFixedParticipant) {
-            if (future && future->getStatus() == StatusCodeEnum::IN_PROGRESS) {
-                future->onError(error);
-            }
-        }
-
-        for (auto future : pendingFutures) {
-            if (future && future->getStatus() == StatusCodeEnum::IN_PROGRESS) {
-                future->onError(error);
-            }
-        }
+        boost::apply_visitor([error](auto& future) {
+                                 if (future && future->getStatus() == StatusCodeEnum::IN_PROGRESS) {
+                                     future->onError(error);
+                                     future.reset();
+                                 }
+                             },
+                             pendingFuture);
     }
 
     if (arbitrationThread.joinable()) {
         JOYNR_LOG_DEBUG(logger(), "Thread can be joined. Joining thread ({}) ...", interfaceName);
         arbitrationThread.join();
     }
+}
+
+void Arbitrator::validatePendingFuture()
+{
+    std::unique_lock<std::mutex> lockList(lockOnPendingFutures);
+    boost::apply_visitor([](auto& future) {
+                             if (future) {
+                                 assert(future->getStatus() != StatusCodeEnum::IN_PROGRESS);
+                                 future.reset();
+                             }
+                         },
+                         pendingFuture);
 }
 
 void Arbitrator::attemptArbitration()
@@ -213,26 +215,38 @@ void Arbitrator::attemptArbitration()
                 types::DiscoveryEntryWithMetaInfo fixedParticipantResult;
                 std::string fixedParticipantId =
                         discoveryQos.getCustomParameter("fixedParticipantId").getValue();
-                auto future = discoveryProxySharedPtr->lookupAsync(fixedParticipantId);
 
-                {
+                auto future = discoveryProxySharedPtr->lookupAsync(fixedParticipantId);
+                if (!keepArbitrationRunning) {
+                    // stopArbitration was called need to get out of here
+                    auto error = std::make_shared<joynr::exceptions::JoynrRuntimeException>(
+                            "Shutting Down Arbitration for interface " + interfaceName);
+                    future->onError(error);
+                    return;
+                } else {
                     std::unique_lock<std::mutex> lockList(lockOnPendingFutures);
-                    pendingFuturesFixedParticipant.push_back(future);
+                    pendingFuture = future;
                 }
 
                 future->get(waitTimeMs, fixedParticipantResult);
+                validatePendingFuture();
                 result.push_back(fixedParticipantResult);
             } else {
                 auto future = discoveryProxySharedPtr->lookupAsync(
                         domains, interfaceName, systemDiscoveryQos);
-
-                // temporarly add future to a shared list of futures
-                {
+                if (!keepArbitrationRunning) {
+                    // stopArbitration was called need to get out of here
+                    auto error = std::make_shared<joynr::exceptions::JoynrRuntimeException>(
+                            "Shutting Down Arbitration for interface " + interfaceName);
+                    future->onError(error);
+                    return;
+                } else {
                     std::unique_lock<std::mutex> lockList(lockOnPendingFutures);
-                    pendingFutures.push_back(future);
+                    pendingFuture = future;
                 }
 
                 future->get(waitTimeMs, result);
+                validatePendingFuture();
             }
         } else {
             throw exceptions::JoynrRuntimeException("discoveryProxy not available");
@@ -245,6 +259,7 @@ void Arbitrator::attemptArbitration()
                                e.getMessage();
         JOYNR_LOG_ERROR(logger(), errorMsg);
         arbitrationError.setMessage(errorMsg);
+        validatePendingFuture();
     }
 }
 

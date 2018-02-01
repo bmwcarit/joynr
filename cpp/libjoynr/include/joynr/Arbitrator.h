@@ -28,6 +28,8 @@
 #include <unordered_set>
 #include <vector>
 
+#include <boost/variant.hpp>
+
 #include "joynr/ArbitrationStrategyFunction.h"
 #include "joynr/DiscoveryQos.h"
 #include "joynr/Future.h"
@@ -92,6 +94,18 @@ private:
             const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& discoveryEntries);
 
     std::int64_t getDurationMs() const;
+
+    /*
+     * Check that the pending future has completed successfully and reset it.
+     */
+    void validatePendingFuture();
+
+    std::mutex lockOnPendingFutures;
+    boost::variant<
+            std::shared_ptr<joynr::Future<joynr::types::DiscoveryEntryWithMetaInfo>>,
+            std::shared_ptr<joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>>
+            pendingFuture;
+
     std::weak_ptr<joynr::system::IDiscoveryAsync> discoveryProxy;
     DiscoveryQos discoveryQos;
     joynr::types::DiscoveryQos systemDiscoveryQos;
@@ -112,12 +126,6 @@ private:
     std::thread arbitrationThread;
     std::chrono::system_clock::time_point startTimePoint;
     ADD_LOGGER(Arbitrator)
-
-    static std::mutex lockOnPendingFutures;
-    static std::vector<std::shared_ptr<joynr::Future<joynr::types::DiscoveryEntryWithMetaInfo>>>
-            pendingFuturesFixedParticipant;
-    static std::vector<std::shared_ptr<
-            joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>> pendingFutures;
 };
 
 } // namespace joynr
