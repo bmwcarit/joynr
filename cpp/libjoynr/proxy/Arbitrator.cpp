@@ -215,56 +215,58 @@ void Arbitrator::attemptArbitration()
 {
     std::vector<joynr::types::DiscoveryEntryWithMetaInfo> result;
     try {
-        if (auto discoveryProxySharedPtr = discoveryProxy.lock()) {
-            const std::int64_t durationMs = getDurationMs();
-            const std::int64_t waitTimeMs = discoveryQos.getDiscoveryTimeoutMs() - durationMs;
-
-            if (waitTimeMs <= 0) {
-                throw exceptions::JoynrTimeOutException("arbitration timed out");
-            }
-
-            if (discoveryQos.getArbitrationStrategy() ==
-                DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT) {
-                types::DiscoveryEntryWithMetaInfo fixedParticipantResult;
-                std::string fixedParticipantId =
-                        discoveryQos.getCustomParameter("fixedParticipantId").getValue();
-
-                auto future = discoveryProxySharedPtr->lookupAsync(fixedParticipantId);
-                if (!keepArbitrationRunning) {
-                    // stopArbitration was called need to get out of here
-                    auto error = std::make_shared<joynr::exceptions::JoynrRuntimeException>(
-                            "Shutting Down Arbitration for interface " + interfaceName);
-                    future->onError(error);
-                    return;
-                } else {
-                    std::unique_lock<std::mutex> lockList(lockOnPendingFutures);
-                    pendingFuture = future;
-                }
-
-                future->get(waitTimeMs, fixedParticipantResult);
-                validatePendingFuture();
-                result.push_back(fixedParticipantResult);
-            } else {
-                auto future = discoveryProxySharedPtr->lookupAsync(
-                        domains, interfaceName, systemDiscoveryQos);
-                if (!keepArbitrationRunning) {
-                    // stopArbitration was called need to get out of here
-                    auto error = std::make_shared<joynr::exceptions::JoynrRuntimeException>(
-                            "Shutting Down Arbitration for interface " + interfaceName);
-                    future->onError(error);
-                    return;
-                } else {
-                    std::unique_lock<std::mutex> lockList(lockOnPendingFutures);
-                    pendingFuture = future;
-                }
-
-                future->get(waitTimeMs, result);
-                validatePendingFuture();
-            }
-        } else {
+        auto discoveryProxySharedPtr = discoveryProxy.lock();
+        if (!discoveryProxySharedPtr) {
             throw exceptions::JoynrRuntimeException("discoveryProxy not available");
         }
+        const std::int64_t durationMs = getDurationMs();
+        const std::int64_t waitTimeMs = discoveryQos.getDiscoveryTimeoutMs() - durationMs;
+
+        if (waitTimeMs <= 0) {
+            throw exceptions::JoynrTimeOutException("arbitration timed out");
+        }
+
+        if (discoveryQos.getArbitrationStrategy() ==
+            DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT) {
+            types::DiscoveryEntryWithMetaInfo fixedParticipantResult;
+            std::string fixedParticipantId =
+                    discoveryQos.getCustomParameter("fixedParticipantId").getValue();
+
+            auto future = discoveryProxySharedPtr->lookupAsync(fixedParticipantId);
+            if (!keepArbitrationRunning) {
+                // stopArbitration was called need to get out of here
+                auto error = std::make_shared<joynr::exceptions::JoynrRuntimeException>(
+                        "Shutting Down Arbitration for interface " + interfaceName);
+                future->onError(error);
+                return;
+            } else {
+                std::unique_lock<std::mutex> lockList(lockOnPendingFutures);
+                pendingFuture = future;
+            }
+
+            future->get(waitTimeMs, fixedParticipantResult);
+            validatePendingFuture();
+            result.push_back(fixedParticipantResult);
+        } else {
+            auto future = discoveryProxySharedPtr->lookupAsync(
+                    domains, interfaceName, systemDiscoveryQos);
+            if (!keepArbitrationRunning) {
+                // stopArbitration was called need to get out of here
+                auto error = std::make_shared<joynr::exceptions::JoynrRuntimeException>(
+                        "Shutting Down Arbitration for interface " + interfaceName);
+                future->onError(error);
+                return;
+            } else {
+                std::unique_lock<std::mutex> lockList(lockOnPendingFutures);
+                pendingFuture = future;
+            }
+
+            future->get(waitTimeMs, result);
+            validatePendingFuture();
+        }
+
         receiveCapabilitiesLookupResults(result);
+
     } catch (const exceptions::JoynrException& e) {
         std::string errorMsg = "Unable to lookup provider (domain: " +
                                (domains.empty() ? std::string("EMPTY") : domains.at(0)) +
