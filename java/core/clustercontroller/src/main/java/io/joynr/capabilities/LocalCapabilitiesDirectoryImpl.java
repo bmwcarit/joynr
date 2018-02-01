@@ -492,7 +492,16 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             if (ce.getParticipantId() != null && ce.getAddress() != null) {
                 Address address = CapabilityUtils.getAddressFromGlobalDiscoveryEntry(ce);
                 final boolean isGloballyVisible = (ce.getQos().getScope() == ProviderScope.GLOBAL);
-                messageRouter.addNextHop(ce.getParticipantId(), address, isGloballyVisible);
+                final boolean isSticky = false;
+                final long expiryDateMs = Long.MAX_VALUE;
+                final boolean allowUpdate = true; // Always trust the discovery directory.
+
+                messageRouter.addNextHop(ce.getParticipantId(),
+                                         address,
+                                         isGloballyVisible,
+                                         expiryDateMs,
+                                         isSticky,
+                                         allowUpdate);
             }
         }
     }
