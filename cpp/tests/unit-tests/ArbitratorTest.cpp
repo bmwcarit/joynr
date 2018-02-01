@@ -44,6 +44,7 @@ using ::testing::Throw;
 using ::testing::Return;
 using ::testing::_;
 using ::testing::A;
+using ::testing::InvokeWithoutArgs;
 
 using namespace joynr;
 
@@ -1217,4 +1218,53 @@ TEST_F(ArbitratorTest, getLastSeenReturnsExceptionEmptyResult) {
                     move(lastSeenArbitrationStrategyFunction));
 
     testExceptionEmptyResult(lastSeenArbitrator, discoveryQos);
+}
+
+template <int Duration>
+void letThreadSleep()
+{
+    std::this_thread::sleep_for(std::chrono::milliseconds(Duration));
+}
+
+TEST_F(ArbitratorTest, arbitrationStopsOnShutdown) {
+    types::Version providerVersion;
+    std::int64_t discoveryTimeoutMs = std::chrono::milliseconds(1000).count();
+
+    DiscoveryQos discoveryQos;
+    discoveryQos.setDiscoveryTimeoutMs(discoveryTimeoutMs);
+
+    auto mockFuture = std::make_shared<joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>();
+    mockFuture->onSuccess({});
+
+    EXPECT_CALL(*mockDiscovery, lookupAsyncMock(_,_,_,_,_))
+        .WillOnce(DoAll(ReleaseSemaphore(&semaphore),
+                        InvokeWithoutArgs(letThreadSleep<500>),
+                        Return(mockFuture)));
+
+    auto arbitrator = std::make_shared<joynr::Arbitrator>("domain",
+                    "interfaceName",
+                    providerVersion,
+                    mockDiscovery,
+                    discoveryQos,
+                    move(lastSeenArbitrationStrategyFunction));
+
+    auto onSuccess = [](const types::DiscoveryEntryWithMetaInfo&) {
+        FAIL();
+    };
+
+    joynr::Semaphore onErrorSemaphore;
+    auto onError = [&onErrorSemaphore](const exceptions::DiscoveryException&) {
+        onErrorSemaphore.notify();
+    };
+
+    arbitrator->startArbitration(onSuccess, onError);
+
+    // Wait for a time shorter then the discovery.
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(100)));
+
+    // stop arbitration before the discovery thread wakes up
+    arbitrator->stopArbitration();
+
+    // onError should be invoked
+    EXPECT_TRUE(onErrorSemaphore.waitFor(std::chrono::milliseconds(100)));
 }
