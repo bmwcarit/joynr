@@ -204,7 +204,8 @@ public class CcMessageRouterTest {
         final boolean isGloballyVisible = true; // toParticipantId is globally visible
         final long expiryDateMs = Long.MAX_VALUE;
         final boolean isSticky = true;
-        routingTable.put(toParticipantId, channelAddress, isGloballyVisible, expiryDateMs, isSticky);
+        final boolean allowUpdate = false;
+        routingTable.put(toParticipantId, channelAddress, isGloballyVisible, expiryDateMs, isSticky, allowUpdate);
 
         Request request = new Request("noMethod", new Object[]{}, new String[]{}, "requestReplyId");
 
@@ -280,8 +281,19 @@ public class CcMessageRouterTest {
         final boolean isGloballyVisible = false;
         final long expiryDateMs = Long.MAX_VALUE;
         final boolean isSticky = false;
-        routingTable.put(receiverParticipantId1, receiverAddress1, isGloballyVisible, expiryDateMs, isSticky);
-        routingTable.put(receiverParticipantId2, receiverAddress2, isGloballyVisible, expiryDateMs, isSticky);
+        final boolean allowUpdate = false;
+        routingTable.put(receiverParticipantId1,
+                         receiverAddress1,
+                         isGloballyVisible,
+                         expiryDateMs,
+                         isSticky,
+                         allowUpdate);
+        routingTable.put(receiverParticipantId2,
+                         receiverAddress2,
+                         isGloballyVisible,
+                         expiryDateMs,
+                         isSticky,
+                         allowUpdate);
 
         joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(100000).getValue());
         joynrMessage.setType(Message.VALUE_MESSAGE_TYPE_MULTICAST);

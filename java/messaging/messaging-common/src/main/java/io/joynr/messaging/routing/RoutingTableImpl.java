@@ -121,7 +121,8 @@ public class RoutingTableImpl implements RoutingTable {
                        Address address,
                        boolean isGloballyVisible,
                        long expiryDateMs,
-                       boolean sticky) {
+                       boolean sticky,
+                       boolean allowUpdate) {
         RoutingEntry routingEntry = new RoutingEntry(address, isGloballyVisible, expiryDateMs, sticky);
         RoutingEntry result = hashMap.putIfAbsent(participantId, routingEntry);
         final boolean routingEntryAlreadyPresent = result != null;
@@ -140,15 +141,30 @@ public class RoutingTableImpl implements RoutingTable {
                 || result.getIsGloballyVisible() != isGloballyVisible;
 
         if (routingEntryChanged) {
-            logger.warn("unable to update(participantId={}, address={}, isGloballyVisible={}, expiryDateMs={}, sticky={}) into routing table,"
-                                + " since the participant ID is already associated with routing entry address={}, isGloballyVisible={}",
-                        participantId,
-                        address,
-                        isGloballyVisible,
-                        expiryDateMs,
-                        sticky,
-                        result.address,
-                        result.isGloballyVisible);
+            if (allowUpdate) {
+                logger.debug("put(participantId={}, address={}, isGloballyVisible={}, expiryDateMs={}, sticky={}). Replacing previous entry with address={}, isGloballyVisible={}, expiryDateMs={}, sticky={}",
+                             participantId,
+                             address,
+                             isGloballyVisible,
+                             expiryDateMs,
+                             sticky,
+                             result.address,
+                             result.isGloballyVisible,
+                             result.expiryDateMs,
+                             result.isSticky);
+                mergeRoutingEntryAttributes(routingEntry, result.getExpiryDateMs(), result.getIsSticky());
+                hashMap.put(participantId, routingEntry);
+            } else {
+                logger.warn("unable to update(participantId={}, address={}, isGloballyVisible={}, expiryDateMs={}, sticky={}) into routing table,"
+                                    + " since the participant ID is already associated with routing entry address={}, isGloballyVisible={}",
+                            participantId,
+                            address,
+                            isGloballyVisible,
+                            expiryDateMs,
+                            sticky,
+                            result.address,
+                            result.isGloballyVisible);
+            }
         } else {
             logger.trace("put(participantId={}, address={}, isGloballyVisible={}, expiryDateMs={}, sticky={}): Entry exists. Updating expiryDate and sticky-flag");
             mergeRoutingEntryAttributes(result, expiryDateMs, sticky);
