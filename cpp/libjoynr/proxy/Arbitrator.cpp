@@ -102,8 +102,22 @@ void Arbitrator::startArbitration(
         while (thisSharedPtr->keepArbitrationRunning) {
             thisSharedPtr->attemptArbitration();
 
-            // exit if arbitration has finished or was stopped
-            if (thisSharedPtr->arbitrationFinished || !thisSharedPtr->keepArbitrationRunning) {
+            // exit if arbitration has finished successfully
+            if (thisSharedPtr->arbitrationFinished) {
+                return;
+            }
+
+            // check if we should break the keepArbitrationRunning loop and report errors to the
+            // user
+            if (!thisSharedPtr->keepArbitrationRunning) {
+                // stopArbitration has been invoked
+                thisSharedPtr->arbitrationError.setMessage(
+                        "Shutting Down Arbitration for interface " + thisSharedPtr->interfaceName);
+                thisSharedPtr->onErrorCallback(thisSharedPtr->arbitrationError);
+                thisSharedPtr->arbitrationRunning = false;
+                JOYNR_LOG_DEBUG(logger(),
+                                "Exiting arbitration thread for interface={}",
+                                thisSharedPtr->interfaceName);
                 return;
             }
 
@@ -121,7 +135,6 @@ void Arbitrator::startArbitration(
                  * about
                  * cancelled arbitration
                  */
-
                 auto waitIntervalMs = std::chrono::milliseconds(
                         thisSharedPtr->discoveryQos.getDiscoveryTimeoutMs() - durationMs);
                 thisSharedPtr.reset();
