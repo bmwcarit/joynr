@@ -117,12 +117,12 @@ public class RoutingTableImpl implements RoutingTable {
     }
 
     @Override
-    public Address put(String participantId,
-                       Address address,
-                       boolean isGloballyVisible,
-                       long expiryDateMs,
-                       boolean sticky,
-                       boolean allowUpdate) {
+    public void put(String participantId,
+                    Address address,
+                    boolean isGloballyVisible,
+                    long expiryDateMs,
+                    boolean sticky,
+                    boolean allowUpdate) {
         RoutingEntry routingEntry = new RoutingEntry(address, isGloballyVisible, expiryDateMs, sticky);
         RoutingEntry result = hashMap.putIfAbsent(participantId, routingEntry);
         final boolean routingEntryAlreadyPresent = result != null;
@@ -134,7 +134,7 @@ public class RoutingTableImpl implements RoutingTable {
                          isGloballyVisible,
                          expiryDateMs,
                          sticky);
-            return null;
+            return;
         }
 
         final boolean routingEntryChanged = !address.equals(result.getAddress())
@@ -169,7 +169,6 @@ public class RoutingTableImpl implements RoutingTable {
             logger.trace("put(participantId={}, address={}, isGloballyVisible={}, expiryDateMs={}, sticky={}): Entry exists. Updating expiryDate and sticky-flag");
             mergeRoutingEntryAttributes(result, expiryDateMs, sticky);
         }
-        return result.getAddress();
     }
 
     private void mergeRoutingEntryAttributes(RoutingEntry entry, long expiryDateMs, boolean isSticky) {

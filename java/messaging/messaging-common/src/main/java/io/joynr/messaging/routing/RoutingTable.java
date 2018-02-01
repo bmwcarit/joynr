@@ -34,12 +34,12 @@ public interface RoutingTable {
      * @param isSticky If set to true, the routing entry never expires
      * @param allowUpdate If set to false, the address won't be changed if a routing entry for the provided participantId already exists.
      */
-    Address put(String participantId,
-                Address address,
-                boolean isGloballyVisible,
-                long expiryDateMs,
-                boolean isSticky,
-                boolean allowUpdate);
+    void put(String participantId,
+             Address address,
+             boolean isGloballyVisible,
+             long expiryDateMs,
+             boolean isSticky,
+             boolean allowUpdate);
 
     boolean containsKey(String participantId);
 
