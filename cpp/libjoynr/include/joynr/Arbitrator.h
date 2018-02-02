@@ -122,6 +122,7 @@ private:
     std::function<void(const exceptions::DiscoveryException& exception)> onErrorCallback;
 
     DISALLOW_COPY_AND_ASSIGN(Arbitrator);
+    Semaphore semaphore;
     bool arbitrationFinished;
     std::atomic<bool> arbitrationRunning;
     std::atomic<bool> keepArbitrationRunning;

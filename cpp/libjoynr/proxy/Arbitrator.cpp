@@ -55,6 +55,7 @@ Arbitrator::Arbitrator(
           discoveredIncompatibleVersions(),
           arbitrationError("Arbitration could not be finished in time."),
           arbitrationStrategyFunction(std::move(arbitrationStrategyFunction)),
+          semaphore(0),
           arbitrationFinished(false),
           arbitrationRunning(false),
           keepArbitrationRunning(false),
@@ -90,7 +91,6 @@ void Arbitrator::startArbitration(
             return;
         }
 
-        Semaphore semaphore;
         thisSharedPtr->arbitrationFinished = false;
 
         std::string serializedDomainsList = boost::algorithm::join(thisSharedPtr->domains, ", ");
@@ -137,23 +137,13 @@ void Arbitrator::startArbitration(
                  */
                 auto waitIntervalMs = std::chrono::milliseconds(
                         thisSharedPtr->discoveryQos.getDiscoveryTimeoutMs() - durationMs);
-                thisSharedPtr.reset();
-                semaphore.waitFor(waitIntervalMs);
-                thisSharedPtr = thisWeakPtr.lock();
-                if (!thisSharedPtr) {
-                    return;
-                }
+                thisSharedPtr->semaphore.waitFor(waitIntervalMs);
                 break;
             } else {
                 // wait for retry interval and attempt a new arbitration
                 auto waitIntervalMs =
                         std::chrono::milliseconds(thisSharedPtr->discoveryQos.getRetryIntervalMs());
-                thisSharedPtr.reset();
-                semaphore.waitFor(waitIntervalMs);
-                thisSharedPtr = thisWeakPtr.lock();
-                if (!thisSharedPtr) {
-                    return;
-                }
+                thisSharedPtr->semaphore.waitFor(waitIntervalMs);
             }
         }
 
@@ -192,6 +182,8 @@ void Arbitrator::stopArbitration()
                              },
                              pendingFuture);
     }
+
+    semaphore.notify();
 
     if (arbitrationThread.joinable()) {
         JOYNR_LOG_DEBUG(logger(), "Thread can be joined. Joining thread ({}) ...", interfaceName);
