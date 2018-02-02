@@ -538,18 +538,19 @@ Under `examples/radio-jee` you can find an example application which is based on
 [Radio App example](./Tutorial.md). It uses the same `radio.fidl` file from the tutorial
 but implements it as a JEE provider application and a separate JEE consumer application.
 
-The project is sub-divided into one multi-module parent project and three subprojects:
+The project is sub-divided into one multi-module parent project and four subprojects:
 
 ```
  - radio-jee
    |- radio-jee-api
-   |- radio-jee-provider
+   |- radio-jee-backend-services
    |- radio-jee-consumer
+   |- radio-jee-provider
 ```
 
-In order to build the project you first have to have built the rest of joynr by executing
+In order to build the project you have to built joynr by executing
 `mvn install` from the root of the directory where you checked out joynr to. Next change
-to the `radio-jee` directory and call `mvn install`.
+to the `radio-jee` directory and find the .war-archives in the corresponding `target` subfolders.
 
 The following describes running the example on [Payara 4.1](http://www.payara.fish). First,
 install the application server and you will also need to install an MQTT broker, e.g.
