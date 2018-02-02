@@ -41,7 +41,7 @@ Arbitrator::Arbitrator(
         const DiscoveryQos& discoveryQos,
         std::unique_ptr<const ArbitrationStrategyFunction> arbitrationStrategyFunction)
         : std::enable_shared_from_this<Arbitrator>(),
-          lockOnPendingFutures(),
+          pendingFutureMutex(),
           pendingFuture(),
           discoveryProxy(discoveryProxy),
           discoveryQos(discoveryQos),
@@ -168,10 +168,10 @@ void Arbitrator::stopArbitration()
 {
     JOYNR_LOG_DEBUG(logger(), "StopArbitrator for interface={}", interfaceName);
     {
-        std::unique_lock<std::mutex> lockList(lockOnPendingFutures);
+        std::unique_lock<std::mutex> lock(pendingFutureMutex);
         keepArbitrationRunning = false;
 
-        // check if there are pending futures and stop them if still in progress
+        // check if there is a pending future and stop it if still in progress
         auto error = std::make_shared<joynr::exceptions::JoynrRuntimeException>(
                 "Shutting Down Arbitration for interface " + interfaceName);
         boost::apply_visitor([error](auto& future) {
@@ -195,7 +195,7 @@ void Arbitrator::stopArbitration()
 
 void Arbitrator::validatePendingFuture()
 {
-    std::unique_lock<std::mutex> lockList(lockOnPendingFutures);
+    std::unique_lock<std::mutex> lock(pendingFutureMutex);
     boost::apply_visitor([](auto& future) {
                              if (future) {
                                  assert(future->getStatus() != StatusCodeEnum::IN_PROGRESS);
@@ -207,7 +207,7 @@ void Arbitrator::validatePendingFuture()
 
 void Arbitrator::assertNoPendingFuture()
 {
-    std::unique_lock<std::mutex> lockList(lockOnPendingFutures);
+    std::unique_lock<std::mutex> lock(pendingFutureMutex);
     boost::apply_visitor([](auto& future) { assert(!future); }, pendingFuture);
 }
 
@@ -235,7 +235,7 @@ void Arbitrator::attemptArbitration()
 
             auto future = discoveryProxySharedPtr->lookupAsync(fixedParticipantId);
             {
-                std::unique_lock<std::mutex> lockList(lockOnPendingFutures);
+                std::unique_lock<std::mutex> lock(pendingFutureMutex);
                 if (!keepArbitrationRunning) {
                     return;
                 } else {
@@ -250,7 +250,7 @@ void Arbitrator::attemptArbitration()
             auto future = discoveryProxySharedPtr->lookupAsync(
                     domains, interfaceName, systemDiscoveryQos);
             {
-                std::unique_lock<std::mutex> lockList(lockOnPendingFutures);
+                std::unique_lock<std::mutex> lock(pendingFutureMutex);
                 if (!keepArbitrationRunning) {
                     return;
                 } else {

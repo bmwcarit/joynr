@@ -102,7 +102,7 @@ private:
 
     void assertNoPendingFuture();
 
-    std::mutex lockOnPendingFutures;
+    std::mutex pendingFutureMutex;
     boost::variant<
             std::shared_ptr<joynr::Future<joynr::types::DiscoveryEntryWithMetaInfo>>,
             std::shared_ptr<joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>>
