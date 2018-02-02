@@ -125,6 +125,7 @@ var WebSocketMessagingSkeletonTest = require("../test-classes/joynr/messaging/we
 var WebSocketMessagingStubFactoryTest = require("../test-classes/joynr/messaging/websocket/WebSocketMessagingStubFactoryTest");
 var WebSocketMessagingStubTest = require("../test-classes/joynr/messaging/websocket/WebSocketMessagingStubTest");
 var WebSocketNodeTest = require("../test-classes/global/WebSocketNodeTest");
+var WebSocketLibJoynrRuntimeTest = require("../test-classes/joynr/start/WebSocketLibjoynrRuntimeTest");
 
 console.log("all tests modules loaded");
 loadingFinished = true;
