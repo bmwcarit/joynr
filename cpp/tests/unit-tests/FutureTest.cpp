@@ -167,7 +167,7 @@ TEST_F(FutureTest, waitForFinishWithTimer) {
         intFuture.wait(5);
         FAIL()<< "expected JoynrTimeOutException";
     } catch (const exceptions::JoynrTimeOutException& e) {
-        EXPECT_EQ(StatusCodeEnum::IN_PROGRESS, intFuture.getStatus());
+        EXPECT_EQ(StatusCodeEnum::WAIT_TIMED_OUT, intFuture.getStatus());
     }
 }
 
@@ -176,6 +176,6 @@ TEST_F(FutureTest, waitForFinishWithTimerForVoid) {
         voidFuture.wait(5);
         FAIL()<< "expected JoynrTimeOutException";
     } catch (const exceptions::JoynrTimeOutException& e) {
-        EXPECT_EQ(StatusCodeEnum::IN_PROGRESS, voidFuture.getStatus());
+        EXPECT_EQ(StatusCodeEnum::WAIT_TIMED_OUT, voidFuture.getStatus());
     }
 }

@@ -35,6 +35,9 @@ std::string StatusCode::toString(StatusCodeEnum enumValue)
     case StatusCodeEnum::ERROR:
         literal = std::string("ERROR");
         break;
+    case StatusCodeEnum::WAIT_TIMED_OUT:
+        literal = std::string("WAIT_TIMED_OUT");
+        break;
     }
     if (literal.empty()) {
         throw std::invalid_argument("StatusCodeEnum: No literal found");
