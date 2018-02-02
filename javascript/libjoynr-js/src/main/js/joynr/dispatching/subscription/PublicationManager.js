@@ -158,25 +158,11 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
             });
         }
 
-        var attribute = getAttribute(subscriptionInfo.providerParticipantId, subscriptionInfo.subscribedToName),
-            value;
-        try {
-            value = attribute.get();
-            if (Util.isPromise(value)) {
-                return value.catch(promiseCatchHandler);
-            }
-        } catch (error) {
-            if (error instanceof ProviderRuntimeException) {
-                return Promise.reject(error);
-            }
-            return Promise.reject(
-                new ProviderRuntimeException({
-                    detailMessage:
-                        "getter method for attribute " + subscriptionInfo.subscribedToName + " reported an error"
-                })
-            );
-        }
-        return Promise.resolve(value);
+        var attribute = getAttribute(subscriptionInfo.providerParticipantId, subscriptionInfo.subscribedToName);
+
+        return Promise.resolve()
+            .then(attribute.get) // assume that attribute.get is already bound
+            .catch(promiseCatchHandler);
     }
 
     /**

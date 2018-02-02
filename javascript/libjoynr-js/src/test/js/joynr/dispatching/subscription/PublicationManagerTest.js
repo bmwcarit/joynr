@@ -901,44 +901,50 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", functi
             // wait until the first publication occurs
             increaseFakeTime(asyncGetterCallDelay);
 
-            // reset first publication
-            asyncTestAttribute.get.calls.reset();
-            dispatcherSpy.sendPublication.calls.reset();
+            return Promise.resolve()
+                .then(function() {
+                    // reset first publication
+                    asyncTestAttribute.get.calls.reset();
+                    dispatcherSpy.sendPublication.calls.reset();
 
-            // let the minIntervalMs exceed, so that new value changes
-            // immediately lead to publications
-            increaseFakeTime(minIntervalMs);
-            expect(asyncTestAttribute.get).not.toHaveBeenCalled();
-            expect(dispatcherSpy.sendPublication).not.toHaveBeenCalled();
+                    // let the minIntervalMs exceed, so that new value changes
+                    // immediately lead to publications
+                    increaseFakeTime(minIntervalMs);
+                    expect(asyncTestAttribute.get).not.toHaveBeenCalled();
+                    expect(dispatcherSpy.sendPublication).not.toHaveBeenCalled();
 
-            asyncTestAttribute.valueChanged(value);
-            increaseFakeTime(5);
+                    asyncTestAttribute.valueChanged(value);
+                    increaseFakeTime(5);
 
-            // this should cause an async timer, which sends a publication
-            // after minIntervalMs-5
-            asyncTestAttribute.valueChanged(value);
+                    // this should cause an async timer, which sends a publication
+                    // after minIntervalMs-5
+                    asyncTestAttribute.valueChanged(value);
 
-            // the getter has not been invoked so far
-            expect(asyncTestAttribute.get).not.toHaveBeenCalled();
+                    // the getter has not been invoked so far
+                    expect(asyncTestAttribute.get).not.toHaveBeenCalled();
 
-            waitsFor(
-                function() {
-                    return dispatcherSpy.sendPublication.calls.count() === 1;
-                },
-                "timeout dispatcherSpy.sendPublication",
-                asyncGetterCallDelay
-            )
+                    return waitsFor(
+                        function() {
+                            return dispatcherSpy.sendPublication.calls.count() === 1;
+                        },
+                        "timeout dispatcherSpy.sendPublication",
+                        asyncGetterCallDelay
+                    );
+                })
                 .then(function() {
                     expect(dispatcherSpy.sendPublication.calls.count()).toEqual(1);
                     // now, lets increas the time until mininterval
                     increaseFakeTime(minIntervalMs - 5);
-
+                })
+                .then(function() {
                     // now, the async timer has exceeded, and the PublicationManager
                     // invokes the get
                     expect(asyncTestAttribute.get.calls.count()).toEqual(1);
 
                     // now change the attribute value
                     asyncTestAttribute.valueChanged(value);
+                })
+                .then(function() {
                     return waitsFor(
                         function() {
                             return dispatcherSpy.sendPublication.calls.count() === 2;
@@ -1211,6 +1217,8 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", functi
 
                     // after minIntervalMs the publication works again
                     increaseFakeTime(mixedSubscriptionRequest.qos.minIntervalMs - shortInterval * maxNrOfTimes);
+                })
+                .then(function() {
                     testAttribute.valueChanged(value);
                     expect(testAttribute.get.calls.count()).toEqual(1);
                     expect(dispatcherSpy.sendPublication.calls.count()).toEqual(1);
@@ -1373,7 +1381,11 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", functi
                     // to the subscribers as the publication timeout occurs
                     dispatcherSpy.sendPublication.calls.reset();
                     increaseFakeTime(mixedSubscriptionRequest.qos.minIntervalMs - maxNrOfTimes);
+                })
+                .then(function() {
                     expect(testAttribute.get.calls.count()).toEqual(1);
+                })
+                .then(function() {
                     return waitsFor(
                         function() {
                             return dispatcherSpy.sendPublication.calls.count() === 1;
