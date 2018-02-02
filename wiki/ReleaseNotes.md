@@ -15,6 +15,7 @@ API Stable
 * **[JS]** Updated wscpp version to 1.0.0
 * **[JS]** Verify arrays with Array.isArray() built-in function instead of
   "object.constructor === Array".
+* **[Java]** Discovery entries returned by the discovery service will update the routing table.
 
 ## Configuration property changes
 * **[JS]** See the [Javascript Configuration Reference](JavaScriptTutorial.md) for
