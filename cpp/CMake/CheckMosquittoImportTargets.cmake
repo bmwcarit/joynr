@@ -12,6 +12,6 @@ if(NOT TARGET mosquitto::mosquitto)
     set_property(TARGET mosquitto::mosquitto  PROPERTY
         IMPORTED_LOCATION ${MOSQUITTO_LIBRARIES}
     )
-
+    add_dependencies(mosquitto::mosquitto mosquitto)
 endif(NOT TARGET mosquitto::mosquitto)
 
