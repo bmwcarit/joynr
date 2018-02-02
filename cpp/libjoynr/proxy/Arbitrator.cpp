@@ -167,16 +167,18 @@ void Arbitrator::startArbitration(
 void Arbitrator::stopArbitration()
 {
     JOYNR_LOG_DEBUG(logger(), "StopArbitrator for interface={}", interfaceName);
-    keepArbitrationRunning = false;
-
-    // check if there are pending futures and stop them if still in progress
-    auto error = std::make_shared<joynr::exceptions::JoynrRuntimeException>(
-            "Shutting Down Arbitration for interface " + interfaceName);
     {
         std::unique_lock<std::mutex> lockList(lockOnPendingFutures);
+        keepArbitrationRunning = false;
+
+        // check if there are pending futures and stop them if still in progress
+        auto error = std::make_shared<joynr::exceptions::JoynrRuntimeException>(
+                "Shutting Down Arbitration for interface " + interfaceName);
         boost::apply_visitor([error](auto& future) {
-                                 if (future && future->getStatus() == StatusCodeEnum::IN_PROGRESS) {
-                                     future->onError(error);
+                                 if (future) {
+                                     if (future->getStatus() == StatusCodeEnum::IN_PROGRESS) {
+                                         future->onError(error);
+                                     }
                                      future.reset();
                                  }
                              },
@@ -232,16 +234,13 @@ void Arbitrator::attemptArbitration()
                     discoveryQos.getCustomParameter("fixedParticipantId").getValue();
 
             auto future = discoveryProxySharedPtr->lookupAsync(fixedParticipantId);
-            if (!keepArbitrationRunning) {
-                // stopArbitration was called need to get out of here
-                auto error = std::make_shared<joynr::exceptions::JoynrRuntimeException>(
-                        "Shutting Down Arbitration for interface " + interfaceName);
-                future->onError(error);
-                assertNoPendingFuture();
-                return;
-            } else {
+            {
                 std::unique_lock<std::mutex> lockList(lockOnPendingFutures);
-                pendingFuture = future;
+                if (!keepArbitrationRunning) {
+                    return;
+                } else {
+                    pendingFuture = future;
+                }
             }
 
             future->get(waitTimeMs, fixedParticipantResult);
@@ -250,16 +249,13 @@ void Arbitrator::attemptArbitration()
         } else {
             auto future = discoveryProxySharedPtr->lookupAsync(
                     domains, interfaceName, systemDiscoveryQos);
-            if (!keepArbitrationRunning) {
-                // stopArbitration was called need to get out of here
-                auto error = std::make_shared<joynr::exceptions::JoynrRuntimeException>(
-                        "Shutting Down Arbitration for interface " + interfaceName);
-                future->onError(error);
-                assertNoPendingFuture();
-                return;
-            } else {
+            {
                 std::unique_lock<std::mutex> lockList(lockOnPendingFutures);
-                pendingFuture = future;
+                if (!keepArbitrationRunning) {
+                    return;
+                } else {
+                    pendingFuture = future;
+                }
             }
 
             future->get(waitTimeMs, result);
