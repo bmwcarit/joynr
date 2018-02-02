@@ -211,8 +211,15 @@ void Arbitrator::validatePendingFuture()
                          pendingFuture);
 }
 
+void Arbitrator::assertNoPendingFuture()
+{
+    std::unique_lock<std::mutex> lockList(lockOnPendingFutures);
+    boost::apply_visitor([](auto& future) { assert(!future); }, pendingFuture);
+}
+
 void Arbitrator::attemptArbitration()
 {
+    assertNoPendingFuture();
     std::vector<joynr::types::DiscoveryEntryWithMetaInfo> result;
     try {
         auto discoveryProxySharedPtr = discoveryProxy.lock();
@@ -238,6 +245,7 @@ void Arbitrator::attemptArbitration()
                 auto error = std::make_shared<joynr::exceptions::JoynrRuntimeException>(
                         "Shutting Down Arbitration for interface " + interfaceName);
                 future->onError(error);
+                assertNoPendingFuture();
                 return;
             } else {
                 std::unique_lock<std::mutex> lockList(lockOnPendingFutures);
@@ -255,6 +263,7 @@ void Arbitrator::attemptArbitration()
                 auto error = std::make_shared<joynr::exceptions::JoynrRuntimeException>(
                         "Shutting Down Arbitration for interface " + interfaceName);
                 future->onError(error);
+                assertNoPendingFuture();
                 return;
             } else {
                 std::unique_lock<std::mutex> lockList(lockOnPendingFutures);
@@ -276,6 +285,7 @@ void Arbitrator::attemptArbitration()
         arbitrationError.setMessage(errorMsg);
         validatePendingFuture();
     }
+    assertNoPendingFuture();
 }
 
 void Arbitrator::receiveCapabilitiesLookupResults(

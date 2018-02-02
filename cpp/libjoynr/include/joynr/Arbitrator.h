@@ -100,6 +100,8 @@ private:
      */
     void validatePendingFuture();
 
+    void assertNoPendingFuture();
+
     std::mutex lockOnPendingFutures;
     boost::variant<
             std::shared_ptr<joynr::Future<joynr::types::DiscoveryEntryWithMetaInfo>>,
