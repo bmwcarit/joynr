@@ -111,14 +111,7 @@ void Arbitrator::startArbitration(
             // user
             if (!thisSharedPtr->keepArbitrationRunning) {
                 // stopArbitration has been invoked
-                thisSharedPtr->arbitrationError.setMessage(
-                        "Shutting Down Arbitration for interface " + thisSharedPtr->interfaceName);
-                thisSharedPtr->onErrorCallback(thisSharedPtr->arbitrationError);
-                thisSharedPtr->arbitrationRunning = false;
-                JOYNR_LOG_DEBUG(logger(),
-                                "Exiting arbitration thread for interface={}",
-                                thisSharedPtr->interfaceName);
-                return;
+                break;
             }
 
             // If there are no suitable providers, retry the arbitration after the retry interval
@@ -147,13 +140,17 @@ void Arbitrator::startArbitration(
             }
         }
 
-        // If this point is reached the arbitration timed out
         if (thisSharedPtr->onErrorCallback) {
-            if (!(thisSharedPtr->discoveredIncompatibleVersions.empty())) {
+            if (!thisSharedPtr->keepArbitrationRunning) {
+                thisSharedPtr->arbitrationError.setMessage(
+                        "Shutting Down Arbitration for interface " + thisSharedPtr->interfaceName);
+                thisSharedPtr->onErrorCallback(thisSharedPtr->arbitrationError);
+                // If this point is reached the arbitration timed out
+            } else if (thisSharedPtr->discoveredIncompatibleVersions.empty()) {
+                thisSharedPtr->onErrorCallback(thisSharedPtr->arbitrationError);
+            } else {
                 thisSharedPtr->onErrorCallback(exceptions::NoCompatibleProviderFoundException(
                         thisSharedPtr->discoveredIncompatibleVersions));
-            } else {
-                thisSharedPtr->onErrorCallback(thisSharedPtr->arbitrationError);
             }
         }
 

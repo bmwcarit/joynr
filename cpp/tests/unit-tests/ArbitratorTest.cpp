@@ -1187,6 +1187,7 @@ void letThreadSleep()
 
 void ArbitratorTest::testArbitrationStopsOnShutdown(bool testRetry)
 {
+    const std::string interfaceName("interfaceName");
     types::Version providerVersion;
     std::int64_t discoveryTimeoutMs = std::chrono::milliseconds(2000).count();
 
@@ -1209,7 +1210,7 @@ void ArbitratorTest::testArbitrationStopsOnShutdown(bool testRetry)
     }
 
     auto arbitrator = std::make_shared<joynr::Arbitrator>("domain",
-                    "interfaceName",
+                    interfaceName,
                     providerVersion,
                     mockDiscovery,
                     discoveryQos,
