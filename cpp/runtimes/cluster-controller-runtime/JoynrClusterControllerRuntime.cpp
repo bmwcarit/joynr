@@ -952,6 +952,7 @@ void JoynrClusterControllerRuntime::shutdownClusterController()
 void JoynrClusterControllerRuntime::runForever()
 {
     lifetimeSemaphore.wait();
+    shutdown();
 }
 
 std::shared_ptr<JoynrClusterControllerRuntime> JoynrClusterControllerRuntime::create(
