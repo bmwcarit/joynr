@@ -568,8 +568,9 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", function() {
         sentRequestMessage = clusterControllerMessagingStub.transmit.calls.mostRecent().args[0];
         var clusterControllerMessagingStubTransmitCallsCount = clusterControllerMessagingStub.transmit.calls.count();
         // get ready for an incoming request: when handleRequest is called, pass an empty reply back.
-        requestReplyManager.handleRequest.and.callFake(function(to, request) {
-            return Promise.resolve(request);
+        requestReplyManager.handleRequest.and.callFake(function(to, request, cb, replySettings) {
+            cb(replySettings, request);
+            return Promise.resolve();
         });
         // now simulate receiving the request message, as if it had been transmitted
         // this will be passed on to the mock requestReplyManager

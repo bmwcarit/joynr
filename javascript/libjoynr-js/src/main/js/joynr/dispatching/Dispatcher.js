@@ -481,21 +481,8 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
 
         settings.reply = JSONSerializer.stringify(reply, reply.error !== undefined);
         settings.messageType = JoynrMessage.JOYNRMESSAGE_TYPE_REPLY;
-        try {
-            sendReply(settings).catch(function(error) {
-                log.error(
-                    "Failed to send reply for request " +
-                        requestReplyId +
-                        " to " +
-                        toParticipantId +
-                        ": " +
-                        error +
-                        (error instanceof JoynrException ? " " + error.detailMessage : "")
-                );
-            });
-        } catch (error) {
-            // Errors should be returned via the Promise
-            log.fatal(
+        return sendReply(settings).catch(function(error) {
+            log.error(
                 "Failed to send reply for request " +
                     requestReplyId +
                     " to " +
@@ -504,7 +491,7 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
                     error +
                     (error instanceof JoynrException ? " " + error.detailMessage : "")
             );
-        }
+        });
     }
     /**
      * @private
@@ -743,9 +730,12 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
                         customHeaders: joynrMessage.getCustomHeaders()
                     };
 
-                    return requestReplyManager
-                        .handleRequest(joynrMessage.to, request)
-                        .then(sendRequestReply.bind(this, handleReplySettings));
+                    return requestReplyManager.handleRequest(
+                        joynrMessage.to,
+                        request,
+                        sendRequestReply,
+                        handleReplySettings
+                    );
                 } catch (errorInRequest) {
                     // TODO handle error in handling the request
                     log.error("error handling request: " + errorInRequest);

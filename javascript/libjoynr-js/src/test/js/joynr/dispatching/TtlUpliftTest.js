@@ -146,13 +146,12 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
     beforeEach(function() {
         jasmine.addMatchers(customMatchers);
 
-        var sendRequestReply = function(providerParticipantId, request) {
-            return Promise.resolve(
-                new Reply({
-                    response: "response",
-                    requestReplyId: request.requestReplyId
-                })
-            );
+        var sendRequestReply = function(providerParticipantId, request, cb, replySettings) {
+            var reply = new Reply({
+                response: "response",
+                requestReplyId: request.requestReplyId
+            });
+            return Promise.resolve(cb(replySettings, reply));
         };
         requestReplyManager = {
             handleRequest: sendRequestReply
@@ -385,7 +384,9 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
                     providerId,
                     jasmine.objectContaining({
                         _typeName: "joynr.Request"
-                    })
+                    }),
+                    jasmine.any(Function),
+                    jasmine.any(Object)
                 );
 
                 checkRequestReplyMessage(expiryDateMs);
@@ -658,7 +659,9 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
                     providerId,
                     jasmine.objectContaining({
                         _typeName: "joynr.Request"
-                    })
+                    }),
+                    jasmine.any(Function),
+                    jasmine.any(Object)
                 );
 
                 checkRequestReplyMessage(expiryDateWithTtlUplift);

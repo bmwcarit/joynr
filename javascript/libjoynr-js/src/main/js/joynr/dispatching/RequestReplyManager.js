@@ -194,26 +194,31 @@ function RequestReplyManager(dispatcher, typeRegistry) {
 
     /**
      * @name RequestReplyManager#handleRequest
-     * @function
-     *
-     * @param {Request}
-     *            request
+     * @param {String} providerParticipantId
+     * @param {Request} request
+     * @param {Function} handleReplyCallback
+     *          callback for handling the reply
+     * @param {Object} replySettings
+     *          settings for handleReplyCallback to avoid unnecessary function object creation
+     * @returns {*}
      */
-    this.handleRequest = function handleRequest(providerParticipantId, request) {
+    this.handleRequest = function handleRequest(providerParticipantId, request, handleReplyCallback, replySettings) {
         var exception;
 
         function createReplyFromError(exception) {
-            return new Reply({
+            var reply = new Reply({
                 error: exception,
                 requestReplyId: request.requestReplyId
             });
+            return handleReplyCallback(replySettings, reply);
         }
 
         function createReplyFromSuccess(response) {
-            return new Reply({
+            var reply = new Reply({
                 response: response,
                 requestReplyId: request.requestReplyId
             });
+            return handleReplyCallback(replySettings, reply);
         }
 
         try {
