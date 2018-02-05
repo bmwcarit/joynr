@@ -142,6 +142,10 @@ var asWrite = (function() {
     };
 }());
 
+function toArray(returnValue) {
+    return [returnValue];
+}
+
 // prettier-ignore
 var asRead = (function() {
     /**
@@ -179,10 +183,6 @@ var asRead = (function() {
         }
         // call getter function with the same arguments as this function
         value = this.privateGetterFunc();
-
-        function toArray(returnValue) {
-            return [returnValue];
-        }
 
         if (Util.isPromise(value)) {
             return value.then(toArray);
