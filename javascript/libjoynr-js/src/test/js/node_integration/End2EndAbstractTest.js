@@ -33,8 +33,6 @@ function End2EndAbstractTest(provisioningSuffix, buildDataProxy) {
     var childId;
     var testIdentifier = 0;
 
-    jasmine.getEnv().defaultTimeoutInterval = 15000; //15 secs default timeout for async tests;
-    jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000000;
     this.beforeEach = function() {
         var provisioningSuffixForTest = provisioningSuffix + "-" + testIdentifier++;
         var domain = provisioningSuffixForTest;

@@ -23,6 +23,13 @@ var Typing = require("../util/Typing");
 var Util = require("../util/UtilInternal");
 var LoggerFactory = require("../system/LoggerFactory");
 
+function makeSetterFunction(obj, parameterName) {
+    return function(arg) {
+        obj.filterParameters[parameterName] = arg;
+        return obj;
+    };
+}
+
 /**
  * Constructor of BroadcastFilterParameters object used for subscriptions in generated proxy objects
  *
@@ -49,13 +56,6 @@ function BroadcastFilterParameters(filterParameterProperties) {
      */
     Util.objectDefineProperty(this, "_typeName", "joynr.BroadcastFilterParameters");
     Typing.checkPropertyIfDefined(filterParameterProperties, "Object", "filterParameters");
-
-    function makeSetterFunction(obj, parameterName) {
-        return function(arg) {
-            obj.filterParameters[parameterName] = arg;
-            return obj;
-        };
-    }
 
     var parameterName;
     var funcName;

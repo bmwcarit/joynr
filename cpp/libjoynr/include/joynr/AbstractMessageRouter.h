@@ -20,8 +20,10 @@
 #ifndef ABSTRACTMESSAGEROUTER_H
 #define ABSTRACTMESSAGEROUTER_H
 
+#include <atomic>
 #include <chrono>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <unordered_set>
 
@@ -200,6 +202,7 @@ private:
 
     void checkExpiryDate(const ImmutableMessage& message);
     AddressUnorderedSet lookupAddresses(const std::unordered_set<std::string>& participantIds);
+    std::atomic<bool> isShuttingDown;
 };
 
 /**

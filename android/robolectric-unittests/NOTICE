@@ -64,7 +64,7 @@ This project has dependencies to:
   Jetty :: Websocket :: Client under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: Websocket :: Common under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   JSON (JavaScript Object Notation) under provided without support or warranty
-  JUnit under Common Public License Version 1.0
+  JUnit under Eclipse Public License 1.0
   libjoynr-websocket-runtime under The Apache Software License, Version 2.0
   Maven Ant Tasks under The Apache Software License, Version 2.0
   Maven Artifact under The Apache Software License, Version 2.0

@@ -63,7 +63,7 @@ WebSocket.unmarshalJoynrMessage = function(event, callback) {
     if (typeof event.data === "object") {
         var callbackWrapper = function(joynrMessageData) {
             if (joynrMessageData !== null && joynrMessageData !== undefined) {
-                callback(new JoynrMessage(JSON.parse(joynrMessageData)));
+                callback(JoynrMessage.parseMessage(JSON.parse(joynrMessageData)));
             }
         };
         WebSocket.decodeEventData(event, callbackWrapper);

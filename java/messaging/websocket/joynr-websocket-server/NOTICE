@@ -50,6 +50,6 @@ This project has dependencies to:
   Jetty :: Websocket :: Common under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: Websocket :: Server under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: Websocket :: Servlet Interface under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
-  JUnit under Common Public License Version 1.0
+  JUnit under Eclipse Public License 1.0
   SLF4J API Module under MIT License
 

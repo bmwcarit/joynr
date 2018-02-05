@@ -171,8 +171,8 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", function() {
             type: parameters.type,
             payload: JSON.stringify(parameters.payload)
         });
-        joynrMessage.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_FROM_PARTICIPANT_ID, proxyId);
-        joynrMessage.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_TO_PARTICIPANT_ID, providerId);
+        joynrMessage.from = proxyId;
+        joynrMessage.to = providerId;
         dispatcher.receive(joynrMessage);
     }
 
@@ -290,13 +290,12 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", function() {
             type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
             payload: JSON.stringify(request)
         });
-        joynrMessage.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_TO_PARTICIPANT_ID, providerId);
-        joynrMessage.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_FROM_PARTICIPANT_ID, proxyId);
+        joynrMessage.to = providerId;
+        joynrMessage.from = proxyId;
         dispatcher.receive(joynrMessage);
         expect(requestReplyManager.handleRequest).toHaveBeenCalled();
         expect(requestReplyManager.handleRequest.calls.mostRecent().args[0]).toEqual(providerId);
         expect(requestReplyManager.handleRequest.calls.mostRecent().args[1]).toEqual(request);
-        expect(typeof requestReplyManager.handleRequest.calls.mostRecent().args[2] === "function").toBeTruthy();
         done();
     });
 
@@ -308,8 +307,8 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", function() {
             type: JoynrMessage.JOYNRMESSAGE_TYPE_ONE_WAY,
             payload: JSON.stringify(oneWayRequest)
         });
-        joynrMessage.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_TO_PARTICIPANT_ID, providerId);
-        joynrMessage.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_FROM_PARTICIPANT_ID, proxyId);
+        joynrMessage.to = providerId;
+        joynrMessage.from = proxyId;
         dispatcher.receive(joynrMessage);
         expect(requestReplyManager.handleOneWayRequest).toHaveBeenCalled();
         expect(requestReplyManager.handleOneWayRequest.calls.mostRecent().args[0]).toEqual(providerId);
@@ -558,16 +557,21 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", function() {
         });
         expect(clusterControllerMessagingStub.transmit).toHaveBeenCalled();
         sentRequestMessage = clusterControllerMessagingStub.transmit.calls.mostRecent().args[0];
+        var clusterControllerMessagingStubTransmitCallsCount = clusterControllerMessagingStub.transmit.calls.count();
         // get ready for an incoming request: when handleRequest is called, pass an empty reply back.
-        requestReplyManager.handleRequest.and.callFake(function(to, request, callback) {
-            callback(new Reply());
+        requestReplyManager.handleRequest.and.callFake(function(to, request) {
+            return Promise.resolve(request);
         });
         // now simulate receiving the request message, as if it had been transmitted
         // this will be passed on to the mock requestReplyManager
-        dispatcher.receive(sentRequestMessage);
-        sentReplyMessage = clusterControllerMessagingStub.transmit.calls.mostRecent().args[0];
-        expect(sentReplyMessage.getCustomHeaders()[headerKey]).toEqual(headerValue);
-        done();
+        dispatcher.receive(sentRequestMessage).then(function() {
+            sentReplyMessage = clusterControllerMessagingStub.transmit.calls.mostRecent().args[0];
+            expect(clusterControllerMessagingStub.transmit.calls.count()).toBe(
+                clusterControllerMessagingStubTransmitCallsCount + 1
+            );
+            expect(sentReplyMessage.getCustomHeaders()[headerKey]).toEqual(headerValue);
+            done();
+        });
     });
 
     it("sends subscription reply on subscription request", function(done) {
@@ -579,8 +583,8 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", function() {
             type: JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REQUEST,
             payload: JSON.stringify(payload)
         });
-        joynrMessage.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_FROM_PARTICIPANT_ID, proxyId);
-        joynrMessage.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_TO_PARTICIPANT_ID, providerId);
+        joynrMessage.from = proxyId;
+        joynrMessage.to = providerId;
 
         var subscriptionReplyPayload = {
             subscriptionId: subscriptionId

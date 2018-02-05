@@ -75,7 +75,7 @@ This project has dependencies to:
   Jetty :: Utilities under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   json-path under Apache 2.0
   JSON.simple under The Apache Software License, Version 2.0
-  JUnit under Common Public License Version 1.0
+  JUnit under Eclipse Public License 1.0
   Logging under The Apache Software License, Version 2.0
   Reflections under WTFPL
   REST Assured under Apache 2.0

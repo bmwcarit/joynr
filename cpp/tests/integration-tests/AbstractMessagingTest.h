@@ -120,6 +120,7 @@ public:
     }
 
     ~AbstractMessagingTest(){
+        messageRouter->shutdown();
         std::remove(settingsFileName.c_str());
     }
 

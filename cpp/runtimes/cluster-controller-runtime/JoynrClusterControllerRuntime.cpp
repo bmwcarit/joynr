@@ -335,6 +335,11 @@ void JoynrClusterControllerRuntime::init()
             doMqttMessaging ? mqttSerializedGlobalClusterControllerAddress
                             : httpSerializedGlobalClusterControllerAddress;
 
+    const int maxThreads = 1;
+    std::unique_ptr<MessageQueue<std::string>> messageQueue =
+            std::make_unique<MessageQueue<std::string>>(
+                    clusterControllerSettings.getMessageQueueLimit(),
+                    clusterControllerSettings.getPerParticipantIdMessageQueueLimit());
     // init message router
     ccMessageRouter = std::make_shared<CcMessageRouter>(
             messagingSettings,
@@ -347,7 +352,10 @@ void JoynrClusterControllerRuntime::init()
             globalClusterControllerAddress,
             systemServicesSettings.getCcMessageNotificationProviderParticipantId(),
             libjoynrSettings.isMessageRouterPersistencyEnabled(),
-            std::move(transportStatuses));
+            std::move(transportStatuses),
+            maxThreads,
+            std::move(messageQueue));
+
     ccMessageRouter->init();
     if (libjoynrSettings.isMessageRouterPersistencyEnabled()) {
         ccMessageRouter->loadRoutingTable(libjoynrSettings.getMessageRouterPersistenceFilename());

@@ -74,4 +74,9 @@ public class LongPollingHttpMulticastAddressCalculator implements MulticastAddre
     public boolean supports(String transport) {
         return LongPollingHttpGlobalAddressFactory.SUPPORTED_TRANSPORT_LONGPOLLING.equals(transport);
     }
+
+    @Override
+    public boolean createsGlobalTransportAddresses() {
+        return true;
+    }
 }

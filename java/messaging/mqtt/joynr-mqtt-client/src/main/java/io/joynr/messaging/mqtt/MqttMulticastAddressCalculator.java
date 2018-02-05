@@ -51,4 +51,9 @@ public class MqttMulticastAddressCalculator implements MulticastAddressCalculato
     public boolean supports(String transport) {
         return "mqtt".equalsIgnoreCase(transport);
     }
+
+    @Override
+    public boolean createsGlobalTransportAddresses() {
+        return true;
+    }
 }

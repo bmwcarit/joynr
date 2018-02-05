@@ -25,6 +25,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
+#include "joynr/CapabilityUtils.h"
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "joynr/ClusterControllerDirectories.h"
 #include "joynr/ClusterControllerSettings.h"
@@ -70,6 +71,7 @@ public:
               expiryDateMs(lastSeenDateMs + 60 * 60 * 1000), // lastSeen + 1h
               dummyParticipantId1(),
               dummyParticipantId2(),
+              dummyParticipantId3(),
               callback(),
               defaultOnSuccess([](){}),
               defaultOnError([](const joynr::exceptions::ProviderRuntimeException&){}),
@@ -233,6 +235,7 @@ public:
         std::ignore = onError;
         types::ProviderQos qos;
         std::vector<types::GlobalDiscoveryEntry> discoveryEntryList;
+        // each participantId can register for only one domain and only one interface.
         discoveryEntryList.push_back(types::GlobalDiscoveryEntry(defaultProviderVersion,
                                                                  DOMAIN_1_NAME,
                                                                  INTERFACE_1_NAME,
@@ -245,7 +248,7 @@ public:
         discoveryEntryList.push_back(types::GlobalDiscoveryEntry(defaultProviderVersion,
                                                                  DOMAIN_2_NAME,
                                                                  INTERFACE_2_NAME,
-                                                                 dummyParticipantId1,
+                                                                 dummyParticipantId2,
                                                                  qos,
                                                                  LASTSEEN_MS,
                                                                  EXPIRYDATE_MS,
@@ -254,7 +257,7 @@ public:
         discoveryEntryList.push_back(types::GlobalDiscoveryEntry(defaultProviderVersion,
                                                                  DOMAIN_3_NAME,
                                                                  INTERFACE_3_NAME,
-                                                                 dummyParticipantId1,
+                                                                 dummyParticipantId3,
                                                                  qos,
                                                                  LASTSEEN_MS,
                                                                  EXPIRYDATE_MS,
@@ -649,6 +652,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupForParticipantIdDelegatesToCapabili
     EXPECT_EQ(3, capabilities.size());
     bool interfaceAddress1Found = false;
     bool interfaceAddress2Found = false;
+    bool interfaceAddress3Found = false;
     for (std::uint16_t i = 0; i < capabilities.size(); i++) {
         types::DiscoveryEntry entry = capabilities.at(i);
         if ((entry.getDomain() == DOMAIN_1_NAME) &&
@@ -657,11 +661,15 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupForParticipantIdDelegatesToCapabili
         } else if ((entry.getDomain() == DOMAIN_2_NAME) &&
                    (entry.getInterfaceName() == INTERFACE_2_NAME)) {
             interfaceAddress2Found = true;
+        } else if ((entry.getDomain() == DOMAIN_3_NAME) &&
+                   (entry.getInterfaceName() == INTERFACE_3_NAME)) {
+            interfaceAddress3Found = true;
         }
     }
 
     EXPECT_TRUE(interfaceAddress1Found);
     EXPECT_TRUE(interfaceAddress2Found);
+    EXPECT_TRUE(interfaceAddress3Found);
 }
 
 TEST_F(LocalCapabilitiesDirectoryTest, clearRemovesEntries)
@@ -1119,7 +1127,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
     joynr::types::DiscoveryEntry entry(defaultProviderVersion,
                                        DOMAIN_1_NAME,
                                        INTERFACE_1_NAME,
-                                       dummyParticipantId1,
+                                       dummyParticipantId3,
                                        providerQos,
                                        lastSeenDateMs,
                                        expiryDateMs,
@@ -1799,6 +1807,99 @@ TEST_F(LocalCapabilitiesDirectoryTest, throwExceptionOnMultiProxy)
     EXPECT_CALL(mockCallback, onSuccess(_)).Times(0);
     localCapabilitiesDirectory->lookup(
             twoDomains, INTERFACE_1_NAME, discoveryQos, onSuccess, onError);
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, localAndGlobalDoesNotReturnDuplicateEntriesCacheEnabled)
+{
+    types::ProviderQos providerQos;
+    providerQos.setScope(types::ProviderScope::GLOBAL);
+
+
+    joynr::types::DiscoveryEntry entry(defaultProviderVersion,
+                                       DOMAIN_1_NAME,
+                                       INTERFACE_1_NAME,
+                                       dummyParticipantId1,
+                                       providerQos,
+                                       lastSeenDateMs,
+                                       expiryDateMs,
+                                       PUBLIC_KEY_ID);
+    const joynr::types::DiscoveryEntryWithMetaInfo expectedEntry = util::convert(true, entry);
+
+    EXPECT_CALL(*capabilitiesClient,
+                add(Matcher<const joynr::types::GlobalDiscoveryEntry&>(_),_,_)).Times(1);
+
+    localCapabilitiesDirectory->add(entry,
+                                    defaultOnSuccess,
+                                    defaultOnError);
+
+    EXPECT_CALL(*capabilitiesClient, lookup(_, _, _, _, _)).Times(0);
+
+    joynr::types::DiscoveryQos discoveryQos;
+    discoveryQos.setCacheMaxAge(5000);
+    discoveryQos.setDiscoveryTimeout(5000);
+    discoveryQos.setDiscoveryScope(joynr::types::DiscoveryScope::LOCAL_AND_GLOBAL);
+    localCapabilitiesDirectory->lookup(
+            {DOMAIN_1_NAME}, INTERFACE_1_NAME, callback, discoveryQos);
+
+    // set max timeout to get results to 10 ms
+    auto results = callback->getResults(10);
+    EXPECT_EQ(1, results.size());
+    const joynr::types::DiscoveryEntryWithMetaInfo result = results.at(0);
+
+    EXPECT_EQ(expectedEntry, result);
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, localAndGlobalDoesNotReturnDuplicateEntriesCacheDisabled)
+{
+    types::ProviderQos providerQos;
+    providerQos.setScope(types::ProviderScope::GLOBAL);
+    joynr::types::DiscoveryEntry entry(defaultProviderVersion,
+                                       DOMAIN_1_NAME,
+                                       INTERFACE_1_NAME,
+                                       dummyParticipantId1,
+                                       providerQos,
+                                       lastSeenDateMs,
+                                       expiryDateMs,
+                                       PUBLIC_KEY_ID);
+    const joynr::types::DiscoveryEntryWithMetaInfo expectedEntry = util::convert(true, entry);
+    const joynr::types::GlobalDiscoveryEntry globalEntry = joynr::types::GlobalDiscoveryEntry(entry.getProviderVersion(),
+                                                                                       entry.getDomain(),
+                                                                                       entry.getInterfaceName(),
+                                                                                       entry.getParticipantId(),
+                                                                                       entry.getQos(),
+                                                                                       entry.getLastSeenDateMs(),
+                                                                                       entry.getExpiryDateMs(),
+                                                                                       entry.getPublicKeyId(),
+                                                                                       EXTERNAL_ADDRESS);
+    const std::vector<types::GlobalDiscoveryEntry> globalEntryVec = {globalEntry};
+
+    EXPECT_CALL(*capabilitiesClient,
+                add(Matcher<const joynr::types::GlobalDiscoveryEntry&>(_),_,_)).Times(1);
+
+    localCapabilitiesDirectory->add(entry,
+                                    defaultOnSuccess,
+                                    defaultOnError);
+
+    EXPECT_CALL(*capabilitiesClient, lookup(_, _, _, _, _))
+            .Times(1)
+            .WillOnce(InvokeArgument<3>(globalEntryVec));
+
+    joynr::types::DiscoveryQos discoveryQos;
+    discoveryQos.setCacheMaxAge(0);
+    discoveryQos.setDiscoveryTimeout(5000);
+    discoveryQos.setDiscoveryScope(joynr::types::DiscoveryScope::LOCAL_AND_GLOBAL);
+
+    // wait some time to be sure that the cached entry is not used
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    localCapabilitiesDirectory->lookup(
+            {DOMAIN_1_NAME}, INTERFACE_1_NAME, callback, discoveryQos);
+
+    // set max timeout to get results to 10 ms
+    auto results = callback->getResults(10);
+    EXPECT_EQ(1, results.size());
+    const joynr::types::DiscoveryEntryWithMetaInfo result = results.at(0);
+
+    EXPECT_EQ(expectedEntry, result);
 }
 
 TEST_F(LocalCapabilitiesDirectoryTest, callTouchPeriodically)

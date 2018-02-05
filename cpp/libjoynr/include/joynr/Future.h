@@ -53,6 +53,7 @@ public:
         if (resultReceived.waitFor(std::chrono::milliseconds(timeOut))) {
             resultReceived.notify();
         } else {
+            status = StatusCodeEnum::WAIT_TIMED_OUT;
             throw exceptions::JoynrTimeOutException("Request did not finish in time");
         }
     }

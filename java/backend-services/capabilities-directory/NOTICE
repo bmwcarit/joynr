@@ -63,7 +63,7 @@ This project has dependencies to:
   javax.inject under The Apache Software License, Version 2.0
   javax.interceptor API under CDDL + GPLv2 with classpath exception
   JBoss Logging 3 under Apache License, version 2.0
-  JUnit under Common Public License Version 1.0
+  JUnit under Eclipse Public License 1.0
   Logging under The Apache Software License, Version 2.0
   Reflections under WTFPL
   SLF4J API Module under MIT License

@@ -465,7 +465,7 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", function() {
             providerParticipantId = "nonExistentProviderId";
         }
 
-        requestReplyManager.handleRequest(providerParticipantId, request, callbackDispatcher);
+        requestReplyManager.handleRequest(providerParticipantId, request).then(callbackDispatcher);
 
         return {
             provider: provider,
@@ -740,32 +740,29 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", function() {
         expect(function() {
             requestReplyManager.removeRequestCaller("providerParticipantId");
         }).toThrow();
-        var callbackDispatcherSpy = jasmine.createSpy("callbackDispatcherSpy");
-        requestReplyManager.handleRequest(
-            "providerParticipantId",
-            {
+        requestReplyManager
+            .handleRequest("providerParticipantId", {
                 requestReplyId: requestReplyId
-            },
-            callbackDispatcherSpy
-        );
-        expect(callbackDispatcherSpy).toHaveBeenCalled();
-        expect(callbackDispatcherSpy.calls.argsFor(0)[0] instanceof Reply);
-        expect(callbackDispatcherSpy.calls.argsFor(0)[0].error instanceof MethodInvocationException);
-        expect(function() {
-            var replyCallerSpy = jasmine.createSpyObj("promise", ["resolve", "reject"]);
+            })
+            .then(function(reply) {
+                expect(reply instanceof Reply);
+                expect(reply.error instanceof MethodInvocationException);
+                expect(function() {
+                    var replyCallerSpy = jasmine.createSpyObj("promise", ["resolve", "reject"]);
 
-            requestReplyManager.addReplyCaller(requestReplyId, replyCallerSpy);
-        }).toThrow();
-        expect(function() {
-            requestReplyManager.addRequestCaller("providerParticipantId", {});
-        }).toThrow();
-        expect(function() {
-            requestReplyManager.sendOneWayRequest({});
-        }).toThrow();
-        expect(function() {
-            requestReplyManager.sendRequest({});
-        }).toThrow();
-        done();
+                    requestReplyManager.addReplyCaller(requestReplyId, replyCallerSpy);
+                }).toThrow();
+                expect(function() {
+                    requestReplyManager.addRequestCaller("providerParticipantId", {});
+                }).toThrow();
+                expect(function() {
+                    requestReplyManager.sendOneWayRequest({});
+                }).toThrow();
+                expect(function() {
+                    requestReplyManager.sendRequest({});
+                }).toThrow();
+                done();
+            });
     });
     it(" rejects reply callers when shut down", function(done) {
         var replyCallerSpy = jasmine.createSpyObj("promise", ["resolve", "reject"]);

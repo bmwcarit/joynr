@@ -23,7 +23,23 @@ import joynr.system.RoutingTypes.Address;
 public interface RoutingTable {
     Address get(String participantId);
 
-    Address put(String participantId, Address address, boolean isGloballyVisible, long expiryDateMs, boolean isSticky);
+    /**
+     * Adds a new routing entry. If a routing entry for the provided participantId already exists, only the expiryDate and the sticky-flag
+     * are updated unless allowUpdate is set to true.
+     *
+     * @param participantId participant id for which a routing entry shall be created
+     * @param address Address which shall be associated with the participant id
+     * @param isGloballyVisible States whether the endpoint is globally visible or not
+     * @param expiryDateMs Expiry date of the routing entry in milliseconds
+     * @param isSticky If set to true, the routing entry never expires
+     * @param allowUpdate If set to false, the address won't be changed if a routing entry for the provided participantId already exists.
+     */
+    void put(String participantId,
+             Address address,
+             boolean isGloballyVisible,
+             long expiryDateMs,
+             boolean isSticky,
+             boolean allowUpdate);
 
     boolean containsKey(String participantId);
 
@@ -35,6 +51,20 @@ public interface RoutingTable {
      * @throws JoynrRuntimeException if no entry exists for the given participantId
      */
     boolean getIsGloballyVisible(String participantId);
+
+    /**
+     * Query the expiry date of a routing entry for a participant id.
+     * @param participantId
+     * @return The routing entry's expiry date in ms.
+     */
+    long getExpiryDateMs(String participantId);
+
+    /**
+     * Query the sticky-flag of a routing entry for a participant id.
+     * @param participantId
+     * @return The routing entry's sticky state.
+     */
+    boolean getIsSticky(String participantId);
 
     /**
      * Sets the isSticky attribute of the Routing Entry for the participantId.

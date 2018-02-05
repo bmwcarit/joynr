@@ -380,39 +380,19 @@ function performCppConsumerTest {
     wait $TEST_PIDS
 }
 
-function performJsConsumerTest {
+function performJsPerformanceTest {
     STDOUT_PARAM=$1
     REPORTFILE_PARAM=$2
-    VIACC=$3
-    STARTPROVIDER=$4
-    SKIPBYTEARRAYSIZETIMEK=$5
-    PROVIDER_STDOUT=$PERFORMANCETESTS_RESULTS_DIR/provider_stdout.txt
-    PROVIDER_STDERR=$PERFORMANCETESTS_RESULTS_DIR/provider_stderr.txt
 
     cd $PERFORMANCETESTS_SOURCE_DIR
 
-    if [ "$STARTPROVIDER" == "ON" ]
-    then
-        startJsPerformanceTestProvider
-    fi
 
     if [ "$USE_NPM" == "ON" ]
     then
-        npm run-script --performance-test:runs=$SINGLECONSUMER_RUNS \
-                       --performance-test:domain=$DOMAINNAME \
-                       --performance-test:stringlength=$INPUTDATA_STRINGLENGTH \
-                       --performance-test:bytearraylength=$INPUTDATA_BYTEARRAYSIZE \
-                       --performance-test:viacc=$VIACC \
-                       --performance-test:skipByteArraySizeTimesK=$SKIPBYTEARRAYSIZETIMEK \
-                         startconsumer 1>>$STDOUT_PARAM 2>>$REPORTFILE_PARAM
+        npm run-script startPerformance 1>>$STDOUT_PARAM 2>>$REPORTFILE_PARAM
     else
-        export runs=$SINGLECONSUMER_RUNS
-        export domain=$DOMAINNAME
-        export stringlength=$INPUTDATA_STRINGLENGTH
-        export bytearraylength=$INPUTDATA_BYTEARRAYSIZE
-        export viacc=$VIACC
         # This call assumes that the required js dependencies are installed locally
-        node src/main/js/consumer.js 1>>$STDOUT_PARAM 2>>$REPORTFILE_PARAM
+        node src/main/js/runPerformanceTests.js 1>>$STDOUT_PARAM 2>>$REPORTFILE_PARAM
     fi
 }
 
@@ -543,7 +523,7 @@ function stopServices {
 function echoUsage {
     echo "Usage: run-performance-tests.sh -j <jetty-dir> -p <performance-bin-dir> \
 -r <performance-results-dir> -s <performance-source-dir> \
--t <JAVA_SYNC|JAVA_ASYNC|JAVA_MULTICONSUMER|JS_ASYNC|OAP_TO_BACKEND_MOSQ|\
+-t <JAVA_SYNC|JAVA_ASYNC|JAVA_MULTICONSUMER|JS_CONSUMER|OAP_TO_BACKEND_MOSQ|\
 CPP_SYNC|CPP_ASYNC|CPP_MULTICONSUMER|JEE_PROVIDER|ALL> -y <joynr-bin-dir>\
 -B <backend-services (MQTT|HTTP)>\
 [-c <number-of-consumers> -x <number-of-runs> -m <use maven ON|OFF> -z <mosquitto.conf> -n <use node ON|OFF>]"
@@ -624,7 +604,6 @@ done
 
 if [ "$TESTCASE" != "JAVA_SYNC" ] && [ "$TESTCASE" != "JAVA_ASYNC" ] && \
    [ "$TESTCASE" != "JAVA_MULTICONSUMER" ] && \
-   [ "$TESTCASE" != "JS_ASYNC" ] && [ "$TESTCASE" != "JS_SHORTCIRCUIT" ] && \
    [ "$TESTCASE" != "JS_CONSUMER" ] && [ "$TESTCASE" != "OAP_TO_BACKEND_MOSQ" ] && \
    [ "$TESTCASE" != "CPP_SYNC" ] && [ "$TESTCASE" != "CPP_ASYNC" ] && \
    [ "$TESTCASE" != "CPP_MULTICONSUMER" ] && [ "$TESTCASE" != "CPP_SERIALIZER" ] && \
@@ -633,8 +612,8 @@ if [ "$TESTCASE" != "JAVA_SYNC" ] && [ "$TESTCASE" != "JAVA_ASYNC" ] && \
    [ "$TESTCASE" != "CPP_CONSUMER_JS_PROVIDER" ]
 then
     echo "\"$TESTCASE\" is not a valid testcase"
-    echo "-t option can be either JAVA_SYNC, JAVA_ASYNC, JAVA_MULTICONSUMER, JS_ASYNC, \
-JS_CONSUMER, JS_SHORTCIRCUIT, OAP_TO_BACKEND_MOSQ, CPP_SYNC, CPP_ASYNC, CPP_MULTICONSUMER, \
+    echo "-t option can be either JAVA_SYNC, JAVA_ASYNC, JAVA_MULTICONSUMER, JS_CONSUMER, \
+OAP_TO_BACKEND_MOSQ, CPP_SYNC, CPP_ASYNC, CPP_MULTICONSUMER, \
 CPP_SERIALIZER, CPP_SHORTCIRCUIT, CPP_PROVIDER, JEE_PROVIDER, JS_CONSUMER_CPP_PROVIDER, CPP_CONSUMER_JS_PROVIDER"
     echoUsage
     exit 1
@@ -726,29 +705,17 @@ then
         done
     fi
 
-    if [ "$TESTCASE" == "JS_ASYNC" ]
-    then
-        echo "Testcase: JS_ASYNC" | tee -a $REPORTFILE
-        performJsConsumerTest $STDOUT $REPORTFILE true ON $SKIPBYTEARRAYSIZETIMESK
-    fi
-
-    if [ "$TESTCASE" == "JS_SHORTCIRCUIT" ]
-    then
-        echo "Testcase: JS_SHORTCIRCUIT" | tee -a $REPORTFILE
-        performJsConsumerTest $STDOUT $REPORTFILE false OFF $SKIPBYTEARRAYSIZETIMESK
-    fi
-
     if [ "$TESTCASE" == "JS_CONSUMER" ]
     then
-        echo "Testcase: JS_CONSUMER for domain $DOMAINNAME" | tee -a $REPORTFILE
-        performJsConsumerTest $STDOUT $REPORTFILE true OFF $SKIPBYTEARRAYSIZETIMESK
+        echo "Testcase: JS_CONSUMER" | tee -a $REPORTFILE
+        performJsPerformanceTest $STDOUT $REPORTFILE
     fi
 
     if [ "$TESTCASE" == "JS_CONSUMER_CPP_PROVIDER" ]
     then
         echo "Testcase: JS_CONSUMER_CPP_PROVIDER" | tee -a $REPORTFILE
         startCppPerformanceTestProvider
-        performJsConsumerTest $STDOUT $REPORTFILE true OFF $SKIPBYTEARRAYSIZETIMESK
+        performJsPerformanceTest $STDOUT $REPORTFILE
     fi
 
     if [ "$TESTCASE" == "CPP_CONSUMER_JS_PROVIDER" ]
@@ -806,7 +773,7 @@ then
     echo "### Starting performance tests ###"
 
     echo "Testcase: OAP_TO_BACKEND_MOSQ" | tee -a $REPORTFILE
-    performJsConsumerTest $STDOUT $REPORTFILE true OFF $SKIPBYTEARRAYSIZETIMESK
+    performJsPerformanceTest $STDOUT $REPORTFILE true OFF $SKIPBYTEARRAYSIZETIMESK
 
     stopMeasureCpuUsage $REPORTFILE
     stopAnyProvider

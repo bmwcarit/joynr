@@ -1,3 +1,30 @@
+# joynr 1.0.0
+API Stable
+
+## Other changes
+* **[C++]** It is now possible to add a limit to the message queue. When this limit
+  is reached, the message with the smallest TTL will be removed. By default
+  the limit is disabled and can be enabled with the property:
+  * `cluster-controller/message-queue-limit`
+* **[C++]** The message queue can also be limited per participant id (message's recipient).
+  If the limit for a certain recipient is reached, the message with the smallest TTL
+  for this recipient will be removed. By default the limit is disabled. In order to
+  enable it, set following property: `cluster-controller/per-participantid-message-queue-limit`.
+  The same limit value is used for all participant ids. This mechanism will only be enabled, if
+  `cluster-controller/message-queue-limit` is set to a value greater than 0.
+* **[JS]** Updated wscpp version to 1.0.0
+* **[JS]** Verify arrays with Array.isArray() built-in function instead of
+  "object.constructor === Array".
+* **[Java]** Discovery entries returned by the discovery service will update the routing table.
+
+## Configuration property changes
+* **[JS]** See the [Javascript Configuration Reference](JavaScriptTutorial.md) for
+  details about the newly introduced properties:
+  * `persistency`
+    * `routingTable`
+    * `capabilities`
+    * `publications`
+
 # joynr 0.33.1
 
 ## API relevant change
@@ -17,10 +44,10 @@ None.
   * `PROPERTY_DISCOVERY_GLOBAL_ADD_AND_REMOVE_TTL_MS`
 
 ## Other changes
-* **[[C++,Generator]** Fixed a problem with the generator when empty structures
+* **[C++,Generator]** Fixed a problem with the generator when empty structures
   with extends were specified in the FIDL files.
 * **[C++, JAVA, JS]** Removed DBUS and CommonAPI support
-* **[[Java,Generator]** Allow disabling of null checks in complex type member setters
+* **[Java,Generator]** Allow disabling of null checks in complex type member setters
   See the [joynr code Generator Reference](generator.md) for details.
   Note: Using types containing null values is incompatible with joynr C++.
 

@@ -1,4 +1,5 @@
 /*jslint es5: true, node: true, node: true */
+/*global triggerPublicationTimer: true */
 /*
  * #%L
  * %%
@@ -93,9 +94,25 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
      * @private
      *
      */
-    function storeSubscriptions() {
+    var storeSubscriptions = function storeSubscriptions() {
         var item = SubscriptionUtil.serializeSubscriptionIds(subscriptionInfos);
         persistency.setItem(subscriptionPersistenceKey, item);
+    };
+
+    var removeSubscriptionFromPersistency = function removeSubscriptionFromPersistency(subscriptionId) {
+        persistency.removeItem(subscriptionId);
+        storeSubscriptions();
+    };
+
+    var addSubscriptionToPersistency = function(subscriptionId, subscriptionInfo) {
+        persistency.setItem(subscriptionId, JSON.stringify(subscriptionInfo));
+        storeSubscriptions();
+    };
+
+    if (!persistency) {
+        storeSubscriptions = Util.emptyFunction;
+        removeSubscriptionFromPersistency = Util.emptyFunction;
+        addSubscriptionToPersistency = Util.emptyFunction;
     }
 
     /**
@@ -111,8 +128,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
      * @returns {ProviderAttribute} the provider attribute
      */
     function getAttribute(participantId, attributeName) {
-        var provider = participantIdToProvider[participantId],
-            attribute;
+        var provider = participantIdToProvider[participantId];
         return provider[attributeName];
     }
 
@@ -264,8 +280,28 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         }
     }
 
+    function triggerPublication(subscriptionInfo, callback) {
+        if (callback !== undefined) {
+            callback();
+        }
+
+        function getAttributeValueSuccess(value) {
+            prepareAttributePublication(subscriptionInfo, value, triggerPublicationTimer);
+            return value;
+        }
+
+        function getAttributeValueFailure(exception) {
+            sendPublication(subscriptionInfo, undefined, exception);
+            return exception;
+        }
+
+        getAttributeValue(subscriptionInfo)
+            .then(getAttributeValueSuccess)
+            .catch(getAttributeValueFailure);
+    }
+
     /**
-     * This functions waits the delay time before pubslishing the value of the attribute
+     * This functions waits the delay time before publishing the value of the attribute
      * specified in the subscription information
      *
      * @name PublicationManager#triggerPublicationTimer
@@ -283,28 +319,12 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
      *            callback to be invoked by this function once the timer has been exceeded
      */
     function triggerPublicationTimer(subscriptionInfo, delay, callback) {
-        function getAttributeValueSuccess(value) {
-            prepareAttributePublication(subscriptionInfo, value, triggerPublicationTimer);
-            return value;
-        }
-
-        function getAttributeValueFailure(exception) {
-            sendPublication(subscriptionInfo, undefined, exception);
-            return exception;
-        }
-
-        function getAttributeFromProviderTimeout() {
-            if (callback !== undefined) {
-                callback();
-            }
-            getAttributeValue(subscriptionInfo)
-                .then(getAttributeValueSuccess)
-                .catch(getAttributeValueFailure);
-        }
-
         if (!isNaN(delay)) {
-            return LongTimer.setTimeout(getAttributeFromProviderTimeout, delay);
+            return LongTimer.setTimeout(triggerPublication, delay, subscriptionInfo, callback);
+            // the last two arguments get to triggerPublication
         }
+        // TODO: what kind of recursive design is this? triggerPublication calls triggerPublicationTimer on Success ...
+        // why not use Intervals?
 
         // TODO:why is nothing returned here in the else case?
     }
@@ -400,7 +420,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
             throw new Error(
                 'attribute publication for providerId "' +
                     providerId +
-                    "and attribute " +
+                    " and attribute " +
                     attributeName +
                     " is not forwarded to subscribers, as the publication manager is " +
                     "already shut down"
@@ -506,7 +526,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
             throw new Error(
                 'event publication for providerId "' +
                     providerId +
-                    "and eventName " +
+                    " and eventName " +
                     eventName +
                     " is not forwarded to subscribers, as the publication manager is " +
                     "already shut down"
@@ -742,8 +762,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
 
         delete subscriptionInfos[subscriptionId];
 
-        persistency.removeItem(subscriptionId);
-        storeSubscriptions();
+        removeSubscriptionFromPersistency(subscriptionId);
     }
 
     /**
@@ -876,16 +895,16 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         return false;
     };
 
+    function asyncCallbackDispatcher(reply, callbackDispatcher) {
+        callbackDispatcher(new SubscriptionReply(reply));
+    }
+
     /* the parameter "callbackDispatcher" is optional, as in case of restoring
      * subscriptions, no reply must be sent back via the dispatcher
      */
     function callbackDispatcherAsync(reply, callbackDispatcher) {
-        function asyncCallbackDispatcher() {
-            callbackDispatcher(new SubscriptionReply(reply));
-        }
-
         if (callbackDispatcher !== undefined) {
-            LongTimer.setTimeout(asyncCallbackDispatcher, 0);
+            LongTimer.setTimeout(asyncCallbackDispatcher, 0, reply, callbackDispatcher);
         }
     }
 
@@ -931,7 +950,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
                         JSONSerializer.stringify(subscriptionRequest) +
                         ". expiryDateMs " +
                         subscriptionRequest.qos.expiryDateMs +
-                        "for ProviderAttribute " +
+                        " for ProviderAttribute " +
                         attributeName +
                         " for providerId " +
                         providerParticipantId +
@@ -955,7 +974,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
                 detailMessage:
                     "error handling subscription request: " +
                     JSONSerializer.stringify(subscriptionRequest) +
-                    "and provider ParticipantId " +
+                    " and provider ParticipantId " +
                     providerParticipantId +
                     ": joynr runtime already shut down",
                 subscriptionId: subscriptionRequest.subscriptionId
@@ -986,7 +1005,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         // make sure the provider is registered
         if (provider === undefined) {
             log.info(
-                "Provider with participantId " + providerParticipantId + "not found. Queueing subscription request..."
+                "Provider with participantId " + providerParticipantId + " not found. Queueing subscription request..."
             );
             queuedSubscriptionInfos[subscriptionId] = subscriptionInfo;
             var pendingSubscriptions = queuedProviderParticipantIdToSubscriptionRequestsMapping[providerParticipantId];
@@ -1005,7 +1024,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
                 detailMessage:
                     "error handling subscription request: " +
                     JSONSerializer.stringify(subscriptionRequest) +
-                    ".Provider: " +
+                    ". Provider: " +
                     providerParticipantId +
                     " misses attribute " +
                     attributeName,
@@ -1100,13 +1119,9 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
             }
         }
 
-        function subscriptionReachedEndDate() {
-            removeSubscription(subscriptionId);
-        }
-
         if (timeToEndDate > 0) {
             // schedule to remove subscription from internal maps
-            subscriptionInfo.endDateTimeout = LongTimer.setTimeout(subscriptionReachedEndDate, timeToEndDate);
+            subscriptionInfo.endDateTimeout = LongTimer.setTimeout(removeSubscription, timeToEndDate, subscriptionId);
         }
 
         // call the get method on the provider at the set interval
@@ -1117,24 +1132,9 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         subscriptionInfos[subscriptionId] = subscriptionInfo;
         subscriptions[subscriptionId] = subscriptionInfo;
 
-        persistency.setItem(subscriptionId, JSON.stringify(subscriptionInfo));
-        storeSubscriptions();
+        addSubscriptionToPersistency(subscriptionId, subscriptionInfo);
 
-        function getAttributeValueSuccess(value) {
-            prepareAttributePublication(subscriptionInfo, value, triggerPublicationTimer);
-            return value;
-        }
-
-        function getAttributeValueException(getValueException) {
-            sendPublication(subscriptionInfo, undefined, getValueException);
-            return getValueException;
-        }
-
-        // publish value immediately
-        getAttributeValue(subscriptionInfo)
-            .then(getAttributeValueSuccess)
-            .catch(getAttributeValueException);
-
+        triggerPublication(subscriptionInfo);
         callbackDispatcherAsync({ subscriptionId: subscriptionId }, callbackDispatcher);
     };
 
@@ -1145,7 +1145,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         callbackDispatcher,
         multicast
     ) {
-        var requestType = multicast ? "multicast" : "broadcast" + " subscription request";
+        var requestType = (multicast ? "multicast" : "broadcast") + " subscription request";
         var exception;
         var timeToEndDate = 0;
         var eventName = subscriptionRequest.subscribedToName;
@@ -1170,7 +1170,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
                         JSONSerializer.stringify(subscriptionRequest) +
                         ". expiryDateMs " +
                         subscriptionRequest.qos.expiryDateMs +
-                        "for ProviderEvent " +
+                        " for ProviderEvent " +
                         eventName +
                         " for providerId " +
                         providerParticipantId +
@@ -1196,7 +1196,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
                     requestType +
                     ": " +
                     JSONSerializer.stringify(subscriptionRequest) +
-                    "and provider ParticipantId " +
+                    " and provider ParticipantId " +
                     providerParticipantId +
                     ": joynr runtime already shut down",
                 subscriptionId: subscriptionRequest.subscriptionId
@@ -1230,7 +1230,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         // make sure the provider is registered
         if (provider === undefined) {
             log.warn(
-                "Provider with participantId " + providerParticipantId + "not found. Queueing " + requestType + "..."
+                "Provider with participantId " + providerParticipantId + " not found. Queueing " + requestType + "..."
             );
             queuedSubscriptionInfos[subscriptionId] = subscriptionInfo;
             var pendingSubscriptions = queuedProviderParticipantIdToSubscriptionRequestsMapping[providerParticipantId];
@@ -1345,13 +1345,9 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
             }
         }
 
-        function subscriptionReachedEndDate() {
-            removeSubscription(subscriptionId);
-        }
-
         if (timeToEndDate > 0) {
             // schedule to remove subscription from internal maps
-            subscriptionInfo.endDateTimeout = LongTimer.setTimeout(subscriptionReachedEndDate, timeToEndDate);
+            subscriptionInfo.endDateTimeout = LongTimer.setTimeout(removeSubscription, timeToEndDate, subscriptionId);
         }
 
         // save subscriptionInfo to subscriptionId => subscription and
@@ -1359,8 +1355,8 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         subscriptionInfos[subscriptionId] = subscriptionInfo;
         subscriptions[subscriptionId] = subscriptionInfo;
 
-        persistency.setItem(subscriptionId, JSON.stringify(subscriptionInfo));
-        storeSubscriptions();
+        addSubscriptionToPersistency(subscriptionId, subscriptionInfo);
+
         callbackDispatcherAsync(
             {
                 subscriptionId: subscriptionId
@@ -1546,6 +1542,10 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
     this.restore = function restore(callbackAsync) {
         if (!isReady()) {
             throw new Error("PublicationManager is already shut down");
+        }
+
+        if (!persistency) {
+            return;
         }
 
         var subscriptions = persistency.getItem(subscriptionPersistenceKey);

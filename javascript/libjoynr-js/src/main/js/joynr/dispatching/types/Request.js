@@ -30,8 +30,6 @@ var defaultSettings = {
 var rrBase = uuid();
 var rrIndex = 0;
 
-Util.enrichObjectWithSetPrototypeOf();
-
 /**
  * @name Request
  * @constructor
@@ -73,7 +71,6 @@ function Request(settings) {
     /*jslint nomen: true*/
     settings._typeName = "joynr.Request";
     /*jslint nomen: false */
-    Object.setPrototypeOf(settings, Request.prototype);
 
     return settings;
 }

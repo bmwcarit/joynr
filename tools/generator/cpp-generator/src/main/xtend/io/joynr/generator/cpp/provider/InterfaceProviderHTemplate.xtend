@@ -245,7 +245,9 @@ def printThreadingDocumentation()
 * must not block this thread; it must be released immediately after the method is
 * called. Computations or further blocking calls must be performed asynchronously.
 * Return the result of these computations by calling the onSuccess or onError
-* callbacks asynchronously.
+* callbacks asynchronously. N.B. Internal joynr data structures of joynr messages are
+* captured in the callbacks and will be first released after the callback onSuccess
+* or onError is called.
 '''
 
 def printCallbackDocumentation(String onSuccessParameter)

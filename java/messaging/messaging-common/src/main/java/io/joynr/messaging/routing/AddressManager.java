@@ -33,8 +33,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class AddressManager {
-
     private static final Logger logger = LoggerFactory.getLogger(AddressManager.class);
+
     private final MulticastReceiverRegistry multicastReceiversRegistry;
 
     private RoutingTable routingTable;
@@ -112,23 +112,42 @@ public class AddressManager {
 
     private void handleMulticastMessage(ImmutableMessage message, Set<Address> result) {
         if (!message.isReceivedFromGlobal() && multicastAddressCalculator != null) {
-            String participantId = message.getSender();
-            // default: if no routing entry found, do not publish globally
-            boolean isGloballyVisible = false;
-            try {
-                isGloballyVisible = routingTable.getIsGloballyVisible(participantId);
-            } catch (JoynrRuntimeException e) {
-                // This should never happen
-                logger.error("No routing entry found for Mulicast Provider {}. "
-                        + "The message will not be published globally.", participantId);
-            }
-            if (isGloballyVisible) {
-                Address calculatedAddress = multicastAddressCalculator.calculate(message);
-                if (calculatedAddress != null) {
-                    result.add(calculatedAddress);
+            if (multicastAddressCalculator.createsGlobalTransportAddresses()) {
+                // only global providers should multicast to the "outside world"
+                if (isProviderGloballyVisible(message.getSender())) {
+                    addMulticastReceiverAddressFromAddressCalculator(message, result);
                 }
+            } else {
+                // in case the address calculator does not provide an address
+                // to the "outside world" it is safe to forward the message
+                // regardless of the provider being globally visible or not
+                addMulticastReceiverAddressFromAddressCalculator(message, result);
             }
         }
+        addLocalMulticastReceiverAddressesFromRegistry(message, result);
+    }
+
+    private boolean isProviderGloballyVisible(String participantId) {
+        boolean isGloballyVisible = false;
+
+        try {
+            isGloballyVisible = routingTable.getIsGloballyVisible(participantId);
+        } catch (JoynrRuntimeException e) {
+            // This should never happen
+            logger.error("No routing entry found for Mulicast Provider {}. "
+                    + "The message will not be published globally.", participantId);
+        }
+        return isGloballyVisible;
+    }
+
+    private void addMulticastReceiverAddressFromAddressCalculator(ImmutableMessage message, Set<Address> result) {
+        Address calculatedAddress = multicastAddressCalculator.calculate(message);
+        if (calculatedAddress != null) {
+            result.add(calculatedAddress);
+        }
+    }
+
+    private void addLocalMulticastReceiverAddressesFromRegistry(ImmutableMessage message, Set<Address> result) {
         Set<String> receivers = multicastReceiversRegistry.getReceivers(message.getRecipient());
         for (String receiverParticipantId : receivers) {
             Address address = routingTable.get(receiverParticipantId);
@@ -137,5 +156,4 @@ public class AddressManager {
             }
         }
     }
-
 }

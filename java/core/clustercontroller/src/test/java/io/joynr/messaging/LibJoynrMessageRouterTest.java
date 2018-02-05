@@ -135,11 +135,13 @@ public class LibJoynrMessageRouterTest {
         final boolean isGloballyVisible = true;
         final long expiryDateMs = Long.MAX_VALUE;
         final boolean isSticky = false;
+        final boolean allowUpdate = false;
         Mockito.verify(routingTable).put(Mockito.eq(unknownParticipantId),
                                          Mockito.eq(parentAddress),
                                          Mockito.eq(isGloballyVisible),
                                          Mockito.eq(expiryDateMs),
-                                         Mockito.eq(isSticky));
+                                         Mockito.eq(isSticky),
+                                         Mockito.eq(allowUpdate));
     }
 
     @Test

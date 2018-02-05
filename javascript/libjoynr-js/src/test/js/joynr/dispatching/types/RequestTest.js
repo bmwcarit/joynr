@@ -28,7 +28,6 @@ describe("libjoynr-js.joynr.dispatching.types.Request", function() {
             methodName: methodName
         });
         expect(request).toBeDefined();
-        expect(request instanceof Request).toBeTruthy();
         expect(request._typeName).toEqual("joynr.Request");
         expect(request.methodName).toEqual(methodName);
     });
@@ -46,7 +45,7 @@ describe("libjoynr-js.joynr.dispatching.types.Request", function() {
             ]
         });
         expect(request).toBeDefined();
-        expect(request instanceof Request).toBeTruthy();
+        expect(request._typeName).toBe("joynr.Request");
         expect(request.params[0] instanceof RadioStation).toBeTruthy();
     });
 });

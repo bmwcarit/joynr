@@ -49,7 +49,7 @@ This project has dependencies to:
   jackson-databind under The Apache Software License, Version 2.0
   Javassist under MPL 1.1 or LGPL 2.1
   javax.inject under The Apache Software License, Version 2.0
-  JUnit under Common Public License Version 1.0
+  JUnit under Eclipse Public License 1.0
   Logging under The Apache Software License, Version 2.0
   Reflections under WTFPL
   SLF4J API Module under MIT License

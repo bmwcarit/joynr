@@ -95,23 +95,33 @@ private:
 
 PublicationManager::~PublicationManager()
 {
-    JOYNR_LOG_TRACE(logger(), "Destructor, saving subscriptionsMap...");
+    std::lock_guard<std::mutex> shutDownLocker(shutDownMutex);
+    assert(shuttingDown);
+}
 
-    saveAttributeSubscriptionRequestsMap();
-    saveBroadcastSubscriptionRequestsMap();
-
-    // saveSubscriptionRequestsMap will not store to file, as soon as shuttingDown is true, so we
-    // call it first then set shuttingDown to true
+void PublicationManager::shutdown()
+{
+    // saveSubscriptionRequestsMap will not store to file, as soon as shuttingDown is true
+    // except extra parameter is provided
     {
         std::lock_guard<std::mutex> shutDownLocker(shutDownMutex);
+        assert(!shuttingDown);
+        if (shuttingDown) {
+            return;
+        }
         shuttingDown = true;
     }
 
-    JOYNR_LOG_TRACE(logger(), "Destructor, shutting down for thread pool and scheduler ...");
+    JOYNR_LOG_TRACE(logger(), "shutting down thread pool and scheduler ...");
     delayedScheduler->shutdown();
 
+    JOYNR_LOG_TRACE(logger(), "saving subscriptionsMap...");
+    bool finalSave = true;
+    saveAttributeSubscriptionRequestsMap(finalSave);
+    saveBroadcastSubscriptionRequestsMap(finalSave);
+
     // Remove all publications
-    JOYNR_LOG_TRACE(logger(), "Destructor: removing publications");
+    JOYNR_LOG_TRACE(logger(), "removing publications");
 
     while (subscriptionId2SubscriptionRequest.size() > 0) {
         auto subscriptionRequest = subscriptionId2SubscriptionRequest.begin();
@@ -122,11 +132,6 @@ PublicationManager::~PublicationManager()
         auto broadcastRequest = subscriptionId2BroadcastSubscriptionRequest.begin();
         removeBroadcastPublication((broadcastRequest->second)->getSubscriptionId(), false);
     }
-}
-
-void PublicationManager::shutdown()
-{
-    delayedScheduler->shutdown();
 }
 
 PublicationManager::PublicationManager(boost::asio::io_service& ioService,
@@ -622,31 +627,33 @@ void PublicationManager::loadSavedBroadcastSubscriptionRequestsMap(const std::st
 }
 
 // This function assumes that subscriptionList is a copy that is exclusively used by this function
-void PublicationManager::saveBroadcastSubscriptionRequestsMap()
+void PublicationManager::saveBroadcastSubscriptionRequestsMap(bool saveOnShutdown)
 {
     JOYNR_LOG_TRACE(logger(), "Saving active broadcastSubscriptionRequests to file.");
 
     saveSubscriptionRequestsMap(subscriptionId2BroadcastSubscriptionRequest,
-                                broadcastSubscriptionRequestStorageFileName);
+                                broadcastSubscriptionRequestStorageFileName,
+                                saveOnShutdown);
 }
 
-void PublicationManager::saveAttributeSubscriptionRequestsMap()
+void PublicationManager::saveAttributeSubscriptionRequestsMap(bool finalSave)
 {
     JOYNR_LOG_TRACE(logger(), "Saving active attribute subscriptionRequests to file.");
 
     saveSubscriptionRequestsMap(
-            subscriptionId2SubscriptionRequest, subscriptionRequestStorageFileName);
+            subscriptionId2SubscriptionRequest, subscriptionRequestStorageFileName, finalSave);
 }
 
 template <typename Map>
 void PublicationManager::saveSubscriptionRequestsMap(const Map& map,
-                                                     const std::string& storageFilename)
+                                                     const std::string& storageFilename,
+                                                     bool finalSave)
 {
     if (!enableSubscriptionStorage) {
         return;
     }
 
-    if (isShuttingDown()) {
+    if (!finalSave && isShuttingDown()) {
         JOYNR_LOG_TRACE(logger(), "Abort saving, because we are already shutting down.");
         return;
     }

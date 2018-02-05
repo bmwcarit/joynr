@@ -18,6 +18,7 @@
  */
 #include <chrono>
 #include <cstdint>
+#include <memory>
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
@@ -45,6 +46,14 @@ protected:
     MessageQueue<std::string> messageQueue;
     JoynrTimePoint expiryDate;
 
+    void createAndQueueMessage(const JoynrTimePoint& expiryDate) {
+        MutableMessage mutableMsg;
+        mutableMsg.setExpiryDate(expiryDate);
+        auto immutableMessage = mutableMsg.getImmutableMessage();
+        auto recipient = immutableMessage->getRecipient();
+        messageQueue.queueMessage(recipient, std::move(immutableMessage));
+    }
+
 private:
     DISALLOW_COPY_AND_ASSIGN(MessageQueueTest);
 };
@@ -54,29 +63,50 @@ TEST_F(MessageQueueTest, initialQueueIsEmpty) {
 }
 
 TEST_F(MessageQueueTest, addMultipleMessages) {
-    MutableMessage mutableMsg1;
-    mutableMsg1.setExpiryDate(expiryDate);
-    auto immutableMsg1 = mutableMsg1.getImmutableMessage();
-    auto recipient1 = immutableMsg1->getRecipient();
-    EXPECT_EQ(messageQueue.queueMessage(recipient1, std::move(immutableMsg1)), 1);
+    createAndQueueMessage(expiryDate);
+    EXPECT_EQ(1, messageQueue.getQueueLength());
 
-    MutableMessage mutableMsg2;
-    mutableMsg2.setExpiryDate(expiryDate);
-    auto immutableMsg2 = mutableMsg2.getImmutableMessage();
-    auto recipient2 = immutableMsg2->getRecipient();
-    EXPECT_EQ(messageQueue.queueMessage(recipient2, std::move(immutableMsg2)), 2);
+    createAndQueueMessage(expiryDate);
+    EXPECT_EQ(2, messageQueue.getQueueLength());
 
-    MutableMessage mutableMsg3;
-    mutableMsg3.setExpiryDate(expiryDate);
-    auto immutableMsg3 = mutableMsg3.getImmutableMessage();
-    auto recipient3 = immutableMsg3->getRecipient();
-    EXPECT_EQ(messageQueue.queueMessage(recipient3, std::move(immutableMsg3)), 3);
+    createAndQueueMessage(expiryDate);
+    EXPECT_EQ(3, messageQueue.getQueueLength());
 
-    MutableMessage mutableMsg4;
-    mutableMsg4.setExpiryDate(expiryDate);
-    auto immutableMsg4 = mutableMsg4.getImmutableMessage();
-    auto recipient4 = immutableMsg4->getRecipient();
-    EXPECT_EQ(messageQueue.queueMessage(recipient4, std::move(immutableMsg4)), 4);
+    createAndQueueMessage(expiryDate);
+    EXPECT_EQ(4, messageQueue.getQueueLength());
+}
+
+TEST_F(MessageQueueTest, removeExpiredMessages_AllMessagesExpired) {
+    const JoynrTimePoint zeroTimepoint(std::chrono::milliseconds::zero());
+
+    createAndQueueMessage(zeroTimepoint);
+    createAndQueueMessage(zeroTimepoint);
+    EXPECT_EQ(2, messageQueue.getQueueLength());
+
+    messageQueue.removeOutdatedMessages();
+    EXPECT_EQ(0, messageQueue.getQueueLength());
+}
+
+TEST_F(MessageQueueTest, removeExpiredMessages_SomeMessagesExpired) {
+    const JoynrTimePoint zeroTimepoint(std::chrono::milliseconds::zero());
+
+    createAndQueueMessage(zeroTimepoint);
+    createAndQueueMessage(zeroTimepoint);
+    createAndQueueMessage(expiryDate);
+    createAndQueueMessage(expiryDate);
+    EXPECT_EQ(4, messageQueue.getQueueLength());
+
+    messageQueue.removeOutdatedMessages();
+    EXPECT_EQ(2, messageQueue.getQueueLength());
+}
+
+TEST_F(MessageQueueTest, removeExpiredMessages_NoMessageExpired) {
+    createAndQueueMessage(expiryDate);
+    createAndQueueMessage(expiryDate);
+    EXPECT_EQ(2, messageQueue.getQueueLength());
+
+    messageQueue.removeOutdatedMessages();
+    EXPECT_EQ(2, messageQueue.getQueueLength());
 }
 
 TEST_F(MessageQueueTest, queueDequeueMessages) {
@@ -98,11 +128,11 @@ TEST_F(MessageQueueTest, queueDequeueMessages) {
 
     // get messages from queue
     auto item = messageQueue.getNextMessageFor(recipient1);
-    compareMutableImmutableMessage(mutableMsg1, item->getContent());
+    compareMutableImmutableMessage(mutableMsg1, item);
     EXPECT_EQ(messageQueue.getQueueLength(), 1);
 
     item = messageQueue.getNextMessageFor(recipient2);
-    compareMutableImmutableMessage(mutableMsg2, item->getContent());
+    compareMutableImmutableMessage(mutableMsg2, item);
     EXPECT_EQ(messageQueue.getQueueLength(), 0);
 }
 
@@ -118,14 +148,144 @@ TEST_F(MessageQueueTest, queueDequeueMultipleMessagesForOneParticipant) {
 
     // get messages from queue
     auto item = messageQueue.getNextMessageFor(participantId);
-    compareMutableImmutableMessage(mutableMessage, item->getContent());
+    compareMutableImmutableMessage(mutableMessage, item);
     EXPECT_EQ(messageQueue.getQueueLength(), 1);
 
     item = messageQueue.getNextMessageFor(participantId);
-    compareMutableImmutableMessage(mutableMessage, item->getContent());
+    compareMutableImmutableMessage(mutableMessage, item);
     EXPECT_EQ(messageQueue.getQueueLength(), 0);
 }
 
 TEST_F(MessageQueueTest, dequeueInvalidParticipantId) {
     EXPECT_EQ(messageQueue.getNextMessageFor("TEST"), nullptr);
+}
+
+class MessageQueueWithLimitTest : public ::testing::Test
+{
+public:
+    MessageQueueWithLimitTest() { }
+    ~MessageQueueWithLimitTest() = default;
+
+protected:
+
+    void createAndQueueMessage(MessageQueue<std::string>& queue, const JoynrTimePoint& expiryDate, const std::string& recipient, const std::string& payload = "") {
+        MutableMessage mutableMsg;
+        mutableMsg.setExpiryDate(expiryDate);
+        mutableMsg.setRecipient(recipient);
+        mutableMsg.setPayload(payload);
+        auto immutableMessage = mutableMsg.getImmutableMessage();
+        queue.queueMessage(recipient, std::move(immutableMessage));
+    }
+
+    std::string payloadAsString(std::shared_ptr<ImmutableMessage> message) {
+        const smrf::ByteArrayView& byteArrayView = message->getUnencryptedBody();
+        return std::string(reinterpret_cast<const char*>(byteArrayView.data()), byteArrayView.size());
+    }
+
+private:
+    DISALLOW_COPY_AND_ASSIGN(MessageQueueWithLimitTest);
+};
+
+JoynrTimePoint getExpiryDateFromNow(long long offset)
+{
+    return (std::chrono::time_point_cast<std::chrono::milliseconds>( std::chrono::system_clock::now()) + std::chrono::milliseconds(offset));
+}
+
+TEST_F(MessageQueueWithLimitTest, testAddingMessages)
+{
+    constexpr std::uint64_t messageQueueLimit = 4;
+    MessageQueue<std::string> messageQueue(messageQueueLimit);
+
+    const int messageCount = 5;
+    // Keep in mind that message 1 expires later than message 3. This is done in order to check
+    // if removal deletes the message with lowest ttl and not the first inserted message.
+    const JoynrTimePoint expiryDate[messageCount] = {
+        getExpiryDateFromNow(300),
+        getExpiryDateFromNow(200),
+        getExpiryDateFromNow(100),
+        getExpiryDateFromNow(500),
+        getExpiryDateFromNow(600)
+    };
+
+    const std::string recipient[messageCount] = {
+        "TEST1",
+        "TEST2",
+        "TEST3",
+        "TEST4",
+        "TEST5"};
+
+    for (int i=0; i < messageCount; i++) {
+        this->createAndQueueMessage(messageQueue, expiryDate[i], recipient[i]);
+    }
+
+    EXPECT_EQ(messageQueue.getQueueLength(), messageQueueLimit);
+
+    // Check if the message with the lowest TTL (message3) was removed.
+    EXPECT_EQ(messageQueue.getNextMessageFor(recipient[0])->getRecipient(), recipient[0]);
+    EXPECT_EQ(messageQueue.getNextMessageFor(recipient[1])->getRecipient(), recipient[1]);
+    EXPECT_EQ(messageQueue.getNextMessageFor(recipient[2]), nullptr);
+    EXPECT_EQ(messageQueue.getNextMessageFor(recipient[3])->getRecipient(), recipient[3]);
+    EXPECT_EQ(messageQueue.getNextMessageFor(recipient[4])->getRecipient(), recipient[4]);
+}
+
+TEST_F(MessageQueueWithLimitTest, testPerKeyQueueLimit_lowestTtlRemoved)
+{
+    const std::string recipient1("recipient1");
+    const std::string recipient2("recipient2");
+    const std::string msgRecipient1Payload1("payload1.1");
+    const std::string msgRecipient1Payload2("payload1.2");
+    const std::string msgRecipient2Payload1("payload2.1");
+
+    constexpr std::uint64_t messageQueueLimit = 10;
+    constexpr std::uint64_t perKeyQueueLimit = 1;
+
+    MessageQueue<std::string> queue(messageQueueLimit, perKeyQueueLimit);
+    createAndQueueMessage(queue, getExpiryDateFromNow(1000), recipient1, msgRecipient1Payload1);
+    createAndQueueMessage(queue, getExpiryDateFromNow(2000), recipient1, msgRecipient1Payload2);
+    createAndQueueMessage(queue, getExpiryDateFromNow(1000), recipient2, msgRecipient2Payload1);
+
+    EXPECT_EQ(2, queue.getQueueLength());
+
+    auto recipient1Message = queue.getNextMessageFor(recipient1);
+    auto recipient2Message = queue.getNextMessageFor(recipient2);
+
+    EXPECT_NE(nullptr, recipient1Message);
+    EXPECT_NE(nullptr, recipient2Message);
+
+    // When the per-key queue is full, the entry with the lowest TTL shall be removed.
+    EXPECT_EQ(msgRecipient1Payload2, payloadAsString(recipient1Message));
+    EXPECT_EQ(msgRecipient2Payload1, payloadAsString(recipient2Message));
+}
+
+TEST_F(MessageQueueWithLimitTest, testPerKeyQueueLimit_overallQueueIsFull)
+{
+    const std::string recipient1("recipient1");
+    const std::string recipient2("recipient2");
+    const std::string msgRecipient1Payload1("payload1.1");
+    const std::string msgRecipient1Payload2("payload1.2");
+    const std::string msgRecipient2Payload1("payload2.1");
+
+    constexpr std::uint64_t messageQueueLimit = 2;
+    constexpr std::uint64_t perKeyQueueLimit = 2;
+
+    MessageQueue<std::string> queue(messageQueueLimit, perKeyQueueLimit);
+    createAndQueueMessage(queue, getExpiryDateFromNow(1000), recipient1, msgRecipient1Payload1);
+    createAndQueueMessage(queue, getExpiryDateFromNow(100), recipient2, msgRecipient2Payload1);
+
+    // The overall queue is full. However, there is still space in the per-key-queue. Therefore
+    // the message for recipient 2 must be removed.
+    createAndQueueMessage(queue, getExpiryDateFromNow(2000), recipient1, msgRecipient1Payload2);
+
+    EXPECT_EQ(2, queue.getQueueLength());
+
+    auto recipient1Message1 = queue.getNextMessageFor(recipient1);
+    auto recipient1Message2 = queue.getNextMessageFor(recipient1);
+    auto recipient2Message1 = queue.getNextMessageFor(recipient2);
+
+    EXPECT_NE(nullptr, recipient1Message1);
+    EXPECT_NE(nullptr, recipient1Message2);
+    EXPECT_EQ(nullptr, recipient2Message1);
+
+    EXPECT_EQ(msgRecipient1Payload2, payloadAsString(recipient1Message1));
+    EXPECT_EQ(msgRecipient1Payload1, payloadAsString(recipient1Message2));
 }

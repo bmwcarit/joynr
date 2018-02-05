@@ -62,7 +62,7 @@ This project has dependencies to:
   jersey-servlet under CDDL 1.1 or GPL2 w/ CPE
   JMS 1.1 under The Apache Software License, Version 2.0
   JTA 1.1 under The Apache Software License, Version 2.0
-  JUnit under Common Public License Version 1.0
+  JUnit under Eclipse Public License 1.0
   Mockito under The MIT License
   Objenesis under MIT License
   OpenJPA JDBC under Apache Software License 2.0

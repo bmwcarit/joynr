@@ -1,0 +1,2 @@
+[cluster-controller]
+message-queue-limit=10

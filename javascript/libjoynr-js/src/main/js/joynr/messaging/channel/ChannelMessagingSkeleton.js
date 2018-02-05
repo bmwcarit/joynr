@@ -50,8 +50,8 @@ function ChannelMessagingSkeleton(settings) {
  * @param {JoynrMessage} joynrMessage
  */
 ChannelMessagingSkeleton.prototype.receiveMessage = function receiveMessage(joynrMessage) {
-    joynrMessage = new JoynrMessage(joynrMessage);
-    joynrMessage.setReceivedFromGlobal(true);
+    joynrMessage = JoynrMessage.parseMessage(joynrMessage);
+    joynrMessage.isReceivedFromGlobal = true;
     try {
         this._messageRouter.route(joynrMessage).catch(function(e) {
             log.error(

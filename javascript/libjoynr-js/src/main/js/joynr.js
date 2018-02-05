@@ -90,43 +90,38 @@ var joynr = {
      * @return Promise object being resolved in case all libjoynr dependencies are loaded
      */
     load: function load(provisioning, capabilitiesWritable) {
-        return new Promise(function(resolve, reject) {
-            joynr.loaded = true;
-            var joynrapi = require("./libjoynr-deps");
-            var runtime;
-            runtime = new joynrapi.Runtime(provisioning);
-            runtime
-                .start()
-                .then(function() {
-                    populateJoynrApi(joynr, joynrapi);
-                    //remove Runtime, as it is not required for the end user
-                    delete joynr.Runtime;
-                    populateJoynrApi(joynr, runtime);
-                    freeze(joynr, capabilitiesWritable);
+        joynr.loaded = true;
+        var joynrapi = require("./libjoynr-deps");
+        var runtime;
+        runtime = new joynrapi.Runtime(provisioning);
+        return runtime
+            .start()
+            .then(function() {
+                populateJoynrApi(joynr, joynrapi);
+                //remove Runtime, as it is not required for the end user
+                delete joynr.Runtime;
+                populateJoynrApi(joynr, runtime);
+                freeze(joynr, capabilitiesWritable);
 
-                    // make sure the runtime is shutdown when process.exit(...)
-                    // gets called since otherwise the process might not
-                    // terminate. Ignore any exception thrown in case shutdown
-                    // had already been invoked manually before reaching this
-                    // point.
-                    if (typeof process === "object" && typeof process.on === "function") {
-                        process.on("exit", function() {
-                            try {
-                                joynr.shutdown();
-                            } catch (error) {
-                                // ignore
-                            }
-                        });
-                    }
-
-                    resolve(joynr);
-                    return;
-                })
-                .catch(function(error) {
-                    reject(error);
-                    return error;
-                });
-        });
+                // make sure the runtime is shutdown when process.exit(...)
+                // gets called since otherwise the process might not
+                // terminate. Ignore any exception thrown in case shutdown
+                // had already been invoked manually before reaching this
+                // point.
+                if (typeof process === "object" && typeof process.on === "function") {
+                    process.on("exit", function() {
+                        try {
+                            joynr.shutdown();
+                        } catch (error) {
+                            // ignore
+                        }
+                    });
+                }
+                return joynr;
+            })
+            .catch(function(error) {
+                return Promise.reject(error);
+            });
     },
     /**
      * Adds a typeName to constructor entry in the type registry.

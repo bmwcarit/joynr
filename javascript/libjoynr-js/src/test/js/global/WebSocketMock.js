@@ -68,11 +68,11 @@ websocket.marshalJoynrMessage = function(joynrMessage) {
 websocket.unmarshalJoynrMessage = function(event, callback) {
     if (typeof event.data === "object") {
         if (typeof Buffer === "function") {
-            callback(new JoynrMessage(JSON.parse(event.data.toString())));
+            callback(JoynrMessage.parseMessage(JSON.parse(event.data.toString())));
         } else {
             var callbackWrapper = function(joynrMessageData) {
                 if (joynrMessageData !== null && joynrMessageData !== undefined) {
-                    callback(new JoynrMessage(JSON.parse(joynrMessageData)));
+                    callback(JoynrMessage.parseMessage(JSON.parse(joynrMessageData)));
                 }
             };
             this.decodeEventData(event, callbackWrapper);

@@ -30,7 +30,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>javascript</artifactId>
-		<version>0.33.1</version>
+		<version>1.0.0</version>
 	</parent>
 
 	<properties>
@@ -498,6 +498,7 @@
 										<include>libjoynr-deps*.js</include>
 										<include>require.config.node.js</include>
 										<include>joynr/**</include>
+										<include>global/MemoryStorage.js</include>
 										<include>global/LocalStorageNode.js</include>
 										<include>global/LocalStorage.js</include>
 										<include>global/Mqtt.js</include>

@@ -26,22 +26,29 @@ namespace joynr
 {
 
 /**
- * @brief This struct contains all the possible status codes
+ * @brief This struct contains all the possible status codes of a Future.
  *
  */
 enum class StatusCodeEnum : std::uint8_t {
     /**
-     * @brief
+     * @brief The Future was successful and onSuccess was called.
      */
     SUCCESS = 0,
+
     /**
-     * @brief
+     * @brief The future is still in progress.
      */
     IN_PROGRESS = 1,
+
     /**
-     * @brief
+     * @brief Either a time-out occured or onError was called.
      */
-    ERROR = 2
+    ERROR = 2,
+
+    /**
+     * @brief Future::waitFor() timed out.
+     */
+    WAIT_TIMED_OUT = 3,
 };
 
 class StatusCode

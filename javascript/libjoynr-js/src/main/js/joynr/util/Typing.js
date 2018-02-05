@@ -33,10 +33,7 @@ Typing.checkProperty = function(obj, type, description) {
     if (typeof type === "string" && Typing.getObjectType(obj) !== type) {
         throw new Error(description + " is not of type " + type + ". Actual type is " + Typing.getObjectType(obj));
     }
-    if (
-        Object.prototype.toString.call(type) === "[object Array]" &&
-        !Typing.getObjectType(obj).match("^" + type.join("$|^") + "$")
-    ) {
+    if (Array.isArray(type) && !Typing.getObjectType(obj).match("^" + type.join("$|^") + "$")) {
         throw new Error(
             description + " is not of a type from " + type + ". Actual type is " + Typing.getObjectType(obj)
         );
@@ -84,6 +81,9 @@ Typing.checkPropertyIfDefined = function(obj, type, description) {
 Typing.getObjectType = function(obj) {
     if (obj === null || obj === undefined) {
         throw new Error("cannot determine the type of an undefined object");
+    }
+    if (Array.isArray(obj)) {
+        return "Array";
     }
     return obj.constructor.name || "";
 };
@@ -206,13 +206,7 @@ Typing.augmentTypeName = function(obj, packageName, memberName) {
  * @function Typing#isComplexJoynrObject
  */
 Typing.isComplexJoynrObject = function isComplexJoynrObject(value) {
-    try {
-        var valuePrototype = Object.getPrototypeOf(value);
-        return valuePrototype && valuePrototype instanceof joynr.JoynrObject;
-    } catch (error) {
-        // This can be the case when the value is a primitive type
-    }
-    return false;
+    return value instanceof joynr.JoynrObject;
 };
 
 /**

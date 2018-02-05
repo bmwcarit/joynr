@@ -1,5 +1,5 @@
 /*jslint es5: true, node: true, node: true */
-/*global fail: true, xit: true */
+/*global fail: true, xit: true, sharedTests: true */
 /*
  * #%L
  * %%
@@ -42,7 +42,6 @@ var uuid = require("../../../../classes/lib/uuid-annotated");
 var Date = require("../../../../test-classes/global/Date");
 var waitsFor = require("../../../../test-classes/global/WaitsFor");
 var LocalStorage = require("../../../../test-classes/global/LocalStorageNodeTests");
-var localStorage = new LocalStorage();
 var originalSetTimeout = setTimeout;
 describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", function() {
     var callbackDispatcher;
@@ -55,6 +54,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", functi
     var testAttributeNotNotifiable, testAttributeNotNotifiableName;
     var testBroadcastName, testBroadcast;
     var testNonSelectiveBroadcastName, testNonSelectiveBroadcast;
+    var persistency; // localStorage was renamed to persistency because it's impossible to reassign it because of jslint
 
     function createSubscriptionRequest(
         isAttribute,
@@ -172,10 +172,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", functi
         return request;
     }
 
-    /**
-     * Called before each test.
-     */
-    beforeEach(function(done) {
+    function prepareTests(done) {
         callbackDispatcher = jasmine.createSpy("callbackDispatcher");
         proxyId = "proxy" + uuid();
         providerId = "provider" + uuid();
@@ -194,7 +191,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", functi
         subscriptionLength = (maxNrOfTimes + 1) * maxIntervalMs;
 
         dispatcherSpy = jasmine.createSpyObj("Dispatcher", ["sendPublication", "sendMulticastPublication"]);
-        publicationManager = new PublicationManager(dispatcherSpy, localStorage, joynrInstanceId);
+        publicationManager = new PublicationManager(dispatcherSpy, persistency, joynrInstanceId);
 
         provider = jasmine.createSpyObj("Provider", ["registerOnChangeListener"]);
 
@@ -309,1691 +306,1755 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", functi
         );
         expect(publicationManager.hasSubscriptions()).toBe(false);
         done();
+    }
+
+    describe("without localStorage", function() {
+        sharedTests(function() {
+            persistency = null;
+        });
     });
 
-    afterEach(function(done) {
-        jasmine.clock().uninstall();
-        done();
+    describe("with localStorage", function() {
+        sharedTests(function() {
+            persistency = new LocalStorage();
+        });
     });
 
-    it("is instantiable", function(done) {
-        expect(publicationManager).toBeDefined();
-        expect(function() {
-            var p = new PublicationManager(dispatcherSpy, localStorage);
-        }).not.toThrow();
-        done();
-    });
-
-    it("calls dispatcher with correct arguments", function(done) {
-        publicationManager.addPublicationProvider(providerId, provider);
-        publicationManager.handleSubscriptionRequest(
-            proxyId,
-            providerId,
-            onChangeSubscriptionRequest,
-            callbackDispatcher
-        );
-        expect(publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)).toBeTruthy();
-        increaseFakeTime(1);
-
-        waitsFor(
-            function() {
-                return dispatcherSpy.sendPublication.calls.count() > 0;
-            },
-            "dispatcherSpy.sendPublication",
-            asyncGetterCallDelay
-        )
-            .then(function() {
-                // reset first publication
-                testAttribute.get.calls.reset();
-                dispatcherSpy.sendPublication.calls.reset();
-
-                increaseFakeTime(50);
-
-                testAttribute.valueChanged(value);
-
-                return waitsFor(
-                    function() {
-                        return dispatcherSpy.sendPublication.calls.count() > 0;
-                    },
-                    "dispatcherSpy.sendPublication",
-                    asyncGetterCallDelay
-                );
-            })
-            .then(function() {
-                expect(dispatcherSpy.sendPublication).toHaveBeenCalled();
-                expect(dispatcherSpy.sendPublication).toHaveBeenCalledWith(
-                    {
-                        from: providerId,
-                        to: proxyId,
-                        expiryDate: Date.now() + onChangeSubscriptionRequest.qos.publicationTtlMs
-                    },
-                    new SubscriptionPublication({
-                        response: [value],
-                        subscriptionId: onChangeSubscriptionRequest.subscriptionId
-                    })
-                );
-                stopSubscription(onChangeSubscriptionRequest);
-                expect(
-                    publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)
-                ).toBeFalsy();
-                done();
-                return null;
-            })
-            .catch(fail);
-    });
-
-    it("publishes first value once immediately after subscription", function(done) {
-        var times;
-
-        publicationManager.addPublicationProvider(providerId, provider);
-        expect(testAttribute.get).not.toHaveBeenCalled();
-        expect(dispatcherSpy.sendPublication).not.toHaveBeenCalled();
-        publicationManager.handleSubscriptionRequest(
-            proxyId,
-            providerId,
-            onChangeSubscriptionRequest,
-            callbackDispatcher
-        );
-        expect(publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)).toBeTruthy();
-        increaseFakeTime(1);
-
-        waitsFor(
-            function() {
-                return dispatcherSpy.sendPublication.calls.count() > 0;
-            },
-            "dispatcherSpy.sendPublication",
-            asyncGetterCallDelay
-        )
-            .then(function() {
-                expect(testAttribute.get.calls.count()).toEqual(1);
-                expect(dispatcherSpy.sendPublication.calls.count()).toEqual(1);
-                // cleanup
-                stopSubscription(onChangeSubscriptionRequest);
-                expect(
-                    publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)
-                ).toBeFalsy();
-                done();
-                return null;
-            })
-            .catch(fail);
-    });
-
-    it("creates a working interval subscription", function(done) {
-        var times;
-
-        publicationManager.addPublicationProvider(providerId, provider);
-        publicationManager.handleSubscriptionRequest(
-            proxyId,
-            providerId,
-            intervalSubscriptionRequest,
-            callbackDispatcher
-        );
-        expect(publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)).toBeTruthy();
-        increaseFakeTime(1);
-
-        var promiseChain = waitsFor(function() {
-            return dispatcherSpy.sendPublication.calls.count() > 0;
-        }, asyncGetterCallDelay).then(function() {
-            // reset first publication
-            testAttribute.get.calls.reset();
-            dispatcherSpy.sendPublication.calls.reset();
+    function sharedTests(beforeTests) {
+        beforeEach(function(done) {
+            beforeTests();
+            prepareTests(done);
         });
 
-        var internalCheck = function(times, promiseChain) {
-            return promiseChain.then(function() {
-                // step the clock forward to 1 ms before the interval
-                increaseFakeTime(maxIntervalMs - 1);
+        afterEach(function(done) {
+            jasmine.clock().uninstall();
+            done();
+        });
 
-                // 1 ms later the poll should happen
-                increaseFakeTime(1);
+        it("is instantiable", function(done) {
+            expect(publicationManager).toBeDefined();
+            expect(function() {
+                var p = new PublicationManager(dispatcherSpy, persistency);
+            }).not.toThrow();
+            done();
+        });
 
-                return waitsFor(
-                    function() {
-                        return dispatcherSpy.sendPublication.calls.count() === times;
-                    },
-                    "dispatcherSpy.sendPublication " + times + " times",
-                    asyncGetterCallDelay
-                ).then(function() {
-                    expect(testAttribute.get.calls.count()).toEqual(times);
-                    expect(dispatcherSpy.sendPublication.calls.count()).toEqual(times);
-                    expect(dispatcherSpy.sendPublication.calls.count()).toEqual(times);
-                });
-            });
-        };
+        it("calls dispatcher with correct arguments", function(done) {
+            publicationManager.addPublicationProvider(providerId, provider);
+            publicationManager.handleSubscriptionRequest(
+                proxyId,
+                providerId,
+                onChangeSubscriptionRequest,
+                callbackDispatcher
+            );
+            expect(publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)).toBeTruthy();
+            increaseFakeTime(1);
 
-        for (times = 1; times < maxNrOfTimes + 1; ++times) {
-            promiseChain = internalCheck(times, promiseChain);
-        }
+            waitsFor(
+                function() {
+                    return dispatcherSpy.sendPublication.calls.count() > 0;
+                },
+                "dispatcherSpy.sendPublication",
+                asyncGetterCallDelay
+            )
+                .then(function() {
+                    // reset first publication
+                    testAttribute.get.calls.reset();
+                    dispatcherSpy.sendPublication.calls.reset();
 
-        promiseChain
-            .then(function() {
-                // cleanup
-                stopSubscription(intervalSubscriptionRequest);
-                expect(
-                    publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)
-                ).toBeFalsy();
-                done();
-                return null;
-            })
-            .catch(fail);
-    });
+                    increaseFakeTime(50);
 
-    it("restores a persisted subscription request correctly", function(done) {
-        localStorage.clear();
-        publicationManager.addPublicationProvider(providerId, provider);
-        publicationManager.handleSubscriptionRequest(
-            proxyId,
-            providerId,
-            intervalSubscriptionRequest,
-            callbackDispatcher
-        );
-        //now, a valid subscription should be correctly persisted -> let's restore
+                    testAttribute.valueChanged(value);
 
-        var publicationManagerWithRestore = new PublicationManager(dispatcherSpy, localStorage, joynrInstanceId);
-        publicationManagerWithRestore.addPublicationProvider(providerId, provider);
-        publicationManagerWithRestore.restore(callbackDispatcher);
-        // increasing the time by one tick ensures all async callbacks within the
-        // publication manager are invoked
-        increaseFakeTime(1);
-        expect(callbackDispatcher).toHaveBeenCalled();
-        expect(callbackDispatcher.calls.mostRecent().args[0].subscriptionId).toBe(
-            intervalSubscriptionRequest.subscriptionId
-        );
-        expect(callbackDispatcher.calls.mostRecent().args[0].error).toBeUndefined();
-        done();
-    });
+                    return waitsFor(
+                        function() {
+                            return dispatcherSpy.sendPublication.calls.count() > 0;
+                        },
+                        "dispatcherSpy.sendPublication",
+                        asyncGetterCallDelay
+                    );
+                })
+                .then(function() {
+                    expect(dispatcherSpy.sendPublication).toHaveBeenCalled();
+                    expect(dispatcherSpy.sendPublication).toHaveBeenCalledWith(
+                        {
+                            from: providerId,
+                            to: proxyId,
+                            expiryDate: Date.now() + onChangeSubscriptionRequest.qos.publicationTtlMs
+                        },
+                        new SubscriptionPublication({
+                            response: [value],
+                            subscriptionId: onChangeSubscriptionRequest.subscriptionId
+                        })
+                    );
+                    stopSubscription(onChangeSubscriptionRequest);
+                    expect(
+                        publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)
+                    ).toBeFalsy();
+                    done();
+                    return null;
+                })
+                .catch(fail);
+        });
 
-    it("restores a persisted event subscription request correctly", function(done) {
-        localStorage.clear();
-        publicationManager.addPublicationProvider(providerId, provider);
-        publicationManager.handleBroadcastSubscriptionRequest(
-            proxyId,
-            providerId,
-            onChangeBroadcastSubscriptionRequest,
-            callbackDispatcher
-        );
+        it("publishes first value once immediately after subscription", function(done) {
+            var times;
 
-        //now, a valid subscription should be correctly persisted -> let's restore
-
-        var publicationManagerWithRestore = new PublicationManager(dispatcherSpy, localStorage, joynrInstanceId);
-        publicationManagerWithRestore.addPublicationProvider(providerId, provider);
-        publicationManagerWithRestore.restore(callbackDispatcher);
-        // increasing the time by one tick ensures all async callbacks within the
-        // publication manager are invoked
-        increaseFakeTime(1);
-        expect(callbackDispatcher).toHaveBeenCalled();
-        expect(callbackDispatcher.calls.mostRecent().args[0].subscriptionId).toBe(
-            onChangeBroadcastSubscriptionRequest.subscriptionId
-        );
-        expect(callbackDispatcher.calls.mostRecent().args[0].error).toBeUndefined();
-        done();
-    });
-
-    it("restores a persisted multicast subscription request correctly", function(done) {
-        localStorage.clear();
-        publicationManager.addPublicationProvider(providerId, provider);
-        var request = handleMulticastSubscriptionRequest();
-
-        //now, a valid subscription should be correctly persisted -> let's restore
-
-        var publicationManagerWithRestore = new PublicationManager(dispatcherSpy, localStorage, joynrInstanceId);
-        publicationManagerWithRestore.addPublicationProvider(providerId, provider);
-        publicationManagerWithRestore.restore(callbackDispatcher);
-        // increasing the time by one tick ensures all async callbacks within the
-        // publication manager are invoked
-        increaseFakeTime(1);
-        expect(callbackDispatcher).toHaveBeenCalled();
-        expect(callbackDispatcher.calls.mostRecent().args[0].subscriptionId).toBe(request.subscriptionId);
-        expect(callbackDispatcher.calls.mostRecent().args[0].error).toBeUndefined();
-        done();
-    });
-
-    it("does not publish when interval subscription has an endDate in the past", function(done) {
-        var times;
-
-        intervalSubscriptionRequest.qos.expiryDateMs = Date.now() - 1;
-        publicationManager.addPublicationProvider(providerId, provider);
-        publicationManager.handleSubscriptionRequest(
-            proxyId,
-            providerId,
-            intervalSubscriptionRequest,
-            callbackDispatcher
-        );
-
-        expect(publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)).toBeFalsy();
-        // reset first publication
-        testAttribute.get.calls.reset();
-        dispatcherSpy.sendPublication.calls.reset();
-
-        expect(testAttribute.get).not.toHaveBeenCalled();
-        expect(dispatcherSpy.sendPublication).not.toHaveBeenCalled();
-        increaseFakeTime(subscriptionLength);
-
-        originalSetTimeout(function() {
+            publicationManager.addPublicationProvider(providerId, provider);
             expect(testAttribute.get).not.toHaveBeenCalled();
             expect(dispatcherSpy.sendPublication).not.toHaveBeenCalled();
-            // cleanup
-            stopSubscription(intervalSubscriptionRequest);
-            done();
-        }, asyncGetterCallDelay);
-    });
+            publicationManager.handleSubscriptionRequest(
+                proxyId,
+                providerId,
+                onChangeSubscriptionRequest,
+                callbackDispatcher
+            );
+            expect(publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)).toBeTruthy();
+            increaseFakeTime(1);
 
-    it("removes an interval attribute subscription after endDate", function(done) {
-        publicationManager.addPublicationProvider(providerId, provider);
-        publicationManager.handleSubscriptionRequest(
-            proxyId,
-            providerId,
-            intervalSubscriptionRequest,
-            callbackDispatcher
-        );
-        expect(publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)).toBeTruthy();
-        increaseFakeTime(1);
+            waitsFor(
+                function() {
+                    return dispatcherSpy.sendPublication.calls.count() > 0;
+                },
+                "dispatcherSpy.sendPublication",
+                asyncGetterCallDelay
+            )
+                .then(function() {
+                    expect(testAttribute.get.calls.count()).toEqual(1);
+                    expect(dispatcherSpy.sendPublication.calls.count()).toEqual(1);
+                    // cleanup
+                    stopSubscription(onChangeSubscriptionRequest);
+                    expect(
+                        publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)
+                    ).toBeFalsy();
+                    done();
+                    return null;
+                })
+                .catch(fail);
+        });
 
-        waitsFor(
-            function() {
+        it("creates a working interval subscription", function(done) {
+            var times;
+
+            publicationManager.addPublicationProvider(providerId, provider);
+            publicationManager.handleSubscriptionRequest(
+                proxyId,
+                providerId,
+                intervalSubscriptionRequest,
+                callbackDispatcher
+            );
+            expect(publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)).toBeTruthy();
+            increaseFakeTime(1);
+
+            var promiseChain = waitsFor(function() {
                 return dispatcherSpy.sendPublication.calls.count() > 0;
-            },
-            "dispatcherSpy.sendPublication",
-            asyncGetterCallDelay
-        )
-            .then(function() {
+            }, asyncGetterCallDelay).then(function() {
                 // reset first publication
                 testAttribute.get.calls.reset();
                 dispatcherSpy.sendPublication.calls.reset();
-                //increaseFakeTime(subscriptionLength);
-                //
-                // Do not increase by full subscriptionLength, because then
-                // both the publication end timer and the timer for the current
-                // interval period will become runnable at the same time.
-                // Jasmine seems to call the end timer first (which should
-                // cancel the other one), however the interval period timer
-                // will still be run. Unfortunately it creates a new interval
-                // period timer, which will run another publication after the
-                // subscription has already expired which lets the test fail.
-                // The following shorter increase of time will allow the
-                // interval period timer to run first. Also note, that despite
-                // the large time warp, only one publication will be
-                // visible since Joynr has implemented interval timers by
-                // a simple timer that retriggers itself after each interval
-                // instead of using the Javascript setInterval().
-                increaseFakeTime(subscriptionLength - 2);
-                return waitsFor(
-                    function() {
-                        return dispatcherSpy.sendPublication.calls.count() > 0;
-                    },
-                    "dispatcherSpy.sendPublication",
-                    asyncGetterCallDelay
-                );
-            })
-            .then(function() {
-                // The following increase of time will only trigger the end timer
-                // while the interval period timer remains waiting. So it
-                // can be cleared ok.
-                increaseFakeTime(2);
+            });
 
-                expect(testAttribute.get).toHaveBeenCalled();
-                expect(dispatcherSpy.sendPublication).toHaveBeenCalled();
-                // after another interval, the methods should not have been called again
-                // (ie subscription terminated)
-                testAttribute.get.calls.reset();
-                dispatcherSpy.sendPublication.calls.reset();
-                increaseFakeTime(maxIntervalMs);
-                originalSetTimeout(function() {
-                    expect(testAttribute.get).not.toHaveBeenCalled();
-                    expect(dispatcherSpy.sendPublication).not.toHaveBeenCalled();
+            var internalCheck = function(times, promiseChain) {
+                return promiseChain.then(function() {
+                    // step the clock forward to 1 ms before the interval
+                    increaseFakeTime(maxIntervalMs - 1);
+
+                    // 1 ms later the poll should happen
+                    increaseFakeTime(1);
+
+                    return waitsFor(
+                        function() {
+                            return dispatcherSpy.sendPublication.calls.count() === times;
+                        },
+                        "dispatcherSpy.sendPublication " + times + " times",
+                        asyncGetterCallDelay
+                    ).then(function() {
+                        expect(testAttribute.get.calls.count()).toEqual(times);
+                        expect(dispatcherSpy.sendPublication.calls.count()).toEqual(times);
+                        expect(dispatcherSpy.sendPublication.calls.count()).toEqual(times);
+                    });
+                });
+            };
+
+            for (times = 1; times < maxNrOfTimes + 1; ++times) {
+                promiseChain = internalCheck(times, promiseChain);
+            }
+
+            promiseChain
+                .then(function() {
+                    // cleanup
                     stopSubscription(intervalSubscriptionRequest);
                     expect(
                         publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)
                     ).toBeFalsy();
                     done();
-                }, asyncGetterCallDelay);
-                return null;
-            })
-            .catch(fail);
-    });
+                    return null;
+                })
+                .catch(fail);
+        });
 
-    it("removes an interval attribute subscription after subscription stop", function(done) {
-        publicationManager.addPublicationProvider(providerId, provider);
-        publicationManager.handleSubscriptionRequest(
-            proxyId,
-            providerId,
-            intervalSubscriptionRequest,
-            callbackDispatcher
-        );
-
-        expect(publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)).toBeTruthy();
-        // reset first publication
-        testAttribute.get.calls.reset();
-        dispatcherSpy.sendPublication.calls.reset();
-
-        increaseFakeTime(maxIntervalMs + asyncGetterCallDelay);
-
-        waitsFor(
-            function() {
-                return dispatcherSpy.sendPublication.calls.count() > 0;
-            },
-            "timeout dispatcherSpy.sendPublication",
-            asyncGetterCallDelay
-        )
-            .then(function() {
-                expect(testAttribute.get).toHaveBeenCalled();
-                expect(dispatcherSpy.sendPublication).toHaveBeenCalled();
-                // after subscription stop, the methods should not have been called
-                // again (ie subscription terminated)
-                publicationManager.handleSubscriptionStop(
-                    new SubscriptionStop({
-                        subscriptionId: intervalSubscriptionRequest.subscriptionId
-                    })
+        if (persistency) {
+            it("restores a persisted subscription request correctly", function(done) {
+                publicationManager.addPublicationProvider(providerId, provider);
+                publicationManager.handleSubscriptionRequest(
+                    proxyId,
+                    providerId,
+                    intervalSubscriptionRequest,
+                    callbackDispatcher
                 );
-                testAttribute.get.calls.reset();
-                dispatcherSpy.sendPublication.calls.reset();
+                //now, a valid subscription should be correctly persisted -> let's restore
 
-                increaseFakeTime(maxIntervalMs + 1);
-                expect(testAttribute.get).not.toHaveBeenCalled();
-                expect(dispatcherSpy.sendPublication).not.toHaveBeenCalled();
+                var publicationManagerWithRestore = new PublicationManager(dispatcherSpy, persistency, joynrInstanceId);
+                publicationManagerWithRestore.addPublicationProvider(providerId, provider);
+                publicationManagerWithRestore.restore(callbackDispatcher);
+                // increasing the time by one tick ensures all async callbacks within the
+                // publication manager are invoked
+                increaseFakeTime(1);
+                expect(callbackDispatcher).toHaveBeenCalled();
+                expect(callbackDispatcher.calls.mostRecent().args[0].subscriptionId).toBe(
+                    intervalSubscriptionRequest.subscriptionId
+                );
+                expect(callbackDispatcher.calls.mostRecent().args[0].error).toBeUndefined();
                 done();
-                return null;
-            })
-            .catch(fail);
-    });
+            });
 
-    it("creates a working onChange subscription", function(done) {
-        publicationManager.addPublicationProvider(providerId, provider);
-        publicationManager.handleSubscriptionRequest(
-            proxyId,
-            providerId,
-            onChangeSubscriptionRequest,
-            callbackDispatcher
-        );
+            it("restores a persisted event subscription request correctly", function(done) {
+                publicationManager.addPublicationProvider(providerId, provider);
+                publicationManager.handleBroadcastSubscriptionRequest(
+                    proxyId,
+                    providerId,
+                    onChangeBroadcastSubscriptionRequest,
+                    callbackDispatcher
+                );
 
-        expect(publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)).toBeTruthy();
+                //now, a valid subscription should be correctly persisted -> let's restore
 
-        // reset first publication
-        testAttribute.get.calls.reset();
-        dispatcherSpy.sendPublication.calls.reset();
+                var publicationManagerWithRestore = new PublicationManager(dispatcherSpy, persistency, joynrInstanceId);
+                publicationManagerWithRestore.addPublicationProvider(providerId, provider);
+                publicationManagerWithRestore.restore(callbackDispatcher);
+                // increasing the time by one tick ensures all async callbacks within the
+                // publication manager are invoked
+                increaseFakeTime(1);
+                expect(callbackDispatcher).toHaveBeenCalled();
+                expect(callbackDispatcher.calls.mostRecent().args[0].subscriptionId).toBe(
+                    onChangeBroadcastSubscriptionRequest.subscriptionId
+                );
+                expect(callbackDispatcher.calls.mostRecent().args[0].error).toBeUndefined();
+                done();
+            });
 
-        for (times = 0; times < maxNrOfTimes; times++) {
-            increaseFakeTime(50);
-            testAttribute.valueChanged(value + times);
-            expect(dispatcherSpy.sendPublication.calls.count()).toEqual(times + 1);
+            it("restores a persisted multicast subscription request correctly", function(done) {
+                publicationManager.addPublicationProvider(providerId, provider);
+                var request = handleMulticastSubscriptionRequest();
+
+                //now, a valid subscription should be correctly persisted -> let's restore
+
+                var publicationManagerWithRestore = new PublicationManager(dispatcherSpy, persistency, joynrInstanceId);
+                publicationManagerWithRestore.addPublicationProvider(providerId, provider);
+                publicationManagerWithRestore.restore(callbackDispatcher);
+                // increasing the time by one tick ensures all async callbacks within the
+                // publication manager are invoked
+                increaseFakeTime(1);
+                expect(callbackDispatcher).toHaveBeenCalled();
+                expect(callbackDispatcher.calls.mostRecent().args[0].subscriptionId).toBe(request.subscriptionId);
+                expect(callbackDispatcher.calls.mostRecent().args[0].error).toBeUndefined();
+                done();
+            });
         }
 
-        // cleanup
-        stopSubscription(onChangeSubscriptionRequest);
-        expect(publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)).toBeFalsy();
-        done();
-    });
+        it("does not publish when interval subscription has an endDate in the past", function(done) {
+            var times;
 
-    it("does not publish when an onChange subscription has an endDate in the past", function(done) {
-        onChangeSubscriptionRequest.qos.expiryDateMs = Date.now() - 1;
+            intervalSubscriptionRequest.qos.expiryDateMs = Date.now() - 1;
+            publicationManager.addPublicationProvider(providerId, provider);
+            publicationManager.handleSubscriptionRequest(
+                proxyId,
+                providerId,
+                intervalSubscriptionRequest,
+                callbackDispatcher
+            );
 
-        publicationManager.addPublicationProvider(providerId, provider);
-        publicationManager.handleSubscriptionRequest(
-            proxyId,
-            providerId,
-            onChangeSubscriptionRequest,
-            callbackDispatcher
-        );
-        expect(publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)).toBeFalsy();
-        // reset first publication
-        testAttribute.get.calls.reset();
-        dispatcherSpy.sendPublication.calls.reset();
+            expect(publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)).toBeFalsy();
+            // reset first publication
+            testAttribute.get.calls.reset();
+            dispatcherSpy.sendPublication.calls.reset();
 
-        testAttribute.valueChanged(value + times);
-
-        increaseFakeTime(asyncGetterCallDelay);
-
-        originalSetTimeout(function() {
+            expect(testAttribute.get).not.toHaveBeenCalled();
             expect(dispatcherSpy.sendPublication).not.toHaveBeenCalled();
+            increaseFakeTime(subscriptionLength);
+
+            originalSetTimeout(function() {
+                expect(testAttribute.get).not.toHaveBeenCalled();
+                expect(dispatcherSpy.sendPublication).not.toHaveBeenCalled();
+                // cleanup
+                stopSubscription(intervalSubscriptionRequest);
+                done();
+            }, asyncGetterCallDelay);
+        });
+
+        it("removes an interval attribute subscription after endDate", function(done) {
+            publicationManager.addPublicationProvider(providerId, provider);
+            publicationManager.handleSubscriptionRequest(
+                proxyId,
+                providerId,
+                intervalSubscriptionRequest,
+                callbackDispatcher
+            );
+            expect(publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)).toBeTruthy();
+            increaseFakeTime(1);
+
+            waitsFor(
+                function() {
+                    return dispatcherSpy.sendPublication.calls.count() > 0;
+                },
+                "dispatcherSpy.sendPublication",
+                asyncGetterCallDelay
+            )
+                .then(function() {
+                    // reset first publication
+                    testAttribute.get.calls.reset();
+                    dispatcherSpy.sendPublication.calls.reset();
+                    //increaseFakeTime(subscriptionLength);
+                    //
+                    // Do not increase by full subscriptionLength, because then
+                    // both the publication end timer and the timer for the current
+                    // interval period will become runnable at the same time.
+                    // Jasmine seems to call the end timer first (which should
+                    // cancel the other one), however the interval period timer
+                    // will still be run. Unfortunately it creates a new interval
+                    // period timer, which will run another publication after the
+                    // subscription has already expired which lets the test fail.
+                    // The following shorter increase of time will allow the
+                    // interval period timer to run first. Also note, that despite
+                    // the large time warp, only one publication will be
+                    // visible since Joynr has implemented interval timers by
+                    // a simple timer that retriggers itself after each interval
+                    // instead of using the Javascript setInterval().
+                    increaseFakeTime(subscriptionLength - 2);
+                    return waitsFor(
+                        function() {
+                            return dispatcherSpy.sendPublication.calls.count() > 0;
+                        },
+                        "dispatcherSpy.sendPublication",
+                        asyncGetterCallDelay
+                    );
+                })
+                .then(function() {
+                    // The following increase of time will only trigger the end timer
+                    // while the interval period timer remains waiting. So it
+                    // can be cleared ok.
+                    increaseFakeTime(2);
+
+                    expect(testAttribute.get).toHaveBeenCalled();
+                    expect(dispatcherSpy.sendPublication).toHaveBeenCalled();
+                    // after another interval, the methods should not have been called again
+                    // (ie subscription terminated)
+                    testAttribute.get.calls.reset();
+                    dispatcherSpy.sendPublication.calls.reset();
+                    increaseFakeTime(maxIntervalMs);
+                    originalSetTimeout(function() {
+                        expect(testAttribute.get).not.toHaveBeenCalled();
+                        expect(dispatcherSpy.sendPublication).not.toHaveBeenCalled();
+                        stopSubscription(intervalSubscriptionRequest);
+                        expect(
+                            publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)
+                        ).toBeFalsy();
+                        done();
+                    }, asyncGetterCallDelay);
+                    return null;
+                })
+                .catch(fail);
+        });
+
+        it("removes an interval attribute subscription after subscription stop", function(done) {
+            publicationManager.addPublicationProvider(providerId, provider);
+            publicationManager.handleSubscriptionRequest(
+                proxyId,
+                providerId,
+                intervalSubscriptionRequest,
+                callbackDispatcher
+            );
+
+            expect(publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)).toBeTruthy();
+            // reset first publication
+            testAttribute.get.calls.reset();
+            dispatcherSpy.sendPublication.calls.reset();
+
+            increaseFakeTime(maxIntervalMs + asyncGetterCallDelay);
+
+            waitsFor(
+                function() {
+                    return dispatcherSpy.sendPublication.calls.count() > 0;
+                },
+                "timeout dispatcherSpy.sendPublication",
+                asyncGetterCallDelay
+            )
+                .then(function() {
+                    expect(testAttribute.get).toHaveBeenCalled();
+                    expect(dispatcherSpy.sendPublication).toHaveBeenCalled();
+                    // after subscription stop, the methods should not have been called
+                    // again (ie subscription terminated)
+                    publicationManager.handleSubscriptionStop(
+                        new SubscriptionStop({
+                            subscriptionId: intervalSubscriptionRequest.subscriptionId
+                        })
+                    );
+                    testAttribute.get.calls.reset();
+                    dispatcherSpy.sendPublication.calls.reset();
+
+                    increaseFakeTime(maxIntervalMs + 1);
+                    expect(testAttribute.get).not.toHaveBeenCalled();
+                    expect(dispatcherSpy.sendPublication).not.toHaveBeenCalled();
+                    done();
+                    return null;
+                })
+                .catch(fail);
+        });
+
+        it("creates a working onChange subscription", function(done) {
+            publicationManager.addPublicationProvider(providerId, provider);
+            publicationManager.handleSubscriptionRequest(
+                proxyId,
+                providerId,
+                onChangeSubscriptionRequest,
+                callbackDispatcher
+            );
+
+            expect(publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)).toBeTruthy();
+
+            // reset first publication
+            testAttribute.get.calls.reset();
+            dispatcherSpy.sendPublication.calls.reset();
+
+            for (times = 0; times < maxNrOfTimes; times++) {
+                increaseFakeTime(50);
+                testAttribute.valueChanged(value + times);
+                expect(dispatcherSpy.sendPublication.calls.count()).toEqual(times + 1);
+            }
 
             // cleanup
             stopSubscription(onChangeSubscriptionRequest);
             expect(publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)).toBeFalsy();
             done();
-        }, asyncGetterCallDelay);
-    });
+        });
 
-    it("removes an onChange attribute subscription after endDate", function(done) {
-        publicationManager.addPublicationProvider(providerId, provider);
-        publicationManager.handleSubscriptionRequest(
-            proxyId,
-            providerId,
-            onChangeSubscriptionRequest,
-            callbackDispatcher
-        );
-        expect(publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)).toBeTruthy();
-        increaseFakeTime(1);
+        it("does not publish when an onChange subscription has an endDate in the past", function(done) {
+            onChangeSubscriptionRequest.qos.expiryDateMs = Date.now() - 1;
 
-        waitsFor(
-            function() {
-                return dispatcherSpy.sendPublication.calls.count() > 0;
-            },
-            "timeout dispatcherSpy.sendPublication",
-            10
-        )
-            .then(function() {
-                // reset first publication
-                testAttribute.get.calls.reset();
-                dispatcherSpy.sendPublication.calls.reset();
+            publicationManager.addPublicationProvider(providerId, provider);
+            publicationManager.handleSubscriptionRequest(
+                proxyId,
+                providerId,
+                onChangeSubscriptionRequest,
+                callbackDispatcher
+            );
+            expect(publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)).toBeFalsy();
+            // reset first publication
+            testAttribute.get.calls.reset();
+            dispatcherSpy.sendPublication.calls.reset();
 
-                increaseFakeTime(50);
-                testAttribute.valueChanged(value);
-                return waitsFor(
-                    function() {
-                        return dispatcherSpy.sendPublication.calls.count() > 0;
-                    },
-                    "timeout dispatcherSpy.sendPublication after valueChanged",
-                    10
-                );
-            })
-            .then(function() {
-                expect(dispatcherSpy.sendPublication).toHaveBeenCalled();
+            testAttribute.valueChanged(value + times);
 
-                // after another attribute change, the methods should not have been
-                // called again (ie subscription terminated)
-                increaseFakeTime(subscriptionLength);
-                dispatcherSpy.sendPublication.calls.reset();
+            increaseFakeTime(asyncGetterCallDelay);
 
-                testAttribute.valueChanged(value);
+            originalSetTimeout(function() {
+                expect(dispatcherSpy.sendPublication).not.toHaveBeenCalled();
 
-                originalSetTimeout(function() {
-                    expect(dispatcherSpy.sendPublication).not.toHaveBeenCalled();
+                // cleanup
+                stopSubscription(onChangeSubscriptionRequest);
+                expect(
+                    publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)
+                ).toBeFalsy();
+                done();
+            }, asyncGetterCallDelay);
+        });
+
+        it("removes an onChange attribute subscription after endDate", function(done) {
+            publicationManager.addPublicationProvider(providerId, provider);
+            publicationManager.handleSubscriptionRequest(
+                proxyId,
+                providerId,
+                onChangeSubscriptionRequest,
+                callbackDispatcher
+            );
+            expect(publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)).toBeTruthy();
+            increaseFakeTime(1);
+
+            waitsFor(
+                function() {
+                    return dispatcherSpy.sendPublication.calls.count() > 0;
+                },
+                "timeout dispatcherSpy.sendPublication",
+                10
+            )
+                .then(function() {
+                    // reset first publication
+                    testAttribute.get.calls.reset();
+                    dispatcherSpy.sendPublication.calls.reset();
+
+                    increaseFakeTime(50);
+                    testAttribute.valueChanged(value);
+                    return waitsFor(
+                        function() {
+                            return dispatcherSpy.sendPublication.calls.count() > 0;
+                        },
+                        "timeout dispatcherSpy.sendPublication after valueChanged",
+                        10
+                    );
+                })
+                .then(function() {
+                    expect(dispatcherSpy.sendPublication).toHaveBeenCalled();
+
+                    // after another attribute change, the methods should not have been
+                    // called again (ie subscription terminated)
+                    increaseFakeTime(subscriptionLength);
+                    dispatcherSpy.sendPublication.calls.reset();
+
+                    testAttribute.valueChanged(value);
+
+                    originalSetTimeout(function() {
+                        expect(dispatcherSpy.sendPublication).not.toHaveBeenCalled();
+                        expect(
+                            publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)
+                        ).toBeFalsy();
+                        done();
+                    }, asyncGetterCallDelay);
+                    return null;
+                })
+                .catch(fail);
+        });
+
+        it("removes an onChange attribute subscription after subscription stop", function(done) {
+            publicationManager.addPublicationProvider(providerId, provider);
+            publicationManager.handleSubscriptionRequest(
+                proxyId,
+                providerId,
+                onChangeSubscriptionRequest,
+                callbackDispatcher
+            );
+            expect(publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)).toBeTruthy();
+            increaseFakeTime(1);
+
+            waitsFor(
+                function() {
+                    return dispatcherSpy.sendPublication.calls.count() > 0;
+                },
+                "timeout dispatcherSpy.sendPublication",
+                10
+            )
+                .then(function() {
+                    // reset first publication
+                    testAttribute.get.calls.reset();
+                    dispatcherSpy.sendPublication.calls.reset();
+
+                    increaseFakeTime(50);
+                    testAttribute.valueChanged(value);
+                    return waitsFor(
+                        function() {
+                            return dispatcherSpy.sendPublication.calls.count() > 0;
+                        },
+                        "timeout dispatcherSpy.sendPublication",
+                        10
+                    );
+                })
+                .then(function() {
+                    expect(dispatcherSpy.sendPublication).toHaveBeenCalled();
+
+                    // after subscription stop, the methods should not have been called
+                    // again (ie subscription terminated)
+                    publicationManager.handleSubscriptionStop(
+                        new SubscriptionStop({
+                            subscriptionId: onChangeSubscriptionRequest.subscriptionId
+                        })
+                    );
                     expect(
                         publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)
                     ).toBeFalsy();
-                    done();
-                }, asyncGetterCallDelay);
-                return null;
-            })
-            .catch(fail);
-    });
+                    dispatcherSpy.sendPublication.calls.reset();
 
-    it("removes an onChange attribute subscription after subscription stop", function(done) {
-        publicationManager.addPublicationProvider(providerId, provider);
-        publicationManager.handleSubscriptionRequest(
-            proxyId,
-            providerId,
-            onChangeSubscriptionRequest,
-            callbackDispatcher
-        );
-        expect(publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)).toBeTruthy();
-        increaseFakeTime(1);
+                    testAttribute.valueChanged(value);
+                    increaseFakeTime(1);
+                    originalSetTimeout(function() {
+                        expect(dispatcherSpy.sendPublication).not.toHaveBeenCalled();
+                        done();
+                    }, asyncGetterCallDelay);
+                    return null;
+                })
+                .catch(fail);
+        });
 
-        waitsFor(
-            function() {
-                return dispatcherSpy.sendPublication.calls.count() > 0;
-            },
-            "timeout dispatcherSpy.sendPublication",
-            10
-        )
-            .then(function() {
-                // reset first publication
-                testAttribute.get.calls.reset();
-                dispatcherSpy.sendPublication.calls.reset();
+        it("creates a mixed subscription and does not send two publications within minintervalMs in case async getter calls and valueChanged occur at the same time", function(
+            done
+        ) {
+            var times;
 
-                increaseFakeTime(50);
-                testAttribute.valueChanged(value);
-                return waitsFor(
-                    function() {
-                        return dispatcherSpy.sendPublication.calls.count() > 0;
-                    },
-                    "timeout dispatcherSpy.sendPublication",
-                    10
-                );
-            })
-            .then(function() {
-                expect(dispatcherSpy.sendPublication).toHaveBeenCalled();
+            publicationManager.addPublicationProvider(providerId, provider);
+            publicationManager.handleSubscriptionRequest(
+                proxyId,
+                providerId,
+                mixedSubscriptionRequestWithAsyncAttribute,
+                callbackDispatcher
+            );
+            expect(
+                publicationManager.hasSubscriptionsForProviderAttribute(providerId, asyncTestAttributeName)
+            ).toBeTruthy();
+            // wait until the first publication occurs
+            increaseFakeTime(asyncGetterCallDelay);
 
-                // after subscription stop, the methods should not have been called
-                // again (ie subscription terminated)
-                publicationManager.handleSubscriptionStop(
-                    new SubscriptionStop({
-                        subscriptionId: onChangeSubscriptionRequest.subscriptionId
-                    })
-                );
-                expect(
-                    publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)
-                ).toBeFalsy();
-                dispatcherSpy.sendPublication.calls.reset();
-
-                testAttribute.valueChanged(value);
-                increaseFakeTime(1);
-                originalSetTimeout(function() {
-                    expect(dispatcherSpy.sendPublication).not.toHaveBeenCalled();
-                    done();
-                }, asyncGetterCallDelay);
-                return null;
-            })
-            .catch(fail);
-    });
-
-    it("creates a mixed subscription and does not send two publications within minintervalMs in case async getter calls and valueChanged occur at the same time", function(
-        done
-    ) {
-        var times;
-
-        publicationManager.addPublicationProvider(providerId, provider);
-        publicationManager.handleSubscriptionRequest(
-            proxyId,
-            providerId,
-            mixedSubscriptionRequestWithAsyncAttribute,
-            callbackDispatcher
-        );
-        expect(
-            publicationManager.hasSubscriptionsForProviderAttribute(providerId, asyncTestAttributeName)
-        ).toBeTruthy();
-        // wait until the first publication occurs
-        increaseFakeTime(asyncGetterCallDelay);
-
-        // reset first publication
-        asyncTestAttribute.get.calls.reset();
-        dispatcherSpy.sendPublication.calls.reset();
-
-        // let the minIntervalMs exceed, so that new value changes
-        // immediately lead to publications
-        increaseFakeTime(minIntervalMs);
-        expect(asyncTestAttribute.get).not.toHaveBeenCalled();
-        expect(dispatcherSpy.sendPublication).not.toHaveBeenCalled();
-
-        asyncTestAttribute.valueChanged(value);
-        increaseFakeTime(5);
-
-        // this should cause an async timer, which sends a publication
-        // after minIntervalMs-5
-        asyncTestAttribute.valueChanged(value);
-
-        // the getter has not been invoked so far
-        expect(asyncTestAttribute.get).not.toHaveBeenCalled();
-
-        waitsFor(
-            function() {
-                return dispatcherSpy.sendPublication.calls.count() === 1;
-            },
-            "timeout dispatcherSpy.sendPublication",
-            asyncGetterCallDelay
-        )
-            .then(function() {
-                expect(dispatcherSpy.sendPublication.calls.count()).toEqual(1);
-                // now, lets increas the time until mininterval
-                increaseFakeTime(minIntervalMs - 5);
-
-                // now, the async timer has exceeded, and the PublicationManager
-                // invokes the get
-                expect(asyncTestAttribute.get.calls.count()).toEqual(1);
-
-                // now change the attribute value
-                asyncTestAttribute.valueChanged(value);
-                return waitsFor(
-                    function() {
-                        return dispatcherSpy.sendPublication.calls.count() === 2;
-                    },
-                    "timeout dispatcherSpy.sendPublication",
-                    asyncGetterCallDelay
-                );
-            })
-            .then(function() {
-                expect(dispatcherSpy.sendPublication.calls.count()).toEqual(2);
-                // lets exceed the async getter delay, causing the async getter
-                // to resolve the promise object
-                increaseFakeTime(asyncGetterCallDelay);
-
-                // now change the attribute value
-                asyncTestAttribute.valueChanged(value);
-
-                // this shall not result in a new sendPublication, as
-                // asyncGetterCallDelay<minIntervalMs and the time
-                // delay between two publications must be at least minIntervalMs
-                expect(dispatcherSpy.sendPublication.calls.count()).toEqual(2);
-
-                increaseFakeTime(minIntervalMs - asyncGetterCallDelay);
-                return waitsFor(
-                    function() {
-                        return asyncTestAttribute.get.calls.count() === 2;
-                    },
-                    "timeout asyncTestAttribute.get",
-                    asyncGetterCallDelay
-                );
-            })
-            .then(function() {
-                expect(asyncTestAttribute.get.calls.count()).toEqual(2);
-
-                increaseFakeTime(asyncGetterCallDelay);
-                return waitsFor(
-                    function() {
-                        return dispatcherSpy.sendPublication.calls.count() === 3;
-                    },
-                    "timeout dispatcherSpy.sendPublication",
-                    asyncGetterCallDelay
-                );
-            })
-            .then(function() {
-                expect(asyncTestAttribute.get.calls.count()).toEqual(2);
-                expect(dispatcherSpy.sendPublication.calls.count()).toEqual(3);
-
-                stopSubscription(mixedSubscriptionRequestWithAsyncAttribute);
-                expect(
-                    publicationManager.hasSubscriptionsForProviderAttribute(providerId, asyncTestAttributeName)
-                ).toBeFalsy();
-                done();
-                return null;
-            })
-            .catch(fail);
-    });
-
-    it("creates a mixed subscription that publishes every maxIntervalMs", function(done) {
-        var times;
-
-        publicationManager.addPublicationProvider(providerId, provider);
-        publicationManager.handleSubscriptionRequest(proxyId, providerId, mixedSubscriptionRequest, callbackDispatcher);
-        expect(publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)).toBeTruthy();
-        increaseFakeTime(1);
-
-        var promiseChain = waitsFor(
-            function() {
-                return dispatcherSpy.sendPublication.calls.count() > 0;
-            },
-            "timeout dispatcherSpy.sendPublication",
-            asyncGetterCallDelay
-        ).then(function() {
             // reset first publication
-            testAttribute.get.calls.reset();
+            asyncTestAttribute.get.calls.reset();
             dispatcherSpy.sendPublication.calls.reset();
-            expect(testAttribute.get).not.toHaveBeenCalled();
+
+            // let the minIntervalMs exceed, so that new value changes
+            // immediately lead to publications
+            increaseFakeTime(minIntervalMs);
+            expect(asyncTestAttribute.get).not.toHaveBeenCalled();
             expect(dispatcherSpy.sendPublication).not.toHaveBeenCalled();
-        });
 
-        var internalCheck = function(times, promiseChain) {
-            return promiseChain.then(function() {
-                // step the clock forward to 1 ms before the interval
-                increaseFakeTime(maxIntervalMs - 1);
-                // 1 ms later the poll should happen
-                increaseFakeTime(1);
+            asyncTestAttribute.valueChanged(value);
+            increaseFakeTime(5);
 
-                return waitsFor(
-                    function() {
-                        return dispatcherSpy.sendPublication.calls.count() === times + 1;
-                    },
-                    "timeout testAttribute.get",
-                    asyncGetterCallDelay
-                ).then(function() {
-                    expect(testAttribute.get.calls.count()).toEqual(times + 1);
-                    expect(dispatcherSpy.sendPublication.calls.count()).toEqual(times + 1);
-                });
-            });
-        };
+            // this should cause an async timer, which sends a publication
+            // after minIntervalMs-5
+            asyncTestAttribute.valueChanged(value);
 
-        for (times = 0; times < maxNrOfTimes; ++times) {
-            promiseChain = internalCheck(times, promiseChain);
-        }
+            // the getter has not been invoked so far
+            expect(asyncTestAttribute.get).not.toHaveBeenCalled();
 
-        promiseChain
-            .then(function() {
-                // cleanup
-                stopSubscription(mixedSubscriptionRequest);
-                expect(
-                    publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)
-                ).toBeFalsy();
-                done();
-                return null;
-            })
-            .catch(fail);
-    });
-
-    it("creates a mixed subscription that publishes valueChanges that occur each minIntervalMs", function(done) {
-        publicationManager.addPublicationProvider(providerId, provider);
-        publicationManager.handleSubscriptionRequest(proxyId, providerId, mixedSubscriptionRequest, callbackDispatcher);
-        expect(publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)).toBeTruthy();
-        increaseFakeTime(1);
-
-        var promiseChain = waitsFor(
-            function() {
-                return dispatcherSpy.sendPublication.calls.count() === 1;
-            },
-            "timeout dispatcherSpy.sendPublication",
-            asyncGetterCallDelay
-        ).then(function() {
-            // reset first publication
-            testAttribute.get.calls.reset();
-            dispatcherSpy.sendPublication.calls.reset();
-        });
-
-        var internalCheck = function(times, promiseChain) {
-            return promiseChain.then(function() {
-                increaseFakeTime(mixedSubscriptionRequest.qos.minIntervalMs);
-                testAttribute.valueChanged(value + times);
-
-                return waitsFor(
-                    function() {
-                        return dispatcherSpy.sendPublication.calls.count() === times + 1;
-                    },
-                    "timeout dispatcherSpy.sendPublication",
-                    asyncGetterCallDelay
-                ).then(function() {
-                    expect(testAttribute.get).not.toHaveBeenCalled();
-                    expect(dispatcherSpy.sendPublication.calls.count()).toEqual(times + 1);
-                });
-            });
-        };
-
-        for (times = 0; times < maxNrOfTimes; times++) {
-            promiseChain = internalCheck(times, promiseChain);
-        }
-
-        promiseChain
-            .then(function() {
-                // cleanup
-                stopSubscription(mixedSubscriptionRequest);
-                expect(
-                    publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)
-                ).toBeFalsy();
-                done();
-                return null;
-            })
-            .catch(fail);
-    });
-
-    it("creates a mixed subscription that publishes valueChanges that occur each maxIntervalMs-1", function(done) {
-        dispatcherSpy.sendPublication.calls.reset();
-        publicationManager.addPublicationProvider(providerId, provider);
-        publicationManager.handleSubscriptionRequest(proxyId, providerId, mixedSubscriptionRequest, callbackDispatcher);
-        expect(publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)).toBeTruthy();
-        increaseFakeTime(1);
-
-        var promiseChain = waitsFor(
-            function() {
-                return dispatcherSpy.sendPublication.calls.count() === 1;
-            },
-            "timeout dispatcherSpy.sendPublication",
-            asyncGetterCallDelay
-        ).then(function() {
-            // reset first publication
-            testAttribute.get.calls.reset();
-            dispatcherSpy.sendPublication.calls.reset();
-        });
-
-        var internalCheck = function(times, promiseChain) {
-            return promiseChain.then(function() {
-                increaseFakeTime(mixedSubscriptionRequest.qos.maxIntervalMs - 2);
-                testAttribute.valueChanged(value + times);
-                increaseFakeTime(1);
-
-                return waitsFor(
-                    function() {
-                        return dispatcherSpy.sendPublication.calls.count() === times + 1;
-                    },
-                    "timeout dispatcherSpy.sendPublication",
-                    asyncGetterCallDelay
-                ).then(function() {
-                    expect(testAttribute.get).not.toHaveBeenCalled();
-                    expect(dispatcherSpy.sendPublication.calls.count()).toEqual(times + 1);
-                });
-            });
-        };
-        for (times = 0; times < maxNrOfTimes; times++) {
-            promiseChain = internalCheck(times, promiseChain);
-        }
-
-        promiseChain
-            .then(function() {
-                // cleanup
-                stopSubscription(mixedSubscriptionRequest);
-                expect(
-                    publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)
-                ).toBeFalsy();
-                done();
-                return null;
-            })
-            .catch(fail);
-    });
-    it("creates a mixed subscription that publishes many valueChanges within minIntervalMs only once", function(done) {
-        publicationManager.addPublicationProvider(providerId, provider);
-        publicationManager.handleSubscriptionRequest(proxyId, providerId, mixedSubscriptionRequest, callbackDispatcher);
-        expect(publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)).toBeTruthy();
-        increaseFakeTime(1);
-
-        waitsFor(
-            function() {
-                return dispatcherSpy.sendPublication.calls.count() === 1;
-            },
-            "timeout dispatcherSpy.sendPublication",
-            asyncGetterCallDelay
-        )
-            .then(function() {
-                // reset first publication
-                testAttribute.get.calls.reset();
-                dispatcherSpy.sendPublication.calls.reset();
-
-                var shortInterval = Math.round((mixedSubscriptionRequest.qos.minIntervalMs - 2) / maxNrOfTimes);
-                for (times = 0; times < maxNrOfTimes; times++) {
-                    expect(testAttribute.get).not.toHaveBeenCalled();
-                    expect(dispatcherSpy.sendPublication).not.toHaveBeenCalled();
-                    increaseFakeTime(shortInterval);
-                    testAttribute.valueChanged(value + times);
-                }
-
-                // after minIntervalMs the publication works again
-                increaseFakeTime(mixedSubscriptionRequest.qos.minIntervalMs - shortInterval * maxNrOfTimes);
-                testAttribute.valueChanged(value);
-                expect(testAttribute.get.calls.count()).toEqual(1);
-                expect(dispatcherSpy.sendPublication.calls.count()).toEqual(1);
-
-                // cleanup
-                stopSubscription(mixedSubscriptionRequest);
-                expect(
-                    publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)
-                ).toBeFalsy();
-                done();
-                return null;
-            })
-            .catch(fail);
-    });
-
-    it("creates a periodic subscription without expiryDate and expects periodic publications", function(done) {
-        var periodMs = 400,
-            n = 10,
-            subscriptionRequestWithoutExpiryDate;
-
-        subscriptionRequestWithoutExpiryDate = createSubscriptionRequest(
-            true,
-            testAttributeName,
-            periodMs,
-            0,
-            false,
-            minIntervalMs
-        );
-        dispatcherSpy.sendPublication.calls.reset();
-        publicationManager.addPublicationProvider(providerId, provider);
-        publicationManager.handleSubscriptionRequest(
-            proxyId,
-            providerId,
-            subscriptionRequestWithoutExpiryDate,
-            callbackDispatcher
-        );
-        expect(publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)).toBeTruthy();
-        increaseFakeTime(1);
-
-        var promiseChain = waitsFor(
-            function() {
-                return dispatcherSpy.sendPublication.calls.count() === 1;
-            },
-            "timeout dispatcherSpy.sendPublication",
-            asyncGetterCallDelay
-        ).then(function() {
-            expect(dispatcherSpy.sendPublication.calls.count()).toEqual(1);
-            dispatcherSpy.sendPublication.calls.reset();
-        });
-
-        var checkMaxIntervalCalls = function(i, promiseChain) {
-            return promiseChain
+            waitsFor(
+                function() {
+                    return dispatcherSpy.sendPublication.calls.count() === 1;
+                },
+                "timeout dispatcherSpy.sendPublication",
+                asyncGetterCallDelay
+            )
                 .then(function() {
-                    increaseFakeTime(periodMs);
+                    expect(dispatcherSpy.sendPublication.calls.count()).toEqual(1);
+                    // now, lets increas the time until mininterval
+                    increaseFakeTime(minIntervalMs - 5);
 
+                    // now, the async timer has exceeded, and the PublicationManager
+                    // invokes the get
+                    expect(asyncTestAttribute.get.calls.count()).toEqual(1);
+
+                    // now change the attribute value
+                    asyncTestAttribute.valueChanged(value);
                     return waitsFor(
                         function() {
-                            return dispatcherSpy.sendPublication.calls.count() === 1 + i;
+                            return dispatcherSpy.sendPublication.calls.count() === 2;
                         },
-                        "timeout " + i + " times dispatcherSpy.sendPublication call",
+                        "timeout dispatcherSpy.sendPublication",
                         asyncGetterCallDelay
                     );
                 })
                 .then(function() {
-                    expect(dispatcherSpy.sendPublication.calls.count()).toEqual(1 + i);
-                });
-        };
+                    expect(dispatcherSpy.sendPublication.calls.count()).toEqual(2);
+                    // lets exceed the async getter delay, causing the async getter
+                    // to resolve the promise object
+                    increaseFakeTime(asyncGetterCallDelay);
 
-        var i;
-        for (i = 0; i < n; i++) {
-            promiseChain = checkMaxIntervalCalls(i, promiseChain);
-        }
+                    // now change the attribute value
+                    asyncTestAttribute.valueChanged(value);
 
-        promiseChain
-            .then(function() {
-                // cleanup
-                stopSubscription(subscriptionRequestWithoutExpiryDate);
-                expect(
-                    publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)
-                ).toBeFalsy();
-                done();
-                return null;
-            })
-            .catch(fail);
-    });
-    it("creates a mixed subscription that publishes correctly with all cases mixed", function(done) {
-        var i;
+                    // this shall not result in a new sendPublication, as
+                    // asyncGetterCallDelay<minIntervalMs and the time
+                    // delay between two publications must be at least minIntervalMs
+                    expect(dispatcherSpy.sendPublication.calls.count()).toEqual(2);
 
-        publicationManager.addPublicationProvider(providerId, provider);
-        publicationManager.handleSubscriptionRequest(proxyId, providerId, mixedSubscriptionRequest, callbackDispatcher);
-        expect(publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)).toBeTruthy();
-        increaseFakeTime(1);
+                    increaseFakeTime(minIntervalMs - asyncGetterCallDelay);
+                    return waitsFor(
+                        function() {
+                            return asyncTestAttribute.get.calls.count() === 2;
+                        },
+                        "timeout asyncTestAttribute.get",
+                        asyncGetterCallDelay
+                    );
+                })
+                .then(function() {
+                    expect(asyncTestAttribute.get.calls.count()).toEqual(2);
 
-        waitsFor(
-            function() {
-                return dispatcherSpy.sendPublication.calls.count() === 1;
-            },
-            "timeout dispatcherSpy.sendPublication",
-            asyncGetterCallDelay
-        )
-            .then(function() {
+                    increaseFakeTime(asyncGetterCallDelay);
+                    return waitsFor(
+                        function() {
+                            return dispatcherSpy.sendPublication.calls.count() === 3;
+                        },
+                        "timeout dispatcherSpy.sendPublication",
+                        asyncGetterCallDelay
+                    );
+                })
+                .then(function() {
+                    expect(asyncTestAttribute.get.calls.count()).toEqual(2);
+                    expect(dispatcherSpy.sendPublication.calls.count()).toEqual(3);
+
+                    stopSubscription(mixedSubscriptionRequestWithAsyncAttribute);
+                    expect(
+                        publicationManager.hasSubscriptionsForProviderAttribute(providerId, asyncTestAttributeName)
+                    ).toBeFalsy();
+                    done();
+                    return null;
+                })
+                .catch(fail);
+        });
+
+        it("creates a mixed subscription that publishes every maxIntervalMs", function(done) {
+            var times;
+
+            publicationManager.addPublicationProvider(providerId, provider);
+            publicationManager.handleSubscriptionRequest(
+                proxyId,
+                providerId,
+                mixedSubscriptionRequest,
+                callbackDispatcher
+            );
+            expect(publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)).toBeTruthy();
+            increaseFakeTime(1);
+
+            var promiseChain = waitsFor(
+                function() {
+                    return dispatcherSpy.sendPublication.calls.count() > 0;
+                },
+                "timeout dispatcherSpy.sendPublication",
+                asyncGetterCallDelay
+            ).then(function() {
                 // reset first publication
                 testAttribute.get.calls.reset();
                 dispatcherSpy.sendPublication.calls.reset();
-
-                // at time 0, a value change is not reported because value was
-                // already published initially while
-                // handling the subscription request
-                testAttribute.valueChanged(value);
                 expect(testAttribute.get).not.toHaveBeenCalled();
                 expect(dispatcherSpy.sendPublication).not.toHaveBeenCalled();
+            });
 
-                // minIntervalMs and a value change the value should be reported
-                increaseFakeTime(mixedSubscriptionRequest.qos.minIntervalMs);
+            var internalCheck = function(times, promiseChain) {
+                return promiseChain.then(function() {
+                    // step the clock forward to 1 ms before the interval
+                    increaseFakeTime(maxIntervalMs - 1);
+                    // 1 ms later the poll should happen
+                    increaseFakeTime(1);
 
-                return waitsFor(
-                    function() {
-                        return dispatcherSpy.sendPublication.calls.count() === 1;
-                    },
-                    "timeout dispatcherSpy.sendPublication call",
-                    asyncGetterCallDelay
-                );
-            })
-            .then(function() {
-                // due to minIntervalMs exceeded + valueChanged has been occured
-                // within the minIntervalMs, the
-                // PublicationManager
-                // send the current attribute value to the subscriptions
-                expect(testAttribute.get.calls.count()).toEqual(1);
-                expect(dispatcherSpy.sendPublication.calls.count()).toEqual(1);
+                    return waitsFor(
+                        function() {
+                            return dispatcherSpy.sendPublication.calls.count() === times + 1;
+                        },
+                        "timeout testAttribute.get",
+                        asyncGetterCallDelay
+                    ).then(function() {
+                        expect(testAttribute.get.calls.count()).toEqual(times + 1);
+                        expect(dispatcherSpy.sendPublication.calls.count()).toEqual(times + 1);
+                    });
+                });
+            };
+
+            for (times = 0; times < maxNrOfTimes; ++times) {
+                promiseChain = internalCheck(times, promiseChain);
+            }
+
+            promiseChain
+                .then(function() {
+                    // cleanup
+                    stopSubscription(mixedSubscriptionRequest);
+                    expect(
+                        publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)
+                    ).toBeFalsy();
+                    done();
+                    return null;
+                })
+                .catch(fail);
+        });
+
+        it("creates a mixed subscription that publishes valueChanges that occur each minIntervalMs", function(done) {
+            publicationManager.addPublicationProvider(providerId, provider);
+            publicationManager.handleSubscriptionRequest(
+                proxyId,
+                providerId,
+                mixedSubscriptionRequest,
+                callbackDispatcher
+            );
+            expect(publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)).toBeTruthy();
+            increaseFakeTime(1);
+
+            var promiseChain = waitsFor(
+                function() {
+                    return dispatcherSpy.sendPublication.calls.count() === 1;
+                },
+                "timeout dispatcherSpy.sendPublication",
+                asyncGetterCallDelay
+            ).then(function() {
+                // reset first publication
                 testAttribute.get.calls.reset();
                 dispatcherSpy.sendPublication.calls.reset();
-                // minIntervalMs and no publication shall occur
-                increaseFakeTime(mixedSubscriptionRequest.qos.minIntervalMs);
-                expect(testAttribute.get).not.toHaveBeenCalled();
-                expect(dispatcherSpy.sendPublication).not.toHaveBeenCalled();
+            });
 
-                // change value, and immediate publication shall occur
-                testAttribute.valueChanged(value);
-                expect(testAttribute.get).not.toHaveBeenCalled();
-                expect(dispatcherSpy.sendPublication.calls.count()).toEqual(1);
+            var internalCheck = function(times, promiseChain) {
+                return promiseChain.then(function() {
+                    increaseFakeTime(mixedSubscriptionRequest.qos.minIntervalMs);
+                    testAttribute.valueChanged(value + times);
 
-                // at time 1:maxNrOfTimes, a value change is reported => NO
-                // publication is sent
-                for (i = 0; i < maxNrOfTimes; ++i) {
-                    dispatcherSpy.sendPublication.calls.reset();
+                    return waitsFor(
+                        function() {
+                            return dispatcherSpy.sendPublication.calls.count() === times + 1;
+                        },
+                        "timeout dispatcherSpy.sendPublication",
+                        asyncGetterCallDelay
+                    ).then(function() {
+                        expect(testAttribute.get).not.toHaveBeenCalled();
+                        expect(dispatcherSpy.sendPublication.calls.count()).toEqual(times + 1);
+                    });
+                });
+            };
+
+            for (times = 0; times < maxNrOfTimes; times++) {
+                promiseChain = internalCheck(times, promiseChain);
+            }
+
+            promiseChain
+                .then(function() {
+                    // cleanup
+                    stopSubscription(mixedSubscriptionRequest);
+                    expect(
+                        publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)
+                    ).toBeFalsy();
+                    done();
+                    return null;
+                })
+                .catch(fail);
+        });
+
+        it("creates a mixed subscription that publishes valueChanges that occur each maxIntervalMs-1", function(done) {
+            dispatcherSpy.sendPublication.calls.reset();
+            publicationManager.addPublicationProvider(providerId, provider);
+            publicationManager.handleSubscriptionRequest(
+                proxyId,
+                providerId,
+                mixedSubscriptionRequest,
+                callbackDispatcher
+            );
+            expect(publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)).toBeTruthy();
+            increaseFakeTime(1);
+
+            var promiseChain = waitsFor(
+                function() {
+                    return dispatcherSpy.sendPublication.calls.count() === 1;
+                },
+                "timeout dispatcherSpy.sendPublication",
+                asyncGetterCallDelay
+            ).then(function() {
+                // reset first publication
+                testAttribute.get.calls.reset();
+                dispatcherSpy.sendPublication.calls.reset();
+            });
+
+            var internalCheck = function(times, promiseChain) {
+                return promiseChain.then(function() {
+                    increaseFakeTime(mixedSubscriptionRequest.qos.maxIntervalMs - 2);
+                    testAttribute.valueChanged(value + times);
                     increaseFakeTime(1);
+
+                    return waitsFor(
+                        function() {
+                            return dispatcherSpy.sendPublication.calls.count() === times + 1;
+                        },
+                        "timeout dispatcherSpy.sendPublication",
+                        asyncGetterCallDelay
+                    ).then(function() {
+                        expect(testAttribute.get).not.toHaveBeenCalled();
+                        expect(dispatcherSpy.sendPublication.calls.count()).toEqual(times + 1);
+                    });
+                });
+            };
+            for (times = 0; times < maxNrOfTimes; times++) {
+                promiseChain = internalCheck(times, promiseChain);
+            }
+
+            promiseChain
+                .then(function() {
+                    // cleanup
+                    stopSubscription(mixedSubscriptionRequest);
+                    expect(
+                        publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)
+                    ).toBeFalsy();
+                    done();
+                    return null;
+                })
+                .catch(fail);
+        });
+        it("creates a mixed subscription that publishes many valueChanges within minIntervalMs only once", function(
+            done
+        ) {
+            publicationManager.addPublicationProvider(providerId, provider);
+            publicationManager.handleSubscriptionRequest(
+                proxyId,
+                providerId,
+                mixedSubscriptionRequest,
+                callbackDispatcher
+            );
+            expect(publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)).toBeTruthy();
+            increaseFakeTime(1);
+
+            waitsFor(
+                function() {
+                    return dispatcherSpy.sendPublication.calls.count() === 1;
+                },
+                "timeout dispatcherSpy.sendPublication",
+                asyncGetterCallDelay
+            )
+                .then(function() {
+                    // reset first publication
+                    testAttribute.get.calls.reset();
+                    dispatcherSpy.sendPublication.calls.reset();
+
+                    var shortInterval = Math.round((mixedSubscriptionRequest.qos.minIntervalMs - 2) / maxNrOfTimes);
+                    for (times = 0; times < maxNrOfTimes; times++) {
+                        expect(testAttribute.get).not.toHaveBeenCalled();
+                        expect(dispatcherSpy.sendPublication).not.toHaveBeenCalled();
+                        increaseFakeTime(shortInterval);
+                        testAttribute.valueChanged(value + times);
+                    }
+
+                    // after minIntervalMs the publication works again
+                    increaseFakeTime(mixedSubscriptionRequest.qos.minIntervalMs - shortInterval * maxNrOfTimes);
+                    testAttribute.valueChanged(value);
+                    expect(testAttribute.get.calls.count()).toEqual(1);
+                    expect(dispatcherSpy.sendPublication.calls.count()).toEqual(1);
+
+                    // cleanup
+                    stopSubscription(mixedSubscriptionRequest);
+                    expect(
+                        publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)
+                    ).toBeFalsy();
+                    done();
+                    return null;
+                })
+                .catch(fail);
+        });
+
+        it("creates a periodic subscription without expiryDate and expects periodic publications", function(done) {
+            var periodMs = 400,
+                n = 10,
+                subscriptionRequestWithoutExpiryDate;
+
+            subscriptionRequestWithoutExpiryDate = createSubscriptionRequest(
+                true,
+                testAttributeName,
+                periodMs,
+                0,
+                false,
+                minIntervalMs
+            );
+            dispatcherSpy.sendPublication.calls.reset();
+            publicationManager.addPublicationProvider(providerId, provider);
+            publicationManager.handleSubscriptionRequest(
+                proxyId,
+                providerId,
+                subscriptionRequestWithoutExpiryDate,
+                callbackDispatcher
+            );
+            expect(publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)).toBeTruthy();
+            increaseFakeTime(1);
+
+            var promiseChain = waitsFor(
+                function() {
+                    return dispatcherSpy.sendPublication.calls.count() === 1;
+                },
+                "timeout dispatcherSpy.sendPublication",
+                asyncGetterCallDelay
+            ).then(function() {
+                expect(dispatcherSpy.sendPublication.calls.count()).toEqual(1);
+                dispatcherSpy.sendPublication.calls.reset();
+            });
+
+            var checkMaxIntervalCalls = function(i, promiseChain) {
+                return promiseChain
+                    .then(function() {
+                        increaseFakeTime(periodMs);
+
+                        return waitsFor(
+                            function() {
+                                return dispatcherSpy.sendPublication.calls.count() === 1 + i;
+                            },
+                            "timeout " + i + " times dispatcherSpy.sendPublication call",
+                            asyncGetterCallDelay
+                        );
+                    })
+                    .then(function() {
+                        expect(dispatcherSpy.sendPublication.calls.count()).toEqual(1 + i);
+                    });
+            };
+
+            var i;
+            for (i = 0; i < n; i++) {
+                promiseChain = checkMaxIntervalCalls(i, promiseChain);
+            }
+
+            promiseChain
+                .then(function() {
+                    // cleanup
+                    stopSubscription(subscriptionRequestWithoutExpiryDate);
+                    expect(
+                        publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)
+                    ).toBeFalsy();
+                    done();
+                    return null;
+                })
+                .catch(fail);
+        });
+        it("creates a mixed subscription that publishes correctly with all cases mixed", function(done) {
+            var i;
+
+            publicationManager.addPublicationProvider(providerId, provider);
+            publicationManager.handleSubscriptionRequest(
+                proxyId,
+                providerId,
+                mixedSubscriptionRequest,
+                callbackDispatcher
+            );
+            expect(publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)).toBeTruthy();
+            increaseFakeTime(1);
+
+            waitsFor(
+                function() {
+                    return dispatcherSpy.sendPublication.calls.count() === 1;
+                },
+                "timeout dispatcherSpy.sendPublication",
+                asyncGetterCallDelay
+            )
+                .then(function() {
+                    // reset first publication
+                    testAttribute.get.calls.reset();
+                    dispatcherSpy.sendPublication.calls.reset();
+
+                    // at time 0, a value change is not reported because value was
+                    // already published initially while
+                    // handling the subscription request
                     testAttribute.valueChanged(value);
                     expect(testAttribute.get).not.toHaveBeenCalled();
                     expect(dispatcherSpy.sendPublication).not.toHaveBeenCalled();
-                }
 
-                // at time mixedSubscriptionRequest.qos.minIntervalMs the last
-                // value of the test attribute is sent
-                // to the subscribers as the publication timeout occurs
-                dispatcherSpy.sendPublication.calls.reset();
-                increaseFakeTime(mixedSubscriptionRequest.qos.minIntervalMs - maxNrOfTimes);
-                expect(testAttribute.get.calls.count()).toEqual(1);
-                return waitsFor(
-                    function() {
-                        return dispatcherSpy.sendPublication.calls.count() === 1;
-                    },
-                    "timeout dispatcherSpy.sendPublication call ",
-                    asyncGetterCallDelay
-                );
-            })
-            .then(function() {
-                expect(dispatcherSpy.sendPublication.calls.count()).toEqual(1);
+                    // minIntervalMs and a value change the value should be reported
+                    increaseFakeTime(mixedSubscriptionRequest.qos.minIntervalMs);
 
-                // value change after mixedSubscriptionRequest.qos.maxInterval - 2=> publication sent
-                dispatcherSpy.sendPublication.calls.reset();
-                testAttribute.get.calls.reset();
+                    return waitsFor(
+                        function() {
+                            return dispatcherSpy.sendPublication.calls.count() === 1;
+                        },
+                        "timeout dispatcherSpy.sendPublication call",
+                        asyncGetterCallDelay
+                    );
+                })
+                .then(function() {
+                    // due to minIntervalMs exceeded + valueChanged has been occured
+                    // within the minIntervalMs, the
+                    // PublicationManager
+                    // send the current attribute value to the subscriptions
+                    expect(testAttribute.get.calls.count()).toEqual(1);
+                    expect(dispatcherSpy.sendPublication.calls.count()).toEqual(1);
+                    testAttribute.get.calls.reset();
+                    dispatcherSpy.sendPublication.calls.reset();
+                    // minIntervalMs and no publication shall occur
+                    increaseFakeTime(mixedSubscriptionRequest.qos.minIntervalMs);
+                    expect(testAttribute.get).not.toHaveBeenCalled();
+                    expect(dispatcherSpy.sendPublication).not.toHaveBeenCalled();
 
-                increaseFakeTime(mixedSubscriptionRequest.qos.maxIntervalMs - 1);
-                testAttribute.valueChanged(value);
-                expect(testAttribute.get).not.toHaveBeenCalled();
-                return waitsFor(
-                    function() {
-                        return dispatcherSpy.sendPublication.calls.count() === 1;
-                    },
-                    "timeout dispatcherSpy.sendPublication call ",
-                    asyncGetterCallDelay
-                );
-            })
-            .then(function() {
-                expect(dispatcherSpy.sendPublication.calls.count()).toEqual(1);
+                    // change value, and immediate publication shall occur
+                    testAttribute.valueChanged(value);
+                    expect(testAttribute.get).not.toHaveBeenCalled();
+                    expect(dispatcherSpy.sendPublication.calls.count()).toEqual(1);
 
-                // after mixedSubscriptionRequest.qos.maxIntervalMs => interval
-                // publication is sent
-                dispatcherSpy.sendPublication.calls.reset();
-                increaseFakeTime(mixedSubscriptionRequest.qos.maxIntervalMs);
-                return waitsFor(
-                    function() {
-                        return dispatcherSpy.sendPublication.calls.count() === 1;
-                    },
-                    "timeout dispatcherSpy.sendPublication call ",
-                    asyncGetterCallDelay
-                );
-            })
-            .then(function() {
-                expect(testAttribute.get.calls.count()).toEqual(1);
-                expect(dispatcherSpy.sendPublication.calls.count()).toEqual(1);
+                    // at time 1:maxNrOfTimes, a value change is reported => NO
+                    // publication is sent
+                    for (i = 0; i < maxNrOfTimes; ++i) {
+                        dispatcherSpy.sendPublication.calls.reset();
+                        increaseFakeTime(1);
+                        testAttribute.valueChanged(value);
+                        expect(testAttribute.get).not.toHaveBeenCalled();
+                        expect(dispatcherSpy.sendPublication).not.toHaveBeenCalled();
+                    }
 
-                // after another mixedSubscriptionRequest.qos.maxIntervalMs =>
-                // interval publication is sent
-                testAttribute.get.calls.reset();
-                dispatcherSpy.sendPublication.calls.reset();
-                increaseFakeTime(mixedSubscriptionRequest.qos.maxIntervalMs);
-                return waitsFor(
-                    function() {
-                        return dispatcherSpy.sendPublication.calls.count() === 1;
-                    },
-                    "timeout dispatcherSpy.sendPublication call ",
-                    asyncGetterCallDelay
-                );
-            })
-            .then(function() {
-                expect(testAttribute.get.calls.count()).toEqual(1);
-                expect(dispatcherSpy.sendPublication.calls.count()).toEqual(1);
+                    // at time mixedSubscriptionRequest.qos.minIntervalMs the last
+                    // value of the test attribute is sent
+                    // to the subscribers as the publication timeout occurs
+                    dispatcherSpy.sendPublication.calls.reset();
+                    increaseFakeTime(mixedSubscriptionRequest.qos.minIntervalMs - maxNrOfTimes);
+                    expect(testAttribute.get.calls.count()).toEqual(1);
+                    return waitsFor(
+                        function() {
+                            return dispatcherSpy.sendPublication.calls.count() === 1;
+                        },
+                        "timeout dispatcherSpy.sendPublication call ",
+                        asyncGetterCallDelay
+                    );
+                })
+                .then(function() {
+                    expect(dispatcherSpy.sendPublication.calls.count()).toEqual(1);
 
-                // after subscription stop => NO publications are sent any more
-                stopSubscription(mixedSubscriptionRequest);
-                expect(
-                    publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)
-                ).toBeFalsy();
-                testAttribute.get.calls.reset();
-                dispatcherSpy.sendPublication.calls.reset();
-                increaseFakeTime(mixedSubscriptionRequest.qos.minIntervalMs);
-                testAttribute.valueChanged(value);
-                expect(testAttribute.get).not.toHaveBeenCalled();
-                done();
-                return null;
-            })
-            .catch(fail);
-    });
-    it("does not publish when mixed subscription has an endDate in the past", function(done) {
-        mixedSubscriptionRequest.qos.expiryDateMs = Date.now() - 1;
+                    // value change after mixedSubscriptionRequest.qos.maxInterval - 2=> publication sent
+                    dispatcherSpy.sendPublication.calls.reset();
+                    testAttribute.get.calls.reset();
 
-        publicationManager.addPublicationProvider(providerId, provider);
-        publicationManager.handleSubscriptionRequest(proxyId, providerId, mixedSubscriptionRequest, callbackDispatcher);
-        expect(publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)).toBeFalsy();
-        // reset first publication
-        testAttribute.get.calls.reset();
-        dispatcherSpy.sendPublication.calls.reset();
+                    increaseFakeTime(mixedSubscriptionRequest.qos.maxIntervalMs - 1);
+                    testAttribute.valueChanged(value);
+                    expect(testAttribute.get).not.toHaveBeenCalled();
+                    return waitsFor(
+                        function() {
+                            return dispatcherSpy.sendPublication.calls.count() === 1;
+                        },
+                        "timeout dispatcherSpy.sendPublication call ",
+                        asyncGetterCallDelay
+                    );
+                })
+                .then(function() {
+                    expect(dispatcherSpy.sendPublication.calls.count()).toEqual(1);
 
-        testAttribute.valueChanged(value);
-        increaseFakeTime(subscriptionLength);
-        expect(testAttribute.get).not.toHaveBeenCalled();
-        expect(dispatcherSpy.sendPublication).not.toHaveBeenCalled();
+                    // after mixedSubscriptionRequest.qos.maxIntervalMs => interval
+                    // publication is sent
+                    dispatcherSpy.sendPublication.calls.reset();
+                    increaseFakeTime(mixedSubscriptionRequest.qos.maxIntervalMs);
+                    return waitsFor(
+                        function() {
+                            return dispatcherSpy.sendPublication.calls.count() === 1;
+                        },
+                        "timeout dispatcherSpy.sendPublication call ",
+                        asyncGetterCallDelay
+                    );
+                })
+                .then(function() {
+                    expect(testAttribute.get.calls.count()).toEqual(1);
+                    expect(dispatcherSpy.sendPublication.calls.count()).toEqual(1);
 
-        // cleanup
-        stopSubscription(mixedSubscriptionRequest);
-        expect(publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)).toBeFalsy();
-        done();
-    });
+                    // after another mixedSubscriptionRequest.qos.maxIntervalMs =>
+                    // interval publication is sent
+                    testAttribute.get.calls.reset();
+                    dispatcherSpy.sendPublication.calls.reset();
+                    increaseFakeTime(mixedSubscriptionRequest.qos.maxIntervalMs);
+                    return waitsFor(
+                        function() {
+                            return dispatcherSpy.sendPublication.calls.count() === 1;
+                        },
+                        "timeout dispatcherSpy.sendPublication call ",
+                        asyncGetterCallDelay
+                    );
+                })
+                .then(function() {
+                    expect(testAttribute.get.calls.count()).toEqual(1);
+                    expect(dispatcherSpy.sendPublication.calls.count()).toEqual(1);
 
-    it("removes a mixed attribute subscription after endDate", function(done) {
-        publicationManager.addPublicationProvider(providerId, provider);
-        publicationManager.handleSubscriptionRequest(proxyId, providerId, mixedSubscriptionRequest, callbackDispatcher);
-        expect(publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)).toBeTruthy();
-        increaseFakeTime(1);
+                    // after subscription stop => NO publications are sent any more
+                    stopSubscription(mixedSubscriptionRequest);
+                    expect(
+                        publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)
+                    ).toBeFalsy();
+                    testAttribute.get.calls.reset();
+                    dispatcherSpy.sendPublication.calls.reset();
+                    increaseFakeTime(mixedSubscriptionRequest.qos.minIntervalMs);
+                    testAttribute.valueChanged(value);
+                    expect(testAttribute.get).not.toHaveBeenCalled();
+                    done();
+                    return null;
+                })
+                .catch(fail);
+        });
+        it("does not publish when mixed subscription has an endDate in the past", function(done) {
+            mixedSubscriptionRequest.qos.expiryDateMs = Date.now() - 1;
 
-        waitsFor(
-            function() {
-                return dispatcherSpy.sendPublication.calls.count() > 0;
-            },
-            "dispatcherSpy.sendPublication",
-            asyncGetterCallDelay
-        )
-            .then(function() {
-                // reset first publication
-                testAttribute.get.calls.reset();
-                dispatcherSpy.sendPublication.calls.reset();
+            publicationManager.addPublicationProvider(providerId, provider);
+            publicationManager.handleSubscriptionRequest(
+                proxyId,
+                providerId,
+                mixedSubscriptionRequest,
+                callbackDispatcher
+            );
+            expect(publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)).toBeFalsy();
+            // reset first publication
+            testAttribute.get.calls.reset();
+            dispatcherSpy.sendPublication.calls.reset();
 
-                increaseFakeTime(subscriptionLength);
-                testAttribute.get.calls.reset();
-                dispatcherSpy.sendPublication.calls.reset();
+            testAttribute.valueChanged(value);
+            increaseFakeTime(subscriptionLength);
+            expect(testAttribute.get).not.toHaveBeenCalled();
+            expect(dispatcherSpy.sendPublication).not.toHaveBeenCalled();
 
-                expect(testAttribute.get).not.toHaveBeenCalled();
-                expect(dispatcherSpy.sendPublication).not.toHaveBeenCalled();
-                testAttribute.valueChanged(value);
-                expect(testAttribute.get).not.toHaveBeenCalled();
-                expect(dispatcherSpy.sendPublication).not.toHaveBeenCalled();
-                stopSubscription(mixedSubscriptionRequest);
-                expect(
-                    publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)
-                ).toBeFalsy();
-                done();
-                return null;
-            })
-            .catch(fail);
-    });
+            // cleanup
+            stopSubscription(mixedSubscriptionRequest);
+            expect(publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)).toBeFalsy();
+            done();
+        });
 
-    xit("removes a mixed attribute subscription after subscription stop", function(done) {
-        publicationManager.addPublicationProvider(providerId, provider);
-        publicationManager.handleSubscriptionRequest(proxyId, providerId, mixedSubscriptionRequest, callbackDispatcher);
-        expect(publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)).toBeTruthy();
-        increaseFakeTime(1);
+        it("removes a mixed attribute subscription after endDate", function(done) {
+            publicationManager.addPublicationProvider(providerId, provider);
+            publicationManager.handleSubscriptionRequest(
+                proxyId,
+                providerId,
+                mixedSubscriptionRequest,
+                callbackDispatcher
+            );
+            expect(publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)).toBeTruthy();
+            increaseFakeTime(1);
 
-        waitsFor(
-            function() {
-                return dispatcherSpy.sendPublication.calls.count() > 0;
-            },
-            "dispatcherSpy.sendPublication",
-            asyncGetterCallDelay
-        )
-            .then(function() {
-                // reset first publication
-                testAttribute.get.calls.reset();
-                dispatcherSpy.sendPublication.calls.reset();
+            waitsFor(
+                function() {
+                    return dispatcherSpy.sendPublication.calls.count() > 0;
+                },
+                "dispatcherSpy.sendPublication",
+                asyncGetterCallDelay
+            )
+                .then(function() {
+                    // reset first publication
+                    testAttribute.get.calls.reset();
+                    dispatcherSpy.sendPublication.calls.reset();
 
-                testAttribute.valueChanged(value); // do change
-                //increaseFakeTime(maxIntervalMs); // increase interval
-                increaseFakeTime(maxIntervalMs); // increase interval
+                    increaseFakeTime(subscriptionLength);
+                    testAttribute.get.calls.reset();
+                    dispatcherSpy.sendPublication.calls.reset();
 
-                return waitsFor(
-                    function() {
-                        return dispatcherSpy.sendPublication.calls.count() > 0;
-                    },
-                    "dispatcherSpy.sendPublication 2",
-                    asyncGetterCallDelay
-                );
-            })
-            .then(function() {
-                // after subscription stop, the methods should not have been called
-                // again (ie subscription
-                // terminated)
-                publicationManager.handleSubscriptionStop(
-                    new SubscriptionStop({
-                        subscriptionId: mixedSubscriptionRequest.subscriptionId
-                    })
-                );
-                expect(
-                    publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)
-                ).toBeFalsy();
-                testAttribute.get.calls.reset();
-                dispatcherSpy.sendPublication.calls.reset();
-
-                increaseFakeTime(maxIntervalMs); // increase interval
-                testAttribute.valueChanged(value); // do change
-                increaseFakeTime(maxIntervalMs); // increase interval
-
-                originalSetTimeout(function() {
+                    expect(testAttribute.get).not.toHaveBeenCalled();
+                    expect(dispatcherSpy.sendPublication).not.toHaveBeenCalled();
+                    testAttribute.valueChanged(value);
                     expect(testAttribute.get).not.toHaveBeenCalled();
                     expect(dispatcherSpy.sendPublication).not.toHaveBeenCalled();
                     stopSubscription(mixedSubscriptionRequest);
+                    expect(
+                        publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)
+                    ).toBeFalsy();
                     done();
-                }, asyncGetterCallDelay);
-                return null;
-            })
-            .catch(fail);
-    });
+                    return null;
+                })
+                .catch(fail);
+        });
 
-    it("removes a mixed broadcast subscription after subscription stop", function(done) {
-        var broadcastOutputParameters = testBroadcast.createBroadcastOutputParameters();
-        broadcastOutputParameters.setParam1("param1");
-        publicationManager.addPublicationProvider(providerId, provider);
-        publicationManager.handleBroadcastSubscriptionRequest(
-            proxyId,
-            providerId,
-            onChangeBroadcastSubscriptionRequest,
-            callbackDispatcher
-        );
+        xit("removes a mixed attribute subscription after subscription stop", function(done) {
+            publicationManager.addPublicationProvider(providerId, provider);
+            publicationManager.handleSubscriptionRequest(
+                proxyId,
+                providerId,
+                mixedSubscriptionRequest,
+                callbackDispatcher
+            );
+            expect(publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)).toBeTruthy();
+            increaseFakeTime(1);
 
-        expect(publicationManager.hasSubscriptionsForProviderEvent(providerId, testBroadcastName)).toBeTruthy();
-        increaseFakeTime(1);
+            waitsFor(
+                function() {
+                    return dispatcherSpy.sendPublication.calls.count() > 0;
+                },
+                "dispatcherSpy.sendPublication",
+                asyncGetterCallDelay
+            )
+                .then(function() {
+                    // reset first publication
+                    testAttribute.get.calls.reset();
+                    dispatcherSpy.sendPublication.calls.reset();
 
-        testBroadcast.fire(broadcastOutputParameters);
-        increaseFakeTime(maxIntervalMs); // increase interval
+                    testAttribute.valueChanged(value); // do change
+                    //increaseFakeTime(maxIntervalMs); // increase interval
+                    increaseFakeTime(maxIntervalMs); // increase interval
 
-        waitsFor(
-            function() {
-                return dispatcherSpy.sendPublication.calls.count() > 0;
-            },
-            "dispatcherSpy.sendPublication",
-            asyncGetterCallDelay
-        )
-            .then(function() {
-                // reset first publication
-                dispatcherSpy.sendPublication.calls.reset();
+                    return waitsFor(
+                        function() {
+                            return dispatcherSpy.sendPublication.calls.count() > 0;
+                        },
+                        "dispatcherSpy.sendPublication 2",
+                        asyncGetterCallDelay
+                    );
+                })
+                .then(function() {
+                    // after subscription stop, the methods should not have been called
+                    // again (ie subscription
+                    // terminated)
+                    publicationManager.handleSubscriptionStop(
+                        new SubscriptionStop({
+                            subscriptionId: mixedSubscriptionRequest.subscriptionId
+                        })
+                    );
+                    expect(
+                        publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)
+                    ).toBeFalsy();
+                    testAttribute.get.calls.reset();
+                    dispatcherSpy.sendPublication.calls.reset();
 
-                // after subscription stop, the methods should not have been called
-                // again (ie subscription
-                // terminated)
-                publicationManager.handleSubscriptionStop(
-                    new SubscriptionStop({
-                        subscriptionId: onChangeBroadcastSubscriptionRequest.subscriptionId
-                    })
-                );
+                    increaseFakeTime(maxIntervalMs); // increase interval
+                    testAttribute.valueChanged(value); // do change
+                    increaseFakeTime(maxIntervalMs); // increase interval
 
-                expect(publicationManager.hasSubscriptionsForProviderEvent(providerId, testBroadcastName)).toBeFalsy();
+                    originalSetTimeout(function() {
+                        expect(testAttribute.get).not.toHaveBeenCalled();
+                        expect(dispatcherSpy.sendPublication).not.toHaveBeenCalled();
+                        stopSubscription(mixedSubscriptionRequest);
+                        done();
+                    }, asyncGetterCallDelay);
+                    return null;
+                })
+                .catch(fail);
+        });
 
-                increaseFakeTime(maxIntervalMs); // increase interval
-                testBroadcast.fire(broadcastOutputParameters);
-                increaseFakeTime(maxIntervalMs); // increase interval
+        it("removes a mixed broadcast subscription after subscription stop", function(done) {
+            var broadcastOutputParameters = testBroadcast.createBroadcastOutputParameters();
+            broadcastOutputParameters.setParam1("param1");
+            publicationManager.addPublicationProvider(providerId, provider);
+            publicationManager.handleBroadcastSubscriptionRequest(
+                proxyId,
+                providerId,
+                onChangeBroadcastSubscriptionRequest,
+                callbackDispatcher
+            );
 
-                originalSetTimeout(function() {
-                    expect(dispatcherSpy.sendPublication).not.toHaveBeenCalled();
+            expect(publicationManager.hasSubscriptionsForProviderEvent(providerId, testBroadcastName)).toBeTruthy();
+            increaseFakeTime(1);
+
+            testBroadcast.fire(broadcastOutputParameters);
+            increaseFakeTime(maxIntervalMs); // increase interval
+
+            waitsFor(
+                function() {
+                    return dispatcherSpy.sendPublication.calls.count() > 0;
+                },
+                "dispatcherSpy.sendPublication",
+                asyncGetterCallDelay
+            )
+                .then(function() {
+                    // reset first publication
+                    dispatcherSpy.sendPublication.calls.reset();
+
+                    // after subscription stop, the methods should not have been called
+                    // again (ie subscription
+                    // terminated)
+                    publicationManager.handleSubscriptionStop(
+                        new SubscriptionStop({
+                            subscriptionId: onChangeBroadcastSubscriptionRequest.subscriptionId
+                        })
+                    );
+
+                    expect(
+                        publicationManager.hasSubscriptionsForProviderEvent(providerId, testBroadcastName)
+                    ).toBeFalsy();
+
+                    increaseFakeTime(maxIntervalMs); // increase interval
+                    testBroadcast.fire(broadcastOutputParameters);
+                    increaseFakeTime(maxIntervalMs); // increase interval
+
+                    originalSetTimeout(function() {
+                        expect(dispatcherSpy.sendPublication).not.toHaveBeenCalled();
+                        done();
+                    }, asyncGetterCallDelay);
+                    return null;
+                })
+                .catch(fail);
+        });
+
+        it("removes publication provider", function(done) {
+            var times;
+            spyOn(testAttribute, "registerObserver").and.callThrough();
+            spyOn(testAttribute, "unregisterObserver").and.callThrough();
+            publicationManager.addPublicationProvider(providerId, provider);
+            expect(testAttribute.registerObserver).toHaveBeenCalled();
+            spyOn(publicationManager, "handleSubscriptionStop").and.callThrough();
+
+            expect(testAttribute.get).not.toHaveBeenCalled();
+            expect(dispatcherSpy.sendPublication).not.toHaveBeenCalled();
+
+            publicationManager.handleSubscriptionRequest(
+                proxyId,
+                providerId,
+                intervalSubscriptionRequest,
+                callbackDispatcher
+            );
+            expect(publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)).toBeTruthy();
+            //increase the fake time to ensure proper async processing of the subscription request
+            increaseFakeTime(1);
+
+            waitsFor(
+                function() {
+                    return dispatcherSpy.sendPublication.calls.count() > 0;
+                },
+                "dispatcherSpy.sendPublication",
+                asyncGetterCallDelay
+            )
+                .then(function() {
+                    expect(testAttribute.get.calls.count()).toEqual(1);
+                    expect(dispatcherSpy.sendPublication.calls.count()).toEqual(1);
+                    expect(testAttribute.unregisterObserver).not.toHaveBeenCalled();
+                    expect(publicationManager.handleSubscriptionStop).not.toHaveBeenCalled();
+                    publicationManager.removePublicationProvider(providerId, provider);
+                    expect(testAttribute.unregisterObserver).toHaveBeenCalled();
+                    expect(publicationManager.handleSubscriptionStop).toHaveBeenCalledWith(
+                        new SubscriptionStop({
+                            subscriptionId: intervalSubscriptionRequest.subscriptionId
+                        })
+                    );
+                    // cleanup
+                    stopSubscription(intervalSubscriptionRequest);
+                    expect(
+                        publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)
+                    ).toBeFalsy();
                     done();
-                }, asyncGetterCallDelay);
-                return null;
-            })
-            .catch(fail);
-    });
-
-    it("removes publication provider", function(done) {
-        var times;
-        spyOn(testAttribute, "registerObserver").and.callThrough();
-        spyOn(testAttribute, "unregisterObserver").and.callThrough();
-        publicationManager.addPublicationProvider(providerId, provider);
-        expect(testAttribute.registerObserver).toHaveBeenCalled();
-        spyOn(publicationManager, "handleSubscriptionStop").and.callThrough();
-
-        expect(testAttribute.get).not.toHaveBeenCalled();
-        expect(dispatcherSpy.sendPublication).not.toHaveBeenCalled();
-
-        publicationManager.handleSubscriptionRequest(
-            proxyId,
-            providerId,
-            intervalSubscriptionRequest,
-            callbackDispatcher
-        );
-        expect(publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)).toBeTruthy();
-        //increase the fake time to ensure proper async processing of the subscription request
-        increaseFakeTime(1);
-
-        waitsFor(
-            function() {
-                return dispatcherSpy.sendPublication.calls.count() > 0;
-            },
-            "dispatcherSpy.sendPublication",
-            asyncGetterCallDelay
-        )
-            .then(function() {
-                expect(testAttribute.get.calls.count()).toEqual(1);
-                expect(dispatcherSpy.sendPublication.calls.count()).toEqual(1);
-                expect(testAttribute.unregisterObserver).not.toHaveBeenCalled();
-                expect(publicationManager.handleSubscriptionStop).not.toHaveBeenCalled();
-                publicationManager.removePublicationProvider(providerId, provider);
-                expect(testAttribute.unregisterObserver).toHaveBeenCalled();
-                expect(publicationManager.handleSubscriptionStop).toHaveBeenCalledWith(
-                    new SubscriptionStop({
-                        subscriptionId: intervalSubscriptionRequest.subscriptionId
-                    })
-                );
-                // cleanup
-                stopSubscription(intervalSubscriptionRequest);
-                expect(
-                    publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)
-                ).toBeFalsy();
-                done();
-                return null;
-            })
-            .catch(fail);
-    });
-
-    it("rejects attribute subscription if expiryDateMs lies in the past", function(done) {
-        var request = new SubscriptionRequest({
-            subscriptionId: "subscriptionId" + uuid(),
-            subscribedToName: testAttributeName,
-            qos: new OnChangeSubscriptionQos({
-                expiryDateMs: Date.now() - 10000
-            })
+                    return null;
+                })
+                .catch(fail);
         });
-        publicationManager.addPublicationProvider(providerId, provider);
-        publicationManager.handleSubscriptionRequest(proxyId, providerId, request, callbackDispatcher);
 
-        waitsFor(
-            function() {
-                return callbackDispatcher.calls.count() === 1;
-            },
-            "callbackDispatcher got called",
-            1000
-        )
-            .then(function() {
-                expect(callbackDispatcher).toHaveBeenCalled();
-                var error = callbackDispatcher.calls.mostRecent().args[0].error;
-                expect(error).toBeDefined();
-                expect(error instanceof SubscriptionException);
-                expect(error.subscriptionId).toBeDefined();
-                expect(error.subscriptionId).toEqual(callbackDispatcher.calls.mostRecent().args[0].subscriptionId);
-                expect(error.detailMessage).toMatch(/lies in the past/);
-                done();
-                return null;
-            })
-            .catch(fail);
-        increaseFakeTime(1);
-    });
+        it("rejects attribute subscription if expiryDateMs lies in the past", function(done) {
+            var request = new SubscriptionRequest({
+                subscriptionId: "subscriptionId" + uuid(),
+                subscribedToName: testAttributeName,
+                qos: new OnChangeSubscriptionQos({
+                    expiryDateMs: Date.now() - 10000
+                })
+            });
+            publicationManager.addPublicationProvider(providerId, provider);
+            publicationManager.handleSubscriptionRequest(proxyId, providerId, request, callbackDispatcher);
 
-    it("rejects attribute subscription if attribute does not exist", function(done) {
-        var request = new SubscriptionRequest({
-            subscriptionId: "subscriptionId" + uuid(),
-            subscribedToName: "nonExistingAttribute",
-            qos: new OnChangeSubscriptionQos()
+            waitsFor(
+                function() {
+                    return callbackDispatcher.calls.count() === 1;
+                },
+                "callbackDispatcher got called",
+                1000
+            )
+                .then(function() {
+                    expect(callbackDispatcher).toHaveBeenCalled();
+                    var error = callbackDispatcher.calls.mostRecent().args[0].error;
+                    expect(error).toBeDefined();
+                    expect(error instanceof SubscriptionException);
+                    expect(error.subscriptionId).toBeDefined();
+                    expect(error.subscriptionId).toEqual(callbackDispatcher.calls.mostRecent().args[0].subscriptionId);
+                    expect(error.detailMessage).toMatch(/lies in the past/);
+                    done();
+                    return null;
+                })
+                .catch(fail);
+            increaseFakeTime(1);
         });
-        publicationManager.addPublicationProvider(providerId, provider);
-        publicationManager.handleSubscriptionRequest(proxyId, providerId, request, callbackDispatcher);
 
-        waitsFor(
-            function() {
-                return callbackDispatcher.calls.count() === 1;
-            },
-            "callbackDispatcher got called",
-            1000
-        )
-            .then(function() {
-                expect(callbackDispatcher).toHaveBeenCalled();
-                var error = callbackDispatcher.calls.mostRecent().args[0].error;
-                expect(error).toBeDefined();
-                expect(error instanceof SubscriptionException);
-                expect(error.subscriptionId).toBeDefined();
-                expect(error.subscriptionId).toEqual(callbackDispatcher.calls.mostRecent().args[0].subscriptionId);
-                expect(error.detailMessage).toMatch(/misses attribute/);
-                done();
-                return null;
-            })
-            .catch(fail);
-        increaseFakeTime(1);
-    });
+        it("rejects attribute subscription if attribute does not exist", function(done) {
+            var request = new SubscriptionRequest({
+                subscriptionId: "subscriptionId" + uuid(),
+                subscribedToName: "nonExistingAttribute",
+                qos: new OnChangeSubscriptionQos()
+            });
+            publicationManager.addPublicationProvider(providerId, provider);
+            publicationManager.handleSubscriptionRequest(proxyId, providerId, request, callbackDispatcher);
 
-    it("rejects attribute subscription if attribute is not notifiable", function(done) {
-        var request = new SubscriptionRequest({
-            subscriptionId: "subscriptionId" + uuid(),
-            subscribedToName: testAttributeNotNotifiableName,
-            qos: new OnChangeSubscriptionQos()
+            waitsFor(
+                function() {
+                    return callbackDispatcher.calls.count() === 1;
+                },
+                "callbackDispatcher got called",
+                1000
+            )
+                .then(function() {
+                    expect(callbackDispatcher).toHaveBeenCalled();
+                    var error = callbackDispatcher.calls.mostRecent().args[0].error;
+                    expect(error).toBeDefined();
+                    expect(error instanceof SubscriptionException);
+                    expect(error.subscriptionId).toBeDefined();
+                    expect(error.subscriptionId).toEqual(callbackDispatcher.calls.mostRecent().args[0].subscriptionId);
+                    expect(error.detailMessage).toMatch(/misses attribute/);
+                    done();
+                    return null;
+                })
+                .catch(fail);
+            increaseFakeTime(1);
         });
-        publicationManager.addPublicationProvider(providerId, provider);
-        publicationManager.handleSubscriptionRequest(proxyId, providerId, request, callbackDispatcher);
 
-        waitsFor(
-            function() {
-                return callbackDispatcher.calls.count() === 1;
-            },
-            "callbackDispatcher got called",
-            1000
-        )
-            .then(function() {
-                expect(callbackDispatcher).toHaveBeenCalled();
-                var error = callbackDispatcher.calls.mostRecent().args[0].error;
-                expect(error).toBeDefined();
-                expect(error instanceof SubscriptionException);
-                expect(error.subscriptionId).toBeDefined();
-                expect(error.subscriptionId).toEqual(callbackDispatcher.calls.mostRecent().args[0].subscriptionId);
-                expect(error.detailMessage).toMatch(/is not notifiable/);
-                done();
-                return null;
-            })
-            .catch(fail);
-        increaseFakeTime(1);
-    });
+        it("rejects attribute subscription if attribute is not notifiable", function(done) {
+            var request = new SubscriptionRequest({
+                subscriptionId: "subscriptionId" + uuid(),
+                subscribedToName: testAttributeNotNotifiableName,
+                qos: new OnChangeSubscriptionQos()
+            });
+            publicationManager.addPublicationProvider(providerId, provider);
+            publicationManager.handleSubscriptionRequest(proxyId, providerId, request, callbackDispatcher);
 
-    it("rejects attribute subscription if periodMs is too small", function(done) {
-        var qosSettings = new PeriodicSubscriptionQos({
-            expiryDateMs: 0,
-            alertAfterIntervalMs: 0,
-            publicationTtlMs: 1000
+            waitsFor(
+                function() {
+                    return callbackDispatcher.calls.count() === 1;
+                },
+                "callbackDispatcher got called",
+                1000
+            )
+                .then(function() {
+                    expect(callbackDispatcher).toHaveBeenCalled();
+                    var error = callbackDispatcher.calls.mostRecent().args[0].error;
+                    expect(error).toBeDefined();
+                    expect(error instanceof SubscriptionException);
+                    expect(error.subscriptionId).toBeDefined();
+                    expect(error.subscriptionId).toEqual(callbackDispatcher.calls.mostRecent().args[0].subscriptionId);
+                    expect(error.detailMessage).toMatch(/is not notifiable/);
+                    done();
+                    return null;
+                })
+                .catch(fail);
+            increaseFakeTime(1);
         });
-        // forcibly fake it! The constructor throws, if using this directly
-        qosSettings.periodMs = PeriodicSubscriptionQos.MIN_PERIOD_MS - 1;
 
-        var request = new SubscriptionRequest({
-            subscriptionId: "subscriptionId" + uuid(),
-            subscribedToName: testAttributeName,
-            qos: qosSettings
+        it("rejects attribute subscription if periodMs is too small", function(done) {
+            var qosSettings = new PeriodicSubscriptionQos({
+                expiryDateMs: 0,
+                alertAfterIntervalMs: 0,
+                publicationTtlMs: 1000
+            });
+            // forcibly fake it! The constructor throws, if using this directly
+            qosSettings.periodMs = PeriodicSubscriptionQos.MIN_PERIOD_MS - 1;
+
+            var request = new SubscriptionRequest({
+                subscriptionId: "subscriptionId" + uuid(),
+                subscribedToName: testAttributeName,
+                qos: qosSettings
+            });
+            publicationManager.addPublicationProvider(providerId, provider);
+            publicationManager.handleSubscriptionRequest(proxyId, providerId, request, callbackDispatcher);
+
+            waitsFor(
+                function() {
+                    return callbackDispatcher.calls.count() === 1;
+                },
+                "callbackDispatcher got called",
+                1000
+            )
+                .then(function() {
+                    expect(callbackDispatcher).toHaveBeenCalled();
+                    var error = callbackDispatcher.calls.mostRecent().args[0].error;
+                    expect(error).toBeDefined();
+                    expect(error instanceof SubscriptionException);
+                    expect(error.subscriptionId).toBeDefined();
+                    expect(error.subscriptionId).toEqual(callbackDispatcher.calls.mostRecent().args[0].subscriptionId);
+                    expect(error.detailMessage).toMatch(/is smaller than PeriodicSubscriptionQos/);
+                    done();
+                    return null;
+                })
+                .catch(fail);
+            increaseFakeTime(1);
         });
-        publicationManager.addPublicationProvider(providerId, provider);
-        publicationManager.handleSubscriptionRequest(proxyId, providerId, request, callbackDispatcher);
 
-        waitsFor(
-            function() {
-                return callbackDispatcher.calls.count() === 1;
-            },
-            "callbackDispatcher got called",
-            1000
-        )
-            .then(function() {
-                expect(callbackDispatcher).toHaveBeenCalled();
-                var error = callbackDispatcher.calls.mostRecent().args[0].error;
-                expect(error).toBeDefined();
-                expect(error instanceof SubscriptionException);
-                expect(error.subscriptionId).toBeDefined();
-                expect(error.subscriptionId).toEqual(callbackDispatcher.calls.mostRecent().args[0].subscriptionId);
-                expect(error.detailMessage).toMatch(/is smaller than PeriodicSubscriptionQos/);
-                done();
-                return null;
-            })
-            .catch(fail);
-        increaseFakeTime(1);
-    });
+        it("rejects broadcast subscription if expiryDateMs lies in the past", function(done) {
+            var request = new BroadcastSubscriptionRequest({
+                subscriptionId: "subscriptionId" + uuid(),
+                subscribedToName: testBroadcastName,
+                qos: new OnChangeSubscriptionQos({
+                    expiryDateMs: Date.now() - 10000
+                }),
+                filterParameters: {}
+            });
+            publicationManager.addPublicationProvider(providerId, provider);
+            publicationManager.handleBroadcastSubscriptionRequest(proxyId, providerId, request, callbackDispatcher);
 
-    it("rejects broadcast subscription if expiryDateMs lies in the past", function(done) {
-        var request = new BroadcastSubscriptionRequest({
-            subscriptionId: "subscriptionId" + uuid(),
-            subscribedToName: testBroadcastName,
-            qos: new OnChangeSubscriptionQos({
-                expiryDateMs: Date.now() - 10000
-            }),
-            filterParameters: {}
+            waitsFor(
+                function() {
+                    return callbackDispatcher.calls.count() === 1;
+                },
+                "callbackDispatcher got called",
+                1000
+            )
+                .then(function() {
+                    expect(callbackDispatcher).toHaveBeenCalled();
+                    var error = callbackDispatcher.calls.mostRecent().args[0].error;
+                    expect(error).toBeDefined();
+                    expect(error instanceof SubscriptionException);
+                    expect(error.subscriptionId).toBeDefined();
+                    expect(error.subscriptionId).toEqual(callbackDispatcher.calls.mostRecent().args[0].subscriptionId);
+                    expect(error.detailMessage).toMatch(/lies in the past/);
+                    done();
+                    return null;
+                })
+                .catch(fail);
+            increaseFakeTime(1);
         });
-        publicationManager.addPublicationProvider(providerId, provider);
-        publicationManager.handleBroadcastSubscriptionRequest(proxyId, providerId, request, callbackDispatcher);
 
-        waitsFor(
-            function() {
-                return callbackDispatcher.calls.count() === 1;
-            },
-            "callbackDispatcher got called",
-            1000
-        )
-            .then(function() {
-                expect(callbackDispatcher).toHaveBeenCalled();
-                var error = callbackDispatcher.calls.mostRecent().args[0].error;
-                expect(error).toBeDefined();
-                expect(error instanceof SubscriptionException);
-                expect(error.subscriptionId).toBeDefined();
-                expect(error.subscriptionId).toEqual(callbackDispatcher.calls.mostRecent().args[0].subscriptionId);
-                expect(error.detailMessage).toMatch(/lies in the past/);
-                done();
-                return null;
-            })
-            .catch(fail);
-        increaseFakeTime(1);
-    });
-
-    it("rejects broadcast subscription if filter parameters are wrong", function(done) {
-        var request = new BroadcastSubscriptionRequest({
-            subscriptionId: "subscriptionId" + uuid(),
-            subscribedToName: testBroadcastName,
-            qos: new OnChangeSubscriptionQos(),
-            filterParameters: {
+        it("rejects broadcast subscription if filter parameters are wrong", function(done) {
+            var request = new BroadcastSubscriptionRequest({
+                subscriptionId: "subscriptionId" + uuid(),
+                subscribedToName: testBroadcastName,
+                qos: new OnChangeSubscriptionQos(),
                 filterParameters: {
-                    corruptFilterParameter: "value"
+                    filterParameters: {
+                        corruptFilterParameter: "value"
+                    }
                 }
-            }
+            });
+            publicationManager.addPublicationProvider(providerId, provider);
+            publicationManager.handleBroadcastSubscriptionRequest(proxyId, providerId, request, callbackDispatcher);
+
+            waitsFor(
+                function() {
+                    return callbackDispatcher.calls.count() === 1;
+                },
+                "callbackDispatcher got called",
+                1000
+            )
+                .then(function() {
+                    expect(callbackDispatcher).toHaveBeenCalled();
+                    var error = callbackDispatcher.calls.mostRecent().args[0].error;
+                    expect(error).toBeDefined();
+                    expect(error instanceof SubscriptionException);
+                    expect(error.subscriptionId).toBeDefined();
+                    expect(error.subscriptionId).toEqual(callbackDispatcher.calls.mostRecent().args[0].subscriptionId);
+                    expect(error.detailMessage).toMatch(/Filter parameter positionOfInterest for broadcast/);
+                    done();
+                    return null;
+                })
+                .catch(fail);
+            increaseFakeTime(1);
         });
-        publicationManager.addPublicationProvider(providerId, provider);
-        publicationManager.handleBroadcastSubscriptionRequest(proxyId, providerId, request, callbackDispatcher);
 
-        waitsFor(
-            function() {
-                return callbackDispatcher.calls.count() === 1;
-            },
-            "callbackDispatcher got called",
-            1000
-        )
-            .then(function() {
-                expect(callbackDispatcher).toHaveBeenCalled();
-                var error = callbackDispatcher.calls.mostRecent().args[0].error;
-                expect(error).toBeDefined();
-                expect(error instanceof SubscriptionException);
-                expect(error.subscriptionId).toBeDefined();
-                expect(error.subscriptionId).toEqual(callbackDispatcher.calls.mostRecent().args[0].subscriptionId);
-                expect(error.detailMessage).toMatch(/Filter parameter positionOfInterest for broadcast/);
-                done();
-                return null;
-            })
-            .catch(fail);
-        increaseFakeTime(1);
-    });
+        it("registers multicast subscription", function(done) {
+            expect(publicationManager.hasMulticastSubscriptions()).toBe(false);
+            publicationManager.addPublicationProvider(providerId, provider);
 
-    it("registers multicast subscription", function(done) {
-        expect(publicationManager.hasMulticastSubscriptions()).toBe(false);
-        publicationManager.addPublicationProvider(providerId, provider);
+            var request = handleMulticastSubscriptionRequest();
 
-        var request = handleMulticastSubscriptionRequest();
-
-        waitsFor(
-            function() {
-                return callbackDispatcher.calls.count() === 1;
-            },
-            "callbackDispatcher got called",
-            1000
-        )
-            .then(function() {
-                expect(callbackDispatcher).toHaveBeenCalled();
-                var response = callbackDispatcher.calls.mostRecent().args[0];
-                expect(response.error).toBeUndefined();
-                expect(response.subscriptionId).toEqual(request.subscriptionId);
-                expect(publicationManager.hasMulticastSubscriptions()).toBe(true);
-                done();
-                return null;
-            })
-            .catch(fail);
-        increaseFakeTime(1);
-    });
-
-    it("registers and unregisters multicast subscription", function() {
-        expect(publicationManager.hasMulticastSubscriptions()).toBe(false);
-        publicationManager.addPublicationProvider(providerId, provider);
-
-        var request = handleMulticastSubscriptionRequest();
-        expect(publicationManager.hasMulticastSubscriptions()).toBe(true);
-
-        expect(publicationManager.hasSubscriptions()).toBe(true);
-        publicationManager.handleSubscriptionStop({
-            subscriptionId: request.subscriptionId
+            waitsFor(
+                function() {
+                    return callbackDispatcher.calls.count() === 1;
+                },
+                "callbackDispatcher got called",
+                1000
+            )
+                .then(function() {
+                    expect(callbackDispatcher).toHaveBeenCalled();
+                    var response = callbackDispatcher.calls.mostRecent().args[0];
+                    expect(response.error).toBeUndefined();
+                    expect(response.subscriptionId).toEqual(request.subscriptionId);
+                    expect(publicationManager.hasMulticastSubscriptions()).toBe(true);
+                    done();
+                    return null;
+                })
+                .catch(fail);
+            increaseFakeTime(1);
         });
-        expect(publicationManager.hasMulticastSubscriptions()).toBe(false);
-        expect(publicationManager.hasSubscriptions()).toBe(false);
-    });
 
-    it("registers for multicast subscription and sends multicast publication", function() {
-        var broadcastOutputParameters = testNonSelectiveBroadcast.createBroadcastOutputParameters();
-        broadcastOutputParameters.setParam1("param1");
+        it("registers and unregisters multicast subscription", function() {
+            expect(publicationManager.hasMulticastSubscriptions()).toBe(false);
+            publicationManager.addPublicationProvider(providerId, provider);
 
-        expect(publicationManager.hasMulticastSubscriptions()).toBe(false);
-        publicationManager.addPublicationProvider(providerId, provider);
+            var request = handleMulticastSubscriptionRequest();
+            expect(publicationManager.hasMulticastSubscriptions()).toBe(true);
 
-        var request = handleMulticastSubscriptionRequest();
-        expect(publicationManager.hasMulticastSubscriptions()).toBe(true);
-
-        testNonSelectiveBroadcast.fire(broadcastOutputParameters);
-
-        expect(dispatcherSpy.sendMulticastPublication).toHaveBeenCalled();
-
-        var settings = dispatcherSpy.sendMulticastPublication.calls.argsFor(0)[0];
-        var multicastPublication = dispatcherSpy.sendMulticastPublication.calls.argsFor(0)[1];
-
-        expect(multicastPublication.multicastId).toEqual(request.multicastId);
-
-        publicationManager.handleSubscriptionStop({
-            subscriptionId: request.subscriptionId
+            expect(publicationManager.hasSubscriptions()).toBe(true);
+            publicationManager.handleSubscriptionStop({
+                subscriptionId: request.subscriptionId
+            });
+            expect(publicationManager.hasMulticastSubscriptions()).toBe(false);
+            expect(publicationManager.hasSubscriptions()).toBe(false);
         });
-        expect(publicationManager.hasMulticastSubscriptions()).toBe(false);
-    });
 
-    it("rejects broadcast subscription if broadcast does not exist", function(done) {
-        var request = new BroadcastSubscriptionRequest({
-            subscriptionId: "subscriptionId" + uuid(),
-            subscribedToName: "nonExistingBroadcast",
-            qos: new OnChangeSubscriptionQos(),
-            filterParameters: {}
+        it("registers for multicast subscription and sends multicast publication", function() {
+            var broadcastOutputParameters = testNonSelectiveBroadcast.createBroadcastOutputParameters();
+            broadcastOutputParameters.setParam1("param1");
+
+            expect(publicationManager.hasMulticastSubscriptions()).toBe(false);
+            publicationManager.addPublicationProvider(providerId, provider);
+
+            var request = handleMulticastSubscriptionRequest();
+            expect(publicationManager.hasMulticastSubscriptions()).toBe(true);
+
+            testNonSelectiveBroadcast.fire(broadcastOutputParameters);
+
+            expect(dispatcherSpy.sendMulticastPublication).toHaveBeenCalled();
+
+            var settings = dispatcherSpy.sendMulticastPublication.calls.argsFor(0)[0];
+            var multicastPublication = dispatcherSpy.sendMulticastPublication.calls.argsFor(0)[1];
+
+            expect(multicastPublication.multicastId).toEqual(request.multicastId);
+
+            publicationManager.handleSubscriptionStop({
+                subscriptionId: request.subscriptionId
+            });
+            expect(publicationManager.hasMulticastSubscriptions()).toBe(false);
         });
-        publicationManager.addPublicationProvider(providerId, provider);
-        publicationManager.handleBroadcastSubscriptionRequest(proxyId, providerId, request, callbackDispatcher);
 
-        waitsFor(
-            function() {
-                return callbackDispatcher.calls.count() === 1;
-            },
-            "callbackDispatcher got called",
-            1000
-        )
-            .then(function() {
-                expect(callbackDispatcher).toHaveBeenCalled();
-                var error = callbackDispatcher.calls.mostRecent().args[0].error;
-                expect(error).toBeDefined();
-                expect(error instanceof SubscriptionException);
-                expect(error.subscriptionId).toBeDefined();
-                expect(error.subscriptionId).toEqual(callbackDispatcher.calls.mostRecent().args[0].subscriptionId);
-                expect(error.detailMessage).toMatch(/misses event/);
-                done();
-                return null;
-            })
-            .catch(fail);
-        increaseFakeTime(1);
-    });
+        it("rejects broadcast subscription if broadcast does not exist", function(done) {
+            var request = new BroadcastSubscriptionRequest({
+                subscriptionId: "subscriptionId" + uuid(),
+                subscribedToName: "nonExistingBroadcast",
+                qos: new OnChangeSubscriptionQos(),
+                filterParameters: {}
+            });
+            publicationManager.addPublicationProvider(providerId, provider);
+            publicationManager.handleBroadcastSubscriptionRequest(proxyId, providerId, request, callbackDispatcher);
 
-    it(" throws exception when called while shut down", function(done) {
-        publicationManager.shutdown();
-        var callbackDispatcherSpy = jasmine.createSpy("callbackDispatcherSpy");
+            waitsFor(
+                function() {
+                    return callbackDispatcher.calls.count() === 1;
+                },
+                "callbackDispatcher got called",
+                1000
+            )
+                .then(function() {
+                    expect(callbackDispatcher).toHaveBeenCalled();
+                    var error = callbackDispatcher.calls.mostRecent().args[0].error;
+                    expect(error).toBeDefined();
+                    expect(error instanceof SubscriptionException);
+                    expect(error.subscriptionId).toBeDefined();
+                    expect(error.subscriptionId).toEqual(callbackDispatcher.calls.mostRecent().args[0].subscriptionId);
+                    expect(error.detailMessage).toMatch(/misses event/);
+                    done();
+                    return null;
+                })
+                .catch(fail);
+            increaseFakeTime(1);
+        });
 
-        expect(function() {
-            publicationManager.removePublicationProvider("providerParticipantId", {});
-        }).toThrow();
+        it(" throws exception when called while shut down", function(done) {
+            publicationManager.shutdown();
+            var callbackDispatcherSpy = jasmine.createSpy("callbackDispatcherSpy");
 
-        expect(function() {
-            publicationManager.addPublicationProvider("providerParticipantId", {});
-        }).toThrow();
+            expect(function() {
+                publicationManager.removePublicationProvider("providerParticipantId", {});
+            }).toThrow();
 
-        expect(function() {
-            publicationManager.restore();
-        }).toThrow();
+            expect(function() {
+                publicationManager.addPublicationProvider("providerParticipantId", {});
+            }).toThrow();
 
-        publicationManager.handleSubscriptionRequest(
-            "proxyParticipantId",
-            "providerParticipantId",
-            {
-                subscriptionId: "subscriptionId"
-            },
-            callbackDispatcherSpy
-        );
-        increaseFakeTime(1);
-        waitsFor(
-            function() {
-                return callbackDispatcherSpy.calls.count() === 1;
-            },
-            "callbackDispatcher for attributes got called",
-            1000
-        )
-            .then(function() {
-                expect(callbackDispatcherSpy).toHaveBeenCalled();
-                expect(callbackDispatcherSpy.calls.argsFor(0)[0] instanceof SubscriptionReply);
-                expect(callbackDispatcherSpy.calls.argsFor(0)[0].error instanceof SubscriptionException);
-                return null;
-            })
-            .then(function() {
-                callbackDispatcherSpy.calls.reset();
-                publicationManager.handleBroadcastSubscriptionRequest(
-                    "proxyParticipantId",
-                    "providerParticipantId",
-                    {
-                        subscriptionId: "subscriptionId"
-                    },
-                    callbackDispatcherSpy
-                );
-                increaseFakeTime(1);
-                waitsFor(
-                    function() {
-                        return callbackDispatcherSpy.calls.count() === 1;
-                    },
-                    "callbackDispatcher for events got called",
-                    1000
-                ).then(function() {
+            expect(function() {
+                publicationManager.restore();
+            }).toThrow();
+
+            publicationManager.handleSubscriptionRequest(
+                "proxyParticipantId",
+                "providerParticipantId",
+                {
+                    subscriptionId: "subscriptionId"
+                },
+                callbackDispatcherSpy
+            );
+            increaseFakeTime(1);
+            waitsFor(
+                function() {
+                    return callbackDispatcherSpy.calls.count() === 1;
+                },
+                "callbackDispatcher for attributes got called",
+                1000
+            )
+                .then(function() {
                     expect(callbackDispatcherSpy).toHaveBeenCalled();
                     expect(callbackDispatcherSpy.calls.argsFor(0)[0] instanceof SubscriptionReply);
                     expect(callbackDispatcherSpy.calls.argsFor(0)[0].error instanceof SubscriptionException);
-                    done();
                     return null;
-                });
-            })
-            .catch(fail);
-    });
+                })
+                .then(function() {
+                    callbackDispatcherSpy.calls.reset();
+                    publicationManager.handleBroadcastSubscriptionRequest(
+                        "proxyParticipantId",
+                        "providerParticipantId",
+                        {
+                            subscriptionId: "subscriptionId"
+                        },
+                        callbackDispatcherSpy
+                    );
+                    increaseFakeTime(1);
+                    waitsFor(
+                        function() {
+                            return callbackDispatcherSpy.calls.count() === 1;
+                        },
+                        "callbackDispatcher for events got called",
+                        1000
+                    ).then(function() {
+                        expect(callbackDispatcherSpy).toHaveBeenCalled();
+                        expect(callbackDispatcherSpy.calls.argsFor(0)[0] instanceof SubscriptionReply);
+                        expect(callbackDispatcherSpy.calls.argsFor(0)[0].error instanceof SubscriptionException);
+                        done();
+                        return null;
+                    });
+                })
+                .catch(fail);
+        });
+    }
 });

@@ -144,7 +144,7 @@ This project has dependencies to:
   JSON Small and Fast Parser under The Apache Software License, Version 2.0
   jsonevent-layout under The Apache Software License, Version 2.0
   jsoup under The MIT License
-  JUnit under Common Public License Version 1.0
+  JUnit under Eclipse Public License 1.0
   Logging under The Apache Software License, Version 2.0
   Maven Aether Provider under Apache License, Version 2.0
   Maven Model under Apache License, Version 2.0

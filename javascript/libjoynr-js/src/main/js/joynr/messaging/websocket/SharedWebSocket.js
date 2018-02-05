@@ -23,6 +23,7 @@ var WebSocket = require("../../../global/WebSocketNode");
 var Typing = require("../../util/Typing");
 var JSONSerializer = require("../../util/JSONSerializer");
 var LongTimer = require("../../util/LongTimer");
+var Util = require("../../util/UtilInternal");
 var LoggerFactory = require("../../system/LoggerFactory");
 var log = LoggerFactory.getLogger("joynr.messaging.websocket.SharedWebSocket");
 /**
@@ -73,30 +74,29 @@ function sendQueuedMessages(websocket, queuedMessages) {
 }
 
 function sendMessage(websocket, joynrMessage, queuedMessages) {
-    function sendMessageResolver(resolve, reject) {
-        if (websocket.readyState === WebSocket.OPEN) {
-            try {
-                websocket.send(websocket.marshalJoynrMessage(joynrMessage), { binary: true });
-                resolve();
-                // Error is thrown if the socket is no longer open, so requeue to the front
-            } catch (e) {
-                // add the message back to the front of the queue
-                queuedMessages.unshift({
-                    message: joynrMessage,
-                    resolve: resolve
-                });
-                throw e;
-            }
-        } else {
-            // push new messages onto the back of the queue
-            queuedMessages.push({
-                message: joynrMessage,
-                resolve: resolve
-            });
-        }
-    }
+    var deferred = Util.createDeferred();
 
-    return new Promise(sendMessageResolver);
+    if (websocket.readyState === WebSocket.OPEN) {
+        try {
+            websocket.send(websocket.marshalJoynrMessage(joynrMessage), { binary: true });
+            deferred.resolve();
+            // Error is thrown if the socket is no longer open, so requeue to the front
+        } catch (e) {
+            // add the message back to the front of the queue
+            queuedMessages.unshift({
+                message: joynrMessage,
+                resolve: deferred.resolve
+            });
+            throw e;
+        }
+    } else {
+        // push new messages onto the back of the queue
+        queuedMessages.push({
+            message: joynrMessage,
+            resolve: deferred.resolve
+        });
+    }
+    return deferred.promise;
 }
 
 /**
@@ -199,6 +199,7 @@ var SharedWebSocket = function SharedWebSocket(settings) {
     // send all queued messages, requeuing to the front in case of a problem
     onOpen = function onOpen() {
         try {
+            log.debug("connection opened.");
             initializeConnection(websocket, localAddress);
             sendQueuedMessages(websocket, queuedMessages);
         } catch (e) {
@@ -219,6 +220,7 @@ var SharedWebSocket = function SharedWebSocket(settings) {
             resetConnection();
         }
 
+        log.debug(">>> OUTGOING >>> message with ID " + joynrMessage.msgId);
         return sendMessage(websocket, joynrMessage, queuedMessages).catch(sendMessageOnError);
     };
 

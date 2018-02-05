@@ -19,6 +19,7 @@
 #ifndef PUBLICATIONMANAGER_H
 #define PUBLICATIONMANAGER_H
 
+#include <atomic>
 #include <map>
 #include <memory>
 #include <mutex>
@@ -301,8 +302,8 @@ private:
                                std::shared_ptr<exceptions::SubscriptionException> error);
     bool publicationExists(const std::string& subscriptionId) const;
     void createPublishRunnable(const std::string& subscriptionId);
-    void saveAttributeSubscriptionRequestsMap();
-    void saveBroadcastSubscriptionRequestsMap();
+    void saveAttributeSubscriptionRequestsMap(bool finalSave = false);
+    void saveBroadcastSubscriptionRequestsMap(bool finalSave = false);
 
     void reschedulePublication(const std::string& subscriptionId, std::int64_t nextPublication);
 
@@ -320,7 +321,9 @@ private:
                                              const std::shared_ptr<SubscriptionQos> qos);
 
     template <typename Map>
-    void saveSubscriptionRequestsMap(const Map& map, const std::string& storageFilename);
+    void saveSubscriptionRequestsMap(const Map& map,
+                                     const std::string& storageFilename,
+                                     bool saveOnShutdown);
 
     template <class RequestInformationType>
     void loadSavedSubscriptionRequestsMap(

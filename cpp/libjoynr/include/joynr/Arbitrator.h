@@ -28,8 +28,11 @@
 #include <unordered_set>
 #include <vector>
 
+#include <boost/variant.hpp>
+
 #include "joynr/ArbitrationStrategyFunction.h"
 #include "joynr/DiscoveryQos.h"
+#include "joynr/Future.h"
 #include "joynr/JoynrExport.h"
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
@@ -91,6 +94,20 @@ private:
             const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& discoveryEntries);
 
     std::int64_t getDurationMs() const;
+
+    /*
+     * Check that the pending future has completed successfully and reset it.
+     */
+    void validatePendingFuture();
+
+    void assertNoPendingFuture();
+
+    std::mutex pendingFutureMutex;
+    boost::variant<
+            std::shared_ptr<joynr::Future<joynr::types::DiscoveryEntryWithMetaInfo>>,
+            std::shared_ptr<joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>>
+            pendingFuture;
+
     std::weak_ptr<joynr::system::IDiscoveryAsync> discoveryProxy;
     DiscoveryQos discoveryQos;
     joynr::types::DiscoveryQos systemDiscoveryQos;
@@ -105,6 +122,7 @@ private:
     std::function<void(const exceptions::DiscoveryException& exception)> onErrorCallback;
 
     DISALLOW_COPY_AND_ASSIGN(Arbitrator);
+    Semaphore semaphore;
     bool arbitrationFinished;
     std::atomic<bool> arbitrationRunning;
     std::atomic<bool> keepArbitrationRunning;

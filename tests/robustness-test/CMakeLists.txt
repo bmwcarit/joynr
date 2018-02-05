@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 ######## Project settings ########
-project(robustness-tests-0.33.1)
+project(robustness-tests-1.0.0)
 
 # Compile to a bin directory current directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin/")
@@ -23,7 +23,7 @@ message(STATUS "option GENERATE_SOURCES=" ${GENERATE_SOURCES})
 ##### Start of build ####################
 
 # Pull in the Joynr configuration
-find_package(Joynr 0.33.1 REQUIRED)
+find_package(Joynr 1.0.0 REQUIRED)
 
 if(${GENERATE_SOURCES})
     find_package(JoynrGenerator ${Joynr_VERSION} EXACT REQUIRED)
@@ -54,11 +54,11 @@ include(AddGtestGmock)
 ##### Helper variables for using generated code ###########
 
 file(GLOB_RECURSE GENERATED_HEADERS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-    "src/main/generated-cpp/include/*.h"
+    "../robustness-test-base/src/main/generated-cpp/include/*.h"
 )
 
 file(GLOB_RECURSE GENERATED_SOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-    "src/main/generated-cpp/*.cpp"
+    "../robustness-test-base/src/main/generated-cpp/*.cpp"
 )
 
 file(GLOB_RECURSE TEST_SCRIPTS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
@@ -66,7 +66,7 @@ file(GLOB_RECURSE TEST_SCRIPTS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 set(GENERATED_INCLUDE_DIRS
-    "src/main/generated-cpp/include"
+    "../robustness-test-base/src/main/generated-cpp/include"
 )
 
 # Put the Joynr_LIB_COMMON_INCLUDE_DIRS last so that it is possible to override types
@@ -150,6 +150,25 @@ target_link_libraries(robustness-tests-provider-ws
     ${Joynr_LIB_WS_LIBRARIES}
 )
 
+#Compile Provider-cc
+add_executable(robustness-tests-provider-cc
+    ${robustness-tests-provider_HEADERS}
+    ${robustness-tests-provider_SOURCES}
+)
+
+target_include_directories(
+    robustness-tests-provider-cc
+    PRIVATE ${GENERATED_INCLUDE_DIRS}
+    PRIVATE ${Joynr_LIB_COMMON_INCLUDE_DIRS}
+    PRIVATE ${Joynr_LIB_INPROCESS_INCLUDE_DIRS}
+)
+
+# Link the provider-cc
+target_link_libraries(robustness-tests-provider-cc
+    robustness-tests-generated
+    ${robustness-tests_LIBRARIES}
+    ${Joynr_LIB_INPROCESS_LIBRARIES}
+)
 
 # Compile the test application (requires: running cluster controller)
 # Communicates via WebSockets with cluster controller
@@ -172,6 +191,28 @@ target_link_libraries(robustness-tests-ws
     ${Joynr_LIB_WS_LIBRARIES}
 )
 
+# Compile the test application (requires: running cluster controller)
+# Communicates via WebSockets with cluster controller
+AddTest(
+    robustness-tests-cc
+    ${robustness-tests-consumer_HEADERS}
+    ${robustness-tests-consumer_SOURCES}
+)
+
+target_include_directories(
+    robustness-tests-cc
+    PRIVATE ${GENERATED_INCLUDE_DIRS}
+    PRIVATE ${Joynr_LIB_COMMON_INCLUDE_DIRS}
+    PRIVATE ${Joynr_LIB_INPROCESS_INCLUDE_DIRS}
+)
+
+# Link the test application
+target_link_libraries(robustness-tests-cc
+    robustness-tests-generated
+    ${robustness-tests_LIBRARIES}
+    ${Joynr_LIB_INPROCESS_LIBRARIES}
+)
+
 # copy runtime dependencies to output directory
 file(
     COPY
@@ -183,12 +224,14 @@ file(
 
 install(TARGETS
             robustness-tests-provider-ws
+            robustness-tests-provider-cc
             robustness-tests-ws
         RUNTIME DESTINATION bin COMPONENT bin
 )
 
 AddClangFormat(robustness-tests-provider-ws)
 AddClangFormat(robustness-tests-ws)
+AddClangFormat(robustness-tests-provider-cc)
 
 if(NOT DEFINED JOYNR_SERVER_HOST)
     set(JOYNR_SERVER_HOST "localhost")

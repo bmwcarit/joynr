@@ -74,15 +74,15 @@ AbstractMessageRouter::AbstractMessageRouter(
           messageQueueCleanerTimer(ioService),
           messageQueueCleanerTimerPeriodMs(std::chrono::milliseconds(1000)),
           routingTableCleanerTimer(ioService),
-          transportStatuses(std::move(transportStatuses))
+          transportStatuses(std::move(transportStatuses)),
+          isShuttingDown(false)
 {
 }
 
 AbstractMessageRouter::~AbstractMessageRouter()
 {
-    // make sure this gets called in any case,
-    // even if we might have called shutdown before manually
-    shutdown();
+    // make sure shutdown() has been called earlier
+    assert(isShuttingDown);
 }
 
 void AbstractMessageRouter::init()
@@ -94,6 +94,15 @@ void AbstractMessageRouter::init()
 
 void AbstractMessageRouter::shutdown()
 {
+    // make sure shutdown() code is executed only once
+    bool previousValue =
+            std::atomic_exchange_explicit(&isShuttingDown, true, std::memory_order_acquire);
+    assert(!previousValue);
+    // bail out in case assert is disabled
+    if (previousValue) {
+        return;
+    }
+
     messageQueueCleanerTimer.cancel();
     routingTableCleanerTimer.cancel();
     messageScheduler->shutdown();
@@ -279,7 +288,7 @@ void AbstractMessageRouter::sendMessages(
             break;
         }
 
-        std::unique_ptr<MessageQueueItem> item(messageQueue->getNextMessageFor(destinationPartId));
+        std::shared_ptr<ImmutableMessage> item(messageQueue->getNextMessageFor(destinationPartId));
 
         if (!item) {
             break;
@@ -287,16 +296,14 @@ void AbstractMessageRouter::sendMessages(
 
         try {
             const std::uint32_t tryCount = 0;
-            messageScheduler->schedule(std::make_shared<MessageRunnable>(item->getContent(),
-                                                                         std::move(messagingStub),
-                                                                         address,
-                                                                         shared_from_this(),
-                                                                         tryCount),
-                                       std::chrono::milliseconds(0));
+            messageScheduler->schedule(
+                    std::make_shared<MessageRunnable>(
+                            item, std::move(messagingStub), address, shared_from_this(), tryCount),
+                    std::chrono::milliseconds(0));
         } catch (const exceptions::JoynrMessageNotSentException& e) {
             JOYNR_LOG_ERROR(logger(),
                             "Message with Id {} could not be sent. Error: {}",
-                            item->getContent()->getId(),
+                            item->getId(),
                             e.getMessage());
         }
     }
@@ -392,13 +399,12 @@ void AbstractMessageRouter::rescheduleQueuedMessagesForTransport(
     std::lock_guard<std::mutex> lock(transportAvailabilityMutex);
     while (auto nextImmutableMessage =
                    transportNotAvailableQueue->getNextMessageFor(transportStatus)) {
-        std::shared_ptr<ImmutableMessage> message = nextImmutableMessage->getContent();
         try {
-            route(message);
+            route(nextImmutableMessage);
         } catch (const exceptions::JoynrRuntimeException& e) {
             JOYNR_LOG_DEBUG(logger(),
                             "could not route queued message '{}' due to '{}'",
-                            message->toLogMessage(),
+                            nextImmutableMessage->toLogMessage(),
                             e.getMessage());
         }
     }

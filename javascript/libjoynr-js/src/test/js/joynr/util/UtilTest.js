@@ -77,7 +77,7 @@ describe("libjoynr-js.joynr.Util.extend", function() {
         expect(merged.level12).toEqual(subobject);
 
         expect(typeof merged.number === "number").toBeTruthy();
-        expect(Util.isArray(merged.array)).toBeTruthy();
+        expect(Array.isArray(merged.array)).toBeTruthy();
         expect(typeof merged.string === "string").toBeTruthy();
         expect(typeof merged.bool === "boolean").toBeTruthy();
     });
@@ -104,7 +104,7 @@ describe("libjoynr-js.joynr.Util.extend", function() {
         expect(typeof merged.subobject.number === "number").toBeTruthy();
         expect(merged.subobject.number).toEqual(2.0);
 
-        expect(Util.isArray(merged.subobject.array)).toBeTruthy();
+        expect(Array.isArray(merged.subobject.array)).toBeTruthy();
         expect(merged.subobject.array[0]).toEqual(0);
         expect(merged.subobject.array[1]).toEqual(1);
         expect(merged.subobject.array[2]).toEqual(2);
@@ -275,6 +275,24 @@ describe("libjoynr-js.joynr.Util.forward", function() {
     });
 });
 
+describe("libjoynr-js.joynr.Util.forwardPrototype", function() {
+    it("forwards methods to another object", function() {
+        var someValue = "some Value";
+        var ObjectWithPrivateVars = function() {
+            this.someObject = someValue;
+            return Util.forwardPrototype(this);
+        };
+        ObjectWithPrivateVars.prototype.someFunction = function() {
+            return this.someObject;
+        };
+        var privateObject = new ObjectWithPrivateVars();
+
+        expect(typeof privateObject.someFunction).toBe("function");
+        expect(privateObject.someObject).toBeUndefined();
+        expect(privateObject.someFunction()).toBe(someValue);
+    });
+});
+
 describe("libjoynr-js.joynr.Util.timeoutPromise", function() {
     beforeEach(function() {
         jasmine.clock().install();
@@ -302,5 +320,13 @@ describe("libjoynr-js.joynr.Util.timeoutPromise", function() {
             .catch(done);
         jasmine.clock().tick(101);
         jasmine.clock().tick(100);
+    });
+});
+
+describe("libjoynr-js.joynr.Util.createDeferred", function() {
+    it("create a correct Deferred Object", function(done) {
+        var deferred = Util.createDeferred();
+        deferred.resolve();
+        deferred.promise.then(done).catch(fail);
     });
 });

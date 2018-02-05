@@ -102,5 +102,5 @@ This project has following dependencies:
    │  ├─ smrf-native (0.2.2) ── Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0, http://www.opensource.org/licenses/Apache-2.0) ── node_modules/smrf-native/package.json
    │  │  ├─ bindings (1.2.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/bindings/package.json
    │  │  └─ nan (2.6.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/nan/package.json
-   │  └─ wscpp (0.2.6) ── Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0, http://www.opensource.org/licenses/Apache-2.0) ── node_modules/wscpp/package.json
+   │  └─ wscpp (1.0.0) ── Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0, http://www.opensource.org/licenses/Apache-2.0) ── node_modules/wscpp/package.json
    └─ mqtt (2.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt/package.json

@@ -41,7 +41,7 @@ var MqttMessagingSkeleton = function MqttMessagingSkeleton(settings) {
     this._settings = settings;
 
     settings.client.onmessage = function(topic, message) {
-        message.setReceivedFromGlobal(true);
+        message.isReceivedFromGlobal = true;
         try {
             settings.messageRouter.route(message).catch(function(e) {
                 log.error(

@@ -37,8 +37,8 @@ Util.ensureTypedValues = function(value, typeRegistry) {
     typeRegistry = typeRegistry || TypeRegistrySingleton.getInstance();
 
     if (value !== undefined && value !== null) {
-        if (value.constructor.name === "Array") {
-            for (i = 0; i < value.length; i++) {
+        if (Array.isArray(value)) {
+            for (i = 0; i < value.length; ++i) {
                 value[i] = Util.ensureTypedValues(value[i]);
             }
         } else if (typeof value === "object" && !Typing.isComplexJoynrObject(value)) {

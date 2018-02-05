@@ -28,8 +28,8 @@
 
 #include "joynr/access-control/IAccessController.h"
 
-#include "joynr/CapabilityUtils.h"
 #include "joynr/CallContextStorage.h"
+#include "joynr/CapabilityUtils.h"
 #include "joynr/ClusterControllerSettings.h"
 #include "joynr/DiscoveryQos.h"
 #include "joynr/ILocalCapabilitiesCallback.h"
@@ -39,13 +39,30 @@
 #include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
-#include "joynr/serializer/Serializer.h"
-#include "joynr/Util.h"
 
 #include "libjoynrclustercontroller/capabilities-client/ICapabilitiesClient.h"
 
 namespace joynr
 {
+
+struct DiscoveryEntryHash
+{
+    std::size_t operator()(const types::DiscoveryEntry& entry) const
+    {
+        std::size_t seed = 0;
+        boost::hash_combine(seed, entry.getParticipantId());
+        return seed;
+    }
+};
+
+struct DiscoveryEntryKeyEq
+{
+    bool operator()(const types::DiscoveryEntry& lhs, const types::DiscoveryEntry& rhs) const
+    {
+        // there is no need to check typeid because entries are of the same type.
+        return joynr::util::compareValues(lhs.getParticipantId(), rhs.getParticipantId());
+    }
+};
 
 LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(
         ClusterControllerSettings& clusterControllerSettings,
@@ -313,6 +330,24 @@ bool LocalCapabilitiesDirectory::getLocalAndCachedCapabilities(
                                   std::move(callback));
 }
 
+std::vector<types::DiscoveryEntryWithMetaInfo> LocalCapabilitiesDirectory::filterDuplicates(
+        std::vector<types::DiscoveryEntryWithMetaInfo>&& localCapabilitiesWithMetaInfo,
+        std::vector<types::DiscoveryEntryWithMetaInfo>&& globalCapabilitiesWithMetaInfo)
+{
+    // use custom DiscoveryEntryHash and custom DiscoveryEntryKeyEq to compare only the
+    // participantId and to ignore the isLocal flag of DiscoveryEntryWithMetaInfo.
+    // prefer local entries if there are local and global entries for the same provider.
+    std::unordered_set<types::DiscoveryEntryWithMetaInfo,
+                       joynr::DiscoveryEntryHash,
+                       joynr::DiscoveryEntryKeyEq>
+            resultSet(std::make_move_iterator(localCapabilitiesWithMetaInfo.begin()),
+                      std::make_move_iterator(localCapabilitiesWithMetaInfo.end()));
+    resultSet.insert(std::make_move_iterator(globalCapabilitiesWithMetaInfo.begin()),
+                     std::make_move_iterator(globalCapabilitiesWithMetaInfo.end()));
+    std::vector<types::DiscoveryEntryWithMetaInfo> resultVec(resultSet.begin(), resultSet.end());
+    return resultVec;
+}
+
 bool LocalCapabilitiesDirectory::callReceiverIfPossible(
         joynr::types::DiscoveryScope::Enum& scope,
         std::vector<types::DiscoveryEntry>&& localCapabilities,
@@ -353,13 +388,9 @@ bool LocalCapabilitiesDirectory::callReceiverIfPossible(
                     util::convert(false, globalCapabilities);
 
             // remove duplicates
-            std::unordered_set<types::DiscoveryEntryWithMetaInfo> resultSet(
-                    std::make_move_iterator(localCapabilitiesWithMetaInfo.begin()),
-                    std::make_move_iterator(localCapabilitiesWithMetaInfo.end()));
-            resultSet.insert(std::make_move_iterator(globalCapabilitiesWithMetaInfo.begin()),
-                             std::make_move_iterator(globalCapabilitiesWithMetaInfo.end()));
-            std::vector<types::DiscoveryEntryWithMetaInfo> resultVec(
-                    resultSet.begin(), resultSet.end());
+            std::vector<types::DiscoveryEntryWithMetaInfo> resultVec =
+                    filterDuplicates(std::move(localCapabilitiesWithMetaInfo),
+                                     std::move(globalCapabilitiesWithMetaInfo));
             callback->capabilitiesReceived(std::move(resultVec));
             return true;
         }
@@ -379,34 +410,33 @@ bool LocalCapabilitiesDirectory::callReceiverIfPossible(
 
 void LocalCapabilitiesDirectory::capabilitiesReceived(
         const std::vector<types::GlobalDiscoveryEntry>& results,
-        std::vector<types::DiscoveryEntry>&& cachedLocalCapabilities,
+        std::vector<types::DiscoveryEntry>&& localEntries,
         std::shared_ptr<ILocalCapabilitiesCallback> callback,
         joynr::types::DiscoveryScope::Enum discoveryScope)
 {
     std::unordered_multimap<std::string, types::DiscoveryEntry> capabilitiesMap;
-    std::vector<types::DiscoveryEntryWithMetaInfo> mergedEntries;
+    std::vector<types::DiscoveryEntryWithMetaInfo> globalEntries;
 
     for (types::GlobalDiscoveryEntry globalDiscoveryEntry : results) {
         types::DiscoveryEntryWithMetaInfo convertedEntry =
                 util::convert(false, globalDiscoveryEntry);
         capabilitiesMap.insert(
                 {globalDiscoveryEntry.getAddress(), std::move(globalDiscoveryEntry)});
-        mergedEntries.push_back(std::move(convertedEntry));
+        globalEntries.push_back(std::move(convertedEntry));
     }
     registerReceivedCapabilities(std::move(capabilitiesMap));
 
     if (discoveryScope == joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL ||
         discoveryScope == joynr::types::DiscoveryScope::LOCAL_AND_GLOBAL) {
-        std::vector<types::DiscoveryEntryWithMetaInfo> cachedLocalCapabilitiesWithMetaInfo =
-                util::convert(false, cachedLocalCapabilities);
+        std::vector<types::DiscoveryEntryWithMetaInfo> localEntriesWithMetaInfo =
+                util::convert(true, localEntries);
         // look if in the meantime there are some local providers registered
         // lookup in the local directory to get local providers which were registered in the
         // meantime.
-        mergedEntries.insert(mergedEntries.end(),
-                             std::make_move_iterator(cachedLocalCapabilitiesWithMetaInfo.begin()),
-                             std::make_move_iterator(cachedLocalCapabilitiesWithMetaInfo.end()));
+        globalEntries =
+                filterDuplicates(std::move(localEntriesWithMetaInfo), std::move(globalEntries));
     }
-    callback->capabilitiesReceived(std::move(mergedEntries));
+    callback->capabilitiesReceived(std::move(globalEntries));
 }
 
 void LocalCapabilitiesDirectory::lookup(const std::string& participantId,

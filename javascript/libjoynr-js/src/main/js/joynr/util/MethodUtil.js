@@ -19,8 +19,17 @@
  */
 var Typing = require("./Typing");
 var Util = require("./UtilInternal");
+
+/**
+ * @exports MethodUtil
+ */
 var MethodUtil = {};
 
+/**
+ * @param {Object[]} operationArguments Arguments coming from the proxy or provider
+ * @param {Object[]} parameters List of paraemters for the operationArguments
+ * @returns {Object} Object in the form of { paramDatatypes: [Array of types], params: [Array of values] };
+ */
 MethodUtil.transformParameterMapToArray = function transformParameterMapToArray(operationArguments, parameters) {
     var argument,
         objectType,
@@ -48,7 +57,7 @@ MethodUtil.transformParameterMapToArray = function transformParameterMapToArray(
         // check if the parameter type matches the type of the argument value
         // allow dangling _ in variable once
         /*jslint nomen: true */
-        objectType = argumentValue.constructor === Array ? "Array" : argumentValue._typeName || typeof argumentValue;
+        objectType = Array.isArray(argumentValue) ? "Array" : argumentValue._typeName || typeof argumentValue;
         /*jslint nomen: false */
         if (argument.javascriptType !== objectType) {
             // signature does not match

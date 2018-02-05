@@ -76,12 +76,12 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", function() {
         receiverParticipantId = "TestMessageRouter_participantId_" + Date.now();
         receiverParticipantId2 = "TestMessageRouter_delayedParticipantId_" + Date.now();
         joynrMessage = new JoynrMessage({
-            type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
+            type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
+            payload: "hello"
         });
         joynrMessage.expiryDate = 9360686108031;
         joynrMessage.to = receiverParticipantId;
         joynrMessage.from = senderParticipantId;
-        joynrMessage.payload = "hello";
 
         joynrMessage2 = new JoynrMessage({
             type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
@@ -362,7 +362,7 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", function() {
         var isGloballyVisible = true;
         messageRouter.addNextHop(joynrMessage.to, address, isGloballyVisible);
         joynrMessage.expiryDate = Date.now() - 1;
-        joynrMessage.setIsLocalMessage(true);
+        joynrMessage.isLocalMessage = true;
         messageRouter
             .route(joynrMessage)
             .then(function() {
@@ -379,7 +379,7 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", function() {
         var isGloballyVisible = true;
         messageRouter.addNextHop(joynrMessage.to, address, isGloballyVisible);
 
-        joynrMessage.setIsLocalMessage(false);
+        joynrMessage.isLocalMessage = false;
         expect(joynrMessage.replyChannelId).toEqual(undefined);
 
         messageRouter.route(joynrMessage);
@@ -394,7 +394,7 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", function() {
         var isGloballyVisible = false;
         messageRouter.addNextHop(joynrMessage.to, address, isGloballyVisible);
 
-        joynrMessage.setIsLocalMessage(true);
+        joynrMessage.isLocalMessage = true;
         expect(joynrMessage.replyChannelId).toEqual(undefined);
 
         messageRouter.route(joynrMessage);
@@ -515,6 +515,27 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", function() {
         done();
     });
 
+    it("addNextHop won't write InProcessAdresses", function() {
+        address = new InProcessAddress();
+        messageRouter.addNextHop(joynrMessage.to, address);
+        expect(persistencySpy.setItem).not.toHaveBeenCalled();
+
+        expect(messageRouter.removeNextHop.bind(null, joynrMessage.to)).not.toThrow();
+    });
+
+    it("addNextHop will work without Persistency", function(done) {
+        messageRouter = createMessageRouter(null, messageQueueSpy);
+        messageRouter.setReplyToAddress(serializedTestGlobalClusterControllerAddress);
+        messageRouter.addNextHop(joynrMessage.to, address);
+        messageRouter
+            .route(joynrMessage)
+            .then(function() {
+                expect(messagingStubSpy.transmit).toHaveBeenCalled();
+                done();
+            })
+            .catch(fail);
+    });
+
     describe("route multicast messages", function() {
         var parameters;
         var multicastMessage;
@@ -528,12 +549,12 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", function() {
             };
 
             multicastMessage = new JoynrMessage({
-                type: JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST
+                type: JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST,
+                payload: "hello"
             });
             multicastMessage.expiryDate = 9360686108031;
             multicastMessage.to = parameters.multicastId;
             multicastMessage.from = "senderParticipantId";
-            multicastMessage.payload = "hello";
 
             /* add routing table entry for parameters.subscriberParticipantId,
                                  * otherwise messaging stub call can be executed by the message router
@@ -550,14 +571,14 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", function() {
         });
 
         it("never, if message is received from global and NO local receiver", function() {
-            multicastMessage.setReceivedFromGlobal(true);
+            multicastMessage.isReceivedFromGlobal = true;
             messageRouter.route(multicastMessage);
             expect(messagingStubSpy.transmit).not.toHaveBeenCalled();
         });
 
         it("once, if message is received from global and has local receiver", function() {
             messageRouter.addMulticastReceiver(parameters);
-            multicastMessage.setReceivedFromGlobal(true);
+            multicastMessage.isReceivedFromGlobal = true;
             messageRouter.route(multicastMessage);
             expect(messagingStubSpy.transmit).toHaveBeenCalled();
             expect(messagingStubSpy.transmit.calls.count()).toBe(1);
@@ -708,7 +729,7 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", function() {
             var isGloballyVisible = true;
             messageRouter.addNextHop(joynrMessage.to, address, isGloballyVisible);
 
-            joynrMessage.setIsLocalMessage(false);
+            joynrMessage.isLocalMessage = false;
             expect(joynrMessage.replyChannelId).toEqual(undefined);
 
             messageRouter.route(joynrMessage);
@@ -723,7 +744,7 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", function() {
             var isGloballyVisible = true;
             messageRouter.addNextHop(joynrMessage.to, address, isGloballyVisible);
 
-            joynrMessage.setIsLocalMessage(true);
+            joynrMessage.isLocalMessage = true;
             expect(joynrMessage.replyChannelId).toEqual(undefined);
 
             messageRouter.route(joynrMessage);
@@ -745,8 +766,8 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", function() {
             routingProxySpy.addNextHop.and.returnValue(Promise.resolve());
             messageRouter.addNextHop(joynrMessage.to, address, isGloballyVisible);
 
-            joynrMessage.setIsLocalMessage(false);
-            var expectedJoynrMessage = new JoynrMessage(Util.extendDeep({}, joynrMessage));
+            joynrMessage.isLocalMessage = false;
+            var expectedJoynrMessage = JoynrMessage.parseMessage(Util.extendDeep({}, joynrMessage));
             expectedJoynrMessage.replyChannelId = serializedTestGlobalClusterControllerAddress;
 
             messageRouter
