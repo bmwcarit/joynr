@@ -25,27 +25,14 @@
 
 #include "tests/JoynrTest.h"
 
-using ::testing::Property;
-using ::testing::Eq;
-using ::testing::ByRef;
-using ::testing::_;
 using namespace ::testing;
 using namespace joynr;
 
-/*
- * This tests the Future class.
- */
-
-
 class FutureTest : public ::testing::Test {
 public:
-
     FutureTest()
         : intFuture(),
           voidFuture() {
-    }
-
-    void SetUp() {
     }
 
 protected:
