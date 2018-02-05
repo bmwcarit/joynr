@@ -158,7 +158,7 @@ describe("libjoynr-js.joynr.provider.ProviderAttribute", function() {
     it("call[G|S]etter calls through to registered [g|s]etters", function(done) {
         var result;
         var testParam = "myTestParameter";
-        var promiseChain = Promise.resolve();
+        var promiseChain;
 
         var createFunc = function(attribute, promiseChain) {
             var spy = jasmine.createSpy("ProviderAttributeSpy");
@@ -173,17 +173,21 @@ describe("libjoynr-js.joynr.provider.ProviderAttribute", function() {
                 });
         };
 
-        for (i = 0; i < allAttributes.length; ++i) {
-            // only check getter if the attribute is readable
-            if (allAttributes[i].get instanceof Function) {
-                var spy = jasmine.createSpy("ProviderAttributeSpy");
-                spy.and.returnValue(testParam);
-                allAttributes[i].registerGetter(spy);
-                result = allAttributes[i].get();
-                expect(spy).toHaveBeenCalled();
-                expect(result).toEqual([testParam]);
-            }
+        promiseChain = Promise.all(
+            allAttributes.map(function(attribute) {
+                if (attribute.get instanceof Function) {
+                    var spy = jasmine.createSpy("ProviderAttributeSpy");
+                    spy.and.returnValue(testParam);
+                    attribute.registerGetter(spy);
+                    return attribute.get().then(function(result) {
+                        expect(spy).toHaveBeenCalled();
+                        expect(result).toEqual([testParam]);
+                    });
+                }
+            })
+        );
 
+        for (i = 0; i < allAttributes.length; ++i) {
             if (allAttributes[i].set instanceof Function) {
                 promiseChain = createFunc(allAttributes[i], promiseChain);
             }
@@ -214,15 +218,22 @@ describe("libjoynr-js.joynr.provider.ProviderAttribute", function() {
                 });
         };
 
-        for (i = 0; i < allAttributes.length; ++i) {
-            // only check getter if the attribute is readable
-            if (allAttributes[i].get instanceof Function) {
-                implementation.get.calls.reset();
-                implementation.get.and.returnValue(testParam);
-                expect(allAttributes[i].get()).toEqual([testParam]);
-                expect(implementation.get).toHaveBeenCalled();
-            }
+        promiseChain = Promise.all(
+            allAttributes.map(function(attribute) {
+                // only check getter if the attribute is readable
+                if (attribute.get instanceof Function) {
+                    implementation.get.calls.reset();
+                    implementation.get.and.returnValue(testParam);
 
+                    return attribute.get().then(function(result) {
+                        expect(implementation.get).toHaveBeenCalled();
+                        expect(result).toEqual([testParam]);
+                    });
+                }
+            })
+        );
+
+        for (i = 0; i < allAttributes.length; ++i) {
             if (allAttributes[i].set instanceof Function) {
                 promiseChain = createFunc(allAttributes[i], promiseChain);
             }

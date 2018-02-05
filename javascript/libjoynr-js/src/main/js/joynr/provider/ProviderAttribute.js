@@ -22,6 +22,7 @@ var Promise = require("../../global/Promise");
 var Util = require("../util/UtilInternal");
 var Typing = require("../util/Typing");
 var TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
+var ProviderRuntimeException = require("../exceptions/ProviderRuntimeException");
 
 var typeRegistry = TypeRegistrySingleton.getInstance();
 
@@ -160,7 +161,18 @@ var asRead = (function() {
      * @returns {ProviderAttribute} fluent interface to call multiple methods
      */
     function registerGetter(getterFunc) {
-        this.privateGetterFunc = getterFunc;
+        this.privateGetterFunc = function(){
+            return Promise.resolve().then(getterFunc);
+        };
+    }
+
+    function createError(error){
+        if (error instanceof ProviderRuntimeException) {
+            throw error;
+        }
+        throw new ProviderRuntimeException({
+            detailMessage: "getter method for attribute " + this.attributeName + " reported an error"
+        });
     }
 
     /**
@@ -178,17 +190,11 @@ var asRead = (function() {
      * @see ProviderAttribute#registerGetter
      */
     function get() {
-        var value;
-        if (!this.privateGetterFunc) {
-            throw new Error("no getter function registered for provider attribute");
-        }
-        // call getter function with the same arguments as this function
-        value = this.privateGetterFunc();
 
-        if (Util.isPromise(value)) {
-            return value.then(toArray);
+        if (!this.privateGetterFunc) {
+            return Promise.reject(new Error("no getter function registered for provider attribute: " + this.attributeName));
         }
-        return [value];
+        return this.privateGetterFunc().then(toArray).catch(createError.bind(this));
     }
 
     return function() {
@@ -281,8 +287,19 @@ function ProviderAttribute(parent, implementation, attributeName, attributeType,
     publicProviderAttribute.isNotifiable = this.isNotifiable.bind(this);
 
     // place these functions after the forwarding we don't want them public
-    this.privateGetterFunc = implementation ? implementation.get : undefined;
-    this.privateSetterFunc = implementation ? implementation.set : undefined;
+    if (implementation && typeof implementation.get === "function") {
+        /*
+            In order to avoid code duplication it would have been nice to call registerGetter here.
+            But this is not possible, because registerGetter is only available if this.hasRead is true.
+            this.privateGetterFunc is also needed for set to trigger valuechanged.
+         */
+        this.privateGetterFunc = function() {
+            return Promise.resolve().then(implementation.get);
+        };
+    }
+    if (implementation && typeof implementation.set === "function") {
+        this.privateSetterFunc = implementation.set;
+    }
 
     return Object.freeze(publicProviderAttribute);
 }

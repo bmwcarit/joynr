@@ -253,8 +253,12 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", functi
         provider[testBroadcastName] = testBroadcast;
         provider[testNonSelectiveBroadcastName] = testNonSelectiveBroadcast;
         provider[testAttributeNotNotifiableName] = testAttributeNotNotifiable;
-        spyOn(testAttribute, "get").and.returnValue("attributeValue");
-        spyOn(testAttributeNotNotifiable, "get").and.returnValue("attributeValue");
+        spyOn(testAttribute, "get").and.callFake(function() {
+            return Promise.resolve("attributeValue");
+        });
+        spyOn(testAttributeNotNotifiable, "get").and.callFake(function() {
+            return Promise.resolve("attributeValue");
+        });
 
         provider[asyncTestAttributeName] = asyncTestAttribute;
         spyOn(asyncTestAttribute, "get").and.callFake(function() {

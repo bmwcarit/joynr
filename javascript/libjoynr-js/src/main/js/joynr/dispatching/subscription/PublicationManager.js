@@ -33,7 +33,6 @@ var ProviderEvent = require("../../provider/ProviderEvent");
 var Typing = require("../../util/Typing");
 var SubscriptionUtil = require("./util/SubscriptionUtil");
 var SubscriptionException = require("../../exceptions/SubscriptionException");
-var ProviderRuntimeException = require("../../exceptions/ProviderRuntimeException");
 var JSONSerializer = require("../../util/JSONSerializer");
 var LongTimer = require("../../util/LongTimer");
 var Util = require("../../util/UtilInternal");
@@ -149,20 +148,9 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
      *            error upon failure
      */
     function getAttributeValue(subscriptionInfo) {
-        function promiseCatchHandler(error) {
-            if (error instanceof ProviderRuntimeException) {
-                throw error;
-            }
-            throw new ProviderRuntimeException({
-                detailMessage: "getter method for attribute " + subscriptionInfo.subscribedToName + " reported an error"
-            });
-        }
-
         var attribute = getAttribute(subscriptionInfo.providerParticipantId, subscriptionInfo.subscribedToName);
 
-        return Promise.resolve()
-            .then(attribute.get) // assume that attribute.get is already bound
-            .catch(promiseCatchHandler);
+        return attribute.get();
     }
 
     /**
