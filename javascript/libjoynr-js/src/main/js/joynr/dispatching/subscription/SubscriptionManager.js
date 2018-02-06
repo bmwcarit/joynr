@@ -132,13 +132,14 @@ function SubscriptionManager(dispatcher) {
             delay_ms = alertAfterIntervalMs - timeSinceLastPublication;
         }
 
-        function checkPublicationDelay() {
-            checkPublication(subscriptionId, alertAfterIntervalMs);
-        }
-
         if (!subscriptionEnds(subscriptionId, delay_ms)) {
             // log.debug("Rescheduling checkPublication with delay: " + delay_ms);
-            publicationCheckTimerIds[subscriptionId] = LongTimer.setTimeout(checkPublicationDelay, delay_ms);
+            publicationCheckTimerIds[subscriptionId] = LongTimer.setTimeout(
+                checkPublication,
+                delay_ms,
+                subscriptionId,
+                alertAfterIntervalMs
+            );
         }
     }
 
