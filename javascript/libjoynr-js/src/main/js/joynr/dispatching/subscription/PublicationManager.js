@@ -214,7 +214,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
      * @name PublicationManager#prepareAttributePublication
      * @private
      */
-    function prepareAttributePublication(subscriptionInfo, value, timer) {
+    function prepareAttributePublication(subscriptionInfo, value) {
         var timeSinceLastPublication = Date.now() - subscriptionInfo.lastPublication;
         if (
             subscriptionInfo.qos.minIntervalMs === undefined ||
@@ -231,10 +231,13 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
             // if there's an existing interval, clear it and restart
             if (subscriptionInfo.subscriptionInterval !== undefined) {
                 LongTimer.clearTimeout(subscriptionInfo.subscriptionInterval);
-                subscriptionInfo.subscriptionInterval = timer(subscriptionInfo, getPeriod(subscriptionInfo));
+                subscriptionInfo.subscriptionInterval = triggerPublicationTimer(
+                    subscriptionInfo,
+                    getPeriod(subscriptionInfo)
+                );
             }
         } else if (subscriptionInfo.onChangeDebounce === undefined) {
-            subscriptionInfo.onChangeDebounce = timer(
+            subscriptionInfo.onChangeDebounce = triggerPublicationTimer(
                 subscriptionInfo,
                 subscriptionInfo.qos.minIntervalMs - timeSinceLastPublication,
                 function() {
@@ -272,7 +275,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         }
 
         function getAttributeValueSuccess(value) {
-            prepareAttributePublication(subscriptionInfo, value, triggerPublicationTimer);
+            prepareAttributePublication(subscriptionInfo, value);
             return value;
         }
 
@@ -309,10 +312,6 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
             return LongTimer.setTimeout(triggerPublication, delay, subscriptionInfo, callback);
             // the last two arguments get to triggerPublication
         }
-        // TODO: what kind of recursive design is this? triggerPublication calls triggerPublicationTimer on Success ...
-        // why not use Intervals?
-
-        // TODO:why is nothing returned here in the else case?
     }
 
     /**
@@ -430,7 +429,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         for (subscriptionId in subscriptions) {
             if (subscriptions.hasOwnProperty(subscriptionId)) {
                 var subscriptionInfo = subscriptions[subscriptionId];
-                prepareAttributePublication(subscriptionInfo, value, triggerPublicationTimer);
+                prepareAttributePublication(subscriptionInfo, value);
             }
         }
     }
