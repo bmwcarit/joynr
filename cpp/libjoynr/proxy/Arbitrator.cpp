@@ -104,6 +104,7 @@ void Arbitrator::startArbitration(
 
             // exit if arbitration has finished successfully
             if (thisSharedPtr->arbitrationFinished) {
+                thisSharedPtr->assertNoPendingFuture();
                 return;
             }
 
@@ -158,6 +159,7 @@ void Arbitrator::startArbitration(
         JOYNR_LOG_DEBUG(logger(),
                         "Exiting arbitration thread for interface={}",
                         thisSharedPtr->interfaceName);
+        thisSharedPtr->assertNoPendingFuture();
     });
 }
 
