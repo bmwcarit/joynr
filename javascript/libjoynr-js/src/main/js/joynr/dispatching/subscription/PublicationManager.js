@@ -276,12 +276,10 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
 
         function getAttributeValueSuccess(value) {
             prepareAttributePublication(subscriptionInfo, value);
-            return value;
         }
 
         function getAttributeValueFailure(exception) {
             sendPublication(subscriptionInfo, undefined, exception);
-            return exception;
         }
 
         getAttributeValue(subscriptionInfo)
