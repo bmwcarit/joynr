@@ -216,12 +216,8 @@ var SharedWebSocket = function SharedWebSocket(settings) {
      *            joynrMessage the joynr message to transmit
      */
     this.send = function send(joynrMessage) {
-        function sendMessageOnError(e1) {
-            resetConnection();
-        }
-
         log.debug(">>> OUTGOING >>> message with ID " + joynrMessage.msgId);
-        return sendMessage(websocket, joynrMessage, queuedMessages).catch(sendMessageOnError);
+        return sendMessage(websocket, joynrMessage, queuedMessages).catch(resetConnection);
     };
 
     /**
