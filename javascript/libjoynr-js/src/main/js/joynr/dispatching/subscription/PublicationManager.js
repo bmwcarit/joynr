@@ -1,5 +1,5 @@
 /*jslint es5: true, node: true, node: true */
-/*global triggerPublicationTimer: true */
+/*global triggerPublicationTimer: true, triggerPublicationAndClearDebounce: true */
 /*
  * #%L
  * %%
@@ -237,12 +237,10 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
                 );
             }
         } else if (subscriptionInfo.onChangeDebounce === undefined) {
-            subscriptionInfo.onChangeDebounce = triggerPublicationTimer(
-                subscriptionInfo,
+            subscriptionInfo.onChangeDebounce = LongTimer.setTimeout(
+                triggerPublicationAndClearDebounce,
                 subscriptionInfo.qos.minIntervalMs - timeSinceLastPublication,
-                function() {
-                    delete subscriptionInfo.onChangeDebounce;
-                }
+                subscriptionInfo
             );
         }
     }
@@ -269,11 +267,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         }
     }
 
-    function triggerPublication(subscriptionInfo, callback) {
-        if (callback !== undefined) {
-            callback();
-        }
-
+    function triggerPublication(subscriptionInfo) {
         function getAttributeValueSuccess(value) {
             prepareAttributePublication(subscriptionInfo, value);
         }
@@ -285,6 +279,11 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         getAttributeValue(subscriptionInfo)
             .then(getAttributeValueSuccess)
             .catch(getAttributeValueFailure);
+    }
+
+    function triggerPublicationAndClearDebounce(subscriptionInfo) {
+        subscriptionInfo.onChangeDebounce = undefined;
+        triggerPublication(subscriptionInfo);
     }
 
     /**
@@ -302,13 +301,10 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
      *            subscriptionInfo.subscribedToName the attribute to be published
      * @param {Number}
      *            delay the delay to wait for the publication
-     * @param {Function}
-     *            callback to be invoked by this function once the timer has been exceeded
      */
-    function triggerPublicationTimer(subscriptionInfo, delay, callback) {
+    function triggerPublicationTimer(subscriptionInfo, delay) {
         if (!isNaN(delay)) {
-            return LongTimer.setTimeout(triggerPublication, delay, subscriptionInfo, callback);
-            // the last two arguments get to triggerPublication
+            return LongTimer.setTimeout(triggerPublication, delay, subscriptionInfo);
         }
     }
 
