@@ -55,6 +55,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", functi
     var testBroadcastName, testBroadcast;
     var testNonSelectiveBroadcastName, testNonSelectiveBroadcast;
     var persistency; // localStorage was renamed to persistency because it's impossible to reassign it because of jslint
+    var callbackDispatcherSettings;
 
     function createSubscriptionRequest(
         isAttribute,
@@ -189,6 +190,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", functi
         maxNrOfTimes = 5;
         asyncGetterCallDelay = 10;
         subscriptionLength = (maxNrOfTimes + 1) * maxIntervalMs;
+        callbackDispatcherSettings = {};
 
         dispatcherSpy = jasmine.createSpyObj("Dispatcher", ["sendPublication", "sendMulticastPublication"]);
         publicationManager = new PublicationManager(dispatcherSpy, persistency, joynrInstanceId);
@@ -511,10 +513,10 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", functi
                 // publication manager are invoked
                 increaseFakeTime(1);
                 expect(callbackDispatcher).toHaveBeenCalled();
-                expect(callbackDispatcher.calls.mostRecent().args[0].subscriptionId).toBe(
+                expect(callbackDispatcher.calls.mostRecent().args[1].subscriptionId).toBe(
                     intervalSubscriptionRequest.subscriptionId
                 );
-                expect(callbackDispatcher.calls.mostRecent().args[0].error).toBeUndefined();
+                expect(callbackDispatcher.calls.mostRecent().args[1].error).toBeUndefined();
                 done();
             });
 
@@ -536,10 +538,10 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", functi
                 // publication manager are invoked
                 increaseFakeTime(1);
                 expect(callbackDispatcher).toHaveBeenCalled();
-                expect(callbackDispatcher.calls.mostRecent().args[0].subscriptionId).toBe(
+                expect(callbackDispatcher.calls.mostRecent().args[1].subscriptionId).toBe(
                     onChangeBroadcastSubscriptionRequest.subscriptionId
                 );
-                expect(callbackDispatcher.calls.mostRecent().args[0].error).toBeUndefined();
+                expect(callbackDispatcher.calls.mostRecent().args[1].error).toBeUndefined();
                 done();
             });
 
@@ -556,8 +558,8 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", functi
                 // publication manager are invoked
                 increaseFakeTime(1);
                 expect(callbackDispatcher).toHaveBeenCalled();
-                expect(callbackDispatcher.calls.mostRecent().args[0].subscriptionId).toBe(request.subscriptionId);
-                expect(callbackDispatcher.calls.mostRecent().args[0].error).toBeUndefined();
+                expect(callbackDispatcher.calls.mostRecent().args[1].subscriptionId).toBe(request.subscriptionId);
+                expect(callbackDispatcher.calls.mostRecent().args[1].error).toBeUndefined();
                 done();
             });
         }
@@ -1721,11 +1723,11 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", functi
             )
                 .then(function() {
                     expect(callbackDispatcher).toHaveBeenCalled();
-                    var error = callbackDispatcher.calls.mostRecent().args[0].error;
+                    var error = callbackDispatcher.calls.mostRecent().args[1].error;
                     expect(error).toBeDefined();
                     expect(error instanceof SubscriptionException);
                     expect(error.subscriptionId).toBeDefined();
-                    expect(error.subscriptionId).toEqual(callbackDispatcher.calls.mostRecent().args[0].subscriptionId);
+                    expect(error.subscriptionId).toEqual(callbackDispatcher.calls.mostRecent().args[1].subscriptionId);
                     expect(error.detailMessage).toMatch(/lies in the past/);
                     done();
                     return null;
@@ -1752,11 +1754,11 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", functi
             )
                 .then(function() {
                     expect(callbackDispatcher).toHaveBeenCalled();
-                    var error = callbackDispatcher.calls.mostRecent().args[0].error;
+                    var error = callbackDispatcher.calls.mostRecent().args[1].error;
                     expect(error).toBeDefined();
                     expect(error instanceof SubscriptionException);
                     expect(error.subscriptionId).toBeDefined();
-                    expect(error.subscriptionId).toEqual(callbackDispatcher.calls.mostRecent().args[0].subscriptionId);
+                    expect(error.subscriptionId).toEqual(callbackDispatcher.calls.mostRecent().args[1].subscriptionId);
                     expect(error.detailMessage).toMatch(/misses attribute/);
                     done();
                     return null;
@@ -1783,11 +1785,11 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", functi
             )
                 .then(function() {
                     expect(callbackDispatcher).toHaveBeenCalled();
-                    var error = callbackDispatcher.calls.mostRecent().args[0].error;
+                    var error = callbackDispatcher.calls.mostRecent().args[1].error;
                     expect(error).toBeDefined();
                     expect(error instanceof SubscriptionException);
                     expect(error.subscriptionId).toBeDefined();
-                    expect(error.subscriptionId).toEqual(callbackDispatcher.calls.mostRecent().args[0].subscriptionId);
+                    expect(error.subscriptionId).toEqual(callbackDispatcher.calls.mostRecent().args[1].subscriptionId);
                     expect(error.detailMessage).toMatch(/is not notifiable/);
                     done();
                     return null;
@@ -1822,11 +1824,11 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", functi
             )
                 .then(function() {
                     expect(callbackDispatcher).toHaveBeenCalled();
-                    var error = callbackDispatcher.calls.mostRecent().args[0].error;
+                    var error = callbackDispatcher.calls.mostRecent().args[1].error;
                     expect(error).toBeDefined();
                     expect(error instanceof SubscriptionException);
                     expect(error.subscriptionId).toBeDefined();
-                    expect(error.subscriptionId).toEqual(callbackDispatcher.calls.mostRecent().args[0].subscriptionId);
+                    expect(error.subscriptionId).toEqual(callbackDispatcher.calls.mostRecent().args[1].subscriptionId);
                     expect(error.detailMessage).toMatch(/is smaller than PeriodicSubscriptionQos/);
                     done();
                     return null;
@@ -1856,11 +1858,11 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", functi
             )
                 .then(function() {
                     expect(callbackDispatcher).toHaveBeenCalled();
-                    var error = callbackDispatcher.calls.mostRecent().args[0].error;
+                    var error = callbackDispatcher.calls.mostRecent().args[1].error;
                     expect(error).toBeDefined();
                     expect(error instanceof SubscriptionException);
                     expect(error.subscriptionId).toBeDefined();
-                    expect(error.subscriptionId).toEqual(callbackDispatcher.calls.mostRecent().args[0].subscriptionId);
+                    expect(error.subscriptionId).toEqual(callbackDispatcher.calls.mostRecent().args[1].subscriptionId);
                     expect(error.detailMessage).toMatch(/lies in the past/);
                     done();
                     return null;
@@ -1892,11 +1894,11 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", functi
             )
                 .then(function() {
                     expect(callbackDispatcher).toHaveBeenCalled();
-                    var error = callbackDispatcher.calls.mostRecent().args[0].error;
+                    var error = callbackDispatcher.calls.mostRecent().args[1].error;
                     expect(error).toBeDefined();
                     expect(error instanceof SubscriptionException);
                     expect(error.subscriptionId).toBeDefined();
-                    expect(error.subscriptionId).toEqual(callbackDispatcher.calls.mostRecent().args[0].subscriptionId);
+                    expect(error.subscriptionId).toEqual(callbackDispatcher.calls.mostRecent().args[1].subscriptionId);
                     expect(error.detailMessage).toMatch(/Filter parameter positionOfInterest for broadcast/);
                     done();
                     return null;
@@ -1920,7 +1922,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", functi
             )
                 .then(function() {
                     expect(callbackDispatcher).toHaveBeenCalled();
-                    var response = callbackDispatcher.calls.mostRecent().args[0];
+                    var response = callbackDispatcher.calls.mostRecent().args[1];
                     expect(response.error).toBeUndefined();
                     expect(response.subscriptionId).toEqual(request.subscriptionId);
                     expect(publicationManager.hasMulticastSubscriptions()).toBe(true);
@@ -1990,11 +1992,11 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", functi
             )
                 .then(function() {
                     expect(callbackDispatcher).toHaveBeenCalled();
-                    var error = callbackDispatcher.calls.mostRecent().args[0].error;
+                    var error = callbackDispatcher.calls.mostRecent().args[1].error;
                     expect(error).toBeDefined();
                     expect(error instanceof SubscriptionException);
                     expect(error.subscriptionId).toBeDefined();
-                    expect(error.subscriptionId).toEqual(callbackDispatcher.calls.mostRecent().args[0].subscriptionId);
+                    expect(error.subscriptionId).toEqual(callbackDispatcher.calls.mostRecent().args[1].subscriptionId);
                     expect(error.detailMessage).toMatch(/misses event/);
                     done();
                     return null;
@@ -2037,8 +2039,8 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", functi
             )
                 .then(function() {
                     expect(callbackDispatcherSpy).toHaveBeenCalled();
-                    expect(callbackDispatcherSpy.calls.argsFor(0)[0] instanceof SubscriptionReply);
-                    expect(callbackDispatcherSpy.calls.argsFor(0)[0].error instanceof SubscriptionException);
+                    expect(callbackDispatcherSpy.calls.argsFor(0)[1] instanceof SubscriptionReply);
+                    expect(callbackDispatcherSpy.calls.argsFor(0)[1].error instanceof SubscriptionException);
                     return null;
                 })
                 .then(function() {
@@ -2060,8 +2062,8 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", functi
                         1000
                     ).then(function() {
                         expect(callbackDispatcherSpy).toHaveBeenCalled();
-                        expect(callbackDispatcherSpy.calls.argsFor(0)[0] instanceof SubscriptionReply);
-                        expect(callbackDispatcherSpy.calls.argsFor(0)[0].error instanceof SubscriptionException);
+                        expect(callbackDispatcherSpy.calls.argsFor(0)[1] instanceof SubscriptionReply);
+                        expect(callbackDispatcherSpy.calls.argsFor(0)[1].error instanceof SubscriptionException);
                         done();
                         return null;
                     });

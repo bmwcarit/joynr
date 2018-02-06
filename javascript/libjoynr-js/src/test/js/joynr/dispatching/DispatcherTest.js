@@ -99,9 +99,11 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", function() {
             proxyParticipantId,
             providerParticipantId,
             subscriptionRequest,
-            callbackDispatcher
+            callbackDispatcher,
+            callbackDispatcherSettings
         ) {
             callbackDispatcher(
+                callbackDispatcherSettings,
                 new SubscriptionReply({
                     subscriptionId: subscriptionRequest.subscriptionId
                 })
@@ -199,7 +201,8 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", function() {
             proxyId,
             providerId,
             new SubscriptionRequest(payload),
-            jasmine.any(Function)
+            jasmine.any(Function),
+            jasmine.any(Object)
         );
     });
 
@@ -218,7 +221,8 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", function() {
             proxyId,
             providerId,
             new MulticastSubscriptionRequest(payload),
-            jasmine.any(Function)
+            jasmine.any(Function),
+            jasmine.any(Object)
         );
         expect(clusterControllerMessagingStub.transmit).toHaveBeenCalled();
         var sentMessage = clusterControllerMessagingStub.transmit.calls.mostRecent().args[0];
@@ -613,9 +617,10 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", function() {
             proxyId,
             providerId,
             subscriptionRequest,
-            callback
+            callback,
+            settings
         ) {
-            callback(subscriptionReply);
+            callback(settings, subscriptionReply);
         });
 
         dispatcher.receive(joynrMessage);
@@ -630,7 +635,8 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", function() {
             proxyId,
             providerId,
             new SubscriptionRequest(payload),
-            jasmine.any(Function)
+            jasmine.any(Function),
+            jasmine.any(Object)
         );
 
         expect(clusterControllerMessagingStub.transmit).toHaveBeenCalled();

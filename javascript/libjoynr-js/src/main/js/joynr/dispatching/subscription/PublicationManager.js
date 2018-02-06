@@ -874,16 +874,16 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         return false;
     };
 
-    function asyncCallbackDispatcher(reply, callbackDispatcher) {
-        callbackDispatcher(new SubscriptionReply(reply));
+    function asyncCallbackDispatcher(callbackDispatcherSettings, reply, callbackDispatcher) {
+        callbackDispatcher(callbackDispatcherSettings, new SubscriptionReply(reply));
     }
 
     /* the parameter "callbackDispatcher" is optional, as in case of restoring
      * subscriptions, no reply must be sent back via the dispatcher
      */
-    function callbackDispatcherAsync(reply, callbackDispatcher) {
+    function callbackDispatcherAsync(callbackDispatcherSettings, reply, callbackDispatcher) {
         if (callbackDispatcher !== undefined) {
-            LongTimer.setTimeout(asyncCallbackDispatcher, 0, reply, callbackDispatcher);
+            LongTimer.setTimeout(asyncCallbackDispatcher, 0, callbackDispatcherSettings, reply, callbackDispatcher);
         }
     }
 
@@ -905,7 +905,8 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         proxyParticipantId,
         providerParticipantId,
         subscriptionRequest,
-        callbackDispatcher
+        callbackDispatcher,
+        callbackDispatcherSettings
     ) {
         var exception;
         var timeToEndDate = 0;
@@ -938,6 +939,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
                 });
                 log.error(exception.detailMessage);
                 callbackDispatcherAsync(
+                    callbackDispatcherSettings,
                     {
                         error: exception,
                         subscriptionId: subscriptionId
@@ -960,6 +962,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
             });
             log.debug(exception.detailMessage);
             callbackDispatcherAsync(
+                callbackDispatcherSettings,
                 {
                     error: exception,
                     subscriptionId: subscriptionRequest.subscriptionId
@@ -1011,6 +1014,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
             });
             log.error(exception.detailMessage);
             callbackDispatcherAsync(
+                callbackDispatcherSettings,
                 {
                     error: exception,
                     subscriptionId: subscriptionId
@@ -1036,6 +1040,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
             });
             log.error(exception.detailMessage);
             callbackDispatcherAsync(
+                callbackDispatcherSettings,
                 {
                     error: exception,
                     subscriptionId: subscriptionId
@@ -1061,6 +1066,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
             });
             log.error(exception.detailMessage);
             callbackDispatcherAsync(
+                callbackDispatcherSettings,
                 {
                     error: exception,
                     subscriptionId: subscriptionId
@@ -1088,6 +1094,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
                 });
                 log.error(exception.detailMessage);
                 callbackDispatcherAsync(
+                    callbackDispatcherSettings,
                     {
                         error: exception,
                         subscriptionId: subscriptionId
@@ -1114,7 +1121,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         addSubscriptionToPersistency(subscriptionId, subscriptionInfo);
 
         triggerPublication(subscriptionInfo);
-        callbackDispatcherAsync({ subscriptionId: subscriptionId }, callbackDispatcher);
+        callbackDispatcherAsync(callbackDispatcherSettings, { subscriptionId: subscriptionId }, callbackDispatcher);
     };
 
     function handleBroadcastSubscriptionRequestInternal(
@@ -1122,6 +1129,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         providerParticipantId,
         subscriptionRequest,
         callbackDispatcher,
+        callbackDispatcherSettings,
         multicast
     ) {
         var requestType = (multicast ? "multicast" : "broadcast") + " subscription request";
@@ -1158,6 +1166,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
                 });
                 log.error(exception.detailMessage);
                 callbackDispatcherAsync(
+                    callbackDispatcherSettings,
                     {
                         error: exception,
                         subscriptionId: subscriptionId
@@ -1182,6 +1191,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
             });
             log.debug(exception.detailMessage);
             callbackDispatcherAsync(
+                callbackDispatcherSettings,
                 {
                     error: exception,
                     subscriptionId: subscriptionRequest.subscriptionId
@@ -1238,6 +1248,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
             });
             log.error(exception.detailMessage);
             callbackDispatcherAsync(
+                callbackDispatcherSettings,
                 {
                     error: exception,
                     subscriptionId: subscriptionId
@@ -1265,6 +1276,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
             });
             log.error(exception.detailMessage);
             callbackDispatcherAsync(
+                callbackDispatcherSettings,
                 {
                     error: exception,
                     subscriptionId: subscriptionId
@@ -1290,6 +1302,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
                 });
                 log.error(exception.detailMessage);
                 callbackDispatcherAsync(
+                    callbackDispatcherSettings,
                     {
                         error: exception,
                         subscriptionId: subscriptionId
@@ -1314,6 +1327,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
                 });
                 log.error(exception.detailMessage);
                 callbackDispatcherAsync(
+                    callbackDispatcherSettings,
                     {
                         error: exception,
                         subscriptionId: subscriptionId
@@ -1337,6 +1351,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         addSubscriptionToPersistency(subscriptionId, subscriptionInfo);
 
         callbackDispatcherAsync(
+            callbackDispatcherSettings,
             {
                 subscriptionId: subscriptionId
             },
@@ -1361,13 +1376,15 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         proxyParticipantId,
         providerParticipantId,
         subscriptionRequest,
-        callbackDispatcher
+        callbackDispatcher,
+        callbackDispatcherSettings
     ) {
         return handleBroadcastSubscriptionRequestInternal(
             proxyParticipantId,
             providerParticipantId,
             subscriptionRequest,
             callbackDispatcher,
+            callbackDispatcherSettings,
             false
         );
     };
@@ -1389,13 +1406,15 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         proxyParticipantId,
         providerParticipantId,
         subscriptionRequest,
-        callbackDispatcher
+        callbackDispatcher,
+        callbackDispatcherSettings
     ) {
         return handleBroadcastSubscriptionRequestInternal(
             proxyParticipantId,
             providerParticipantId,
             subscriptionRequest,
             callbackDispatcher,
+            callbackDispatcherSettings,
             true
         );
     };

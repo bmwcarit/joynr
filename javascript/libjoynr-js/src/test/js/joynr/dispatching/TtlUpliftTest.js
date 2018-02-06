@@ -166,9 +166,11 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
             proxyParticipantId,
             providerParticipantId,
             subscriptionRequest,
-            callbackDispatcher
+            callbackDispatcher,
+            settings
         ) {
             callbackDispatcher(
+                settings,
                 new SubscriptionReply({
                     subscriptionId: subscriptionRequest.subscriptionId
                 })
@@ -422,7 +424,8 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
                 proxyId,
                 providerId,
                 expectedSubscriptionRequest,
-                jasmine.any(Function)
+                jasmine.any(Function),
+                jasmine.any(Object)
             );
 
             checkSubscriptionReplyMessage(expiryDateMs);
@@ -449,7 +452,8 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
                 proxyId,
                 providerId,
                 expectedSubscriptionRequest,
-                jasmine.any(Function)
+                jasmine.any(Function),
+                jasmine.any(Object)
             );
 
             checkSubscriptionReplyMessage(expiryDateMs);
@@ -477,7 +481,8 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
                 proxyId,
                 providerId,
                 expectedSubscriptionRequest,
-                jasmine.any(Function)
+                jasmine.any(Function),
+                jasmine.any(Object)
             );
 
             checkSubscriptionReplyMessage(expiryDateMs);
@@ -691,7 +696,8 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
                 proxyId,
                 providerId,
                 expectedSubscriptionRequest,
-                jasmine.any(Function)
+                jasmine.any(Function),
+                jasmine.any(Object)
             );
 
             checkSubscriptionReplyMessage(expiryDateWithTtlUplift);
@@ -719,7 +725,8 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
                 proxyId,
                 providerId,
                 expectedSubscriptionRequest,
-                jasmine.any(Function)
+                jasmine.any(Function),
+                jasmine.any(Object)
             );
 
             checkSubscriptionReplyMessage(expiryDateWithTtlUplift);
@@ -748,7 +755,8 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
                 proxyId,
                 providerId,
                 expectedSubscriptionRequest,
-                jasmine.any(Function)
+                jasmine.any(Function),
+                jasmine.any(Object)
             );
 
             checkSubscriptionReplyMessage(expiryDateWithTtlUplift);

@@ -689,6 +689,15 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
         }
     };
 
+    function createSubscriptionReplySettings(joynrMessage) {
+        return {
+            from: joynrMessage.to,
+            to: joynrMessage.from,
+            expiryDate: joynrMessage.expiryDate,
+            customHeaders: joynrMessage.getCustomHeaders()
+        };
+    }
+
     /**
      * receives a new JoynrMessage that has to be routed to one of the managers
      *
@@ -723,18 +732,11 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
                         })
                     );
 
-                    var handleReplySettings = {
-                        from: joynrMessage.to,
-                        to: joynrMessage.from,
-                        expiryDate: joynrMessage.expiryDate,
-                        customHeaders: joynrMessage.getCustomHeaders()
-                    };
-
                     return requestReplyManager.handleRequest(
                         joynrMessage.to,
                         request,
                         sendRequestReply,
-                        handleReplySettings
+                        createSubscriptionReplySettings(joynrMessage)
                     );
                 } catch (errorInRequest) {
                     // TODO handle error in handling the request
@@ -788,21 +790,13 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
                             from: joynrMessage.from
                         })
                     );
+
                     publicationManager.handleSubscriptionRequest(
                         joynrMessage.from,
                         joynrMessage.to,
                         subscriptionRequest,
-                        function(subscriptionReply) {
-                            sendSubscriptionReply(
-                                {
-                                    from: joynrMessage.to,
-                                    to: joynrMessage.from,
-                                    expiryDate: joynrMessage.expiryDate,
-                                    customHeaders: joynrMessage.getCustomHeaders()
-                                },
-                                subscriptionReply
-                            );
-                        }
+                        sendSubscriptionReply,
+                        createSubscriptionReplySettings(joynrMessage)
                     );
                 } catch (errorInSubscriptionRequest) {
                     // TODO handle error in handling the subscriptionRequest
@@ -823,21 +817,13 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
                             from: joynrMessage.from
                         })
                     );
+
                     publicationManager.handleBroadcastSubscriptionRequest(
                         joynrMessage.from,
                         joynrMessage.to,
                         broadcastSubscriptionRequest,
-                        function(subscriptionReply) {
-                            sendSubscriptionReply(
-                                {
-                                    from: joynrMessage.to,
-                                    to: joynrMessage.from,
-                                    expiryDate: joynrMessage.expiryDate,
-                                    customHeaders: joynrMessage.getCustomHeaders()
-                                },
-                                subscriptionReply
-                            );
-                        }
+                        sendSubscriptionReply,
+                        createSubscriptionReplySettings(joynrMessage)
                     );
                 } catch (errorInBroadcastSubscriptionRequest) {
                     // TODO handle error in handling the subscriptionRequest
@@ -858,21 +844,13 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
                             from: joynrMessage.from
                         })
                     );
+
                     publicationManager.handleMulticastSubscriptionRequest(
                         joynrMessage.from,
                         joynrMessage.to,
                         multicastSubscriptionRequest,
-                        function(subscriptionReply) {
-                            sendSubscriptionReply(
-                                {
-                                    from: joynrMessage.to,
-                                    to: joynrMessage.from,
-                                    expiryDate: joynrMessage.expiryDate,
-                                    customHeaders: joynrMessage.getCustomHeaders()
-                                },
-                                subscriptionReply
-                            );
-                        }
+                        sendSubscriptionReply,
+                        createSubscriptionReplySettings(joynrMessage)
                     );
                 } catch (errorInMulticastSubscriptionRequest) {
                     // TODO handle error in handling the subscriptionRequest
