@@ -1,4 +1,4 @@
-/*global fail: true */
+/*global fail: true, beforeAll: true */
 /*jslint es5: true, node: true, nomen: true */
 /*
  * #%L
@@ -45,6 +45,7 @@ var Version = require("../../../classes/joynr/types/Version");
 var ProviderQos = require("../../../classes/joynr/types/ProviderQos");
 var uuid = require("../../../classes/lib/uuid-annotated");
 var Promise = require("../../../classes/global/Promise");
+var LoggerFactory = require("../../../classes/joynr/system/LoggerFactory");
 
 var providerId = "providerId";
 var proxyId = "proxyId";
@@ -61,6 +62,11 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", function() {
     var subscriptionId = "mySubscriptionId-" + uuid();
     var multicastId = "multicastId-" + uuid();
     var requestReplyId = "requestReplyId";
+    var loggerSpy;
+
+    beforeAll(function() {
+        spyOn(LoggerFactory, "getLogger").and.callThrough();
+    });
 
     /**
      * Called before each test.
@@ -122,6 +128,9 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", function() {
         dispatcher.registerSubscriptionManager(subscriptionManager);
         dispatcher.registerPublicationManager(publicationManager);
         dispatcher.registerMessageRouter(messageRouter);
+
+        loggerSpy = LoggerFactory.getLogger.calls.mostRecent().returnValue;
+        spyOn(loggerSpy, "error");
 
         /*
          * Make sure 'TestEnum' is properly registered as a type.
@@ -629,5 +638,19 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", function() {
         expect(sentMessage.payload).toEqual(JSON.stringify(subscriptionReply));
 
         done();
+    });
+
+    it("accepts messages with Parse Errors", function(done) {
+        loggerSpy.error.calls.reset();
+        var joynrMessage = new JoynrMessage({
+            type: JoynrMessage.JOYNRMESSAGE_TYPE_REPLY,
+            payload: "invalidJSONPayload[/}"
+        });
+        dispatcher
+            .receive(joynrMessage)
+            .then(done)
+            .catch(fail);
+        var lastArgs = loggerSpy.error.calls.argsFor(0)[0];
+        expect(lastArgs.indexOf(joynrMessage.payload) !== -1).toBe(true);
     });
 });

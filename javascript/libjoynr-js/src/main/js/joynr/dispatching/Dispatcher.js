@@ -96,29 +96,6 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
     }
 
     /**
-     * @name Dispatcher#parsePayload
-     * @function
-     * @private
-     *
-     * @param {Object}
-     *            joynrMessage the joynr message
-     * @returns payload if the payload is parsable JSON, this is parsed and returned as as an object; otherwise the payload itself
-     *          is returned
-     *
-     */
-    function parsePayload(joynrMessage) {
-        try {
-            return JSON.parse(joynrMessage.payload);
-        } catch (e) {
-            // TODO handle error properly
-            log.error("error while deserializing: " + e);
-        }
-
-        // TODO: handle errors correctly with respect to return value
-        return joynrMessage.payload;
-    }
-
-    /**
      * @name Dispatcher#sendJoynrMessage
      * @function
      * @private
@@ -740,9 +717,9 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
         }
         var payload;
         try {
-            payload = parsePayload(joynrMessage);
+            payload = JSON.parse(joynrMessage.payload);
         } catch (error) {
-            log.error("error parsing joynrMessage: " + error);
+            log.error("error parsing joynrMessage: " + error + " payload: " + joynrMessage.payload);
             return Promise.resolve();
         }
 
@@ -812,9 +789,7 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
 
             case JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REQUEST:
                 try {
-                    var subscriptionRequest = upLiftExpiryDateInSubscriptionRequest(
-                        new SubscriptionRequest(parsePayload(joynrMessage))
-                    );
+                    var subscriptionRequest = upLiftExpiryDateInSubscriptionRequest(new SubscriptionRequest(payload));
                     log.info(
                         "received subscription to " + subscriptionRequest.subscribedToName,
                         DiagnosticTags.forSubscriptionRequest({
@@ -848,7 +823,7 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
             case JoynrMessage.JOYNRMESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST:
                 try {
                     var broadcastSubscriptionRequest = upLiftExpiryDateInSubscriptionRequest(
-                        new BroadcastSubscriptionRequest(parsePayload(joynrMessage))
+                        new BroadcastSubscriptionRequest(payload)
                     );
                     log.info(
                         "received broadcast subscription to " + broadcastSubscriptionRequest.subscribedToName,
@@ -883,7 +858,7 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
             case JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST:
                 try {
                     var multicastSubscriptionRequest = upLiftExpiryDateInSubscriptionRequest(
-                        new MulticastSubscriptionRequest(parsePayload(joynrMessage))
+                        new MulticastSubscriptionRequest(payload)
                     );
                     log.info(
                         "received broadcast subscription to " + multicastSubscriptionRequest.subscribedToName,
