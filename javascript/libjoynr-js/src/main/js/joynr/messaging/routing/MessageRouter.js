@@ -1,4 +1,4 @@
-/*global JSON: true */
+/*global JSON: true, routeInternal: true */
 /*jslint es5: true, node: true, nomen: true */
 /*
  * #%L
@@ -101,6 +101,26 @@ function MessageRouter(settings) {
     }
 
     var started = true;
+
+    var getAddressFromPersistency = function getAddressFromPersistency(participantId) {
+        var addressString;
+        try {
+            addressString = persistency.getItem(that.getStorageKey(participantId));
+            if (addressString === undefined || addressString === null || addressString === "{}") {
+                persistency.removeItem(that.getStorageKey(participantId));
+            } else {
+                var address = Typing.augmentTypes(JSON.parse(addressString), typeRegistry);
+                routingTable[participantId] = address;
+                return address;
+            }
+        } catch (error) {
+            log.error("Failed to get address from persisted routing entries for participant " + participantId);
+        }
+    };
+
+    if (!persistency) {
+        getAddressFromPersistency = Util.emptyFunction;
+    }
 
     function isReady() {
         return started;
@@ -305,28 +325,38 @@ function MessageRouter(settings) {
             .then(processQueuedRoutingProxyCalls);
     };
 
+    function resolveNextHopAndRoute(participantId, joynrMessage) {
+        var address = getAddressFromPersistency(participantId);
+
+        function resolveNextHopOnSuccess(opArgs) {
+            if (opArgs.resolved) {
+                routingTable[participantId] = parentMessageRouterAddress;
+                return routeInternal(parentMessageRouterAddress, joynrMessage);
+            }
+            throw new Error(
+                "nextHop cannot be resolved, as participant with id " +
+                    participantId +
+                    " is not reachable by parent routing table"
+            );
+        }
+
+        if (address === undefined && routingProxy !== undefined) {
+            return routingProxy
+                .resolveNextHop({
+                    participantId: participantId
+                })
+                .then(resolveNextHopOnSuccess);
+        }
+        return routeInternal(address, joynrMessage);
+    }
+
     /*
      * This method is called when no address can be found in the local routing table.
      *
      * It tries to resolve the next hop from the persistency and parent router.
      */
     function resolveNextHopInternal(participantId) {
-        var address, addressString;
-
-        if (persistency) {
-            try {
-                addressString = persistency.getItem(that.getStorageKey(participantId));
-                if (addressString === undefined || addressString === null || addressString === "{}") {
-                    persistency.removeItem(that.getStorageKey(participantId));
-                } else {
-                    address = Typing.augmentTypes(JSON.parse(addressString), typeRegistry);
-                    routingTable[participantId] = address;
-                }
-            } catch (error) {
-                log.error("Failed to get address from persisted routing entries for participant " + participantId);
-                return Promise.reject(error);
-            }
-        }
+        var address = getAddressFromPersistency(participantId);
 
         function resolveNextHopOnSuccess(opArgs) {
             if (opArgs.resolved) {
@@ -501,6 +531,10 @@ function MessageRouter(settings) {
         }
     }
 
+    function forwardToRouteInternal(address) {
+        return routeInternal(address, this);
+    }
+
     /**
      * @name MessageRouter#route
      * @function
@@ -522,12 +556,8 @@ function MessageRouter(settings) {
 
         registerGlobalRoutingEntryIfRequired(joynrMessage);
 
-        function forwardToRouteInternal(address) {
-            return routeInternal(address, joynrMessage);
-        }
-
         if (joynrMessage.type === JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST) {
-            return Promise.all(getAddressesForMulticast(joynrMessage).map(forwardToRouteInternal));
+            return Promise.all(getAddressesForMulticast(joynrMessage).map(forwardToRouteInternal, joynrMessage));
         }
 
         var participantId = joynrMessage.to;
@@ -536,7 +566,7 @@ function MessageRouter(settings) {
             return routeInternal(address, joynrMessage);
         }
 
-        return resolveNextHopInternal(participantId).then(forwardToRouteInternal);
+        return resolveNextHopAndRoute(participantId, joynrMessage);
     };
 
     /**
