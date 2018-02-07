@@ -66,15 +66,8 @@ function useWebSocketNode() {
             return data;
         };
 
-        var signingCallback = keychain
-            ? function() {
-                  // set the signature to just be the ownerID
-                  return Buffer.from(keychain.ownerId);
-              }
-            : undefined;
-
         webSocketObj.marshalJoynrMessage = function(data) {
-            return MessageSerializer.stringify(data, signingCallback);
+            return MessageSerializer.stringify(data);
         };
         webSocketObj.unmarshalJoynrMessage = function(event, callback) {
             var joynrMessage = MessageSerializer.parse(event.data);

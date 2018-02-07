@@ -43,12 +43,8 @@ function useSmrf() {
         }
     }
 
-    MessageSerializer.stringify = function(joynrMessage, signingCallback) {
+    MessageSerializer.stringify = function(joynrMessage) {
         joynrMessage.body = joynrMessage.body || new Buffer(joynrMessage.payload);
-
-        if (signingCallback) {
-            joynrMessage.signingCallback = signingCallback;
-        }
 
         return serializeSmrfMessage(joynrMessage);
     };

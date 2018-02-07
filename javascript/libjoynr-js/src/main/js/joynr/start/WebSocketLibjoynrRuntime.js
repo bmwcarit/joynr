@@ -66,6 +66,7 @@ var defaultWebSocketSettings = require("./settings/defaultWebSocketSettings");
 var defaultLibjoynrSettings = require("./settings/defaultLibjoynrSettings");
 var LocalStorage = require("../../global/LocalStorageNode");
 var MemoryStorage = require("../../global/MemoryStorage");
+var JoynrMessage = require("../../joynr/messaging/JoynrMessage");
 var JoynrStates = {
     SHUTDOWN: "shut down",
     STARTING: "starting",
@@ -113,6 +114,7 @@ function WebSocketLibjoynrRuntime(provisioning) {
     var TWO_DAYS_IN_MS = 172800000;
     var keychain = provisioning.keychain;
     var internalShutdown;
+    var bufferedOwnerId;
 
     // this is required at load time of libjoynr
     typeRegistry = Object.freeze(TypeRegistrySingleton.getInstance());
@@ -229,6 +231,10 @@ function WebSocketLibjoynrRuntime(provisioning) {
         DiscoveryQos.setDefaultSettings(discoveryQosSettings);
     }
 
+    function signingCallback() {
+        return bufferedOwnerId;
+    }
+
     if (keychain) {
         if (Util.checkNullUndefined(keychain.tlsCert)) {
             throw new Error("tlsCert not set in keychain.tlsCert");
@@ -242,6 +248,9 @@ function WebSocketLibjoynrRuntime(provisioning) {
         if (Util.checkNullUndefined(keychain.ownerId)) {
             throw new Error("ownerId not set in keychain.ownerId");
         }
+
+        bufferedOwnerId = Buffer.from(keychain.ownerId);
+        JoynrMessage.setSigningCallback(signingCallback);
     }
 
     /**

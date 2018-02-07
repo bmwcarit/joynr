@@ -1,4 +1,4 @@
-/*jslint es5: true, nomen: true */
+/*jslint es5: true, nomen: true, node: true */
 /*global fail: true, beforeAll: true */
 
 /*
@@ -44,6 +44,7 @@ var MessagingQos = require("../../../classes/joynr/messaging/MessagingQos");
 var WebSocketMessagingSkeleton = require("../../../classes/joynr/messaging/websocket/WebSocketMessagingSkeleton");
 var SharedWebSocket = require("../../../classes/joynr/messaging/websocket/SharedWebSocket");
 var WebSocketMessagingStubFactory = require("../../../classes/joynr/messaging/websocket/WebSocketMessagingStubFactory");
+var JoynrMessage = require("../../../classes/joynr/messaging/JoynrMessage");
 
 /**
  * this function creates a wrapper class, which calls Class not by its normal constructor but by Class.prototype.constructor
@@ -272,5 +273,19 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", function() {
             .then(done)
             .catch(fail);
         expect(MessagingQos.prototype.constructor).toHaveBeenCalledWith({ ttl: ttl });
+    });
+
+    it("will set the signingCallback to the joynrMessage.prototype", function() {
+        provisioning.keychain = {
+            tlsCert: "tlsCert",
+            tlsKey: "tlsKey",
+            tlsCa: "tlsCa",
+            ownerId: "ownerID"
+        };
+        spyOn(JoynrMessage, "setSigningCallback").and.callThrough();
+        runtime = new WebSocketLibjoynrRuntime(provisioning);
+        expect(JoynrMessage.setSigningCallback).toHaveBeenCalled();
+        var joynrMessage = new JoynrMessage({ payload: "payload", type: "type" });
+        expect(joynrMessage.signingCallback()).toEqual(Buffer.from(provisioning.keychain.ownerId));
     });
 });
