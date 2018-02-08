@@ -12,7 +12,7 @@ ARCHIVEBINARIES='OFF'
 ADDITIONAL_CMAKE_ARGS=''
 RUN_MAVEN='OFF'
 
-TESTS=(inter-language-test performance-test robustness-test system-integration-test)
+TESTS=(inter-language-test performance-test robustness-test robustness-test-env system-integration-test)
 
 function join_strings
 {
@@ -90,6 +90,11 @@ then
   log "building system-integration-test"
   MAVEN_PROJECT=",io.joynr.tests.system-integration-test:sit-cpp-app"
   SRC_FOLDER="${SRC_FOLDER}/system-integration-test/sit-cpp-app"
+elif [[ "robustness-test-env" == ${SELECTED_TEST} ]]
+then
+  log "building robustness-test-env"
+  MAVEN_PROJECT=",io.joynr.tests:robustness-test-env"
+  SRC_FOLDER="${SRC_FOLDER}/robustness-test-env"
 elif [[ " ${TESTS[@]} " =~ " ${SELECTED_TEST} " ]]
 then
   log "building ${SELECTED_TEST} test"
@@ -134,15 +139,16 @@ cmake -DCMAKE_PREFIX_PATH=$JOYNR_INSTALL_DIR \
 
 time make -j $JOBS
 
-if [ "ON" == "${ARCHIVEBINARIES}" ]
+
+if [ "all" == "${SELECTED_TEST}" ]
 then
-	if [ "all" == "${SELECTED_TEST}" ]
-	then
- 	   tar czf joynr-all-tests.tar.gz bin
-	else
-	    tar czf joynr-$SELECTED_TEST.tar.gz bin
-	fi
+   log "Archiving tests bin folder for ALL"
+   tar czf joynr-all-tests.tar.gz bin
+else
+    log "Archiving tests bin folder for $SELECTED_TEST"
+    tar czf joynr-$SELECTED_TEST.tar.gz bin
 fi
+
 
 END=$(date +%s)
 DIFF=$(( $END - $START ))
