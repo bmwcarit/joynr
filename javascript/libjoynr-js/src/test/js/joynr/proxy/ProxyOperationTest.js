@@ -64,11 +64,14 @@ describe("libjoynr-js.joynr.proxy.ProxyOperation", function() {
 
     beforeEach(function(done) {
         requestReplyManagerSpy = jasmine.createSpyObj("requestReplyManager", ["sendRequest", "sendOneWayRequest"]);
-        requestReplyManagerSpy.sendRequest.and.returnValue(
-            Promise.resolve({
-                result: "resultValue"
-            })
-        );
+        requestReplyManagerSpy.sendRequest.and.callFake(function(settings, callbackSettings) {
+            var response = { result: "resultValue" };
+
+            return Promise.resolve({
+                response: response,
+                settings: callbackSettings
+            });
+        });
 
         operationName = "myOperation";
         proxyParticipantId = "proxyParticipantId";
@@ -223,7 +226,12 @@ describe("libjoynr-js.joynr.proxy.ProxyOperation", function() {
             providerDiscoveryEntry: providerDiscoveryEntry
         };
 
-        requestReplyManagerSpy.sendRequest.and.returnValue(Promise.resolve(replyResponse));
+        requestReplyManagerSpy.sendRequest.and.callFake(function(settings, callbackSettings) {
+            return Promise.resolve({
+                response: replyResponse,
+                settings: callbackSettings
+            });
+        });
 
         var testMethod = new ProxyOperation(
             proxy,
@@ -562,7 +570,13 @@ describe("libjoynr-js.joynr.proxy.ProxyOperation", function() {
             operationName,
             [testData.signature]
         ).buildFunction();
-        requestReplyManagerSpy.sendRequest.and.returnValue(Promise.resolve(testData.returnParams));
+
+        requestReplyManagerSpy.sendRequest.and.callFake(function(settings, callbackSettings) {
+            return Promise.resolve({
+                response: testData.returnParams,
+                settings: callbackSettings
+            });
+        });
         requestReplyManagerSpy.sendRequest.calls.reset();
 
         // do operation call
@@ -580,17 +594,20 @@ describe("libjoynr-js.joynr.proxy.ProxyOperation", function() {
                 expect(requestReplyManagerSpy.sendRequest).toHaveBeenCalled();
 
                 var requestReplyId = requestReplyManagerSpy.sendRequest.calls.argsFor(0)[0].request.requestReplyId;
-                expect(requestReplyManagerSpy.sendRequest).toHaveBeenCalledWith({
-                    toDiscoveryEntry: providerDiscoveryEntry,
-                    from: proxyParticipantId,
-                    messagingQos: new MessagingQos(),
-                    request: new Request({
-                        methodName: operationName,
-                        paramDatatypes: testData.paramDatatypes,
-                        params: testData.params,
-                        requestReplyId: requestReplyId
-                    })
-                });
+                expect(requestReplyManagerSpy.sendRequest).toHaveBeenCalledWith(
+                    {
+                        toDiscoveryEntry: providerDiscoveryEntry,
+                        from: proxyParticipantId,
+                        messagingQos: new MessagingQos(),
+                        request: new Request({
+                            methodName: operationName,
+                            paramDatatypes: testData.paramDatatypes,
+                            params: testData.params,
+                            requestReplyId: requestReplyId
+                        })
+                    },
+                    jasmine.any(Object)
+                );
             })
             .catch(function() {
                 expect(requestReplyManagerSpy.sendRequest).toHaveBeenCalled();
@@ -608,6 +625,7 @@ describe("libjoynr-js.joynr.proxy.ProxyOperation", function() {
             operationName,
             [testData.signature]
         ).buildFunction();
+
         requestReplyManagerSpy.sendOneWayRequest.and.returnValue(Promise.resolve());
         requestReplyManagerSpy.sendOneWayRequest.calls.reset();
 

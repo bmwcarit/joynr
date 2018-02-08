@@ -319,6 +319,7 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", function() {
 
     it("calls registered replyCaller when a reply arrives", function(done) {
         var replyCallerSpy = jasmine.createSpyObj("promise", ["resolve", "reject"]);
+        replyCallerSpy.callbackSettings = {};
 
         var timeout = toleranceMs + ttl_ms;
 
@@ -334,7 +335,10 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", function() {
         )
             .then(function() {
                 expect(replyCallerSpy.resolve).toHaveBeenCalled();
-                expect(replyCallerSpy.resolve).toHaveBeenCalledWith(testResponse);
+                expect(replyCallerSpy.resolve).toHaveBeenCalledWith({
+                    response: testResponse,
+                    settings: replyCallerSpy.callbackSettings
+                });
                 expect(replyCallerSpy.reject).not.toHaveBeenCalled();
                 done();
                 return null;
@@ -393,8 +397,8 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", function() {
 
                 var result = replyCallerSpy.resolve.calls.argsFor(0)[0];
                 for (i = 0; i < params.length; i++) {
-                    expect(result[i]).toEqual(params[i]);
-                    expect(Typing.getObjectType(result[i])).toEqual(Typing.getObjectType(params[i]));
+                    expect(result.response[i]).toEqual(params[i]);
+                    expect(Typing.getObjectType(result.response[i])).toEqual(Typing.getObjectType(params[i]));
                 }
             })
             .catch(function(error) {

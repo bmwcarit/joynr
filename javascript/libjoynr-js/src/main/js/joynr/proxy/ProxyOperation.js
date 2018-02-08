@@ -109,6 +109,31 @@ function checkArguments(operationArguments) {
     return errors;
 }
 
+function operationFunctionOnSuccess(settings) {
+    var response = settings.response,
+        foundValidOperationSignature = settings.settings;
+    var responseKey, argumentValue;
+    if (foundValidOperationSignature.outputParameter && foundValidOperationSignature.outputParameter.length > 0) {
+        argumentValue = {};
+        for (responseKey in response) {
+            if (response.hasOwnProperty(responseKey)) {
+                if (foundValidOperationSignature.outputParameter[responseKey] !== undefined) {
+                    argumentValue[foundValidOperationSignature.outputParameter[responseKey].name] = Typing.augmentTypes(
+                        response[responseKey],
+                        typeRegistry,
+                        foundValidOperationSignature.outputParameter[responseKey].type
+                    );
+                } else {
+                    return Promise.reject(
+                        new Error("Unexpected response: " + JSONSerializer.stringify(response[responseKey]))
+                    );
+                }
+            }
+        }
+    }
+    return argumentValue;
+}
+
 /**
  * Generic operation implementation
  *
@@ -220,42 +245,16 @@ function operationFunction(operationArguments) {
             });
 
             return this.settings.dependencies.requestReplyManager
-                .sendRequest({
-                    toDiscoveryEntry: this.parent.providerDiscoveryEntry,
-                    from: this.parent.proxyParticipantId,
-                    messagingQos: this.messagingQos,
-                    request: request
-                })
-                .then(function(response) {
-                    var responseKey, argumentValue;
-                    if (
-                        foundValidOperationSignature.outputParameter &&
-                        foundValidOperationSignature.outputParameter.length > 0
-                    ) {
-                        argumentValue = {};
-                        for (responseKey in response) {
-                            if (response.hasOwnProperty(responseKey)) {
-                                if (foundValidOperationSignature.outputParameter[responseKey] !== undefined) {
-                                    argumentValue[
-                                        foundValidOperationSignature.outputParameter[responseKey].name
-                                    ] = Typing.augmentTypes(
-                                        response[responseKey],
-                                        typeRegistry,
-                                        foundValidOperationSignature.outputParameter[responseKey].type
-                                    );
-                                } else {
-                                    return Promise.reject(
-                                        new Error(
-                                            "Unexpected response: " + JSONSerializer.stringify(response[responseKey])
-                                        )
-                                    );
-                                }
-                            }
-                        }
-                    }
-
-                    return argumentValue;
-                });
+                .sendRequest(
+                    {
+                        toDiscoveryEntry: this.parent.providerDiscoveryEntry,
+                        from: this.parent.proxyParticipantId,
+                        messagingQos: this.messagingQos,
+                        request: request
+                    },
+                    foundValidOperationSignature
+                )
+                .then(operationFunctionOnSuccess);
         }
     } catch (e) {
         return Promise.reject(new Error("error calling operation: " + e.toString()));

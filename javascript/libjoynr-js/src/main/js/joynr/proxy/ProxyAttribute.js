@@ -248,8 +248,10 @@ function ProxyAttribute(parent, settings, attributeName, attributeType, attribut
     return Object.freeze(publicProxyAttribute);
 }
 
-function sendRequestOnSuccess(response) {
-    return Typing.augmentTypes(response[0], typeRegistry, this.attributeType);
+function sendRequestOnSuccess(settings) {
+    var response = settings.response,
+        attributeType = settings.settings;
+    return Typing.augmentTypes(response[0], typeRegistry, attributeType);
 }
 
 /**
@@ -277,13 +279,16 @@ ProxyAttribute.prototype.executeRequest = function(request, requestSettings) {
 
     // return promise to caller
     return this.settings.dependencies.requestReplyManager
-        .sendRequest({
-            toDiscoveryEntry: this.parent.providerDiscoveryEntry,
-            from: this.parent.proxyParticipantId,
-            messagingQos: messagingQos,
-            request: request
-        })
-        .then(sendRequestOnSuccess.bind(this));
+        .sendRequest(
+            {
+                toDiscoveryEntry: this.parent.providerDiscoveryEntry,
+                from: this.parent.proxyParticipantId,
+                messagingQos: messagingQos,
+                request: request
+            },
+            this.attributeType
+        )
+        .then(sendRequestOnSuccess);
 };
 
 module.exports = ProxyAttribute;

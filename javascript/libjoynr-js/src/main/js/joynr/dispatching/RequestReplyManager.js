@@ -87,9 +87,11 @@ function RequestReplyManager(dispatcher, typeRegistry) {
      *            settings.messagingQos quality-of-service parameters such as time-to-live
      * @param {Request}
      *            settings.request the Request to send
+     * @param {Object} callbackSettings
+     *          additional settings to handle the reply.
      * @returns {Promise} the Promise for the Request
      */
-    this.sendRequest = function sendRequest(settings) {
+    this.sendRequest = function sendRequest(settings, callbackSettings) {
         checkIfReady();
 
         var deferred = Util.createDeferred();
@@ -97,7 +99,8 @@ function RequestReplyManager(dispatcher, typeRegistry) {
             settings.request.requestReplyId,
             {
                 resolve: deferred.resolve,
-                reject: deferred.reject
+                reject: deferred.reject,
+                callbackSettings: callbackSettings
             },
             settings.messagingQos.ttl
         );
@@ -401,7 +404,7 @@ function RequestReplyManager(dispatcher, typeRegistry) {
                     replyCaller.reject(Typing.augmentTypes(reply.error, typeRegistry));
                 }
             } else {
-                replyCaller.resolve(reply.response);
+                replyCaller.resolve({ response: reply.response, settings: replyCaller.callbackSettings });
             }
 
             delete replyCallers[reply.requestReplyId];
