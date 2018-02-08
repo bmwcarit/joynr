@@ -248,6 +248,10 @@ function ProxyAttribute(parent, settings, attributeName, attributeType, attribut
     return Object.freeze(publicProxyAttribute);
 }
 
+function sendRequestOnSuccess(response) {
+    return Typing.augmentTypes(response[0], typeRegistry, this.attributeType);
+}
+
 /**
  * @name ProxyAttribute#executeRequest
  * @function
@@ -270,10 +274,6 @@ ProxyAttribute.prototype.executeRequest = function(request, requestSettings) {
         this.settings.messagingQos,
         requestSettings.messagingQos
     );
-
-    function sendRequestOnSuccess(response) {
-        return Typing.augmentTypes(response[0], typeRegistry, this.attributeType);
-    }
 
     // return promise to caller
     return this.settings.dependencies.requestReplyManager
