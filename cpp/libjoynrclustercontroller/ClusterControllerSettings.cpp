@@ -71,6 +71,10 @@ void ClusterControllerSettings::checkSettings()
         setPerParticipantIdMessageQueueLimit(DEFAULT_PER_PARTICIPANTID_MESSAGE_QUEUE_LIMIT());
     }
 
+    if (!settings.contains(SETTING_TRANSPORT_NOT_AVAILABLE_QUEUE_LIMIT())) {
+        setTransportNotAvailableQueueLimit(DEFAULT_TRANSPORT_NOT_AVAILABLE_QUEUE_LIMIT());
+    }
+
     if (!settings.contains(SETTING_MQTT_MULTICAST_TOPIC_PREFIX())) {
         setMqttMulticastTopicPrefix(DEFAULT_MQTT_MULTICAST_TOPIC_PREFIX());
     }
@@ -334,6 +338,11 @@ std::uint64_t ClusterControllerSettings::DEFAULT_PER_PARTICIPANTID_MESSAGE_QUEUE
     return 0;
 }
 
+std::uint64_t ClusterControllerSettings::DEFAULT_TRANSPORT_NOT_AVAILABLE_QUEUE_LIMIT()
+{
+    return 0;
+}
+
 const std::string& ClusterControllerSettings::DEFAULT_MQTT_MULTICAST_TOPIC_PREFIX()
 {
     static const std::string value("");
@@ -547,6 +556,12 @@ const std::string& ClusterControllerSettings::SETTING_PER_PARTICIPANTID_MESSAGE_
     return value;
 }
 
+const std::string& ClusterControllerSettings::SETTING_TRANSPORT_NOT_AVAILABLE_QUEUE_LIMIT()
+{
+    static const std::string value("cluster-controller/transport-not-available-queue-limit");
+    return value;
+}
+
 const std::string& ClusterControllerSettings::
         SETTING_LOCAL_DOMAIN_ACCESS_STORE_PERSISTENCE_FILENAME()
 {
@@ -589,6 +604,16 @@ std::uint64_t ClusterControllerSettings::getPerParticipantIdMessageQueueLimit() 
 void ClusterControllerSettings::setPerParticipantIdMessageQueueLimit(std::uint64_t limit)
 {
     settings.set(SETTING_PER_PARTICIPANTID_MESSAGE_QUEUE_LIMIT(), limit);
+}
+
+std::uint64_t ClusterControllerSettings::getTransportNotAvailableQueueLimit() const
+{
+    return settings.get<std::uint64_t>(SETTING_TRANSPORT_NOT_AVAILABLE_QUEUE_LIMIT());
+}
+
+void ClusterControllerSettings::setTransportNotAvailableQueueLimit(std::uint64_t limit)
+{
+    settings.set(SETTING_TRANSPORT_NOT_AVAILABLE_QUEUE_LIMIT(), limit);
 }
 
 void ClusterControllerSettings::setAclEntriesDirectory(const std::string& directoryPath)

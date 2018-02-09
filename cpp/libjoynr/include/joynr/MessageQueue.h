@@ -177,6 +177,10 @@ private:
         const std::size_t numEntriesForKey = std::distance(range.first, range.second);
 
         if (numEntriesForKey >= perKeyMessageQueueLimit) {
+            JOYNR_LOG_WARN(logger(),
+                           "Erasing message with id {} since queue limit of {} was reached",
+                           range.first->message->getId(),
+                           perKeyMessageQueueLimit);
             keyAndTtlIndex.erase(range.first);
         }
     }
@@ -193,7 +197,7 @@ private:
         assert(msgWithLowestTtl != ttlIndex.cend());
 
         JOYNR_LOG_WARN(logger(),
-                       "erasing message with id {} since queue limit of {} was reached",
+                       "Erasing message with id {} since queue limit of {} was reached",
                        msgWithLowestTtl->message->getId(),
                        messageQueueLimit);
 

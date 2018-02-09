@@ -107,6 +107,7 @@ private:
     void createSubscriptions();
     void subscribeToTopicInternal(const std::string& topic, const bool isChannelTopic = false);
     void setReadyToSend(bool readyToSend);
+    static std::string getErrorString(int rc);
 
     const MessagingSettings& messagingSettings;
     const std::string host;
