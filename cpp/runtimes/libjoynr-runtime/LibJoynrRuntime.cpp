@@ -207,7 +207,7 @@ void LibJoynrRuntime::init(
             DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
     routingProviderDiscoveryQos.addCustomParameter(
             "fixedParticipantId", routingProviderParticipantId);
-    routingProviderDiscoveryQos.setDiscoveryTimeoutMs(50);
+    routingProviderDiscoveryQos.setDiscoveryTimeoutMs(1000);
 
     std::shared_ptr<ProxyBuilder<joynr::system::RoutingProxy>> routingProxyBuilder =
             createProxyBuilder<joynr::system::RoutingProxy>(systemServicesDomain);

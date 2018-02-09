@@ -39,6 +39,7 @@ public:
     static const std::string& SETTING_LOCAL_DOMAIN_ACCESS_STORE_PERSISTENCE_FILENAME();
     static const std::string& SETTING_MESSAGE_QUEUE_LIMIT();
     static const std::string& SETTING_PER_PARTICIPANTID_MESSAGE_QUEUE_LIMIT();
+    static const std::string& SETTING_TRANSPORT_NOT_AVAILABLE_QUEUE_LIMIT();
     static const std::string& SETTING_MQTT_CLIENT_ID_PREFIX();
     static const std::string& SETTING_MQTT_TLS_ENABLED();
     static const std::string& SETTING_MQTT_CERTIFICATE_AUTHORITY_PEM_FILENAME();
@@ -78,6 +79,7 @@ public:
     static bool DEFAULT_ACCESS_CONTROL_AUDIT();
     static std::uint64_t DEFAULT_MESSAGE_QUEUE_LIMIT();
     static std::uint64_t DEFAULT_PER_PARTICIPANTID_MESSAGE_QUEUE_LIMIT();
+    static std::uint64_t DEFAULT_TRANSPORT_NOT_AVAILABLE_QUEUE_LIMIT();
 
     explicit ClusterControllerSettings(Settings& settings);
     ClusterControllerSettings(const ClusterControllerSettings&) = default;
@@ -131,6 +133,9 @@ public:
 
     std::uint64_t getPerParticipantIdMessageQueueLimit() const;
     void setPerParticipantIdMessageQueueLimit(std::uint64_t limit);
+
+    std::uint64_t getTransportNotAvailableQueueLimit() const;
+    void setTransportNotAvailableQueueLimit(std::uint64_t limit);
 
     bool enableAccessController() const;
     void setEnableAccessController(bool enable);
