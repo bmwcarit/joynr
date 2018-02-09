@@ -79,3 +79,11 @@ TEST(ClusterControllerSettingsTest, messageQueueLimitIsSet)
 
     EXPECT_EQ(clusterControllerSettings.getMessageQueueLimit(), std::uint64_t(10));
 }
+
+TEST(ClusterControllerSettingsTest, defaultTransportNotAvailableQueueLimitIsSet)
+{
+    Settings settings;
+    ClusterControllerSettings clusterControllerSettings(settings);
+
+    EXPECT_EQ(0, clusterControllerSettings.getTransportNotAvailableQueueLimit());
+}
