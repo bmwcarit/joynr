@@ -1,7 +1,13 @@
-# joynr 1.0.1
+# joynr 1.0.2
 
 ## API relevant changes
 None.
+
+## Other changes
+* **[Java]** joynr performs an explicit disconnect when the MQTT connection is lost in order to make
+  a reconnect more robust.
+
+# joynr 1.0.1
 
 ## Other changes
 
@@ -11,6 +17,7 @@ None.
   property. By default no queue limit is enfored.
 
 # joynr 1.0.0
+API Stable
 
 ## API relevant changes
 None.
