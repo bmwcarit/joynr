@@ -518,15 +518,19 @@ function MessageRouter(settings) {
             type === JoynrMessage.JOYNRMESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST ||
             type === JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST
         ) {
-            var replyToAddress = joynrMessage.replyChannelId;
-            if (!Util.checkNullUndefined(replyToAddress)) {
-                // because the message is received via global transport, isGloballyVisible must be true
-                var isGloballyVisible = true;
-                that.addNextHop(
-                    joynrMessage.from,
-                    Typing.augmentTypes(JSON.parse(replyToAddress), typeRegistry),
-                    isGloballyVisible
-                );
+            try {
+                var replyToAddress = joynrMessage.replyChannelId;
+                if (!Util.checkNullUndefined(replyToAddress)) {
+                    // because the message is received via global transport, isGloballyVisible must be true
+                    var isGloballyVisible = true;
+                    that.addNextHop(
+                        joynrMessage.from,
+                        Typing.augmentTypes(JSON.parse(replyToAddress), typeRegistry),
+                        isGloballyVisible
+                    );
+                }
+            } catch (e) {
+                log.error("could not register global Routing Entry: " + e);
             }
         }
     }
@@ -544,29 +548,38 @@ function MessageRouter(settings) {
      * @returns {Object} A+ promise object
      */
     this.route = function route(joynrMessage) {
-        var now = Date.now();
-        if (now > joynrMessage.expiryDate) {
-            var errorMsg = "Received expired message. Dropping the message. ID: " + joynrMessage.msgId;
-            log.warn(errorMsg + ", expiryDate: " + joynrMessage.expiryDate + ", now: " + now);
-            return Promise.reject(new JoynrRuntimeException({ detailMessage: errorMsg }));
+        try {
+            var now = Date.now();
+            if (now > joynrMessage.expiryDate) {
+                var errorMsg = "Received expired message. Dropping the message. ID: " + joynrMessage.msgId;
+                log.warn(errorMsg + ", expiryDate: " + joynrMessage.expiryDate + ", now: " + now);
+                return Promise.reject(new JoynrRuntimeException({ detailMessage: errorMsg }));
+            }
+            log.debug(
+                "Route message. ID: " +
+                    joynrMessage.msgId +
+                    ", expiryDate: " +
+                    joynrMessage.expiryDate +
+                    ", now: " +
+                    now
+            );
+
+            registerGlobalRoutingEntryIfRequired(joynrMessage);
+
+            if (joynrMessage.type === JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST) {
+                return Promise.all(getAddressesForMulticast(joynrMessage).map(forwardToRouteInternal, joynrMessage));
+            }
+
+            var participantId = joynrMessage.to;
+            var address = routingTable[participantId];
+            if (address !== undefined) {
+                return routeInternal(address, joynrMessage);
+            }
+
+            return resolveNextHopAndRoute(participantId, joynrMessage);
+        } catch (e) {
+            log.error("MessageRouter.route failed: " + e.message);
         }
-        log.debug(
-            "Route message. ID: " + joynrMessage.msgId + ", expiryDate: " + joynrMessage.expiryDate + ", now: " + now
-        );
-
-        registerGlobalRoutingEntryIfRequired(joynrMessage);
-
-        if (joynrMessage.type === JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST) {
-            return Promise.all(getAddressesForMulticast(joynrMessage).map(forwardToRouteInternal, joynrMessage));
-        }
-
-        var participantId = joynrMessage.to;
-        var address = routingTable[participantId];
-        if (address !== undefined) {
-            return routeInternal(address, joynrMessage);
-        }
-
-        return resolveNextHopAndRoute(participantId, joynrMessage);
     };
 
     /**
