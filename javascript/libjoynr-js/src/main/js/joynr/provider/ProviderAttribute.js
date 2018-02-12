@@ -1,5 +1,4 @@
-/*jslint es5: true, node: true */
-
+/*jslint es5: true, node: true, nomen: true */
 /*
  * #%L
  * %%
@@ -123,12 +122,14 @@ var asWrite = (function() {
         if (!this.privateSetterFunc) {
             throw new Error("no setter function registered for provider attribute");
         }
+
+        var setterParams = Typing.augmentTypes(value, typeRegistry, that.attributeType);
         return Promise.resolve(this.privateGetterFunc())
             .then(
                 function(getterValue) {
                     originalValue = getterValue;
-                    return this.privateSetterFunc(Typing.augmentTypes(value, typeRegistry, this.attributeType));
-                }.bind(this)
+                    return that.privateSetterFunc(setterParams);
+                }
             )
             .then(function() {
                 if (originalValue !== value && that.valueChanged instanceof Function) {
@@ -166,13 +167,15 @@ var asRead = (function() {
         };
     }
 
-    function createError(error){
-        if (error instanceof ProviderRuntimeException) {
-            throw error;
-        }
-        throw new ProviderRuntimeException({
-            detailMessage: "getter method for attribute " + this.attributeName + " reported an error"
-        });
+    function curryCreateError(context){
+        return function createError(error){
+            if (error instanceof ProviderRuntimeException) {
+                throw error;
+            }
+            throw new ProviderRuntimeException({
+                detailMessage: "getter method for attribute " + context.attributeName + " reported an error"
+            });
+        };
     }
 
     /**
@@ -182,22 +185,27 @@ var asRead = (function() {
      * @name ProviderAttribute#get
      * @function
      *
-     * @returns {?} the attribute value
+     * @returns {?} a Promise which resolves the attribute value
      *
-     * @throws {Error} if no getter function was registered before calling it
-     * @throws {Error} if registered getter returns a compound type with incorrect values
+     * rejects {Error} if no getter function was registered before calling it
+     * rejects {Error} if registered getter returns a compound type with incorrect values
      *
      * @see ProviderAttribute#registerGetter
      */
     function get() {
+        try{
+            if (!this.privateGetterFunc) {
+                return Promise.reject(new Error("no getter function registered for provider attribute: " + this.attributeName));
+            }
+            return Promise.resolve(this.privateGetterFunc()).then(toArray).catch(this._createError);
 
-        if (!this.privateGetterFunc) {
-            return Promise.reject(new Error("no getter function registered for provider attribute: " + this.attributeName));
+        } catch (e){
+            return Promise.reject(e);
         }
-        return this.privateGetterFunc().then(toArray).catch(createError.bind(this));
     }
 
     return function() {
+        this._createError = curryCreateError(this);
         this.get = get;
         this.registerGetter = registerGetter;
     };
@@ -288,14 +296,7 @@ function ProviderAttribute(parent, implementation, attributeName, attributeType,
 
     // place these functions after the forwarding we don't want them public
     if (implementation && typeof implementation.get === "function") {
-        /*
-            In order to avoid code duplication it would have been nice to call registerGetter here.
-            But this is not possible, because registerGetter is only available if this.hasRead is true.
-            this.privateGetterFunc is also needed for set to trigger valuechanged.
-         */
-        this.privateGetterFunc = function() {
-            return Promise.resolve().then(implementation.get);
-        };
+        this.privateGetterFunc = implementation.get;
     }
     if (implementation && typeof implementation.set === "function") {
         this.privateSetterFunc = implementation.set;
