@@ -133,34 +133,10 @@ The number of incoming MQTT messages that can be handled by the message router a
 
 This property is only relevant when `PROPERTY_BACKPRESSURE_ENABLED` is set to true.
 
-To prevent the mqtt broker from flooding the message queue, the reception of further incoming MQTT
-messages will be delayed by not sending acknowledgement messages to the broker until an already
-accepted Mqtt message is removed from the message queue and is marked as processed.
-See also `PROPERTY_BACKPRESSURE_REPEATED_MQTT_MESSAGE_IGNORE_PERIOD_MS`.
-
 * **OPTIONAL**
 * **Type**: int
 * **User property**: `joynr.messaging.backpressure.maxincomingmqttmessagesinqueue`
 * **Default value**: `20`
-
-### `PROPERTY_BACKPRESSURE_REPEATED_MQTT_MESSAGE_IGNORE_PERIOD_MS`
-Time in milliseconds for which the message ID of processed messages is kept to detect duplicated
-incoming Mqtt messages.
-
-This property is only relevant when `PROPERTY_BACKPRESSURE_ENABLED` is set to true.
-
-The Mqtt broker tries to resend a Qos=1 and Qos=2 message when no response (PUBACK/PUBREL) is
-received. Joynr keeps track of received but not yet processed messages and delays the
-acknowledgement until the message is processed by the provider or proxy callback. After a message
-is marked as processed, the message ID is kept for additional
-`joynr.messaging.backpressure.repeatedmqttmessageignoreperiodms` milliseconds to detect duplicated messages which
-were resent by the MQTT broker because it did not receive an acknowledgement for a processed message
-in time.
-
-* **OPTIONAL**
-* **Type**: long
-* **User property**: `joynr.messaging.backpressure.repeatedmqttmessageignoreperiodms`
-* **Default value**: `1000`
 
 ### `PROPERTY_MESSAGING_MAXIMUM_TTL_MS`
 The maximum allowed time-to-live (TTL) of joynr messages. The TTL used in a joynr message is set on
