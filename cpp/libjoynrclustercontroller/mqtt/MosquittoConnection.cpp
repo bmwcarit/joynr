@@ -21,6 +21,7 @@
 
 #include "joynr/ClusterControllerSettings.h"
 #include "joynr/MessagingSettings.h"
+#include "joynr/Util.h"
 #include "joynr/exceptions/JoynrException.h"
 
 namespace joynr
@@ -99,19 +100,8 @@ std::string MosquittoConnection::getErrorString(int rc)
         return std::string(mosqpp::strerror(rc));
     }
 
-    // MT-safe workaround
-    char buf[256];
-    buf[0] = '\0';
-    int storedErrno = errno;
-    // POSIX compliant check for conversion errors,
-    // see 'man strerror_r'
-    errno = 0;
-    strerror_r(storedErrno, buf, sizeof(buf));
-    if (errno) {
-        return "failed to convert errno";
-    }
-
-    return std::string(buf);
+    const int storedErrno = errno;
+    return joynr::util::getErrorString(storedErrno);
 }
 
 void MosquittoConnection::on_disconnect(int rc)
