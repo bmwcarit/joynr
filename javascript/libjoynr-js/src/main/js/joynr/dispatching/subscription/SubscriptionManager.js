@@ -196,9 +196,9 @@ function SubscriptionManager(dispatcher) {
         var alertAfterIntervalMs = subscriptionRequest.qos.alertAfterIntervalMs;
         if (alertAfterIntervalMs !== undefined && alertAfterIntervalMs > 0) {
             publicationCheckTimerIds[subscriptionRequest.subscriptionId] = LongTimer.setTimeout(
-                function checkPublicationAlertAfterInterval() {
-                    checkPublication(subscriptionRequest.subscriptionId, alertAfterIntervalMs);
-                },
+                checkPublication,
+                alertAfterIntervalMs,
+                subscriptionRequest.subscriptionId,
                 alertAfterIntervalMs
             );
         }
