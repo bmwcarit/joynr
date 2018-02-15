@@ -63,13 +63,24 @@ int main(int argc, char* argv[])
     std::string sslPrivateKeyFilename;
     std::string sslCaCertFilename;
 
-    po::options_description cmdLineOptions;
-    cmdLineOptions.add_options()("domain,d", po::value(&providerDomain)->required())(
-            "runForever,r", po::value(&runForever)->default_value(false))(
-            "pathtosettings,p", po::value(&pathToSettings))(
-            "ssl-cert-pem", po::value(&sslCertFilename))(
-            "ssl-privatekey-pem", po::value(&sslPrivateKeyFilename))(
-            "ssl-ca-cert-pem", po::value(&sslCaCertFilename));
+    po::options_description cmdLineOptions("Available options");
+    cmdLineOptions.add_options()(
+            "domain,d", po::value(&providerDomain)->required(), "joynr domain to be used")(
+            "runForever,r",
+            po::value(&runForever)->default_value(false),
+            "If not set the provider will terminate"
+            "after answering the first request.")("pathtosettings,p",
+                                                  po::value(&pathToSettings),
+                                                  "Absolute path to a non-default setting file.")(
+            "ssl-cert-pem",
+            po::value(&sslCertFilename),
+            "Absolute path to public certificate for this application.")(
+            "ssl-privatekey-pem",
+            po::value(&sslPrivateKeyFilename),
+            "Absolute path to private key for this application.")(
+            "ssl-ca-cert-pem",
+            po::value(&sslCaCertFilename),
+            "Absolute path to certificate of CA.")("help,h", "Print help message");
 
     try {
         po::variables_map variablesMap;
@@ -78,9 +89,16 @@ int main(int argc, char* argv[])
                           .positional(positionalCmdLineOptions)
                           .run(),
                   variablesMap);
+
+        if (variablesMap.count("help")) {
+            std::cout << cmdLineOptions << std::endl;
+            return EXIT_SUCCESS;
+        }
+
         po::notify(variablesMap);
     } catch (const std::exception& e) {
-        std::cerr << e.what();
+        std::cerr << e.what() << std::endl;
+        std::cerr << cmdLineOptions << std::endl;
         return EXIT_FAILURE;
     }
 
