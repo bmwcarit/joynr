@@ -18,6 +18,9 @@
  */
 package io.joynr.jeeintegration.messaging;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.inject.Inject;
 
 import io.joynr.messaging.FailureAction;
@@ -31,6 +34,7 @@ import io.joynr.messaging.mqtt.MqttClientFactory;
  * NoOp).
  */
 public class NoOpMqttMessagingSkeleton implements IMqttMessagingSkeleton {
+    private final static Logger logger = LoggerFactory.getLogger(NoOpMqttMessagingSkeleton.class);
 
     private MqttClientFactory mqttClientFactory;
     private JoynrMqttClient mqttClient;
@@ -42,7 +46,7 @@ public class NoOpMqttMessagingSkeleton implements IMqttMessagingSkeleton {
 
     @Override
     public void transmit(byte[] serializedMessage, int mqttId, int mqttQos, FailureAction failureAction) {
-        mqttClient.messageReceivedAndProcessingFinished(mqttId, mqttQos);
+        logger.trace("NoOp processing of mqtt message with id: {} and qos: {}", mqttId, mqttQos);
     }
 
     @Override

@@ -21,7 +21,6 @@ package io.joynr.messaging.mqtt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -206,23 +205,7 @@ public class MqttMessagingSkeletonTest {
     }
 
     @Test
-    public void testClientNotifiedWhenMessageIsProcessed() throws Exception {
-        final int mqttMessageId = -753;
-        final int mqttQos = 1;
-        ImmutableMessage message = createTestMessage();
-        final String messageId = message.getId();
-
-        subject.transmit(message.getSerializedMessage(), mqttMessageId, mqttQos, failIfCalledAction);
-
-        Thread.sleep(50);
-        verify(mqttClient, times(0)).messageReceivedAndProcessingFinished(anyInt(), anyInt());
-
-        subject.messageProcessed(messageId);
-        verify(mqttClient).messageReceivedAndProcessingFinished(mqttMessageId, mqttQos);
-    }
-
-    @Test
-    public void testClientNotifiedForInvalidMessage() throws Exception {
+    public void testFailureActionCalledForInvalidMessage() throws Exception {
         final int mqttMessageId = -333;
         final int mqttQos = 1;
 
@@ -232,12 +215,11 @@ public class MqttMessagingSkeletonTest {
                          mqttQos,
                          getExpectToBeCalledAction(semaphore));
 
-        verify(mqttClient).messageReceivedAndProcessingFinished(mqttMessageId, mqttQos);
         assertTrue(semaphore.tryAcquire());
     }
 
     @Test
-    public void testClientNotifiedAfterExceptionFromMessageRouter() throws Exception {
+    public void testFailureActionCalledAfterExceptionFromMessageRouter() throws Exception {
         final int mqttMessageId = -44;
         final int mqttQos = 1;
 
@@ -248,49 +230,7 @@ public class MqttMessagingSkeletonTest {
         Semaphore semaphore = new Semaphore(0);
         subject.transmit(message.getSerializedMessage(), mqttMessageId, mqttQos, getExpectToBeCalledAction(semaphore));
 
-        verify(mqttClient).messageReceivedAndProcessingFinished(mqttMessageId, mqttQos);
         assertTrue(semaphore.tryAcquire());
-    }
-
-    @Test
-    public void testClientNotifiedOnlyOnceWithExceptionFromMessageRouter() throws Exception {
-        final int mqttMessageId = 476;
-        final int mqttQos = 1;
-        ImmutableMessage message = createTestMessage();
-        final String messageId = message.getId();
-
-        doThrow(new JoynrRuntimeException()).when(messageRouter).route(any(ImmutableMessage.class));
-
-        Semaphore semaphore = new Semaphore(0);
-        subject.transmit(message.getSerializedMessage(), mqttMessageId, mqttQos, getExpectToBeCalledAction(semaphore));
-
-        assertTrue(semaphore.tryAcquire());
-        verify(mqttClient, times(1)).messageReceivedAndProcessingFinished(anyInt(), anyInt());
-
-        subject.messageProcessed(messageId);
-        verify(mqttClient, times(1)).messageReceivedAndProcessingFinished(mqttMessageId, mqttQos);
-
-        subject.messageProcessed(messageId);
-        verify(mqttClient, times(1)).messageReceivedAndProcessingFinished(mqttMessageId, mqttQos);
-    }
-
-    @Test
-    public void testClientNotifiedOnlyOnceWithoutExceptionFromMessageRouter() throws Exception {
-        final int mqttMessageId = 1453;
-        final int mqttQos = 1;
-        ImmutableMessage message = createTestMessage();
-        final String messageId = message.getId();
-
-        subject.transmit(message.getSerializedMessage(), mqttMessageId, mqttQos, failIfCalledAction);
-
-        Thread.sleep(50);
-        verify(mqttClient, times(0)).messageReceivedAndProcessingFinished(mqttMessageId, mqttQos);
-
-        subject.messageProcessed(messageId);
-        verify(mqttClient, times(1)).messageReceivedAndProcessingFinished(mqttMessageId, mqttQos);
-
-        subject.messageProcessed(messageId);
-        verify(mqttClient, times(1)).messageReceivedAndProcessingFinished(mqttMessageId, mqttQos);
     }
 
     @Test
@@ -343,35 +283,6 @@ public class MqttMessagingSkeletonTest {
                          mqttQos,
                          failIfCalledAction);
         verify(messageRouter, times(maxMqttMessagesInQueue + 1)).route(any(ImmutableMessage.class));
-    }
-
-    @Test
-    public void testPubAckSentWhenBackpressureIsDisabled() throws Exception {
-        final int mqttQos = 1;
-        final int mqttMessageId1 = 1234;
-        final int mqttMessageId2 = 4321;
-
-        ImmutableMessage message1 = createTestMessage();
-        ImmutableMessage message2 = createTestMessage();
-
-        final boolean testLocalBackpressureEnabled = false;
-        final int testLocalmaxMqttMessagesInQueue = 1;
-
-        subject = new MqttMessagingSkeleton(ownAddress,
-                                            testLocalmaxMqttMessagesInQueue,
-                                            testLocalBackpressureEnabled,
-                                            messageRouter,
-                                            mqttClientFactory,
-                                            mqttTopicPrefixProvider,
-                                            new NoOpRawMessagingPreprocessor(),
-                                            new HashSet<JoynrMessageProcessor>());
-        subject.init();
-
-        subject.transmit(message1.getSerializedMessage(), mqttMessageId1, mqttQos, failIfCalledAction);
-        subject.transmit(message2.getSerializedMessage(), mqttMessageId2, mqttQos, failIfCalledAction);
-
-        verify(mqttClient).messageReceivedAndProcessingFinished(mqttMessageId1, mqttQos);
-        verify(mqttClient).messageReceivedAndProcessingFinished(mqttMessageId2, mqttQos);
     }
 
     private ImmutableMessage createTestMessage() throws Exception {

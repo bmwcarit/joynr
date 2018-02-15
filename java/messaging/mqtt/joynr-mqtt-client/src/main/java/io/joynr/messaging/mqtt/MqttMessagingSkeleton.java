@@ -239,8 +239,6 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
             LOG.error("Error processing incoming message. Message will be dropped: {} ", e.getMessage());
             failureAction.execute(e);
         }
-
-        mqttClient.messageReceivedAndProcessingFinished(mqttId, mqttQos);
     }
 
     @Override
@@ -271,7 +269,6 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
             }
         } catch (UnsuppportedVersionException | EncodingException | NullPointerException e) {
             LOG.error("Message: \"{}\", could not be deserialized, exception: {}", serializedMessage, e.getMessage());
-            mqttClient.messageReceivedAndProcessingFinished(mqttId, mqttQos);
             failureAction.execute(e);
         }
     }
@@ -321,8 +318,7 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
     private void handleMessageProcessed(String messageId, int mqttId, int mqttQos) {
         DelayedMessageId delayedMessageId = new DelayedMessageId(messageId, 0);
         if (!processedMessagesQueue.contains(delayedMessageId)) {
-            LOG.debug("Message {} was processed and will be acknowledged", messageId);
-            mqttClient.messageReceivedAndProcessingFinished(mqttId, mqttQos);
+            LOG.debug("Message {} was processed", messageId);
             processedMessagesQueue.put(delayedMessageId);
         }
     }

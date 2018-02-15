@@ -34,6 +34,4 @@ public interface JoynrMqttClient {
 
     public void unsubscribe(String topic);
 
-    public void messageReceivedAndProcessingFinished(int mqttId, int mqttQos);
-
 }

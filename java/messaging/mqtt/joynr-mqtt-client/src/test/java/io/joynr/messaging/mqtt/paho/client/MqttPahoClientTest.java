@@ -200,8 +200,6 @@ public class MqttPahoClientTest {
                                                              mqttMessageIdCaptor.capture(),
                                                              eq(MqttMessagingStub.DEFAULT_QOS_LEVEL),
                                                              any(FailureAction.class));
-        joynrMqttClient.messageReceivedAndProcessingFinished(mqttMessageIdCaptor.getValue(),
-                                                             MqttMessagingStub.DEFAULT_QOS_LEVEL);
     }
 
     @Test
@@ -369,9 +367,6 @@ public class MqttPahoClientTest {
                                                   mqttMessageIdCaptor.capture(),
                                                   eq(MqttMessagingStub.DEFAULT_QOS_LEVEL),
                                                   any(FailureAction.class));
-
-        joynrMqttClient.messageReceivedAndProcessingFinished(mqttMessageIdCaptor.getValue(),
-                                                             MqttMessagingStub.DEFAULT_QOS_LEVEL);
     }
 
     @Test
