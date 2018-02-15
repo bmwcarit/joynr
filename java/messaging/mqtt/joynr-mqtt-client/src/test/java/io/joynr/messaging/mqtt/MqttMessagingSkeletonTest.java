@@ -297,61 +297,6 @@ public class MqttMessagingSkeletonTest {
         verify(mqttClient, times(1)).messageReceivedAndProcessingFinished(mqttMessageId, mqttQos);
     }
 
-    private void transmitDuplicatedMessageForRepeatMqttMessageIgnorePeriodTests(ImmutableMessage message1,
-                                                                                ImmutableMessage message2,
-                                                                                int sleepDurationMs) throws Exception {
-        final int mqttMessageId = 1487;
-        final int mqttMessageId2 = 1516;
-        final int mqttQos = 1;
-
-        subject.transmit(message1.getSerializedMessage(), mqttMessageId, mqttQos, failIfCalledAction);
-        subject.messageProcessed(message1.getId());
-        subject.transmit(message1.getSerializedMessage(), mqttMessageId, mqttQos, failIfCalledAction);
-
-        Thread.sleep(sleepDurationMs);
-
-        subject.transmit(message2.getSerializedMessage(), mqttMessageId2, mqttQos, failIfCalledAction);
-        subject.messageProcessed(message2.getId());
-
-        subject.transmit(message1.getSerializedMessage(), mqttMessageId, mqttQos, failIfCalledAction);
-    }
-
-    @Test
-    public void testDuplicatedMessageDroppedWithinRepeatedMqttMessageIgnorePeriod() throws Exception {
-        ImmutableMessage message1 = createTestMessage();
-        ImmutableMessage message2 = createTestMessage();
-
-        final int toleranceMs = 300;
-        final int sleepDurationMs = repeatedMqttMessageIgnorePeriodMs - toleranceMs;
-        assertTrue(sleepDurationMs > 0);
-
-        transmitDuplicatedMessageForRepeatMqttMessageIgnorePeriodTests(message1, message2, sleepDurationMs);
-
-        ArgumentCaptor<ImmutableMessage> captor = ArgumentCaptor.forClass(ImmutableMessage.class);
-        verify(messageRouter, times(2)).route(captor.capture());
-
-        assertArrayEquals(message1.getSerializedMessage(), captor.getAllValues().get(0).getSerializedMessage());
-        assertArrayEquals(message2.getSerializedMessage(), captor.getAllValues().get(1).getSerializedMessage());
-    }
-
-    @Test
-    public void testDuplicatedMessageNotDroppedAfterRepeatedMqttMessageIgnorePeriod() throws Exception {
-        ImmutableMessage message1 = createTestMessage();
-        ImmutableMessage message2 = createTestMessage();
-
-        final int toleranceMs = 50;
-        final int sleepDurationMs = repeatedMqttMessageIgnorePeriodMs + toleranceMs;
-
-        transmitDuplicatedMessageForRepeatMqttMessageIgnorePeriodTests(message1, message2, sleepDurationMs);
-
-        ArgumentCaptor<ImmutableMessage> captor = ArgumentCaptor.forClass(ImmutableMessage.class);
-        verify(messageRouter, times(3)).route(captor.capture());
-
-        assertArrayEquals(message1.getSerializedMessage(), captor.getAllValues().get(0).getSerializedMessage());
-        assertArrayEquals(message2.getSerializedMessage(), captor.getAllValues().get(1).getSerializedMessage());
-        assertArrayEquals(message1.getSerializedMessage(), captor.getAllValues().get(2).getSerializedMessage());
-    }
-
     @Test
     public void testMessagesAreRejectedWhenMaxMqttMessagesInQueueIsReached() throws Exception {
         final int mqttMessageId = 1517;
