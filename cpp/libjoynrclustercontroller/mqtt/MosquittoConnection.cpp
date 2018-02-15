@@ -46,7 +46,9 @@ MosquittoConnection::MosquittoConnection(const MessagingSettings& messagingSetti
           readyToSend(false),
           onMessageReceived(),
           onReadyToSendChangedMutex(),
-          onReadyToSendChanged()
+          onReadyToSendChanged(),
+          stopMutex(),
+          isStopped(true)
 {
     JOYNR_LOG_INFO(logger(), "Init mosquitto connection using MQTT client ID: {}", clientId);
     mosqpp::lib_init();
@@ -86,8 +88,8 @@ MosquittoConnection::MosquittoConnection(const MessagingSettings& messagingSetti
 
 MosquittoConnection::~MosquittoConnection()
 {
-    stop();
-    stopLoop();
+    std::lock_guard<std::mutex> stopLocker(stopMutex);
+    assert(isStopped);
 
     mosqpp::lib_cleanup();
 }
@@ -162,6 +164,13 @@ bool MosquittoConnection::isMqttRetain() const
 
 void MosquittoConnection::start()
 {
+    // do not start/stop in parallel
+    std::lock_guard<std::mutex> stopLocker(stopMutex);
+    if (!isStopped) {
+        JOYNR_LOG_INFO(logger(), "Mosquitto Connection already started");
+        return;
+    }
+
     JOYNR_LOG_TRACE(
             logger(), "Start called with isRunning: {}, isConnected: {}", isRunning, isConnected);
 
@@ -174,6 +183,10 @@ void MosquittoConnection::start()
                         messagingSettings.getMqttExponentialBackoffEnabled());
 
     startLoop();
+
+    if (isRunning) {
+        isStopped = false;
+    }
 }
 
 void MosquittoConnection::startLoop()
@@ -193,6 +206,13 @@ void MosquittoConnection::startLoop()
 
 void MosquittoConnection::stop()
 {
+    // do not start/stop in parallel
+    std::lock_guard<std::mutex> stopLocker(stopMutex);
+    if (isStopped) {
+        JOYNR_LOG_INFO(logger(), "Mosquitto Connection already stopped");
+        return;
+    }
+
     // disconnect() must be called prior to stopLoop() since
     // otherwise the loop in the mosquitto background thread
     // continues forever and thus the join in stopLoop()
@@ -217,6 +237,7 @@ void MosquittoConnection::stop()
         stopLoop();
     }
     setReadyToSend(false);
+    isStopped = true;
 }
 
 void MosquittoConnection::stopLoop(bool force)
