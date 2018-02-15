@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -62,6 +62,7 @@ int main(int argc, char* argv[])
     std::string sslCertFilename;
     std::string sslPrivateKeyFilename;
     std::string sslCaCertFilename;
+    std::uint64_t runs = 0;
 
     po::options_description cmdLineOptions("Available options");
     cmdLineOptions.add_options()(
@@ -77,7 +78,10 @@ int main(int argc, char* argv[])
             "Absolute path to private key for this application.")(
             "ssl-ca-cert-pem",
             po::value(&sslCaCertFilename),
-            "Absolute path to certificate of CA.")("help,h", "Print help message");
+            "Absolute path to certificate of CA.")("runs,r",
+                                                   po::value(&runs)->default_value(1),
+                                                   "Specify number of RPC calls to perform.")(
+            "help,h", "Print help message");
 
     try {
         po::variables_map variablesMap;
@@ -156,14 +160,16 @@ int main(int argc, char* argv[])
     std::int32_t sum = 0;
 
     try {
-        proxy->add(sum, addendA, addendB);
-        success = (sum == addendA + addendB);
-        JOYNR_LOG_INFO(logger,
-                       "SIT RESULT success: C++ consumer -> {} ({} + {} = {})",
-                       providerDomain,
-                       addendA,
-                       addendB,
-                       sum);
+        while (runs-- > 0) {
+            proxy->add(sum, addendA, addendB);
+            success = (sum == addendA + addendB);
+            JOYNR_LOG_INFO(logger,
+                           "SIT RESULT success: C++ consumer -> {} ({} + {} = {})",
+                           providerDomain,
+                           addendA,
+                           addendB,
+                           sum);
+        }
     } catch (const exceptions::JoynrException& e) {
         // exception sink
         success = false;
