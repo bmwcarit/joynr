@@ -62,7 +62,6 @@ import com.google.common.collect.Sets;
 @RunWith(MockitoJUnitRunner.class)
 public class MqttMessagingSkeletonTest {
 
-    private final int repeatedMqttMessageIgnorePeriodMs = 1000;
     private final int maxMqttMessagesInQueue = 20;
     private final boolean backpressureEnabled = true;
     private MqttMessagingSkeleton subject;
@@ -101,7 +100,6 @@ public class MqttMessagingSkeletonTest {
     @Before
     public void setup() {
         subject = new MqttMessagingSkeleton(ownAddress,
-                                            repeatedMqttMessageIgnorePeriodMs,
                                             maxMqttMessagesInQueue,
                                             backpressureEnabled,
                                             messageRouter,
@@ -164,7 +162,6 @@ public class MqttMessagingSkeletonTest {
         RawMessagingPreprocessor preprocessor = mock(RawMessagingPreprocessor.class);
         when(preprocessor.process(any(byte[].class), anyMap())).then(returnsFirstArg());
         subject = new MqttMessagingSkeleton(ownAddress,
-                                            repeatedMqttMessageIgnorePeriodMs,
                                             maxMqttMessagesInQueue,
                                             backpressureEnabled,
                                             messageRouter,
@@ -190,7 +187,6 @@ public class MqttMessagingSkeletonTest {
         when(processorMock.processIncoming(any(ImmutableMessage.class))).then(returnsFirstArg());
 
         subject = new MqttMessagingSkeleton(ownAddress,
-                                            repeatedMqttMessageIgnorePeriodMs,
                                             maxMqttMessagesInQueue,
                                             backpressureEnabled,
                                             messageRouter,
@@ -362,7 +358,6 @@ public class MqttMessagingSkeletonTest {
         final int testLocalmaxMqttMessagesInQueue = 1;
 
         subject = new MqttMessagingSkeleton(ownAddress,
-                                            repeatedMqttMessageIgnorePeriodMs,
                                             testLocalmaxMqttMessagesInQueue,
                                             testLocalBackpressureEnabled,
                                             messageRouter,

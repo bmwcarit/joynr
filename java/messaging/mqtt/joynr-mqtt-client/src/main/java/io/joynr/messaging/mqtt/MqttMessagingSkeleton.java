@@ -20,7 +20,6 @@ package io.joynr.messaging.mqtt;
 
 import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_BACKPRESSURE_ENABLED;
 import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_BACKPRESSURE_MAX_INCOMING_MQTT_MESSAGES_IN_QUEUE;
-import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_BACKPRESSURE_REPEATED_MQTT_MESSAGE_IGNORE_PERIOD_MS;
 
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.DelayQueue;
@@ -54,7 +53,6 @@ import joynr.system.RoutingTypes.MqttAddress;
 public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessageProcessedListener {
 
     private static final Logger LOG = LoggerFactory.getLogger(MqttMessagingSkeleton.class);
-    private final int repeatedMqttMessageIgnorePeriodMs;
     private final int maxMqttMessagesInQueue;
     private MessageRouter messageRouter;
     private JoynrMqttClient mqttClient;
@@ -132,7 +130,6 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
     @Inject
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 2 LINES
     public MqttMessagingSkeleton(@Named(MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
-                                 @Named(PROPERTY_BACKPRESSURE_REPEATED_MQTT_MESSAGE_IGNORE_PERIOD_MS) int repeatedMqttMessageIgnorePeriodMs,
                                  @Named(PROPERTY_BACKPRESSURE_MAX_INCOMING_MQTT_MESSAGES_IN_QUEUE) int maxMqttMessagesInQueue,
                                  @Named(PROPERTY_BACKPRESSURE_ENABLED) boolean backpressureEnabled,
                                  MessageRouter messageRouter,
@@ -142,7 +139,6 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
                                  Set<JoynrMessageProcessor> messageProcessors) {
         this.backpressureEnabled = backpressureEnabled;
         this.ownAddress = ownAddress;
-        this.repeatedMqttMessageIgnorePeriodMs = repeatedMqttMessageIgnorePeriodMs;
         this.maxMqttMessagesInQueue = maxMqttMessagesInQueue;
         this.messageRouter = messageRouter;
         this.mqttClientFactory = mqttClientFactory;
@@ -321,8 +317,9 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
         }
     }
 
+    //TODO method will be rewritten with the new backpressure mechanism
     private void handleMessageProcessed(String messageId, int mqttId, int mqttQos) {
-        DelayedMessageId delayedMessageId = new DelayedMessageId(messageId, repeatedMqttMessageIgnorePeriodMs);
+        DelayedMessageId delayedMessageId = new DelayedMessageId(messageId, 0);
         if (!processedMessagesQueue.contains(delayedMessageId)) {
             LOG.debug("Message {} was processed and will be acknowledged", messageId);
             mqttClient.messageReceivedAndProcessingFinished(mqttId, mqttQos);

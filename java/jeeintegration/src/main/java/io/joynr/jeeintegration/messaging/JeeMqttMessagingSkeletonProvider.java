@@ -19,7 +19,6 @@
 package io.joynr.jeeintegration.messaging;
 
 import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_BACKPRESSURE_ENABLED;
-import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_BACKPRESSURE_REPEATED_MQTT_MESSAGE_IGNORE_PERIOD_MS;
 import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_BACKPRESSURE_MAX_INCOMING_MQTT_MESSAGES_IN_QUEUE;
 import static io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys.JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS;
@@ -62,7 +61,6 @@ public class JeeMqttMessagingSkeletonProvider extends MqttMessagingSkeletonProvi
     public JeeMqttMessagingSkeletonProvider(@Named(JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY) String enableHttpBridge,
                                             @Named(PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS) String enableSharedSubscriptions,
                                             @Named(PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
-                                            @Named(PROPERTY_BACKPRESSURE_REPEATED_MQTT_MESSAGE_IGNORE_PERIOD_MS) int repeatedMqttMessageIgnorePeriodMs,
                                             @Named(PROPERTY_BACKPRESSURE_MAX_INCOMING_MQTT_MESSAGES_IN_QUEUE) int maxIncomingMqttMessagesInQueue,
                                             @Named(PROPERTY_BACKPRESSURE_ENABLED) boolean backpressureEnabled,
                                             @Named(PROPERTY_MQTT_REPLY_TO_ADDRESS) MqttAddress replyToAddress,
@@ -74,7 +72,6 @@ public class JeeMqttMessagingSkeletonProvider extends MqttMessagingSkeletonProvi
         // CHECKSTYLE:ON
         super(enableSharedSubscriptions,
               ownAddress,
-              repeatedMqttMessageIgnorePeriodMs,
               maxIncomingMqttMessagesInQueue,
               backpressureEnabled,
               replyToAddress,

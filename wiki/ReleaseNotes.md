@@ -1,3 +1,11 @@
+# joynr x.x.x
+
+## Configuration property changes
+* **[Java]** Removed property `PROPERTY_REPEATED_MQTT_MESSAGE_IGNORE_PERIOD_MS`.
+  The future behavior of the MqttMessagingSkeleton will change to immediate mqtt
+  message acknowledgment and this should eliminate receiving repeated messages from
+  the mqtt broker.
+
 # joynr 1.0.0
 API Stable
 

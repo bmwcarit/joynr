@@ -75,8 +75,6 @@ public class DefaultMqttClientIdProviderTest {
         properties.put(MqttModule.PROPERTY_KEY_MQTT_MAX_MSGS_INFLIGHT, "100");
         properties.put(MqttModule.PROPERTY_KEY_MQTT_MAX_MESSAGE_SIZE_BYTES, "0");
         properties.put(MessagingPropertyKeys.RECEIVERID, receiverId);
-        properties.put(ConfigurableMessagingSettings.PROPERTY_BACKPRESSURE_REPEATED_MQTT_MESSAGE_IGNORE_PERIOD_MS,
-                       "1000");
         properties.put(ConfigurableMessagingSettings.PROPERTY_BACKPRESSURE_MAX_INCOMING_MQTT_MESSAGES_IN_QUEUE, "20");
         properties.put(ConfigurableMessagingSettings.PROPERTY_BACKPRESSURE_ENABLED, "false");
         properties.put(MqttModule.PROPERTY_MQTT_CLEAN_SESSION, "false");

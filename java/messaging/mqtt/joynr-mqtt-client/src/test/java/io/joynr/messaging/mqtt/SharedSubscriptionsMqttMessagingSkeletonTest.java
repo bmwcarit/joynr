@@ -50,7 +50,6 @@ import joynr.system.RoutingTypes.MqttAddress;
 public class SharedSubscriptionsMqttMessagingSkeletonTest {
 
     private final int maxMqttMessagesInQueue = 20;
-    private final int repeatedMqttMessageIgnorePeriodMs = 1000;
     private final boolean backpressureEnabled = false;
 
     @Mock
@@ -87,7 +86,6 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
         final String replyToAddressTopic = "replyToAddressTopic";
         when(replyToAddress.getTopic()).thenReturn(replyToAddressTopic);
         subject = new SharedSubscriptionsMqttMessagingSkeleton(ownAddress,
-                                                               repeatedMqttMessageIgnorePeriodMs,
                                                                maxMqttMessagesInQueue,
                                                                backpressureEnabled,
                                                                replyToAddress,
@@ -105,7 +103,6 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
     @Test
     public void testChannelIdStrippedOfNonAlphaChars() {
         subject = new SharedSubscriptionsMqttMessagingSkeleton(ownAddress,
-                                                               repeatedMqttMessageIgnorePeriodMs,
                                                                maxMqttMessagesInQueue,
                                                                backpressureEnabled,
                                                                replyToAddress,
@@ -122,7 +119,6 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
     @Test(expected = IllegalArgumentException.class)
     public void testIllegalChannelId() {
         subject = new SharedSubscriptionsMqttMessagingSkeleton(ownAddress,
-                                                               repeatedMqttMessageIgnorePeriodMs,
                                                                maxMqttMessagesInQueue,
                                                                backpressureEnabled,
                                                                replyToAddress,
