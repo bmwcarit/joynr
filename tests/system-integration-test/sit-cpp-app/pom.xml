@@ -98,7 +98,7 @@
 						<root>.</root>
 					</roots>
 					<excludes>
-						<exclude>src/main/resources/local-domain-access-store.json</exclude>
+						<exclude>src/main/resources/acl-lite/local-domain-access-store.json</exclude>
 					</excludes>
 				</configuration>
 			</plugin>

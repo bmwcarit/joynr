@@ -4,7 +4,7 @@ certificate-pem-filename=/data/build/tests/ssl-data/cc.cert.pem
 private-key-pem-filename=/data/build/tests/ssl-data/cc.key.pem
 
 [cluster-controller]
-local-domain-access-store-persistence-file=/data/build/tests/bin/resources/local-domain-access-store.json
+acl-entries-directory=/data/build/tests/bin/resources/acl-lite
 
 [access-control]
 enable=true
