@@ -49,7 +49,7 @@ int main(int argc, char* argv[])
     // Register app at the dlt-daemon for logging
     DLT_REGISTER_APP("JYSC", argv[0]);
 #endif // JOYNR_ENABLE_DLT_LOGGING
-    // Get a logger
+
     joynr::Logger logger("ConsumerApplication");
 
     namespace po = boost::program_options;
@@ -126,30 +126,14 @@ int main(int argc, char* argv[])
     std::shared_ptr<JoynrRuntime> runtime =
             JoynrRuntime::createRuntime(pathToSettings, pathToMessagingSettingsDefault, keychain);
 
-    // Create proxy builder
     std::shared_ptr<ProxyBuilder<test::SystemIntegrationTestProxy>> proxyBuilder =
             runtime->createProxyBuilder<test::SystemIntegrationTestProxy>(providerDomain);
 
-    // Find the provider with the highest priority set in ProviderQos
     DiscoveryQos discoveryQos;
-    // As soon as the discovery QoS is set on the proxy builder, discovery of suitable providers
-    // is triggered. If the discovery process does not find matching providers within the
-    // arbitration timeout duration it will be terminated and you will get an arbitration exception.
     discoveryQos.setDiscoveryTimeoutMs(120000); // 2 Mins
-    // Provider entries in the global capabilities directory are cached locally. Discovery will
-    // consider entries in this cache valid if they are younger as the max age of cached
-    // providers as defined in the QoS. All valid entries will be processed by the arbitrator when
-    // searching
-    // for and arbitrating the "best" matching provider.
-    // NOTE: Valid cache entries might prevent triggering a lookup in the global capabilities
-    //       directory. Therefore, not all providers registered with the global capabilities
-    //       directory might be taken into account during arbitration.
     discoveryQos.setCacheMaxAgeMs(std::numeric_limits<std::int64_t>::max());
-    // The discovery process outputs a list of matching providers. The arbitration strategy then
-    // chooses one or more of them to be used by the proxy.
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
 
-    // Build a proxy to communicate with the provider
     std::shared_ptr<test::SystemIntegrationTestProxy> proxy(
             proxyBuilder->setMessagingQos(MessagingQos())->setDiscoveryQos(discoveryQos)->build());
 

@@ -47,7 +47,6 @@ int main(int argc, char* argv[])
     DLT_REGISTER_APP("JYSP", argv[0]);
 #endif // JOYNR_ENABLE_DLT_LOGGING
 
-    // Get a logger
     Logger logger("ProviderApplication");
 
     namespace po = boost::program_options;
@@ -138,7 +137,6 @@ int main(int argc, char* argv[])
         providerQos.setPriority(millisSinceEpoch.count());
         providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
 
-        // Register the provider
         runtime->registerProvider<test::SystemIntegrationTestProvider>(
                 providerDomain, provider, providerQos);
 
@@ -148,8 +146,6 @@ int main(int argc, char* argv[])
             }
         } else {
             bool successful = semaphore.waitFor(std::chrono::milliseconds(30000));
-
-            // Unregister the provider
             runtime->unregisterProvider<test::SystemIntegrationTestProvider>(
                     providerDomain, provider);
 
