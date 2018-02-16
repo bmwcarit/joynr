@@ -1158,7 +1158,7 @@
 								</configuration>
 							</execution>
 							-->
-							<execution>
+							<!--execution>
 								<phase>integration-test</phase>
 								<id>karma-intertab-integration-tests</id>
 								<goals>
@@ -1167,7 +1167,7 @@
 								<configuration>
 									<configFile>${basedir}/src/test/karma/karma.intertab.integration.conf.js</configFile>
 								</configuration>
-							</execution>
+							</execution-->
 						</executions>
 						<configuration>
 							<karmaExecutable>${project.build.directory}/node-classes/node_modules/.bin/karma</karmaExecutable>
