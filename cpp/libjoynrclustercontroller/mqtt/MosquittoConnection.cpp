@@ -166,6 +166,7 @@ void MosquittoConnection::start()
             logger(), "Start called with isRunning: {}, isConnected: {}", isRunning, isConnected);
 
     JOYNR_LOG_INFO(logger(), "Try to connect to tcp://{}:{}", host, port);
+
     connect_async(host.c_str(), port, messagingSettings.getMqttKeepAliveTimeSeconds().count());
 
     reconnect_delay_set(messagingSettings.getMqttReconnectDelayTimeSeconds().count(),
@@ -192,6 +193,12 @@ void MosquittoConnection::startLoop()
 
 void MosquittoConnection::stop()
 {
+    // disconnect() must be called prior to stopLoop() since
+    // otherwise the loop in the mosquitto background thread
+    // continues forever and thus the join in stopLoop()
+    // blocks indefinitely. This applies even if a connection
+    // does not exist yet.
+
     if (isConnected) {
         int rc = disconnect();
 
@@ -206,6 +213,7 @@ void MosquittoConnection::stop()
         }
         stopLoop(true);
     } else if (isRunning) {
+        disconnect();
         stopLoop(true);
     }
     setReadyToSend(false);
