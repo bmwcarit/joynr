@@ -87,7 +87,7 @@ MosquittoConnection::MosquittoConnection(const MessagingSettings& messagingSetti
 MosquittoConnection::~MosquittoConnection()
 {
     stop();
-    stopLoop(true);
+    stopLoop();
 
     mosqpp::lib_cleanup();
 }
@@ -211,10 +211,10 @@ void MosquittoConnection::stop()
                             std::to_string(rc),
                             errorString);
         }
-        stopLoop(true);
+        stopLoop();
     } else if (isRunning) {
         disconnect();
-        stopLoop(true);
+        stopLoop();
     }
     setReadyToSend(false);
 }
