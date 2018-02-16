@@ -204,8 +204,8 @@ void MosquittoConnection::stop()
                             "Mosquitto disconnect failed: error: {} ({})",
                             std::to_string(rc),
                             errorString);
-            stopLoop(true);
         }
+        stopLoop(true);
     } else if (isRunning) {
         stopLoop(true);
     }
