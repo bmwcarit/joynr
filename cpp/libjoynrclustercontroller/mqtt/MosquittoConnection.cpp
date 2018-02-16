@@ -120,7 +120,6 @@ void MosquittoConnection::on_disconnect(int rc)
 
     if (rc == MOSQ_ERR_SUCCESS) {
         JOYNR_LOG_INFO(logger(), "Disconnected from tcp://{}:{}", host, port);
-        stopLoop();
     } else {
         JOYNR_LOG_ERROR(logger(),
                         "Unexpectedly disconnected from tcp://{}:{}, error: {}",
