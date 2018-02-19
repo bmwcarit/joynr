@@ -68,6 +68,25 @@ TEST_F(IltConsumerSyncMethodTest, callMethodWithMultiplePrimitiveParameters)
     ASSERT_EQ(stringOut, std::to_string(arg1));
 }
 
+TEST_F(IltConsumerSyncMethodTest, callMethodWithSingleByteBufferParameter)
+{
+    joynr::ByteBuffer byteBufferIn = {0x00, 0x64, 0xFF};
+    joynr::ByteBuffer byteBufferOut;
+    JOYNR_ASSERT_NO_THROW(
+            testInterfaceProxy->methodWithSingleByteBufferParameter(byteBufferOut, byteBufferIn));
+    ASSERT_EQ(byteBufferOut, byteBufferIn);
+}
+
+TEST_F(IltConsumerSyncMethodTest, callMethodWithMultipleByteBufferParameters)
+{
+    joynr::ByteBuffer byteBufferIn1 = {0x05, 0x7D};
+    joynr::ByteBuffer byteBufferIn2 = {0x4E, 0x00};
+    joynr::ByteBuffer byteBufferOut;
+    JOYNR_ASSERT_NO_THROW(testInterfaceProxy->methodWithMultipleByteBufferParameters(
+            byteBufferOut, byteBufferIn1, byteBufferIn2));
+    ASSERT_EQ(byteBufferOut, IltUtil::concatByteBuffers(byteBufferIn1, byteBufferIn2));
+}
+
 TEST_F(IltConsumerSyncMethodTest, callMethodWithSingleArrayParameters)
 {
     std::vector<double> arg = IltUtil::createDoubleArray();
