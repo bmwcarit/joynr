@@ -60,16 +60,9 @@ Default«interfaceName»Provider::Default«interfaceName»Provider() :
 			«attribute.joynrName»()
 		«ENDFOR»
 {
-	// default uses a priority that is the current time,
-	// causing arbitration to the last started instance if highest priority arbitrator is used
-	std::chrono::milliseconds millisSinceEpoch = std::chrono::duration_cast<std::chrono::milliseconds>(
-			std::chrono::system_clock::now().time_since_epoch()
-	);
 }
 
-Default«interfaceName»Provider::~Default«interfaceName»Provider()
-{
-}
+Default«interfaceName»Provider::~Default«interfaceName»Provider() = default;
 
 «IF !francaIntf.attributes.empty»
 	// attributes
