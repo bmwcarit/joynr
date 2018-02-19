@@ -22,7 +22,6 @@ import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_BACKPRES
 import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_BACKPRESSURE_MAX_INCOMING_MQTT_MESSAGES_IN_QUEUE;
 
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.DelayQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.Set;
 import java.io.Serializable;
@@ -41,7 +40,6 @@ import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.routing.MessageProcessedListener;
 import io.joynr.messaging.routing.MessageRouter;
-import io.joynr.messaging.routing.TimedDelayed;
 import io.joynr.smrf.EncodingException;
 import io.joynr.smrf.UnsuppportedVersionException;
 import joynr.ImmutableMessage;
@@ -63,7 +61,6 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
     private RawMessagingPreprocessor rawMessagingPreprocessor;
     private Set<JoynrMessageProcessor> messageProcessors;
     private Map<String, MqttAckInformation> processingMessages;
-    private DelayQueue<DelayedMessageId> processedMessagesQueue;
     private final boolean backpressureEnabled;
 
     private static class MqttAckInformation {
@@ -81,49 +78,6 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
 
         public int getMqttQos() {
             return mqttQos;
-        }
-    }
-
-    private static class DelayedMessageId extends TimedDelayed {
-
-        private String messageId;
-
-        public DelayedMessageId(String messageId, long delayMs) {
-            super(delayMs);
-            this.messageId = messageId;
-        }
-
-        public String getMessageId() {
-            return messageId;
-        }
-
-        @Override
-        public int hashCode() {
-            final int prime = 31;
-            int result = super.hashCode();
-            result = prime * result + ((messageId == null) ? 0 : messageId.hashCode());
-            return result;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {
-                return true;
-            }
-            if (obj == null)
-                return false;
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
-            DelayedMessageId other = (DelayedMessageId) obj;
-            if (messageId == null) {
-                if (other.messageId != null) {
-                    return false;
-                }
-            } else if (!messageId.equals(other.messageId)) {
-                return false;
-            }
-            return true;
         }
     }
 
@@ -146,7 +100,6 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
         this.rawMessagingPreprocessor = rawMessagingPreprocessor;
         this.messageProcessors = messageProcessors;
         this.processingMessages = new HashMap<>();
-        this.processedMessagesQueue = new DelayQueue<>();
     }
 
     @Override
@@ -255,21 +208,8 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
         return mqttTopicPrefixProvider.getMulticastTopicPrefix() + translateWildcard(multicastId);
     }
 
-    private void removeProcessedMessageInformation() {
-        DelayedMessageId delayedMessageId;
-        while ((delayedMessageId = processedMessagesQueue.poll()) != null) {
-            LOG.debug("Message {} removed from list of processed messages", delayedMessageId.getMessageId());
-            processingMessages.remove(delayedMessageId.getMessageId());
-        }
-    }
-
-    //TODO method will be rewritten with the new backpressure mechanism
     private void handleMessageProcessed(String messageId, int mqttId, int mqttQos) {
-        DelayedMessageId delayedMessageId = new DelayedMessageId(messageId, 0);
-        if (!processedMessagesQueue.contains(delayedMessageId)) {
-            LOG.debug("Message {} was processed", messageId);
-            processedMessagesQueue.put(delayedMessageId);
-        }
+        //TODO method will be rewritten with the new backpressure mechanism
     }
 
     @Override
@@ -281,7 +221,6 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
                 return;
             }
             handleMessageProcessed(messageId, info.getMqttId(), info.getMqttQos());
-            removeProcessedMessageInformation();
         }
     }
 
