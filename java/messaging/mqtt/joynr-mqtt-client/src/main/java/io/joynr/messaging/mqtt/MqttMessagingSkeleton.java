@@ -273,23 +273,6 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
     }
 
     private boolean dropMessage(ImmutableMessage message) {
-        if (backpressureEnabled) {
-            synchronized (processingMessages) {
-                // The number of not yet processed (queued) Mqtt messages is the difference between
-                // processingMessages.size() and the number of messages which are already processed but still
-                // not removed from processingMessages.
-                if (processingMessages.size() - processedMessagesQueue.size() >= maxMqttMessagesInQueue) {
-                    LOG.warn("Maximum number of Mqtt messages in message queue reached. "
-                            + "Incoming Mqtt message with id {} cannot be handled now.", message.getId());
-                    return true;
-                }
-                if (processingMessages.containsKey(message.getId())) {
-                    LOG.debug("Dropping already received message with id {}", message.getId());
-                    return true;
-                }
-            }
-        }
-
         return false;
     }
 

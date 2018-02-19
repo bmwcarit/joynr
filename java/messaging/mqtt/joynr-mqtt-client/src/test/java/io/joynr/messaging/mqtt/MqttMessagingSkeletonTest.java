@@ -48,6 +48,7 @@ import joynr.Message;
 import joynr.MutableMessage;
 import joynr.system.RoutingTypes.MqttAddress;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.Assert;
@@ -233,6 +234,7 @@ public class MqttMessagingSkeletonTest {
         assertTrue(semaphore.tryAcquire());
     }
 
+    @Ignore("Will be reactivated with the new message dropping mechanism")
     @Test
     public void testMessagesAreRejectedWhenMaxMqttMessagesInQueueIsReached() throws Exception {
         final int mqttMessageId = 1517;
@@ -248,6 +250,7 @@ public class MqttMessagingSkeletonTest {
         verify(messageRouter, times(maxMqttMessagesInQueue)).route(any(ImmutableMessage.class));
     }
 
+    @Ignore("Will be reactivated with the new message dropping mechanism")
     @Test
     public void testMessagesAreAcceptedAgainWhenMessageIsProcessedAfterMaxMessagesInQueueReached() throws Exception {
         final int mqttQos = 1;
