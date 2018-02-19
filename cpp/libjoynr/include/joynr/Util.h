@@ -73,6 +73,13 @@ void validatePartitions(const std::vector<std::string>& partitions, bool allowWi
 bool isAdditionOnPointerSafe(std::uintptr_t address, int offset);
 
 /**
+ * @brief MT-safe retrieval of string describing error number
+ * @param errorNumber The error number for which string description should be retrieved
+ * @return string describing error number
+ */
+std::string getErrorString(int errorNumber);
+
+/**
  * @brief converts an attribute name to its getter function
  * @param attributeName name of the attribute; MUST NOT be an empty string!
  * @return name of getter function;

@@ -87,10 +87,27 @@ std::shared_ptr<JoynrRuntime> JoynrRuntime::createRuntimeAsync(
         runtimeImpl = std::make_shared<LibJoynrWebSocketRuntime>(
                 std::move(settings), std::move(keyChain));
         runtimeImpl->connect(std::move(onSuccess), onError);
-    } catch (exceptions::JoynrRuntimeException& exception) {
+    } catch (const exceptions::JoynrRuntimeException& exception) {
+        JOYNR_LOG_ERROR(
+                JoynrRuntime::logger(), "caught JoynrRuntimeException: {}", exception.what());
         if (onError) {
             onError(exception);
         }
+    } catch (const std::exception& exception) {
+        JOYNR_LOG_ERROR(JoynrRuntime::logger(), "caught std::exception: {}", exception.what());
+        if (onError) {
+            onError(exceptions::JoynrRuntimeException(exception.what()));
+        }
+    } catch (...) {
+        const std::string errorMessage = "caught unknown object which is neither "
+                                         "JoynrRuntimeException nor std::exception";
+        JOYNR_LOG_ERROR(JoynrRuntime::logger(), errorMessage);
+        if (onError) {
+            onError(exceptions::JoynrRuntimeException(errorMessage));
+        }
+    }
+    if (!runtimeImpl) {
+        return nullptr;
     }
     return std::make_shared<JoynrRuntime>(runtimeImpl);
 }

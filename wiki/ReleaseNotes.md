@@ -1,3 +1,15 @@
+# joynr 1.0.3
+
+## API relevant changes
+None.
+
+## Other changes
+* **[C++]** Fixed Mosquitto Connection start/stop handling
+  Mosquitto background thread got not always joined correctly resulting in memory leak.
+* **[C++]** JoynrRuntime::createRuntime APIs now internally catch all exceptions to
+  avoid crashes; exceptions will be logged and distributed as JoynrRuntimeException
+  to onError() callback, if provided
+
 # joynr 1.0.2
 
 ## API relevant changes

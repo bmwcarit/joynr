@@ -277,6 +277,7 @@ protected:
 private:
     std::shared_ptr<JoynrRuntimeImpl> runtimeImpl;
     DISALLOW_COPY_AND_ASSIGN(JoynrRuntime);
+    ADD_LOGGER(JoynrRuntime)
 };
 
 } // namespace joynr

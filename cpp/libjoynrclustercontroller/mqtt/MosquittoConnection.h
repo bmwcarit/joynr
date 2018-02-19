@@ -133,6 +133,9 @@ private:
     std::mutex onReadyToSendChangedMutex;
     std::function<void(bool)> onReadyToSendChanged;
 
+    std::mutex stopMutex;
+    bool isStopped;
+
     ADD_LOGGER(MosquittoConnection)
 };
 

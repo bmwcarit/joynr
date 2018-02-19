@@ -176,3 +176,19 @@ TEST(UtilTest, setDoesNotContainSet)
     needles = {"s0", "s1", "s3"};
     EXPECT_FALSE(util::setContainsSet(haystack, needles));
 }
+
+TEST(UtilTest, getErrorStringDeliversCorrectString)
+{
+    int i;
+
+    // check whether MT-safe util::getErrorString() returns
+    // same error strings as standard MT-unsafe strerror()
+    for (i = 0; i < 255; i++) {
+        char *str = strerror(i);
+        if (str != NULL) {
+            std::string s1(str);
+            std::string s2(util::getErrorString(i));
+            EXPECT_EQ(s1, s2);
+        }
+    }
+}
