@@ -203,43 +203,6 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
         return topic;
     }
 
-    private void forwardMessageWithBackpressure(ImmutableMessage message,
-                                                int mqttId,
-                                                int mqttQos,
-                                                FailureAction failureAction) {
-        message.setReceivedFromGlobal(true);
-        synchronized (processingMessages) {
-            // message.getId() == null (NullPointerException) already caught in transmit
-            processingMessages.put(message.getId(), new MqttAckInformation(mqttId, mqttQos));
-        }
-        try {
-            messageRouter.route(message);
-        } catch (Exception e) {
-            LOG.error("Error processing incoming message. Message will be dropped: {} ", e.getMessage());
-            synchronized (processingMessages) {
-                handleMessageProcessed(message.getId(), mqttId, mqttQos);
-            }
-            failureAction.execute(e);
-        }
-        synchronized (processingMessages) {
-            removeProcessedMessageInformation();
-        }
-    }
-
-    private void forwardMessageWithoutBackpressure(ImmutableMessage message,
-                                                   int mqttId,
-                                                   int mqttQos,
-                                                   FailureAction failureAction) {
-        message.setReceivedFromGlobal(true);
-
-        try {
-            messageRouter.route(message);
-        } catch (Exception e) {
-            LOG.error("Error processing incoming message. Message will be dropped: {} ", e.getMessage());
-            failureAction.execute(e);
-        }
-    }
-
     @Override
     public void transmit(byte[] serializedMessage, int mqttId, int mqttQos, FailureAction failureAction) {
         try {
@@ -261,10 +224,14 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
                 return;
             }
 
-            if (backpressureEnabled) {
-                forwardMessageWithBackpressure(message, mqttId, mqttQos, failureAction);
-            } else {
-                forwardMessageWithoutBackpressure(message, mqttId, mqttQos, failureAction);
+            message.setReceivedFromGlobal(true);
+
+            try {
+                messageRouter.route(message);
+            } catch (Exception e) {
+                LOG.error("Error processing incoming message. Message will be dropped: {} ", e.getMessage());
+                handleMessageProcessed(message.getId(), mqttId, mqttQos);
+                failureAction.execute(e);
             }
         } catch (UnsuppportedVersionException | EncodingException | NullPointerException e) {
             LOG.error("Message: \"{}\", could not be deserialized, exception: {}", serializedMessage, e.getMessage());
