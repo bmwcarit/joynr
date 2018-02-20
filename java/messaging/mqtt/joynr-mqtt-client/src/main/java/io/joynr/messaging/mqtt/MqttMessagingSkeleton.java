@@ -25,8 +25,9 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.Set;
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.Map;
+import java.util.HashSet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,26 +61,8 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
     private MqttTopicPrefixProvider mqttTopicPrefixProvider;
     private RawMessagingPreprocessor rawMessagingPreprocessor;
     private Set<JoynrMessageProcessor> messageProcessors;
-    private Map<String, MqttAckInformation> processingMessages;
+    private Set<String> incomingMqttMessagesBeingProcessed;
     private final boolean backpressureEnabled;
-
-    private static class MqttAckInformation {
-        private int mqttId;
-        private int mqttQos;
-
-        MqttAckInformation(int mqttId, int mqttQos) {
-            this.mqttId = mqttId;
-            this.mqttQos = mqttQos;
-        }
-
-        public int getMqttId() {
-            return mqttId;
-        }
-
-        public int getMqttQos() {
-            return mqttQos;
-        }
-    }
 
     @Inject
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 2 LINES
@@ -99,7 +82,7 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
         this.mqttTopicPrefixProvider = mqttTopicPrefixProvider;
         this.rawMessagingPreprocessor = rawMessagingPreprocessor;
         this.messageProcessors = messageProcessors;
-        this.processingMessages = new HashMap<>();
+        this.incomingMqttMessagesBeingProcessed = Collections.synchronizedSet(new HashSet<String>());
     }
 
     @Override
@@ -178,12 +161,13 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
             }
 
             message.setReceivedFromGlobal(true);
+            incomingMqttMessagesBeingProcessed.add(message.getId());
 
             try {
                 messageRouter.route(message);
             } catch (Exception e) {
                 LOG.error("Error processing incoming message. Message will be dropped: {} ", e.getMessage());
-                handleMessageProcessed(message.getId(), mqttId, mqttQos);
+                messageProcessed(message.getId());
                 failureAction.execute(e);
             }
         } catch (UnsuppportedVersionException | EncodingException | NullPointerException e) {
@@ -208,19 +192,12 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
         return mqttTopicPrefixProvider.getMulticastTopicPrefix() + translateWildcard(multicastId);
     }
 
-    private void handleMessageProcessed(String messageId, int mqttId, int mqttQos) {
-        //TODO method will be rewritten with the new backpressure mechanism
-    }
-
     @Override
     public void messageProcessed(String messageId) {
-        synchronized (processingMessages) {
-            MqttAckInformation info = processingMessages.get(messageId);
-            if (info == null) {
-                LOG.debug("Message {} was processed but it is unkown", messageId);
-                return;
-            }
-            handleMessageProcessed(messageId, info.getMqttId(), info.getMqttQos());
+        if (incomingMqttMessagesBeingProcessed.remove(messageId)) {
+            LOG.trace("Message {} was processed and is removed from the MQTT skeleton list", messageId);
+        } else {
+            LOG.trace("Message {} was processed but it is unkown to the MQTT skeleton", messageId);
         }
     }
 
