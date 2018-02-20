@@ -116,7 +116,6 @@ set(JoynrLib_SOURCES
     "common/concurrency/Thread.cpp"
     "common/concurrency/ThreadPool.cpp"
     "common/concurrency/ThreadPoolDelayedScheduler.cpp"
-    "common/DispatcherUtils.cpp"
     "common/InterfaceAddress.cpp"
     "common/MessagingQos.cpp"
     "common/MessagingStubFactory.cpp"
