@@ -27,7 +27,6 @@
 #include <cstdint>
 #include <string>
 
-#include "joynr/DispatcherUtils.h"
 #include "joynr/Future.h"
 #include "joynr/MessagingQos.h"
 #include "joynr/ProxyBuilder.h"

@@ -21,8 +21,8 @@
 
 #include <chrono>
 
-#include "joynr/DispatcherUtils.h"
 #include "joynr/JoynrExport.h"
+#include "joynr/TimePoint.h"
 
 namespace joynr
 {
@@ -31,14 +31,14 @@ class JOYNR_EXPORT ObjectWithDecayTime
 {
 
 public:
-    explicit ObjectWithDecayTime(const JoynrTimePoint& decayTime);
+    explicit ObjectWithDecayTime(const TimePoint& decayTime);
     virtual ~ObjectWithDecayTime() = default;
     std::chrono::milliseconds getRemainingTtl() const;
-    JoynrTimePoint getDecayTime() const;
+    TimePoint getDecayTime() const;
     bool isExpired() const;
 
 protected:
-    JoynrTimePoint decayTime;
+    TimePoint decayTime;
 };
 
 } // namespace joynr

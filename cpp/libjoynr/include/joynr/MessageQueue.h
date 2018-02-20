@@ -142,10 +142,7 @@ public:
         }
 
         auto& ttlIndex = boost::multi_index::get<messagequeuetags::ttlAbsolute>(queue);
-
-        const JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(
-                std::chrono::system_clock::now());
-        auto onePastOutdatedMsgIt = ttlIndex.lower_bound(now);
+        auto onePastOutdatedMsgIt = ttlIndex.lower_bound(TimePoint::now());
 
         for (auto it = ttlIndex.begin(); it != onePastOutdatedMsgIt; ++it) {
             std::size_t msgSize = it->message->getMessageSize();
@@ -176,7 +173,7 @@ protected:
     struct MessageQueueItem
     {
         T key;
-        JoynrTimePoint ttlAbsolute;
+        TimePoint ttlAbsolute;
         std::shared_ptr<ImmutableMessage> message;
     };
 
@@ -188,9 +185,7 @@ protected:
                             BOOST_MULTI_INDEX_MEMBER(MessageQueueItem, T, key)>,
                     boost::multi_index::ordered_non_unique<
                             boost::multi_index::tag<messagequeuetags::ttlAbsolute>,
-                            BOOST_MULTI_INDEX_MEMBER(MessageQueueItem,
-                                                     JoynrTimePoint,
-                                                     ttlAbsolute)>,
+                            BOOST_MULTI_INDEX_MEMBER(MessageQueueItem, TimePoint, ttlAbsolute)>,
                     boost::multi_index::ordered_non_unique<
                             boost::multi_index::tag<messagequeuetags::key_and_ttlAbsolute>,
                             boost::multi_index::composite_key<
@@ -198,7 +193,7 @@ protected:
                                     boost::multi_index::
                                             member<MessageQueueItem, T, &MessageQueueItem::key>,
                                     BOOST_MULTI_INDEX_MEMBER(MessageQueueItem,
-                                                             JoynrTimePoint,
+                                                             TimePoint,
                                                              ttlAbsolute)>>>>;
 
     QueueMultiIndexContainer queue;

@@ -27,8 +27,8 @@
 #include <smrf/ByteVector.h>
 #include <smrf/MessageDeserializer.h>
 
-#include "joynr/DispatcherUtils.h"
 #include "joynr/Logger.h"
+#include "joynr/TimePoint.h"
 #include "serializer/Serializer.h"
 
 namespace joynr
@@ -79,7 +79,7 @@ public:
 
     boost::optional<std::string> getEffort() const;
 
-    JoynrTimePoint getExpiryDate() const;
+    TimePoint getExpiryDate() const;
 
     const smrf::ByteVector& getSerializedMessage() const;
 

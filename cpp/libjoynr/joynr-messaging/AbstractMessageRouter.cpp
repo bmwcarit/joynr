@@ -23,7 +23,6 @@
 
 #include <boost/asio/io_service.hpp>
 
-#include "joynr/DispatcherUtils.h"
 #include "joynr/IMessagingStub.h"
 #include "joynr/IMessagingStubFactory.h"
 #include "joynr/ImmutableMessage.h"
@@ -178,15 +177,7 @@ AbstractMessageRouter::AddressUnorderedSet AbstractMessageRouter::getDestination
 
 void AbstractMessageRouter::checkExpiryDate(const ImmutableMessage& message)
 {
-    JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(
-            std::chrono::system_clock::now());
-    JOYNR_LOG_TRACE(
-            logger(),
-            "now: {} --- expiryDate: {}",
-            std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count(),
-            std::chrono::duration_cast<std::chrono::milliseconds>(
-                    message.getExpiryDate().time_since_epoch()).count());
-    if (now > message.getExpiryDate()) {
+    if (TimePoint::now() > message.getExpiryDate()) {
         std::string errorMessage("Received expired message. Dropping the message (ID: " +
                                  message.getId() + ").");
         JOYNR_LOG_WARN(logger(), errorMessage);
@@ -224,16 +215,15 @@ void AbstractMessageRouter::registerGlobalRoutingEntryIfRequired(const Immutable
             // because the message is received via global transport (isGloballyVisible=true),
             // isGloballyVisible must be true
             const bool isGloballyVisible = true;
-            std::int64_t expiryDateMs =
-                    std::chrono::duration_cast<std::chrono::milliseconds>(
-                            message.getExpiryDate().time_since_epoch()).count() +
-                    messagingSettings.getRoutingTableGracePeriodMs();
-            if (expiryDateMs < 0) {
-                expiryDateMs = std::numeric_limits<std::int64_t>::max();
-            }
+            const TimePoint expiryDate =
+                    message.getExpiryDate() + messagingSettings.getRoutingTableGracePeriodMs();
 
             const bool isSticky = false;
-            addNextHop(message.getSender(), address, isGloballyVisible, expiryDateMs, isSticky);
+            addNextHop(message.getSender(),
+                       address,
+                       isGloballyVisible,
+                       expiryDate.toMilliseconds(),
+                       isSticky);
         } catch (const std::invalid_argument& e) {
             std::string errorMessage("could not deserialize Address from " + replyTo +
                                      " - error: " + e.what());
