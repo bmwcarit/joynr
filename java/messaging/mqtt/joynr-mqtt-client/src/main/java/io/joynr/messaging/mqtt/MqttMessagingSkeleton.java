@@ -51,8 +51,8 @@ import joynr.system.RoutingTypes.MqttAddress;
  * Connects to the MQTT broker
  */
 public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessageProcessedListener {
-
     private static final Logger LOG = LoggerFactory.getLogger(MqttMessagingSkeleton.class);
+
     private final int maxMqttMessagesInQueue;
     private MessageRouter messageRouter;
     private JoynrMqttClient mqttClient;
