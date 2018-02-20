@@ -46,6 +46,7 @@ var attributeBooleanReadonly = false;
 var attributeStringNoSubscriptions = "";
 var attributeInt8readonlyNoSubscriptions = 0;
 var attributeArrayOfStringImplicit = [ "" ];
+var attributeByteBuffer;
 var attributeEnumeration;
 var attributeExtendedEnumerationReadonly;
 var attributeBaseStruct;
@@ -144,6 +145,19 @@ exports.implementation = {
             return new Promise(function(resolve, reject) {
                 resolve();
             });
+        }
+    },
+
+    attributeByteBuffer : {
+         get : function() {
+            prettyLog("IltProvider.attributeByteBuffer.get() called");
+            return Promise.resolve(attributeByteBuffer);
+        },
+        set : function(value) {
+            prettyLog("IltProvider.attributeByteBuffer.set(" + value + ") called");
+            attributeByteBuffer = value;
+            self.attributeByteBuffer.valueChanged(attributeByteBuffer);
+            return Promise.resolve();
         }
     },
 
@@ -378,6 +392,28 @@ exports.implementation = {
                     });
             }
         });
+    },
+
+    methodWithSingleByteBufferParameter : function(opArgs) {
+        prettyLog("IltProvider.methodWithSingleByteBufferParameter(" + JSON.stringify(opArgs) + ") called");
+        if (opArgs.byteBufferIn === undefined || opArgs.byteBufferIn === null) {
+            return Promise.reject(new joynr.exceptions.ProviderRuntimeException(
+                    {detailMessage: "methodWithSingleByteBufferParameter: received wrong argument"}));
+        }
+        return Promise.resolve(opArgs.byteBufferIn);
+    },
+
+    methodWithMultipleByteBufferParameters : function(opArgs) {
+        prettyLog("IltProvider.methodWithMultipleByteBufferParameters(" + JSON.stringify(opArgs) + ") called");
+        if (opArgs.byteBufferIn1 === undefined || opArgs.byteBufferIn1 === null) {
+            return Promise.reject(new joynr.exceptions.ProviderRuntimeException(
+                    {detailMessage: "methodWithMultipleByteBufferParameters: invalid argument byteBufferIn1"}));
+        }
+        if (opArgs.byteBufferIn2 === undefined || opArgs.byteBufferIn2 === null) {
+            return Promise.reject(new joynr.exceptions.ProviderRuntimeException(
+                    {detailMessage: "methodWithMultipleByteBufferParameters: invalid argument byteBufferIn2"}));
+        }
+        return Promise.resolve(byteBufferIn1.concat(byteBufferIn2));
     },
 
     methodWithSingleEnumParameters : function(opArgs) {
@@ -671,6 +707,8 @@ exports.implementation = {
     broadcastWithMultiplePrimitiveParameters : {},
     broadcastWithSingleArrayParameter : {},
     broadcastWithMultipleArrayParameters : {},
+    broadcastWithSingleByteBufferParameter : {},
+    broadcastWithMultipleByteBufferParameters : {},
     broadcastWithSingleEnumerationParameter : {},
     broadcastWithMultipleEnumerationParameters : {},
     broadcastWithSingleStructParameter : {},
@@ -723,6 +761,23 @@ exports.implementation = {
             self.broadcastWithMultipleArrayParameters.fire(outputParameters, opArgs.partitions);
             resolve();
         });
+    },
+
+    methodToFireBroadcastWithSingleByteBufferParameter : function(opArgs) {
+        prettyLog("IltProvider.methodToFireBroadcastWithSingleByteBufferParameter(" + JSON.stringify(opArgs) + ") called");
+        var outputParameters = self.broadcastWithSingleByteBufferParameter.createBroadcastOutputParameters();
+        outputParameters.setByteBufferOut(opArgs.byteBufferIn);
+        self.broadcastWithSingleByteBufferParameter.fire(outputParameters, opArgs.partitions);
+        return Promise.resolve();
+    },
+
+    methodToFireBroadcastWithMultipleByteBufferParameters : function(opArgs) {
+        prettyLog("IltProvider.methodToFireBroadcastWithMultipleByteBufferParameters(" + JSON.stringify(opArgs) + ") called");
+        var outputParameters = self.broadcastWithSingleByteBufferParameter.createBroadcastOutputParameters();
+        outputParameters.setByteBufferOut1(opArgs.byteBufferIn1);
+        outputParameters.setByteBufferOut2(opArgs.byteBufferIn2);
+        self.broadcastWithMultipleByteBufferParameters.fire(outputParameters, opArgs.partitions);
+        return Promise.resolve();
     },
 
     methodToFireBroadcastWithSingleEnumerationParameter : function(opArgs) {
