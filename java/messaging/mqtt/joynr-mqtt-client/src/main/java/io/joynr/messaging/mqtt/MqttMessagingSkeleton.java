@@ -44,6 +44,7 @@ import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.smrf.EncodingException;
 import io.joynr.smrf.UnsuppportedVersionException;
 import joynr.ImmutableMessage;
+import joynr.Message;
 import joynr.system.RoutingTypes.MqttAddress;
 
 /**
@@ -177,6 +178,19 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
     }
 
     private boolean dropMessage(ImmutableMessage message) {
+        // check if there are already too many messages being processed
+        if (incomingMqttMessagesBeingProcessed.size() >= maxMqttMessagesInQueue) {
+            // only certain types of messages can be dropped in order not to break
+            // the communication, e.g. a reply message must not be dropped
+            if (message.getType().equals(Message.VALUE_MESSAGE_TYPE_REQUEST)
+                    || message.getType().equals(Message.VALUE_MESSAGE_TYPE_ONE_WAY)) {
+                LOG.warn("Incoming MQTT message with id {} will be dropped as limit of {} messages is reached",
+                         message.getId(),
+                         maxMqttMessagesInQueue);
+                return true;
+            }
+        }
+
         return false;
     }
 
