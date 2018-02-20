@@ -106,6 +106,7 @@ set(JoynrLib_SOURCES
     "capabilities/LocalDiscoveryAggregator.cpp"
     "capabilities/ParticipantIdStorage.cpp"
     "CapabilitiesRegistrar.cpp"
+    "TimePoint.cpp"
     "common/CallContext.cpp"
     "common/CapabilityUtils.cpp"
     "common/concurrency/BlockingQueue.cpp"
