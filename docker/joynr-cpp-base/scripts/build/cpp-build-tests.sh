@@ -59,6 +59,18 @@ while [ "$1" != "" ]; do
     shift
 done
 
+# build dummyKeychain first
+DUMMYKEYCHAIN_SRC_DIR=/data/src/tests/dummyKeychain
+DUMMYKEYCHAIN_BUILD_DIR=/data/build/dummyKeychain
+rm -rf $DUMMYKEYCHAIN_BUILD_DIR
+mkdir $DUMMYKEYCHAIN_BUILD_DIR
+cd $DUMMYKEYCHAIN_BUILD_DIR
+cmake -DCMAKE_PREFIX_PATH=$JOYNR_INSTALL_DIR \
+      -DCMAKE_BUILD_TYPE=$BUILDTYPE \
+      -DCMAKE_INSTALL_PREFIX=/usr \
+      $DUMMYKEYCHAIN_SRC_DIR
+make -j ${JOBS}
+
 # check which test to build
 MAVEN_PROJECT=
 MAVEN_PREFIX=",io.joynr.tests:"

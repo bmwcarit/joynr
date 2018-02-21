@@ -19,34 +19,44 @@
 
 #include "SitUtil.h"
 
-#include <stdexcept>
+#include <string>
+#include <memory>
 
-#include "KeychainImpl.h"
+#include <joynr/JoynrRuntime.h>
+
+#include <joynr/tests/DummyKeyChainParameters.h>
+#include <joynr/tests/DummyKeychainImpl.h>
 
 namespace joynr
 {
-std::shared_ptr<IKeychain> tryLoadKeychainFromCmdLineArgs(const std::string& certPemFilename,
-                                                          const std::string& privateKeyPemFilename,
-                                                          const std::string& caCertPemFilename)
+namespace sitUtil
 {
-    const bool oneSSLCmdLineArgProvided = !certPemFilename.empty() ||
-                                          !privateKeyPemFilename.empty() ||
-                                          !caCertPemFilename.empty();
-    const bool allSSLCmdLineArgsProvided = !certPemFilename.empty() &&
-                                           !privateKeyPemFilename.empty() &&
-                                           !caCertPemFilename.empty();
+std::shared_ptr<joynr::JoynrRuntime> createRuntime(const std::string& pathToSettings,
+                                                   const std::string& sslCertFilename,
+                                                   const std::string& sslPrivateKeyFilename,
+                                                   const std::string& sslCaCertFilename)
+{
+    const std::string pathToMessagingSettingsDefault("");
+    std::shared_ptr<IKeychain> keychain;
+    std::string privateKeyPwd;
+    const joynr::tests::DummyKeyChainParameters inputKeyChainParams{
+            sslCertFilename, sslPrivateKeyFilename, sslCaCertFilename, privateKeyPwd};
 
-    if (oneSSLCmdLineArgProvided && !allSSLCmdLineArgsProvided) {
+    if (!inputKeyChainParams.allEmpty()) {
+        keychain = joynr::tests::DummyKeychainImpl::createFromPEMFiles(inputKeyChainParams);
+    } else if (inputKeyChainParams.atLeastOneIsDefined()) {
+        // do not throw if nothing is defined to allow initialization without keychain
         throw std::invalid_argument("All three ssl options must be provided (cert, key, ca-cert)");
     }
 
-    if (allSSLCmdLineArgsProvided) {
-        const std::string privateKeyPassword("");
-
-        return KeychainImpl::createFromPEMFiles(
-                certPemFilename, privateKeyPemFilename, caCertPemFilename, privateKeyPassword);
+    std::shared_ptr<JoynrRuntime> runtime;
+    try {
+        runtime = JoynrRuntime::createRuntime(
+                pathToSettings, pathToMessagingSettingsDefault, keychain);
+    } catch (...) {
+        runtime = nullptr;
     }
-
-    return nullptr;
+    return runtime;
+}
 }
 } // namespace joynr

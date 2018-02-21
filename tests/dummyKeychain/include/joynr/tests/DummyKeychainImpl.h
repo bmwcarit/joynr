@@ -17,20 +17,24 @@
  * #L%
  */
 
-#ifndef KEYCHAINIMPL_H
-#define KEYCHAINIMPL_H
+#ifndef DUMMYKEYCHAINIMPL_H
+#define DUMMYKEYCHAINIMPL_H
 
 #include <memory>
 #include <string>
 
 #include <joynr/IKeychain.h>
 
+#include <joynr/tests/DummyKeyChainParameters.h>
+
 namespace joynr
 {
-class KeychainImpl : public IKeychain
+namespace tests
+{
+class DummyKeychainImpl : public IKeychain
 {
 public:
-    KeychainImpl(std::shared_ptr<const mococrw::X509Certificate> tlsCertificate,
+    DummyKeychainImpl(std::shared_ptr<const mococrw::X509Certificate> tlsCertificate,
                  std::shared_ptr<const mococrw::AsymmetricPrivateKey> tlsKey,
                  std::shared_ptr<const mococrw::X509Certificate> tlsRootCertificate);
 
@@ -39,17 +43,14 @@ public:
     std::shared_ptr<const mococrw::X509Certificate> getTlsRootCertificate() const final;
     std::string getOwnerId() const final;
 
-    static std::shared_ptr<IKeychain> createFromPEMFiles(
-            const std::string& tlsCertificatePEMFilename,
-            const std::string& tlsKeyPEMFilename,
-            const std::string& tlsRootCertificatePEMFilename,
-            const std::string& privateKeyPassword);
+    static std::shared_ptr<IKeychain> createFromPEMFiles(const DummyKeyChainParameters& inputParams);
 
 private:
     std::shared_ptr<const mococrw::X509Certificate> tlsCertificate;
     std::shared_ptr<const mococrw::AsymmetricPrivateKey> tlsKey;
     std::shared_ptr<const mococrw::X509Certificate> tlsRootCertificate;
 };
+} // namespace tests
 } // namespace joynr
 
-#endif // KEYCHAINIMPL_H
+#endif // DUMMYKEYCHAINIMPL_H
