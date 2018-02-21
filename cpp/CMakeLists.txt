@@ -783,7 +783,7 @@ set(
     ${CMAKE_THREAD_LIBS_INIT}
 )
 
-get_target_property(Joynr_PUBLIC_INCLUDE_DIRECTORY Joynr PUBLIC_INCLUDE_DIRECTORY)
+get_target_property(Joynr_PUBLIC_INCLUDE_DIRECTORY Joynr INTERFACE_INCLUDE_DIRECTORIES)
 get_target_property(JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY JoynrClusterController PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(JoynrClusterControllerRuntime_PUBLIC_INCLUDE_DIRECTORY JoynrClusterControllerRuntime PUBLIC_INCLUDE_DIRECTORY)
 

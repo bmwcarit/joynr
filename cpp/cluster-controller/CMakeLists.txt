@@ -2,7 +2,6 @@ message(STATUS "#############################################")
 message(STATUS "Configuring cluster controller executable...")
 message(STATUS "#############################################\n")
 
-get_target_property(Joynr_PUBLIC_INCLUDE_DIRECTORY Joynr PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY JoynrClusterController PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(runtime_PUBLIC_INCLUDE_DIRECTORY JoynrClusterControllerRuntime PUBLIC_INCLUDE_DIRECTORY)
 
@@ -10,7 +9,6 @@ set(
     ClusterControllerExecutable_INCLUDE_DIRECTORIES
     ${runtime_PUBLIC_INCLUDE_DIRECTORY}
     ${JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY}
-    ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
     "../"
 )
 

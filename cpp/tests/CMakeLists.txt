@@ -104,8 +104,6 @@ if(${GENERATE_SOURCES})
     )
 endif(${GENERATE_SOURCES})
 
-get_target_property(Joynr_PUBLIC_INCLUDE_DIRECTORY Joynr PUBLIC_INCLUDE_DIRECTORY)
-
 get_target_property(joynrwsruntime_PUBLIC_INCLUDE_DIRECTORY JoynrWsRuntime PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY JoynrClusterController PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(JoynrClusterControllerRuntime_PUBLIC_INCLUDE_DIRECTORY JoynrClusterControllerRuntime PUBLIC_INCLUDE_DIRECTORY)
@@ -115,7 +113,6 @@ set(
     ${CMAKE_CURRENT_SOURCE_DIR}
     "${CMAKE_CURRENT_SOURCE_DIR}/.."
     "${CMAKE_CURRENT_SOURCE_DIR}/gen/include"
-    ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
     ${joynrwsruntime_PUBLIC_INCLUDE_DIRECTORY}
     ${JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY}
     ${JoynrClusterControllerRuntime_PUBLIC_INCLUDE_DIRECTORY}

@@ -32,17 +32,6 @@ if(${GENERATE_SOURCES})
 endif(${GENERATE_SOURCES})
 
 set(
-    JoynrLib_PUBLIC_INCLUDE_DIRECTORY
-    "${CMAKE_CURRENT_SOURCE_DIR}/include"
-)
-
-set(
-    JoynrLib_INCLUDE_DIRECTORIES
-    ${JoynrLib_PUBLIC_INCLUDE_DIRECTORY}
-    "../"
-)
-
-set(
     JoynrLib_TARGET_LIBRARIES
     Boost::system
     Boost::thread
@@ -224,19 +213,6 @@ add_library(
     ${JoynrLib_SOURCES}
 )
 
-target_include_directories(
-    Joynr
-    PRIVATE ${JoynrLib_INCLUDE_DIRECTORIES}
-)
-
-target_include_directories(
-    Joynr
-    SYSTEM PUBLIC
-        "$<BUILD_INTERFACE:${spdlog_INCLUDE_DIRS}>"
-        "$<BUILD_INTERFACE:${WEBSOCKETPP_INCLUDE_DIR}>"
-        "$<BUILD_INTERFACE:${OPENSSL_INCLUDE_DIR}>" # necessary, because requirements are not propagated properly in cmake 2.8.x
-)
-
 if(JOYNR_ENABLE_DLT_LOGGING)
     target_include_directories(
         Joynr
@@ -247,14 +223,31 @@ endif(JOYNR_ENABLE_DLT_LOGGING)
 
 add_dependencies(Joynr muesli::muesli)
 get_target_property(muesli_INCLUDE_DIRECTORIES muesli::muesli INTERFACE_INCLUDE_DIRECTORIES)
-target_include_directories(Joynr SYSTEM PUBLIC "$<BUILD_INTERFACE:${muesli_INCLUDE_DIRECTORIES}>")
+
+target_include_directories(
+    Joynr
+    PUBLIC
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+        "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+    PRIVATE
+        "../" # allow inclusion of private headers in the form libjoynr/subfolder/header_file.h
+)
+
+target_include_directories(
+    Joynr
+    SYSTEM PUBLIC
+        "$<BUILD_INTERFACE:${spdlog_INCLUDE_DIRS}>"
+        "$<BUILD_INTERFACE:${WEBSOCKETPP_INCLUDE_DIR}>"
+        "$<BUILD_INTERFACE:${OPENSSL_INCLUDE_DIR}>" # necessary, because requirements are not propagated properly in cmake 2.8.x
+        "$<BUILD_INTERFACE:${muesli_INCLUDE_DIRECTORIES}>"
+)
 
 if(NOT USE_PLATFORM_SPDLOG)
     add_dependencies(Joynr spdlog)
 endif(NOT USE_PLATFORM_SPDLOG)
 
 if(JOYNR_ENABLE_DLT_LOGGING)
-add_dependencies(Joynr DLT::DLT)
+    add_dependencies(Joynr DLT::DLT)
 endif(JOYNR_ENABLE_DLT_LOGGING)
 
 if(NOT USE_PLATFORM_WEBSOCKETPP)
@@ -272,7 +265,6 @@ set_target_properties(
     PROPERTIES
     SOVERSION "${JOYNR_SOVERSION}"
     VERSION "${JOYNR_VERSION}"
-    PUBLIC_INCLUDE_DIRECTORY "${JoynrLib_PUBLIC_INCLUDE_DIRECTORY}"
     COMPILE_DEFINITIONS CMAKE_JOYNR_SETTINGS_INSTALL_DIR="${JOYNR_INSTALL_FULL_SYSCONFDIR}"
 )
 
