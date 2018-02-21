@@ -128,15 +128,21 @@ Controls whether the backpressure mechanism is active.
 * **User property**: `joynr.messaging.backpressure.enabled`
 * **Default value**: `false`
 
-### `PROPERTY_BACKPRESSURE_MAX_INCOMING_MQTT_MESSAGES_IN_QUEUE`
-The number of incoming MQTT messages that can be handled by the message router at the same time.
-
-This property is only relevant when `PROPERTY_BACKPRESSURE_ENABLED` is set to true.
+### `PROPERTY_MAX_INCOMING_MQTT_REQUESTS`
+Setting this limit protects a joynr instance against consuming too much memory.
+This may be the case if the processing of requests (meaning RPCs and fire-and-forget
+methods) coming over MQTT is slower than their incoming rate and there is a resulting need
+of queueing them. In case the set maximum is reached, further incoming MQTT requests
+are dropped and are lost. Pay attention that other types of incoming MQTT messages (e.g.
+replies) will not be dropped in order not to break the joynr communication. New
+requests coming over MQTT will be accepted again when processing of previous ones
+is completed. The default value of `0` means that no limit is enforced and no messages
+will be ever dropped.
 
 * **OPTIONAL**
 * **Type**: int
-* **User property**: `joynr.messaging.backpressure.maxincomingmqttmessagesinqueue`
-* **Default value**: `20`
+* **User property**: `joynr.messaging.maxincomingmqttmessagesinprocessing`
+* **Default value**: `0`
 
 ### `PROPERTY_MESSAGING_MAXIMUM_TTL_MS`
 The maximum allowed time-to-live (TTL) of joynr messages. The TTL used in a joynr message is set on

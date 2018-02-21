@@ -1,6 +1,15 @@
 # joynr x.x.x
 
 ## Configuration property changes
+* **[Java]** Property `PROPERTY_BACKPRESSURE_MAX_INCOMING_MQTT_MESSAGES_IN_QUEUE`
+  was renamed to `PROPERTY_MAX_INCOMING_MQTT_REQUESTS`. The new identifier is
+  `joynr.messaging.maxincomingmqttrequests`. This change indicates that the property
+  is not more related to a backpressure mechanism but is rather an independent
+  self-protection mechanism of the instance from too heavy MQTT requests inflow.
+  Furthermore, the default value of the property was changed from 20 to 0 (off).
+  Hence, at default the mechanism is off and only the user can configure an appropriate
+  value according to his application. See
+  [Java Configuration Reference](JavaSettings.md) for more details.
 * **[Java]** Removed property `PROPERTY_REPEATED_MQTT_MESSAGE_IGNORE_PERIOD_MS`.
   The future behavior of the MqttMessagingSkeleton will change to immediate mqtt
   message acknowledgment and this should eliminate receiving repeated messages from

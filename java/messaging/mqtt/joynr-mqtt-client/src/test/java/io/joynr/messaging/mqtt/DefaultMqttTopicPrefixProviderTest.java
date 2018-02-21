@@ -75,7 +75,7 @@ public class DefaultMqttTopicPrefixProviderTest {
         properties.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_MULTICAST, expectedMulticastPrefix);
         properties.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_REPLYTO, expectedReplyToPrefix);
         properties.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_UNICAST, expectedUnicastPrefix);
-        properties.put(ConfigurableMessagingSettings.PROPERTY_BACKPRESSURE_MAX_INCOMING_MQTT_MESSAGES_IN_QUEUE, "20");
+        properties.put(ConfigurableMessagingSettings.PROPERTY_MAX_INCOMING_MQTT_REQUESTS, "0");
         properties.put(ConfigurableMessagingSettings.PROPERTY_BACKPRESSURE_ENABLED, "false");
         properties.put(MqttModule.PROPERTY_MQTT_CLEAN_SESSION, "false");
         Module testModule = Modules.override(new MqttPahoModule()).with(new AbstractModule() {

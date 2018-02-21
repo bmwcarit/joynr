@@ -19,7 +19,7 @@
 package io.joynr.messaging.mqtt;
 
 import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_BACKPRESSURE_ENABLED;
-import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_BACKPRESSURE_MAX_INCOMING_MQTT_MESSAGES_IN_QUEUE;
+import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_MAX_INCOMING_MQTT_REQUESTS;
 
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -53,7 +53,7 @@ import joynr.system.RoutingTypes.MqttAddress;
 public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessageProcessedListener {
     private static final Logger LOG = LoggerFactory.getLogger(MqttMessagingSkeleton.class);
 
-    private final int maxMqttMessagesInQueue;
+    private final int maxIncomingMqttRequests;
     private MessageRouter messageRouter;
     private JoynrMqttClient mqttClient;
     private MqttClientFactory mqttClientFactory;
@@ -62,13 +62,13 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
     private MqttTopicPrefixProvider mqttTopicPrefixProvider;
     private RawMessagingPreprocessor rawMessagingPreprocessor;
     private Set<JoynrMessageProcessor> messageProcessors;
-    private Set<String> incomingMqttMessagesBeingProcessed;
+    private Set<String> incomingMqttRequests;
     private final boolean backpressureEnabled;
 
     @Inject
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 2 LINES
     public MqttMessagingSkeleton(@Named(MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
-                                 @Named(PROPERTY_BACKPRESSURE_MAX_INCOMING_MQTT_MESSAGES_IN_QUEUE) int maxMqttMessagesInQueue,
+                                 @Named(PROPERTY_MAX_INCOMING_MQTT_REQUESTS) int maxIncomingMqttRequests,
                                  @Named(PROPERTY_BACKPRESSURE_ENABLED) boolean backpressureEnabled,
                                  MessageRouter messageRouter,
                                  MqttClientFactory mqttClientFactory,
@@ -77,13 +77,13 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
                                  Set<JoynrMessageProcessor> messageProcessors) {
         this.backpressureEnabled = backpressureEnabled;
         this.ownAddress = ownAddress;
-        this.maxMqttMessagesInQueue = maxMqttMessagesInQueue;
+        this.maxIncomingMqttRequests = maxIncomingMqttRequests;
         this.messageRouter = messageRouter;
         this.mqttClientFactory = mqttClientFactory;
         this.mqttTopicPrefixProvider = mqttTopicPrefixProvider;
         this.rawMessagingPreprocessor = rawMessagingPreprocessor;
         this.messageProcessors = messageProcessors;
-        this.incomingMqttMessagesBeingProcessed = Collections.synchronizedSet(new HashSet<String>());
+        this.incomingMqttRequests = Collections.synchronizedSet(new HashSet<String>());
     }
 
     @Override
@@ -162,7 +162,7 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
             }
 
             message.setReceivedFromGlobal(true);
-            incomingMqttMessagesBeingProcessed.add(message.getId());
+            incomingMqttRequests.add(message.getId());
 
             try {
                 messageRouter.route(message);
@@ -178,15 +178,16 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
     }
 
     private boolean dropMessage(ImmutableMessage message) {
-        // check if there are already too many messages being processed
-        if (incomingMqttMessagesBeingProcessed.size() >= maxMqttMessagesInQueue) {
+        // check if a limit for requests is set and
+        // if there are already too many requests still not processed
+        if (maxIncomingMqttRequests > 0 && incomingMqttRequests.size() >= maxIncomingMqttRequests) {
             // only certain types of messages can be dropped in order not to break
             // the communication, e.g. a reply message must not be dropped
             if (message.getType().equals(Message.VALUE_MESSAGE_TYPE_REQUEST)
                     || message.getType().equals(Message.VALUE_MESSAGE_TYPE_ONE_WAY)) {
-                LOG.warn("Incoming MQTT message with id {} will be dropped as limit of {} messages is reached",
+                LOG.warn("Incoming MQTT message with id {} will be dropped as limit of {} requests is reached",
                          message.getId(),
-                         maxMqttMessagesInQueue);
+                         maxIncomingMqttRequests);
                 return true;
             }
         }
@@ -208,7 +209,7 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
 
     @Override
     public void messageProcessed(String messageId) {
-        if (incomingMqttMessagesBeingProcessed.remove(messageId)) {
+        if (incomingMqttRequests.remove(messageId)) {
             LOG.trace("Message {} was processed and is removed from the MQTT skeleton list", messageId);
         } else {
             LOG.trace("Message {} was processed but it is unkown to the MQTT skeleton", messageId);
