@@ -22,6 +22,7 @@
 #include <functional>
 
 #include <boost/asio/io_service.hpp>
+#include <spdlog/fmt/fmt.h>
 
 #include "joynr/IMessagingStub.h"
 #include "joynr/IMessagingStubFactory.h"
@@ -177,9 +178,13 @@ AbstractMessageRouter::AddressUnorderedSet AbstractMessageRouter::getDestination
 
 void AbstractMessageRouter::checkExpiryDate(const ImmutableMessage& message)
 {
-    if (TimePoint::now() > message.getExpiryDate()) {
-        std::string errorMessage("Received expired message. Dropping the message (ID: " +
-                                 message.getId() + ").");
+    const auto now = TimePoint::now();
+    if (now > message.getExpiryDate()) {
+        const std::string errorMessage = fmt::format(
+                "Received expired message (now={}, expiryDate={}). Dropping the message (ID: {})",
+                now.toMilliseconds(),
+                message.getExpiryDate().toMilliseconds(),
+                message.getId());
         JOYNR_LOG_WARN(logger(), errorMessage);
         throw exceptions::JoynrMessageNotSentException(errorMessage);
     }
