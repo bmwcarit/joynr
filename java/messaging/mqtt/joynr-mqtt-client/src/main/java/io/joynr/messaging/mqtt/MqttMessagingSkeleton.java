@@ -181,15 +181,23 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
         // check if a limit for requests is set and
         // if there are already too many requests still not processed
         if (maxIncomingMqttRequests > 0 && incomingMqttRequests.size() >= maxIncomingMqttRequests) {
-            // only certain types of messages can be dropped in order not to break
-            // the communication, e.g. a reply message must not be dropped
-            if (message.getType().equals(Message.VALUE_MESSAGE_TYPE_REQUEST)
-                    || message.getType().equals(Message.VALUE_MESSAGE_TYPE_ONE_WAY)) {
+            if (isRequestMessageTypeThatCanBeDropped(message.getType())) {
                 LOG.warn("Incoming MQTT message with id {} will be dropped as limit of {} requests is reached",
                          message.getId(),
                          maxIncomingMqttRequests);
                 return true;
             }
+        }
+
+        return false;
+    }
+
+    // only certain types of messages can be dropped in order not to break
+    // the communication, e.g. a reply message must not be dropped
+    private boolean isRequestMessageTypeThatCanBeDropped(String messageType) {
+        if (messageType.equals(Message.VALUE_MESSAGE_TYPE_REQUEST)
+                || messageType.equals(Message.VALUE_MESSAGE_TYPE_ONE_WAY)) {
+            return true;
         }
 
         return false;
