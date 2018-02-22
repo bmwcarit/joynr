@@ -162,7 +162,10 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
             }
 
             message.setReceivedFromGlobal(true);
-            incomingMqttRequests.add(message.getId());
+
+            if (isRequestMessageTypeThatCanBeDropped(message.getType())) {
+                incomingMqttRequests.add(message.getId());
+            }
 
             try {
                 messageRouter.route(message);
