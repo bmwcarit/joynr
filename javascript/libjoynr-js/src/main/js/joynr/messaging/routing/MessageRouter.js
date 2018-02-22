@@ -511,6 +511,10 @@ function MessageRouter(settings) {
         return routeInternal(address, this);
     }
 
+    function resolveNextHopOnError(e) {
+        log.error(e.message);
+    }
+
     function resolveNextHopAndRoute(participantId, joynrMessage) {
         var address = getAddressFromPersistency(participantId);
 
@@ -531,7 +535,8 @@ function MessageRouter(settings) {
                 .resolveNextHop({
                     participantId: participantId
                 })
-                .then(resolveNextHopOnSuccess);
+                .then(resolveNextHopOnSuccess)
+                .catch(resolveNextHopOnError);
         }
         return routeInternal(address, joynrMessage);
     }
@@ -777,11 +782,7 @@ function MessageRouter(settings) {
         if (messageQueue !== undefined) {
             i = messageQueue.length;
             while (i--) {
-                try {
-                    that.route(messageQueue[i]).catch(handleError);
-                } catch (error) {
-                    handleError(error);
-                }
+                that.route(messageQueue[i]);
             }
         }
     };
