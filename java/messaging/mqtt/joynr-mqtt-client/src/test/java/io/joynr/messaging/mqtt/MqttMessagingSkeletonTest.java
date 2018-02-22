@@ -170,14 +170,14 @@ public class MqttMessagingSkeletonTest {
                                             preprocessor,
                                             new HashSet<JoynrMessageProcessor>());
 
-        ImmutableMessage message = createTestMessage();
+        ImmutableMessage rqMessage = createTestRequestMessage();
 
-        subject.transmit(message.getSerializedMessage(), 42, 0, failIfCalledAction);
+        subject.transmit(rqMessage.getSerializedMessage(), 42, 0, failIfCalledAction);
 
         ArgumentCaptor<ImmutableMessage> captor = ArgumentCaptor.forClass(ImmutableMessage.class);
         verify(messageRouter).route(captor.capture());
 
-        assertArrayEquals(message.getSerializedMessage(), captor.getValue().getSerializedMessage());
+        assertArrayEquals(rqMessage.getSerializedMessage(), captor.getValue().getSerializedMessage());
     }
 
     @Test
@@ -195,14 +195,14 @@ public class MqttMessagingSkeletonTest {
                                             new NoOpRawMessagingPreprocessor(),
                                             Sets.newHashSet(processorMock));
 
-        ImmutableMessage message = createTestMessage();
+        ImmutableMessage rqMessage = createTestRequestMessage();
 
-        subject.transmit(message.getSerializedMessage(), 42, 0, failIfCalledAction);
+        subject.transmit(rqMessage.getSerializedMessage(), 42, 0, failIfCalledAction);
 
         ArgumentCaptor<ImmutableMessage> argCaptor = ArgumentCaptor.forClass(ImmutableMessage.class);
         verify(processorMock).processIncoming(argCaptor.capture());
 
-        Assert.assertArrayEquals(message.getSerializedMessage(), argCaptor.getValue().getSerializedMessage());
+        Assert.assertArrayEquals(rqMessage.getSerializedMessage(), argCaptor.getValue().getSerializedMessage());
     }
 
     @Test
@@ -224,12 +224,12 @@ public class MqttMessagingSkeletonTest {
         final int mqttMessageId = -44;
         final int mqttQos = 1;
 
-        ImmutableMessage message = createTestMessage();
+        ImmutableMessage rqMessage = createTestRequestMessage();
 
         doThrow(new JoynrRuntimeException()).when(messageRouter).route(any(ImmutableMessage.class));
 
         Semaphore semaphore = new Semaphore(0);
-        subject.transmit(message.getSerializedMessage(), mqttMessageId, mqttQos, getExpectToBeCalledAction(semaphore));
+        subject.transmit(rqMessage.getSerializedMessage(), mqttMessageId, mqttQos, getExpectToBeCalledAction(semaphore));
 
         assertTrue(semaphore.tryAcquire());
     }
@@ -241,12 +241,15 @@ public class MqttMessagingSkeletonTest {
         final int mqttQos = 1;
 
         for (int i = 0; i < maxMqttMessagesInQueue; i++) {
-            subject.transmit(createTestMessage().getSerializedMessage(), mqttMessageId, mqttQos, failIfCalledAction);
+            subject.transmit(createTestRequestMessage().getSerializedMessage(),
+                             mqttMessageId,
+                             mqttQos,
+                             failIfCalledAction);
         }
         verify(messageRouter, times(maxMqttMessagesInQueue)).route(any(ImmutableMessage.class));
 
         // As the queue is full, further messages should not be transmitted
-        subject.transmit(createTestMessage().getSerializedMessage(), mqttMessageId, mqttQos, failIfCalledAction);
+        subject.transmit(createTestRequestMessage().getSerializedMessage(), mqttMessageId, mqttQos, failIfCalledAction);
         verify(messageRouter, times(maxMqttMessagesInQueue)).route(any(ImmutableMessage.class));
     }
 
@@ -259,12 +262,12 @@ public class MqttMessagingSkeletonTest {
         final int mqttMessageId3_willBeRejected = 1789;
         final int mqttMessageId4_willBeAcceptedAsQueueHasFreeSlotAgain = 2017;
 
-        ImmutableMessage message1 = createTestMessage();
-        final String messageId1 = message1.getId();
-        subject.transmit(message1.getSerializedMessage(), mqttMessageId1_willBeProcessed, mqttQos, failIfCalledAction);
+        ImmutableMessage rqMessage1 = createTestRequestMessage();
+        final String messageId1 = rqMessage1.getId();
+        subject.transmit(rqMessage1.getSerializedMessage(), mqttMessageId1_willBeProcessed, mqttQos, failIfCalledAction);
 
         for (int i = 0; i < maxMqttMessagesInQueue - 1; i++) {
-            subject.transmit(createTestMessage().getSerializedMessage(),
+            subject.transmit(createTestRequestMessage().getSerializedMessage(),
                              mqttMessageId2_fillingUpQueue,
                              mqttQos,
                              failIfCalledAction);
@@ -273,7 +276,7 @@ public class MqttMessagingSkeletonTest {
 
         // As the queue is full, further messages should not be transmitted
         // until an already accepted message is marked as processed
-        subject.transmit(createTestMessage().getSerializedMessage(),
+        subject.transmit(createTestRequestMessage().getSerializedMessage(),
                          mqttMessageId3_willBeRejected,
                          mqttQos,
                          failIfCalledAction);
@@ -281,14 +284,18 @@ public class MqttMessagingSkeletonTest {
 
         subject.messageProcessed(messageId1);
 
-        subject.transmit(createTestMessage().getSerializedMessage(),
+        subject.transmit(createTestRequestMessage().getSerializedMessage(),
                          mqttMessageId4_willBeAcceptedAsQueueHasFreeSlotAgain,
                          mqttQos,
                          failIfCalledAction);
         verify(messageRouter, times(maxMqttMessagesInQueue + 1)).route(any(ImmutableMessage.class));
     }
 
-    private ImmutableMessage createTestMessage() throws Exception {
+    private ImmutableMessage createTestRequestMessage() throws Exception {
+        return createTestMessage(Message.VALUE_MESSAGE_TYPE_REQUEST);
+    }
+
+    private ImmutableMessage createTestMessage(String messageType) throws Exception {
         MutableMessage message = new MutableMessage();
 
         ObjectMapper objectMapper = new ObjectMapper();
@@ -299,7 +306,7 @@ public class MqttMessagingSkeletonTest {
         message.setTtlAbsolute(true);
         message.setTtlMs(100000);
         message.setPayload(new byte[]{ 0, 1, 2 });
-        message.setType(Message.VALUE_MESSAGE_TYPE_REQUEST);
+        message.setType(messageType);
         message.setReplyTo(objectMapper.writeValueAsString(address));
 
         return message.getImmutableMessage();
