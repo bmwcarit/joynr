@@ -51,6 +51,10 @@ find_package(Boost 1.58.0 REQUIRED
 )
 include_directories(${Boost_INCLUDE_DIRS})
 
+######## Add dependency to dummyKeychain ########
+find_package(dummyKeychain 0.0.1 REQUIRED)
+message(STATUS "Found dummyKeychain version ${dummyKeychain_VERSION}")
+
 ##### Library consisting of the generated code ###########
 
 file(GLOB_RECURSE PERFORMANCE_GENERATED_HEADERS
