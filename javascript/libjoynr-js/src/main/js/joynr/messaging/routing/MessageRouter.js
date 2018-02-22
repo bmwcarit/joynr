@@ -448,14 +448,6 @@ function MessageRouter(settings) {
         // remote provider participants are registered by capabilitiesDirectory on lookup
         // local providers are registered by capabilitiesDirectory on register
         // replyCallers are registered when they are created
-        if (address === undefined) {
-            errorMsg = "No message receiver found for participantId: " + joynrMessage.to + ". Queuing message.";
-            log.warn(errorMsg, DiagnosticTags.forJoynrMessage(joynrMessage));
-            // message is queued until the participant is registered
-            // TODO remove expired messages from queue
-            settings.messageQueue.putMessage(joynrMessage);
-            return Promise.resolve();
-        }
 
         if (!joynrMessage.isLocalMessage) {
             try {
@@ -519,7 +511,7 @@ function MessageRouter(settings) {
         var address = getAddressFromPersistency(participantId);
 
         function resolveNextHopOnSuccess(opArgs) {
-            if (opArgs.resolved) {
+            if (opArgs.resolved && parentMessageRouterAddress !== undefined) {
                 routingTable[participantId] = parentMessageRouterAddress;
                 return routeInternal(parentMessageRouterAddress, joynrMessage);
             }
@@ -530,13 +522,23 @@ function MessageRouter(settings) {
             );
         }
 
-        if (address === undefined && routingProxy !== undefined) {
-            return routingProxy
-                .resolveNextHop({
-                    participantId: participantId
-                })
-                .then(resolveNextHopOnSuccess)
-                .catch(resolveNextHopOnError);
+        if (address === undefined) {
+            if (routingProxy !== undefined) {
+                return routingProxy
+                    .resolveNextHop({
+                        participantId: participantId
+                    })
+                    .then(resolveNextHopOnSuccess)
+                    .catch(resolveNextHopOnError);
+            }
+            log.warn(
+                "No message receiver found for participantId: " + joynrMessage.to + ". Queuing message.",
+                DiagnosticTags.forJoynrMessage(joynrMessage)
+            );
+            // message is queued until the participant is registered
+            // TODO remove expired messages from queue
+            settings.messageQueue.putMessage(joynrMessage);
+            return Promise.resolve();
         }
         return routeInternal(address, joynrMessage);
     }
