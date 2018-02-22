@@ -34,8 +34,7 @@ add_library(
     ${dummyKeychain_SOURCES}
 )
 
-# Activate in a later stage
-# AddClangFormat(dummyKeychain ${dummyKeychain_HEADERS})
+AddClangFormat(dummyKeychain ${dummyKeychain_HEADERS})
 
 target_link_libraries(dummyKeychain Joynr)
 
