@@ -246,10 +246,10 @@ class ProxyGenerator extends InterfaceJsTemplate {
 
 		«proxyName».getUsedDatatypes = function getUsedDatatypes(){
 			return [
-						«FOR datatype : francaIntf.getAllComplexTypes SEPARATOR ','»
-						"«datatype.joynrTypeName»"
-						«ENDFOR»
-					];
+				«FOR datatype : francaIntf.getAllComplexTypes SEPARATOR ','»
+				"«datatype.joynrTypeName»"
+				«ENDFOR»
+			];
 		};
 
 		«IF requireJSSupport»
@@ -277,7 +277,10 @@ class ProxyGenerator extends InterfaceJsTemplate {
 			window.«proxyName» = «proxyName»;
 		}
 		«ELSE»
-		window.«proxyName» = «proxyName»;
+		«FOR datatype : francaIntf.getAllComplexTypes(typeSelectorIncludingErrorTypesAndTransitiveTypes)»
+		require("«relativePathToBase() + datatype.getDependencyPath()»");
+		«ENDFOR»
+		module.exports = «proxyName»;
 		«ENDIF»
 	})();
 	'''

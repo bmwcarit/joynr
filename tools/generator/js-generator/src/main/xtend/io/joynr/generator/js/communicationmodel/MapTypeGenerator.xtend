@@ -176,11 +176,11 @@ class MapTypeGenerator extends MapTemplate {
 			window.«type.joynrName» = «type.joynrName»;
 		}
 		«ELSE»
-		//we assume a correct order of script loading
-		«type.joynrName».prototype = new window.joynr.JoynrObject();
+		var joynr = require("joynr");
+		«type.joynrName».prototype = new joynr.JoynrObject();
 		«type.joynrName».prototype.constructor = «type.joynrName»;
-		window.joynr.addType("«type.joynrTypeName»", «type.joynrName»);
-		window.«type.joynrName» = «type.joynrName»;
+		joynr.addType("«type.joynrTypeName»", «type.joynrName»);
+		module.exports = «type.joynrName»;
 		«ENDIF»
 	})();
 	'''

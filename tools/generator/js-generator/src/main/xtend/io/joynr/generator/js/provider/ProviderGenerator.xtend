@@ -282,7 +282,10 @@ class ProviderGenerator extends InterfaceJsTemplate {
 			window.«providerName» = «providerName»;
 		}
 		«ELSE»
-		window.«providerName» = «providerName»;
+		«FOR datatype : francaIntf.getAllComplexTypes(typeSelectorIncludingErrorTypesAndTransitiveTypes)»
+		require("«relativePathToBase() + datatype.getDependencyPath()»");
+		«ENDFOR»
+		module.exports = «providerName»;
 		«ENDIF»
 	})();
 	'''

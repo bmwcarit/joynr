@@ -271,10 +271,10 @@ class CompoundTypeGenerator extends CompoundTypeTemplate {
 				window.«type.joynrName» = «type.joynrName»;
 			}
 			«ELSE»
-				//we assume a correct order of script loading
-			preparePrototype(window.joynr);
-			window.joynr.addType("«type.joynrTypeName»", «type.joynrName»);
-			window.«type.joynrName» = «type.joynrName»;
+			var joynr = require("joynr");
+			preparePrototype(joynr);
+			joynr.addType("«type.joynrTypeName»", «type.joynrName»);
+			module.exports = «type.joynrName»;
 			«ENDIF»
 		})();
 	'''

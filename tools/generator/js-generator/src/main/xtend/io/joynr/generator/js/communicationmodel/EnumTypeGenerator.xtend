@@ -175,13 +175,13 @@ class EnumTypeGenerator extends EnumTemplate {
 			window.«type.joynrName» = «type.joynrName»;
 		}
 		«ELSE»
-		//we assume a correct order of script loading
-		«type.joynrName».prototype = new window.joynr.JoynrObject();
+		var joynr = require("joynr");
+		«type.joynrName».prototype = new joynr.JoynrObject();
 		«type.joynrName».prototype.constructor = «type.joynrName»;
 		preparePrototype();
 		createLiterals();
-		window.joynr.addType("«type.joynrTypeName»", «type.joynrName», true);
-		window.«type.joynrName» = «type.joynrName»;
+		joynr.addType("«type.joynrTypeName»", «type.joynrName», true);
+		module.exports = «type.joynrName»;
 		«ENDIF»
 	})();
 	'''
