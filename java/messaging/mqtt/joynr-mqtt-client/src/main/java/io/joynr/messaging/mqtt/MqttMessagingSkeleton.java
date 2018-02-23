@@ -221,9 +221,7 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
     @Override
     public void messageProcessed(String messageId) {
         if (incomingMqttRequests.remove(messageId)) {
-            LOG.debug("Message {} was processed and is removed from the MQTT skeleton list", messageId);
-        } else {
-            LOG.trace("Message {} was processed but it is unkown to the MQTT skeleton", messageId);
+            LOG.debug("Request {} was processed and is removed from the MQTT skeleton tracking list", messageId);
         }
     }
 
