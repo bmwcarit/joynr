@@ -23,6 +23,7 @@ import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_MAX_INCO
 
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.Set;
 import java.io.Serializable;
 import java.util.Collections;
@@ -64,6 +65,7 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
     private Set<JoynrMessageProcessor> messageProcessors;
     private Set<String> incomingMqttRequests;
     private final boolean backpressureEnabled;
+    private AtomicLong droppedMessagesCount;
 
     @Inject
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 2 LINES
@@ -84,6 +86,7 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
         this.rawMessagingPreprocessor = rawMessagingPreprocessor;
         this.messageProcessors = messageProcessors;
         this.incomingMqttRequests = Collections.synchronizedSet(new HashSet<String>());
+        this.droppedMessagesCount = new AtomicLong();
     }
 
     @Override
@@ -158,6 +161,7 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
             }
 
             if (dropMessage(message)) {
+                droppedMessagesCount.incrementAndGet();
                 return;
             }
 
@@ -216,6 +220,10 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
 
     private String getSubscriptionTopic(String multicastId) {
         return mqttTopicPrefixProvider.getMulticastTopicPrefix() + translateWildcard(multicastId);
+    }
+
+    public long getDroppedMessagesCount() {
+        return droppedMessagesCount.get();
     }
 
     @Override
