@@ -5,7 +5,6 @@ bin
 .settings
 .checkstyle
 sit-cpp-app-build
-CMakeLists.txt.user
 /provider-joynr.properties
 /joynr_participantIds.properties
 /consumer-joynr.properties
