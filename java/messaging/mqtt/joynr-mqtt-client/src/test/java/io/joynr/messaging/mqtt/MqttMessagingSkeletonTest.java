@@ -49,7 +49,6 @@ import joynr.Message;
 import joynr.MutableMessage;
 import joynr.system.RoutingTypes.MqttAddress;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.Assert;
@@ -267,9 +266,8 @@ public class MqttMessagingSkeletonTest {
         verify(messageRouter, times(maxIncomingMqttRequests + 8)).route(any(ImmutableMessage.class));
     }
 
-    @Ignore("Will be reactivated with the new message dropping mechanism")
     @Test
-    public void testMessagesAreAcceptedAgainWhenMessageIsProcessedAfterMaxMessagesInQueueReached() throws Exception {
+    public void testRequestsAreAcceptedAgainWhenPreviousAreProcessedAfterMaxIncomingRequestsReached() throws Exception {
         ImmutableMessage rqMessage1 = createTestRequestMessage();
         final String messageId1 = rqMessage1.getId();
         subject.transmit(rqMessage1.getSerializedMessage(), failIfCalledAction);
@@ -277,9 +275,10 @@ public class MqttMessagingSkeletonTest {
         feedMqttSkeletonWithRequests(maxIncomingMqttRequests - 1);
         verify(messageRouter, times(maxIncomingMqttRequests)).route(any(ImmutableMessage.class));
 
-        // As the queue is full, further messages should not be transmitted
-        // until an already accepted message is marked as processed
+        // As the limit is reached, further requests should be dropped and not transmitted
+        // until an already accepted request is marked as processed
         subject.transmit(createTestRequestMessage().getSerializedMessage(), failIfCalledAction);
+        assertEquals(1, subject.getDroppedMessagesCount());
         verify(messageRouter, times(maxIncomingMqttRequests)).route(any(ImmutableMessage.class));
 
         subject.messageProcessed(messageId1);
