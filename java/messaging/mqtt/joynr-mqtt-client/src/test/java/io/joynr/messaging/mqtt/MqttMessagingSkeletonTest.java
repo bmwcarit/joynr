@@ -62,7 +62,7 @@ import com.google.common.collect.Sets;
 @RunWith(MockitoJUnitRunner.class)
 public class MqttMessagingSkeletonTest {
 
-    private final int maxMqttMessagesInQueue = 20;
+    private final int maxIncomingMqttRequests = 20;
     private final boolean backpressureEnabled = true;
     private MqttMessagingSkeleton subject;
 
@@ -100,7 +100,7 @@ public class MqttMessagingSkeletonTest {
     @Before
     public void setup() {
         subject = new MqttMessagingSkeleton(ownAddress,
-                                            maxMqttMessagesInQueue,
+                                            maxIncomingMqttRequests,
                                             backpressureEnabled,
                                             messageRouter,
                                             mqttClientFactory,
@@ -162,7 +162,7 @@ public class MqttMessagingSkeletonTest {
         RawMessagingPreprocessor preprocessor = mock(RawMessagingPreprocessor.class);
         when(preprocessor.process(any(byte[].class), anyMap())).then(returnsFirstArg());
         subject = new MqttMessagingSkeleton(ownAddress,
-                                            maxMqttMessagesInQueue,
+                                            maxIncomingMqttRequests,
                                             backpressureEnabled,
                                             messageRouter,
                                             mqttClientFactory,
@@ -187,7 +187,7 @@ public class MqttMessagingSkeletonTest {
         when(processorMock.processIncoming(any(ImmutableMessage.class))).then(returnsFirstArg());
 
         subject = new MqttMessagingSkeleton(ownAddress,
-                                            maxMqttMessagesInQueue,
+                                            maxIncomingMqttRequests,
                                             backpressureEnabled,
                                             messageRouter,
                                             mqttClientFactory,
@@ -240,17 +240,17 @@ public class MqttMessagingSkeletonTest {
         final int mqttMessageId = 1517;
         final int mqttQos = 1;
 
-        for (int i = 0; i < maxMqttMessagesInQueue; i++) {
+        for (int i = 0; i < maxIncomingMqttRequests; i++) {
             subject.transmit(createTestRequestMessage().getSerializedMessage(),
                              mqttMessageId,
                              mqttQos,
                              failIfCalledAction);
         }
-        verify(messageRouter, times(maxMqttMessagesInQueue)).route(any(ImmutableMessage.class));
+        verify(messageRouter, times(maxIncomingMqttRequests)).route(any(ImmutableMessage.class));
 
         // As the queue is full, further messages should not be transmitted
         subject.transmit(createTestRequestMessage().getSerializedMessage(), mqttMessageId, mqttQos, failIfCalledAction);
-        verify(messageRouter, times(maxMqttMessagesInQueue)).route(any(ImmutableMessage.class));
+        verify(messageRouter, times(maxIncomingMqttRequests)).route(any(ImmutableMessage.class));
     }
 
     @Ignore("Will be reactivated with the new message dropping mechanism")
@@ -266,13 +266,13 @@ public class MqttMessagingSkeletonTest {
         final String messageId1 = rqMessage1.getId();
         subject.transmit(rqMessage1.getSerializedMessage(), mqttMessageId1_willBeProcessed, mqttQos, failIfCalledAction);
 
-        for (int i = 0; i < maxMqttMessagesInQueue - 1; i++) {
+        for (int i = 0; i < maxIncomingMqttRequests - 1; i++) {
             subject.transmit(createTestRequestMessage().getSerializedMessage(),
                              mqttMessageId2_fillingUpQueue,
                              mqttQos,
                              failIfCalledAction);
         }
-        verify(messageRouter, times(maxMqttMessagesInQueue)).route(any(ImmutableMessage.class));
+        verify(messageRouter, times(maxIncomingMqttRequests)).route(any(ImmutableMessage.class));
 
         // As the queue is full, further messages should not be transmitted
         // until an already accepted message is marked as processed
@@ -280,7 +280,7 @@ public class MqttMessagingSkeletonTest {
                          mqttMessageId3_willBeRejected,
                          mqttQos,
                          failIfCalledAction);
-        verify(messageRouter, times(maxMqttMessagesInQueue)).route(any(ImmutableMessage.class));
+        verify(messageRouter, times(maxIncomingMqttRequests)).route(any(ImmutableMessage.class));
 
         subject.messageProcessed(messageId1);
 
@@ -288,7 +288,7 @@ public class MqttMessagingSkeletonTest {
                          mqttMessageId4_willBeAcceptedAsQueueHasFreeSlotAgain,
                          mqttQos,
                          failIfCalledAction);
-        verify(messageRouter, times(maxMqttMessagesInQueue + 1)).route(any(ImmutableMessage.class));
+        verify(messageRouter, times(maxIncomingMqttRequests + 1)).route(any(ImmutableMessage.class));
     }
 
     private ImmutableMessage createTestRequestMessage() throws Exception {
