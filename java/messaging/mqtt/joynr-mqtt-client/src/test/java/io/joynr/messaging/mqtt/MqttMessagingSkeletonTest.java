@@ -235,9 +235,8 @@ public class MqttMessagingSkeletonTest {
         assertTrue(semaphore.tryAcquire());
     }
 
-    @Ignore("Will be reactivated with the new message dropping mechanism")
     @Test
-    public void testMessagesAreRejectedWhenMaxMqttMessagesInQueueIsReached() throws Exception {
+    public void testFurtherRequestsAreDroppedWhenMaxForIncomingMqttRequestsIsReached() throws Exception {
         final int mqttMessageId = 1517;
         final int mqttQos = 1;
 
@@ -247,10 +246,16 @@ public class MqttMessagingSkeletonTest {
                              mqttQos,
                              failIfCalledAction);
         }
+        assertEquals(0, subject.getDroppedMessagesCount());
         verify(messageRouter, times(maxIncomingMqttRequests)).route(any(ImmutableMessage.class));
 
-        // As the queue is full, further messages should not be transmitted
+        // As the limit is reached, further requests should be dropped
         subject.transmit(createTestRequestMessage().getSerializedMessage(), mqttMessageId, mqttQos, failIfCalledAction);
+        subject.transmit(createTestMessage(Message.VALUE_MESSAGE_TYPE_ONE_WAY).getSerializedMessage(),
+                         mqttMessageId,
+                         mqttQos,
+                         failIfCalledAction);
+        assertEquals(2, subject.getDroppedMessagesCount());
         verify(messageRouter, times(maxIncomingMqttRequests)).route(any(ImmutableMessage.class));
     }
 
