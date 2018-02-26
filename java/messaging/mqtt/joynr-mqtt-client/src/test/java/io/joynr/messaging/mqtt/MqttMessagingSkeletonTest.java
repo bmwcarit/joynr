@@ -241,6 +241,32 @@ public class MqttMessagingSkeletonTest {
         verify(messageRouter, times(maxIncomingMqttRequests)).route(any(ImmutableMessage.class));
     }
 
+    @Test
+    public void testOtherMessagesAreAcceptedEvenWhenMaxForIncomingMqttRequestsIsReached() throws Exception {
+        feedMqttSkeletonWithRequests(maxIncomingMqttRequests);
+        assertEquals(0, subject.getDroppedMessagesCount());
+        verify(messageRouter, times(maxIncomingMqttRequests)).route(any(ImmutableMessage.class));
+
+        // Further non-request messages should still be accepted
+        subject.transmit(createTestMessage(Message.VALUE_MESSAGE_TYPE_REPLY).getSerializedMessage(), failIfCalledAction);
+        subject.transmit(createTestMessage(Message.VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST).getSerializedMessage(),
+                         failIfCalledAction);
+        subject.transmit(createTestMessage(Message.VALUE_MESSAGE_TYPE_MULTICAST).getSerializedMessage(),
+                         failIfCalledAction);
+        subject.transmit(createTestMessage(Message.VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST).getSerializedMessage(),
+                         failIfCalledAction);
+        subject.transmit(createTestMessage(Message.VALUE_MESSAGE_TYPE_PUBLICATION).getSerializedMessage(),
+                         failIfCalledAction);
+        subject.transmit(createTestMessage(Message.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY).getSerializedMessage(),
+                         failIfCalledAction);
+        subject.transmit(createTestMessage(Message.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST).getSerializedMessage(),
+                         failIfCalledAction);
+        subject.transmit(createTestMessage(Message.VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP).getSerializedMessage(),
+                         failIfCalledAction);
+        assertEquals(0, subject.getDroppedMessagesCount());
+        verify(messageRouter, times(maxIncomingMqttRequests + 8)).route(any(ImmutableMessage.class));
+    }
+
     @Ignore("Will be reactivated with the new message dropping mechanism")
     @Test
     public void testMessagesAreAcceptedAgainWhenMessageIsProcessedAfterMaxMessagesInQueueReached() throws Exception {
