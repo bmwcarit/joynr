@@ -240,12 +240,7 @@ public class MqttMessagingSkeletonTest {
         final int mqttMessageId = 1517;
         final int mqttQos = 1;
 
-        for (int i = 0; i < maxIncomingMqttRequests; i++) {
-            subject.transmit(createTestRequestMessage().getSerializedMessage(),
-                             mqttMessageId,
-                             mqttQos,
-                             failIfCalledAction);
-        }
+        feedMqttSkeletonWithRequests(maxIncomingMqttRequests);
         assertEquals(0, subject.getDroppedMessagesCount());
         verify(messageRouter, times(maxIncomingMqttRequests)).route(any(ImmutableMessage.class));
 
@@ -272,12 +267,7 @@ public class MqttMessagingSkeletonTest {
         final String messageId1 = rqMessage1.getId();
         subject.transmit(rqMessage1.getSerializedMessage(), mqttMessageId1_willBeProcessed, mqttQos, failIfCalledAction);
 
-        for (int i = 0; i < maxIncomingMqttRequests - 1; i++) {
-            subject.transmit(createTestRequestMessage().getSerializedMessage(),
-                             mqttMessageId2_fillingUpQueue,
-                             mqttQos,
-                             failIfCalledAction);
-        }
+        feedMqttSkeletonWithRequests(maxIncomingMqttRequests - 1);
         verify(messageRouter, times(maxIncomingMqttRequests)).route(any(ImmutableMessage.class));
 
         // As the queue is full, further messages should not be transmitted
@@ -300,8 +290,6 @@ public class MqttMessagingSkeletonTest {
     @Test
     public void testNoMessagesAreDroppedWhenNoMaxForIncomingMqttRequestsIsSet() throws Exception {
         final int maxIncomingMqttRequestsNoLimit = 0;
-        final int mqttMessageId = 1517;
-        final int mqttQos = 1;
 
         subject = new MqttMessagingSkeleton(ownAddress,
                                             maxIncomingMqttRequestsNoLimit,
@@ -314,23 +302,28 @@ public class MqttMessagingSkeletonTest {
         subject.init();
 
         // number of incoming messages is arbitrarily selected
-        for (int i = 0; i < (2 * maxIncomingMqttRequests); i++) {
-            subject.transmit(createTestMessage(Message.VALUE_MESSAGE_TYPE_REQUEST).getSerializedMessage(),
-                             mqttMessageId,
-                             mqttQos,
-                             failIfCalledAction);
-            subject.transmit(createTestMessage(Message.VALUE_MESSAGE_TYPE_REPLY).getSerializedMessage(),
-                             mqttMessageId,
-                             mqttQos,
-                             failIfCalledAction);
-            subject.transmit(createTestMessage(Message.VALUE_MESSAGE_TYPE_MULTICAST).getSerializedMessage(),
+        feedMqttSkeletonWithRequests(2 * maxIncomingMqttRequests);
+        feedMqttSkeletonWithMessages(Message.VALUE_MESSAGE_TYPE_REPLY, 2 * maxIncomingMqttRequests);
+        feedMqttSkeletonWithMessages(Message.VALUE_MESSAGE_TYPE_MULTICAST, 2 * maxIncomingMqttRequests);
+
+        verify(messageRouter, times(3 * 2 * maxIncomingMqttRequests)).route(any(ImmutableMessage.class));
+        assertEquals(0, subject.getDroppedMessagesCount());
+    }
+
+    private void feedMqttSkeletonWithRequests(int numRequests) throws Exception {
+        feedMqttSkeletonWithMessages(Message.VALUE_MESSAGE_TYPE_REQUEST, numRequests);
+    }
+
+    private void feedMqttSkeletonWithMessages(String messageType, int numMessages) throws Exception {
+        final int mqttMessageId = 1517;
+        final int mqttQos = 1;
+
+        for (int i = 0; i < numMessages; i++) {
+            subject.transmit(createTestMessage(messageType).getSerializedMessage(),
                              mqttMessageId,
                              mqttQos,
                              failIfCalledAction);
         }
-
-        verify(messageRouter, times(3 * 2 * maxIncomingMqttRequests)).route(any(ImmutableMessage.class));
-        assertEquals(0, subject.getDroppedMessagesCount());
     }
 
     private ImmutableMessage createTestRequestMessage() throws Exception {
