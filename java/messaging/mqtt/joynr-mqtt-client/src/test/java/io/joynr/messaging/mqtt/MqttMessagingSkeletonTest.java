@@ -32,6 +32,7 @@ import static org.mockito.Mockito.when;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.junit.Assert.fail;
 import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.HashSet;
@@ -289,6 +290,42 @@ public class MqttMessagingSkeletonTest {
                          mqttQos,
                          failIfCalledAction);
         verify(messageRouter, times(maxIncomingMqttRequests + 1)).route(any(ImmutableMessage.class));
+    }
+
+    @Test
+    public void testNoMessagesAreDroppedWhenNoMaxForIncomingMqttRequestsIsSet() throws Exception {
+        final int maxIncomingMqttRequestsNoLimit = 0;
+        final int mqttMessageId = 1517;
+        final int mqttQos = 1;
+
+        subject = new MqttMessagingSkeleton(ownAddress,
+                                            maxIncomingMqttRequestsNoLimit,
+                                            backpressureEnabled,
+                                            messageRouter,
+                                            mqttClientFactory,
+                                            mqttTopicPrefixProvider,
+                                            new NoOpRawMessagingPreprocessor(),
+                                            new HashSet<JoynrMessageProcessor>());
+        subject.init();
+
+        // number of incoming messages is arbitrarily selected
+        for (int i = 0; i < (2 * maxIncomingMqttRequests); i++) {
+            subject.transmit(createTestMessage(Message.VALUE_MESSAGE_TYPE_REQUEST).getSerializedMessage(),
+                             mqttMessageId,
+                             mqttQos,
+                             failIfCalledAction);
+            subject.transmit(createTestMessage(Message.VALUE_MESSAGE_TYPE_REPLY).getSerializedMessage(),
+                             mqttMessageId,
+                             mqttQos,
+                             failIfCalledAction);
+            subject.transmit(createTestMessage(Message.VALUE_MESSAGE_TYPE_MULTICAST).getSerializedMessage(),
+                             mqttMessageId,
+                             mqttQos,
+                             failIfCalledAction);
+        }
+
+        verify(messageRouter, times(3 * 2 * maxIncomingMqttRequests)).route(any(ImmutableMessage.class));
+        assertEquals(0, subject.getDroppedMessagesCount());
     }
 
     private ImmutableMessage createTestRequestMessage() throws Exception {
