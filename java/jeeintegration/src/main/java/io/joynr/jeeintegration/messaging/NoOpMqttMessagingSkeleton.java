@@ -45,8 +45,8 @@ public class NoOpMqttMessagingSkeleton implements IMqttMessagingSkeleton {
     }
 
     @Override
-    public void transmit(byte[] serializedMessage, int mqttId, int mqttQos, FailureAction failureAction) {
-        logger.trace("NoOp processing of mqtt message with id: {} and qos: {}", mqttId, mqttQos);
+    public void transmit(byte[] serializedMessage, FailureAction failureAction) {
+        logger.trace("NoOp processing of mqtt message");
     }
 
     @Override

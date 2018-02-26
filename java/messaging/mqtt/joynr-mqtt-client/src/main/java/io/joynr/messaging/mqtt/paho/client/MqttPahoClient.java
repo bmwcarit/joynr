@@ -409,16 +409,13 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
             logger.error("MQTT message not processed: messagingSkeleton has not been set yet");
             return;
         }
-        messagingSkeleton.transmit(mqttMessage.getPayload(),
-                                   mqttMessage.getId(),
-                                   mqttMessage.getQos(),
-                                   new FailureAction() {
+        messagingSkeleton.transmit(mqttMessage.getPayload(), new FailureAction() {
 
-                                       @Override
-                                       public void execute(Throwable error) {
-                                           logger.error("MQTT message not processed");
-                                       }
-                                   });
+            @Override
+            public void execute(Throwable error) {
+                logger.error("MQTT message not processed");
+            }
+        });
     }
 
     @Override

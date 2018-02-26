@@ -196,10 +196,7 @@ public class MqttPahoClientTest {
 
     private void joynrMqttClientPublishAndVerifyReceivedMessage(byte[] serializedMessage) {
         joynrMqttClient.publishMessage(ownTopic.getTopic(), serializedMessage);
-        verify(mockReceiver, timeout(100).times(1)).transmit(eq(serializedMessage),
-                                                             mqttMessageIdCaptor.capture(),
-                                                             eq(MqttMessagingStub.DEFAULT_QOS_LEVEL),
-                                                             any(FailureAction.class));
+        verify(mockReceiver, timeout(100).times(1)).transmit(eq(serializedMessage), any(FailureAction.class));
     }
 
     @Test
@@ -363,10 +360,7 @@ public class MqttPahoClientTest {
         joynrMqttClient.subscribe(topic);
 
         Thread.sleep(100);
-        verify(mockReceiver, atLeast(1)).transmit(eq(serializedMessage),
-                                                  mqttMessageIdCaptor.capture(),
-                                                  eq(MqttMessagingStub.DEFAULT_QOS_LEVEL),
-                                                  any(FailureAction.class));
+        verify(mockReceiver, atLeast(1)).transmit(eq(serializedMessage), any(FailureAction.class));
     }
 
     @Test
@@ -391,10 +385,7 @@ public class MqttPahoClientTest {
         joynrMqttClient.subscribe(topic);
 
         Thread.sleep(100);
-        verify(mockReceiver, times(0)).transmit(eq(serializedMessage),
-                                                mqttMessageIdCaptor.capture(),
-                                                eq(MqttMessagingStub.DEFAULT_QOS_LEVEL),
-                                                any(FailureAction.class));
+        verify(mockReceiver, times(0)).transmit(eq(serializedMessage), any(FailureAction.class));
     }
 
     @Test

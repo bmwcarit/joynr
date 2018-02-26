@@ -144,7 +144,7 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
     }
 
     @Override
-    public void transmit(byte[] serializedMessage, int mqttId, int mqttQos, FailureAction failureAction) {
+    public void transmit(byte[] serializedMessage, FailureAction failureAction) {
         try {
             HashMap<String, Serializable> context = new HashMap<String, Serializable>();
             byte[] processedMessage = rawMessagingPreprocessor.process(serializedMessage, context);
