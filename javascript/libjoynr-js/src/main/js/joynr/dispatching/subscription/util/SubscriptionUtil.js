@@ -1,6 +1,5 @@
 /*jslint node: true */
 
-/*global JSON: true */
 /*
  * #%L
  * %%

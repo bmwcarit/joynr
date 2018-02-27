@@ -1,5 +1,5 @@
-/*global JSON: true, routeInternal: true */
 /*jslint es5: true, node: true, nomen: true */
+
 /*
  * #%L
  * %%
@@ -325,31 +325,6 @@ function MessageRouter(settings) {
             .then(processQueuedRoutingProxyCalls);
     };
 
-    function resolveNextHopAndRoute(participantId, joynrMessage) {
-        var address = getAddressFromPersistency(participantId);
-
-        function resolveNextHopOnSuccess(opArgs) {
-            if (opArgs.resolved) {
-                routingTable[participantId] = parentMessageRouterAddress;
-                return routeInternal(parentMessageRouterAddress, joynrMessage);
-            }
-            throw new Error(
-                "nextHop cannot be resolved, as participant with id " +
-                    participantId +
-                    " is not reachable by parent routing table"
-            );
-        }
-
-        if (address === undefined && routingProxy !== undefined) {
-            return routingProxy
-                .resolveNextHop({
-                    participantId: participantId
-                })
-                .then(resolveNextHopOnSuccess);
-        }
-        return routeInternal(address, joynrMessage);
-    }
-
     /*
      * This method is called when no address can be found in the local routing table.
      *
@@ -537,6 +512,31 @@ function MessageRouter(settings) {
 
     function forwardToRouteInternal(address) {
         return routeInternal(address, this);
+    }
+
+    function resolveNextHopAndRoute(participantId, joynrMessage) {
+        var address = getAddressFromPersistency(participantId);
+
+        function resolveNextHopOnSuccess(opArgs) {
+            if (opArgs.resolved) {
+                routingTable[participantId] = parentMessageRouterAddress;
+                return routeInternal(parentMessageRouterAddress, joynrMessage);
+            }
+            throw new Error(
+                "nextHop cannot be resolved, as participant with id " +
+                    participantId +
+                    " is not reachable by parent routing table"
+            );
+        }
+
+        if (address === undefined && routingProxy !== undefined) {
+            return routingProxy
+                .resolveNextHop({
+                    participantId: participantId
+                })
+                .then(resolveNextHopOnSuccess);
+        }
+        return routeInternal(address, joynrMessage);
     }
 
     /**

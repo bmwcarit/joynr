@@ -1,5 +1,5 @@
 /*jslint es5: true, node: true, newcap: true */
-/*global Buffer: true, requirejs: true */
+/*global Buffer: true */
 
 /*
  * #%L

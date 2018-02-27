@@ -1,5 +1,5 @@
 /*jslint es5: true, node: true, nomen: true */
-/*global requireJsDefine: true, requirejs: true, process: true*/
+/*global process: true*/
 /*
  * #%L
  * %%

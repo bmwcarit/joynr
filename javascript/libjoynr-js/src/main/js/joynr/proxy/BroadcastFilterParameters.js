@@ -1,6 +1,5 @@
 /*jslint node: true */
 
-/*global joynr: true */
 /*
  * #%L
  * %%
