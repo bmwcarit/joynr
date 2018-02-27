@@ -19,6 +19,7 @@
 package io.joynr.messaging.mqtt;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Properties;
 import java.util.concurrent.Executors;
@@ -51,10 +52,14 @@ import io.joynr.messaging.routing.MessageRouter;
  */
 public class DefaultMqttClientIdProviderTest {
 
-    private String receiverId = "testReceiverId123";
+    private String standardReceiverId = "testReceiverId12"; // 16 bytes length
+    private String shortReceiverId = "testReceiver";
+    private String longReceiverId = "testReceiverId12345678";
     private String clientIdPrefix = "testPrefix-";
     private MqttClientIdProvider clientIdProviderWithoutClientIdPrefix;
     private MqttClientIdProvider clientIdProviderWithClientIdPrefix;
+    private MqttClientIdProvider clientIdProviderWithShortReceiverId;
+    private MqttClientIdProvider clientIdProviderWithLongReceiverId;
 
     @Mock
     private MessageRouter mockMessageRouter;
@@ -74,7 +79,6 @@ public class DefaultMqttClientIdProviderTest {
         properties.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_UNICAST, "");
         properties.put(MqttModule.PROPERTY_KEY_MQTT_MAX_MSGS_INFLIGHT, "100");
         properties.put(MqttModule.PROPERTY_KEY_MQTT_MAX_MESSAGE_SIZE_BYTES, "0");
-        properties.put(MessagingPropertyKeys.RECEIVERID, receiverId);
         properties.put(ConfigurableMessagingSettings.PROPERTY_BACKPRESSURE_REPEATED_MQTT_MESSAGE_IGNORE_PERIOD_MS,
                        "1000");
         properties.put(ConfigurableMessagingSettings.PROPERTY_BACKPRESSURE_MAX_INCOMING_MQTT_MESSAGES_IN_QUEUE, "20");
@@ -91,6 +95,16 @@ public class DefaultMqttClientIdProviderTest {
                                                     .toInstance(Executors.newScheduledThreadPool(10));
             }
         });
+
+        properties.put(MessagingPropertyKeys.RECEIVERID, shortReceiverId);
+        Injector injectorWithShortReceiverId = Guice.createInjector(testModule, new JoynrPropertiesModule(properties));
+        clientIdProviderWithShortReceiverId = injectorWithShortReceiverId.getInstance(MqttClientIdProvider.class);
+
+        properties.put(MessagingPropertyKeys.RECEIVERID, longReceiverId);
+        Injector injectorWithLongReceiverId = Guice.createInjector(testModule, new JoynrPropertiesModule(properties));
+        clientIdProviderWithLongReceiverId = injectorWithLongReceiverId.getInstance(MqttClientIdProvider.class);
+
+        properties.put(MessagingPropertyKeys.RECEIVERID, standardReceiverId);
         Injector injectorWithoutClientIdPrefix = Guice.createInjector(testModule, new JoynrPropertiesModule(properties));
         clientIdProviderWithoutClientIdPrefix = injectorWithoutClientIdPrefix.getInstance(MqttClientIdProvider.class);
 
@@ -100,16 +114,34 @@ public class DefaultMqttClientIdProviderTest {
     }
 
     @Test
+    public void testGetClientIdWithShortReceiverId() {
+        String clientId = clientIdProviderWithShortReceiverId.getClientId();
+        String expectedClientId = "joynr:" + shortReceiverId;
+        assertTrue("shortReceiverId is less than 16 characters long", shortReceiverId.length() < 16);
+        assertEquals(expectedClientId, clientId);
+    }
+
+    @Test
+    public void testGetClientIdWithLongReceiverId() {
+        String clientId = clientIdProviderWithLongReceiverId.getClientId();
+        String expectedClientId = "joynr:" + longReceiverId.substring(0, Math.min(16, longReceiverId.length()));
+        assertTrue("longReceiverId is more than 16 characters long", longReceiverId.length() > 16);
+        assertEquals(expectedClientId, clientId);
+    }
+
+    @Test
     public void testGetClientIdWithoutPrefix() {
         String clientId = clientIdProviderWithoutClientIdPrefix.getClientId();
-        String expectedClientId = "joynr:" + receiverId;
+        String expectedClientId = "joynr:" + standardReceiverId;
+        assertTrue("standardReceiverId is exactly 16 characters long (expected uuid length)",
+                   standardReceiverId.length() == 16);
         assertEquals(expectedClientId, clientId);
     }
 
     @Test
     public void testGetClientIdWithPrefix() {
         String clientId = clientIdProviderWithClientIdPrefix.getClientId();
-        String expectedClientId = clientIdPrefix + "joynr:" + receiverId;
+        String expectedClientId = clientIdPrefix + "joynr:" + standardReceiverId;
         assertEquals(expectedClientId, clientId);
     }
 
