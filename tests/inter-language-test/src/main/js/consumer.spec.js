@@ -1462,6 +1462,53 @@ describe("Consumer test", function() {
         });
     });
 
+    it("callSetandGetAttributeByteBuffer", function() {
+        var spy = jasmine.createSpyObj("spy", [ "onFulfilled", "onError" ]);
+
+        runs(function() {
+            log("callSetAttributeByteBuffer");
+            var args = {
+                byteBuffer: [-128, 0, 127];
+            };
+            testInterfaceProxy.attributeByteBuffer.set(args).then(spy.onFulfilled).catch(spy.onError);
+        });
+
+        waitsFor(function() {
+            return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
+        }, "callSetAttributeByteBuffer", 5000);
+
+        runs(function() {
+            if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
+                log(spy.onError.calls[0].args[0]);
+            }
+            expect(spy.onFulfilled.callCount).toEqual(1);
+            expect(spy.onError.callCount).toEqual(0);
+        });
+
+        runs(function() {
+            // Remove all tracking information for previous calls.
+            spy.calls.reset();
+            log("callGetAttributeByteBuffer");
+            testInterfaceProxy.attributeByteBuffer.get().then(spy.onFulfilled).catch(spy.onError);
+        });
+
+        waitsFor(function() {
+            return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
+        }, "callGetAttributeByteBuffer", 5000);
+
+        runs(function() {
+            if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
+                log(spy.onError.calls[0].args[0]);
+            }
+            expect(spy.onFulfilled.callCount).toEqual(1);
+            expect(spy.onError.callCount).toEqual(0);
+            var byteBuffer = [-128, 0, 127];
+            var retObj = spy.onFulfilled.calls[0].args[0];
+            expect(retObj).toBeDefined();
+            expect(IltUtil.cmpByteBuffers(retObj, byteBuffer)).toBeTruthy();
+        });
+    });
+
     it("callSetAttributeEnumeration", function() {
         var spy = jasmine.createSpyObj("spy", [ "onFulfilled", "onError" ]);
         spy.onFulfilled.reset();
