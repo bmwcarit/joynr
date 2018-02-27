@@ -289,6 +289,10 @@ private:
                 return;
             }
 
+            JOYNR_LOG_INFO(logger(),
+                           "Init connection for websocket client id: {}",
+                           clientAddress->getId());
+
             auto sender = std::make_shared<WebSocketPpSender<Server>>(endpoint);
             sender->setConnectionHandle(hdl);
 
