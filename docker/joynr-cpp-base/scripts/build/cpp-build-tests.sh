@@ -10,6 +10,7 @@ CLANGFORMATTER='ON'
 BUILDTYPE='Debug'
 ARCHIVEBINARIES='OFF'
 ADDITIONAL_CMAKE_ARGS=''
+RUN_MAVEN='OFF'
 
 TESTS=(inter-language-test performance-test robustness-test system-integration-test)
 
@@ -24,7 +25,7 @@ function usage
 {
     local joined_tests=$(join_strings " | " "${TESTS[@]}")
     echo "usage: cpp-build-tests.sh all$joined_tests [--jobs X --clangformatter ON|OFF \
-    --buildtype Debug|Release --archivebinaries ON|OFF --additionalcmakeargs <args>]"
+    --buildtype Debug|Release --archivebinaries ON|OFF --additionalcmakeargs <args> --run-maven ON|OFF]"
     echo "default: jobs is $JOBS, clangformatter is $CLANGFORMATTER, buildtype is \
     $BUILDTYPE, archivebinaries is $ARCHIVEBINARIES and additionalcmakeargs is $ADDITIONAL_CMAKE_ARGS"
 }
@@ -49,11 +50,27 @@ while [ "$1" != "" ]; do
         --additionalcmakeargs ) shift
                                 ADDITIONAL_CMAKE_ARGS=$1
                                 ;;
+        --run-maven )           shift
+                                RUN_MAVEN=$1
+                                ;;
         * )                     usage
                                 exit 1
     esac
     shift
 done
+
+# build dummyKeychain first
+DUMMYKEYCHAIN_SRC_DIR=/data/src/tests/dummyKeychain
+DUMMYKEYCHAIN_BUILD_DIR=/data/build/dummyKeychain
+rm -rf $DUMMYKEYCHAIN_BUILD_DIR
+mkdir $DUMMYKEYCHAIN_BUILD_DIR
+cd $DUMMYKEYCHAIN_BUILD_DIR
+cmake -DCMAKE_PREFIX_PATH=$JOYNR_INSTALL_DIR \
+      -DCMAKE_BUILD_TYPE=$BUILDTYPE \
+      -DCMAKE_INSTALL_PREFIX=/usr \
+      -DENABLE_CLANG_FORMATTER=$CLANGFORMATTER \
+      $DUMMYKEYCHAIN_SRC_DIR
+make -j ${JOBS}
 
 # check which test to build
 MAVEN_PROJECT=
@@ -84,16 +101,19 @@ log "ENVIRONMENT"
 env
 echo "ADDITIONAL_CMAKE_ARGS is $ADDITIONAL_CMAKE_ARGS"
 
-cd /data/src/
-mvn clean install -P no-license-and-notice,no-java-formatter,no-checkstyle -DskipTests \
---projects \
-io.joynr.tools.generator:dependency-libs,\
-io.joynr.tools.generator:generator-framework,\
-io.joynr.tools.generator:joynr-generator-maven-plugin,\
-io.joynr.tools.generator:java-generator,\
-io.joynr.tools.generator:js-generator,\
-io.joynr.tools.generator:cpp-generator\
-${MAVEN_PROJECT}
+if [ ${RUN_MAVEN} == "ON" ]
+then
+    cd /data/src/
+    mvn clean install -P no-license-and-notice,no-java-formatter,no-checkstyle -DskipTests \
+    --projects \
+    io.joynr.tools.generator:dependency-libs,\
+    io.joynr.tools.generator:generator-framework,\
+    io.joynr.tools.generator:joynr-generator-maven-plugin,\
+    io.joynr.tools.generator:java-generator,\
+    io.joynr.tools.generator:js-generator,\
+    io.joynr.tools.generator:cpp-generator\
+    ${MAVEN_PROJECT}
+fi
 
 rm -rf /data/build/tests
 mkdir /data/build/tests

@@ -32,8 +32,10 @@
 #include "joynr/Semaphore.h"
 #include "joynr/types/ProviderQos.h"
 #include "joynr/types/ProviderScope.h"
+
 #include "SystemIntegrationTestProvider.h"
 #include "SitUtil.h"
+
 #ifdef JOYNR_ENABLE_DLT_LOGGING
 #include <dlt/dlt.h>
 #endif // JOYNR_ENABLE_DLT_LOGGING
@@ -47,7 +49,6 @@ int main(int argc, char* argv[])
     DLT_REGISTER_APP("JYSP", argv[0]);
 #endif // JOYNR_ENABLE_DLT_LOGGING
 
-    // Get a logger
     Logger logger("ProviderApplication");
 
     namespace po = boost::program_options;
@@ -63,13 +64,24 @@ int main(int argc, char* argv[])
     std::string sslPrivateKeyFilename;
     std::string sslCaCertFilename;
 
-    po::options_description cmdLineOptions;
-    cmdLineOptions.add_options()("domain,d", po::value(&providerDomain)->required())(
-            "runForever,r", po::value(&runForever)->default_value(false))(
-            "pathtosettings,p", po::value(&pathToSettings))(
-            "ssl-cert-pem", po::value(&sslCertFilename))(
-            "ssl-privatekey-pem", po::value(&sslPrivateKeyFilename))(
-            "ssl-ca-cert-pem", po::value(&sslCaCertFilename));
+    po::options_description cmdLineOptions("Available options");
+    cmdLineOptions.add_options()(
+            "domain,d", po::value(&providerDomain)->required(), "joynr domain to be used")(
+            "runForever,r",
+            po::value(&runForever)->default_value(false),
+            "If not set the provider will terminate"
+            "after answering the first request.")("pathtosettings,p",
+                                                  po::value(&pathToSettings),
+                                                  "Absolute path to a non-default setting file.")(
+            "ssl-cert-pem",
+            po::value(&sslCertFilename),
+            "Absolute path to public certificate for this application.")(
+            "ssl-privatekey-pem",
+            po::value(&sslPrivateKeyFilename),
+            "Absolute path to private key for this application.")(
+            "ssl-ca-cert-pem",
+            po::value(&sslCaCertFilename),
+            "Absolute path to certificate of CA.")("help,h", "Print help message");
 
     try {
         po::variables_map variablesMap;
@@ -78,13 +90,18 @@ int main(int argc, char* argv[])
                           .positional(positionalCmdLineOptions)
                           .run(),
                   variablesMap);
+
+        if (variablesMap.count("help")) {
+            std::cout << cmdLineOptions << std::endl;
+            return EXIT_SUCCESS;
+        }
+
         po::notify(variablesMap);
     } catch (const std::exception& e) {
-        std::cerr << e.what();
+        std::cerr << e.what() << std::endl;
+        std::cerr << cmdLineOptions << std::endl;
         return EXIT_FAILURE;
     }
-
-    JOYNR_LOG_INFO(logger, "Registering provider on domain {}", providerDomain);
 
     if (pathToSettings.empty()) {
         boost::filesystem::path appFilename = boost::filesystem::path(argv[0]);
@@ -93,23 +110,23 @@ int main(int argc, char* argv[])
         pathToSettings = appDirectory + "/resources/systemintegrationtest-provider.settings";
     }
 
-    const std::string pathToMessagingSettingsDefault("");
-    std::shared_ptr<IKeychain> keychain;
-
+    std::shared_ptr<JoynrRuntime> runtime;
     try {
-        keychain = tryLoadKeychainFromCmdLineArgs(
-                sslCertFilename, sslPrivateKeyFilename, sslCaCertFilename);
+        runtime = joynr::sitUtil::createRuntime(
+                pathToSettings, sslCertFilename, sslPrivateKeyFilename, sslCaCertFilename);
     } catch (const std::invalid_argument& e) {
         JOYNR_LOG_FATAL(logger, e.what());
+        runtime.reset();
+    }
+
+    if (!runtime) {
         return EXIT_FAILURE;
     }
 
     try {
-        std::shared_ptr<JoynrRuntime> runtime = JoynrRuntime::createRuntime(
-                pathToSettings, pathToMessagingSettingsDefault, keychain);
-
         joynr::Semaphore semaphore;
 
+        JOYNR_LOG_INFO(logger, "Registering provider on domain {}", providerDomain);
         auto provider =
                 std::make_shared<SystemIntegrationTestProvider>([&]() { semaphore.notify(); });
 
@@ -120,7 +137,6 @@ int main(int argc, char* argv[])
         providerQos.setPriority(millisSinceEpoch.count());
         providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
 
-        // Register the provider
         runtime->registerProvider<test::SystemIntegrationTestProvider>(
                 providerDomain, provider, providerQos);
 
@@ -130,8 +146,6 @@ int main(int argc, char* argv[])
             }
         } else {
             bool successful = semaphore.waitFor(std::chrono::milliseconds(30000));
-
-            // Unregister the provider
             runtime->unregisterProvider<test::SystemIntegrationTestProvider>(
                     providerDomain, provider);
 

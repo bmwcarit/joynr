@@ -103,7 +103,7 @@ function ProxyEvent(parent, settings) {
     return Object.freeze(Util.forwardPrototype(this));
 }
 
-/**git
+/**
  * @name ProxyEvent#subscribe
  * @function
  * @param {Object}

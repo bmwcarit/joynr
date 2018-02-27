@@ -5,10 +5,10 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 ######## Project settings ########
-project(joynr-1.0.1)
+project(joynr-1.1.0-SNAPSHOT)
 set(JOYNR_MAJOR_VERSION 1)
-set(JOYNR_MINOR_VERSION 0)
-set(JOYNR_PATCH_VERSION 1)
+set(JOYNR_MINOR_VERSION 1)
+set(JOYNR_PATCH_VERSION 0)
 set(
     JOYNR_VERSION
     ${JOYNR_MAJOR_VERSION}.${JOYNR_MINOR_VERSION}.${JOYNR_PATCH_VERSION}
@@ -783,7 +783,7 @@ set(
     ${CMAKE_THREAD_LIBS_INIT}
 )
 
-get_target_property(Joynr_PUBLIC_INCLUDE_DIRECTORY Joynr PUBLIC_INCLUDE_DIRECTORY)
+get_target_property(Joynr_PUBLIC_INCLUDE_DIRECTORY Joynr INTERFACE_INCLUDE_DIRECTORIES)
 get_target_property(JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY JoynrClusterController PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(JoynrClusterControllerRuntime_PUBLIC_INCLUDE_DIRECTORY JoynrClusterControllerRuntime PUBLIC_INCLUDE_DIRECTORY)
 

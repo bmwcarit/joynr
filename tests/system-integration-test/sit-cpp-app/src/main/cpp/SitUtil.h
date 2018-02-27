@@ -20,16 +20,20 @@
 #ifndef SIT_UTIL_H
 #define SIT_UTIL_H
 
-#include <string>
 #include <memory>
-
-#include <joynr/IKeychain.h>
 
 namespace joynr
 {
-std::shared_ptr<IKeychain> tryLoadKeychainFromCmdLineArgs(const std::string& certPemFilename,
-                                                          const std::string& privateKeyPemFilename,
-                                                          const std::string& caCertPemFilename);
+
+class JoynrRuntime;
+
+namespace sitUtil
+{
+std::shared_ptr<joynr::JoynrRuntime> createRuntime(const std::string& pathToSettings,
+                                                   const std::string& sslCertFilename,
+                                                   const std::string& sslPrivateKeyFilename,
+                                                   const std::string& sslCaCertFilename);
+}
 
 } // namespace joynr
 

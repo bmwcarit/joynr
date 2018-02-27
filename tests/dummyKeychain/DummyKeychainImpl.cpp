@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,60 +17,61 @@
  * #L%
  */
 
-#include "KeychainImpl.h"
+#include "joynr/tests/DummyKeychainImpl.h"
 
 #include <mococrw/x509.h>
+
 #include <joynr/Util.h>
 
 namespace joynr
 {
+namespace tests
+{
 
-KeychainImpl::KeychainImpl(std::shared_ptr<const mococrw::X509Certificate> tlsCertificate,
-                           std::shared_ptr<const mococrw::AsymmetricPrivateKey> tlsKey,
-                           std::shared_ptr<const mococrw::X509Certificate> tlsRootCertificate)
+DummyKeychainImpl::DummyKeychainImpl(
+        std::shared_ptr<const mococrw::X509Certificate> tlsCertificate,
+        std::shared_ptr<const mococrw::AsymmetricPrivateKey> tlsKey,
+        std::shared_ptr<const mococrw::X509Certificate> tlsRootCertificate)
 {
     this->tlsCertificate = tlsCertificate;
     this->tlsKey = tlsKey;
     this->tlsRootCertificate = tlsRootCertificate;
 }
 
-std::shared_ptr<const mococrw::X509Certificate> KeychainImpl::getTlsCertificate() const
+std::shared_ptr<const mococrw::X509Certificate> DummyKeychainImpl::getTlsCertificate() const
 {
     return tlsCertificate;
 }
 
-std::shared_ptr<const mococrw::AsymmetricPrivateKey> KeychainImpl::getTlsKey() const
+std::shared_ptr<const mococrw::AsymmetricPrivateKey> DummyKeychainImpl::getTlsKey() const
 {
     return tlsKey;
 }
 
-std::shared_ptr<const mococrw::X509Certificate> KeychainImpl::getTlsRootCertificate() const
+std::shared_ptr<const mococrw::X509Certificate> DummyKeychainImpl::getTlsRootCertificate() const
 {
     return tlsRootCertificate;
 }
 
-std::string KeychainImpl::getOwnerId() const
+std::string DummyKeychainImpl::getOwnerId() const
 {
     return tlsCertificate->getSubjectDistinguishedName().commonName();
 }
 
-std::shared_ptr<IKeychain> KeychainImpl::createFromPEMFiles(
-        const std::string& tlsCertificatePEMFilename,
-        const std::string& tlsKeyPEMFilename,
-        const std::string& tlsRootCertificatePEMFilename,
-        const std::string& privateKeyPassword)
+std::shared_ptr<IKeychain> DummyKeychainImpl::createFromPEMFiles(
+        const joynr::tests::DummyKeyChainParameters& inputParams)
 {
     auto tlsCertificate = std::make_shared<const mococrw::X509Certificate>(
-            mococrw::X509Certificate::fromPEMFile(tlsCertificatePEMFilename));
+            mococrw::X509Certificate::fromPEMFile(inputParams.pubCertFileName));
     auto tlsKey = std::make_shared<const mococrw::AsymmetricPrivateKey>(
             mococrw::AsymmetricPrivateKey::readPrivateKeyFromPEM(
-                    joynr::util::loadStringFromFile(tlsKeyPEMFilename), privateKeyPassword));
+                    joynr::util::loadStringFromFile(inputParams.privKeyFileName),
+                    inputParams.privKeyPassword));
     auto tlsRootCertificate = std::make_shared<const mococrw::X509Certificate>(
-            mococrw::X509Certificate::fromPEMFile(tlsRootCertificatePEMFilename));
+            mococrw::X509Certificate::fromPEMFile(inputParams.rootCertFileName));
 
-    auto result = std::make_shared<KeychainImpl>(tlsCertificate, tlsKey, tlsRootCertificate);
-
-    return result;
+    return std::make_shared<DummyKeychainImpl>(tlsCertificate, tlsKey, tlsRootCertificate);
 }
 
+} // namespace tests
 } // namespace joynr

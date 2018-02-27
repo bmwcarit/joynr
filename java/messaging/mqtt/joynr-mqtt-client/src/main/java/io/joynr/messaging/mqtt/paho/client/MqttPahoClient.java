@@ -67,6 +67,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
     private String keyStorePWD;
     private String trustStorePWD;
     private boolean isSecureConnection;
+    private boolean disconnecting = false;
 
     private Set<String> subscribedTopics = new HashSet<>();
 
@@ -344,7 +345,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
             case MqttException.REASON_CODE_CONNECTION_LOST:
             case MqttException.REASON_CODE_UNEXPECTED_ERROR:
                 logger.debug("MQTT connection lost, trying to reconnect. Error code {}", reason);
-                start();
+                attemptDisconnectAndRestart();
                 break;
             case MqttException.REASON_CODE_CLIENT_EXCEPTION:
                 logger.error("MQTT connection lost due to client exception");
@@ -352,7 +353,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
                 if (cause != null) {
                     logger.error(cause.getMessage());
                 }
-                start();
+                attemptDisconnectAndRestart();
                 break;
             // the following error codes indicate a configuration problem that is not recoverable through reconnecting
             case MqttException.REASON_CODE_INVALID_PROTOCOL_VERSION:
@@ -392,6 +393,25 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
         } else {
             logger.error("MQTT connection lost due to unknown error " + error);
             shutdown();
+        }
+    }
+
+    private void attemptDisconnectAndRestart() {
+        if (!disconnecting) {
+            disconnecting = true;
+            try {
+                mqttClient.disconnect();
+            } catch (Exception e) {
+                logger.trace("Problem while attempting disconnect.", e);
+                try {
+                    mqttClient.disconnectForcibly();
+                } catch (Exception e2) {
+                    logger.trace("Problem while attempting to disconnect forcibly.", e2);
+                }
+            } finally {
+                disconnecting = false;
+                start();
+            }
         }
     }
 

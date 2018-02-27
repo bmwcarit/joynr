@@ -2,8 +2,6 @@ message(STATUS "#############################################")
 message(STATUS "Configuring JoynrClusterController...")
 message(STATUS "#############################################\n")
 
-get_target_property(JoynrLib_PUBLIC_INCLUDE_DIRECTORY Joynr PUBLIC_INCLUDE_DIRECTORY)
-
 ### Add mosquitto mqtt ###########################################################
 if(USE_PLATFORM_MOSQUITTO)
     find_package(mosquitto REQUIRED)
@@ -54,7 +52,6 @@ set(
     JoynrClusterController_INCLUDE_DIRECTORIES
     ${JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY}
     "../"
-    ${JoynrLib_PUBLIC_INCLUDE_DIRECTORY}
 )
 
 set(

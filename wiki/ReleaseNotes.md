@@ -1,7 +1,34 @@
-# joynr 1.0.1
+# joynr 1.1.0-SNAPSHOT
 
 ## API relevant changes
 None.
+
+## Other changes
+* **[C++]** moved settings `local-capabilities-directory-persistence-file` and
+  `local-capabilities-directory-persistency-enabled` from section [lib-joynr] to [cluster-controller].
+
+# joynr 1.0.3
+
+## API relevant changes
+None.
+
+## Other changes
+* **[C++]** Fixed Mosquitto Connection start/stop handling
+  Mosquitto background thread got not always joined correctly resulting in memory leak.
+* **[C++]** JoynrRuntime::createRuntime APIs now internally catch all exceptions to
+  avoid crashes; exceptions will be logged and distributed as JoynrRuntimeException
+  to onError() callback, if provided
+
+# joynr 1.0.2
+
+## API relevant changes
+None.
+
+## Other changes
+* **[Java]** joynr performs an explicit disconnect when the MQTT connection is lost in order to make
+  a reconnect more robust.
+
+# joynr 1.0.1
 
 ## Other changes
 
@@ -11,6 +38,7 @@ None.
   property. By default no queue limit is enfored.
 
 # joynr 1.0.0
+API Stable
 
 ## API relevant changes
 None.

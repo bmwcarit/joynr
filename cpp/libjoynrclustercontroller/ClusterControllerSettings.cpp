@@ -159,14 +159,16 @@ void ClusterControllerSettings::checkSettings()
 const std::string& ClusterControllerSettings::
         SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME()
 {
-    static const std::string value("lib-joynr/local-capabilities-directory-persistence-file");
+    static const std::string value(
+            "cluster-controller/local-capabilities-directory-persistence-file");
     return value;
 }
 
 const std::string& ClusterControllerSettings::
         SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCY_ENABLED()
 {
-    static const std::string value("lib-joynr/local-capabilities-directory-persistency-enabled");
+    static const std::string value(
+            "cluster-controller/local-capabilities-directory-persistency-enabled");
     return value;
 }
 

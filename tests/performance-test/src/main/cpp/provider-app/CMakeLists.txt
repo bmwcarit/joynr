@@ -7,6 +7,7 @@ target_link_libraries(performance-provider-app
     performance-provider
     ${Joynr_LIB_WS_LIBRARIES}
     ${Boost_LIBRARIES}
+    dummyKeychain
 )
 
 install(

@@ -21,6 +21,7 @@
 
 #include "joynr/ClusterControllerSettings.h"
 #include "joynr/MessagingSettings.h"
+#include "joynr/Util.h"
 #include "joynr/exceptions/JoynrException.h"
 
 namespace joynr
@@ -45,7 +46,9 @@ MosquittoConnection::MosquittoConnection(const MessagingSettings& messagingSetti
           readyToSend(false),
           onMessageReceived(),
           onReadyToSendChangedMutex(),
-          onReadyToSendChanged()
+          onReadyToSendChanged(),
+          stopMutex(),
+          isStopped(true)
 {
     JOYNR_LOG_INFO(logger(), "Init mosquitto connection using MQTT client ID: {}", clientId);
     mosqpp::lib_init();
@@ -85,8 +88,8 @@ MosquittoConnection::MosquittoConnection(const MessagingSettings& messagingSetti
 
 MosquittoConnection::~MosquittoConnection()
 {
-    stop();
-    stopLoop(true);
+    std::lock_guard<std::mutex> stopLocker(stopMutex);
+    assert(isStopped);
 
     mosqpp::lib_cleanup();
 }
@@ -99,19 +102,8 @@ std::string MosquittoConnection::getErrorString(int rc)
         return std::string(mosqpp::strerror(rc));
     }
 
-    // MT-safe workaround
-    char buf[256];
-    buf[0] = '\0';
-    int storedErrno = errno;
-    // POSIX compliant check for conversion errors,
-    // see 'man strerror_r'
-    errno = 0;
-    strerror_r(storedErrno, buf, sizeof(buf));
-    if (errno) {
-        return "failed to convert errno";
-    }
-
-    return std::string(buf);
+    const int storedErrno = errno;
+    return joynr::util::getErrorString(storedErrno);
 }
 
 void MosquittoConnection::on_disconnect(int rc)
@@ -130,7 +122,6 @@ void MosquittoConnection::on_disconnect(int rc)
 
     if (rc == MOSQ_ERR_SUCCESS) {
         JOYNR_LOG_INFO(logger(), "Disconnected from tcp://{}:{}", host, port);
-        stopLoop();
     } else {
         JOYNR_LOG_ERROR(logger(),
                         "Unexpectedly disconnected from tcp://{}:{}, error: {}",
@@ -173,10 +164,18 @@ bool MosquittoConnection::isMqttRetain() const
 
 void MosquittoConnection::start()
 {
+    // do not start/stop in parallel
+    std::lock_guard<std::mutex> stopLocker(stopMutex);
+    if (!isStopped) {
+        JOYNR_LOG_INFO(logger(), "Mosquitto Connection already started");
+        return;
+    }
+
     JOYNR_LOG_TRACE(
             logger(), "Start called with isRunning: {}, isConnected: {}", isRunning, isConnected);
 
     JOYNR_LOG_INFO(logger(), "Try to connect to tcp://{}:{}", host, port);
+
     connect_async(host.c_str(), port, messagingSettings.getMqttKeepAliveTimeSeconds().count());
 
     reconnect_delay_set(messagingSettings.getMqttReconnectDelayTimeSeconds().count(),
@@ -184,6 +183,10 @@ void MosquittoConnection::start()
                         messagingSettings.getMqttExponentialBackoffEnabled());
 
     startLoop();
+
+    if (isRunning) {
+        isStopped = false;
+    }
 }
 
 void MosquittoConnection::startLoop()
@@ -203,6 +206,19 @@ void MosquittoConnection::startLoop()
 
 void MosquittoConnection::stop()
 {
+    // do not start/stop in parallel
+    std::lock_guard<std::mutex> stopLocker(stopMutex);
+    if (isStopped) {
+        JOYNR_LOG_INFO(logger(), "Mosquitto Connection already stopped");
+        return;
+    }
+
+    // disconnect() must be called prior to stopLoop() since
+    // otherwise the loop in the mosquitto background thread
+    // continues forever and thus the join in stopLoop()
+    // blocks indefinitely. This applies even if a connection
+    // does not exist yet.
+
     if (isConnected) {
         int rc = disconnect();
 
@@ -214,12 +230,14 @@ void MosquittoConnection::stop()
                             "Mosquitto disconnect failed: error: {} ({})",
                             std::to_string(rc),
                             errorString);
-            stopLoop(true);
         }
+        stopLoop();
     } else if (isRunning) {
-        stopLoop(true);
+        disconnect();
+        stopLoop();
     }
     setReadyToSend(false);
+    isStopped = true;
 }
 
 void MosquittoConnection::stopLoop(bool force)
