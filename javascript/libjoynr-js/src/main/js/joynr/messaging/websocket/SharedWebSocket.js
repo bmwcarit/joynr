@@ -207,7 +207,7 @@ var SharedWebSocket = function SharedWebSocket(settings) {
      */
     this.send = function send(joynrMessage) {
         log.debug(">>> OUTGOING >>> message with ID " + joynrMessage.msgId);
-        return sendMessage(websocket, joynrMessage, queuedMessages).catch(resetConnection);
+        return sendMessage(websocket, joynrMessage, queuedMessages);
     };
 
     /**
