@@ -141,7 +141,7 @@ will be ever dropped.
 
 * **OPTIONAL**
 * **Type**: int
-* **User property**: `joynr.messaging.maxincomingmqttmessagesinprocessing`
+* **User property**: `joynr.messaging.maxincomingmqttrequests`
 * **Default value**: `0`
 
 ### `PROPERTY_MESSAGING_MAXIMUM_TTL_MS`
