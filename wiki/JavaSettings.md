@@ -234,7 +234,7 @@ for the added time to the retry interval by the exponential backoff algorithm.
 * **User property**: `joynr.messaging.maxDelayWithExponentialBackoffMs`
 * **Default value**: `-1` (no maximum delay for retry interval)
 
-### PROPERTY_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS
+### `PROPERTY_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS`
 
 The cluster controller sends a freshness update message to the global discovery directory every
 PROPERTY_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS milliseconds. The global discovery directory
@@ -245,7 +245,7 @@ updates the ```lastSeenDateMs``` of all capabilities registered via this cluster
 * **User property**: `joynr.capabilities.freshnessupdateintervalms`
 * **Default value**: `3600000`
 
-##Access Control
+## Access Control
 ### `PROPERTY_ACCESSCONTROL_ENABLE`
 Enables or disables access control checks.
 
@@ -254,7 +254,7 @@ Enables or disables access control checks.
 * **User property**: `joynr.accesscontrol.enable`
 * **Default value**: `false`
 
-##MessagingPropertyKeys
+## MessagingPropertyKeys
 
 ### `PROPERTY_BOUNCE_PROXY_URL`
 The root URL of the BounceProxy backend service when using HTTP messaging. The cluster controller
