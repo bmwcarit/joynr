@@ -290,6 +290,60 @@ describe("Consumer test", function() {
         });
     });
 
+    it("callMethodWithSingleByteBufferParameter", function() {
+        var spy = jasmine.createSpyObj("spy", [ "onFulfilled", "onError" ]);
+        var byteBufferIn = [-128, 0, 127];
+        runs(function() {
+            log("callMethodWithSingleByteBufferParameter");
+            var args = {
+                byteBufferArg: byteBufferIn
+            };
+            testInterfaceProxy.methodWithSingleByteBufferParameter(args).then(spy.onFulfilled).catch(spy.onError);
+        });
+
+        waitsFor(function() {
+            return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
+        }, "callMethodWithSingleByteBufferParameter", 5000);
+
+        runs(function() {
+            expect(spy.onFulfilled.callCount).toEqual(1);
+            expect(spy.onError.callCount).toEqual(0);
+            var retObj = spy.onFulfilled.calls[0].args[0];
+            expect(retObj).toBeDefined();
+            expect(retObj.byteBufferOut).toBeDefined();
+            expect(IltUtil.cmpByteBuffers(retObj.byteBufferOut, byteBufferIn)).toBeTruthy();
+            log("callMethodWithSingleByteBufferParameter - OK");
+        });
+    });
+
+    it("callMethodWithMultipleByteBufferParameters", function() {
+        var spy = jasmine.createSpyObj("spy", [ "onFulfilled", "onError" ]);
+        var byteBufferIn1 = [-5, 125];
+        var byteBufferIn2 = [78, 0];
+        runs(function() {
+            log("callMethodWithMultipleByteBufferParameters");
+            var args = {
+                byteBufferArg1: byteBufferIn1,
+                byteBufferArg2: byteBufferIn2
+            };
+            testInterfaceProxy.methodWithMultipleByteBufferParameters(args).then(spy.onFulfilled).catch(spy.onError);
+        });
+
+        waitsFor(function() {
+            return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
+        }, "callMethodWithMultipleByteBufferParameters", 5000);
+
+        runs(function() {
+            expect(spy.onFulfilled.callCount).toEqual(1);
+            expect(spy.onError.callCount).toEqual(0);
+            var retObj = spy.onFulfilled.calls[0].args[0];
+            expect(retObj).toBeDefined();
+            expect(retObj.byteBufferOut).toBeDefined();
+            expect(IltUtil.cmpByteBuffers(retObj.byteBufferOut, byteBufferIn1.concat(byteBufferIn2))).toBeTruthy();
+            log("callMethodWithMultipleByteBufferParameters - OK");
+        });
+    });
+
     it("callMethodWithSingleEnumParameters", function() {
         var spy = jasmine.createSpyObj("spy", [ "onFulfilled", "onError" ]);
         spy.onFulfilled.reset();
