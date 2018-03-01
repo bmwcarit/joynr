@@ -292,11 +292,11 @@ describe("Consumer test", function() {
 
     it("callMethodWithSingleByteBufferParameter", function() {
         var spy = jasmine.createSpyObj("spy", [ "onFulfilled", "onError" ]);
-        var byteBufferIn = [-128, 0, 127];
+        var byteBufferArg = [-128, 0, 127];
         runs(function() {
             log("callMethodWithSingleByteBufferParameter");
             var args = {
-                byteBufferArg: byteBufferIn
+                byteBufferIn: byteBufferArg
             };
             testInterfaceProxy.methodWithSingleByteBufferParameter(args).then(spy.onFulfilled).catch(spy.onError);
         });
@@ -311,20 +311,20 @@ describe("Consumer test", function() {
             var retObj = spy.onFulfilled.calls[0].args[0];
             expect(retObj).toBeDefined();
             expect(retObj.byteBufferOut).toBeDefined();
-            expect(IltUtil.cmpByteBuffers(retObj.byteBufferOut, byteBufferIn)).toBeTruthy();
+            expect(IltUtil.cmpByteBuffers(retObj.byteBufferOut, byteBufferArg)).toBeTruthy();
             log("callMethodWithSingleByteBufferParameter - OK");
         });
     });
 
     it("callMethodWithMultipleByteBufferParameters", function() {
         var spy = jasmine.createSpyObj("spy", [ "onFulfilled", "onError" ]);
-        var byteBufferIn1 = [-5, 125];
-        var byteBufferIn2 = [78, 0];
+        var byteBufferArg1 = [-5, 125];
+        var byteBufferArg2 = [78, 0];
         runs(function() {
             log("callMethodWithMultipleByteBufferParameters");
             var args = {
-                byteBufferArg1: byteBufferIn1,
-                byteBufferArg2: byteBufferIn2
+                byteBufferIn1: byteBufferArg1,
+                byteBufferIn2: byteBufferArg2
             };
             testInterfaceProxy.methodWithMultipleByteBufferParameters(args).then(spy.onFulfilled).catch(spy.onError);
         });
@@ -339,7 +339,7 @@ describe("Consumer test", function() {
             var retObj = spy.onFulfilled.calls[0].args[0];
             expect(retObj).toBeDefined();
             expect(retObj.byteBufferOut).toBeDefined();
-            expect(IltUtil.cmpByteBuffers(retObj.byteBufferOut, byteBufferIn1.concat(byteBufferIn2))).toBeTruthy();
+            expect(IltUtil.cmpByteBuffers(retObj.byteBufferOut, byteBufferArg1.concat(byteBufferArg2))).toBeTruthy();
             log("callMethodWithMultipleByteBufferParameters - OK");
         });
     });
@@ -1517,49 +1517,45 @@ describe("Consumer test", function() {
     });
 
     it("callSetandGetAttributeByteBuffer", function() {
-        var spy = jasmine.createSpyObj("spy", [ "onFulfilled", "onError" ]);
+        var spy = jasmine.createSpyObj("spy", [ "onSet", "onSetError", "onGet", "onGetError" ]);
+        var byteBufferArg = [-128, 0, 127];
 
         runs(function() {
             log("callSetAttributeByteBuffer");
             var args = {
-                byteBuffer: [-128, 0, 127];
+                value: byteBufferArg
             };
-            testInterfaceProxy.attributeByteBuffer.set(args).then(spy.onFulfilled).catch(spy.onError);
+            testInterfaceProxy.attributeByteBuffer.set(args).then(spy.onSet).catch(spy.onSetError);
         });
 
         waitsFor(function() {
-            return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
+            return spy.onSet.callCount > 0 || spy.onSetError.callCount > 0;
         }, "callSetAttributeByteBuffer", 5000);
 
         runs(function() {
-            if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                log(spy.onError.calls[0].args[0]);
+            if (spy.onSetError.callCount > 0 && spy.onSetError.calls[0] && spy.onSetError.calls[0].args[0]) {
+                log(spy.onSetError.calls[0].args[0]);
             }
-            expect(spy.onFulfilled.callCount).toEqual(1);
-            expect(spy.onError.callCount).toEqual(0);
-        });
+            expect(spy.onSet.callCount).toEqual(1);
+            expect(spy.onSetError.callCount).toEqual(0);
 
-        runs(function() {
-            // Remove all tracking information for previous calls.
-            spy.calls.reset();
             log("callGetAttributeByteBuffer");
-            testInterfaceProxy.attributeByteBuffer.get().then(spy.onFulfilled).catch(spy.onError);
+            testInterfaceProxy.attributeByteBuffer.get().then(spy.onGet).catch(spy.onGetError);
         });
 
         waitsFor(function() {
-            return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
+            return spy.onGet.callCount > 0 || spy.onGetError.callCount > 0;
         }, "callGetAttributeByteBuffer", 5000);
 
         runs(function() {
-            if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                log(spy.onError.calls[0].args[0]);
+            if (spy.onGetError.callCount > 0 && spy.onGetError.calls[0] && spy.onGetError.calls[0].args[0]) {
+                log(spy.onGetError.calls[0].args[0]);
             }
-            expect(spy.onFulfilled.callCount).toEqual(1);
-            expect(spy.onError.callCount).toEqual(0);
-            var byteBuffer = [-128, 0, 127];
-            var retObj = spy.onFulfilled.calls[0].args[0];
+            expect(spy.onGet.callCount).toEqual(1);
+            expect(spy.onGetError.callCount).toEqual(0);
+            var retObj = spy.onGet.calls[0].args[0];
             expect(retObj).toBeDefined();
-            expect(IltUtil.cmpByteBuffers(retObj, byteBuffer)).toBeTruthy();
+            expect(IltUtil.cmpByteBuffers(retObj, byteBufferArg)).toBeTruthy();
         });
     });
 
@@ -2338,6 +2334,184 @@ describe("Consumer test", function() {
 
     it("callSubscribeBroadcastWithMultipleArrayParameters_SimplePartitions", function() {
         callSubscribeBroadcastWithMultipleArrayParameters(["partition0", "partition1"]);
+    });
+
+    var byteBufferArg = [-128, 0, 127];
+
+    callSubscribeBroadcastWithSingleByteBufferParameter = function(byteBufferArg, partitionsToUse) {
+        var spy = jasmine.createSpyObj("spy", [ "onPublication", "onPublicationError", "onSubscribed", "onSubscribedError",
+                                                "onFiredError", "onUnsubscribe", "onUnsubscribeError" ]);
+        var subscriptionId;
+        var subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({ minIntervalMs: 50, validityMs: 60000 });
+
+        runs(function() {
+            log("callSubscribeBroadcastWithSingleByteBufferParameter");
+            testInterfaceProxy.broadcastWithSingleByteBufferParameter.subscribe({
+                "subscriptionQos": subscriptionQosOnChange,
+                "partitions" : partitionsToUse,
+                "onReceive": spy.onPublication,
+                "onError": spy.onPublicationError,
+                "onSubscribed": spy.onSubscribed
+                }).catch(spy.onSubscribedError);
+        });
+
+        waitsFor(function() {
+            return spy.onSubscribed.callCount > 0 || spy.onSubscribedError.callCount > 0;
+        }, "callSubscribeBroadcastWithSingleByteBufferParameter", 5000);
+
+        runs(function() {
+            if (spy.onSubscribedError.callCount > 0 && spy.onSubscribedError.calls[0] && spy.onSubscribedError.calls[0].args[0]) {
+                log(spy.onSubscribedError.calls[0].args[0]);
+            }
+            expect(spy.onSubscribed.callCount).toEqual(1);
+            expect(spy.onSubscribedError.callCount).toEqual(0);
+            subscriptionId = spy.onSubscribed.calls[0].args[0];
+            log("Subscription was succesful with subscriptionId = " + subscriptionId);
+
+            // execute fire method here
+            testInterfaceProxy.methodToFireBroadcastWithSingleByteBufferParameter({
+                byteBufferIn: byteBufferArg,
+                partitions: partitionsToUse
+            }).catch(spy.onFiredError);
+        });
+
+        waitsFor(function() {
+            return spy.onPublication.callCount > 0 || spy.onPublicationError.callCount > 0 || spy.onFiredError > 0;
+        }, "callSubscribeBroadcastWithSingleByteBufferParameter methodToFireBroadcastWithSingleByteBufferParameter and Publication", 5000);
+
+        runs(function() {
+            if (spy.onFiredError.callCount > 0 && spy.onFiredError.calls[0] && spy.onFiredError.calls[0].args[0]) {
+                log(spy.onFiredError.calls[0].args[0]);
+            }
+            if (spy.onPublicationError.callCount > 0 && spy.onPublicationError.calls[0] && spy.onPublicationError.calls[0].args[0]) {
+                log(spy.onPublicationError.calls[0].args[0]);
+            }
+            expect(spy.onPublication.callCount).toEqual(1);
+            expect(spy.onPublicationError.callCount).toEqual(0);
+            expect(spy.onFiredError.callCount).toEqual(0);
+            var retObj = spy.onPublication.calls[0].args[0];
+            expect(retObj).toBeDefined();
+            expect(retObj.byteBufferOut).toBeDefined();
+            expect(IltUtil.cmpByteBuffers(retObj.byteBufferOut, byteBufferArg)).toBeTruthy();
+            log("Successful publication of retObj: " + JSON.stringify(retObj));
+
+            // unsubscribe again
+            testInterfaceProxy.broadcastWithSingleByteBufferParameter.unsubscribe({
+                "subscriptionId": subscriptionId
+            }).then(spy.onUnsubscribed).catch(spy.onUnsubscribedError);
+        });
+
+        waitsFor(function() {
+            return spy.onUnsubscribed.callCount > 0 || spy.onUnsubscribedError.callCount > 0;
+        }, "callSubscribeBroadcastWithSingleByteBufferParameter Unsubscribe", 5000);
+
+        runs(function() {
+            if (spy.onSubscribedError.callCount > 0 && spy.onSubscribedError.calls[0] && spy.onSubscribedError.calls[0].args[0]) {
+                log(spy.onSubscribedError.calls[0].args[0]);
+            }
+            expect(spy.onSubscribed).toEqual(1);
+            expect(spy.onSubscribedError).toEqual(0);
+            log("Successfully unsubscribed from broadcast");
+        });
+    }
+
+    it("callSubscribeBroadcastWithSingleByteBufferParameter_NoPartitions", function() {
+        callSubscribeBroadcastWithSingleByteBufferParameter(byteBufferArg, []);
+    });
+
+    it("callSubscribeBroadcastWithSingleByteBufferParameter_SimplePartitions", function() {
+        callSubscribeBroadcastWithSingleByteBufferParameter(byteBufferArg, ["partition0", "partition1"]);
+    });
+
+    var byteBufferArg1 = [-5, 125];
+    var byteBufferArg2 = [78, 0];
+
+    callSubscribeBroadcastWithMultipleByteBufferParameters = function(byteBufferArg1, byteBufferArg2, partitionsToUse) {
+        var spy = jasmine.createSpyObj("spy", [ "onPublication", "onPublicationError", "onSubscribed", "onSubscribedError",
+                                                "onFiredError", "onUnsubscribed", "onUnsubscribedError" ]);
+        var subscriptionId;
+        var subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({ minIntervalMs: 50, validityMs: 60000 });
+
+        runs(function() {
+            log("callSubscribeBroadcastWithMultipleByteBufferParameters");
+            testInterfaceProxy.broadcastWithMultipleByteBufferParameters.subscribe({
+                "subscriptionQos": subscriptionQosOnChange,
+                "partitions" : partitionsToUse,
+                "onReceive": spy.onPublication,
+                "onError": spy.onPublicationError
+                "onSubscribed": spy.onSubscribed
+            }).catch(spy.onSubscribedError);
+        });
+
+        waitsFor(function() {
+            return spy.onSubscribed.callCount > 0 || spy.onSubscribedError.callCount > 0;
+        }, "callSubscribeBroadcastWithMultipleByteBufferParameters", 5000);
+
+        runs(function() {
+            if (spy.onSubscribedError.callCount > 0 && spy.onSubscribedError.calls[0] && spy.onSubscribedError.calls[0].args[0]) {
+                log(spy.onSubscribedError.calls[0].args[0]);
+            }
+            expect(spy.onSubscribed.callCount).toEqual(1);
+            expect(spy.onSubscribedError.callCount).toEqual(0);
+            subscriptionId = spy.onScubscribed.calls[0].args[0];
+            log("Subscription was successful with subscriptionId = " + subscriptionId);
+
+            // execute fire method here
+            testInterfaceProxy.methodToFireBroadcastWithMultipleByteBufferParameters({
+                byteBufferIn1: byteBufferArg1,
+                byteBufferIn2: byteBufferArg2,
+                partitions: partitionsToUse
+            }).catch(spy.onFiredError);
+        });
+
+        waitsFor(function() {
+            return spy.onPublication.callCount > 0 || spy.onPublicationError.callCount > 0 || spy.onFiredError.callCount > 0;
+        }, "callSubscribeBroadcastWithMultipleByteBufferParameters methodToFireBroadcastWithMultipleByteBufferParameters and Publication", 5000);
+
+        runs(function() {
+            if (spy.onPublicationError.callCount > 0 && spy.onPublicationError.calls[0] && spy.onPublicationError.calls[0].args[0]) {
+                log(spy.onPublicationError.calls[0].args[0]);
+            }
+            if (spy.onFiredError.callCount > 0 && spy.onFiredError.calls[0] && spy.onFiredError.calls[0].args[0]) {
+                log(spy.onFiredError.calls[0].args[0]);
+            }
+            expect(spy.onPublication.callCount).toEqual(1);
+            expect(spy.onPublicationError).toEqual(0);
+            expect(spy.onFiredError.callCount).toEqual(0);
+            var retObj = spy.onPublication.calls[0].args[0];
+            expect(retObj).toBeDefined();
+            expect(retObj.byteBufferOut1).toBeDefined();
+            expect(retObj.byteBufferOut2).toBeDefined();
+            expect(IltUtil.cmpByteBuffers(retObj.byteBufferOut1, byteBufferArg1)).toBeTruthy();
+            expect(IltUtil.cmpByteBuffers(retObj.byteBufferOut2, byteBufferArg2)).toBeTruthy();
+            log("Successful publication of retObj: " + JSON.stringify(retObj));
+
+            // unsubscribe again
+            testInterfaceProxy.broadcastWithMultipleByteBufferParameters.unsubscribe({
+                "subscriptionId": subscriptionId
+            }).then(spy.onUnsubscribed).catch(spy.onUnsubscribedError);
+        });
+
+        waitsFor(function() {
+            return spy.onUnsubscribed.callCount > 0 || spy.onUnsubscribedError.callCount > 0;
+        }, "callSubscribeBroadcastWithMultipleByteBufferParameters Unsubscribe", 5000);
+
+        runs(function() {
+            if (spy.onUnsubscribedError.callCount > 0 && spy.onUnsubscribedError.calls[0] && spy.onUnsubscribedError.calls[0].args[0]) {
+                log(spy.onUnsubscribedError.calls[0].args[0]);
+            }
+            expect(spy.onUnsubscribed.callCount).toEqual(1);
+            expect(spy.onUnsubscribedError.callCount).toEqual(0);
+            log("Successfully unsubscribed from broadcast");
+        });
+    }
+
+    it("callSubscribeBroadcastWithMultipleByteBufferParameters_NoPartitions", function() {
+        callSubscribeBroadcastWithMultipleByteBufferParameters(byteBufferArg1, byteBufferArg2, []);
+    });
+
+    it("callSubscribeBroadcastWithMultipleByteBufferParameters_SimplePartitions", function() {
+        callSubscribeBroadcastWithMultipleByteBufferParameters(byteBufferArg1, byteBufferArg2, ["partition0", "partition1"]);
     });
 
     callSubscribeBroadcastWithSingleEnumerationParameter = function(partitionsToUse) {
