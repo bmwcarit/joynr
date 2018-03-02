@@ -43,7 +43,6 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -68,7 +67,6 @@ import io.joynr.messaging.mqtt.IMqttMessagingSkeleton;
 import io.joynr.messaging.mqtt.JoynrMqttClient;
 import io.joynr.messaging.mqtt.MqttClientFactory;
 import io.joynr.messaging.mqtt.MqttClientIdProvider;
-import io.joynr.messaging.mqtt.MqttMessagingStub;
 import io.joynr.messaging.mqtt.MqttModule;
 import io.joynr.messaging.routing.MessageRouter;
 import joynr.system.RoutingTypes.MqttAddress;
@@ -88,7 +86,6 @@ public class MqttPahoClientTest {
     private MessageRouter mockMessageRouter;
     private JoynrMqttClient joynrMqttClient;
     private Properties properties;
-    private ArgumentCaptor<Integer> mqttMessageIdCaptor;
     private byte[] serializedMessage;
 
     @Rule
@@ -111,7 +108,6 @@ public class MqttPahoClientTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         properties = new Properties();
-        mqttMessageIdCaptor = ArgumentCaptor.forClass(Integer.class);
 
         properties.put(MqttModule.PROPERTY_KEY_MQTT_RECONNECT_SLEEP_MS, "100");
         properties.put(MqttModule.PROPERTY_KEY_MQTT_KEEP_ALIVE_TIMER_SEC, "60");
