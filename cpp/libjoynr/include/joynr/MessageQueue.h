@@ -63,12 +63,11 @@ public:
     std::size_t getQueueLength() const
     {
         std::lock_guard<std::mutex> lock(queueMutex);
-        return boost::multi_index::get<messagequeuetags::key>(queue).size();
+        return getQueueLengthUnlocked();
     }
 
     void queueMessage(T key, std::shared_ptr<ImmutableMessage> message)
     {
-        ensureFreeQueueSlot(key);
 
         MessageQueueItem item;
         item.key = std::move(key);
@@ -76,6 +75,7 @@ public:
         item.message = std::move(message);
 
         std::lock_guard<std::mutex> lock(queueMutex);
+        ensureFreeQueueSlot(item.key);
         queue.insert(std::move(item));
     }
 
@@ -149,8 +149,14 @@ private:
     const std::uint64_t messageQueueLimit;
     const std::uint64_t perKeyMessageQueueLimit;
 
+    std::size_t getQueueLengthUnlocked() const
+    {
+        return boost::multi_index::get<messagequeuetags::key>(queue).size();
+    }
+
     void ensureFreeQueueSlot(const T& key)
     {
+        // queueMutex must have been acquired earlier
         const bool queueLimitActive = messageQueueLimit > 0;
         if (!queueLimitActive) {
             return;
@@ -161,33 +167,34 @@ private:
             ensureFreePerKeyQueueSlot(key);
         }
 
-        if (getQueueLength() >= messageQueueLimit) {
+        while (getQueueLengthUnlocked() >= messageQueueLimit) {
             removeMessageWithLeastTtl();
         }
     }
 
     void ensureFreePerKeyQueueSlot(const T& key)
     {
+        // queueMutex must have been locked already
         assert(perKeyMessageQueueLimit > 0);
 
-        std::lock_guard<std::mutex> lock(queueMutex);
         auto& keyAndTtlIndex =
                 boost::multi_index::get<messagequeuetags::key_and_ttlAbsolute>(queue);
         auto range = keyAndTtlIndex.equal_range(key);
         const std::size_t numEntriesForKey = std::distance(range.first, range.second);
 
         if (numEntriesForKey >= perKeyMessageQueueLimit) {
-            JOYNR_LOG_WARN(logger(),
-                           "Erasing message with id {} since queue limit of {} was reached",
-                           range.first->message->getId(),
-                           perKeyMessageQueueLimit);
+            JOYNR_LOG_WARN(
+                    logger(),
+                    "Erasing message with id {} since key based queue limit of {} was reached",
+                    range.first->message->getId(),
+                    perKeyMessageQueueLimit);
             keyAndTtlIndex.erase(range.first);
         }
     }
 
     void removeMessageWithLeastTtl()
     {
-        std::lock_guard<std::mutex> lock(queueMutex);
+        // queueMutex must have been locked already
         if (queue.empty()) {
             return;
         }
@@ -197,7 +204,7 @@ private:
         assert(msgWithLowestTtl != ttlIndex.cend());
 
         JOYNR_LOG_WARN(logger(),
-                       "Erasing message with id {} since queue limit of {} was reached",
+                       "Erasing message with id {} since generic queue limit of {} was reached",
                        msgWithLowestTtl->message->getId(),
                        messageQueueLimit);
 
