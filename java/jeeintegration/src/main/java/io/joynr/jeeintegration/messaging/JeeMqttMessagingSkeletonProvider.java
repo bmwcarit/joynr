@@ -58,8 +58,8 @@ public class JeeMqttMessagingSkeletonProvider extends MqttMessagingSkeletonProvi
 
     @Inject
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 2 LINES
-    public JeeMqttMessagingSkeletonProvider(@Named(JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY) String enableHttpBridge,
-                                            @Named(PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS) String enableSharedSubscriptions,
+    public JeeMqttMessagingSkeletonProvider(@Named(JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY) boolean enableHttpBridge,
+                                            @Named(PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS) boolean enableSharedSubscriptions,
                                             @Named(PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
                                             @Named(PROPERTY_MAX_INCOMING_MQTT_REQUESTS) int maxIncomingMqttRequests,
                                             @Named(PROPERTY_BACKPRESSURE_ENABLED) boolean backpressureEnabled,
@@ -81,7 +81,7 @@ public class JeeMqttMessagingSkeletonProvider extends MqttMessagingSkeletonProvi
               mqttTopicPrefixProvider,
               rawMessagingPreprocessor,
               new HashSet<JoynrMessageProcessor>());
-        httpBridgeEnabled = Boolean.valueOf(enableHttpBridge);
+        httpBridgeEnabled = enableHttpBridge;
         logger.debug("Created with httpBridgeEnabled: {} ownAddress: {} channelId: {}", new Object[]{ httpBridgeEnabled,
                 ownAddress, channelId });
     }

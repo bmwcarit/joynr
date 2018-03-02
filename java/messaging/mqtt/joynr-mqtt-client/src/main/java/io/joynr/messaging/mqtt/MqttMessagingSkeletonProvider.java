@@ -64,7 +64,7 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
 
     @Inject
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
-    public MqttMessagingSkeletonProvider(@Named(PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS) String enableSharedSubscriptions,
+    public MqttMessagingSkeletonProvider(@Named(PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS) boolean enableSharedSubscriptions,
                                          @Named(PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
                                          @Named(PROPERTY_MAX_INCOMING_MQTT_REQUESTS) int maxIncomingMqttRequests,
                                          @Named(PROPERTY_BACKPRESSURE_ENABLED) boolean backpressureEnabled,
@@ -75,7 +75,7 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
                                          MqttTopicPrefixProvider mqttTopicPrefixProvider,
                                          RawMessagingPreprocessor rawMessagingPreprocessor,
                                          Set<JoynrMessageProcessor> messageProcessors) {
-        sharedSubscriptionsEnabled = Boolean.valueOf(enableSharedSubscriptions);
+        sharedSubscriptionsEnabled = enableSharedSubscriptions;
         this.rawMessagingPreprocessor = rawMessagingPreprocessor;
         this.messageProcessors = messageProcessors;
         this.ownAddress = ownAddress;
