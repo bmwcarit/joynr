@@ -727,6 +727,14 @@ void ClusterControllerSettings::printSettings() const
 
     JOYNR_LOG_DEBUG(
             logger(), "SETTING: {}  = {}", SETTING_MESSAGE_QUEUE_LIMIT(), getMessageQueueLimit());
+    JOYNR_LOG_DEBUG(logger(),
+                    "SETTING: {}  = {}",
+                    SETTING_PER_PARTICIPANTID_MESSAGE_QUEUE_LIMIT(),
+                    getPerParticipantIdMessageQueueLimit());
+    JOYNR_LOG_DEBUG(logger(),
+                    "SETTING: {}  = {}",
+                    SETTING_TRANSPORT_NOT_AVAILABLE_QUEUE_LIMIT(),
+                    getTransportNotAvailableQueueLimit());
 
     JOYNR_LOG_DEBUG(logger(),
                     "SETTING: {}  = {}",
