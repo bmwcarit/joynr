@@ -56,7 +56,8 @@ public:
             : queue(),
               queueMutex(),
               messageQueueLimit(messageLimit),
-              perKeyMessageQueueLimit(perKeyMessageQueueLimit)
+              perKeyMessageQueueLimit(perKeyMessageQueueLimit),
+              queueSizeBytes(0)
     {
     }
 
@@ -66,17 +67,30 @@ public:
         return getQueueLengthUnlocked();
     }
 
-    void queueMessage(T key, std::shared_ptr<ImmutableMessage> message)
+    std::size_t getQueueSizeBytes() const
+    {
+        std::lock_guard<std::mutex> lock(queueMutex);
+        return queueSizeBytes;
+    }
+
+    void queueMessage(const T key, std::shared_ptr<ImmutableMessage> message)
     {
 
         MessageQueueItem item;
         item.key = std::move(key);
         item.ttlAbsolute = message->getExpiryDate();
+        std::string recipient = message->getRecipient();
         item.message = std::move(message);
 
         std::lock_guard<std::mutex> lock(queueMutex);
+        queueSizeBytes += item.message->getMessageSize();
         ensureFreeQueueSlot(item.key);
         queue.insert(std::move(item));
+        JOYNR_LOG_TRACE(logger(),
+                        "queueMessage: recipient {}, new queueSize(bytes) = {}, #msgs = {}",
+                        recipient,
+                        queueSizeBytes,
+                        getQueueLengthUnlocked());
     }
 
     std::shared_ptr<ImmutableMessage> getNextMessageFor(const T& key)
@@ -88,6 +102,14 @@ public:
         if (queueElement != keyIndex.cend()) {
             auto message = std::move(queueElement->message);
             queue.erase(queueElement);
+            queueSizeBytes -= message->getMessageSize();
+            JOYNR_LOG_TRACE(logger(),
+                            "getNextMessageFor: message recipient {}, size {}, new "
+                            "queueSize(bytes) = {}, #msgs = {}",
+                            message->getRecipient(),
+                            message->getMessageSize(),
+                            queueSizeBytes,
+                            getQueueLengthUnlocked());
             return message;
         }
         return nullptr;
@@ -96,6 +118,8 @@ public:
     void removeOutdatedMessages()
     {
         std::lock_guard<std::mutex> lock(queueMutex);
+        int numberOfErasedMessages = 0;
+        std::size_t erasedBytes = 0;
 
         if (queue.empty()) {
             return;
@@ -107,7 +131,26 @@ public:
                 std::chrono::system_clock::now());
         auto onePastOutdatedMsgIt = ttlIndex.lower_bound(now);
 
+        for (auto it = ttlIndex.begin(); it != onePastOutdatedMsgIt; ++it) {
+            std::size_t msgSize = it->message->getMessageSize();
+            JOYNR_LOG_TRACE(logger(),
+                            "removeOutdatedMessages: Erasing expired message with id {}, {} bytes",
+                            it->message->getId(),
+                            msgSize);
+            queueSizeBytes -= msgSize;
+            erasedBytes += msgSize;
+            numberOfErasedMessages++;
+        }
         ttlIndex.erase(ttlIndex.begin(), onePastOutdatedMsgIt);
+        if (numberOfErasedMessages) {
+            JOYNR_LOG_TRACE(logger(),
+                            "removeOutdatedMessages: Erased {} messages with {} bytes, new "
+                            "queueSize(bytes) = {}, #msgs = {}",
+                            numberOfErasedMessages,
+                            erasedBytes,
+                            queueSizeBytes,
+                            getQueueLengthUnlocked());
+        }
     }
 
 protected:
@@ -148,6 +191,7 @@ protected:
 private:
     const std::uint64_t messageQueueLimit;
     const std::uint64_t perKeyMessageQueueLimit;
+    std::uint64_t queueSizeBytes;
 
     std::size_t getQueueLengthUnlocked() const
     {
@@ -182,12 +226,19 @@ private:
         auto range = keyAndTtlIndex.equal_range(key);
         const std::size_t numEntriesForKey = std::distance(range.first, range.second);
 
+        JOYNR_LOG_TRACE(logger(),
+                        "ensureFreePerKeyQueueSlot: numEntriesForKey = {}, perKeyMessageQueueLimit "
+                        "= {}",
+                        numEntriesForKey,
+                        perKeyMessageQueueLimit);
+
         if (numEntriesForKey >= perKeyMessageQueueLimit) {
             JOYNR_LOG_WARN(
                     logger(),
                     "Erasing message with id {} since key based queue limit of {} was reached",
                     range.first->message->getId(),
                     perKeyMessageQueueLimit);
+            queueSizeBytes -= range.first->message->getMessageSize();
             keyAndTtlIndex.erase(range.first);
         }
     }
@@ -208,6 +259,7 @@ private:
                        msgWithLowestTtl->message->getId(),
                        messageQueueLimit);
 
+        queueSizeBytes -= msgWithLowestTtl->message->getMessageSize();
         ttlIndex.erase(msgWithLowestTtl);
     }
 };
