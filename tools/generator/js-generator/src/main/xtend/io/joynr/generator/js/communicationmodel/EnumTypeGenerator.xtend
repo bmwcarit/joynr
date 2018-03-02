@@ -112,29 +112,8 @@ class EnumTypeGenerator extends EnumTemplate {
 			value: «minorVersion»
 		});
 
-		var preparePrototype = function() {
-			Object.defineProperty(«type.joynrName».prototype, 'equals', {
-				enumerable: false,
-				configurable: false,
-				writable: false,
-				readable: true,
-				value: function equals(other) {
-					var i;
-					if (this === other) {
-						return true;
-					}
-					if (other === undefined || other === null) {
-						return false;
-					}
-					if (other._typeName === undefined || this._typeName !== other._typeName) {
-						return false;
-					}
-					if (this.name !== other.name || this.value !== other.value) {
-						return false;
-					}
-					return true;
-				}
-		});
+		var preparePrototype = function(joynr) {
+			joynr.util.GenerationUtil.addEqualsEnum(«type.joynrName»);
 		};
 		var createLiterals = function() {
 			«getEnumerators()»
@@ -146,7 +125,7 @@ class EnumTypeGenerator extends EnumTemplate {
 			define(«type.defineName»["joynr"], function (joynr) {
 				«type.joynrName».prototype = new joynr.JoynrObject();
 				«type.joynrName».prototype.constructor = «type.joynrName»;
-				preparePrototype();
+				preparePrototype(joynr);
 				createLiterals();
 				joynr.addType("«type.joynrTypeName»", «type.joynrName», true);
 				return «type.joynrName»;
@@ -161,7 +140,7 @@ class EnumTypeGenerator extends EnumTemplate {
 			var joynr = require("joynr");
 			«type.joynrName».prototype = new joynr.JoynrObject();
 			«type.joynrName».prototype.constructor = «type.joynrName»;
-			preparePrototype();
+			preparePrototype(joynr);
 			createLiterals();
 			joynr.addType("«type.joynrTypeName»", «type.joynrName», true);
 		} else {
@@ -169,7 +148,7 @@ class EnumTypeGenerator extends EnumTemplate {
 			joynr = window.joynr;
 			«type.joynrName».prototype = new joynr.JoynrObject();
 			«type.joynrName».prototype.constructor = «type.joynrName»;
-			preparePrototype();
+			preparePrototype(joynr);
 			createLiterals();
 			joynr.addType("«type.joynrTypeName»", «type.joynrName», true);
 			window.«type.joynrName» = «type.joynrName»;
@@ -178,7 +157,7 @@ class EnumTypeGenerator extends EnumTemplate {
 		var joynr = require("joynr");
 		«type.joynrName».prototype = new joynr.JoynrObject();
 		«type.joynrName».prototype.constructor = «type.joynrName»;
-		preparePrototype();
+		preparePrototype(joynr);
 		createLiterals();
 		joynr.addType("«type.joynrTypeName»", «type.joynrName», true);
 		module.exports = «type.joynrName»;

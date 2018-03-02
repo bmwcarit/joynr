@@ -76,6 +76,8 @@ function freeze(joynr, capabilitiesWritable) {
 
 var Promise = require("./global/Promise");
 
+var GenerationUtil = require("./joynr/util/GenerationUtil");
+
 /**
  * @name joynr
  * @class
@@ -141,7 +143,8 @@ var joynr = {
         var TypeRegistrySingleton = require("./joynr/types/TypeRegistrySingleton");
         TypeRegistrySingleton.getInstance().addType(name, type, isEnum);
     },
-    JoynrObject: function JoynrObject() {}
+    JoynrObject: function JoynrObject() {},
+    util: { GenerationUtil: GenerationUtil }
 };
 
 if (typeof window === "object") {

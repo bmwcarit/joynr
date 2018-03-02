@@ -37,6 +37,7 @@ libjoynrExports = [
     "./joynr/proxy/BroadcastFilterParameters",
     "./joynr/types/ArbitrationStrategyCollection",
     "./joynr/util/Util",
+    "./joynr/util/GenerationUtil",
     "./joynr/exceptions/JoynrException",
     "./joynr/exceptions/JoynrRuntimeException",
     "./joynr/exceptions/ApplicationException",

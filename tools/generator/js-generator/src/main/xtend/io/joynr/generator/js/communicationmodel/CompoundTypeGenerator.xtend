@@ -178,57 +178,7 @@ class CompoundTypeGenerator extends CompoundTypeTemplate {
 			var preparePrototype = function(joynr) {
 				«type.joynrName».prototype = new joynr.JoynrObject();
 				«type.joynrName».prototype.constructor = «type.joynrName»;
-				Object.defineProperty(«type.joynrName».prototype, 'equals', {
-					enumerable: false,
-					configurable: false,
-					writable: false,
-					readable: true,
-					value: function equals(other) {
-						var i;
-						if (this === other) {
-							return true;
-						}
-						if (other === undefined || other === null) {
-							return false;
-						}
-						if (other._typeName === undefined || this._typeName !== other._typeName) {
-							return false;
-						}
-						«FOR member : members»
-							if (this.«member.joynrName» === undefined || this.«member.joynrName» === null) {
-								if (other.«member.joynrName» !== null && other.«member.joynrName» !== undefined) {
-									return false;
-								}
-							«IF isByteBuffer(member.type) || isArray(member)»
-							} else {
-								if (this.«member.joynrName».length !== other.«member.joynrName».length) {
-									return false;
-								}
-								for (i=0;i<this.«member.joynrName».length;i++) {
-									«IF member.type.isCompound || member.type.isEnum»
-									if (!this.«member.joynrName»[i].equals(other.«member.joynrName»[i])){
-										return false;
-									}
-									«ELSE»
-									if (this.«member.joynrName»[i] !== other.«member.joynrName»[i]){
-										return false;
-									}
-									«ENDIF»
-								}
-							}
-							«ELSEIF member.type.isCompound || member.type.isEnum»
-							} else if (!this.«member.joynrName».equals(other.«member.joynrName»)){
-								return false;
-							}
-							«ELSE»
-							} else if (this.«member.joynrName» !== other.«member.joynrName»){
-								return false;
-							}
-							«ENDIF»
-						«ENDFOR»
-						return true;
-					}
-				});
+				joynr.util.GenerationUtil.addEqualsCompound(«type.joynrName»);
 			};
 
 			var memberTypes = {
