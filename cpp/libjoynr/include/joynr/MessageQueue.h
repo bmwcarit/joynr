@@ -52,10 +52,13 @@ template <typename T>
 class JOYNR_EXPORT MessageQueue
 {
 public:
-    MessageQueue(std::uint64_t messageQueueLimit = 0, std::uint64_t perKeyMessageQueueLimit = 0)
+    MessageQueue(std::uint64_t messageQueueLimit = 0,
+                 std::uint64_t perKeyMessageQueueLimit = 0,
+                 std::uint64_t messageQueueLimitBytes = 0)
             : queue(),
               queueMutex(),
               messageQueueLimit(messageQueueLimit),
+              messageQueueLimitBytes(messageQueueLimitBytes),
               perKeyMessageQueueLimit(perKeyMessageQueueLimit),
               queueSizeBytes(0)
     {
@@ -83,8 +86,21 @@ public:
         item.message = std::move(message);
 
         std::lock_guard<std::mutex> lock(queueMutex);
-        queueSizeBytes += item.message->getMessageSize();
         ensureFreeQueueSlot(item.key);
+        if (!ensureFreeQueueBytes(item.message->getMessageSize())) {
+            JOYNR_LOG_WARN(logger(),
+                           "queueMessage: messageSize {} exceeds messageQueueLimitBytes {}, "
+                           "discarding message with id {}. recipient {}; queueSize(bytes) = {}, "
+                           "#msgs = {}",
+                           item.message->getMessageSize(),
+                           messageQueueLimitBytes,
+                           item.message->getId(),
+                           recipient,
+                           queueSizeBytes,
+                           getQueueLengthUnlocked());
+            return;
+        }
+        queueSizeBytes += item.message->getMessageSize();
         queue.insert(std::move(item));
         JOYNR_LOG_TRACE(logger(),
                         "queueMessage: recipient {}, new queueSize(bytes) = {}, #msgs = {}",
@@ -101,8 +117,8 @@ public:
         auto queueElement = keyIndex.find(key);
         if (queueElement != keyIndex.cend()) {
             auto message = std::move(queueElement->message);
-            queue.erase(queueElement);
             queueSizeBytes -= message->getMessageSize();
+            queue.erase(queueElement);
             JOYNR_LOG_TRACE(logger(),
                             "getNextMessageFor: message recipient {}, size {}, new "
                             "queueSize(bytes) = {}, #msgs = {}",
@@ -134,7 +150,7 @@ public:
         for (auto it = ttlIndex.begin(); it != onePastOutdatedMsgIt; ++it) {
             std::size_t msgSize = it->message->getMessageSize();
             JOYNR_LOG_TRACE(logger(),
-                            "removeOutdatedMessages: Erasing expired message with id {}, {} bytes",
+                            "removeOutdatedMessages: Erasing expired message with id {} of size {}",
                             it->message->getId(),
                             msgSize);
             queueSizeBytes -= msgSize;
@@ -144,7 +160,7 @@ public:
         ttlIndex.erase(ttlIndex.begin(), onePastOutdatedMsgIt);
         if (numberOfErasedMessages) {
             JOYNR_LOG_TRACE(logger(),
-                            "removeOutdatedMessages: Erased {} messages with {} bytes, new "
+                            "removeOutdatedMessages: Erased {} messages of size {}, new "
                             "queueSize(bytes) = {}, #msgs = {}",
                             numberOfErasedMessages,
                             erasedBytes,
@@ -190,12 +206,31 @@ protected:
 
 private:
     const std::uint64_t messageQueueLimit;
+    const std::uint64_t messageQueueLimitBytes;
     const std::uint64_t perKeyMessageQueueLimit;
     std::uint64_t queueSizeBytes;
 
     std::size_t getQueueLengthUnlocked() const
     {
         return boost::multi_index::get<messagequeuetags::key>(queue).size();
+    }
+
+    bool ensureFreeQueueBytes(const std::uint64_t messageLength)
+    {
+        // queueMutex must have been acquired earlier
+        const bool queueLimitBytesActive = messageQueueLimitBytes > 0;
+        if (!queueLimitBytesActive) {
+            return true;
+        }
+
+        if (messageLength > messageQueueLimitBytes) {
+            return false;
+        }
+
+        while (queueSizeBytes + messageLength > messageQueueLimitBytes) {
+            removeMessageWithLeastTtl();
+        }
+        return true;
     }
 
     void ensureFreeQueueSlot(const T& key)
@@ -233,11 +268,12 @@ private:
                         perKeyMessageQueueLimit);
 
         if (numEntriesForKey >= perKeyMessageQueueLimit) {
-            JOYNR_LOG_WARN(
-                    logger(),
-                    "Erasing message with id {} since key based queue limit of {} was reached",
-                    range.first->message->getId(),
-                    perKeyMessageQueueLimit);
+            JOYNR_LOG_WARN(logger(),
+                           "Erasing message with id {} of size {} since key based queue limit of "
+                           "{} was reached",
+                           range.first->message->getId(),
+                           range.first->message->getMessageSize(),
+                           perKeyMessageQueueLimit);
             queueSizeBytes -= range.first->message->getMessageSize();
             keyAndTtlIndex.erase(range.first);
         }
@@ -250,14 +286,20 @@ private:
             return;
         }
 
+        const std::size_t queueLength = getQueueLengthUnlocked();
         auto& ttlIndex = boost::multi_index::get<messagequeuetags::ttlAbsolute>(queue);
         auto msgWithLowestTtl = ttlIndex.cbegin();
         assert(msgWithLowestTtl != ttlIndex.cend());
 
         JOYNR_LOG_WARN(logger(),
-                       "Erasing message with id {} since generic queue limit of {} was reached",
+                       "Erasing message with id {} of size {} since either generic queue limit of "
+                       "{} messages or {} bytes was reached, #msgs = {}, queueSize(bytes) = {}",
                        msgWithLowestTtl->message->getId(),
-                       messageQueueLimit);
+                       msgWithLowestTtl->message->getMessageSize(),
+                       messageQueueLimit,
+                       messageQueueLimitBytes,
+                       queueLength,
+                       queueSizeBytes);
 
         queueSizeBytes -= msgWithLowestTtl->message->getMessageSize();
         ttlIndex.erase(msgWithLowestTtl);
