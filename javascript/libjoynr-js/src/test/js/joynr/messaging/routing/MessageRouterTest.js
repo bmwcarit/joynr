@@ -358,7 +358,7 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", function() {
             .catch(fail);
     });
 
-    it("route drops expired message", function(done) {
+    it("route drops expired messages, but will resolve the Promise", function(done) {
         var isGloballyVisible = true;
         messageRouter.addNextHop(joynrMessage.to, address, isGloballyVisible);
         joynrMessage.expiryDate = Date.now() - 1;
@@ -366,13 +366,10 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", function() {
         messageRouter
             .route(joynrMessage)
             .then(function() {
-                done.fail("did not throw");
-            })
-            .catch(function(e) {
-                expect(e.detailMessage.indexOf("expired message") >= 0).toBe(true);
-                expect(messagingStubFactorySpy.createMessagingStub).not.toHaveBeenCalled();
+                expect(messagingStubSpy.transmit).not.toHaveBeenCalled();
                 done();
-            });
+            })
+            .catch(fail);
     });
 
     it("sets replyTo address for non local messages", function(done) {
