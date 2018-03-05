@@ -339,10 +339,13 @@ void JoynrClusterControllerRuntime::init()
     std::unique_ptr<MessageQueue<std::string>> messageQueue =
             std::make_unique<MessageQueue<std::string>>(
                     clusterControllerSettings.getMessageQueueLimit(),
-                    clusterControllerSettings.getPerParticipantIdMessageQueueLimit());
+                    clusterControllerSettings.getPerParticipantIdMessageQueueLimit(),
+                    clusterControllerSettings.getMessageQueueLimitBytes());
     std::unique_ptr<MessageQueue<std::shared_ptr<ITransportStatus>>> transportStatusQueue =
             std::make_unique<MessageQueue<std::shared_ptr<ITransportStatus>>>(
-                    clusterControllerSettings.getTransportNotAvailableQueueLimit());
+                    clusterControllerSettings.getTransportNotAvailableQueueLimit(),
+                    0,
+                    clusterControllerSettings.getTransportNotAvailableQueueLimitBytes());
     // init message router
     ccMessageRouter = std::make_shared<CcMessageRouter>(
             messagingSettings,
