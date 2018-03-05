@@ -69,6 +69,7 @@ var ChannelMessagingStubFactoryTest = require("../test-classes/joynr/messaging/c
 var ChannelMessagingStubTest = require("../test-classes/joynr/messaging/channel/ChannelMessagingStubTest");
 var DiscoveryQosTest = require("../test-classes/joynr/capabilities/discovery/DiscoveryQosTest");
 var DispatcherTest = require("../test-classes/joynr/dispatching/DispatcherTest");
+var GenerationUtilTest = require("../test-classes/joynr/util/GenerationUtilTest");
 var InProcessAddressTest = require("../test-classes/joynr/messaging/inprocess/InProcessAddressTest");
 var InProcessMessagingSkeletonTest = require("../test-classes/joynr/messaging/inprocess/InProcessMessagingSkeletonTest");
 var InProcessMessagingStubFactoryTest = require("../test-classes/joynr/messaging/inprocess/InProcessMessagingStubFactoryTest");
