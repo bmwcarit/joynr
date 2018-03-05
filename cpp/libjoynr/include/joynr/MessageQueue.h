@@ -52,10 +52,10 @@ template <typename T>
 class JOYNR_EXPORT MessageQueue
 {
 public:
-    MessageQueue(std::uint64_t messageLimit = 0, std::uint64_t perKeyMessageQueueLimit = 0)
+    MessageQueue(std::uint64_t messageQueueLimit = 0, std::uint64_t perKeyMessageQueueLimit = 0)
             : queue(),
               queueMutex(),
-              messageQueueLimit(messageLimit),
+              messageQueueLimit(messageQueueLimit),
               perKeyMessageQueueLimit(perKeyMessageQueueLimit),
               queueSizeBytes(0)
     {
