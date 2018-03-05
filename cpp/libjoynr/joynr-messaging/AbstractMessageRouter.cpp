@@ -30,6 +30,7 @@
 #include "joynr/IMulticastAddressCalculator.h"
 #include "joynr/InProcessMessagingAddress.h"
 #include "joynr/Message.h"
+#include "joynr/MessageQueue.h"
 #include "joynr/MulticastReceiverDirectory.h"
 #include "joynr/access-control/IAccessController.h"
 #include "joynr/exceptions/JoynrException.h"
@@ -39,6 +40,7 @@
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
+#include "libjoynrclustercontroller/include/joynr/ITransportStatus.h"
 
 namespace joynr
 {

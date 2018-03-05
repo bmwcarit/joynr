@@ -50,6 +50,7 @@
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "joynr/LocalDiscoveryAggregator.h"
 #include "joynr/MessageSender.h"
+#include "joynr/MessageQueue.h"
 #include "joynr/MessagingQos.h"
 #include "joynr/MessagingStubFactory.h"
 #include "joynr/MqttMulticastAddressCalculator.h"

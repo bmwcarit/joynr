@@ -30,6 +30,7 @@
 #include "joynr/IPlatformSecurityManager.h"
 #include "joynr/InProcessMessagingAddress.h"
 #include "joynr/Message.h"
+#include "joynr/MessageQueue.h"
 #include "joynr/MulticastMessagingSkeletonDirectory.h"
 #include "joynr/MulticastReceiverDirectory.h"
 #include "joynr/Util.h"

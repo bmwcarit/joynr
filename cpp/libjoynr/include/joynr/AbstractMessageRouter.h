@@ -30,7 +30,6 @@
 #include "joynr/IMessageRouter.h"
 #include "joynr/JoynrExport.h"
 #include "joynr/Logger.h"
-#include "joynr/MessageQueue.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/MulticastReceiverDirectory.h"
 #include "joynr/ObjectWithDecayTime.h"
@@ -42,7 +41,6 @@
 #include "joynr/SteadyTimer.h"
 #include "joynr/ThreadPoolDelayedScheduler.h"
 #include "joynr/system/RoutingTypes/Address.h"
-#include "libjoynrclustercontroller/include/joynr/ITransportStatus.h"
 
 namespace boost
 {
@@ -58,6 +56,10 @@ class error_code;
 
 namespace joynr
 {
+
+template <typename T>
+class MessageQueue;
+class ITransportStatus;
 
 class IMessagingStub;
 class IMessagingStubFactory;
@@ -126,12 +128,10 @@ protected:
                           boost::asio::io_service& ioService,
                           std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
                           bool persistRoutingTable,
-                          std::vector<std::shared_ptr<ITransportStatus>> transportStatuses = {},
-                          std::unique_ptr<MessageQueue<std::string>> messageQueue =
-                                  std::make_unique<MessageQueue<std::string>>(),
+                          std::vector<std::shared_ptr<ITransportStatus>> transportStatuses,
+                          std::unique_ptr<MessageQueue<std::string>> messageQueue,
                           std::unique_ptr<MessageQueue<std::shared_ptr<ITransportStatus>>>
-                                  transportNotAvailableQueue = std::make_unique<
-                                          MessageQueue<std::shared_ptr<ITransportStatus>>>());
+                                  transportNotAvailableQueue);
 
     virtual bool publishToGlobal(const ImmutableMessage& message) = 0;
     AddressUnorderedSet getDestinationAddresses(const ImmutableMessage& message,

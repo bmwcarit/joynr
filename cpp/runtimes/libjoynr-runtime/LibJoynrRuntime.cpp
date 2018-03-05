@@ -30,6 +30,7 @@
 #include "joynr/InProcessMessagingAddress.h"
 #include "joynr/InProcessPublicationSender.h"
 #include "joynr/MessageSender.h"
+#include "joynr/MessageQueue.h"
 #include "joynr/LibJoynrMessageRouter.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/MessagingStubFactory.h"
@@ -46,6 +47,8 @@
 
 namespace joynr
 {
+
+class ITransportStatus;
 
 LibJoynrRuntime::LibJoynrRuntime(std::unique_ptr<Settings> settings,
                                  std::shared_ptr<IKeychain> keyChain)
@@ -141,7 +144,10 @@ void LibJoynrRuntime::init(
             std::move(messagingStubFactory),
             singleThreadIOService->getIOService(),
             std::move(addressCalculator),
-            libjoynrSettings->isMessageRouterPersistencyEnabled());
+            libjoynrSettings->isMessageRouterPersistencyEnabled(),
+            std::vector<std::shared_ptr<ITransportStatus>>{},
+            std::make_unique<MessageQueue<std::string>>(),
+            std::make_unique<MessageQueue<std::shared_ptr<ITransportStatus>>>());
     libJoynrMessageRouter->init();
 
     libJoynrMessageRouter->loadRoutingTable(
