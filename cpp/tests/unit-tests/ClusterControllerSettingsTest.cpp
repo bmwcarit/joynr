@@ -102,6 +102,26 @@ TEST(ClusterControllerSettingsTest, transportNotAvailableQueueLimitIsSet)
     EXPECT_EQ(clusterControllerSettings.getTransportNotAvailableQueueLimit(), std::uint64_t(10));
 }
 
+TEST(ClusterControllerSettingsTest, messageQueueLimitBytesIsSet)
+{
+    Settings testSettings("test-resources/CCSettingsWithMessageQueueLimit.settings");
+    ASSERT_TRUE(testSettings.isLoaded());
+
+    ClusterControllerSettings clusterControllerSettings(testSettings);
+
+    EXPECT_EQ(clusterControllerSettings.getMessageQueueLimitBytes(), std::uint64_t(104857600));
+}
+
+TEST(ClusterControllerSettingsTest, transportNotAvailableQueueLimitBytesIsSet)
+{
+    Settings testSettings("test-resources/CCSettingsWithMessageQueueLimit.settings");
+    ASSERT_TRUE(testSettings.isLoaded());
+
+    ClusterControllerSettings clusterControllerSettings(testSettings);
+
+    EXPECT_EQ(clusterControllerSettings.getTransportNotAvailableQueueLimitBytes(), std::uint64_t(52428800));
+}
+
 // check default values
 
 TEST(ClusterControllerSettingsTest, defaultMessageQueueLimitIsSet)
@@ -126,4 +146,20 @@ TEST(ClusterControllerSettingsTest, defaultTransportNotAvailableQueueLimitIsSet)
     ClusterControllerSettings clusterControllerSettings(settings);
 
     EXPECT_EQ(clusterControllerSettings.getTransportNotAvailableQueueLimit(), ClusterControllerSettings::DEFAULT_TRANSPORT_NOT_AVAILABLE_QUEUE_LIMIT());
+}
+
+TEST(ClusterControllerSettingsTest, defaultMessageQueueLimitBytesIsSet)
+{
+    Settings settings;
+    ClusterControllerSettings clusterControllerSettings(settings);
+
+    EXPECT_EQ(clusterControllerSettings.getMessageQueueLimitBytes(), ClusterControllerSettings::DEFAULT_MESSAGE_QUEUE_LIMIT_BYTES());
+}
+
+TEST(ClusterControllerSettingsTest, defaultTransportNotAvailableQueueLimitBytesIsSet)
+{
+    Settings settings;
+    ClusterControllerSettings clusterControllerSettings(settings);
+
+    EXPECT_EQ(clusterControllerSettings.getTransportNotAvailableQueueLimitBytes(), ClusterControllerSettings::DEFAULT_TRANSPORT_NOT_AVAILABLE_QUEUE_LIMIT_BYTES());
 }

@@ -40,6 +40,8 @@ public:
     static const std::string& SETTING_MESSAGE_QUEUE_LIMIT();
     static const std::string& SETTING_PER_PARTICIPANTID_MESSAGE_QUEUE_LIMIT();
     static const std::string& SETTING_TRANSPORT_NOT_AVAILABLE_QUEUE_LIMIT();
+    static const std::string& SETTING_MESSAGE_QUEUE_LIMIT_BYTES();
+    static const std::string& SETTING_TRANSPORT_NOT_AVAILABLE_QUEUE_LIMIT_BYTES();
     static const std::string& SETTING_MQTT_CLIENT_ID_PREFIX();
     static const std::string& SETTING_MQTT_TLS_ENABLED();
     static const std::string& SETTING_MQTT_CERTIFICATE_AUTHORITY_PEM_FILENAME();
@@ -80,6 +82,8 @@ public:
     static std::uint64_t DEFAULT_MESSAGE_QUEUE_LIMIT();
     static std::uint64_t DEFAULT_PER_PARTICIPANTID_MESSAGE_QUEUE_LIMIT();
     static std::uint64_t DEFAULT_TRANSPORT_NOT_AVAILABLE_QUEUE_LIMIT();
+    static std::uint64_t DEFAULT_MESSAGE_QUEUE_LIMIT_BYTES();
+    static std::uint64_t DEFAULT_TRANSPORT_NOT_AVAILABLE_QUEUE_LIMIT_BYTES();
 
     explicit ClusterControllerSettings(Settings& settings);
     ClusterControllerSettings(const ClusterControllerSettings&) = default;
@@ -136,6 +140,12 @@ public:
 
     std::uint64_t getTransportNotAvailableQueueLimit() const;
     void setTransportNotAvailableQueueLimit(std::uint64_t limit);
+
+    std::uint64_t getMessageQueueLimitBytes() const;
+    void setMessageQueueLimitBytes(std::uint64_t limitBytes);
+
+    std::uint64_t getTransportNotAvailableQueueLimitBytes() const;
+    void setTransportNotAvailableQueueLimitBytes(std::uint64_t limitBytes);
 
     bool enableAccessController() const;
     void setEnableAccessController(bool enable);

@@ -2,3 +2,5 @@
 message-queue-limit=10
 per-participantid-message-queue-limit=5
 transport-not-available-queue-limit=10
+message-queue-limit-bytes=104857600
+transport-not-available-queue-limit-bytes=52428800
