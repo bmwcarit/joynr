@@ -104,6 +104,11 @@ public class DispatcherImpl implements Dispatcher {
                 String multicastId = ((MulticastSubscriptionRequest) subscriptionRequest).getMulticastId();
                 messageRouter.addMulticastReceiver(multicastId, fromParticipantId, toDiscoveryEntry.getParticipantId());
             }
+            logger.debug("Send SubscriptionRequest: subscriptionId: {}, messageId: {}, proxy participantId: {}, provider participantId: {}",
+                         subscriptionRequest.getSubscriptionId(),
+                         message.getId(),
+                         fromParticipantId,
+                         toDiscoveryEntry.getParticipantId());
             messageSender.sendMessage(message);
         }
     }
@@ -119,6 +124,12 @@ public class DispatcherImpl implements Dispatcher {
                                                                            subscriptionStop,
                                                                            messagingQos);
             message.setLocalMessage(toDiscoveryEntry.getIsLocal());
+            logger.debug("UNREGISTER SUBSCRIPTION call proxy: subscriptionId: {}, messageId: {}, proxy participantId: {}, "
+                                 + "provider participantId: {}",
+                         subscriptionStop.getSubscriptionId(),
+                         message.getId(),
+                         fromParticipantId,
+                         toDiscoveryEntry.getParticipantId());
             messageSender.sendMessage(message);
         }
 

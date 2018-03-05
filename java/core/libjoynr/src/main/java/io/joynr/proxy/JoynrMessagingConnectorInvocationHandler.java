@@ -109,13 +109,8 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
 
         Request request = new Request(method.getName(), paramsWithoutCallback, paramDatatypesWithoutCallback);
         String requestReplyId = request.getRequestReplyId();
-        logger.debug("REQUEST call proxy: requestReplyId: {}, method: {}, params: {}, proxy participantId: {}, provider discovery entries: {}",
-                     requestReplyId,
-                     method.getName(),
-                     paramsWithoutCallback,
-                     fromParticipantId,
-                     toDiscoveryEntries);
 
+        @SuppressWarnings("rawtypes")
         RpcAsyncRequestReplyCaller<?> callbackWrappingReplyCaller = new RpcAsyncRequestReplyCaller(requestReplyId,
                                                                                                    callback,
                                                                                                    future,
@@ -154,12 +149,7 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
         Request request = new Request(method.getName(), args, method.getParameterTypes());
         Reply reply;
         String requestReplyId = request.getRequestReplyId();
-        logger.debug("REQUEST call proxy: requestReplyId: {}, method: {}, params: {}, proxy participantId: {}, provider discovery entries: {}",
-                     requestReplyId,
-                     method.getName(),
-                     args,
-                     fromParticipantId,
-                     toDiscoveryEntries);
+
         SynchronizedReplyCaller synchronizedReplyCaller = new SynchronizedReplyCaller(fromParticipantId,
                                                                                       requestReplyId,
                                                                                       request);
@@ -206,6 +196,9 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
             throw new JoynrIllegalStateException("You must have at least one participant to be able to execute an oneWayMethod.");
         }
 
+        logger.debug("ONEWAYREQUEST call proxy: method: {}, params: {}, proxy participantId: {},"
+                + " provider discovery entries: {}", method.getName(), args, fromParticipantId, toDiscoveryEntries);
+
         OneWayRequest request = new OneWayRequest(method.getName(), args, method.getParameterTypes());
         requestReplyManager.sendOneWayRequest(fromParticipantId, toDiscoveryEntries, request, qosSettings);
     }
@@ -229,13 +222,14 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
             throw new JoynrIllegalStateException("You must have at least one participant to be able to execute a subscription method.");
         }
 
-        subscriptionManager.registerAttributeSubscription(fromParticipantId, toDiscoveryEntries, attributeSubscription);
-        logger.debug("SUBSCRIPTION call proxy: subscriptionId: {}, attribute: {}, qos: {}, proxy participantId: {}, provider: {}",
+        logger.debug("SUBSCRIPTION call proxy: subscriptionId: {}, attribute: {}, qos: {},"
+                             + " proxy participantId: {}, provider discovery entries: {}",
                      attributeSubscription.getSubscriptionId(),
                      attributeSubscription.getSubscriptionName(),
                      attributeSubscription.getQos(),
                      fromParticipantId,
                      toDiscoveryEntries);
+        subscriptionManager.registerAttributeSubscription(fromParticipantId, toDiscoveryEntries, attributeSubscription);
     }
 
     @Override
@@ -245,13 +239,14 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
             throw new JoynrIllegalStateException("You must have at least one participant to be able to execute a subscription method.");
         }
 
-        subscriptionManager.registerBroadcastSubscription(fromParticipantId, toDiscoveryEntries, broadcastSubscription);
-        logger.debug("SUBSCRIPTION call proxy: subscriptionId: {}, broadcast: {}, qos: {}, proxy participantId: {}, provider: {}",
+        logger.debug("SUBSCRIPTION call proxy: subscriptionId: {}, broadcast: {}, qos: {},"
+                             + " proxy participantId: {}, provider discovery entries: {}",
                      broadcastSubscription.getSubscriptionId(),
                      broadcastSubscription.getBroadcastName(),
                      broadcastSubscription.getQos(),
                      fromParticipantId,
                      toDiscoveryEntries);
+        subscriptionManager.registerBroadcastSubscription(fromParticipantId, toDiscoveryEntries, broadcastSubscription);
     }
 
     @Override

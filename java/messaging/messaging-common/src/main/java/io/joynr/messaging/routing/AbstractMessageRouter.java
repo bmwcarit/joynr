@@ -275,16 +275,17 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
     }
 
     private void routeInternal(final ImmutableMessage message, final long delayMs, final int retriesCount) {
-        logger.trace("Scheduling {} with delay {} and retries {}", new Object[]{ message, delayMs, retriesCount });
+        logger.trace("Scheduling message {} with delay {} and retries {}",
+                     new Object[]{ message, delayMs, retriesCount });
         DelayableImmutableMessage delayableMessage = new DelayableImmutableMessage(message, delayMs, retriesCount);
         if (maxRetryCount > -1) {
             if (retriesCount > maxRetryCount) {
-                logger.error("Max-retry-count (" + maxRetryCount + ") reached. Dropping message " + message);
+                logger.error("Max-retry-count (" + maxRetryCount + ") reached. Dropping message " + message.getId());
                 callMessageProcessedListeners(message.getId());
                 return;
             }
             if (retriesCount > 0) {
-                logger.debug("Retry {}/{} sending message {}", retriesCount, maxRetryCount, message);
+                logger.debug("Retry {}/{} sending message {}", retriesCount, maxRetryCount, message.getId());
             }
         }
         messageQueue.put(delayableMessage);
@@ -469,7 +470,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
                         // no matter if an earlier transmission attempt was already successful or not.
                         FailureAction failureAction = createFailureAction(message, retriesCount);
                         for (Address address : addresses) {
-                            logger.trace(">>>>> SEND  {} to address {}", message, address);
+                            logger.trace(">>>>> SEND message {} to address {}", message.getId(), address);
 
                             IMessagingStub messagingStub = messagingStubFactory.create(address);
                             messagingStub.transmit(message, messageProcessedAction, failureAction);
