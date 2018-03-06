@@ -217,12 +217,7 @@ class ProviderGenerator extends InterfaceJsTemplate {
                 implementation.«eventName» = this.«eventName»;
 			«ENDFOR»
 
-			Object.defineProperty(this, 'checkImplementation', {
-				enumerable: false,
-				configurable: false,
-				writable: false,
-				value: checkImpl
-			});
+			Object.defineProperty(this, 'checkImplementation', { value: checkImpl});
 
 			this.interfaceName = "«getFQN(francaIntf)»";
 
@@ -235,26 +230,14 @@ class ProviderGenerator extends InterfaceJsTemplate {
 		 * @default «majorVersion»
 		 * @summary The MAJOR_VERSION of the provider is GENERATED FROM THE INTERFACE DESCRIPTION
 		 */
-		Object.defineProperty(«providerName», 'MAJOR_VERSION', {
-			enumerable: false,
-			configurable: false,
-			writable: false,
-			readable: true,
-			value: «majorVersion»
-		});
+		Object.defineProperty(«providerName», 'MAJOR_VERSION', { value: «majorVersion»});
 		/**
 		 * @name «providerName»#MINOR_VERSION
 		 * @constant {Number}
 		 * @default «minorVersion»
 		 * @summary The MINOR_VERSION of the provider is GENERATED FROM THE INTERFACE DESCRIPTION
 		 */
-		Object.defineProperty(«providerName», 'MINOR_VERSION', {
-			enumerable: false,
-			configurable: false,
-			writable: false,
-			readable: true,
-			value: «minorVersion»
-		});
+		Object.defineProperty(«providerName», 'MINOR_VERSION', { value: «minorVersion»});
 
 		«IF requireJSSupport»
 		// AMD support

@@ -72,8 +72,6 @@ class EnumTypeGenerator extends EnumTemplate {
 			 * @readonly
 			 */
 			Object.defineProperty(this, "_typeName", {
-				configurable : false,
-				writable : false,
 				enumerable : true,
 				value : "«type.joynrTypeName»"
 			});
@@ -91,26 +89,14 @@ class EnumTypeGenerator extends EnumTemplate {
 		 * @default «majorVersion»
 		 * @summary The MAJOR_VERSION of the enum type «type.joynrName» is GENERATED FROM THE INTERFACE DESCRIPTION
 		 */
-		Object.defineProperty(«type.joynrName», 'MAJOR_VERSION', {
-			enumerable: false,
-			configurable: false,
-			writable: false,
-			readable: true,
-			value: «majorVersion»
-		});
+		Object.defineProperty(«type.joynrName», 'MAJOR_VERSION', { value: «majorVersion» });
 		/**
 		 * @name «type.joynrName»#MINOR_VERSION
 		 * @constant {Number}
 		 * @default «minorVersion»
 		 * @summary The MINOR_VERSION of the enum type «type.joynrName» is GENERATED FROM THE INTERFACE DESCRIPTION
 		 */
-		Object.defineProperty(«type.joynrName», 'MINOR_VERSION', {
-			enumerable: false,
-			configurable: false,
-			writable: false,
-			readable: true,
-			value: «minorVersion»
-		});
+		Object.defineProperty(«type.joynrName», 'MINOR_VERSION', { value: «minorVersion» });
 
 		var preparePrototype = function(joynr) {
 			joynr.util.GenerationUtil.addEqualsEnum(«type.joynrName»);

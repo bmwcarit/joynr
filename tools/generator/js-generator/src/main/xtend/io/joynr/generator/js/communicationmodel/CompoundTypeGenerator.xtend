@@ -91,8 +91,6 @@ class CompoundTypeGenerator extends CompoundTypeTemplate {
 				 * @readonly
 				 */
 				Object.defineProperty(this, "_typeName", {
-					configurable : false,
-					writable : false,
 					enumerable : true,
 					value : «type.joynrName»._typeName
 				});
@@ -105,9 +103,6 @@ class CompoundTypeGenerator extends CompoundTypeTemplate {
 				 * @readonly
 				 */
 				Object.defineProperty(this, "_extends", {
-					configurable : false,
-					writable : false,
-					enumerable : false,
 					value : "«type.base.joynrTypeName»"
 				});
 				«ENDIF»
@@ -130,17 +125,10 @@ class CompoundTypeGenerator extends CompoundTypeTemplate {
 			};
 
 			Object.defineProperty(«type.joynrName», "_typeName", {
-				configurable : false,
-				writable : false,
-				enumerable : false,
 				value : "«type.joynrTypeName»"
 			});
 
 			Object.defineProperty(«type.joynrName», 'checkMembers', {
-				enumerable: false,
-				configurable: false,
-				writable: false,
-				readable: true,
 				value: function checkMembers(instance, check) {
 					«FOR member : members»
 					check(instance.«member.joynrName», «member.checkPropertyTypeName», "members.«member.joynrName»");
@@ -154,26 +142,14 @@ class CompoundTypeGenerator extends CompoundTypeTemplate {
 			 * @default «majorVersion»
 			 * @summary The MAJOR_VERSION of the struct type «type.joynrName» is GENERATED FROM THE INTERFACE DESCRIPTION
 			 */
-			Object.defineProperty(«type.joynrName», 'MAJOR_VERSION', {
-				enumerable: false,
-				configurable: false,
-				writable: false,
-				readable: true,
-				value: «majorVersion»
-			});
+			Object.defineProperty(«type.joynrName», 'MAJOR_VERSION', { value: «majorVersion» });
 			/**
 			 * @name «type.joynrName»#MINOR_VERSION
 			 * @constant {Number}
 			 * @default «minorVersion»
 			 * @summary The MINOR_VERSION of the struct type «type.joynrName» is GENERATED FROM THE INTERFACE DESCRIPTION
 			 */
-			Object.defineProperty(«type.joynrName», 'MINOR_VERSION', {
-				enumerable: false,
-				configurable: false,
-				writable: false,
-				readable: true,
-				value: «minorVersion»
-			});
+			Object.defineProperty(«type.joynrName», 'MINOR_VERSION', { value: «minorVersion» });
 
 			var preparePrototype = function(joynr) {
 				«type.joynrName».prototype = new joynr.JoynrObject();
