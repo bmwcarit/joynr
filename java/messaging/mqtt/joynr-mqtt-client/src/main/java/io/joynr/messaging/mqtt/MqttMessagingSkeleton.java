@@ -53,7 +53,7 @@ import joynr.system.RoutingTypes.MqttAddress;
 public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessageProcessedListener {
     private static final Logger LOG = LoggerFactory.getLogger(MqttMessagingSkeleton.class);
 
-    private final int maxIncomingMqttRequests;
+    protected final int maxIncomingMqttRequests;
     private MessageRouter messageRouter;
     private JoynrMqttClient mqttClient;
     private MqttClientFactory mqttClientFactory;
