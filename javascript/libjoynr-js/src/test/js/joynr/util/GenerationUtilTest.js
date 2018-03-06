@@ -150,4 +150,14 @@ describe("libjoynr-js.joynr.GenerationUtil", function() {
             expect(equalsSpy).toHaveBeenCalledWith(otherMember);
         });
     });
+
+    describe(".addMemberTypeGetter", function() {
+        it("adds the getMemberType function, which works successfully", function() {
+            var memberName = "someName";
+            var testObject = { _memberTypes: { memberName: memberName } };
+            Util.addMemberTypeGetter(testObject);
+            expect(testObject.getMemberType).toEqual(jasmine.any(Function));
+            expect(testObject.getMemberType("memberName")).toEqual(memberName);
+        });
+    });
 });

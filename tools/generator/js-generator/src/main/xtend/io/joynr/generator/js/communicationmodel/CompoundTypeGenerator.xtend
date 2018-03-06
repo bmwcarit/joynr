@@ -179,20 +179,14 @@ class CompoundTypeGenerator extends CompoundTypeTemplate {
 				«type.joynrName».prototype = new joynr.JoynrObject();
 				«type.joynrName».prototype.constructor = «type.joynrName»;
 				joynr.util.GenerationUtil.addEqualsCompound(«type.joynrName»);
+				joynr.util.GenerationUtil.addMemberTypeGetter(«type.joynrName»);
 			};
 
-			var memberTypes = {
-				«FOR member : members SEPARATOR ","»
-				«member.joynrName»: "«member.joynrTypeName»"
-				«ENDFOR»
-			};
-			Object.defineProperty(«type.joynrName», 'getMemberType', {
-				enumerable: false,
-				value: function getMemberType(memberName) {
-					if (memberTypes[memberName] !== undefined) {
-						return memberTypes[memberName];
-					}
-					return undefined;
+			Object.defineProperty(«type.joynrName», '_memberTypes', {
+				value: {
+					«FOR member : members SEPARATOR ","»
+					«member.joynrName»: "«member.joynrTypeName»"
+					«ENDFOR»
 				}
 			});
 

@@ -129,4 +129,16 @@ GenerationUtil.addEqualsEnum = function(enumJoynrObject) {
     });
 };
 
+function getMemberType(memberName) {
+    if (this._memberTypes[memberName] !== undefined) {
+        return this._memberTypes[memberName];
+    }
+}
+
+GenerationUtil.addMemberTypeGetter = function(joynrObject) {
+    Object.defineProperty(joynrObject, "getMemberType", {
+        value: getMemberType
+    });
+};
+
 module.exports = GenerationUtil;
