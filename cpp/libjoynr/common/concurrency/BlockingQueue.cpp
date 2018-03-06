@@ -46,7 +46,7 @@ void BlockingQueue::add(std::shared_ptr<Runnable> work)
 std::shared_ptr<Runnable> BlockingQueue::take()
 {
     if (stoppingScheduler) {
-        JOYNR_LOG_TRACE(logger(), "Shuting down and returning NULL");
+        JOYNR_LOG_TRACE(logger(), "Shutting down and returning NULL");
         return nullptr;
     }
 
@@ -57,7 +57,7 @@ std::shared_ptr<Runnable> BlockingQueue::take()
     // Wait for work or shutdown
     condition.wait(lock, [this] { return (stoppingScheduler || !queue.empty()); });
     if (stoppingScheduler) {
-        JOYNR_LOG_TRACE(logger(), "Shuting down and returning NULL");
+        JOYNR_LOG_TRACE(logger(), "Shutting down and returning NULL");
         return nullptr;
     }
 
