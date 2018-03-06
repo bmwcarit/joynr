@@ -18,7 +18,6 @@
  */
 package io.joynr.messaging.mqtt;
 
-import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_BACKPRESSURE_ENABLED;
 import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_MAX_INCOMING_MQTT_REQUESTS;
 
 import java.util.concurrent.ConcurrentMap;
@@ -64,20 +63,17 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
     private RawMessagingPreprocessor rawMessagingPreprocessor;
     private Set<JoynrMessageProcessor> messageProcessors;
     private Set<String> incomingMqttRequests;
-    private final boolean backpressureEnabled;
     private AtomicLong droppedMessagesCount;
 
     @Inject
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 2 LINES
     public MqttMessagingSkeleton(@Named(MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
                                  @Named(PROPERTY_MAX_INCOMING_MQTT_REQUESTS) int maxIncomingMqttRequests,
-                                 @Named(PROPERTY_BACKPRESSURE_ENABLED) boolean backpressureEnabled,
                                  MessageRouter messageRouter,
                                  MqttClientFactory mqttClientFactory,
                                  MqttTopicPrefixProvider mqttTopicPrefixProvider,
                                  RawMessagingPreprocessor rawMessagingPreprocessor,
                                  Set<JoynrMessageProcessor> messageProcessors) {
-        this.backpressureEnabled = backpressureEnabled;
         this.ownAddress = ownAddress;
         this.maxIncomingMqttRequests = maxIncomingMqttRequests;
         this.messageRouter = messageRouter;

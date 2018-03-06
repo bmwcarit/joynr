@@ -47,6 +47,7 @@ public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkele
     private static final String NON_ALPHA_REGEX_PATTERN = "[^a-zA-Z]";
     private String channelId;
     private MqttAddress replyToAddress;
+    private boolean backpressureEnabled;
 
     @Inject
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 8 LINES
@@ -62,7 +63,6 @@ public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkele
                                                     Set<JoynrMessageProcessor> messageProcessors) {
         super(ownAddress,
               maxIncomingMqttRequests,
-              backpressureEnabled,
               messageRouter,
               mqttClientFactory,
               mqttTopicPrefixProvider,
@@ -70,6 +70,7 @@ public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkele
               messageProcessors);
         this.replyToAddress = replyToAddress;
         this.channelId = channelId;
+        this.backpressureEnabled = backpressureEnabled;
     }
 
     @Override

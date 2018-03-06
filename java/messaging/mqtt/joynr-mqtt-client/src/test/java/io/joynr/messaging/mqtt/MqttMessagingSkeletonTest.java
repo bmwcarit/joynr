@@ -62,7 +62,6 @@ import com.google.common.collect.Sets;
 @RunWith(MockitoJUnitRunner.class)
 public class MqttMessagingSkeletonTest {
     private final int maxIncomingMqttRequests = 20;
-    private final boolean backpressureEnabled = true;
 
     private MqttMessagingSkeleton subject;
 
@@ -101,7 +100,6 @@ public class MqttMessagingSkeletonTest {
     public void setup() {
         subject = new MqttMessagingSkeleton(ownAddress,
                                             maxIncomingMqttRequests,
-                                            backpressureEnabled,
                                             messageRouter,
                                             mqttClientFactory,
                                             mqttTopicPrefixProvider,
@@ -163,7 +161,6 @@ public class MqttMessagingSkeletonTest {
         when(preprocessor.process(any(byte[].class), anyMap())).then(returnsFirstArg());
         subject = new MqttMessagingSkeleton(ownAddress,
                                             maxIncomingMqttRequests,
-                                            backpressureEnabled,
                                             messageRouter,
                                             mqttClientFactory,
                                             mqttTopicPrefixProvider,
@@ -188,7 +185,6 @@ public class MqttMessagingSkeletonTest {
 
         subject = new MqttMessagingSkeleton(ownAddress,
                                             maxIncomingMqttRequests,
-                                            backpressureEnabled,
                                             messageRouter,
                                             mqttClientFactory,
                                             mqttTopicPrefixProvider,
@@ -293,7 +289,6 @@ public class MqttMessagingSkeletonTest {
 
         subject = new MqttMessagingSkeleton(ownAddress,
                                             maxIncomingMqttRequestsNoLimit,
-                                            backpressureEnabled,
                                             messageRouter,
                                             mqttClientFactory,
                                             mqttTopicPrefixProvider,

@@ -106,7 +106,6 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
         }
         return new MqttMessagingSkeleton(ownAddress,
                                          maxIncomingMqttRequests,
-                                         backpressureEnabled,
                                          messageRouter,
                                          mqttClientFactory,
                                          mqttTopicPrefixProvider,
