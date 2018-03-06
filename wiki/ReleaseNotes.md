@@ -1,6 +1,10 @@
 # joynr x.x.x
 
 ## Configuration property changes
+* **[Java]** Introduced `PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_UPPER_THRESHOLD`
+  and `PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD` for controlling
+  the backpressure mechanism. See [Java Configuration Reference](JavaSettings.md)
+  for more details.
 * **[Java]** Property `PROPERTY_BACKPRESSURE_MAX_INCOMING_MQTT_MESSAGES_IN_QUEUE`
   was renamed to `PROPERTY_MAX_INCOMING_MQTT_REQUESTS`. The new identifier is
   `joynr.messaging.maxincomingmqttrequests`. This change indicates that the property

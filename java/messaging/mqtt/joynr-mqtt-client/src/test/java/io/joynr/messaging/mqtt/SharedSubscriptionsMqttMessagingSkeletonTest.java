@@ -51,6 +51,8 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
 
     private final int maxMqttMessagesInQueue = 20;
     private final boolean backpressureEnabled = false;
+    private final int backpressureIncomingMqttRequestsUpperThreshold = 80;
+    private final int backpressureIncomingMqttRequestsLowerThreshold = 20;
 
     @Mock
     private MqttClientFactory mqttClientFactory;
@@ -88,6 +90,8 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
         subject = new SharedSubscriptionsMqttMessagingSkeleton(ownAddress,
                                                                maxMqttMessagesInQueue,
                                                                backpressureEnabled,
+                                                               backpressureIncomingMqttRequestsUpperThreshold,
+                                                               backpressureIncomingMqttRequestsLowerThreshold,
                                                                replyToAddress,
                                                                messageRouter,
                                                                mqttClientFactory,
@@ -105,6 +109,8 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
         subject = new SharedSubscriptionsMqttMessagingSkeleton(ownAddress,
                                                                maxMqttMessagesInQueue,
                                                                backpressureEnabled,
+                                                               backpressureIncomingMqttRequestsUpperThreshold,
+                                                               backpressureIncomingMqttRequestsLowerThreshold,
                                                                replyToAddress,
                                                                messageRouter,
                                                                mqttClientFactory,
@@ -121,6 +127,8 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
         subject = new SharedSubscriptionsMqttMessagingSkeleton(ownAddress,
                                                                maxMqttMessagesInQueue,
                                                                backpressureEnabled,
+                                                               backpressureIncomingMqttRequestsUpperThreshold,
+                                                               backpressureIncomingMqttRequestsLowerThreshold,
                                                                replyToAddress,
                                                                messageRouter,
                                                                mqttClientFactory,

@@ -68,6 +68,7 @@ import io.joynr.messaging.mqtt.JoynrMqttClient;
 import io.joynr.messaging.mqtt.MqttClientFactory;
 import io.joynr.messaging.mqtt.MqttClientIdProvider;
 import io.joynr.messaging.mqtt.MqttModule;
+import io.joynr.messaging.mqtt.settings.LimitAndBackpressureSettings;
 import io.joynr.messaging.routing.MessageRouter;
 import joynr.system.RoutingTypes.MqttAddress;
 
@@ -121,6 +122,8 @@ public class MqttPahoClientTest {
         properties.put(MessagingPropertyKeys.CHANNELID, "myChannelId");
         properties.put(ConfigurableMessagingSettings.PROPERTY_MAX_INCOMING_MQTT_REQUESTS, "0");
         properties.put(ConfigurableMessagingSettings.PROPERTY_BACKPRESSURE_ENABLED, "false");
+        properties.put(LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_UPPER_THRESHOLD, "80");
+        properties.put(LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD, "20");
         properties.put(MqttModule.PROPERTY_MQTT_CLEAN_SESSION, "false");
         properties.put(MqttModule.PROPERTY_KEY_MQTT_MAX_MESSAGE_SIZE_BYTES, "0");
         serializedMessage = new byte[10];

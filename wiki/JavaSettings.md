@@ -121,7 +121,13 @@ The number of threads used by the message router to send joynr messages.
 * **Default value**: `20`
 
 ### `PROPERTY_BACKPRESSURE_ENABLED`
-Controls whether the backpressure mechanism is active.
+Controls whether the backpressure mechanism is active. It applies only when using shared
+subscriptions, so `PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS` needs to be `true`.
+When backpressure is enabled it is required to set reasonable values also for
+`PROPERTY_MAX_INCOMING_MQTT_REQUESTS`, `PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_UPPER_THRESHOLD`
+and `PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD`. In case that at
+startup an invalid value combination for these three properties is detected an
+IllegalArgumentException is thrown and backpresure is disabled.
 
 * **OPTIONAL**
 * **Type**: Boolean
@@ -244,6 +250,41 @@ updates the ```lastSeenDateMs``` of all capabilities registered via this cluster
 * **Type**: long
 * **User property**: `joynr.capabilities.freshnessupdateintervalms`
 * **Default value**: `3600000`
+
+## LimitAndBackpressureSettings
+
+### `PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_UPPER_THRESHOLD`
+Requires `PROPERTY_MAX_INCOMING_MQTT_REQUESTS` > 0 and will have effect only if
+additionally `PROPERTY_BACKPRESSURE_ENABLED` is set to `true`. The value for this
+property has a maximum of 100 (incl.) and represents a percentage. When joynr reaches the
+set percentage of the maximum incoming MQTT requests (`PROPERTY_MAX_INCOMING_MQTT_REQUESTS`),
+the instance will try to temporarily unsubscribe from the MQTT shared subscriptions
+topic where the requests come from. This should stop the inflow of further MQTT
+requests. The joynr instance will try to subscribe again for the mentioned topic
+when the number of queued requests drops below
+`PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD` percent of the maximum.
+The value for the upper threshold must be strictly higher than
+`PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD`.
+
+* **OPTIONAL**
+* **Type**: int
+* **User property**: `joynr.messaging.backpressure.incomingmqttrequests.upperthreshold`
+* **Default value**: `80`
+
+### `PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD`
+Requires `PROPERTY_MAX_INCOMING_MQTT_REQUESTS` > 0 and will have effect only if
+additionally `PROPERTY_BACKPRESSURE_ENABLED` is set to `true`. The value for this
+property has a maximum of 100 (excl.) and represents a percentage. In case the joynr
+instance is temporarily unsubscribed from the MQTT shared subscriptions topic, i.e. the
+source of incoming requests, and the number of currently available unprocessed requests drops
+below the hereby set percentage of the maximum (`PROPERTY_MAX_INCOMING_MQTT_REQUESTS`), then
+the instance will try to subscribe again for the mentioned topic. The value for the
+lower threshold must be strictly below `PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_UPPER_THRESHOLD`.
+
+* **OPTIONAL**
+* **Type**: int
+* **User property**: `joynr.messaging.backpressure.incomingmqttrequests.lowerthreshold`
+* **Default value**: `20`
 
 ## Access Control
 ### `PROPERTY_ACCESSCONTROL_ENABLE`

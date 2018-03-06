@@ -20,6 +20,8 @@ package io.joynr.messaging.mqtt;
 
 import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_BACKPRESSURE_ENABLED;
 import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_MAX_INCOMING_MQTT_REQUESTS;
+import static io.joynr.messaging.mqtt.settings.LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD;
+import static io.joynr.messaging.mqtt.settings.LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_UPPER_THRESHOLD;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_REPLY_TO_ADDRESS;
@@ -55,6 +57,8 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
     private MqttAddress ownAddress;
     private int maxIncomingMqttRequests;
     private boolean backpressureEnabled;
+    private int backpressureIncomingMqttRequestsUpperThreshold;
+    private int backpressureIncomingMqttRequestsLowerThreshold;
     private MqttAddress replyToAddress;
     private MessageRouter messageRouter;
     private String channelId;
@@ -68,6 +72,8 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
                                          @Named(PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
                                          @Named(PROPERTY_MAX_INCOMING_MQTT_REQUESTS) int maxIncomingMqttRequests,
                                          @Named(PROPERTY_BACKPRESSURE_ENABLED) boolean backpressureEnabled,
+                                         @Named(PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_UPPER_THRESHOLD) int backpressureIncomingMqttRequestsUpperThreshold,
+                                         @Named(PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD) int backpressureIncomingMqttRequestsLowerThreshold,
                                          @Named(PROPERTY_MQTT_REPLY_TO_ADDRESS) MqttAddress replyToAddress,
                                          MessageRouter messageRouter,
                                          MqttClientFactory mqttClientFactory,
@@ -81,6 +87,8 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
         this.ownAddress = ownAddress;
         this.maxIncomingMqttRequests = maxIncomingMqttRequests;
         this.backpressureEnabled = backpressureEnabled;
+        this.backpressureIncomingMqttRequestsUpperThreshold = backpressureIncomingMqttRequestsUpperThreshold;
+        this.backpressureIncomingMqttRequestsLowerThreshold = backpressureIncomingMqttRequestsLowerThreshold;
         this.replyToAddress = replyToAddress;
         this.messageRouter = messageRouter;
         this.mqttClientFactory = mqttClientFactory;
@@ -96,6 +104,8 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
             return new SharedSubscriptionsMqttMessagingSkeleton(ownAddress,
                                                                 maxIncomingMqttRequests,
                                                                 backpressureEnabled,
+                                                                backpressureIncomingMqttRequestsUpperThreshold,
+                                                                backpressureIncomingMqttRequestsLowerThreshold,
                                                                 replyToAddress,
                                                                 messageRouter,
                                                                 mqttClientFactory,

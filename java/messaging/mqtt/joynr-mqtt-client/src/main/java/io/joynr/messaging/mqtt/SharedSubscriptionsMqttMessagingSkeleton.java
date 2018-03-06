@@ -20,12 +20,17 @@ package io.joynr.messaging.mqtt;
 
 import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_BACKPRESSURE_ENABLED;
 import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_MAX_INCOMING_MQTT_REQUESTS;
+import static io.joynr.messaging.mqtt.settings.LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD;
+import static io.joynr.messaging.mqtt.settings.LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_UPPER_THRESHOLD;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_REPLY_TO_ADDRESS;
 
 import static java.lang.String.format;
 
 import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -43,17 +48,22 @@ import joynr.system.RoutingTypes.MqttAddress;
  * @see io.joynr.messaging.mqtt.MqttModule#PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS
  */
 public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkeleton {
+    private static final Logger LOG = LoggerFactory.getLogger(SharedSubscriptionsMqttMessagingSkeleton.class);
 
     private static final String NON_ALPHA_REGEX_PATTERN = "[^a-zA-Z]";
     private String channelId;
     private MqttAddress replyToAddress;
     private boolean backpressureEnabled;
+    private final int backpressureIncomingMqttRequestsUpperThreshold;
+    private final int backpressureIncomingMqttRequestsLowerThreshold;
 
     @Inject
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 8 LINES
     public SharedSubscriptionsMqttMessagingSkeleton(@Named(PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
                                                     @Named(PROPERTY_MAX_INCOMING_MQTT_REQUESTS) int maxIncomingMqttRequests,
                                                     @Named(PROPERTY_BACKPRESSURE_ENABLED) boolean backpressureEnabled,
+                                                    @Named(PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_UPPER_THRESHOLD) int backpressureIncomingMqttRequestsUpperThreshold,
+                                                    @Named(PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD) int backpressureIncomingMqttRequestsLowerThreshold,
                                                     @Named(PROPERTY_MQTT_REPLY_TO_ADDRESS) MqttAddress replyToAddress,
                                                     MessageRouter messageRouter,
                                                     MqttClientFactory mqttClientFactory,
@@ -71,6 +81,54 @@ public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkele
         this.replyToAddress = replyToAddress;
         this.channelId = channelId;
         this.backpressureEnabled = backpressureEnabled;
+        this.backpressureIncomingMqttRequestsUpperThreshold = backpressureIncomingMqttRequestsUpperThreshold;
+        this.backpressureIncomingMqttRequestsLowerThreshold = backpressureIncomingMqttRequestsLowerThreshold;
+        validateBackpressureValues();
+    }
+
+    private void validateBackpressureValues() {
+        if (backpressureEnabled) {
+            boolean invalidPropertyValueDetected = false;
+
+            if (maxIncomingMqttRequests <= 0) {
+                invalidPropertyValueDetected = true;
+                LOG.error("Invalid value {} for {}, expecting a limit greater than 0 when backpressure is activated",
+                          maxIncomingMqttRequests,
+                          PROPERTY_MAX_INCOMING_MQTT_REQUESTS);
+            }
+
+            if (backpressureIncomingMqttRequestsUpperThreshold <= 0
+                    || backpressureIncomingMqttRequestsUpperThreshold > 100) {
+                invalidPropertyValueDetected = true;
+                LOG.error("Invalid value {} for {}, expecting percentage value in range (0,100]",
+                          backpressureIncomingMqttRequestsUpperThreshold,
+                          PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_UPPER_THRESHOLD);
+            }
+
+            if (backpressureIncomingMqttRequestsLowerThreshold < 0
+                    || backpressureIncomingMqttRequestsLowerThreshold >= 100) {
+                invalidPropertyValueDetected = true;
+                LOG.error("Invalid value {} for {}, expecting percentage value in range [0,100)",
+                          backpressureIncomingMqttRequestsLowerThreshold,
+                          PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD);
+            }
+
+            if (backpressureIncomingMqttRequestsLowerThreshold >= backpressureIncomingMqttRequestsUpperThreshold) {
+                LOG.error("Lower threshold percentage {} must be stricly below the upper threshold percentage {}. Change the value of {} or {}",
+                          backpressureIncomingMqttRequestsLowerThreshold,
+                          backpressureIncomingMqttRequestsUpperThreshold,
+                          PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD,
+                          PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_UPPER_THRESHOLD);
+            }
+
+            // disable backpressure in case of detected problems and throw an exception
+            if (invalidPropertyValueDetected) {
+                backpressureEnabled = false;
+                String disablingBackpressureMessage = "Disabling backpressure mechanism because of invalid property settings";
+                LOG.error(disablingBackpressureMessage);
+                throw new IllegalArgumentException(disablingBackpressureMessage);
+            }
+        }
     }
 
     @Override
