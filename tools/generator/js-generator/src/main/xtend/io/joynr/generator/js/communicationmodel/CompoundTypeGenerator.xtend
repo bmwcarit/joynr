@@ -183,14 +183,14 @@ class CompoundTypeGenerator extends CompoundTypeTemplate {
 
 			var memberTypes = {
 				«FOR member : members SEPARATOR ","»
-				«member.joynrName»: function() { return "«member.joynrTypeName»"; }
+				«member.joynrName»: "«member.joynrTypeName»"
 				«ENDFOR»
 			};
 			Object.defineProperty(«type.joynrName», 'getMemberType', {
 				enumerable: false,
 				value: function getMemberType(memberName) {
 					if (memberTypes[memberName] !== undefined) {
-						return memberTypes[memberName]();
+						return memberTypes[memberName];
 					}
 					return undefined;
 				}
