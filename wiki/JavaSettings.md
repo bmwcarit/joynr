@@ -223,6 +223,17 @@ updates the ```lastSeenDateMs``` of all capabilities registered via this cluster
 
 ## LimitAndBackpressureSettings
 
+LimitAndBackpressureSettings contains the properties that are related to incoming MQTT
+requests and the possible ways of dealing with a heavy load situations, i.e. when requests
+are processed slower (by joynr or the invoked provider implementations) than their arrival
+rate. The following diagram describes the three different possible states/mechanisms that
+can be configured with the properties of this section:
+![Possible states using limit and backpressure properties](/images/PossibleStatesLimitAndBackpressureProperties.png)
+
+The following diagram shows in more detail the interaction between the properties for the case
+when the backpressure mechanism is enabled:
+![Limit and backpressure properties in action](/images/LimitAndBackpressurePropertiesInAction.png)
+
 ### `PROPERTY_MAX_INCOMING_MQTT_REQUESTS`
 Setting this limit protects a joynr instance against consuming too much memory.
 This may be the case if the processing of requests (meaning RPCs and fire-and-forget
