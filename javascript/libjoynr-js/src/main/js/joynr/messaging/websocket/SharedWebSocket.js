@@ -80,7 +80,7 @@ function sendMessage(websocket, joynrMessage, queuedMessages) {
         } catch (e) {
             // add the message back to the front of the queue
             queuedMessages.unshift(joynrMessage);
-            throw e;
+            log.error("could not send joynrMessage: " + joynrMessage.msgId + " requeuing message. Error: " + e);
         }
     } else {
         // push new messages onto the back of the queue
