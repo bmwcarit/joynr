@@ -169,7 +169,11 @@ fi
 mkdir -p ${BUILDDIR}
 
 cp -R ../../sit-node-app ${BUILDDIR}
+
 cp -R ../../../../build/tests ${BUILDDIR}
+
+cp -R ../../../../build/dummyKeychain ${BUILDDIR}
+
 # create the directory in any case because it is referenced in Dockerfile below
 mkdir ${BUILDDIR}/sit-java-app
 cp ../../sit-java-app/target/sit-java-app-*-jar-with-dependencies.jar ${BUILDDIR}/sit-java-app
@@ -219,6 +223,11 @@ cat > $BUILDDIR/Dockerfile <<-EOF
     # Copy C++ binaries
     ###################################################
     COPY tests /data/sit-cpp-app
+
+    ###################################################
+    # Copy libdummyKeyChain
+    ###################################################
+    COPY dummyKeychain /data/build/dummyKeychain
 
     ###################################################
     # Copy sit-node-app
