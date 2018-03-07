@@ -1,3 +1,15 @@
+# joynr 1.0.5
+
+## API relevant changes
+None.
+
+## Other changes
+None.
+
+## Configuration property changes
+* **[Java]** Moved property PROPERTY_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS
+  from LocalCapabilitiesDirectoryImpl.java to SystemServicesSettings.java.
+
 # joynr 1.0.4
 
 ## API relevant changes
