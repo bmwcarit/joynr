@@ -50,7 +50,6 @@ AbstractMessageRouter::AbstractMessageRouter(
         boost::asio::io_service& ioService,
         std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
         bool persistRoutingTable,
-        int maxThreads,
         std::vector<std::shared_ptr<ITransportStatus>> transportStatuses,
         std::unique_ptr<MessageQueue<std::string>> messageQueue,
         std::unique_ptr<MessageQueue<std::shared_ptr<ITransportStatus>>> transportNotAvailableQueue)
@@ -62,7 +61,7 @@ AbstractMessageRouter::AbstractMessageRouter(
           messagingSettings(messagingSettings),
           persistRoutingTable(persistRoutingTable),
           messagingStubFactory(std::move(messagingStubFactory)),
-          messageScheduler(std::make_shared<ThreadPoolDelayedScheduler>(maxThreads,
+          messageScheduler(std::make_shared<ThreadPoolDelayedScheduler>(1,
                                                                         "AbstractMessageRouter",
                                                                         ioService)),
           messageQueue(std::move(messageQueue)),

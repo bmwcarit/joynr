@@ -126,7 +126,6 @@ protected:
                           boost::asio::io_service& ioService,
                           std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
                           bool persistRoutingTable,
-                          int maxThreads = 1,
                           std::vector<std::shared_ptr<ITransportStatus>> transportStatuses = {},
                           std::unique_ptr<MessageQueue<std::string>> messageQueue =
                                   std::make_unique<MessageQueue<std::string>>(),

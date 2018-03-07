@@ -93,7 +93,6 @@ public:
                     const std::string& messageNotificationProviderParticipantId,
                     bool persistRoutingTable,
                     std::vector<std::shared_ptr<ITransportStatus>> transportStatuses = {},
-                    int maxThreads = 1,
                     std::unique_ptr<MessageQueue<std::string>> messageQueue =
                             std::make_unique<MessageQueue<std::string>>(),
                     std::unique_ptr<MessageQueue<std::shared_ptr<ITransportStatus>>>

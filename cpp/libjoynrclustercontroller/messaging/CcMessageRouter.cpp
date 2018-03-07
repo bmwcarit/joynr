@@ -124,7 +124,6 @@ CcMessageRouter::CcMessageRouter(
         const std::string& messageNotificationProviderParticipantId,
         bool persistRoutingTable,
         std::vector<std::shared_ptr<ITransportStatus>> transportStatuses,
-        int maxThreads,
         std::unique_ptr<MessageQueue<std::string>> messageQueue,
         std::unique_ptr<MessageQueue<std::shared_ptr<ITransportStatus>>> transportNotAvailableQueue)
         : AbstractMessageRouter(messagingSettings,
@@ -132,7 +131,6 @@ CcMessageRouter::CcMessageRouter(
                                 ioService,
                                 std::move(addressCalculator),
                                 persistRoutingTable,
-                                maxThreads,
                                 std::move(transportStatuses),
                                 std::move(messageQueue),
                                 std::move(transportNotAvailableQueue)),

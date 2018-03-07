@@ -335,7 +335,6 @@ void JoynrClusterControllerRuntime::init()
             doMqttMessaging ? mqttSerializedGlobalClusterControllerAddress
                             : httpSerializedGlobalClusterControllerAddress;
 
-    const int maxThreads = 1;
     std::unique_ptr<MessageQueue<std::string>> messageQueue =
             std::make_unique<MessageQueue<std::string>>(
                     clusterControllerSettings.getMessageQueueLimit(),
@@ -356,7 +355,6 @@ void JoynrClusterControllerRuntime::init()
             systemServicesSettings.getCcMessageNotificationProviderParticipantId(),
             libjoynrSettings.isMessageRouterPersistencyEnabled(),
             std::move(transportStatuses),
-            maxThreads,
             std::move(messageQueue),
             std::move(transportStatusQueue));
 
