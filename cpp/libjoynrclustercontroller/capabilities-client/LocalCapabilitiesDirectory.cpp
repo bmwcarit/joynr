@@ -235,12 +235,12 @@ void LocalCapabilitiesDirectory::remove(const std::string& participantId)
     const types::DiscoveryEntry& entry = *optionalEntry;
 
     if (isGlobal(entry)) {
-        JOYNR_LOG_TRACE(logger(), "Removing globally registered participantId: {}", participantId);
+        JOYNR_LOG_INFO(logger(), "Removing globally registered participantId: {}", participantId);
         removeFromGloballyRegisteredCapabilities(entry);
         globalCapabilities.removeByParticipantId(participantId);
         capabilitiesClient->remove(participantId);
     }
-    JOYNR_LOG_TRACE(logger(), "Removing locally registered participantId: {}", participantId);
+    JOYNR_LOG_INFO(logger(), "Removing locally registered participantId: {}", participantId);
     localCapabilities.removeByParticipantId(participantId);
     informObserversOnRemove(entry);
     if (auto messageRouterSharedPtr = messageRouter.lock()) {
@@ -938,11 +938,13 @@ void LocalCapabilitiesDirectory::insertInCache(const types::DiscoveryEntry& entr
     // add entry to local cache
     if (localCache) {
         localCapabilities.insert(entry);
+        JOYNR_LOG_INFO(logger(), "Added local capability to cache {}", entry.toString());
     }
 
     // add entry to global cache
     if (globalCache) {
         globalCapabilities.insert(entry);
+        JOYNR_LOG_INFO(logger(), "Added global capability to cache {}", entry.toString());
     }
 }
 
