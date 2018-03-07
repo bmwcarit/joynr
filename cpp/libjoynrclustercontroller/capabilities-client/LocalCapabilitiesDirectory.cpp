@@ -173,11 +173,12 @@ void LocalCapabilitiesDirectory::addInternal(const types::DiscoveryEntry& discov
                       globalDiscoveryEntry) == registeredGlobalCapabilities.end()) {
 
             std::function<void(const exceptions::JoynrException&)> onError =
-                    [&](const exceptions::JoynrException& error) {
-                JOYNR_LOG_ERROR(
-                        logger(),
-                        "Error occured during the execution of capabilitiesProxy->add. Error: {}",
-                        error.getMessage());
+                    [globalDiscoveryEntry](const exceptions::JoynrException& error) {
+                JOYNR_LOG_ERROR(logger(),
+                                "Error occured during the execution of capabilitiesProxy->add for "
+                                "'{}'. Error: {}",
+                                globalDiscoveryEntry.toString(),
+                                error.getMessage());
             };
 
             std::function<void()> onSuccess = [
@@ -186,9 +187,10 @@ void LocalCapabilitiesDirectory::addInternal(const types::DiscoveryEntry& discov
             ]()
             {
                 if (auto thisSharedPtr = thisWeakPtr.lock()) {
-                    JOYNR_LOG_TRACE(logger(),
-                                    "Global capability addedd successfully, adding it to list "
-                                    "of registered capabilities.");
+                    JOYNR_LOG_INFO(logger(),
+                                   "Global capability '{}' addedd successfully, adding it to list "
+                                   "of registered capabilities.",
+                                   globalDiscoveryEntry.toString());
                     thisSharedPtr->registeredGlobalCapabilities.push_back(globalDiscoveryEntry);
                 }
             };

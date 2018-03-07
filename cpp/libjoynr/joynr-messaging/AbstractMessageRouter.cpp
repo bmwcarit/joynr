@@ -30,6 +30,7 @@
 #include "joynr/IMulticastAddressCalculator.h"
 #include "joynr/InProcessMessagingAddress.h"
 #include "joynr/Message.h"
+#include "joynr/MessageQueue.h"
 #include "joynr/MulticastReceiverDirectory.h"
 #include "joynr/access-control/IAccessController.h"
 #include "joynr/exceptions/JoynrException.h"
@@ -39,6 +40,7 @@
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
+#include "libjoynrclustercontroller/include/joynr/ITransportStatus.h"
 
 namespace joynr
 {
@@ -50,7 +52,6 @@ AbstractMessageRouter::AbstractMessageRouter(
         boost::asio::io_service& ioService,
         std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
         bool persistRoutingTable,
-        int maxThreads,
         std::vector<std::shared_ptr<ITransportStatus>> transportStatuses,
         std::unique_ptr<MessageQueue<std::string>> messageQueue,
         std::unique_ptr<MessageQueue<std::shared_ptr<ITransportStatus>>> transportNotAvailableQueue)
@@ -62,7 +63,7 @@ AbstractMessageRouter::AbstractMessageRouter(
           messagingSettings(messagingSettings),
           persistRoutingTable(persistRoutingTable),
           messagingStubFactory(std::move(messagingStubFactory)),
-          messageScheduler(std::make_shared<ThreadPoolDelayedScheduler>(maxThreads,
+          messageScheduler(std::make_shared<ThreadPoolDelayedScheduler>(1,
                                                                         "AbstractMessageRouter",
                                                                         ioService)),
           messageQueue(std::move(messageQueue)),

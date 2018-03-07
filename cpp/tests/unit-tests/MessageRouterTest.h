@@ -110,7 +110,6 @@ protected:
                     std::make_unique<WebSocketMulticastAddressCalculator>(localTransport),
                     enablePersistency,
                     std::move(transportStatuses),
-                    6,
                     std::move(messageQueueForMessageRouter),
                     std::move(transportNotAvailableQueue)
                 );
@@ -147,7 +146,6 @@ protected:
                     messageNotificationProviderParticipantId,
                     enablePersistency,
                     std::move(transportStatuses),
-                    6,
                     std::move(messageQueueForMessageRouter),
                     std::move(transportNotAvailableQueue)
                 );

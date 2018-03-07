@@ -29,7 +29,6 @@
 
 #include "joynr/JoynrExport.h"
 #include "joynr/Logger.h"
-#include "joynr/MessageQueue.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/MulticastReceiverDirectory.h"
 #include "joynr/ObjectWithDecayTime.h"
@@ -47,6 +46,8 @@ class io_service;
 namespace joynr
 {
 
+template <typename T>
+class MessageQueue;
 class IAccessController;
 class IMessagingStubFactory;
 class IMulticastAddressCalculator;
@@ -92,13 +93,10 @@ public:
                     const std::string& globalClusterControllerAddress,
                     const std::string& messageNotificationProviderParticipantId,
                     bool persistRoutingTable,
-                    std::vector<std::shared_ptr<ITransportStatus>> transportStatuses = {},
-                    int maxThreads = 1,
-                    std::unique_ptr<MessageQueue<std::string>> messageQueue =
-                            std::make_unique<MessageQueue<std::string>>(),
+                    std::vector<std::shared_ptr<ITransportStatus>> transportStatuses,
+                    std::unique_ptr<MessageQueue<std::string>> messageQueue,
                     std::unique_ptr<MessageQueue<std::shared_ptr<ITransportStatus>>>
-                            transportNotAvailableQueue = std::make_unique<
-                                    MessageQueue<std::shared_ptr<ITransportStatus>>>());
+                            transportNotAvailableQueue);
 
     ~CcMessageRouter() override;
 

@@ -29,6 +29,7 @@
 #include "joynr/InProcessMessagingAddress.h"
 #include "joynr/InProcessPublicationSender.h"
 #include "joynr/MessageSender.h"
+#include "joynr/MessageQueue.h"
 #include "joynr/MessagingStubFactory.h"
 #include "joynr/MqttMulticastAddressCalculator.h"
 #include "joynr/Settings.h"
@@ -39,6 +40,8 @@
 
 namespace joynr
 {
+
+class ITransportStatus;
 
 ShortCircuitRuntime::ShortCircuitRuntime(std::unique_ptr<Settings> settings,
                                          std::shared_ptr<IKeychain> keyChain)
@@ -61,16 +64,20 @@ ShortCircuitRuntime::ShortCircuitRuntime(std::unique_ptr<Settings> settings,
     const std::string messageNotificationProviderParticipantId(
             "messageNotificationProviderParticipantId");
 
-    messageRouter = std::make_shared<CcMessageRouter>(messagingSettings,
-                                                      clusterControllerSettings,
-                                                      std::move(messagingStubFactory),
-                                                      nullptr,
-                                                      nullptr,
-                                                      singleThreadedIOService.getIOService(),
-                                                      std::move(addressCalculator),
-                                                      globalClusterControllerAddress,
-                                                      messageNotificationProviderParticipantId,
-                                                      enablePersistency);
+    messageRouter = std::make_shared<CcMessageRouter>(
+            messagingSettings,
+            clusterControllerSettings,
+            std::move(messagingStubFactory),
+            nullptr,
+            nullptr,
+            singleThreadedIOService.getIOService(),
+            std::move(addressCalculator),
+            globalClusterControllerAddress,
+            messageNotificationProviderParticipantId,
+            enablePersistency,
+            std::vector<std::shared_ptr<ITransportStatus>>{},
+            std::make_unique<MessageQueue<std::string>>(),
+            std::make_unique<MessageQueue<std::shared_ptr<ITransportStatus>>>());
 
     messageSender = std::make_shared<MessageSender>(messageRouter, keyChain);
     joynrDispatcher =

@@ -7,6 +7,17 @@ None.
 * **[C++]** moved settings `local-capabilities-directory-persistence-file` and
   `local-capabilities-directory-persistency-enabled` from section [lib-joynr] to [cluster-controller].
 
+# joynr 1.0.4
+
+## API relevant changes
+None.
+
+## Other changes
+* **[C++]** The queue sizes for messages can now additionally be limited by setting the properties
+  'cluster-controller/message-queue-limit-bytes' and / or
+  'cluster-controller/transport-not-available-queue-limit-bytes' which specify
+  the limit in bytes rather than number of messages. By default no queue limit is enforced.
+
 # joynr 1.0.3
 
 ## API relevant changes

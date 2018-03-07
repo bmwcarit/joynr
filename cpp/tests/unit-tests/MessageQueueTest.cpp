@@ -167,14 +167,16 @@ public:
     ~MessageQueueWithLimitTest() = default;
 
 protected:
-
-    void createAndQueueMessage(MessageQueue<std::string>& queue, const JoynrTimePoint& expiryDate, const std::string& recipient, const std::string& payload = "") {
+    std::shared_ptr<ImmutableMessage> createMessage(const JoynrTimePoint& expiryDate, const std::string& recipient, const std::string& payload = "") {
         MutableMessage mutableMsg;
         mutableMsg.setExpiryDate(expiryDate);
         mutableMsg.setRecipient(recipient);
         mutableMsg.setPayload(payload);
-        auto immutableMessage = mutableMsg.getImmutableMessage();
-        queue.queueMessage(recipient, std::move(immutableMessage));
+        return mutableMsg.getImmutableMessage();
+    }
+
+    void createAndQueueMessage(MessageQueue<std::string>& queue, const JoynrTimePoint& expiryDate, const std::string& recipient, const std::string& payload = "") {
+        queue.queueMessage(recipient, createMessage(expiryDate, recipient, payload));
     }
 
     std::string payloadAsString(std::shared_ptr<ImmutableMessage> message) {
@@ -288,4 +290,66 @@ TEST_F(MessageQueueWithLimitTest, testPerKeyQueueLimit_overallQueueIsFull)
 
     EXPECT_EQ(msgRecipient1Payload2, payloadAsString(recipient1Message1));
     EXPECT_EQ(msgRecipient1Payload1, payloadAsString(recipient1Message2));
+}
+
+TEST_F(MessageQueueWithLimitTest, testMessageQueueLimitBytes)
+{
+    const std::string recipient1("recipient1");
+    const std::string recipient2("recipient2");
+
+    constexpr std::uint64_t messageQueueLimit = 0;
+    constexpr std::uint64_t perKeyQueueLimit = 0;
+
+    std::string payload(1000, 'x');
+    std::uint64_t sizeOfSingleMessage = createMessage(getExpiryDateFromNow(1000), recipient1, payload)->getMessageSize();
+
+    // set limit so that 2 messages safely fit into the queue, but 3 messages exceed it
+    std::uint64_t messageQueueLimitBytes = sizeOfSingleMessage * 3 - 1;
+    MessageQueue<std::string> queue(messageQueueLimit, perKeyQueueLimit, messageQueueLimitBytes);
+
+    createAndQueueMessage(queue, getExpiryDateFromNow(1000), recipient1, payload);
+    EXPECT_EQ(1, queue.getQueueLength());
+    EXPECT_EQ(queue.getQueueSizeBytes(), sizeOfSingleMessage);
+    EXPECT_LE(queue.getQueueSizeBytes(), messageQueueLimitBytes);
+
+    // the following 2nd message is expected to be discarded when the
+    // 3rd message is queued since it has the lowest expiry date
+    createAndQueueMessage(queue, getExpiryDateFromNow(100), recipient2, payload);
+    EXPECT_EQ(2, queue.getQueueLength());
+    EXPECT_EQ(queue.getQueueSizeBytes(), sizeOfSingleMessage * 2);
+    EXPECT_LE(queue.getQueueSizeBytes(), messageQueueLimitBytes);
+
+    createAndQueueMessage(queue, getExpiryDateFromNow(2000), recipient1, payload);
+    EXPECT_EQ(2, queue.getQueueLength());
+    EXPECT_EQ(queue.getQueueSizeBytes(), sizeOfSingleMessage * 2);
+    EXPECT_LE(queue.getQueueSizeBytes(), messageQueueLimitBytes);
+
+    auto recipient1Message1 = queue.getNextMessageFor(recipient1);
+    EXPECT_EQ(1, queue.getQueueLength());
+    EXPECT_EQ(queue.getQueueSizeBytes(), sizeOfSingleMessage);
+    EXPECT_NE(nullptr, recipient1Message1);
+
+    auto recipient1Message2 = queue.getNextMessageFor(recipient1);
+    EXPECT_EQ(0, queue.getQueueLength());
+    EXPECT_EQ(0, queue.getQueueSizeBytes());
+    EXPECT_NE(nullptr, recipient1Message2);
+
+    auto recipient2Message1 = queue.getNextMessageFor(recipient2);
+    EXPECT_EQ(nullptr, recipient2Message1);
+}
+
+TEST_F(MessageQueueWithLimitTest, testMessageQueueHandlesTooLargeMessage)
+{
+    const std::string recipient1("recipient1");
+    constexpr std::uint64_t messageQueueLimit = 0;
+    constexpr std::uint64_t perKeyQueueLimit = 0;
+    std::string payload(1000, 'x');
+    std::uint64_t sizeOfSingleMessage = createMessage(getExpiryDateFromNow(1000), recipient1, payload)->getMessageSize();
+    std::uint64_t messageQueueLimitBytes = sizeOfSingleMessage - 1;
+
+    MessageQueue<std::string> queue(messageQueueLimit, perKeyQueueLimit, messageQueueLimitBytes);
+
+    createAndQueueMessage(queue, getExpiryDateFromNow(1000), recipient1, payload);
+
+    EXPECT_EQ(0, queue.getQueueLength());
 }
