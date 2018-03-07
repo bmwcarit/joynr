@@ -46,6 +46,7 @@ public class GlobalCapabilitiesDirectoryClient {
     private final DiscoveryQos discoveryQos;
     private final ProxyBuilderFactory proxyBuilderFactory;
     private GlobalCapabilitiesDirectoryProxy touchProxy;
+    private GlobalCapabilitiesDirectoryProxy addAndRemoveProxy;
     @Inject
     @Named(MessagingPropertyKeys.CHANNELID)
     private String localChannelId;
@@ -75,16 +76,23 @@ public class GlobalCapabilitiesDirectoryClient {
         return capabilitiesProxyBuilder.setDiscoveryQos(discoveryQos).setMessagingQos(messagingQos).build();
     }
 
+    private GlobalCapabilitiesDirectoryProxy getAddAndRemoveProxy() {
+        if (addAndRemoveProxy == null) {
+            addAndRemoveProxy = getProxy(ttlAddAndRemoveMs);
+        }
+        return addAndRemoveProxy;
+    }
+
     public void add(Callback<Void> callback, GlobalDiscoveryEntry globalDiscoveryEntry) {
-        getProxy(ttlAddAndRemoveMs).add(callback, globalDiscoveryEntry);
+        getAddAndRemoveProxy().add(callback, globalDiscoveryEntry);
     }
 
     public void remove(Callback<Void> callback, String participantId) {
-        getProxy(ttlAddAndRemoveMs).remove(callback, participantId);
+        getAddAndRemoveProxy().remove(callback, participantId);
     }
 
     public void remove(Callback<Void> callback, List<String> participantIds) {
-        getProxy(ttlAddAndRemoveMs).remove(callback, participantIds.toArray(new String[participantIds.size()]));
+        getAddAndRemoveProxy().remove(callback, participantIds.toArray(new String[participantIds.size()]));
     }
 
     public void lookup(Callback<GlobalDiscoveryEntry> callback, String participantId, long ttl) {
