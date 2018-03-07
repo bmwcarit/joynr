@@ -48,7 +48,7 @@ class MapTypeGenerator extends MapTemplate {
 	 * This is the generated map type «type.joynrName»: DOCS GENERATED FROM INTERFACE DESCRIPTION
 	 * Generation date: «generationDate»
 	 */
-	(function(undefined) {
+	function preparePrototype(joynr) {
 
 		/**
 		 * @namespace «type.joynrName»
@@ -72,53 +72,23 @@ class MapTypeGenerator extends MapTemplate {
 			 * @readonly
 			 */
 			Object.defineProperty(this, "_typeName", {
-				configurable : false,
-				writable : false,
 				enumerable : true,
 				value : "«type.joynrTypeName»"
 			});
 
 			if (settings !== undefined) {
+				var settingKey;
 				for (settingKey in settings) {
-					this[settingKey] = settings[settingKey];
-				}
-			}
-
-			Object.defineProperty(this, 'put', {
-				enumerable: false,
-				value: function (key, value) {
-					this[key] = value;
-				}
-			});
-
-			Object.defineProperty(this, 'get', {
-				enumerable: false,
-				value: function (key) {
-					return this[key];
-				}
-			});
-
-			Object.defineProperty(this, 'remove', {
-				enumerable: false,
-				value: function (key, value) {
-					delete this[key];
-				}
-			});
-		};
-
-		Object.defineProperty(«type.joynrName», 'checkMembers', {
-			enumerable: false,
-			value: function checkMembers(instance, check) {
-				var memberKey;
-				for (memberKey in instance) {
-					if (instance.hasOwnProperty(memberKey)) {
-						if (memberKey !== "_typeName") {
-							check(instance[memberKey], «type.valueType.checkPropertyTypeName(false)», memberKey);
-						}
+					if (settings.hasOwnProperty(settingKey)){
+						this[settingKey] = settings[settingKey];
 					}
 				}
 			}
-		});
+		};
+
+		«type.joynrName».prototype = new joynr.JoynrObject();
+		«type.joynrName».prototype.constructor = «type.joynrName»;
+		joynr.util.GenerationUtil.addMapUtility(«type.joynrName», «type.valueType.checkPropertyTypeName(false)»);
 
 		/**
 		 * @name «type.joynrName»#MAJOR_VERSION
@@ -126,62 +96,40 @@ class MapTypeGenerator extends MapTemplate {
 		 * @default «majorVersion»
 		 * @summary The MAJOR_VERSION of the map type «type.joynrName» is GENERATED FROM THE INTERFACE DESCRIPTION
 		 */
-		Object.defineProperty(«type.joynrName», 'MAJOR_VERSION', {
-			enumerable: false,
-			configurable: false,
-			writable: false,
-			readable: true,
-			value: «majorVersion»
-		});
+		Object.defineProperty(«type.joynrName», 'MAJOR_VERSION', { value: «majorVersion»});
 		/**
 		 * @name «type.joynrName»#MINOR_VERSION
 		 * @constant {Number}
 		 * @default «minorVersion»
 		 * @summary The MINOR_VERSION of the map type «type.joynrName» is GENERATED FROM THE INTERFACE DESCRIPTION
 		 */
-		Object.defineProperty(«type.joynrName», 'MINOR_VERSION', {
-			enumerable: false,
-			configurable: false,
-			writable: false,
-			readable: true,
-			value: «minorVersion»
-		});
+		Object.defineProperty(«type.joynrName», 'MINOR_VERSION', { value: «minorVersion»});
 
-		«IF requireJSSupport»
-		// AMD support
-		if (typeof define === 'function' && define.amd) {
-			define(«type.defineName»["joynr"], function (joynr) {
-				«type.joynrName».prototype = new joynr.JoynrObject();
-				«type.joynrName».prototype.constructor = «type.joynrName»;
-				joynr.addType("«type.joynrTypeName»", «type.joynrName»);
-				return «type.joynrName»;
-			});
-		} else if (typeof exports !== 'undefined' ) {
-			if ((module !== undefined) && module.exports) {
-				exports = module.exports = «type.joynrName»;
-			} else {
-			// support CommonJS module 1.1.1 spec (`exports` cannot be a function)
-				exports.«type.joynrName» = «type.joynrName»;
-			}
-			var joynr = require("joynr");
-			«type.joynrName».prototype = new joynr.JoynrObject();
-			«type.joynrName».prototype.constructor = «type.joynrName»;
-			joynr.addType("«type.joynrTypeName»", «type.joynrName»);
-		} else {
-			//we assume a correct order of script loading
-			joynr = window.joynr;
-			«type.joynrName».prototype = new joynr.JoynrObject();
-			«type.joynrName».prototype.constructor = «type.joynrName»;
-			joynr.addType("«type.joynrTypeName»", «type.joynrName»);
-			window.«type.joynrName» = «type.joynrName»;
-		}
-		«ELSE»
-		var joynr = require("joynr");
-		«type.joynrName».prototype = new joynr.JoynrObject();
-		«type.joynrName».prototype.constructor = «type.joynrName»;
 		joynr.addType("«type.joynrTypeName»", «type.joynrName»);
-		module.exports = «type.joynrName»;
-		«ENDIF»
-	})();
+		return «type.joynrName»;
+
+	}
+
+	«IF requireJSSupport»
+	// AMD support
+	if (typeof define === 'function' && define.amd) {
+		define(«type.defineName»["joynr"], preparePrototype);
+	} else if (typeof exports !== 'undefined' ) {
+		var joynr = require("joynr");
+		if ((module !== undefined) && module.exports) {
+			exports = module.exports = preparePrototype(joynr);
+		} else {
+		// support CommonJS module 1.1.1 spec (`exports` cannot be a function)
+			exports.«type.joynrName» = preparePrototype(joynr);
+		}
+	} else {
+		//we assume a correct order of script loading
+		joynr = window.joynr;
+		window.«type.joynrName» = preparePrototype(joynr);
+	}
+	«ELSE»
+	var joynr = require("joynr");
+	module.exports = preparePrototype(joynr);
+	«ENDIF»
 	'''
 }

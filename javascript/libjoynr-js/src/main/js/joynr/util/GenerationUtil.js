@@ -141,4 +141,31 @@ GenerationUtil.addMemberTypeGetter = function(joynrObject) {
     });
 };
 
+GenerationUtil.addMapUtility = function(joynrObject, propertyTypeName) {
+    joynrObject.prototype.put = function(key, value) {
+        this[key] = value;
+    };
+
+    joynrObject.prototype.get = function(key) {
+        return this[key];
+    };
+
+    joynrObject.prototype.remove = function(key) {
+        delete this[key];
+    };
+
+    Object.defineProperty(joynrObject, "checkMembers", {
+        value: function checkMembers(instance, check) {
+            var memberKey;
+            for (memberKey in instance) {
+                if (instance.hasOwnProperty(memberKey)) {
+                    if (memberKey !== "_typeName") {
+                        check(instance[memberKey], propertyTypeName, memberKey);
+                    }
+                }
+            }
+        }
+    });
+};
+
 module.exports = GenerationUtil;
