@@ -188,7 +188,7 @@ void LocalCapabilitiesDirectory::addInternal(const types::DiscoveryEntry& discov
             {
                 if (auto thisSharedPtr = thisWeakPtr.lock()) {
                     JOYNR_LOG_INFO(logger(),
-                                   "Global capability '{}' addedd successfully, adding it to list "
+                                   "Global capability '{}' added successfully, adding it to list "
                                    "of registered capabilities.",
                                    globalDiscoveryEntry.toString());
                     thisSharedPtr->registeredGlobalCapabilities.push_back(globalDiscoveryEntry);
