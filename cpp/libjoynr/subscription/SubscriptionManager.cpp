@@ -36,6 +36,7 @@
 #include "joynr/Util.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/exceptions/SubscriptionException.h"
+#include "joynr/serializer/Serializer.h"
 
 namespace joynr
 {
@@ -202,6 +203,16 @@ void SubscriptionManager::registerSubscription(
             }
         }
 
+        JOYNR_LOG_DEBUG(logger(),
+                        "SUBSCRIPTION call proxy: subscriptionId: {}, multicastId: {}, broadcast: "
+                        "{}, qos: {}, "
+                        "proxy participantId: {}, provider participantId: [{}]",
+                        subscriptionId,
+                        multicastId,
+                        subscriptionRequest.getSubscribeToName(),
+                        joynr::serializer::serializeToJson(*qos),
+                        subscriberParticipantId,
+                        providerParticipantId);
         // register multicast subscription
         registerSubscription(subscribeToName,
                              subscriptionCaller,
