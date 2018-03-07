@@ -45,6 +45,7 @@ public class GlobalCapabilitiesDirectoryClient {
     private final String domain;
     private final DiscoveryQos discoveryQos;
     private final ProxyBuilderFactory proxyBuilderFactory;
+    private GlobalCapabilitiesDirectoryProxy touchProxy;
     @Inject
     @Named(MessagingPropertyKeys.CHANNELID)
     private String localChannelId;
@@ -117,7 +118,10 @@ public class GlobalCapabilitiesDirectoryClient {
     }
 
     public void touch() {
-        getProxy(freshnessUpdateIntervalMs).touch(localChannelId);
+        if (touchProxy == null) {
+            touchProxy = getProxy(freshnessUpdateIntervalMs);
+        }
+        touchProxy.touch(localChannelId);
     }
 
 }
