@@ -18,6 +18,8 @@
  */
 package io.joynr.capabilities;
 
+import static io.joynr.runtime.SystemServicesSettings.PROPERTY_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -46,6 +48,9 @@ public class GlobalCapabilitiesDirectoryClient {
     @Inject
     @Named(MessagingPropertyKeys.CHANNELID)
     private String localChannelId;
+    @Inject
+    @Named(PROPERTY_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS)
+    private long freshnessUpdateIntervalMs;
 
     @Inject(optional = true)
     @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_GLOBAL_ADD_AND_REMOVE_TTL_MS)
@@ -111,8 +116,8 @@ public class GlobalCapabilitiesDirectoryClient {
 
     }
 
-    public void touch(long ttl) {
-        getProxy(ttl).touch(localChannelId);
+    public void touch() {
+        getProxy(freshnessUpdateIntervalMs).touch(localChannelId);
     }
 
 }

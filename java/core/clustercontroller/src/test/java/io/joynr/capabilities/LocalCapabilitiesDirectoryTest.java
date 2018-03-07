@@ -1120,6 +1120,6 @@ public class LocalCapabilitiesDirectoryTest {
     public void callTouchPeriodically() throws InterruptedException {
         Runnable runnable = runnableCaptor.getValue();
         runnable.run();
-        verify(globalCapabilitiesClient).touch(anyLong());
+        verify(globalCapabilitiesClient).touch();
     }
 }

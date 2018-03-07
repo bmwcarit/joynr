@@ -163,7 +163,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             public void run() {
                 try {
                     logger.debug("Updating last seen date ms.");
-                    globalCapabilitiesDirectoryClient.touch(freshnessUpdateIntervalMs);
+                    globalCapabilitiesDirectoryClient.touch();
                 } catch (JoynrRuntimeException e) {
                     logger.error("error sending freshness update", e);
                 }
