@@ -27,7 +27,6 @@ import java.util.HashSet;
 
 import org.junit.Before;
 import org.junit.Test;
-
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -36,10 +35,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.NoOpRawMessagingPreprocessor;
-import io.joynr.messaging.mqtt.JoynrMqttClient;
-import io.joynr.messaging.mqtt.MqttClientFactory;
-import io.joynr.messaging.mqtt.MqttTopicPrefixProvider;
-import io.joynr.messaging.mqtt.SharedSubscriptionsMqttMessagingSkeleton;
 import io.joynr.messaging.routing.MessageRouter;
 import joynr.system.RoutingTypes.MqttAddress;
 
