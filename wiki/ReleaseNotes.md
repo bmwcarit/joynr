@@ -1,5 +1,11 @@
 # joynr x.x.x
 
+## API relevant changes
+* **[Java]** The String constants `PROPERTY_BACKPRESSURE_ENABLED` and
+  `PROPERTY_MAX_INCOMING_MQTT_REQUESTS` are moved from class ConfigurableMessagingSettings
+  to LimitAndBackpressureSettings. Please adapt the import statements in case you
+  use these constants directly.
+
 ## Configuration property changes
 * **[Java]** Introduced `PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_UPPER_THRESHOLD`
   and `PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD` for controlling

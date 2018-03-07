@@ -120,36 +120,6 @@ The number of threads used by the message router to send joynr messages.
 * **User property**: `joynr.messaging.maximumparallelsends`
 * **Default value**: `20`
 
-### `PROPERTY_BACKPRESSURE_ENABLED`
-Controls whether the backpressure mechanism is active. It applies only when using shared
-subscriptions, so `PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS` needs to be `true`.
-When backpressure is enabled it is required to set reasonable values also for
-`PROPERTY_MAX_INCOMING_MQTT_REQUESTS`, `PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_UPPER_THRESHOLD`
-and `PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD`. In case that at
-startup an invalid value combination for these three properties is detected an
-IllegalArgumentException is thrown and backpresure is disabled.
-
-* **OPTIONAL**
-* **Type**: Boolean
-* **User property**: `joynr.messaging.backpressure.enabled`
-* **Default value**: `false`
-
-### `PROPERTY_MAX_INCOMING_MQTT_REQUESTS`
-Setting this limit protects a joynr instance against consuming too much memory.
-This may be the case if the processing of requests (meaning RPCs and fire-and-forget
-methods) coming over MQTT is slower than their incoming rate and there is a resulting need
-of queueing them. In case the set maximum is reached, further incoming MQTT requests
-are dropped and are lost. Pay attention that other types of incoming MQTT messages (e.g.
-replies) will not be dropped in order not to break the joynr communication. New
-requests coming over MQTT will be accepted again when processing of previous ones
-is completed. The default value of `0` means that no limit is enforced and no messages
-will be ever dropped.
-
-* **OPTIONAL**
-* **Type**: int
-* **User property**: `joynr.messaging.maxincomingmqttrequests`
-* **Default value**: `0`
-
 ### `PROPERTY_MESSAGING_MAXIMUM_TTL_MS`
 The maximum allowed time-to-live (TTL) of joynr messages. The TTL used in a joynr message is set on
 the proxy builder using the messaging QoS object. These TTLs are only accepted up to the maximum
@@ -252,6 +222,36 @@ updates the ```lastSeenDateMs``` of all capabilities registered via this cluster
 * **Default value**: `3600000`
 
 ## LimitAndBackpressureSettings
+
+### `PROPERTY_MAX_INCOMING_MQTT_REQUESTS`
+Setting this limit protects a joynr instance against consuming too much memory.
+This may be the case if the processing of requests (meaning RPCs and fire-and-forget
+methods) coming over MQTT is slower than their incoming rate and there is a resulting need
+of queueing them. In case the set maximum is reached, further incoming MQTT requests
+are dropped and are lost. Pay attention that other types of incoming MQTT messages (e.g.
+replies) will not be dropped in order not to break the joynr communication. New
+requests coming over MQTT will be accepted again when processing of previous ones
+is completed. The default value of `0` means that no limit is enforced and no messages
+will be ever dropped.
+
+* **OPTIONAL**
+* **Type**: int
+* **User property**: `joynr.messaging.maxincomingmqttrequests`
+* **Default value**: `0`
+
+### `PROPERTY_BACKPRESSURE_ENABLED`
+Controls whether the backpressure mechanism is active. It applies only when using shared
+subscriptions, so `PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS` needs to be `true`.
+When backpressure is enabled it is required to set reasonable values also for
+`PROPERTY_MAX_INCOMING_MQTT_REQUESTS`, `PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_UPPER_THRESHOLD`
+and `PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD`. In case that at
+startup an invalid value combination for these three properties is detected an
+IllegalArgumentException is thrown and backpresure is disabled.
+
+* **OPTIONAL**
+* **Type**: Boolean
+* **User property**: `joynr.messaging.backpressure.enabled`
+* **Default value**: `false`
 
 ### `PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_UPPER_THRESHOLD`
 Requires `PROPERTY_MAX_INCOMING_MQTT_REQUESTS` > 0 and will have effect only if

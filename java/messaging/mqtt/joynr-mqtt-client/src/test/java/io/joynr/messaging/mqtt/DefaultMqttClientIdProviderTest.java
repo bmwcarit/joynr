@@ -38,7 +38,6 @@ import com.google.inject.name.Names;
 import com.google.inject.util.Modules;
 
 import io.joynr.common.JoynrPropertiesModule;
-import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.NoOpRawMessagingPreprocessor;
@@ -76,8 +75,8 @@ public class DefaultMqttClientIdProviderTest {
         properties.put(MqttModule.PROPERTY_KEY_MQTT_MAX_MSGS_INFLIGHT, "100");
         properties.put(MqttModule.PROPERTY_KEY_MQTT_MAX_MESSAGE_SIZE_BYTES, "0");
         properties.put(MessagingPropertyKeys.RECEIVERID, receiverId);
-        properties.put(ConfigurableMessagingSettings.PROPERTY_MAX_INCOMING_MQTT_REQUESTS, "0");
-        properties.put(ConfigurableMessagingSettings.PROPERTY_BACKPRESSURE_ENABLED, "false");
+        properties.put(LimitAndBackpressureSettings.PROPERTY_MAX_INCOMING_MQTT_REQUESTS, "0");
+        properties.put(LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_ENABLED, "false");
         properties.put(LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_UPPER_THRESHOLD, "80");
         properties.put(LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD, "20");
         properties.put(MqttModule.PROPERTY_MQTT_CLEAN_SESSION, "false");
