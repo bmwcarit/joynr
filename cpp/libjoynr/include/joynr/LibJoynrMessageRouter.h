@@ -32,7 +32,6 @@
 #include "joynr/PrivateCopyAssign.h"
 
 #include "joynr/Logger.h"
-#include "joynr/MessageQueue.h"
 
 namespace boost
 {
@@ -44,6 +43,10 @@ class io_service;
 
 namespace joynr
 {
+
+template <typename T>
+class MessageQueue;
+class ITransportStatus;
 
 namespace exceptions
 {
@@ -82,13 +85,10 @@ public:
             boost::asio::io_service& ioService,
             std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
             bool persistRoutingTable,
-            std::vector<std::shared_ptr<ITransportStatus>> transportStatuses = {},
-            int maxThreads = 1,
-            std::unique_ptr<MessageQueue<std::string>> messageQueue =
-                    std::make_unique<MessageQueue<std::string>>(),
+            std::vector<std::shared_ptr<ITransportStatus>> transportStatuses,
+            std::unique_ptr<MessageQueue<std::string>> messageQueue,
             std::unique_ptr<MessageQueue<std::shared_ptr<ITransportStatus>>>
-                    transportNotAvailableQueue =
-                            std::make_unique<MessageQueue<std::shared_ptr<ITransportStatus>>>());
+                    transportNotAvailableQueue);
 
     ~LibJoynrMessageRouter() override;
 

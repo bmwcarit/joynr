@@ -230,9 +230,11 @@ void Dispatcher::handleRequestReceived(std::shared_ptr<ImmutableMessage> message
         message
     ](const std::shared_ptr<exceptions::JoynrException>& exception) mutable
     {
+        assert(exception);
         if (auto thisSharedPtr = thisWeakPtr.lock()) {
             JOYNR_LOG_WARN(logger(),
-                           "Got error reply from RequestInterpreter for requestReplyId {}",
+                           "Got error '{}' from RequestInterpreter for requestReplyId {}",
+                           exception->getMessage(),
                            requestReplyId);
             Reply reply;
             reply.setRequestReplyId(std::move(requestReplyId));

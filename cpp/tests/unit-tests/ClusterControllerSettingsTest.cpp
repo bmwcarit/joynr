@@ -70,6 +70,8 @@ TEST(ClusterControllerSettingsTest, initializedWithDefaultSettings)
               ClusterControllerSettings::DEFAULT_MESSAGE_QUEUE_LIMIT());
 }
 
+// check specific non-default settings
+
 TEST(ClusterControllerSettingsTest, messageQueueLimitIsSet)
 {
     Settings testSettings("test-resources/CCSettingsWithMessageQueueLimit.settings");
@@ -80,10 +82,84 @@ TEST(ClusterControllerSettingsTest, messageQueueLimitIsSet)
     EXPECT_EQ(clusterControllerSettings.getMessageQueueLimit(), std::uint64_t(10));
 }
 
+TEST(ClusterControllerSettingsTest, perParticipantIdMessageQueueLimitIsSet)
+{
+    Settings testSettings("test-resources/CCSettingsWithMessageQueueLimit.settings");
+    ASSERT_TRUE(testSettings.isLoaded());
+
+    ClusterControllerSettings clusterControllerSettings(testSettings);
+
+    EXPECT_EQ(clusterControllerSettings.getPerParticipantIdMessageQueueLimit(), std::uint64_t(5));
+}
+
+TEST(ClusterControllerSettingsTest, transportNotAvailableQueueLimitIsSet)
+{
+    Settings testSettings("test-resources/CCSettingsWithMessageQueueLimit.settings");
+    ASSERT_TRUE(testSettings.isLoaded());
+
+    ClusterControllerSettings clusterControllerSettings(testSettings);
+
+    EXPECT_EQ(clusterControllerSettings.getTransportNotAvailableQueueLimit(), std::uint64_t(10));
+}
+
+TEST(ClusterControllerSettingsTest, messageQueueLimitBytesIsSet)
+{
+    Settings testSettings("test-resources/CCSettingsWithMessageQueueLimit.settings");
+    ASSERT_TRUE(testSettings.isLoaded());
+
+    ClusterControllerSettings clusterControllerSettings(testSettings);
+
+    EXPECT_EQ(clusterControllerSettings.getMessageQueueLimitBytes(), std::uint64_t(104857600));
+}
+
+TEST(ClusterControllerSettingsTest, transportNotAvailableQueueLimitBytesIsSet)
+{
+    Settings testSettings("test-resources/CCSettingsWithMessageQueueLimit.settings");
+    ASSERT_TRUE(testSettings.isLoaded());
+
+    ClusterControllerSettings clusterControllerSettings(testSettings);
+
+    EXPECT_EQ(clusterControllerSettings.getTransportNotAvailableQueueLimitBytes(), std::uint64_t(52428800));
+}
+
+// check default values
+
+TEST(ClusterControllerSettingsTest, defaultMessageQueueLimitIsSet)
+{
+    Settings settings;
+    ClusterControllerSettings clusterControllerSettings(settings);
+
+    EXPECT_EQ(clusterControllerSettings.getMessageQueueLimit(), ClusterControllerSettings::DEFAULT_MESSAGE_QUEUE_LIMIT());
+}
+
+TEST(ClusterControllerSettingsTest, defaultPerParticipantIdMessageQueueLimitIsSet)
+{
+    Settings settings;
+    ClusterControllerSettings clusterControllerSettings(settings);
+
+    EXPECT_EQ(clusterControllerSettings.getPerParticipantIdMessageQueueLimit(), ClusterControllerSettings::DEFAULT_TRANSPORT_NOT_AVAILABLE_QUEUE_LIMIT());
+}
+
 TEST(ClusterControllerSettingsTest, defaultTransportNotAvailableQueueLimitIsSet)
 {
     Settings settings;
     ClusterControllerSettings clusterControllerSettings(settings);
 
-    EXPECT_EQ(0, clusterControllerSettings.getTransportNotAvailableQueueLimit());
+    EXPECT_EQ(clusterControllerSettings.getTransportNotAvailableQueueLimit(), ClusterControllerSettings::DEFAULT_TRANSPORT_NOT_AVAILABLE_QUEUE_LIMIT());
+}
+
+TEST(ClusterControllerSettingsTest, defaultMessageQueueLimitBytesIsSet)
+{
+    Settings settings;
+    ClusterControllerSettings clusterControllerSettings(settings);
+
+    EXPECT_EQ(clusterControllerSettings.getMessageQueueLimitBytes(), ClusterControllerSettings::DEFAULT_MESSAGE_QUEUE_LIMIT_BYTES());
+}
+
+TEST(ClusterControllerSettingsTest, defaultTransportNotAvailableQueueLimitBytesIsSet)
+{
+    Settings settings;
+    ClusterControllerSettings clusterControllerSettings(settings);
+
+    EXPECT_EQ(clusterControllerSettings.getTransportNotAvailableQueueLimitBytes(), ClusterControllerSettings::DEFAULT_TRANSPORT_NOT_AVAILABLE_QUEUE_LIMIT_BYTES());
 }

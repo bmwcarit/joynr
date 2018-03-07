@@ -50,6 +50,7 @@
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "joynr/LocalDiscoveryAggregator.h"
 #include "joynr/MessageSender.h"
+#include "joynr/MessageQueue.h"
 #include "joynr/MessagingQos.h"
 #include "joynr/MessagingStubFactory.h"
 #include "joynr/MqttMulticastAddressCalculator.h"
@@ -335,14 +336,16 @@ void JoynrClusterControllerRuntime::init()
             doMqttMessaging ? mqttSerializedGlobalClusterControllerAddress
                             : httpSerializedGlobalClusterControllerAddress;
 
-    const int maxThreads = 1;
     std::unique_ptr<MessageQueue<std::string>> messageQueue =
             std::make_unique<MessageQueue<std::string>>(
                     clusterControllerSettings.getMessageQueueLimit(),
-                    clusterControllerSettings.getPerParticipantIdMessageQueueLimit());
+                    clusterControllerSettings.getPerParticipantIdMessageQueueLimit(),
+                    clusterControllerSettings.getMessageQueueLimitBytes());
     std::unique_ptr<MessageQueue<std::shared_ptr<ITransportStatus>>> transportStatusQueue =
             std::make_unique<MessageQueue<std::shared_ptr<ITransportStatus>>>(
-                    clusterControllerSettings.getTransportNotAvailableQueueLimit());
+                    clusterControllerSettings.getTransportNotAvailableQueueLimit(),
+                    0,
+                    clusterControllerSettings.getTransportNotAvailableQueueLimitBytes());
     // init message router
     ccMessageRouter = std::make_shared<CcMessageRouter>(
             messagingSettings,
@@ -356,7 +359,6 @@ void JoynrClusterControllerRuntime::init()
             systemServicesSettings.getCcMessageNotificationProviderParticipantId(),
             libjoynrSettings.isMessageRouterPersistencyEnabled(),
             std::move(transportStatuses),
-            maxThreads,
             std::move(messageQueue),
             std::move(transportStatusQueue));
 
