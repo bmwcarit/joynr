@@ -93,7 +93,7 @@ var testRunner = {
 
     executeSubRunsWithWarmUp: function(benchmarkConfig) {
         error("warming up: " + benchmarkConfig.name);
-        if (options.measureMemory == "true") {
+        if (options.heapSnapShot == "true") {
             setTimeout(function() {
                 ProcessManager.takeHeapSnapShot(Date.now() + "start" + benchmarkConfig.name);
             }, 500);

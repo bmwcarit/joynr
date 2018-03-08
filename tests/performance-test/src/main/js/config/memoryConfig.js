@@ -53,6 +53,7 @@ module.exports = {
             port: "4242"
         },
         measureMemory: "true",
+        heapSnapShot: "false",
         stringLength: 10,
         timeout: 3600000,
         byteArraySize: 1000,
