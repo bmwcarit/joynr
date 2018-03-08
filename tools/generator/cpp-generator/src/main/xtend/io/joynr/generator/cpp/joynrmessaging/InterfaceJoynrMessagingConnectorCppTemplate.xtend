@@ -333,7 +333,7 @@ request.setParams(
 					std::shared_ptr<joynr::SubscriptionQos> subscriptionQos,
 					SubscriptionRequest& subscriptionRequest
 		) {
-			JOYNR_LOG_DEBUG(logger(), "Subscribing to «attributeName».");
+			JOYNR_LOG_TRACE(logger(), "Subscribing to «attributeName».");
 			std::string attributeName("«attributeName»");
 			joynr::MessagingQos clonedMessagingQos(qosSettings);
 			clonedMessagingQos.setTtl(ISubscriptionManager::convertExpiryDateIntoTtlMs(*subscriptionQos));
