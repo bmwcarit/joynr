@@ -4,7 +4,11 @@
 None.
 
 ## Other changes
-None.
+* **[Java]** Reduced cpu load and memory usage by reusing joynr internal proxies instead of
+  building a new proxy for every proxy operation.
+* **[Java, C++]** Enhanced log output to allow easier tracing of proxy calls: message ID and
+  relevant payload are now logged when a joynr message is created to be able to relate later log
+  output which only contains the message ID to the corresponding proxy call.
 
 ## Configuration property changes
 * **[Java]** Moved property PROPERTY_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS
