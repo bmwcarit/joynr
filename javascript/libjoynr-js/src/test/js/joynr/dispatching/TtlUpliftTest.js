@@ -189,6 +189,7 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
         spyOn(publicationManager, "handleSubscriptionStop");
 
         messageRouter = jasmine.createSpyObj("MessageRouter", ["addMulticastReceiver", "removeMulticastReceiver"]);
+        messageRouter.addMulticastReceiver.and.returnValue(Promise.resolve());
         clusterControllerMessagingStub = jasmine.createSpyObj("ClusterControllerMessagingStub", ["transmit"]);
         clusterControllerMessagingStub.transmit.and.returnValue(Promise.resolve());
 
@@ -284,7 +285,7 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
             );
         });
 
-        it("send multicast subscription request", function() {
+        it("send multicast subscription request", function(done) {
             var settings = {
                 from: proxyId,
                 toDiscoveryEntry: providerDiscoveryEntry,
@@ -297,12 +298,13 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
                 })
             };
 
-            dispatcher.sendBroadcastSubscriptionRequest(settings);
-
-            checkMessageFromProxyWithTolerance(
-                JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST,
-                expiryDateMs
-            );
+            dispatcher.sendBroadcastSubscriptionRequest(settings).then(function() {
+                checkMessageFromProxyWithTolerance(
+                    JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST,
+                    expiryDateMs
+                );
+                done();
+            });
         });
 
         it("send multicast subscription stop", function() {
@@ -556,7 +558,7 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
             );
         });
 
-        it("send multicast subscription request", function() {
+        it("send multicast subscription request", function(done) {
             var settings = {
                 from: proxyId,
                 toDiscoveryEntry: providerDiscoveryEntry,
@@ -569,12 +571,13 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
                 })
             };
 
-            dispatcherWithTtlUplift.sendBroadcastSubscriptionRequest(settings);
-
-            checkMessageFromProxyWithTolerance(
-                JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST,
-                expiryDateWithTtlUplift
-            );
+            dispatcherWithTtlUplift.sendBroadcastSubscriptionRequest(settings).then(function() {
+                checkMessageFromProxyWithTolerance(
+                    JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST,
+                    expiryDateWithTtlUplift
+                );
+                done();
+            });
         });
 
         it("send multicast subscription stop", function() {

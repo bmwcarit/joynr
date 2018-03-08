@@ -31,7 +31,6 @@ var SubscriptionPublication = require("./types/SubscriptionPublication");
 var MulticastPublication = require("./types/MulticastPublication");
 var JoynrMessage = require("../messaging/JoynrMessage");
 var MessagingQosEffort = require("../messaging/MessagingQosEffort");
-var InProcessAddress = require("../messaging/inprocess/InProcessAddress");
 var defaultMessagingSettings = require("../start/settings/defaultMessagingSettings");
 var DiagnosticTags = require("../system/DiagnosticTags");
 var Util = require("../util/UtilInternal");
@@ -39,7 +38,6 @@ var JSONSerializer = require("../util/JSONSerializer");
 var Typing = require("../util/Typing");
 var SubscriptionQos = require("../proxy/SubscriptionQos");
 var LoggerFactory = require("../system/LoggerFactory");
-var JoynrException = require("../exceptions/JoynrException");
 
 /**
  * @name Dispatcher
@@ -323,32 +321,35 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
             payload: JSONSerializer.stringify(settings.subscriptionRequest)
         });
 
+        function addMulticastReceiverOnSuccess() {
+            return sendJoynrMessage(requestMessage, settings);
+        }
+
         if (type === JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST) {
             log.info(
-                "broadcast subscription to " + settings.subscriptionRequest.subscribedToName,
+                "multicast subscription to " + settings.subscriptionRequest.subscribedToName,
                 DiagnosticTags.forMulticastSubscriptionRequest({
                     subscriptionRequest: settings.subscriptionRequest,
                     to: settings.toDiscoveryEntry.participantId,
                     from: settings.from
                 })
             );
-            if (messageRouter !== undefined) {
-                messageRouter.addMulticastReceiver({
+            return messageRouter
+                .addMulticastReceiver({
                     multicastId: settings.subscriptionRequest.multicastId,
                     subscriberParticipantId: settings.from,
                     providerParticipantId: settings.toDiscoveryEntry.participantId
-                });
-            }
-        } else {
-            log.info(
-                "broadcast subscription to " + settings.subscriptionRequest.subscribedToName,
-                DiagnosticTags.forBroadcastSubscriptionRequest({
-                    subscriptionRequest: settings.subscriptionRequest,
-                    to: settings.toDiscoveryEntry.participantId,
-                    from: settings.from
                 })
-            );
+                .then(addMulticastReceiverOnSuccess);
         }
+        log.info(
+            "broadcast subscription to " + settings.subscriptionRequest.subscribedToName,
+            DiagnosticTags.forBroadcastSubscriptionRequest({
+                subscriptionRequest: settings.subscriptionRequest,
+                to: settings.toDiscoveryEntry.participantId,
+                from: settings.from
+            })
+        );
         return sendJoynrMessage(requestMessage, settings);
     };
 
@@ -371,15 +372,12 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
      * @returns {Object} A+ promise object
      */
     this.sendMulticastSubscriptionStop = function sendMulticastSubscriptionStop(settings) {
-        var result = this.sendSubscriptionStop(settings);
-        if (messageRouter !== undefined) {
-            messageRouter.removeMulticastReceiver({
-                multicastId: settings.multicastId,
-                subscriberParticipantId: settings.from,
-                providerParticipantId: settings.toDiscoveryEntry.participantId
-            });
-        }
-        return result;
+        this.sendSubscriptionStop(settings);
+        return messageRouter.removeMulticastReceiver({
+            multicastId: settings.multicastId,
+            subscriberParticipantId: settings.from,
+            providerParticipantId: settings.toDiscoveryEntry.participantId
+        });
     };
 
     /**

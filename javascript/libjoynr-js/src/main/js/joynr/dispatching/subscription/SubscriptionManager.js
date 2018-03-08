@@ -449,12 +449,14 @@ function SubscriptionManager(dispatcher) {
             return deferred.promise;
         }
 
-        dispatcher.sendBroadcastSubscriptionRequest({
-            from: parameters.proxyId,
-            toDiscoveryEntry: parameters.providerDiscoveryEntry,
-            messagingQos: messagingQos,
-            subscriptionRequest: subscriptionRequest
-        });
+        dispatcher
+            .sendBroadcastSubscriptionRequest({
+                from: parameters.proxyId,
+                toDiscoveryEntry: parameters.providerDiscoveryEntry,
+                messagingQos: messagingQos,
+                subscriptionRequest: subscriptionRequest
+            })
+            .catch(sendBroadcastSubscriptionRequestOnError);
 
         return deferred.promise;
     };
