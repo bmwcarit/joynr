@@ -604,6 +604,11 @@ void JoynrClusterControllerRuntime::init()
                             messagingSettings.getDiscoveryDirectoriesDomain());
     capabilitiesProxyBuilder->setDiscoveryQos(discoveryQos);
 
+    MessagingQos messagingQos;
+    messagingQos.setCompress(
+            clusterControllerSettings.isGlobalCapabilitiesDirectoryCompressedMessagesEnabled());
+    capabilitiesProxyBuilder->setMessagingQos(messagingQos);
+
     capabilitiesClient->setProxyBuilder(std::move(capabilitiesProxyBuilder));
 
     // Do this after local capabilities directory and message router have been initialized.
