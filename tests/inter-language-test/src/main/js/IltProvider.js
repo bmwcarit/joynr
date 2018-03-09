@@ -400,7 +400,7 @@ exports.implementation = {
             return Promise.reject(new joynr.exceptions.ProviderRuntimeException(
                     {detailMessage: "methodWithSingleByteBufferParameter: received wrong argument"}));
         }
-        return Promise.resolve(opArgs.byteBufferIn);
+        return Promise.resolve({byteBufferOut: opArgs.byteBufferIn});
     },
 
     methodWithMultipleByteBufferParameters : function(opArgs) {
@@ -413,7 +413,7 @@ exports.implementation = {
             return Promise.reject(new joynr.exceptions.ProviderRuntimeException(
                     {detailMessage: "methodWithMultipleByteBufferParameters: invalid argument byteBufferIn2"}));
         }
-        return Promise.resolve(byteBufferIn1.concat(byteBufferIn2));
+        return Promise.resolve({byteBufferOut: opArgs.byteBufferIn1.concat(opArgs.byteBufferIn2)});
     },
 
     methodWithSingleEnumParameters : function(opArgs) {
@@ -773,7 +773,7 @@ exports.implementation = {
 
     methodToFireBroadcastWithMultipleByteBufferParameters : function(opArgs) {
         prettyLog("IltProvider.methodToFireBroadcastWithMultipleByteBufferParameters(" + JSON.stringify(opArgs) + ") called");
-        var outputParameters = self.broadcastWithSingleByteBufferParameter.createBroadcastOutputParameters();
+        var outputParameters = self.broadcastWithMultipleByteBufferParameters.createBroadcastOutputParameters();
         outputParameters.setByteBufferOut1(opArgs.byteBufferIn1);
         outputParameters.setByteBufferOut2(opArgs.byteBufferIn2);
         self.broadcastWithMultipleByteBufferParameters.fire(outputParameters, opArgs.partitions);
