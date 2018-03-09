@@ -63,6 +63,7 @@ public:
     static const std::string&
     SETTING_ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_PARTICIPANTID();
     static const std::string& SETTING_ACL_ENTRIES_DIRECTORY();
+    static const std::string& SETTING_GLOBAL_CAPABILITIES_DIRECTORY_COMPRESSED_MESSAGES_ENABLED();
 
     static std::chrono::milliseconds DEFAULT_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS();
     static const std::string& DEFAULT_CLUSTERCONTROLLER_SETTINGS_FILENAME();
@@ -84,6 +85,7 @@ public:
     static std::uint64_t DEFAULT_TRANSPORT_NOT_AVAILABLE_QUEUE_LIMIT();
     static std::uint64_t DEFAULT_MESSAGE_QUEUE_LIMIT_BYTES();
     static std::uint64_t DEFAULT_TRANSPORT_NOT_AVAILABLE_QUEUE_LIMIT_BYTES();
+    static bool DEFAULT_GLOBAL_CAPABILITIES_DIRECTORY_COMPRESSED_MESSAGES_ENABLED();
 
     explicit ClusterControllerSettings(Settings& settings);
     ClusterControllerSettings(const ClusterControllerSettings&) = default;
@@ -163,6 +165,9 @@ public:
     void setLocalCapabilitiesDirectoryPersistenceFilename(const std::string& filename);
     bool isLocalCapabilitiesDirectoryPersistencyEnabled() const;
     void setLocalCapabilitiesDirectoryPersistencyEnabled(bool enabled);
+
+    bool isGlobalCapabilitiesDirectoryCompressedMessagesEnabled() const;
+    void setGlobalCapabilitiesDirectoryCompressedMessagesEnabled(bool enable);
 
     int getPurgeExpiredDiscoveryEntriesIntervalMs() const;
     void setPurgeExpiredDiscoveryEntriesIntervalMs(int purgeExpiredEntriesIntervalMs);

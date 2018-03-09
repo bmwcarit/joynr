@@ -122,6 +122,16 @@ TEST(ClusterControllerSettingsTest, transportNotAvailableQueueLimitBytesIsSet)
     EXPECT_EQ(clusterControllerSettings.getTransportNotAvailableQueueLimitBytes(), std::uint64_t(52428800));
 }
 
+TEST(ClusterControllerSettingsTest, globalCapabilitiesDirectoryCompressedMessagesEnabledIsSet)
+{
+    Settings testSettings("test-resources/CCSettingsWithGlobalDiscovery.settings");
+    ASSERT_TRUE(testSettings.isLoaded());
+
+    ClusterControllerSettings clusterControllerSettings(testSettings);
+
+    EXPECT_EQ(clusterControllerSettings.isGlobalCapabilitiesDirectoryCompressedMessagesEnabled(), true);
+}
+
 // check default values
 
 TEST(ClusterControllerSettingsTest, defaultMessageQueueLimitIsSet)
@@ -162,4 +172,12 @@ TEST(ClusterControllerSettingsTest, defaultTransportNotAvailableQueueLimitBytesI
     ClusterControllerSettings clusterControllerSettings(settings);
 
     EXPECT_EQ(clusterControllerSettings.getTransportNotAvailableQueueLimitBytes(), ClusterControllerSettings::DEFAULT_TRANSPORT_NOT_AVAILABLE_QUEUE_LIMIT_BYTES());
+}
+
+TEST(ClusterControllerSettingsTest, defaultGlobalCapabilitiesDirectoryCompressedMessagesEnabledIsSet)
+{
+    Settings settings;
+    ClusterControllerSettings clusterControllerSettings(settings);
+
+    EXPECT_EQ(clusterControllerSettings.isGlobalCapabilitiesDirectoryCompressedMessagesEnabled(), ClusterControllerSettings::DEFAULT_GLOBAL_CAPABILITIES_DIRECTORY_COMPRESSED_MESSAGES_ENABLED());
 }

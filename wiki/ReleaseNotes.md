@@ -6,6 +6,9 @@ None.
 ## Other changes
 * **[C++]** moved settings `local-capabilities-directory-persistence-file` and
   `local-capabilities-directory-persistency-enabled` from section [lib-joynr] to [cluster-controller].
+* **[C++]** added setting 'cluster-controller/global-capabilities-directory-compressed-messages-enabled'
+  which specifies whether messages to GlobalCapabilitiesDirectory shall be compressed.
+  By default they will be sent uncompressed.
 
 # joynr 1.0.4
 

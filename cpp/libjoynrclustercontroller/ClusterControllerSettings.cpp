@@ -54,6 +54,11 @@ void ClusterControllerSettings::checkSettings()
                 DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCY_ENABLED());
     }
 
+    if (!settings.contains(SETTING_GLOBAL_CAPABILITIES_DIRECTORY_COMPRESSED_MESSAGES_ENABLED())) {
+        setGlobalCapabilitiesDirectoryCompressedMessagesEnabled(
+                DEFAULT_GLOBAL_CAPABILITIES_DIRECTORY_COMPRESSED_MESSAGES_ENABLED());
+    }
+
     if (!settings.contains(SETTING_MQTT_CLIENT_ID_PREFIX())) {
         setMqttClientIdPrefix(DEFAULT_MQTT_CLIENT_ID_PREFIX());
     }
@@ -553,6 +558,18 @@ bool ClusterControllerSettings::isMqttTlsEnabled() const
     return settings.get<bool>(SETTING_MQTT_TLS_ENABLED());
 }
 
+bool ClusterControllerSettings::isGlobalCapabilitiesDirectoryCompressedMessagesEnabled() const
+{
+    return settings.get<bool>(SETTING_GLOBAL_CAPABILITIES_DIRECTORY_COMPRESSED_MESSAGES_ENABLED());
+}
+
+void ClusterControllerSettings::setGlobalCapabilitiesDirectoryCompressedMessagesEnabled(
+        bool enabled)
+{
+    return settings.set<bool>(
+            SETTING_GLOBAL_CAPABILITIES_DIRECTORY_COMPRESSED_MESSAGES_ENABLED(), enabled);
+}
+
 const std::string& ClusterControllerSettings::
         DEFAULT_LOCAL_DOMAIN_ACCESS_STORE_PERSISTENCE_FILENAME()
 {
@@ -561,6 +578,11 @@ const std::string& ClusterControllerSettings::
 }
 
 bool ClusterControllerSettings::DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCY_ENABLED()
+{
+    return false;
+}
+
+bool ClusterControllerSettings::DEFAULT_GLOBAL_CAPABILITIES_DIRECTORY_COMPRESSED_MESSAGES_ENABLED()
 {
     return false;
 }
@@ -605,6 +627,14 @@ const std::string& ClusterControllerSettings::
 const std::string& ClusterControllerSettings::SETTING_ACL_ENTRIES_DIRECTORY()
 {
     static const std::string value("cluster-controller/acl-entries-directory");
+    return value;
+}
+
+const std::string& ClusterControllerSettings::
+        SETTING_GLOBAL_CAPABILITIES_DIRECTORY_COMPRESSED_MESSAGES_ENABLED()
+{
+    static const std::string value(
+            "cluster-controller/global-capabilities-directory-compressed-messages-enabled");
     return value;
 }
 
@@ -879,6 +909,11 @@ void ClusterControllerSettings::printSettings() const
                     "SETTING: {} = {})",
                     SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS(),
                     getCapabilitiesFreshnessUpdateIntervalMs().count());
+    JOYNR_LOG_DEBUG(logger(),
+                    "SETTING: {} = {})",
+                    SETTING_GLOBAL_CAPABILITIES_DIRECTORY_COMPRESSED_MESSAGES_ENABLED(),
+                    isGlobalCapabilitiesDirectoryCompressedMessagesEnabled());
+
     if (settings.get<bool>(SETTING_ACCESS_CONTROL_ENABLE())) {
         JOYNR_LOG_DEBUG(logger(),
                         "SETTING: {} = {})",
