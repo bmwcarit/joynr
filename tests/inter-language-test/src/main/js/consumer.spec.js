@@ -52,6 +52,7 @@ describe("Consumer test", function() {
     var provisioning = testbase.provisioning_common;
     var initialized = false;
     var testFinished = false;
+    var compressed = true;
     var testInterfaceProxy;
 
     beforeEach(function() {
@@ -65,8 +66,10 @@ describe("Consumer test", function() {
                     log("joynr started");
                     joynr = loadedJoynr;
                     var messagingQos = new joynr.messaging.MessagingQos({
-                        ttl : 60000
+                        ttl : 60000,
+                        compress: compressed
                     });
+                    log("messagingQos - compressed = " + compressed);
                     var TestInterfaceProxy = require("../generated-javascript/joynr/interlanguagetest/TestInterfaceProxy.js");
                     joynr.proxyBuilder.build(TestInterfaceProxy, {
                         domain : domain,
@@ -98,6 +101,28 @@ describe("Consumer test", function() {
 
     it("proxy is defined", function() {
         expect(testInterfaceProxy).toBeDefined();
+    });
+
+    it("callMethodWithoutParametersCompressed", function() {
+        var spy = jasmine.createSpyObj("spy", [ "onFulfilled", "onError" ]);
+        spy.onFulfilled.reset();
+        spy.onError.reset();
+
+        runs(function() {
+            log("callMethodWithoutParametersCompressed");
+            testInterfaceProxy.methodWithoutParameters().then(spy.onFulfilled).catch(spy.onError);
+        });
+
+        waitsFor(function() {
+            return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
+        }, "callMethodWithoutParametersCompressed", 5000);
+
+        runs(function() {
+            expect(spy.onFulfilled.callCount).toEqual(1);
+            expect(spy.onError.callCount).toEqual(0);
+            initialized = false;
+            compressed = false;
+        });
     });
 
     it("callMethodWithoutParameters", function() {

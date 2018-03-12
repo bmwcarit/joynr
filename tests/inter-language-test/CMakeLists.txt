@@ -89,6 +89,7 @@ set(ilt-consumer_SOURCES
     "src/main/cpp/IltConsumerAsyncMethodTest.cpp"
     "src/main/cpp/IltConsumerAttributeSubscriptionTest.cpp"
     "src/main/cpp/IltConsumerBroadcastSubscriptionTest.cpp"
+    "src/main/cpp/IltConsumerCompressionTest.cpp"
     "src/main/cpp/IltConsumerFilteredBroadcastSubscriptionTest.cpp"
     "src/main/cpp/IltConsumerFireAndForgetMethodTest.cpp"
     "src/main/cpp/IltConsumerGetterSetterTest.cpp"
