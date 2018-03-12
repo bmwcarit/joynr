@@ -1054,15 +1054,15 @@ void LocalCapabilitiesDirectory::checkExpiredDiscoveryEntries(
     auto removedGlobalCapabilities = globalCapabilities.removeExpired();
 
     if (!removedLocalCapabilities.empty()) {
-        JOYNR_LOG_DEBUG(logger(),
-                        "Following local discovery entries expired: {}",
-                        joinToString(removedLocalCapabilities));
+        JOYNR_LOG_INFO(logger(),
+                       "Following local discovery entries expired: {}",
+                       joinToString(removedLocalCapabilities));
     }
 
     if (!removedGlobalCapabilities.empty()) {
-        JOYNR_LOG_DEBUG(logger(),
-                        "Following global discovery entries expired: {}",
-                        joinToString(removedGlobalCapabilities));
+        JOYNR_LOG_INFO(logger(),
+                       "Following global discovery entries expired: {}",
+                       joinToString(removedGlobalCapabilities));
     }
 
     if (!removedLocalCapabilities.empty() || !removedGlobalCapabilities.empty()) {
