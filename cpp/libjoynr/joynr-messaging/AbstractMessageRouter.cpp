@@ -34,6 +34,7 @@
 #include "joynr/MulticastReceiverDirectory.h"
 #include "joynr/access-control/IAccessController.h"
 #include "joynr/exceptions/JoynrException.h"
+#include "joynr/serializer/Serializer.h"
 #include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/system/RoutingTypes/BrowserAddress.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"

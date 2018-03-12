@@ -17,7 +17,6 @@
  * #L%
  */
 #include "joynr/ObjectWithDecayTime.h"
-#include <chrono>
 
 namespace joynr
 {

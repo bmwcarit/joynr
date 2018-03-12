@@ -25,15 +25,11 @@
 
 #include <memory>
 #include <string>
-#include <unordered_set>
 
 #include "joynr/JoynrExport.h"
 #include "joynr/Logger.h"
 #include "joynr/MessagingSettings.h"
-#include "joynr/MulticastReceiverDirectory.h"
-#include "joynr/ObjectWithDecayTime.h"
 #include "joynr/PrivateCopyAssign.h"
-#include "joynr/Runnable.h"
 
 namespace boost
 {

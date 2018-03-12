@@ -23,8 +23,7 @@
 #include <vector>
 
 #include "joynr/Dispatcher.h"
-#include "joynr/exceptions/JoynrException.h"
-#include "joynr/IKeychain.h"
+#include "joynr/CapabilitiesRegistrar.h"
 #include "joynr/IMulticastAddressCalculator.h"
 #include "joynr/InProcessDispatcher.h"
 #include "joynr/InProcessMessagingAddress.h"
