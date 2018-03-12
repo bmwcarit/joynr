@@ -64,7 +64,7 @@ None.
 ## Configuration property changes
 * **[C++]** The queue size for messages, which can not be transmitted because the global transport
   is not available, can be limited by setting the `cluster-controller/transport-not-available-queue-limit`
-  property. By default no queue limit is enfored.
+  property. By default no queue limit is enforced.
 
 # joynr 1.0.0
 API Stable
