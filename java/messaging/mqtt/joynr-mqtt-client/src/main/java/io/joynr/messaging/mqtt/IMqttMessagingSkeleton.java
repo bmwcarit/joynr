@@ -24,5 +24,5 @@ import io.joynr.messaging.IMessagingSkeleton;
 
 public interface IMqttMessagingSkeleton extends IMessagingSkeleton, IMessagingMulticastSubscriber {
 
-    public void transmit(byte[] serializedMessage, int mqttId, int mqttQos, FailureAction failureAction);
+    public void transmit(byte[] serializedMessage, FailureAction failureAction);
 }

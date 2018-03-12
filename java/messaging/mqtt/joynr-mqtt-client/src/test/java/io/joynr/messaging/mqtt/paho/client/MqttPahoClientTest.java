@@ -43,7 +43,6 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -68,7 +67,6 @@ import io.joynr.messaging.mqtt.IMqttMessagingSkeleton;
 import io.joynr.messaging.mqtt.JoynrMqttClient;
 import io.joynr.messaging.mqtt.MqttClientFactory;
 import io.joynr.messaging.mqtt.MqttClientIdProvider;
-import io.joynr.messaging.mqtt.MqttMessagingStub;
 import io.joynr.messaging.mqtt.MqttModule;
 import io.joynr.messaging.routing.MessageRouter;
 import joynr.system.RoutingTypes.MqttAddress;
@@ -88,7 +86,6 @@ public class MqttPahoClientTest {
     private MessageRouter mockMessageRouter;
     private JoynrMqttClient joynrMqttClient;
     private Properties properties;
-    private ArgumentCaptor<Integer> mqttMessageIdCaptor;
     private byte[] serializedMessage;
 
     @Rule
@@ -111,7 +108,6 @@ public class MqttPahoClientTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         properties = new Properties();
-        mqttMessageIdCaptor = ArgumentCaptor.forClass(Integer.class);
 
         properties.put(MqttModule.PROPERTY_KEY_MQTT_RECONNECT_SLEEP_MS, "100");
         properties.put(MqttModule.PROPERTY_KEY_MQTT_KEEP_ALIVE_TIMER_SEC, "60");
@@ -123,9 +119,7 @@ public class MqttPahoClientTest {
         properties.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_UNICAST, "");
         properties.put(MqttModule.PROPERTY_KEY_MQTT_MAX_MSGS_INFLIGHT, "100");
         properties.put(MessagingPropertyKeys.CHANNELID, "myChannelId");
-        properties.put(ConfigurableMessagingSettings.PROPERTY_BACKPRESSURE_REPEATED_MQTT_MESSAGE_IGNORE_PERIOD_MS,
-                       "1000");
-        properties.put(ConfigurableMessagingSettings.PROPERTY_BACKPRESSURE_MAX_INCOMING_MQTT_MESSAGES_IN_QUEUE, "20");
+        properties.put(ConfigurableMessagingSettings.PROPERTY_MAX_INCOMING_MQTT_REQUESTS, "0");
         properties.put(ConfigurableMessagingSettings.PROPERTY_BACKPRESSURE_ENABLED, "false");
         properties.put(MqttModule.PROPERTY_MQTT_CLEAN_SESSION, "false");
         properties.put(MqttModule.PROPERTY_KEY_MQTT_MAX_MESSAGE_SIZE_BYTES, "0");
@@ -198,12 +192,7 @@ public class MqttPahoClientTest {
 
     private void joynrMqttClientPublishAndVerifyReceivedMessage(byte[] serializedMessage) {
         joynrMqttClient.publishMessage(ownTopic.getTopic(), serializedMessage);
-        verify(mockReceiver, timeout(100).times(1)).transmit(eq(serializedMessage),
-                                                             mqttMessageIdCaptor.capture(),
-                                                             eq(MqttMessagingStub.DEFAULT_QOS_LEVEL),
-                                                             any(FailureAction.class));
-        joynrMqttClient.messageReceivedAndProcessingFinished(mqttMessageIdCaptor.getValue(),
-                                                             MqttMessagingStub.DEFAULT_QOS_LEVEL);
+        verify(mockReceiver, timeout(100).times(1)).transmit(eq(serializedMessage), any(FailureAction.class));
     }
 
     @Test
@@ -367,13 +356,7 @@ public class MqttPahoClientTest {
         joynrMqttClient.subscribe(topic);
 
         Thread.sleep(100);
-        verify(mockReceiver, atLeast(1)).transmit(eq(serializedMessage),
-                                                  mqttMessageIdCaptor.capture(),
-                                                  eq(MqttMessagingStub.DEFAULT_QOS_LEVEL),
-                                                  any(FailureAction.class));
-
-        joynrMqttClient.messageReceivedAndProcessingFinished(mqttMessageIdCaptor.getValue(),
-                                                             MqttMessagingStub.DEFAULT_QOS_LEVEL);
+        verify(mockReceiver, atLeast(1)).transmit(eq(serializedMessage), any(FailureAction.class));
     }
 
     @Test
@@ -398,10 +381,7 @@ public class MqttPahoClientTest {
         joynrMqttClient.subscribe(topic);
 
         Thread.sleep(100);
-        verify(mockReceiver, times(0)).transmit(eq(serializedMessage),
-                                                mqttMessageIdCaptor.capture(),
-                                                eq(MqttMessagingStub.DEFAULT_QOS_LEVEL),
-                                                any(FailureAction.class));
+        verify(mockReceiver, times(0)).transmit(eq(serializedMessage), any(FailureAction.class));
     }
 
     @Test
