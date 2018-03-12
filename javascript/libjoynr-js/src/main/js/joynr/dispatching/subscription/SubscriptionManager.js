@@ -334,23 +334,12 @@ function SubscriptionManager(dispatcher) {
 
         storeSubscriptionRequest(settings, subscriptionRequest);
 
-        function sendSubscriptionRequestCatcher(error) {
-            cleanupSubscription(subscriptionId);
-            if (settings.onError) {
-                settings.onError(error);
-            }
-            deferred.reject(error);
-            return deferred.promise;
-        }
-
-        dispatcher
-            .sendSubscriptionRequest({
-                from: settings.proxyId,
-                toDiscoveryEntry: settings.providerDiscoveryEntry,
-                messagingQos: messagingQos,
-                subscriptionRequest: subscriptionRequest
-            })
-            .catch(sendSubscriptionRequestCatcher);
+        dispatcher.sendSubscriptionRequest({
+            from: settings.proxyId,
+            toDiscoveryEntry: settings.providerDiscoveryEntry,
+            messagingQos: messagingQos,
+            subscriptionRequest: subscriptionRequest
+        });
 
         return deferred.promise;
     };
@@ -460,14 +449,12 @@ function SubscriptionManager(dispatcher) {
             return deferred.promise;
         }
 
-        dispatcher
-            .sendBroadcastSubscriptionRequest({
-                from: parameters.proxyId,
-                toDiscoveryEntry: parameters.providerDiscoveryEntry,
-                messagingQos: messagingQos,
-                subscriptionRequest: subscriptionRequest
-            })
-            .catch(sendBroadcastSubscriptionRequestOnError);
+        dispatcher.sendBroadcastSubscriptionRequest({
+            from: parameters.proxyId,
+            toDiscoveryEntry: parameters.providerDiscoveryEntry,
+            messagingQos: messagingQos,
+            subscriptionRequest: subscriptionRequest
+        });
 
         return deferred.promise;
     };

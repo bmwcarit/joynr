@@ -52,26 +52,7 @@ function ChannelMessagingSkeleton(settings) {
 ChannelMessagingSkeleton.prototype.receiveMessage = function receiveMessage(joynrMessage) {
     joynrMessage = JoynrMessage.parseMessage(joynrMessage);
     joynrMessage.isReceivedFromGlobal = true;
-    try {
-        this._messageRouter.route(joynrMessage).catch(function(e) {
-            log.error(
-                "unable to process message: " +
-                    e +
-                    (e instanceof JoynrException ? " " + e.detailMessage : "") +
-                    " \nmessage: " +
-                    DiagnosticTags.forJoynrMessage(joynrMessage)
-            );
-        });
-    } catch (e) {
-        // Errors should be returned via the Promise
-        log.fatal(
-            "unable to process message: " +
-                e +
-                (e instanceof JoynrException ? " " + e.detailMessage : "") +
-                " \nmessage: " +
-                DiagnosticTags.forJoynrMessage(joynrMessage)
-        );
-    }
+    this._messageRouter.route(joynrMessage);
 };
 
 module.exports = ChannelMessagingSkeleton;

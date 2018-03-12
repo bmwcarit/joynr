@@ -106,12 +106,7 @@ function RequestReplyManager(dispatcher, typeRegistry) {
         );
         // resolve will be called upon successful response
 
-        function requestErrorCatcher(error) {
-            delete replyCallers[settings.request.requestReplyId];
-            deferred.reject(error);
-        }
-
-        dispatcher.sendRequest(settings).catch(requestErrorCatcher);
+        dispatcher.sendRequest(settings);
 
         return deferred.promise;
     };

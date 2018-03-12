@@ -370,9 +370,7 @@ function WebSocketLibjoynrRuntime(provisioning) {
             incomingAddress: localAddress
         });
 
-        webSocketMessagingSkeleton.registerListener(function(joynrMessage) {
-            messageRouter.route(joynrMessage).catch(Util.emptyFunction);
-        });
+        webSocketMessagingSkeleton.registerListener(messageRouter.route);
 
         // link up clustercontroller messaging to dispatcher
         messageRouterSkeleton = new InProcessMessagingSkeleton();

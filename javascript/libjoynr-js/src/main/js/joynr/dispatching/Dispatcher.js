@@ -481,17 +481,7 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
 
         settings.reply = JSONSerializer.stringify(reply, reply.error !== undefined);
         settings.messageType = JoynrMessage.JOYNRMESSAGE_TYPE_REPLY;
-        return sendReply(settings).catch(function(error) {
-            log.error(
-                "Failed to send reply for request " +
-                    requestReplyId +
-                    " to " +
-                    toParticipantId +
-                    ": " +
-                    error +
-                    (error instanceof JoynrException ? " " + error.detailMessage : "")
-            );
-        });
+        return sendReply(settings);
     }
     /**
      * @private
@@ -523,17 +513,7 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
 
         settings.reply = JSONSerializer.stringify(subscriptionReply, subscriptionReply.error !== undefined);
         settings.messageType = JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REPLY;
-        sendReply(settings).catch(function(error) {
-            log.error(
-                "Failed to send subscription reply for subscription " +
-                    subscriptionId +
-                    " to " +
-                    toParticipantId +
-                    ": " +
-                    error +
-                    (error instanceof JoynrException ? " " + error.detailMessage : "")
-            );
-        });
+        sendReply(settings);
     }
 
     function sendPublicationInternal(settings, type, publication) {
@@ -552,14 +532,7 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
         if (log.isDebugEnabled()) {
             log.debug("sendPublicationInternal, message = " + JSON.stringify(publicationMessage));
         }
-        clusterControllerMessagingStub.transmit(publicationMessage).catch(function(error) {
-            log.error(
-                "Failed to send publication to " +
-                    toParticipantId +
-                    error +
-                    (error instanceof JoynrException ? " " + error.detailMessage : "")
-            );
-        });
+        clusterControllerMessagingStub.transmit(publicationMessage);
     }
 
     /**
@@ -643,16 +616,7 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
         if (log.isDebugEnabled()) {
             log.debug("sendMulticastPublication, message = " + JSON.stringify(publicationMessage));
         }
-        clusterControllerMessagingStub.transmit(publicationMessage).catch(function(error) {
-            // TODO error could be caught by the provider implementation when calling the fire method
-            log.error(
-                "Failed to send MulticastPublication to " +
-                    multicastId +
-                    ", error: " +
-                    error +
-                    (error instanceof JoynrException ? " " + error.detailMessage : "")
-            );
-        });
+        clusterControllerMessagingStub.transmit(publicationMessage);
     };
 
     function createSubscriptionReplySettings(joynrMessage) {
