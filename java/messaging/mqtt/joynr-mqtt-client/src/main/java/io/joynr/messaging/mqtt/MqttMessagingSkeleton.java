@@ -165,7 +165,7 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
             message.setReceivedFromGlobal(true);
 
             if (isRequestMessageTypeThatCanBeDropped(message.getType())) {
-                incomingMqttRequests.add(message.getId());
+                requestAccepted(message.getId());
             }
 
             try {
@@ -226,8 +226,15 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
     @Override
     public void messageProcessed(String messageId) {
         if (incomingMqttRequests.remove(messageId)) {
-            LOG.debug("Request {} was processed and is removed from the MQTT skeleton tracking list", messageId);
+            requestProcessed(messageId);
         }
     }
 
+    protected void requestAccepted(String messageId) {
+        incomingMqttRequests.add(messageId);
+    }
+
+    protected void requestProcessed(String messageId) {
+        LOG.debug("Request {} was processed and is removed from the MQTT skeleton tracking list", messageId);
+    }
 }
