@@ -223,6 +223,10 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
         return droppedMessagesCount.get();
     }
 
+    protected int getCurrentCountOfUnprocessedMqttRequests() {
+        return incomingMqttRequests.size();
+    }
+
     @Override
     public void messageProcessed(String messageId) {
         if (incomingMqttRequests.remove(messageId)) {
