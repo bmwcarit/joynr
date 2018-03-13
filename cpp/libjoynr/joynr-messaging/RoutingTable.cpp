@@ -76,15 +76,24 @@ void RoutingTable::add(const std::string& participantId,
     auto result = multiIndexContainer.insert(routingEntry);
     if (!result.second) {
         multiIndexContainer.replace(result.first, routingEntry);
-        JOYNR_LOG_INFO(logger(), "Replaced routing entry: {}", routingEntry.toString());
+        JOYNR_LOG_INFO(logger(),
+                       "Replaced routing entry: {}, #entries: {}",
+                       routingEntry.toString(),
+                       multiIndexContainer.size());
     } else {
-        JOYNR_LOG_INFO(logger(), "Added routing entry: {}", routingEntry.toString());
+        JOYNR_LOG_INFO(logger(),
+                       "Added routing entry: {}, #entries: {}",
+                       routingEntry.toString(),
+                       multiIndexContainer.size());
     }
 }
 
 void RoutingTable::remove(const std::string& participantId)
 {
-    JOYNR_LOG_INFO(logger(), "Removing routing entry for participantId: {}", participantId);
+    JOYNR_LOG_INFO(logger(),
+                   "Removing routing entry for participantId: {}, #entries before removal: {}",
+                   participantId,
+                   multiIndexContainer.size());
     multiIndexContainer.erase(participantId);
 }
 
