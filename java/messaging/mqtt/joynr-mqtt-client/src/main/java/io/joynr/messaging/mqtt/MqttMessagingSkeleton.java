@@ -54,16 +54,16 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
     private static final Logger LOG = LoggerFactory.getLogger(MqttMessagingSkeleton.class);
 
     protected final int maxIncomingMqttRequests;
-    private MessageRouter messageRouter;
+    private final MessageRouter messageRouter;
     private JoynrMqttClient mqttClient;
-    private MqttClientFactory mqttClientFactory;
-    private MqttAddress ownAddress;
-    private ConcurrentMap<String, AtomicInteger> multicastSubscriptionCount = Maps.newConcurrentMap();
-    private MqttTopicPrefixProvider mqttTopicPrefixProvider;
-    private RawMessagingPreprocessor rawMessagingPreprocessor;
-    private Set<JoynrMessageProcessor> messageProcessors;
-    private Set<String> incomingMqttRequests;
-    private AtomicLong droppedMessagesCount;
+    private final MqttClientFactory mqttClientFactory;
+    private final MqttAddress ownAddress;
+    private final ConcurrentMap<String, AtomicInteger> multicastSubscriptionCount;
+    private final MqttTopicPrefixProvider mqttTopicPrefixProvider;
+    private final RawMessagingPreprocessor rawMessagingPreprocessor;
+    private final Set<JoynrMessageProcessor> messageProcessors;
+    private final Set<String> incomingMqttRequests;
+    private final AtomicLong droppedMessagesCount;
 
     @Inject
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 2 LINES
@@ -83,6 +83,7 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
         this.messageProcessors = messageProcessors;
         this.incomingMqttRequests = Collections.synchronizedSet(new HashSet<String>());
         this.droppedMessagesCount = new AtomicLong();
+        this.multicastSubscriptionCount = Maps.newConcurrentMap();
     }
 
     @Override

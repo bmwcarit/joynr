@@ -50,8 +50,8 @@ public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkele
     private static final Logger LOG = LoggerFactory.getLogger(SharedSubscriptionsMqttMessagingSkeleton.class);
 
     private static final String NON_ALPHA_REGEX_PATTERN = "[^a-zA-Z]";
-    private String channelId;
-    private MqttAddress replyToAddress;
+    private final String channelId;
+    private final MqttAddress replyToAddress;
     private boolean backpressureEnabled;
     private final int backpressureIncomingMqttRequestsUpperThreshold;
     private final int backpressureIncomingMqttRequestsLowerThreshold;
