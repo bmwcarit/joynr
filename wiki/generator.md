@@ -145,5 +145,10 @@ to *gen*.
     Optional, C++ only:
       -outputHeaderPath <path to directory containing header files>
       -includePrefix <prefix to use in include statements>
+    Optional, JS only:
+      -requireJSSupport <true, false>
+        true: generate exports for all require mechanisms such als requirejs, browser and node
+        false: generate only module.exports for node
+        default: false
 ```
 
