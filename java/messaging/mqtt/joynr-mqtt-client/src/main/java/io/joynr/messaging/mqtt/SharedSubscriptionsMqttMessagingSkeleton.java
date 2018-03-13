@@ -51,6 +51,7 @@ public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkele
 
     private static final String NON_ALPHA_REGEX_PATTERN = "[^a-zA-Z]";
     private final String channelId;
+    private final String sharedSubscriptionsTopic;
     private final MqttAddress replyToAddress;
     private boolean backpressureEnabled;
     private final int backpressureIncomingMqttRequestsUpperThreshold;
@@ -79,6 +80,7 @@ public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkele
               messageProcessors);
         this.replyToAddress = replyToAddress;
         this.channelId = channelId;
+        this.sharedSubscriptionsTopic = createSharedSubscriptionsTopic();
         this.backpressureEnabled = backpressureEnabled;
         this.backpressureIncomingMqttRequestsUpperThreshold = backpressureIncomingMqttRequestsUpperThreshold;
         this.backpressureIncomingMqttRequestsLowerThreshold = backpressureIncomingMqttRequestsLowerThreshold;
@@ -132,8 +134,17 @@ public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkele
 
     @Override
     protected void subscribe() {
-        getClient().subscribe("$share:" + sanitiseChannelIdForUseAsTopic() + ":" + getOwnAddress().getTopic() + "/#");
+        getClient().subscribe(sharedSubscriptionsTopic);
         getClient().subscribe(replyToAddress.getTopic() + "/#");
+    }
+
+    private String createSharedSubscriptionsTopic() {
+        StringBuilder sb = new StringBuilder("$share:");
+        sb.append(sanitiseChannelIdForUseAsTopic());
+        sb.append(":");
+        sb.append(getOwnAddress().getTopic());
+        sb.append("/#");
+        return sb.toString();
     }
 
     private String sanitiseChannelIdForUseAsTopic() {
