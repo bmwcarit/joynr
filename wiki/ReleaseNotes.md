@@ -1,5 +1,21 @@
 # joynr 1.1.0-SNAPSHOT
 
+## Javascript Memory and Performance Changes
+* **[Generator]** Generated JS code will support only module.exports as default when exporting.
+  This reduces the size of the generated code.
+  There is a new generator option requireJSSupport, which will restore the old behavior.
+  See the [joynr code Generator Reference](generator.md) for details.
+* **[Generator]** Joynr Compound Types and Joynr Enums won't generate their own equals implementation,
+  but use a more general implementation provided by libjoynr.
+  Extracted some additional functionality to libjoynr by using mixins.
+  This further reduces the size of the generated code.
+  This change renders the generated code incompatible with previous joynr versions.
+* **[JS]** Removed Object.freeze at several API relevant locations and thus allowing libjoynr to
+  manipulate those objects freely. This allows joynr the usage of prototypes and thus saving many
+  function allocations.
+  **[JS]** Many other internal optimizations which avoid function allocations and thus unnecessary
+  GC cycles.
+
 ## API relevant changes
 None.
 
