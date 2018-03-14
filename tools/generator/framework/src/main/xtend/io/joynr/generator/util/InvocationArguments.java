@@ -114,7 +114,7 @@ public class InvocationArguments {
         usageString.append("       -includePrefix <prefix to use in include statements>\n");
         usageString.append("      Optional, JS only:\n");
         usageString.append("       -requireJSSupport <true, false>\n");
-        usageString.append("         true: generate exports for all require mechanisms such als requirejs, browser and node\n");
+        usageString.append("         true: generate exports for all require mechanisms such as requirejs, browser and node\n");
         usageString.append("         false: generate only module.exports for node\n");
         usageString.append("         default: false\n");
         return usageString.toString();

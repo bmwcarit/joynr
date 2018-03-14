@@ -147,7 +147,7 @@ to *gen*.
       -includePrefix <prefix to use in include statements>
     Optional, JS only:
       -requireJSSupport <true, false>
-        true: generate exports for all require mechanisms such als requirejs, browser and node
+        true: generate exports for all require mechanisms such as requirejs, browser and node
         false: generate only module.exports for node
         default: false
 ```
