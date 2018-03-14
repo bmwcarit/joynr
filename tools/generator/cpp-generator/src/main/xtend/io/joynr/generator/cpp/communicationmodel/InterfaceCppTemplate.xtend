@@ -70,7 +70,7 @@ class InterfaceCppTemplate extends InterfaceTemplate {
 
 const std::string& I«interfaceName»Base::INTERFACE_NAME()
 {
-	static const std::string INTERFACE_NAME("«getPackagePathWithoutJoynrPrefix(francaIntf, "/")»/«interfaceName»");
+	static const std::string INTERFACE_NAME("«francaIntf.fullyQualifiedName»");
 	return INTERFACE_NAME;
 }
 

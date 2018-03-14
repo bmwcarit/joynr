@@ -31,7 +31,9 @@ import org.franca.core.franca.FBroadcast;
 import org.franca.core.franca.FModel;
 import org.junit.Test;
 
+import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
+import com.google.inject.name.Names;
 
 public class BroadcastUtilTest {
 
@@ -40,7 +42,14 @@ public class BroadcastUtilTest {
         URL fixtureURL = BroadcastUtilTest.class.getResource("FilterParameters.fidl");
         ModelLoader loader = new ModelLoader(fixtureURL.getPath());
         Resource fixtureResource = loader.getResources().iterator().next();
-        BroadcastUtil broadcastUtil = Guice.createInjector().getInstance(BroadcastUtil.class);
+        BroadcastUtil broadcastUtil = Guice.createInjector(new AbstractModule() {
+
+            @Override
+            protected void configure() {
+                bindConstant().annotatedWith(Names.named(NamingUtil.JOYNR_GENERATOR_INTERFACENAMEWITHVERSION))
+                              .to(false);
+            }
+        }).getInstance(BroadcastUtil.class);
 
         FModel model = (FModel) fixtureResource.getContents().get(0);
         FBroadcast fixture = model.getInterfaces().get(0).getBroadcasts().get(0);

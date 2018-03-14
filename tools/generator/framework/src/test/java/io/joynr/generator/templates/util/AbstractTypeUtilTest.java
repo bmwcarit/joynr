@@ -36,7 +36,9 @@ import org.junit.Test;
 import org.mockito.internal.stubbing.answers.CallsRealMethods;
 import org.mockito.invocation.InvocationOnMock;
 
+import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
+import com.google.inject.name.Names;
 
 public class AbstractTypeUtilTest {
 
@@ -67,7 +69,15 @@ public class AbstractTypeUtilTest {
 
         AbstractTypeUtil typeUtil = mock(AbstractTypeUtil.class, new MyCallsRealMethods());
 
-        Guice.createInjector().injectMembers(typeUtil);
+        Guice.createInjector(new AbstractModule() {
+
+            @Override
+            protected void configure() {
+                bindConstant().annotatedWith(Names.named(NamingUtil.JOYNR_GENERATOR_INTERFACENAMEWITHVERSION))
+                              .to(false);
+            }
+        }).injectMembers(typeUtil);
+
         FModel model = (FModel) fixtureResource.getContents().get(0);
         String stringDatatype = FBasicTypeId.STRING.getName();
         String numberDatatype = FBasicTypeId.INT16.getName();

@@ -120,7 +120,7 @@ import io.joynr.provider.SubscriptionPublisherInjection;
 interface «interfaceName»SubscriptionPublisherInjection extends SubscriptionPublisherInjection<«interfaceName»SubscriptionPublisher> {}
 «ENDIF»
 
-@JoynrInterface(provides = «className».class, name = "«getPackagePathWithoutJoynrPrefix(francaIntf, "/")»/«interfaceName»")
+@JoynrInterface(provides = «className».class, name = "«francaIntf.fullyQualifiedName»")
 @JoynrVersion(major = «majorVersion», minor = «minorVersion»)
 «IF francaIntf.hasNotifiableAttribute || !francaIntf.broadcasts.empty»
 public interface «className» extends «interfaceName»SubscriptionPublisherInjection {

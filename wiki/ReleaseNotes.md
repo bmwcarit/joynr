@@ -49,6 +49,8 @@ the versioning scheme [here](JoynrVersioning.md).
 * **[C++]** added setting 'cluster-controller/global-capabilities-directory-compressed-messages-enabled'
   which specifies whether messages to GlobalCapabilitiesDirectory shall be compressed.
   By default they will be sent uncompressed.
+* **[Generator]** Introduced a new flag `addVersionTo` to append version information at filesystem level
+  (package or interface). See [Generator Documentation](generator.md) for additional information.
 
 # joynr 1.0.5
 

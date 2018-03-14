@@ -22,15 +22,10 @@ import com.google.inject.Inject
 import io.joynr.generator.templates.util.AttributeUtil
 import io.joynr.generator.templates.util.JoynrGeneratorExtensions
 import org.franca.core.franca.FAttribute
-import org.franca.core.franca.FInterface
 
 class JoynrJSGeneratorExtensions extends JoynrGeneratorExtensions {
 	@Inject private extension AttributeUtil
 
 	def getAttributeCaps(FAttribute attribute)
 	'''«IF isNotifiable(attribute)»NOTIFY«ENDIF»«IF isReadable(attribute)»READ«ENDIF»«IF isWritable(attribute)»WRITE«ENDIF»'''
-
-	def getFQN(FInterface fInterface) {
-		getPackagePathWithoutJoynrPrefix(fInterface, "/") + "/" + fInterface.joynrName
-	}
 }
