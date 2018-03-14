@@ -9,6 +9,7 @@ None.
 * **[Java, C++]** Enhanced log output to allow easier tracing of proxy calls: message ID and
   relevant payload are now logged when a joynr message is created to be able to relate later log
   output which only contains the message ID to the corresponding proxy call.
+* **[Java]** use SMRF 0.2.3
 
 ## Configuration property changes
 * **[Java]** Moved property PROPERTY_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS
