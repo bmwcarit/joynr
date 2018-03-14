@@ -149,23 +149,23 @@ public:
 
         for (auto it = ttlIndex.begin(); it != onePastOutdatedMsgIt; ++it) {
             std::size_t msgSize = it->message->getMessageSize();
-            JOYNR_LOG_TRACE(logger(),
-                            "removeOutdatedMessages: Erasing expired message with id {} of size {}",
-                            it->message->getId(),
-                            msgSize);
+            JOYNR_LOG_INFO(logger(),
+                           "removeOutdatedMessages: Erasing expired message with id {} of size {}",
+                           it->message->getId(),
+                           msgSize);
             queueSizeBytes -= msgSize;
             erasedBytes += msgSize;
             numberOfErasedMessages++;
         }
         ttlIndex.erase(ttlIndex.begin(), onePastOutdatedMsgIt);
         if (numberOfErasedMessages) {
-            JOYNR_LOG_TRACE(logger(),
-                            "removeOutdatedMessages: Erased {} messages of size {}, new "
-                            "queueSize(bytes) = {}, #msgs = {}",
-                            numberOfErasedMessages,
-                            erasedBytes,
-                            queueSizeBytes,
-                            getQueueLengthUnlocked());
+            JOYNR_LOG_INFO(logger(),
+                           "removeOutdatedMessages: Erased {} messages of size {}, new "
+                           "queueSize(bytes) = {}, #msgs = {}",
+                           numberOfErasedMessages,
+                           erasedBytes,
+                           queueSizeBytes,
+                           getQueueLengthUnlocked());
         }
     }
 
