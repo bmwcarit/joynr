@@ -68,9 +68,12 @@ public:
                 joynr::DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
 
         // Build a proxy
-        testInterfaceProxy = proxyBuilder->setMessagingQos(joynr::MessagingQos(qosMsgTtl))
-                                     ->setDiscoveryQos(discoveryQos)
-                                     ->build();
+        JOYNR_ASSERT_NO_THROW({
+            testInterfaceProxy = proxyBuilder->setMessagingQos(joynr::MessagingQos(qosMsgTtl))
+                                         ->setDiscoveryQos(discoveryQos)
+                                         ->build();
+            ASSERT_TRUE(testInterfaceProxy);
+        });
 
         JOYNR_LOG_INFO(logger(), "***********************");
         JOYNR_LOG_INFO(logger(), "Proxy built.");
