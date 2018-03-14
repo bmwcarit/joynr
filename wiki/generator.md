@@ -36,6 +36,12 @@ have to be provided in the Maven configuration:
                          complex types use generation language "java"
                          and set the following parameter -->
                     <ignoreInvalidNullClassMembers>true</ignoreInvalidNullClassMembers>
+                    <!-- for JavaScript only:
+                         requireJSSupport=true: generate exports for all require mechanisms such
+                             as requirejs, browser and node
+                         requireJSSupport = false: generate only module.exports for node
+                         default: false -->
+                    <requireJSSupport>true</requireJSSupport>
                 </parameter>
             </configuration>
         </execution>
