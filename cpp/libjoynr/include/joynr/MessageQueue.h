@@ -52,31 +52,61 @@ template <typename T>
 class JOYNR_EXPORT MessageQueue
 {
 public:
-    MessageQueue(std::uint64_t messageLimit = 0, std::uint64_t perKeyMessageQueueLimit = 0)
+    MessageQueue(std::uint64_t messageQueueLimit = 0,
+                 std::uint64_t perKeyMessageQueueLimit = 0,
+                 std::uint64_t messageQueueLimitBytes = 0)
             : queue(),
               queueMutex(),
-              messageQueueLimit(messageLimit),
-              perKeyMessageQueueLimit(perKeyMessageQueueLimit)
+              messageQueueLimit(messageQueueLimit),
+              messageQueueLimitBytes(messageQueueLimitBytes),
+              perKeyMessageQueueLimit(perKeyMessageQueueLimit),
+              queueSizeBytes(0)
     {
     }
 
     std::size_t getQueueLength() const
     {
         std::lock_guard<std::mutex> lock(queueMutex);
-        return boost::multi_index::get<messagequeuetags::key>(queue).size();
+        return getQueueLengthUnlocked();
     }
 
-    void queueMessage(T key, std::shared_ptr<ImmutableMessage> message)
+    std::size_t getQueueSizeBytes() const
     {
-        ensureFreeQueueSlot(key);
+        std::lock_guard<std::mutex> lock(queueMutex);
+        return queueSizeBytes;
+    }
+
+    void queueMessage(const T key, std::shared_ptr<ImmutableMessage> message)
+    {
 
         MessageQueueItem item;
         item.key = std::move(key);
         item.ttlAbsolute = message->getExpiryDate();
+        std::string recipient = message->getRecipient();
         item.message = std::move(message);
 
         std::lock_guard<std::mutex> lock(queueMutex);
+        ensureFreeQueueSlot(item.key);
+        if (!ensureFreeQueueBytes(item.message->getMessageSize())) {
+            JOYNR_LOG_WARN(logger(),
+                           "queueMessage: messageSize {} exceeds messageQueueLimitBytes {}, "
+                           "discarding message with id {}. recipient {}; queueSize(bytes) = {}, "
+                           "#msgs = {}",
+                           item.message->getMessageSize(),
+                           messageQueueLimitBytes,
+                           item.message->getId(),
+                           recipient,
+                           queueSizeBytes,
+                           getQueueLengthUnlocked());
+            return;
+        }
+        queueSizeBytes += item.message->getMessageSize();
         queue.insert(std::move(item));
+        JOYNR_LOG_TRACE(logger(),
+                        "queueMessage: recipient {}, new queueSize(bytes) = {}, #msgs = {}",
+                        recipient,
+                        queueSizeBytes,
+                        getQueueLengthUnlocked());
     }
 
     std::shared_ptr<ImmutableMessage> getNextMessageFor(const T& key)
@@ -87,7 +117,15 @@ public:
         auto queueElement = keyIndex.find(key);
         if (queueElement != keyIndex.cend()) {
             auto message = std::move(queueElement->message);
+            queueSizeBytes -= message->getMessageSize();
             queue.erase(queueElement);
+            JOYNR_LOG_TRACE(logger(),
+                            "getNextMessageFor: message recipient {}, size {}, new "
+                            "queueSize(bytes) = {}, #msgs = {}",
+                            message->getRecipient(),
+                            message->getMessageSize(),
+                            queueSizeBytes,
+                            getQueueLengthUnlocked());
             return message;
         }
         return nullptr;
@@ -96,18 +134,36 @@ public:
     void removeOutdatedMessages()
     {
         std::lock_guard<std::mutex> lock(queueMutex);
+        int numberOfErasedMessages = 0;
+        std::size_t erasedBytes = 0;
 
         if (queue.empty()) {
             return;
         }
 
         auto& ttlIndex = boost::multi_index::get<messagequeuetags::ttlAbsolute>(queue);
+        auto onePastOutdatedMsgIt = ttlIndex.lower_bound(TimePoint::now());
 
-        const JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(
-                std::chrono::system_clock::now());
-        auto onePastOutdatedMsgIt = ttlIndex.lower_bound(now);
-
+        for (auto it = ttlIndex.begin(); it != onePastOutdatedMsgIt; ++it) {
+            std::size_t msgSize = it->message->getMessageSize();
+            JOYNR_LOG_TRACE(logger(),
+                            "removeOutdatedMessages: Erasing expired message with id {} of size {}",
+                            it->message->getId(),
+                            msgSize);
+            queueSizeBytes -= msgSize;
+            erasedBytes += msgSize;
+            numberOfErasedMessages++;
+        }
         ttlIndex.erase(ttlIndex.begin(), onePastOutdatedMsgIt);
+        if (numberOfErasedMessages) {
+            JOYNR_LOG_TRACE(logger(),
+                            "removeOutdatedMessages: Erased {} messages of size {}, new "
+                            "queueSize(bytes) = {}, #msgs = {}",
+                            numberOfErasedMessages,
+                            erasedBytes,
+                            queueSizeBytes,
+                            getQueueLengthUnlocked());
+        }
     }
 
 protected:
@@ -117,7 +173,7 @@ protected:
     struct MessageQueueItem
     {
         T key;
-        JoynrTimePoint ttlAbsolute;
+        TimePoint ttlAbsolute;
         std::shared_ptr<ImmutableMessage> message;
     };
 
@@ -129,9 +185,7 @@ protected:
                             BOOST_MULTI_INDEX_MEMBER(MessageQueueItem, T, key)>,
                     boost::multi_index::ordered_non_unique<
                             boost::multi_index::tag<messagequeuetags::ttlAbsolute>,
-                            BOOST_MULTI_INDEX_MEMBER(MessageQueueItem,
-                                                     JoynrTimePoint,
-                                                     ttlAbsolute)>,
+                            BOOST_MULTI_INDEX_MEMBER(MessageQueueItem, TimePoint, ttlAbsolute)>,
                     boost::multi_index::ordered_non_unique<
                             boost::multi_index::tag<messagequeuetags::key_and_ttlAbsolute>,
                             boost::multi_index::composite_key<
@@ -139,7 +193,7 @@ protected:
                                     boost::multi_index::
                                             member<MessageQueueItem, T, &MessageQueueItem::key>,
                                     BOOST_MULTI_INDEX_MEMBER(MessageQueueItem,
-                                                             JoynrTimePoint,
+                                                             TimePoint,
                                                              ttlAbsolute)>>>>;
 
     QueueMultiIndexContainer queue;
@@ -147,10 +201,36 @@ protected:
 
 private:
     const std::uint64_t messageQueueLimit;
+    const std::uint64_t messageQueueLimitBytes;
     const std::uint64_t perKeyMessageQueueLimit;
+    std::uint64_t queueSizeBytes;
+
+    std::size_t getQueueLengthUnlocked() const
+    {
+        return boost::multi_index::get<messagequeuetags::key>(queue).size();
+    }
+
+    bool ensureFreeQueueBytes(const std::uint64_t messageLength)
+    {
+        // queueMutex must have been acquired earlier
+        const bool queueLimitBytesActive = messageQueueLimitBytes > 0;
+        if (!queueLimitBytesActive) {
+            return true;
+        }
+
+        if (messageLength > messageQueueLimitBytes) {
+            return false;
+        }
+
+        while (queueSizeBytes + messageLength > messageQueueLimitBytes) {
+            removeMessageWithLeastTtl();
+        }
+        return true;
+    }
 
     void ensureFreeQueueSlot(const T& key)
     {
+        // queueMutex must have been acquired earlier
         const bool queueLimitActive = messageQueueLimit > 0;
         if (!queueLimitActive) {
             return;
@@ -161,46 +241,62 @@ private:
             ensureFreePerKeyQueueSlot(key);
         }
 
-        if (getQueueLength() >= messageQueueLimit) {
+        while (getQueueLengthUnlocked() >= messageQueueLimit) {
             removeMessageWithLeastTtl();
         }
     }
 
     void ensureFreePerKeyQueueSlot(const T& key)
     {
+        // queueMutex must have been locked already
         assert(perKeyMessageQueueLimit > 0);
 
-        std::lock_guard<std::mutex> lock(queueMutex);
         auto& keyAndTtlIndex =
                 boost::multi_index::get<messagequeuetags::key_and_ttlAbsolute>(queue);
         auto range = keyAndTtlIndex.equal_range(key);
         const std::size_t numEntriesForKey = std::distance(range.first, range.second);
 
+        JOYNR_LOG_TRACE(logger(),
+                        "ensureFreePerKeyQueueSlot: numEntriesForKey = {}, perKeyMessageQueueLimit "
+                        "= {}",
+                        numEntriesForKey,
+                        perKeyMessageQueueLimit);
+
         if (numEntriesForKey >= perKeyMessageQueueLimit) {
             JOYNR_LOG_WARN(logger(),
-                           "Erasing message with id {} since queue limit of {} was reached",
+                           "Erasing message with id {} of size {} since key based queue limit of "
+                           "{} was reached",
                            range.first->message->getId(),
+                           range.first->message->getMessageSize(),
                            perKeyMessageQueueLimit);
+            queueSizeBytes -= range.first->message->getMessageSize();
             keyAndTtlIndex.erase(range.first);
         }
     }
 
     void removeMessageWithLeastTtl()
     {
-        std::lock_guard<std::mutex> lock(queueMutex);
+        // queueMutex must have been locked already
         if (queue.empty()) {
             return;
         }
 
+        const std::size_t queueLength = getQueueLengthUnlocked();
         auto& ttlIndex = boost::multi_index::get<messagequeuetags::ttlAbsolute>(queue);
         auto msgWithLowestTtl = ttlIndex.cbegin();
         assert(msgWithLowestTtl != ttlIndex.cend());
 
         JOYNR_LOG_WARN(logger(),
-                       "Erasing message with id {} since queue limit of {} was reached",
+                       "Erasing message with id {} of size {} since either generic queue limit of "
+                       "{} messages or {} bytes was reached, #msgs = {}, queueSize(bytes) = {}",
                        msgWithLowestTtl->message->getId(),
-                       messageQueueLimit);
+                       msgWithLowestTtl->message->getMessageSize(),
+                       messageQueueLimit,
+                       messageQueueLimitBytes,
+                       queueLength,
+                       queueSizeBytes);
 
+        queueSizeBytes -= msgWithLowestTtl->message->getMessageSize();
         ttlIndex.erase(msgWithLowestTtl);
     }
 };

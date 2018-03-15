@@ -17,14 +17,13 @@
  * #L%
  */
 #include "RobustnessTestProvider.h"
+
 #include <thread>
-#include "joynr/DispatcherUtils.h"
+
+#include "joynr/TimePoint.h"
 
 namespace joynr
 {
-
-using joynr::JoynrTimePoint;
-using joynr::DispatcherUtils;
 
 RobustnessTestProvider::RobustnessTestProvider()
         : joynr::tests::robustness::DefaultTestInterfaceProvider()
@@ -117,9 +116,8 @@ void RobustnessTestProvider::fireBroadcastWithSingleStringParameterInternal(
         std::int64_t validity_ms,
         std::shared_ptr<std::string> stringOut)
 {
-    JoynrTimePoint decayTime = DispatcherUtils::convertTtlToAbsoluteTime(validity_ms);
-    while (std::chrono::system_clock::now() < decayTime &&
-           !stopBroadcastWithSingleStringParameter) {
+    const TimePoint decayTime = TimePoint::fromRelativeMs(validity_ms);
+    while (TimePoint::now() < decayTime && !stopBroadcastWithSingleStringParameter) {
         fireBroadcastWithSingleStringParameter(*stringOut);
         std::this_thread::sleep_for(std::chrono::milliseconds(period_ms));
     }

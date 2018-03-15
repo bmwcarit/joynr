@@ -23,7 +23,6 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "joynr/DispatcherUtils.h"
 #include "joynr/Future.h"
 #include "joynr/JoynrClusterControllerRuntime.h"
 #include "joynr/LibjoynrSettings.h"
@@ -34,6 +33,7 @@
 #include "tests/mock/MockSubscriptionListener.h"
 #include "tests/mock/MockTestProvider.h"
 #include "tests/utils/PtrUtils.h"
+#include "joynr/TimePoint.h"
 
 using namespace ::testing;
 
@@ -118,7 +118,7 @@ TEST_P(End2EndPerformanceTest, sendManyRequests) {
                      ->setMessagingQos(MessagingQos(qosRoundTripTTL))
                      ->setDiscoveryQos(discoveryQos)
                      ->build();
-    std::uint64_t startTime = DispatcherUtils::nowInMilliseconds();
+    TimePoint startTime = TimePoint::now();
     std::vector<std::shared_ptr<Future<int> > >testFutureList;
     int numberOfRequests = 150;
     int successfulRequests = 0;
@@ -141,10 +141,10 @@ TEST_P(End2EndPerformanceTest, sendManyRequests) {
             EXPECT_EQ(expectedValue, actualValue);
         }
     }
-    std::uint64_t stopTime = DispatcherUtils::nowInMilliseconds();
+    TimePoint stopTime = TimePoint::now();
     //check if all Requests were successful
     EXPECT_EQ(numberOfRequests, successfulRequests);
-    JOYNR_LOG_INFO(logger(), "Required Time for 1000 Requests: {}",(stopTime - startTime));
+    JOYNR_LOG_INFO(logger(), "Required Time for 1000 Requests: {}", (stopTime - startTime).count());
 
     runtime1->unregisterProvider(participantId);
 

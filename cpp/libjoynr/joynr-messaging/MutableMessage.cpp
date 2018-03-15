@@ -55,7 +55,7 @@ std::unique_ptr<ImmutableMessage> MutableMessage::getImmutableMessage() const
     // explicit headers
     messageSerializer.setSender(sender);
     messageSerializer.setRecipient(recipient);
-    messageSerializer.setTtlMs(expiryDate.time_since_epoch().count());
+    messageSerializer.setTtlMs(expiryDate.toMilliseconds());
 
     // key-value pair headers
     std::unordered_map<std::string, std::string> keyValuePairHeaders;
@@ -226,12 +226,12 @@ void MutableMessage::setType(const std::string& type)
     this->type = type;
 }
 
-JoynrTimePoint MutableMessage::getExpiryDate() const
+TimePoint MutableMessage::getExpiryDate() const
 {
     return expiryDate;
 }
 
-void MutableMessage::setExpiryDate(JoynrTimePoint expiryDate)
+void MutableMessage::setExpiryDate(const TimePoint& expiryDate)
 {
     this->expiryDate = expiryDate;
 }

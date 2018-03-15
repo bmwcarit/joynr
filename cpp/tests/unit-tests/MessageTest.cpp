@@ -22,8 +22,8 @@
 #include "joynr/ImmutableMessage.h"
 #include "joynr/Message.h"
 #include "joynr/MutableMessage.h"
-#include "joynr/DispatcherUtils.h"
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/TimePoint.h"
 
 #include "tests/mock/MockKeychain.h"
 
@@ -35,7 +35,7 @@ public:
     ImmutableMessageTest() {
         mutableMessage.setSender("sender");
         mutableMessage.setRecipient("recipient");
-        mutableMessage.setExpiryDate(DispatcherUtils::convertTtlToAbsoluteTime(1234567));
+        mutableMessage.setExpiryDate(TimePoint::fromRelativeMs(1234567));
         mutableMessage.setReplyTo("replyTo");
         mutableMessage.setEffort("effort");
         mutableMessage.setPayload("payload");

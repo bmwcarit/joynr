@@ -25,7 +25,6 @@
 #include "joynr/MqttMessagingSkeleton.h"
 
 #include "joynr/ClusterControllerSettings.h"
-#include "joynr/DispatcherUtils.h"
 #include "joynr/Request.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/SingleThreadedIOService.h"
@@ -33,6 +32,7 @@
 #include "joynr/MutableMessageFactory.h"
 #include "joynr/MessagingQos.h"
 #include "joynr/Settings.h"
+#include "joynr/TimePoint.h"
 
 #include "tests/JoynrTest.h"
 #include "tests/mock/MockMessageRouter.h"
@@ -94,7 +94,7 @@ TEST_F(MqttMessagingSkeletonTtlUpliftTest, testDefaultTtlUplift) {
                 isLocalMessage);
     mutableMessage.setReplyTo(replyAddressSerialized);
 
-    JoynrTimePoint expectedExpiryDate = mutableMessage.getExpiryDate();
+    const TimePoint expectedExpiryDate = mutableMessage.getExpiryDate();
 
     EXPECT_CALL(*mockMessageRouter, route(
                     MessageHasExpiryDate(expectedExpiryDate),
@@ -119,7 +119,7 @@ TEST_F(MqttMessagingSkeletonTtlUpliftTest, DISABLED_testTtlUplift) {
                 isLocalMessage);
     mutableMessage.setReplyTo(replyAddressSerialized);
 
-    JoynrTimePoint expectedExpiryDate = mutableMessage.getExpiryDate() + std::chrono::milliseconds(ttlUpliftMs);
+    const TimePoint expectedExpiryDate = mutableMessage.getExpiryDate() + std::chrono::milliseconds(ttlUpliftMs);
 
     EXPECT_CALL(*mockMessageRouter, route(
                     MessageHasExpiryDate(expectedExpiryDate),
@@ -133,7 +133,7 @@ TEST_F(MqttMessagingSkeletonTtlUpliftTest, DISABLED_testTtlUplift) {
 }
 
 TEST_F(MqttMessagingSkeletonTtlUpliftTest, DISABLED_testTtlUpliftWithLargeTtl) {
-    const JoynrTimePoint maxAbsoluteTime = DispatcherUtils::getMaxAbsoluteTime();
+    const TimePoint maxAbsoluteTime = TimePoint::max();
     std::int64_t ttlMs = 1024;
     MessagingQos qos(ttlMs);
     Request request;
@@ -145,9 +145,9 @@ TEST_F(MqttMessagingSkeletonTtlUpliftTest, DISABLED_testTtlUpliftWithLargeTtl) {
                 isLocalMessage);
     mutableMessage.setReplyTo(replyAddressSerialized);
 
-    JoynrTimePoint expiryDate = maxAbsoluteTime - std::chrono::milliseconds(ttlUpliftMs / 2);
+    TimePoint expiryDate = maxAbsoluteTime - std::chrono::milliseconds(ttlUpliftMs / 2);
     mutableMessage.setExpiryDate(expiryDate);
-    JoynrTimePoint expectedExpiryDate = maxAbsoluteTime;
+    TimePoint expectedExpiryDate = maxAbsoluteTime;
 
     EXPECT_CALL(*mockMessageRouter,
                 route(MessageHasExpiryDate(expectedExpiryDate),_)

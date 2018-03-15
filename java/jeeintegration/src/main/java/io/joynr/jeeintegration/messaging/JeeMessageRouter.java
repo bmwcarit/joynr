@@ -51,7 +51,7 @@ import org.slf4j.LoggerFactory;
  *
  * @see io.joynr.messaging.routing.CcMessageRouter
  */
-@edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "JLM_JSR166_UTILCONCURRENT_MONITORENTER", justification = "ensure that no new messages are scheduled when scheduler is shuting down")
+@edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "JLM_JSR166_UTILCONCURRENT_MONITORENTER", justification = "ensure that no new messages are scheduled when scheduler is shutting down")
 public class JeeMessageRouter extends io.joynr.messaging.routing.CcMessageRouter {
 
     private static final Logger LOG = LoggerFactory.getLogger(JeeMessageRouter.class);

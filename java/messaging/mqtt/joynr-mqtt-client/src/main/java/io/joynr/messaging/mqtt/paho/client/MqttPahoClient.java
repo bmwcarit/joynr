@@ -118,7 +118,6 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
                 logger.debug("Started MqttPahoClient");
                 mqttClient.setCallback(this);
                 mqttClient.setTimeToWait(timeToWaitMs);
-                mqttClient.setManualAcks(true);
                 mqttClient.connect(getConnectOptions());
                 logger.debug("MQTT Connected client");
                 reestablishSubscriptions();
@@ -430,29 +429,17 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
             logger.error("MQTT message not processed: messagingSkeleton has not been set yet");
             return;
         }
-        messagingSkeleton.transmit(mqttMessage.getPayload(),
-                                   mqttMessage.getId(),
-                                   mqttMessage.getQos(),
-                                   new FailureAction() {
+        messagingSkeleton.transmit(mqttMessage.getPayload(), new FailureAction() {
 
-                                       @Override
-                                       public void execute(Throwable error) {
-                                           logger.error("MQTT message not processed");
-                                       }
-                                   });
+            @Override
+            public void execute(Throwable error) {
+                logger.error("MQTT message not processed");
+            }
+        });
     }
 
     @Override
     public void setMessageListener(IMqttMessagingSkeleton messaging) {
         this.messagingSkeleton = messaging;
-    }
-
-    @Override
-    public void messageReceivedAndProcessingFinished(int mqttId, int mqttQos) {
-        try {
-            mqttClient.messageArrivedComplete(mqttId, mqttQos);
-        } catch (MqttException e) {
-            logger.error("Sending Mqtt Ack failed for message with mqtt id " + mqttId, e);
-        }
     }
 }

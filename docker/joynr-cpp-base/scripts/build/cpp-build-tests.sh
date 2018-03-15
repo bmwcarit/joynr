@@ -24,8 +24,13 @@ function join_strings
 function usage
 {
     local joined_tests=$(join_strings " | " "${TESTS[@]}")
-    echo "usage: cpp-build-tests.sh all$joined_tests [--jobs X --clangformatter ON|OFF \
-    --buildtype Debug|Release --archivebinaries ON|OFF --additionalcmakeargs <args> --run-maven ON|OFF]"
+    echo "usage: cpp-build-tests.sh all$joined_tests
+        [--additionalcmakeargs <args> Default empty string]
+        [--archivebinaries ON|OFF Default $ARCHIVEBINARIES]
+        [--buildtype DEBUG|RELEASE|RELWITHDEBINFO|MINSIZEREL Default: $BUILDTYPE]
+        [--clangformatter ON|OFF Default $CLANGFORMATTER]
+        [--jobs X Default $JOBS]
+        [--run-maven ON|OFF Default $RUN_MAVEN]"
     echo "default: jobs is $JOBS, clangformatter is $CLANGFORMATTER, buildtype is \
     $BUILDTYPE, archivebinaries is $ARCHIVEBINARIES and additionalcmakeargs is $ADDITIONAL_CMAKE_ARGS"
 }
@@ -35,20 +40,20 @@ shift
 
 while [ "$1" != "" ]; do
     case $1 in
-        --jobs )                shift
-                                JOBS=$1
-                                ;;
-        --clangformatter )      shift
-                                CLANGFORMATTER=$1
-                                ;;
-        --buildtype )           shift
-                                BUILDTYPE=$1
+        --additionalcmakeargs ) shift
+                                ADDITIONAL_CMAKE_ARGS=$1
                                 ;;
         --archivebinaries )     shift
                                 ARCHIVEBINARIES=$1
                                 ;;
-        --additionalcmakeargs ) shift
-                                ADDITIONAL_CMAKE_ARGS=$1
+        --buildtype )           shift
+                                BUILDTYPE=$1
+                                ;;
+        --clangformatter )      shift
+                                CLANGFORMATTER=$1
+                                ;;
+        --jobs )                shift
+                                JOBS=$1
                                 ;;
         --run-maven )           shift
                                 RUN_MAVEN=$1

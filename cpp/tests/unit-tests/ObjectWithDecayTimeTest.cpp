@@ -19,10 +19,12 @@
 #include <gtest/gtest.h>
 
 #include "joynr/ObjectWithDecayTime.h"
+#include "joynr/TimePoint.h"
+
+using namespace joynr;
 
 TEST(ObjectWithDecayTimeTest, highValueIsNotExpired)
 {
-    joynr::JoynrTimePoint expiryDate(std::chrono::milliseconds(9223372036854775807));
-    joynr::ObjectWithDecayTime objectWithDecayTime(expiryDate);
+    ObjectWithDecayTime objectWithDecayTime(TimePoint::max());
     EXPECT_FALSE(objectWithDecayTime.isExpired());
 }

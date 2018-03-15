@@ -19,9 +19,38 @@
 ## API relevant changes
 None.
 
+## Configuration property changes
+* **[Java]** Property `PROPERTY_BACKPRESSURE_MAX_INCOMING_MQTT_MESSAGES_IN_QUEUE`
+  was renamed to `PROPERTY_MAX_INCOMING_MQTT_REQUESTS`. The new identifier is
+  `joynr.messaging.maxincomingmqttrequests`. This change indicates that the property
+  is not more related to a backpressure mechanism but is rather an independent
+  self-protection mechanism of the instance from too heavy MQTT requests inflow.
+  Furthermore, the default value of the property was changed from 20 to 0 (off).
+  Hence, at default the mechanism is off and only the user can configure an appropriate
+  value according to his application. See
+  [Java Configuration Reference](JavaSettings.md) for more details.
+* **[Java]** Removed property `PROPERTY_REPEATED_MQTT_MESSAGE_IGNORE_PERIOD_MS`.
+  The future behavior of the MqttMessagingSkeleton will change to immediate mqtt
+  message acknowledgment and this should eliminate receiving repeated messages from
+  the mqtt broker.
+
 ## Other changes
 * **[C++]** moved settings `local-capabilities-directory-persistence-file` and
   `local-capabilities-directory-persistency-enabled` from section [lib-joynr] to [cluster-controller].
+* **[C++]** added setting 'cluster-controller/global-capabilities-directory-compressed-messages-enabled'
+  which specifies whether messages to GlobalCapabilitiesDirectory shall be compressed.
+  By default they will be sent uncompressed.
+
+# joynr 1.0.4
+
+## API relevant changes
+None.
+
+## Other changes
+* **[C++]** The queue sizes for messages can now additionally be limited by setting the properties
+  'cluster-controller/message-queue-limit-bytes' and / or
+  'cluster-controller/transport-not-available-queue-limit-bytes' which specify
+  the limit in bytes rather than number of messages. By default no queue limit is enforced.
 
 # joynr 1.0.3
 
@@ -51,7 +80,7 @@ None.
 ## Configuration property changes
 * **[C++]** The queue size for messages, which can not be transmitted because the global transport
   is not available, can be limited by setting the `cluster-controller/transport-not-available-queue-limit`
-  property. By default no queue limit is enfored.
+  property. By default no queue limit is enforced.
 
 # joynr 1.0.0
 API Stable

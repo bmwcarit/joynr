@@ -28,6 +28,7 @@
 #include "joynr/IMulticastAddressCalculator.h"
 #include "joynr/InProcessMessagingAddress.h"
 #include "joynr/Message.h"
+#include "joynr/MessageQueue.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/system/RoutingProxy.h"
 #include "joynr/system/RoutingTypes/Address.h"
@@ -58,7 +59,6 @@ LibJoynrMessageRouter::LibJoynrMessageRouter(
         std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
         bool persistRoutingTable,
         std::vector<std::shared_ptr<ITransportStatus>> transportStatuses,
-        int maxThreads,
         std::unique_ptr<MessageQueue<std::string>> messageQueue,
         std::unique_ptr<MessageQueue<std::shared_ptr<ITransportStatus>>> transportNotAvailableQueue)
         : AbstractMessageRouter(messagingSettings,
@@ -66,7 +66,6 @@ LibJoynrMessageRouter::LibJoynrMessageRouter(
                                 ioService,
                                 std::move(addressCalculator),
                                 persistRoutingTable,
-                                maxThreads,
                                 std::move(transportStatuses),
                                 std::move(messageQueue),
                                 std::move(transportNotAvailableQueue)),

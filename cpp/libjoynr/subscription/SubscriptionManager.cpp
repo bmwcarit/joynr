@@ -143,10 +143,9 @@ void SubscriptionManager::registerSubscription(
         std::lock_guard<std::recursive_mutex> subscriptionLocker(subscription->mutex);
         if (alertAfterInterval > 0 && periodicPublicationInterval > 0) {
             JOYNR_LOG_TRACE(logger(), "Will notify if updates are missed.");
-            JoynrTimePoint expiryDate(std::chrono::milliseconds{subscriptionExpiryDateMs});
+            auto expiryDate = TimePoint::fromAbsoluteMs(subscriptionExpiryDateMs);
             if (subscriptionExpiryDateMs == SubscriptionQos::NO_EXPIRY_DATE()) {
-                expiryDate = JoynrTimePoint(
-                        std::chrono::milliseconds(std::numeric_limits<std::int64_t>::max()));
+                expiryDate = TimePoint::max();
             }
             subscription->missedPublicationRunnableHandle = missedPublicationScheduler->schedule(
                     std::make_shared<MissedPublicationRunnable>(expiryDate,
@@ -455,7 +454,7 @@ SubscriptionManager::Subscription::Subscription(
   *  SubscriptionManager::MissedPublicationRunnable
   */
 SubscriptionManager::MissedPublicationRunnable::MissedPublicationRunnable(
-        const JoynrTimePoint& expiryDate,
+        const TimePoint& expiryDate,
         std::int64_t expectedIntervalMSecs,
         const std::string& subscriptionId,
         std::shared_ptr<Subscription> subscription,
