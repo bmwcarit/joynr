@@ -14,6 +14,7 @@ None.
 ## Configuration property changes
 * **[Java]** Moved property PROPERTY_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS
   from LocalCapabilitiesDirectoryImpl.java to SystemServicesSettings.java.
+* **[JS]** Default of `persistency.capabilities` changed to `true`
 
 # joynr 1.0.4
 
