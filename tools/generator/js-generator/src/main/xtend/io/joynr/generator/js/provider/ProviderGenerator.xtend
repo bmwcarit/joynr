@@ -214,7 +214,7 @@ class ProviderGenerator extends InterfaceJsTemplate {
 					«ENDIF»
 					}
 				});
-                implementation.«eventName» = this.«eventName»;
+				implementation.«eventName» = this.«eventName»;
 			«ENDFOR»
 
 			Object.defineProperty(this, 'checkImplementation', { value: checkImpl});
