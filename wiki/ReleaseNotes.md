@@ -1,5 +1,8 @@
 # joynr 1.1.0-SNAPSHOT
 
+## API relevant changes
+None.
+
 ## Javascript Memory and Performance Changes
 * **[Generator]** Generated JS code will support only module.exports as default when exporting.
   This reduces the size of the generated code.
@@ -15,9 +18,6 @@
   function allocations.
   **[JS]** Many other internal optimizations which avoid function allocations and thus unnecessary
   GC cycles.
-
-## API relevant changes
-None.
 
 ## Configuration property changes
 * **[Java]** Property `PROPERTY_BACKPRESSURE_MAX_INCOMING_MQTT_MESSAGES_IN_QUEUE`
