@@ -16,7 +16,10 @@ None.
 * **[JS]** Removed Object.freeze at several API relevant locations and thus allowing libjoynr to
   manipulate those objects freely. This allows joynr the usage of prototypes and thus saving many
   function allocations.
-  **[JS]** Many other internal optimizations which avoid function allocations and thus unnecessary
+* **[JS]** Fixed a bug where all joynr Runtimes were required. Added a description how to avoid the
+  same Problem when using browserify. See [Javascript Configuration Reference](JavaScriptTutorial.md)
+  for the detailed explanation.
+* **[JS]** Many other internal optimizations which avoid function allocations and thus unnecessary
   GC cycles.
 
 ## Configuration property changes
