@@ -26,8 +26,6 @@
 #include <mutex>
 #include <sstream>
 
-#include <boost/asio/io_service.hpp>
-
 #include "joynr/BroadcastSubscriptionRequest.h"
 #include "joynr/CallContextStorage.h"
 #include "joynr/DelayedScheduler.h"

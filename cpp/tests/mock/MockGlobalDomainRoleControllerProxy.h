@@ -21,8 +21,12 @@
 
 #include <gmock/gmock.h>
 
-#include "joynr/JoynrRuntimeImpl.h"
 #include "joynr/infrastructure/GlobalDomainRoleControllerProxy.h"
+
+namespace joynr
+{
+    class JoynrRuntimeImpl;
+} // namespace joynr
 
 class MockGlobalDomainRoleControllerProxy : public virtual joynr::infrastructure::GlobalDomainRoleControllerProxy {
 public:

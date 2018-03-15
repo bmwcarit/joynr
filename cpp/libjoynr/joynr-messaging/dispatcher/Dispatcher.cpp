@@ -38,6 +38,7 @@
 #include "joynr/SubscriptionReply.h"
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/SubscriptionStop.h"
+#include "joynr/ThreadPool.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/exceptions/JoynrExceptionUtil.h"
 #include "joynr/serializer/Serializer.h"

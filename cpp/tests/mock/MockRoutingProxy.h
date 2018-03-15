@@ -23,7 +23,11 @@
 
 #include "joynr/MessagingQos.h"
 #include "joynr/system/RoutingProxy.h"
-#include "joynr/JoynrRuntimeImpl.h"
+
+namespace joynr
+{
+class JoynrRuntimeImpl;
+} // namespace joynr
 
 class MockRoutingProxy : public virtual joynr::system::RoutingProxy {
 public:
