@@ -155,7 +155,7 @@ var persistencyValue = {
     routingTable: <true|false>, /* Optional. Default false. Persists RoutingTable entries and thus
                                  * allows the runtime to restart without help from the cc.
                                  */
-    capabilities: <true|false>, /* Optional. Default false. Persists ParticipantIds of registered
+    capabilities: <true|false>, /* Optional. Default true. Persists ParticipantIds of registered
                                  * providers and thus keeps them upon restart.
                                  */
     publications: <true|false>, /* Optional. Default true. Persists previously received

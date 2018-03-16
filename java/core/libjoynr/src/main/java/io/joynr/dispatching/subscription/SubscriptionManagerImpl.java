@@ -239,6 +239,14 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
             final String multicastId = MulticastIdUtil.createMulticastId(toDiscoveryEntry.getParticipantId(),
                                                                          multicastSubscribeInvocation.getSubscriptionName(),
                                                                          multicastSubscribeInvocation.getPartitions());
+            logger.debug("SUBSCRIPTION call proxy: subscriptionId: {}, multicastId: {}, broadcast: {}, qos: {},"
+                                 + " proxy participantId: {}, provider participantId: {}",
+                         multicastSubscribeInvocation.getSubscriptionId(),
+                         multicastId,
+                         multicastSubscribeInvocation.getSubscriptionName(),
+                         multicastSubscribeInvocation.getQos(),
+                         fromParticipantId,
+                         toDiscoveryEntry.getParticipantId());
             registerSubscription(fromParticipantId,
                                  toDiscoveryEntries,
                                  multicastSubscribeInvocation,
@@ -263,13 +271,6 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
                                                                                  multicastSubscribeInvocation.getQos());
                                      }
                                  });
-            logger.debug("SUBSCRIPTION call proxy: subscriptionId: {}, multicastId: {}, broadcast: {}, qos: {}, proxy participantId: {}, provider: {}",
-                         multicastSubscribeInvocation.getSubscriptionId(),
-                         multicastId,
-                         multicastSubscribeInvocation.getSubscriptionName(),
-                         multicastSubscribeInvocation.getQos(),
-                         fromParticipantId,
-                         toDiscoveryEntry);
         }
     }
 

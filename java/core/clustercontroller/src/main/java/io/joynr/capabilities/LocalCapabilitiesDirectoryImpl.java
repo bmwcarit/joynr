@@ -18,6 +18,8 @@
  */
 package io.joynr.capabilities;
 
+import static io.joynr.runtime.SystemServicesSettings.PROPERTY_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -84,7 +86,6 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         INCLUDE_GLOBAL_SCOPES.add(DiscoveryScope.LOCAL_THEN_GLOBAL);
     }
 
-    public static final String PROPERTY_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS = "joynr.capabilities.freshnessupdateintervalms";
     private ScheduledExecutorService freshnessUpdateScheduler;
 
     private DiscoveryEntryStore localDiscoveryEntryStore;
@@ -162,7 +163,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             public void run() {
                 try {
                     logger.debug("Updating last seen date ms.");
-                    globalCapabilitiesDirectoryClient.touch(freshnessUpdateIntervalMs);
+                    globalCapabilitiesDirectoryClient.touch();
                 } catch (JoynrRuntimeException e) {
                     logger.error("error sending freshness update", e);
                 }

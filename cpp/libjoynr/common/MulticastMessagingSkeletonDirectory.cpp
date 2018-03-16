@@ -30,13 +30,13 @@ std::shared_ptr<IMessagingMulticastSubscriber> MulticastMessagingSkeletonDirecto
 {
     const system::RoutingTypes::Address& addressRef = *address;
     std::type_index typeIndex(typeid(addressRef));
-    JOYNR_LOG_TRACE(logger(), "get messaging skeleton for address type {}", typeIndex.name());
+    JOYNR_LOG_TRACE(logger(), "get messaging skeleton for address {}", address->toString());
     std::lock_guard<std::recursive_mutex> lock(mutex);
     if (contains(address)) {
         return multicastSkeletons[typeIndex];
     }
     JOYNR_LOG_WARN(
-            logger(), "No messaging skeleton registered for address type {}", typeIndex.name());
+            logger(), "No messaging skeleton registered for address {}", address->toString());
     return std::shared_ptr<IMessagingMulticastSubscriber>();
 }
 

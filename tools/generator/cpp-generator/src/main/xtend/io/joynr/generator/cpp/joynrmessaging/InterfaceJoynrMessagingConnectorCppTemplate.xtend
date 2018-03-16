@@ -76,9 +76,11 @@ request.setParams(
 	def logMethodCall(FMethod method)
 	'''
 		JOYNR_LOG_DEBUG(logger(),
-				"REQUEST call proxy: requestReplyId: {}, method: {}, params: «getParamsPlaceholders(method.inputParameters.size)», proxy "
-				"participantId: {}, provider participantId: [{}]",
-				request.getRequestReplyId(),
+				"«IF method.fireAndForget»ONEWAY«ENDIF»REQUEST call proxy: «
+					IF !method.fireAndForget»requestReplyId: {}, «ENDIF
+					»method: {}, params: «getParamsPlaceholders(method.inputParameters.size)», "
+				"proxy participantId: {}, provider participantId: [{}]",
+				«IF !method.fireAndForget»request.getRequestReplyId(),«ENDIF»
 				request.getMethodName(),
 				«FOR inputParam : method.inputParameters»
 					joynr::serializer::serializeToJson(«inputParam.joynrName»),
@@ -333,7 +335,7 @@ request.setParams(
 					std::shared_ptr<joynr::SubscriptionQos> subscriptionQos,
 					SubscriptionRequest& subscriptionRequest
 		) {
-			JOYNR_LOG_DEBUG(logger(), "Subscribing to «attributeName».");
+			JOYNR_LOG_TRACE(logger(), "Subscribing to «attributeName».");
 			std::string attributeName("«attributeName»");
 			joynr::MessagingQos clonedMessagingQos(qosSettings);
 			clonedMessagingQos.setTtl(ISubscriptionManager::convertExpiryDateIntoTtlMs(*subscriptionQos));
@@ -473,6 +475,7 @@ request.setParams(
 			{
 				«produceParameterSetters(method)»
 
+				«logMethodCall(method)»
 				operationOneWayRequest(std::move(request));
 			}
 	«ENDIF»
@@ -530,7 +533,7 @@ request.setParams(
 					const std::vector<std::string>& partitions
 				«ENDIF»
 	) {
-		JOYNR_LOG_TRACE(logger(), "Subscribing to «broadcastName» broadcast.");
+		JOYNR_LOG_TRACE(logger(), "Subscribing to «broadcastName» «IF broadcast.selective»broadcast«ELSE»multicast«ENDIF».");
 		std::string broadcastName("«broadcastName»");
 		joynr::MessagingQos clonedMessagingQos(qosSettings);
 		clonedMessagingQos.setTtl(ISubscriptionManager::convertExpiryDateIntoTtlMs(*subscriptionQos));
@@ -548,6 +551,14 @@ request.setParams(
 						subscriptionRequest);
 			}
 
+			JOYNR_LOG_DEBUG(logger(),
+					"SUBSCRIPTION call proxy: subscriptionId: {}, broadcast: {}, qos: {}, proxy "
+					"participantId: {}, provider participantId: [{}]",
+					subscriptionRequest.getSubscriptionId(),
+					broadcastName,
+					joynr::serializer::serializeToJson(*subscriptionQos),
+					proxyParticipantId,
+					providerParticipantId);
 			if (auto ptr = messageSender.lock()) {
 				ptr->sendBroadcastSubscriptionRequest(
 						proxyParticipantId,
@@ -608,18 +619,6 @@ request.setParams(
 						std::move(onError));
 			}
 		«ENDIF»
-		JOYNR_LOG_DEBUG(logger(),
-				"SUBSCRIPTION call proxy: subscriptionId: {}, attribute: {}, qos: {}, proxy "
-				"participantId: {}, provider participantId: [{}]",
-				«IF broadcast.selective»
-					subscriptionRequest.getSubscriptionId(),
-				«ELSE»
-					subscriptionRequest->getSubscriptionId(),
-				«ENDIF»
-				broadcastName,
-				joynr::serializer::serializeToJson(*subscriptionQos),
-				proxyParticipantId,
-				providerParticipantId);
 		return future;
 	}
 
