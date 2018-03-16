@@ -32,9 +32,10 @@ import org.franca.core.franca.FType
 import io.joynr.generator.templates.util.InterfaceUtil.TypeSelector
 import org.franca.core.franca.FTypedElement
 import javax.inject.Singleton
+import io.joynr.generator.templates.util.JoynrGeneratorExtensions
 
 @Singleton
-class JoynrJavaGeneratorExtensions extends io.joynr.generator.templates.util.JoynrGeneratorExtensions {
+class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 	@Inject extension JavaTypeUtil
 	@Inject extension InterfaceUtil
 	@Inject extension BroadcastUtil
