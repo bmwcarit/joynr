@@ -62,7 +62,7 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
             return invoke(method, args);
         } catch (Exception e) {
             if (this.throwable != null) {
-                logger.debug("exception caught: {} overriden by: {}", e.getMessage(), throwable.getMessage());
+                logger.debug("exception caught: {} overridden by: {}", e.getMessage(), throwable.getMessage());
                 throw throwable;
             } else {
                 throw e;

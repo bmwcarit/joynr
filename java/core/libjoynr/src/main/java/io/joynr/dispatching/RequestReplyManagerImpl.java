@@ -114,6 +114,15 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
                                                               request,
                                                               messagingQos);
         message.setLocalMessage(toDiscoveryEntry.getIsLocal());
+
+        logger.debug("REQUEST call proxy: method: {}, requestReplyId: {}, messageId: {}, proxy participantId: {}, "
+                             + "provider participantId: {}, params: {}",
+                     request.getMethodName(),
+                     request.getRequestReplyId(),
+                     message.getId(),
+                     fromParticipantId,
+                     toDiscoveryEntry.getParticipantId(),
+                     request.getParams());
         messageSender.sendMessage(message);
     }
 
@@ -182,6 +191,12 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
                                                                         toDiscoveryEntry.getParticipantId(),
                                                                         oneWayRequest,
                                                                         messagingQos);
+
+            logger.debug("Send OneWayRequest: method: {}, messageId: {}, proxy participantId: {}, provider participantId: {}",
+                         oneWayRequest.getMethodName(),
+                         message.getId(),
+                         fromParticipantId,
+                         toDiscoveryEntry.getParticipantId());
             messageSender.sendMessage(message);
         }
     }
