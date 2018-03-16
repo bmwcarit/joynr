@@ -57,11 +57,17 @@ class CppInterfaceUtil extends InterfaceUtil {
 	* failed with an unexpected modeled exception. It must expect an Error enum as modeled in Franca.
 '''
 
+	def printMessagingQosParamDefinition()
+'''
+	* @param qos optional MessagingQos parameter; if specified, this will overwrite the MessagingQos that
+	* was specified when building the proxy.
+'''
+
 	def produceSyncGetterSignature(FAttribute attribute, String className)
 '''
 	«val returnType = attribute.typeName»
 	«val attributeName = attribute.joynrName»
-	void «IF className != null»«className»::«ENDIF»get«attributeName.toFirstUpper»(«returnType»& «attributeName»)
+	void «IF className != null»«className»::«ENDIF»get«attributeName.toFirstUpper»(«returnType»& «attributeName», boost::optional<joynr::MessagingQos> qos«IF className==null» = boost::none«ENDIF»)
 '''
 
     def produceSyncGetterSignature(FAttribute attribute) {
@@ -77,6 +83,7 @@ class CppInterfaceUtil extends InterfaceUtil {
 		* @brief Synchronous getter for the «attributeName» attribute.
 		*
 		* @param result The result that will be returned to the caller.
+		«printMessagingQosParamDefinition»
 		* @throws JoynrException if the request is not successful
 		*/
 		«IF pure»virtual «ENDIF»
@@ -93,7 +100,8 @@ class CppInterfaceUtil extends InterfaceUtil {
 	«val defaultArg = if(className == null) " = nullptr" else ""»
 	std::shared_ptr<joynr::Future<«returnType»> > «IF className != null»«className»::«ENDIF»get«attributeName.toFirstUpper»Async(
 				std::function<void(const «returnType»& «attributeName»)> onSuccess«defaultArg»,
-				std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError«defaultArg»)
+				std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError«defaultArg»,
+				boost::optional<joynr::MessagingQos> qos«IF className==null» = boost::none«ENDIF»)
 				noexcept
 '''
 
@@ -111,6 +119,7 @@ class CppInterfaceUtil extends InterfaceUtil {
 		*
 		«printOnSuccessFctParamDefinition»
 		«printOnRuntimeErrorFctParamDefinition»
+		«printMessagingQosParamDefinition»
 		«printFutureReturnDefinition»
 		*/
 		«IF pure»virtual «ENDIF»
@@ -124,7 +133,7 @@ class CppInterfaceUtil extends InterfaceUtil {
 '''
 	«val returnType = attribute.typeName»
 	«val attributeName = attribute.joynrName»
-	void «IF className != null»«className»::«ENDIF»set«attributeName.toFirstUpper»(const «returnType»& «attributeName»)
+	void «IF className != null»«className»::«ENDIF»set«attributeName.toFirstUpper»(const «returnType»& «attributeName», boost::optional<joynr::MessagingQos> qos«IF className==null» = boost::none«ENDIF»)
 '''
 
 	def produceSyncSetterSignature(FAttribute attribute) {
@@ -140,6 +149,7 @@ class CppInterfaceUtil extends InterfaceUtil {
 		* @brief Synchronous setter for the «attributeName» attribute.
 		*
 		* @param «attributeName» The value to set.
+		«printMessagingQosParamDefinition»
 		* @throws JoynrException if the request is not successful
 		*/
 		«IF pure»virtual «ENDIF»
@@ -156,7 +166,8 @@ class CppInterfaceUtil extends InterfaceUtil {
 	std::shared_ptr<joynr::Future<void> > «IF className != null»«className»::«ENDIF»set«attributeName.toFirstUpper»Async(
 				«returnType» «attributeName»,
 				std::function<void(void)> onSuccess«defaultArg»,
-				std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError«defaultArg»)
+				std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError«defaultArg»,
+				boost::optional<joynr::MessagingQos> qos«IF className==null» = boost::none«ENDIF»)
 				noexcept
 '''
 
@@ -175,6 +186,7 @@ class CppInterfaceUtil extends InterfaceUtil {
 		* @param «attributeName» The value to set.
 		«printOnSuccessFctParamDefinition»
 		«printOnRuntimeErrorFctParamDefinition»
+		«printMessagingQosParamDefinition»
 		«printFutureReturnDefinition»
 		*/
 		«IF pure»virtual «ENDIF»
@@ -190,9 +202,12 @@ class CppInterfaceUtil extends InterfaceUtil {
 	«val inputTypedParamList = method.commaSeperatedTypedConstInputParameterList»
 	void «IF className != null»«className»::«ENDIF»«method.joynrName»(
 				«IF !method.outputParameters.empty»
-				«outputTypedParamList»«IF method.inputParameters.size > 0»,«ENDIF»
+				«outputTypedParamList»,
 				«ENDIF»
-				«inputTypedParamList»
+				«IF !method.inputParameters.empty»
+				«inputTypedParamList»,
+				«ENDIF»
+				boost::optional<joynr::MessagingQos> qos«IF className==null» = boost::none«ENDIF»
 	)
 '''
 
@@ -213,6 +228,7 @@ class CppInterfaceUtil extends InterfaceUtil {
 		«FOR inputParam: method.inputParameters»
 		* @param «inputParam.typeName» «inputParam.joynrName»
 		«ENDFOR»
+		«printMessagingQosParamDefinition»
 		* @throws JoynrException if the request is not successful
 		*/
 		«IF pure»virtual «ENDIF»
@@ -246,7 +262,8 @@ class CppInterfaceUtil extends InterfaceUtil {
 				«IF method.hasErrorEnum»
 					std::function<void (const «getMethodErrorEnum(serviceInterface, method)»& errorEnum)> onApplicationError«defaultArg»,
 				«ENDIF»
-				std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError«defaultArg»
+				std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError«defaultArg»,
+				boost::optional<joynr::MessagingQos> qos«IF className==null» = boost::none«ENDIF»
 	) noexcept
 '''
 
@@ -266,6 +283,7 @@ class CppInterfaceUtil extends InterfaceUtil {
 			«printOnApplicationErrorFctParamDefinition»
 		«ENDIF»
 		«printOnRuntimeErrorFctParamDefinition»
+		«printMessagingQosParamDefinition»
 		«printFutureReturnDefinition»
 		*/
 		«IF pure»virtual «ENDIF»
@@ -283,6 +301,7 @@ class CppInterfaceUtil extends InterfaceUtil {
 		«FOR inputParam: method.inputParameters»
 		* @param «inputParam.typeName» «inputParam.joynrName»
 		«ENDFOR»
+		«printMessagingQosParamDefinition»
 		*/
 		«IF pure»virtual «ENDIF»
 		«produceFireAndForgetMethodSignature(method)»
@@ -294,7 +313,10 @@ class CppInterfaceUtil extends InterfaceUtil {
 '''
 	«val inputTypedParamList = method.commaSeperatedTypedConstInputParameterList»
 	void «IF className != null»«className»::«ENDIF»«method.joynrName»(
-	«inputTypedParamList»)
+	«IF !method.inputParameters.empty»
+	«inputTypedParamList»,
+	«ENDIF»
+	boost::optional<joynr::MessagingQos> qos«IF className==null» = boost::none«ENDIF»)
 '''
 
 	def produceFireAndForgetMethodSignature(FMethod method) {

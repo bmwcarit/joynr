@@ -161,7 +161,7 @@ request.setParams(
 	«IF attribute.readable»
 		«produceSyncGetterSignature(attribute, className)»
 		{
-			auto future = get«attributeName.toFirstUpper»Async();
+			auto future = get«attributeName.toFirstUpper»Async(nullptr, nullptr, std::move(qos));
 			future->get(«attributeName»);
 		}
 
@@ -218,7 +218,7 @@ request.setParams(
 						proxyParticipantId,
 						providerParticipantId);
 				auto replyCaller = std::make_shared<joynr::ReplyCaller<«returnType»>>(std::move(onSuccessWrapper), std::move(onErrorWrapper));
-				operationRequest(std::move(replyCaller), std::move(request));
+				operationRequest(std::move(replyCaller), std::move(request), std::move(qos));
 			} catch (const std::invalid_argument& exception) {
 				auto joynrException = std::make_shared<joynr::exceptions::MethodInvocationException>(exception.what());
 				future->onError(joynrException);
@@ -292,7 +292,7 @@ request.setParams(
 						proxyParticipantId,
 						providerParticipantId);
 				auto replyCaller = std::make_shared<joynr::ReplyCaller<void>>(std::move(onSuccessWrapper), std::move(onErrorWrapper));
-				operationRequest(std::move(replyCaller), std::move(request));
+				operationRequest(std::move(replyCaller), std::move(request), std::move(qos));
 			} catch (const std::invalid_argument& exception) {
 				auto joynrException = std::make_shared<joynr::exceptions::MethodInvocationException>(exception.what());
 				future->onError(joynrException);
@@ -312,7 +312,7 @@ request.setParams(
 
 		«produceSyncSetterSignature(attribute, className)»
 		{
-			auto future = set«attributeName.toFirstUpper»Async(«attributeName»);
+			auto future = set«attributeName.toFirstUpper»Async(«attributeName», nullptr, nullptr, std::move(qos));
 			future->get();
 		}
 
@@ -400,7 +400,7 @@ request.setParams(
 	«IF !method.fireAndForget»
 		«produceSyncMethodSignature(method, className)»
 		{
-			auto future = «method.joynrName»Async(«method.commaSeperatedUntypedInputParameterList»);
+			auto future = «method.joynrName»Async(«method.commaSeperatedUntypedInputParameterList»«IF !method.inputParameters.empty», «ENDIF»«IF method.hasErrorEnum»nullptr,«ENDIF»nullptr, nullptr, std::move(qos));
 			future->get(«method.commaSeperatedUntypedOutputParameterList»);
 		}
 
@@ -453,7 +453,7 @@ request.setParams(
 				«logMethodCall(method)»
 
 				auto replyCaller = std::make_shared<joynr::ReplyCaller<«outputParameters»>>(std::move(onSuccessWrapper), std::move(onErrorWrapper));
-				operationRequest(std::move(replyCaller), std::move(request));
+				operationRequest(std::move(replyCaller), std::move(request), std::move(qos));
 			} catch (const std::invalid_argument& exception) {
 				auto joynrException = std::make_shared<joynr::exceptions::MethodInvocationException>(exception.what());
 				future->onError(joynrException);
@@ -476,7 +476,7 @@ request.setParams(
 				«produceParameterSetters(method)»
 
 				«logMethodCall(method)»
-				operationOneWayRequest(std::move(request));
+				operationOneWayRequest(std::move(request), std::move(qos));
 			}
 	«ENDIF»
 «ENDFOR»

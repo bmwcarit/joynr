@@ -68,6 +68,11 @@ class InterfaceHTemplate extends InterfaceTemplate{
 #include <memory>
 #include <functional>
 
+#include <boost/none.hpp>
+#include <boost/optional.hpp>
+
+#include "joynr/MessagingQos.h"
+
 namespace joynr
 {
 	template <class ... Ts> class Future;

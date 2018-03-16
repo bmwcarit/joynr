@@ -115,6 +115,7 @@ class InterfaceInProcessConnectorCPPTemplate extends InterfaceTemplate{
 		«val getAttributeName = "get" + attribute.joynrName.toFirstUpper»
 		«produceSyncGetterSignature(attribute, className)»
 		{
+			std::ignore = qos;
 			auto future = get«attributeName.toFirstUpper»Async();
 			future->get(«attributeName»);
 		}
@@ -122,6 +123,7 @@ class InterfaceInProcessConnectorCPPTemplate extends InterfaceTemplate{
 		«produceAsyncGetterSignature(attribute, className)»
 		{
 			assert(address);
+			std::ignore = qos;
 			std::shared_ptr<joynr::RequestCaller> caller = address->getRequestCaller();
 			assert(caller);
 			std::shared_ptr<«interfaceName»RequestCaller> «francaIntf.interfaceCaller» = std::dynamic_pointer_cast<«interfaceName»RequestCaller>(caller);
@@ -155,6 +157,7 @@ class InterfaceInProcessConnectorCPPTemplate extends InterfaceTemplate{
 		«produceAsyncSetterSignature(attribute, className)»
 		{
 			assert(address);
+			std::ignore = qos;
 			std::shared_ptr<joynr::RequestCaller> caller = address->getRequestCaller();
 			assert(caller);
 			std::shared_ptr<«interfaceName»RequestCaller> «francaIntf.interfaceCaller» = std::dynamic_pointer_cast<«interfaceName»RequestCaller>(caller);
@@ -186,6 +189,7 @@ class InterfaceInProcessConnectorCPPTemplate extends InterfaceTemplate{
 		«produceSyncSetterSignature(attribute, className)»
 		{
 			assert(address);
+			std::ignore = qos;
 			std::shared_ptr<joynr::RequestCaller> caller = address->getRequestCaller();
 			assert(caller);
 			std::shared_ptr<«interfaceName»RequestCaller> «francaIntf.interfaceCaller» = std::dynamic_pointer_cast<«interfaceName»RequestCaller>(caller);
@@ -328,6 +332,7 @@ class InterfaceInProcessConnectorCPPTemplate extends InterfaceTemplate{
 «IF !method.fireAndForget»
 	«produceSyncMethodSignature(method, className)»
 	{
+		std::ignore = qos;
 		auto future = «method.joynrName»Async(«method.commaSeperatedUntypedInputParameterList»);
 		future->get(«method.commaSeperatedUntypedOutputParameterList»);
 	}
@@ -335,6 +340,7 @@ class InterfaceInProcessConnectorCPPTemplate extends InterfaceTemplate{
 	«produceAsyncMethodSignature(francaIntf, method, className)»
 	{
 		assert(address);
+		std::ignore = qos;
 		std::shared_ptr<joynr::RequestCaller> caller = address->getRequestCaller();
 		assert(caller);
 		std::shared_ptr<«interfaceName»RequestCaller> «francaIntf.interfaceCaller» = std::dynamic_pointer_cast<«interfaceName»RequestCaller>(caller);
@@ -363,6 +369,7 @@ class InterfaceInProcessConnectorCPPTemplate extends InterfaceTemplate{
   «produceFireAndForgetMethodSignature(method, className)»
 	{
 		assert(address);
+		std::ignore = qos;
 		std::shared_ptr<joynr::RequestCaller> caller = address->getRequestCaller();
 		assert(caller);
 		std::shared_ptr<«interfaceName»RequestCaller> «francaIntf.interfaceCaller» = std::dynamic_pointer_cast<«interfaceName»RequestCaller>(caller);

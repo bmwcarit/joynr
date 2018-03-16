@@ -65,19 +65,21 @@ public:
                 std::function<void(
                     const std::vector<joynr::infrastructure::DacTypes::DomainRoleEntry>& domainRoleEntries
                 )> onSuccess,
-                std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onError
+                std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onError,
+                boost::optional<joynr::MessagingQos> qos
             ) noexcept override
     {
-        return getDomainRolesAsyncMock(uid, std::move(onSuccess), std::move(onError));
+        return getDomainRolesAsyncMock(uid, std::move(onSuccess), std::move(onError), std::move(qos));
     }
-    MOCK_METHOD3(
+    MOCK_METHOD4(
             getDomainRolesAsyncMock,
             std::shared_ptr<joynr::Future<std::vector<joynr::infrastructure::DacTypes::DomainRoleEntry>>>(
                 const std::string& uid,
                 std::function<void(
                     const std::vector<joynr::infrastructure::DacTypes::DomainRoleEntry>& domainRoleEntries
                 )> onSuccess,
-                std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onError
+                std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onError,
+                boost::optional<joynr::MessagingQos> qos
             )
     );
 };
