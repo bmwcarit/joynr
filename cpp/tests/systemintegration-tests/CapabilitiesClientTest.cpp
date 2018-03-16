@@ -93,15 +93,16 @@ TEST_P(CapabilitiesClientTest, registerAndRetrieveCapability) {
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
     discoveryQos.addCustomParameter(
             "fixedParticipantId", messagingSettings.getCapabilitiesDirectoryParticipantId());
+    const MessagingQos messagingQos(10000);
     std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> cabilitiesProxy (
         capabilitiesProxyBuilder
-            ->setMessagingQos(MessagingQos(10000)) //TODO magic values.
+            ->setMessagingQos(messagingQos)
             ->setDiscoveryQos(discoveryQos)
             ->build()
         );
 
     std::unique_ptr<CapabilitiesClient> capabilitiesClient (std::make_unique<CapabilitiesClient>());
-    capabilitiesClient->setProxyBuilder(std::move(capabilitiesProxyBuilder));
+    capabilitiesClient->setProxy(cabilitiesProxy, messagingQos);
 
     std::string capDomain("testDomain");
     std::string capInterface("testInterface");
