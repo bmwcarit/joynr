@@ -1,5 +1,10 @@
 # joynr 1.1.0-SNAPSHOT
 
+## API relevant changes
+* **[C++]** Proxy methods can now be passed an optional `joynr::MessagingQos` parameter.
+  This allows to overwrite the `MessagingQos` which was specified during proxy building
+  for each proxy method call separately.
+
 ## Javascript Memory and Performance Changes
 * **[Generator]** Generated JS code will support only module.exports as default when exporting.
   This reduces the size of the generated code.
