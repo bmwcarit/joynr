@@ -199,7 +199,7 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", function() {
         expect(MessageRouter.prototype.constructor.calls.count()).toEqual(1);
         expect(MessageRouter.prototype.constructor.calls.argsFor(0)[0].persistency).toBeUndefined();
         expect(ParticipantIdStorage.prototype.constructor.calls.count()).toEqual(1);
-        expect(ParticipantIdStorage.prototype.constructor.calls.argsFor(0)[0]).toEqual(jasmine.any(MemoryStorage));
+        expect(ParticipantIdStorage.prototype.constructor.calls.argsFor(0)[0]).toEqual(jasmine.any(LocalStorage));
         expect(PublicationManager.prototype.constructor.calls.count()).toEqual(1);
         expect(PublicationManager.prototype.constructor.calls.argsFor(0)[1]).toEqual(jasmine.any(LocalStorage));
     });
