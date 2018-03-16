@@ -1,22 +1,22 @@
 package io.joynr.generator.templates.util
+
 /*
  * !!!
- *
+ * 
  * Copyright (C) 2011 - 2018 BMW Car IT GmbH
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import com.google.common.collect.Iterators
 import com.google.inject.Inject
 import com.google.inject.name.Named
@@ -78,16 +78,18 @@ class JoynrGeneratorExtensions {
 	}
 
 	def String getPackageNameInternal(FModelElement fModelElement, boolean useOwnName) {
-		if (fModelElement == null){
-			throw new IllegalStateException("Generator could not proceed with code generation, since JoynGeneratorExtensions.getPackageNameInternal has been invoked with an empty model element");
-		} else if (fModelElement.eContainer == null){
+		if (fModelElement == null) {
+			throw new IllegalStateException(
+				"Generator could not proceed with code generation, since JoynGeneratorExtensions.getPackageNameInternal has been invoked with an empty model element");
+		} else if (fModelElement.eContainer == null) {
 			val errorMsg = "Generator could not proceed with code generation, since " +
-							if (fModelElement.joynrName != null)
-								"the container of model element " + fModelElement.joynrName + " is not known" else "the resource " +
-							(if (fModelElement instanceof BasicEObjectImpl)
-								 (fModelElement as BasicEObjectImpl).eProxyURI
-							else
-								fModelElement.eResource.toString) + " cannot be parsed correctly"
+				if (fModelElement.joynrName != null)
+					"the container of model element " + fModelElement.joynrName + " is not known"
+				else
+					"the resource " + (if (fModelElement instanceof BasicEObjectImpl)
+						(fModelElement as BasicEObjectImpl).eProxyURI
+					else
+						fModelElement.eResource.toString) + " cannot be parsed correctly"
 			throw new IllegalStateException(errorMsg);
 		} else if (fModelElement.eContainer instanceof FModel) {
 			return (fModelElement.eContainer as FModel).joynrName + getVersionSuffix(fModelElement);
@@ -95,14 +97,15 @@ class JoynrGeneratorExtensions {
 			// include interface name for unnamed error enums (defined or extended inside method definition)
 			val finterface = fModelElement.eContainer as FModelElement
 			if (finterface == null || !(finterface instanceof FInterface)) {
-				val errorMsg = "Generator could not proceed with code generation, since "
-								+ "JoynGeneratorExtensions.getPackageNameInternal has been invoked "
-								+ "with a FMethod element which is not defined inside an interface"
+				val errorMsg = "Generator could not proceed with code generation, since " +
+					"JoynGeneratorExtensions.getPackageNameInternal has been invoked " +
+					"with a FMethod element which is not defined inside an interface"
 				throw new IllegalStateException(errorMsg);
 			}
 			return finterface.getPackageNameInternal(false) + '.' + finterface.joynrName
 		}
-		return (fModelElement.eContainer as FModelElement).getPackageNameInternal(true) + (if (useOwnName) '.' + fModelElement.joynrName else '')
+		return (fModelElement.eContainer as FModelElement).getPackageNameInternal(true) +
+			(if (useOwnName) '.' + fModelElement.joynrName else '')
 	}
 
 	def getPackageName(FModelElement fModelElement) {
@@ -195,7 +198,8 @@ class JoynrGeneratorExtensions {
 		}
 	}
 
-	def generateFile(IFileSystemAccess fsa,
+	def generateFile(
+		IFileSystemAccess fsa,
 		String path,
 		BroadcastTemplate generator,
 		FInterface serviceInterface,
@@ -277,16 +281,16 @@ class JoynrGeneratorExtensions {
 
 	def String getJoynrTypeName(FBasicTypeId predefined) {
 		switch predefined {
-			case isString(predefined) : "String"
-			case isShort(predefined)  : "Short"
-			case isInteger(predefined): "Integer"
-			case isLong(predefined)   : "Long"
-			case isDouble(predefined) : "Double"
-			case isFloat(predefined)  : "Float"
-			case isBool(predefined)   : "Boolean"
-			case isByte(predefined)   : "Byte"
-			case isByteBuffer(predefined)   : "Byte[]"
-			default                   : throw new RuntimeException("Unhandled primitive type: " + predefined.getName)
+			case isString(predefined)    : "String"
+			case isShort(predefined)     : "Short"
+			case isInteger(predefined)   : "Integer"
+			case isLong(predefined)      : "Long"
+			case isDouble(predefined)    : "Double"
+			case isFloat(predefined)     : "Float"
+			case isBool(predefined)      : "Boolean"
+			case isByte(predefined)      : "Byte"
+			case isByteBuffer(predefined): "Byte[]"
+			default: throw new RuntimeException("Unhandled primitive type: " + predefined.getName)
 		}
 	}
 
@@ -311,8 +315,8 @@ class JoynrGeneratorExtensions {
 		var packagepath = "";
 		try {
 			packagepath = getPackagePathWithJoynrPrefix(datatype, separator);
-		} catch (IllegalStateException e){
-			//	if an illegal StateException has been thrown, we tried to get the package for a primitive type, so the packagepath stays empty.
+		} catch (IllegalStateException e) {
+			// if an illegal StateException has been thrown, we tried to get the package for a primitive type, so the packagepath stays empty.
 		}
 		if (includeTypeCollection && datatype.partOfTypeCollection) {
 			packagepath += separator + datatype.typeCollectionName;
