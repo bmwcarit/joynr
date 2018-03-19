@@ -60,7 +60,7 @@ var TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
 var Util = require("../util/UtilInternal");
 var CapabilitiesUtil = require("../util/CapabilitiesUtil");
 var WebWorkerMessagingAppender = require("../system/WebWorkerMessagingAppender");
-var LoggingManager = require("../system/LoggingManager");
+var loggingManager = require("../system/LoggingManager");
 var uuid = require("../../lib/uuid-annotated");
 var LoggerFactory = require("../system/LoggerFactory");
 var defaultSettings = require("./settings/defaultSettings");
@@ -89,7 +89,6 @@ var clusterControllerSettings;
  * @param provisioning
  */
 function InProcessRuntime(provisioning) {
-    var loggingManager;
     var initialRoutingTable;
     var untypedCapabilities;
     var typedCapabilities;
@@ -205,8 +204,6 @@ function InProcessRuntime(provisioning) {
     var loggingMessagingQos = new MessagingQos({
         ttl: relativeTtl
     });
-    loggingManager = Object.freeze(new LoggingManager());
-    LoggerFactory.init(loggingManager);
 
     var joynrState = JoynrStates.SHUTDOWN;
 
@@ -505,8 +502,6 @@ function InProcessRuntime(provisioning) {
 
         providerBuilder = Object.freeze(new ProviderBuilder());
 
-        loggingManager.registerAppenderClass("WebWorker", WebWorkerMessagingAppender);
-
         if (provisioning.logging) {
             loggingManager.configure(provisioning.logging);
         }
@@ -594,10 +589,6 @@ function InProcessRuntime(provisioning) {
 
         if (typeRegistry !== undefined) {
             typeRegistry.shutdown();
-        }
-
-        if (loggingManager !== undefined) {
-            loggingManager.shutdown();
         }
 
         joynrState = JoynrStates.SHUTDOWN;

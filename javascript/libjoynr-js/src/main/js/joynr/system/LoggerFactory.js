@@ -18,8 +18,7 @@
  * limitations under the License.
  * #L%
  */
-var LoggingManager = require("./LoggingManager");
-var defaultConfig = require("./DefaultLoggerConfiguration");
+var loggingManager = require("./LoggingManager");
 
 /**
  * @name LoggerFactory
@@ -27,10 +26,6 @@ var defaultConfig = require("./DefaultLoggerConfiguration");
  * @classdesc Global factory to create logger instances
  */
 var LoggerFactory = {};
-var loggingManager;
-LoggerFactory.init = function init(newLoggingManager) {
-    loggingManager = newLoggingManager;
-};
 
 /**
  * @name LoggerFactory#getLogger
@@ -38,12 +33,6 @@ LoggerFactory.init = function init(newLoggingManager) {
  * @param {Object} name - The logger's name
  */
 LoggerFactory.getLogger = function getLogger(name) {
-    if (loggingManager === undefined) {
-        var newLoggingManager = new LoggingManager();
-        newLoggingManager.configure(defaultConfig);
-        LoggerFactory.init(newLoggingManager);
-    }
-
     return loggingManager.getLogger(name);
 };
 

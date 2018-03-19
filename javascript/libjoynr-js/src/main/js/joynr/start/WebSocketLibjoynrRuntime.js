@@ -60,7 +60,7 @@ var CapabilitiesUtil = require("../util/CapabilitiesUtil");
 var Typing = require("../util/Typing");
 var WebWorkerMessagingAppender = require("../system/WebWorkerMessagingAppender");
 var uuid = require("../../lib/uuid-annotated");
-var LoggingManager = require("../system/LoggingManager");
+var loggingManager = require("../system/LoggingManager");
 var LoggerFactory = require("../system/LoggerFactory");
 var defaultSettings = require("./settings/defaultSettings");
 var defaultWebSocketSettings = require("./settings/defaultWebSocketSettings");
@@ -85,7 +85,7 @@ var JoynrStates = {
  * @param {Object} provisioning
  */
 function WebSocketLibjoynrRuntime(provisioning) {
-    var log, loggingManager;
+    var log;
     var initialRoutingTable;
     var untypedCapabilities;
     var typedCapabilities;
@@ -197,8 +197,6 @@ function WebSocketLibjoynrRuntime(provisioning) {
     var loggingMessagingQos = new MessagingQos({
         ttl: relativeTtl
     });
-    loggingManager = Object.freeze(new LoggingManager());
-    LoggerFactory.init(loggingManager);
 
     if (Util.checkNullUndefined(provisioning.ccAddress)) {
         throw new Error("ccAddress not set in provisioning.ccAddress");
@@ -275,10 +273,6 @@ function WebSocketLibjoynrRuntime(provisioning) {
         if (!provisioning) {
             throw new Error("Constructor has been invoked without provisioning");
         }
-
-        // initialize Logger with external logging configuration or default
-        // values
-        loggingManager.registerAppenderClass("WebWorker", WebWorkerMessagingAppender);
 
         if (provisioning.logging) {
             loggingManager.configure(provisioning.logging);
@@ -585,10 +579,6 @@ function WebSocketLibjoynrRuntime(provisioning) {
 
         if (typeRegistry !== undefined) {
             typeRegistry.shutdown();
-        }
-
-        if (loggingManager !== undefined) {
-            loggingManager.shutdown();
         }
 
         joynrState = JoynrStates.SHUTDOWN;

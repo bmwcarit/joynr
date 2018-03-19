@@ -56,7 +56,7 @@ var Util = require("../util/UtilInternal");
 var CapabilitiesUtil = require("../util/CapabilitiesUtil");
 var WebWorkerMessagingAppender = require("../system/WebWorkerMessagingAppender");
 var uuid = require("../../lib/uuid-annotated");
-var LoggingManager = require("../system/LoggingManager");
+var loggingManager = require("../system/LoggingManager");
 var LoggerFactory = require("../system/LoggerFactory");
 var defaultSettings = require("./settings/defaultSettings");
 var defaultInterTabSettings = require("./settings/defaultInterTabSettings");
@@ -82,7 +82,6 @@ var CC_WINDOWID = "ClusterController";
  * @param provisioning
  */
 function InterTabLibjoynrRuntime(provisioning) {
-    var loggingManager;
     var ccAddress;
     var initialRoutingTable;
     var untypedCapabilities;
@@ -191,8 +190,6 @@ function InterTabLibjoynrRuntime(provisioning) {
     var loggingMessagingQos = new MessagingQos({
         ttl: relativeTtl
     });
-    loggingManager = Object.freeze(new LoggingManager());
-    LoggerFactory.init(loggingManager);
 
     var joynrState = JoynrStates.SHUTDOWN;
 
@@ -239,10 +236,6 @@ function InterTabLibjoynrRuntime(provisioning) {
         if (!provisioning) {
             throw new Error("Constructor has been invoked without provisioning");
         }
-
-        // initialize Logger with external logging configuration or default
-        // values
-        loggingManager.registerAppenderClass("WebWorker", WebWorkerMessagingAppender);
 
         if (provisioning.logging) {
             loggingManager.configure(provisioning.logging);
@@ -541,10 +534,6 @@ function InterTabLibjoynrRuntime(provisioning) {
 
         if (typeRegistry !== undefined) {
             typeRegistry.shutdown();
-        }
-
-        if (loggingManager !== undefined) {
-            loggingManager.shutdown();
         }
 
         return Promise.all([] /* TODO: insert promises here */).then(function() {
