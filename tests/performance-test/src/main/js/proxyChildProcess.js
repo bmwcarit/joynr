@@ -36,12 +36,10 @@ var testType = options.testType;
 log("Using domain " + options.domain);
 error("test runs: " + options.testRuns);
 error("Using testType: " + testType);
-var provisioning = testbase.provisioning_common;
+var provisioning = PerformanceUtilities.getProvisioning(false);
 provisioning.ccAddress.host = options.cchost;
 provisioning.ccAddress.port = options.ccport;
 joynr.selectRuntime("websocket.libjoynr");
-
-provisioning.logging.configuration.loggers.root.level = "error";
 
 var heapdump = require("heapdump");
 

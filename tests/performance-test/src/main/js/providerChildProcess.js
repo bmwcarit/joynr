@@ -34,12 +34,11 @@ var joynr = require("joynr");
 joynr.selectRuntime("websocket.libjoynr");
 
 var testbase = require("test-base");
-var provisioning = testbase.provisioning_common;
+var provisioning = PerformanceUtilities.getProvisioning(true);
 var log = testbase.logging.log;
 let error = testbase.logging.error;
 log("domain: " + domain);
 
-provisioning.logging.configuration.loggers.root.level = "error";
 joynr
     .load(provisioning)
     .then(function(loadedJoynr) {
