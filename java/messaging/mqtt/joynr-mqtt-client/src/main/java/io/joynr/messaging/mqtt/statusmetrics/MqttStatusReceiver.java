@@ -18,21 +18,19 @@
  */
 package io.joynr.messaging.mqtt.statusmetrics;
 
-public interface MqttStatusMetrics {
-    /**
-     * @return Returns the number of messages which were dropped since the start of the
-     * instance because an overload situation was detected.
-     */
-    long getDroppedIncomingRequestsCount();
+public interface MqttStatusReceiver {
+    public enum ConnectionStatus {
+        CONNECTED, NOT_CONNECTED,
+    }
 
     /**
-     *  @return Returns whether there is a MQTT connection or not.
+     * Will be called whenever a message is dropped because the upper message queue limit was reached.
      */
-    boolean isConnected();
+    void notifyMessageDropped();
 
     /**
-     * @return Returns a timestamp at which the MQTT connection became unavailable. If the connection has never been
-     * established because the instance just started, the method returns the timestamp of the first connection attempt.
+     * Will be called whenever the connection status changed.
+     * @param connectionStatus A new connection status
      */
-    long getOfflineSinceTimestamp();
+    void notifyConnectionStatusChanged(ConnectionStatus connectionStatus);
 }
