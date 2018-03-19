@@ -19,6 +19,7 @@
 package io.joynr.generator.cpp.util;
 
 import io.joynr.generator.loading.ModelLoader;
+import io.joynr.generator.templates.util.JoynrGeneratorExtensions;
 
 import java.net.URL;
 
@@ -53,6 +54,8 @@ public class CppStdTypeUtilTest extends TestCase {
             @Override
             protected void configure() {
                 bindConstant().annotatedWith(Names.named("generationId")).to("");
+                bindConstant().annotatedWith(Names.named(JoynrGeneratorExtensions.JOYNR_GENERATOR_CLEAN)).to(false);
+                bindConstant().annotatedWith(Names.named(JoynrGeneratorExtensions.JOYNR_GENERATOR_GENERATE)).to(true);
                 install(new FactoryModuleBuilder().build(CppTemplateFactory.class));
             }
         }).getInstance(CppStdTypeUtil.class);
