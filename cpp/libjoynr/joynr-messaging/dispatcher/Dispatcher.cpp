@@ -209,10 +209,12 @@ void Dispatcher::handleRequestReceived(std::shared_ptr<ImmutableMessage> message
             // send reply back to the original sender (ie. sender and receiver ids are reversed
             // on purpose)
             const std::chrono::milliseconds ttl = requestExpiryDate.relativeFromNow();
+            MessagingQos messagingQos(ttl.count());
+            messagingQos.setCompress(message->isCompressed());
             thisSharedPtr->messageSender->sendReply(
                     receiverId, // receiver of the request is sender of reply
                     senderId,   // sender of request is receiver of reply
-                    MessagingQos(ttl.count()),
+                    messagingQos,
                     message->getPrefixedCustomHeaders(),
                     std::move(reply));
         }
@@ -237,10 +239,12 @@ void Dispatcher::handleRequestReceived(std::shared_ptr<ImmutableMessage> message
             reply.setRequestReplyId(std::move(requestReplyId));
             reply.setError(exception);
             const std::chrono::milliseconds ttl = requestExpiryDate.relativeFromNow();
+            MessagingQos messagingQos(ttl.count());
+            messagingQos.setCompress(message->isCompressed());
             thisSharedPtr->messageSender->sendReply(
                     receiverId, // receiver of the request is sender of reply
                     senderId,   // sender of request is receiver of reply
-                    MessagingQos(ttl.count()),
+                    messagingQos,
                     message->getPrefixedCustomHeaders(),
                     std::move(reply));
         }
