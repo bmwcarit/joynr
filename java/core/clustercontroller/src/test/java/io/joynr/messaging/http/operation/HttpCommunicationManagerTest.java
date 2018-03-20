@@ -51,6 +51,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -147,6 +148,7 @@ public class HttpCommunicationManagerTest {
     }
 
     @Test
+    @Ignore
     public void testCreateOpenAndDeleteChannel() throws Exception {
 
         MutableMessage mutableMessage = new MutableMessage();
