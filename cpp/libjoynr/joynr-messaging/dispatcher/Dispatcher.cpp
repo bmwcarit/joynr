@@ -644,9 +644,11 @@ void Dispatcher::registerPublicationManager(std::weak_ptr<PublicationManager> pu
 
 void Dispatcher::shutdown()
 {
-    WriteLocker locker(isShuttingDownLock);
-    assert(!isShuttingDown);
-    isShuttingDown = true;
+    {
+        WriteLocker locker(isShuttingDownLock);
+        assert(!isShuttingDown);
+        isShuttingDown = true;
+    }
     handleReceivedMessageThreadPool->shutdown();
     replyCallerDirectory.shutdown();
     requestCallerDirectory.shutdown();
