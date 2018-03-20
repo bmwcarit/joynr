@@ -31,8 +31,8 @@ import org.franca.core.franca.FModelElement
 import org.franca.core.franca.FType
 import io.joynr.generator.templates.util.InterfaceUtil.TypeSelector
 import org.franca.core.franca.FTypedElement
-import javax.inject.Singleton
 import io.joynr.generator.templates.util.JoynrGeneratorExtensions
+import com.google.inject.Singleton
 
 @Singleton
 class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {

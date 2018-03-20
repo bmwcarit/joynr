@@ -20,6 +20,7 @@ package io.joynr.generator
 import com.google.common.collect.Sets
 import com.google.inject.AbstractModule
 import com.google.inject.Inject
+import com.google.inject.Singleton
 import com.google.inject.assistedinject.FactoryModuleBuilder
 import io.joynr.generator.communicationmodel.CommunicationModelGenerator
 import io.joynr.generator.filter.FilterGenerator
@@ -66,6 +67,7 @@ class JoynrJavaGenerator implements IJoynrGenerator {
 		new AbstractModule() {
 			override protected configure() {
 				install(new FactoryModuleBuilder().build(JavaTemplateFactory))
+				bind(JoynrJavaGeneratorExtensions).in(Singleton)
 			}
 		}
 	}
