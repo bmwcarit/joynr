@@ -17,17 +17,19 @@ under the License.
 
 This project has dependencies to:
   "Java Concurrency in Practice" book annotations under Creative Commons Attribution License
+  Animal Sniffer Annotations under MIT license
   AOP alliance under Public Domain
   Apache Commons CLI under Apache License, Version 2.0
   Apache HttpClient under Apache License
   Apache HttpCore under Apache License
   Apache Log4j under The Apache Software License, Version 2.0
+  Checker Qual under GNU General Public License, version 2 (GPL2), with the classpath exception or The MIT License
   clustercontroller-inprocess-runtime under The Apache Software License, Version 2.0
   clustercontroller-websocket-runtime under The Apache Software License, Version 2.0
   Commons Codec under The Apache Software License, Version 2.0
   Commons Lang under The Apache Software License, Version 2.0
-  dom4j under BSD License
   ehcache under The Apache Software License, Version 2.0
+  error-prone annotations under Apache 2.0
   FindBugs-Annotations under GNU Lesser Public License
   FindBugs-jsr305 under The Apache Software License, Version 2.0
   flatbuffers-java under Apache License V2.0
@@ -56,11 +58,12 @@ This project has dependencies to:
   io.joynr.mqtt:mqtt-client under Eclipse Public License - Version 1.0
   io.joynr.smrf.java:smrf under The Apache Software License, Version 2.0
   io.joynr.smrf.java:smrf-api under The Apache Software License, Version 2.0
+  J2ObjC Annotations under The Apache Software License, Version 2.0
   Jackson-annotations under The Apache Software License, Version 2.0
   Jackson-core under The Apache Software License, Version 2.0
   jackson-databind under The Apache Software License, Version 2.0
   Java Servlet API under CDDL + GPLv2 with classpath exception
-  Javassist under MPL 1.1 or LGPL 2.1
+  Javassist under MPL 1.1 or LGPL 2.1 or Apache License 2.0
   javax.inject under The Apache Software License, Version 2.0
   Jetty :: Http Utility under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: IO Utility under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
@@ -77,8 +80,7 @@ This project has dependencies to:
   JUnit under Eclipse Public License 1.0
   libjoynr-websocket-runtime under The Apache Software License, Version 2.0
   Logging under The Apache Software License, Version 2.0
-  Reflections under WTFPL
+  Reflections under WTFPL or The New BSD License
   SLF4J API Module under MIT License
   SLF4J LOG4J-12 Binding under MIT License
-  XML Commons External Components XML APIs under The Apache Software License, Version 2.0 or The SAX License or The W3C License
 

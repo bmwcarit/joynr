@@ -17,6 +17,7 @@ under the License.
 
 This project has dependencies to:
   "Java Concurrency in Practice" book annotations under Creative Commons Attribution License
+  Animal Sniffer Annotations under MIT license
   AOP alliance under Public Domain
   Apache Derby Database Engine and Embedded JDBC Driver under Apache 2
   Apache Geronimo JSR-317 JPA 2.0 Spec API under The Apache Software License, Version 2.0
@@ -34,6 +35,7 @@ This project has dependencies to:
   atmosphere-runtime under CDDL or Apache License 2.0
   Bean Validation API under Apache License, Version 2.0
   CDI APIs under Apache License, Version 2.0
+  Checker Qual under GNU General Public License, version 2 (GPL2), with the classpath exception or The MIT License
   Common Annotations 1.1 API under lgpl
   Commons Codec under The Apache Software License, Version 2.0
   Commons Collections under The Apache Software License, Version 2.0
@@ -43,6 +45,7 @@ This project has dependencies to:
   Data Mapper for Jackson under The Apache Software License, Version 2.0
   ehcache under The Apache Software License, Version 2.0
   EJB 3.1 API under lgpl
+  error-prone annotations under Apache 2.0
   Expression Language 2.2 API under lgpl
   FindBugs-Annotations under GNU Lesser Public License
   FindBugs-jsr305 under The Apache Software License, Version 2.0
@@ -88,6 +91,7 @@ This project has dependencies to:
   io.joynr.mqtt:mqtt-client under Eclipse Public License - Version 1.0
   io.joynr.smrf.java:smrf under The Apache Software License, Version 2.0
   io.joynr.smrf.java:smrf-api under The Apache Software License, Version 2.0
+  J2ObjC Annotations under The Apache Software License, Version 2.0
   JACC 1.4 API under lgpl
   Jackson under The Apache Software License, Version 2.0
   Jackson module: JAXB-annotations under The Apache Software License, Version 2.0

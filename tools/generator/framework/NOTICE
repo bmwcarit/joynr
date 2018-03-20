@@ -16,26 +16,31 @@ specific language governing permissions and limitations
 under the License.
 
 This project has dependencies to:
+  "Java Concurrency in Practice" book annotations under Creative Commons Attribution License
   3rd Party Dependencies - Library under Eclipse Public License - v 1.0
+  Animal Sniffer Annotations under MIT license
   Antlr 3 Runtime under BSD License
   AOP alliance under Public Domain
   Apache Log4j under The Apache Software License, Version 2.0
   ASM Commons under BSD
   ASM Core under BSD
   ASM Tree under BSD
+  Checker Qual under GNU General Public License, version 2 (GPL2), with the classpath exception or The MIT License
   Common Eclipse Runtime under Eclipse Public License - v 1.0
   Common Types Runtime Library under Eclipse Public License - v 1.0
-  dom4j under BSD License
   Eclipse Xbase Runtime Library under Eclipse Public License - v 1.0
   Eclipse Xtend Macro Library under Eclipse Public License - v 1.0
   Eclipse Xtend Runtime Library under Eclipse Public License - v 1.0
+  error-prone annotations under Apache 2.0
+  FindBugs-Annotations under GNU Lesser Public License
   FindBugs-jsr305 under The Apache Software License, Version 2.0
   Google Guice - Core Library under The Apache Software License, Version 2.0
   Google Guice - Extensions - AssistedInject under The Apache Software License, Version 2.0
   Guava: Google Core Libraries for Java under The Apache Software License, Version 2.0
   Hamcrest Core under New BSD License
   io.joynr.tools.generator:generator-framework under The Apache Software License, Version 2.0
-  Javassist under MPL 1.1 or LGPL 2.1
+  J2ObjC Annotations under The Apache Software License, Version 2.0
+  Javassist under MPL 1.1 or LGPL 2.1 or Apache License 2.0
   javax.inject under The Apache Software License, Version 2.0
   JUnit under Eclipse Public License 1.0
   Mockito under The MIT License
@@ -47,11 +52,10 @@ This project has dependencies to:
   org.franca.core under Eclipse Public License - v 1.0
   org.franca.core.dsl under Eclipse Public License - v 1.0
   org.franca.deploymodel.dsl under Eclipse Public License - v 1.0
-  Reflections under WTFPL
+  Reflections under WTFPL or The New BSD License
   SLF4J API Module under MIT License
   Tycho org.eclipse.jdt.core dependency (Incubation) under Eclipse Public License
   Xbase Runtime Library under Eclipse Public License - v 1.0
-  XML Commons External Components XML APIs under The Apache Software License, Version 2.0 or The SAX License or The W3C License
   Xtend Core Library under Eclipse Public License - v 1.0
   Xtext Runtime Library under Eclipse Public License - v 1.0
   Xtext Util under Eclipse Public License - v 1.0

@@ -22,6 +22,7 @@ import java.util.concurrent.Future;
 
 import com.google.common.util.concurrent.Futures;
 import com.google.inject.Singleton;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
  * A Dummy implementation that does not perform any backend communication
@@ -65,6 +66,7 @@ public class NoBackendMessagingReceiver implements MessageReceiver {
     }
 
     @Override
+    @SuppressFBWarnings(value = "NP_NONNULL_PARAM_VIOLATION", justification = "Deal with NullableDecl & Java 8")
     public Future<Void> start(MessageArrivedListener messageArrivedListener, ReceiverStatusListener... statusListeners) {
         return Futures.immediateFuture(null);
     }

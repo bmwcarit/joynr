@@ -398,7 +398,7 @@
 		<hibernate.version>4.3.8.Final</hibernate.version>
 		<android.platform.version>5.0.1_r2</android.platform.version>
 		<android.platform.level>21</android.platform.level>
-		<javaassist.version>3.12.1.GA</javaassist.version>
+		<javassist.version>3.22.0-GA</javassist.version>
 		<skipTests>true</skipTests>
 		<franca.version>0.10.0</franca.version>
 		<xtend.version>2.8.4</xtend.version>
@@ -431,15 +431,15 @@
 				</exclusions>
 			</dependency>
 			<dependency>
-				<groupId>javassist</groupId>
+				<groupId>org.javassist</groupId>
 				<artifactId>javassist</artifactId>
-				<version>${javaassist.version}</version>
+				<version>${javassist.version}</version>
 				<classifier>sources</classifier>
 			</dependency>
 			<dependency>
-				<groupId>javassist</groupId>
+				<groupId>org.javassist</groupId>
 				<artifactId>javassist</artifactId>
-				<version>${javaassist.version}</version>
+				<version>${javassist.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>junit</groupId>
@@ -510,7 +510,7 @@
 			<dependency>
 				<groupId>com.google.guava</groupId>
 				<artifactId>guava</artifactId>
-				<version>11.0.2</version>
+				<version>24.1-android</version>
 			</dependency>
 			<dependency>
 				<groupId>com.sun.jersey</groupId>
@@ -737,7 +737,7 @@
 			<dependency>
 				<groupId>org.reflections</groupId>
 				<artifactId>reflections</artifactId>
-				<version>0.9.8</version>
+				<version>0.9.10</version>
 			</dependency>
 			<dependency>
 				<groupId>commons-codec</groupId>
