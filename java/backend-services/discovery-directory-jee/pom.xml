@@ -82,13 +82,13 @@
 		<dependency>
 			<groupId>org.jboss.arquillian.container</groupId>
 			<artifactId>arquillian-container-test-api</artifactId>
-			<version>1.1.11.Final</version>
+			<version>1.1.15.Final</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.jboss.arquillian.container</groupId>
 			<artifactId>arquillian-glassfish-embedded-3.1</artifactId>
-			<version>1.0.0.CR4</version>
+			<version>1.0.2</version>
 			<scope>test</scope>
 			<exclusions>
 				<exclusion>
@@ -115,6 +115,7 @@
 		<dependency>
 			<groupId>org.jboss.shrinkwrap.resolver</groupId>
 			<artifactId>shrinkwrap-resolver-impl-maven</artifactId>
+			<version>2.2.6</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

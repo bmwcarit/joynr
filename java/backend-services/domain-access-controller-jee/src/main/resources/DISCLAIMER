@@ -36,7 +36,6 @@ The software listed below included in some products is licensed under the "Apach
 - commons-logging:commons-logging:1.0.4
   Notice file: WEB-INF/lib/commons-logging-1.0.4.jar:META-INF/NOTICE.txt
   License file: WEB-INF/lib/commons-logging-1.0.4.jar:META-INF/LICENSE.txt
-- fish.payara.extras:payara-embedded-all:jar:4.1.153
 - javax.inject:javax.inject:1
 - log4j:log4j:1.2.17
   Notice file: WEB-INF/lib/log4j-1.2.17.jar:META-INF/NOTICE
