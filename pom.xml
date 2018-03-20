@@ -514,8 +514,8 @@
 			</dependency>
 			<dependency>
 				<groupId>org.glassfish.jersey.core</groupId>
-                                                                                        <artifactId>jersey-server</artifactId>
-                                                                                        <version>2.26-b02</version>
+				<artifactId>jersey-server</artifactId>
+				<version>2.26-b02</version>
 				<scope>compile</scope>
 			</dependency>
 			<dependency>
