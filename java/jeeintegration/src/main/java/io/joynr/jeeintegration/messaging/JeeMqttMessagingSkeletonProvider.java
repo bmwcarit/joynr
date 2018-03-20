@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
+import io.joynr.jeeintegration.JoynrStatusMetricsAggregator;
 import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
@@ -68,7 +69,8 @@ public class JeeMqttMessagingSkeletonProvider extends MqttMessagingSkeletonProvi
                                             MqttClientFactory mqttClientFactory,
                                             @Named(CHANNELID) String channelId,
                                             MqttTopicPrefixProvider mqttTopicPrefixProvider,
-                                            RawMessagingPreprocessor rawMessagingPreprocessor) {
+                                            RawMessagingPreprocessor rawMessagingPreprocessor,
+                                            JoynrStatusMetricsAggregator jeeJoynrStatusMetrics) {
         // CHECKSTYLE:ON
         super(enableSharedSubscriptions,
               ownAddress,
@@ -80,7 +82,8 @@ public class JeeMqttMessagingSkeletonProvider extends MqttMessagingSkeletonProvi
               channelId,
               mqttTopicPrefixProvider,
               rawMessagingPreprocessor,
-              new HashSet<JoynrMessageProcessor>());
+              new HashSet<JoynrMessageProcessor>(),
+              jeeJoynrStatusMetrics);
         httpBridgeEnabled = enableHttpBridge;
         logger.debug("Created with httpBridgeEnabled: {} ownAddress: {} channelId: {}", new Object[]{ httpBridgeEnabled,
                 ownAddress, channelId });

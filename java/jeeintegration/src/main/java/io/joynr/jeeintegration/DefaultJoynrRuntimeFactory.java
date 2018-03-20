@@ -61,6 +61,7 @@ import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.NoOpRawMessagingPreprocessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.MqttClientIdProvider;
+import io.joynr.messaging.mqtt.statusmetrics.MqttStatusReceiver;
 import io.joynr.provider.JoynrInterface;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.CCInProcessRuntimeModule;
@@ -92,6 +93,7 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
     private final String joynrLocalDomain;
 
     private BeanManager beanManager;
+    private MqttStatusReceiver mqttStatusReceiver;
 
     /**
      * The scheduled executor service to use for providing to the joynr runtime.
@@ -116,13 +118,15 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
      * @param joynrProperties  the joynr properties, if present, by {@link #prepareJoynrProperties(Properties)} to prepare the properties with which the injector is created.
      * @param joynrLocalDomain the joynr local domain name to use for the application.
      * @param rawMessagePreprocessor can be optionally provided to intercept incoming messages and inspect or modify them
+     * @param joynrStatusReceiver Is passed to POJO joynr and receives metrics about the status of the joynr instance.
      */
     @Inject
     public DefaultJoynrRuntimeFactory(@JoynrProperties Instance<Properties> joynrProperties,
                                       @JoynrLocalDomain Instance<String> joynrLocalDomain,
                                       @JoynrRawMessagingPreprocessor Instance<RawMessagingPreprocessor> rawMessagePreprocessor,
                                       @JoynrMqttClientIdProvider Instance<MqttClientIdProvider> mqttClientIdProvider,
-                                      BeanManager beanManager) {
+                                      BeanManager beanManager,
+                                      MqttStatusReceiver mqttStatusReceiver) {
         if (joynrLocalDomain.isUnsatisfied()) {
             String message = "No local domain name specified. Please provide a value for the local domain via @JoynrLocalDomain in your configuration EJB.";
             LOG.error(message);
@@ -173,6 +177,7 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
         }
         this.joynrProperties = prepareJoynrProperties(configuredProperties);
         this.beanManager = beanManager;
+        this.mqttStatusReceiver = mqttStatusReceiver;
     }
 
     @Override
@@ -215,6 +220,8 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
                     if (mqttClientIdProvider != null) {
                         bind(MqttClientIdProvider.class).toInstance(mqttClientIdProvider);
                     }
+
+                    bind(MqttStatusReceiver.class).toInstance(mqttStatusReceiver);
                 }
             });
 

@@ -43,6 +43,7 @@ import com.google.inject.name.Names;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.jeeintegration.DefaultJoynrRuntimeFactory;
 import io.joynr.jeeintegration.JoynrIntegrationBean;
+import io.joynr.jeeintegration.JoynrStatusMetricsAggregator;
 import io.joynr.jeeintegration.ServiceProviderDiscovery;
 import io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys;
 import io.joynr.messaging.routing.MessageRouter;
@@ -60,7 +61,7 @@ public class JeeIntegrationBeanTest {
 		return ShrinkWrap.create(JavaArchive.class)
 				.addClasses(ServiceProviderDiscovery.class, DefaultJoynrRuntimeFactory.class,
 						JeeIntegrationJoynrTestConfigurationProvider.class, JoynrIntegrationBean.class,
-						TestResult.class)
+						TestResult.class, JoynrStatusMetricsAggregator.class)
 				.addAsManifestResource(new File("src/main/resources/META-INF/beans.xml"));
 		// @formatter:on
 	}
