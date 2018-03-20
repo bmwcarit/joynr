@@ -542,7 +542,7 @@ void JoynrClusterControllerRuntime::init()
     requestCallerDirectory =
             std::dynamic_pointer_cast<IRequestCallerDirectory>(inProcessDispatcher);
 
-    auto capabilitiesClient = std::make_shared<CapabilitiesClient>();
+    auto capabilitiesClient = std::make_shared<CapabilitiesClient>(clusterControllerSettings);
     localCapabilitiesDirectory =
             std::make_shared<LocalCapabilitiesDirectory>(clusterControllerSettings,
                                                          capabilitiesClient,

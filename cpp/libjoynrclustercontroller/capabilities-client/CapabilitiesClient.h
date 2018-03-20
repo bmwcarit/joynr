@@ -41,6 +41,7 @@
 
 namespace joynr
 {
+class ClusterControllerSettings;
 
 class JOYNRCLUSTERCONTROLLER_EXPORT CapabilitiesClient : public ICapabilitiesClient
 {
@@ -52,7 +53,7 @@ public:
        To upgrade to a complete CapabilitiesClient the setProxy method must be called, and a
        Proxy must be provided.
     */
-    CapabilitiesClient();
+    CapabilitiesClient(const ClusterControllerSettings& clusterControllerSettings);
 
     ~CapabilitiesClient() override = default;
 

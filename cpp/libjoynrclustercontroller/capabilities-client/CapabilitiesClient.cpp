@@ -21,13 +21,16 @@
  * Client for the global capabilities directory.
  */
 
+#include "joynr/ClusterControllerSettings.h"
 #include "libjoynrclustercontroller/capabilities-client/CapabilitiesClient.h"
 
 namespace joynr
 {
 
-CapabilitiesClient::CapabilitiesClient() : capabilitiesProxy(nullptr), messagingQos()
+CapabilitiesClient::CapabilitiesClient(const ClusterControllerSettings& clusterControllerSettings)
+        : capabilitiesProxy(nullptr), messagingQos()
 {
+    std::ignore = clusterControllerSettings;
 }
 
 void CapabilitiesClient::add(

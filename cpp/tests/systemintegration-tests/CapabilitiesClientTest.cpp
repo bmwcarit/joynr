@@ -22,6 +22,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
+#include "joynr/ClusterControllerSettings.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrClusterControllerRuntime.h"
 #include "joynr/infrastructure/IGlobalCapabilitiesDirectory.h"
@@ -51,11 +52,13 @@ public:
     std::shared_ptr<JoynrClusterControllerRuntime> runtime;
     std::unique_ptr<Settings> settings;
     MessagingSettings messagingSettings;
+    ClusterControllerSettings clusterControllerSettings;
 
     CapabilitiesClientTest() :
         runtime(),
         settings(std::make_unique<Settings>(GetParam())),
-        messagingSettings(*settings)
+        messagingSettings(*settings),
+        clusterControllerSettings(*settings)
     {
         messagingSettings.setMessagingPropertiesPersistenceFilename(messagingPropertiesPersistenceFileName);
         MessagingPropertiesPersistence storage(messagingSettings.getMessagingPropertiesPersistenceFilename());
@@ -101,7 +104,7 @@ TEST_P(CapabilitiesClientTest, registerAndRetrieveCapability) {
             ->build()
         );
 
-    std::unique_ptr<CapabilitiesClient> capabilitiesClient (std::make_unique<CapabilitiesClient>());
+    std::unique_ptr<CapabilitiesClient> capabilitiesClient(std::make_unique<CapabilitiesClient>(clusterControllerSettings));
     capabilitiesClient->setProxy(cabilitiesProxy, messagingQos);
 
     std::string capDomain("testDomain");
