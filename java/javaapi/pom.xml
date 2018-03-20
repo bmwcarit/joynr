@@ -133,6 +133,19 @@
 						</configuration>
 					</execution>
 					<execution>
+						<id>testSourcesWithVersion</id>
+						<phase>generate-test-sources</phase>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<configuration>
+							<model>${basedir}/../../basemodel/src/test/franca-with-version</model>
+							<generationLanguage>java</generationLanguage>
+							<outputPath>${basedir}/src/test/generated</outputPath>
+							<addVersionTo>package</addVersionTo>
+						</configuration>
+					</execution>
+					<execution>
 						<id>testSources2</id>
 						<phase>generate-test-sources</phase>
 						<goals>
