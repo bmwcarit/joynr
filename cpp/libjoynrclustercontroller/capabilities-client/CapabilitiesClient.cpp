@@ -28,9 +28,10 @@ namespace joynr
 {
 
 CapabilitiesClient::CapabilitiesClient(const ClusterControllerSettings& clusterControllerSettings)
-        : capabilitiesProxy(nullptr), messagingQos()
+        : capabilitiesProxy(nullptr),
+          messagingQos(),
+          touchTtl(clusterControllerSettings.getCapabilitiesFreshnessUpdateIntervalMs().count())
 {
-    std::ignore = clusterControllerSettings;
 }
 
 void CapabilitiesClient::add(
@@ -93,7 +94,10 @@ void CapabilitiesClient::touch(
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError)
 {
-    capabilitiesProxy->touchAsync(clusterControllerId, std::move(onSuccess), std::move(onError));
+    MessagingQos touchMessagingQos = messagingQos;
+    touchMessagingQos.setTtl(touchTtl);
+    capabilitiesProxy->touchAsync(
+            clusterControllerId, std::move(onSuccess), std::move(onError), touchMessagingQos);
 }
 
 void CapabilitiesClient::setProxy(

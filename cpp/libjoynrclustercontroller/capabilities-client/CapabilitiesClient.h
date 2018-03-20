@@ -19,6 +19,7 @@
 #ifndef CAPABILITIESCLIENT_H
 #define CAPABILITIESCLIENT_H
 
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>
@@ -109,6 +110,7 @@ private:
     DISALLOW_COPY_AND_ASSIGN(CapabilitiesClient);
     std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> capabilitiesProxy;
     MessagingQos messagingQos;
+    const std::uint64_t touchTtl;
     ADD_LOGGER(CapabilitiesClient)
 };
 
