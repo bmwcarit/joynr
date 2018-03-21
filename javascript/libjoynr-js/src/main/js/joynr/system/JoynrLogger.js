@@ -19,6 +19,7 @@
  * #L%
  */
 var noop = function() {};
+var trace, debug, info, warn, error, fatal;
 
 function JoynrLogger(name) {
     this.name = name;
@@ -36,16 +37,20 @@ JoynrLogger.LogLevel = {
 
 function createLog(level) {
     return function(message) {
-        this.output({ level: { name: level }, messages: [message] });
+        this.log(message, level);
     };
 }
 
-var trace = createLog(JoynrLogger.LogLevel.TRACE);
-var debug = createLog(JoynrLogger.LogLevel.DEBUG);
-var info = createLog(JoynrLogger.LogLevel.INFO);
-var warn = createLog(JoynrLogger.LogLevel.WARN);
-var error = createLog(JoynrLogger.LogLevel.ERROR);
-var fatal = createLog(JoynrLogger.LogLevel.FATAL);
+function createLogs() {
+    trace = createLog(JoynrLogger.LogLevel.TRACE);
+    debug = createLog(JoynrLogger.LogLevel.DEBUG);
+    info = createLog(JoynrLogger.LogLevel.INFO);
+    warn = createLog(JoynrLogger.LogLevel.WARN);
+    error = createLog(JoynrLogger.LogLevel.ERROR);
+    fatal = createLog(JoynrLogger.LogLevel.FATAL);
+}
+
+createLogs();
 
 JoynrLogger.setLogLevel = function(level) {
     JoynrLogger.prototype.trace = noop;
@@ -113,9 +118,108 @@ JoynrLogger.setOutput = function(outputFunction) {
 };
 
 JoynrLogger.prototype.output = noop;
+function logWithoutFormatting(message, level) {
+    this.output({ level: { name: level }, messages: [message] });
+}
+
+function logWithFormatting(message, level) {
+    var formattedMessage = this.format(message, level);
+    this.output({ level: { name: level }, messages: [formattedMessage] });
+}
+
+JoynrLogger.prototype.log = logWithoutFormatting;
 
 JoynrLogger.prototype.isDebugEnabled = function() {
     return this.level === JoynrLogger.LogLevel.DEBUG || this.level === JoynrLogger.LogLevel.TRACE;
+};
+
+function curryAddString(string) {
+    return function(output, settings) {
+        return output + string;
+    };
+}
+
+function addDate(output, settings) {
+    var date = new Date();
+    return output + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds() + "," + date.getMilliseconds();
+}
+
+function addLoggerName(output, settings) {
+    return output + settings.name;
+}
+
+function addLogLevel(output, settings) {
+    return output + settings.level;
+}
+
+function addMessage(output, settings) {
+    return output + settings.message;
+}
+
+function createFormattingFunctionFromSteps(steps) {
+    return function(message, level) {
+        var i,
+            output = "";
+        var length = steps.length;
+        var settings = {
+            message: message,
+            level: level,
+            name: this.name
+        };
+        for (i = 0; i < length; i++) {
+            output = steps[i](output, settings);
+        }
+        return output;
+    };
+}
+
+JoynrLogger.setFormatting = function(pattern) {
+    var steps = [];
+    // pattern : "[%d{HH:mm:ss,SSS}][%c][%p] %m{2}"
+
+    function checkRest(restString) {
+        if (restString !== "") {
+            steps.push(curryAddString(restString));
+        }
+    }
+
+    var regexPattern = new RegExp("{[^}]*}", "g");
+    // too complicated patterns are not supported
+    var patternWithoutArguments = pattern.replace(regexPattern, "");
+
+    var splitString = patternWithoutArguments.split("%");
+    var firstElement = splitString.shift();
+    if (firstElement !== "") {
+        steps.push(curryAddString(firstElement));
+    }
+    while (splitString.length) {
+        var subString = splitString.shift();
+        var command = subString.charAt(0);
+        subString = subString.slice(1);
+        switch (command) {
+            case "d":
+                steps.push(addDate);
+                checkRest(subString);
+                break;
+            case "c": // logger name
+                steps.push(addLoggerName);
+                checkRest(subString);
+                break;
+            case "p": // log level
+                steps.push(addLogLevel);
+                checkRest(subString);
+                break;
+            case "m": // message
+                steps.push(addMessage);
+                checkRest(subString);
+                break;
+            default:
+                break;
+        }
+    }
+
+    JoynrLogger.prototype.format = createFormattingFunctionFromSteps(steps);
+    JoynrLogger.prototype.log = logWithFormatting;
 };
 
 module.exports = JoynrLogger;

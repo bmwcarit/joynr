@@ -59,6 +59,18 @@ LoggingManager.configure = function configure(settings) {
                 callback(level);
             });
         }
+        if (
+            settings.configuration.appenders &&
+            settings.configuration.appenders.appender &&
+            settings.configuration.appenders.appender[0] &&
+            settings.configuration.appenders.appender[0].PatternLayout &&
+            settings.configuration.appenders.appender[0].PatternLayout.pattern
+        ) {
+            var patternLayout = settings.configuration.appenders.appender[0].PatternLayout.pattern;
+            if (patternLayout !== "%m") {
+                JoynrLogger.setFormatting(patternLayout);
+            }
+        }
     }
     if (settings.appenderClasses && Object.keys(settings.appenderClasses).length > 0) {
         var appenderClassKey = Object.keys(settings.appenderClasses)[0];
