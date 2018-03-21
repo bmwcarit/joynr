@@ -383,7 +383,7 @@
 		<timestamp>${maven.build.timestamp}</timestamp>
 		<maven.build.timestamp.format>yyyyMMdd-HHmmss</maven.build.timestamp.format>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<licenseConfigurationVersion>1.0.12</licenseConfigurationVersion>
+		<licenseConfigurationVersion>1.0.13</licenseConfigurationVersion>
 		<!--
 			Those versions should not be used outside of the superpom. All dependencies
 			that need those version numbers should be defined in the dependencyManagement
