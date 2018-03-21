@@ -226,15 +226,6 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
         routeInternal(message, 0, 0);
     }
 
-    protected void schedule(Runnable runnable, String messageId, long delay, TimeUnit timeUnit) {
-        if (scheduler.isShutdown()) {
-            JoynrShutdownException joynrShutdownEx = new JoynrShutdownException("MessageScheduler is shutting down already. Unable to send message [messageId: "
-                    + messageId + "].");
-            throw joynrShutdownEx;
-        }
-        scheduler.schedule(runnable, delay, timeUnit);
-    }
-
     protected Set<Address> getAddresses(ImmutableMessage message) {
         return addressManager.getAddresses(message);
     }

@@ -22,7 +22,6 @@ import static java.lang.String.format;
 
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -55,7 +54,6 @@ import org.slf4j.LoggerFactory;
 public class JeeMessageRouter extends io.joynr.messaging.routing.CcMessageRouter {
 
     private static final Logger LOG = LoggerFactory.getLogger(JeeMessageRouter.class);
-    private ScheduledExecutorService scheduler;
 
     @Inject
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 8 LINES
@@ -94,12 +92,6 @@ public class JeeMessageRouter extends io.joynr.messaging.routing.CcMessageRouter
                              sendMsgRetryIntervalMs,
                              messagingStubFactory));
         }
-        this.scheduler = scheduler;
     }
 
-    @Override
-    protected void schedule(Runnable runnable, String messageId, long delay, TimeUnit timeUnit) {
-        LOG.trace("Scheduling {} on {} with delay {} {}", new Object[]{ runnable, scheduler, delay, timeUnit });
-        scheduler.schedule(runnable, delay, timeUnit);
-    }
 }
