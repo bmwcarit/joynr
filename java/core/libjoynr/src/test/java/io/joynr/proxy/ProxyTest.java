@@ -20,6 +20,7 @@ package io.joynr.proxy;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -35,6 +36,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -67,10 +70,12 @@ import io.joynr.dispatching.rpc.RpcUtils;
 import io.joynr.dispatching.rpc.SynchronizedReplyCaller;
 import io.joynr.dispatching.subscription.SubscriptionManager;
 import io.joynr.exceptions.JoynrCommunicationException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
+import io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback;
 import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
 import io.joynr.proxy.invocation.BroadcastSubscribeInvocation;
 import io.joynr.proxy.invocation.MulticastSubscribeInvocation;
@@ -105,6 +110,10 @@ public class ProxyTest {
     private static final long MAX_TTL_MS = 2592000000L;
     private static long DISCOVERY_TIMEOUT_MS = 30000L;
     private static long RETRY_INTERVAL_MS = 2000L;
+    private Semaphore testInterfaceProxyCreatedSemaphore;
+    private Semaphore navigationProxyCreatedSemaphore;
+    private ProxyCreatedCallback<NavigationProxy> navigationProxyCreatedCallback;
+    private ProxyCreatedCallback<TestInterface> testInterfaceProxyCreatedCallback;
     private DiscoveryQos discoveryQos;
     private MessagingQos messagingQos;
     @Mock
@@ -124,6 +133,7 @@ public class ProxyTest {
     private LocalDiscoveryAggregator localDiscoveryAggregator;
 
     private String domain;
+    private String fromParticipantId;
     private String toParticipantId;
     private DiscoveryEntryWithMetaInfo toDiscoveryEntry;
     private Set<DiscoveryEntryWithMetaInfo> toDiscoveryEntries;
@@ -166,8 +176,34 @@ public class ProxyTest {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Before
     public void setUp() throws Exception {
+        navigationProxyCreatedSemaphore = new Semaphore(0);
+        navigationProxyCreatedCallback = new ProxyCreatedCallback<NavigationProxy>() {
+            @Override
+            public void onProxyCreationFinished(NavigationProxy result) {
+                navigationProxyCreatedSemaphore.release();
+            }
+
+            @Override
+            public void onProxyCreationError(JoynrRuntimeException error) {
+                fail("Navigation proxy creation failed: " + error);
+            }
+        };
+        testInterfaceProxyCreatedSemaphore = new Semaphore(0);
+        testInterfaceProxyCreatedCallback = new ProxyCreatedCallback<TestInterface>() {
+            @Override
+            public void onProxyCreationFinished(TestInterface result) {
+                testInterfaceProxyCreatedSemaphore.release();
+            }
+
+            @Override
+            public void onProxyCreationError(JoynrRuntimeException error) {
+                fail("TestInterface proxy creation failed: " + error);
+            }
+        };
+
         domain = "TestDomain";
-        toParticipantId = "TestParticipantId";
+        fromParticipantId = "ProxyTestFromParticipantId";
+        toParticipantId = "ProxyTestToParticipantId";
         toDiscoveryEntry = new DiscoveryEntryWithMetaInfo(new Version(47, 11),
                                                           domain,
                                                           TestInterface.INTERFACE_NAME,
@@ -302,6 +338,26 @@ public class ProxyTest {
         return (ProxyBuilderDefaultImpl<T>) proxyBuilderFactory.get(domain, interfaceClass);
     }
 
+    private TestInterface getTestInterfaceProxy() throws InterruptedException {
+        ProxyBuilder<TestInterface> proxyBuilder = getProxyBuilder(TestInterface.class);
+        proxyBuilder.setParticipantId(fromParticipantId);
+        TestInterface proxy = proxyBuilder.setMessagingQos(messagingQos)
+                                          .setDiscoveryQos(discoveryQos)
+                                          .build(testInterfaceProxyCreatedCallback);
+        assertTrue(testInterfaceProxyCreatedSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
+        return proxy;
+    }
+
+    private NavigationProxy getNavigationProxy() throws InterruptedException {
+        ProxyBuilder<NavigationProxy> proxyBuilder = getProxyBuilder(NavigationProxy.class);
+        proxyBuilder.setParticipantId(fromParticipantId);
+        NavigationProxy proxy = proxyBuilder.setMessagingQos(messagingQos)
+                                            .setDiscoveryQos(discoveryQos)
+                                            .build(navigationProxyCreatedCallback);
+        assertTrue(navigationProxyCreatedSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
+        return proxy;
+    }
+
     @Test
     public void createProxyWithMessageQosLargerThanMaxTtlUsesMax() throws Exception {
         ProxyBuilderDefaultImpl<TestInterface> proxyBuilder = getProxyBuilder(TestInterface.class);
@@ -370,8 +426,7 @@ public class ProxyTest {
 
     @Test
     public void createProxyAndCallAsyncMethodSuccess() throws Exception {
-        ProxyBuilder<TestInterface> proxyBuilder = getProxyBuilder(TestInterface.class);
-        TestInterface proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+        TestInterface proxy = getTestInterfaceProxy();
 
         // when joynrMessageSender1.sendRequest is called, get the replyCaller from the mock dispatcher and call
         // messageCallback on it.
@@ -411,8 +466,7 @@ public class ProxyTest {
     public void createProxyAndCallAsyncMethodFailWithApplicationError() throws Exception {
         final ApplicationException expected = new ApplicationException(ApplicationErrors.ERROR_VALUE_3,
                                                                        "TEST: createProxyAndCallAsyncMethodFailWithApplicationError");
-        ProxyBuilder<TestInterface> proxyBuilder = getProxyBuilder(TestInterface.class);
-        TestInterface proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+        TestInterface proxy = getTestInterfaceProxy();
 
         // when joynrMessageSender1.sendRequest is called, get the replyCaller from the mock dispatcher and call
         // messageCallback on it.
@@ -460,8 +514,7 @@ public class ProxyTest {
         final JoynrCommunicationException expectedException = new JoynrCommunicationException();
         // final JoynCommunicationException expectedException = null;
 
-        ProxyBuilder<TestInterface> proxyBuilder = getProxyBuilder(TestInterface.class);
-        TestInterface proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+        TestInterface proxy = getTestInterfaceProxy();
 
         // when joynrMessageSender1.sendRequest is called, get the replyCaller from the mock dispatcher and call
         // messageCallback on it.
@@ -504,9 +557,8 @@ public class ProxyTest {
 
     @Test
     public void createProxySubscribeToBroadcast() throws Exception {
-        ProxyBuilder<NavigationProxy> proxyBuilder = getProxyBuilder(NavigationProxy.class);
-        String fromParticipantId = proxyBuilder.getParticipantId();
-        NavigationProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+        NavigationProxy proxy = getNavigationProxy();
+
         long expiryDate = System.currentTimeMillis() + 30000;
         MulticastSubscriptionQos subscriptionQos = new MulticastSubscriptionQos().setExpiryDateMs(expiryDate);
 
@@ -522,9 +574,8 @@ public class ProxyTest {
 
     @Test
     public void createProxySubscribeAndUnsubscribeFromSelectiveBroadcast() throws Exception {
-        ProxyBuilder<NavigationProxy> proxyBuilder = getProxyBuilder(NavigationProxy.class);
-        String fromParticipantId = proxyBuilder.getParticipantId();
-        NavigationProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+        NavigationProxy proxy = getNavigationProxy();
+
         long minInterval_ms = 0;
         long expiryDate = System.currentTimeMillis() + 30000;
         long publicationTtl_ms = 5000;
@@ -555,9 +606,8 @@ public class ProxyTest {
 
     @Test
     public void createProxySubscribeAndUnsubscribeFromBroadcast() throws Exception {
-        ProxyBuilder<NavigationProxy> proxyBuilder = getProxyBuilder(NavigationProxy.class);
-        String fromParticipantId = proxyBuilder.getParticipantId();
-        NavigationProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+        NavigationProxy proxy = getNavigationProxy();
+
         long expiryDate = System.currentTimeMillis() + 30000;
         MulticastSubscriptionQos subscriptionQos = new MulticastSubscriptionQos().setExpiryDateMs(expiryDate);
 
@@ -582,9 +632,7 @@ public class ProxyTest {
 
     @Test
     public void createProxySubscribeToBroadcastWithSubscriptionId() throws Exception {
-        ProxyBuilder<NavigationProxy> proxyBuilder = getProxyBuilder(NavigationProxy.class);
-        String fromParticipantId = proxyBuilder.getParticipantId();
-        NavigationProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+        NavigationProxy proxy = getNavigationProxy();
         long expiryDate = System.currentTimeMillis() + 30000;
         MulticastSubscriptionQos subscriptionQos = new MulticastSubscriptionQos().setExpiryDateMs(expiryDate);
 
@@ -607,9 +655,8 @@ public class ProxyTest {
 
     @Test
     public void createProxySubscribeAndUnsubscribeFromAttribute() throws Exception {
-        ProxyBuilder<NavigationProxy> proxyBuilder = getProxyBuilder(NavigationProxy.class);
-        String fromParticipantId = proxyBuilder.getParticipantId();
-        NavigationProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+        NavigationProxy proxy = getNavigationProxy();
+
         long minInterval_ms = 0;
         long expiryDate = System.currentTimeMillis() + 30000;
         long publicationTtl_ms = 5000;
@@ -640,9 +687,7 @@ public class ProxyTest {
 
     @Test
     public void createProxySubscribeToAttributeWithSubscriptionId() throws Exception {
-        ProxyBuilder<NavigationProxy> proxyBuilder = getProxyBuilder(NavigationProxy.class);
-        String fromParticipantId = proxyBuilder.getParticipantId();
-        NavigationProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+        NavigationProxy proxy = getNavigationProxy();
         long minInterval_ms = 0;
         long expiryDate = System.currentTimeMillis() + 30000;
         long publicationTtl_ms = 5000;
@@ -671,9 +716,7 @@ public class ProxyTest {
 
     @Test
     public void createProxyUnSubscribeFromBroadcast() throws Exception {
-        ProxyBuilder<NavigationProxy> proxyBuilder = getProxyBuilder(NavigationProxy.class);
-        String fromParticipantId = proxyBuilder.getParticipantId();
-        NavigationProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+        NavigationProxy proxy = getNavigationProxy();
 
         String subscriptionId = UUID.randomUUID().toString();
         proxy.unsubscribeFromLocationUpdateBroadcast(subscriptionId);
