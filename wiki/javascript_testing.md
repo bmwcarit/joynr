@@ -55,10 +55,19 @@ The node tests can also be run on the sources using
 cd <JOYNR_REPO>
 cd javascript/libjoynr-js
 npm install
+```
+after these preparations its possible to run all tests with
+```
 cd src/tests/resources
 node node-run-unit-tests-sources.js
-(use --inspect for debugging with chrome dev tools for node)
 ```
+or a single test with
+```
+cd <TESTDIR>
+node <TESTNAME>
+```
+(use --inspect for debugging with chrome dev tools for node)
+
 
 ## Karma test configuration
 
