@@ -21,7 +21,7 @@
 
 // run Jasmine 2.x unit tests via node
 
-require("./node-unit-test-helper");
+require("../js/node-unit-test-helper");
 
 var ArbitrationStrategiesTest = require("../../test/js/joynr/capabilities/arbitration/ArbitrationStrategiesTest");
 var ArbitratorTest = require("../../test/js/joynr/capabilities/arbitration/ArbitratorTest");

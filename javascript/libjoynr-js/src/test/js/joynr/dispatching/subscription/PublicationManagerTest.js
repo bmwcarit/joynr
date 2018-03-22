@@ -18,6 +18,7 @@
  * limitations under the License.
  * #L%
  */
+require("../../../node-unit-test-helper");
 var Promise = require("../../../../classes/global/Promise");
 var PublicationManager = require("../../../../classes/joynr/dispatching/subscription/PublicationManager");
 var MessagingQos = require("../../../../classes/joynr/messaging/MessagingQos");

@@ -18,6 +18,7 @@
  * limitations under the License.
  * #L%
  */
+require("../../node-unit-test-helper");
 var Dispatcher = require("../../../classes/joynr/dispatching/Dispatcher");
 var JoynrMessage = require("../../../classes/joynr/messaging/JoynrMessage");
 var MessagingQos = require("../../../classes/joynr/messaging/MessagingQos");

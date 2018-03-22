@@ -18,6 +18,7 @@
  * limitations under the License.
  * #L%
  */
+require("../../node-unit-test-helper");
 var ProxyAttribute = require("../../../classes/joynr/proxy/ProxyAttribute");
 var ProxyOperation = require("../../../classes/joynr/proxy/ProxyOperation");
 var ProxyEvent = require("../../../classes/joynr/proxy/ProxyEvent");

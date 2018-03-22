@@ -17,6 +17,7 @@
  * limitations under the License.
  * #L%
  */
+require("../../node-unit-test-helper");
 var Util = require("../../../classes/joynr/util/GenerationUtil");
 
 describe("libjoynr-js.joynr.GenerationUtil", function() {

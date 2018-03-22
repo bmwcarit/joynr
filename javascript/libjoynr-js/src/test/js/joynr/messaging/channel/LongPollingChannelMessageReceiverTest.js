@@ -18,6 +18,7 @@
  * limitations under the License.
  * #L%
  */
+require("../../../node-unit-test-helper");
 var Promise = require("../../../../classes/global/Promise");
 var CommunicationModule = require("../../../../classes/joynr/messaging/CommunicationModule");
 var LongPollingChannelMessageReceiver = require("../../../../classes/joynr/messaging/channel/LongPollingChannelMessageReceiver");

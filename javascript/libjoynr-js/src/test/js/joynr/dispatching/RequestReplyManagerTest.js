@@ -18,6 +18,7 @@
  * limitations under the License.
  * #L%
  */
+require("../../node-unit-test-helper");
 var RequestReplyManager = require("../../../classes/joynr/dispatching/RequestReplyManager");
 var OneWayRequest = require("../../../classes/joynr/dispatching/types/OneWayRequest");
 var Request = require("../../../classes/joynr/dispatching/types/Request");

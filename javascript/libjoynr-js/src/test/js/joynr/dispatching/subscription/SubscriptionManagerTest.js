@@ -18,6 +18,7 @@
  * limitations under the License.
  * #L%
  */
+require("../../../node-unit-test-helper");
 var SubscriptionManager = require("../../../../classes/joynr/dispatching/subscription/SubscriptionManager");
 var MessagingQos = require("../../../../classes/joynr/messaging/MessagingQos");
 var defaultMessagingSettings = require("../../../../classes/joynr/start/settings/defaultMessagingSettings");

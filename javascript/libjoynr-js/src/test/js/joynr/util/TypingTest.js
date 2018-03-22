@@ -18,6 +18,7 @@
  * limitations under the License.
  * #L%
  */
+require("../../node-unit-test-helper");
 var Typing = require("../../../classes/joynr/util/Typing");
 var TypeRegistry = require("../../../classes/joynr/start/TypeRegistry");
 var LoggerFactory = require("../../../classes/joynr/system/LoggerFactory");

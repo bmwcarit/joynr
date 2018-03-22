@@ -18,6 +18,7 @@
  * limitations under the License.
  * #L%
  */
+require("../../node-unit-test-helper");
 var Promise = require("../../../classes/global/Promise");
 var Util = require("../../../classes/joynr/util/UtilInternal");
 var JoynrMessage = require("../../../classes/joynr/messaging/JoynrMessage");

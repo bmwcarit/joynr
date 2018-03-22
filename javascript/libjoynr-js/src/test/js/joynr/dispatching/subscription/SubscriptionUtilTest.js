@@ -18,6 +18,7 @@
  * limitations under the License.
  * #L%
  */
+require("../../../node-unit-test-helper");
 var SubscriptionUtil = require("../../../../classes/joynr/dispatching/subscription/util/SubscriptionUtil");
 var SubscriptionInformation = require("../../../../classes/joynr/dispatching/types/SubscriptionInformation");
 var SubscriptionRequest = require("../../../../classes/joynr/dispatching/types/SubscriptionRequest");

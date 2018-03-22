@@ -18,7 +18,7 @@
  * limitations under the License.
  * #L%
  */
-
+require("../../node-unit-test-helper");
 var JoynrLogger = require("../../../classes/joynr/system/JoynrLogger");
 
 describe("libjoynr-js.joynr.system.JoynrLogger", function() {

@@ -19,6 +19,7 @@
  * limitations under the License.
  * #L%
  */
+require("../../node-unit-test-helper");
 var ParticipantIdStorage = require("../../../classes/joynr/capabilities/ParticipantIdStorage");
 var MemoryStorage = require("../../../classes/global/MemoryStorage");
 
