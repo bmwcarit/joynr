@@ -444,6 +444,10 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
         // set custom headers
         joynrMessage.setCustomHeaders(settings.customHeaders);
 
+        if (settings.compress) {
+            joynrMessage.compress = true;
+        }
+
         if (log.isDebugEnabled()) {
             log.debug("sendReply, message = " + JSON.stringify(joynrMessage));
         }
@@ -617,7 +621,7 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
         clusterControllerMessagingStub.transmit(publicationMessage);
     };
 
-    function createSubscriptionReplySettings(joynrMessage) {
+    function createReplySettings(joynrMessage) {
         return {
             from: joynrMessage.to,
             to: joynrMessage.from,
@@ -660,11 +664,17 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
                         })
                     );
 
+                    var handleReplySettings = createReplySettings(joynrMessage);
+
+                    if (joynrMessage.compress) {
+                        handleReplySettings.compress = true;
+                    }
+
                     return requestReplyManager.handleRequest(
                         joynrMessage.to,
                         request,
                         sendRequestReply,
-                        createSubscriptionReplySettings(joynrMessage)
+                        handleReplySettings
                     );
                 } catch (errorInRequest) {
                     // TODO handle error in handling the request
@@ -724,7 +734,7 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
                         joynrMessage.to,
                         subscriptionRequest,
                         sendSubscriptionReply,
-                        createSubscriptionReplySettings(joynrMessage)
+                        createReplySettings(joynrMessage)
                     );
                 } catch (errorInSubscriptionRequest) {
                     // TODO handle error in handling the subscriptionRequest
@@ -751,7 +761,7 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
                         joynrMessage.to,
                         broadcastSubscriptionRequest,
                         sendSubscriptionReply,
-                        createSubscriptionReplySettings(joynrMessage)
+                        createReplySettings(joynrMessage)
                     );
                 } catch (errorInBroadcastSubscriptionRequest) {
                     // TODO handle error in handling the subscriptionRequest
@@ -778,7 +788,7 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
                         joynrMessage.to,
                         multicastSubscriptionRequest,
                         sendSubscriptionReply,
-                        createSubscriptionReplySettings(joynrMessage)
+                        createReplySettings(joynrMessage)
                     );
                 } catch (errorInMulticastSubscriptionRequest) {
                     // TODO handle error in handling the subscriptionRequest

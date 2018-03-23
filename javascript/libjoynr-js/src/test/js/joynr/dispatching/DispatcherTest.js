@@ -535,6 +535,32 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", function() {
         done();
     });
 
+    it("sets the compressed flag for replies if the request was compressed", function(done) {
+        var request = new Request({
+            methodName: "methodName"
+        });
+        var joynrMessage = new JoynrMessage({
+            type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
+            payload: JSON.stringify(request)
+        });
+        joynrMessage.to = providerId;
+        joynrMessage.from = proxyId;
+        joynrMessage.compress = true;
+
+        requestReplyManager.handleRequest.and.callFake(function(to, request, cb, replySettings) {
+            cb(replySettings, request);
+            return Promise.resolve();
+        });
+
+        dispatcher.receive(joynrMessage).then(function() {
+            expect(requestReplyManager.handleRequest).toHaveBeenCalled();
+            expect(requestReplyManager.handleRequest.calls.mostRecent().args[0]).toEqual(providerId);
+            expect(requestReplyManager.handleRequest.calls.mostRecent().args[1]).toEqual(request);
+            expect(clusterControllerMessagingStub.transmit.calls.mostRecent().args[0].compress).toBe(true);
+            done();
+        });
+    });
+
     it("enriches requests with custom headers", function(done) {
         var sentMessage;
         var request = new Request({
