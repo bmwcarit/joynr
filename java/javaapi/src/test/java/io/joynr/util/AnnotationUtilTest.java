@@ -34,6 +34,7 @@ import java.lang.reflect.Proxy;
 import java.util.Collection;
 
 import joynr.tests.DefaulttestProvider;
+import joynr.tests.test;
 import joynr.tests.testProvider;
 
 import org.junit.Test;
@@ -70,7 +71,8 @@ public class AnnotationUtilTest {
     public void testInterfaceClassAnnotation() {
         JoynrInterface interfaceClassAnnotation = AnnotationUtil.getAnnotation(DefaulttestProvider.class,
                                                                                JoynrInterface.class);
-        assertEquals(interfaceClassAnnotation.provides(), testProvider.class);
+        assertEquals(interfaceClassAnnotation.provider(), testProvider.class);
+        assertEquals(interfaceClassAnnotation.provides(), test.class);
     }
 
     @Test
