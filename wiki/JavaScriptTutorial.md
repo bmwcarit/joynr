@@ -136,7 +136,11 @@ var loggingValue = {
     configuration: {...} /*
                        * log4j2-style JSON config, but as JavaScript object
                        * See https://logging.apache.org/log4j/2.x/manual/configuration.html#JSON
-                       * for more information
+                       * for more information.
+                       * Since replacing log4javascript due to performance issues,
+                       * not all configuration options are still supported.
+                       * - only one appender is supported. Others will be ignored.
+                       * - reduced complexity of supported patternLayouts.
                        */
 };
 
