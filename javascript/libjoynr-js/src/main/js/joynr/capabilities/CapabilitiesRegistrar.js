@@ -25,6 +25,7 @@ var ProviderScope = require("../../joynr/types/ProviderScope");
 var ParticipantIdStorage = require("./ParticipantIdStorage");
 var Version = require("../../joynr/types/Version");
 var defaultExpiryIntervalMs = 6 * 7 * 24 * 60 * 60 * 1000; // 6 Weeks
+var loggingManager = require("../system/LoggingManager");
 /**
  * The Capabilities Registrar
  *
@@ -55,7 +56,6 @@ function CapabilitiesRegistrar(dependencies) {
     this._libjoynrMessagingAddress = dependencies.libjoynrMessagingAddress;
     this._requestReplyManager = dependencies.requestReplyManager;
     this._publicationManager = dependencies.publicationManager;
-    this._loggingManager = dependencies.loggingManager;
     this._started = true;
 }
 
@@ -173,7 +173,8 @@ CapabilitiesRegistrar.prototype.registerProvider = function registerProvider(
     }
 
     if (loggingContext !== undefined) {
-        this._loggingManager.setLoggingContext(participantId, loggingContext);
+        var log = loggingManager.getLogger("joynr.capabilities.CapabilitiesRegistrar.js");
+        log.warn("loggingContext is currently not supported");
     }
 
     // register provider at RequestReplyManager

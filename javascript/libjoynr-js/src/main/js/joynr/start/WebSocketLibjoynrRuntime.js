@@ -405,8 +405,7 @@ function WebSocketLibjoynrRuntime(provisioning) {
                 requestReplyManager: requestReplyManager,
                 publicationManager: publicationManager,
                 libjoynrMessagingAddress: new InProcessAddress(libjoynrMessagingSkeleton),
-                participantIdStorage: participantIdStorage,
-                loggingManager: loggingManager
+                participantIdStorage: participantIdStorage
             })
         );
 
@@ -425,8 +424,7 @@ function WebSocketLibjoynrRuntime(provisioning) {
                 },
                 {
                     messageRouter: messageRouter,
-                    libjoynrMessagingAddress: new InProcessAddress(libjoynrMessagingSkeleton),
-                    loggingManager: loggingManager
+                    libjoynrMessagingAddress: new InProcessAddress(libjoynrMessagingSkeleton)
                 }
             )
         );

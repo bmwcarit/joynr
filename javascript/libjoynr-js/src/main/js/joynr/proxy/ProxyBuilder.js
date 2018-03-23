@@ -144,7 +144,7 @@ function ProxyBuilder(proxyDependencies, dependencies) {
 
         function startArbitrationOnSuccess(arbitratedCaps) {
             if (settings.loggingContext !== undefined) {
-                dependencies.loggingManager.setLoggingContext(proxy.proxyParticipantId, settings.loggingContext);
+                log.warn("loggingContext is currently not supported");
             }
             var isGloballyVisible = false;
             if (arbitratedCaps && arbitratedCaps.length > 0) {

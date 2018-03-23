@@ -36,7 +36,6 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", function() {
     var participantIdStorageSpy;
     var discoveryStubSpy;
     var messageRouterSpy;
-    var loggingManagerSpy;
     var libjoynrMessagingAddress;
     var provider;
     var capability;
@@ -106,7 +105,6 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", function() {
             toBe: "a",
             object: {}
         };
-        loggingManagerSpy = jasmine.createSpyObj("loggingManager", ["setLoggingContext"]);
 
         capabilitiesRegistrar = new CapabilitiesRegistrar({
             discoveryStub: discoveryStubSpy,
@@ -114,8 +112,7 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", function() {
             participantIdStorage: participantIdStorageSpy,
             libjoynrMessagingAddress: libjoynrMessagingAddress,
             requestReplyManager: requestReplyManagerSpy,
-            publicationManager: publicationManagerSpy,
-            loggingManager: loggingManagerSpy
+            publicationManager: publicationManagerSpy
         });
 
         capability = new GlobalDiscoveryEntry({
@@ -322,24 +319,6 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", function() {
         expect(actualDiscoveryEntry.lastSeenDateMs).not.toBeGreaterThan(upperBound);
         expect(actualDiscoveryEntry.providerVersion.majorVersion).toEqual(provider.constructor.MAJOR_VERSION);
         expect(actualDiscoveryEntry.providerVersion.minorVersion).toEqual(provider.constructor.MINOR_VERSION);
-        done();
-    });
-
-    it("registers logging context with the ContextManager", function(done) {
-        var expiryDateMs = -1;
-        var loggingContext = {
-            myContext: "myContext"
-        };
-        capabilitiesRegistrar
-            .registerProvider(domain, provider, providerQos, expiryDateMs, loggingContext)
-            .then(function() {
-                return null;
-            })
-            .catch(function() {
-                return null;
-            });
-        expect(loggingManagerSpy.setLoggingContext).toHaveBeenCalled();
-        expect(loggingManagerSpy.setLoggingContext).toHaveBeenCalledWith(participantId, loggingContext);
         done();
     });
 
