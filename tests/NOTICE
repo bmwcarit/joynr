@@ -16,6 +16,7 @@ specific language governing permissions and limitations
 under the License.
 
 This project has dependencies to:
+  "Java Concurrency in Practice" book annotations under Creative Commons Attribution License
   AOP alliance under Public Domain
   Apache Commons CLI under Apache License, Version 2.0
   Apache Groovy under The Apache Software License, Version 2.0

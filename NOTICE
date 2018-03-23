@@ -16,6 +16,7 @@ specific language governing permissions and limitations
 under the License.
 
 This project has dependencies to:
+  "Java Concurrency in Practice" book annotations under Creative Commons Attribution License
   3rd Party Dependencies - Library under Eclipse Public License - v 1.0
   Accessibility Test Framework under Apache License, Version 2.0
   Aether API under Eclipse Public License, Version 1.0

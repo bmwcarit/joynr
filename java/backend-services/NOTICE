@@ -16,6 +16,7 @@ specific language governing permissions and limitations
 under the License.
 
 This project has dependencies to:
+  "Java Concurrency in Practice" book annotations under Creative Commons Attribution License
   Aether API under Eclipse Public License, Version 1.0
   Aether Connector Basic under Eclipse Public License, Version 1.0
   Aether Implementation under Eclipse Public License, Version 1.0
