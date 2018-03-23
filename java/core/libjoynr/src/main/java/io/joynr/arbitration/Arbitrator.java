@@ -66,6 +66,7 @@ public class Arbitrator {
     protected ArbitrationCallback arbitrationListener;
     // Initialized with 0 to block until the listener is registered
     private Semaphore arbitrationListenerSemaphore = new Semaphore(0);
+    private long retryDelay = 0;
     private long arbitrationDeadline;
     private Set<String> domains;
     private String interfaceName;
@@ -115,7 +116,8 @@ public class Arbitrator {
      * Called by the proxy builder to start the arbitration process.
      */
     public void startArbitration() {
-        attemptArbitration();
+        DelayableArbitration arbitration = new DelayableArbitration(this, retryDelay);
+        arbitrationQueue.put(arbitration);
     }
 
     void attemptArbitration() {
@@ -170,16 +172,9 @@ public class Arbitrator {
     }
 
     protected void restartArbitration() {
-        logger.trace("Restarting Arbitration");
-        long backoff = Math.max(discoveryQos.getRetryIntervalMs(), MINIMUM_ARBITRATION_RETRY_DELAY);
-        try {
-            if (backoff > 0) {
-                Thread.sleep(backoff);
-            }
-            startArbitration();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+        retryDelay = Math.max(discoveryQos.getRetryIntervalMs(), MINIMUM_ARBITRATION_RETRY_DELAY);
+        logger.trace("Restarting Arbitration with delay {}ms", retryDelay);
+        startArbitration();
     }
 
     protected void arbitrationFailed() {

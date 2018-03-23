@@ -19,6 +19,8 @@
 package io.joynr.arbitration;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
@@ -37,8 +39,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
-import org.junit.Assert;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -55,6 +62,9 @@ import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.MultiDomainNoCompatibleProviderFoundException;
 import io.joynr.exceptions.NoCompatibleProviderFoundException;
 import io.joynr.proxy.Callback;
+import io.joynr.runtime.JoynrThreadFactory;
+import io.joynr.runtime.ShutdownListener;
+import io.joynr.runtime.ShutdownNotifier;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.types.CustomParameter;
@@ -67,27 +77,36 @@ public class ArbitrationTest {
 
     private static final long ARBITRATION_TIMEOUT = 1000;
     private static final Long NO_EXPIRY = Long.MAX_VALUE;
-    private String domain = "testDomain";
-    private String publicKeyId = "publicKeyId";
     private static String interfaceName = "testInterface";
     private static Version interfaceVersion = new Version(0, 0);
+
+    protected ArrayList<DiscoveryEntryWithMetaInfo> capabilitiesList;
+
+    private String domain = "testDomain";
+    private String publicKeyId = "publicKeyId";
+    private String testKeyword = "testKeyword";
+    private long testPriority = 42;
+    private String expectedParticipantId = "expectedParticipantId";
+    private Address expectedEndpointAddress;
+
     private DiscoveryQos discoveryQos;
-    String testKeyword = "testKeyword";
-    long testPriority = 42;
 
-    public interface TestInterface {
-        public static final String INTERFACE_NAME = interfaceName;
-    }
+    private Semaphore localDiscoveryAggregatorSemaphore = new Semaphore(0);
 
+    private ScheduledExecutorService scheduler;
+
+    @Mock
+    private ShutdownNotifier shutdownNotifier;
     @Mock
     private LocalDiscoveryAggregator localDiscoveryAggregator;
     @Mock
     private ArbitrationCallback arbitrationCallback;
     @Mock
     private DiscoveryEntryVersionFilter discoveryEntryVersionFilter;
-    protected ArrayList<DiscoveryEntryWithMetaInfo> capabilitiesList;
-    private String expectedParticipantId = "expectedParticipantId";
-    Address expectedEndpointAddress;
+
+    public interface TestInterface {
+        public static final String INTERFACE_NAME = interfaceName;
+    }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Before
@@ -103,6 +122,7 @@ public class ArbitrationTest {
                 Object[] arguments = invocation.getArguments();
                 assert (arguments[0] instanceof Callback);
                 ((Callback) arguments[0]).resolve((Object) capabilitiesList.toArray(new DiscoveryEntryWithMetaInfo[0]));
+                localDiscoveryAggregatorSemaphore.release();
                 return null;
             }
         }).when(localDiscoveryAggregator).lookup(Mockito.<Callback> any(),
@@ -122,10 +142,35 @@ public class ArbitrationTest {
         }).when(discoveryEntryVersionFilter).filter(Mockito.<Version> any(),
                                                     Mockito.<Set<DiscoveryEntryWithMetaInfo>> any(),
                                                     Mockito.<Map<String, Set<Version>>> any());
+
+        Field schedulerField = ArbitratorFactory.class.getDeclaredField("scheduler");
+        schedulerField.setAccessible(true);
+        String name = "TEST.joynr.scheduler.arbitration.arbitratorRunnable";
+        ThreadFactory joynrThreadFactory = new JoynrThreadFactory(name, true);
+        scheduler = Executors.newSingleThreadScheduledExecutor(joynrThreadFactory);
+        schedulerField.set(ArbitratorFactory.class, scheduler);
+
+        Field shutdownNotifierField = ArbitratorFactory.class.getDeclaredField("shutdownNotifier");
+        shutdownNotifierField.setAccessible(true);
+        shutdownNotifierField.set(ArbitratorFactory.class, shutdownNotifier);
+
+        ArbitratorFactory.start();
+        verify(shutdownNotifier).registerForShutdown(any(ShutdownListener.class));
+    }
+
+    @After
+    public void tearDown() {
+        ArbitratorFactory.shutdown();
+        scheduler.shutdown();
+        try {
+            assertTrue(scheduler.awaitTermination(2000, TimeUnit.MILLISECONDS));
+        } catch (InterruptedException e) {
+            fail("InterruptedException in scheduler.awaitTermination: " + e);
+        }
     }
 
     @Test
-    public void keywordArbitratorTest() {
+    public void keywordArbitratorTest() throws InterruptedException {
         ProviderQos providerQos = new ProviderQos();
         CustomParameter[] qosParameters = { new CustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, testKeyword) };
         providerQos.setCustomParameters(qosParameters);
@@ -165,15 +210,17 @@ public class ArbitrationTest {
             arbitrator.setArbitrationListener(arbitrationCallback);
             arbitrator.startArbitration();
 
+            assertTrue(localDiscoveryAggregatorSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
+
             ArbitrationResult expectedArbitrationResult = new ArbitrationResult(expectedDiscoveryEntry);
             verify(arbitrationCallback, times(1)).onSuccess(eq(expectedArbitrationResult));
         } catch (DiscoveryException e) {
-            Assert.fail("A Joyn Arbitration Exception has been thrown");
+            fail("A Joyn Arbitration Exception has been thrown");
         }
     }
 
     @Test
-    public void keyWordArbitratorMissingKeywordTest() {
+    public void keyWordArbitratorMissingKeywordTest() throws InterruptedException {
 
         ProviderQos providerQos = new ProviderQos();
         CustomParameter[] qosParameters = { new CustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, "wrongkeyword") };
@@ -215,17 +262,20 @@ public class ArbitrationTest {
                                                              localDiscoveryAggregator);
             arbitrator.setArbitrationListener(arbitrationCallback);
             arbitrator.startArbitration();
+
+            assertTrue(localDiscoveryAggregatorSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
+
             verify(arbitrationCallback, times(1)).onError(any(Throwable.class));
             verify(arbitrationCallback, never()).onSuccess(any(ArbitrationResult.class));
         } catch (DiscoveryException e) {
-            Assert.fail("A Joyn Arbitration Exception has been thrown");
+            fail("A Joyn Arbitration Exception has been thrown");
         }
     }
 
     // Check that the keyword arbitrator will only consider providers that support onChange subscriptions
     // when this is requested by the DiscoveryQos
     @Test
-    public void keywordArbitratorOnChangeSubscriptionsTest() {
+    public void keywordArbitratorOnChangeSubscriptionsTest() throws InterruptedException {
         ProviderQos providerQos = new ProviderQos();
         CustomParameter[] qosParameters = { new CustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, testKeyword) };
 
@@ -272,15 +322,17 @@ public class ArbitrationTest {
             arbitrator.setArbitrationListener(arbitrationCallback);
             arbitrator.startArbitration();
 
+            assertTrue(localDiscoveryAggregatorSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
+
             ArbitrationResult expectedArbitrationResult = new ArbitrationResult(expectedDiscoveryEntry);
             verify(arbitrationCallback, times(1)).onSuccess(eq(expectedArbitrationResult));
         } catch (DiscoveryException e) {
-            Assert.fail("A Joyn Arbitration Exception has been thrown");
+            fail("A Joyn Arbitration Exception has been thrown");
         }
     }
 
     @Test
-    public void testLastSeenArbitrator() {
+    public void testLastSeenArbitrator() throws InterruptedException {
         ProviderQos providerQos = new ProviderQos();
 
         capabilitiesList.add(new DiscoveryEntryWithMetaInfo(new Version(47, 11),
@@ -325,15 +377,17 @@ public class ArbitrationTest {
             arbitrator.setArbitrationListener(arbitrationCallback);
             arbitrator.startArbitration();
 
+            assertTrue(localDiscoveryAggregatorSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
+
             ArbitrationResult expectedArbitrationResult = new ArbitrationResult(expectedDiscoveryEntry);
             verify(arbitrationCallback, times(1)).onSuccess(eq(expectedArbitrationResult));
         } catch (DiscoveryException e) {
-            Assert.fail("A Joyn Arbitration Exception has been thrown");
+            fail("A Joyn Arbitration Exception has been thrown");
         }
     }
 
     @Test
-    public void testPriorityArbitrator() {
+    public void testPriorityArbitrator() throws InterruptedException {
         ProviderQos providerQos = new ProviderQos();
         providerQos.setPriority(testPriority);
 
@@ -390,15 +444,17 @@ public class ArbitrationTest {
             arbitrator.setArbitrationListener(arbitrationCallback);
             arbitrator.startArbitration();
 
+            assertTrue(localDiscoveryAggregatorSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
+
             ArbitrationResult expectedArbitrationResult = new ArbitrationResult(expectedDiscoveryEntry);
             verify(arbitrationCallback, times(1)).onSuccess(eq(expectedArbitrationResult));
         } catch (DiscoveryException e) {
-            Assert.fail("A Joyn Arbitration Exception has been thrown");
+            fail("A Joyn Arbitration Exception has been thrown");
         }
     }
 
     @Test
-    public void testPriorityArbitratorWithOnlyNegativePriorities() {
+    public void testPriorityArbitratorWithOnlyNegativePriorities() throws InterruptedException {
         ProviderQos providerQos = new ProviderQos();
         providerQos.setPriority(Long.MIN_VALUE);
 
@@ -450,15 +506,18 @@ public class ArbitrationTest {
                                                              localDiscoveryAggregator);
             arbitrator.setArbitrationListener(arbitrationCallback);
             arbitrator.startArbitration();
+
+            assertTrue(localDiscoveryAggregatorSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
+
             verify(arbitrationCallback, times(1)).onError(any(Throwable.class));
             verify(arbitrationCallback, never()).onSuccess(any(ArbitrationResult.class));
         } catch (DiscoveryException e) {
-            Assert.fail("A Joyn Arbitration Exception has been thrown");
+            fail("A Joyn Arbitration Exception has been thrown");
         }
     }
 
     @Test
-    public void testPriorityArbitratorOnChangeSubscriptions() {
+    public void testPriorityArbitratorOnChangeSubscriptions() throws InterruptedException {
         // Expected provider supports onChangeSubscriptions
         ProviderQos providerQos = new ProviderQos();
         providerQos.setPriority(testPriority);
@@ -524,16 +583,18 @@ public class ArbitrationTest {
             arbitrator.setArbitrationListener(arbitrationCallback);
             arbitrator.startArbitration();
 
+            assertTrue(localDiscoveryAggregatorSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
+
             ArbitrationResult expectedArbitrationResult = new ArbitrationResult(expectedDiscoveryEntry);
             verify(arbitrationCallback, times(1)).onSuccess(eq(expectedArbitrationResult));
         } catch (DiscoveryException e) {
-            Assert.fail("A Joyn Arbitration Exception has been thrown");
+            fail("A Joyn Arbitration Exception has been thrown");
         }
     }
 
     @SuppressWarnings("unchecked")
     @Test
-    public void testCustomArbitrationFunction() {
+    public void testCustomArbitrationFunction() throws InterruptedException {
         // Expected provider supports onChangeSubscriptions
         ProviderQos providerQos = new ProviderQos();
 
@@ -561,6 +622,8 @@ public class ArbitrationTest {
         arbitrator.setArbitrationListener(arbitrationCallback);
         arbitrator.startArbitration();
 
+        assertTrue(localDiscoveryAggregatorSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
+
         verify(arbitrationStrategyFunction, times(1)).select(eq(discoveryQos.getCustomParameters()),
                                                              eq(new HashSet<DiscoveryEntryWithMetaInfo>(capabilitiesList)));
 
@@ -571,7 +634,7 @@ public class ArbitrationTest {
 
     @SuppressWarnings("unchecked")
     @Test
-    public void testCustomArbitrationFunctionMultipleMatches() {
+    public void testCustomArbitrationFunctionMultipleMatches() throws InterruptedException {
         // Expected provider supports onChangeSubscriptions
         ProviderQos providerQos = new ProviderQos();
 
@@ -604,6 +667,8 @@ public class ArbitrationTest {
         arbitrator.setArbitrationListener(arbitrationCallback);
         arbitrator.startArbitration();
 
+        assertTrue(localDiscoveryAggregatorSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
+
         verify(arbitrationStrategyFunction, times(1)).select(eq(discoveryQos.getCustomParameters()),
                                                              eq(new HashSet<DiscoveryEntryWithMetaInfo>(capabilitiesList)));
 
@@ -614,7 +679,7 @@ public class ArbitrationTest {
 
     @SuppressWarnings("unchecked")
     @Test
-    public void testVersionFilterUsed() {
+    public void testVersionFilterUsed() throws InterruptedException {
         ProviderQos providerQos = new ProviderQos();
         String publicKeyId = "publicKeyId";
         expectedEndpointAddress = new ChannelAddress("http://testUrl", "testChannelId");
@@ -644,13 +709,15 @@ public class ArbitrationTest {
         arbitrator.setArbitrationListener(arbitrationCallback);
         arbitrator.startArbitration();
 
+        assertTrue(localDiscoveryAggregatorSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
+
         verify(discoveryEntryVersionFilter).filter(interfaceVersion,
                                                    new HashSet<DiscoveryEntryWithMetaInfo>(capabilitiesList),
                                                    new HashMap<String, Set<Version>>());
     }
 
     @Test
-    public void testIncompatibleVersionsReported() {
+    public void testIncompatibleVersionsReported() throws InterruptedException {
         Version incompatibleVersion = new Version(100, 100);
         final Collection<DiscoveryEntryWithMetaInfo> discoveryEntries = Lists.newArrayList(new DiscoveryEntryWithMetaInfo(incompatibleVersion,
                                                                                                                           domain,
@@ -685,6 +752,7 @@ public class ArbitrationTest {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
                 ((Callback<DiscoveryEntryWithMetaInfo[]>) invocation.getArguments()[0]).resolve((Object) discoveryEntries.toArray(new DiscoveryEntryWithMetaInfo[1]));
+                localDiscoveryAggregatorSemaphore.release();
                 return null;
             }
         }).when(localDiscoveryAggregator).lookup(Mockito.<Callback<DiscoveryEntryWithMetaInfo[]>> any(),
@@ -700,6 +768,8 @@ public class ArbitrationTest {
         arbitrator.setArbitrationListener(arbitrationCallback);
         arbitrator.startArbitration();
 
+        assertTrue(localDiscoveryAggregatorSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
+
         Set<Version> discoveredVersions = Sets.newHashSet(incompatibleVersion);
         ArgumentCaptor<NoCompatibleProviderFoundException> noCompatibleProviderFoundExceptionCaptor = ArgumentCaptor.forClass(NoCompatibleProviderFoundException.class);
         verify(arbitrationCallback).onError(noCompatibleProviderFoundExceptionCaptor.capture());
@@ -708,7 +778,7 @@ public class ArbitrationTest {
     }
 
     @Test
-    public void testMultiDomainIncompatibleVersionsReported() {
+    public void testMultiDomainIncompatibleVersionsReported() throws InterruptedException {
         final Version incompatibleVersion = new Version(100, 100);
         final String domain1 = "domain1";
         final String domain2 = "domain2";
@@ -758,6 +828,7 @@ public class ArbitrationTest {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
                 ((Callback<DiscoveryEntryWithMetaInfo[]>) invocation.getArguments()[0]).resolve((Object) discoveryEntries.toArray(new DiscoveryEntryWithMetaInfo[2]));
+                localDiscoveryAggregatorSemaphore.release();
                 return null;
             }
         }).when(localDiscoveryAggregator).lookup(Mockito.<Callback<DiscoveryEntryWithMetaInfo[]>> any(),
@@ -772,6 +843,8 @@ public class ArbitrationTest {
                                                          localDiscoveryAggregator);
         arbitrator.setArbitrationListener(arbitrationCallback);
         arbitrator.startArbitration();
+
+        assertTrue(localDiscoveryAggregatorSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
 
         Set<Version> discoveredVersions = Sets.newHashSet(incompatibleVersion);
         ArgumentCaptor<MultiDomainNoCompatibleProviderFoundException> noCompatibleProviderFoundExceptionCaptor = ArgumentCaptor.forClass(MultiDomainNoCompatibleProviderFoundException.class);

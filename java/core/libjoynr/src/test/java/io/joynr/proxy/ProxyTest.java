@@ -36,11 +36,13 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.common.collect.Sets;
@@ -81,6 +83,9 @@ import io.joynr.proxy.invocation.BroadcastSubscribeInvocation;
 import io.joynr.proxy.invocation.MulticastSubscribeInvocation;
 import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
+import io.joynr.runtime.JoynrThreadFactory;
+import io.joynr.runtime.ShutdownListener;
+import io.joynr.runtime.ShutdownNotifier;
 import io.joynr.runtime.SystemServicesSettings;
 import joynr.MulticastSubscriptionQos;
 import joynr.OnChangeSubscriptionQos;
@@ -96,6 +101,8 @@ import joynr.vehicle.NavigationBroadcastInterface.LocationUpdateBroadcastListene
 import joynr.vehicle.NavigationBroadcastInterface.LocationUpdateSelectiveBroadcastFilterParameters;
 import joynr.vehicle.NavigationBroadcastInterface.LocationUpdateSelectiveBroadcastListener;
 import joynr.vehicle.NavigationProxy;
+
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -118,12 +125,27 @@ public class ProxyTest {
     private static final long MAX_TTL_MS = 2592000000L;
     private static long DISCOVERY_TIMEOUT_MS = 30000L;
     private static long RETRY_INTERVAL_MS = 2000L;
+
     private Semaphore testInterfaceProxyCreatedSemaphore;
     private Semaphore navigationProxyCreatedSemaphore;
     private ProxyCreatedCallback<NavigationProxy> navigationProxyCreatedCallback;
     private ProxyCreatedCallback<TestInterface> testInterfaceProxyCreatedCallback;
+
     private DiscoveryQos discoveryQos;
     private MessagingQos messagingQos;
+
+    private String domain;
+    private String fromParticipantId;
+    private String toParticipantId;
+    private String asyncReplyText = "replyText";
+
+    private DiscoveryEntryWithMetaInfo toDiscoveryEntry;
+    private Set<DiscoveryEntryWithMetaInfo> toDiscoveryEntries;
+
+    private ProxyBuilderFactory proxyBuilderFactory;
+
+    private ScheduledExecutorService scheduler;
+
     @Mock
     private ReplyCallerDirectory replyCallerDirectory;
     @Mock
@@ -140,20 +162,14 @@ public class ProxyTest {
     @Mock
     private LocalDiscoveryAggregator localDiscoveryAggregator;
 
-    private String domain;
-    private String fromParticipantId;
-    private String toParticipantId;
-    private DiscoveryEntryWithMetaInfo toDiscoveryEntry;
-    private Set<DiscoveryEntryWithMetaInfo> toDiscoveryEntries;
-    private String asyncReplyText = "replyText";
+    @Mock
+    private ShutdownNotifier shutdownNotifier;
 
     @Mock
     private Callback<String> callback;
 
     @Mock
     private DiscoveryEntryVersionFilter discoveryEntryVersionFilter;
-
-    private ProxyBuilderFactory proxyBuilderFactory;
 
     private enum ApplicationErrors {
         ERROR_VALUE_1, ERROR_VALUE_2, ERROR_VALUE_3
@@ -164,9 +180,6 @@ public class ProxyTest {
         String method1();
 
         String methodWithApplicationError() throws ApplicationException;
-    }
-
-    public static class StringTypeRef extends TypeReference<String> {
     }
 
     @Async
@@ -328,6 +341,15 @@ public class ProxyTest {
         discoveryQos = new DiscoveryQos(10000, ArbitrationStrategy.HighestPriority, Long.MAX_VALUE);
         messagingQos = new MessagingQos();
 
+        doAnswer(new Answer<Set<DiscoveryEntryWithMetaInfo>>() {
+            @Override
+            public Set<DiscoveryEntryWithMetaInfo> answer(InvocationOnMock invocation) throws Throwable {
+                return (Set<DiscoveryEntryWithMetaInfo>) invocation.getArguments()[1];
+            }
+        }).when(discoveryEntryVersionFilter).filter(Mockito.<Version> any(),
+                                                    Mockito.<Set<DiscoveryEntryWithMetaInfo>> any(),
+                                                    Mockito.<Map<String, Set<Version>>> any());
+
         Field discoveryEntryVersionFilterField = ArbitratorFactory.class.getDeclaredField("discoveryEntryVersionFilter");
         discoveryEntryVersionFilterField.setAccessible(true);
         discoveryEntryVersionFilterField.set(ArbitratorFactory.class, discoveryEntryVersionFilter);
@@ -340,6 +362,31 @@ public class ProxyTest {
         }).when(discoveryEntryVersionFilter).filter(Mockito.<Version> any(),
                                                     Mockito.<Set<DiscoveryEntryWithMetaInfo>> any(),
                                                     Mockito.<Map<String, Set<Version>>> any());
+
+        Field schedulerField = ArbitratorFactory.class.getDeclaredField("scheduler");
+        schedulerField.setAccessible(true);
+        String name = "TEST.joynr.scheduler.arbitration.arbitratorRunnable";
+        ThreadFactory joynrThreadFactory = new JoynrThreadFactory(name, true);
+        scheduler = Executors.newSingleThreadScheduledExecutor(joynrThreadFactory);
+        schedulerField.set(ArbitratorFactory.class, scheduler);
+
+        Field shutdownNotifierField = ArbitratorFactory.class.getDeclaredField("shutdownNotifier");
+        shutdownNotifierField.setAccessible(true);
+        shutdownNotifierField.set(ArbitratorFactory.class, shutdownNotifier);
+
+        ArbitratorFactory.start();
+        verify(shutdownNotifier).registerForShutdown(any(ShutdownListener.class));
+    }
+
+    @After
+    public void tearDown() {
+        ArbitratorFactory.shutdown();
+        scheduler.shutdown();
+        try {
+            assertTrue(scheduler.awaitTermination(2000, TimeUnit.MILLISECONDS));
+        } catch (InterruptedException e) {
+            fail("InterruptedException in scheduler.awaitTermination: " + e);
+        }
     }
 
     private <T> ProxyBuilderDefaultImpl<T> getProxyBuilder(final Class<T> interfaceClass) {
