@@ -18,15 +18,20 @@
  */
 package io.joynr.jeeintegration;
 
+import java.util.concurrent.ConcurrentHashMap;
+
 import javax.ejb.Singleton;
 
 import io.joynr.messaging.mqtt.statusmetrics.MqttStatusReceiver;
+import io.joynr.statusmetrics.MessageWorkerStatus;
+import io.joynr.statusmetrics.StatusReceiver;
 
 @Singleton
-public class JoynrStatusMetricsAggregator implements JoynrStatusReceiver, MqttStatusReceiver {
+public class JoynrStatusMetricsAggregator implements JoynrStatusMetrics, MqttStatusReceiver, StatusReceiver {
     private int numDiscardedMqttRequest = 0;
     private boolean isConnectedToMqttBroker = false;
     private long disconnectedFromMqttBrokerSinceTimestamp;
+    private ConcurrentHashMap<Integer, MessageWorkerStatus> messageWorkersStatus = new ConcurrentHashMap<Integer, MessageWorkerStatus>();
 
     @Override
     public synchronized void notifyMessageDropped() {
@@ -62,5 +67,10 @@ public class JoynrStatusMetricsAggregator implements JoynrStatusReceiver, MqttSt
     @Override
     public synchronized long getDisconnectedFromMqttBrokerSinceTimestamp() {
         return disconnectedFromMqttBrokerSinceTimestamp;
+    }
+
+    @Override
+    public void updateMessageWorkerStatus(int messageWorkerId, MessageWorkerStatus messageWorkerStatus) {
+        this.messageWorkersStatus.put(messageWorkerId, messageWorkerStatus);
     }
 }
