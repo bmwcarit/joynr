@@ -19,13 +19,16 @@
 package io.joynr.arbitration;
 
 import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_ARBITRATION_MINIMUMRETRYDELAY;
+import static io.joynr.messaging.routing.MessageRouter.SCHEDULEDTHREADPOOL;
 
 import java.util.Set;
+import java.util.concurrent.ScheduledExecutorService;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
 import io.joynr.exceptions.DiscoveryException;
+import io.joynr.runtime.ShutdownNotifier;
 import joynr.system.DiscoveryAsync;
 import joynr.types.Version;
 
@@ -37,6 +40,13 @@ public final class ArbitratorFactory {
 
     @Inject
     private static DiscoveryEntryVersionFilter discoveryEntryVersionFilter;
+
+    @Inject
+    private static ShutdownNotifier shutdownNotifier;
+
+    @Inject
+    @Named(SCHEDULEDTHREADPOOL)
+    private static ScheduledExecutorService scheduler;
 
     private ArbitratorFactory() {
 
