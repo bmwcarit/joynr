@@ -42,6 +42,8 @@ the versioning scheme [here](JoynrVersioning.md).
   The future behavior of the MqttMessagingSkeleton will change to immediate mqtt
   message acknowledgment and this should eliminate receiving repeated messages from
   the mqtt broker.
+* **[C++]** newly added TLS properties `cluster-controller/mqtt-tls-version` and 
+  `cluster-controller/mqtt-tls-ciphers` can be used to fine tune the MQTT TLS connection
 
 ## Other changes
 * **[C++]** moved settings `local-capabilities-directory-persistence-file` and
