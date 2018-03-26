@@ -24,12 +24,12 @@ var CommunicationModule = require("../../../../classes/joynr/messaging/Communica
 var LongPollingChannelMessageReceiver = require("../../../../classes/joynr/messaging/channel/LongPollingChannelMessageReceiver");
 var JoynrMessage = require("../../../../classes/joynr/messaging/JoynrMessage");
 var Typing = require("../../../../classes/joynr/util/Typing");
-var LoggerFactory = require("../../../../classes/joynr/system/LoggerFactory");
+var LoggingManager = require("../../../../classes/joynr/system/LoggingManager");
 var LocalStorage = require("../../../../test-classes/global/LocalStorageNodeTests");
 var provisioning = require("../../../../test-classes/joynr/provisioning/provisioning_root");
 var waitsFor = require("../../../../test-classes/global/WaitsFor");
 
-var log = LoggerFactory.getLogger("joynr.messaging.TestLongPollingChannelMessageReceiver");
+var log = LoggingManager.getLogger("joynr.messaging.TestLongPollingChannelMessageReceiver");
 var localStorage = new LocalStorage();
 
 describe("libjoynr-js.joynr.messaging.LongPollingChannelMessageReceiver", function() {

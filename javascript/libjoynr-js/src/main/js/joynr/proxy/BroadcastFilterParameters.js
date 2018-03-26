@@ -20,7 +20,7 @@
  */
 var Typing = require("../util/Typing");
 var Util = require("../util/UtilInternal");
-var LoggerFactory = require("../system/LoggerFactory");
+var LoggingManager = require("../system/LoggingManager");
 
 function makeSetterFunction(obj, parameterName) {
     return function(arg) {
@@ -47,7 +47,7 @@ function BroadcastFilterParameters(filterParameterProperties) {
         return new BroadcastFilterParameters(filterParameterProperties);
     }
 
-    var log = LoggerFactory.getLogger("joynr.proxy.BroadcastFilterParameters");
+    var log = LoggingManager.getLogger("joynr.proxy.BroadcastFilterParameters");
 
     /**
      * @name BroadcastFilterParameters#_typeName

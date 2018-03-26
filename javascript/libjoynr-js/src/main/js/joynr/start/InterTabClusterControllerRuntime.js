@@ -69,7 +69,6 @@ var Util = require("../util/UtilInternal");
 var WebWorkerMessagingAppender = require("../system/WebWorkerMessagingAppender");
 var uuid = require("../../lib/uuid-annotated");
 var loggingManager = require("../system/LoggingManager");
-var LoggerFactory = require("../system/LoggerFactory");
 var defaultSettings = require("./settings/defaultSettings");
 var defaultInterTabSettings = require("./settings/defaultInterTabSettings");
 var defaultClusterControllerSettings = require("./settings/defaultClusterControllerSettings");
@@ -267,7 +266,7 @@ function InterTabClusterControllerRuntime(provisioning) {
             loggingManager.configure(provisioning.logging);
         }
 
-        log = LoggerFactory.getLogger("joynr.start.InterTabClusterControllerRuntime");
+        log = loggingManager.getLogger("joynr.start.InterTabClusterControllerRuntime");
 
         var persistencyProvisioning = provisioning.persistency || {};
         persistency = new LocalStorage({

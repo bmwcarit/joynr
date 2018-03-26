@@ -23,12 +23,12 @@
  * The <code>MessageQueue</code> is a joynr internal data structure. The Message Queue caches incoming messages, which cannot be shipped
  * to the correct participant. Once a participant with the matching participantId is registered, the incoming message is forwarded to him
  */
-var LoggerFactory = require("../../system/LoggerFactory");
+var LoggingManager = require("../../system/LoggingManager");
 var DiagnosticTags = require("../../system/DiagnosticTags");
 var Util = require("../../util/UtilInternal");
 var ParticipantQueue = require("./ParticipantQueue");
 
-var log = LoggerFactory.getLogger("joynr/messaging/routing/MessageQueue");
+var log = LoggingManager.getLogger("joynr/messaging/routing/MessageQueue");
 var defaultSettings;
 var CHECK_TTL_ON_QUEUED_MESSAGES_INTERVAL_MS = 10000; // a very loose interval because of a second check on return
 /**

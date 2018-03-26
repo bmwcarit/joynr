@@ -22,7 +22,7 @@ var TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
 var Typing = require("../util/Typing");
 var Util = require("../util/UtilInternal");
 var JoynrRuntimeException = require("./JoynrRuntimeException");
-var LoggerFactory = require("../system/LoggerFactory");
+var LoggingManager = require("../system/LoggingManager");
 var defaultSettings;
 
 /**
@@ -53,7 +53,7 @@ function PublicationMissedException(settings) {
         return new PublicationMissedException(settings);
     }
 
-    var log = LoggerFactory.getLogger("joynr.exceptions.PublicationMissedException");
+    var log = LoggingManager.getLogger("joynr.exceptions.PublicationMissedException");
     var runtimeException = new JoynrRuntimeException(settings);
 
     Typing.checkProperty(settings.subscriptionId, "String", "settings.subscriptionId");

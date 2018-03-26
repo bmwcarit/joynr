@@ -57,7 +57,6 @@ var CapabilitiesUtil = require("../util/CapabilitiesUtil");
 var WebWorkerMessagingAppender = require("../system/WebWorkerMessagingAppender");
 var uuid = require("../../lib/uuid-annotated");
 var loggingManager = require("../system/LoggingManager");
-var LoggerFactory = require("../system/LoggerFactory");
 var defaultSettings = require("./settings/defaultSettings");
 var defaultInterTabSettings = require("./settings/defaultInterTabSettings");
 var defaultLibjoynrSettings = require("./settings/defaultLibjoynrSettings");
@@ -241,7 +240,7 @@ function InterTabLibjoynrRuntime(provisioning) {
             loggingManager.configure(provisioning.logging);
         }
 
-        log = LoggerFactory.getLogger("joynr.start.InterTabLibjoynrRuntime");
+        log = loggingManager.getLogger("joynr.start.InterTabLibjoynrRuntime");
 
         var persistencyProvisioning = provisioning.persistency || {};
         persistency = new LocalStorage({

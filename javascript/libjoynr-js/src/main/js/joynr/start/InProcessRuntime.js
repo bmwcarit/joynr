@@ -62,7 +62,6 @@ var CapabilitiesUtil = require("../util/CapabilitiesUtil");
 var WebWorkerMessagingAppender = require("../system/WebWorkerMessagingAppender");
 var loggingManager = require("../system/LoggingManager");
 var uuid = require("../../lib/uuid-annotated");
-var LoggerFactory = require("../system/LoggerFactory");
 var defaultSettings = require("./settings/defaultSettings");
 var defaultLibjoynrSettings = require("./settings/defaultLibjoynrSettings");
 var defaultClusterControllerSettings = require("./settings/defaultClusterControllerSettings");
@@ -252,7 +251,7 @@ function InProcessRuntime(provisioning) {
         // values
         var logLevel, logLayout, appenderNames, appenderName;
 
-        log = LoggerFactory.getLogger("joynr.start.InProcessRuntime");
+        log = loggingManager.getLogger("joynr.start.InProcessRuntime");
 
         var persistencyProvisioning = provisioning.persistency || {};
         persistency = new LocalStorage({

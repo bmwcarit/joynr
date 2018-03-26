@@ -19,11 +19,11 @@
  * #L%
  */
 var Typing = require("../../util/Typing");
-var LoggerFactory = require("../../system/LoggerFactory");
+var LoggingManager = require("../../system/LoggingManager");
 var DiagnosticTags = require("../../system/DiagnosticTags");
 var JoynrException = require("../../exceptions/JoynrException");
 
-var log = LoggerFactory.getLogger("joynr/messaging/mqtt/MqttMessagingSkeleton");
+var log = LoggingManager.getLogger("joynr/messaging/mqtt/MqttMessagingSkeleton");
 /**
  * @constructor MqttMessagingSkeleton
  * @param {Object} settings

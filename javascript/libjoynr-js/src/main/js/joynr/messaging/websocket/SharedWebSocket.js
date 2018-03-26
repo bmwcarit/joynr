@@ -24,8 +24,8 @@ var Typing = require("../../util/Typing");
 var JSONSerializer = require("../../util/JSONSerializer");
 var LongTimer = require("../../util/LongTimer");
 var Util = require("../../util/UtilInternal");
-var LoggerFactory = require("../../system/LoggerFactory");
-var log = LoggerFactory.getLogger("joynr.messaging.websocket.SharedWebSocket");
+var LoggingManager = require("../../system/LoggingManager");
+var log = LoggingManager.getLogger("joynr.messaging.websocket.SharedWebSocket");
 /**
  * @param address
  * @param {WebSocketAddress}

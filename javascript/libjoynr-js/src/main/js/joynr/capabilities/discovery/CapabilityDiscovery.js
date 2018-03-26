@@ -29,7 +29,7 @@ var ProviderScope = require("../../../joynr/types/ProviderScope");
 var GlobalCapabilitiesDirectoryProxy = require("../../infrastructure/GlobalCapabilitiesDirectoryProxy");
 var TypeRegistrySingleton = require("../../../joynr/types/TypeRegistrySingleton");
 var Typing = require("../../util/Typing");
-var LoggerFactory = require("../../system/LoggerFactory");
+var LoggingManager = require("../../system/LoggingManager");
 var Util = require("../../util/UtilInternal");
 var ProviderRuntimeException = require("../../exceptions/ProviderRuntimeException");
 var CapabilitiesUtil = require("../../util/CapabilitiesUtil");
@@ -60,7 +60,7 @@ function CapabilityDiscovery(
     proxyBuilder,
     globalCapabilitiesDomain
 ) {
-    var log = LoggerFactory.getLogger("joynr/capabilities/discovery/CapabilityDiscovery");
+    var log = LoggingManager.getLogger("joynr/capabilities/discovery/CapabilityDiscovery");
     var TTL_30DAYS_IN_MS = 30 * 24 * 60 * 60 * 1000;
     var globalAddress, globalAddressSerialized;
     var typeRegistry = TypeRegistrySingleton.getInstance();

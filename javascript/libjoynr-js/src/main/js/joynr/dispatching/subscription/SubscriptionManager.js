@@ -30,7 +30,7 @@ var BroadcastSubscriptionRequest = require("../types/BroadcastSubscriptionReques
 var SubscriptionListener = require("./SubscriptionListener");
 var SubscriptionUtil = require("./util/SubscriptionUtil");
 var LongTimer = require("../../util/LongTimer");
-var LoggerFactory = require("../../system/LoggerFactory");
+var LoggingManager = require("../../system/LoggingManager");
 var uuid = require("../../../lib/uuid-annotated");
 var Util = require("../../util/UtilInternal");
 var Typing = require("../../util/Typing");
@@ -45,7 +45,7 @@ var JSONSerializer = require("../../util/JSONSerializer");
  */
 function SubscriptionManager(dispatcher) {
     var multicastWildcardRegexFactory = new MulticastWildcardRegexFactory();
-    var log = LoggerFactory.getLogger("joynr.dispatching.subscription.SubscriptionManager");
+    var log = LoggingManager.getLogger("joynr.dispatching.subscription.SubscriptionManager");
     var typeRegistry = TypeRegistrySingleton.getInstance();
     if (!(this instanceof SubscriptionManager)) {
         // in case someone calls constructor without new keyword (e.g. var c =

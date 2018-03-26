@@ -28,7 +28,7 @@ var OnChangeSubscriptionQos = require("../../../../classes/joynr/proxy/OnChangeS
 var OnChangeWithKeepAliveSubscriptionQos = require("../../../../classes/joynr/proxy/OnChangeWithKeepAliveSubscriptionQos");
 var ProviderQos = require("../../../../classes/joynr/types/ProviderQos");
 var uuid = require("../../../../classes/lib/uuid-annotated");
-var LoggerFactory = require("../../../../classes/joynr/system/LoggerFactory");
+var LoggingManager = require("../../../../classes/joynr/system/LoggingManager");
 
 describe("libjoynr-js.joynr.dispatching.subscription.types.SubscriptionUtil", function() {
     var proxyId;
@@ -48,7 +48,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.types.SubscriptionUtil", fu
     var subscriptionLength;
     var testAttribute;
     var providerSettings;
-    var log = LoggerFactory.getLogger("joynr.dispatching.subscription.TestSubscriptionUtil");
+    var log = LoggingManager.getLogger("joynr.dispatching.subscription.TestSubscriptionUtil");
 
     function createSubscriptionInformation(proxy, provider, periodMs, subscriptionLength, onChange, minIntervalMs) {
         var qosSettings;

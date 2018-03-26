@@ -22,7 +22,6 @@ require("../../node-unit-test-helper");
 var Promise = require("../../../classes/global/Promise");
 var Util = require("../../../classes/joynr/util/UtilInternal");
 var JoynrMessage = require("../../../classes/joynr/messaging/JoynrMessage");
-var LoggerFactory = require("../../../classes/joynr/system/LoggerFactory");
 var TypeRegistry = require("../../../classes/joynr/start/TypeRegistry");
 var RadioStation = require("../../../test-classes/joynr/vehicle/radiotypes/RadioStation");
 

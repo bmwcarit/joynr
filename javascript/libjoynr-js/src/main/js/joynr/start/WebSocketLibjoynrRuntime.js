@@ -61,7 +61,6 @@ var Typing = require("../util/Typing");
 var WebWorkerMessagingAppender = require("../system/WebWorkerMessagingAppender");
 var uuid = require("../../lib/uuid-annotated");
 var loggingManager = require("../system/LoggingManager");
-var LoggerFactory = require("../system/LoggerFactory");
 var defaultSettings = require("./settings/defaultSettings");
 var defaultWebSocketSettings = require("./settings/defaultWebSocketSettings");
 var defaultLibjoynrSettings = require("./settings/defaultLibjoynrSettings");
@@ -278,7 +277,7 @@ function WebSocketLibjoynrRuntime(provisioning) {
             loggingManager.configure(provisioning.logging);
         }
 
-        log = LoggerFactory.getLogger("joynr.start.WebSocketLibjoynrRuntime");
+        log = loggingManager.getLogger("joynr.start.WebSocketLibjoynrRuntime");
 
         var persistencyProvisioning = Util.extend(
             {},
