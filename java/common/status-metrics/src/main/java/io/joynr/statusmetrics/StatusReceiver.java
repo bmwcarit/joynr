@@ -18,15 +18,16 @@
  */
 package io.joynr.statusmetrics;
 
-public interface StatusMetrics {
+public interface StatusReceiver {
     /**
-     * Provides status information for message workers. Message workers consume messages from the
-     * message queue and process them. Evaluating their status allows to detect states in which
-     * a thread blocks indefinitely.
+     * Updates the status of a message worker.
+     * Message workers consume messages from the message queue and process them. Evaluating their
+     * status allows to detect states in which a thread blocks indefinitely.
      *
      * @see MessageWorkerStatus for more information.
      *
-     * @return Returns an array which contains the status of each message worker.
+     * @param messageWorkerId: A value which identifies the message worker uniquely.
+     * @param messageWorkerStatus A new status for the message worker.
      */
-    MessageWorkerStatus[] getMessageWorkersStatus();
+    void updateMessageWorkerStatus(int messageWorkerId, MessageWorkerStatus messageWorkerStatus);
 }
