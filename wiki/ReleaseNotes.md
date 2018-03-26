@@ -51,6 +51,7 @@ the versioning scheme [here](JoynrVersioning.md).
 * **[C++]** added setting 'cluster-controller/global-capabilities-directory-compressed-messages-enabled'
   which specifies whether messages to GlobalCapabilitiesDirectory shall be compressed.
   By default they will be sent uncompressed.
+* **[Java]** Fixed a bug that was blocking shutdown if disconnected from MQTT at the same time.
 
 # joynr 1.0.5
 
