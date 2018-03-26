@@ -112,6 +112,10 @@ public class Arbitrator {
      * Called by the proxy builder to start the arbitration process.
      */
     public void startArbitration() {
+        attemptArbitration();
+    }
+
+    void attemptArbitration() {
         logger.debug("DISCOVERY lookup for domain: {}, interface: {}", domains, interfaceName);
         localDiscoveryAggregator.lookup(new DiscoveryCallback(),
                                         domains.toArray(new String[domains.size()]),
