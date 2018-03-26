@@ -32,6 +32,7 @@ import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.runtime.ClusterControllerRuntimeModule;
 import io.joynr.runtime.ShutdownNotifier;
+import io.joynr.statusmetrics.StatusReceiver;
 import io.joynr.messaging.routing.AddressManager;
 import io.joynr.messaging.routing.DelayableImmutableMessage;
 import io.joynr.messaging.routing.MessagingStubFactory;
@@ -72,7 +73,8 @@ public class JeeMessageRouter extends io.joynr.messaging.routing.CcMessageRouter
                             AccessController accessController,
                             @Named(ClusterControllerRuntimeModule.PROPERTY_ACCESSCONTROL_ENABLE) boolean enableAccessControl,
                             DelayQueue<DelayableImmutableMessage> messageQueue,
-                            ShutdownNotifier shutdownNotifier) {
+                            ShutdownNotifier shutdownNotifier,
+                            StatusReceiver statusReceiver) {
         super(routingTable,
               scheduler,
               sendMsgRetryIntervalMs,
@@ -86,7 +88,8 @@ public class JeeMessageRouter extends io.joynr.messaging.routing.CcMessageRouter
               accessController,
               enableAccessControl,
               messageQueue,
-              shutdownNotifier);
+              shutdownNotifier,
+              statusReceiver);
         if (LOG.isDebugEnabled()) {
             LOG.debug(format("Initialising with:%n\troutingTable: %s%n\tscheduler: %s%n\tsendMsgRetryIntervalMs: %d%n\tmessageStubFactory: %s",
                              routingTable,

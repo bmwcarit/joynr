@@ -50,6 +50,8 @@ import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.SuccessAction;
 import io.joynr.runtime.ShutdownListener;
 import io.joynr.runtime.ShutdownNotifier;
+import io.joynr.statusmetrics.MessageWorkerStatus;
+import io.joynr.statusmetrics.StatusReceiver;
 import joynr.ImmutableMessage;
 import joynr.Message;
 import joynr.system.RoutingTypes.Address;
@@ -76,6 +78,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
     protected final MulticastReceiverRegistry multicastReceiverRegistry;
 
     private final DelayQueue<DelayableImmutableMessage> messageQueue;
+    private final StatusReceiver statusReceiver;
 
     private List<MessageProcessedListener> messageProcessedListeners;
     private List<MessageWorker> messageWorkers;
@@ -94,7 +97,8 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
                                  AddressManager addressManager,
                                  MulticastReceiverRegistry multicastReceiverRegistry,
                                  DelayQueue<DelayableImmutableMessage> messageQueue,
-                                 ShutdownNotifier shutdownNotifier) {
+                                 ShutdownNotifier shutdownNotifier,
+                                 StatusReceiver statusReceiver) {
         // CHECKSTYLE:ON
         this.routingTable = routingTable;
         this.scheduler = scheduler;
@@ -106,6 +110,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
         this.addressManager = addressManager;
         this.multicastReceiverRegistry = multicastReceiverRegistry;
         this.messageQueue = messageQueue;
+        this.statusReceiver = statusReceiver;
         shutdownNotifier.registerForShutdown(this);
         messageProcessedListeners = new ArrayList<MessageProcessedListener>();
         startMessageWorkerThreads(maxParallelSends);
@@ -442,9 +447,15 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
                 int retriesCount = 0;
 
                 try {
+                    statusReceiver.updateMessageWorkerStatus(number,
+                                                             new MessageWorkerStatus(System.currentTimeMillis(), true));
                     delayableMessage = messageQueue.poll(1000, TimeUnit.MILLISECONDS);
 
                     if (delayableMessage != null) {
+                        statusReceiver.updateMessageWorkerStatus(number,
+                                                                 new MessageWorkerStatus(System.currentTimeMillis(),
+                                                                                         false));
+
                         retriesCount = delayableMessage.getRetriesCount();
                         message = delayableMessage.getMessage();
                         logger.trace("Starting processing of message {}", message);

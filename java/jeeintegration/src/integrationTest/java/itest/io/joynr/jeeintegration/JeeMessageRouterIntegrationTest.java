@@ -22,6 +22,7 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.junit.Assert.assertEquals;
@@ -53,6 +54,7 @@ import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.messaging.routing.MulticastReceiverRegistry;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.runtime.ShutdownNotifier;
+import io.joynr.statusmetrics.StatusReceiver;
 import jersey.repackaged.com.google.common.collect.Sets;
 import joynr.ImmutableMessage;
 import joynr.system.RoutingTypes.Address;
@@ -131,7 +133,8 @@ public class JeeMessageRouterIntegrationTest {
                                                         null,
                                                         false,
                                                         messageQueue,
-                                                        shutdownNotifier);
+                                                        shutdownNotifier,
+                                                        mock(StatusReceiver.class));
 
         for(int i=0; i < MESSAGE_LOAD; i++) {
             subject.route(failingMessage);

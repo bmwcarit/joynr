@@ -20,6 +20,7 @@ package test.io.joynr.jeeintegration.messaging;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -36,6 +37,7 @@ import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.messaging.routing.MulticastReceiverRegistry;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.runtime.ShutdownNotifier;
+import io.joynr.statusmetrics.StatusReceiver;
 import joynr.ImmutableMessage;
 import joynr.system.RoutingTypes.Address;
 
@@ -100,7 +102,8 @@ public class JeeMessageRouterTest {
                                                         null,
                                                         false,
                                                         messageQueue,
-                                                        shutdownNotifier);
+                                                        shutdownNotifier,
+                                                        mock(StatusReceiver.class));
 
         subject.route(message);
 
@@ -125,7 +128,8 @@ public class JeeMessageRouterTest {
                                                         null,
                                                         false,
                                                         messageQueue,
-                                                        shutdownNotifier);
+                                                        shutdownNotifier,
+                                                        mock(StatusReceiver.class));
 
         verify(shutdownNotifier).registerForShutdown(subject);
     }
