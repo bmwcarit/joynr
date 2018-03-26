@@ -48,6 +48,7 @@ import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.mqtt.IMqttMessagingSkeleton;
 import io.joynr.messaging.mqtt.JoynrMqttClient;
 import io.joynr.messaging.mqtt.MqttMessagingStub;
+import io.joynr.messaging.mqtt.statusmetrics.MqttStatusReceiver;
 
 public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
 
@@ -66,6 +67,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
     private String trustStorePath;
     private String keyStorePWD;
     private String trustStorePWD;
+    private MqttStatusReceiver mqttStatusReceiver;
     private boolean isSecureConnection;
     private boolean disconnecting = false;
 
@@ -85,7 +87,8 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
                           String keyStorePath,
                           String trustStorePath,
                           String keyStorePWD,
-                          String trustStorePWD) throws MqttException {
+                          String trustStorePWD,
+                          MqttStatusReceiver mqttStatusReceiver) throws MqttException {
         this.mqttClient = mqttClient;
         this.reconnectSleepMs = reconnectSleepMS;
         this.keepAliveTimerSec = keepAliveTimerSec;
@@ -98,6 +101,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
         this.trustStorePath = trustStorePath;
         this.keyStorePWD = keyStorePWD;
         this.trustStorePWD = trustStorePWD;
+        this.mqttStatusReceiver = mqttStatusReceiver;
 
         String srvURI = mqttClient.getServerURI();
         URI vURI;
@@ -120,6 +124,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
                 mqttClient.setTimeToWait(timeToWaitMs);
                 mqttClient.connect(getConnectOptions());
                 logger.debug("MQTT Connected client");
+                mqttStatusReceiver.notifyConnectionStatusChanged(MqttStatusReceiver.ConnectionStatus.CONNECTED);
                 reestablishSubscriptions();
             } catch (MqttException mqttError) {
                 logger.error("MQTT Connect failed. Error code {}", mqttError.getReasonCode(), mqttError);
@@ -329,6 +334,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
     @Override
     public void connectionLost(Throwable error) {
         logger.debug("connectionLost: {}", error.getMessage());
+        mqttStatusReceiver.notifyConnectionStatusChanged(MqttStatusReceiver.ConnectionStatus.NOT_CONNECTED);
 
         if (error instanceof MqttException) {
             MqttException mqttError = (MqttException) error;
