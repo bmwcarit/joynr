@@ -67,6 +67,7 @@ import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
+import io.joynr.statusmetrics.StatusReceiver;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.TrustLevel;
@@ -93,6 +94,8 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
     private final String joynrLocalDomain;
 
     private BeanManager beanManager;
+
+    private StatusReceiver statusReceiver;
     private MqttStatusReceiver mqttStatusReceiver;
 
     /**
@@ -126,6 +129,7 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
                                       @JoynrRawMessagingPreprocessor Instance<RawMessagingPreprocessor> rawMessagePreprocessor,
                                       @JoynrMqttClientIdProvider Instance<MqttClientIdProvider> mqttClientIdProvider,
                                       BeanManager beanManager,
+                                      StatusReceiver statusReceiver,
                                       MqttStatusReceiver mqttStatusReceiver) {
         if (joynrLocalDomain.isUnsatisfied()) {
             String message = "No local domain name specified. Please provide a value for the local domain via @JoynrLocalDomain in your configuration EJB.";
@@ -178,6 +182,7 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
         this.joynrProperties = prepareJoynrProperties(configuredProperties);
         this.beanManager = beanManager;
         this.mqttStatusReceiver = mqttStatusReceiver;
+        this.statusReceiver = statusReceiver;
     }
 
     @Override
@@ -222,6 +227,7 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
                     }
 
                     bind(MqttStatusReceiver.class).toInstance(mqttStatusReceiver);
+                    bind(StatusReceiver.class).toInstance(statusReceiver);
                 }
             });
 

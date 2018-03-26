@@ -54,6 +54,7 @@ import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.MqttClientIdProvider;
 import io.joynr.messaging.mqtt.statusmetrics.MqttStatusReceiver;
 import io.joynr.runtime.JoynrRuntime;
+import io.joynr.statusmetrics.StatusReceiver;
 import joynr.ImmutableMessage;
 import joynr.MutableMessage;
 import joynr.Request;
@@ -146,6 +147,7 @@ public class DefaultJoynrRuntimeFactoryTest {
         fixture = new DefaultJoynrRuntimeFactory(joynrProperties, joynrLocalDomain,
                                                  rawMessageProcessor, mqttClientIdProviderInstance,
                                                  beanManager,
+                                                 mock(StatusReceiver.class),
                                                  mock(MqttStatusReceiver.class));
         scheduledExecutorService = mock(ScheduledExecutorService.class);
         Field executorField = DefaultJoynrRuntimeFactory.class.getDeclaredField("scheduledExecutorService");
