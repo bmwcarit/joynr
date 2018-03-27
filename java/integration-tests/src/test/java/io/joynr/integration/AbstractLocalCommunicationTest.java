@@ -28,12 +28,14 @@ import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 import io.joynr.runtime.JoynrRuntime;
 import joynr.OnChangeSubscriptionQos;
 import joynr.PeriodicSubscriptionQos;
+import joynr.test.JoynrTestLoggingRule;
 import joynr.tests.testProxy;
 import joynr.types.ProviderQos;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -58,6 +60,8 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 public abstract class AbstractLocalCommunicationTest {
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractLocalCommunicationTest.class);
+    @Rule
+    public JoynrTestLoggingRule joynrTestRule = new JoynrTestLoggingRule(logger);
     private JoynrRuntime runtimeA;
     private SubscriptionTestsProviderImpl provider;
     private String domain;
