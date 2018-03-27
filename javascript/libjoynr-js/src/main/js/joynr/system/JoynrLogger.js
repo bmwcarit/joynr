@@ -36,7 +36,12 @@ JoynrLogger.LogLevel = {
 };
 
 function createLog(level) {
-    return function(message) {
+    return function(message, object) {
+        if (object) {
+            try {
+                message += " " + JSON.stringify(object);
+            } catch (e) {}
+        }
         this.log(message, level);
     };
 }
