@@ -219,7 +219,6 @@ public class DispatcherImplTest {
         fixture.sendMulticast(fromParticipantId, multicastPublication, messagingQos);
 
         verify(messageFactoryMock).createMulticast(eq(fromParticipantId), eq(multicastPublication), eq(messagingQos));
-        verify(messageSenderMock).sendMessage(Mockito.<MutableMessage> any());
     }
 
     @Test
