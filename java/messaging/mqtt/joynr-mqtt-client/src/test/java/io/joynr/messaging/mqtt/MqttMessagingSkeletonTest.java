@@ -18,6 +18,7 @@
  */
 package io.joynr.messaging.mqtt;
 
+import static io.joynr.messaging.mqtt.MqttMessagingSkeletonTestUtil.*;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.any;
@@ -30,7 +31,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
-import static org.junit.Assert.fail;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -39,14 +39,12 @@ import java.util.HashSet;
 import java.util.concurrent.Semaphore;
 
 import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.NoOpRawMessagingPreprocessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.routing.MessageRouter;
 import joynr.ImmutableMessage;
 import joynr.Message;
-import joynr.MutableMessage;
 import joynr.system.RoutingTypes.MqttAddress;
 import org.junit.Before;
 import org.junit.Test;
@@ -56,7 +54,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Sets;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -79,22 +76,6 @@ public class MqttMessagingSkeletonTest {
 
     @Mock
     private MqttTopicPrefixProvider mqttTopicPrefixProvider;
-
-    private FailureAction failIfCalledAction = new FailureAction() {
-        @Override
-        public void execute(Throwable error) {
-            fail("failure action was erroneously called");
-        }
-    };
-
-    private FailureAction getExpectToBeCalledAction(final Semaphore semaphore) {
-        return new FailureAction() {
-            @Override
-            public void execute(Throwable error) {
-                semaphore.release();
-            }
-        };
-    }
 
     @Before
     public void setup() {
@@ -224,7 +205,7 @@ public class MqttMessagingSkeletonTest {
 
     @Test
     public void testFurtherRequestsAreDroppedWhenMaxForIncomingMqttRequestsIsReached() throws Exception {
-        feedMqttSkeletonWithRequests(maxIncomingMqttRequests);
+        feedMqttSkeletonWithRequests(subject, maxIncomingMqttRequests);
         assertEquals(0, subject.getDroppedMessagesCount());
         verify(messageRouter, times(maxIncomingMqttRequests)).route(any(ImmutableMessage.class));
 
@@ -238,7 +219,7 @@ public class MqttMessagingSkeletonTest {
 
     @Test
     public void testOtherMessagesAreAcceptedEvenWhenMaxForIncomingMqttRequestsIsReached() throws Exception {
-        feedMqttSkeletonWithRequests(maxIncomingMqttRequests);
+        feedMqttSkeletonWithRequests(subject, maxIncomingMqttRequests);
         assertEquals(0, subject.getDroppedMessagesCount());
         verify(messageRouter, times(maxIncomingMqttRequests)).route(any(ImmutableMessage.class));
 
@@ -268,7 +249,7 @@ public class MqttMessagingSkeletonTest {
         final String messageId1 = rqMessage1.getId();
         subject.transmit(rqMessage1.getSerializedMessage(), failIfCalledAction);
 
-        feedMqttSkeletonWithRequests(maxIncomingMqttRequests - 1);
+        feedMqttSkeletonWithRequests(subject, maxIncomingMqttRequests - 1);
         verify(messageRouter, times(maxIncomingMqttRequests)).route(any(ImmutableMessage.class));
 
         // As the limit is reached, further requests should be dropped and not transmitted
@@ -297,42 +278,11 @@ public class MqttMessagingSkeletonTest {
         subject.init();
 
         // number of incoming messages is arbitrarily selected
-        feedMqttSkeletonWithRequests(2 * maxIncomingMqttRequests);
-        feedMqttSkeletonWithMessages(Message.VALUE_MESSAGE_TYPE_REPLY, 2 * maxIncomingMqttRequests);
-        feedMqttSkeletonWithMessages(Message.VALUE_MESSAGE_TYPE_MULTICAST, 2 * maxIncomingMqttRequests);
+        feedMqttSkeletonWithRequests(subject, 2 * maxIncomingMqttRequests);
+        feedMqttSkeletonWithMessages(subject, Message.VALUE_MESSAGE_TYPE_REPLY, 2 * maxIncomingMqttRequests);
+        feedMqttSkeletonWithMessages(subject, Message.VALUE_MESSAGE_TYPE_MULTICAST, 2 * maxIncomingMqttRequests);
 
         verify(messageRouter, times(3 * 2 * maxIncomingMqttRequests)).route(any(ImmutableMessage.class));
         assertEquals(0, subject.getDroppedMessagesCount());
-    }
-
-    private void feedMqttSkeletonWithRequests(int numRequests) throws Exception {
-        feedMqttSkeletonWithMessages(Message.VALUE_MESSAGE_TYPE_REQUEST, numRequests);
-    }
-
-    private void feedMqttSkeletonWithMessages(String messageType, int numMessages) throws Exception {
-        for (int i = 0; i < numMessages; i++) {
-            subject.transmit(createTestMessage(messageType).getSerializedMessage(), failIfCalledAction);
-        }
-    }
-
-    private ImmutableMessage createTestRequestMessage() throws Exception {
-        return createTestMessage(Message.VALUE_MESSAGE_TYPE_REQUEST);
-    }
-
-    private ImmutableMessage createTestMessage(String messageType) throws Exception {
-        MutableMessage message = new MutableMessage();
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        MqttAddress address = new MqttAddress("testBrokerUri", "testTopic");
-
-        message.setSender("someSender");
-        message.setRecipient("someRecipient");
-        message.setTtlAbsolute(true);
-        message.setTtlMs(100000);
-        message.setPayload(new byte[]{ 0, 1, 2 });
-        message.setType(messageType);
-        message.setReplyTo(objectMapper.writeValueAsString(address));
-
-        return message.getImmutableMessage();
     }
 }
