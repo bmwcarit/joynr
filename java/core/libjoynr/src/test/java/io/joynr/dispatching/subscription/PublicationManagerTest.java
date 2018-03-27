@@ -78,7 +78,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
@@ -95,15 +94,6 @@ public class PublicationManagerTest {
 
     ScheduledExecutorService cleanupScheduler;
     PublicationManagerImpl publicationManager;
-
-    @Captor
-    ArgumentCaptor<String> sentProviderParticipantId;
-    @Captor
-    ArgumentCaptor<String> sentProxyParticipantId;
-    @Captor
-    ArgumentCaptor<SubscriptionPublication> sentPublication;
-    @Captor
-    ArgumentCaptor<MessagingQos> sentMessagingQos;
 
     @Mock
     AttributePollInterpreter attributePollInterpreter;
