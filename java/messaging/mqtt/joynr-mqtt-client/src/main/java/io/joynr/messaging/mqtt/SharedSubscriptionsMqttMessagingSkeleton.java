@@ -47,6 +47,7 @@ public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkele
     private static final String NON_ALPHA_REGEX_PATTERN = "[^a-zA-Z]";
     private String channelId;
     private MqttAddress replyToAddress;
+    @SuppressWarnings("unused")
     private boolean backpressureEnabled;
 
     @Inject
