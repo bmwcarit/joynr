@@ -10,8 +10,15 @@ env
 set -e
 ulimit -c unlimited
 
+log "running robustness-test-env"
+
 cd /data/src/tests/robustness-test-env
 ./run-prov-cons-robustness-tests.sh -b /data/build/tests
+
+log "running mqtt-cc-robustness-test"
+
+cd /data/src/tests/robustness-test
+./run-mqtt-cc-robustness-tests.sh -b /data/build/tests -s /data/src
 
 END=$(date +%s)
 DIFF=$(( $END - $START ))
