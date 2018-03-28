@@ -2340,7 +2340,7 @@ describe("Consumer test", function() {
 
     callSubscribeBroadcastWithSingleByteBufferParameter = function(byteBufferArg, partitionsToUse) {
         var spy = jasmine.createSpyObj("spy", [ "onPublication", "onPublicationError", "onSubscribed", "onSubscribedError",
-                                                "onFiredError", "onUnsubscribe", "onUnsubscribeError" ]);
+                                                "onFiredError", "onUnsubscribed", "onUnsubscribedError" ]);
         var subscriptionId;
         var subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({ minIntervalMs: 50, validityMs: 60000 });
 
@@ -2409,8 +2409,8 @@ describe("Consumer test", function() {
             if (spy.onSubscribedError.callCount > 0 && spy.onSubscribedError.calls[0] && spy.onSubscribedError.calls[0].args[0]) {
                 log(spy.onSubscribedError.calls[0].args[0]);
             }
-            expect(spy.onSubscribed).toEqual(1);
-            expect(spy.onSubscribedError).toEqual(0);
+            expect(spy.onSubscribed.callCount).toEqual(1);
+            expect(spy.onSubscribedError.callCount).toEqual(0);
             log("Successfully unsubscribed from broadcast");
         });
     }
@@ -2438,7 +2438,7 @@ describe("Consumer test", function() {
                 "subscriptionQos": subscriptionQosOnChange,
                 "partitions" : partitionsToUse,
                 "onReceive": spy.onPublication,
-                "onError": spy.onPublicationError
+                "onError": spy.onPublicationError,
                 "onSubscribed": spy.onSubscribed
             }).catch(spy.onSubscribedError);
         });
@@ -2453,7 +2453,7 @@ describe("Consumer test", function() {
             }
             expect(spy.onSubscribed.callCount).toEqual(1);
             expect(spy.onSubscribedError.callCount).toEqual(0);
-            subscriptionId = spy.onScubscribed.calls[0].args[0];
+            subscriptionId = spy.onSubscribed.calls[0].args[0];
             log("Subscription was successful with subscriptionId = " + subscriptionId);
 
             // execute fire method here
@@ -2476,7 +2476,7 @@ describe("Consumer test", function() {
                 log(spy.onFiredError.calls[0].args[0]);
             }
             expect(spy.onPublication.callCount).toEqual(1);
-            expect(spy.onPublicationError).toEqual(0);
+            expect(spy.onPublicationError.callCount).toEqual(0);
             expect(spy.onFiredError.callCount).toEqual(0);
             var retObj = spy.onPublication.calls[0].args[0];
             expect(retObj).toBeDefined();
