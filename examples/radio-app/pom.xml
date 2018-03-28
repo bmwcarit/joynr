@@ -107,13 +107,6 @@
 		</dependency>
 		<dependency>
 			<groupId>io.joynr.java.backend-services</groupId>
-			<artifactId>domain-access-controller-servlet</artifactId>
-			<version>${joynr.version}</version>
-			<type>war</type>
-		</dependency>
-
-		<dependency>
-			<groupId>io.joynr.java.backend-services</groupId>
 			<artifactId>discovery-directory-jee</artifactId>
 			<version>${joynr.version}</version>
 			<type>war</type>
@@ -337,14 +330,6 @@
 									<type>war</type>
 									<outputDirectory>${project.build.directory}</outputDirectory>
 									<destFileName>bounceproxy.war</destFileName>
-								</artifactItem>
-								<artifactItem>
-									<groupId>io.joynr.java.backend-services</groupId>
-									<artifactId>domain-access-controller-servlet</artifactId>
-									<version>${joynr.version}</version>
-									<type>war</type>
-									<outputDirectory>${project.build.directory}</outputDirectory>
-									<destFileName>accesscontrol.war</destFileName>
 								</artifactItem>
 							</artifactItems>
 							<overWriteReleases>false</overWriteReleases>

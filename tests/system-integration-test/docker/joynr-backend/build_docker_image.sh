@@ -8,8 +8,7 @@ fi
 mkdir target
 
 for COPY_WAR in \
-	../../../../java/messaging/bounceproxy/single-bounceproxy/target/single-bounceproxy.war \
-	../../../../java/backend-services/domain-access-controller-servlet/target/domain-access-controller-servlet.war
+	../../../../java/messaging/bounceproxy/single-bounceproxy/target/single-bounceproxy.war
 do
 	if [ ! -f $COPY_WAR ]; then
 		echo "Missing $COPY_WAR build artifact. Can't proceed."

@@ -50,7 +50,6 @@ android/robolectric-integration-tests/src/test/AndroidManifest.xml \
 android/robolectric-unittests/src/main/AndroidManifest.xml \
 examples/android-location-provider/AndroidManifest.xml \
 examples/android-location-consumer/AndroidManifest.xml \
-java/backend-services/domain-access-controller-servlet/pom.xml \
 examples/radio-node/pom.xml \
 examples/radio-node/package.json \
 javascript/libjoynr-js/package.json

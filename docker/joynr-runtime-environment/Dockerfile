@@ -1,7 +1,6 @@
 # Following must be copied to the docker build context before the docker images is built
 # - {joynr}/javascript/libjoynr-js as files/libjoynr-js
 # - {joynr}/tests/test-base as files/test-base
-# - {joynr}/java/backend-services/domain-access-controller-servlet/target/domain-access-controller-servlet.war as files/domain-access-controller-servlet.war
 # - {joynr}/java/messaging/bounceproxy/single-bounceproxy/target/single-bounceproxy.war as files/single-bounceproxy.war
 #
 # Following files must be copied from {joynr}/tests/performance-test/ to files/performance-test/
@@ -87,7 +86,6 @@ COPY files/mosquitto.conf /etc/mosquitto/mosquitto.conf
 # install the backend servlets
 ###################################################
 
-ADD files/domain-access-controller-servlet.war /usr/local/jetty/webapps/accesscontrol.war
 ADD files/single-bounceproxy.war /usr/local/jetty/webapps/bounceproxy.war
 
 # Create an environment variable which is used by
