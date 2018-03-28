@@ -8,7 +8,6 @@ fi
 mkdir target
 
 for COPY_WAR in \
-	../../../../java/backend-services/discovery-directory-servlet/target/discovery-directory-servlet.war \
 	../../../../java/messaging/bounceproxy/single-bounceproxy/target/single-bounceproxy.war \
 	../../../../java/backend-services/domain-access-controller-servlet/target/domain-access-controller-servlet.war
 do

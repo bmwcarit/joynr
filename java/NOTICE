@@ -120,7 +120,6 @@ This project has dependencies to:
   Interceptors 1.1 API under lgpl
   io.joynr.java.backend-services:capabilities-directory under The Apache Software License, Version 2.0
   io.joynr.java.backend-services:discovery-directory-jee under The Apache Software License, Version 2.0
-  io.joynr.java.backend-services:discovery-directory-servlet under The Apache Software License, Version 2.0
   io.joynr.java.backend-services:domain-access-controller under The Apache Software License, Version 2.0
   io.joynr.java.backend-services:domain-access-controller-jee under The Apache Software License, Version 2.0
   io.joynr.java.backend-services:domain-access-controller-servlet under The Apache Software License, Version 2.0
@@ -189,7 +188,7 @@ This project has dependencies to:
   JavaBeans Activation Framework (JAF) under Common Development and Distribution License (CDDL) v1.0
   JavaEE Application Deployment 1.2 API under lgpl
   JavaMail API under CDDL or GPLv2+CE
-  Javassist under MPL 1.1 or LGPL 2.1 or Apache License 2.0
+  Javassist under MPL 1.1 or LGPL 2.1
   javax.annotation API under CDDL + GPLv2 with classpath exception
   javax.inject under The Apache Software License, Version 2.0
   javax.inject:1 as OSGi bundle under CDDL + GPLv2 with classpath exception
@@ -233,10 +232,8 @@ This project has dependencies to:
   JMS 1.1 under The Apache Software License, Version 2.0
   JMS 1.1 API under lgpl
   JPA 2.0 API under Sun Binary Code License
-  JSON Small and Fast Parser under The Apache Software License, Version 2.0
   json-path under Apache 2.0
   JSON.simple under The Apache Software License, Version 2.0
-  jsonevent-layout under The Apache Software License, Version 2.0
   jsoup under The MIT License
   JSR-181 Maintenance Release 1 under CDDL+GPLv2
   JTA 1.1 under The Apache Software License, Version 2.0

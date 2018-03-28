@@ -32,7 +32,6 @@
 	</parent>
 
 	<modules>
-		<module>discovery-directory-servlet</module>
 		<module>discovery-directory-jee</module>
 		<module>capabilities-directory</module>
 		<module>domain-access-controller</module>

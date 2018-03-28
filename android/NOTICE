@@ -59,7 +59,6 @@ This project has dependencies to:
   io.joynr.android:robolectric-unittests under The Apache Software License, Version 2.0
   io.joynr.java.android:joynr-android under The Apache Software License, Version 2.0
   io.joynr.java.android:joynr-android-runtime under The Apache Software License, Version 2.0
-  io.joynr.java.backend-services:discovery-directory-servlet under The Apache Software License, Version 2.0
   io.joynr.java.backend-services:domain-access-controller-servlet under The Apache Software License, Version 2.0
   io.joynr.java.common:access-control-common under The Apache Software License, Version 2.0
   io.joynr.java.common:discovery-common under The Apache Software License, Version 2.0

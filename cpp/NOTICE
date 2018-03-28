@@ -19,7 +19,6 @@ This project has dependencies to:
   Hamcrest Core under New BSD License
   io.joynr.cpp:libjoynr under The Apache Software License, Version 2.0
   io.joynr.cpp:tests under The Apache Software License, Version 2.0
-  io.joynr.java.backend-services:discovery-directory-servlet under The Apache Software License, Version 2.0
   io.joynr.java.backend-services:domain-access-controller-servlet under The Apache Software License, Version 2.0
   io.joynr.java.messaging.bounceproxy:single-bounceproxy under The Apache Software License, Version 2.0
   io.joynr:cpp under The Apache Software License, Version 2.0

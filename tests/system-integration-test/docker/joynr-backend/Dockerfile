@@ -5,4 +5,3 @@ ENV JAVA_OPTS -Djoynr.servlet.hostpath=http://joynrbackend:8080 -Djoynr.messagin
 
 ADD target/single-bounceproxy.war /var/lib/jetty/webapps/bounceproxy.war
 ADD target/domain-access-controller-servlet.war /var/lib/jetty/webapps/accesscontrol.war
-ADD target/discovery-directory-servlet.war /var/lib/jetty/webapps/discovery.war
