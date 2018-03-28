@@ -33,7 +33,6 @@ This project has dependencies to:
   atmosphere-runtime under CDDL or Apache License 2.0
   Bean Validation API under Apache License, Version 2.0
   CDI APIs under Apache License, Version 2.0
-  clustercontroller-inprocess-runtime under The Apache Software License, Version 2.0
   Common Annotations 1.1 API under lgpl
   Commons Codec under The Apache Software License, Version 2.0
   Commons Collections under The Apache Software License, Version 2.0
@@ -41,7 +40,6 @@ This project has dependencies to:
   Commons Pool under The Apache Software License, Version 2.0
   Connector Architecture 1.5 API under lgpl
   Data Mapper for Jackson under The Apache Software License, Version 2.0
-  dom4j under BSD License
   ehcache under The Apache Software License, Version 2.0
   EJB 3.1 API under lgpl
   Expression Language 2.2 API under lgpl
@@ -49,7 +47,6 @@ This project has dependencies to:
   FindBugs-jsr305 under The Apache Software License, Version 2.0
   flatbuffers-java under Apache License V2.0
   Google Guice - Core Library under The Apache Software License, Version 2.0
-  Google Guice - Extensions - AssistedInject under The Apache Software License, Version 2.0
   Google Guice - Extensions - MultiBindings under The Apache Software License, Version 2.0
   Google Guice - Extensions - Persist under The Apache Software License, Version 2.0
   Google Guice - Extensions - Servlet under The Apache Software License, Version 2.0
@@ -60,12 +57,7 @@ This project has dependencies to:
   Hamcrest library under New BSD License
   INFOMAS ASL :: Annotation Detector under The Apache Software License, Version 2.0
   Interceptors 1.1 API under lgpl
-  io.joynr.java.common:access-control-common under The Apache Software License, Version 2.0
-  io.joynr.java.common:discovery-common under The Apache Software License, Version 2.0
   io.joynr.java.common:guice-integration under The Apache Software License, Version 2.0
-  io.joynr.java.common:infrastructure-common under The Apache Software License, Version 2.0
-  io.joynr.java.core:clustercontroller under The Apache Software License, Version 2.0
-  io.joynr.java.core:libjoynr under The Apache Software License, Version 2.0
   io.joynr.java.messaging.bounceproxy.bounceproxy-controller-persistence:ehcache under The Apache Software License, Version 2.0
   io.joynr.java.messaging.bounceproxy.bounceproxy-controller-persistence:jdbc under The Apache Software License, Version 2.0
   io.joynr.java.messaging.bounceproxy.bounceproxy-controller-persistence:persistence-common under The Apache Software License, Version 2.0
@@ -85,7 +77,6 @@ This project has dependencies to:
   io.joynr.java.messaging:channel-service under The Apache Software License, Version 2.0
   io.joynr.java.messaging:messaging-common under The Apache Software License, Version 2.0
   io.joynr.java.messaging:messaging-service under The Apache Software License, Version 2.0
-  io.joynr.java.messaging:messaging-servlet under The Apache Software License, Version 2.0
   io.joynr.java.messaging:mqtt under The Apache Software License, Version 2.0
   io.joynr.java.messaging:service-common under The Apache Software License, Version 2.0
   io.joynr.java.messaging:servlet-common under The Apache Software License, Version 2.0
@@ -114,7 +105,6 @@ This project has dependencies to:
   JavaBeans Activation Framework (JAF) under Common Development and Distribution License (CDDL) v1.0
   JavaEE Application Deployment 1.2 API under lgpl
   JavaMail API under CDDL or GPLv2+CE
-  Javassist under MPL 1.1 or LGPL 2.1
   javax.inject under The Apache Software License, Version 2.0
   JAX-RS Core API under Apache License, Version 2.0
   JBoss Java Authentication SPI for Containers 1.0 API under lgpl
@@ -155,7 +145,6 @@ This project has dependencies to:
   OpenJPA Persistence under Apache Software License 2.0
   OpenJPA Persistence JDBC under Apache Software License 2.0
   OpenJPA Utilities Library under Apache Software License 2.0
-  Reflections under WTFPL
   REST Assured under Apache 2.0
   rest-assured-common under Apache 2.0
   Serp under BSD
@@ -165,6 +154,5 @@ This project has dependencies to:
   StAX API under The Apache Software License, Version 2.0
   TagSoup under Apache License 2.0
   Transaction 1.1 API under lgpl
-  XML Commons External Components XML APIs under The Apache Software License, Version 2.0 or The SAX License or The W3C License
   xml-path under Apache 2.0
 
