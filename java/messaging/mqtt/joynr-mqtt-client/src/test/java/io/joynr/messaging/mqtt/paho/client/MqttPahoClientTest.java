@@ -42,6 +42,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -454,7 +455,10 @@ public class MqttPahoClientTest {
         joynrMqttClientPublishAndVerifyReceivedMessage(serializedMessage);
     }
 
+    // This test was disabled, because it runs perfectly on a local machine but not in the CI.
+    // Further investigations are required to stabilize this test.
     @Test
+    @Ignore
     public void testClientNotifiesStatusReceiverAboutBrokerDisconnect() throws Exception {
         final MqttStatusReceiver mqttStatusReceiver = mock(MqttStatusReceiver.class);
         @SuppressWarnings("unused")
