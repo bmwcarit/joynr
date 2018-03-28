@@ -208,7 +208,7 @@ public class ArbitrationTest {
                                                              discoveryQos,
                                                              localDiscoveryAggregator);
             arbitrator.setArbitrationListener(arbitrationCallback);
-            arbitrator.startArbitration();
+            arbitrator.scheduleArbitration();
 
             assertTrue(localDiscoveryAggregatorSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
 
@@ -261,7 +261,7 @@ public class ArbitrationTest {
                                                              discoveryQos,
                                                              localDiscoveryAggregator);
             arbitrator.setArbitrationListener(arbitrationCallback);
-            arbitrator.startArbitration();
+            arbitrator.scheduleArbitration();
 
             assertTrue(localDiscoveryAggregatorSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
 
@@ -320,7 +320,7 @@ public class ArbitrationTest {
                                                              discoveryQos,
                                                              localDiscoveryAggregator);
             arbitrator.setArbitrationListener(arbitrationCallback);
-            arbitrator.startArbitration();
+            arbitrator.scheduleArbitration();
 
             assertTrue(localDiscoveryAggregatorSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
 
@@ -375,7 +375,7 @@ public class ArbitrationTest {
                                                              discoveryQos,
                                                              localDiscoveryAggregator);
             arbitrator.setArbitrationListener(arbitrationCallback);
-            arbitrator.startArbitration();
+            arbitrator.scheduleArbitration();
 
             assertTrue(localDiscoveryAggregatorSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
 
@@ -442,7 +442,7 @@ public class ArbitrationTest {
                                                              discoveryQos,
                                                              localDiscoveryAggregator);
             arbitrator.setArbitrationListener(arbitrationCallback);
-            arbitrator.startArbitration();
+            arbitrator.scheduleArbitration();
 
             assertTrue(localDiscoveryAggregatorSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
 
@@ -505,7 +505,7 @@ public class ArbitrationTest {
                                                              discoveryQos,
                                                              localDiscoveryAggregator);
             arbitrator.setArbitrationListener(arbitrationCallback);
-            arbitrator.startArbitration();
+            arbitrator.scheduleArbitration();
 
             assertTrue(localDiscoveryAggregatorSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
 
@@ -581,7 +581,7 @@ public class ArbitrationTest {
                                                              discoveryQos,
                                                              localDiscoveryAggregator);
             arbitrator.setArbitrationListener(arbitrationCallback);
-            arbitrator.startArbitration();
+            arbitrator.scheduleArbitration();
 
             assertTrue(localDiscoveryAggregatorSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
 
@@ -620,7 +620,7 @@ public class ArbitrationTest {
                                                          discoveryQos,
                                                          localDiscoveryAggregator);
         arbitrator.setArbitrationListener(arbitrationCallback);
-        arbitrator.startArbitration();
+        arbitrator.scheduleArbitration();
 
         assertTrue(localDiscoveryAggregatorSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
 
@@ -665,7 +665,7 @@ public class ArbitrationTest {
                                                          discoveryQos,
                                                          localDiscoveryAggregator);
         arbitrator.setArbitrationListener(arbitrationCallback);
-        arbitrator.startArbitration();
+        arbitrator.scheduleArbitration();
 
         assertTrue(localDiscoveryAggregatorSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
 
@@ -707,7 +707,7 @@ public class ArbitrationTest {
                                                          discoveryQos,
                                                          localDiscoveryAggregator);
         arbitrator.setArbitrationListener(arbitrationCallback);
-        arbitrator.startArbitration();
+        arbitrator.scheduleArbitration();
 
         assertTrue(localDiscoveryAggregatorSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
 
@@ -766,7 +766,7 @@ public class ArbitrationTest {
                                                          discoveryQos,
                                                          localDiscoveryAggregator);
         arbitrator.setArbitrationListener(arbitrationCallback);
-        arbitrator.startArbitration();
+        arbitrator.scheduleArbitration();
 
         assertTrue(localDiscoveryAggregatorSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
 
@@ -842,7 +842,7 @@ public class ArbitrationTest {
                                                          discoveryQos,
                                                          localDiscoveryAggregator);
         arbitrator.setArbitrationListener(arbitrationCallback);
-        arbitrator.startArbitration();
+        arbitrator.scheduleArbitration();
 
         assertTrue(localDiscoveryAggregatorSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
 

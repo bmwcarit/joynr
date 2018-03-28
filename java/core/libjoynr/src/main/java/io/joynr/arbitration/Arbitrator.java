@@ -115,7 +115,7 @@ public class Arbitrator {
     /**
      * Called by the proxy builder to start the arbitration process.
      */
-    public void startArbitration() {
+    public void scheduleArbitration() {
         DelayableArbitration arbitration = new DelayableArbitration(this, retryDelay);
         arbitrationQueue.put(arbitration);
     }
@@ -173,8 +173,8 @@ public class Arbitrator {
 
     protected void restartArbitration() {
         retryDelay = Math.max(discoveryQos.getRetryIntervalMs(), MINIMUM_ARBITRATION_RETRY_DELAY);
-        logger.trace("Restarting Arbitration with delay {}ms", retryDelay);
-        startArbitration();
+        logger.trace("Rescheduling arbitration with delay {}ms", retryDelay);
+        scheduleArbitration();
     }
 
     protected void arbitrationFailed() {
