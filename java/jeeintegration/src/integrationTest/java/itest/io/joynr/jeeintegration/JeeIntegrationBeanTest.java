@@ -43,11 +43,14 @@ import com.google.inject.name.Names;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.jeeintegration.DefaultJoynrRuntimeFactory;
 import io.joynr.jeeintegration.JoynrIntegrationBean;
+import io.joynr.jeeintegration.JoynrStatusMetrics;
 import io.joynr.jeeintegration.JoynrStatusMetricsAggregator;
 import io.joynr.jeeintegration.ServiceProviderDiscovery;
 import io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys;
+import io.joynr.messaging.mqtt.statusmetrics.MqttStatusReceiver;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.runtime.JoynrInjectionConstants;
+import io.joynr.statusmetrics.StatusReceiver;
 
 /**
  * Integration tests for the JEE integration bean.
@@ -68,6 +71,9 @@ public class JeeIntegrationBeanTest {
 
 	@Inject
 	private JoynrIntegrationBean joynrIntegrationBean;
+
+	@Inject
+	private JoynrStatusMetrics joynrStatusMetrics;
 
 	@Resource(name = JeeIntegrationPropertyKeys.JEE_MESSAGING_SCHEDULED_EXECUTOR_RESOURCE)
 	private ScheduledExecutorService scheduledExecutorService;
@@ -91,4 +97,19 @@ public class JeeIntegrationBeanTest {
 		             .getInstance(Key.get(ScheduledExecutorService.class, Names.named(LocalCapabilitiesDirectory.JOYNR_SCHEDULER_CAPABILITIES_FRESHNESS))));
 	}
 
+	@Test
+	public void testJoynrStatusMetricsObjectIsUsedAsJoynrStatusReceiver() {
+		Injector joynrInjector = joynrIntegrationBean.getJoynrInjector();
+
+		MqttStatusReceiver mqttStatusReceiver = joynrInjector.getInstance(MqttStatusReceiver.class);
+		StatusReceiver statusReceiver = joynrInjector.getInstance(StatusReceiver.class);
+
+		assertNotNull(joynrStatusMetrics);
+
+		// We cannot compare these objects directly using the == operator. The reason is that the joynrStatusMetrics object is
+		// wrapped by a java proxy. Therefore the objects are different. However, the toString() method is called on the
+		// underlying object.
+		assertEquals(mqttStatusReceiver.toString(), joynrStatusMetrics.toString());
+		assertEquals(statusReceiver.toString(), joynrStatusMetrics.toString());
+	}
 }
