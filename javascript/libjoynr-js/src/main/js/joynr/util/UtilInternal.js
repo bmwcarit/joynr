@@ -1,5 +1,5 @@
-/*global unescape: true, Blob: true, Array:true */
-/*jslint es5: true, node: true, node: true */
+/*jslint es5: true, node: true */
+/*global unescape: true, Blob: true, Array: true */
 /*
  * #%L
  * %%

@@ -47,10 +47,6 @@ public:
     MOCK_METHOD3(touch, void(const std::string& clusterControllerId,
                      std::function<void()> onSuccess,
                      std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError));
-
-    void setProxyBuilder(std::shared_ptr<joynr::IProxyBuilder<joynr::infrastructure::GlobalCapabilitiesDirectoryProxy>> input) {
-        std::ignore = input;
-    }
 };
 
 #endif // TESTS_MOCK_MOCKCAPABILITIESCLIENT_H

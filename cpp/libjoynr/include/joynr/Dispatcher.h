@@ -28,7 +28,6 @@
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/ReadWriteLock.h"
-#include "joynr/ThreadPool.h"
 
 namespace boost
 {
@@ -46,6 +45,7 @@ class IReplyCaller;
 class MessagingQos;
 class RequestCaller;
 class IMessageSender;
+class ThreadPool;
 
 class JOYNR_EXPORT Dispatcher : public std::enable_shared_from_this<Dispatcher>, public IDispatcher
 {

@@ -18,6 +18,7 @@
  * limitations under the License.
  * #L%
  */
+require("../../node-unit-test-helper");
 var MethodUtil = require("../../../classes/joynr/util/MethodUtil");
 
 describe("libjoynr-js.joynr.MethodUtil", function() {

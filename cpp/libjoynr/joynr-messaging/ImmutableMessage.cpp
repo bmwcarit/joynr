@@ -123,6 +123,11 @@ bool ImmutableMessage::isSigned() const
     return messageDeserializer.isSigned();
 }
 
+bool ImmutableMessage::isCompressed() const
+{
+    return messageDeserializer.isCompressed();
+}
+
 smrf::ByteArrayView ImmutableMessage::getUnencryptedBody() const
 {
     if (!bodyView) {

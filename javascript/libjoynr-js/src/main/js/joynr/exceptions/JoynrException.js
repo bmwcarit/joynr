@@ -21,7 +21,7 @@
 var TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
 var Typing = require("../util/Typing");
 var Util = require("../util/UtilInternal");
-var LoggerFactory = require("../system/LoggerFactory");
+var LoggingManager = require("../system/LoggingManager");
 var defaultSettings;
 
 /**
@@ -50,7 +50,7 @@ function JoynrException(settings) {
         return new JoynrException(settings);
     }
 
-    var log = LoggerFactory.getLogger("joynr.exceptions.JoynrException");
+    var log = LoggingManager.getLogger("joynr.exceptions.JoynrException");
 
     /**
      * Used for serialization.

@@ -18,6 +18,7 @@
  * limitations under the License.
  * #L%
  */
+require("../../../node-unit-test-helper");
 var SubscriptionPublication = require("../../../../classes/joynr/dispatching/types/SubscriptionPublication");
 var RadioStation = require("../../../../test-classes/joynr/vehicle/radiotypes/RadioStation");
 

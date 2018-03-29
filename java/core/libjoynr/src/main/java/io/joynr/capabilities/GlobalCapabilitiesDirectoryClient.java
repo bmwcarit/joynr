@@ -18,6 +18,8 @@
  */
 package io.joynr.capabilities;
 
+import static io.joynr.runtime.SystemServicesSettings.PROPERTY_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -43,9 +45,14 @@ public class GlobalCapabilitiesDirectoryClient {
     private final String domain;
     private final DiscoveryQos discoveryQos;
     private final ProxyBuilderFactory proxyBuilderFactory;
+    private GlobalCapabilitiesDirectoryProxy touchProxy;
+    private GlobalCapabilitiesDirectoryProxy addAndRemoveProxy;
     @Inject
     @Named(MessagingPropertyKeys.CHANNELID)
     private String localChannelId;
+    @Inject
+    @Named(PROPERTY_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS)
+    private long freshnessUpdateIntervalMs;
 
     @Inject(optional = true)
     @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_GLOBAL_ADD_AND_REMOVE_TTL_MS)
@@ -69,16 +76,23 @@ public class GlobalCapabilitiesDirectoryClient {
         return capabilitiesProxyBuilder.setDiscoveryQos(discoveryQos).setMessagingQos(messagingQos).build();
     }
 
+    private GlobalCapabilitiesDirectoryProxy getAddAndRemoveProxy() {
+        if (addAndRemoveProxy == null) {
+            addAndRemoveProxy = getProxy(ttlAddAndRemoveMs);
+        }
+        return addAndRemoveProxy;
+    }
+
     public void add(Callback<Void> callback, GlobalDiscoveryEntry globalDiscoveryEntry) {
-        getProxy(ttlAddAndRemoveMs).add(callback, globalDiscoveryEntry);
+        getAddAndRemoveProxy().add(callback, globalDiscoveryEntry);
     }
 
     public void remove(Callback<Void> callback, String participantId) {
-        getProxy(ttlAddAndRemoveMs).remove(callback, participantId);
+        getAddAndRemoveProxy().remove(callback, participantId);
     }
 
     public void remove(Callback<Void> callback, List<String> participantIds) {
-        getProxy(ttlAddAndRemoveMs).remove(callback, participantIds.toArray(new String[participantIds.size()]));
+        getAddAndRemoveProxy().remove(callback, participantIds.toArray(new String[participantIds.size()]));
     }
 
     public void lookup(Callback<GlobalDiscoveryEntry> callback, String participantId, long ttl) {
@@ -111,8 +125,11 @@ public class GlobalCapabilitiesDirectoryClient {
 
     }
 
-    public void touch(long ttl) {
-        getProxy(ttl).touch(localChannelId);
+    public void touch() {
+        if (touchProxy == null) {
+            touchProxy = getProxy(freshnessUpdateIntervalMs);
+        }
+        touchProxy.touch(localChannelId);
     }
 
 }

@@ -131,8 +131,6 @@ function ProviderOperation(parent, implementation, operationName, operationSigna
     this._privateOperationFunc = implementation;
     this._operationName = operationName;
     this._operationSignatures = operationSignatures;
-
-    return Object.freeze(Util.forwardPrototype(this));
 }
 
 /**

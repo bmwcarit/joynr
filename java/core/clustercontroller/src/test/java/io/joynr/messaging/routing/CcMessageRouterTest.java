@@ -19,6 +19,7 @@
 package io.joynr.messaging.routing;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;
@@ -39,7 +40,9 @@ import static org.hamcrest.Matchers.lessThan;
 
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.DelayQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.Semaphore;
@@ -83,6 +86,7 @@ import io.joynr.messaging.routing.CcMessageRouter;
 import io.joynr.runtime.ClusterControllerRuntimeModule;
 import io.joynr.statusmetrics.MessageWorkerStatus;
 import io.joynr.statusmetrics.StatusReceiver;
+import io.joynr.runtime.ShutdownNotifier;
 import io.joynr.messaging.routing.TestGlobalAddressModule;
 import joynr.ImmutableMessage;
 import joynr.Message;
@@ -108,6 +112,7 @@ public class CcMessageRouterTest {
 
     private String channelId = "MessageSchedulerTest_" + UUID.randomUUID().toString();
     private final ChannelAddress channelAddress = new ChannelAddress("http://testUrl", channelId);
+    private final int maximumParallelSends = 1;
 
     private RoutingTable routingTable = spy(new RoutingTableImpl());
     InMemoryMulticastReceiverRegistry multicastReceiverRegistry = new InMemoryMulticastReceiverRegistry(new MulticastWildcardRegexFactory());
@@ -117,13 +122,15 @@ public class CcMessageRouterTest {
                                                                    multicastReceiverRegistry));
 
     @Mock
-    private ChannelMessagingStubFactory messagingStubFactoryMock;
+    private ChannelMessagingStubFactory middlewareMessagingStubFactoryMock;
     @Mock
     private IMessagingStub messagingStubMock;
     @Mock
     private ChannelMessagingSkeleton messagingSkeletonMock;
     @Mock
     private StatusReceiver statusReceiver;
+    @Mock
+    private ShutdownNotifier shutdownNotifier;
 
     private MessageRouter messageRouter;
     private MutableMessage joynrMessage;
@@ -135,12 +142,13 @@ public class CcMessageRouterTest {
 
     @Before
     public void setUp() throws Exception {
-        when(messagingStubFactoryMock.create(any(ChannelAddress.class))).thenReturn(messagingStubMock);
+        when(middlewareMessagingStubFactoryMock.create(any(ChannelAddress.class))).thenReturn(messagingStubMock);
 
         AbstractModule mockModule = new AbstractModule() {
 
             private Long msgRetryIntervalMs = 10L;
-            private int maximumParallelSends = 1;
+            // message runnables + cleanup thread
+            private int numberOfThreads = maximumParallelSends + 1;
             private long routingTableGracePeriodMs = 30000;
             private long routingTableCleanupIntervalMs = 60000;
 
@@ -150,6 +158,7 @@ public class CcMessageRouterTest {
                 bind(RoutingTable.class).toInstance(routingTable);
                 bind(AddressManager.class).toInstance(addressManager);
                 bind(MulticastReceiverRegistry.class).toInstance(multicastReceiverRegistry);
+                bind(ShutdownNotifier.class).toInstance(shutdownNotifier);
                 bind(Long.class).annotatedWith(Names.named(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS))
                                 .toInstance(msgRetryIntervalMs);
                 bind(Integer.class).annotatedWith(Names.named(ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_PARALLEL_SENDS))
@@ -172,7 +181,7 @@ public class CcMessageRouterTest {
                                                               new TypeLiteral<AbstractMiddlewareMessagingStubFactory<? extends IMessagingStub, ? extends Address>>() {
                                                               },
                                                               Names.named(MessagingStubFactory.MIDDLEWARE_MESSAGING_STUB_FACTORIES));
-                messagingStubFactory.addBinding(ChannelAddress.class).toInstance(messagingStubFactoryMock);
+                messagingStubFactory.addBinding(ChannelAddress.class).toInstance(middlewareMessagingStubFactoryMock);
 
                 MapBinder<Class<? extends Address>, IMessagingSkeleton> messagingSkeletonFactory;
                 messagingSkeletonFactory = MapBinder.newMapBinder(binder(),
@@ -192,7 +201,7 @@ public class CcMessageRouterTest {
             ScheduledExecutorService provideMessageSchedulerThreadPoolExecutor() {
                 ThreadFactory schedulerNamedThreadFactory = new ThreadFactoryBuilder().setNameFormat("joynr.MessageScheduler-scheduler-%d")
                                                                                       .build();
-                ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(maximumParallelSends,
+                ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(numberOfThreads,
                                                                                         schedulerNamedThreadFactory);
                 scheduler.setKeepAliveTime(100, TimeUnit.SECONDS);
                 scheduler.allowCoreThreadTimeOut(true);
@@ -229,7 +238,7 @@ public class CcMessageRouterTest {
 
         messageRouter.route(immutableMessage);
         Thread.sleep(1000);
-        verify(messagingStubFactoryMock).create(eq(channelAddress));
+        verify(middlewareMessagingStubFactoryMock).create(eq(channelAddress));
         verify(messagingStubMock).transmit(eq(immutableMessage), any(SuccessAction.class), any(FailureAction.class));
     }
 
@@ -244,7 +253,7 @@ public class CcMessageRouterTest {
         try {
             messageRouter.route(immutableMessage);
         } catch (JoynrMessageNotSentException e) {
-            verify(messagingStubFactoryMock, never()).create(any(ChannelAddress.class));
+            verify(middlewareMessagingStubFactoryMock, never()).create(any(ChannelAddress.class));
             return;
         }
         fail("scheduling an expired message should throw");
@@ -337,8 +346,8 @@ public class CcMessageRouterTest {
         verify(messagingStubMock, times(4)).transmit(eq(immutableMessage),
                                                      any(SuccessAction.class),
                                                      any(FailureAction.class));
-        verify(messagingStubFactoryMock, times(2)).create(receiverAddress1);
-        verify(messagingStubFactoryMock, times(2)).create(receiverAddress2);
+        verify(middlewareMessagingStubFactoryMock, times(2)).create(receiverAddress1);
+        verify(middlewareMessagingStubFactoryMock, times(2)).create(receiverAddress2);
     }
 
     private ImmutableMessage retryRoutingWith1msDelay(MessageRouter messageRouter, int ttlMs) throws Exception {
@@ -712,4 +721,91 @@ public class CcMessageRouterTest {
         assertEquals(false, statusUpdates[1].isWaitingForMessage());
         assertEquals(true, statusUpdates[2].isWaitingForMessage());
     }
+
+    public void testScheduleMessage() throws InterruptedException {
+        final DelayQueue<DelayableImmutableMessage> messageQueue = spy(new DelayQueue<DelayableImmutableMessage>());
+        Module messageQueueSpyModule = Modules.override(testModule).with(new AbstractModule() {
+            @Override
+            protected void configure() {
+                bind(new TypeLiteral<DelayQueue<DelayableImmutableMessage>>() {
+                }).toInstance(messageQueue);
+            }
+        });
+        messageRouter = Guice.createInjector(messageQueueSpyModule).getInstance(MessageRouter.class);
+
+        Address address = new Address();
+        ImmutableMessage message = Mockito.mock(ImmutableMessage.class);
+        when(message.isTtlAbsolute()).thenReturn(true);
+        when(message.getTtlMs()).thenReturn(ExpiryDate.fromRelativeTtl(60000L).getValue());
+        when(message.getRecipient()).thenReturn("to");
+        when(routingTable.get("to")).thenReturn(address);
+
+        messageRouter.route(message);
+
+        ArgumentCaptor<DelayableImmutableMessage> passedDelaybleMessage = ArgumentCaptor.forClass(DelayableImmutableMessage.class);
+        verify(messageQueue, atLeast(1)).put(passedDelaybleMessage.capture());
+        assertEquals(message, passedDelaybleMessage.getAllValues().get(0).getMessage());
+        assertTrue(passedDelaybleMessage.getAllValues().get(0).getDelay(TimeUnit.MILLISECONDS) <= 0);
+    }
+
+    @Test
+    public void testShutdown() throws InterruptedException {
+        verify(shutdownNotifier).registerForShutdown((CcMessageRouter) messageRouter);
+    }
+
+    @Test(timeout = 3000)
+    public void testFailedTransmitDoesNotLeadToThreadStarvation() throws Exception {
+        final int MESSAGE_LOAD = 10;
+
+        ImmutableMessage failingMessage = mock(ImmutableMessage.class);
+        when(failingMessage.isTtlAbsolute()).thenReturn(true);
+        when(failingMessage.getTtlMs()).thenReturn(ExpiryDate.fromRelativeTtl(1000L).getValue());
+        when(failingMessage.getRecipient()).thenReturn("to");
+
+        when(routingTable.get("to")).thenReturn(channelAddress);
+        Set<Address> addressSet = new HashSet<>();
+        addressSet.add(channelAddress);
+        Mockito.doReturn(addressSet).when(addressManager).getAddresses(failingMessage);
+
+        doAnswer(new Answer<Object>() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                assertEquals(invocation.getArguments().length, 3);
+                FailureAction failureAction = (FailureAction) invocation.getArguments()[2];
+                failureAction.execute(new Exception("Some error"));
+                return null;
+            }
+        }).when(messagingStubMock).transmit(eq(failingMessage), any(SuccessAction.class), any(FailureAction.class));
+
+        for (int i = 0; i < MESSAGE_LOAD; i++) {
+            messageRouter.route(failingMessage);
+        }
+
+        Thread.sleep(2000);
+        verify(messagingStubMock, atLeast(MESSAGE_LOAD * 3)).transmit(eq(failingMessage),
+                                                                      any(SuccessAction.class),
+                                                                      any(FailureAction.class));
+
+        ImmutableMessage anotherMessage = mock(ImmutableMessage.class);
+        when(anotherMessage.isTtlAbsolute()).thenReturn(true);
+        when(anotherMessage.getTtlMs()).thenReturn(ExpiryDate.fromRelativeTtl(1000L).getValue());
+        when(anotherMessage.getRecipient()).thenReturn("to");
+        Mockito.doReturn(addressSet).when(addressManager).getAddresses(anotherMessage);
+
+        final Semaphore semaphore = new Semaphore(0);
+        doAnswer(new Answer<Object>() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                assertEquals(invocation.getArguments().length, 3);
+                SuccessAction successAction = (SuccessAction) invocation.getArguments()[1];
+                successAction.execute();
+                semaphore.release();
+                return null;
+            }
+        }).when(messagingStubMock).transmit(eq(anotherMessage), any(SuccessAction.class), any(FailureAction.class));
+
+        messageRouter.route(anotherMessage);
+        assertTrue(semaphore.tryAcquire(100, TimeUnit.MILLISECONDS));
+    }
+
 }

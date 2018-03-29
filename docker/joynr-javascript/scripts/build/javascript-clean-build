@@ -1,5 +1,6 @@
 #!/bin/bash
 
+export CHROME_BIN=/usr/bin/chromium-browser
 source /data/src/docker/joynr-base/scripts/global.sh
 
 cd /data/src

@@ -67,6 +67,8 @@ public:
 
     bool isSigned() const;
 
+    bool isCompressed() const;
+
     smrf::ByteArrayView getUnencryptedBody() const;
 
     std::string toLogMessage() const;

@@ -19,6 +19,8 @@
 package io.joynr.messaging.mqtt.paho.client;
 
 import static com.google.inject.util.Modules.override;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -33,6 +35,8 @@ import java.net.URL;
 import java.util.Properties;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
@@ -170,7 +174,12 @@ public class MqttPahoClientTest {
         } else {
             properties.put(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "tcp://localhost:1883");
         }
+        JoynrMqttClient client = createMqttClientInternal(mqttStatusReceiver);
+        client.start();
+        return client;
+    }
 
+    private JoynrMqttClient createMqttClientInternal(final MqttStatusReceiver mqttStatusReceiver) {
         injector = Guice.createInjector(override(new MqttPahoModule()).with(new AbstractModule() {
             @Override
             protected void configure() {
@@ -193,7 +202,6 @@ public class MqttPahoClientTest {
         mqttClientFactory = injector.getInstance(MqttClientFactory.class);
 
         JoynrMqttClient client = mqttClientFactory.create();
-        client.start();
         client.setMessageListener(mockReceiver);
         return client;
     }
@@ -485,4 +493,31 @@ public class MqttPahoClientTest {
         mqttClient.shutdown();
         verify(mqttStatusReceiver).notifyConnectionStatusChanged(MqttStatusReceiver.ConnectionStatus.NOT_CONNECTED);
     }
+
+    @Test
+    public void mqttClientTestShutdownIfDisconnectFromMQTT() throws Exception {
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "tcp://localhost:1111");
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_RECONNECT_SLEEP_MS, "100");
+        // create and start client
+        final JoynrMqttClient client = createMqttClientInternal(mock(MqttStatusReceiver.class));
+        final Semaphore semaphoreBeforeStartMethod = new Semaphore(0);
+        final Semaphore semaphoreAfterStartMethod = new Semaphore(0);
+        final int timeout = 500;
+        Runnable myRunnable = new Runnable() {
+            @Override
+            public void run() {
+                semaphoreBeforeStartMethod.release();
+                client.start();
+                semaphoreAfterStartMethod.release();
+            }
+        };
+        new Thread(myRunnable).start();
+        assertTrue(semaphoreBeforeStartMethod.tryAcquire(timeout, TimeUnit.MILLISECONDS));
+        // At this level semaphore supposed to be not released
+        // because when we call shutdown we are still in start()
+        assertFalse(semaphoreAfterStartMethod.tryAcquire());
+        client.shutdown();
+        assertTrue(semaphoreAfterStartMethod.tryAcquire(timeout, TimeUnit.MILLISECONDS));
+    }
+
 }

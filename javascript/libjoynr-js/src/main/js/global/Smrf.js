@@ -1,5 +1,3 @@
-/*global Buffer: true */
-
 /*
  * #%L
  * %%

@@ -46,11 +46,14 @@ void LocalDiscoveryAggregator::setDiscoveryProxy(std::shared_ptr<IDiscoveryAsync
 std::shared_ptr<joynr::Future<void>> LocalDiscoveryAggregator::addAsync(
         const types::DiscoveryEntry& discoveryEntry,
         std::function<void()> onSuccess,
-        std::function<void(const exceptions::JoynrRuntimeException&)> onRuntimeError) noexcept
+        std::function<void(const exceptions::JoynrRuntimeException&)> onRuntimeError,
+        boost::optional<joynr::MessagingQos> messagingQos) noexcept
 {
     assert(discoveryProxy);
-    return discoveryProxy->addAsync(
-            discoveryEntry, std::move(onSuccess), std::move(onRuntimeError));
+    return discoveryProxy->addAsync(discoveryEntry,
+                                    std::move(onSuccess),
+                                    std::move(onRuntimeError),
+                                    std::move(messagingQos));
 }
 
 std::shared_ptr<joynr::Future<std::vector<types::DiscoveryEntryWithMetaInfo>>>
@@ -59,18 +62,23 @@ LocalDiscoveryAggregator::lookupAsync(
         const std::string& interfaceName,
         const types::DiscoveryQos& discoveryQos,
         std::function<void(const std::vector<types::DiscoveryEntryWithMetaInfo>&)> onSuccess,
-        std::function<void(const exceptions::JoynrRuntimeException&)> onRuntimeError) noexcept
+        std::function<void(const exceptions::JoynrRuntimeException&)> onRuntimeError,
+        boost::optional<joynr::MessagingQos> messagingQos) noexcept
 {
     assert(discoveryProxy);
-    return discoveryProxy->lookupAsync(
-            domains, interfaceName, discoveryQos, std::move(onSuccess), std::move(onRuntimeError));
+    return discoveryProxy->lookupAsync(domains,
+                                       interfaceName,
+                                       discoveryQos,
+                                       std::move(onSuccess),
+                                       std::move(onRuntimeError),
+                                       std::move(messagingQos));
 }
 
 std::shared_ptr<joynr::Future<types::DiscoveryEntryWithMetaInfo>> LocalDiscoveryAggregator::
         lookupAsync(const std::string& participantId,
                     std::function<void(const types::DiscoveryEntryWithMetaInfo&)> onSuccess,
-                    std::function<void(const exceptions::JoynrRuntimeException&)>
-                            onRuntimeError) noexcept
+                    std::function<void(const exceptions::JoynrRuntimeException&)> onRuntimeError,
+                    boost::optional<joynr::MessagingQos> messagingQos) noexcept
 {
     auto entry = provisionedDiscoveryEntries.find(participantId);
     if (entry != provisionedDiscoveryEntries.cend()) {
@@ -82,19 +90,24 @@ std::shared_ptr<joynr::Future<types::DiscoveryEntryWithMetaInfo>> LocalDiscovery
         return future;
     } else {
         assert(discoveryProxy);
-        return discoveryProxy->lookupAsync(
-                participantId, std::move(onSuccess), std::move(onRuntimeError));
+        return discoveryProxy->lookupAsync(participantId,
+                                           std::move(onSuccess),
+                                           std::move(onRuntimeError),
+                                           std::move(messagingQos));
     }
 }
 
 std::shared_ptr<joynr::Future<void>> LocalDiscoveryAggregator::removeAsync(
         const std::string& participantId,
         std::function<void()> onSuccess,
-        std::function<void(const exceptions::JoynrRuntimeException&)> onRuntimeError) noexcept
+        std::function<void(const exceptions::JoynrRuntimeException&)> onRuntimeError,
+        boost::optional<joynr::MessagingQos> messagingQos) noexcept
 {
     assert(discoveryProxy);
-    return discoveryProxy->removeAsync(
-            participantId, std::move(onSuccess), std::move(onRuntimeError));
+    return discoveryProxy->removeAsync(participantId,
+                                       std::move(onSuccess),
+                                       std::move(onRuntimeError),
+                                       std::move(messagingQos));
 }
 
 } // namespace joynr

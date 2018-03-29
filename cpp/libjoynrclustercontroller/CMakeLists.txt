@@ -3,8 +3,9 @@ message(STATUS "Configuring JoynrClusterController...")
 message(STATUS "#############################################\n")
 
 ### Add mosquitto mqtt ###########################################################
+set(JOYNR_REQUIRED_MOSQUITTO_VERSION 1.4.7)
 if(USE_PLATFORM_MOSQUITTO)
-    find_package(mosquitto REQUIRED)
+    find_package(mosquitto ${JOYNR_REQUIRED_MOSQUITTO_VERSION} REQUIRED)
 
     message(STATUS "variable MOSQUITTO_INCLUDE_DIRS=${MOSQUITTO_INCLUDE_DIRS}")
     set(MOSQUITTO_INCLUDE_DIRS ${MOSQUITTO_INCLUDE_DIRS} PARENT_SCOPE)
@@ -15,13 +16,12 @@ else(USE_PLATFORM_MOSQUITTO)
     message(STATUS "############ Download: mosquitto ############")
     set(MOSQUITTO_SOURCE_URL "https://git.eclipse.org/r/mosquitto/org.eclipse.mosquitto.git")
     set(MOSQUITTO_SOURCE_TYPE "GIT_REPOSITORY")
-    set(MOSQUITTO_VERSION 1.4.7)
     set(MOSQUITTO_LIBRARY_NAME ${CMAKE_SHARED_LIBRARY_PREFIX}mosquittopp${CMAKE_SHARED_LIBRARY_SUFFIX})
 
     AddExternalProject(
         mosquitto
         ${MOSQUITTO_SOURCE_TYPE} "${MOSQUITTO_SOURCE_URL}"
-        GIT_TAG v${MOSQUITTO_VERSION}
+        GIT_TAG v${JOYNR_REQUIRED_MOSQUITTO_VERSION}
         TIMEOUT 10
         BUILD_BYPRODUCTS("${EXTERNAL_PROJECTS_ROOT}/src/mosquitto-build/lib/cpp/${MOSQUITTO_LIBRARY_NAME}")
     )

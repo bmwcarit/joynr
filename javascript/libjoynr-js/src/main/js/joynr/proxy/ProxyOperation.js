@@ -1,4 +1,5 @@
-/*jslint es5: true, node: true, node: true */
+/*jslint es5: true, node: true */
+
 /*
  * #%L
  * %%
@@ -106,6 +107,31 @@ function checkArguments(operationArguments) {
         }
     }
     return errors;
+}
+
+function operationFunctionOnSuccess(settings) {
+    var response = settings.response,
+        foundValidOperationSignature = settings.settings;
+    var responseKey, argumentValue;
+    if (foundValidOperationSignature.outputParameter && foundValidOperationSignature.outputParameter.length > 0) {
+        argumentValue = {};
+        for (responseKey in response) {
+            if (response.hasOwnProperty(responseKey)) {
+                if (foundValidOperationSignature.outputParameter[responseKey] !== undefined) {
+                    argumentValue[foundValidOperationSignature.outputParameter[responseKey].name] = Typing.augmentTypes(
+                        response[responseKey],
+                        typeRegistry,
+                        foundValidOperationSignature.outputParameter[responseKey].type
+                    );
+                } else {
+                    return Promise.reject(
+                        new Error("Unexpected response: " + JSONSerializer.stringify(response[responseKey]))
+                    );
+                }
+            }
+        }
+    }
+    return argumentValue;
 }
 
 /**
@@ -219,42 +245,16 @@ function operationFunction(operationArguments) {
             });
 
             return this.settings.dependencies.requestReplyManager
-                .sendRequest({
-                    toDiscoveryEntry: this.parent.providerDiscoveryEntry,
-                    from: this.parent.proxyParticipantId,
-                    messagingQos: this.messagingQos,
-                    request: request
-                })
-                .then(function(response) {
-                    var responseKey, argumentValue;
-                    if (
-                        foundValidOperationSignature.outputParameter &&
-                        foundValidOperationSignature.outputParameter.length > 0
-                    ) {
-                        argumentValue = {};
-                        for (responseKey in response) {
-                            if (response.hasOwnProperty(responseKey)) {
-                                if (foundValidOperationSignature.outputParameter[responseKey] !== undefined) {
-                                    argumentValue[
-                                        foundValidOperationSignature.outputParameter[responseKey].name
-                                    ] = Typing.augmentTypes(
-                                        response[responseKey],
-                                        typeRegistry,
-                                        foundValidOperationSignature.outputParameter[responseKey].type
-                                    );
-                                } else {
-                                    return Promise.reject(
-                                        new Error(
-                                            "Unexpected response: " + JSONSerializer.stringify(response[responseKey])
-                                        )
-                                    );
-                                }
-                            }
-                        }
-                    }
-
-                    return argumentValue;
-                });
+                .sendRequest(
+                    {
+                        toDiscoveryEntry: this.parent.providerDiscoveryEntry,
+                        from: this.parent.proxyParticipantId,
+                        messagingQos: this.messagingQos,
+                        request: request
+                    },
+                    foundValidOperationSignature
+                )
+                .then(operationFunctionOnSuccess);
         }
     } catch (e) {
         return Promise.reject(new Error("error calling operation: " + e.toString()));
@@ -333,8 +333,6 @@ function ProxyOperation(parent, settings, operationName, operationSignatures) {
      * @type Array
      */
     this.operationSignatures = operationSignatures;
-
-    return Object.freeze(Util.forwardPrototype(this));
 }
 
 /**
@@ -347,10 +345,7 @@ function ProxyOperation(parent, settings, operationName, operationSignatures) {
  *            member of the proxy
  */
 ProxyOperation.prototype.buildFunction = function buildFunction() {
-    var that = this;
-    return function(operationArguments) {
-        return operationFunction.call(that, operationArguments);
-    };
+    return operationFunction.bind(this);
 };
 
 module.exports = ProxyOperation;

@@ -63,7 +63,7 @@ var routingCapability = {
 
 defaultSettings.persistencySettings = {
     routingTable: false,
-    capabilities: false,
+    capabilities: true,
     publications: true
 };
 

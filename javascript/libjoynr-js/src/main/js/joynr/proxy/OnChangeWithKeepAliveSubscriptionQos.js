@@ -21,7 +21,7 @@
 var Typing = require("../util/Typing");
 var Util = require("../util/UtilInternal");
 var OnChangeSubscriptionQos = require("./OnChangeSubscriptionQos");
-var LoggerFactory = require("../system/LoggerFactory");
+var LoggingManager = require("../system/LoggingManager");
 
 var defaultSettings;
 
@@ -106,7 +106,7 @@ function OnChangeWithKeepAliveSubscriptionQos(settings) {
     }
 
     var onChangeSubscriptionQos = new OnChangeSubscriptionQos(settings);
-    var log = LoggerFactory.getLogger("joynr.proxy.OnChangeWithKeepAliveSubscriptionQos");
+    var log = LoggingManager.getLogger("joynr.proxy.OnChangeWithKeepAliveSubscriptionQos");
 
     /**
      * Used for serialization.

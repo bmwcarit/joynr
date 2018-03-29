@@ -18,6 +18,7 @@
  * limitations under the License.
  * #L%
  */
+require("../../node-unit-test-helper");
 var GlobalDiscoveryEntry = require("../../../classes/joynr/types/GlobalDiscoveryEntry");
 var ProviderQos = require("../../../classes/joynr/types/ProviderQos");
 var ProviderScope = require("../../../classes/joynr/types/ProviderScope");

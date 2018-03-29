@@ -23,6 +23,7 @@ import java.net.URISyntaxException;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.net.ssl.SSLHandshakeException;
 
@@ -73,7 +74,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
 
     private Set<String> subscribedTopics = new HashSet<>();
 
-    private volatile boolean shutdown = false;
+    private volatile AtomicBoolean shutdown = new AtomicBoolean(false);
 
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public MqttPahoClient(MqttClient mqttClient,
@@ -117,7 +118,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
     @Override
     @SuppressFBWarnings("SWL_SLEEP_WITH_LOCK_HELD")
     public synchronized void start() {
-        while (!shutdown && !mqttClient.isConnected()) {
+        while (!shutdown.get() && !mqttClient.isConnected()) {
             try {
                 logger.debug("Started MqttPahoClient");
                 mqttClient.setCallback(this);
@@ -149,7 +150,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
                 case MqttException.REASON_CODE_SUBSCRIBE_FAILED:
                 case MqttException.REASON_CODE_UNEXPECTED_ERROR:
                 case MqttException.REASON_CODE_WRITE_TIMEOUT:
-                    if (shutdown) {
+                    if (shutdown.get()) {
                         return;
                     }
 
@@ -204,7 +205,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
     @Override
     public void subscribe(String topic) {
         boolean subscribed = false;
-        while (!subscribed && !shutdown) {
+        while (!subscribed && !shutdown.get()) {
             logger.debug("MQTT subscribing to: {}", topic);
             try {
                 synchronized (subscribedTopics) {
@@ -266,8 +267,8 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
     }
 
     @Override
-    public synchronized void shutdown() {
-        shutdown = true;
+    public void shutdown() {
+        shutdown.set(true);
         logger.info("Attempting shutdown of MQTT connection.");
         try {
             mqttClient.disconnectForcibly(10000, 10000);

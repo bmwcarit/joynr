@@ -18,6 +18,7 @@
  * limitations under the License.
  * #L%
  */
+require("../../../node-unit-test-helper");
 var WebSocketMessagingStubFactory = require("../../../../classes/joynr/messaging/websocket/WebSocketMessagingStubFactory");
 var WebSocketAddress = require("../../../../classes/joynr/system/RoutingTypes/WebSocketAddress");
 var WebSocketClientAddress = require("../../../../classes/joynr/system/RoutingTypes/WebSocketClientAddress");

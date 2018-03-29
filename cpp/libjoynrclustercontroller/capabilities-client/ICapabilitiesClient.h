@@ -24,7 +24,6 @@
 #include <string>
 #include <vector>
 
-#include "joynr/IProxyBuilder.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/types/GlobalDiscoveryEntry.h"
 
@@ -69,10 +68,6 @@ public:
             const std::string& clusterControllerId,
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError) = 0;
-
-    virtual void setProxyBuilder(
-            std::shared_ptr<IProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>>
-                    capabilitiesProxyBuilder) = 0;
 };
 
 } // namespace joynr

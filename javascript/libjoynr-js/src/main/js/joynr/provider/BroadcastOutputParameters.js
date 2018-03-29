@@ -1,6 +1,5 @@
 /*jslint node: true */
 
-/*global joynr: true */
 /*
  * #%L
  * %%
@@ -21,7 +20,6 @@
  */
 var Typing = require("../util/Typing");
 var Util = require("../util/UtilInternal");
-var LoggerFactory = require("../system/LoggerFactory");
 
 function makeSetterFunction(obj, pos) {
     return function(arg) {
@@ -52,8 +50,6 @@ function BroadcastOutputParameters(outputParameterProperties) {
         // = Constructor({..}))
         return new BroadcastOutputParameters(outputParameterProperties);
     }
-
-    var log = LoggerFactory.getLogger("joynr.provider.BroadcastOutputParameters");
 
     /**
      * @name BroadcastOutputParameters#_typeName

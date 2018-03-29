@@ -19,13 +19,21 @@
 package io.joynr.arbitration;
 
 import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_ARBITRATION_MINIMUMRETRYDELAY;
+import static io.joynr.messaging.routing.MessageRouter.SCHEDULEDTHREADPOOL;
 
 import java.util.Set;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
 import io.joynr.exceptions.DiscoveryException;
+import io.joynr.runtime.ShutdownListener;
+import io.joynr.runtime.ShutdownNotifier;
 import joynr.system.DiscoveryAsync;
 import joynr.types.Version;
 
@@ -37,6 +45,15 @@ public final class ArbitratorFactory {
 
     @Inject
     private static DiscoveryEntryVersionFilter discoveryEntryVersionFilter;
+
+    @Inject
+    private static ShutdownNotifier shutdownNotifier;
+
+    @Inject
+    @Named(SCHEDULEDTHREADPOOL)
+    private static ScheduledExecutorService scheduler;
+
+    private static ArbitratorRunnable arbitratorRunnable;
 
     private ArbitratorFactory() {
 
@@ -96,4 +113,61 @@ public final class ArbitratorFactory {
                               discoveryEntryVersionFilter);
     }
 
+    public static void start() {
+        arbitratorRunnable = new ArbitratorRunnable();
+        scheduler.execute(arbitratorRunnable);
+        shutdownNotifier.registerForShutdown(new ShutdownListener() {
+            @Override
+            public void shutdown() {
+                ArbitratorFactory.shutdown();
+            }
+        });
+    }
+
+    public static void shutdown() {
+        if (arbitratorRunnable != null) {
+            arbitratorRunnable.stopArbitratorRunnable();
+        }
+    }
+
+    static class ArbitratorRunnable implements Runnable {
+        private Logger logger = LoggerFactory.getLogger(ArbitratorRunnable.class);
+        private volatile boolean stopped;
+
+        ArbitratorRunnable() {
+            stopped = false;
+        }
+
+        void stopArbitratorRunnable() {
+            stopped = true;
+        }
+
+        @Override
+        public void run() {
+            DelayableArbitration delayableArbitration = null;
+
+            Thread.currentThread().setName("ArbitratorRunnable");
+            logger.debug("Start ArbitratorRunnable");
+
+            while (!stopped) {
+                try {
+                    delayableArbitration = Arbitrator.arbitrationQueue.poll(1000, TimeUnit.MILLISECONDS);
+                    if (delayableArbitration != null) {
+                        delayableArbitration.getArbitration().attemptArbitration();
+                    }
+                } catch (InterruptedException e) {
+                    logger.trace("ArbitratorRunnable interrupted. Stopping.");
+                    Thread.currentThread().interrupt();
+                    return;
+                } catch (Exception e) {
+                    logger.error("Unexpected exception in ArbitratorRunnable: " + e);
+                    if (delayableArbitration != null) {
+                        delayableArbitration.getArbitration().arbitrationFailed(e);
+                    }
+                }
+            }
+            logger.debug("Stop ArbitratorRunnable");
+        }
+
+    }
 }

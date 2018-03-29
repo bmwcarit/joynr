@@ -22,8 +22,8 @@
 #include "IltAbstractConsumerTest.h"
 #include "joynr/ISubscriptionListener.h"
 #include "joynr/MulticastSubscriptionQos.h"
-#include "joynr/SubscriptionListener.h"
 #include "joynr/Semaphore.h"
+#include "joynr/SubscriptionListener.h"
 
 using namespace ::testing;
 
@@ -259,6 +259,115 @@ TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithMultipleA
                 subscriptionId);
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     });
+}
+
+class MockBroadcastWithSingleByteBufferParameterBroadcastListener
+        : public joynr::ISubscriptionListener<joynr::ByteBuffer>
+{
+public:
+    MOCK_METHOD1(onSubscribed, void(const std::string& subscriptionId));
+    MOCK_METHOD1(onReceive, void(const joynr::ByteBuffer& byteBufferOut));
+    MOCK_METHOD1(onError, void(const joynr::exceptions::JoynrRuntimeException& error));
+};
+
+TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithSingleByteBufferParameter)
+{
+    const std::vector<std::string> partitions = GetParam();
+    const joynr::ByteBuffer byteBufferOut = {0, 100, 255};
+
+    auto mockBroadcastWithSingleByteBufferParameterBroadcastListener =
+            std::make_shared<MockBroadcastWithSingleByteBufferParameterBroadcastListener>();
+    joynr::ByteBuffer result;
+    Semaphore publicationSemaphore;
+    EXPECT_CALL(*mockBroadcastWithSingleByteBufferParameterBroadcastListener, onError(_)).Times(0);
+    EXPECT_CALL(*mockBroadcastWithSingleByteBufferParameterBroadcastListener, onReceive(_))
+            .WillOnce(DoAll(SaveArg<0>(&result), ReleaseSemaphore(&publicationSemaphore)));
+
+    JOYNR_LOG_DEBUG(iltConsumerBroadcastSubscriptionTestLogger,
+                    "callSubscribeBroadcastWithSingleByteBufferParameter - register subscription");
+
+    std::shared_ptr<ISubscriptionListener<joynr::ByteBuffer>> listener(
+            mockBroadcastWithSingleByteBufferParameterBroadcastListener);
+    std::string subscriptionId;
+    JOYNR_ASSERT_NO_THROW(
+            testInterfaceProxy->subscribeToBroadcastWithSingleByteBufferParameterBroadcast(
+                                        listener, subscriptionQos, partitions)
+                    ->get(subscriptionIdFutureTimeoutMs, subscriptionId));
+
+    JOYNR_LOG_DEBUG(
+            iltConsumerBroadcastSubscriptionTestLogger,
+            "callSubscribeBroadcastWithSingleByteBufferParameter - subscription registered");
+    JOYNR_LOG_DEBUG(iltConsumerBroadcastSubscriptionTestLogger,
+                    "callSubscribeBroadcastWithSingleByteBufferParameter - fire broadcast");
+
+    JOYNR_ASSERT_NO_THROW(testInterfaceProxy->methodToFireBroadcastWithSingleByteBufferParameter(
+            byteBufferOut, partitions));
+    ASSERT_TRUE(publicationSemaphore.waitFor(publicationTimeoutMs));
+
+    EXPECT_EQ(result, byteBufferOut);
+
+    JOYNR_ASSERT_NO_THROW(
+            testInterfaceProxy->unsubscribeFromBroadcastWithSingleByteBufferParameterBroadcast(
+                    subscriptionId));
+}
+
+class MockBroadcastWithMultipleByteBufferParametersBroadcastListener
+        : public joynr::ISubscriptionListener<joynr::ByteBuffer, joynr::ByteBuffer>
+{
+public:
+    MOCK_METHOD1(onSubscribed, void(const std::string& subscriptionId));
+    MOCK_METHOD2(onReceive,
+                 void(const joynr::ByteBuffer& byteBufferOut1,
+                      const joynr::ByteBuffer& byteBufferOut2));
+    MOCK_METHOD1(onError, void(const joynr::exceptions::JoynrRuntimeException& error));
+};
+
+TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithMultipleByteBufferParameters)
+{
+    const std::vector<std::string> partitions = GetParam();
+    const joynr::ByteBuffer byteBufferOut1 = {5, 125};
+    const joynr::ByteBuffer byteBufferOut2 = {78, 0};
+
+    auto mockBroadcastWithMultipleByteBufferParametersBroadcastListener =
+            std::make_shared<MockBroadcastWithMultipleByteBufferParametersBroadcastListener>();
+    joynr::ByteBuffer result1;
+    joynr::ByteBuffer result2;
+    Semaphore publicationSemaphore;
+    EXPECT_CALL(*mockBroadcastWithMultipleByteBufferParametersBroadcastListener, onError(_))
+            .Times(0);
+    EXPECT_CALL(*mockBroadcastWithMultipleByteBufferParametersBroadcastListener, onReceive(_, _))
+            .WillOnce(DoAll(SaveArg<0>(&result1),
+                            SaveArg<1>(&result2),
+                            ReleaseSemaphore(&publicationSemaphore)));
+
+    JOYNR_LOG_DEBUG(
+            iltConsumerBroadcastSubscriptionTestLogger,
+            "callSubscribeBroadcastWithMultipleByteBufferParameters - register subscription");
+
+    std::shared_ptr<ISubscriptionListener<joynr::ByteBuffer, joynr::ByteBuffer>> listener(
+            mockBroadcastWithMultipleByteBufferParametersBroadcastListener);
+    std::string subscriptionId;
+    JOYNR_ASSERT_NO_THROW(
+            testInterfaceProxy->subscribeToBroadcastWithMultipleByteBufferParametersBroadcast(
+                                        listener, subscriptionQos, partitions)
+                    ->get(subscriptionIdFutureTimeoutMs, subscriptionId));
+
+    JOYNR_LOG_DEBUG(
+            iltConsumerBroadcastSubscriptionTestLogger,
+            "callSubscribeBroadcastWithMultipleByteBufferParameters - subscription registered");
+    JOYNR_LOG_DEBUG(iltConsumerBroadcastSubscriptionTestLogger,
+                    "callSubscribeBroadcastWithMultipleByteBufferParameters - fire broadcast");
+
+    JOYNR_ASSERT_NO_THROW(testInterfaceProxy->methodToFireBroadcastWithMultipleByteBufferParameters(
+            byteBufferOut1, byteBufferOut2, partitions));
+    ASSERT_TRUE(publicationSemaphore.waitFor(publicationTimeoutMs));
+
+    EXPECT_EQ(result1, byteBufferOut1);
+    EXPECT_EQ(result2, byteBufferOut2);
+
+    JOYNR_ASSERT_NO_THROW(
+            testInterfaceProxy->unsubscribeFromBroadcastWithMultipleByteBufferParametersBroadcast(
+                    subscriptionId));
 }
 
 class MockBroadcastWithSingleEnumerationParameterBroadcastListener

@@ -21,6 +21,7 @@
 
 #include <cassert>
 #include <functional>
+#include <typeinfo>
 
 #include "joynr/ClusterControllerSettings.h"
 #include "joynr/IMessagingMulticastSubscriber.h"
@@ -612,12 +613,16 @@ void CcMessageRouter::addMulticastReceiver(
     }
     providerAddress = routingEntry->address;
 
-    registerMulticastReceiver(multicastId,
-                              subscriberParticipantId,
-                              providerParticipantId,
-                              std::move(providerAddress),
-                              std::move(onSuccessWrapper),
-                              std::move(onErrorWrapper));
+    if (typeid(*providerAddress) == typeid(system::RoutingTypes::MqttAddress)) {
+        registerMulticastReceiver(multicastId,
+                                  subscriberParticipantId,
+                                  providerParticipantId,
+                                  std::move(providerAddress),
+                                  std::move(onSuccessWrapper),
+                                  std::move(onErrorWrapper));
+    } else {
+        onSuccessWrapper();
+    }
 }
 
 void CcMessageRouter::removeMulticastReceiver(
@@ -646,8 +651,9 @@ void CcMessageRouter::removeMulticastReceiver(
             onError(exception);
         }
         return;
-    } else {
-        const auto providerAddress = routingEntry->address;
+    }
+    const auto providerAddress = routingEntry->address;
+    if (typeid(*providerAddress) == typeid(system::RoutingTypes::MqttAddress)) {
         std::shared_ptr<IMessagingMulticastSubscriber> skeleton =
                 multicastMessagingSkeletonDirectory->getSkeleton(providerAddress);
         if (skeleton) {
@@ -658,9 +664,9 @@ void CcMessageRouter::removeMulticastReceiver(
                             "provider (address=" +
                                     providerAddress->toString() + ").");
         }
-        if (onSuccess) {
-            onSuccess();
-        }
+    }
+    if (onSuccess) {
+        onSuccess();
     }
 }
 

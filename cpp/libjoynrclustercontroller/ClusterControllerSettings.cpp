@@ -114,6 +114,14 @@ void ClusterControllerSettings::checkSettings()
         settings.set(SETTING_MQTT_TLS_ENABLED(), DEFAULT_MQTT_TLS_ENABLED());
     }
 
+    if (!settings.contains(SETTING_MQTT_TLS_VERSION())) {
+        settings.set(SETTING_MQTT_TLS_VERSION(), DEFAULT_MQTT_TLS_VERSION());
+    }
+
+    if (!settings.contains(SETTING_MQTT_TLS_CIPHERS())) {
+        settings.set(SETTING_MQTT_TLS_CIPHERS(), DEFAULT_MQTT_TLS_CIPHERS());
+    }
+
     if (!settings.contains(SETTING_ACCESS_CONTROL_AUDIT())) {
         settings.set(SETTING_ACCESS_CONTROL_AUDIT(), DEFAULT_ACCESS_CONTROL_AUDIT());
     }
@@ -277,6 +285,18 @@ const std::string& ClusterControllerSettings::SETTING_MQTT_TLS_ENABLED()
     return value;
 }
 
+const std::string& ClusterControllerSettings::SETTING_MQTT_TLS_VERSION()
+{
+    static const std::string value("cluster-controller/mqtt-tls-version");
+    return value;
+}
+
+const std::string& ClusterControllerSettings::SETTING_MQTT_TLS_CIPHERS()
+{
+    static const std::string value("cluster-controller/mqtt-tls-ciphers");
+    return value;
+}
+
 const std::string& ClusterControllerSettings::SETTING_MQTT_CERTIFICATE_AUTHORITY_PEM_FILENAME()
 {
     static const std::string value("cluster-controller/mqtt-certificate-authority-pem-filename");
@@ -337,6 +357,18 @@ const std::string& ClusterControllerSettings::DEFAULT_MQTT_CLIENT_ID_PREFIX()
 bool ClusterControllerSettings::DEFAULT_MQTT_TLS_ENABLED()
 {
     return false;
+}
+
+const std::string& ClusterControllerSettings::DEFAULT_MQTT_TLS_VERSION()
+{
+    static const std::string value("tlsv1.2");
+    return value;
+}
+
+const std::string& ClusterControllerSettings::DEFAULT_MQTT_TLS_CIPHERS()
+{
+    static const std::string value("");
+    return value;
 }
 
 bool ClusterControllerSettings::DEFAULT_ACCESS_CONTROL_AUDIT()
@@ -556,6 +588,26 @@ void ClusterControllerSettings::setMqttTlsEnabled(bool enabled)
 bool ClusterControllerSettings::isMqttTlsEnabled() const
 {
     return settings.get<bool>(SETTING_MQTT_TLS_ENABLED());
+}
+
+void ClusterControllerSettings::setMqttTlsVersion(const std::string& tlsVersion)
+{
+    settings.set<std::string>(SETTING_MQTT_TLS_VERSION(), tlsVersion);
+}
+
+std::string ClusterControllerSettings::getMqttTlsVersion() const
+{
+    return settings.get<std::string>(SETTING_MQTT_TLS_VERSION());
+}
+
+void ClusterControllerSettings::setMqttTlsCiphers(const std::string& tlsCiphers)
+{
+    settings.set<std::string>(SETTING_MQTT_TLS_CIPHERS(), tlsCiphers);
+}
+
+std::string ClusterControllerSettings::getMqttTlsCiphers() const
+{
+    return settings.get<std::string>(SETTING_MQTT_TLS_CIPHERS());
 }
 
 bool ClusterControllerSettings::isGlobalCapabilitiesDirectoryCompressedMessagesEnabled() const

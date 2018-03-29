@@ -129,20 +129,6 @@ TEST_F(JsonSerializerTest, serialize_deserialize_byte_array) {
     EXPECT_EQ(expectedUint8Vector, deserializedVector);
 }
 
-TEST_F(JsonSerializerTest, deserialize_byte_array_with_null_pointer) {
-    std::string jsonString =
-            "{\"_typeName\":\"joynr.Request\",\
-            \"methodName\":\"deserialize_byte_array_with_null_pointer\",\
-            \"paramDatatypes\":[\"List\"],\
-            \"params\":[[1,null,3,255,254,253]],\
-            \"requestReplyId\": \"789eaj21312390\" }";
-
-    joynr::Request request;
-    joynr::serializer::deserializeFromJson(request, jsonString);
-    std::vector<std::uint8_t> byteArray;
-    EXPECT_THROW(request.getParams(byteArray), std::invalid_argument);
-}
-
 TEST_F(JsonSerializerTest, serialize_operation_with_multiple_params1) {
     // Set the request method name
     joynr::Request request;

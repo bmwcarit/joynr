@@ -19,7 +19,7 @@
 
 (function(){
     var setupProvisionedData = function(provisioning){
-        provisioning.ttl = ${joynr.provisioning.testTtl};
+        provisioning.ttl = 10000;
 
         provisioning.mqtt = {
             qosLevel : 0

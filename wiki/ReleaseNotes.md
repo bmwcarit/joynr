@@ -1,7 +1,35 @@
+# Release Notes
+All relevant changes are documented in this file. You can find more information about
+the versioning scheme [here](JoynrVersioning.md).
+
 # joynr 1.1.0-SNAPSHOT
 
 ## API relevant changes
-None.
+* **[C++]** Proxy methods can now be passed an optional `joynr::MessagingQos` parameter.
+  This allows to overwrite the `MessagingQos` which was specified during proxy building
+  for each proxy method call separately.
+
+## Javascript Memory and Performance Changes
+* **[Generator]** Generated JS code will support only module.exports as default when exporting.
+  This reduces the size of the generated code.
+  There is a new generator option requireJSSupport, which will restore the old behavior.
+  See the [joynr code Generator Reference](generator.md) for details.
+* **[Generator]** Joynr Compound Types and Joynr Enums won't generate their own equals implementation,
+  but use a more general implementation provided by libjoynr.
+  Extracted some additional functionality to libjoynr by using mixins.
+  This further reduces the size of the generated code.
+  This change renders the generated code incompatible with previous joynr versions.
+* **[JS]** Removed Object.freeze at several API relevant locations and thus allowing libjoynr to
+  manipulate those objects freely. This allows joynr the usage of prototypes and thus saving many
+  function allocations.
+* **[JS]** Fixed a bug where all joynr Runtimes were required. Added a description how to avoid the
+  same Problem when using browserify. See [Javascript Configuration Reference](JavaScriptTutorial.md)
+  for the detailed explanation.
+* **[JS]** Replaced log4javascript with a simplified implementation. The same configuration interface
+  is still supported apart from some advanced options.
+  See [Javascript Configuration Reference](JavaScriptTutorial.md) for the detailed explanation.
+* **[JS]** Many other internal optimizations which avoid function allocations and thus unnecessary
+  GC cycles.
 
 ## Configuration property changes
 * **[Java]** Property `PROPERTY_BACKPRESSURE_MAX_INCOMING_MQTT_MESSAGES_IN_QUEUE`
@@ -17,6 +45,8 @@ None.
   The future behavior of the MqttMessagingSkeleton will change to immediate mqtt
   message acknowledgment and this should eliminate receiving repeated messages from
   the mqtt broker.
+* **[C++]** newly added TLS properties `cluster-controller/mqtt-tls-version` and 
+  `cluster-controller/mqtt-tls-ciphers` can be used to fine tune the MQTT TLS connection
 
 ## Other changes
 * **[C++]** moved settings `local-capabilities-directory-persistence-file` and
@@ -24,11 +54,30 @@ None.
 * **[C++]** added setting 'cluster-controller/global-capabilities-directory-compressed-messages-enabled'
   which specifies whether messages to GlobalCapabilitiesDirectory shall be compressed.
   By default they will be sent uncompressed.
+* **[Java]** Fixed a bug that was blocking shutdown if disconnected from MQTT at the same time.
+* **[C++]** Upgrade muesli to version 1.0.1.
 * **[Java]** joynr exposes status metrics which can be used to monitor instances. See
   [JEE Documentation](jee.md#status_monitoring)
   for more information on how to use this information for JEE and
   [Java Documentation](java.md#status_monitoring)
   for plain Java.
+
+# joynr 1.0.5
+
+## API relevant changes
+None.
+## Other changes
+* **[Java]** Reduced cpu load and memory usage by reusing joynr internal proxies instead of
+  building a new proxy for every proxy operation.
+* **[Java, C++]** Enhanced log output to allow easier tracing of proxy calls: message ID and
+  relevant payload are now logged when a joynr message is created to be able to relate later log
+  output which only contains the message ID to the corresponding proxy call.
+* **[Java]** use SMRF 0.2.3
+
+## Configuration property changes
+* **[Java]** Moved property PROPERTY_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS
+  from LocalCapabilitiesDirectoryImpl.java to SystemServicesSettings.java.
+* **[JS]** Default of `persistency.capabilities` changed to `true`
 
 # joynr 1.0.4
 

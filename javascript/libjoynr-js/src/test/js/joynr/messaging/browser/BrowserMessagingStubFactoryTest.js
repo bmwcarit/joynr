@@ -18,6 +18,7 @@
  * limitations under the License.
  * #L%
  */
+require("../../../node-unit-test-helper");
 var Util = require("../../../../classes/joynr/util/Util");
 var BrowserMessagingStubFactory = require("../../../../classes/joynr/messaging/browser/BrowserMessagingStubFactory");
 

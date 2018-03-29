@@ -18,6 +18,7 @@
  * #L%
  */
 // This data file is used in Test[ProxyProvider]Operation
+require("../../node-unit-test-helper");
 var RadioStation = require("../../../test-classes/joynr/vehicle/radiotypes/RadioStation");
 var ErrorList = require("../../../test-classes/joynr/vehicle/radiotypes/ErrorList");
 var TestEnum = require("../../../test-classes/joynr/tests/testTypes/TestEnum");

@@ -20,7 +20,6 @@
 
 #include "joynr/ImmutableMessage.h"
 #include "joynr/ITransportMessageSender.h"
-#include "joynr/MessagingQos.h"
 
 namespace joynr
 {

@@ -18,6 +18,7 @@
  * limitations under the License.
  * #L%
  */
+require("../../../node-unit-test-helper");
 var InProcessMessagingStubFactory = require("../../../../classes/joynr/messaging/inprocess/InProcessMessagingStubFactory");
 
 describe("libjoynr-js.joynr.messaging.inprocess.InProcessMessagingStubFactory", function() {

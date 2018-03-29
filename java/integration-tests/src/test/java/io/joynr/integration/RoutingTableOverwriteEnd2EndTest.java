@@ -24,8 +24,11 @@ import static org.mockito.Mockito.verify;
 
 import java.util.Properties;
 
+import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
@@ -42,12 +45,16 @@ import io.joynr.provider.ProviderAnnotations;
 import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
+import joynr.test.JoynrTestLoggingRule;
 import joynr.tests.DefaulttestProvider;
 import joynr.tests.testProxy;
 import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
 
 public class RoutingTableOverwriteEnd2EndTest {
+    private static final Logger logger = LoggerFactory.getLogger(RoutingTableOverwriteEnd2EndTest.class);
+    @Rule
+    public JoynrTestLoggingRule joynrTestRule = new JoynrTestLoggingRule(logger);
 
     private static int mqttBrokerPort = 1883;
 

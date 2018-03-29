@@ -132,7 +132,18 @@ public:
 
             if (auto discoveryProxyPtr = discoveryProxy.lock()) {
 
-                discoveryProxyPtr->addAsync(entry, std::move(onSuccess), std::move(onErrorWrapper));
+                discoveryProxyPtr->addAsync(entry,
+                                            [domain, interfaceName, participantId, onSuccess]() {
+                                                JOYNR_LOG_INFO(logger(),
+                                                               "Registered Provider: "
+                                                               "participantId: {}, domain: {}, "
+                                                               "interfaceName: {}",
+                                                               participantId,
+                                                               domain,
+                                                               interfaceName);
+                                                onSuccess();
+                                            },
+                                            std::move(onErrorWrapper));
             } else {
                 const joynr::exceptions::JoynrRuntimeException error(
                         "runtime and required discovery proxy have been already destroyed");
@@ -172,7 +183,18 @@ public:
         // Get the provider participant Id - the persisted provider Id has priority
         std::string participantId =
                 participantIdStorage->getProviderParticipantId(domain, interfaceName);
-        removeAsync(participantId, std::move(onSuccess), std::move(onError));
+        removeAsync(participantId,
+                    [participantId, domain, interfaceName, onSuccess]() {
+                        JOYNR_LOG_INFO(logger(),
+                                       "Unregistered Provider: participantId: {}, domain: {}, "
+                                       "interfaceName: {}",
+                                       participantId,
+                                       domain,
+                                       interfaceName);
+
+                        onSuccess();
+                    },
+                    std::move(onError));
         return participantId;
     }
 

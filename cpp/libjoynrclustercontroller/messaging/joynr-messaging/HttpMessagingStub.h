@@ -20,7 +20,6 @@
 #define HTTPMESSAGINGSTUB_H
 
 #include <memory>
-#include <string>
 
 #include "joynr/IMessagingStub.h"
 #include "joynr/Logger.h"

@@ -18,6 +18,7 @@
  * limitations under the License.
  * #L%
  */
+require("../../../node-unit-test-helper");
 var InProcessAddress = require("../../../../classes/joynr/messaging/inprocess/InProcessAddress");
 
 describe("libjoynr-js.joynr.messaging.inprocess.InProcessAddress", function() {

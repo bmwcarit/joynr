@@ -43,24 +43,26 @@ AbstractJoynrMessagingConnector::AbstractJoynrMessagingConnector(
 }
 
 void AbstractJoynrMessagingConnector::operationRequest(std::shared_ptr<IReplyCaller> replyCaller,
-                                                       Request&& request)
+                                                       Request&& request,
+                                                       boost::optional<MessagingQos> qos)
 {
     if (auto ptr = messageSender.lock()) {
         ptr->sendRequest(proxyParticipantId,
                          providerParticipantId,
-                         qosSettings,
+                         qos ? *qos : qosSettings,
                          request,
                          std::move(replyCaller),
                          providerDiscoveryEntry.getIsLocal());
     }
 }
 
-void AbstractJoynrMessagingConnector::operationOneWayRequest(OneWayRequest&& request)
+void AbstractJoynrMessagingConnector::operationOneWayRequest(OneWayRequest&& request,
+                                                             boost::optional<MessagingQos> qos)
 {
     if (auto ptr = messageSender.lock()) {
         ptr->sendOneWayRequest(proxyParticipantId,
                                providerParticipantId,
-                               qosSettings,
+                               qos ? *qos : qosSettings,
                                request,
                                providerDiscoveryEntry.getIsLocal());
     }
