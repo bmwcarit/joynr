@@ -835,6 +835,13 @@ get_target_property(JoynrConfig_MOCOCRW_LIBRARIES MoCOCrW::mococrw IMPORTED_LOCA
 
 set(JoynrConfig_RESOLVE_DEPENDENCIES)
 
+### Add Config files to project so that can be shown in the editor
+file(GLOB_RECURSE ADD_ALL_CMAKE_FILE_TO_PROJECT
+    RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+    "CMake/*"
+)
+add_custom_target(NOOP_SHOW_CMAKE_FILES SOURCES ${ADD_ALL_CMAKE_FILE_TO_PROJECT})
+
 macro(FillJoynrConfigDependencies DEPENDENCY_FILE)
     file(READ "${CMAKE_CURRENT_LIST_DIR}/CMake/JoynrConfig/${DEPENDENCY_FILE}.cmake.in" FILE_CONTENTS)
     string(CONFIGURE ${FILE_CONTENTS} FILE_CONTENTS @ONLY)
