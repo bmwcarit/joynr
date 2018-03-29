@@ -43,21 +43,17 @@ function RequestReplyManager(dispatcher, typeRegistry) {
     const log = LoggingManager.getLogger("joynr.dispatching.RequestReplyManager");
 
     const providers = {};
-    let replyCallers = {};
+    let replyCallers = new Map();
     let started = true;
 
     const CLEANUP_CYCLE_INTERVAL = 1000;
 
     const cleanupInterval = setInterval(() => {
         const currentTime = Date.now();
-        let id;
-        for (id in replyCallers) {
-            if (replyCallers.hasOwnProperty(id)) {
-                const caller = replyCallers[id];
-                if (caller.expiresAt <= currentTime) {
-                    caller.reject(new Error('Request with id "' + id + '" failed: ttl expired'));
-                    delete replyCallers[id];
-                }
+        for (let [id, caller] of replyCallers) {
+            if (caller.expiresAt <= currentTime) {
+                caller.reject(new Error('Request with id "' + id + '" failed: ttl expired'));
+                replyCallers.delete(id);
             }
         }
     }, CLEANUP_CYCLE_INTERVAL);
@@ -164,7 +160,7 @@ function RequestReplyManager(dispatcher, typeRegistry) {
     this.addReplyCaller = function addReplyCaller(requestReplyId, replyCaller, ttl_ms) {
         checkIfReady();
         replyCaller.expiresAt = Date.now() + ttl_ms;
-        replyCallers[requestReplyId] = replyCaller;
+        replyCallers.set(requestReplyId, replyCaller);
     };
 
     /**
@@ -376,7 +372,7 @@ function RequestReplyManager(dispatcher, typeRegistry) {
      *            reply
      */
     this.handleReply = function handleReply(reply) {
-        const replyCaller = replyCallers[reply.requestReplyId];
+        let replyCaller = replyCallers.get(reply.requestReplyId);
 
         if (replyCaller === undefined) {
             log.error(
@@ -397,7 +393,7 @@ function RequestReplyManager(dispatcher, typeRegistry) {
                 replyCaller.resolve({ response: reply.response, settings: replyCaller.callbackSettings });
             }
 
-            delete replyCallers[reply.requestReplyId];
+            replyCallers.delete(reply.requestReplyId);
         } catch (e) {
             log.error(
                 "exception thrown during handling reply " +
@@ -417,16 +413,14 @@ function RequestReplyManager(dispatcher, typeRegistry) {
     this.shutdown = function shutdown() {
         clearInterval(cleanupInterval);
 
-        let requestReplyId;
-        for (requestReplyId in replyCallers) {
-            if (replyCallers.hasOwnProperty(requestReplyId)) {
-                const replyCaller = replyCallers[requestReplyId];
-                if (replyCaller) {
-                    replyCaller.reject(new Error("RequestReplyManager is already shut down"));
-                }
+        /*eslint-disable no-unused-vars*/
+        for (let [requestReplyId, replyCaller] of replyCallers) {
+            if (replyCaller) {
+                replyCaller.reject(new Error("RequestReplyManager is already shut down"));
             }
         }
-        replyCallers = {};
+        /*eslint-enable no-unused-vars*/
+        replyCallers.clear();
         started = false;
     };
 }
