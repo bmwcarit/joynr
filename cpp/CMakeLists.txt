@@ -649,15 +649,16 @@ if(JOYNR_ENABLE_DLT_LOGGING)
 endif(JOYNR_ENABLE_DLT_LOGGING)
 
 ### Add muesli ############################################################
+set(JOYNR_MUESLI_REQUIRED_VERSION 1.0.1)
 if (USE_PLATFORM_MUESLI)
-    find_package(muesli 1.0.1 REQUIRED CONFIG)
+    find_package(muesli ${JOYNR_MUESLI_REQUIRED_VERSION} REQUIRED CONFIG)
 else(USE_PLATFORM_MUESLI)
-    message(STATUS "############ Download: muesli ############")
+    message(STATUS "############ Download: muesli ${JOYNR_MUESLI_REQUIRED_VERSION} ############")
 
     AddExternalProject(
         muesli
         GIT_REPOSITORY https://github.com/bmwcarit/muesli
-        GIT_TAG 1.0.1
+        GIT_TAG ${JOYNR_MUESLI_REQUIRED_VERSION}
         TIMEOUT 10
         # Disable configure step
         #CONFIGURE_COMMAND ""
