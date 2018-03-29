@@ -45,7 +45,7 @@ LocalDomainAccessStore::LocalDomainAccessStore(std::string fileName)
         joynr::serializer::deserializeFromJson(
                 *this, joynr::util::loadStringFromFile(persistenceFileName));
     } catch (const std::runtime_error& ex) {
-        JOYNR_LOG_ERROR(logger(), ex.what());
+        JOYNR_LOG_INFO(logger(), ex.what());
     } catch (const std::invalid_argument& ex) {
         JOYNR_LOG_ERROR(logger(),
                         "Could not deserialize persisted access control entries from {}: {}",
