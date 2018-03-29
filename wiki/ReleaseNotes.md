@@ -52,6 +52,7 @@ the versioning scheme [here](JoynrVersioning.md).
   which specifies whether messages to GlobalCapabilitiesDirectory shall be compressed.
   By default they will be sent uncompressed.
 * **[Java]** Fixed a bug that was blocking shutdown if disconnected from MQTT at the same time.
+* **[C++]** Upgrade muesli to version 1.0.1.
 
 # joynr 1.0.5
 
