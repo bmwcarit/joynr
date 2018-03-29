@@ -43,11 +43,10 @@ import joynr.system.RoutingTypes.MqttAddress;
  */
 @RunWith(MockitoJUnitRunner.class)
 public class SharedSubscriptionsMqttMessagingSkeletonTest {
-
-    private final int maxMqttMessagesInQueue = 20;
-    private final boolean backpressureEnabled = false;
-    private final int backpressureIncomingMqttRequestsUpperThreshold = 80;
-    private final int backpressureIncomingMqttRequestsLowerThreshold = 20;
+    private int maxMqttMessagesInQueue = 20;
+    private boolean backpressureEnabled = false;
+    private int backpressureIncomingMqttRequestsUpperThreshold = 80;
+    private int backpressureIncomingMqttRequestsLowerThreshold = 20;
 
     @Mock
     private MqttClientFactory mqttClientFactory;
@@ -77,11 +76,7 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
         when(mqttClientFactory.create()).thenReturn(mqttClient);
     }
 
-    @Test
-    public void testSubscribesToSharedSubscription() {
-        when(ownAddress.getTopic()).thenReturn("ownTopic");
-        final String replyToAddressTopic = "replyToAddressTopic";
-        when(replyToAddress.getTopic()).thenReturn(replyToAddressTopic);
+    private void createAndInitSkeleton(String channelId) {
         subject = new SharedSubscriptionsMqttMessagingSkeleton(ownAddress,
                                                                maxMqttMessagesInQueue,
                                                                backpressureEnabled,
@@ -90,48 +85,34 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
                                                                replyToAddress,
                                                                messageRouter,
                                                                mqttClientFactory,
-                                                               "channelId",
+                                                               channelId,
                                                                mqttTopicPrefixProvider,
                                                                new NoOpRawMessagingPreprocessor(),
                                                                new HashSet<JoynrMessageProcessor>());
         subject.init();
+        verify(mqttClient).subscribe(startsWith("$share:"));
+    }
+
+    @Test
+    public void testSubscribesToSharedSubscription() {
+        when(ownAddress.getTopic()).thenReturn("ownTopic");
+        final String replyToAddressTopic = "replyToAddressTopic";
+        when(replyToAddress.getTopic()).thenReturn(replyToAddressTopic);
+
+        createAndInitSkeleton("channelId");
         verify(mqttClient).subscribe(eq("$share:channelId:ownTopic/#"));
         verify(mqttClient).subscribe(eq(replyToAddressTopic + "/#"));
     }
 
     @Test
     public void testChannelIdStrippedOfNonAlphaChars() {
-        subject = new SharedSubscriptionsMqttMessagingSkeleton(ownAddress,
-                                                               maxMqttMessagesInQueue,
-                                                               backpressureEnabled,
-                                                               backpressureIncomingMqttRequestsUpperThreshold,
-                                                               backpressureIncomingMqttRequestsLowerThreshold,
-                                                               replyToAddress,
-                                                               messageRouter,
-                                                               mqttClientFactory,
-                                                               "channel@123_bling$$",
-                                                               mqttTopicPrefixProvider,
-                                                               new NoOpRawMessagingPreprocessor(),
-                                                               new HashSet<JoynrMessageProcessor>());
-        subject.init();
+        createAndInitSkeleton("channel@123_bling$$");
         verify(mqttClient).subscribe(startsWith("$share:channelbling:"));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testIllegalChannelId() {
-        subject = new SharedSubscriptionsMqttMessagingSkeleton(ownAddress,
-                                                               maxMqttMessagesInQueue,
-                                                               backpressureEnabled,
-                                                               backpressureIncomingMqttRequestsUpperThreshold,
-                                                               backpressureIncomingMqttRequestsLowerThreshold,
-                                                               replyToAddress,
-                                                               messageRouter,
-                                                               mqttClientFactory,
-                                                               "@123_$$-!",
-                                                               mqttTopicPrefixProvider,
-                                                               new NoOpRawMessagingPreprocessor(),
-                                                               new HashSet<JoynrMessageProcessor>());
-        subject.init();
+        createAndInitSkeleton("@123_$$-!");
     }
 
 }
