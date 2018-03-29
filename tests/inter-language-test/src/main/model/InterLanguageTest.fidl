@@ -269,9 +269,10 @@ interface TestInterface {
 
 	attribute Int8 attributeInt8readonlyNoSubscriptions readonly noSubscriptions
 
+	attribute ByteBuffer attributeByteBuffer
+
 	// currently not supported
 	// attribute Integer attributeIntegerWithoutRange
-	// attribute ByteBuffer attributeByteBuffer
 
 	// USER-DEFINED TYPE ATTRIBUTES
 
@@ -350,6 +351,25 @@ interface TestInterface {
 		out {
 			UInt64[] uInt64ArrayOut
 			namedTypeCollection1.StructWithStringArray[] structWithStringArrayArrayOut
+		}
+	}
+
+	method methodWithSingleByteBufferParameter {
+		in {
+			ByteBuffer byteBufferIn
+		}
+		out {
+			ByteBuffer byteBufferOut
+		}
+	}
+
+	method methodWithMultipleByteBufferParameters {
+		in {
+			ByteBuffer byteBufferIn1
+			ByteBuffer byteBufferIn2
+		}
+		out {
+			ByteBuffer byteBufferOut
 		}
 	}
 
@@ -600,6 +620,34 @@ interface TestInterface {
 
 	method methodToFireBroadcastWithMultipleArrayParameters {
 		in {
+			String[] partitions
+		}
+	}
+
+	broadcast broadcastWithSingleByteBufferParameter {
+		out {
+			ByteBuffer byteBufferOut
+		}
+	}
+
+	method methodToFireBroadcastWithSingleByteBufferParameter {
+		in {
+			ByteBuffer byteBufferIn
+			String[] partitions
+		}
+	}
+
+	broadcast broadcastWithMultipleByteBufferParameters {
+		out {
+			ByteBuffer byteBufferOut1
+			ByteBuffer byteBufferOut2
+		}
+	}
+
+	method methodToFireBroadcastWithMultipleByteBufferParameters {
+		in {
+		 	ByteBuffer byteBufferIn1
+			ByteBuffer byteBufferIn2
 			String[] partitions
 		}
 	}

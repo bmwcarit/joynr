@@ -210,6 +210,32 @@ void IltProvider::methodWithMultipleArrayParameters(
     onSuccess(uInt64ArrayOut, structWithStringArrayArrayOut);
 }
 
+void IltProvider::methodWithSingleByteBufferParameter(
+        const joynr::ByteBuffer& byteBufferIn,
+        std::function<void(const joynr::ByteBuffer& byteBufferOut)> onSuccess,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError)
+{
+    std::ignore = onError;
+    JOYNR_LOG_INFO(logger(), "********************************************************");
+    JOYNR_LOG_INFO(logger(), "* IltProvider::methodWithSingleByteBufferParameter called");
+    JOYNR_LOG_INFO(logger(), "********************************************************");
+    onSuccess(byteBufferIn);
+}
+
+void IltProvider::methodWithMultipleByteBufferParameters(
+        const joynr::ByteBuffer& byteBufferIn1,
+        const joynr::ByteBuffer& byteBufferIn2,
+        std::function<void(const joynr::ByteBuffer& byteBufferOut)> onSuccess,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError)
+{
+    std::ignore = onError;
+    JOYNR_LOG_INFO(logger(), "********************************************************");
+    JOYNR_LOG_INFO(logger(), "* IltProvider::methodWithMultipleByteBufferParameters called");
+    JOYNR_LOG_INFO(logger(), "********************************************************");
+    joynr::ByteBuffer byteBufferOut = IltUtil::concatByteBuffers(byteBufferIn1, byteBufferIn2);
+    onSuccess(byteBufferOut);
+}
+
 void IltProvider::methodWithSingleEnumParameters(
         const joynr::interlanguagetest::namedTypeCollection2::
                 ExtendedEnumerationWithPartlyDefinedValues::Enum& enumerationArg,
@@ -733,6 +759,41 @@ void IltProvider::methodToFireBroadcastWithMultipleArrayParameters(
             structWithStringArrayArrayOut = IltUtil::createStructWithStringArrayArray();
     fireBroadcastWithMultipleArrayParameters(
             uInt64ArrayOut, structWithStringArrayArrayOut, partitions);
+    onSuccess();
+}
+
+void IltProvider::methodToFireBroadcastWithSingleByteBufferParameter(
+        const joynr::ByteBuffer& byteBufferIn,
+        const std::vector<std::string>& partitions,
+        std::function<void()> onSuccess,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError)
+{
+    std::ignore = onError;
+    JOYNR_LOG_INFO(
+            logger(), "***********************************************************************");
+    JOYNR_LOG_INFO(
+            logger(), "* IltProvider::methodToFireBroadcastWithSingleByteBufferParameter called");
+    JOYNR_LOG_INFO(
+            logger(), "***********************************************************************");
+    fireBroadcastWithSingleByteBufferParameter(byteBufferIn, partitions);
+    onSuccess();
+}
+
+void IltProvider::methodToFireBroadcastWithMultipleByteBufferParameters(
+        const joynr::ByteBuffer& byteBufferIn1,
+        const joynr::ByteBuffer& byteBufferIn2,
+        const std::vector<std::string>& partitions,
+        std::function<void()> onSuccess,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError)
+{
+    std::ignore = onError;
+    JOYNR_LOG_INFO(
+            logger(), "**************************************************************************");
+    JOYNR_LOG_INFO(logger(),
+                   "* IltProvider::methodToFireBroadcastWithMultipleByteBufferParameters called");
+    JOYNR_LOG_INFO(
+            logger(), "**************************************************************************");
+    fireBroadcastWithMultipleByteBufferParameters(byteBufferIn1, byteBufferIn2, partitions);
     onSuccess();
 }
 

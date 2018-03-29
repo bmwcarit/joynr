@@ -29,8 +29,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
 import static org.junit.Assert.fail;
 
 public class IltConsumerGetterSetterTest extends IltConsumerTest {
@@ -264,6 +266,24 @@ public class IltConsumerGetterSetterTest extends IltConsumerTest {
         } catch (Exception e) {
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
             return;
+        }
+
+        LOG.info(name.getMethodName() + " - OK");
+    }
+
+    @Test
+    public void callGetAndSetAttributeByteBuffer() {
+        LOG.info(name.getMethodName());
+        try {
+            // must set the value before it can be retrieved again
+            Byte[] byteBufferArg = { -128, 0, 127 };
+            testInterfaceProxy.setAttributeByteBuffer(byteBufferArg);
+
+            Byte[] result = testInterfaceProxy.getAttributeByteBuffer();
+            Assert.assertNotNull(name.getMethodName() + " - FAILED - got no result", result);
+            Assert.assertArrayEquals(name.getMethodName() + " - FAILED - got invalid result", byteBufferArg, result);
+        } catch (Exception e) {
+            fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
         }
 
         LOG.info(name.getMethodName() + " - OK");
