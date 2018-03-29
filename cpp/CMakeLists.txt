@@ -706,10 +706,12 @@ else(USE_PLATFORM_MOCOCRW)
     message(ERROR "Retrieving mococrw from an external source is not supported yet.")
 endif(USE_PLATFORM_MOCOCRW)
 
+### Add smrf ############################################################
+set(JOYNR_SMRF_REQUIRED_VERSION 0.2.2)
 if (USE_PLATFORM_SMRF)
-    find_package(smrf 0.2.2 REQUIRED CONFIG)
+    find_package(smrf ${JOYNR_SMRF_REQUIRED_VERSION} REQUIRED CONFIG)
 else(USE_PLATFORM_SMRF)
-    message(STATUS "############ Download: smrf ############")
+    message(STATUS "############ Download: smrf ${JOYNR_SMRF_REQUIRED_VERSION} ############")
 
     get_property(EP_PREFIX DIRECTORY PROPERTY EP_PREFIX)
     set(SMRF_LIBRARY_NAME "${CMAKE_SHARED_LIBRARY_PREFIX}smrf${CMAKE_SHARED_LIBRARY_SUFFIX}")
@@ -718,7 +720,7 @@ else(USE_PLATFORM_SMRF)
     AddExternalProject(
         smrf
         GIT_REPOSITORY https://github.com/bmwcarit/smrf
-        GIT_TAG 0.2.2
+        GIT_TAG ${JOYNR_SMRF_REQUIRED_VERSION}
         TIMEOUT 10
         # Disable configure step
         #CONFIGURE_COMMAND ""
