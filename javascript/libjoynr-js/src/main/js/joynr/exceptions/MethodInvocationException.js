@@ -22,7 +22,7 @@ var TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
 var Typing = require("../util/Typing");
 var Util = require("../util/UtilInternal");
 var JoynrRuntimeException = require("./JoynrRuntimeException");
-var LoggerFactory = require("../system/LoggerFactory");
+var LoggingManager = require("../system/LoggingManager");
 var defaultSettings;
 
 /**
@@ -54,7 +54,7 @@ function MethodInvocationException(settings) {
         return new MethodInvocationException(settings);
     }
 
-    var log = LoggerFactory.getLogger("joynr.exceptions.MethodInvocationException");
+    var log = LoggingManager.getLogger("joynr.exceptions.MethodInvocationException");
     var runtimeException = new JoynrRuntimeException(settings);
 
     /**

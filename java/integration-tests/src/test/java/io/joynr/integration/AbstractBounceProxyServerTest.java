@@ -41,11 +41,13 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import joynr.ImmutableMessage;
+import joynr.test.JoynrTestLoggingRule;
 
 import org.apache.commons.io.Charsets;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,6 +73,8 @@ import com.jayway.restassured.response.Response;
 public abstract class AbstractBounceProxyServerTest {
 
     private static final Logger log = LoggerFactory.getLogger(AbstractBounceProxyServerTest.class);
+    @Rule
+    public JoynrTestLoggingRule joynrTestRule = new JoynrTestLoggingRule(log);
 
     private static final String DEFAULT_SERVER = "http://localhost";
     private static final int DEFAULT_PORT = 8080;

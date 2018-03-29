@@ -76,9 +76,11 @@ request.setParams(
 	def logMethodCall(FMethod method)
 	'''
 		JOYNR_LOG_DEBUG(logger(),
-				"REQUEST call proxy: requestReplyId: {}, method: {}, params: «getParamsPlaceholders(method.inputParameters.size)», proxy "
-				"participantId: {}, provider participantId: [{}]",
-				request.getRequestReplyId(),
+				"«IF method.fireAndForget»ONEWAY«ENDIF»REQUEST call proxy: «
+					IF !method.fireAndForget»requestReplyId: {}, «ENDIF
+					»method: {}, params: «getParamsPlaceholders(method.inputParameters.size)», "
+				"proxy participantId: {}, provider participantId: [{}]",
+				«IF !method.fireAndForget»request.getRequestReplyId(),«ENDIF»
 				request.getMethodName(),
 				«FOR inputParam : method.inputParameters»
 					joynr::serializer::serializeToJson(«inputParam.joynrName»),
@@ -159,7 +161,7 @@ request.setParams(
 	«IF attribute.readable»
 		«produceSyncGetterSignature(attribute, className)»
 		{
-			auto future = get«attributeName.toFirstUpper»Async();
+			auto future = get«attributeName.toFirstUpper»Async(nullptr, nullptr, std::move(qos));
 			future->get(«attributeName»);
 		}
 
@@ -216,7 +218,7 @@ request.setParams(
 						proxyParticipantId,
 						providerParticipantId);
 				auto replyCaller = std::make_shared<joynr::ReplyCaller<«returnType»>>(std::move(onSuccessWrapper), std::move(onErrorWrapper));
-				operationRequest(std::move(replyCaller), std::move(request));
+				operationRequest(std::move(replyCaller), std::move(request), std::move(qos));
 			} catch (const std::invalid_argument& exception) {
 				auto joynrException = std::make_shared<joynr::exceptions::MethodInvocationException>(exception.what());
 				future->onError(joynrException);
@@ -290,7 +292,7 @@ request.setParams(
 						proxyParticipantId,
 						providerParticipantId);
 				auto replyCaller = std::make_shared<joynr::ReplyCaller<void>>(std::move(onSuccessWrapper), std::move(onErrorWrapper));
-				operationRequest(std::move(replyCaller), std::move(request));
+				operationRequest(std::move(replyCaller), std::move(request), std::move(qos));
 			} catch (const std::invalid_argument& exception) {
 				auto joynrException = std::make_shared<joynr::exceptions::MethodInvocationException>(exception.what());
 				future->onError(joynrException);
@@ -310,7 +312,7 @@ request.setParams(
 
 		«produceSyncSetterSignature(attribute, className)»
 		{
-			auto future = set«attributeName.toFirstUpper»Async(«attributeName»);
+			auto future = set«attributeName.toFirstUpper»Async(«attributeName», nullptr, nullptr, std::move(qos));
 			future->get();
 		}
 
@@ -333,7 +335,7 @@ request.setParams(
 					std::shared_ptr<joynr::SubscriptionQos> subscriptionQos,
 					SubscriptionRequest& subscriptionRequest
 		) {
-			JOYNR_LOG_DEBUG(logger(), "Subscribing to «attributeName».");
+			JOYNR_LOG_TRACE(logger(), "Subscribing to «attributeName».");
 			std::string attributeName("«attributeName»");
 			joynr::MessagingQos clonedMessagingQos(qosSettings);
 			clonedMessagingQos.setTtl(ISubscriptionManager::convertExpiryDateIntoTtlMs(*subscriptionQos));
@@ -398,7 +400,7 @@ request.setParams(
 	«IF !method.fireAndForget»
 		«produceSyncMethodSignature(method, className)»
 		{
-			auto future = «method.joynrName»Async(«method.commaSeperatedUntypedInputParameterList»);
+			auto future = «method.joynrName»Async(«method.commaSeperatedUntypedInputParameterList»«IF !method.inputParameters.empty», «ENDIF»«IF method.hasErrorEnum»nullptr,«ENDIF»nullptr, nullptr, std::move(qos));
 			future->get(«method.commaSeperatedUntypedOutputParameterList»);
 		}
 
@@ -451,7 +453,7 @@ request.setParams(
 				«logMethodCall(method)»
 
 				auto replyCaller = std::make_shared<joynr::ReplyCaller<«outputParameters»>>(std::move(onSuccessWrapper), std::move(onErrorWrapper));
-				operationRequest(std::move(replyCaller), std::move(request));
+				operationRequest(std::move(replyCaller), std::move(request), std::move(qos));
 			} catch (const std::invalid_argument& exception) {
 				auto joynrException = std::make_shared<joynr::exceptions::MethodInvocationException>(exception.what());
 				future->onError(joynrException);
@@ -473,7 +475,8 @@ request.setParams(
 			{
 				«produceParameterSetters(method)»
 
-				operationOneWayRequest(std::move(request));
+				«logMethodCall(method)»
+				operationOneWayRequest(std::move(request), std::move(qos));
 			}
 	«ENDIF»
 «ENDFOR»
@@ -530,7 +533,7 @@ request.setParams(
 					const std::vector<std::string>& partitions
 				«ENDIF»
 	) {
-		JOYNR_LOG_TRACE(logger(), "Subscribing to «broadcastName» broadcast.");
+		JOYNR_LOG_TRACE(logger(), "Subscribing to «broadcastName» «IF broadcast.selective»broadcast«ELSE»multicast«ENDIF».");
 		std::string broadcastName("«broadcastName»");
 		joynr::MessagingQos clonedMessagingQos(qosSettings);
 		clonedMessagingQos.setTtl(ISubscriptionManager::convertExpiryDateIntoTtlMs(*subscriptionQos));
@@ -548,6 +551,14 @@ request.setParams(
 						subscriptionRequest);
 			}
 
+			JOYNR_LOG_DEBUG(logger(),
+					"SUBSCRIPTION call proxy: subscriptionId: {}, broadcast: {}, qos: {}, proxy "
+					"participantId: {}, provider participantId: [{}]",
+					subscriptionRequest.getSubscriptionId(),
+					broadcastName,
+					joynr::serializer::serializeToJson(*subscriptionQos),
+					proxyParticipantId,
+					providerParticipantId);
 			if (auto ptr = messageSender.lock()) {
 				ptr->sendBroadcastSubscriptionRequest(
 						proxyParticipantId,
@@ -608,18 +619,6 @@ request.setParams(
 						std::move(onError));
 			}
 		«ENDIF»
-		JOYNR_LOG_DEBUG(logger(),
-				"SUBSCRIPTION call proxy: subscriptionId: {}, attribute: {}, qos: {}, proxy "
-				"participantId: {}, provider participantId: [{}]",
-				«IF broadcast.selective»
-					subscriptionRequest.getSubscriptionId(),
-				«ELSE»
-					subscriptionRequest->getSubscriptionId(),
-				«ENDIF»
-				broadcastName,
-				joynr::serializer::serializeToJson(*subscriptionQos),
-				proxyParticipantId,
-				providerParticipantId);
 		return future;
 	}
 

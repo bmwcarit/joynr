@@ -72,7 +72,8 @@ public:
             const joynr::types::DiscoveryEntry& discoveryEntry,
             std::function<void()> onSuccess = nullptr,
             std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
-                    onRuntimeError = nullptr) noexcept override
+                    onRuntimeError = nullptr,
+            boost::optional<MessagingQos> qos = boost::none) noexcept override
     {
         std::ignore = onRuntimeError;
         entry = discoveryEntry;
@@ -87,7 +88,8 @@ public:
             std::function<void(const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result)>
                     onSuccess = nullptr,
             std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
-                    onRuntimeError = nullptr) noexcept override
+                    onRuntimeError = nullptr,
+            boost::optional<MessagingQos> qos = boost::none) noexcept override
     {
         std::vector<joynr::types::DiscoveryEntryWithMetaInfo> result;
         result.push_back(joynr::util::convert(true, entry));
@@ -99,7 +101,8 @@ public:
             std::function<void(const joynr::types::DiscoveryEntryWithMetaInfo& result)> onSuccess =
                     nullptr,
             std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
-                    onRuntimeError = nullptr) noexcept override
+                    onRuntimeError = nullptr,
+            boost::optional<MessagingQos> qos = boost::none) noexcept override
     {
         return resolve(joynr::util::convert(true, entry), onSuccess);
     }
@@ -108,7 +111,8 @@ public:
             const std::string& participantId,
             std::function<void()> onSuccess = nullptr,
             std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
-                    onRuntimeError = nullptr) noexcept override
+                    onRuntimeError = nullptr,
+            boost::optional<MessagingQos> qos = boost::none) noexcept override
     {
         return resolve(onSuccess);
     }

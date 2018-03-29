@@ -17,6 +17,7 @@
  * limitations under the License.
  * #L%
  */
+require("../../node-unit-test-helper");
 var EnumInsideTypeCollectionWithoutVersion = require("../../../test-classes/joynr/types/TestTypesWithoutVersion/EnumInsideTypeCollectionWithoutVersion");
 var MapInsideTypeCollectionWithoutVersion = require("../../../test-classes/joynr/types/TestTypesWithoutVersion/MapInsideTypeCollectionWithoutVersion");
 var StructInsideTypeCollectionWithoutVersion = require("../../../test-classes/joynr/types/TestTypesWithoutVersion/StructInsideTypeCollectionWithoutVersion");

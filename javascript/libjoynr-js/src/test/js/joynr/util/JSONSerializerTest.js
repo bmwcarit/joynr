@@ -17,6 +17,7 @@
  * limitations under the License.
  * #L%
  */
+require("../../node-unit-test-helper");
 var JSONSerializer = require("../../../classes/joynr/util/JSONSerializer");
 var TestEnum = require("../../../test-classes/joynr/tests/testTypes/TestEnum");
 

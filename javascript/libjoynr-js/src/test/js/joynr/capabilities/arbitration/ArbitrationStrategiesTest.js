@@ -18,6 +18,7 @@
  * limitations under the License.
  * #L%
  */
+require("../../../node-unit-test-helper");
 var ArbitrationStrategyCollection = require("../../../../classes/joynr/types/ArbitrationStrategyCollection");
 var DiscoveryEntry = require("../../../../classes/joynr/types/DiscoveryEntry");
 var ProviderScope = require("../../../../classes/joynr/types/ProviderScope");

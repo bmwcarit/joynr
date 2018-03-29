@@ -40,8 +40,12 @@ public:
     static const std::string& SETTING_MESSAGE_QUEUE_LIMIT();
     static const std::string& SETTING_PER_PARTICIPANTID_MESSAGE_QUEUE_LIMIT();
     static const std::string& SETTING_TRANSPORT_NOT_AVAILABLE_QUEUE_LIMIT();
+    static const std::string& SETTING_MESSAGE_QUEUE_LIMIT_BYTES();
+    static const std::string& SETTING_TRANSPORT_NOT_AVAILABLE_QUEUE_LIMIT_BYTES();
     static const std::string& SETTING_MQTT_CLIENT_ID_PREFIX();
     static const std::string& SETTING_MQTT_TLS_ENABLED();
+    static const std::string& SETTING_MQTT_TLS_VERSION();
+    static const std::string& SETTING_MQTT_TLS_CIPHERS();
     static const std::string& SETTING_MQTT_CERTIFICATE_AUTHORITY_PEM_FILENAME();
     static const std::string& SETTING_MQTT_CERTIFICATE_AUTHORITY_CERTIFICATE_FOLDER_PATH();
     static const std::string& SETTING_MQTT_CERTIFICATE_PEM_FILENAME();
@@ -61,6 +65,7 @@ public:
     static const std::string&
     SETTING_ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_PARTICIPANTID();
     static const std::string& SETTING_ACL_ENTRIES_DIRECTORY();
+    static const std::string& SETTING_GLOBAL_CAPABILITIES_DIRECTORY_COMPRESSED_MESSAGES_ENABLED();
 
     static std::chrono::milliseconds DEFAULT_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS();
     static const std::string& DEFAULT_CLUSTERCONTROLLER_SETTINGS_FILENAME();
@@ -69,6 +74,8 @@ public:
     static const std::string& DEFAULT_LOCAL_DOMAIN_ACCESS_STORE_PERSISTENCE_FILENAME();
     static const std::string& DEFAULT_MQTT_CLIENT_ID_PREFIX();
     static bool DEFAULT_MQTT_TLS_ENABLED();
+    static const std::string& DEFAULT_MQTT_TLS_VERSION();
+    static const std::string& DEFAULT_MQTT_TLS_CIPHERS();
     static const std::string& DEFAULT_MQTT_MULTICAST_TOPIC_PREFIX();
     static const std::string& DEFAULT_MQTT_UNICAST_TOPIC_PREFIX();
     static const std::string& DEFAULT_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCE_FILENAME();
@@ -80,6 +87,9 @@ public:
     static std::uint64_t DEFAULT_MESSAGE_QUEUE_LIMIT();
     static std::uint64_t DEFAULT_PER_PARTICIPANTID_MESSAGE_QUEUE_LIMIT();
     static std::uint64_t DEFAULT_TRANSPORT_NOT_AVAILABLE_QUEUE_LIMIT();
+    static std::uint64_t DEFAULT_MESSAGE_QUEUE_LIMIT_BYTES();
+    static std::uint64_t DEFAULT_TRANSPORT_NOT_AVAILABLE_QUEUE_LIMIT_BYTES();
+    static bool DEFAULT_GLOBAL_CAPABILITIES_DIRECTORY_COMPRESSED_MESSAGES_ENABLED();
 
     explicit ClusterControllerSettings(Settings& settings);
     ClusterControllerSettings(const ClusterControllerSettings&) = default;
@@ -125,6 +135,12 @@ public:
     void setMqttTlsEnabled(bool enabled);
     bool isMqttTlsEnabled() const;
 
+    void setMqttTlsVersion(const std::string& tlsVersion);
+    std::string getMqttTlsVersion() const;
+
+    void setMqttTlsCiphers(const std::string& tlsCiphers);
+    std::string getMqttTlsCiphers() const;
+
     std::string getLocalDomainAccessStorePersistenceFilename() const;
     void setLocalDomainAccessStorePersistenceFilename(const std::string& filename);
 
@@ -136,6 +152,12 @@ public:
 
     std::uint64_t getTransportNotAvailableQueueLimit() const;
     void setTransportNotAvailableQueueLimit(std::uint64_t limit);
+
+    std::uint64_t getMessageQueueLimitBytes() const;
+    void setMessageQueueLimitBytes(std::uint64_t limitBytes);
+
+    std::uint64_t getTransportNotAvailableQueueLimitBytes() const;
+    void setTransportNotAvailableQueueLimitBytes(std::uint64_t limitBytes);
 
     bool enableAccessController() const;
     void setEnableAccessController(bool enable);
@@ -153,6 +175,9 @@ public:
     void setLocalCapabilitiesDirectoryPersistenceFilename(const std::string& filename);
     bool isLocalCapabilitiesDirectoryPersistencyEnabled() const;
     void setLocalCapabilitiesDirectoryPersistencyEnabled(bool enabled);
+
+    bool isGlobalCapabilitiesDirectoryCompressedMessagesEnabled() const;
+    void setGlobalCapabilitiesDirectoryCompressedMessagesEnabled(bool enable);
 
     int getPurgeExpiredDiscoveryEntriesIntervalMs() const;
     void setPurgeExpiredDiscoveryEntriesIntervalMs(int purgeExpiredEntriesIntervalMs);

@@ -4,7 +4,6 @@ target
 .settings
 .checkstyle
 src/main/generated*
-CMakeLists.txt.user
 /provider-joynr.properties
 /joynr_participantIds.properties
 /consumer-joynr.properties

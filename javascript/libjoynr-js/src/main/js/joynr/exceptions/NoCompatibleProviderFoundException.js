@@ -21,7 +21,7 @@
 var TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
 var Util = require("../util/UtilInternal");
 var DiscoveryException = require("./DiscoveryException");
-var LoggerFactory = require("../system/LoggerFactory");
+var LoggingManager = require("../system/LoggingManager");
 var defaultSettings;
 
 /**
@@ -56,7 +56,7 @@ function NoCompatibleProviderFoundException(settings) {
         return new NoCompatibleProviderFoundException(settings);
     }
 
-    var log = LoggerFactory.getLogger("joynr.exceptions.NoCompatibleProviderFoundException");
+    var log = LoggingManager.getLogger("joynr.exceptions.NoCompatibleProviderFoundException");
     var discoveryException = new DiscoveryException(settings);
 
     /**

@@ -34,6 +34,7 @@
 #include "joynr/ProxyBuilder.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/test/SystemIntegrationTestProxy.h"
+
 #include "SitUtil.h"
 #ifdef JOYNR_ENABLE_DLT_LOGGING
 #include <dlt/dlt.h>
@@ -103,31 +104,30 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-    JOYNR_LOG_INFO(logger, "Create proxy for domain {}", providerDomain);
-
     if (pathToSettings.empty()) {
         boost::filesystem::path appFilename = boost::filesystem::path(argv[0]);
         std::string appDirectory =
                 boost::filesystem::system_complete(appFilename).parent_path().string();
-        pathToSettings = appDirectory + "/resources/systemintegrationtest-consumer.settings";
+        pathToSettings = appDirectory + "/resources/systemintegrationtest-provider.settings";
     }
 
-    const std::string pathToMessagingSettingsDefault("");
-    std::shared_ptr<IKeychain> keychain;
-
+    std::shared_ptr<JoynrRuntime> runtime;
     try {
-        keychain = tryLoadKeychainFromCmdLineArgs(
-                sslCertFilename, sslPrivateKeyFilename, sslCaCertFilename);
+        runtime = joynr::sitUtil::createRuntime(
+                pathToSettings, sslCertFilename, sslPrivateKeyFilename, sslCaCertFilename);
     } catch (const std::invalid_argument& e) {
         JOYNR_LOG_FATAL(logger, e.what());
-        return -1;
+        runtime.reset();
     }
 
-    std::shared_ptr<JoynrRuntime> runtime =
-            JoynrRuntime::createRuntime(pathToSettings, pathToMessagingSettingsDefault, keychain);
+    if (!runtime) {
+        return EXIT_FAILURE;
+    }
 
     std::shared_ptr<ProxyBuilder<test::SystemIntegrationTestProxy>> proxyBuilder =
             runtime->createProxyBuilder<test::SystemIntegrationTestProxy>(providerDomain);
+
+    JOYNR_LOG_INFO(logger, "Create proxy for domain {}", providerDomain);
 
     DiscoveryQos discoveryQos;
     discoveryQos.setDiscoveryTimeoutMs(120000); // 2 Mins

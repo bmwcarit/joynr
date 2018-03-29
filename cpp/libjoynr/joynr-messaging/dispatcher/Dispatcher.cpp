@@ -23,7 +23,6 @@
 #include <cstdint>
 
 #include "joynr/BroadcastSubscriptionRequest.h"
-#include "joynr/DispatcherUtils.h"
 #include "joynr/IMessageSender.h"
 #include "joynr/ImmutableMessage.h"
 #include "joynr/IRequestInterpreter.h"
@@ -39,6 +38,7 @@
 #include "joynr/SubscriptionReply.h"
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/SubscriptionStop.h"
+#include "joynr/ThreadPool.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/exceptions/JoynrExceptionUtil.h"
 #include "joynr/serializer/Serializer.h"
@@ -190,7 +190,7 @@ void Dispatcher::handleRequestReceived(std::shared_ptr<ImmutableMessage> message
     }
 
     const std::string& requestReplyId = request.getRequestReplyId();
-    JoynrTimePoint requestExpiryDate = message->getExpiryDate();
+    TimePoint requestExpiryDate = message->getExpiryDate();
 
     auto onSuccess = [
         requestReplyId,
@@ -208,14 +208,13 @@ void Dispatcher::handleRequestReceived(std::shared_ptr<ImmutableMessage> message
             reply.setRequestReplyId(std::move(requestReplyId));
             // send reply back to the original sender (ie. sender and receiver ids are reversed
             // on purpose)
-            JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(
-                    std::chrono::system_clock::now());
-            std::int64_t ttl = std::chrono::duration_cast<std::chrono::milliseconds>(
-                                       requestExpiryDate - now).count();
+            const std::chrono::milliseconds ttl = requestExpiryDate.relativeFromNow();
+            MessagingQos messagingQos(ttl.count());
+            messagingQos.setCompress(message->isCompressed());
             thisSharedPtr->messageSender->sendReply(
                     receiverId, // receiver of the request is sender of reply
                     senderId,   // sender of request is receiver of reply
-                    MessagingQos(ttl),
+                    messagingQos,
                     message->getPrefixedCustomHeaders(),
                     std::move(reply));
         }
@@ -230,21 +229,22 @@ void Dispatcher::handleRequestReceived(std::shared_ptr<ImmutableMessage> message
         message
     ](const std::shared_ptr<exceptions::JoynrException>& exception) mutable
     {
+        assert(exception);
         if (auto thisSharedPtr = thisWeakPtr.lock()) {
             JOYNR_LOG_WARN(logger(),
-                           "Got error reply from RequestInterpreter for requestReplyId {}",
+                           "Got error '{}' from RequestInterpreter for requestReplyId {}",
+                           exception->getMessage(),
                            requestReplyId);
             Reply reply;
             reply.setRequestReplyId(std::move(requestReplyId));
             reply.setError(exception);
-            JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(
-                    std::chrono::system_clock::now());
-            std::int64_t ttl = std::chrono::duration_cast<std::chrono::milliseconds>(
-                                       requestExpiryDate - now).count();
+            const std::chrono::milliseconds ttl = requestExpiryDate.relativeFromNow();
+            MessagingQos messagingQos(ttl.count());
+            messagingQos.setCompress(message->isCompressed());
             thisSharedPtr->messageSender->sendReply(
                     receiverId, // receiver of the request is sender of reply
                     senderId,   // sender of request is receiver of reply
-                    MessagingQos(ttl),
+                    messagingQos,
                     message->getPrefixedCustomHeaders(),
                     std::move(reply));
         }

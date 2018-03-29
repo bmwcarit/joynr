@@ -31,4 +31,6 @@ public class SystemServicesSettings {
     public static final String PROPERTY_CC_ROUTING_PROVIDER_PARTICIPANT_ID = "joynr.messaging.routingproviderparticipantid";
 
     public static final String LIBJOYNR_MESSAGING_ADDRESS = "libjoynr_messaging_address";
+
+    public static final String PROPERTY_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS = "joynr.capabilities.freshnessupdateintervalms";
 }

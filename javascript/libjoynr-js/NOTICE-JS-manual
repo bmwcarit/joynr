@@ -7,14 +7,6 @@
       together
       js-dependencies/src/main/resources/JsonParser/JsonParser.patch
 
-* log4javascript (http://log4javascript.org/), Version 1.4.10
-  License: Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0.html)
-  Location: js-dependencies/src/main/js/log4javascript/log4javascript_uncompressed.js
-  Modifications: none
-  Webjar: <groupId>org.webjars</groupId>
-          <artifactId>log4javascript</artifactId>
-          <version>1.4.10</version>
-
 * UUID (https://gist.github.com/jed/982883)
   License: WTF Public License (https://gist.github.com/jed/982883#file-license-txt)
   Location: js-dependencies/src/main/js/uuid/

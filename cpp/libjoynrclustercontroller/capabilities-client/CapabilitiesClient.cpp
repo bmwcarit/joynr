@@ -21,42 +21,17 @@
  * Client for the global capabilities directory.
  */
 
+#include "joynr/ClusterControllerSettings.h"
 #include "libjoynrclustercontroller/capabilities-client/CapabilitiesClient.h"
-
-#include <cassert>
-#include <cstdint>
-#include <string>
-
-#include "joynr/DispatcherUtils.h"
-#include "joynr/Future.h"
-#include "joynr/MessagingQos.h"
-#include "joynr/ProxyBuilder.h"
-#include "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy.h"
-#include "joynr/types/DiscoveryQos.h"
 
 namespace joynr
 {
 
-// The capabilitiesProxyBuilder will use as MessagingQoS the one provided by the CapabilitiesClient
-// user. If nothing is provided the default MessageQoS::ttl will be used.
-//
-// Additionally, if the capabilitiesProxyBuilder is not configured correctly an excpetion will
-// be thrown (see ProxyBuilder::build())
-// The configuration excpects that a discoveryQoS is set (see ProxyBuilder::setDiscoveryQos())
-// The capabilitiesClient should not be responsible to change the DiscoveryQoS.
-
-CapabilitiesClient::CapabilitiesClient()
-        : defaultCapabilitiesProxy(nullptr), capabilitiesProxyBuilder(nullptr)
+CapabilitiesClient::CapabilitiesClient(const ClusterControllerSettings& clusterControllerSettings)
+        : capabilitiesProxy(nullptr),
+          messagingQos(),
+          touchTtl(clusterControllerSettings.getCapabilitiesFreshnessUpdateIntervalMs().count())
 {
-}
-
-std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> CapabilitiesClient::
-        getGlobalCapabilitiesDirectoryProxy(std::int64_t messagingTtl)
-{
-    assert(capabilitiesProxyBuilder);
-    std::lock_guard<std::mutex> lock(capabilitiesProxyBuilderMutex);
-    return std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy>(
-            capabilitiesProxyBuilder->setMessagingQos(MessagingQos(messagingTtl))->build());
 }
 
 void CapabilitiesClient::add(
@@ -64,8 +39,7 @@ void CapabilitiesClient::add(
         std::function<void()> onSuccess,
         std::function<void(const exceptions::JoynrRuntimeException& error)> onError)
 {
-    assert(defaultCapabilitiesProxy);
-    defaultCapabilitiesProxy->addAsync(entry, onSuccess, onError);
+    capabilitiesProxy->addAsync(entry, onSuccess, onError);
 }
 
 void CapabilitiesClient::add(
@@ -73,20 +47,17 @@ void CapabilitiesClient::add(
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError)
 {
-    assert(defaultCapabilitiesProxy);
-    defaultCapabilitiesProxy->addAsync(globalDiscoveryEntries, onSuccess, onRuntimeError);
+    capabilitiesProxy->addAsync(globalDiscoveryEntries, onSuccess, onRuntimeError);
 }
 
 void CapabilitiesClient::remove(const std::string& participantId)
 {
-    assert(defaultCapabilitiesProxy);
-    defaultCapabilitiesProxy->removeAsync(participantId);
+    capabilitiesProxy->removeAsync(participantId);
 }
 
 void CapabilitiesClient::remove(std::vector<std::string> participantIdList)
 {
-    assert(defaultCapabilitiesProxy);
-    defaultCapabilitiesProxy->removeAsync(participantIdList);
+    capabilitiesProxy->removeAsync(participantIdList);
 }
 
 void CapabilitiesClient::lookup(
@@ -96,9 +67,10 @@ void CapabilitiesClient::lookup(
         std::function<void(const std::vector<types::GlobalDiscoveryEntry>& result)> onSuccess,
         std::function<void(const exceptions::JoynrRuntimeException& error)> onError)
 {
-    std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> proxy =
-            getGlobalCapabilitiesDirectoryProxy(messagingTtl);
-    proxy->lookupAsync(domains, interfaceName, std::move(onSuccess), std::move(onError));
+    MessagingQos lookupMessagingQos = messagingQos;
+    lookupMessagingQos.setTtl(messagingTtl);
+    capabilitiesProxy->lookupAsync(
+            domains, interfaceName, std::move(onSuccess), std::move(onError), lookupMessagingQos);
 }
 
 void CapabilitiesClient::lookup(
@@ -107,16 +79,14 @@ void CapabilitiesClient::lookup(
                 onSuccess,
         std::function<void(const exceptions::JoynrRuntimeException& error)> onError)
 {
-    assert(defaultCapabilitiesProxy);
-    defaultCapabilitiesProxy->lookupAsync(
-            participantId,
-            [onSuccess = std::move(onSuccess)](
-                    const joynr::types::GlobalDiscoveryEntry& capability) {
-                std::vector<joynr::types::GlobalDiscoveryEntry> result;
-                result.push_back(capability);
-                onSuccess(result);
-            },
-            std::move(onError));
+    capabilitiesProxy->lookupAsync(participantId,
+                                   [onSuccess = std::move(onSuccess)](
+                                           const joynr::types::GlobalDiscoveryEntry& capability) {
+                                       std::vector<joynr::types::GlobalDiscoveryEntry> result;
+                                       result.push_back(capability);
+                                       onSuccess(result);
+                                   },
+                                   std::move(onError));
 }
 
 void CapabilitiesClient::touch(
@@ -124,18 +94,18 @@ void CapabilitiesClient::touch(
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError)
 {
-    assert(defaultCapabilitiesProxy);
-    defaultCapabilitiesProxy->touchAsync(
-            clusterControllerId, std::move(onSuccess), std::move(onError));
+    MessagingQos touchMessagingQos = messagingQos;
+    touchMessagingQos.setTtl(touchTtl);
+    capabilitiesProxy->touchAsync(
+            clusterControllerId, std::move(onSuccess), std::move(onError), touchMessagingQos);
 }
 
-void CapabilitiesClient::setProxyBuilder(std::shared_ptr<
-        IProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>> inCapabilitiesProxyBuilder)
+void CapabilitiesClient::setProxy(
+        std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> capabilitiesProxy,
+        MessagingQos messagingQos)
 {
-    assert(inCapabilitiesProxyBuilder);
-    std::lock_guard<std::mutex> lock(capabilitiesProxyBuilderMutex);
-    capabilitiesProxyBuilder = std::move(inCapabilitiesProxyBuilder);
-    defaultCapabilitiesProxy = capabilitiesProxyBuilder->build();
+    this->capabilitiesProxy = std::move(capabilitiesProxy);
+    this->messagingQos = std::move(messagingQos);
 }
 
 } // namespace joynr

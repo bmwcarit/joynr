@@ -48,10 +48,7 @@ function ProviderEvent(settings) {
     this._callbacks = [];
     this._filters = [];
     this._settings = settings;
-
-    var privateProviderEvent = Util.forwardPrototype(this);
-    privateProviderEvent.selective = settings.selective; // TODO: create a getter for this.selective instead
-    return Object.freeze(privateProviderEvent);
+    this.selective = settings.selective;
 }
 
 /**

@@ -1,6 +1,5 @@
 /*jslint node: true */
 
-/*global Buffer: true */
 /*
  * #%L
  * %%

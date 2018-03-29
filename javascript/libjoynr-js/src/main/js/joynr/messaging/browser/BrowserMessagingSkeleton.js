@@ -22,7 +22,7 @@ var JoynrMessage = require("../JoynrMessage");
 var Typing = require("../../util/Typing");
 var Util = require("../../util/UtilInternal");
 var JSONSerializer = require("../../util/JSONSerializer");
-var LoggerFactory = require("../../system/LoggerFactory");
+var LoggingManager = require("../../system/LoggingManager");
 
 /**
  * @constructor BrowserMessagingSkeleton
@@ -31,7 +31,7 @@ var LoggerFactory = require("../../system/LoggerFactory");
  * @param {WebMessagingSkeleton} settings.webMessagingSkeleton a web messaging skeleton receiving web messages
  */
 function BrowserMessagingSkeleton(settings) {
-    var log = LoggerFactory.getLogger("joynr/messaging/browser/BrowserMessagingSkeleton");
+    var log = LoggingManager.getLogger("joynr/messaging/browser/BrowserMessagingSkeleton");
     Typing.checkProperty(settings, "Object", "settings");
     Typing.checkProperty(settings.webMessagingSkeleton, Object, "settings.webMessagingSkeleton");
 

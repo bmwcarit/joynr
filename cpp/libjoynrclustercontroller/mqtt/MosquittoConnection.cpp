@@ -19,6 +19,8 @@
 
 #include "libjoynrclustercontroller/mqtt/MosquittoConnection.h"
 
+#include <openssl/ssl.h>
+
 #include "joynr/ClusterControllerSettings.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/Util.h"
@@ -80,6 +82,19 @@ MosquittoConnection::MosquittoConnection(const MessagingSettings& messagingSetti
             mosqpp::lib_cleanup();
             JOYNR_LOG_FATAL(
                     logger(), "fatal failure to initialize TLS connection - {}", errorString);
+            return;
+        }
+
+        const std::string tlsCiphers = ccSettings.getMqttTlsCiphers();
+        rc = tls_opts_set(SSL_VERIFY_PEER,
+                          ccSettings.getMqttTlsVersion().c_str(),
+                          tlsCiphers.empty() ? nullptr : tlsCiphers.c_str());
+        if (rc != MOSQ_ERR_SUCCESS) {
+            const std::string errorString(getErrorString(rc));
+            mosqpp::lib_cleanup();
+            JOYNR_LOG_FATAL(
+                    logger(), "fatal failure to initialize TLS connection - {}", errorString);
+            return;
         }
     } else {
         JOYNR_LOG_DEBUG(logger(), "MQTT connection not encrypted");

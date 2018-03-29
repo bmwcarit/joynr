@@ -26,12 +26,9 @@
 #include <mutex>
 #include <sstream>
 
-#include <boost/asio/io_service.hpp>
-
 #include "joynr/BroadcastSubscriptionRequest.h"
 #include "joynr/CallContextStorage.h"
 #include "joynr/DelayedScheduler.h"
-#include "joynr/DispatcherUtils.h"
 #include "joynr/IPublicationSender.h"
 #include "joynr/IRequestInterpreter.h"
 #include "joynr/InterfaceRegistrar.h"
@@ -45,6 +42,7 @@
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/SubscriptionUtil.h"
 #include "joynr/ThreadPoolDelayedScheduler.h"
+#include "joynr/TimePoint.h"
 #include "joynr/UnicastSubscriptionQos.h"
 #include "joynr/Util.h"
 #include "joynr/exceptions/JoynrException.h"
@@ -181,9 +179,8 @@ void PublicationManager::sendSubscriptionReply(std::weak_ptr<IPublicationSender>
     if (expiryDateMs == SubscriptionQos::NO_EXPIRY_DATE()) {
         messagingQos.setTtl(INT64_MAX);
     } else {
-        std::int64_t ttl = DispatcherUtils::convertAbsoluteTimeToTtl(
-                JoynrTimePoint(std::chrono::milliseconds(expiryDateMs)));
-        messagingQos.setTtl(ttl);
+        const auto timePoint = TimePoint::fromAbsoluteMs(expiryDateMs);
+        messagingQos.setTtl(timePoint.relativeFromNow().count());
     }
     if (auto publicationSenderSharedPtr = publicationSender.lock()) {
         publicationSenderSharedPtr->sendSubscriptionReply(
@@ -237,21 +234,21 @@ void PublicationManager::addSubscriptionCleanupIfNecessary(std::shared_ptr<Publi
                                                            const std::string& subscriptionId)
 {
     if (qos->getExpiryDateMs() != SubscriptionQos::NO_EXPIRY_DATE()) {
-        std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
-                                   std::chrono::system_clock::now().time_since_epoch()).count();
-        std::int64_t publicationEndDelay;
+
         std::chrono::hours tolerance = std::chrono::hours(1);
-        JoynrTimePoint max = DispatcherUtils::getMaxAbsoluteTime() - tolerance;
-        if (qos->getExpiryDateMs() >
-            max.time_since_epoch().count() - static_cast<std::int64_t>(ttlUplift)) {
-            publicationEndDelay = max.time_since_epoch().count() - now;
+        const TimePoint max = TimePoint::max() - tolerance;
+        TimePoint publicationEnd;
+        if (qos->getExpiryDateMs() > max.toMilliseconds() - static_cast<std::int64_t>(ttlUplift)) {
+            publicationEnd = max;
         } else {
-            publicationEndDelay = qos->getExpiryDateMs() + ttlUplift - now;
+            publicationEnd = TimePoint::fromAbsoluteMs(qos->getExpiryDateMs() + ttlUplift);
         }
         publication->publicationEndRunnableHandle = delayedScheduler->schedule(
                 std::make_shared<PublicationEndRunnable>(shared_from_this(), subscriptionId),
-                std::chrono::milliseconds(publicationEndDelay));
-        JOYNR_LOG_TRACE(logger(), "publication will end in {}  ms", publicationEndDelay);
+                publicationEnd.relativeFromNow());
+        JOYNR_LOG_TRACE(logger(),
+                        "publication will end in {}  ms",
+                        publicationEnd.relativeFromNow().count());
     }
 }
 
@@ -304,13 +301,11 @@ void PublicationManager::handleAttributeSubscriptionRequest(
                     std::make_shared<PublisherRunnable>(shared_from_this(), subscriptionId));
         } else {
             JOYNR_LOG_WARN(logger(), "publication end is in the past");
-            std::int64_t expiryDateMs =
-                    DispatcherUtils::convertTtlToAbsoluteTime(60000).time_since_epoch().count() +
-                    ttlUplift;
+            const TimePoint expiryDate = TimePoint::fromRelativeMs(60000) + ttlUplift;
             sendSubscriptionReply(publicationSender,
                                   requestInfo->getProviderId(),
                                   requestInfo->getProxyId(),
-                                  expiryDateMs,
+                                  expiryDate.toMilliseconds(),
                                   subscriptionId,
                                   std::make_shared<exceptions::SubscriptionException>(
                                           "publication end is in the past", subscriptionId));
@@ -450,13 +445,11 @@ void PublicationManager::handleBroadcastSubscriptionRequest(
                                   subscriptionId);
         } else {
             JOYNR_LOG_WARN(logger(), "publication end is in the past");
-            std::int64_t expiryDateMs =
-                    DispatcherUtils::convertTtlToAbsoluteTime(60000).time_since_epoch().count() +
-                    ttlUplift;
+            const TimePoint expiryDate = TimePoint::fromRelativeMs(60000) + ttlUplift;
             sendSubscriptionReply(publicationSender,
                                   requestInfo->getProviderId(),
                                   requestInfo->getProxyId(),
-                                  expiryDateMs,
+                                  expiryDate.toMilliseconds(),
                                   subscriptionId,
                                   std::make_shared<exceptions::SubscriptionException>(
                                           "publication end is in the past", subscriptionId));

@@ -21,7 +21,6 @@ package io.joynr.messaging.mqtt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -33,6 +32,7 @@ import static org.mockito.Mockito.when;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.junit.Assert.fail;
 import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.HashSet;
@@ -61,10 +61,8 @@ import com.google.common.collect.Sets;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MqttMessagingSkeletonTest {
+    private final int maxIncomingMqttRequests = 20;
 
-    private final int repeatedMqttMessageIgnorePeriodMs = 1000;
-    private final int maxMqttMessagesInQueue = 20;
-    private final boolean backpressureEnabled = true;
     private MqttMessagingSkeleton subject;
 
     @Mock
@@ -101,9 +99,7 @@ public class MqttMessagingSkeletonTest {
     @Before
     public void setup() {
         subject = new MqttMessagingSkeleton(ownAddress,
-                                            repeatedMqttMessageIgnorePeriodMs,
-                                            maxMqttMessagesInQueue,
-                                            backpressureEnabled,
+                                            maxIncomingMqttRequests,
                                             messageRouter,
                                             mqttClientFactory,
                                             mqttTopicPrefixProvider,
@@ -164,23 +160,21 @@ public class MqttMessagingSkeletonTest {
         RawMessagingPreprocessor preprocessor = mock(RawMessagingPreprocessor.class);
         when(preprocessor.process(any(byte[].class), anyMap())).then(returnsFirstArg());
         subject = new MqttMessagingSkeleton(ownAddress,
-                                            repeatedMqttMessageIgnorePeriodMs,
-                                            maxMqttMessagesInQueue,
-                                            backpressureEnabled,
+                                            maxIncomingMqttRequests,
                                             messageRouter,
                                             mqttClientFactory,
                                             mqttTopicPrefixProvider,
                                             preprocessor,
                                             new HashSet<JoynrMessageProcessor>());
 
-        ImmutableMessage message = createTestMessage();
+        ImmutableMessage rqMessage = createTestRequestMessage();
 
-        subject.transmit(message.getSerializedMessage(), 42, 0, failIfCalledAction);
+        subject.transmit(rqMessage.getSerializedMessage(), failIfCalledAction);
 
         ArgumentCaptor<ImmutableMessage> captor = ArgumentCaptor.forClass(ImmutableMessage.class);
         verify(messageRouter).route(captor.capture());
 
-        assertArrayEquals(message.getSerializedMessage(), captor.getValue().getSerializedMessage());
+        assertArrayEquals(rqMessage.getSerializedMessage(), captor.getValue().getSerializedMessage());
     }
 
     @Test
@@ -190,236 +184,111 @@ public class MqttMessagingSkeletonTest {
         when(processorMock.processIncoming(any(ImmutableMessage.class))).then(returnsFirstArg());
 
         subject = new MqttMessagingSkeleton(ownAddress,
-                                            repeatedMqttMessageIgnorePeriodMs,
-                                            maxMqttMessagesInQueue,
-                                            backpressureEnabled,
+                                            maxIncomingMqttRequests,
                                             messageRouter,
                                             mqttClientFactory,
                                             mqttTopicPrefixProvider,
                                             new NoOpRawMessagingPreprocessor(),
                                             Sets.newHashSet(processorMock));
 
-        ImmutableMessage message = createTestMessage();
+        ImmutableMessage rqMessage = createTestRequestMessage();
 
-        subject.transmit(message.getSerializedMessage(), 42, 0, failIfCalledAction);
+        subject.transmit(rqMessage.getSerializedMessage(), failIfCalledAction);
 
         ArgumentCaptor<ImmutableMessage> argCaptor = ArgumentCaptor.forClass(ImmutableMessage.class);
         verify(processorMock).processIncoming(argCaptor.capture());
 
-        Assert.assertArrayEquals(message.getSerializedMessage(), argCaptor.getValue().getSerializedMessage());
+        Assert.assertArrayEquals(rqMessage.getSerializedMessage(), argCaptor.getValue().getSerializedMessage());
     }
 
     @Test
-    public void testClientNotifiedWhenMessageIsProcessed() throws Exception {
-        final int mqttMessageId = -753;
-        final int mqttQos = 1;
-        ImmutableMessage message = createTestMessage();
-        final String messageId = message.getId();
-
-        subject.transmit(message.getSerializedMessage(), mqttMessageId, mqttQos, failIfCalledAction);
-
-        Thread.sleep(50);
-        verify(mqttClient, times(0)).messageReceivedAndProcessingFinished(anyInt(), anyInt());
-
-        subject.messageProcessed(messageId);
-        verify(mqttClient).messageReceivedAndProcessingFinished(mqttMessageId, mqttQos);
-    }
-
-    @Test
-    public void testClientNotifiedForInvalidMessage() throws Exception {
-        final int mqttMessageId = -333;
-        final int mqttQos = 1;
-
+    public void testFailureActionCalledForInvalidMessage() throws Exception {
         Semaphore semaphore = new Semaphore(0);
         subject.transmit("Invalid message which cannot be deserialized".getBytes(),
-                         mqttMessageId,
-                         mqttQos,
                          getExpectToBeCalledAction(semaphore));
 
-        verify(mqttClient).messageReceivedAndProcessingFinished(mqttMessageId, mqttQos);
         assertTrue(semaphore.tryAcquire());
     }
 
     @Test
-    public void testClientNotifiedAfterExceptionFromMessageRouter() throws Exception {
-        final int mqttMessageId = -44;
-        final int mqttQos = 1;
-
-        ImmutableMessage message = createTestMessage();
+    public void testFailureActionCalledAfterExceptionFromMessageRouter() throws Exception {
+        ImmutableMessage rqMessage = createTestRequestMessage();
 
         doThrow(new JoynrRuntimeException()).when(messageRouter).route(any(ImmutableMessage.class));
 
         Semaphore semaphore = new Semaphore(0);
-        subject.transmit(message.getSerializedMessage(), mqttMessageId, mqttQos, getExpectToBeCalledAction(semaphore));
-
-        verify(mqttClient).messageReceivedAndProcessingFinished(mqttMessageId, mqttQos);
-        assertTrue(semaphore.tryAcquire());
-    }
-
-    @Test
-    public void testClientNotifiedOnlyOnceWithExceptionFromMessageRouter() throws Exception {
-        final int mqttMessageId = 476;
-        final int mqttQos = 1;
-        ImmutableMessage message = createTestMessage();
-        final String messageId = message.getId();
-
-        doThrow(new JoynrRuntimeException()).when(messageRouter).route(any(ImmutableMessage.class));
-
-        Semaphore semaphore = new Semaphore(0);
-        subject.transmit(message.getSerializedMessage(), mqttMessageId, mqttQos, getExpectToBeCalledAction(semaphore));
+        subject.transmit(rqMessage.getSerializedMessage(), getExpectToBeCalledAction(semaphore));
 
         assertTrue(semaphore.tryAcquire());
-        verify(mqttClient, times(1)).messageReceivedAndProcessingFinished(anyInt(), anyInt());
-
-        subject.messageProcessed(messageId);
-        verify(mqttClient, times(1)).messageReceivedAndProcessingFinished(mqttMessageId, mqttQos);
-
-        subject.messageProcessed(messageId);
-        verify(mqttClient, times(1)).messageReceivedAndProcessingFinished(mqttMessageId, mqttQos);
     }
 
     @Test
-    public void testClientNotifiedOnlyOnceWithoutExceptionFromMessageRouter() throws Exception {
-        final int mqttMessageId = 1453;
-        final int mqttQos = 1;
-        ImmutableMessage message = createTestMessage();
-        final String messageId = message.getId();
+    public void testFurtherRequestsAreDroppedWhenMaxForIncomingMqttRequestsIsReached() throws Exception {
+        feedMqttSkeletonWithRequests(maxIncomingMqttRequests);
+        assertEquals(0, subject.getDroppedMessagesCount());
+        verify(messageRouter, times(maxIncomingMqttRequests)).route(any(ImmutableMessage.class));
 
-        subject.transmit(message.getSerializedMessage(), mqttMessageId, mqttQos, failIfCalledAction);
-
-        Thread.sleep(50);
-        verify(mqttClient, times(0)).messageReceivedAndProcessingFinished(mqttMessageId, mqttQos);
-
-        subject.messageProcessed(messageId);
-        verify(mqttClient, times(1)).messageReceivedAndProcessingFinished(mqttMessageId, mqttQos);
-
-        subject.messageProcessed(messageId);
-        verify(mqttClient, times(1)).messageReceivedAndProcessingFinished(mqttMessageId, mqttQos);
-    }
-
-    private void transmitDuplicatedMessageForRepeatMqttMessageIgnorePeriodTests(ImmutableMessage message1,
-                                                                                ImmutableMessage message2,
-                                                                                int sleepDurationMs) throws Exception {
-        final int mqttMessageId = 1487;
-        final int mqttMessageId2 = 1516;
-        final int mqttQos = 1;
-
-        subject.transmit(message1.getSerializedMessage(), mqttMessageId, mqttQos, failIfCalledAction);
-        subject.messageProcessed(message1.getId());
-        subject.transmit(message1.getSerializedMessage(), mqttMessageId, mqttQos, failIfCalledAction);
-
-        Thread.sleep(sleepDurationMs);
-
-        subject.transmit(message2.getSerializedMessage(), mqttMessageId2, mqttQos, failIfCalledAction);
-        subject.messageProcessed(message2.getId());
-
-        subject.transmit(message1.getSerializedMessage(), mqttMessageId, mqttQos, failIfCalledAction);
-    }
-
-    @Test
-    public void testDuplicatedMessageDroppedWithinRepeatedMqttMessageIgnorePeriod() throws Exception {
-        ImmutableMessage message1 = createTestMessage();
-        ImmutableMessage message2 = createTestMessage();
-
-        final int toleranceMs = 300;
-        final int sleepDurationMs = repeatedMqttMessageIgnorePeriodMs - toleranceMs;
-        assertTrue(sleepDurationMs > 0);
-
-        transmitDuplicatedMessageForRepeatMqttMessageIgnorePeriodTests(message1, message2, sleepDurationMs);
-
-        ArgumentCaptor<ImmutableMessage> captor = ArgumentCaptor.forClass(ImmutableMessage.class);
-        verify(messageRouter, times(2)).route(captor.capture());
-
-        assertArrayEquals(message1.getSerializedMessage(), captor.getAllValues().get(0).getSerializedMessage());
-        assertArrayEquals(message2.getSerializedMessage(), captor.getAllValues().get(1).getSerializedMessage());
-    }
-
-    @Test
-    public void testDuplicatedMessageNotDroppedAfterRepeatedMqttMessageIgnorePeriod() throws Exception {
-        ImmutableMessage message1 = createTestMessage();
-        ImmutableMessage message2 = createTestMessage();
-
-        final int toleranceMs = 50;
-        final int sleepDurationMs = repeatedMqttMessageIgnorePeriodMs + toleranceMs;
-
-        transmitDuplicatedMessageForRepeatMqttMessageIgnorePeriodTests(message1, message2, sleepDurationMs);
-
-        ArgumentCaptor<ImmutableMessage> captor = ArgumentCaptor.forClass(ImmutableMessage.class);
-        verify(messageRouter, times(3)).route(captor.capture());
-
-        assertArrayEquals(message1.getSerializedMessage(), captor.getAllValues().get(0).getSerializedMessage());
-        assertArrayEquals(message2.getSerializedMessage(), captor.getAllValues().get(1).getSerializedMessage());
-        assertArrayEquals(message1.getSerializedMessage(), captor.getAllValues().get(2).getSerializedMessage());
-    }
-
-    @Test
-    public void testMessagesAreRejectedWhenMaxMqttMessagesInQueueIsReached() throws Exception {
-        final int mqttMessageId = 1517;
-        final int mqttQos = 1;
-
-        for (int i = 0; i < maxMqttMessagesInQueue; i++) {
-            subject.transmit(createTestMessage().getSerializedMessage(), mqttMessageId, mqttQos, failIfCalledAction);
-        }
-        verify(messageRouter, times(maxMqttMessagesInQueue)).route(any(ImmutableMessage.class));
-
-        // As the queue is full, further messages should not be transmitted
-        subject.transmit(createTestMessage().getSerializedMessage(), mqttMessageId, mqttQos, failIfCalledAction);
-        verify(messageRouter, times(maxMqttMessagesInQueue)).route(any(ImmutableMessage.class));
-    }
-
-    @Test
-    public void testMessagesAreAcceptedAgainWhenMessageIsProcessedAfterMaxMessagesInQueueReached() throws Exception {
-        final int mqttQos = 1;
-        final int mqttMessageId1_willBeProcessed = 1618;
-        final int mqttMessageId2_fillingUpQueue = 1648;
-        final int mqttMessageId3_willBeRejected = 1789;
-        final int mqttMessageId4_willBeAcceptedAsQueueHasFreeSlotAgain = 2017;
-
-        ImmutableMessage message1 = createTestMessage();
-        final String messageId1 = message1.getId();
-        subject.transmit(message1.getSerializedMessage(), mqttMessageId1_willBeProcessed, mqttQos, failIfCalledAction);
-
-        for (int i = 0; i < maxMqttMessagesInQueue - 1; i++) {
-            subject.transmit(createTestMessage().getSerializedMessage(),
-                             mqttMessageId2_fillingUpQueue,
-                             mqttQos,
-                             failIfCalledAction);
-        }
-        verify(messageRouter, times(maxMqttMessagesInQueue)).route(any(ImmutableMessage.class));
-
-        // As the queue is full, further messages should not be transmitted
-        // until an already accepted message is marked as processed
-        subject.transmit(createTestMessage().getSerializedMessage(),
-                         mqttMessageId3_willBeRejected,
-                         mqttQos,
+        // As the limit is reached, further requests should be dropped
+        subject.transmit(createTestRequestMessage().getSerializedMessage(), failIfCalledAction);
+        subject.transmit(createTestMessage(Message.VALUE_MESSAGE_TYPE_ONE_WAY).getSerializedMessage(),
                          failIfCalledAction);
-        verify(messageRouter, times(maxMqttMessagesInQueue)).route(any(ImmutableMessage.class));
+        assertEquals(2, subject.getDroppedMessagesCount());
+        verify(messageRouter, times(maxIncomingMqttRequests)).route(any(ImmutableMessage.class));
+    }
+
+    @Test
+    public void testOtherMessagesAreAcceptedEvenWhenMaxForIncomingMqttRequestsIsReached() throws Exception {
+        feedMqttSkeletonWithRequests(maxIncomingMqttRequests);
+        assertEquals(0, subject.getDroppedMessagesCount());
+        verify(messageRouter, times(maxIncomingMqttRequests)).route(any(ImmutableMessage.class));
+
+        // Further non-request messages should still be accepted
+        subject.transmit(createTestMessage(Message.VALUE_MESSAGE_TYPE_REPLY).getSerializedMessage(), failIfCalledAction);
+        subject.transmit(createTestMessage(Message.VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST).getSerializedMessage(),
+                         failIfCalledAction);
+        subject.transmit(createTestMessage(Message.VALUE_MESSAGE_TYPE_MULTICAST).getSerializedMessage(),
+                         failIfCalledAction);
+        subject.transmit(createTestMessage(Message.VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST).getSerializedMessage(),
+                         failIfCalledAction);
+        subject.transmit(createTestMessage(Message.VALUE_MESSAGE_TYPE_PUBLICATION).getSerializedMessage(),
+                         failIfCalledAction);
+        subject.transmit(createTestMessage(Message.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY).getSerializedMessage(),
+                         failIfCalledAction);
+        subject.transmit(createTestMessage(Message.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST).getSerializedMessage(),
+                         failIfCalledAction);
+        subject.transmit(createTestMessage(Message.VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP).getSerializedMessage(),
+                         failIfCalledAction);
+        assertEquals(0, subject.getDroppedMessagesCount());
+        verify(messageRouter, times(maxIncomingMqttRequests + 8)).route(any(ImmutableMessage.class));
+    }
+
+    @Test
+    public void testRequestsAreAcceptedAgainWhenPreviousAreProcessedAfterMaxIncomingRequestsReached() throws Exception {
+        ImmutableMessage rqMessage1 = createTestRequestMessage();
+        final String messageId1 = rqMessage1.getId();
+        subject.transmit(rqMessage1.getSerializedMessage(), failIfCalledAction);
+
+        feedMqttSkeletonWithRequests(maxIncomingMqttRequests - 1);
+        verify(messageRouter, times(maxIncomingMqttRequests)).route(any(ImmutableMessage.class));
+
+        // As the limit is reached, further requests should be dropped and not transmitted
+        // until an already accepted request is marked as processed
+        subject.transmit(createTestRequestMessage().getSerializedMessage(), failIfCalledAction);
+        assertEquals(1, subject.getDroppedMessagesCount());
+        verify(messageRouter, times(maxIncomingMqttRequests)).route(any(ImmutableMessage.class));
 
         subject.messageProcessed(messageId1);
 
-        subject.transmit(createTestMessage().getSerializedMessage(),
-                         mqttMessageId4_willBeAcceptedAsQueueHasFreeSlotAgain,
-                         mqttQos,
-                         failIfCalledAction);
-        verify(messageRouter, times(maxMqttMessagesInQueue + 1)).route(any(ImmutableMessage.class));
+        subject.transmit(createTestRequestMessage().getSerializedMessage(), failIfCalledAction);
+        verify(messageRouter, times(maxIncomingMqttRequests + 1)).route(any(ImmutableMessage.class));
     }
 
     @Test
-    public void testPubAckSentWhenBackpressureIsDisabled() throws Exception {
-        final int mqttQos = 1;
-        final int mqttMessageId1 = 1234;
-        final int mqttMessageId2 = 4321;
-
-        ImmutableMessage message1 = createTestMessage();
-        ImmutableMessage message2 = createTestMessage();
-
-        final boolean testLocalBackpressureEnabled = false;
-        final int testLocalmaxMqttMessagesInQueue = 1;
+    public void testNoMessagesAreDroppedWhenNoMaxForIncomingMqttRequestsIsSet() throws Exception {
+        final int maxIncomingMqttRequestsNoLimit = 0;
 
         subject = new MqttMessagingSkeleton(ownAddress,
-                                            repeatedMqttMessageIgnorePeriodMs,
-                                            testLocalmaxMqttMessagesInQueue,
-                                            testLocalBackpressureEnabled,
+                                            maxIncomingMqttRequestsNoLimit,
                                             messageRouter,
                                             mqttClientFactory,
                                             mqttTopicPrefixProvider,
@@ -427,14 +296,30 @@ public class MqttMessagingSkeletonTest {
                                             new HashSet<JoynrMessageProcessor>());
         subject.init();
 
-        subject.transmit(message1.getSerializedMessage(), mqttMessageId1, mqttQos, failIfCalledAction);
-        subject.transmit(message2.getSerializedMessage(), mqttMessageId2, mqttQos, failIfCalledAction);
+        // number of incoming messages is arbitrarily selected
+        feedMqttSkeletonWithRequests(2 * maxIncomingMqttRequests);
+        feedMqttSkeletonWithMessages(Message.VALUE_MESSAGE_TYPE_REPLY, 2 * maxIncomingMqttRequests);
+        feedMqttSkeletonWithMessages(Message.VALUE_MESSAGE_TYPE_MULTICAST, 2 * maxIncomingMqttRequests);
 
-        verify(mqttClient).messageReceivedAndProcessingFinished(mqttMessageId1, mqttQos);
-        verify(mqttClient).messageReceivedAndProcessingFinished(mqttMessageId2, mqttQos);
+        verify(messageRouter, times(3 * 2 * maxIncomingMqttRequests)).route(any(ImmutableMessage.class));
+        assertEquals(0, subject.getDroppedMessagesCount());
     }
 
-    private ImmutableMessage createTestMessage() throws Exception {
+    private void feedMqttSkeletonWithRequests(int numRequests) throws Exception {
+        feedMqttSkeletonWithMessages(Message.VALUE_MESSAGE_TYPE_REQUEST, numRequests);
+    }
+
+    private void feedMqttSkeletonWithMessages(String messageType, int numMessages) throws Exception {
+        for (int i = 0; i < numMessages; i++) {
+            subject.transmit(createTestMessage(messageType).getSerializedMessage(), failIfCalledAction);
+        }
+    }
+
+    private ImmutableMessage createTestRequestMessage() throws Exception {
+        return createTestMessage(Message.VALUE_MESSAGE_TYPE_REQUEST);
+    }
+
+    private ImmutableMessage createTestMessage(String messageType) throws Exception {
         MutableMessage message = new MutableMessage();
 
         ObjectMapper objectMapper = new ObjectMapper();
@@ -445,7 +330,7 @@ public class MqttMessagingSkeletonTest {
         message.setTtlAbsolute(true);
         message.setTtlMs(100000);
         message.setPayload(new byte[]{ 0, 1, 2 });
-        message.setType(Message.VALUE_MESSAGE_TYPE_REQUEST);
+        message.setType(messageType);
         message.setReplyTo(objectMapper.writeValueAsString(address));
 
         return message.getImmutableMessage();

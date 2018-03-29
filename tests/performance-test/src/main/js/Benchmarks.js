@@ -136,7 +136,8 @@ function Benchmarks(proxy, loadedJoynr) {
                     })
                     .then(proxy => proxy.simpleAttribute.set(args.data));
             }
-        }
+        },
+        simpleBroadcast: {}
     };
 }
 

@@ -19,7 +19,6 @@
  * limitations under the License.
  * #L%
  */
-
 var provisioning = require("../../../test-classes/joynr/provisioning/provisioning_cc");
 var InProcessRuntime; //= require("../../../classes/joynr/start/InProcessRuntime");
 var Promise = require("../../../classes/global/Promise");

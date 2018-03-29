@@ -23,18 +23,11 @@
 #include <atomic>
 #include <functional>
 #include <memory>
-#include <mutex>
 #include <string>
 
-#include "joynr/CapabilitiesRegistrar.h"
-#include "joynr/IKeychain.h"
 #include "joynr/JoynrRuntimeImpl.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/PrivateCopyAssign.h"
-#include "joynr/Semaphore.h"
-#include "joynr/SubscriptionManager.h"
-#include "joynr/SystemServicesSettings.h"
-#include "joynr/exceptions/JoynrException.h"
 
 namespace joynr
 {
@@ -46,6 +39,8 @@ class IMulticastAddressCalculator;
 class InProcessMessagingSkeleton;
 class LibJoynrMessageRouter;
 class Settings;
+class SubscriptionManager;
+class IKeychain;
 
 class LibJoynrRuntime : public JoynrRuntimeImpl
 {

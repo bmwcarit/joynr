@@ -30,6 +30,7 @@ import io.joynr.proxy.ProxyBuilder;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.PropertyLoader;
+import joynr.test.JoynrTestLoggingRule;
 import joynr.tests.DefaulttestProvider;
 import joynr.tests.testProxy;
 import joynr.types.ProviderQos;
@@ -49,6 +50,8 @@ import java.util.UUID;
 public abstract class AbstractSSLEnd2EndTest extends JoynrEnd2EndTest {
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractSSLEnd2EndTest.class);
+    @Rule
+    public JoynrTestLoggingRule joynrTestRule = new JoynrTestLoggingRule(logger);
 
     DefaulttestProvider provider;
     String domain;

@@ -35,6 +35,7 @@
 #include "joynr/SubscriptionStop.h"
 #include "joynr/MulticastSubscriptionQos.h"
 #include "joynr/OnChangeSubscriptionQos.h"
+#include "joynr/TimePoint.h"
 
 using namespace joynr;
 
@@ -166,25 +167,19 @@ TEST_F(MutableMessageFactoryTest, createRequest_withContentType)
 TEST_F(MutableMessageFactoryTest, createRequest)
 {
     MutableMessage mutableMessage = messageFactory.createRequest(senderID, receiverID, qos, request, isLocalMessage);
-    // warning if prepareRequest needs to long this assert will fail as it compares absolute
-    // timestamps
-    JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(
-            std::chrono::system_clock::now());
-    JoynrTimePoint expectedExpiryDate = now + std::chrono::milliseconds(qos.getTtl());
-    JoynrTimePoint expiryDate = mutableMessage.getExpiryDate();
-    EXPECT_NEAR(expectedExpiryDate.time_since_epoch().count(),
-                expiryDate.time_since_epoch().count(),
+    const TimePoint expectedExpiryDate = TimePoint::fromRelativeMs(qos.getTtl());
+    const TimePoint expiryDate = mutableMessage.getExpiryDate();
+    EXPECT_NEAR(expectedExpiryDate.toMilliseconds(),
+                expiryDate.toMilliseconds(),
                 100.);
     JOYNR_LOG_DEBUG(logger(),
                     "expiryDate: {} [{}]",
-                    DispatcherUtils::convertAbsoluteTimeToTtlString(expiryDate),
-                    std::chrono::duration_cast<std::chrono::milliseconds>(
-                            expiryDate.time_since_epoch()).count());
+                    expiryDate.toString(),
+                    expiryDate.toMilliseconds());
     JOYNR_LOG_DEBUG(logger(),
                     "expectedExpiryDate: {}  [{}]",
-                    DispatcherUtils::convertAbsoluteTimeToTtlString(expectedExpiryDate),
-                    std::chrono::duration_cast<std::chrono::milliseconds>(
-                            expectedExpiryDate.time_since_epoch()).count());
+                    expectedExpiryDate.toString(),
+                    expectedExpiryDate.toMilliseconds());
 
     checkSenderRecipient(mutableMessage);
     checkRequest(mutableMessage);

@@ -80,7 +80,7 @@ public:
         messagingStubFactory = std::make_shared<MockMessagingStubFactory>();
         messageRouter = createMessageRouter();
 
-        JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
+        const TimePoint now = TimePoint::now();
         mutableMessage.setExpiryDate(now + std::chrono::milliseconds(500));
         mutableMessage.setType(Message::VALUE_MESSAGE_TYPE_ONE_WAY());
     }
@@ -110,7 +110,6 @@ protected:
                     std::make_unique<WebSocketMulticastAddressCalculator>(localTransport),
                     enablePersistency,
                     std::move(transportStatuses),
-                    6,
                     std::move(messageQueueForMessageRouter),
                     std::move(transportNotAvailableQueue)
                 );
@@ -147,7 +146,6 @@ protected:
                     messageNotificationProviderParticipantId,
                     enablePersistency,
                     std::move(transportStatuses),
-                    6,
                     std::move(messageQueueForMessageRouter),
                     std::move(transportNotAvailableQueue)
                 );

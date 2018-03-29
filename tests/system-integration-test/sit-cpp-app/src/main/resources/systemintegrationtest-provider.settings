@@ -1,3 +1,2 @@
 [lib-joynr]
 participant-ids-persistence-file=systemintegrationtest-provider.participantids
-message-router-persistence-file=systemintegrationtest-provider-routing-table.persist

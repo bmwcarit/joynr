@@ -76,12 +76,7 @@ void HttpSender::sendMessage(
 
     auto startTime = std::chrono::system_clock::now();
 
-    std::chrono::milliseconds decayTimeMillis =
-            std::chrono::duration_cast<std::chrono::milliseconds>(
-                    message->getExpiryDate().time_since_epoch());
-    std::chrono::milliseconds nowMillis = std::chrono::duration_cast<std::chrono::milliseconds>(
-            std::chrono::system_clock::now().time_since_epoch());
-    std::chrono::milliseconds remainingTtl = decayTimeMillis - nowMillis;
+    std::chrono::milliseconds remainingTtl = message->getExpiryDate().relativeFromNow();
 
     // A channelId can have several Url's. Hence, we cannot use up all the time we have for
     // testing just one (in case it is not available). So we use just a fraction, yet at
@@ -93,7 +88,7 @@ void HttpSender::sendMessage(
     JOYNR_LOG_TRACE(logger(),
                     "Sending message; url: {}, time left: {}",
                     toUrl(*channelAddress),
-                    DispatcherUtils::convertAbsoluteTimeToTtlString(message->getExpiryDate()));
+                    message->getExpiryDate().relativeFromNow().count());
 
     JOYNR_LOG_TRACE(logger(), "going to buildRequest");
 
@@ -133,10 +128,9 @@ void HttpSender::sendMessage(
         }
     } else {
         JOYNR_LOG_DEBUG(logger(),
-                        "sending message - success; url: {} status code: {} at ",
+                        "sending message - success; url: {} status code: {}",
                         toUrl(*channelAddress),
-                        sendMessageResult.getStatusCode(),
-                        DispatcherUtils::nowInMilliseconds());
+                        sendMessageResult.getStatusCode());
     }
 }
 

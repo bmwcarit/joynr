@@ -43,6 +43,7 @@ module.exports = function (customMapping) {
                     .exclude('wscpp')
                     .exclude('bufferutil')
                     .exclude('utf-8-validate')
+                    .exclude('node-persist')
                     .bundle(function (err, buffer) {
                         if (err) {
                             console.log(file, err.toString());

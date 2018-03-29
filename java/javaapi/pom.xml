@@ -142,9 +142,9 @@
 							<model>${basedir}/../../basemodel/src/test/franca2</model>
 							<generationLanguage>java</generationLanguage>
 							<outputPath>${basedir}/src/test/generated</outputPath>
-							<parameter>>
+							<parameter>
 								<ignoreInvalidNullClassMembers>true</ignoreInvalidNullClassMembers>
-							</parameter>>
+							</parameter>
 						</configuration>
 					</execution>
 				</executions>

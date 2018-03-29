@@ -208,7 +208,7 @@ private:
     class MissedPublicationRunnable : public Runnable, public ObjectWithDecayTime
     {
     public:
-        MissedPublicationRunnable(const JoynrTimePoint& expiryDate,
+        MissedPublicationRunnable(const TimePoint& expiryDate,
                                   std::int64_t expectedIntervalMSecs,
                                   const std::string& subscriptionId,
                                   std::shared_ptr<Subscription> subscription,

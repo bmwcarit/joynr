@@ -26,7 +26,7 @@
 #include <boost/filesystem/path.hpp>
 
 #include "joynr/DiscoveryQos.h"
-#include "joynr/DispatcherUtils.h"
+#include "joynr/TimePoint.h"
 #include "joynr/JoynrRuntime.h"
 #include "joynr/Logger.h"
 
@@ -45,8 +45,8 @@ void syncTest(std::shared_ptr<tests::performance::EchoProxy> proxy,
     std::string data = std::string(stringLength, '#');
     std::string responseData;
 
-    JoynrTimePoint expiryDate = DispatcherUtils::convertTtlToAbsoluteTime(validityMs);
-    while (isRunning && std::chrono::system_clock::now() < expiryDate) {
+    const TimePoint expiryDate = TimePoint::fromRelativeMs(validityMs);
+    while (isRunning && TimePoint::now() < expiryDate) {
         try {
             std::this_thread::sleep_for(std::chrono::milliseconds(periodMs));
             proxy->echoString(responseData, data);
@@ -66,8 +66,8 @@ void asyncTest(std::shared_ptr<tests::performance::EchoProxy> proxy,
     auto onRuntimeError = [logger](const joynr::exceptions::JoynrRuntimeException& error) {
         JOYNR_LOG_ERROR(logger, "JoynrRuntimeException {}", error.getMessage());
     };
-    JoynrTimePoint expiryDate = DispatcherUtils::convertTtlToAbsoluteTime(validityMs);
-    while (isRunning && std::chrono::system_clock::now() < expiryDate) {
+    const TimePoint expiryDate = TimePoint::fromRelativeMs(validityMs);
+    while (isRunning && TimePoint::now() < expiryDate) {
         proxy->echoStringAsync(data);
     }
 }

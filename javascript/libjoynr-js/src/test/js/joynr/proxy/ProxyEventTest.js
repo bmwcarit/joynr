@@ -18,6 +18,7 @@
  * limitations under the License.
  * #L%
  */
+require("../../node-unit-test-helper");
 //TODO: some of this relies on the dummy implementation, change accordingly when implementing
 var ProxyAttribute = require("../../../classes/joynr/proxy/ProxyAttribute");
 var ProxyOperation = require("../../../classes/joynr/proxy/ProxyOperation");

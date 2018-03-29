@@ -346,9 +346,7 @@ TYPED_TEST(MessageRouterTest, cleanupExpiredMessagesFromTransportNotAvailableQue
 
     std::shared_ptr<ImmutableMessage> immutableMessage1 = this->mutableMessage.getImmutableMessage();
 
-    JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
-
-    this->mutableMessage.setExpiryDate(now + std::chrono::milliseconds(10000));
+    this->mutableMessage.setExpiryDate(TimePoint::fromRelativeMs(10000));
     std::shared_ptr<ImmutableMessage> immutableMessage2 = this->mutableMessage.getImmutableMessage();
     this->messageRouter->route(immutableMessage1);
     this->messageRouter->route(immutableMessage2);

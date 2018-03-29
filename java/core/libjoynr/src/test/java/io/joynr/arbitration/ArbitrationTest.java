@@ -23,6 +23,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -105,8 +106,8 @@ public class ArbitrationTest {
                 return null;
             }
         }).when(localDiscoveryAggregator).lookup(Mockito.<Callback> any(),
-                                                 Mockito.eq(new String[]{ domain }),
-                                                 Mockito.eq(interfaceName),
+                                                 eq(new String[]{ domain }),
+                                                 eq(interfaceName),
                                                  Mockito.<joynr.types.DiscoveryQos> any());
 
         Field discoveryEntryVersionFilterField = ArbitratorFactory.class.getDeclaredField("discoveryEntryVersionFilter");
@@ -165,7 +166,7 @@ public class ArbitrationTest {
             arbitrator.startArbitration();
 
             ArbitrationResult expectedArbitrationResult = new ArbitrationResult(expectedDiscoveryEntry);
-            Mockito.verify(arbitrationCallback, Mockito.times(1)).onSuccess(Mockito.eq(expectedArbitrationResult));
+            verify(arbitrationCallback, times(1)).onSuccess(eq(expectedArbitrationResult));
         } catch (DiscoveryException e) {
             Assert.fail("A Joyn Arbitration Exception has been thrown");
         }
@@ -214,8 +215,8 @@ public class ArbitrationTest {
                                                              localDiscoveryAggregator);
             arbitrator.setArbitrationListener(arbitrationCallback);
             arbitrator.startArbitration();
-            Mockito.verify(arbitrationCallback, Mockito.times(1)).onError(any(Throwable.class));
-            Mockito.verify(arbitrationCallback, Mockito.never()).onSuccess(Mockito.any(ArbitrationResult.class));
+            verify(arbitrationCallback, times(1)).onError(any(Throwable.class));
+            verify(arbitrationCallback, never()).onSuccess(any(ArbitrationResult.class));
         } catch (DiscoveryException e) {
             Assert.fail("A Joyn Arbitration Exception has been thrown");
         }
@@ -272,7 +273,7 @@ public class ArbitrationTest {
             arbitrator.startArbitration();
 
             ArbitrationResult expectedArbitrationResult = new ArbitrationResult(expectedDiscoveryEntry);
-            Mockito.verify(arbitrationCallback, Mockito.times(1)).onSuccess(Mockito.eq(expectedArbitrationResult));
+            verify(arbitrationCallback, times(1)).onSuccess(eq(expectedArbitrationResult));
         } catch (DiscoveryException e) {
             Assert.fail("A Joyn Arbitration Exception has been thrown");
         }
@@ -325,7 +326,7 @@ public class ArbitrationTest {
             arbitrator.startArbitration();
 
             ArbitrationResult expectedArbitrationResult = new ArbitrationResult(expectedDiscoveryEntry);
-            Mockito.verify(arbitrationCallback, Mockito.times(1)).onSuccess(Mockito.eq(expectedArbitrationResult));
+            verify(arbitrationCallback, times(1)).onSuccess(eq(expectedArbitrationResult));
         } catch (DiscoveryException e) {
             Assert.fail("A Joyn Arbitration Exception has been thrown");
         }
@@ -390,7 +391,7 @@ public class ArbitrationTest {
             arbitrator.startArbitration();
 
             ArbitrationResult expectedArbitrationResult = new ArbitrationResult(expectedDiscoveryEntry);
-            Mockito.verify(arbitrationCallback, Mockito.times(1)).onSuccess(Mockito.eq(expectedArbitrationResult));
+            verify(arbitrationCallback, times(1)).onSuccess(eq(expectedArbitrationResult));
         } catch (DiscoveryException e) {
             Assert.fail("A Joyn Arbitration Exception has been thrown");
         }
@@ -449,8 +450,8 @@ public class ArbitrationTest {
                                                              localDiscoveryAggregator);
             arbitrator.setArbitrationListener(arbitrationCallback);
             arbitrator.startArbitration();
-            Mockito.verify(arbitrationCallback, Mockito.times(1)).onError(any(Throwable.class));
-            Mockito.verify(arbitrationCallback, Mockito.never()).onSuccess(Mockito.any(ArbitrationResult.class));
+            verify(arbitrationCallback, times(1)).onError(any(Throwable.class));
+            verify(arbitrationCallback, never()).onSuccess(any(ArbitrationResult.class));
         } catch (DiscoveryException e) {
             Assert.fail("A Joyn Arbitration Exception has been thrown");
         }
@@ -524,7 +525,7 @@ public class ArbitrationTest {
             arbitrator.startArbitration();
 
             ArbitrationResult expectedArbitrationResult = new ArbitrationResult(expectedDiscoveryEntry);
-            Mockito.verify(arbitrationCallback, Mockito.times(1)).onSuccess(Mockito.eq(expectedArbitrationResult));
+            verify(arbitrationCallback, times(1)).onSuccess(eq(expectedArbitrationResult));
         } catch (DiscoveryException e) {
             Assert.fail("A Joyn Arbitration Exception has been thrown");
         }

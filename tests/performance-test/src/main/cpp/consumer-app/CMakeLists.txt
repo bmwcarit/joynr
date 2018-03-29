@@ -8,6 +8,7 @@ target_link_libraries(performance-consumer-app
     performance-generated
     ${Joynr_LIB_WS_LIBRARIES}
     ${Boost_LIBRARIES}
+    dummyKeychain
 )
 
 install(

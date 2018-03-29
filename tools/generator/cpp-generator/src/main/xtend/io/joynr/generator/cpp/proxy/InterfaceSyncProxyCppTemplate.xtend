@@ -88,7 +88,7 @@ class InterfaceSyncProxyCppTemplate extends InterfaceTemplate {
 				throw error;
 			}
 			else{
-				return connector->«getAttribute»(«attributeName»);
+				return connector->«getAttribute»(«attributeName», std::move(qos));
 			}
 		}
 	«ENDIF»
@@ -111,7 +111,7 @@ class InterfaceSyncProxyCppTemplate extends InterfaceTemplate {
 				throw error;
 			}
 			else{
-				return connector->«setAttribute»(«attributeName»);
+				return connector->«setAttribute»(«attributeName», std::move(qos));
 			}
 		}
 	«ENDIF»
@@ -142,7 +142,7 @@ class InterfaceSyncProxyCppTemplate extends InterfaceTemplate {
 			throw error;
 		}
 		else{
-			return connector->«methodName»(«outputUntypedParamList»«IF method.outputParameters.size > 0 && method.inputParameters.size > 0», «ENDIF»«params»);
+			return connector->«methodName»(«outputUntypedParamList»«IF method.outputParameters.size > 0», «ENDIF»«params»«IF method.inputParameters.size > 0»,«ENDIF» std::move(qos));
 		}
 	}
 «ENDFOR»

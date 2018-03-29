@@ -24,6 +24,8 @@ import java.util.concurrent.Semaphore;
 
 import org.junit.Assert;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,11 +37,25 @@ import joynr.interlanguagetest.TestInterfaceBroadcastInterface.BroadcastWithSing
 import joynr.interlanguagetest.namedTypeCollection2.ExtendedTypeCollectionEnumerationInTypeCollection;
 
 public class IltConsumerMulticastSubscriptionTest extends IltConsumerTest {
-    private static final Logger LOG = LoggerFactory.getLogger(IltConsumerTest.class);
+    private static final Logger LOG = LoggerFactory.getLogger(IltConsumerMulticastSubscriptionTest.class);
 
     volatile boolean subscribeBroadcastWithSingleEnumerationParameterCallbackDone = false;
     volatile boolean subscribeBroadcastWithSingleEnumerationParameterCallbackResult = false;
     Semaphore callbackCalledSemaphore = new Semaphore(0);
+
+    @BeforeClass
+    public static void setUp() throws Exception {
+        LOG.info("setUp: Entering");
+        setupConsumerRuntime(false);
+        LOG.info("setUp: Leaving");
+    }
+
+    @AfterClass
+    public static void tearDown() throws InterruptedException {
+        LOG.info("tearDown: Entering");
+        generalTearDown();
+        LOG.info("tearDown: Leaving");
+    }
 
     @Test
     public void doNotReceivePublicationsForOtherPartitions() {

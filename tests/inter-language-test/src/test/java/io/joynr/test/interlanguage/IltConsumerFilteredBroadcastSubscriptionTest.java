@@ -32,6 +32,8 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.fail;
 
@@ -40,7 +42,21 @@ import io.joynr.exceptions.SubscriptionException;
 import io.joynr.proxy.Future;
 
 public class IltConsumerFilteredBroadcastSubscriptionTest extends IltConsumerTest {
-    private static final Logger LOG = LoggerFactory.getLogger(IltConsumerTest.class);
+    private static final Logger LOG = LoggerFactory.getLogger(IltConsumerFilteredBroadcastSubscriptionTest.class);
+
+    @BeforeClass
+    public static void setUp() throws Exception {
+        LOG.info("setUp: Entering");
+        setupConsumerRuntime(false);
+        LOG.info("setUp: Leaving");
+    }
+
+    @AfterClass
+    public static void tearDown() throws InterruptedException {
+        LOG.info("tearDown: Entering");
+        generalTearDown();
+        LOG.info("tearDown: Leaving");
+    }
 
     // variables that are to be changed inside callbacks must be declared global
     volatile boolean subscribeBroadcastWithFilteringCallbackDone = false;

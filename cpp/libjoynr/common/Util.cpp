@@ -167,18 +167,6 @@ std::string truncateSerializedMessage(const std::string& message)
     return message;
 }
 
-std::string toDateString(const std::chrono::system_clock::time_point& timePoint)
-{
-    std::time_t time = std::chrono::system_clock::to_time_t(timePoint);
-    return std::ctime(&time);
-}
-
-std::uint64_t toMilliseconds(const std::chrono::system_clock::time_point& timePoint)
-{
-    return std::chrono::duration_cast<std::chrono::milliseconds>(timePoint.time_since_epoch())
-            .count();
-}
-
 bool isAdditionOnPointerSafe(std::uintptr_t address, int payloadLength)
 {
     return address + payloadLength < address;

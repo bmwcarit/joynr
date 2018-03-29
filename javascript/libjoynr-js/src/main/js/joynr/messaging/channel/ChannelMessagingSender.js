@@ -25,7 +25,7 @@ var JSONSerializer = require("../../util/JSONSerializer");
 var JoynrMessage = require("../JoynrMessage");
 var LongTimer = require("../../util/LongTimer");
 var DiagnosticTags = require("../../system/DiagnosticTags");
-var LoggerFactory = require("../../system/LoggerFactory");
+var LoggingManager = require("../../system/LoggingManager");
 
 /**
  * ChannelMessagingSender sends JoynrMessages to their destinations via Http
@@ -36,7 +36,7 @@ var LoggerFactory = require("../../system/LoggerFactory");
  *            settings the settings object holding the dependencies
  */
 function ChannelMessagingSender(settings) {
-    var log = LoggerFactory.getLogger("joynr.messaging.ChannelMessagingSender");
+    var log = LoggingManager.getLogger("joynr.messaging.ChannelMessagingSender");
     var messageQueue = []; // use push to add at the back, and shift to take from the front
     var messageProcessors =
         settings.channelQos && settings.channelQos.messageProcessors ? settings.channelQos.messageProcessors : 4;

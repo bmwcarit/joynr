@@ -18,6 +18,7 @@
  * limitations under the License.
  * #L%
  */
+require("../../../node-unit-test-helper");
 var WebMessagingStub = require("../../../../classes/joynr/messaging/webmessaging/WebMessagingStub");
 var JSONSerializer = require("../../../../classes/joynr/util/JSONSerializer");
 

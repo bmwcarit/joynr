@@ -68,8 +68,7 @@ var TypeRegistrySingleton = require("../types/TypeRegistrySingleton");
 var Util = require("../util/UtilInternal");
 var WebWorkerMessagingAppender = require("../system/WebWorkerMessagingAppender");
 var uuid = require("../../lib/uuid-annotated");
-var LoggingManager = require("../system/LoggingManager");
-var LoggerFactory = require("../system/LoggerFactory");
+var loggingManager = require("../system/LoggingManager");
 var defaultSettings = require("./settings/defaultSettings");
 var defaultInterTabSettings = require("./settings/defaultInterTabSettings");
 var defaultClusterControllerSettings = require("./settings/defaultClusterControllerSettings");
@@ -96,7 +95,6 @@ var clusterControllerSettings;
  * @param provisioning
  */
 function InterTabClusterControllerRuntime(provisioning) {
-    var loggingManager;
     var initialRoutingTable;
     var untypedCapabilities;
     var typedCapabilities;
@@ -221,8 +219,6 @@ function InterTabClusterControllerRuntime(provisioning) {
     var loggingMessagingQos = new MessagingQos({
         ttl: relativeTtl
     });
-    loggingManager = Object.freeze(new LoggingManager());
-    LoggerFactory.init(loggingManager);
 
     var joynrState = JoynrStates.SHUTDOWN;
 
@@ -266,15 +262,11 @@ function InterTabClusterControllerRuntime(provisioning) {
             throw new Error("Constructor has been invoked without provisioning");
         }
 
-        // initialize Logger with external logging configuration or default
-        // values
-        loggingManager.registerAppenderClass("WebWorker", WebWorkerMessagingAppender);
-
         if (provisioning.logging) {
             loggingManager.configure(provisioning.logging);
         }
 
-        log = LoggerFactory.getLogger("joynr.start.InterTabClusterControllerRuntime");
+        log = loggingManager.getLogger("joynr.start.InterTabClusterControllerRuntime");
 
         var persistencyProvisioning = provisioning.persistency || {};
         persistency = new LocalStorage({
@@ -490,8 +482,7 @@ function InterTabClusterControllerRuntime(provisioning) {
                 requestReplyManager: requestReplyManager,
                 publicationManager: publicationManager,
                 libjoynrMessagingAddress: new InProcessAddress(libjoynrMessagingSkeleton),
-                participantIdStorage: participantIdStorage,
-                loggingManager: loggingManager
+                participantIdStorage: participantIdStorage
             })
         );
 
@@ -507,8 +498,7 @@ function InterTabClusterControllerRuntime(provisioning) {
                 },
                 {
                     messageRouter: messageRouter,
-                    libjoynrMessagingAddress: new InProcessAddress(libjoynrMessagingSkeleton),
-                    loggingManager: loggingManager
+                    libjoynrMessagingAddress: new InProcessAddress(libjoynrMessagingSkeleton)
                 }
             )
         );
@@ -732,10 +722,6 @@ function InterTabClusterControllerRuntime(provisioning) {
 
         if (typeRegistry !== undefined) {
             typeRegistry.shutdown();
-        }
-
-        if (loggingManager !== undefined) {
-            loggingManager.shutdown();
         }
 
         log.debug("joynr cluster controller shut down");

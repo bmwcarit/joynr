@@ -54,6 +54,11 @@ void ClusterControllerSettings::checkSettings()
                 DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCY_ENABLED());
     }
 
+    if (!settings.contains(SETTING_GLOBAL_CAPABILITIES_DIRECTORY_COMPRESSED_MESSAGES_ENABLED())) {
+        setGlobalCapabilitiesDirectoryCompressedMessagesEnabled(
+                DEFAULT_GLOBAL_CAPABILITIES_DIRECTORY_COMPRESSED_MESSAGES_ENABLED());
+    }
+
     if (!settings.contains(SETTING_MQTT_CLIENT_ID_PREFIX())) {
         setMqttClientIdPrefix(DEFAULT_MQTT_CLIENT_ID_PREFIX());
     }
@@ -73,6 +78,15 @@ void ClusterControllerSettings::checkSettings()
 
     if (!settings.contains(SETTING_TRANSPORT_NOT_AVAILABLE_QUEUE_LIMIT())) {
         setTransportNotAvailableQueueLimit(DEFAULT_TRANSPORT_NOT_AVAILABLE_QUEUE_LIMIT());
+    }
+
+    if (!settings.contains(SETTING_MESSAGE_QUEUE_LIMIT_BYTES())) {
+        setMessageQueueLimitBytes(DEFAULT_MESSAGE_QUEUE_LIMIT_BYTES());
+    }
+
+    if (!settings.contains(SETTING_TRANSPORT_NOT_AVAILABLE_QUEUE_LIMIT_BYTES())) {
+        setTransportNotAvailableQueueLimitBytes(
+                DEFAULT_TRANSPORT_NOT_AVAILABLE_QUEUE_LIMIT_BYTES());
     }
 
     if (!settings.contains(SETTING_MQTT_MULTICAST_TOPIC_PREFIX())) {
@@ -98,6 +112,14 @@ void ClusterControllerSettings::checkSettings()
 
     if (!settings.contains(SETTING_MQTT_TLS_ENABLED())) {
         settings.set(SETTING_MQTT_TLS_ENABLED(), DEFAULT_MQTT_TLS_ENABLED());
+    }
+
+    if (!settings.contains(SETTING_MQTT_TLS_VERSION())) {
+        settings.set(SETTING_MQTT_TLS_VERSION(), DEFAULT_MQTT_TLS_VERSION());
+    }
+
+    if (!settings.contains(SETTING_MQTT_TLS_CIPHERS())) {
+        settings.set(SETTING_MQTT_TLS_CIPHERS(), DEFAULT_MQTT_TLS_CIPHERS());
     }
 
     if (!settings.contains(SETTING_ACCESS_CONTROL_AUDIT())) {
@@ -263,6 +285,18 @@ const std::string& ClusterControllerSettings::SETTING_MQTT_TLS_ENABLED()
     return value;
 }
 
+const std::string& ClusterControllerSettings::SETTING_MQTT_TLS_VERSION()
+{
+    static const std::string value("cluster-controller/mqtt-tls-version");
+    return value;
+}
+
+const std::string& ClusterControllerSettings::SETTING_MQTT_TLS_CIPHERS()
+{
+    static const std::string value("cluster-controller/mqtt-tls-ciphers");
+    return value;
+}
+
 const std::string& ClusterControllerSettings::SETTING_MQTT_CERTIFICATE_AUTHORITY_PEM_FILENAME()
 {
     static const std::string value("cluster-controller/mqtt-certificate-authority-pem-filename");
@@ -325,6 +359,18 @@ bool ClusterControllerSettings::DEFAULT_MQTT_TLS_ENABLED()
     return false;
 }
 
+const std::string& ClusterControllerSettings::DEFAULT_MQTT_TLS_VERSION()
+{
+    static const std::string value("tlsv1.2");
+    return value;
+}
+
+const std::string& ClusterControllerSettings::DEFAULT_MQTT_TLS_CIPHERS()
+{
+    static const std::string value("");
+    return value;
+}
+
 bool ClusterControllerSettings::DEFAULT_ACCESS_CONTROL_AUDIT()
 {
     return false;
@@ -341,6 +387,16 @@ std::uint64_t ClusterControllerSettings::DEFAULT_PER_PARTICIPANTID_MESSAGE_QUEUE
 }
 
 std::uint64_t ClusterControllerSettings::DEFAULT_TRANSPORT_NOT_AVAILABLE_QUEUE_LIMIT()
+{
+    return 0;
+}
+
+std::uint64_t ClusterControllerSettings::DEFAULT_MESSAGE_QUEUE_LIMIT_BYTES()
+{
+    return 0;
+}
+
+std::uint64_t ClusterControllerSettings::DEFAULT_TRANSPORT_NOT_AVAILABLE_QUEUE_LIMIT_BYTES()
 {
     return 0;
 }
@@ -534,6 +590,38 @@ bool ClusterControllerSettings::isMqttTlsEnabled() const
     return settings.get<bool>(SETTING_MQTT_TLS_ENABLED());
 }
 
+void ClusterControllerSettings::setMqttTlsVersion(const std::string& tlsVersion)
+{
+    settings.set<std::string>(SETTING_MQTT_TLS_VERSION(), tlsVersion);
+}
+
+std::string ClusterControllerSettings::getMqttTlsVersion() const
+{
+    return settings.get<std::string>(SETTING_MQTT_TLS_VERSION());
+}
+
+void ClusterControllerSettings::setMqttTlsCiphers(const std::string& tlsCiphers)
+{
+    settings.set<std::string>(SETTING_MQTT_TLS_CIPHERS(), tlsCiphers);
+}
+
+std::string ClusterControllerSettings::getMqttTlsCiphers() const
+{
+    return settings.get<std::string>(SETTING_MQTT_TLS_CIPHERS());
+}
+
+bool ClusterControllerSettings::isGlobalCapabilitiesDirectoryCompressedMessagesEnabled() const
+{
+    return settings.get<bool>(SETTING_GLOBAL_CAPABILITIES_DIRECTORY_COMPRESSED_MESSAGES_ENABLED());
+}
+
+void ClusterControllerSettings::setGlobalCapabilitiesDirectoryCompressedMessagesEnabled(
+        bool enabled)
+{
+    return settings.set<bool>(
+            SETTING_GLOBAL_CAPABILITIES_DIRECTORY_COMPRESSED_MESSAGES_ENABLED(), enabled);
+}
+
 const std::string& ClusterControllerSettings::
         DEFAULT_LOCAL_DOMAIN_ACCESS_STORE_PERSISTENCE_FILENAME()
 {
@@ -542,6 +630,11 @@ const std::string& ClusterControllerSettings::
 }
 
 bool ClusterControllerSettings::DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCY_ENABLED()
+{
+    return false;
+}
+
+bool ClusterControllerSettings::DEFAULT_GLOBAL_CAPABILITIES_DIRECTORY_COMPRESSED_MESSAGES_ENABLED()
 {
     return false;
 }
@@ -564,6 +657,18 @@ const std::string& ClusterControllerSettings::SETTING_TRANSPORT_NOT_AVAILABLE_QU
     return value;
 }
 
+const std::string& ClusterControllerSettings::SETTING_MESSAGE_QUEUE_LIMIT_BYTES()
+{
+    static const std::string value("cluster-controller/message-queue-limit-bytes");
+    return value;
+}
+
+const std::string& ClusterControllerSettings::SETTING_TRANSPORT_NOT_AVAILABLE_QUEUE_LIMIT_BYTES()
+{
+    static const std::string value("cluster-controller/transport-not-available-queue-limit-bytes");
+    return value;
+}
+
 const std::string& ClusterControllerSettings::
         SETTING_LOCAL_DOMAIN_ACCESS_STORE_PERSISTENCE_FILENAME()
 {
@@ -574,6 +679,14 @@ const std::string& ClusterControllerSettings::
 const std::string& ClusterControllerSettings::SETTING_ACL_ENTRIES_DIRECTORY()
 {
     static const std::string value("cluster-controller/acl-entries-directory");
+    return value;
+}
+
+const std::string& ClusterControllerSettings::
+        SETTING_GLOBAL_CAPABILITIES_DIRECTORY_COMPRESSED_MESSAGES_ENABLED()
+{
+    static const std::string value(
+            "cluster-controller/global-capabilities-directory-compressed-messages-enabled");
     return value;
 }
 
@@ -616,6 +729,26 @@ std::uint64_t ClusterControllerSettings::getTransportNotAvailableQueueLimit() co
 void ClusterControllerSettings::setTransportNotAvailableQueueLimit(std::uint64_t limit)
 {
     settings.set(SETTING_TRANSPORT_NOT_AVAILABLE_QUEUE_LIMIT(), limit);
+}
+
+std::uint64_t ClusterControllerSettings::getMessageQueueLimitBytes() const
+{
+    return settings.get<std::uint64_t>(SETTING_MESSAGE_QUEUE_LIMIT_BYTES());
+}
+
+void ClusterControllerSettings::setMessageQueueLimitBytes(std::uint64_t limitBytes)
+{
+    settings.set(SETTING_MESSAGE_QUEUE_LIMIT_BYTES(), limitBytes);
+}
+
+std::uint64_t ClusterControllerSettings::getTransportNotAvailableQueueLimitBytes() const
+{
+    return settings.get<std::uint64_t>(SETTING_TRANSPORT_NOT_AVAILABLE_QUEUE_LIMIT_BYTES());
+}
+
+void ClusterControllerSettings::setTransportNotAvailableQueueLimitBytes(std::uint64_t limitBytes)
+{
+    settings.set(SETTING_TRANSPORT_NOT_AVAILABLE_QUEUE_LIMIT_BYTES(), limitBytes);
 }
 
 void ClusterControllerSettings::setAclEntriesDirectory(const std::string& directoryPath)
@@ -708,123 +841,140 @@ void ClusterControllerSettings::setCapabilitiesFreshnessUpdateIntervalMs(
 void ClusterControllerSettings::printSettings() const
 {
     JOYNR_LOG_DEBUG(logger(),
-                    "SETTING: {}  = {}",
+                    "SETTING: {} = {}",
                     SETTING_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCY_ENABLED(),
                     isMulticastReceiverDirectoryPersistencyEnabled());
 
     JOYNR_LOG_DEBUG(logger(),
-                    "SETTING: {}  = {}",
+                    "SETTING: {} = {}",
                     SETTING_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCE_FILENAME(),
                     getMulticastReceiverDirectoryPersistenceFilename());
 
     JOYNR_LOG_DEBUG(logger(),
-                    "SETTING: {}  = {}",
+                    "SETTING: {} = {}",
                     SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCY_ENABLED(),
                     isLocalCapabilitiesDirectoryPersistencyEnabled());
 
     JOYNR_LOG_DEBUG(logger(),
-                    "SETTING: {}  = {}",
+                    "SETTING: {} = {}",
                     SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME(),
                     getLocalCapabilitiesDirectoryPersistenceFilename());
 
     JOYNR_LOG_DEBUG(
-            logger(), "SETTING: {}  = {}", SETTING_MESSAGE_QUEUE_LIMIT(), getMessageQueueLimit());
+            logger(), "SETTING: {} = {}", SETTING_MESSAGE_QUEUE_LIMIT(), getMessageQueueLimit());
+    JOYNR_LOG_DEBUG(logger(),
+                    "SETTING: {} = {}",
+                    SETTING_MESSAGE_QUEUE_LIMIT_BYTES(),
+                    getMessageQueueLimitBytes());
+    JOYNR_LOG_DEBUG(logger(),
+                    "SETTING: {} = {}",
+                    SETTING_PER_PARTICIPANTID_MESSAGE_QUEUE_LIMIT(),
+                    getPerParticipantIdMessageQueueLimit());
+    JOYNR_LOG_DEBUG(logger(),
+                    "SETTING: {} = {}",
+                    SETTING_TRANSPORT_NOT_AVAILABLE_QUEUE_LIMIT(),
+                    getTransportNotAvailableQueueLimit());
+    JOYNR_LOG_DEBUG(logger(),
+                    "SETTING: {} = {}",
+                    SETTING_TRANSPORT_NOT_AVAILABLE_QUEUE_LIMIT_BYTES(),
+                    getTransportNotAvailableQueueLimitBytes());
+
+    JOYNR_LOG_DEBUG(
+            logger(), "SETTING: {} = {}", SETTING_MQTT_CLIENT_ID_PREFIX(), getMqttClientIdPrefix());
 
     JOYNR_LOG_DEBUG(logger(),
-                    "SETTING: {}  = {}",
-                    SETTING_MQTT_CLIENT_ID_PREFIX(),
-                    getMqttClientIdPrefix());
-
-    JOYNR_LOG_DEBUG(logger(),
-                    "SETTING: {}  = {}",
+                    "SETTING: {} = {}",
                     SETTING_MQTT_MULTICAST_TOPIC_PREFIX(),
                     getMqttMulticastTopicPrefix());
 
     JOYNR_LOG_DEBUG(logger(),
-                    "SETTING: {}  = {}",
+                    "SETTING: {} = {}",
                     SETTING_MQTT_UNICAST_TOPIC_PREFIX(),
                     getMqttUnicastTopicPrefix());
 
     if (isWsTLSPortSet()) {
-        JOYNR_LOG_DEBUG(logger(), "SETTING: {}  = {}", SETTING_WS_TLS_PORT(), getWsTLSPort());
+        JOYNR_LOG_DEBUG(logger(), "SETTING: {} = {}", SETTING_WS_TLS_PORT(), getWsTLSPort());
     } else {
-        JOYNR_LOG_DEBUG(logger(), "SETTING: {}  = NOT SET", SETTING_WS_TLS_PORT());
+        JOYNR_LOG_DEBUG(logger(), "SETTING: {} = NOT SET", SETTING_WS_TLS_PORT());
     }
 
     if (isWsPortSet()) {
-        JOYNR_LOG_DEBUG(logger(), "SETTING: {}  = {}", SETTING_WS_PORT(), getWsPort());
+        JOYNR_LOG_DEBUG(logger(), "SETTING: {} = {}", SETTING_WS_PORT(), getWsPort());
     } else {
-        JOYNR_LOG_DEBUG(logger(), "SETTING: {}  = NOT SET", SETTING_WS_PORT());
+        JOYNR_LOG_DEBUG(logger(), "SETTING: {} = NOT SET", SETTING_WS_PORT());
     }
 
-    JOYNR_LOG_DEBUG(logger(), "SETTING: {}  = {}", SETTING_MQTT_TLS_ENABLED(), isMqttTlsEnabled());
+    JOYNR_LOG_DEBUG(logger(), "SETTING: {} = {}", SETTING_MQTT_TLS_ENABLED(), isMqttTlsEnabled());
 
     if (isMqttCertificateAuthorityPemFilenameSet()) {
         JOYNR_LOG_DEBUG(logger(),
-                        "SETTING: {}  = {}",
+                        "SETTING: {} = {}",
                         SETTING_MQTT_CERTIFICATE_AUTHORITY_PEM_FILENAME(),
                         getMqttCertificateAuthorityPemFilename());
     } else {
         JOYNR_LOG_DEBUG(logger(),
-                        "SETTING: {}  = NOT SET",
+                        "SETTING: {} = NOT SET",
                         SETTING_MQTT_CERTIFICATE_AUTHORITY_PEM_FILENAME());
     }
 
     if (isMqttCertificateAuthorityCertificateFolderPathSet()) {
         JOYNR_LOG_DEBUG(logger(),
-                        "SETTING: {}  = {}",
+                        "SETTING: {} = {}",
                         SETTING_MQTT_CERTIFICATE_AUTHORITY_CERTIFICATE_FOLDER_PATH(),
                         getMqttCertificateAuthorityCertificateFolderPath());
     } else {
         JOYNR_LOG_DEBUG(logger(),
-                        "SETTING: {}  = NOT SET",
+                        "SETTING: {} = NOT SET",
                         SETTING_MQTT_CERTIFICATE_AUTHORITY_CERTIFICATE_FOLDER_PATH());
     }
 
     if (isMqttCertificatePemFilenameSet()) {
         JOYNR_LOG_DEBUG(logger(),
-                        "SETTING: {}  = {}",
+                        "SETTING: {} = {}",
                         SETTING_MQTT_CERTIFICATE_PEM_FILENAME(),
                         getMqttCertificatePemFilename());
     } else {
-        JOYNR_LOG_DEBUG(
-                logger(), "SETTING: {}  = NOT SET", SETTING_MQTT_CERTIFICATE_PEM_FILENAME());
+        JOYNR_LOG_DEBUG(logger(), "SETTING: {} = NOT SET", SETTING_MQTT_CERTIFICATE_PEM_FILENAME());
     }
 
     if (isMqttPrivateKeyPemFilenameSet()) {
         JOYNR_LOG_DEBUG(logger(),
-                        "SETTING: {}  = {}",
+                        "SETTING: {} = {}",
                         SETTING_MQTT_PRIVATE_KEY_PEM_FILENAME(),
                         getMqttPrivateKeyPemFilename());
     } else {
-        JOYNR_LOG_DEBUG(
-                logger(), "SETTING: {}  = NOT SET", SETTING_MQTT_PRIVATE_KEY_PEM_FILENAME());
+        JOYNR_LOG_DEBUG(logger(), "SETTING: {} = NOT SET", SETTING_MQTT_PRIVATE_KEY_PEM_FILENAME());
     }
 
     JOYNR_LOG_DEBUG(logger(),
-                    "SETTING: {}  = {}",
+                    "SETTING: {} = {}",
                     SETTING_LOCAL_DOMAIN_ACCESS_STORE_PERSISTENCE_FILENAME(),
                     getLocalDomainAccessStorePersistenceFilename());
 
-    JOYNR_LOG_DEBUG(logger(), "SETTING: {}  = {}", SETTING_USE_ONLY_LDAS(), getUseOnlyLDAS());
+    JOYNR_LOG_DEBUG(logger(), "SETTING: {} = {}", SETTING_USE_ONLY_LDAS(), getUseOnlyLDAS());
 
     JOYNR_LOG_DEBUG(logger(),
-                    "SETTING: {}  = {})",
+                    "SETTING: {} = {})",
                     SETTING_ACCESS_CONTROL_ENABLE(),
                     settings.get<std::string>(SETTING_ACCESS_CONTROL_ENABLE()));
     JOYNR_LOG_DEBUG(logger(),
                     "SETTING: {} = {})",
                     SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS(),
                     getCapabilitiesFreshnessUpdateIntervalMs().count());
+    JOYNR_LOG_DEBUG(logger(),
+                    "SETTING: {} = {})",
+                    SETTING_GLOBAL_CAPABILITIES_DIRECTORY_COMPRESSED_MESSAGES_ENABLED(),
+                    isGlobalCapabilitiesDirectoryCompressedMessagesEnabled());
+
     if (settings.get<bool>(SETTING_ACCESS_CONTROL_ENABLE())) {
         JOYNR_LOG_DEBUG(logger(),
-                        "SETTING: {}  = {})",
+                        "SETTING: {} = {})",
                         SETTING_ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_ADDRESS(),
                         settings.get<std::string>(
                                 SETTING_ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_ADDRESS()));
         JOYNR_LOG_DEBUG(
                 logger(),
-                "SETTING: {}  = {})",
+                "SETTING: {} = {})",
                 SETTING_ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_PARTICIPANTID(),
                 settings.get<std::string>(
                         SETTING_ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_PARTICIPANTID()));

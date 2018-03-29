@@ -18,6 +18,7 @@
  * limitations under the License.
  * #L%
  */
+require("../../node-unit-test-helper");
 var SubscriptionQos = require("../../../classes/joynr/proxy/SubscriptionQos");
 var PeriodicSubscriptionQos = require("../../../classes/joynr/proxy/PeriodicSubscriptionQos");
 var OnChangeSubscriptionQos = require("../../../classes/joynr/proxy/OnChangeSubscriptionQos");

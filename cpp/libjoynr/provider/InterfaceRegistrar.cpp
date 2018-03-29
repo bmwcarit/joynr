@@ -20,6 +20,8 @@
 
 #include <cassert>
 
+#include "joynr/IRequestInterpreter.h"
+
 namespace joynr
 {
 

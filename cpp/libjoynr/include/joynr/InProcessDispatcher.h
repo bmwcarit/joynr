@@ -24,7 +24,6 @@
 
 #include "joynr/IDispatcher.h"
 #include "joynr/IRequestCallerDirectory.h"
-#include "joynr/InProcessAddress.h"
 #include "joynr/JoynrExport.h"
 #include "joynr/LibJoynrDirectories.h"
 #include "joynr/Logger.h"

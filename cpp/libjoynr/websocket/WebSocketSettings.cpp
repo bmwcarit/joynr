@@ -173,27 +173,27 @@ bool WebSocketSettings::contains(const std::string& key) const
 void WebSocketSettings::printSettings() const
 {
     JOYNR_LOG_DEBUG(logger(),
-                    "SETTING: {}  = {}",
+                    "SETTING: {} = {}",
                     SETTING_CC_MESSAGING_URL(),
                     settings.get<std::string>(SETTING_CC_MESSAGING_URL()));
 
     JOYNR_LOG_DEBUG(logger(),
-                    "SETTING: {}  = {}",
+                    "SETTING: {} = {}",
                     SETTING_CERTIFICATE_AUTHORITY_PEM_FILENAME(),
                     settings.get<std::string>(SETTING_CERTIFICATE_AUTHORITY_PEM_FILENAME()));
 
     JOYNR_LOG_DEBUG(logger(),
-                    "SETTING: {}  = {}",
+                    "SETTING: {} = {}",
                     SETTING_CERTIFICATE_PEM_FILENAME(),
                     settings.get<std::string>(SETTING_CERTIFICATE_PEM_FILENAME()));
 
     JOYNR_LOG_DEBUG(logger(),
-                    "SETTING: {}  = {}",
+                    "SETTING: {} = {}",
                     SETTING_PRIVATE_KEY_PEM_FILENAME(),
                     settings.get<std::string>(SETTING_PRIVATE_KEY_PEM_FILENAME()));
 
     JOYNR_LOG_DEBUG(logger(),
-                    "SETTING: {}  = {}",
+                    "SETTING: {} = {}",
                     SETTING_TLS_ENCRYPTION(),
                     settings.get<std::string>(SETTING_TLS_ENCRYPTION()));
 }

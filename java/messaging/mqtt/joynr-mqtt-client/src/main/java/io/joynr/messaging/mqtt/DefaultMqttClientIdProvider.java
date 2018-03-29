@@ -46,7 +46,7 @@ public class DefaultMqttClientIdProvider implements MqttClientIdProvider {
         if (receiverId.length() != 16) {
             LOG.warn("ReceiverId " + receiverId + " is not a UUID of expected length 16");
         }
-        this.clientId = clientIdPrefix + "joynr:" + receiverId.substring(0, Math.min(17, receiverId.length() + 1));
+        this.clientId = clientIdPrefix + "joynr:" + receiverId.substring(0, Math.min(16, receiverId.length()));
     }
 
     @Override

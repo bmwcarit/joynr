@@ -173,11 +173,12 @@ void LocalCapabilitiesDirectory::addInternal(const types::DiscoveryEntry& discov
                       globalDiscoveryEntry) == registeredGlobalCapabilities.end()) {
 
             std::function<void(const exceptions::JoynrException&)> onError =
-                    [&](const exceptions::JoynrException& error) {
-                JOYNR_LOG_ERROR(
-                        logger(),
-                        "Error occured during the execution of capabilitiesProxy->add. Error: {}",
-                        error.getMessage());
+                    [globalDiscoveryEntry](const exceptions::JoynrException& error) {
+                JOYNR_LOG_ERROR(logger(),
+                                "Error occured during the execution of capabilitiesProxy->add for "
+                                "'{}'. Error: {}",
+                                globalDiscoveryEntry.toString(),
+                                error.getMessage());
             };
 
             std::function<void()> onSuccess = [
@@ -186,9 +187,12 @@ void LocalCapabilitiesDirectory::addInternal(const types::DiscoveryEntry& discov
             ]()
             {
                 if (auto thisSharedPtr = thisWeakPtr.lock()) {
-                    JOYNR_LOG_TRACE(logger(),
-                                    "Global capability addedd successfully, adding it to list "
-                                    "of registered capabilities.");
+                    JOYNR_LOG_INFO(logger(),
+                                   "Global capability '{}' added successfully, adding it to list "
+                                   "of registered capabilities, #registeredGlobalCapabilities "
+                                   "afterwards: {}",
+                                   globalDiscoveryEntry.toString(),
+                                   thisSharedPtr->registeredGlobalCapabilities.size() + 1);
                     thisSharedPtr->registeredGlobalCapabilities.push_back(globalDiscoveryEntry);
                 }
             };
@@ -233,12 +237,20 @@ void LocalCapabilitiesDirectory::remove(const std::string& participantId)
     const types::DiscoveryEntry& entry = *optionalEntry;
 
     if (isGlobal(entry)) {
-        JOYNR_LOG_TRACE(logger(), "Removing globally registered participantId: {}", participantId);
+        JOYNR_LOG_INFO(logger(), "Removing globally registered participantId: {}", participantId);
         removeFromGloballyRegisteredCapabilities(entry);
         globalCapabilities.removeByParticipantId(participantId);
         capabilitiesClient->remove(participantId);
+        JOYNR_LOG_INFO(logger(),
+                       "#globalCapabilities: {}, #registeredGlobalCapabilities: {}",
+                       globalCapabilities.size(),
+                       registeredGlobalCapabilities.size());
     }
-    JOYNR_LOG_TRACE(logger(), "Removing locally registered participantId: {}", participantId);
+    JOYNR_LOG_INFO(
+            logger(),
+            "Removing locally registered participantId: {}, #localCapabilities before removal: {}",
+            participantId,
+            localCapabilities.size());
     localCapabilities.removeByParticipantId(participantId);
     informObserversOnRemove(entry);
     if (auto messageRouterSharedPtr = messageRouter.lock()) {
@@ -936,11 +948,19 @@ void LocalCapabilitiesDirectory::insertInCache(const types::DiscoveryEntry& entr
     // add entry to local cache
     if (localCache) {
         localCapabilities.insert(entry);
+        JOYNR_LOG_INFO(logger(),
+                       "Added local capability to cache {}, #localCapabilities: {}",
+                       entry.toString(),
+                       localCapabilities.size());
     }
 
     // add entry to global cache
     if (globalCache) {
         globalCapabilities.insert(entry);
+        JOYNR_LOG_INFO(logger(),
+                       "Added global capability to cache {}, #globalCapabilities: {}",
+                       entry.toString(),
+                       globalCapabilities.size());
     }
 }
 
@@ -1050,15 +1070,17 @@ void LocalCapabilitiesDirectory::checkExpiredDiscoveryEntries(
     auto removedGlobalCapabilities = globalCapabilities.removeExpired();
 
     if (!removedLocalCapabilities.empty()) {
-        JOYNR_LOG_DEBUG(logger(),
-                        "Following local discovery entries expired: {}",
-                        joinToString(removedLocalCapabilities));
+        JOYNR_LOG_INFO(logger(),
+                       "Following local discovery entries expired: {}, #localCapabilities: {}",
+                       joinToString(removedLocalCapabilities),
+                       localCapabilities.size());
     }
 
     if (!removedGlobalCapabilities.empty()) {
-        JOYNR_LOG_DEBUG(logger(),
-                        "Following global discovery entries expired: {}",
-                        joinToString(removedGlobalCapabilities));
+        JOYNR_LOG_INFO(logger(),
+                       "Following global discovery entries expired: {}, #globalCapabilities: {}",
+                       joinToString(removedGlobalCapabilities),
+                       globalCapabilities.size());
     }
 
     if (!removedLocalCapabilities.empty() || !removedGlobalCapabilities.empty()) {

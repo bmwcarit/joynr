@@ -5,6 +5,8 @@ set -e
 
 source /data/src/docker/joynr-base/scripts/global.sh
 
+log "### start cpp-build-smrf-rpm-package.sh ###"
+
 START=$(date +%s)
 
 log "ENVIRONMENT"
@@ -58,3 +60,5 @@ rpmbuild -bb ${rpm_with_flags} --buildroot $DESTDIR $RPMSPEC_BASENAME
 END=$(date +%s)
 DIFF=$(( $END - $START ))
 log "SMRF build time: $DIFF seconds"
+
+log "### end cpp-build-smrf-rpm-package.sh ###"

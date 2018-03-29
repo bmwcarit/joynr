@@ -18,9 +18,10 @@
  * limitations under the License.
  * #L%
  */
+require("../../node-unit-test-helper");
 var Typing = require("../../../classes/joynr/util/Typing");
 var TypeRegistry = require("../../../classes/joynr/start/TypeRegistry");
-var LoggerFactory = require("../../../classes/joynr/system/LoggerFactory");
+var LoggingManager = require("../../../classes/joynr/system/LoggingManager");
 var TypeRegistrySingleton = require("../../../classes/joynr/types/TypeRegistrySingleton");
 var DiscoveryEntry = require("../../../classes/joynr/types/DiscoveryEntry");
 var ProviderQos = require("../../../classes/joynr/types/ProviderQos");
@@ -124,7 +125,7 @@ describe("libjoynr-js.joynr.Typing.getObjectType", function() {
 });
 
 describe("libjoynr-js.joynr.Typing.augmentType", function() {
-    var log = LoggerFactory.getLogger("joynr.util.TypingTest");
+    var log = LoggingManager.getLogger("joynr.util.TypingTest");
 
     var tests = [
         {

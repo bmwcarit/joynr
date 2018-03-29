@@ -21,13 +21,20 @@
 
 var joynr = require("../joynr");
 
-var availableRuntimes = {
-    "websocket.libjoynr": require("./Runtime.websocket.libjoynr"),
-    inprocess: require("./Runtime.inprocess"),
-    "intertab.libjoynr": require("./Runtime.intertab.libjoynr"),
-    "intertab.clustercontroller": require("./Runtime.intertab.clustercontroller")
-};
-
-var defaultRuntime = "websocket.libjoynr";
-
-module.exports = availableRuntimes[joynr._selectedRuntime || defaultRuntime];
+switch (joynr._selectedRuntime) {
+    case "websocket.libjoynr":
+        module.exports = require("./Runtime.websocket.libjoynr");
+        break;
+    case "inprocess":
+        module.exports = require("./Runtime.inprocess");
+        break;
+    case "intertab.libjoynr":
+        module.exports = require("./Runtime.intertab.libjoynr");
+        break;
+    case "intertab.clustercontroller":
+        module.exports = require("./Runtime.intertab.clustercontroller");
+        break;
+    default:
+        module.exports = require("./Runtime.websocket.libjoynr");
+        break;
+}

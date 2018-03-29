@@ -1,5 +1,5 @@
-/*global JSON: true */
 /*jslint es5: true, node: true, nomen: true */
+
 /*
  * #%L
  * %%
@@ -21,7 +21,7 @@
 var Promise = require("../../../global/Promise");
 var MulticastWildcardRegexFactory = require("../util/MulticastWildcardRegexFactory");
 var DiagnosticTags = require("../../system/DiagnosticTags");
-var LoggerFactory = require("../../system/LoggerFactory");
+var LoggingManager = require("../../system/LoggingManager");
 var InProcessAddress = require("../inprocess/InProcessAddress");
 var JoynrMessage = require("../JoynrMessage");
 var MessageReplyToAddressCalculator = require("../MessageReplyToAddressCalculator");
@@ -68,7 +68,7 @@ function MessageRouter(settings) {
 
     var that = this;
     var multicastWildcardRegexFactory = new MulticastWildcardRegexFactory();
-    var log = LoggerFactory.getLogger("joynr/messaging/routing/MessageRouter");
+    var log = LoggingManager.getLogger("joynr/messaging/routing/MessageRouter");
     var listener, routingProxy, messagingStub;
     var queuedAddNextHopCalls = [],
         queuedRemoveNextHopCalls = [],
@@ -101,6 +101,26 @@ function MessageRouter(settings) {
     }
 
     var started = true;
+
+    var getAddressFromPersistency = function getAddressFromPersistency(participantId) {
+        var addressString;
+        try {
+            addressString = persistency.getItem(that.getStorageKey(participantId));
+            if (addressString === undefined || addressString === null || addressString === "{}") {
+                persistency.removeItem(that.getStorageKey(participantId));
+            } else {
+                var address = Typing.augmentTypes(JSON.parse(addressString), typeRegistry);
+                routingTable[participantId] = address;
+                return address;
+            }
+        } catch (error) {
+            log.error("Failed to get address from persisted routing entries for participant " + participantId);
+        }
+    };
+
+    if (!persistency) {
+        getAddressFromPersistency = Util.emptyFunction;
+    }
 
     function isReady() {
         return started;
@@ -155,11 +175,11 @@ function MessageRouter(settings) {
         }
         if (parentMessageRouterAddress !== undefined) {
             var deferred = Util.createDeferred();
-            queuedRemoveNextHopCalls[queuedRemoveNextHopCalls.length] = {
+            queuedRemoveNextHopCalls.push({
                 participantId: participantId,
                 resolve: deferred.resolve,
                 reject: deferred.reject
-            };
+            });
             return deferred.promise;
         }
         return Promise.resolve();
@@ -240,44 +260,41 @@ function MessageRouter(settings) {
         }
     }
     function processQueuedRoutingProxyCalls() {
-        var hop, participantId, receiver, queuedCall;
-        for (hop in queuedAddNextHopCalls) {
-            if (queuedAddNextHopCalls.hasOwnProperty(hop)) {
-                queuedCall = queuedAddNextHopCalls[hop];
-                if (queuedCall.participantId !== routingProxy.proxyParticipantId) {
-                    that
-                        .addNextHopToParentRoutingTable(queuedCall.participantId, queuedCall.isGloballyVisible)
-                        .then(queuedCall.resolve)
-                        .catch(queuedCall.reject);
-                }
-            }
-        }
-        for (hop in queuedRemoveNextHopCalls) {
-            if (queuedRemoveNextHopCalls.hasOwnProperty(hop)) {
-                queuedCall = queuedRemoveNextHopCalls[hop];
+        var hopIndex, receiverIndex, queuedCall, length;
+
+        length = queuedAddNextHopCalls.length;
+        for (hopIndex = 0; hopIndex < length; hopIndex++) {
+            queuedCall = queuedAddNextHopCalls[hopIndex];
+            if (queuedCall.participantId !== routingProxy.proxyParticipantId) {
                 that
-                    .removeNextHop(queuedCall.participantId)
+                    .addNextHopToParentRoutingTable(queuedCall.participantId, queuedCall.isGloballyVisible)
                     .then(queuedCall.resolve)
                     .catch(queuedCall.reject);
             }
         }
-        for (receiver in queuedAddMulticastReceiverCalls) {
-            if (queuedAddMulticastReceiverCalls.hasOwnProperty(receiver)) {
-                queuedCall = queuedAddMulticastReceiverCalls[receiver];
-                routingProxy
-                    .addMulticastReceiver(queuedCall.parameters)
-                    .then(queuedCall.resolve)
-                    .catch(queuedCall.reject);
-            }
+        length = queuedRemoveNextHopCalls.length;
+        for (hopIndex = 0; hopIndex < length; hopIndex++) {
+            queuedCall = queuedRemoveNextHopCalls[hopIndex];
+            that
+                .removeNextHop(queuedCall.participantId)
+                .then(queuedCall.resolve)
+                .catch(queuedCall.reject);
         }
-        for (receiver in queuedRemoveMulticastReceiverCalls) {
-            if (queuedRemoveMulticastReceiverCalls.hasOwnProperty(receiver)) {
-                queuedCall = queuedRemoveMulticastReceiverCalls[receiver];
-                routingProxy
-                    .removeMulticastReceiver(queuedCall.parameters)
-                    .then(queuedCall.resolve)
-                    .catch(queuedCall.reject);
-            }
+        length = queuedAddMulticastReceiverCalls.length;
+        for (receiverIndex = 0; receiverIndex < length; receiverIndex++) {
+            queuedCall = queuedAddMulticastReceiverCalls[receiverIndex];
+            routingProxy
+                .addMulticastReceiver(queuedCall.parameters)
+                .then(queuedCall.resolve)
+                .catch(queuedCall.reject);
+        }
+        length = queuedRemoveMulticastReceiverCalls.length;
+        for (receiverIndex = 0; receiverIndex < length; receiverIndex++) {
+            queuedCall = queuedRemoveMulticastReceiverCalls[receiverIndex];
+            routingProxy
+                .removeMulticastReceiver(queuedCall.parameters)
+                .then(queuedCall.resolve)
+                .catch(queuedCall.reject);
         }
         queuedAddNextHopCalls = undefined;
         queuedRemoveNextHopCalls = undefined;
@@ -311,22 +328,7 @@ function MessageRouter(settings) {
      * It tries to resolve the next hop from the persistency and parent router.
      */
     function resolveNextHopInternal(participantId) {
-        var address, addressString;
-
-        if (persistency) {
-            try {
-                addressString = persistency.getItem(that.getStorageKey(participantId));
-                if (addressString === undefined || addressString === null || addressString === "{}") {
-                    persistency.removeItem(that.getStorageKey(participantId));
-                } else {
-                    address = Typing.augmentTypes(JSON.parse(addressString), typeRegistry);
-                    routingTable[participantId] = address;
-                }
-            } catch (error) {
-                log.error("Failed to get address from persisted routing entries for participant " + participantId);
-                return Promise.reject(error);
-            }
-        }
+        var address = getAddressFromPersistency(participantId);
 
         function resolveNextHopOnSuccess(opArgs) {
             if (opArgs.resolved) {
@@ -446,14 +448,6 @@ function MessageRouter(settings) {
         // remote provider participants are registered by capabilitiesDirectory on lookup
         // local providers are registered by capabilitiesDirectory on register
         // replyCallers are registered when they are created
-        if (address === undefined) {
-            errorMsg = "No message receiver found for participantId: " + joynrMessage.to + ". Queuing message.";
-            log.warn(errorMsg, DiagnosticTags.forJoynrMessage(joynrMessage));
-            // message is queued until the participant is registered
-            // TODO remove expired messages from queue
-            settings.messageQueue.putMessage(joynrMessage);
-            return Promise.resolve();
-        }
 
         if (!joynrMessage.isLocalMessage) {
             try {
@@ -469,7 +463,7 @@ function MessageRouter(settings) {
         messagingStub = settings.messagingStubFactory.createMessagingStub(address);
         if (messagingStub === undefined) {
             errorMsg = "No message receiver found for participantId: " + joynrMessage.to + " queuing message.";
-            log.info(errorMsg, DiagnosticTags.forJoynrMessage(joynrMessage));
+            log.info(errorMsg, JSON.stringify(DiagnosticTags.forJoynrMessage(joynrMessage)));
             // TODO queue message and retry later
             return Promise.resolve();
         }
@@ -488,17 +482,65 @@ function MessageRouter(settings) {
             type === JoynrMessage.JOYNRMESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST ||
             type === JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST
         ) {
-            var replyToAddress = joynrMessage.replyChannelId;
-            if (!Util.checkNullUndefined(replyToAddress)) {
-                // because the message is received via global transport, isGloballyVisible must be true
-                var isGloballyVisible = true;
-                that.addNextHop(
-                    joynrMessage.from,
-                    Typing.augmentTypes(JSON.parse(replyToAddress), typeRegistry),
-                    isGloballyVisible
-                );
+            try {
+                var replyToAddress = joynrMessage.replyChannelId;
+                if (!Util.checkNullUndefined(replyToAddress)) {
+                    // because the message is received via global transport, isGloballyVisible must be true
+                    var isGloballyVisible = true;
+                    that.addNextHop(
+                        joynrMessage.from,
+                        Typing.augmentTypes(JSON.parse(replyToAddress), typeRegistry),
+                        isGloballyVisible
+                    );
+                }
+            } catch (e) {
+                log.error("could not register global Routing Entry: " + e);
             }
         }
+    }
+
+    function forwardToRouteInternal(address) {
+        return routeInternal(address, this);
+    }
+
+    function resolveNextHopOnError(e) {
+        log.error(e.message);
+    }
+
+    function resolveNextHopAndRoute(participantId, joynrMessage) {
+        var address = getAddressFromPersistency(participantId);
+
+        function resolveNextHopOnSuccess(opArgs) {
+            if (opArgs.resolved && parentMessageRouterAddress !== undefined) {
+                routingTable[participantId] = parentMessageRouterAddress;
+                return routeInternal(parentMessageRouterAddress, joynrMessage);
+            }
+            throw new Error(
+                "nextHop cannot be resolved, as participant with id " +
+                    participantId +
+                    " is not reachable by parent routing table"
+            );
+        }
+
+        if (address === undefined) {
+            if (routingProxy !== undefined) {
+                return routingProxy
+                    .resolveNextHop({
+                        participantId: participantId
+                    })
+                    .then(resolveNextHopOnSuccess)
+                    .catch(resolveNextHopOnError);
+            }
+            log.warn(
+                "No message receiver found for participantId: " + joynrMessage.to + ". Queuing message.",
+                DiagnosticTags.forJoynrMessage(joynrMessage)
+            );
+            // message is queued until the participant is registered
+            // TODO remove expired messages from queue
+            settings.messageQueue.putMessage(joynrMessage);
+            return Promise.resolve();
+        }
+        return routeInternal(address, joynrMessage);
     }
 
     /**
@@ -510,33 +552,38 @@ function MessageRouter(settings) {
      * @returns {Object} A+ promise object
      */
     this.route = function route(joynrMessage) {
-        var now = Date.now();
-        if (now > joynrMessage.expiryDate) {
-            var errorMsg = "Received expired message. Dropping the message. ID: " + joynrMessage.msgId;
-            log.warn(errorMsg + ", expiryDate: " + joynrMessage.expiryDate + ", now: " + now);
-            return Promise.reject(new JoynrRuntimeException({ detailMessage: errorMsg }));
+        try {
+            var now = Date.now();
+            if (now > joynrMessage.expiryDate) {
+                var errorMsg = "Received expired message. Dropping the message. ID: " + joynrMessage.msgId;
+                log.warn(errorMsg + ", expiryDate: " + joynrMessage.expiryDate + ", now: " + now);
+                return Promise.resolve();
+            }
+            log.debug(
+                "Route message. ID: " +
+                    joynrMessage.msgId +
+                    ", expiryDate: " +
+                    joynrMessage.expiryDate +
+                    ", now: " +
+                    now
+            );
+
+            registerGlobalRoutingEntryIfRequired(joynrMessage);
+
+            if (joynrMessage.type === JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST) {
+                return Promise.all(getAddressesForMulticast(joynrMessage).map(forwardToRouteInternal, joynrMessage));
+            }
+
+            var participantId = joynrMessage.to;
+            var address = routingTable[participantId];
+            if (address !== undefined) {
+                return routeInternal(address, joynrMessage);
+            }
+
+            return resolveNextHopAndRoute(participantId, joynrMessage);
+        } catch (e) {
+            log.error("MessageRouter.route failed: " + e.message);
         }
-        log.debug(
-            "Route message. ID: " + joynrMessage.msgId + ", expiryDate: " + joynrMessage.expiryDate + ", now: " + now
-        );
-
-        registerGlobalRoutingEntryIfRequired(joynrMessage);
-
-        function forwardToRouteInternal(address) {
-            return routeInternal(address, joynrMessage);
-        }
-
-        if (joynrMessage.type === JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST) {
-            return Promise.all(getAddressesForMulticast(joynrMessage).map(forwardToRouteInternal));
-        }
-
-        var participantId = joynrMessage.to;
-        var address = routingTable[participantId];
-        if (address !== undefined) {
-            return routeInternal(address, joynrMessage);
-        }
-
-        return resolveNextHopInternal(participantId).then(forwardToRouteInternal);
     };
 
     /**
@@ -579,12 +626,12 @@ function MessageRouter(settings) {
             promise = that.addNextHopToParentRoutingTable(participantId, isGloballyVisible);
         } else if (parentMessageRouterAddress !== undefined) {
             var deferred = Util.createDeferred();
-            queuedAddNextHopCalls[queuedAddNextHopCalls.length] = {
+            queuedAddNextHopCalls.push({
                 participantId: participantId,
                 isGloballyVisible: isGloballyVisible,
                 resolve: deferred.resolve,
                 reject: deferred.reject
-            };
+            });
             promise = deferred.promise;
         } else {
             promise = Promise.resolve();
@@ -640,11 +687,11 @@ function MessageRouter(settings) {
         }
 
         var deferred = Util.createDeferred();
-        queuedAddMulticastReceiverCalls[queuedAddMulticastReceiverCalls.length] = {
+        queuedAddMulticastReceiverCalls.push({
             parameters: parameters,
             resolve: deferred.resolve,
             reject: deferred.reject
-        };
+        });
 
         return deferred.promise;
     };
@@ -703,11 +750,11 @@ function MessageRouter(settings) {
         }
 
         var deferred = Util.createDeferred();
-        queuedRemoveMulticastReceiverCalls[queuedRemoveMulticastReceiverCalls.length] = {
+        queuedRemoveMulticastReceiverCalls.push({
             parameters: parameters,
             resolve: deferred.resolve,
             reject: deferred.reject
-        };
+        });
 
         return deferred.promise;
     };
@@ -737,11 +784,7 @@ function MessageRouter(settings) {
         if (messageQueue !== undefined) {
             i = messageQueue.length;
             while (i--) {
-                try {
-                    that.route(messageQueue[i]).catch(handleError);
-                } catch (error) {
-                    handleError(error);
-                }
+                that.route(messageQueue[i]);
             }
         }
     };

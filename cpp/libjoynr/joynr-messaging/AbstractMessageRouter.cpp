@@ -22,23 +22,26 @@
 #include <functional>
 
 #include <boost/asio/io_service.hpp>
+#include <spdlog/fmt/fmt.h>
 
-#include "joynr/DispatcherUtils.h"
 #include "joynr/IMessagingStub.h"
 #include "joynr/IMessagingStubFactory.h"
 #include "joynr/ImmutableMessage.h"
 #include "joynr/IMulticastAddressCalculator.h"
 #include "joynr/InProcessMessagingAddress.h"
 #include "joynr/Message.h"
+#include "joynr/MessageQueue.h"
 #include "joynr/MulticastReceiverDirectory.h"
 #include "joynr/access-control/IAccessController.h"
 #include "joynr/exceptions/JoynrException.h"
+#include "joynr/serializer/Serializer.h"
 #include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/system/RoutingTypes/BrowserAddress.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
+#include "libjoynrclustercontroller/include/joynr/ITransportStatus.h"
 
 namespace joynr
 {
@@ -50,7 +53,6 @@ AbstractMessageRouter::AbstractMessageRouter(
         boost::asio::io_service& ioService,
         std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
         bool persistRoutingTable,
-        int maxThreads,
         std::vector<std::shared_ptr<ITransportStatus>> transportStatuses,
         std::unique_ptr<MessageQueue<std::string>> messageQueue,
         std::unique_ptr<MessageQueue<std::shared_ptr<ITransportStatus>>> transportNotAvailableQueue)
@@ -62,7 +64,7 @@ AbstractMessageRouter::AbstractMessageRouter(
           messagingSettings(messagingSettings),
           persistRoutingTable(persistRoutingTable),
           messagingStubFactory(std::move(messagingStubFactory)),
-          messageScheduler(std::make_shared<ThreadPoolDelayedScheduler>(maxThreads,
+          messageScheduler(std::make_shared<ThreadPoolDelayedScheduler>(1,
                                                                         "AbstractMessageRouter",
                                                                         ioService)),
           messageQueue(std::move(messageQueue)),
@@ -177,17 +179,13 @@ AbstractMessageRouter::AddressUnorderedSet AbstractMessageRouter::getDestination
 
 void AbstractMessageRouter::checkExpiryDate(const ImmutableMessage& message)
 {
-    JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(
-            std::chrono::system_clock::now());
-    JOYNR_LOG_TRACE(
-            logger(),
-            "now: {} --- expiryDate: {}",
-            std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count(),
-            std::chrono::duration_cast<std::chrono::milliseconds>(
-                    message.getExpiryDate().time_since_epoch()).count());
+    const auto now = TimePoint::now();
     if (now > message.getExpiryDate()) {
-        std::string errorMessage("Received expired message. Dropping the message (ID: " +
-                                 message.getId() + ").");
+        const std::string errorMessage = fmt::format(
+                "Received expired message (now={}, expiryDate={}). Dropping the message (ID: {})",
+                now.toMilliseconds(),
+                message.getExpiryDate().toMilliseconds(),
+                message.getId());
         JOYNR_LOG_WARN(logger(), errorMessage);
         throw exceptions::JoynrMessageNotSentException(errorMessage);
     }
@@ -223,16 +221,15 @@ void AbstractMessageRouter::registerGlobalRoutingEntryIfRequired(const Immutable
             // because the message is received via global transport (isGloballyVisible=true),
             // isGloballyVisible must be true
             const bool isGloballyVisible = true;
-            std::int64_t expiryDateMs =
-                    std::chrono::duration_cast<std::chrono::milliseconds>(
-                            message.getExpiryDate().time_since_epoch()).count() +
-                    messagingSettings.getRoutingTableGracePeriodMs();
-            if (expiryDateMs < 0) {
-                expiryDateMs = std::numeric_limits<std::int64_t>::max();
-            }
+            const TimePoint expiryDate =
+                    message.getExpiryDate() + messagingSettings.getRoutingTableGracePeriodMs();
 
             const bool isSticky = false;
-            addNextHop(message.getSender(), address, isGloballyVisible, expiryDateMs, isSticky);
+            addNextHop(message.getSender(),
+                       address,
+                       isGloballyVisible,
+                       expiryDate.toMilliseconds(),
+                       isSticky);
         } catch (const std::invalid_argument& e) {
             std::string errorMessage("could not deserialize Address from " + replyTo +
                                      " - error: " + e.what());

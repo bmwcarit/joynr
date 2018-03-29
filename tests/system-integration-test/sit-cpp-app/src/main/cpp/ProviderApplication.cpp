@@ -32,8 +32,10 @@
 #include "joynr/Semaphore.h"
 #include "joynr/types/ProviderQos.h"
 #include "joynr/types/ProviderScope.h"
+
 #include "SystemIntegrationTestProvider.h"
 #include "SitUtil.h"
+
 #ifdef JOYNR_ENABLE_DLT_LOGGING
 #include <dlt/dlt.h>
 #endif // JOYNR_ENABLE_DLT_LOGGING
@@ -101,8 +103,6 @@ int main(int argc, char* argv[])
         return EXIT_FAILURE;
     }
 
-    JOYNR_LOG_INFO(logger, "Registering provider on domain {}", providerDomain);
-
     if (pathToSettings.empty()) {
         boost::filesystem::path appFilename = boost::filesystem::path(argv[0]);
         std::string appDirectory =
@@ -110,23 +110,23 @@ int main(int argc, char* argv[])
         pathToSettings = appDirectory + "/resources/systemintegrationtest-provider.settings";
     }
 
-    const std::string pathToMessagingSettingsDefault("");
-    std::shared_ptr<IKeychain> keychain;
-
+    std::shared_ptr<JoynrRuntime> runtime;
     try {
-        keychain = tryLoadKeychainFromCmdLineArgs(
-                sslCertFilename, sslPrivateKeyFilename, sslCaCertFilename);
+        runtime = joynr::sitUtil::createRuntime(
+                pathToSettings, sslCertFilename, sslPrivateKeyFilename, sslCaCertFilename);
     } catch (const std::invalid_argument& e) {
         JOYNR_LOG_FATAL(logger, e.what());
+        runtime.reset();
+    }
+
+    if (!runtime) {
         return EXIT_FAILURE;
     }
 
     try {
-        std::shared_ptr<JoynrRuntime> runtime = JoynrRuntime::createRuntime(
-                pathToSettings, pathToMessagingSettingsDefault, keychain);
-
         joynr::Semaphore semaphore;
 
+        JOYNR_LOG_INFO(logger, "Registering provider on domain {}", providerDomain);
         auto provider =
                 std::make_shared<SystemIntegrationTestProvider>([&]() { semaphore.notify(); });
 

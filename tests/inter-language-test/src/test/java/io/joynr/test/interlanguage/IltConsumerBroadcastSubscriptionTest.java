@@ -46,6 +46,8 @@ import org.slf4j.LoggerFactory;
 import io.joynr.exceptions.SubscriptionException;
 import io.joynr.proxy.Future;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -59,7 +61,21 @@ import java.util.List;
 
 @RunWith(Parameterized.class)
 public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
-    private static final Logger LOG = LoggerFactory.getLogger(IltConsumerTest.class);
+    private static final Logger LOG = LoggerFactory.getLogger(IltConsumerBroadcastSubscriptionTest.class);
+
+    @BeforeClass
+    public static void setUp() throws Exception {
+        LOG.info("setUp: Entering");
+        setupConsumerRuntime(false);
+        LOG.info("setUp: Leaving");
+    }
+
+    @AfterClass
+    public static void tearDown() throws InterruptedException {
+        LOG.info("tearDown: Entering");
+        generalTearDown();
+        LOG.info("tearDown: Leaving");
+    }
 
     /*
      * BROADCAST SUBSCRIPTIONS

@@ -91,7 +91,7 @@ TEST_F(LocalDiscoveryAggregatorTest, addAsync_callsProxy) {
 
     types::DiscoveryEntryWithMetaInfo discoveryEntry;
     discoveryEntry.setParticipantId("testParticipantId");
-    EXPECT_CALL(*discoveryMock, addAsyncMock(Eq(discoveryEntry), Eq(nullptr), Eq(nullptr)));
+    EXPECT_CALL(*discoveryMock, addAsyncMock(Eq(discoveryEntry), Eq(nullptr), Eq(nullptr),_));
     localDiscoveryAggregator.addAsync(discoveryEntry, nullptr, nullptr);
 }
 
@@ -106,7 +106,8 @@ TEST_F(LocalDiscoveryAggregatorTest, lookupAsyncDomainInterface_callsProxy) {
                                            Eq(interfaceName),
                                            Eq(discoveryQos),
                                            Eq(nullptr),
-                                           Eq(nullptr))
+                                           Eq(nullptr),
+                                           _)
                 );
     localDiscoveryAggregator.lookupAsync(domains, interfaceName, discoveryQos, nullptr, nullptr);
 }
@@ -117,7 +118,8 @@ TEST_F(LocalDiscoveryAggregatorTest, lookupAsyncParticipantId_callsProxy) {
     const std::string participantId("testParticipantId");
     EXPECT_CALL(*discoveryMock, lookupAsyncMock(Eq(participantId),
                                             Eq(nullptr),
-                                            Eq(nullptr))
+                                            Eq(nullptr),
+                                            _)
                 );
     localDiscoveryAggregator.lookupAsync(participantId, nullptr, nullptr);
 }
@@ -128,7 +130,8 @@ TEST_F(LocalDiscoveryAggregatorTest, removeAsync_callsProxy) {
     const std::string participantId("testParticipantId");
     EXPECT_CALL(*discoveryMock, removeAsyncMock(Eq(participantId),
                                             Eq(nullptr),
-                                            Eq(nullptr))
+                                            Eq(nullptr),
+                                            _)
                 );
     localDiscoveryAggregator.removeAsync(participantId, nullptr, nullptr);
 }
@@ -143,7 +146,7 @@ TEST_F(LocalDiscoveryAggregatorTest, lookupAsyncParticipantId_provisionedEntry_d
     LocalDiscoveryAggregator localDiscoveryAggregator(provisionedDiscoveryEntries);
     localDiscoveryAggregator.setDiscoveryProxy(discoveryMock);
 
-    EXPECT_CALL(*discoveryMock, lookupAsyncMock(_,_,_)).Times(0);
+    EXPECT_CALL(*discoveryMock, lookupAsyncMock(_,_,_,_)).Times(0);
 
     auto onSuccess = [&semaphore, &provisionedDiscoveryEntry]
             (const types::DiscoveryEntryWithMetaInfo& entry) {

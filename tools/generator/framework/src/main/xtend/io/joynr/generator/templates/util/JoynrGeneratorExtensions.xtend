@@ -51,13 +51,13 @@ class JoynrGeneratorExtensions {
 	@Inject
 	protected extension TypeUtil;
 
-	@Inject(optional = true)
+	@Inject
 	@Named(JOYNR_GENERATOR_GENERATE)
-	public boolean generate = true;
+	public boolean generate;
 
-	@Inject(optional = true)
+	@Inject
 	@Named(JOYNR_GENERATOR_CLEAN)
-	public boolean clean = false;
+	public boolean clean;
 
 	def Iterable<FInterface> getInterfaces(FModel model) {
 		return model.interfaces

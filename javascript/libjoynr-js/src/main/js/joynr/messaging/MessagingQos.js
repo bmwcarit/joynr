@@ -19,11 +19,11 @@
  * #L%
  */
 var defaultMessagingSettings = require("../start/settings/defaultMessagingSettings");
-var LoggerFactory = require("../system/LoggerFactory");
+var LoggingManager = require("../system/LoggingManager");
 var Util = require("../util/UtilInternal");
 var MessagingQosEffort = require("./MessagingQosEffort");
 
-var log = LoggerFactory.getLogger("joynr/messaging/MessagingQos");
+var log = LoggingManager.getLogger("joynr/messaging/MessagingQos");
 var defaultSettings = {
     ttl: 60000,
     customHeaders: {},

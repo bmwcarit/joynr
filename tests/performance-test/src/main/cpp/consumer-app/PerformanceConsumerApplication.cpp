@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -25,7 +25,11 @@
 #include <boost/filesystem/path.hpp>
 #include <boost/program_options.hpp>
 
-#include "joynr/JoynrRuntime.h"
+#include <joynr/JoynrRuntime.h>
+#include <joynr/WebSocketSettings.h>
+
+#include <joynr/tests/DummyKeychainImpl.h>
+#include <joynr/tests/DummyKeyChainParameters.h>
 
 #include "../common/Enum.h"
 #include "PerformanceConsumer.h"
@@ -51,6 +55,9 @@ int main(int argc, char* argv[])
     TestCase testCase;
     std::size_t byteArraySize;
     std::size_t stringLength;
+    bool useKeyChain = false;
+    const std::string ccUrlForTLS("wss://localhost:4243");
+    joynr::tests::DummyKeyChainParameters keyChainInputParams;
 
     auto validateRuns = [](std::size_t value) {
         if (value == 0) {
@@ -68,24 +75,52 @@ int main(int argc, char* argv[])
             "SEND_STRING|SEND_BYTEARRAY|SEND_BYTEARRAY_WITH_SIZE_TIMES_K|SEND_STRUCT")(
             "syncMode,s", po::value(&syncMode)->required(), "SYNC|ASYNC")(
             "stringLength,l", po::value(&stringLength)->required(), "length of string")(
-            "byteArraySize,b", po::value(&byteArraySize)->required(), "size of bytearray");
+            "byteArraySize,b", po::value(&byteArraySize)->required(), "size of bytearray")(
+            "useKeychain",
+            po::value(&useKeyChain)->default_value(false),
+            "Should KeyChain be used? Default: false.")(
+            "root-certificate",
+            po::value(&keyChainInputParams.rootCertFileName),
+            "Root certificate in PEM encoded format.")(
+            "pub-certificate",
+            po::value(&keyChainInputParams.pubCertFileName),
+            "Public certificate in PEM encoded format.")(
+            "private-key",
+            po::value(&keyChainInputParams.privKeyFileName),
+            "Private key in PEM encoded format.")(
+            "private-key-pwd",
+            po::value(&keyChainInputParams.privKeyPassword)->default_value(""),
+            "Passsword of private key. Default: empty string.");
 
     try {
         po::variables_map vm;
         po::store(po::parse_command_line(argc, argv, desc), vm);
-        po::notify(vm);
+
         if (vm.count("help")) {
             std::cout << desc << std::endl;
             return EXIT_FAILURE;
         }
 
+        po::notify(vm);
+
         boost::filesystem::path appFilename = boost::filesystem::path(argv[0]);
         std::string appDirectory =
                 boost::filesystem::system_complete(appFilename).parent_path().string();
-        std::string pathToSettings(appDirectory + "/resources/performancetest-consumer.settings");
+        auto joynrSettings = std::make_unique<joynr::Settings>(
+                (appDirectory + "/resources/performancetest-consumer.settings"));
 
-        std::shared_ptr<joynr::JoynrRuntime> runtime =
-                joynr::JoynrRuntime::createRuntime(pathToSettings);
+        std::shared_ptr<joynr::IKeychain> keyChain;
+
+        if (useKeyChain) {
+            keyChain = joynr::tests::DummyKeychainImpl::createFromPEMFiles(keyChainInputParams);
+            // also change settings file accordingly
+            joynr::WebSocketSettings wsSettings(*joynrSettings);
+            wsSettings.setClusterControllerMessagingUrl(ccUrlForTLS);
+        }
+
+        std::shared_ptr<joynr::JoynrRuntime> runtime(
+                joynr::JoynrRuntime::createRuntime(std::move(joynrSettings), std::move(keyChain)));
+
         std::unique_ptr<joynr::IPerformanceConsumer> consumer;
 
         if (syncMode == SyncMode::SYNC) {

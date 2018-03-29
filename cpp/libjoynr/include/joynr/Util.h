@@ -208,16 +208,6 @@ auto getKeyVectorForMap(const Map& map)
     return keys;
 }
 
-/**
- * Converts a std::chrono::system_clock::time_point to milliseconds
- */
-std::uint64_t toMilliseconds(const std::chrono::system_clock::time_point& timePoint);
-
-/**
- * Converts a std::chrono::system_clock::time_point to a printable string
- */
-std::string toDateString(const std::chrono::system_clock::time_point& timePoint);
-
 template <typename T>
 auto as_weak_ptr(std::shared_ptr<T> ptr)
 {

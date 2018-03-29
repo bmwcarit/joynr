@@ -26,7 +26,6 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "joynr/DispatcherUtils.h"
 #include "joynr/Settings.h"
 #include "joynr/tests/testProxy.h"
 #include "joynr/JoynrClusterControllerRuntime.h"

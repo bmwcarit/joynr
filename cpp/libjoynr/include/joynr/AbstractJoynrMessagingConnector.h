@@ -22,6 +22,9 @@
 #include <memory>
 #include <string>
 
+#include <boost/optional.hpp>
+#include <boost/none.hpp>
+
 #include "joynr/JoynrExport.h"
 #include "joynr/Logger.h"
 #include "joynr/MessagingQos.h"
@@ -56,9 +59,13 @@ public:
      *
      * @param replyCaller
      * @param request
+     * @param qos
      */
-    void operationRequest(std::shared_ptr<IReplyCaller> replyCaller, Request&& request);
-    void operationOneWayRequest(OneWayRequest&& request);
+    void operationRequest(std::shared_ptr<IReplyCaller> replyCaller,
+                          Request&& request,
+                          boost::optional<MessagingQos> qos = boost::none);
+    void operationOneWayRequest(OneWayRequest&& request,
+                                boost::optional<MessagingQos> qos = boost::none);
 
 protected:
     std::weak_ptr<IMessageSender> messageSender;

@@ -16,6 +16,13 @@ option(
 )
 message(STATUS "option GENERATE_SOURCES=" ${GENERATE_SOURCES})
 
+option(
+    USE_DUMMY_KEYCHAIN
+    "Use a dummy keychain implementation?"
+    ON
+)
+message(STATUS "option USE_DUMMY_KEYCHAIN=" ${USE_DUMMY_KEYCHAIN})
+
 ##### Start of build ####################
 
 # Pull in the Joynr configuration
@@ -27,6 +34,14 @@ message(STATUS "joynr variable Joynr_LIB_COMMON_LIBRARIES=${Joynr_LIB_COMMON_LIB
 message(STATUS "joynr variable Joynr_LIB_WS_LIBRARIES=${Joynr_LIB_WS_LIBRARIES}")
 message(STATUS "joynr variable Joynr_EXECUTABLES=${Joynr_EXECUTABLES}")
 message(STATUS "joynr variable Joynr_RESOURCES_DIR=${Joynr_RESOURCES_DIR}")
+
+if(${USE_DUMMY_KEYCHAIN})
+    find_package(dummyKeychain 0.0.1 REQUIRED)
+    message(STATUS "dummyKeychain VERSION=${dummyKeychain_VERSION}")
+    set(KEYCHAIN_TARGET dummyKeychain)
+else()
+    set(KEYCHAIN_TARGET "")
+endif(${USE_DUMMY_KEYCHAIN})
 
 if(${GENERATE_SOURCES})
     find_package(JoynrGenerator ${Joynr_VERSION} EXACT REQUIRED)
@@ -81,13 +96,11 @@ include_directories(
 
 set(
     common_HEADERS
-    "src/main/cpp/KeychainImpl.h"
     "src/main/cpp/SitUtil.h"
 )
 
 set(
     common_SOURCES
-    "src/main/cpp/KeychainImpl.cpp"
     "src/main/cpp/SitUtil.cpp"
 )
 
@@ -127,10 +140,11 @@ file(
     DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
 )
 
-# Link with the joynr libraries
+# Needed libraries
 set(jsit-tests_LIBRARIES
     ${Joynr_LIB_COMMON_LIBRARIES}
     ${Boost_LIBRARIES}
+    ${KEYCHAIN_TARGET}
 )
 
 # Compile the provider application (requires: running cluster controller)
@@ -178,8 +192,8 @@ install(
     RUNTIME DESTINATION bin
 )
 
+include(AddClangFormat)
 if(ENABLE_CLANG_FORMATTER)
-    include(AddClangFormat)
     AddClangFormat(jsit-consumer-ws)
     AddClangFormat(jsit-provider-ws)
 endif(ENABLE_CLANG_FORMATTER)

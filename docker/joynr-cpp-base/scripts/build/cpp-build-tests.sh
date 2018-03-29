@@ -5,6 +5,8 @@ set -e
 
 source /data/src/docker/joynr-base/scripts/global.sh
 
+log "### start cpp-build-tests.sh ###"
+
 START=$(date +%s)
 CLANGFORMATTER='ON'
 BUILDTYPE='Debug'
@@ -24,8 +26,13 @@ function join_strings
 function usage
 {
     local joined_tests=$(join_strings " | " "${TESTS[@]}")
-    echo "usage: cpp-build-tests.sh all$joined_tests [--jobs X --clangformatter ON|OFF \
-    --buildtype Debug|Release --archivebinaries ON|OFF --additionalcmakeargs <args> --run-maven ON|OFF]"
+    echo "usage: cpp-build-tests.sh all$joined_tests
+        [--additionalcmakeargs <args> Default empty string]
+        [--archivebinaries ON|OFF Default $ARCHIVEBINARIES]
+        [--buildtype DEBUG|RELEASE|RELWITHDEBINFO|MINSIZEREL Default: $BUILDTYPE]
+        [--clangformatter ON|OFF Default $CLANGFORMATTER]
+        [--jobs X Default $JOBS]
+        [--run-maven ON|OFF Default $RUN_MAVEN]"
     echo "default: jobs is $JOBS, clangformatter is $CLANGFORMATTER, buildtype is \
     $BUILDTYPE, archivebinaries is $ARCHIVEBINARIES and additionalcmakeargs is $ADDITIONAL_CMAKE_ARGS"
 }
@@ -35,20 +42,20 @@ shift
 
 while [ "$1" != "" ]; do
     case $1 in
-        --jobs )                shift
-                                JOBS=$1
-                                ;;
-        --clangformatter )      shift
-                                CLANGFORMATTER=$1
-                                ;;
-        --buildtype )           shift
-                                BUILDTYPE=$1
+        --additionalcmakeargs ) shift
+                                ADDITIONAL_CMAKE_ARGS=$1
                                 ;;
         --archivebinaries )     shift
                                 ARCHIVEBINARIES=$1
                                 ;;
-        --additionalcmakeargs ) shift
-                                ADDITIONAL_CMAKE_ARGS=$1
+        --buildtype )           shift
+                                BUILDTYPE=$1
+                                ;;
+        --clangformatter )      shift
+                                CLANGFORMATTER=$1
+                                ;;
+        --jobs )                shift
+                                JOBS=$1
                                 ;;
         --run-maven )           shift
                                 RUN_MAVEN=$1
@@ -58,6 +65,19 @@ while [ "$1" != "" ]; do
     esac
     shift
 done
+
+# build dummyKeychain first
+DUMMYKEYCHAIN_SRC_DIR=/data/src/tests/dummyKeychain
+DUMMYKEYCHAIN_BUILD_DIR=/data/build/dummyKeychain
+rm -rf $DUMMYKEYCHAIN_BUILD_DIR
+mkdir $DUMMYKEYCHAIN_BUILD_DIR
+cd $DUMMYKEYCHAIN_BUILD_DIR
+cmake -DCMAKE_PREFIX_PATH=$JOYNR_INSTALL_DIR \
+      -DCMAKE_BUILD_TYPE=$BUILDTYPE \
+      -DCMAKE_INSTALL_PREFIX=/usr \
+      -DENABLE_CLANG_FORMATTER=$CLANGFORMATTER \
+      $DUMMYKEYCHAIN_SRC_DIR
+make -j ${JOBS}
 
 # check which test to build
 MAVEN_PROJECT=
@@ -129,3 +149,5 @@ fi
 END=$(date +%s)
 DIFF=$(( $END - $START ))
 log "Test build time: $DIFF seconds"
+
+log "### end cpp-build-tests.sh ###"

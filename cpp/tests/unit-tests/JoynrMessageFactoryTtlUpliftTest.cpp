@@ -23,7 +23,6 @@
 #include <gtest/gtest.h>
 
 #include "joynr/BroadcastSubscriptionRequest.h"
-#include "joynr/DispatcherUtils.h"
 #include "joynr/MutableMessageFactory.h"
 #include "joynr/MessagingQos.h"
 #include "joynr/MulticastPublication.h"
@@ -34,6 +33,7 @@
 #include "joynr/SubscriptionReply.h"
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/SubscriptionStop.h"
+#include "joynr/TimePoint.h"
 #include "joynr/MutableMessage.h"
 
 using namespace joynr;
@@ -73,8 +73,7 @@ protected:
 
 void JoynrMessageFactoryTtlUpliftTest::checkMessageExpiryDate(const MutableMessage& message, const std::int64_t expectedTtl) {
     const std::int64_t tolerance = 50;
-    std::int64_t actualTtl = std::chrono::duration_cast<std::chrono::milliseconds>(
-                message.getExpiryDate() - std::chrono::system_clock::now()).count();
+    std::int64_t actualTtl = message.getExpiryDate().relativeFromNow().count();
     std::int64_t diff = expectedTtl - actualTtl;
     EXPECT_GE(diff, 0);
     EXPECT_LE(std::abs(diff), tolerance) << "ttl from expiryDate "
@@ -174,22 +173,21 @@ TEST_F(JoynrMessageFactoryTtlUpliftTest, testTtlUplift_SubscriptionStop)
 
 TEST_F(JoynrMessageFactoryTtlUpliftTest, testTtlUpliftWithLargeTtl)
 {
-    const JoynrTimePoint expectedTimePoint = DispatcherUtils::getMaxAbsoluteTime();
+    const TimePoint expectedTimePoint = TimePoint::max();
     Request request;
 
     std::int64_t ttl;
     MessagingQos messagingQos;
     MutableMessage message;
-    JoynrTimePoint timePoint;
 
     ttl = INT64_MAX;
     messagingQos.setTtl(ttl);
     message = factoryWithTtlUplift.createRequest(senderID, receiverID, messagingQos, request, isLocalMessage);
-    timePoint = message.getExpiryDate();
+    TimePoint timePoint = message.getExpiryDate();
     EXPECT_EQ(expectedTimePoint, timePoint) << "expected timepoint: "
-                                               + std::to_string(expectedTimePoint.time_since_epoch().count())
+                                               + std::to_string(expectedTimePoint.toMilliseconds())
                                                + " actual: "
-                                               + std::to_string(timePoint.time_since_epoch().count());
+                                               + std::to_string(timePoint.toMilliseconds());
 
     // TODO uncomment failing tests
     // after overflow checks in DispatcherUtils.convertTtlToAbsoluteTime are fixed
@@ -206,11 +204,8 @@ TEST_F(JoynrMessageFactoryTtlUpliftTest, testTtlUpliftWithLargeTtl)
 //    timePoint = message.getHeaderExpiryDate();
 //    EXPECT_EQ(expectedTimePoint, timePoint);
 
-    std::int64_t now = std::chrono::time_point_cast<std::chrono::milliseconds>(
-                std::chrono::system_clock::now()).time_since_epoch().count();
-    ttl = DispatcherUtils::getMaxAbsoluteTime().time_since_epoch().count()
-            - ttlUplift
-            - now;
+    auto now = TimePoint::now();
+    ttl = (TimePoint::max() - std::chrono::milliseconds(ttlUplift)).relativeFromNow().count();
     messagingQos.setTtl(ttl);
     message = factoryWithTtlUplift.createRequest(senderID, receiverID, messagingQos, request, isLocalMessage);
 //    timePoint = message.getHeaderExpiryDate();
@@ -218,7 +213,7 @@ TEST_F(JoynrMessageFactoryTtlUpliftTest, testTtlUpliftWithLargeTtl)
 //                                               + std::to_string(expectedTimePoint.time_since_epoch().count())
 //                                               + " actual: "
 //                                               + std::to_string(timePoint.time_since_epoch().count());
-    checkMessageExpiryDate(message, expectedTimePoint.time_since_epoch().count() - now);
+    checkMessageExpiryDate(message, (expectedTimePoint - now).count());
 
 //    ttl = DispatcherUtils::getMaxAbsoluteTime().time_since_epoch().count()
 //            - ttlUplift

@@ -141,6 +141,10 @@ public class ImmutableMessage extends Message {
         return messageDeserializer.isSigned();
     }
 
+    public boolean isCompressed() {
+        return messageDeserializer.isCompressed();
+    }
+
     @JsonIgnore
     public int getMessageSize() {
         return messageDeserializer.getMessageSize();
