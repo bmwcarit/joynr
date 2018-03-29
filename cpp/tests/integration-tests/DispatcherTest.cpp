@@ -56,6 +56,10 @@
 using namespace ::testing;
 using namespace joynr;
 
+MATCHER_P(MessageIsCompressed, compressed, "") {
+    return arg->isCompressed() == compressed;
+}
+
 class DispatcherTest : public ::testing::Test {
 public:
     DispatcherTest() :
@@ -233,6 +237,48 @@ TEST_F(DispatcherTest, receive_customHeadersCopied) {
                     AllOf(
                         MessageHasType(joynr::Message::VALUE_MESSAGE_TYPE_REPLY()),
                         ImmutableMessageHasPrefixedCustomHeaders(prefixedCustomHeaders)
+                    ),
+                    _
+                )
+    ).WillOnce(ReleaseSemaphore(&getLocationCalledSemaphore));
+
+    dispatcher->addRequestCaller(providerParticipantId, mockRequestCaller);
+    dispatcher->receive(mutableMessage.getImmutableMessage());
+
+    EXPECT_TRUE(getLocationCalledSemaphore.waitFor(std::chrono::milliseconds(5000)));
+}
+
+TEST_F(DispatcherTest, compressFlagIsRetained) {
+    const bool isCompressed = true;
+
+    EXPECT_CALL(
+                *mockRequestCaller,
+                getLocationMock(
+                    A<std::function<void(const joynr::types::Localisation::GpsLocation&)>>(),
+                    A<std::function<void(const std::shared_ptr<joynr::exceptions::ProviderRuntimeException>&)>>()
+                )
+    ).WillOnce(Invoke(this, &DispatcherTest::invokeOnSuccessWithGpsLocation));
+
+    Request request;
+    request.setRequestReplyId(requestReplyId);
+    request.setMethodName("getLocation");
+
+    qos.setCompress(isCompressed);
+
+    MutableMessage mutableMessage = messageFactory.createRequest(
+                proxyParticipantId,
+                providerParticipantId,
+                qos,
+                request,
+                isLocalMessage
+    );
+
+    EXPECT_CALL(
+                *mockMessageRouter,
+                route(
+                    AllOf(
+                        MessageHasType(joynr::Message::VALUE_MESSAGE_TYPE_REPLY()),
+                        MessageIsCompressed(isCompressed)
                     ),
                     _
                 )

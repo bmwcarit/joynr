@@ -25,7 +25,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>java</artifactId>
-		<version>1.0.0-SNAPSHOT</version>
+		<version>1.1.0-SNAPSHOT</version>
 	</parent>
 
 	<dependencies>
@@ -145,27 +145,6 @@
 			copies them to the currrent build directory.
 		-->
 		<dependency>
-			<groupId>io.joynr.java.backend-services</groupId>
-			<artifactId>discovery-directory-servlet</artifactId>
-			<version>${project.version}</version>
-			<type>war</type>
-		</dependency>
-		<!--
-			This dependency is needed to ensure the correct build order.
-			Some artifacts is needed by the maven-dependency-plugin, which
-			copies them to the currrent build directory.
-		-->
-		<dependency>
-			<groupId>io.joynr.java.backend-services</groupId>
-			<artifactId>domain-access-controller-servlet</artifactId>
-			<version>${project.version}</version>
-			<type>war</type>
-		</dependency>
-		<!-- This dependency is needed to ensure the correct build order.
-			Some artifacts is needed by the maven-dependency-plugin, which
-			copies them to the currrent build directory.
-		-->
-		<dependency>
 			<groupId>io.joynr.java.messaging.bounceproxy</groupId>
 			<artifactId>bounceproxy-controller-nonclustered</artifactId>
 			<version>${project.version}</version>
@@ -240,22 +219,6 @@
 									<type>war</type>
 									<outputDirectory>${project.build.directory}</outputDirectory>
 									<destFileName>bounceproxy.war</destFileName>
-								</artifactItem>
-								<artifactItem>
-									<groupId>io.joynr.java.backend-services</groupId>
-									<artifactId>discovery-directory-servlet</artifactId>
-									<version>${project.version}</version>
-									<type>war</type>
-									<outputDirectory>${project.build.directory}</outputDirectory>
-									<destFileName>discovery.war</destFileName>
-								</artifactItem>
-								<artifactItem>
-									<groupId>io.joynr.java.backend-services</groupId>
-									<artifactId>domain-access-controller-servlet</artifactId>
-									<version>${project.version}</version>
-									<type>war</type>
-									<outputDirectory>${project.build.directory}</outputDirectory>
-									<destFileName>accesscontrol.war</destFileName>
 								</artifactItem>
 								<artifactItem>
 									<groupId>io.joynr.java.messaging.bounceproxy</groupId>

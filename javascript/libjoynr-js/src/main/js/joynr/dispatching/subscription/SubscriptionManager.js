@@ -1,4 +1,5 @@
-/*jslint es5: true, node: true, node: true */
+/*jslint es5: true, node: true */
+
 /*
  * #%L
  * %%
@@ -29,7 +30,7 @@ var BroadcastSubscriptionRequest = require("../types/BroadcastSubscriptionReques
 var SubscriptionListener = require("./SubscriptionListener");
 var SubscriptionUtil = require("./util/SubscriptionUtil");
 var LongTimer = require("../../util/LongTimer");
-var LoggerFactory = require("../../system/LoggerFactory");
+var LoggingManager = require("../../system/LoggingManager");
 var uuid = require("../../../lib/uuid-annotated");
 var Util = require("../../util/UtilInternal");
 var Typing = require("../../util/Typing");
@@ -44,7 +45,7 @@ var JSONSerializer = require("../../util/JSONSerializer");
  */
 function SubscriptionManager(dispatcher) {
     var multicastWildcardRegexFactory = new MulticastWildcardRegexFactory();
-    var log = LoggerFactory.getLogger("joynr.dispatching.subscription.SubscriptionManager");
+    var log = LoggingManager.getLogger("joynr.dispatching.subscription.SubscriptionManager");
     var typeRegistry = TypeRegistrySingleton.getInstance();
     if (!(this instanceof SubscriptionManager)) {
         // in case someone calls constructor without new keyword (e.g. var c =
@@ -132,13 +133,14 @@ function SubscriptionManager(dispatcher) {
             delay_ms = alertAfterIntervalMs - timeSinceLastPublication;
         }
 
-        function checkPublicationDelay() {
-            checkPublication(subscriptionId, alertAfterIntervalMs);
-        }
-
         if (!subscriptionEnds(subscriptionId, delay_ms)) {
             // log.debug("Rescheduling checkPublication with delay: " + delay_ms);
-            publicationCheckTimerIds[subscriptionId] = LongTimer.setTimeout(checkPublicationDelay, delay_ms);
+            publicationCheckTimerIds[subscriptionId] = LongTimer.setTimeout(
+                checkPublication,
+                delay_ms,
+                subscriptionId,
+                alertAfterIntervalMs
+            );
         }
     }
 
@@ -194,9 +196,9 @@ function SubscriptionManager(dispatcher) {
         var alertAfterIntervalMs = subscriptionRequest.qos.alertAfterIntervalMs;
         if (alertAfterIntervalMs !== undefined && alertAfterIntervalMs > 0) {
             publicationCheckTimerIds[subscriptionRequest.subscriptionId] = LongTimer.setTimeout(
-                function checkPublicationAlertAfterInterval() {
-                    checkPublication(subscriptionRequest.subscriptionId, alertAfterIntervalMs);
-                },
+                checkPublication,
+                alertAfterIntervalMs,
+                subscriptionRequest.subscriptionId,
                 alertAfterIntervalMs
             );
         }
@@ -332,23 +334,12 @@ function SubscriptionManager(dispatcher) {
 
         storeSubscriptionRequest(settings, subscriptionRequest);
 
-        function sendSubscriptionRequestCatcher(error) {
-            cleanupSubscription(subscriptionId);
-            if (settings.onError) {
-                settings.onError(error);
-            }
-            deferred.reject(error);
-            return deferred.promise;
-        }
-
-        dispatcher
-            .sendSubscriptionRequest({
-                from: settings.proxyId,
-                toDiscoveryEntry: settings.providerDiscoveryEntry,
-                messagingQos: messagingQos,
-                subscriptionRequest: subscriptionRequest
-            })
-            .catch(sendSubscriptionRequestCatcher);
+        dispatcher.sendSubscriptionRequest({
+            from: settings.proxyId,
+            toDiscoveryEntry: settings.providerDiscoveryEntry,
+            messagingQos: messagingQos,
+            subscriptionRequest: subscriptionRequest
+        });
 
         return deferred.promise;
     };

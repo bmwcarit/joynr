@@ -29,22 +29,21 @@ This project has following dependencies:
    │  │  └─ ultron (1.0.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/ultron/package.json
    │  └─ xmlhttprequest (1.8.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/xmlhttprequest/package.json
    ├─ bluebird (3.3.5) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/bluebird/package.json
-   ├─ log4javascript (1.4.15) ── Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0, http://www.opensource.org/licenses/Apache-2.0) ── node_modules/log4javascript/license.txt
-   ├─ mqtt (2.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt/package.json
+   ├─ mqtt (2.15.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt/package.json
    │  ├─ commist (1.0.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/commist/package.json
    │  │  ├─ leven (1.0.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/leven/package.json
    │  │  └─ minimist (1.2.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/minimist/package.json
    │  ├─ concat-stream (1.6.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/concat-stream/package.json
    │  │  ├─ inherits (2.0.3) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/inherits/package.json
-   │  │  ├─ readable-stream (2.3.3) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/readable-stream/package.json
+   │  │  ├─ readable-stream (2.3.4) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/readable-stream/package.json
    │  │  │  ├─ core-util-is (1.0.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/core-util-is/package.json
    │  │  │  ├─ isarray (1.0.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/isarray/package.json
-   │  │  │  ├─ process-nextick-args (1.0.7) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/process-nextick-args/package.json
+   │  │  │  ├─ process-nextick-args (2.0.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/process-nextick-args/package.json
    │  │  │  ├─ safe-buffer (5.1.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/safe-buffer/package.json
    │  │  │  ├─ string_decoder (1.0.3) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/string_decoder/package.json
    │  │  │  └─ util-deprecate (1.0.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/util-deprecate/package.json
    │  │  └─ typedarray (0.0.6) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/typedarray/package.json
-   │  ├─ end-of-stream (1.4.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/end-of-stream/package.json
+   │  ├─ end-of-stream (1.4.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/end-of-stream/package.json
    │  │  └─ once (1.4.0) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/once/package.json
    │  │     └─ wrappy (1.0.2) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/wrappy/package.json
    │  ├─ help-me (1.1.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/help-me/package.json
@@ -55,7 +54,7 @@ This project has following dependencies:
    │  │     │  ├─ fs.realpath (1.0.0) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/fs.realpath/package.json
    │  │     │  ├─ inflight (1.0.6) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/inflight/package.json
    │  │     │  ├─ minimatch (3.0.4) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/minimatch/package.json
-   │  │     │  │  └─ brace-expansion (1.1.8) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/brace-expansion/package.json
+   │  │     │  │  └─ brace-expansion (1.1.11) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/brace-expansion/package.json
    │  │     │  │     ├─ balanced-match (1.0.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/balanced-match/package.json
    │  │     │  │     └─ concat-map (0.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/concat-map/package.json
    │  │     │  └─ path-is-absolute (1.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/path-is-absolute/package.json
@@ -65,14 +64,16 @@ This project has following dependencies:
    │  │     │  └─ path-dirname (1.0.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/path-dirname/package.json
    │  │     ├─ is-negated-glob (1.0.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/is-negated-glob/package.json
    │  │     ├─ ordered-read-streams (1.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/ordered-read-streams/package.json
-   │  │     ├─ pumpify (1.3.5) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/pumpify/package.json
-   │  │     │  ├─ duplexify (3.5.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/duplexify/package.json
+   │  │     ├─ pumpify (1.4.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/pumpify/package.json
+   │  │     │  ├─ duplexify (3.5.3) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/duplexify/package.json
    │  │     │  │  └─ stream-shift (1.0.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/stream-shift/package.json
-   │  │     │  └─ pump (1.0.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/pump/package.json
+   │  │     │  └─ pump (2.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/pump/package.json
    │  │     ├─ remove-trailing-separator (1.1.0) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/remove-trailing-separator/package.json
-   │  │     ├─ to-absolute-glob (2.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/to-absolute-glob/package.json
-   │  │     │  └─ extend-shallow (2.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/extend-shallow/package.json
-   │  │     │     └─ is-extendable (0.1.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/is-extendable/package.json
+   │  │     ├─ to-absolute-glob (2.0.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/to-absolute-glob/package.json
+   │  │     │  └─ is-absolute (1.0.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/is-absolute/package.json
+   │  │     │     ├─ is-relative (1.0.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/is-relative/package.json
+   │  │     │     │  └─ is-unc-path (1.0.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/is-unc-path/package.json
+   │  │     │     └─ is-windows (1.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/is-windows/package.json
    │  │     └─ unique-stream (2.2.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/unique-stream/package.json
    │  │        ├─ json-stable-stringify (1.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/json-stable-stringify/package.json
    │  │        │  └─ jsonify (0.0.0) ── public domain ── node_modules/jsonify/package.json
@@ -80,16 +81,20 @@ This project has following dependencies:
    │  │           └─ through2 (2.0.3) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/through2/package.json
    │  │              └─ xtend (4.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/xtend/package.json
    │  ├─ mqtt-packet (5.4.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt-packet/package.json
-   │  │  └─ bl (1.2.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/bl/package.json
+   │  │  ├─ bl (1.2.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/bl/package.json
+   │  │  └─ process-nextick-args (1.0.7) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt-packet ~ process-nextick-args/package.json
    │  ├─ reinterval (1.1.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/reinterval/package.json
    │  ├─ split2 (2.2.0) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/split2/package.json
-   │  └─ websocket-stream (3.3.3) ── BSD 2-clause "Simplified" License (http://www.opensource.org/licenses/BSD-2-Clause) ── node_modules/websocket-stream/package.json
+   │  └─ websocket-stream (5.1.1) ── BSD 2-clause "Simplified" License (http://www.opensource.org/licenses/BSD-2-Clause) ── node_modules/websocket-stream/package.json
+   │     └─ ws (3.3.3) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/websocket-stream ~ ws/package.json
+   │        ├─ async-limiter (1.0.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/async-limiter/package.json
+   │        └─ ultron (1.1.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/websocket-stream ~ ultron/package.json
    ├─ node-persist (2.1.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/node-persist/package.json
-   │  ├─ is-absolute (0.2.6) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/is-absolute/package.json
-   │  │  ├─ is-relative (0.2.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/is-relative/package.json
-   │  │  │  └─ is-unc-path (0.1.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/is-unc-path/package.json
+   │  ├─ is-absolute (0.2.6) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/node-persist ~ is-absolute/package.json
+   │  │  ├─ is-relative (0.2.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/node-persist ~ is-relative/package.json
+   │  │  │  └─ is-unc-path (0.1.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/node-persist ~ is-unc-path/package.json
    │  │  │     └─ unc-path-regex (0.1.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/unc-path-regex/package.json
-   │  │  └─ is-windows (0.2.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/is-windows/package.json
+   │  │  └─ is-windows (0.2.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/node-persist ~ is-windows/package.json
    │  ├─ mkdirp (0.5.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mkdirp/package.json
    │  │  └─ minimist (0.0.8) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mkdirp ~ minimist/package.json
    │  └─ q (1.1.2) ── MIT (http://github.com/kriskowal/q/raw/master/LICENSE) ── node_modules/q/package.json
@@ -108,14 +113,6 @@ This project has following dependencies:
     - modified to allow parsing invalid JSON structure of multiple JSOn objects concatenated
       together
       js-dependencies/src/main/resources/JsonParser/JsonParser.patch
-
-* log4javascript (http://log4javascript.org/), Version 1.4.10
-  License: Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0.html)
-  Location: js-dependencies/src/main/js/log4javascript/log4javascript_uncompressed.js
-  Modifications: none
-  Webjar: <groupId>org.webjars</groupId>
-          <artifactId>log4javascript</artifactId>
-          <version>1.4.10</version>
 
 * UUID (https://gist.github.com/jed/982883)
   License: WTF Public License (https://gist.github.com/jed/982883#file-license-txt)

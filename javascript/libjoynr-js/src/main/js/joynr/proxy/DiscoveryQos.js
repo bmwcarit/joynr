@@ -21,7 +21,7 @@
 var ArbitrationStrategyCollection = require("../../joynr/types/ArbitrationStrategyCollection");
 var DiscoveryScope = require("../../joynr/types/DiscoveryScope");
 var Util = require("../util/UtilInternal");
-var LoggerFactory = require("../system/LoggerFactory");
+var LoggingManager = require("../system/LoggingManager");
 
 var defaultSettings = {
     discoveryTimeoutMs: 10 * 60 * 1000, // 10 minutes
@@ -56,7 +56,7 @@ function DiscoveryQos(settings) {
         return new DiscoveryQos(settings);
     }
 
-    var log = LoggerFactory.getLogger("joynr.proxy.DiscoveryQos");
+    var log = LoggingManager.getLogger("joynr.proxy.DiscoveryQos");
 
     settings = Util.extend({}, defaultSettings, settings);
 

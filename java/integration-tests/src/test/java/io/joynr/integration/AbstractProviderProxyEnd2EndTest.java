@@ -66,6 +66,7 @@ import joynr.ImmutableMessage;
 import joynr.MulticastSubscriptionQos;
 import joynr.exceptions.ApplicationException;
 import joynr.exceptions.ProviderRuntimeException;
+import joynr.test.JoynrTestLoggingRule;
 import joynr.tests.DefaulttestProvider;
 import joynr.tests.test.MethodWithErrorEnumExtendedErrorEnum;
 import joynr.tests.test.MethodWithImplicitErrorEnumErrorEnum;
@@ -102,6 +103,8 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
     private static final String MAX_MESSAGE_SIZE = "4000000";
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractProviderProxyEnd2EndTest.class);
+    @Rule
+    public JoynrTestLoggingRule joynrTestRule = new JoynrTestLoggingRule(logger);
 
     // This timeout must be shared by all integration test environments and
     // cannot be too short.

@@ -27,6 +27,7 @@
 #include "joynr/MessageQueue.h"
 #include "joynr/MutableMessage.h"
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/TimePoint.h"
 
 #include "tests/JoynrTest.h"
 
@@ -44,9 +45,9 @@ public:
 
 protected:
     MessageQueue<std::string> messageQueue;
-    JoynrTimePoint expiryDate;
+    TimePoint expiryDate;
 
-    void createAndQueueMessage(const JoynrTimePoint& expiryDate) {
+    void createAndQueueMessage(const TimePoint& expiryDate) {
         MutableMessage mutableMsg;
         mutableMsg.setExpiryDate(expiryDate);
         auto immutableMessage = mutableMsg.getImmutableMessage();
@@ -77,7 +78,7 @@ TEST_F(MessageQueueTest, addMultipleMessages) {
 }
 
 TEST_F(MessageQueueTest, removeExpiredMessages_AllMessagesExpired) {
-    const JoynrTimePoint zeroTimepoint(std::chrono::milliseconds::zero());
+    const auto zeroTimepoint = TimePoint::fromAbsoluteMs(0);
 
     createAndQueueMessage(zeroTimepoint);
     createAndQueueMessage(zeroTimepoint);
@@ -88,7 +89,7 @@ TEST_F(MessageQueueTest, removeExpiredMessages_AllMessagesExpired) {
 }
 
 TEST_F(MessageQueueTest, removeExpiredMessages_SomeMessagesExpired) {
-    const JoynrTimePoint zeroTimepoint(std::chrono::milliseconds::zero());
+    const auto zeroTimepoint = TimePoint::fromAbsoluteMs(0);
 
     createAndQueueMessage(zeroTimepoint);
     createAndQueueMessage(zeroTimepoint);
@@ -167,14 +168,16 @@ public:
     ~MessageQueueWithLimitTest() = default;
 
 protected:
-
-    void createAndQueueMessage(MessageQueue<std::string>& queue, const JoynrTimePoint& expiryDate, const std::string& recipient, const std::string& payload = "") {
+    std::shared_ptr<ImmutableMessage> createMessage(const TimePoint& expiryDate, const std::string& recipient, const std::string& payload = "") {
         MutableMessage mutableMsg;
         mutableMsg.setExpiryDate(expiryDate);
         mutableMsg.setRecipient(recipient);
         mutableMsg.setPayload(payload);
-        auto immutableMessage = mutableMsg.getImmutableMessage();
-        queue.queueMessage(recipient, std::move(immutableMessage));
+        return mutableMsg.getImmutableMessage();
+    }
+
+    void createAndQueueMessage(MessageQueue<std::string>& queue, const TimePoint& expiryDate, const std::string& recipient, const std::string& payload = "") {
+        queue.queueMessage(recipient, createMessage(expiryDate, recipient, payload));
     }
 
     std::string payloadAsString(std::shared_ptr<ImmutableMessage> message) {
@@ -186,11 +189,6 @@ private:
     DISALLOW_COPY_AND_ASSIGN(MessageQueueWithLimitTest);
 };
 
-JoynrTimePoint getExpiryDateFromNow(long long offset)
-{
-    return (std::chrono::time_point_cast<std::chrono::milliseconds>( std::chrono::system_clock::now()) + std::chrono::milliseconds(offset));
-}
-
 TEST_F(MessageQueueWithLimitTest, testAddingMessages)
 {
     constexpr std::uint64_t messageQueueLimit = 4;
@@ -199,12 +197,13 @@ TEST_F(MessageQueueWithLimitTest, testAddingMessages)
     const int messageCount = 5;
     // Keep in mind that message 1 expires later than message 3. This is done in order to check
     // if removal deletes the message with lowest ttl and not the first inserted message.
-    const JoynrTimePoint expiryDate[messageCount] = {
-        getExpiryDateFromNow(300),
-        getExpiryDateFromNow(200),
-        getExpiryDateFromNow(100),
-        getExpiryDateFromNow(500),
-        getExpiryDateFromNow(600)
+    auto now = TimePoint::now();
+    const TimePoint expiryDate[messageCount] = {
+        now + 300,
+        now + 200,
+        now + 100,
+        now + 300,
+        now + 600
     };
 
     const std::string recipient[messageCount] = {
@@ -239,10 +238,11 @@ TEST_F(MessageQueueWithLimitTest, testPerKeyQueueLimit_lowestTtlRemoved)
     constexpr std::uint64_t messageQueueLimit = 10;
     constexpr std::uint64_t perKeyQueueLimit = 1;
 
+    const auto now = TimePoint::now();
     MessageQueue<std::string> queue(messageQueueLimit, perKeyQueueLimit);
-    createAndQueueMessage(queue, getExpiryDateFromNow(1000), recipient1, msgRecipient1Payload1);
-    createAndQueueMessage(queue, getExpiryDateFromNow(2000), recipient1, msgRecipient1Payload2);
-    createAndQueueMessage(queue, getExpiryDateFromNow(1000), recipient2, msgRecipient2Payload1);
+    createAndQueueMessage(queue, now + 1000, recipient1, msgRecipient1Payload1);
+    createAndQueueMessage(queue, now + 2000, recipient1, msgRecipient1Payload2);
+    createAndQueueMessage(queue, now + 1000, recipient2, msgRecipient2Payload1);
 
     EXPECT_EQ(2, queue.getQueueLength());
 
@@ -268,13 +268,14 @@ TEST_F(MessageQueueWithLimitTest, testPerKeyQueueLimit_overallQueueIsFull)
     constexpr std::uint64_t messageQueueLimit = 2;
     constexpr std::uint64_t perKeyQueueLimit = 2;
 
+    const auto now = TimePoint::now();
     MessageQueue<std::string> queue(messageQueueLimit, perKeyQueueLimit);
-    createAndQueueMessage(queue, getExpiryDateFromNow(1000), recipient1, msgRecipient1Payload1);
-    createAndQueueMessage(queue, getExpiryDateFromNow(100), recipient2, msgRecipient2Payload1);
+    createAndQueueMessage(queue, now + 1000, recipient1, msgRecipient1Payload1);
+    createAndQueueMessage(queue, now + 100, recipient2, msgRecipient2Payload1);
 
     // The overall queue is full. However, there is still space in the per-key-queue. Therefore
     // the message for recipient 2 must be removed.
-    createAndQueueMessage(queue, getExpiryDateFromNow(2000), recipient1, msgRecipient1Payload2);
+    createAndQueueMessage(queue, now + 2000, recipient1, msgRecipient1Payload2);
 
     EXPECT_EQ(2, queue.getQueueLength());
 
@@ -288,4 +289,68 @@ TEST_F(MessageQueueWithLimitTest, testPerKeyQueueLimit_overallQueueIsFull)
 
     EXPECT_EQ(msgRecipient1Payload2, payloadAsString(recipient1Message1));
     EXPECT_EQ(msgRecipient1Payload1, payloadAsString(recipient1Message2));
+}
+
+TEST_F(MessageQueueWithLimitTest, testMessageQueueLimitBytes)
+{
+    const std::string recipient1("recipient1");
+    const std::string recipient2("recipient2");
+
+    constexpr std::uint64_t messageQueueLimit = 0;
+    constexpr std::uint64_t perKeyQueueLimit = 0;
+
+    std::string payload(1000, 'x');
+    const auto now = TimePoint::now();    
+    std::uint64_t sizeOfSingleMessage = createMessage(now + 1000, recipient1, payload)->getMessageSize();
+
+    // set limit so that 2 messages safely fit into the queue, but 3 messages exceed it
+    std::uint64_t messageQueueLimitBytes = sizeOfSingleMessage * 3 - 1;
+    MessageQueue<std::string> queue(messageQueueLimit, perKeyQueueLimit, messageQueueLimitBytes);
+
+    createAndQueueMessage(queue, now + 1000, recipient1, payload);
+    EXPECT_EQ(1, queue.getQueueLength());
+    EXPECT_EQ(queue.getQueueSizeBytes(), sizeOfSingleMessage);
+    EXPECT_LE(queue.getQueueSizeBytes(), messageQueueLimitBytes);
+
+    // the following 2nd message is expected to be discarded when the
+    // 3rd message is queued since it has the lowest expiry date
+    createAndQueueMessage(queue, now + 100, recipient2, payload);
+    EXPECT_EQ(2, queue.getQueueLength());
+    EXPECT_EQ(queue.getQueueSizeBytes(), sizeOfSingleMessage * 2);
+    EXPECT_LE(queue.getQueueSizeBytes(), messageQueueLimitBytes);
+
+    createAndQueueMessage(queue, now + 2000, recipient1, payload);
+    EXPECT_EQ(2, queue.getQueueLength());
+    EXPECT_EQ(queue.getQueueSizeBytes(), sizeOfSingleMessage * 2);
+    EXPECT_LE(queue.getQueueSizeBytes(), messageQueueLimitBytes);
+
+    auto recipient1Message1 = queue.getNextMessageFor(recipient1);
+    EXPECT_EQ(1, queue.getQueueLength());
+    EXPECT_EQ(queue.getQueueSizeBytes(), sizeOfSingleMessage);
+    EXPECT_NE(nullptr, recipient1Message1);
+
+    auto recipient1Message2 = queue.getNextMessageFor(recipient1);
+    EXPECT_EQ(0, queue.getQueueLength());
+    EXPECT_EQ(0, queue.getQueueSizeBytes());
+    EXPECT_NE(nullptr, recipient1Message2);
+
+    auto recipient2Message1 = queue.getNextMessageFor(recipient2);
+    EXPECT_EQ(nullptr, recipient2Message1);
+}
+
+TEST_F(MessageQueueWithLimitTest, testMessageQueueHandlesTooLargeMessage)
+{
+    const std::string recipient1("recipient1");
+    constexpr std::uint64_t messageQueueLimit = 0;
+    constexpr std::uint64_t perKeyQueueLimit = 0;
+    std::string payload(1000, 'x');
+    const auto now = TimePoint::now();    
+    std::uint64_t sizeOfSingleMessage = createMessage(now + 1000, recipient1, payload)->getMessageSize();
+    std::uint64_t messageQueueLimitBytes = sizeOfSingleMessage - 1;
+
+    MessageQueue<std::string> queue(messageQueueLimit, perKeyQueueLimit, messageQueueLimitBytes);
+
+    createAndQueueMessage(queue, now + 1000, recipient1, payload);
+
+    EXPECT_EQ(0, queue.getQueueLength());
 }

@@ -99,11 +99,9 @@ function ProxyEvent(parent, settings) {
     }
     this._settings = settings;
     this._parent = parent;
-
-    return Object.freeze(Util.forwardPrototype(this));
 }
 
-/**git
+/**
  * @name ProxyEvent#subscribe
  * @function
  * @param {Object}

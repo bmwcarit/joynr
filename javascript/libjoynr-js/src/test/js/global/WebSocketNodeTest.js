@@ -48,25 +48,6 @@ describe("websocket node", function() {
         ownerId: "ownerID"
     };
 
-    var joynrMessage = {
-        header: {},
-        payload: "somePayload"
-    };
-
-    it("can be used without ownerId", function() {
-        websocketNode = new WebsocketNode(remoteUrl);
-
-        var serializedMessage = websocketNode.marshalJoynrMessage(joynrMessage);
-        expect(serializedMessage).toBe("callback wasn't called");
-    });
-
-    it("can be used with ownerID", function() {
-        websocketNode = new WebsocketNode(remoteUrl, keychain);
-
-        var serializedMessage = websocketNode.marshalJoynrMessage(joynrMessage);
-        expect(serializedMessage).toBe("callback was called");
-    });
-
     it("calls the wscpp constructor with certs for unencrypted Tls communication", function() {
         var useUnencryptedTls = true;
         websocketNode = new WebsocketNode(remoteUrl, keychainWithCerts, useUnencryptedTls);

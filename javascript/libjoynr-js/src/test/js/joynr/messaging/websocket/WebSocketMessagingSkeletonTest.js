@@ -19,6 +19,7 @@
  * limitations under the License.
  * #L%
  */
+require("../../../node-unit-test-helper");
 var WebSocketMessagingSkeleton = require("../../../../classes/joynr/messaging/websocket/WebSocketMessagingSkeleton");
 var JoynrMessage = require("../../../../classes/joynr/messaging/JoynrMessage");
 var WebSocketAddress = require("../../../../classes/joynr/system/RoutingTypes/WebSocketAddress");

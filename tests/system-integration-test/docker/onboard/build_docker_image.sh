@@ -4,6 +4,9 @@
 # of required special parameters in order to support extension
 # of DNS handling and HOSTS entries via environment settings.
 # It is thus required that it does not get assigned any value.
+
+echo "### start build_docker_image.sh for onboard ###"
+
 BUILDDIR=target
 REPODIR=${HOME}/.m2/repository
 DOCKER_REPOSITORY=
@@ -124,7 +127,7 @@ if [ $NO_JAVA_TEST_BUILD ]; then
 	echo "Skipping Java build ..."
 else
 	# Build Java
-	execute_in_docker "echo \"Generate Java API\" && cd /data/src && mvn clean install -P no-license-and-notice,no-java-formatter,no-checkstyle -DskipTests"
+	execute_in_docker '"echo \"Generate Java API\" && cd /data/src && mvn clean install -P no-license-and-notice,no-java-formatter,no-checkstyle -DskipTests"'
 	SKIP_MAVEN_BUILD_CPP_PREREQUISITES=true
 fi
 
@@ -134,25 +137,30 @@ else
 	# if Java is included, the following section can be skipped since already included above
 	if [ -z $SKIP_MAVEN_BUILD_CPP_PREREQUISITES ]
 	then
-		execute_in_docker "echo \"Generate joynr C++ API\" && cd /data/src && mvn clean install -P no-license-and-notice,no-java-formatter,no-checkstyle -DskipTests -am\
-		--projects io.joynr:basemodel,io.joynr.tools.generator:dependency-libs,io.joynr.tools.generator:generator-framework,io.joynr.tools.generator:joynr-generator-maven-plugin,io.joynr.tools.generator:cpp-generator,io.joynr.cpp:libjoynr,io.joynr.tools.generator:joynr-generator-standalone"
+		execute_in_docker '"echo \"Generate joynr C++ API\" && cd /data/src && mvn clean install -P no-license-and-notice,no-java-formatter,no-checkstyle -DskipTests -am\
+		--projects io.joynr:basemodel,io.joynr.tools.generator:dependency-libs,io.joynr.tools.generator:generator-framework,io.joynr.tools.generator:joynr-generator-maven-plugin,io.joynr.tools.generator:cpp-generator,io.joynr.cpp:libjoynr,io.joynr.tools.generator:joynr-generator-standalone"'
 	fi
-	execute_in_docker "echo \"Building joynr c++\" && /data/src/docker/joynr-cpp-base/scripts/build/cpp-clean-build.sh --additionalcmakeargs \"-DUSE_PLATFORM_MUESLI=OFF\" --jobs ${JOBS} --enableclangformatter OFF --buildtests OFF 2>&1"
-	execute_in_docker "echo \"Packaging joynr c++\" && /data/src/docker/joynr-cpp-base/scripts/build/cpp-build-rpm-package.sh --rpm-spec tests/system-integration-test/docker/onboard/joynr-without-test.spec 2>&1"
-	execute_in_docker "echo \"Building and packaging smrf\" && /data/src/docker/joynr-cpp-base/scripts/build/cpp-build-smrf-rpm-package.sh 2>&1"
-	execute_in_docker "echo \"Building MoCOCrW tarball\" && /data/src/docker/joynr-cpp-base/scripts/build/cpp-create-MoCOCrW-tarball.sh 2>&1"
+
+	execute_in_docker '"echo \"Building and packaging smrf\" && /data/src/docker/joynr-cpp-base/scripts/build/cpp-build-smrf-rpm-package.sh 2>&1"'
+
+	execute_in_docker '"echo \"Building joynr c++\" && /data/src/docker/joynr-cpp-base/scripts/build/cpp-clean-build.sh --additionalcmakeargs \"-DUSE_PLATFORM_MUESLI=OFF\" --jobs '"${JOBS}"' --enableclangformatter OFF --buildtests OFF 2>&1"'
+
+	execute_in_docker '"echo \"Packaging joynr c++\" && /data/src/docker/joynr-cpp-base/scripts/build/cpp-build-rpm-package.sh --rpm-spec tests/system-integration-test/docker/onboard/joynr-without-test.spec 2>&1"'
+
+	execute_in_docker '"echo \"Building MoCOCrW tarball\" && /data/src/docker/joynr-cpp-base/scripts/build/cpp-create-MoCOCrW-tarball.sh 2>&1"'
+
 fi
 
 if [ $NO_CPP_TEST_BUILD ]; then
 	echo "Skipping C++ test build ..."
 else
-	execute_in_docker "echo \"Building C++ System Integration Tests\" && export JOYNR_INSTALL_DIR=/data/build/joynr && echo \"dir: \$JOYNR_INSTALL_DIR\" && /data/src/docker/joynr-cpp-base/scripts/build/cpp-build-tests.sh system-integration-test --jobs ${JOBS} --clangformatter OFF 2>&1"
+	execute_in_docker '"echo \"Building C++ System Integration Tests\" && export JOYNR_INSTALL_DIR=/data/build/joynr && echo \"dir: \$JOYNR_INSTALL_DIR\" && /data/src/docker/joynr-cpp-base/scripts/build/cpp-build-tests.sh system-integration-test --jobs '"${JOBS}"' --clangformatter OFF 2>&1"'
 fi
 
 if [ $NO_NODE_TEST_BUILD ]; then
 	echo "Skipping Node test build ..."
 else
-	execute_in_docker "echo \"Building sit node app\" && cd /data/src && mvn clean install -P javascript -am --projects io.joynr.javascript:libjoynr-js,io.joynr.tests:test-base,io.joynr.tests.system-integration-test:sit-node-app && cd tests/system-integration-test/sit-node-app && npm install"  $JS_BUILD_DOCKER_IMAGE
+	execute_in_docker '"echo \"Building sit node app\" && cd /data/src && mvn clean install -P javascript -am --projects io.joynr.javascript:libjoynr-js,io.joynr.tests:test-base,io.joynr.tests.system-integration-test:sit-node-app && cd tests/system-integration-test/sit-node-app && npm install"' $JS_BUILD_DOCKER_IMAGE
 fi
 
 if [ -d ${BUILDDIR} ]; then
@@ -161,7 +169,11 @@ fi
 mkdir -p ${BUILDDIR}
 
 cp -R ../../sit-node-app ${BUILDDIR}
+
 cp -R ../../../../build/tests ${BUILDDIR}
+
+cp -R ../../../../build/dummyKeychain ${BUILDDIR}
+
 # create the directory in any case because it is referenced in Dockerfile below
 mkdir ${BUILDDIR}/sit-java-app
 cp ../../sit-java-app/target/sit-java-app-*-jar-with-dependencies.jar ${BUILDDIR}/sit-java-app
@@ -213,6 +225,11 @@ cat > $BUILDDIR/Dockerfile <<-EOF
     COPY tests /data/sit-cpp-app
 
     ###################################################
+    # Copy libdummyKeyChain
+    ###################################################
+    COPY dummyKeychain /data/build/dummyKeychain
+
+    ###################################################
     # Copy sit-node-app
     ###################################################
     COPY sit-node-app /data/sit-node-app
@@ -238,3 +255,5 @@ docker build -t sit-apps:latest --build-arg http_proxy=${http_proxy} --build-arg
 
 docker images --filter "dangling=true" -q | xargs docker rmi -f 2>/dev/null
 rm -Rf $BUILDDIR
+
+echo "### end build_docker_image.sh for onboard ###"

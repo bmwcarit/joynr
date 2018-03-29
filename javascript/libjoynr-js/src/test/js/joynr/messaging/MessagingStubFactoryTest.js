@@ -17,6 +17,7 @@
  * limitations under the License.
  * #L%
  */
+require("../../node-unit-test-helper");
 var MessagingStubFactory = require("../../../classes/joynr/messaging/MessagingStubFactory");
 
 describe("libjoynr-js.joynr.messaging.MessagingStubFactory", function() {

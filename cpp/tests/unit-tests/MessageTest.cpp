@@ -22,8 +22,8 @@
 #include "joynr/ImmutableMessage.h"
 #include "joynr/Message.h"
 #include "joynr/MutableMessage.h"
-#include "joynr/DispatcherUtils.h"
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/TimePoint.h"
 
 #include "tests/mock/MockKeychain.h"
 
@@ -35,7 +35,7 @@ public:
     ImmutableMessageTest() {
         mutableMessage.setSender("sender");
         mutableMessage.setRecipient("recipient");
-        mutableMessage.setExpiryDate(DispatcherUtils::convertTtlToAbsoluteTime(1234567));
+        mutableMessage.setExpiryDate(TimePoint::fromRelativeMs(1234567));
         mutableMessage.setReplyTo("replyTo");
         mutableMessage.setEffort("effort");
         mutableMessage.setPayload("payload");
@@ -124,4 +124,18 @@ TEST_F(ImmutableMessageTest, TestOwnerSigningCallbackInMutableMessage)
     auto signatureByteArrayView = immutableMessage->getSignature();
     std::string signatureStr(signatureByteArrayView.data(), signatureByteArrayView.data() + signatureByteArrayView.size());
     EXPECT_EQ(signatureWithOwnerIdStr, signatureStr);
+}
+
+TEST_F(ImmutableMessageTest, isNotCompressedByDefault)
+{
+    auto immutableMessage = mutableMessage.getImmutableMessage();
+    EXPECT_FALSE(immutableMessage->isCompressed());
+}
+
+TEST_F(ImmutableMessageTest, isCompressed)
+{
+    const bool expectedValue = true;
+    mutableMessage.setCompress(expectedValue);
+    auto immutableMessage = mutableMessage.getImmutableMessage();
+    EXPECT_EQ(immutableMessage->isCompressed(), expectedValue);
 }

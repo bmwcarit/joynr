@@ -18,6 +18,7 @@
  * limitations under the License.
  * #L%
  */
+require("../../node-unit-test-helper");
 var ProviderQos = require("../../../classes/joynr/types/ProviderQos");
 var ProviderScope = require("../../../classes/joynr/types/ProviderScope");
 var CustomParameter = require("../../../classes/joynr/types/CustomParameter");

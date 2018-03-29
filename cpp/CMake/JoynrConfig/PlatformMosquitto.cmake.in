@@ -1,5 +1,5 @@
 ###### BEGIN Mosquitto ######
-find_package(mosquitto QUIET)
+find_package(mosquitto @JOYNR_REQUIRED_MOSQUITTO_VERSION@ QUIET)
 
 # if neither Findmosquitto.cmake nor mosquittoConfig.cmake is found, try this:
 if(NOT MOSQUITTO_FOUND)

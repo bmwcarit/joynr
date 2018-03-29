@@ -19,12 +19,12 @@
  * #L%
  */
 var Typing = require("../../util/Typing");
-var LoggerFactory = require("../../system/LoggerFactory");
+var LoggingManager = require("../../system/LoggingManager");
 var DiagnosticTags = require("../../system/DiagnosticTags");
 var JoynrException = require("../../exceptions/JoynrException");
 var JoynrMessage = require("../JoynrMessage");
 
-var log = LoggerFactory.getLogger("joynr/messaging/channel/ChannelMessagingSkeleton");
+var log = LoggingManager.getLogger("joynr/messaging/channel/ChannelMessagingSkeleton");
 /**
  * @name ChannelMessagingSkeleton
  * @constructor
@@ -52,26 +52,7 @@ function ChannelMessagingSkeleton(settings) {
 ChannelMessagingSkeleton.prototype.receiveMessage = function receiveMessage(joynrMessage) {
     joynrMessage = JoynrMessage.parseMessage(joynrMessage);
     joynrMessage.isReceivedFromGlobal = true;
-    try {
-        this._messageRouter.route(joynrMessage).catch(function(e) {
-            log.error(
-                "unable to process message: " +
-                    e +
-                    (e instanceof JoynrException ? " " + e.detailMessage : "") +
-                    " \nmessage: " +
-                    DiagnosticTags.forJoynrMessage(joynrMessage)
-            );
-        });
-    } catch (e) {
-        // Errors should be returned via the Promise
-        log.fatal(
-            "unable to process message: " +
-                e +
-                (e instanceof JoynrException ? " " + e.detailMessage : "") +
-                " \nmessage: " +
-                DiagnosticTags.forJoynrMessage(joynrMessage)
-        );
-    }
+    this._messageRouter.route(joynrMessage);
 };
 
 module.exports = ChannelMessagingSkeleton;

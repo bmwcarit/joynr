@@ -254,6 +254,9 @@ private:
         }
         auto it = clients.find(hdl);
         if (it != clients.cend()) {
+            JOYNR_LOG_INFO(logger(),
+                           "Closed connection for websocket client id: {}",
+                           it->second.webSocketClientAddress.getId());
             messagingStubFactory->onMessagingStubClosed(it->second.webSocketClientAddress);
             clients.erase(it);
         }
@@ -288,6 +291,10 @@ private:
                         e.what());
                 return;
             }
+
+            JOYNR_LOG_INFO(logger(),
+                           "Init connection for websocket client id: {}",
+                           clientAddress->getId());
 
             auto sender = std::make_shared<WebSocketPpSender<Server>>(endpoint);
             sender->setConnectionHandle(hdl);

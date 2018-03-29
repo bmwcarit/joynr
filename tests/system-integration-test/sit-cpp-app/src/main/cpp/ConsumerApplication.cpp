@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -34,6 +34,7 @@
 #include "joynr/ProxyBuilder.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/test/SystemIntegrationTestProxy.h"
+
 #include "SitUtil.h"
 #ifdef JOYNR_ENABLE_DLT_LOGGING
 #include <dlt/dlt.h>
@@ -49,7 +50,7 @@ int main(int argc, char* argv[])
     // Register app at the dlt-daemon for logging
     DLT_REGISTER_APP("JYSC", argv[0]);
 #endif // JOYNR_ENABLE_DLT_LOGGING
-    // Get a logger
+
     joynr::Logger logger("ConsumerApplication");
 
     namespace po = boost::program_options;
@@ -62,13 +63,26 @@ int main(int argc, char* argv[])
     std::string sslCertFilename;
     std::string sslPrivateKeyFilename;
     std::string sslCaCertFilename;
+    std::uint64_t runs = 0;
 
-    po::options_description cmdLineOptions;
-    cmdLineOptions.add_options()("domain,d", po::value(&providerDomain)->required())(
-            "pathtosettings,p", po::value(&pathToSettings))(
-            "ssl-cert-pem", po::value(&sslCertFilename))(
-            "ssl-privatekey-pem", po::value(&sslPrivateKeyFilename))(
-            "ssl-ca-cert-pem", po::value(&sslCaCertFilename));
+    po::options_description cmdLineOptions("Available options");
+    cmdLineOptions.add_options()(
+            "domain,d", po::value(&providerDomain)->required(), "joynr domain to be used")(
+            "pathtosettings,p",
+            po::value(&pathToSettings),
+            "Absolute path to a non-default setting file.")(
+            "ssl-cert-pem",
+            po::value(&sslCertFilename),
+            "Absolute path to public certificate for this application.")(
+            "ssl-privatekey-pem",
+            po::value(&sslPrivateKeyFilename),
+            "Absolute path to private key for this application.")(
+            "ssl-ca-cert-pem",
+            po::value(&sslCaCertFilename),
+            "Absolute path to certificate of CA.")("runs,r",
+                                                   po::value(&runs)->default_value(1),
+                                                   "Specify number of RPC calls to perform.")(
+            "help,h", "Print help message");
 
     try {
         po::variables_map variablesMap;
@@ -77,59 +91,49 @@ int main(int argc, char* argv[])
                           .positional(positionalCmdLineOptions)
                           .run(),
                   variablesMap);
+
+        if (variablesMap.count("help")) {
+            std::cout << cmdLineOptions << std::endl;
+            return EXIT_SUCCESS;
+        }
+
         po::notify(variablesMap);
     } catch (const std::exception& e) {
-        std::cerr << e.what();
+        std::cerr << e.what() << std::endl;
+        std::cerr << cmdLineOptions << std::endl;
         return -1;
     }
-
-    JOYNR_LOG_INFO(logger, "Create proxy for domain {}", providerDomain);
 
     if (pathToSettings.empty()) {
         boost::filesystem::path appFilename = boost::filesystem::path(argv[0]);
         std::string appDirectory =
                 boost::filesystem::system_complete(appFilename).parent_path().string();
-        pathToSettings = appDirectory + "/resources/systemintegrationtest-consumer.settings";
+        pathToSettings = appDirectory + "/resources/systemintegrationtest-provider.settings";
     }
 
-    const std::string pathToMessagingSettingsDefault("");
-    std::shared_ptr<IKeychain> keychain;
-
+    std::shared_ptr<JoynrRuntime> runtime;
     try {
-        keychain = tryLoadKeychainFromCmdLineArgs(
-                sslCertFilename, sslPrivateKeyFilename, sslCaCertFilename);
+        runtime = joynr::sitUtil::createRuntime(
+                pathToSettings, sslCertFilename, sslPrivateKeyFilename, sslCaCertFilename);
     } catch (const std::invalid_argument& e) {
         JOYNR_LOG_FATAL(logger, e.what());
-        return -1;
+        runtime.reset();
     }
 
-    std::shared_ptr<JoynrRuntime> runtime =
-            JoynrRuntime::createRuntime(pathToSettings, pathToMessagingSettingsDefault, keychain);
+    if (!runtime) {
+        return EXIT_FAILURE;
+    }
 
-    // Create proxy builder
     std::shared_ptr<ProxyBuilder<test::SystemIntegrationTestProxy>> proxyBuilder =
             runtime->createProxyBuilder<test::SystemIntegrationTestProxy>(providerDomain);
 
-    // Find the provider with the highest priority set in ProviderQos
+    JOYNR_LOG_INFO(logger, "Create proxy for domain {}", providerDomain);
+
     DiscoveryQos discoveryQos;
-    // As soon as the discovery QoS is set on the proxy builder, discovery of suitable providers
-    // is triggered. If the discovery process does not find matching providers within the
-    // arbitration timeout duration it will be terminated and you will get an arbitration exception.
     discoveryQos.setDiscoveryTimeoutMs(120000); // 2 Mins
-    // Provider entries in the global capabilities directory are cached locally. Discovery will
-    // consider entries in this cache valid if they are younger as the max age of cached
-    // providers as defined in the QoS. All valid entries will be processed by the arbitrator when
-    // searching
-    // for and arbitrating the "best" matching provider.
-    // NOTE: Valid cache entries might prevent triggering a lookup in the global capabilities
-    //       directory. Therefore, not all providers registered with the global capabilities
-    //       directory might be taken into account during arbitration.
     discoveryQos.setCacheMaxAgeMs(std::numeric_limits<std::int64_t>::max());
-    // The discovery process outputs a list of matching providers. The arbitration strategy then
-    // chooses one or more of them to be used by the proxy.
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
 
-    // Build a proxy to communicate with the provider
     std::shared_ptr<test::SystemIntegrationTestProxy> proxy(
             proxyBuilder->setMessagingQos(MessagingQos())->setDiscoveryQos(discoveryQos)->build());
 
@@ -140,14 +144,16 @@ int main(int argc, char* argv[])
     std::int32_t sum = 0;
 
     try {
-        proxy->add(sum, addendA, addendB);
-        success = (sum == addendA + addendB);
-        JOYNR_LOG_INFO(logger,
-                       "SIT RESULT success: C++ consumer -> {} ({} + {} = {})",
-                       providerDomain,
-                       addendA,
-                       addendB,
-                       sum);
+        while (runs-- > 0) {
+            proxy->add(sum, addendA, addendB);
+            success = (sum == addendA + addendB);
+            JOYNR_LOG_INFO(logger,
+                           "SIT RESULT success: C++ consumer -> {} ({} + {} = {})",
+                           providerDomain,
+                           addendA,
+                           addendB,
+                           sum);
+        }
     } catch (const exceptions::JoynrException& e) {
         // exception sink
         success = false;

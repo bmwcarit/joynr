@@ -29,6 +29,9 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -52,7 +55,7 @@ import joynr.OnChangeSubscriptionQos;
  */
 @RunWith(MockitoJUnitRunner.class)
 public class IltConsumerFireAndForgetMethodTest extends IltConsumerTest {
-    private static final Logger LOG = LoggerFactory.getLogger(IltConsumerTest.class);
+    private static final Logger LOG = LoggerFactory.getLogger(IltConsumerFireAndForgetMethodTest.class);
     private Integer attributeFireAndForgetValue = -1;
     private OnChangeSubscriptionQos subscriptionQos;
     //private Future<String> attributeFireAndForgetSubscriptionId = new Future<String>();
@@ -80,19 +83,30 @@ public class IltConsumerFireAndForgetMethodTest extends IltConsumerTest {
     @Mock
     private AttributeSubscriptionAdapter<Integer> attributeFireAndForgetListener;
 
-    @Override
+    @BeforeClass
+    public static void testClassSetUp() throws Exception {
+        LOG.info("testClassSetUp: Entering");
+        setupConsumerRuntime(false);
+        LOG.info("testClassSetUp: Leaving");
+    }
+
+    @Before
     public void setUp() {
-        super.setUp();
         publicationReceivedSemaphore = new Semaphore(0);
         doAnswer(releaseSemaphore).when(attributeFireAndForgetListener).onReceive(anyInt());
         doAnswer(failWithException).when(attributeFireAndForgetListener).onError(any(JoynrRuntimeException.class));
     }
 
-    @Override
+    @AfterClass
+    public static void testClassTearDown() throws InterruptedException {
+        LOG.info("testClassTearDown: Entering");
+        generalTearDown();
+        LOG.info("testClassTearDown: Leaving");
+    }
+
     @After
     public void tearDown() {
         unsubscribeFromAttributeFireAndForget();
-        super.tearDown();
     }
 
     /*

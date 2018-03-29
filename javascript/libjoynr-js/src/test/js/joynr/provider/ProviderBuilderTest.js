@@ -18,6 +18,7 @@
  * limitations under the License.
  * #L%
  */
+require("../../node-unit-test-helper");
 var RadioProvider = require("../../../test-classes/joynr/vehicle/RadioProvider");
 var ProviderBuilder = require("../../../classes/joynr/provider/ProviderBuilder");
 var ProviderOperation = require("../../../classes/joynr/provider/ProviderOperation");

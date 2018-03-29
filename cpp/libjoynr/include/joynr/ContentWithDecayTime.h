@@ -28,7 +28,7 @@ template <class T>
 class ContentWithDecayTime : public ObjectWithDecayTime
 {
 public:
-    ContentWithDecayTime(const T& content, JoynrTimePoint decayTime)
+    ContentWithDecayTime(const T& content, const TimePoint& decayTime)
             : ObjectWithDecayTime(decayTime), content(content)
     {
     }

@@ -18,6 +18,7 @@
  * limitations under the License.
  * #L%
  */
+require("../../node-unit-test-helper");
 var BroadcastOutputParameters = require("../../../classes/joynr/provider/BroadcastOutputParameters");
 
 describe("libjoynr-js.joynr.provider.BroadcastOutputParameters", function() {

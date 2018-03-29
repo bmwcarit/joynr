@@ -1088,5 +1088,17 @@ public:
         JOYNR_LOG_TRACE(logger(), "Result: {}", (bool)(fabs(a - b) < 0.001));
         return fabs(a - b) < 0.001;
     }
+
+    // concatenates the two ByteBuffers in a new ByteBuffer
+    static joynr::ByteBuffer concatByteBuffers(const joynr::ByteBuffer& a,
+                                               const joynr::ByteBuffer& b)
+    {
+        joynr::ByteBuffer result = a;
+        result.reserve(a.size() + b.size());
+        for (auto i = 0; i < b.size(); ++i) {
+            result.push_back(b.at(i));
+        }
+        return result;
+    }
 };
 #endif // ILTUTIL_H

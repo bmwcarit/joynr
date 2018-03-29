@@ -18,13 +18,18 @@
  */
 package io.joynr.test.interlanguage;
 
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
+
 import joynr.MulticastSubscriptionQos;
 import joynr.interlanguagetest.Enumeration;
 import joynr.interlanguagetest.TestInterfaceBroadcastInterface.BroadcastWithMultipleArrayParametersBroadcastAdapter;
+import joynr.interlanguagetest.TestInterfaceBroadcastInterface.BroadcastWithMultipleByteBufferParametersBroadcastAdapter;
 import joynr.interlanguagetest.TestInterfaceBroadcastInterface.BroadcastWithMultipleEnumerationParametersBroadcastAdapter;
 import joynr.interlanguagetest.TestInterfaceBroadcastInterface.BroadcastWithMultiplePrimitiveParametersBroadcastAdapter;
 import joynr.interlanguagetest.TestInterfaceBroadcastInterface.BroadcastWithMultipleStructParametersBroadcastAdapter;
 import joynr.interlanguagetest.TestInterfaceBroadcastInterface.BroadcastWithSingleArrayParameterBroadcastAdapter;
+import joynr.interlanguagetest.TestInterfaceBroadcastInterface.BroadcastWithSingleByteBufferParameterBroadcastAdapter;
 import joynr.interlanguagetest.TestInterfaceBroadcastInterface.BroadcastWithSingleEnumerationParameterBroadcastAdapter;
 import joynr.interlanguagetest.TestInterfaceBroadcastInterface.BroadcastWithSinglePrimitiveParameterBroadcastAdapter;
 import joynr.interlanguagetest.TestInterfaceBroadcastInterface.BroadcastWithSingleStructParameterBroadcastAdapter;
@@ -41,11 +46,14 @@ import org.slf4j.LoggerFactory;
 import io.joynr.exceptions.SubscriptionException;
 import io.joynr.proxy.Future;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+import org.junit.Assert;
 import static org.junit.Assert.fail;
 
 import java.util.Arrays;
@@ -53,7 +61,21 @@ import java.util.List;
 
 @RunWith(Parameterized.class)
 public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
-    private static final Logger LOG = LoggerFactory.getLogger(IltConsumerTest.class);
+    private static final Logger LOG = LoggerFactory.getLogger(IltConsumerBroadcastSubscriptionTest.class);
+
+    @BeforeClass
+    public static void setUp() throws Exception {
+        LOG.info("setUp: Entering");
+        setupConsumerRuntime(false);
+        LOG.info("setUp: Leaving");
+    }
+
+    @AfterClass
+    public static void tearDown() throws InterruptedException {
+        LOG.info("tearDown: Entering");
+        generalTearDown();
+        LOG.info("tearDown: Leaving");
+    }
 
     /*
      * BROADCAST SUBSCRIPTIONS
@@ -436,6 +458,157 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
             // also catches InterruptedException from Thread.sleep() call
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
             return;
+        }
+    }
+
+    // variables that are to be changed inside callbacks must be declared global
+    volatile boolean subscribeBroadcastWithSingleByteBufferParameterCallbackResult = false;
+
+    @Test
+    public void callSubscribeBroadcastWithSingleByteBufferParameter() {
+        final Semaphore resultsAvailable = new Semaphore(0);
+        Future<String> subscriptionIdFuture;
+        String subscriptionId;
+        boolean result;
+
+        final Byte[] expectedByteBuffer = { -128, 0, 127 };
+
+        LOG.info(name.getMethodName());
+
+        try {
+            subscriptionIdFuture = testInterfaceProxy.subscribeToBroadcastWithSingleByteBufferParameterBroadcast(new BroadcastWithSingleByteBufferParameterBroadcastAdapter() {
+                                                                                                                     @Override
+                                                                                                                     public void onReceive(Byte[] byteBufferOut) {
+                                                                                                                         LOG.info(name.getMethodName()
+                                                                                                                                 + " - callback - got broadcast");
+                                                                                                                         if (!java.util.Objects.deepEquals(byteBufferOut,
+                                                                                                                                                           expectedByteBuffer)) {
+                                                                                                                             LOG.info(name.getMethodName()
+                                                                                                                                     + " - callback - invalid content");
+                                                                                                                             subscribeBroadcastWithSingleByteBufferParameterCallbackResult = false;
+                                                                                                                         } else {
+                                                                                                                             LOG.info(name.getMethodName()
+                                                                                                                                     + " - callback - content OK");
+                                                                                                                             subscribeBroadcastWithSingleByteBufferParameterCallbackResult = true;
+                                                                                                                         }
+                                                                                                                         resultsAvailable.release();
+                                                                                                                     }
+
+                                                                                                                     @Override
+                                                                                                                     public void onError(SubscriptionException error) {
+                                                                                                                         LOG.info(name.getMethodName()
+                                                                                                                                 + " - callback - error");
+                                                                                                                         subscribeBroadcastWithSingleByteBufferParameterCallbackResult = false;
+                                                                                                                         resultsAvailable.release();
+                                                                                                                     }
+                                                                                                                 },
+                                                                                                                 new MulticastSubscriptionQos(),
+                                                                                                                 partitions);
+            subscriptionId = subscriptionIdFuture.get(10000);
+            LOG.info(name.getMethodName() + " - subscription successful, subscriptionId = " + subscriptionId);
+
+            LOG.info(name.getMethodName() + " - Invoking fire method");
+            testInterfaceProxy.methodToFireBroadcastWithSingleByteBufferParameter(expectedByteBuffer, partitions);
+            LOG.info(name.getMethodName() + " - fire method invoked");
+
+            // wait for results from callback
+            Assert.assertTrue(name.getMethodName() + " - FAILED - callback was not received in time",
+                              resultsAvailable.tryAcquire(2, TimeUnit.SECONDS));
+            LOG.info(name.getMethodName() + " - results received");
+
+            // check results from callback
+            Assert.assertTrue(name.getMethodName()
+                                      + " - FAILED - callback got called but received unexpected error or publication event",
+                              subscribeBroadcastWithSingleByteBufferParameterCallbackResult);
+
+            // try to unsubscribe in any case
+            try {
+                testInterfaceProxy.unsubscribeFromBroadcastWithSingleByteBufferParameterBroadcast(subscriptionId);
+                LOG.info(name.getMethodName() + " - unsubscribe successful");
+            } catch (Exception e) {
+                fail(name.getMethodName() + " - FAILED - caught unexpected exception on unsubscribe: " + e.getMessage());
+            }
+        } catch (Exception e) {
+            // also catches InterruptedException from Thread.sleep() call
+            fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
+        }
+    }
+
+    // variables that are to be changed inside callbacks must be declared global
+    volatile boolean subscribeBroadcastWithMultipleByteBufferParametersCallbackResult = false;
+
+    @Test
+    public void callSubscribeBroadcastWithMultipleByteBufferParameters() {
+        final Semaphore resultsAvailable = new Semaphore(0);
+        Future<String> subscriptionIdFuture;
+        String subscriptionId;
+        boolean result;
+
+        final Byte[] expectedByteBuffer1 = { -5, 125 };
+        final Byte[] expectedByteBuffer2 = { 78, 0 };
+
+        LOG.info(name.getMethodName());
+
+        try {
+            subscriptionIdFuture = testInterfaceProxy.subscribeToBroadcastWithMultipleByteBufferParametersBroadcast(new BroadcastWithMultipleByteBufferParametersBroadcastAdapter() {
+                                                                                                                        @Override
+                                                                                                                        public void onReceive(Byte[] byteBufferOut1,
+                                                                                                                                              Byte[] byteBufferOut2) {
+                                                                                                                            LOG.info(name.getMethodName()
+                                                                                                                                    + " - callback - got broadcast");
+                                                                                                                            if (!java.util.Objects.deepEquals(byteBufferOut1,
+                                                                                                                                                              expectedByteBuffer1)
+                                                                                                                                    || !java.util.Objects.deepEquals(byteBufferOut2,
+                                                                                                                                                                     expectedByteBuffer2)) {
+                                                                                                                                LOG.info(name.getMethodName()
+                                                                                                                                        + " - callback - invalid content");
+                                                                                                                                subscribeBroadcastWithMultipleByteBufferParametersCallbackResult = false;
+                                                                                                                            } else {
+                                                                                                                                LOG.info(name.getMethodName()
+                                                                                                                                        + " - callback - content OK");
+                                                                                                                                subscribeBroadcastWithMultipleByteBufferParametersCallbackResult = true;
+                                                                                                                            }
+                                                                                                                            resultsAvailable.release();
+                                                                                                                        }
+
+                                                                                                                        @Override
+                                                                                                                        public void onError(SubscriptionException error) {
+                                                                                                                            LOG.info(name.getMethodName()
+                                                                                                                                    + " - callback - error");
+                                                                                                                            subscribeBroadcastWithMultipleByteBufferParametersCallbackResult = false;
+                                                                                                                            resultsAvailable.release();
+                                                                                                                        }
+                                                                                                                    },
+                                                                                                                    new MulticastSubscriptionQos(),
+                                                                                                                    partitions);
+            subscriptionId = subscriptionIdFuture.get(10000);
+            LOG.info(name.getMethodName() + " - subscription successful, subscriptionId = " + subscriptionId);
+
+            LOG.info(name.getMethodName() + " - Invoking fire method");
+            testInterfaceProxy.methodToFireBroadcastWithMultipleByteBufferParameters(expectedByteBuffer1,
+                                                                                     expectedByteBuffer2,
+                                                                                     partitions);
+            LOG.info(name.getMethodName() + " - fire method invoked");
+
+            // wait for results from callback
+            Assert.assertTrue(name.getMethodName() + " - FAILED - callback was not received in time",
+                              resultsAvailable.tryAcquire(2, TimeUnit.SECONDS));
+
+            // check results from callback
+            Assert.assertTrue(name.getMethodName()
+                                      + " - FAILED - callback got called but received unexpected error or publication event",
+                              subscribeBroadcastWithMultipleByteBufferParametersCallbackResult);
+
+            // try to unsubscribe in any case
+            try {
+                testInterfaceProxy.unsubscribeFromBroadcastWithMultipleByteBufferParametersBroadcast(subscriptionId);
+                LOG.info(name.getMethodName() + " - unsubscribe successful");
+            } catch (Exception e) {
+                fail(name.getMethodName() + " - FAILED - caught unexpected exception on unsubscribe: " + e.getMessage());
+            }
+        } catch (Exception e) {
+            // also catches InterruptedException from Thread.sleep() call
+            fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
         }
     }
 

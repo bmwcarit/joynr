@@ -18,6 +18,7 @@
  * limitations under the License.
  * #L%
  */
+require("../../node-unit-test-helper");
 var Promise = require("../../../classes/global/Promise");
 var RadioProxy = require("../../../test-classes/joynr/vehicle/RadioProxy");
 var RadioStation = require("../../../test-classes/joynr/vehicle/radiotypes/RadioStation");

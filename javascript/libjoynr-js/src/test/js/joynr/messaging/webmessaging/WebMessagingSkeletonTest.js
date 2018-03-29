@@ -18,6 +18,7 @@
  * limitations under the License.
  * #L%
  */
+require("../../../node-unit-test-helper");
 var WebMessagingSkeleton = require("../../../../classes/joynr/messaging/webmessaging/WebMessagingSkeleton");
 
 describe("libjoynr-js.joynr.messaging.webmessaging.WebMessagingSkeleton", function() {

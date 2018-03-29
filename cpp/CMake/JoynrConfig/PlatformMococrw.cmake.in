@@ -1,4 +1,4 @@
 ###### BEGIN MOCOCRW ######
-find_package(MoCOCrW 0.1.0 REQUIRED)
+find_package(MoCOCrW @JOYNR_MOCOCRW_REQUIRED_VERSION@ REQUIRED)
 include(${JOYNR_CMAKE_DIR}/CheckMOCOCRWImportTargets.cmake)
 ###### MOCOCRW ######

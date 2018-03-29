@@ -104,6 +104,11 @@ public class DispatcherImpl implements Dispatcher {
                 String multicastId = ((MulticastSubscriptionRequest) subscriptionRequest).getMulticastId();
                 messageRouter.addMulticastReceiver(multicastId, fromParticipantId, toDiscoveryEntry.getParticipantId());
             }
+            logger.debug("Send SubscriptionRequest: subscriptionId: {}, messageId: {}, proxy participantId: {}, provider participantId: {}",
+                         subscriptionRequest.getSubscriptionId(),
+                         message.getId(),
+                         fromParticipantId,
+                         toDiscoveryEntry.getParticipantId());
             messageSender.sendMessage(message);
         }
     }
@@ -119,6 +124,12 @@ public class DispatcherImpl implements Dispatcher {
                                                                            subscriptionStop,
                                                                            messagingQos);
             message.setLocalMessage(toDiscoveryEntry.getIsLocal());
+            logger.debug("UNREGISTER SUBSCRIPTION call proxy: subscriptionId: {}, messageId: {}, proxy participantId: {}, "
+                                 + "provider participantId: {}",
+                         subscriptionStop.getSubscriptionId(),
+                         message.getId(),
+                         fromParticipantId,
+                         toDiscoveryEntry.getParticipantId());
             messageSender.sendMessage(message);
         }
 
@@ -142,10 +153,12 @@ public class DispatcherImpl implements Dispatcher {
     public void sendReply(final String fromParticipantId,
                           final String toParticipantId,
                           Reply reply,
-                          long expiryDateMs,
-                          Map<String, String> customHeaders) throws IOException {
+                          final long expiryDateMs,
+                          Map<String, String> customHeaders,
+                          final boolean compress) throws IOException {
         MessagingQos messagingQos = new MessagingQos(expiryDateMs);
         messagingQos.getCustomMessageHeaders().putAll(customHeaders);
+        messagingQos.setCompress(compress);
         MutableMessage message = messageFactory.createReply(fromParticipantId, toParticipantId, reply, messagingQos);
         messageSender.sendMessage(message);
     }
@@ -207,7 +220,12 @@ public class DispatcherImpl implements Dispatcher {
                 request.setCreatorUserId(message.getCreatorUserId());
                 request.setContext(message.getContext());
                 logger.trace("Parsed request from message payload :" + payload);
-                handle(request, message.getSender(), message.getRecipient(), expiryDate, customHeaders);
+                handle(request,
+                       message.getSender(),
+                       message.getRecipient(),
+                       expiryDate,
+                       customHeaders,
+                       message.isCompressed());
             } else if (Message.VALUE_MESSAGE_TYPE_ONE_WAY.equals(type)) {
                 OneWayRequest oneWayRequest = objectMapper.readValue(payload, OneWayRequest.class);
                 oneWayRequest.setCreatorUserId(message.getCreatorUserId());
@@ -247,13 +265,14 @@ public class DispatcherImpl implements Dispatcher {
                         final String fromParticipantId,
                         final String toParticipantId,
                         final long expiryDate,
-                        final Map<String, String> customHeaders) {
+                        final Map<String, String> customHeaders,
+                        final boolean compress) {
         requestReplyManager.handleRequest(new ProviderCallback<Reply>() {
             @Override
             public void onSuccess(Reply reply) {
                 try {
                     if (!DispatcherUtils.isExpired(expiryDate)) {
-                        sendReply(toParticipantId, fromParticipantId, reply, expiryDate, customHeaders);
+                        sendReply(toParticipantId, fromParticipantId, reply, expiryDate, customHeaders, compress);
                     } else {
                         logger.error("Error: reply {} is not send to caller, as the expiryDate of the reply message {} has been reached.",
                                      reply,
@@ -272,7 +291,7 @@ public class DispatcherImpl implements Dispatcher {
                 }
                 Reply reply = new Reply(request.getRequestReplyId(), error);
                 try {
-                    sendReply(toParticipantId, fromParticipantId, reply, expiryDate, customHeaders);
+                    sendReply(toParticipantId, fromParticipantId, reply, expiryDate, customHeaders, compress);
                 } catch (Exception e) {
                     logger.error("Error sending error reply: \r\n {}", reply, e);
                 }

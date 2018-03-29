@@ -1,6 +1,5 @@
 /*jslint node: true */
 
-/*global process: true*/
 /*
  * #%L
  * %%

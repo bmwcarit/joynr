@@ -218,43 +218,43 @@ bool LibjoynrSettings::isClearSubscriptionEnabled() const
 void LibjoynrSettings::printSettings() const
 {
     JOYNR_LOG_DEBUG(logger(),
-                    "SETTING: {}  = {}",
+                    "SETTING: {} = {}",
                     SETTING_MESSAGE_ROUTER_PERSISTENCY_ENABLED(),
                     isMessageRouterPersistencyEnabled());
 
     if (isMessageRouterPersistencyEnabled()) {
         JOYNR_LOG_DEBUG(logger(),
-                        "SETTING: {}  = {}",
+                        "SETTING: {} = {}",
                         SETTING_MESSAGE_ROUTER_PERSISTENCE_FILENAME(),
                         getMessageRouterPersistenceFilename());
     }
 
     if (isClearSubscriptionEnabled()) {
         JOYNR_LOG_DEBUG(logger(),
-                        "SETTING: {}  = {}",
+                        "SETTING: {} = {}",
                         SETTING_CLEAR_SUBSCRIPTION_ENABLED(),
                         isClearSubscriptionEnabled());
     }
 
     JOYNR_LOG_DEBUG(logger(),
-                    "SETTING: {}  = {}",
+                    "SETTING: {} = {}",
                     SETTING_SUBSCRIPTION_PERSISTENCY_ENABLED(),
                     isSubscriptionPersistencyEnabled());
 
     if (isSubscriptionPersistencyEnabled()) {
         JOYNR_LOG_DEBUG(logger(),
-                        "SETTING: {}  = {}",
+                        "SETTING: {} = {}",
                         SETTING_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME(),
                         getSubscriptionRequestPersistenceFilename());
 
         JOYNR_LOG_DEBUG(logger(),
-                        "SETTING: {}  = {}",
+                        "SETTING: {} = {}",
                         SETTING_BROADCASTSUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME(),
                         getBroadcastSubscriptionRequestPersistenceFilename());
     }
 
     JOYNR_LOG_DEBUG(logger(),
-                    "SETTING: {}  = {}",
+                    "SETTING: {} = {}",
                     SETTING_PARTICIPANT_IDS_PERSISTENCE_FILENAME(),
                     settings.get<std::string>(SETTING_PARTICIPANT_IDS_PERSISTENCE_FILENAME()));
 }

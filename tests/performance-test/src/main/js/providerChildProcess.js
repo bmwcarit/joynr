@@ -25,18 +25,20 @@ var heapdump = require("heapdump");
 var options = PerformanceUtilities.getCommandLineOptionsOrDefaults();
 PerformanceUtilities.overrideRequire();
 
+var EchoProvider = require("../generated-javascript/joynr/tests/performance/EchoProvider.js");
+var EchoProviderImpl = require("./EchoProviderImpl.js");
+
 var domain = options.domain;
 
 var joynr = require("joynr");
 joynr.selectRuntime("websocket.libjoynr");
 
 var testbase = require("test-base");
-var provisioning = testbase.provisioning_common;
+var provisioning = PerformanceUtilities.getProvisioning(true);
 var log = testbase.logging.log;
 let error = testbase.logging.error;
 log("domain: " + domain);
 
-provisioning.logging.configuration.loggers.root.level = "error";
 joynr
     .load(provisioning)
     .then(function(loadedJoynr) {
@@ -50,8 +52,6 @@ joynr
             supportsOnChangeSubscriptions: true
         });
 
-        var EchoProvider = require("../generated-javascript/joynr/tests/performance/EchoProvider.js");
-        var EchoProviderImpl = require("./EchoProviderImpl.js");
         var echoProvider = joynr.providerBuilder.build(EchoProvider, EchoProviderImpl.implementation);
 
         joynr.registration
@@ -71,6 +71,17 @@ joynr
     .catch(function(error) {
         throw error;
     });
+
+function fireBroadcasts(numberOfBroadCasts) {
+    var implementation = EchoProviderImpl.implementation;
+
+    for (let i = 0; i < numberOfBroadCasts; i++) {
+        var stringOut = "boom" + i;
+        var outputParameters = implementation.broadcastWithSinglePrimitiveParameter.createBroadcastOutputParameters();
+        outputParameters.setStringOut(stringOut);
+        implementation.broadcastWithSinglePrimitiveParameter.fire(outputParameters);
+    }
+}
 
 var cpuUsage;
 var memoryIntervalId;
@@ -101,6 +112,9 @@ var handler = function(msg) {
         heapdump.writeSnapshot(fileName, function(err, filename) {
             error("dump written to: " + filename);
         });
+    } else if (msg.msg === "fireBroadCast") {
+        let numberOfBroadCasts = msg.amount;
+        fireBroadcasts(numberOfBroadCasts);
     }
 };
 process.on("message", handler);

@@ -142,7 +142,7 @@ void SystemServicesSettings::printSettings() const
                     SETTING_DOMAIN(),
                     settings.get<std::string>(SETTING_DOMAIN()));
     JOYNR_LOG_DEBUG(logger(),
-                    "SETTING: {}  = {}",
+                    "SETTING: {} = {}",
                     SETTING_CC_ROUTINGPROVIDER_PARTICIPANTID(),
                     settings.get<std::string>(SETTING_CC_ROUTINGPROVIDER_PARTICIPANTID()));
     JOYNR_LOG_DEBUG(logger(),

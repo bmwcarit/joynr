@@ -1,5 +1,5 @@
-/*jslint es5: true, node: true, node: true */
-/*global triggerPublicationTimer: true */
+/*jslint es5: true, node: true */
+/*global triggerPublicationTimer: true, triggerPublicationAndClearDebounce: true */
 /*
  * #%L
  * %%
@@ -33,11 +33,10 @@ var ProviderEvent = require("../../provider/ProviderEvent");
 var Typing = require("../../util/Typing");
 var SubscriptionUtil = require("./util/SubscriptionUtil");
 var SubscriptionException = require("../../exceptions/SubscriptionException");
-var ProviderRuntimeException = require("../../exceptions/ProviderRuntimeException");
 var JSONSerializer = require("../../util/JSONSerializer");
 var LongTimer = require("../../util/LongTimer");
 var Util = require("../../util/UtilInternal");
-var LoggerFactory = require("../../system/LoggerFactory");
+var LoggingManager = require("../../system/LoggingManager");
 
 /**
  * The PublicationManager is responsible for handling subscription requests.
@@ -52,7 +51,7 @@ var LoggerFactory = require("../../system/LoggerFactory");
  *            joynrInstanceId: the Id of the actual joynr instance
  */
 function PublicationManager(dispatcher, persistency, joynrInstanceId) {
-    var log = LoggerFactory.getLogger("joynr.dispatching.subscription.PublicationManager");
+    var log = LoggingManager.getLogger("joynr.dispatching.subscription.PublicationManager");
 
     // map: key is the provider's participantId, value is the provider object
     var participantIdToProvider = {};
@@ -149,34 +148,9 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
      *            error upon failure
      */
     function getAttributeValue(subscriptionInfo) {
-        function promiseCatchHandler(error) {
-            if (error instanceof ProviderRuntimeException) {
-                throw error;
-            }
-            throw new ProviderRuntimeException({
-                detailMessage: "getter method for attribute " + subscriptionInfo.subscribedToName + " reported an error"
-            });
-        }
+        var attribute = getAttribute(subscriptionInfo.providerParticipantId, subscriptionInfo.subscribedToName);
 
-        var attribute = getAttribute(subscriptionInfo.providerParticipantId, subscriptionInfo.subscribedToName),
-            value;
-        try {
-            value = attribute.get();
-            if (Util.isPromise(value)) {
-                return value.catch(promiseCatchHandler);
-            }
-        } catch (error) {
-            if (error instanceof ProviderRuntimeException) {
-                return Promise.reject(error);
-            }
-            return Promise.reject(
-                new ProviderRuntimeException({
-                    detailMessage:
-                        "getter method for attribute " + subscriptionInfo.subscribedToName + " reported an error"
-                })
-            );
-        }
-        return Promise.resolve(value);
+        return attribute.get();
     }
 
     /**
@@ -228,7 +202,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
      * @name PublicationManager#prepareAttributePublication
      * @private
      */
-    function prepareAttributePublication(subscriptionInfo, value, timer) {
+    function prepareAttributePublication(subscriptionInfo, value) {
         var timeSinceLastPublication = Date.now() - subscriptionInfo.lastPublication;
         if (
             subscriptionInfo.qos.minIntervalMs === undefined ||
@@ -245,15 +219,16 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
             // if there's an existing interval, clear it and restart
             if (subscriptionInfo.subscriptionInterval !== undefined) {
                 LongTimer.clearTimeout(subscriptionInfo.subscriptionInterval);
-                subscriptionInfo.subscriptionInterval = timer(subscriptionInfo, getPeriod(subscriptionInfo));
+                subscriptionInfo.subscriptionInterval = triggerPublicationTimer(
+                    subscriptionInfo,
+                    getPeriod(subscriptionInfo)
+                );
             }
         } else if (subscriptionInfo.onChangeDebounce === undefined) {
-            subscriptionInfo.onChangeDebounce = timer(
-                subscriptionInfo,
+            subscriptionInfo.onChangeDebounce = LongTimer.setTimeout(
+                triggerPublicationAndClearDebounce,
                 subscriptionInfo.qos.minIntervalMs - timeSinceLastPublication,
-                function() {
-                    delete subscriptionInfo.onChangeDebounce;
-                }
+                subscriptionInfo
             );
         }
     }
@@ -280,24 +255,23 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         }
     }
 
-    function triggerPublication(subscriptionInfo, callback) {
-        if (callback !== undefined) {
-            callback();
-        }
-
+    function triggerPublication(subscriptionInfo) {
         function getAttributeValueSuccess(value) {
-            prepareAttributePublication(subscriptionInfo, value, triggerPublicationTimer);
-            return value;
+            prepareAttributePublication(subscriptionInfo, value);
         }
 
         function getAttributeValueFailure(exception) {
             sendPublication(subscriptionInfo, undefined, exception);
-            return exception;
         }
 
         getAttributeValue(subscriptionInfo)
             .then(getAttributeValueSuccess)
             .catch(getAttributeValueFailure);
+    }
+
+    function triggerPublicationAndClearDebounce(subscriptionInfo) {
+        subscriptionInfo.onChangeDebounce = undefined;
+        triggerPublication(subscriptionInfo);
     }
 
     /**
@@ -315,18 +289,11 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
      *            subscriptionInfo.subscribedToName the attribute to be published
      * @param {Number}
      *            delay the delay to wait for the publication
-     * @param {Function}
-     *            callback to be invoked by this function once the timer has been exceeded
      */
-    function triggerPublicationTimer(subscriptionInfo, delay, callback) {
+    function triggerPublicationTimer(subscriptionInfo, delay) {
         if (!isNaN(delay)) {
-            return LongTimer.setTimeout(triggerPublication, delay, subscriptionInfo, callback);
-            // the last two arguments get to triggerPublication
+            return LongTimer.setTimeout(triggerPublication, delay, subscriptionInfo);
         }
-        // TODO: what kind of recursive design is this? triggerPublication calls triggerPublicationTimer on Success ...
-        // why not use Intervals?
-
-        // TODO:why is nothing returned here in the else case?
     }
 
     /**
@@ -444,7 +411,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         for (subscriptionId in subscriptions) {
             if (subscriptions.hasOwnProperty(subscriptionId)) {
                 var subscriptionInfo = subscriptions[subscriptionId];
-                prepareAttributePublication(subscriptionInfo, value, triggerPublicationTimer);
+                prepareAttributePublication(subscriptionInfo, value);
             }
         }
     }
@@ -895,16 +862,16 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         return false;
     };
 
-    function asyncCallbackDispatcher(reply, callbackDispatcher) {
-        callbackDispatcher(new SubscriptionReply(reply));
+    function asyncCallbackDispatcher(callbackDispatcherSettings, reply, callbackDispatcher) {
+        callbackDispatcher(callbackDispatcherSettings, new SubscriptionReply(reply));
     }
 
     /* the parameter "callbackDispatcher" is optional, as in case of restoring
      * subscriptions, no reply must be sent back via the dispatcher
      */
-    function callbackDispatcherAsync(reply, callbackDispatcher) {
+    function callbackDispatcherAsync(callbackDispatcherSettings, reply, callbackDispatcher) {
         if (callbackDispatcher !== undefined) {
-            LongTimer.setTimeout(asyncCallbackDispatcher, 0, reply, callbackDispatcher);
+            LongTimer.setTimeout(asyncCallbackDispatcher, 0, callbackDispatcherSettings, reply, callbackDispatcher);
         }
     }
 
@@ -926,7 +893,8 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         proxyParticipantId,
         providerParticipantId,
         subscriptionRequest,
-        callbackDispatcher
+        callbackDispatcher,
+        callbackDispatcherSettings
     ) {
         var exception;
         var timeToEndDate = 0;
@@ -959,6 +927,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
                 });
                 log.error(exception.detailMessage);
                 callbackDispatcherAsync(
+                    callbackDispatcherSettings,
                     {
                         error: exception,
                         subscriptionId: subscriptionId
@@ -981,6 +950,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
             });
             log.debug(exception.detailMessage);
             callbackDispatcherAsync(
+                callbackDispatcherSettings,
                 {
                     error: exception,
                     subscriptionId: subscriptionRequest.subscriptionId
@@ -1032,6 +1002,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
             });
             log.error(exception.detailMessage);
             callbackDispatcherAsync(
+                callbackDispatcherSettings,
                 {
                     error: exception,
                     subscriptionId: subscriptionId
@@ -1057,6 +1028,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
             });
             log.error(exception.detailMessage);
             callbackDispatcherAsync(
+                callbackDispatcherSettings,
                 {
                     error: exception,
                     subscriptionId: subscriptionId
@@ -1082,6 +1054,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
             });
             log.error(exception.detailMessage);
             callbackDispatcherAsync(
+                callbackDispatcherSettings,
                 {
                     error: exception,
                     subscriptionId: subscriptionId
@@ -1109,6 +1082,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
                 });
                 log.error(exception.detailMessage);
                 callbackDispatcherAsync(
+                    callbackDispatcherSettings,
                     {
                         error: exception,
                         subscriptionId: subscriptionId
@@ -1135,7 +1109,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         addSubscriptionToPersistency(subscriptionId, subscriptionInfo);
 
         triggerPublication(subscriptionInfo);
-        callbackDispatcherAsync({ subscriptionId: subscriptionId }, callbackDispatcher);
+        callbackDispatcherAsync(callbackDispatcherSettings, { subscriptionId: subscriptionId }, callbackDispatcher);
     };
 
     function handleBroadcastSubscriptionRequestInternal(
@@ -1143,6 +1117,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         providerParticipantId,
         subscriptionRequest,
         callbackDispatcher,
+        callbackDispatcherSettings,
         multicast
     ) {
         var requestType = (multicast ? "multicast" : "broadcast") + " subscription request";
@@ -1179,6 +1154,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
                 });
                 log.error(exception.detailMessage);
                 callbackDispatcherAsync(
+                    callbackDispatcherSettings,
                     {
                         error: exception,
                         subscriptionId: subscriptionId
@@ -1203,6 +1179,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
             });
             log.debug(exception.detailMessage);
             callbackDispatcherAsync(
+                callbackDispatcherSettings,
                 {
                     error: exception,
                     subscriptionId: subscriptionRequest.subscriptionId
@@ -1259,6 +1236,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
             });
             log.error(exception.detailMessage);
             callbackDispatcherAsync(
+                callbackDispatcherSettings,
                 {
                     error: exception,
                     subscriptionId: subscriptionId
@@ -1286,6 +1264,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
             });
             log.error(exception.detailMessage);
             callbackDispatcherAsync(
+                callbackDispatcherSettings,
                 {
                     error: exception,
                     subscriptionId: subscriptionId
@@ -1311,6 +1290,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
                 });
                 log.error(exception.detailMessage);
                 callbackDispatcherAsync(
+                    callbackDispatcherSettings,
                     {
                         error: exception,
                         subscriptionId: subscriptionId
@@ -1335,6 +1315,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
                 });
                 log.error(exception.detailMessage);
                 callbackDispatcherAsync(
+                    callbackDispatcherSettings,
                     {
                         error: exception,
                         subscriptionId: subscriptionId
@@ -1358,6 +1339,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         addSubscriptionToPersistency(subscriptionId, subscriptionInfo);
 
         callbackDispatcherAsync(
+            callbackDispatcherSettings,
             {
                 subscriptionId: subscriptionId
             },
@@ -1382,13 +1364,15 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         proxyParticipantId,
         providerParticipantId,
         subscriptionRequest,
-        callbackDispatcher
+        callbackDispatcher,
+        callbackDispatcherSettings
     ) {
         return handleBroadcastSubscriptionRequestInternal(
             proxyParticipantId,
             providerParticipantId,
             subscriptionRequest,
             callbackDispatcher,
+            callbackDispatcherSettings,
             false
         );
     };
@@ -1410,13 +1394,15 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         proxyParticipantId,
         providerParticipantId,
         subscriptionRequest,
-        callbackDispatcher
+        callbackDispatcher,
+        callbackDispatcherSettings
     ) {
         return handleBroadcastSubscriptionRequestInternal(
             proxyParticipantId,
             providerParticipantId,
             subscriptionRequest,
             callbackDispatcher,
+            callbackDispatcherSettings,
             true
         );
     };

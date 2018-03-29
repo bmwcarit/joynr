@@ -41,6 +41,10 @@ function JoynrMessage(settings) {
     // TODO: check whether it makes sense to add more properties to the constructor
 }
 
+JoynrMessage.setSigningCallback = function(callback) {
+    JoynrMessage.prototype.signingCallback = callback;
+};
+
 JoynrMessage.parseMessage = function(settings) {
     settings.headers = settings.headers || {};
     settings.headers.id = settings.headers.id || jmBase + "_" + jmIndex++;

@@ -19,6 +19,7 @@
 #include "joynr/Util.h"
 
 #include <cctype>
+#include <cstring>
 #include <fstream>
 #include <iterator>
 #include <regex>
@@ -166,21 +167,32 @@ std::string truncateSerializedMessage(const std::string& message)
     return message;
 }
 
-std::string toDateString(const std::chrono::system_clock::time_point& timePoint)
-{
-    std::time_t time = std::chrono::system_clock::to_time_t(timePoint);
-    return std::ctime(&time);
-}
-
-std::uint64_t toMilliseconds(const std::chrono::system_clock::time_point& timePoint)
-{
-    return std::chrono::duration_cast<std::chrono::milliseconds>(timePoint.time_since_epoch())
-            .count();
-}
-
 bool isAdditionOnPointerSafe(std::uintptr_t address, int payloadLength)
 {
     return address + payloadLength < address;
+}
+
+std::string getErrorString(int errorNumber)
+{
+    // MT-safe retrieval of string describing errorNumber
+    char buf[256];
+    char* resultBuf = buf;
+    int storedErrno = errorNumber;
+#if defined(__GLIBC__) && defined(_GNU_SOURCE)
+    // POSIX compliant check for conversion errors,
+    // see 'man strerror_r'
+    errno = 0;
+    resultBuf = strerror_r(storedErrno, buf, sizeof(buf));
+    if (errno) {
+        return "failed to convert errno";
+    }
+#else
+    int rc = strerror_r(storedErrno, buf, sizeof(buf));
+    if (rc) {
+        return "failed to convert errno";
+    }
+#endif
+    return std::string(resultBuf);
 }
 
 } // namespace util

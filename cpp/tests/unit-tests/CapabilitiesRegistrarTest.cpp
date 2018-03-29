@@ -23,13 +23,14 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "joynr/PrivateCopyAssign.h"
 #include "joynr/CapabilitiesRegistrar.h"
-#include "joynr/types/Version.h"
 #include "joynr/IMessageSender.h"
+#include "joynr/MessagingQos.h"
+#include "joynr/PrivateCopyAssign.h"
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 #include "joynr/types/DiscoveryQos.h"
+#include "joynr/types/Version.h"
 
 #include "tests/mock/MockDiscovery.h"
 #include "tests/mock/MockDispatcher.h"
@@ -139,6 +140,7 @@ TEST_F(CapabilitiesRegistrarTest, add){
                         Property(&joynr::types::DiscoveryEntry::getProviderVersion, Eq(expectedProviderVersion))
                     ),
                     _,
+                    _,
                     _
                 )
     ).WillOnce(
@@ -175,6 +177,7 @@ TEST_F(CapabilitiesRegistrarTest, checkVisibilityOfGlobalAndLocalProviders){
     EXPECT_CALL(
                 *mockDiscovery,
                 addAsyncMock(
+                    _,
                     _,
                     _,
                     _
@@ -229,6 +232,7 @@ TEST_F(CapabilitiesRegistrarTest, removeWithDomainAndProviderObject){
     EXPECT_CALL(*mockDiscovery, removeAsyncMock(
                     expectedParticipantId,
                     _,
+                    _,
                     _
     ))
             .Times(1)
@@ -258,6 +262,7 @@ TEST_F(CapabilitiesRegistrarTest, removeWithParticipantId){
     mockFuture->onSuccess();
     EXPECT_CALL(*mockDiscovery, removeAsyncMock(
                     expectedParticipantId,
+                    _,
                     _,
                     _
     ))
@@ -303,6 +308,7 @@ TEST_F(CapabilitiesRegistrarTest, registerMultipleDispatchersAndRegisterCapabili
                         Property(&joynr::types::DiscoveryEntry::getParticipantId, Eq(expectedParticipantId)),
                         Property(&joynr::types::DiscoveryEntry::getQos, Eq(testQos))
                     ),
+                    _,
                     _,
                     _
                 )
@@ -363,6 +369,7 @@ TEST_F(CapabilitiesRegistrarTest, removeDispatcher){
                         Property(&joynr::types::DiscoveryEntry::getParticipantId, Eq(expectedParticipantId)),
                         Property(&joynr::types::DiscoveryEntry::getQos, Eq(testQos))
                     ),
+                    _,
                     _,
                     _
                 )

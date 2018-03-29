@@ -18,6 +18,7 @@
  * limitations under the License.
  * #L%
  */
+require("../../../node-unit-test-helper");
 var BrowserMessagingStub = require("../../../../classes/joynr/messaging/browser/BrowserMessagingStub");
 
 describe("libjoynr-js.joynr.messaging.browser.BrowserMessagingStub", function() {

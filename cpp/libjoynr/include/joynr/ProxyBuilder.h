@@ -250,18 +250,20 @@ void ProxyBuilder<T>::buildAsync(
             return;
         }
 
-        JOYNR_LOG_DEBUG(logger(),
-                        "DISCOVERY proxy created for provider participantId: {}, domain: [{}], "
-                        "interface: {}",
-                        discoverEntry.getParticipantId(),
-                        domain,
-                        T::INTERFACE_NAME());
-
         bool useInProcessConnector =
                 requestCallerDirectory->containsRequestCaller(discoverEntry.getParticipantId());
         std::shared_ptr<T> proxy =
                 proxyFactory.createProxy<T>(runtimeSharedPtr, domain, messagingQos);
         proxy->handleArbitrationFinished(discoverEntry, useInProcessConnector);
+
+        JOYNR_LOG_INFO(logger(),
+                       "DISCOVERY proxy: participantId {} created for provider participantId: {}, "
+                       "domain: [{}], "
+                       "interface: {}",
+                       proxy->getProxyParticipantId(),
+                       discoverEntry.getParticipantId(),
+                       domain,
+                       T::INTERFACE_NAME());
 
         bool isGloballyVisible = !discoverEntry.getIsLocal();
         constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();

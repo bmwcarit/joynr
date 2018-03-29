@@ -52,10 +52,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.rules.TestName;
 
@@ -74,28 +70,12 @@ public abstract class IltConsumerTest {
 
     protected static ObjectMapper objectMapper;
 
-    @BeforeClass
-    public static void generalSetUp() throws Exception {
-        LOG.info("generalSetUp: Entering");
-        setupConsumerRuntime();
-        LOG.info("generalSetUp: Leaving");
-    }
-
-    @Before
-    public void setUp() {
-    }
-
-    @AfterClass
     public static void generalTearDown() throws InterruptedException {
         LOG.info("generalTearDown: Entering");
         if (consumerRuntime != null) {
             consumerRuntime.shutdown(true);
         }
         LOG.info("generalTearDown: Leaving");
-    }
-
-    @After
-    public void tearDown() {
     }
 
     private static Module getRuntimeModule(Properties joynrConfig) {
@@ -155,8 +135,9 @@ public abstract class IltConsumerTest {
         return application.getRuntime();
     }
 
-    private static void setupConsumerRuntime() throws DiscoveryException, JoynrIllegalStateException,
-                                              InterruptedException {
+    protected static void setupConsumerRuntime(boolean msgQosCompressed) throws DiscoveryException,
+                                                                        JoynrIllegalStateException,
+                                                                        InterruptedException {
         LOG.info("setupConsumerRuntime: Entering");
         final String configFileName = "ilt-consumer-test.settings";
 
@@ -191,7 +172,12 @@ public abstract class IltConsumerTest {
 
         ProxyBuilder<TestInterfaceProxy> proxyBuilder = consumerRuntime.getProxyBuilder(providerDomain,
                                                                                         TestInterfaceProxy.class);
-        testInterfaceProxy = proxyBuilder.setMessagingQos(new MessagingQos(10000))
+
+        MessagingQos messagingQos = new MessagingQos(10000);
+        messagingQos.setCompress(msgQosCompressed);
+        LOG.info("setupConsumerRuntime: msgQosCompression = " + msgQosCompressed);
+
+        testInterfaceProxy = proxyBuilder.setMessagingQos(messagingQos)
                                          .setDiscoveryQos(discoveryQos)
                                          .build(new ProxyCreatedCallback<TestInterfaceProxy>() {
                                              @Override

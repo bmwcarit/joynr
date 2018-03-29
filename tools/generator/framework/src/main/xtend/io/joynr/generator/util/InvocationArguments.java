@@ -112,6 +112,11 @@ public class InvocationArguments {
         usageString.append("      Optional, C++ only: \n");
         usageString.append("       -outputHeaderPath <path to directory containing header files>\n");
         usageString.append("       -includePrefix <prefix to use in include statements>\n");
+        usageString.append("      Optional, JS only:\n");
+        usageString.append("       -requireJSSupport <true, false>\n");
+        usageString.append("         true: generate exports for all require mechanisms such as requirejs, browser and node\n");
+        usageString.append("         false: generate only module.exports for node\n");
+        usageString.append("         default: false\n");
         return usageString.toString();
     }
 
@@ -161,6 +166,9 @@ public class InvocationArguments {
                 i++;
             } else if (args[i].equalsIgnoreCase("-rootGenerator")) {
                 setRootGenerator(args[i + 1].replace("\"", ""));
+                i++;
+            } else if (args[i].equalsIgnoreCase("-requireJSSupport")) {
+                setParameterElement("requireJSSupport", args[i + 1].replace("\"", ""));
                 i++;
             }
         }

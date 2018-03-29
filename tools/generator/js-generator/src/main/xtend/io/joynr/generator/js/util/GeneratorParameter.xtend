@@ -46,7 +46,7 @@ class GeneratorParameter {
 
 	private static final String CONST_DEFINE_PREFIX_DEFAULT = "";
 
-	public boolean requireJSSupport = true;
+	public boolean requireJSSupport = false;
 	public String requiredModule;
 	public boolean anonymuousDefine = true;
 	public String definePrefix;
@@ -64,7 +64,7 @@ class GeneratorParameter {
 	}
 
 	private def determRequireJsSupport(){
-		parameters == null || parameters.get(requireJSSupportKey) == null || !parameters.get(requireJSSupportKey).equalsIgnoreCase("false")
+		parameters != null && parameters.get(requireJSSupportKey) != null && parameters.get(requireJSSupportKey).equalsIgnoreCase("true")
 	}
 
 	private def determRequiredModule(){

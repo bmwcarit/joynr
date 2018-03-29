@@ -18,16 +18,17 @@
  * limitations under the License.
  * #L%
  */
+require("../../../node-unit-test-helper");
 var Promise = require("../../../../classes/global/Promise");
 var ChannelMessagingSender = require("../../../../classes/joynr/messaging/channel/ChannelMessagingSender");
 var JoynrMessage = require("../../../../classes/joynr/messaging/JoynrMessage");
 var ChannelAddress = require("../../../../classes/joynr/system/RoutingTypes/ChannelAddress");
 var Typing = require("../../../../classes/joynr/util/Typing");
-var LoggerFactory = require("../../../../classes/joynr/system/LoggerFactory");
+var LoggingManager = require("../../../../classes/joynr/system/LoggingManager");
 var provisioningRoot = require("../../../../test-classes/joynr/provisioning/provisioning_root");
 var waitsFor = require("../../../../test-classes/global/WaitsFor");
 
-var log = LoggerFactory.getLogger("joynr.messaging.TestChannelMessagingSender");
+var log = LoggingManager.getLogger("joynr.messaging.TestChannelMessagingSender");
 
 describe("libjoynr-js.joynr.messaging.ChannelMessagingSender", function() {
     var communicationModuleSpy, channelMessageSender;

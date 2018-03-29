@@ -1,4 +1,4 @@
-/*global fail: true */
+/*global fail: true, beforeAll: true */
 /*jslint es5: true, node: true, nomen: true */
 /*
  * #%L
@@ -18,13 +18,8 @@
  * limitations under the License.
  * #L%
  */
-var Util = require("../../../classes/joynr/util/Util");
+require("../../node-unit-test-helper");
 var Dispatcher = require("../../../classes/joynr/dispatching/Dispatcher");
-var PublicationManager = require("../../../classes/joynr/dispatching/subscription/PublicationManager");
-var SubscriptionManager = require("../../../classes/joynr/dispatching/subscription/SubscriptionManager");
-var RequestReplyManager = require("../../../classes/joynr/dispatching/RequestReplyManager");
-var InProcessMessagingStub = require("../../../classes/joynr/messaging/inprocess/InProcessMessagingStub");
-var InProcessMessagingSkeleton = require("../../../classes/joynr/messaging/inprocess/InProcessMessagingSkeleton");
 var JoynrMessage = require("../../../classes/joynr/messaging/JoynrMessage");
 var MessagingQos = require("../../../classes/joynr/messaging/MessagingQos");
 var MessagingQosEffort = require("../../../classes/joynr/messaging/MessagingQosEffort");
@@ -45,6 +40,7 @@ var Version = require("../../../classes/joynr/types/Version");
 var ProviderQos = require("../../../classes/joynr/types/ProviderQos");
 var uuid = require("../../../classes/lib/uuid-annotated");
 var Promise = require("../../../classes/global/Promise");
+var LoggingManager = require("../../../classes/joynr/system/LoggingManager");
 
 var providerId = "providerId";
 var proxyId = "proxyId";
@@ -61,6 +57,11 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", function() {
     var subscriptionId = "mySubscriptionId-" + uuid();
     var multicastId = "multicastId-" + uuid();
     var requestReplyId = "requestReplyId";
+    var loggerSpy;
+
+    beforeAll(function() {
+        spyOn(LoggingManager, "getLogger").and.callThrough();
+    });
 
     /**
      * Called before each test.
@@ -93,9 +94,11 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", function() {
             proxyParticipantId,
             providerParticipantId,
             subscriptionRequest,
-            callbackDispatcher
+            callbackDispatcher,
+            callbackDispatcherSettings
         ) {
             callbackDispatcher(
+                callbackDispatcherSettings,
                 new SubscriptionReply({
                     subscriptionId: subscriptionRequest.subscriptionId
                 })
@@ -112,6 +115,7 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", function() {
         spyOn(publicationManager, "handleSubscriptionStop");
 
         messageRouter = jasmine.createSpyObj("MessageRouter", ["addMulticastReceiver", "removeMulticastReceiver"]);
+        messageRouter.addMulticastReceiver.and.returnValue(Promise.resolve());
         clusterControllerMessagingStub = jasmine.createSpyObj("ClusterControllerMessagingStub", ["transmit"]);
         clusterControllerMessagingStub.transmit.and.returnValue(Promise.resolve());
 
@@ -122,6 +126,9 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", function() {
         dispatcher.registerSubscriptionManager(subscriptionManager);
         dispatcher.registerPublicationManager(publicationManager);
         dispatcher.registerMessageRouter(messageRouter);
+
+        loggerSpy = LoggingManager.getLogger.calls.mostRecent().returnValue;
+        spyOn(loggerSpy, "error");
 
         /*
          * Make sure 'TestEnum' is properly registered as a type.
@@ -190,7 +197,8 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", function() {
             proxyId,
             providerId,
             new SubscriptionRequest(payload),
-            jasmine.any(Function)
+            jasmine.any(Function),
+            jasmine.any(Object)
         );
     });
 
@@ -209,7 +217,8 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", function() {
             proxyId,
             providerId,
             new MulticastSubscriptionRequest(payload),
-            jasmine.any(Function)
+            jasmine.any(Function),
+            jasmine.any(Object)
         );
         expect(clusterControllerMessagingStub.transmit).toHaveBeenCalled();
         var sentMessage = clusterControllerMessagingStub.transmit.calls.mostRecent().args[0];
@@ -331,67 +340,114 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", function() {
         done();
     });
 
-    function sendAndCheckBroadcastSubscriptionRequest(request, expectedType) {
-        var sentMessage;
+    function sendBroadcastSubscriptionRequest(request) {
         var messagingQos = new MessagingQos();
-        dispatcher.sendBroadcastSubscriptionRequest({
-            from: "from",
+        return dispatcher.sendBroadcastSubscriptionRequest({
+            from: proxyId,
             toDiscoveryEntry: toDiscoveryEntry,
             messagingQos: messagingQos,
             subscriptionRequest: request
         });
-        expect(clusterControllerMessagingStub.transmit).toHaveBeenCalled();
-        sentMessage = clusterControllerMessagingStub.transmit.calls.mostRecent().args[0];
-        expect(sentMessage.type).toEqual(expectedType);
     }
 
-    it("is able to send multicast subscription request", function() {
+    it("is able to send multicast subscription request", function(done) {
         var multicastId = "multicastId";
-        sendAndCheckBroadcastSubscriptionRequest(
-            new MulticastSubscriptionRequest({
-                subscribedToName: "multicastEvent",
-                subscriptionId: "subscriptionId",
-                multicastId: multicastId
-            }),
-            JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST
-        );
-        expect(messageRouter.addMulticastReceiver).toHaveBeenCalled();
-        expect(messageRouter.addMulticastReceiver.calls.argsFor(0)[0].multicastId).toEqual(multicastId);
+        var multicastSubscriptionRequest = new MulticastSubscriptionRequest({
+            subscribedToName: "multicastEvent",
+            subscriptionId: "subscriptionId",
+            multicastId: multicastId
+        });
+        var serializedPayload = JSON.stringify(multicastSubscriptionRequest);
+
+        expect(messageRouter.addMulticastReceiver).not.toHaveBeenCalled();
+        expect(clusterControllerMessagingStub.transmit).not.toHaveBeenCalled();
+
+        sendBroadcastSubscriptionRequest(multicastSubscriptionRequest)
+            .then(function() {
+                expect(messageRouter.addMulticastReceiver).toHaveBeenCalledTimes(1);
+                var addMulticastReceiverParams = messageRouter.addMulticastReceiver.calls.argsFor(0)[0];
+                expect(addMulticastReceiverParams.multicastId).toEqual(multicastId);
+                expect(addMulticastReceiverParams.subscriberParticipantId).toEqual(proxyId);
+                expect(addMulticastReceiverParams.providerParticipantId).toEqual(providerId);
+
+                expect(clusterControllerMessagingStub.transmit).toHaveBeenCalledTimes(1);
+                var sentMessage = clusterControllerMessagingStub.transmit.calls.argsFor(0)[0];
+                expect(sentMessage.type).toEqual(JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST);
+                expect(sentMessage.from).toEqual(proxyId);
+                expect(sentMessage.to).toEqual(providerId);
+                expect(sentMessage.payload).toEqual(serializedPayload);
+
+                done();
+            })
+            .catch(done.fail);
+    });
+
+    it("does not send multicast subscription request if addMulticastReceiver fails", function(done) {
+        var multicastId = "multicastId";
+        var multicastSubscriptionRequest = new MulticastSubscriptionRequest({
+            subscribedToName: "multicastEvent",
+            subscriptionId: "subscriptionId",
+            multicastId: multicastId
+        });
+
+        messageRouter.addMulticastReceiver.and.returnValue(Promise.reject());
+        expect(messageRouter.addMulticastReceiver).not.toHaveBeenCalled();
+        expect(clusterControllerMessagingStub.transmit).not.toHaveBeenCalled();
+
+        sendBroadcastSubscriptionRequest(multicastSubscriptionRequest)
+            .then(fail)
+            .catch(function() {
+                expect(messageRouter.addMulticastReceiver).toHaveBeenCalledTimes(1);
+                expect(clusterControllerMessagingStub.transmit).not.toHaveBeenCalled();
+                done();
+            });
     });
 
     it("is able to send selective broadcast subscription request", function() {
-        sendAndCheckBroadcastSubscriptionRequest(
-            new BroadcastSubscriptionRequest({
-                subscribedToName: "broadcastEvent",
-                subscriptionId: "subscriptionId"
-            }),
-            JoynrMessage.JOYNRMESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST
-        );
+        expect(clusterControllerMessagingStub.transmit).not.toHaveBeenCalled();
+        var broadcastSubscriptionRequest = new BroadcastSubscriptionRequest({
+            subscribedToName: "broadcastEvent",
+            subscriptionId: "subscriptionId"
+        });
+        var serializedPayload = JSON.stringify(broadcastSubscriptionRequest);
+
+        sendBroadcastSubscriptionRequest(broadcastSubscriptionRequest);
+
+        expect(clusterControllerMessagingStub.transmit).toHaveBeenCalledTimes(1);
+        var sentMessage = clusterControllerMessagingStub.transmit.calls.mostRecent().args[0];
+        expect(sentMessage.type).toEqual(JoynrMessage.JOYNRMESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST);
+        expect(sentMessage.from).toEqual(proxyId);
+        expect(sentMessage.to).toEqual(providerId);
+        expect(sentMessage.payload).toEqual(serializedPayload);
     });
 
     function setsIsLocalMessageInSubscriptionRequest(subscriptionRequest, sendMethod) {
         var sentMessage;
         var messagingQos = new MessagingQos();
 
-        sendMethod({
+        return sendMethod({
             from: "from",
             toDiscoveryEntry: toDiscoveryEntry,
             messagingQos: messagingQos,
             subscriptionRequest: subscriptionRequest
-        });
-        expect(clusterControllerMessagingStub.transmit).toHaveBeenCalled();
-        sentMessage = clusterControllerMessagingStub.transmit.calls.mostRecent().args[0];
-        expect(sentMessage.isLocalMessage).toEqual(true);
+        })
+            .then(function() {
+                expect(clusterControllerMessagingStub.transmit).toHaveBeenCalled();
+                sentMessage = clusterControllerMessagingStub.transmit.calls.mostRecent().args[0];
+                expect(sentMessage.isLocalMessage).toEqual(true);
 
-        sendMethod({
-            from: "from",
-            toDiscoveryEntry: globalToDiscoveryEntry,
-            messagingQos: messagingQos,
-            subscriptionRequest: subscriptionRequest
-        });
-        expect(clusterControllerMessagingStub.transmit).toHaveBeenCalled();
-        sentMessage = clusterControllerMessagingStub.transmit.calls.mostRecent().args[0];
-        expect(sentMessage.isLocalMessage).toEqual(false);
+                return sendMethod({
+                    from: "from",
+                    toDiscoveryEntry: globalToDiscoveryEntry,
+                    messagingQos: messagingQos,
+                    subscriptionRequest: subscriptionRequest
+                });
+            })
+            .then(function() {
+                expect(clusterControllerMessagingStub.transmit).toHaveBeenCalled();
+                sentMessage = clusterControllerMessagingStub.transmit.calls.mostRecent().args[0];
+                expect(sentMessage.isLocalMessage).toEqual(false);
+            });
     }
 
     it("sets isLocalMessage in request messages", function(done) {
@@ -430,22 +486,23 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", function() {
             subscriptionId: subscriptionId
         };
         var subscriptionRequest = new SubscriptionRequest(subscriptionRequestPayload);
-        setsIsLocalMessageInSubscriptionRequest(subscriptionRequest, dispatcher.sendSubscriptionRequest);
-
-        var broadcastSubscriptionRequest = new BroadcastSubscriptionRequest(subscriptionRequestPayload);
-        setsIsLocalMessageInSubscriptionRequest(
-            broadcastSubscriptionRequest,
-            dispatcher.sendBroadcastSubscriptionRequest
-        );
-
-        subscriptionRequestPayload.multicastId = multicastId;
-        var multicastSubscriptionRequest = new MulticastSubscriptionRequest(subscriptionRequestPayload);
-        setsIsLocalMessageInSubscriptionRequest(
-            multicastSubscriptionRequest,
-            dispatcher.sendBroadcastSubscriptionRequest
-        );
-
-        done();
+        setsIsLocalMessageInSubscriptionRequest(subscriptionRequest, dispatcher.sendSubscriptionRequest)
+            .then(function() {
+                var broadcastSubscriptionRequest = new BroadcastSubscriptionRequest(subscriptionRequestPayload);
+                return setsIsLocalMessageInSubscriptionRequest(
+                    broadcastSubscriptionRequest,
+                    dispatcher.sendBroadcastSubscriptionRequest
+                );
+            })
+            .then(function() {
+                subscriptionRequestPayload.multicastId = multicastId;
+                var multicastSubscriptionRequest = new MulticastSubscriptionRequest(subscriptionRequestPayload);
+                setsIsLocalMessageInSubscriptionRequest(
+                    multicastSubscriptionRequest,
+                    dispatcher.sendBroadcastSubscriptionRequest
+                ).then(done);
+            })
+            .catch(done.fail);
     });
 
     it("sets compress in request messages", function(done) {
@@ -477,6 +534,32 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", function() {
         expect(sentMessage.compress).toEqual(true);
 
         done();
+    });
+
+    it("sets the compressed flag for replies if the request was compressed", function(done) {
+        var request = new Request({
+            methodName: "methodName"
+        });
+        var joynrMessage = new JoynrMessage({
+            type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
+            payload: JSON.stringify(request)
+        });
+        joynrMessage.to = providerId;
+        joynrMessage.from = proxyId;
+        joynrMessage.compress = true;
+
+        requestReplyManager.handleRequest.and.callFake(function(to, request, cb, replySettings) {
+            cb(replySettings, request);
+            return Promise.resolve();
+        });
+
+        dispatcher.receive(joynrMessage).then(function() {
+            expect(requestReplyManager.handleRequest).toHaveBeenCalled();
+            expect(requestReplyManager.handleRequest.calls.mostRecent().args[0]).toEqual(providerId);
+            expect(requestReplyManager.handleRequest.calls.mostRecent().args[1]).toEqual(request);
+            expect(clusterControllerMessagingStub.transmit.calls.mostRecent().args[0].compress).toBe(true);
+            done();
+        });
     });
 
     it("enriches requests with custom headers", function(done) {
@@ -559,8 +642,9 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", function() {
         sentRequestMessage = clusterControllerMessagingStub.transmit.calls.mostRecent().args[0];
         var clusterControllerMessagingStubTransmitCallsCount = clusterControllerMessagingStub.transmit.calls.count();
         // get ready for an incoming request: when handleRequest is called, pass an empty reply back.
-        requestReplyManager.handleRequest.and.callFake(function(to, request) {
-            return Promise.resolve(request);
+        requestReplyManager.handleRequest.and.callFake(function(to, request, cb, replySettings) {
+            cb(replySettings, request);
+            return Promise.resolve();
         });
         // now simulate receiving the request message, as if it had been transmitted
         // this will be passed on to the mock requestReplyManager
@@ -603,9 +687,10 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", function() {
             proxyId,
             providerId,
             subscriptionRequest,
-            callback
+            callback,
+            settings
         ) {
-            callback(subscriptionReply);
+            callback(settings, subscriptionReply);
         });
 
         dispatcher.receive(joynrMessage);
@@ -620,7 +705,8 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", function() {
             proxyId,
             providerId,
             new SubscriptionRequest(payload),
-            jasmine.any(Function)
+            jasmine.any(Function),
+            jasmine.any(Object)
         );
 
         expect(clusterControllerMessagingStub.transmit).toHaveBeenCalled();
@@ -629,5 +715,19 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", function() {
         expect(sentMessage.payload).toEqual(JSON.stringify(subscriptionReply));
 
         done();
+    });
+
+    it("accepts messages with Parse Errors", function(done) {
+        loggerSpy.error.calls.reset();
+        var joynrMessage = new JoynrMessage({
+            type: JoynrMessage.JOYNRMESSAGE_TYPE_REPLY,
+            payload: "invalidJSONPayload[/}"
+        });
+        dispatcher
+            .receive(joynrMessage)
+            .then(done)
+            .catch(fail);
+        var lastArgs = loggerSpy.error.calls.argsFor(0)[0];
+        expect(lastArgs.indexOf(joynrMessage.payload) !== -1).toBe(true);
     });
 });

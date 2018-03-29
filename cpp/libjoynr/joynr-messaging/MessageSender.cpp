@@ -21,16 +21,20 @@
 
 #include <cassert>
 
+#include "joynr/BroadcastSubscriptionRequest.h"
 #include "joynr/IDispatcher.h"
 #include "joynr/IKeychain.h"
 #include "joynr/IMessageRouter.h"
 #include "joynr/ImmutableMessage.h"
 #include "joynr/MulticastPublication.h"
+#include "joynr/MulticastSubscriptionRequest.h"
 #include "joynr/MutableMessage.h"
 #include "joynr/Reply.h"
 #include "joynr/Request.h"
 #include "joynr/SubscriptionPublication.h"
+#include "joynr/SubscriptionRequest.h"
 #include "joynr/SubscriptionReply.h"
+#include "joynr/SubscriptionStop.h"
 #include "joynr/exceptions/MethodInvocationException.h"
 
 namespace joynr
@@ -79,6 +83,14 @@ void MessageSender::sendRequest(const std::string& senderParticipantId,
         message.setReplyTo(replyToAddress);
     }
 
+    JOYNR_LOG_DEBUG(logger(),
+                    "Send Request: method: {}, requestReplyId: {}, messageId: {}, "
+                    "proxy participantId: {}, provider participantId: {}",
+                    request.getMethodName(),
+                    request.getRequestReplyId(),
+                    message.getId(),
+                    senderParticipantId,
+                    receiverParticipantId);
     assert(messageRouter);
     messageRouter->route(message.getImmutableMessage());
 }
@@ -92,6 +104,13 @@ void MessageSender::sendOneWayRequest(const std::string& senderParticipantId,
     try {
         MutableMessage message = messageFactory.createOneWayRequest(
                 senderParticipantId, receiverParticipantId, qos, request, isLocalMessage);
+        JOYNR_LOG_DEBUG(logger(),
+                        "Send OneWayRequest: method: {}, messageId: {}, proxy participantId: {}, "
+                        "provider participantId: {}",
+                        request.getMethodName(),
+                        message.getId(),
+                        senderParticipantId,
+                        receiverParticipantId);
         assert(messageRouter);
         messageRouter->route(message.getImmutableMessage());
     } catch (const std::invalid_argument& exception) {
@@ -139,6 +158,13 @@ void MessageSender::sendSubscriptionRequest(const std::string& senderParticipant
         if (!message.isLocalMessage()) {
             message.setReplyTo(replyToAddress);
         }
+        JOYNR_LOG_DEBUG(logger(),
+                        "Send AttributeSubscriptionRequest: subscriptionId: {}, messageId: {}, "
+                        "proxy participantId: {}, provider participantId: {}",
+                        subscriptionRequest.getSubscriptionId(),
+                        message.getId(),
+                        senderParticipantId,
+                        receiverParticipantId);
         assert(messageRouter);
         messageRouter->route(message.getImmutableMessage());
     } catch (const std::invalid_argument& exception) {
@@ -163,6 +189,13 @@ void MessageSender::sendBroadcastSubscriptionRequest(
         if (!message.isLocalMessage()) {
             message.setReplyTo(replyToAddress);
         }
+        JOYNR_LOG_DEBUG(logger(),
+                        "Send BroadcastSubscriptionRequest: subscriptionId: {}, messageId: {}, "
+                        "proxy participantId: {}, provider participantId: {}",
+                        subscriptionRequest.getSubscriptionId(),
+                        message.getId(),
+                        senderParticipantId,
+                        receiverParticipantId);
         assert(messageRouter);
         messageRouter->route(message.getImmutableMessage());
     } catch (const std::invalid_argument& exception) {
@@ -187,6 +220,13 @@ void MessageSender::sendMulticastSubscriptionRequest(
         if (!message.isLocalMessage()) {
             message.setReplyTo(replyToAddress);
         }
+        JOYNR_LOG_DEBUG(logger(),
+                        "Send MulticastSubscriptionRequest: subscriptionId: {}, messageId: {}, "
+                        "proxy participantId: {}, provider participantId: {}",
+                        subscriptionRequest.getSubscriptionId(),
+                        message.getId(),
+                        senderParticipantId,
+                        receiverParticipantId);
         assert(messageRouter);
         messageRouter->route(message.getImmutableMessage());
     } catch (const std::invalid_argument& exception) {
@@ -224,6 +264,13 @@ void MessageSender::sendSubscriptionStop(const std::string& senderParticipantId,
     try {
         MutableMessage message = messageFactory.createSubscriptionStop(
                 senderParticipantId, receiverParticipantId, qos, subscriptionStop);
+        JOYNR_LOG_DEBUG(logger(),
+                        "UNREGISTER SUBSCRIPTION call proxy: subscriptionId: {}, messageId: {}, "
+                        "proxy participantId: {}, provider participantId: {}",
+                        subscriptionStop.getSubscriptionId(),
+                        message.getId(),
+                        senderParticipantId,
+                        receiverParticipantId);
         assert(messageRouter);
         messageRouter->route(message.getImmutableMessage());
     } catch (const std::invalid_argument& exception) {

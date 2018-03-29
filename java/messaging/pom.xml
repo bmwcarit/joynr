@@ -26,13 +26,12 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>java</artifactId>
-		<version>1.0.0-SNAPSHOT</version>
+		<version>1.1.0-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<modules>
 		<module>bounceproxy</module>
 		<module>messaging-common</module>
-		<module>messaging-servlet</module>
 		<module>servlet-common</module>
 		<module>messaging-service</module>
 		<module>channel-service</module>

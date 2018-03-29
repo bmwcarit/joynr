@@ -20,7 +20,7 @@
  */
 var Typing = require("../util/Typing");
 var Util = require("../util/UtilInternal");
-var LoggerFactory = require("../system/LoggerFactory");
+var LoggingManager = require("../system/LoggingManager");
 
 var defaultSettings;
 
@@ -87,7 +87,7 @@ function SubscriptionQos(settings) {
         return new SubscriptionQos(settings);
     }
 
-    var log = LoggerFactory.getLogger("joynr.proxy.SubscriptionQos");
+    var log = LoggingManager.getLogger("joynr.proxy.SubscriptionQos");
 
     /**
      * Used for serialization.

@@ -63,7 +63,6 @@ class InterfaceFireAndForgetProxyCppTemplate extends InterfaceTemplate {
 
 «FOR method: getMethods(francaIntf).filter[fireAndForget]»
 	«var methodName = method.name»
-	«val outputUntypedParamList = getCommaSeperatedUntypedOutputParameterList(method)»
 	«var params = getCommaSeperatedUntypedInputParameterList(method)»
 	/*
 	 * «methodName»
@@ -86,7 +85,7 @@ class InterfaceFireAndForgetProxyCppTemplate extends InterfaceTemplate {
 			throw error;
 		}
 		else{
-			return connector->«methodName»(«outputUntypedParamList»«IF method.outputParameters.size > 0 && method.inputParameters.size > 0», «ENDIF»«params»);
+			return connector->«methodName»(«params»«IF method.inputParameters.size > 0»,«ENDIF» std::move(qos));
 		}
 	}
 «ENDFOR»

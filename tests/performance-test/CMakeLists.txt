@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 ######## Project settings ########
-project(performance-test-1.0.0-SNAPSHOT)
+project(performance-test-1.1.0-SNAPSHOT)
 
 # Compile to a bin directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
@@ -17,7 +17,7 @@ include(GNUInstallDirs)
 ##### Start of build ####################
 
 # Pull in the Joynr configuration
-find_package(Joynr 1.0.0 REQUIRED)
+find_package(Joynr 1.1.0 REQUIRED)
 
 if(NOT DEFINED JOYNR_SERVER_HOST)
     set(JOYNR_SERVER_HOST "localhost")
@@ -50,6 +50,10 @@ find_package(Boost 1.58.0 REQUIRED
     program_options
 )
 include_directories(${Boost_INCLUDE_DIRS})
+
+######## Add dependency to dummyKeychain ########
+find_package(dummyKeychain 0.0.1 REQUIRED)
+message(STATUS "Found dummyKeychain version ${dummyKeychain_VERSION}")
 
 ##### Library consisting of the generated code ###########
 

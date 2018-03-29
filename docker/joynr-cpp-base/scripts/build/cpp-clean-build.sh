@@ -2,17 +2,23 @@
 
 source /data/src/docker/joynr-base/scripts/global.sh
 
+log "### start cpp-clean-build.sh ###"
+
 GCOV='OFF'
 ENABLE_CLANG_FORMATTER='ON'
 BUILD_TESTS='ON'
 ADDITIONAL_CMAKE_ARGS=''
+BUILD_TYPE='DEBUG'
 
 function usage
 {
-    echo "usage: cpp-clean-build.sh [--gcov ON|OFF --jobs X \
-    --enableclangformatter ON|OFF --buildtests ON|OFF --additionalcmakeargs <args>]"
-    echo "default gcov is $GCOV, jobs is $JOBS, additionalcmakeargs is \
-    $ADDITIONAL_CMAKE_ARGS"
+    echo "usage: cpp-clean-build.sh
+            --jobs X
+            --enableclangformatter ON|OFF
+            --buildtests ON|OFF
+            [--buildtype [DEBUG|RELEASE|RELWITHDEBINFO|MINSIZEREL] <default: DEBUG>]
+            [--gcov ON|OFF <default: OFF>]
+            [--additionalcmakeargs <args> <default: "">]"
 }
 
 while [ "$1" != "" ]; do
@@ -28,6 +34,9 @@ while [ "$1" != "" ]; do
                                  ;;
         --buildtests )           shift
                                  BUILD_TESTS=$1
+                                 ;;
+        --buildtype )            shift
+                                 BUILD_TYPE=$1
                                  ;;
         --additionalcmakeargs )  shift
                                  ADDITIONAL_CMAKE_ARGS=$1
@@ -64,7 +73,7 @@ set -e -x
 cmake -DENABLE_GCOV=$GCOV \
       -DPYTHON_EXECUTABLE=/usr/bin/python \
       -DJOYNR_SERVER=localhost:8080 \
-      -DCMAKE_BUILD_TYPE=Debug \
+      -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
       -DENABLE_CLANG_FORMATTER=$ENABLE_CLANG_FORMATTER \
       -DBUILD_TESTS=$BUILD_TESTS \
       -DCMAKE_INSTALL_SYSCONFDIR=/etc \
@@ -89,3 +98,5 @@ tar czf joynr-clean-build.tar.gz bin
 END=$(date +%s)
 DIFF=$(( $END - $START ))
 log "C++ build time: $DIFF seconds"
+
+log "### end cpp-clean-build.sh ###"

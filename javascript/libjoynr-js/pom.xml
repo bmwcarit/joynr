@@ -30,14 +30,13 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>javascript</artifactId>
-		<version>1.0.0-SNAPSHOT</version>
+		<version>1.1.0-SNAPSHOT</version>
 	</parent>
 
 	<properties>
 		<atmosphere.javascript.version>2.0.9</atmosphere.javascript.version>
 		<bluebird.version>3.1.1</bluebird.version>
 		<text-encoding.version>0.6.4</text-encoding.version>
-		<log4javascript.version>1.4.10</log4javascript.version>
 		<jetty.version>9.2.13.v20150730</jetty.version>
 		<netbeans.hint.deploy.server>gfv3ee6</netbeans.hint.deploy.server>
 		<project.build.optimizerResources>${project.build.directory}/build-resources/almond</project.build.optimizerResources>
@@ -324,7 +323,7 @@
 									<version>${project.version}</version>
 									<type>jar</type>
 									<outputDirectory>${project.build.directory}/dependencies/</outputDirectory>
-									<includes>JsonParser/JsonParser.js,uuid/uuid-annotated.js,log4javascript/log4javascript_uncompressed.js</includes>
+									<includes>JsonParser/JsonParser.js,uuid/uuid-annotated.js</includes>
 								</artifactItem>
 								<artifactItem>
 									<groupId>io.joynr.tools</groupId>
@@ -341,14 +340,6 @@
 									<type>war</type>
 									<outputDirectory>${project.build.directory}/dependencies/atmosphere</outputDirectory>
 									<includes>javascript/*.js</includes>
-								</artifactItem>
-								<artifactItem>
-									<groupId>org.webjars</groupId>
-									<artifactId>log4javascript</artifactId>
-									<version>${log4javascript.version}</version>
-									<type>jar</type>
-									<outputDirectory>${project.build.directory}/dependencies/log4javascript</outputDirectory>
-									<includes>META-INF/resources/webjars/log4javascript/${log4javascript.version}/log4javascript.js</includes>
 								</artifactItem>
 								<artifactItem>
 									<groupId>org.webjars</groupId>
@@ -423,12 +414,6 @@
 									</includes>
 								</resource>
 								<resource>
-									<directory>${project.build.directory}/dependencies/log4javascript/META-INF/resources/webjars/log4javascript/${log4javascript.version}/</directory>
-									<includes>
-										<include>log4javascript.js</include>
-									</includes>
-								</resource>
-								<resource>
 									<directory>${project.build.directory}/dependencies/bluebird/META-INF/resources/webjars/bluebird/${bluebird.version}/</directory>
 									<includes>
 										<include>bluebird.js</include>
@@ -450,12 +435,6 @@
 									<directory>${project.build.directory}/dependencies/uuid/</directory>
 									<includes>
 										<include>uuid-annotated.js</include>
-									</includes>
-								</resource>
-								<resource>
-									<directory>${project.build.directory}/dependencies/log4javascript/</directory>
-									<includes>
-										<include>log4javascript_uncompressed.js</include>
 									</includes>
 								</resource>
 							</resources>
@@ -510,7 +489,6 @@
 										<include>global/XMLHttpRequest.js</include>
 										<include>lib/atmosphereNode.js</include>
 										<include>lib/JsonParser.js</include>
-										<include>lib/log4javascriptNode.js</include>
 										<include>lib/uuid-annotated.js</include>
 										<include>META-INF/**</include>
 									</includes>
@@ -965,22 +943,6 @@
 											<outputDirectory>${project.build.directory}</outputDirectory>
 											<destFileName>bounceproxy.war</destFileName>
 										</artifactItem>
-										<artifactItem>
-											<groupId>io.joynr.java.backend-services</groupId>
-											<artifactId>domain-access-controller-servlet</artifactId>
-											<version>${project.version}</version>
-											<type>war</type>
-											<outputDirectory>${project.build.directory}</outputDirectory>
-											<destFileName>accesscontrol.war</destFileName>
-										</artifactItem>
-										<artifactItem>
-											<groupId>io.joynr.java.backend-services</groupId>
-											<artifactId>discovery-directory-servlet</artifactId>
-											<version>${project.version}</version>
-											<type>war</type>
-											<outputDirectory>${project.build.directory}</outputDirectory>
-											<destFileName>discovery.war</destFileName>
-										</artifactItem>
 									</artifactItems>
 									<overWriteReleases>false</overWriteReleases>
 									<overWriteSnapshots>true</overWriteSnapshots>
@@ -1158,7 +1120,7 @@
 								</configuration>
 							</execution>
 							-->
-							<execution>
+							<!--execution>
 								<phase>integration-test</phase>
 								<id>karma-intertab-integration-tests</id>
 								<goals>
@@ -1167,7 +1129,7 @@
 								<configuration>
 									<configFile>${basedir}/src/test/karma/karma.intertab.integration.conf.js</configFile>
 								</configuration>
-							</execution>
+							</execution-->
 						</executions>
 						<configuration>
 							<karmaExecutable>${project.build.directory}/node-classes/node_modules/.bin/karma</karmaExecutable>

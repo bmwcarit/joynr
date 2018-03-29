@@ -18,6 +18,7 @@
  * limitations under the License.
  * #L%
  */
+require("../../node-unit-test-helper");
 var Util = require("../../../classes/joynr/util/UtilInternal");
 var Dispatcher = require("../../../classes/joynr/dispatching/Dispatcher");
 var JoynrMessage = require("../../../classes/joynr/messaging/JoynrMessage");
@@ -146,13 +147,12 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
     beforeEach(function() {
         jasmine.addMatchers(customMatchers);
 
-        var sendRequestReply = function(providerParticipantId, request) {
-            return Promise.resolve(
-                new Reply({
-                    response: "response",
-                    requestReplyId: request.requestReplyId
-                })
-            );
+        var sendRequestReply = function(providerParticipantId, request, cb, replySettings) {
+            var reply = new Reply({
+                response: "response",
+                requestReplyId: request.requestReplyId
+            });
+            return Promise.resolve(cb(replySettings, reply));
         };
         requestReplyManager = {
             handleRequest: sendRequestReply
@@ -167,9 +167,11 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
             proxyParticipantId,
             providerParticipantId,
             subscriptionRequest,
-            callbackDispatcher
+            callbackDispatcher,
+            settings
         ) {
             callbackDispatcher(
+                settings,
                 new SubscriptionReply({
                     subscriptionId: subscriptionRequest.subscriptionId
                 })
@@ -188,6 +190,7 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
         spyOn(publicationManager, "handleSubscriptionStop");
 
         messageRouter = jasmine.createSpyObj("MessageRouter", ["addMulticastReceiver", "removeMulticastReceiver"]);
+        messageRouter.addMulticastReceiver.and.returnValue(Promise.resolve());
         clusterControllerMessagingStub = jasmine.createSpyObj("ClusterControllerMessagingStub", ["transmit"]);
         clusterControllerMessagingStub.transmit.and.returnValue(Promise.resolve());
 
@@ -283,7 +286,7 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
             );
         });
 
-        it("send multicast subscription request", function() {
+        it("send multicast subscription request", function(done) {
             var settings = {
                 from: proxyId,
                 toDiscoveryEntry: providerDiscoveryEntry,
@@ -296,12 +299,13 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
                 })
             };
 
-            dispatcher.sendBroadcastSubscriptionRequest(settings);
-
-            checkMessageFromProxyWithTolerance(
-                JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST,
-                expiryDateMs
-            );
+            dispatcher.sendBroadcastSubscriptionRequest(settings).then(function() {
+                checkMessageFromProxyWithTolerance(
+                    JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST,
+                    expiryDateMs
+                );
+                done();
+            });
         });
 
         it("send multicast subscription stop", function() {
@@ -385,7 +389,9 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
                     providerId,
                     jasmine.objectContaining({
                         _typeName: "joynr.Request"
-                    })
+                    }),
+                    jasmine.any(Function),
+                    jasmine.any(Object)
                 );
 
                 checkRequestReplyMessage(expiryDateMs);
@@ -421,7 +427,8 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
                 proxyId,
                 providerId,
                 expectedSubscriptionRequest,
-                jasmine.any(Function)
+                jasmine.any(Function),
+                jasmine.any(Object)
             );
 
             checkSubscriptionReplyMessage(expiryDateMs);
@@ -448,7 +455,8 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
                 proxyId,
                 providerId,
                 expectedSubscriptionRequest,
-                jasmine.any(Function)
+                jasmine.any(Function),
+                jasmine.any(Object)
             );
 
             checkSubscriptionReplyMessage(expiryDateMs);
@@ -476,7 +484,8 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
                 proxyId,
                 providerId,
                 expectedSubscriptionRequest,
-                jasmine.any(Function)
+                jasmine.any(Function),
+                jasmine.any(Object)
             );
 
             checkSubscriptionReplyMessage(expiryDateMs);
@@ -550,7 +559,7 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
             );
         });
 
-        it("send multicast subscription request", function() {
+        it("send multicast subscription request", function(done) {
             var settings = {
                 from: proxyId,
                 toDiscoveryEntry: providerDiscoveryEntry,
@@ -563,12 +572,13 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
                 })
             };
 
-            dispatcherWithTtlUplift.sendBroadcastSubscriptionRequest(settings);
-
-            checkMessageFromProxyWithTolerance(
-                JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST,
-                expiryDateWithTtlUplift
-            );
+            dispatcherWithTtlUplift.sendBroadcastSubscriptionRequest(settings).then(function() {
+                checkMessageFromProxyWithTolerance(
+                    JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST,
+                    expiryDateWithTtlUplift
+                );
+                done();
+            });
         });
 
         it("send multicast subscription stop", function() {
@@ -658,7 +668,9 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
                     providerId,
                     jasmine.objectContaining({
                         _typeName: "joynr.Request"
-                    })
+                    }),
+                    jasmine.any(Function),
+                    jasmine.any(Object)
                 );
 
                 checkRequestReplyMessage(expiryDateWithTtlUplift);
@@ -688,7 +700,8 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
                 proxyId,
                 providerId,
                 expectedSubscriptionRequest,
-                jasmine.any(Function)
+                jasmine.any(Function),
+                jasmine.any(Object)
             );
 
             checkSubscriptionReplyMessage(expiryDateWithTtlUplift);
@@ -716,7 +729,8 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
                 proxyId,
                 providerId,
                 expectedSubscriptionRequest,
-                jasmine.any(Function)
+                jasmine.any(Function),
+                jasmine.any(Object)
             );
 
             checkSubscriptionReplyMessage(expiryDateWithTtlUplift);
@@ -745,7 +759,8 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
                 proxyId,
                 providerId,
                 expectedSubscriptionRequest,
-                jasmine.any(Function)
+                jasmine.any(Function),
+                jasmine.any(Object)
             );
 
             checkSubscriptionReplyMessage(expiryDateWithTtlUplift);

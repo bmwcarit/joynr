@@ -107,6 +107,7 @@ private:
     void createSubscriptions();
     void subscribeToTopicInternal(const std::string& topic, const bool isChannelTopic = false);
     void setReadyToSend(bool readyToSend);
+    static std::string getErrorString(int rc);
 
     const MessagingSettings& messagingSettings;
     const std::string host;
@@ -131,6 +132,9 @@ private:
     std::function<void(smrf::ByteVector&&)> onMessageReceived;
     std::mutex onReadyToSendChangedMutex;
     std::function<void(bool)> onReadyToSendChanged;
+
+    std::mutex stopMutex;
+    bool isStopped;
 
     ADD_LOGGER(MosquittoConnection)
 };

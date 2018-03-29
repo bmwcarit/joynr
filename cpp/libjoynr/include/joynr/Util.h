@@ -73,6 +73,13 @@ void validatePartitions(const std::vector<std::string>& partitions, bool allowWi
 bool isAdditionOnPointerSafe(std::uintptr_t address, int offset);
 
 /**
+ * @brief MT-safe retrieval of string describing error number
+ * @param errorNumber The error number for which string description should be retrieved
+ * @return string describing error number
+ */
+std::string getErrorString(int errorNumber);
+
+/**
  * @brief converts an attribute name to its getter function
  * @param attributeName name of the attribute; MUST NOT be an empty string!
  * @return name of getter function;
@@ -200,16 +207,6 @@ auto getKeyVectorForMap(const Map& map)
     boost::copy(map | boost::adaptors::map_keys, std::back_inserter(keys));
     return keys;
 }
-
-/**
- * Converts a std::chrono::system_clock::time_point to milliseconds
- */
-std::uint64_t toMilliseconds(const std::chrono::system_clock::time_point& timePoint);
-
-/**
- * Converts a std::chrono::system_clock::time_point to a printable string
- */
-std::string toDateString(const std::chrono::system_clock::time_point& timePoint);
 
 template <typename T>
 auto as_weak_ptr(std::shared_ptr<T> ptr)

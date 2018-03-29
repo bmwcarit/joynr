@@ -18,6 +18,7 @@
  * limitations under the License.
  * #L%
  */
+require("../../../node-unit-test-helper");
 var Promise = require("../../../../classes/global/Promise");
 var PublicationManager = require("../../../../classes/joynr/dispatching/subscription/PublicationManager");
 var MessagingQos = require("../../../../classes/joynr/messaging/MessagingQos");
@@ -55,6 +56,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", functi
     var testBroadcastName, testBroadcast;
     var testNonSelectiveBroadcastName, testNonSelectiveBroadcast;
     var persistency; // localStorage was renamed to persistency because it's impossible to reassign it because of jslint
+    var callbackDispatcherSettings;
 
     function createSubscriptionRequest(
         isAttribute,
@@ -116,43 +118,6 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", functi
         jasmine.clock().tick(time_ms);
     }
 
-    // have to define our own ProviderAttributeNotifyReadWrite because we need
-    // the phrase "Notify" in the constructor
-    // function name for the SubscriptionPublication Manager to work correctly,
-    // but we can't use the
-    // ProviderAttributeNotifyReadWrite implementation because it freezes its
-    // members for safe public usage => we cannot
-    // spy on functions of a real ProviderAttributeNotifyReadWrite instance
-    function ProviderAttributeNotifyReadWrite(parent, settings, attributeName, attributeType) {
-        var providerAttribute = new ProviderAttribute(
-            parent,
-            settings,
-            attributeName,
-            attributeType,
-            "NOTIFYREADWRITE"
-        );
-        this.registerGetter = providerAttribute.registerGetter;
-        this.get = providerAttribute.get;
-        this.registerSetter = providerAttribute.registerSetter;
-        this.set = providerAttribute.set;
-        this.valueChanged = providerAttribute.valueChanged;
-        this.registerObserver = providerAttribute.registerObserver;
-        this.unregisterObserver = providerAttribute.unregisterObserver;
-        this.isNotifiable = providerAttribute.isNotifiable;
-    }
-
-    function ProviderAttributeReadWrite(parent, settings, attributeName, attributeType) {
-        var providerAttribute = new ProviderAttribute(parent, settings, attributeName, attributeType, "READWRITE");
-        this.registerGetter = providerAttribute.registerGetter;
-        this.get = providerAttribute.get;
-        this.registerSetter = providerAttribute.registerSetter;
-        this.set = providerAttribute.set;
-        this.isNotifiable = providerAttribute.isNotifiable;
-        //this.valueChanged = providerAttribute.valueChanged;
-        //this.registerObserver = providerAttribute.registerObserver;
-        //this.unregisterObserver = providerAttribute.unregisterObserver;
-    }
-
     function stopSubscription(subscriptionInfo) {
         publicationManager.handleSubscriptionStop(
             new SubscriptionStop({
@@ -189,6 +154,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", functi
         maxNrOfTimes = 5;
         asyncGetterCallDelay = 10;
         subscriptionLength = (maxNrOfTimes + 1) * maxIntervalMs;
+        callbackDispatcherSettings = {};
 
         dispatcherSpy = jasmine.createSpyObj("Dispatcher", ["sendPublication", "sendMulticastPublication"]);
         publicationManager = new PublicationManager(dispatcherSpy, persistency, joynrInstanceId);
@@ -231,28 +197,40 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", functi
             selective: false
         });
 
-        testAttribute = new ProviderAttributeNotifyReadWrite(provider, providerSettings, testAttributeName, "Boolean");
+        testAttribute = new ProviderAttribute(
+            provider,
+            providerSettings,
+            testAttributeName,
+            "Boolean",
+            "NOTIFYREADWRITE"
+        );
 
-        asyncTestAttribute = new ProviderAttributeNotifyReadWrite(
+        asyncTestAttribute = new ProviderAttribute(
             provider,
             providerSettings,
             asyncTestAttributeName,
-            "Boolean"
+            "Boolean",
+            "NOTIFYREADWRITE"
         );
 
-        testAttributeNotNotifiable = new ProviderAttributeReadWrite(
+        testAttributeNotNotifiable = new ProviderAttribute(
             provider,
             providerSettings,
             testAttributeNotNotifiableName,
-            "Boolean"
+            "Boolean",
+            "READWRITE"
         );
 
         provider[testAttributeName] = testAttribute;
         provider[testBroadcastName] = testBroadcast;
         provider[testNonSelectiveBroadcastName] = testNonSelectiveBroadcast;
         provider[testAttributeNotNotifiableName] = testAttributeNotNotifiable;
-        spyOn(testAttribute, "get").and.returnValue("attributeValue");
-        spyOn(testAttributeNotNotifiable, "get").and.returnValue("attributeValue");
+        spyOn(testAttribute, "get").and.callFake(function() {
+            return Promise.resolve("attributeValue");
+        });
+        spyOn(testAttributeNotNotifiable, "get").and.callFake(function() {
+            return Promise.resolve("attributeValue");
+        });
 
         provider[asyncTestAttributeName] = asyncTestAttribute;
         spyOn(asyncTestAttribute, "get").and.callFake(function() {
@@ -511,10 +489,10 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", functi
                 // publication manager are invoked
                 increaseFakeTime(1);
                 expect(callbackDispatcher).toHaveBeenCalled();
-                expect(callbackDispatcher.calls.mostRecent().args[0].subscriptionId).toBe(
+                expect(callbackDispatcher.calls.mostRecent().args[1].subscriptionId).toBe(
                     intervalSubscriptionRequest.subscriptionId
                 );
-                expect(callbackDispatcher.calls.mostRecent().args[0].error).toBeUndefined();
+                expect(callbackDispatcher.calls.mostRecent().args[1].error).toBeUndefined();
                 done();
             });
 
@@ -536,10 +514,10 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", functi
                 // publication manager are invoked
                 increaseFakeTime(1);
                 expect(callbackDispatcher).toHaveBeenCalled();
-                expect(callbackDispatcher.calls.mostRecent().args[0].subscriptionId).toBe(
+                expect(callbackDispatcher.calls.mostRecent().args[1].subscriptionId).toBe(
                     onChangeBroadcastSubscriptionRequest.subscriptionId
                 );
-                expect(callbackDispatcher.calls.mostRecent().args[0].error).toBeUndefined();
+                expect(callbackDispatcher.calls.mostRecent().args[1].error).toBeUndefined();
                 done();
             });
 
@@ -556,8 +534,8 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", functi
                 // publication manager are invoked
                 increaseFakeTime(1);
                 expect(callbackDispatcher).toHaveBeenCalled();
-                expect(callbackDispatcher.calls.mostRecent().args[0].subscriptionId).toBe(request.subscriptionId);
-                expect(callbackDispatcher.calls.mostRecent().args[0].error).toBeUndefined();
+                expect(callbackDispatcher.calls.mostRecent().args[1].subscriptionId).toBe(request.subscriptionId);
+                expect(callbackDispatcher.calls.mostRecent().args[1].error).toBeUndefined();
                 done();
             });
         }
@@ -901,44 +879,50 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", functi
             // wait until the first publication occurs
             increaseFakeTime(asyncGetterCallDelay);
 
-            // reset first publication
-            asyncTestAttribute.get.calls.reset();
-            dispatcherSpy.sendPublication.calls.reset();
+            return Promise.resolve()
+                .then(function() {
+                    // reset first publication
+                    asyncTestAttribute.get.calls.reset();
+                    dispatcherSpy.sendPublication.calls.reset();
 
-            // let the minIntervalMs exceed, so that new value changes
-            // immediately lead to publications
-            increaseFakeTime(minIntervalMs);
-            expect(asyncTestAttribute.get).not.toHaveBeenCalled();
-            expect(dispatcherSpy.sendPublication).not.toHaveBeenCalled();
+                    // let the minIntervalMs exceed, so that new value changes
+                    // immediately lead to publications
+                    increaseFakeTime(minIntervalMs);
+                    expect(asyncTestAttribute.get).not.toHaveBeenCalled();
+                    expect(dispatcherSpy.sendPublication).not.toHaveBeenCalled();
 
-            asyncTestAttribute.valueChanged(value);
-            increaseFakeTime(5);
+                    asyncTestAttribute.valueChanged(value);
+                    increaseFakeTime(5);
 
-            // this should cause an async timer, which sends a publication
-            // after minIntervalMs-5
-            asyncTestAttribute.valueChanged(value);
+                    // this should cause an async timer, which sends a publication
+                    // after minIntervalMs-5
+                    asyncTestAttribute.valueChanged(value);
 
-            // the getter has not been invoked so far
-            expect(asyncTestAttribute.get).not.toHaveBeenCalled();
+                    // the getter has not been invoked so far
+                    expect(asyncTestAttribute.get).not.toHaveBeenCalled();
 
-            waitsFor(
-                function() {
-                    return dispatcherSpy.sendPublication.calls.count() === 1;
-                },
-                "timeout dispatcherSpy.sendPublication",
-                asyncGetterCallDelay
-            )
+                    return waitsFor(
+                        function() {
+                            return dispatcherSpy.sendPublication.calls.count() === 1;
+                        },
+                        "timeout dispatcherSpy.sendPublication",
+                        asyncGetterCallDelay
+                    );
+                })
                 .then(function() {
                     expect(dispatcherSpy.sendPublication.calls.count()).toEqual(1);
                     // now, lets increas the time until mininterval
                     increaseFakeTime(minIntervalMs - 5);
-
+                })
+                .then(function() {
                     // now, the async timer has exceeded, and the PublicationManager
                     // invokes the get
                     expect(asyncTestAttribute.get.calls.count()).toEqual(1);
 
                     // now change the attribute value
                     asyncTestAttribute.valueChanged(value);
+                })
+                .then(function() {
                     return waitsFor(
                         function() {
                             return dispatcherSpy.sendPublication.calls.count() === 2;
@@ -1211,6 +1195,8 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", functi
 
                     // after minIntervalMs the publication works again
                     increaseFakeTime(mixedSubscriptionRequest.qos.minIntervalMs - shortInterval * maxNrOfTimes);
+                })
+                .then(function() {
                     testAttribute.valueChanged(value);
                     expect(testAttribute.get.calls.count()).toEqual(1);
                     expect(dispatcherSpy.sendPublication.calls.count()).toEqual(1);
@@ -1373,7 +1359,11 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", functi
                     // to the subscribers as the publication timeout occurs
                     dispatcherSpy.sendPublication.calls.reset();
                     increaseFakeTime(mixedSubscriptionRequest.qos.minIntervalMs - maxNrOfTimes);
+                })
+                .then(function() {
                     expect(testAttribute.get.calls.count()).toEqual(1);
+                })
+                .then(function() {
                     return waitsFor(
                         function() {
                             return dispatcherSpy.sendPublication.calls.count() === 1;
@@ -1709,11 +1699,11 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", functi
             )
                 .then(function() {
                     expect(callbackDispatcher).toHaveBeenCalled();
-                    var error = callbackDispatcher.calls.mostRecent().args[0].error;
+                    var error = callbackDispatcher.calls.mostRecent().args[1].error;
                     expect(error).toBeDefined();
                     expect(error instanceof SubscriptionException);
                     expect(error.subscriptionId).toBeDefined();
-                    expect(error.subscriptionId).toEqual(callbackDispatcher.calls.mostRecent().args[0].subscriptionId);
+                    expect(error.subscriptionId).toEqual(callbackDispatcher.calls.mostRecent().args[1].subscriptionId);
                     expect(error.detailMessage).toMatch(/lies in the past/);
                     done();
                     return null;
@@ -1740,11 +1730,11 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", functi
             )
                 .then(function() {
                     expect(callbackDispatcher).toHaveBeenCalled();
-                    var error = callbackDispatcher.calls.mostRecent().args[0].error;
+                    var error = callbackDispatcher.calls.mostRecent().args[1].error;
                     expect(error).toBeDefined();
                     expect(error instanceof SubscriptionException);
                     expect(error.subscriptionId).toBeDefined();
-                    expect(error.subscriptionId).toEqual(callbackDispatcher.calls.mostRecent().args[0].subscriptionId);
+                    expect(error.subscriptionId).toEqual(callbackDispatcher.calls.mostRecent().args[1].subscriptionId);
                     expect(error.detailMessage).toMatch(/misses attribute/);
                     done();
                     return null;
@@ -1771,11 +1761,11 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", functi
             )
                 .then(function() {
                     expect(callbackDispatcher).toHaveBeenCalled();
-                    var error = callbackDispatcher.calls.mostRecent().args[0].error;
+                    var error = callbackDispatcher.calls.mostRecent().args[1].error;
                     expect(error).toBeDefined();
                     expect(error instanceof SubscriptionException);
                     expect(error.subscriptionId).toBeDefined();
-                    expect(error.subscriptionId).toEqual(callbackDispatcher.calls.mostRecent().args[0].subscriptionId);
+                    expect(error.subscriptionId).toEqual(callbackDispatcher.calls.mostRecent().args[1].subscriptionId);
                     expect(error.detailMessage).toMatch(/is not notifiable/);
                     done();
                     return null;
@@ -1810,11 +1800,11 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", functi
             )
                 .then(function() {
                     expect(callbackDispatcher).toHaveBeenCalled();
-                    var error = callbackDispatcher.calls.mostRecent().args[0].error;
+                    var error = callbackDispatcher.calls.mostRecent().args[1].error;
                     expect(error).toBeDefined();
                     expect(error instanceof SubscriptionException);
                     expect(error.subscriptionId).toBeDefined();
-                    expect(error.subscriptionId).toEqual(callbackDispatcher.calls.mostRecent().args[0].subscriptionId);
+                    expect(error.subscriptionId).toEqual(callbackDispatcher.calls.mostRecent().args[1].subscriptionId);
                     expect(error.detailMessage).toMatch(/is smaller than PeriodicSubscriptionQos/);
                     done();
                     return null;
@@ -1844,11 +1834,11 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", functi
             )
                 .then(function() {
                     expect(callbackDispatcher).toHaveBeenCalled();
-                    var error = callbackDispatcher.calls.mostRecent().args[0].error;
+                    var error = callbackDispatcher.calls.mostRecent().args[1].error;
                     expect(error).toBeDefined();
                     expect(error instanceof SubscriptionException);
                     expect(error.subscriptionId).toBeDefined();
-                    expect(error.subscriptionId).toEqual(callbackDispatcher.calls.mostRecent().args[0].subscriptionId);
+                    expect(error.subscriptionId).toEqual(callbackDispatcher.calls.mostRecent().args[1].subscriptionId);
                     expect(error.detailMessage).toMatch(/lies in the past/);
                     done();
                     return null;
@@ -1880,11 +1870,11 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", functi
             )
                 .then(function() {
                     expect(callbackDispatcher).toHaveBeenCalled();
-                    var error = callbackDispatcher.calls.mostRecent().args[0].error;
+                    var error = callbackDispatcher.calls.mostRecent().args[1].error;
                     expect(error).toBeDefined();
                     expect(error instanceof SubscriptionException);
                     expect(error.subscriptionId).toBeDefined();
-                    expect(error.subscriptionId).toEqual(callbackDispatcher.calls.mostRecent().args[0].subscriptionId);
+                    expect(error.subscriptionId).toEqual(callbackDispatcher.calls.mostRecent().args[1].subscriptionId);
                     expect(error.detailMessage).toMatch(/Filter parameter positionOfInterest for broadcast/);
                     done();
                     return null;
@@ -1908,7 +1898,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", functi
             )
                 .then(function() {
                     expect(callbackDispatcher).toHaveBeenCalled();
-                    var response = callbackDispatcher.calls.mostRecent().args[0];
+                    var response = callbackDispatcher.calls.mostRecent().args[1];
                     expect(response.error).toBeUndefined();
                     expect(response.subscriptionId).toEqual(request.subscriptionId);
                     expect(publicationManager.hasMulticastSubscriptions()).toBe(true);
@@ -1978,11 +1968,11 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", functi
             )
                 .then(function() {
                     expect(callbackDispatcher).toHaveBeenCalled();
-                    var error = callbackDispatcher.calls.mostRecent().args[0].error;
+                    var error = callbackDispatcher.calls.mostRecent().args[1].error;
                     expect(error).toBeDefined();
                     expect(error instanceof SubscriptionException);
                     expect(error.subscriptionId).toBeDefined();
-                    expect(error.subscriptionId).toEqual(callbackDispatcher.calls.mostRecent().args[0].subscriptionId);
+                    expect(error.subscriptionId).toEqual(callbackDispatcher.calls.mostRecent().args[1].subscriptionId);
                     expect(error.detailMessage).toMatch(/misses event/);
                     done();
                     return null;
@@ -2025,8 +2015,8 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", functi
             )
                 .then(function() {
                     expect(callbackDispatcherSpy).toHaveBeenCalled();
-                    expect(callbackDispatcherSpy.calls.argsFor(0)[0] instanceof SubscriptionReply);
-                    expect(callbackDispatcherSpy.calls.argsFor(0)[0].error instanceof SubscriptionException);
+                    expect(callbackDispatcherSpy.calls.argsFor(0)[1] instanceof SubscriptionReply);
+                    expect(callbackDispatcherSpy.calls.argsFor(0)[1].error instanceof SubscriptionException);
                     return null;
                 })
                 .then(function() {
@@ -2048,8 +2038,8 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", functi
                         1000
                     ).then(function() {
                         expect(callbackDispatcherSpy).toHaveBeenCalled();
-                        expect(callbackDispatcherSpy.calls.argsFor(0)[0] instanceof SubscriptionReply);
-                        expect(callbackDispatcherSpy.calls.argsFor(0)[0].error instanceof SubscriptionException);
+                        expect(callbackDispatcherSpy.calls.argsFor(0)[1] instanceof SubscriptionReply);
+                        expect(callbackDispatcherSpy.calls.argsFor(0)[1].error instanceof SubscriptionException);
                         done();
                         return null;
                     });

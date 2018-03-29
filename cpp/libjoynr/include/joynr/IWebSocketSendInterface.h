@@ -25,10 +25,14 @@
 #include <smrf/ByteArrayView.h>
 
 #include "joynr/JoynrExport.h"
-#include "joynr/exceptions/JoynrException.h"
 
 namespace joynr
 {
+
+namespace exceptions
+{
+class JoynrRuntimeException;
+} // namespace exceptions
 
 /**
  * @class WebSocketSendInterface

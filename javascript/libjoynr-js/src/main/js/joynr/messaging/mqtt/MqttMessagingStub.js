@@ -20,9 +20,9 @@
  */
 var JoynrMessage = require("../JoynrMessage");
 var JSONSerializer = require("../../util/JSONSerializer");
-var LoggerFactory = require("../../system/LoggerFactory");
+var LoggingManager = require("../../system/LoggingManager");
 
-var log = LoggerFactory.getLogger("joynr/messaging/mqtt/MqttMessagingStub");
+var log = LoggingManager.getLogger("joynr/messaging/mqtt/MqttMessagingStub");
 /**
  * @name MqttMessagingStub
  * @constructor

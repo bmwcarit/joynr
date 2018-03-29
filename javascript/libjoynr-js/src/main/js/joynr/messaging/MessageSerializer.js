@@ -19,8 +19,8 @@
  */
 var JSONSerializer = require("../util/JSONSerializer");
 var JoynrMessage = require("./JoynrMessage");
-var LoggerFactory = require("../system/LoggerFactory");
-var log = LoggerFactory.getLogger("joynr.messaging.MessageSerializer");
+var LoggingManager = require("../system/LoggingManager");
+var log = LoggingManager.getLogger("joynr.messaging.MessageSerializer");
 
 var MessageSerializer = {};
 
@@ -43,12 +43,8 @@ function useSmrf() {
         }
     }
 
-    MessageSerializer.stringify = function(joynrMessage, signingCallback) {
+    MessageSerializer.stringify = function(joynrMessage) {
         joynrMessage.body = joynrMessage.body || new Buffer(joynrMessage.payload);
-
-        if (signingCallback) {
-            joynrMessage.signingCallback = signingCallback;
-        }
 
         return serializeSmrfMessage(joynrMessage);
     };

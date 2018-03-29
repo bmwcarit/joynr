@@ -22,7 +22,7 @@ var TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
 var Typing = require("../util/Typing");
 var Util = require("../util/UtilInternal");
 var JoynrRuntimeException = require("./JoynrRuntimeException");
-var LoggerFactory = require("../system/LoggerFactory");
+var LoggingManager = require("../system/LoggingManager");
 var defaultSettings;
 
 /**
@@ -54,7 +54,7 @@ function SubscriptionException(settings) {
         return new SubscriptionException(settings);
     }
 
-    var log = LoggerFactory.getLogger("joynr.exceptions.SubscriptionException");
+    var log = LoggingManager.getLogger("joynr.exceptions.SubscriptionException");
     var runtimeException = new JoynrRuntimeException(settings);
 
     /**

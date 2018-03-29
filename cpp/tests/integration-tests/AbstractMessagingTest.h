@@ -24,6 +24,7 @@
 #include "joynr/Dispatcher.h"
 #include "joynr/InProcessMessagingAddress.h"
 #include "joynr/MutableMessage.h"
+#include "joynr/MessageQueue.h"
 #include "joynr/ImmutableMessage.h"
 #include "joynr/MessageSender.h"
 #include "joynr/CcMessageRouter.h"
@@ -107,7 +108,10 @@ public:
                                                           nullptr,
                                                           globalCCAddress,
                                                           messageNotificationProviderParticipantId,
-                                                          enablePersistency);
+                                                          enablePersistency,
+                                                          std::vector<std::shared_ptr<ITransportStatus>>{},
+                                                          std::make_unique<MessageQueue<std::string>>(),
+                                                          std::make_unique<MessageQueue<std::shared_ptr<ITransportStatus>>>());
         messageRouter->init();
         qos.setTtl(10000);
     }
