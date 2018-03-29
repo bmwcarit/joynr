@@ -36,7 +36,7 @@ var SubscriptionException = require("../../exceptions/SubscriptionException");
 var JSONSerializer = require("../../util/JSONSerializer");
 var LongTimer = require("../../util/LongTimer");
 var Util = require("../../util/UtilInternal");
-var LoggerFactory = require("../../system/LoggerFactory");
+var LoggingManager = require("../../system/LoggingManager");
 
 /**
  * The PublicationManager is responsible for handling subscription requests.
@@ -51,7 +51,7 @@ var LoggerFactory = require("../../system/LoggerFactory");
  *            joynrInstanceId: the Id of the actual joynr instance
  */
 function PublicationManager(dispatcher, persistency, joynrInstanceId) {
-    var log = LoggerFactory.getLogger("joynr.dispatching.subscription.PublicationManager");
+    var log = LoggingManager.getLogger("joynr.dispatching.subscription.PublicationManager");
 
     // map: key is the provider's participantId, value is the provider object
     var participantIdToProvider = {};

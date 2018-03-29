@@ -3,14 +3,6 @@
 The software library "json_parse_state" included in JsonParser/JsonParser.js
 and JsonParser/json_parse_state.js is “Public Domain”.
 
---- log4javascript -------------------------------------------------------------
-
-The software library “log4javascipt” included in some files in js/ is licensed
-under the "Apache License, Version 2.0". A copy of that license in the English
-original version with a copyright notice, a disclaimer of warranty, and an
-exclusion of liability is included in the META-INF/licenses/Apache-2.txt
-document.
-
 --- UUID -----------------------------------------------------------------------
 
 Files in uuid/ are licensed under the "WTF Public License". A copy of that

@@ -28,7 +28,7 @@ var MessagingQos = require("../messaging/MessagingQos");
 var TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
 var Version = require("../../joynr/types/Version");
 var Typing = require("../util/Typing");
-var LoggerFactory = require("../system/LoggerFactory");
+var LoggingManager = require("../system/LoggingManager");
 
 var proxyElementTypes = {
     ProxyAttribute: ProxyAttribute,
@@ -68,7 +68,7 @@ var typeRegistry = TypeRegistrySingleton.getInstance();
  */
 function ProxyBuilder(proxyDependencies, dependencies) {
     var arbitrator = proxyDependencies.arbitrator;
-    var log = LoggerFactory.getLogger("joynr.proxy.ProxyBuilder");
+    var log = LoggingManager.getLogger("joynr.proxy.ProxyBuilder");
     var typeRegisteredTimeout_ms = 3000; //3 secs
 
     /**
@@ -144,7 +144,7 @@ function ProxyBuilder(proxyDependencies, dependencies) {
 
         function startArbitrationOnSuccess(arbitratedCaps) {
             if (settings.loggingContext !== undefined) {
-                dependencies.loggingManager.setLoggingContext(proxy.proxyParticipantId, settings.loggingContext);
+                log.warn("loggingContext is currently not supported");
             }
             var isGloballyVisible = false;
             if (arbitratedCaps && arbitratedCaps.length > 0) {

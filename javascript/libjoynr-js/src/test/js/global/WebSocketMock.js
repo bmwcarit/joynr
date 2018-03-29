@@ -22,13 +22,13 @@
 var JoynrMessage = require("../../classes/joynr/messaging/JoynrMessage");
 var JSONSerializer = require("../../classes/joynr/util/JSONSerializer");
 var JoynrRuntimeException = require("../../classes/joynr/exceptions/JoynrRuntimeException");
-var LoggerFactory = require("../../classes/joynr/system/LoggerFactory");
+var LoggingManager = require("../../classes/joynr/system/LoggingManager");
 if (typeof Buffer !== "function" && typeof TextDecoder !== "function") {
     throw new JoynrRuntimeException(
         "Encoding/Decoding of binary websocket messages not possible. Buffer and TextEncoder/TextDecoder not available."
     );
 }
-var log = LoggerFactory.getLogger("joynr.messaging.websocket.WebSocketMock");
+var log = LoggingManager.getLogger("joynr.messaging.websocket.WebSocketMock");
 
 var websocket = {
     mock: true,

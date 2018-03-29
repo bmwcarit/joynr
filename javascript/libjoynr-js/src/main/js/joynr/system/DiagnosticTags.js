@@ -22,8 +22,8 @@
 /**
  * @exports DiagnosticTags
  */
-var LoggerFactory = require("./LoggerFactory");
-var log = LoggerFactory.getLogger("joynr.system.DiagnosticTags");
+var Util = require("../util/UtilInternal");
+var loggingManager = require("./LoggingManager");
 var DiagnosticTags = {};
 
 /**
@@ -59,6 +59,12 @@ DiagnosticTags.forChannel = function forChannel(channelInfo) {
     };
 };
 
+var forRequestHelper = function forRequestHelper(tagsForRequest, requestInfo) {
+    if (requestInfo.request.params) {
+        tagsForRequest.params = JSON.stringify(requestInfo.request.params);
+    }
+};
+
 /**
  * @param {Object} requestInfo
  */
@@ -69,10 +75,14 @@ DiagnosticTags.forRequest = function forRequest(requestInfo) {
         to: requestInfo.to,
         from: requestInfo.from
     };
-    if (log.isDebugEnabled() && requestInfo.request.params) {
-        tagsForRequest.params = JSON.stringify(requestInfo.request.params);
-    }
+    forRequestHelper(tagsForRequest, requestInfo);
     return tagsForRequest;
+};
+
+var forOneWayRequestHelper = function(tagsForOneWayRequest, requestInfo) {
+    if (requestInfo.request.params) {
+        tagsForOneWayRequest.params = JSON.stringify(requestInfo.request.params);
+    }
 };
 
 /**
@@ -84,10 +94,16 @@ DiagnosticTags.forOneWayRequest = function forOneWayRequest(requestInfo) {
         to: requestInfo.to,
         from: requestInfo.from
     };
-    if (log.isDebugEnabled() && requestInfo.request.params) {
-        tagsForOneWayRequest.params = JSON.stringify(requestInfo.request.params);
-    }
+    forOneWayRequestHelper(tagsForOneWayRequest, requestInfo);
     return tagsForOneWayRequest;
+};
+
+var forReplyHelper = function(tagsForReply, replyInfo) {
+    if (replyInfo.reply.error) {
+        tagsForReply.error = JSON.stringify(replyInfo.reply.error);
+    } else {
+        tagsForReply.response = JSON.stringify(replyInfo.reply.response);
+    }
 };
 
 /**
@@ -100,13 +116,7 @@ DiagnosticTags.forReply = function forReply(replyInfo) {
         to: replyInfo.to,
         from: replyInfo.from
     };
-    if (log.isDebugEnabled()) {
-        if (replyInfo.reply.error) {
-            tagsForReply.error = JSON.stringify(replyInfo.reply.error);
-        } else {
-            tagsForReply.response = JSON.stringify(replyInfo.reply.response);
-        }
-    }
+    forReplyHelper(tagsForReply, replyInfo);
     return tagsForReply;
 };
 
@@ -174,6 +184,10 @@ DiagnosticTags.forSubscriptionStop = function forSubscriptionStop(subscriptionSt
     };
 };
 
+var forPublicationHelper = function(tagsForPublication, publicationInfo) {
+    tagsForPublication.response = JSON.stringify(publicationInfo.publication.response);
+};
+
 /**
  * @param {Object} publicationInfo
  */
@@ -184,10 +198,12 @@ DiagnosticTags.forPublication = function forPublication(publicationInfo) {
         to: publicationInfo.to,
         from: publicationInfo.from
     };
-    if (log.isDebugEnabled()) {
-        tagsForPublication.response = JSON.stringify(publicationInfo.publication.response);
-    }
+    forPublicationHelper(tagsForPublication, publicationInfo);
     return tagsForPublication;
+};
+
+var forMulticastPublicationHelper = function(tagsForMulticastPublication, publicationInfo) {
+    tagsForMulticastPublication.response = JSON.stringify(publicationInfo.publication.response);
 };
 
 /**
@@ -199,10 +215,20 @@ DiagnosticTags.forMulticastPublication = function forMulticastPublication(public
         multicastId: publicationInfo.publication.multicastId,
         from: publicationInfo.from
     };
-    if (log.isDebugEnabled()) {
-        tagsForMulticastPublication.response = JSON.stringify(publicationInfo.publication.response);
-    }
+    forMulticastPublicationHelper(tagsForMulticastPublication, publicationInfo);
     return tagsForMulticastPublication;
 };
+
+function logLevelChangedCb(level) {
+    if (level !== loggingManager.LogLevel.DEBUG && level !== loggingManager.LogLevel.TRACE) {
+        forRequestHelper = Util.emptyFunction;
+        forOneWayRequestHelper = Util.emptyFunction;
+        forReplyHelper = Util.emptyFunction;
+        forPublicationHelper = Util.emptyFunction;
+        forMulticastPublicationHelper = Util.emptyFunction;
+    }
+}
+
+loggingManager.registerForLogLevelChanged(logLevelChangedCb);
 
 module.exports = DiagnosticTags;

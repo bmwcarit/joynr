@@ -155,4 +155,19 @@ PerformanceUtilities.findBenchmarks = function() {
     return benchmarks;
 };
 
+PerformanceUtilities.getProvisioning = function(isProvider) {
+    let useFSLogger = config.logging && config.logging.output === "fs";
+
+    if (useFSLogger) {
+        let loggingPath = isProvider ? "provider" : "proxy";
+        loggingPath += process.pid;
+        let level = config.logging.level || "info";
+        return require("./config/provisioningFsLogger")(loggingPath, level);
+    }
+
+    var provisioning = require("test-base").provisioning_common;
+    provisioning.logging.configuration.loggers.root.level = "error";
+    return provisioning;
+};
+
 module.exports = PerformanceUtilities;

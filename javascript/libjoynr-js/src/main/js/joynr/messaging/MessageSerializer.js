@@ -19,8 +19,8 @@
  */
 var JSONSerializer = require("../util/JSONSerializer");
 var JoynrMessage = require("./JoynrMessage");
-var LoggerFactory = require("../system/LoggerFactory");
-var log = LoggerFactory.getLogger("joynr.messaging.MessageSerializer");
+var LoggingManager = require("../system/LoggingManager");
+var log = LoggingManager.getLogger("joynr.messaging.MessageSerializer");
 
 var MessageSerializer = {};
 

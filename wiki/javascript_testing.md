@@ -49,6 +49,26 @@ cd javascript/libjoynr-js
 mvn clean install -DskipTests=false
 ```
 
+The node tests can also be run on the sources using
+
+```
+cd <JOYNR_REPO>
+cd javascript/libjoynr-js
+npm install
+```
+after these preparations its possible to run all tests with
+```
+cd src/tests/resources
+node node-run-unit-tests-sources.js
+```
+or a single test with
+```
+cd <TESTDIR>
+node <TESTNAME>
+```
+(use --inspect for debugging with chrome dev tools for node)
+
+
 ## Karma test configuration
 
 The karma test environment is configured using the following files:

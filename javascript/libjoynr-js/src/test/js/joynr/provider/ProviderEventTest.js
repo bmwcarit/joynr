@@ -18,6 +18,7 @@
  * limitations under the License.
  * #L%
  */
+require("../../node-unit-test-helper");
 var ProviderEvent = require("../../../classes/joynr/provider/ProviderEvent");
 var ProviderQos = require("../../../classes/joynr/types/ProviderQos");
 var BroadcastFilterParameters = require("../../../classes/joynr/proxy/BroadcastFilterParameters");

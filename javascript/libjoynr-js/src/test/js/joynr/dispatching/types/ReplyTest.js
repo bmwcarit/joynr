@@ -17,6 +17,7 @@
  * limitations under the License.
  * #L%
  */
+require("../../../node-unit-test-helper");
 var Reply = require("../../../../classes/joynr/dispatching/types/Reply");
 var RadioStation = require("../../../../test-classes/joynr/vehicle/radiotypes/RadioStation");
 

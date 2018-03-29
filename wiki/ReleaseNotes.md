@@ -25,6 +25,9 @@ the versioning scheme [here](JoynrVersioning.md).
 * **[JS]** Fixed a bug where all joynr Runtimes were required. Added a description how to avoid the
   same Problem when using browserify. See [Javascript Configuration Reference](JavaScriptTutorial.md)
   for the detailed explanation.
+* **[JS]** Replaced log4javascript with a simplified implementation. The same configuration interface
+  is still supported apart from some advanced options.
+  See [Javascript Configuration Reference](JavaScriptTutorial.md) for the detailed explanation.
 * **[JS]** Many other internal optimizations which avoid function allocations and thus unnecessary
   GC cycles.
 

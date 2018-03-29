@@ -18,6 +18,7 @@
  * limitations under the License.
  * #L%
  */
+require("../../../node-unit-test-helper");
 var MessageRouter = require("../../../../classes/joynr/messaging/routing/MessageRouter");
 var BrowserAddress = require("../../../../classes/joynr/system/RoutingTypes/BrowserAddress");
 var ChannelAddress = require("../../../../classes/joynr/system/RoutingTypes/ChannelAddress");

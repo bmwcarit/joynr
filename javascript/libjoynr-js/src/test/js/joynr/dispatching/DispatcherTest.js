@@ -18,6 +18,7 @@
  * limitations under the License.
  * #L%
  */
+require("../../node-unit-test-helper");
 var Dispatcher = require("../../../classes/joynr/dispatching/Dispatcher");
 var JoynrMessage = require("../../../classes/joynr/messaging/JoynrMessage");
 var MessagingQos = require("../../../classes/joynr/messaging/MessagingQos");
@@ -39,7 +40,7 @@ var Version = require("../../../classes/joynr/types/Version");
 var ProviderQos = require("../../../classes/joynr/types/ProviderQos");
 var uuid = require("../../../classes/lib/uuid-annotated");
 var Promise = require("../../../classes/global/Promise");
-var LoggerFactory = require("../../../classes/joynr/system/LoggerFactory");
+var LoggingManager = require("../../../classes/joynr/system/LoggingManager");
 
 var providerId = "providerId";
 var proxyId = "proxyId";
@@ -59,7 +60,7 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", function() {
     var loggerSpy;
 
     beforeAll(function() {
-        spyOn(LoggerFactory, "getLogger").and.callThrough();
+        spyOn(LoggingManager, "getLogger").and.callThrough();
     });
 
     /**
@@ -126,7 +127,7 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", function() {
         dispatcher.registerPublicationManager(publicationManager);
         dispatcher.registerMessageRouter(messageRouter);
 
-        loggerSpy = LoggerFactory.getLogger.calls.mostRecent().returnValue;
+        loggerSpy = LoggingManager.getLogger.calls.mostRecent().returnValue;
         spyOn(loggerSpy, "error");
 
         /*

@@ -52,10 +52,9 @@ describe("Consumer test", function() {
     var provisioning = testbase.provisioning_common;
     var initialized = false;
     var testFinished = false;
-    var compressed = true;
     var testInterfaceProxy;
 
-    beforeEach(function() {
+    function loadJoynr(compressed){
         var ready = false;
 
         if (initialized === false) {
@@ -97,32 +96,65 @@ describe("Consumer test", function() {
         } else {
             log("Environment already setup");
         }
+    }
+
+    describe("with compressed joynr", function() {
+        var compressedFinished = false;
+        beforeEach(function() {
+            loadJoynr(true);
+        });
+
+        it("callMethodWithoutParametersCompressed", function() {
+            var spy = jasmine.createSpyObj("spy", [ "onFulfilled", "onError" ]);
+            spy.onFulfilled.reset();
+            spy.onError.reset();
+
+            runs(function() {
+                log("callMethodWithoutParametersCompressed");
+                testInterfaceProxy.methodWithoutParameters().then(spy.onFulfilled).catch(spy.onError);
+            });
+
+            waitsFor(function() {
+                return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
+            }, "callMethodWithoutParametersCompressed", 5000);
+
+            runs(function() {
+                expect(spy.onFulfilled.callCount).toEqual(1);
+                expect(spy.onError.callCount).toEqual(0);
+            });
+        });
+
+        it("test finished", function () {
+            compressedFinished = true;
+        });
+
+        afterEach(function () {
+            if (compressedFinished){
+                var doneSpy = jasmine.createSpy("done");
+                runs(function() {
+                    initialized = false;
+                    joynr.shutdown().then(function () {
+                        delete require.cache[require.resolve('joynr')];
+                        joynr = require('joynr');
+                        doneSpy();
+                    });
+                });
+                waitsFor(function () {
+                    return doneSpy.callCount > 0;
+                });
+            }
+        });
+    });
+
+    // this formatting is wrong. Please fix after merge.
+    describe("without compressed joynr", function () {
+
+    beforeEach(function() {
+        loadJoynr(false);
     });
 
     it("proxy is defined", function() {
         expect(testInterfaceProxy).toBeDefined();
-    });
-
-    it("callMethodWithoutParametersCompressed", function() {
-        var spy = jasmine.createSpyObj("spy", [ "onFulfilled", "onError" ]);
-        spy.onFulfilled.reset();
-        spy.onError.reset();
-
-        runs(function() {
-            log("callMethodWithoutParametersCompressed");
-            testInterfaceProxy.methodWithoutParameters().then(spy.onFulfilled).catch(spy.onError);
-        });
-
-        waitsFor(function() {
-            return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-        }, "callMethodWithoutParametersCompressed", 5000);
-
-        runs(function() {
-            expect(spy.onFulfilled.callCount).toEqual(1);
-            expect(spy.onError.callCount).toEqual(0);
-            initialized = false;
-            compressed = false;
-        });
     });
 
     it("callMethodWithoutParameters", function() {
@@ -2931,5 +2963,8 @@ describe("Consumer test", function() {
         if (testFinished === true) {
             joynr.shutdown();
         }
+    });
+
+    // fix this formatting
     });
 });

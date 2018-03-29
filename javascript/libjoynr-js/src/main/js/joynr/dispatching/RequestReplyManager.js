@@ -29,7 +29,7 @@ var LongTimer = require("../util/LongTimer");
 var MethodInvocationException = require("../exceptions/MethodInvocationException");
 var ProviderRuntimeException = require("../exceptions/ProviderRuntimeException");
 var Version = require("../../joynr/types/Version");
-var LoggerFactory = require("../system/LoggerFactory");
+var LoggingManager = require("../system/LoggingManager");
 /**
  * The RequestReplyManager is responsible maintaining a list of providers that wish to
  * receive incoming requests, and also a list of requestReplyIds which is used to match
@@ -45,7 +45,7 @@ var LoggerFactory = require("../system/LoggerFactory");
  *            together with their constructor.
  */
 function RequestReplyManager(dispatcher, typeRegistry) {
-    var log = LoggerFactory.getLogger("joynr.dispatching.RequestReplyManager");
+    var log = LoggingManager.getLogger("joynr.dispatching.RequestReplyManager");
 
     var providers = {};
     var replyCallers = {};

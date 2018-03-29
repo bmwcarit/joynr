@@ -76,6 +76,7 @@ var InProcessMessagingStubFactoryTest = require("../test-classes/joynr/messaging
 var InProcessMessagingStubTest = require("../test-classes/joynr/messaging/inprocess/InProcessMessagingStubTest");
 var InProcessStubAndSkeletonTest = require("../test-classes/joynr/util/InProcessStubAndSkeletonTest");
 var JoynrMessageTest = require("../test-classes/joynr/messaging/JoynrMessageTest");
+var JoynrLoggerTest = require("../test-classes/joynr/system/JoynrLoggerTest");
 var JsonSerializerTest = require("../test-classes/joynr/util/JSONSerializerTest");
 var LocalStorageNodeTest = require("../test-classes/global/LocalStorageNodeTest");
 var LongPollingChannelMessageReceiverTest = require("../test-classes/joynr/messaging/channel/LongPollingChannelMessageReceiverTest");

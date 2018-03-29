@@ -37,7 +37,7 @@ var Util = require("../util/UtilInternal");
 var JSONSerializer = require("../util/JSONSerializer");
 var Typing = require("../util/Typing");
 var SubscriptionQos = require("../proxy/SubscriptionQos");
-var LoggerFactory = require("../system/LoggerFactory");
+var LoggingManager = require("../system/LoggingManager");
 
 /**
  * @name Dispatcher
@@ -49,7 +49,7 @@ var LoggerFactory = require("../system/LoggerFactory");
  *            securityManager for setting the creator user ID header
  */
 function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs) {
-    var log = LoggerFactory.getLogger("joynr.dispatching.Dispatcher");
+    var log = LoggingManager.getLogger("joynr.dispatching.Dispatcher");
 
     var requestReplyManager;
     var subscriptionManager;

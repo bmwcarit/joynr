@@ -18,6 +18,7 @@
  * limitations under the License.
  * #L%
  */
+require("../../node-unit-test-helper");
 var ProviderAttribute = require("../../../classes/joynr/provider/ProviderAttribute");
 var ProviderQos = require("../../../classes/joynr/types/ProviderQos");
 var TestEnum = require("../../../test-classes/joynr/tests/testTypes/TestEnum");

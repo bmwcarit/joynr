@@ -21,7 +21,7 @@
 var Promise = require("../../../global/Promise");
 var MulticastWildcardRegexFactory = require("../util/MulticastWildcardRegexFactory");
 var DiagnosticTags = require("../../system/DiagnosticTags");
-var LoggerFactory = require("../../system/LoggerFactory");
+var LoggingManager = require("../../system/LoggingManager");
 var InProcessAddress = require("../inprocess/InProcessAddress");
 var JoynrMessage = require("../JoynrMessage");
 var MessageReplyToAddressCalculator = require("../MessageReplyToAddressCalculator");
@@ -68,7 +68,7 @@ function MessageRouter(settings) {
 
     var that = this;
     var multicastWildcardRegexFactory = new MulticastWildcardRegexFactory();
-    var log = LoggerFactory.getLogger("joynr/messaging/routing/MessageRouter");
+    var log = LoggingManager.getLogger("joynr/messaging/routing/MessageRouter");
     var listener, routingProxy, messagingStub;
     var queuedAddNextHopCalls = [],
         queuedRemoveNextHopCalls = [],
