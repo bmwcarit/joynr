@@ -184,8 +184,8 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
     public T build(final ProxyCreatedCallback<T> callback) {
         try {
             ProxyInvocationHandler proxyInvocationHandler = createProxyInvocationHandler(callback);
-            arbitrator.startArbitration();
             proxy = ProxyFactory.createProxy(myClass, messagingQos, proxyInvocationHandler);
+            arbitrator.startArbitration();
             return proxy;
         } catch (JoynrRuntimeException e) {
             logger.debug("error building proxy", e);
