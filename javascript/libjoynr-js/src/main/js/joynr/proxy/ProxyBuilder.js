@@ -175,6 +175,13 @@ function ProxyBuilder(proxyDependencies, dependencies) {
                 proxy = Object.freeze(proxy);
             }
 
+            log.info(
+                "Proxy created, proxy participantId: " +
+                    proxy.proxyParticipantId +
+                    ", provider discoveryEntry: " +
+                    JSON.stringify(proxy.providerDiscoveryEntry)
+            );
+
             return proxy;
         }
 
