@@ -153,12 +153,13 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
                     if (shutdown.get()) {
                         return;
                     }
-
-                    try {
-                        Thread.sleep(reconnectSleepMs);
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                        return;
+                    synchronized (this) {
+                        try {
+                            this.wait(reconnectSleepMs);
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                            return;
+                        }
                     }
                     continue;
                 case MqttException.REASON_CODE_CLIENT_CONNECTED:
@@ -269,6 +270,9 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
     @Override
     public void shutdown() {
         shutdown.set(true);
+        synchronized (this) {
+            this.notifyAll();
+        }
         logger.info("Attempting shutdown of MQTT connection.");
         try {
             synchronized (this) {
