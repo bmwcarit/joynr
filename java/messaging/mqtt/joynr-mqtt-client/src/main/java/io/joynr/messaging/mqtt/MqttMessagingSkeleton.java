@@ -65,7 +65,7 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
     private final Set<JoynrMessageProcessor> messageProcessors;
     private final Set<String> incomingMqttRequests;
     private final AtomicLong droppedMessagesCount;
-    private MqttStatusReceiver mqttStatusReceiver;
+    private final MqttStatusReceiver mqttStatusReceiver;
 
     @Inject
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 2 LINES
