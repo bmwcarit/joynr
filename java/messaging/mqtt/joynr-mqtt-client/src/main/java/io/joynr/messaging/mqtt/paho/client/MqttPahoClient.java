@@ -73,7 +73,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
 
     private Set<String> subscribedTopics = new HashSet<>();
 
-    private volatile AtomicBoolean shutdown = new AtomicBoolean(false);
+    private AtomicBoolean shutdown = new AtomicBoolean(false);
 
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public MqttPahoClient(MqttClient mqttClient,
