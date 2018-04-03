@@ -40,7 +40,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Charsets;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.joynr.exceptions.JoynrDelayMessageException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
@@ -116,17 +115,18 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
     }
 
     @Override
-    @SuppressFBWarnings("SWL_SLEEP_WITH_LOCK_HELD")
-    public synchronized void start() {
+    public void start() {
         while (!shutdown.get() && !mqttClient.isConnected()) {
             try {
-                logger.debug("Started MqttPahoClient");
-                mqttClient.setCallback(this);
-                mqttClient.setTimeToWait(timeToWaitMs);
-                mqttClient.connect(getConnectOptions());
-                logger.debug("MQTT Connected client");
-                mqttStatusReceiver.notifyConnectionStatusChanged(MqttStatusReceiver.ConnectionStatus.CONNECTED);
-                reestablishSubscriptions();
+                synchronized (this) {
+                    logger.debug("Started MqttPahoClient");
+                    mqttClient.setCallback(this);
+                    mqttClient.setTimeToWait(timeToWaitMs);
+                    mqttClient.connect(getConnectOptions());
+                    logger.debug("MQTT Connected client");
+                    mqttStatusReceiver.notifyConnectionStatusChanged(MqttStatusReceiver.ConnectionStatus.CONNECTED);
+                    reestablishSubscriptions();
+                }
             } catch (MqttException mqttError) {
                 logger.error("MQTT Connect failed. Error code {}", mqttError.getReasonCode(), mqttError);
                 switch (mqttError.getReasonCode()) {
@@ -271,8 +271,10 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
         shutdown.set(true);
         logger.info("Attempting shutdown of MQTT connection.");
         try {
-            mqttClient.disconnectForcibly(10000, 10000);
-            mqttClient.close();
+            synchronized (this) {
+                mqttClient.disconnectForcibly(10000, 10000);
+                mqttClient.close();
+            }
         } catch (Exception e) {
             logger.error("MQTT Close failed", e);
         }
