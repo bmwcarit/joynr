@@ -56,8 +56,6 @@ public class ConfigurableMessagingSettings implements MessagingSettings {
     public static final String PROPERTY_HOSTS_FILENAME = "joynr.messaging.hostsfilename";
 
     public static final String PROPERTY_MAX_MESSAGE_SIZE = "joynr.messaging.maxmessagesize";
-    public static final String PROPERTY_BACKPRESSURE_ENABLED = "joynr.messaging.backpressure.enabled";
-    public static final String PROPERTY_MAX_INCOMING_MQTT_REQUESTS = "joynr.messaging.maxincomingmqttrequests";
 
     public static final String PROPERTY_MESSAGING_MAXIMUM_TTL_MS = "joynr.messaging.maxttlms";
     public static final String PROPERTY_TTL_UPLIFT_MS = "joynr.messaging.ttlupliftms";

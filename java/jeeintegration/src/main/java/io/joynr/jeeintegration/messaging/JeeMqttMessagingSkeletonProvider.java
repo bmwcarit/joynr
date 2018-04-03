@@ -18,16 +18,17 @@
  */
 package io.joynr.jeeintegration.messaging;
 
-import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_BACKPRESSURE_ENABLED;
-import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_MAX_INCOMING_MQTT_REQUESTS;
 import static io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys.JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY;
-import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS;
-import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_REPLY_TO_ADDRESS;
-
-import java.util.HashSet;
-
 import static io.joynr.messaging.MessagingPropertyKeys.CHANNELID;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS;
+import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS;
+import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_REPLY_TO_ADDRESS;
+import static io.joynr.messaging.mqtt.settings.LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_ENABLED;
+import static io.joynr.messaging.mqtt.settings.LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD;
+import static io.joynr.messaging.mqtt.settings.LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_UPPER_THRESHOLD;
+import static io.joynr.messaging.mqtt.settings.LimitAndBackpressureSettings.PROPERTY_MAX_INCOMING_MQTT_REQUESTS;
+
+import java.util.HashSet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,6 +64,8 @@ public class JeeMqttMessagingSkeletonProvider extends MqttMessagingSkeletonProvi
                                             @Named(PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
                                             @Named(PROPERTY_MAX_INCOMING_MQTT_REQUESTS) int maxIncomingMqttRequests,
                                             @Named(PROPERTY_BACKPRESSURE_ENABLED) boolean backpressureEnabled,
+                                            @Named(PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_UPPER_THRESHOLD) int backpressureIncomingMqttRequestsUpperThreshold,
+                                            @Named(PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD) int backpressureIncomingMqttRequestsLowerThreshold,
                                             @Named(PROPERTY_MQTT_REPLY_TO_ADDRESS) MqttAddress replyToAddress,
                                             MessageRouter messageRouter,
                                             MqttClientFactory mqttClientFactory,
@@ -74,6 +77,8 @@ public class JeeMqttMessagingSkeletonProvider extends MqttMessagingSkeletonProvi
               ownAddress,
               maxIncomingMqttRequests,
               backpressureEnabled,
+              backpressureIncomingMqttRequestsUpperThreshold,
+              backpressureIncomingMqttRequestsLowerThreshold,
               replyToAddress,
               messageRouter,
               mqttClientFactory,
