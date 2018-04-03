@@ -82,4 +82,6 @@ websocket.unmarshalJoynrMessage = function(event, callback) {
     }
 };
 
+websocket.close = function() {};
+
 module.exports = WebSocket;

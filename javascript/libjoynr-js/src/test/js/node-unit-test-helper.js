@@ -69,6 +69,7 @@ function loadJasmine() {
         md = md.replace("../system/Discovery", "../../../../main/generated/joynr/system/Discovery");
         md = md.replace("../system/Routing", "../../../../main/generated/joynr/system/Routing");
         md = md.replace("../types/Discovery", "../../../../main/generated/joynr/types/Discovery");
+        md = md.replace("global/WebSocketMock", "../../global/WebSocketMock");
 
         return unmodifiedRequire.call(this, md);
     };
@@ -83,7 +84,7 @@ function loadJasmine() {
             return req("../js/global/SmrfMock");
         }
         if (md.endsWith("WebSocketNode")) {
-            return req("../js/global/WebSocketMock");
+            return req("global/WebSocketMock");
         }
         return req.apply(this, arguments);
     };
