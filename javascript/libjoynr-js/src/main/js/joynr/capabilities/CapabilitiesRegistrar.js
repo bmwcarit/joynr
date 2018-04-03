@@ -26,6 +26,8 @@ var ParticipantIdStorage = require("./ParticipantIdStorage");
 var Version = require("../../joynr/types/Version");
 var defaultExpiryIntervalMs = 6 * 7 * 24 * 60 * 60 * 1000; // 6 Weeks
 var loggingManager = require("../system/LoggingManager");
+var log = loggingManager.getLogger("joynr.capabilities.CapabilitiesRegistrar");
+
 /**
  * The Capabilities Registrar
  *
@@ -173,7 +175,6 @@ CapabilitiesRegistrar.prototype.registerProvider = function registerProvider(
     }
 
     if (loggingContext !== undefined) {
-        var log = loggingManager.getLogger("joynr.capabilities.CapabilitiesRegistrar.js");
         log.warn("loggingContext is currently not supported");
     }
 
@@ -211,6 +212,14 @@ CapabilitiesRegistrar.prototype.registerProvider = function registerProvider(
     );
 
     function registerProviderFinished() {
+        log.info(
+            "Provider registered: participantId: " +
+                participantId +
+                ", domain: " +
+                domain +
+                ", interfaceName: " +
+                provider.interfaceName
+        );
         return participantId;
     }
 
@@ -247,7 +256,16 @@ CapabilitiesRegistrar.prototype.unregisterProvider = function unregisterProvider
     // unregister provider at RequestReplyManager
     this._requestReplyManager.removeRequestCaller(participantId);
 
-    return Promise.all([discoveryStubPromise, messageRouterPromise]);
+    return Promise.all([discoveryStubPromise, messageRouterPromise]).then(function() {
+        log.info(
+            "Provider unregistered: participantId: " +
+                participantId +
+                ", domain: " +
+                domain +
+                ", interfaceName: " +
+                provider.interfaceName
+        );
+    });
 };
 
 /**
