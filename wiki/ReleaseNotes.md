@@ -57,6 +57,8 @@ the versioning scheme [here](JoynrVersioning.md).
   the mqtt broker.
 * **[C++]** newly added TLS properties `cluster-controller/mqtt-tls-version` and 
   `cluster-controller/mqtt-tls-ciphers` can be used to fine tune the MQTT TLS connection
+* **[JS]** changed default value of shutdownSettings.clearSubscriptionsEnabled to true.
+  As default behavior Joynr will try to terminate active subscriptions when shut down.
 
 ## Other changes
 * **[C++]** moved settings `local-capabilities-directory-persistence-file` and

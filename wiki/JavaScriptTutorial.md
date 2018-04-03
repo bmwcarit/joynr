@@ -169,7 +169,7 @@ var persistencyValue = {
 };
 
 var shutdownSettingsValue = {
-    clearSubscriptionsEnabled: <true|false>, // default false
+    clearSubscriptionsEnabled: <true|false>, // default true
     clearSubscriptionsTimeoutMs: <number> // default 1000
 };
 
