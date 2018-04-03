@@ -515,9 +515,13 @@ public class MqttPahoClientTest {
         };
         new Thread(myRunnable).start();
         assertTrue(semaphoreBeforeStartMethod.tryAcquire(timeout, TimeUnit.MILLISECONDS));
-        // At this level semaphore supposed to be not released
-        // because when we call shutdown we are still in start()
+        // sleep in order to increase the probability of the runnable
+        // to be in the sleep part of the start method
+        Thread.sleep(timeout);
+        // At this point the semaphoreAfterStartMethod is supposed to be not released
+        // because we expect to be still in start()
         assertFalse(semaphoreAfterStartMethod.tryAcquire());
+
         client.shutdown();
         assertTrue(semaphoreAfterStartMethod.tryAcquire(timeout, TimeUnit.MILLISECONDS));
     }
