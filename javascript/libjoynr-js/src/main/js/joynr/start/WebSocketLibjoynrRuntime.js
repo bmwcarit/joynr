@@ -534,12 +534,17 @@ function WebSocketLibjoynrRuntime(provisioning) {
         }
         joynrState = JoynrStates.SHUTTINGDOWN;
 
-        var shutdownProvisioning = provisioning.shutdownSettings || {};
         settings = settings || {};
-        if (settings.clearSubscriptionsEnabled || shutdownProvisioning.clearSubscriptionsEnabled) {
-            var clearSubscriptionTimeoutMs =
-                settings.clearSubscriptionsTimeoutMs || shutdownProvisioning.clearSubscriptionsTimeoutMs || 1000;
-            subscriptionManager.terminateSubscriptions(clearSubscriptionTimeoutMs);
+
+        var shutdownSettings = Util.extend(
+            {},
+            defaultLibjoynrSettings.shutdownSettings,
+            provisioning.shutdownSettings,
+            settings
+        );
+
+        if (shutdownSettings.clearSubscriptionsEnabled) {
+            subscriptionManager.terminateSubscriptions(shutdownSettings.clearSubscriptionsTimeoutMs);
         }
 
         if (webSocketMessagingSkeleton !== undefined) {
