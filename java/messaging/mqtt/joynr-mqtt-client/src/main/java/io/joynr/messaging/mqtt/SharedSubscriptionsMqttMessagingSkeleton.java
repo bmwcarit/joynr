@@ -38,6 +38,7 @@ import com.google.inject.name.Named;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.RawMessagingPreprocessor;
+import io.joynr.messaging.mqtt.statusmetrics.MqttStatusReceiver;
 import io.joynr.messaging.routing.MessageRouter;
 import joynr.system.RoutingTypes.MqttAddress;
 
@@ -74,14 +75,16 @@ public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkele
                                                     @Named(MessagingPropertyKeys.CHANNELID) String channelId,
                                                     MqttTopicPrefixProvider mqttTopicPrefixProvider,
                                                     RawMessagingPreprocessor rawMessagingPreprocessor,
-                                                    Set<JoynrMessageProcessor> messageProcessors) {
+                                                    Set<JoynrMessageProcessor> messageProcessors,
+                                                    MqttStatusReceiver mqttStatusReceiver) {
         super(ownAddress,
               maxIncomingMqttRequests,
               messageRouter,
               mqttClientFactory,
               mqttTopicPrefixProvider,
               rawMessagingPreprocessor,
-              messageProcessors);
+              messageProcessors,
+              mqttStatusReceiver);
         this.replyToAddress = replyToAddress;
         this.channelId = channelId;
         this.sharedSubscriptionsTopic = createSharedSubscriptionsTopic();

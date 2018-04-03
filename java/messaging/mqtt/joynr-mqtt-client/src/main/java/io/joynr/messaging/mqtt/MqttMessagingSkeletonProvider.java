@@ -39,6 +39,7 @@ import com.google.inject.name.Named;
 import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
+import io.joynr.messaging.mqtt.statusmetrics.MqttStatusReceiver;
 import io.joynr.messaging.routing.MessageRouter;
 import joynr.system.RoutingTypes.MqttAddress;
 
@@ -65,6 +66,7 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
     private MqttTopicPrefixProvider mqttTopicPrefixProvider;
     private RawMessagingPreprocessor rawMessagingPreprocessor;
     private Set<JoynrMessageProcessor> messageProcessors;
+    private MqttStatusReceiver mqttStatusReceiver;
 
     @Inject
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
@@ -80,7 +82,8 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
                                          @Named(CHANNELID) String channelId,
                                          MqttTopicPrefixProvider mqttTopicPrefixProvider,
                                          RawMessagingPreprocessor rawMessagingPreprocessor,
-                                         Set<JoynrMessageProcessor> messageProcessors) {
+                                         Set<JoynrMessageProcessor> messageProcessors,
+                                         MqttStatusReceiver mqttStatusReceiver) {
         sharedSubscriptionsEnabled = enableSharedSubscriptions;
         this.rawMessagingPreprocessor = rawMessagingPreprocessor;
         this.messageProcessors = messageProcessors;
@@ -94,6 +97,7 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
         this.mqttClientFactory = mqttClientFactory;
         this.channelId = channelId;
         this.mqttTopicPrefixProvider = mqttTopicPrefixProvider;
+        this.mqttStatusReceiver = mqttStatusReceiver;
         logger.debug("Created with sharedSubscriptionsEnabled: {} ownAddress: {} channelId: {}", new Object[]{
                 sharedSubscriptionsEnabled, this.ownAddress, this.channelId });
     }
@@ -112,7 +116,8 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
                                                                 channelId,
                                                                 mqttTopicPrefixProvider,
                                                                 rawMessagingPreprocessor,
-                                                                messageProcessors);
+                                                                messageProcessors,
+                                                                mqttStatusReceiver);
         }
         return new MqttMessagingSkeleton(ownAddress,
                                          maxIncomingMqttRequests,
@@ -120,7 +125,8 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
                                          mqttClientFactory,
                                          mqttTopicPrefixProvider,
                                          rawMessagingPreprocessor,
-                                         messageProcessors);
+                                         messageProcessors,
+                                         mqttStatusReceiver);
     }
 
 }

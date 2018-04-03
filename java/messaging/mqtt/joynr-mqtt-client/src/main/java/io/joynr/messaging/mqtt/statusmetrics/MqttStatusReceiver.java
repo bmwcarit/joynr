@@ -16,17 +16,21 @@
  * limitations under the License.
  * #L%
  */
-package io.joynr.statusmetrics;
+package io.joynr.messaging.mqtt.statusmetrics;
 
-public interface StatusMetrics {
+public interface MqttStatusReceiver {
+    public enum ConnectionStatus {
+        CONNECTED, NOT_CONNECTED,
+    }
+
     /**
-     * Provides status information for message workers. Message workers consume messages from the
-     * message queue and process them. Evaluating their status allows to detect states in which
-     * a thread blocks indefinitely.
-     *
-     * @see MessageWorkerStatus for more information.
-     *
-     * @return Returns an array which contains the status of each message worker.
+     * Will be called whenever a message is dropped because the upper message queue limit was reached.
      */
-    MessageWorkerStatus[] getMessageWorkersStatus();
+    void notifyMessageDropped();
+
+    /**
+     * Will be called whenever the connection status changed.
+     * @param connectionStatus A new connection status
+     */
+    void notifyConnectionStatusChanged(ConnectionStatus connectionStatus);
 }

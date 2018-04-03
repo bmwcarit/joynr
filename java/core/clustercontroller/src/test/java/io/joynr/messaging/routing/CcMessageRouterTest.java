@@ -39,6 +39,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.lessThan;
 
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.DelayQueue;
@@ -83,6 +84,8 @@ import io.joynr.messaging.channel.ChannelMessagingStubFactory;
 import io.joynr.messaging.util.MulticastWildcardRegexFactory;
 import io.joynr.messaging.routing.CcMessageRouter;
 import io.joynr.runtime.ClusterControllerRuntimeModule;
+import io.joynr.statusmetrics.MessageWorkerStatus;
+import io.joynr.statusmetrics.StatusReceiver;
 import io.joynr.runtime.ShutdownNotifier;
 import io.joynr.messaging.routing.TestGlobalAddressModule;
 import joynr.ImmutableMessage;
@@ -124,6 +127,8 @@ public class CcMessageRouterTest {
     private IMessagingStub messagingStubMock;
     @Mock
     private ChannelMessagingSkeleton messagingSkeletonMock;
+    @Mock
+    private StatusReceiver statusReceiver;
     @Mock
     private ShutdownNotifier shutdownNotifier;
 
@@ -167,6 +172,7 @@ public class CcMessageRouterTest {
                               .to(false);
 
                 bind(AccessController.class).toInstance(Mockito.mock(AccessController.class));
+                bind(StatusReceiver.class).toInstance(statusReceiver);
 
                 MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessagingStub, ? extends Address>> messagingStubFactory;
                 messagingStubFactory = MapBinder.newMapBinder(binder(),
@@ -697,6 +703,25 @@ public class CcMessageRouterTest {
     }
 
     @Test
+    public void testMessageWorkerStatusUpdatedWhenMessageWasQueued() throws Exception {
+        ArgumentCaptor<MessageWorkerStatus> messageWorkerStatusCaptor = ArgumentCaptor.forClass(MessageWorkerStatus.class);
+
+        messageRouter.route(joynrMessage.getImmutableMessage());
+        Thread.sleep(250);
+
+        verify(statusReceiver, atLeast(1)).updateMessageWorkerStatus(eq(0), messageWorkerStatusCaptor.capture());
+
+        // Workaround: At the beginning, the abstract message router queues two initial updates ("waiting for message") with the
+        // same timestamp. Remove this duplicate by inserting all values into a LinkedHashSet which preserves the order of insertion.
+        LinkedHashSet<MessageWorkerStatus> uniqueStatusUpdates = new LinkedHashSet<MessageWorkerStatus>(messageWorkerStatusCaptor.getAllValues());
+        MessageWorkerStatus[] statusUpdates = uniqueStatusUpdates.toArray(new MessageWorkerStatus[0]);
+
+        assertEquals(3, statusUpdates.length);
+        assertEquals(true, statusUpdates[0].isWaitingForMessage());
+        assertEquals(false, statusUpdates[1].isWaitingForMessage());
+        assertEquals(true, statusUpdates[2].isWaitingForMessage());
+    }
+
     public void testScheduleMessage() throws InterruptedException {
         final DelayQueue<DelayableImmutableMessage> messageQueue = spy(new DelayQueue<DelayableImmutableMessage>());
         Module messageQueueSpyModule = Modules.override(testModule).with(new AbstractModule() {

@@ -42,6 +42,7 @@ import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.NoOpRawMessagingPreprocessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
+import io.joynr.messaging.mqtt.statusmetrics.MqttStatusReceiver;
 import io.joynr.messaging.routing.MessageRouter;
 import joynr.ImmutableMessage;
 import joynr.Message;
@@ -77,6 +78,9 @@ public class MqttMessagingSkeletonTest {
     @Mock
     private MqttTopicPrefixProvider mqttTopicPrefixProvider;
 
+    @Mock
+    private MqttStatusReceiver mqttStatusReceiver;
+
     @Before
     public void setup() {
         subject = new MqttMessagingSkeleton(ownAddress,
@@ -85,7 +89,8 @@ public class MqttMessagingSkeletonTest {
                                             mqttClientFactory,
                                             mqttTopicPrefixProvider,
                                             new NoOpRawMessagingPreprocessor(),
-                                            new HashSet<JoynrMessageProcessor>());
+                                            new HashSet<JoynrMessageProcessor>(),
+                                            mqttStatusReceiver);
         when(mqttClientFactory.create()).thenReturn(mqttClient);
         subject.init();
         verify(mqttClient).subscribe(anyString());
@@ -146,7 +151,8 @@ public class MqttMessagingSkeletonTest {
                                             mqttClientFactory,
                                             mqttTopicPrefixProvider,
                                             preprocessor,
-                                            new HashSet<JoynrMessageProcessor>());
+                                            new HashSet<JoynrMessageProcessor>(),
+                                            mqttStatusReceiver);
 
         ImmutableMessage rqMessage = createTestRequestMessage();
 
@@ -170,7 +176,8 @@ public class MqttMessagingSkeletonTest {
                                             mqttClientFactory,
                                             mqttTopicPrefixProvider,
                                             new NoOpRawMessagingPreprocessor(),
-                                            Sets.newHashSet(processorMock));
+                                            Sets.newHashSet(processorMock),
+                                            mqttStatusReceiver);
 
         ImmutableMessage rqMessage = createTestRequestMessage();
 
@@ -215,6 +222,14 @@ public class MqttMessagingSkeletonTest {
                          failIfCalledAction);
         assertEquals(2, subject.getDroppedMessagesCount());
         verify(messageRouter, times(maxIncomingMqttRequests)).route(any(ImmutableMessage.class));
+    }
+
+    @Test
+    public void testMqttStatusReceiverIsNotifiedWhenMessageIsDropped() throws Exception {
+        feedMqttSkeletonWithRequests(subject, maxIncomingMqttRequests);
+        subject.transmit(createTestRequestMessage().getSerializedMessage(), failIfCalledAction);
+
+        verify(mqttStatusReceiver, times(1)).notifyMessageDropped();
     }
 
     @Test
@@ -274,7 +289,8 @@ public class MqttMessagingSkeletonTest {
                                             mqttClientFactory,
                                             mqttTopicPrefixProvider,
                                             new NoOpRawMessagingPreprocessor(),
-                                            new HashSet<JoynrMessageProcessor>());
+                                            new HashSet<JoynrMessageProcessor>(),
+                                            mqttStatusReceiver);
         subject.init();
 
         // number of incoming messages is arbitrarily selected

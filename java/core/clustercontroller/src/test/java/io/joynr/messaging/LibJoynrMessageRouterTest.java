@@ -46,6 +46,7 @@ import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.messaging.routing.MulticastReceiverRegistry;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.runtime.ShutdownNotifier;
+import io.joynr.statusmetrics.StatusReceiver;
 import joynr.ImmutableMessage;
 import joynr.Message;
 import joynr.system.RoutingProxy;
@@ -117,7 +118,8 @@ public class LibJoynrMessageRouterTest {
                                                   addressManager,
                                                   multicastReceiverRegistry,
                                                   messageQueue,
-                                                  shutdownNotifier);
+                                                  shutdownNotifier,
+                                                  mock(StatusReceiver.class));
         messageRouter.setParentRouter(messageRouterParent, parentAddress, "parentParticipantId", "proxyParticipantId");
     }
 

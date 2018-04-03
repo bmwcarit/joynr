@@ -37,10 +37,16 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.NoOpRawMessagingPreprocessor;
+import io.joynr.messaging.mqtt.JoynrMqttClient;
+import io.joynr.messaging.mqtt.MqttClientFactory;
+import io.joynr.messaging.mqtt.MqttTopicPrefixProvider;
+import io.joynr.messaging.mqtt.SharedSubscriptionsMqttMessagingSkeleton;
+import io.joynr.messaging.mqtt.statusmetrics.MqttStatusReceiver;
 import io.joynr.messaging.routing.MessageRouter;
 import joynr.Message;
 import joynr.system.RoutingTypes.MqttAddress;
@@ -95,7 +101,8 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
                                                                channelId,
                                                                mqttTopicPrefixProvider,
                                                                new NoOpRawMessagingPreprocessor(),
-                                                               new HashSet<JoynrMessageProcessor>());
+                                                               new HashSet<JoynrMessageProcessor>(),
+                                                               Mockito.mock(MqttStatusReceiver.class));
         subject.init();
         verify(mqttClient).subscribe(startsWith("$share:"));
     }

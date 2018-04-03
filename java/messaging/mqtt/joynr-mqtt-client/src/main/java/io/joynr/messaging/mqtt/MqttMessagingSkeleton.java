@@ -39,6 +39,7 @@ import com.google.inject.name.Named;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
+import io.joynr.messaging.mqtt.statusmetrics.MqttStatusReceiver;
 import io.joynr.messaging.routing.MessageProcessedListener;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.smrf.EncodingException;
@@ -64,6 +65,7 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
     private final Set<JoynrMessageProcessor> messageProcessors;
     private final Set<String> incomingMqttRequests;
     private final AtomicLong droppedMessagesCount;
+    private MqttStatusReceiver mqttStatusReceiver;
 
     @Inject
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 2 LINES
@@ -73,7 +75,8 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
                                  MqttClientFactory mqttClientFactory,
                                  MqttTopicPrefixProvider mqttTopicPrefixProvider,
                                  RawMessagingPreprocessor rawMessagingPreprocessor,
-                                 Set<JoynrMessageProcessor> messageProcessors) {
+                                 Set<JoynrMessageProcessor> messageProcessors,
+                                 MqttStatusReceiver mqttStatusReceiver) {
         this.ownAddress = ownAddress;
         this.maxIncomingMqttRequests = maxIncomingMqttRequests;
         this.messageRouter = messageRouter;
@@ -84,6 +87,7 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
         this.incomingMqttRequests = Collections.synchronizedSet(new HashSet<String>());
         this.droppedMessagesCount = new AtomicLong();
         this.multicastSubscriptionCount = Maps.newConcurrentMap();
+        this.mqttStatusReceiver = mqttStatusReceiver;
     }
 
     @Override
@@ -159,6 +163,7 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
 
             if (dropMessage(message)) {
                 droppedMessagesCount.incrementAndGet();
+                mqttStatusReceiver.notifyMessageDropped();
                 return;
             }
 

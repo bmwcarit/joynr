@@ -66,6 +66,11 @@ the versioning scheme [here](JoynrVersioning.md).
   By default they will be sent uncompressed.
 * **[Java]** Fixed a bug that was blocking shutdown if disconnected from MQTT at the same time.
 * **[C++]** Upgrade muesli to version 1.0.1.
+* **[Java]** joynr exposes status metrics which can be used to monitor instances. See
+  [JEE Documentation](jee.md#status_monitoring)
+  for more information on how to use this information for JEE and
+  [Java Documentation](java.md#status_monitoring)
+  for plain Java.
 
 # joynr 1.0.5
 
