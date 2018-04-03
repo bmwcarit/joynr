@@ -338,12 +338,13 @@ void AbstractMessageRouter::scheduleMessage(
                                                                      tryCount),
                                    delay);
     } else {
-        JOYNR_LOG_WARN(
-                logger(),
-                "Message with id {} could not be send to {}. Stub creation failed. => Queueing "
-                "message.",
-                message->getId(),
-                destAddress->toString());
+        JOYNR_LOG_WARN(logger(),
+                       "Message with id {} could not be sent to participantId {}, {}. Stub "
+                       "creation failed. => Queueing "
+                       "message.",
+                       message->getId(),
+                       message->getRecipient(),
+                       destAddress->toString());
         ReadLocker lock(messageQueueRetryLock);
         // save the message for later delivery
         queueMessage(std::move(message), lock);
