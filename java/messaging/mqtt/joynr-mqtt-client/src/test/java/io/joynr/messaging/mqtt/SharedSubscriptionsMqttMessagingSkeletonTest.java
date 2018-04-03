@@ -34,8 +34,6 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
@@ -82,9 +80,6 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
     private MqttStatusReceiver mqttStatusReceiver;
 
     private SharedSubscriptionsMqttMessagingSkeleton subject;
-
-    @Captor
-    private ArgumentCaptor<String> stringCaptor;
 
     @Before
     public void setup() {
