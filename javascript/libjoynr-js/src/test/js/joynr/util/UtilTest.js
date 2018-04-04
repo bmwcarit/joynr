@@ -19,11 +19,11 @@
  * #L%
  */
 require("../../node-unit-test-helper");
-var Promise = require("../../../classes/global/Promise");
-var Util = require("../../../classes/joynr/util/UtilInternal");
-var JoynrMessage = require("../../../classes/joynr/messaging/JoynrMessage");
-var TypeRegistry = require("../../../classes/joynr/start/TypeRegistry");
-var RadioStation = require("../../../test-classes/joynr/vehicle/radiotypes/RadioStation");
+var Promise = require("../../../../main/js/global/Promise");
+var Util = require("../../../../main/js/joynr/util/UtilInternal");
+var JoynrMessage = require("../../../../main/js/joynr/messaging/JoynrMessage");
+var TypeRegistry = require("../../../../main/js/joynr/start/TypeRegistry");
+var RadioStation = require("../../../generated/joynr/vehicle/radiotypes/RadioStation");
 
 var argument = {
     someObjectKey: "andValue"

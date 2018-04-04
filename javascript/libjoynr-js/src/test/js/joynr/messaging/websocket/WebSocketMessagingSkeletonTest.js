@@ -20,12 +20,12 @@
  * #L%
  */
 require("../../../node-unit-test-helper");
-var WebSocketMessagingSkeleton = require("../../../../classes/joynr/messaging/websocket/WebSocketMessagingSkeleton");
-var JoynrMessage = require("../../../../classes/joynr/messaging/JoynrMessage");
-var WebSocketAddress = require("../../../../classes/joynr/system/RoutingTypes/WebSocketAddress");
-var WebSocketClientAddress = require("../../../../classes/joynr/system/RoutingTypes/WebSocketClientAddress");
-var SharedWebSocket = require("../../../../classes/joynr/messaging/websocket/SharedWebSocket");
-var WebSocket = require("../../../../test-classes/global/WebSocketMock");
+var WebSocketMessagingSkeleton = require("../../../../../main/js/joynr/messaging/websocket/WebSocketMessagingSkeleton");
+var JoynrMessage = require("../../../../../main/js/joynr/messaging/JoynrMessage");
+var WebSocketAddress = require("../../../../../main/js/generated/joynr/system/RoutingTypes/WebSocketAddress");
+var WebSocketClientAddress = require("../../../../../main/js/generated/joynr/system/RoutingTypes/WebSocketClientAddress");
+var SharedWebSocket = require("../../../../../main/js/joynr/messaging/websocket/SharedWebSocket");
+var WebSocket = require("../../../../../test/js/global/WebSocketMock");
 
 describe("libjoynr-js.joynr.messaging.websocket.WebSocketMessagingSkeleton", function() {
     var window = null;

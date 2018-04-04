@@ -19,9 +19,9 @@
  * #L%
  */
 require("../../../node-unit-test-helper");
-var DiscoveryQos = require("../../../../classes/joynr/proxy/DiscoveryQos");
-var ArbitrationStrategyCollection = require("../../../../classes/joynr/types/ArbitrationStrategyCollection");
-var DiscoveryScope = require("../../../../classes/joynr/types/DiscoveryScope");
+var DiscoveryQos = require("../../../../../main/js/joynr/proxy/DiscoveryQos");
+var ArbitrationStrategyCollection = require("../../../../../main/js/joynr/types/ArbitrationStrategyCollection");
+var DiscoveryScope = require("../../../../../main/js/generated/joynr/types/DiscoveryScope");
 
 describe("libjoynr-js.joynr.capabilities.arbitration.DiscoveryQos", function() {
     it("is instantiable", function() {

@@ -18,9 +18,9 @@
  * #L%
  */
 require("../../../node-unit-test-helper");
-var Request = require("../../../../classes/joynr/dispatching/types/Request");
-var TypeRegistrySingleton = require("../../../../classes/joynr/types/TypeRegistrySingleton");
-var RadioStation = require("../../../../test-classes/joynr/vehicle/radiotypes/RadioStation");
+var Request = require("../../../../../main/js/joynr/dispatching/types/Request");
+var TypeRegistrySingleton = require("../../../../../main/js/joynr/types/TypeRegistrySingleton");
+var RadioStation = require("../../../../generated/joynr/vehicle/radiotypes/RadioStation");
 
 describe("libjoynr-js.joynr.dispatching.types.Request", function() {
     it("is instantiable", function() {

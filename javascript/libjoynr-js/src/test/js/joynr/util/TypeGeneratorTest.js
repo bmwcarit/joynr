@@ -18,14 +18,14 @@
  * #L%
  */
 require("../../node-unit-test-helper");
-var EnumInsideTypeCollectionWithoutVersion = require("../../../test-classes/joynr/types/TestTypesWithoutVersion/EnumInsideTypeCollectionWithoutVersion");
-var MapInsideTypeCollectionWithoutVersion = require("../../../test-classes/joynr/types/TestTypesWithoutVersion/MapInsideTypeCollectionWithoutVersion");
-var StructInsideTypeCollectionWithoutVersion = require("../../../test-classes/joynr/types/TestTypesWithoutVersion/StructInsideTypeCollectionWithoutVersion");
-var TEnum = require("../../../test-classes/joynr/types/TestTypes/TEnum");
-var TStringKeyMap = require("../../../test-classes/joynr/types/TestTypes/TStringKeyMap");
-var TStruct = require("../../../test-classes/joynr/types/TestTypes/TStruct");
-var TStructWithTypedefMembers = require("../../../test-classes/joynr/types/TestTypes/TStructWithTypedefMembers");
-var Typing = require("../../../classes/joynr/util/Typing");
+var EnumInsideTypeCollectionWithoutVersion = require("../../../generated/joynr/types/TestTypesWithoutVersion/EnumInsideTypeCollectionWithoutVersion");
+var MapInsideTypeCollectionWithoutVersion = require("../../../generated/joynr/types/TestTypesWithoutVersion/MapInsideTypeCollectionWithoutVersion");
+var StructInsideTypeCollectionWithoutVersion = require("../../../generated/joynr/types/TestTypesWithoutVersion/StructInsideTypeCollectionWithoutVersion");
+var TEnum = require("../../../generated/joynr/types/TestTypes/TEnum");
+var TStringKeyMap = require("../../../generated/joynr/types/TestTypes/TStringKeyMap");
+var TStruct = require("../../../generated/joynr/types/TestTypes/TStruct");
+var TStructWithTypedefMembers = require("../../../generated/joynr/types/TestTypes/TStructWithTypedefMembers");
+var Typing = require("../../../../main/js/joynr/util/Typing");
 
 describe("libjoynr-js.joynr.TypeGenerator.Enum", function() {
     it("type collection enum default version is set correctly", function() {

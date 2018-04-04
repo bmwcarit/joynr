@@ -26,7 +26,7 @@ var uuid = require("../../lib/uuid-annotated");
 var DiscoveryQos = require("./DiscoveryQos");
 var MessagingQos = require("../messaging/MessagingQos");
 var TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
-var Version = require("../../joynr/types/Version");
+var Version = require("../../generated/joynr/types/Version");
 var Typing = require("../util/Typing");
 var LoggingManager = require("../system/LoggingManager");
 

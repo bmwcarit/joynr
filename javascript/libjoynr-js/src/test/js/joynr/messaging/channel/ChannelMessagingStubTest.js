@@ -18,10 +18,10 @@
  * #L%
  */
 require("../../../node-unit-test-helper");
-var Promise = require("../../../../classes/global/Promise");
-var ChannelAddress = require("../../../../classes/joynr/system/RoutingTypes/ChannelAddress");
-var ChannelMessagingStub = require("../../../../classes/joynr/messaging/channel/ChannelMessagingStub");
-var JoynrMessage = require("../../../../classes/joynr/messaging/JoynrMessage");
+var Promise = require("../../../../../main/js/global/Promise");
+var ChannelAddress = require("../../../../../main/js/generated/joynr/system/RoutingTypes/ChannelAddress");
+var ChannelMessagingStub = require("../../../../../main/js/joynr/messaging/channel/ChannelMessagingStub");
+var JoynrMessage = require("../../../../../main/js/joynr/messaging/JoynrMessage");
 
 describe("libjoynr-js.joynr.messaging.channel.ChannelMessagingStub", function() {
     var channelMessagingSender, destinationChannelAddress, myChannelAddress;

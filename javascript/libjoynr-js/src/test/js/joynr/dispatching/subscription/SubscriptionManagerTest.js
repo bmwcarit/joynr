@@ -19,30 +19,30 @@
  * #L%
  */
 require("../../../node-unit-test-helper");
-var SubscriptionManager = require("../../../../classes/joynr/dispatching/subscription/SubscriptionManager");
-var MessagingQos = require("../../../../classes/joynr/messaging/MessagingQos");
-var defaultMessagingSettings = require("../../../../classes/joynr/start/settings/defaultMessagingSettings");
-var MulticastSubscriptionRequest = require("../../../../classes/joynr/dispatching/types/MulticastSubscriptionRequest");
-var SubscriptionReply = require("../../../../classes/joynr/dispatching/types/SubscriptionReply");
-var SubscriptionRequest = require("../../../../classes/joynr/dispatching/types/SubscriptionRequest");
-var SubscriptionStop = require("../../../../classes/joynr/dispatching/types/SubscriptionStop");
-var OnChangeWithKeepAliveSubscriptionQos = require("../../../../classes/joynr/proxy/OnChangeWithKeepAliveSubscriptionQos");
-var OnChangeSubscriptionQos = require("../../../../classes/joynr/proxy/OnChangeSubscriptionQos");
-var SubscriptionQos = require("../../../../classes/joynr/proxy/SubscriptionQos");
-var SubscriptionPublication = require("../../../../classes/joynr/dispatching/types/SubscriptionPublication");
-var Promise = require("../../../../classes/global/Promise");
-var Reply = require("../../../../classes/joynr/dispatching/types/Reply");
-var PublicationMissedException = require("../../../../classes/joynr/exceptions/PublicationMissedException");
-var SubscriptionException = require("../../../../classes/joynr/exceptions/SubscriptionException");
-var LoggingManager = require("../../../../classes/joynr/system/LoggingManager");
-var Date = require("../../../../test-classes/global/Date");
-var waitsFor = require("../../../../test-classes/global/WaitsFor");
-var TestEnum = require("../../../../test-classes/joynr/tests/testTypes/TestEnum");
-var TypeRegistrySingleton = require("../../../../classes/joynr/types/TypeRegistrySingleton");
-var DiscoveryEntryWithMetaInfo = require("../../../../classes/joynr/types/DiscoveryEntryWithMetaInfo");
-var Version = require("../../../../classes/joynr/types/Version");
-var ProviderQos = require("../../../../classes/joynr/types/ProviderQos");
-var Util = require("../../../../classes/joynr/util/UtilInternal");
+var SubscriptionManager = require("../../../../../main/js/joynr/dispatching/subscription/SubscriptionManager");
+var MessagingQos = require("../../../../../main/js/joynr/messaging/MessagingQos");
+var defaultMessagingSettings = require("../../../../../main/js/joynr/start/settings/defaultMessagingSettings");
+var MulticastSubscriptionRequest = require("../../../../../main/js/joynr/dispatching/types/MulticastSubscriptionRequest");
+var SubscriptionReply = require("../../../../../main/js/joynr/dispatching/types/SubscriptionReply");
+var SubscriptionRequest = require("../../../../../main/js/joynr/dispatching/types/SubscriptionRequest");
+var SubscriptionStop = require("../../../../../main/js/joynr/dispatching/types/SubscriptionStop");
+var OnChangeWithKeepAliveSubscriptionQos = require("../../../../../main/js/joynr/proxy/OnChangeWithKeepAliveSubscriptionQos");
+var OnChangeSubscriptionQos = require("../../../../../main/js/joynr/proxy/OnChangeSubscriptionQos");
+var SubscriptionQos = require("../../../../../main/js/joynr/proxy/SubscriptionQos");
+var SubscriptionPublication = require("../../../../../main/js/joynr/dispatching/types/SubscriptionPublication");
+var Promise = require("../../../../../main/js/global/Promise");
+var Reply = require("../../../../../main/js/joynr/dispatching/types/Reply");
+var PublicationMissedException = require("../../../../../main/js/joynr/exceptions/PublicationMissedException");
+var SubscriptionException = require("../../../../../main/js/joynr/exceptions/SubscriptionException");
+var LoggingManager = require("../../../../../main/js/joynr/system/LoggingManager");
+var Date = require("../../../../../test/js/global/Date");
+var waitsFor = require("../../../../../test/js/global/WaitsFor");
+var TestEnum = require("../../../../generated/joynr/tests/testTypes/TestEnum");
+var TypeRegistrySingleton = require("../../../../../main/js/joynr/types/TypeRegistrySingleton");
+var DiscoveryEntryWithMetaInfo = require("../../../../../main/js/generated/joynr/types/DiscoveryEntryWithMetaInfo");
+var Version = require("../../../../../main/js/generated/joynr/types/Version");
+var ProviderQos = require("../../../../../main/js/generated/joynr/types/ProviderQos");
+var Util = require("../../../../../main/js/joynr/util/UtilInternal");
 
 describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", function() {
     var subscriptionManager;

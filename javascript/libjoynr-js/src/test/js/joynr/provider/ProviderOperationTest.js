@@ -19,16 +19,16 @@
  * #L%
  */
 require("../../node-unit-test-helper");
-var ProviderOperation = require("../../../classes/joynr/provider/ProviderOperation");
-var ProviderQos = require("../../../classes/joynr/types/ProviderQos");
-var testDataOperation = require("../../../test-classes/test/data/Operation");
-var TestEnum = require("../../../test-classes/joynr/tests/testTypes/TestEnum");
-var Util = require("../../../classes/joynr/util/UtilInternal");
-var TypeRegistrySingleton = require("../../../classes/joynr/types/TypeRegistrySingleton");
-var Promise = require("../../../classes/global/Promise");
-var ProviderRuntimeException = require("../../../classes/joynr/exceptions/ProviderRuntimeException");
-var ApplicationException = require("../../../classes/joynr/exceptions/ApplicationException");
-var waitsFor = require("../../../test-classes/global/WaitsFor");
+var ProviderOperation = require("../../../../main/js/joynr/provider/ProviderOperation");
+var ProviderQos = require("../../../../main/js/generated/joynr/types/ProviderQos");
+var testDataOperation = require("../../../../test/js/test/data/Operation");
+var TestEnum = require("../../../generated/joynr/tests/testTypes/TestEnum");
+var Util = require("../../../../main/js/joynr/util/UtilInternal");
+var TypeRegistrySingleton = require("../../../../main/js/joynr/types/TypeRegistrySingleton");
+var Promise = require("../../../../main/js/global/Promise");
+var ProviderRuntimeException = require("../../../../main/js/joynr/exceptions/ProviderRuntimeException");
+var ApplicationException = require("../../../../main/js/joynr/exceptions/ApplicationException");
+var waitsFor = require("../../../../test/js/global/WaitsFor");
 
 var safetyTimeoutDelta = 100;
 

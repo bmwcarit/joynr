@@ -28,7 +28,7 @@ var JSONSerializer = require("../util/JSONSerializer");
 var LongTimer = require("../util/LongTimer");
 var MethodInvocationException = require("../exceptions/MethodInvocationException");
 var ProviderRuntimeException = require("../exceptions/ProviderRuntimeException");
-var Version = require("../../joynr/types/Version");
+var Version = require("../../generated/joynr/types/Version");
 var LoggingManager = require("../system/LoggingManager");
 /**
  * The RequestReplyManager is responsible maintaining a list of providers that wish to

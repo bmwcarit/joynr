@@ -20,18 +20,18 @@
  */
 require("../../node-unit-test-helper");
 //TODO: some of this relies on the dummy implementation, change accordingly when implementing
-var ProxyAttribute = require("../../../classes/joynr/proxy/ProxyAttribute");
-var ProxyOperation = require("../../../classes/joynr/proxy/ProxyOperation");
-var ProxyEvent = require("../../../classes/joynr/proxy/ProxyEvent");
-var DiscoveryQos = require("../../../classes/joynr/proxy/DiscoveryQos");
-var MessagingQos = require("../../../classes/joynr/messaging/MessagingQos");
-var MulticastSubscriptionQos = require("../../../classes/joynr/proxy/MulticastSubscriptionQos");
-var DiscoveryEntryWithMetaInfo = require("../../../classes/joynr/types/DiscoveryEntryWithMetaInfo");
-var Version = require("../../../classes/joynr/types/Version");
-var ProviderQos = require("../../../classes/joynr/types/ProviderQos");
-var Util = require("../../../classes/joynr/util/UtilInternal");
-var Promise = require("../../../classes/global/Promise");
-var waitsFor = require("../../../test-classes/global/WaitsFor");
+var ProxyAttribute = require("../../../../main/js/joynr/proxy/ProxyAttribute");
+var ProxyOperation = require("../../../../main/js/joynr/proxy/ProxyOperation");
+var ProxyEvent = require("../../../../main/js/joynr/proxy/ProxyEvent");
+var DiscoveryQos = require("../../../../main/js/joynr/proxy/DiscoveryQos");
+var MessagingQos = require("../../../../main/js/joynr/messaging/MessagingQos");
+var MulticastSubscriptionQos = require("../../../../main/js/joynr/proxy/MulticastSubscriptionQos");
+var DiscoveryEntryWithMetaInfo = require("../../../../main/js/generated/joynr/types/DiscoveryEntryWithMetaInfo");
+var Version = require("../../../../main/js/generated/joynr/types/Version");
+var ProviderQos = require("../../../../main/js/generated/joynr/types/ProviderQos");
+var Util = require("../../../../main/js/joynr/util/UtilInternal");
+var Promise = require("../../../../main/js/global/Promise");
+var waitsFor = require("../../../../test/js/global/WaitsFor");
 
 var asyncTimeout = 5000;
 

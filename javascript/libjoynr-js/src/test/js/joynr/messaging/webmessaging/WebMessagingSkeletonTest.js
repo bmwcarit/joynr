@@ -19,7 +19,7 @@
  * #L%
  */
 require("../../../node-unit-test-helper");
-var WebMessagingSkeleton = require("../../../../classes/joynr/messaging/webmessaging/WebMessagingSkeleton");
+var WebMessagingSkeleton = require("../../../../../main/js/joynr/messaging/webmessaging/WebMessagingSkeleton");
 
 describe("libjoynr-js.joynr.messaging.webmessaging.WebMessagingSkeleton", function() {
     var window, webMessagingSkeleton, listener1, listener2, data, event;

@@ -19,22 +19,22 @@
  * #L%
  */
 require("../../node-unit-test-helper");
-var ProxyBuilder = require("../../../classes/joynr/proxy/ProxyBuilder");
-var ProxyOperation = require("../../../classes/joynr/proxy/ProxyOperation");
-var ProxyEvent = require("../../../classes/joynr/proxy/ProxyEvent");
-var DiscoveryQos = require("../../../classes/joynr/proxy/DiscoveryQos");
-var MessagingQos = require("../../../classes/joynr/messaging/MessagingQos");
-var ProviderQos = require("../../../classes/joynr/types/ProviderQos");
-var ProviderScope = require("../../../classes/joynr/types/ProviderScope");
-var DiscoveryEntryWithMetaInfo = require("../../../classes/joynr/types/DiscoveryEntryWithMetaInfo");
-var ArbitrationStrategyCollection = require("../../../classes/joynr/types/ArbitrationStrategyCollection");
-var DiscoveryScope = require("../../../classes/joynr/types/DiscoveryScope");
-var Version = require("../../../classes/joynr/types/Version");
-var InProcessAddress = require("../../../classes/joynr/messaging/inprocess/InProcessAddress");
-var RadioProxy = require("../../../test-classes/joynr/vehicle/RadioProxy");
-var RadioStation = require("../../../test-classes/joynr/vehicle/radiotypes/RadioStation");
-var Promise = require("../../../classes/global/Promise");
-var waitsFor = require("../../../test-classes/global/WaitsFor");
+var ProxyBuilder = require("../../../../main/js/joynr/proxy/ProxyBuilder");
+var ProxyOperation = require("../../../../main/js/joynr/proxy/ProxyOperation");
+var ProxyEvent = require("../../../../main/js/joynr/proxy/ProxyEvent");
+var DiscoveryQos = require("../../../../main/js/joynr/proxy/DiscoveryQos");
+var MessagingQos = require("../../../../main/js/joynr/messaging/MessagingQos");
+var ProviderQos = require("../../../../main/js/generated/joynr/types/ProviderQos");
+var ProviderScope = require("../../../../main/js/generated/joynr/types/ProviderScope");
+var DiscoveryEntryWithMetaInfo = require("../../../../main/js/generated/joynr/types/DiscoveryEntryWithMetaInfo");
+var ArbitrationStrategyCollection = require("../../../../main/js/joynr/types/ArbitrationStrategyCollection");
+var DiscoveryScope = require("../../../../main/js/generated/joynr/types/DiscoveryScope");
+var Version = require("../../../../main/js/generated/joynr/types/Version");
+var InProcessAddress = require("../../../../main/js/joynr/messaging/inprocess/InProcessAddress");
+var RadioProxy = require("../../../generated/joynr/vehicle/RadioProxy");
+var RadioStation = require("../../../generated/joynr/vehicle/radiotypes/RadioStation");
+var Promise = require("../../../../main/js/global/Promise");
+var waitsFor = require("../../../../test/js/global/WaitsFor");
 
 var safetyTimeoutDelta = 100;
 

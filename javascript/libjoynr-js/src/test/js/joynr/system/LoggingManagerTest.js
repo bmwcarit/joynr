@@ -19,8 +19,8 @@
  * #L%
  */
 require("../../node-unit-test-helper");
-var LoggingManager = require("../../../classes/joynr/system/LoggingManager");
-var JoynrLogger = require("../../../classes/joynr/system/JoynrLogger");
+var LoggingManager = require("../../../../main/js/joynr/system/LoggingManager");
+var JoynrLogger = require("../../../../main/js/joynr/system/JoynrLogger");
 
 describe("libjoynr-js.joynr.util.LoggingManager", function() {
     beforeEach(function() {

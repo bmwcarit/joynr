@@ -19,10 +19,10 @@
  * limitations under the License.
  * #L%
  */
-var provisioning = require("../../../test-classes/joynr/provisioning/provisioning_cc");
-var InProcessRuntime; //= require("../../../classes/joynr/start/InProcessRuntime");
-var Promise = require("../../../classes/global/Promise");
-var waitsFor = require("../../../test-classes/global/WaitsFor");
+var provisioning = require("../../../resources/joynr/provisioning/provisioning_cc");
+var InProcessRuntime; //= require("../../../../main/js/joynr/start/InProcessRuntime");
+var Promise = require("../../../../main/js/global/Promise");
+var waitsFor = require("../../../../test/js/global/WaitsFor");
 
 function outputPromiseError(error) {
     expect(error.toString()).toBeFalsy();

@@ -19,8 +19,8 @@
  * #L%
  */
 require("../../../node-unit-test-helper");
-var WebMessagingStubFactory = require("../../../../classes/joynr/messaging/webmessaging/WebMessagingStubFactory");
-var JSONSerializer = require("../../../../classes/joynr/util/JSONSerializer");
+var WebMessagingStubFactory = require("../../../../../main/js/joynr/messaging/webmessaging/WebMessagingStubFactory");
+var JSONSerializer = require("../../../../../main/js/joynr/util/JSONSerializer");
 
 describe("libjoynr-js.joynr.messaging.webmessaging.WebMessagingStubFactory", function() {
     var returnValue;

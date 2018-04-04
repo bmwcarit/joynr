@@ -18,7 +18,7 @@
  * #L%
  */
 require("../../node-unit-test-helper");
-var MessagingStubFactory = require("../../../classes/joynr/messaging/MessagingStubFactory");
+var MessagingStubFactory = require("../../../../main/js/joynr/messaging/MessagingStubFactory");
 
 describe("libjoynr-js.joynr.messaging.MessagingStubFactory", function() {
     var messagingStub1, messagingStub2, factory1, factory2;

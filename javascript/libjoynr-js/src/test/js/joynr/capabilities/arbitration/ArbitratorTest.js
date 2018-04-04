@@ -19,21 +19,21 @@
  * #L%
  */
 require("../../../node-unit-test-helper");
-var Arbitrator = require("../../../../classes/joynr/capabilities/arbitration/Arbitrator");
-var DiscoveryEntryWithMetaInfo = require("../../../../classes/joynr/types/DiscoveryEntryWithMetaInfo");
-var ProviderQos = require("../../../../classes/joynr/types/ProviderQos");
-var CustomParameter = require("../../../../classes/joynr/types/CustomParameter");
-var DiscoveryQos = require("../../../../classes/joynr/proxy/DiscoveryQos");
-var DiscoveryQosGen = require("../../../../classes/joynr/types/DiscoveryQos");
-var ArbitrationStrategyCollection = require("../../../../classes/joynr/types/ArbitrationStrategyCollection");
-var DiscoveryScope = require("../../../../classes/joynr/types/DiscoveryScope");
-var DiscoveryException = require("../../../../classes/joynr/exceptions/DiscoveryException");
-var NoCompatibleProviderFoundException = require("../../../../classes/joynr/exceptions/NoCompatibleProviderFoundException");
-var Version = require("../../../../classes/joynr/types/Version");
-var Util = require("../../../../classes/joynr/util/UtilInternal");
-var Promise = require("../../../../classes/global/Promise");
-var Date = require("../../../../test-classes/global/Date");
-var waitsFor = require("../../../../test-classes/global/WaitsFor");
+var Arbitrator = require("../../../../../main/js/joynr/capabilities/arbitration/Arbitrator");
+var DiscoveryEntryWithMetaInfo = require("../../../../../main/js/generated/joynr/types/DiscoveryEntryWithMetaInfo");
+var ProviderQos = require("../../../../../main/js/generated/joynr/types/ProviderQos");
+var CustomParameter = require("../../../../../main/js/generated/joynr/types/CustomParameter");
+var DiscoveryQos = require("../../../../../main/js/joynr/proxy/DiscoveryQos");
+var DiscoveryQosGen = require("../../../../../main/js/generated/joynr/types/DiscoveryQos");
+var ArbitrationStrategyCollection = require("../../../../../main/js/joynr/types/ArbitrationStrategyCollection");
+var DiscoveryScope = require("../../../../../main/js/generated/joynr/types/DiscoveryScope");
+var DiscoveryException = require("../../../../../main/js/joynr/exceptions/DiscoveryException");
+var NoCompatibleProviderFoundException = require("../../../../../main/js/joynr/exceptions/NoCompatibleProviderFoundException");
+var Version = require("../../../../../main/js/generated/joynr/types/Version");
+var Util = require("../../../../../main/js/joynr/util/UtilInternal");
+var Promise = require("../../../../../main/js/global/Promise");
+var Date = require("../../../../../test/js/global/Date");
+var waitsFor = require("../../../../../test/js/global/WaitsFor");
 var capabilities, fakeTime, staticArbitrationSettings, staticArbitrationSpy, domain;
 var interfaceName, discoveryQos, capDiscoverySpy, arbitrator, discoveryEntries, nrTimes;
 var discoveryEntriesWithDifferentProviderVersions;

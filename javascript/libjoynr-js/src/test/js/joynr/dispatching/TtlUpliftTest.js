@@ -19,22 +19,22 @@
  * #L%
  */
 require("../../node-unit-test-helper");
-var Util = require("../../../classes/joynr/util/UtilInternal");
-var Dispatcher = require("../../../classes/joynr/dispatching/Dispatcher");
-var JoynrMessage = require("../../../classes/joynr/messaging/JoynrMessage");
-var MessagingQos = require("../../../classes/joynr/messaging/MessagingQos");
-var DiscoveryEntryWithMetaInfo = require("../../../classes/joynr/types/DiscoveryEntryWithMetaInfo");
-var Request = require("../../../classes/joynr/dispatching/types/Request");
-var Reply = require("../../../classes/joynr/dispatching/types/Reply");
-var BroadcastSubscriptionRequest = require("../../../classes/joynr/dispatching/types/BroadcastSubscriptionRequest");
-var MulticastSubscriptionRequest = require("../../../classes/joynr/dispatching/types/MulticastSubscriptionRequest");
-var SubscriptionRequest = require("../../../classes/joynr/dispatching/types/SubscriptionRequest");
-var SubscriptionReply = require("../../../classes/joynr/dispatching/types/SubscriptionReply");
-var SubscriptionStop = require("../../../classes/joynr/dispatching/types/SubscriptionStop");
-var MulticastPublication = require("../../../classes/joynr/dispatching/types/MulticastPublication");
-var SubscriptionPublication = require("../../../classes/joynr/dispatching/types/SubscriptionPublication");
-var uuid = require("../../../classes/lib/uuid-annotated");
-var Promise = require("../../../classes/global/Promise");
+var Util = require("../../../../main/js/joynr/util/UtilInternal");
+var Dispatcher = require("../../../../main/js/joynr/dispatching/Dispatcher");
+var JoynrMessage = require("../../../../main/js/joynr/messaging/JoynrMessage");
+var MessagingQos = require("../../../../main/js/joynr/messaging/MessagingQos");
+var DiscoveryEntryWithMetaInfo = require("../../../../main/js/generated/joynr/types/DiscoveryEntryWithMetaInfo");
+var Request = require("../../../../main/js/joynr/dispatching/types/Request");
+var Reply = require("../../../../main/js/joynr/dispatching/types/Reply");
+var BroadcastSubscriptionRequest = require("../../../../main/js/joynr/dispatching/types/BroadcastSubscriptionRequest");
+var MulticastSubscriptionRequest = require("../../../../main/js/joynr/dispatching/types/MulticastSubscriptionRequest");
+var SubscriptionRequest = require("../../../../main/js/joynr/dispatching/types/SubscriptionRequest");
+var SubscriptionReply = require("../../../../main/js/joynr/dispatching/types/SubscriptionReply");
+var SubscriptionStop = require("../../../../main/js/joynr/dispatching/types/SubscriptionStop");
+var MulticastPublication = require("../../../../main/js/joynr/dispatching/types/MulticastPublication");
+var SubscriptionPublication = require("../../../../main/js/joynr/dispatching/types/SubscriptionPublication");
+var uuid = require("../../../../main/js/lib/uuid-annotated");
+var Promise = require("../../../../main/js/global/Promise");
 
 var providerId = "providerId";
 var providerDiscoveryEntry = new DiscoveryEntryWithMetaInfo({

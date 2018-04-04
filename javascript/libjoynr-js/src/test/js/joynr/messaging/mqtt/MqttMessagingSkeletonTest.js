@@ -19,10 +19,10 @@
  * #L%
  */
 require("../../../node-unit-test-helper");
-var MqttMessagingSkeleton = require("../../../../classes/joynr/messaging/mqtt/MqttMessagingSkeleton");
-var JoynrMessage = require("../../../../classes/joynr/messaging/JoynrMessage");
-var MessageRouter = require("../../../../classes/joynr/messaging/routing/MessageRouter");
-var Promise = require("../../../../classes/global/Promise");
+var MqttMessagingSkeleton = require("../../../../../main/js/joynr/messaging/mqtt/MqttMessagingSkeleton");
+var JoynrMessage = require("../../../../../main/js/joynr/messaging/JoynrMessage");
+var MessageRouter = require("../../../../../main/js/joynr/messaging/routing/MessageRouter");
+var Promise = require("../../../../../main/js/global/Promise");
 
 describe("libjoynr-js.joynr.messaging.mqtt.MqttMessagingSkeleton", function() {
     var sharedMqttClient, mqttMessagingSkeleton;

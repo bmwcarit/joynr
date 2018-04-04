@@ -19,20 +19,20 @@
  * #L%
  */
 require("../../../node-unit-test-helper");
-var CapabilityDiscovery = require("../../../../classes/joynr/capabilities/discovery/CapabilityDiscovery");
-var DiscoveryQos = require("../../../../classes/joynr/types/DiscoveryQos");
-var ArbitrationStrategyCollection = require("../../../../classes/joynr/types/ArbitrationStrategyCollection");
-var ProviderQos = require("../../../../classes/joynr/types/ProviderQos");
-var CustomParameter = require("../../../../classes/joynr/types/CustomParameter");
-var ProviderScope = require("../../../../classes/joynr/types/ProviderScope");
-var DiscoveryScope = require("../../../../classes/joynr/types/DiscoveryScope");
-var DiscoveryEntry = require("../../../../classes/joynr/types/DiscoveryEntry");
-var GlobalDiscoveryEntry = require("../../../../classes/joynr/types/GlobalDiscoveryEntry");
-var ChannelAddress = require("../../../../classes/joynr/system/RoutingTypes/ChannelAddress");
-var Version = require("../../../../classes/joynr/types/Version");
-var Promise = require("../../../../classes/global/Promise");
-var waitsFor = require("../../../../test-classes/global/WaitsFor");
-var CapabilitiesUtil = require("../../../../classes/joynr/util/CapabilitiesUtil");
+var CapabilityDiscovery = require("../../../../../main/js/joynr/capabilities/discovery/CapabilityDiscovery");
+var DiscoveryQos = require("../../../../../main/js/generated/joynr/types/DiscoveryQos");
+var ArbitrationStrategyCollection = require("../../../../../main/js/joynr/types/ArbitrationStrategyCollection");
+var ProviderQos = require("../../../../../main/js/generated/joynr/types/ProviderQos");
+var CustomParameter = require("../../../../../main/js/generated/joynr/types/CustomParameter");
+var ProviderScope = require("../../../../../main/js/generated/joynr/types/ProviderScope");
+var DiscoveryScope = require("../../../../../main/js/generated/joynr/types/DiscoveryScope");
+var DiscoveryEntry = require("../../../../../main/js/generated/joynr/types/DiscoveryEntry");
+var GlobalDiscoveryEntry = require("../../../../../main/js/generated/joynr/types/GlobalDiscoveryEntry");
+var ChannelAddress = require("../../../../../main/js/generated/joynr/system/RoutingTypes/ChannelAddress");
+var Version = require("../../../../../main/js/generated/joynr/types/Version");
+var Promise = require("../../../../../main/js/global/Promise");
+var waitsFor = require("../../../../../test/js/global/WaitsFor");
+var CapabilitiesUtil = require("../../../../../main/js/joynr/util/CapabilitiesUtil");
 
 var domain, interfaceName, discoveryQos;
 var discoveryEntries, discoveryEntriesReturned, globalDiscoveryEntries, globalDiscoveryEntriesReturned;

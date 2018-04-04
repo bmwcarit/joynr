@@ -19,17 +19,17 @@
  * #L%
  */
 require("../../../node-unit-test-helper");
-var MessageRouter = require("../../../../classes/joynr/messaging/routing/MessageRouter");
-var BrowserAddress = require("../../../../classes/joynr/system/RoutingTypes/BrowserAddress");
-var ChannelAddress = require("../../../../classes/joynr/system/RoutingTypes/ChannelAddress");
-var InProcessAddress = require("../../../../classes/joynr/messaging/inprocess/InProcessAddress");
-var JoynrMessage = require("../../../../classes/joynr/messaging/JoynrMessage");
-var TypeRegistry = require("../../../../classes/joynr/start/TypeRegistry");
-var Promise = require("../../../../classes/global/Promise");
-var Date = require("../../../../test-classes/global/Date");
-var waitsFor = require("../../../../test-classes/global/WaitsFor");
-var Util = require("../../../../classes/joynr/util/UtilInternal");
-var uuid = require("../../../../classes/lib/uuid-annotated");
+var MessageRouter = require("../../../../../main/js/joynr/messaging/routing/MessageRouter");
+var BrowserAddress = require("../../../../../main/js/generated/joynr/system/RoutingTypes/BrowserAddress");
+var ChannelAddress = require("../../../../../main/js/generated/joynr/system/RoutingTypes/ChannelAddress");
+var InProcessAddress = require("../../../../../main/js/joynr/messaging/inprocess/InProcessAddress");
+var JoynrMessage = require("../../../../../main/js/joynr/messaging/JoynrMessage");
+var TypeRegistry = require("../../../../../main/js/joynr/start/TypeRegistry");
+var Promise = require("../../../../../main/js/global/Promise");
+var Date = require("../../../../../test/js/global/Date");
+var waitsFor = require("../../../../../test/js/global/WaitsFor");
+var Util = require("../../../../../main/js/joynr/util/UtilInternal");
+var uuid = require("../../../../../main/js/lib/uuid-annotated");
 var fakeTime;
 
 function increaseFakeTime(time_ms) {

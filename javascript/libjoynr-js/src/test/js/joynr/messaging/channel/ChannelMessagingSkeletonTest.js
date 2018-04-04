@@ -19,10 +19,10 @@
  * #L%
  */
 require("../../../node-unit-test-helper");
-var ChannelMessagingSkeleton = require("../../../../classes/joynr/messaging/channel/ChannelMessagingSkeleton");
-var ChannelAddress = require("../../../../classes/joynr/system/RoutingTypes/ChannelAddress");
-var JoynrMessage = require("../../../../classes/joynr/messaging/JoynrMessage");
-var Promise = require("../../../../classes/global/Promise");
+var ChannelMessagingSkeleton = require("../../../../../main/js/joynr/messaging/channel/ChannelMessagingSkeleton");
+var ChannelAddress = require("../../../../../main/js/generated/joynr/system/RoutingTypes/ChannelAddress");
+var JoynrMessage = require("../../../../../main/js/joynr/messaging/JoynrMessage");
+var Promise = require("../../../../../main/js/global/Promise");
 
 describe("libjoynr-js.joynr.messaging.channel.ChannelMessagingSkeleton", function() {
     var channelMessagingSkeleton, joynrMessage1, joynrMessage2, messageRouterSpy;

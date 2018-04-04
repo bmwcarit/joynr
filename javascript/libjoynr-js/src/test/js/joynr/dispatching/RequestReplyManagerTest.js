@@ -19,21 +19,21 @@
  * #L%
  */
 require("../../node-unit-test-helper");
-var RequestReplyManager = require("../../../classes/joynr/dispatching/RequestReplyManager");
-var OneWayRequest = require("../../../classes/joynr/dispatching/types/OneWayRequest");
-var Request = require("../../../classes/joynr/dispatching/types/Request");
-var Reply = require("../../../classes/joynr/dispatching/types/Reply");
-var TypeRegistrySingleton = require("../../../classes/joynr/types/TypeRegistrySingleton");
-var Typing = require("../../../classes/joynr/util/Typing");
-var UtilInternal = require("../../../classes/joynr/util/UtilInternal");
-var JSONSerializer = require("../../../classes/joynr/util/JSONSerializer");
-var MethodInvocationException = require("../../../classes/joynr/exceptions/MethodInvocationException");
-var Version = require("../../../classes/joynr/types/Version");
-var DiscoveryEntryWithMetaInfo = require("../../../classes/joynr/types/DiscoveryEntryWithMetaInfo");
-var ProviderQos = require("../../../classes/joynr/types/ProviderQos");
-var MessagingQos = require("../../../classes/joynr/messaging/MessagingQos");
-var Promise = require("../../../classes/global/Promise");
-var waitsFor = require("../../../test-classes/global/WaitsFor");
+var RequestReplyManager = require("../../../../main/js/joynr/dispatching/RequestReplyManager");
+var OneWayRequest = require("../../../../main/js/joynr/dispatching/types/OneWayRequest");
+var Request = require("../../../../main/js/joynr/dispatching/types/Request");
+var Reply = require("../../../../main/js/joynr/dispatching/types/Reply");
+var TypeRegistrySingleton = require("../../../../main/js/joynr/types/TypeRegistrySingleton");
+var Typing = require("../../../../main/js/joynr/util/Typing");
+var UtilInternal = require("../../../../main/js/joynr/util/UtilInternal");
+var JSONSerializer = require("../../../../main/js/joynr/util/JSONSerializer");
+var MethodInvocationException = require("../../../../main/js/joynr/exceptions/MethodInvocationException");
+var Version = require("../../../../main/js/generated/joynr/types/Version");
+var DiscoveryEntryWithMetaInfo = require("../../../../main/js/generated/joynr/types/DiscoveryEntryWithMetaInfo");
+var ProviderQos = require("../../../../main/js/generated/joynr/types/ProviderQos");
+var MessagingQos = require("../../../../main/js/joynr/messaging/MessagingQos");
+var Promise = require("../../../../main/js/global/Promise");
+var waitsFor = require("../../../../test/js/global/WaitsFor");
 describe("libjoynr-js.joynr.dispatching.RequestReplyManager", function() {
     var dispatcherSpy;
     var requestReplyManager;

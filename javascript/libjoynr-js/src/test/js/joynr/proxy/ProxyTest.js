@@ -19,17 +19,17 @@
  * #L%
  */
 require("../../node-unit-test-helper");
-var Promise = require("../../../classes/global/Promise");
-var RadioProxy = require("../../../test-classes/joynr/vehicle/RadioProxy");
-var RadioStation = require("../../../test-classes/joynr/vehicle/radiotypes/RadioStation");
-var ProxyAttribute = require("../../../classes/joynr/proxy/ProxyAttribute");
-var ProxyOperation = require("../../../classes/joynr/proxy/ProxyOperation");
-var ProxyEvent = require("../../../classes/joynr/proxy/ProxyEvent");
-var TypeRegistrySingleton = require("../../../classes/joynr/types/TypeRegistrySingleton");
-var DiscoveryQos = require("../../../classes/joynr/proxy/DiscoveryQos");
-var MessagingQos = require("../../../classes/joynr/messaging/MessagingQos");
-var TestWithVersionProxy = require("../../../test-classes/joynr/tests/TestWithVersionProxy");
-var TestWithoutVersionProxy = require("../../../test-classes/joynr/tests/TestWithoutVersionProxy");
+var Promise = require("../../../../main/js/global/Promise");
+var RadioProxy = require("../../../generated/joynr/vehicle/RadioProxy");
+var RadioStation = require("../../../generated/joynr/vehicle/radiotypes/RadioStation");
+var ProxyAttribute = require("../../../../main/js/joynr/proxy/ProxyAttribute");
+var ProxyOperation = require("../../../../main/js/joynr/proxy/ProxyOperation");
+var ProxyEvent = require("../../../../main/js/joynr/proxy/ProxyEvent");
+var TypeRegistrySingleton = require("../../../../main/js/joynr/types/TypeRegistrySingleton");
+var DiscoveryQos = require("../../../../main/js/joynr/proxy/DiscoveryQos");
+var MessagingQos = require("../../../../main/js/joynr/messaging/MessagingQos");
+var TestWithVersionProxy = require("../../../generated/joynr/tests/TestWithVersionProxy");
+var TestWithoutVersionProxy = require("../../../generated/joynr/tests/TestWithoutVersionProxy");
 
 describe("libjoynr-js.joynr.proxy.Proxy", function() {
     var settings, dependencies, radioProxy;

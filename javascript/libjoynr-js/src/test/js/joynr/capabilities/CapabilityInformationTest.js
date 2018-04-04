@@ -19,10 +19,10 @@
  * #L%
  */
 require("../../node-unit-test-helper");
-var GlobalDiscoveryEntry = require("../../../classes/joynr/types/GlobalDiscoveryEntry");
-var ProviderQos = require("../../../classes/joynr/types/ProviderQos");
-var ProviderScope = require("../../../classes/joynr/types/ProviderScope");
-var Version = require("../../../classes/joynr/types/Version");
+var GlobalDiscoveryEntry = require("../../../../main/js/generated/joynr/types/GlobalDiscoveryEntry");
+var ProviderQos = require("../../../../main/js/generated/joynr/types/ProviderQos");
+var ProviderScope = require("../../../../main/js/generated/joynr/types/ProviderScope");
+var Version = require("../../../../main/js/generated/joynr/types/Version");
 
 var capInfo;
 beforeEach(function() {

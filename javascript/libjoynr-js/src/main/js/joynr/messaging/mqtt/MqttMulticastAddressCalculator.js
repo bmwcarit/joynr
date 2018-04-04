@@ -19,7 +19,7 @@
  * #L%
  */
 var Typing = require("../../util/Typing");
-var MqttAddress = require("../../system/RoutingTypes/MqttAddress");
+var MqttAddress = require("../../../generated/joynr/system/RoutingTypes/MqttAddress");
 
 /**
  * @constructor MqttMulticastAddressCalculator

@@ -20,10 +20,10 @@
  * #L%
  */
 require("../../node-unit-test-helper");
-var Promise = require("../../../classes/global/Promise");
-var Util = require("../../../classes/joynr/util/UtilInternal");
+var Promise = require("../../../../main/js/global/Promise");
+var Util = require("../../../../main/js/joynr/util/UtilInternal");
 
-var provisioning_root = require("../../../test-classes/joynr/provisioning/provisioning_root"); // logger and mqtt
+var provisioning_root = require("../../../resources/joynr/provisioning/provisioning_root"); // logger and mqtt
 provisioning_root.ccAddress = {
     protocol: "ws",
     host: "localhost",
@@ -31,21 +31,21 @@ provisioning_root.ccAddress = {
     path: ""
 };
 
-var DiscoveryQos = require("../../../classes/joynr/proxy/DiscoveryQos");
-var CapabilitiesRegistrar = require("../../../classes/joynr/capabilities/CapabilitiesRegistrar");
-var MessageRouter = require("../../../classes/joynr/messaging/routing/MessageRouter");
-var MessageQueue = require("../../../classes/joynr/messaging/routing/MessageQueue");
-var Dispatcher = require("../../../classes/joynr/dispatching/Dispatcher");
-var ParticipantIdStorage = require("../../../classes/joynr/capabilities/ParticipantIdStorage");
-var MemoryStorage = require("../../../classes/global/MemoryStorage");
-var PublicationManager = require("../../../classes/joynr/dispatching/subscription/PublicationManager");
-var LocalStorage = require("../../../classes/global/LocalStorageNode");
-var MessagingQos = require("../../../classes/joynr/messaging/MessagingQos");
-var WebSocketMessagingSkeleton = require("../../../classes/joynr/messaging/websocket/WebSocketMessagingSkeleton");
-var SharedWebSocket = require("../../../classes/joynr/messaging/websocket/SharedWebSocket");
-var WebSocketMessagingStubFactory = require("../../../classes/joynr/messaging/websocket/WebSocketMessagingStubFactory");
-var JoynrMessage = require("../../../classes/joynr/messaging/JoynrMessage");
-var SubscriptionManager = require("../../../classes/joynr/dispatching/subscription/SubscriptionManager");
+var DiscoveryQos = require("../../../../main/js/joynr/proxy/DiscoveryQos");
+var CapabilitiesRegistrar = require("../../../../main/js/joynr/capabilities/CapabilitiesRegistrar");
+var MessageRouter = require("../../../../main/js/joynr/messaging/routing/MessageRouter");
+var MessageQueue = require("../../../../main/js/joynr/messaging/routing/MessageQueue");
+var Dispatcher = require("../../../../main/js/joynr/dispatching/Dispatcher");
+var ParticipantIdStorage = require("../../../../main/js/joynr/capabilities/ParticipantIdStorage");
+var MemoryStorage = require("../../../../main/js/global/MemoryStorage");
+var PublicationManager = require("../../../../main/js/joynr/dispatching/subscription/PublicationManager");
+var LocalStorage = require("../../../../main/js/global/LocalStorageNode");
+var MessagingQos = require("../../../../main/js/joynr/messaging/MessagingQos");
+var WebSocketMessagingSkeleton = require("../../../../main/js/joynr/messaging/websocket/WebSocketMessagingSkeleton");
+var SharedWebSocket = require("../../../../main/js/joynr/messaging/websocket/SharedWebSocket");
+var WebSocketMessagingStubFactory = require("../../../../main/js/joynr/messaging/websocket/WebSocketMessagingStubFactory");
+var JoynrMessage = require("../../../../main/js/joynr/messaging/JoynrMessage");
+var SubscriptionManager = require("../../../../main/js/joynr/dispatching/subscription/SubscriptionManager");
 
 /**
  * this function creates a wrapper class, which calls Class not by its normal constructor but by Class.prototype.constructor
@@ -108,7 +108,7 @@ mod.prototype.require = function(md) {
     return savedRequire.apply(this, arguments);
 };
 
-var WebSocketLibjoynrRuntime = require("../../../classes/joynr/start/WebSocketLibjoynrRuntime");
+var WebSocketLibjoynrRuntime = require("../../../../main/js/joynr/start/WebSocketLibjoynrRuntime");
 
 // restore old require for other tests after requireing dependencies
 mod.prototype.require = savedRequire;

@@ -19,8 +19,8 @@
  * #L%
  */
 require("../../../node-unit-test-helper");
-var BrowserMessagingSkeleton = require("../../../../classes/joynr/messaging/browser/BrowserMessagingSkeleton");
-var JoynrMessage = require("../../../../classes/joynr/messaging/JoynrMessage");
+var BrowserMessagingSkeleton = require("../../../../../main/js/joynr/messaging/browser/BrowserMessagingSkeleton");
+var JoynrMessage = require("../../../../../main/js/joynr/messaging/JoynrMessage");
 
 describe("libjoynr-js.joynr.messaging.browser.BrowserMessagingSkeleton", function() {
     var webMessagingSkeleton, browserMessagingSkeleton, listener1, listener2;

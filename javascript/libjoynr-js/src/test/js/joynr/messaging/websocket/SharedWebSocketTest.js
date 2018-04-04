@@ -19,11 +19,11 @@
  * #L%
  */
 require("../../../node-unit-test-helper");
-var SharedWebSocket = require("../../../../classes/joynr/messaging/websocket/SharedWebSocket");
-var JoynrMessage = require("../../../../classes/joynr/messaging/JoynrMessage");
-var WebSocketAddress = require("../../../../classes/joynr/system/RoutingTypes/WebSocketAddress");
-var WebSocketClientAddress = require("../../../../classes/joynr/system/RoutingTypes/WebSocketClientAddress");
-var WebSocket = require("../../../../test-classes/global/WebSocketMock");
+var SharedWebSocket = require("../../../../../main/js/joynr/messaging/websocket/SharedWebSocket");
+var JoynrMessage = require("../../../../../main/js/joynr/messaging/JoynrMessage");
+var WebSocketAddress = require("../../../../../main/js/generated/joynr/system/RoutingTypes/WebSocketAddress");
+var WebSocketClientAddress = require("../../../../../main/js/generated/joynr/system/RoutingTypes/WebSocketClientAddress");
+var WebSocket = require("../../../../../test/js/global/WebSocketMock");
 
 describe("libjoynr-js.joynr.messaging.webmessaging.SharedWebSocket", function() {
     var window = null;

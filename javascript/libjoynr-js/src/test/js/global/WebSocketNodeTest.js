@@ -33,7 +33,7 @@ mod.prototype.require = function(md) {
 };
 
 // req path starting at: node-run-unit-tests
-var WebsocketNode = req("../classes/global/WebSocketNode");
+var WebsocketNode = req("../../main/js/global/WebSocketNode");
 
 describe("websocket node", function() {
     var websocketNode;

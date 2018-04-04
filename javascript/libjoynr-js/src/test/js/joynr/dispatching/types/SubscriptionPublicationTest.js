@@ -19,8 +19,8 @@
  * #L%
  */
 require("../../../node-unit-test-helper");
-var SubscriptionPublication = require("../../../../classes/joynr/dispatching/types/SubscriptionPublication");
-var RadioStation = require("../../../../test-classes/joynr/vehicle/radiotypes/RadioStation");
+var SubscriptionPublication = require("../../../../../main/js/joynr/dispatching/types/SubscriptionPublication");
+var RadioStation = require("../../../../generated/joynr/vehicle/radiotypes/RadioStation");
 
 describe("libjoynr-js.joynr.dispatching.types.SubscriptionPublication", function() {
     it("is defined", function() {

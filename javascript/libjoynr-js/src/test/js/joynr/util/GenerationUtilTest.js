@@ -18,7 +18,7 @@
  * #L%
  */
 require("../../node-unit-test-helper");
-var Util = require("../../../classes/joynr/util/GenerationUtil");
+var Util = require("../../../../main/js/joynr/util/GenerationUtil");
 
 describe("libjoynr-js.joynr.GenerationUtil", function() {
     it("is defined and of correct type", function() {

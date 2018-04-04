@@ -19,14 +19,14 @@
  * #L%
  */
 require("../../../node-unit-test-helper");
-var Promise = require("../../../../classes/global/Promise");
-var ChannelMessagingSender = require("../../../../classes/joynr/messaging/channel/ChannelMessagingSender");
-var JoynrMessage = require("../../../../classes/joynr/messaging/JoynrMessage");
-var ChannelAddress = require("../../../../classes/joynr/system/RoutingTypes/ChannelAddress");
-var Typing = require("../../../../classes/joynr/util/Typing");
-var LoggingManager = require("../../../../classes/joynr/system/LoggingManager");
-var provisioningRoot = require("../../../../test-classes/joynr/provisioning/provisioning_root");
-var waitsFor = require("../../../../test-classes/global/WaitsFor");
+var Promise = require("../../../../../main/js/global/Promise");
+var ChannelMessagingSender = require("../../../../../main/js/joynr/messaging/channel/ChannelMessagingSender");
+var JoynrMessage = require("../../../../../main/js/joynr/messaging/JoynrMessage");
+var ChannelAddress = require("../../../../../main/js/generated/joynr/system/RoutingTypes/ChannelAddress");
+var Typing = require("../../../../../main/js/joynr/util/Typing");
+var LoggingManager = require("../../../../../main/js/joynr/system/LoggingManager");
+var provisioningRoot = require("../../../../resources/joynr/provisioning/provisioning_root");
+var waitsFor = require("../../../../../test/js/global/WaitsFor");
 
 var log = LoggingManager.getLogger("joynr.messaging.TestChannelMessagingSender");
 

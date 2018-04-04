@@ -18,11 +18,11 @@
  * #L%
  */
 require("../../../node-unit-test-helper");
-var Promise = require("../../../../classes/global/Promise");
-var SharedMqttClient = require("../../../../classes/joynr/messaging/mqtt/SharedMqttClient");
-var MqttAddress = require("../../../../classes/joynr/system/RoutingTypes/MqttAddress");
-var MqttMessagingStubFactory = require("../../../../classes/joynr/messaging/mqtt/MqttMessagingStubFactory");
-var JoynrMessage = require("../../../../classes/joynr/messaging/JoynrMessage");
+var Promise = require("../../../../../main/js/global/Promise");
+var SharedMqttClient = require("../../../../../main/js/joynr/messaging/mqtt/SharedMqttClient");
+var MqttAddress = require("../../../../../main/js/generated/joynr/system/RoutingTypes/MqttAddress");
+var MqttMessagingStubFactory = require("../../../../../main/js/joynr/messaging/mqtt/MqttMessagingStubFactory");
+var JoynrMessage = require("../../../../../main/js/joynr/messaging/JoynrMessage");
 
 describe("libjoynr-js.joynr.messaging.mqtt.MqttMessagingStubFactory", function() {
     var mqttMessagingStubFactory, mqttClient;

@@ -18,8 +18,8 @@
  * #L%
  */
 require("../../node-unit-test-helper");
-var JSONSerializer = require("../../../classes/joynr/util/JSONSerializer");
-var TestEnum = require("../../../test-classes/joynr/tests/testTypes/TestEnum");
+var JSONSerializer = require("../../../../main/js/joynr/util/JSONSerializer");
+var TestEnum = require("../../../generated/joynr/tests/testTypes/TestEnum");
 
 describe("libjoynr-js.joynr.JSONSerializer.ensureCorrectSerialization", function() {
     it("Test enum serialization", function() {

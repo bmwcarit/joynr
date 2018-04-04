@@ -19,19 +19,19 @@
  * #L%
  */
 require("../../node-unit-test-helper");
-var ProxyAttribute = require("../../../classes/joynr/proxy/ProxyAttribute");
-var DiscoveryQos = require("../../../classes/joynr/proxy/DiscoveryQos");
-var MessagingQos = require("../../../classes/joynr/messaging/MessagingQos");
-var OnChangeWithKeepAliveSubscriptionQos = require("../../../classes/joynr/proxy/OnChangeWithKeepAliveSubscriptionQos");
-var RequestReplyManager = require("../../../classes/joynr/dispatching/RequestReplyManager");
-var Request = require("../../../classes/joynr/dispatching/types/Request");
-var TestEnum = require("../../../test-classes/joynr/tests/testTypes/TestEnum");
-var ComplexTestType = require("../../../test-classes/joynr/tests/testTypes/ComplexTestType");
-var TypeRegistrySingleton = require("../../../classes/joynr/types/TypeRegistrySingleton");
-var Promise = require("../../../classes/global/Promise");
-var DiscoveryEntryWithMetaInfo = require("../../../classes/joynr/types/DiscoveryEntryWithMetaInfo");
-var Version = require("../../../classes/joynr/types/Version");
-var ProviderQos = require("../../../classes/joynr/types/ProviderQos");
+var ProxyAttribute = require("../../../../main/js/joynr/proxy/ProxyAttribute");
+var DiscoveryQos = require("../../../../main/js/joynr/proxy/DiscoveryQos");
+var MessagingQos = require("../../../../main/js/joynr/messaging/MessagingQos");
+var OnChangeWithKeepAliveSubscriptionQos = require("../../../../main/js/joynr/proxy/OnChangeWithKeepAliveSubscriptionQos");
+var RequestReplyManager = require("../../../../main/js/joynr/dispatching/RequestReplyManager");
+var Request = require("../../../../main/js/joynr/dispatching/types/Request");
+var TestEnum = require("../../../generated/joynr/tests/testTypes/TestEnum");
+var ComplexTestType = require("../../../generated/joynr/tests/testTypes/ComplexTestType");
+var TypeRegistrySingleton = require("../../../../main/js/joynr/types/TypeRegistrySingleton");
+var Promise = require("../../../../main/js/global/Promise");
+var DiscoveryEntryWithMetaInfo = require("../../../../main/js/generated/joynr/types/DiscoveryEntryWithMetaInfo");
+var Version = require("../../../../main/js/generated/joynr/types/Version");
+var ProviderQos = require("../../../../main/js/generated/joynr/types/ProviderQos");
 
 var asyncTimeout = 5000;
 

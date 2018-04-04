@@ -19,7 +19,7 @@
  * #L%
  */
 var Promise = require("../../../global/Promise");
-var DiscoveryQos = require("../../../joynr/types/DiscoveryQos");
+var DiscoveryQos = require("../../../generated/joynr/types/DiscoveryQos");
 var Util = require("../../util/UtilInternal");
 var DiscoveryException = require("../../exceptions/DiscoveryException");
 var NoCompatibleProviderFoundException = require("../../exceptions/NoCompatibleProviderFoundException");

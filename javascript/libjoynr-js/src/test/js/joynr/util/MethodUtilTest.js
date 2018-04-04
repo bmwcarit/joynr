@@ -19,7 +19,7 @@
  * #L%
  */
 require("../../node-unit-test-helper");
-var MethodUtil = require("../../../classes/joynr/util/MethodUtil");
+var MethodUtil = require("../../../../main/js/joynr/util/MethodUtil");
 
 describe("libjoynr-js.joynr.MethodUtil", function() {
     it("transformParameterMapToArray throws for null values", function() {

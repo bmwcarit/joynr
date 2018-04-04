@@ -19,11 +19,11 @@
  * #L%
  */
 require("../../../node-unit-test-helper");
-var WebSocketMessagingStubFactory = require("../../../../classes/joynr/messaging/websocket/WebSocketMessagingStubFactory");
-var WebSocketAddress = require("../../../../classes/joynr/system/RoutingTypes/WebSocketAddress");
-var WebSocketClientAddress = require("../../../../classes/joynr/system/RoutingTypes/WebSocketClientAddress");
-var SharedWebSocket = require("../../../../classes/joynr/messaging/websocket/SharedWebSocket");
-var WebSocket = require("../../../../test-classes/global/WebSocketMock");
+var WebSocketMessagingStubFactory = require("../../../../../main/js/joynr/messaging/websocket/WebSocketMessagingStubFactory");
+var WebSocketAddress = require("../../../../../main/js/generated/joynr/system/RoutingTypes/WebSocketAddress");
+var WebSocketClientAddress = require("../../../../../main/js/generated/joynr/system/RoutingTypes/WebSocketClientAddress");
+var SharedWebSocket = require("../../../../../main/js/joynr/messaging/websocket/SharedWebSocket");
+var WebSocket = require("../../../../../test/js/global/WebSocketMock");
 
 describe("libjoynr-js.joynr.messaging.webmessaging.WebSocketMessagingStubFactory", function() {
     var webSocketMessagingStubFactory = null;

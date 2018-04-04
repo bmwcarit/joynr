@@ -18,14 +18,14 @@
  * #L%
  */
 require("../../node-unit-test-helper");
-var Promise = require("../../../classes/global/Promise");
-var CapabilitiesUtil = require("../../../classes/joynr/util/CapabilitiesUtil");
-var DiscoveryEntry = require("../../../classes/joynr/types/DiscoveryEntry");
-var DiscoveryEntryWithMetaInfo = require("../../../classes/joynr/types/DiscoveryEntryWithMetaInfo");
-var GlobalDiscoveryEntry = require("../../../classes/joynr/types/GlobalDiscoveryEntry");
-var Version = require("../../../classes/joynr/types/Version");
-var ProviderQos = require("../../../classes/joynr/types/ProviderQos");
-var MqttAddress = require("../../../classes/joynr/system/RoutingTypes/MqttAddress");
+var Promise = require("../../../../main/js/global/Promise");
+var CapabilitiesUtil = require("../../../../main/js/joynr/util/CapabilitiesUtil");
+var DiscoveryEntry = require("../../../../main/js/generated/joynr/types/DiscoveryEntry");
+var DiscoveryEntryWithMetaInfo = require("../../../../main/js/generated/joynr/types/DiscoveryEntryWithMetaInfo");
+var GlobalDiscoveryEntry = require("../../../../main/js/generated/joynr/types/GlobalDiscoveryEntry");
+var Version = require("../../../../main/js/generated/joynr/types/Version");
+var ProviderQos = require("../../../../main/js/generated/joynr/types/ProviderQos");
+var MqttAddress = require("../../../../main/js/generated/joynr/system/RoutingTypes/MqttAddress");
 
 describe("libjoynr-js.joynr.CapabilitiesUtil", function() {
     it("is of correct type and has all members", function() {

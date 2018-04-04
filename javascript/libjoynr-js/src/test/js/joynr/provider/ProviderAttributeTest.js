@@ -19,13 +19,13 @@
  * #L%
  */
 require("../../node-unit-test-helper");
-var ProviderAttribute = require("../../../classes/joynr/provider/ProviderAttribute");
-var ProviderQos = require("../../../classes/joynr/types/ProviderQos");
-var TestEnum = require("../../../test-classes/joynr/tests/testTypes/TestEnum");
-var ComplexRadioStation = require("../../../test-classes/joynr/datatypes/exampleTypes/ComplexRadioStation");
-var Country = require("../../../test-classes/joynr/datatypes/exampleTypes/Country");
-var Promise = require("../../../classes/global/Promise");
-var waitsFor = require("../../../test-classes/global/WaitsFor");
+var ProviderAttribute = require("../../../../main/js/joynr/provider/ProviderAttribute");
+var ProviderQos = require("../../../../main/js/generated/joynr/types/ProviderQos");
+var TestEnum = require("../../../generated/joynr/tests/testTypes/TestEnum");
+var ComplexRadioStation = require("../../../generated/joynr/datatypes/exampleTypes/ComplexRadioStation");
+var Country = require("../../../generated/joynr/datatypes/exampleTypes/Country");
+var Promise = require("../../../../main/js/global/Promise");
+var waitsFor = require("../../../../test/js/global/WaitsFor");
 
 var safetyTimeoutDelta = 100;
 

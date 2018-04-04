@@ -18,8 +18,8 @@
  * #L%
  */
 require("../../../node-unit-test-helper");
-var Reply = require("../../../../classes/joynr/dispatching/types/Reply");
-var RadioStation = require("../../../../test-classes/joynr/vehicle/radiotypes/RadioStation");
+var Reply = require("../../../../../main/js/joynr/dispatching/types/Reply");
+var RadioStation = require("../../../../generated/joynr/vehicle/radiotypes/RadioStation");
 
 describe("libjoynr-js.joynr.dispatching.types.Reply", function() {
     it("is instantiable", function() {

@@ -19,8 +19,8 @@
  * #L%
  */
 require("../../../node-unit-test-helper");
-var MulticastPublication = require("../../../../classes/joynr/dispatching/types/MulticastPublication");
-var RadioStation = require("../../../../test-classes/joynr/vehicle/radiotypes/RadioStation");
+var MulticastPublication = require("../../../../../main/js/joynr/dispatching/types/MulticastPublication");
+var RadioStation = require("../../../../generated/joynr/vehicle/radiotypes/RadioStation");
 
 describe("libjoynr-js.joynr.dispatching.types.MulticastPublication", function() {
     it("is defined", function() {

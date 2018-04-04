@@ -19,9 +19,9 @@
  * #L%
  */
 require("../../node-unit-test-helper");
-var defaultMessagingSettings = require("../../../classes/joynr/start/settings/defaultMessagingSettings");
-var MessagingQos = require("../../../classes/joynr/messaging/MessagingQos");
-var MessagingQosEffort = require("../../../classes/joynr/messaging/MessagingQosEffort");
+var defaultMessagingSettings = require("../../../../main/js/joynr/start/settings/defaultMessagingSettings");
+var MessagingQos = require("../../../../main/js/joynr/messaging/MessagingQos");
+var MessagingQosEffort = require("../../../../main/js/joynr/messaging/MessagingQosEffort");
 
 describe("libjoynr-js.joynr.messaging.MessagingQos", function() {
     it("is instantiable", function() {

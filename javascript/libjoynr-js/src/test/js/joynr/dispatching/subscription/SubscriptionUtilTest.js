@@ -19,16 +19,16 @@
  * #L%
  */
 require("../../../node-unit-test-helper");
-var SubscriptionUtil = require("../../../../classes/joynr/dispatching/subscription/util/SubscriptionUtil");
-var SubscriptionInformation = require("../../../../classes/joynr/dispatching/types/SubscriptionInformation");
-var SubscriptionRequest = require("../../../../classes/joynr/dispatching/types/SubscriptionRequest");
-var SubscriptionStop = require("../../../../classes/joynr/dispatching/types/SubscriptionStop");
-var PeriodicSubscriptionQos = require("../../../../classes/joynr/proxy/PeriodicSubscriptionQos");
-var OnChangeSubscriptionQos = require("../../../../classes/joynr/proxy/OnChangeSubscriptionQos");
-var OnChangeWithKeepAliveSubscriptionQos = require("../../../../classes/joynr/proxy/OnChangeWithKeepAliveSubscriptionQos");
-var ProviderQos = require("../../../../classes/joynr/types/ProviderQos");
-var uuid = require("../../../../classes/lib/uuid-annotated");
-var LoggingManager = require("../../../../classes/joynr/system/LoggingManager");
+var SubscriptionUtil = require("../../../../../main/js/joynr/dispatching/subscription/util/SubscriptionUtil");
+var SubscriptionInformation = require("../../../../../main/js/joynr/dispatching/types/SubscriptionInformation");
+var SubscriptionRequest = require("../../../../../main/js/joynr/dispatching/types/SubscriptionRequest");
+var SubscriptionStop = require("../../../../../main/js/joynr/dispatching/types/SubscriptionStop");
+var PeriodicSubscriptionQos = require("../../../../../main/js/joynr/proxy/PeriodicSubscriptionQos");
+var OnChangeSubscriptionQos = require("../../../../../main/js/joynr/proxy/OnChangeSubscriptionQos");
+var OnChangeWithKeepAliveSubscriptionQos = require("../../../../../main/js/joynr/proxy/OnChangeWithKeepAliveSubscriptionQos");
+var ProviderQos = require("../../../../../main/js/generated/joynr/types/ProviderQos");
+var uuid = require("../../../../../main/js/lib/uuid-annotated");
+var LoggingManager = require("../../../../../main/js/joynr/system/LoggingManager");
 
 describe("libjoynr-js.joynr.dispatching.subscription.types.SubscriptionUtil", function() {
     var proxyId;

@@ -19,7 +19,7 @@
  * #L%
  */
 require("../../../node-unit-test-helper");
-var BrowserMessagingStub = require("../../../../classes/joynr/messaging/browser/BrowserMessagingStub");
+var BrowserMessagingStub = require("../../../../../main/js/joynr/messaging/browser/BrowserMessagingStub");
 
 describe("libjoynr-js.joynr.messaging.browser.BrowserMessagingStub", function() {
     var webMessagingStub, browserMessagingStub, windowId, joynrMessage;

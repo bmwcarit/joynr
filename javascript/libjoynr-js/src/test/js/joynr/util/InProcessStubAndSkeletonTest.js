@@ -19,14 +19,14 @@
  * #L%
  */
 require("../../node-unit-test-helper");
-var GlobalDiscoveryEntry = require("../../../classes/joynr/types/GlobalDiscoveryEntry");
-var ProviderQos = require("../../../classes/joynr/types/ProviderQos");
-var ProviderScope = require("../../../classes/joynr/types/ProviderScope");
-var CustomParameter = require("../../../classes/joynr/types/CustomParameter");
-var Version = require("../../../classes/joynr/types/Version");
-var InProcessAddress = require("../../../classes/joynr/messaging/inprocess/InProcessAddress");
-var InProcessStub = require("../../../classes/joynr/util/InProcessStub");
-var InProcessSkeleton = require("../../../classes/joynr/util/InProcessSkeleton");
+var GlobalDiscoveryEntry = require("../../../../main/js/generated/joynr/types/GlobalDiscoveryEntry");
+var ProviderQos = require("../../../../main/js/generated/joynr/types/ProviderQos");
+var ProviderScope = require("../../../../main/js/generated/joynr/types/ProviderScope");
+var CustomParameter = require("../../../../main/js/generated/joynr/types/CustomParameter");
+var Version = require("../../../../main/js/generated/joynr/types/Version");
+var InProcessAddress = require("../../../../main/js/joynr/messaging/inprocess/InProcessAddress");
+var InProcessStub = require("../../../../main/js/joynr/util/InProcessStub");
+var InProcessSkeleton = require("../../../../main/js/joynr/util/InProcessSkeleton");
 
 describe("libjoynr-js.joynr.util.InProcessStubAndSkeleton", function() {
     it("InProcessSkeleton is instantiable", function(done) {

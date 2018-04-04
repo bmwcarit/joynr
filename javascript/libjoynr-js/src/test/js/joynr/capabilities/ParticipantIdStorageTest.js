@@ -20,8 +20,8 @@
  * #L%
  */
 require("../../node-unit-test-helper");
-var ParticipantIdStorage = require("../../../classes/joynr/capabilities/ParticipantIdStorage");
-var MemoryStorage = require("../../../classes/global/MemoryStorage");
+var ParticipantIdStorage = require("../../../../main/js/joynr/capabilities/ParticipantIdStorage");
+var MemoryStorage = require("../../../../main/js/global/MemoryStorage");
 
 describe("libjoynr-js.joynr.capabilities.ParticipantIdStorage", function() {
     var participantIdStorage, localStorageSpy, uuidSpy;

@@ -19,7 +19,7 @@
  * #L%
  */
 require("../../../node-unit-test-helper");
-var InProcessMessagingStub = require("../../../../classes/joynr/messaging/inprocess/InProcessMessagingStub");
+var InProcessMessagingStub = require("../../../../../main/js/joynr/messaging/inprocess/InProcessMessagingStub");
 
 describe("libjoynr-js.joynr.messaging.inprocess.InProcessMessagingStub", function() {
     var skeletonCallReturn, inProcessMessagingSkeleton, inProcessMessagingStub, joynrMessage;

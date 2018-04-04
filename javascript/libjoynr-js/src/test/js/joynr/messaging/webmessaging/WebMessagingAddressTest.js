@@ -19,7 +19,7 @@
  * #L%
  */
 require("../../../node-unit-test-helper");
-var WebMessagingAddress = require("../../../../classes/joynr/messaging/webmessaging/WebMessagingAddress");
+var WebMessagingAddress = require("../../../../../main/js/joynr/messaging/webmessaging/WebMessagingAddress");
 
 describe("libjoynr-js.joynr.messaging.webmessaging.WebMessagingAddress", function() {
     var window, origin, webMessagingAddress;

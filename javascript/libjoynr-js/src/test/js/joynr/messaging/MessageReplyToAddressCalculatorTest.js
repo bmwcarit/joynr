@@ -18,9 +18,9 @@
  * #L%
  */
 require("../../node-unit-test-helper");
-var JoynrMessage = require("../../../classes/joynr/messaging/JoynrMessage");
-var MqttAddress = require("../../../classes/joynr/system/RoutingTypes/MqttAddress");
-var MessageReplyToAddressCalculator = require("../../../classes/joynr/messaging/MessageReplyToAddressCalculator");
+var JoynrMessage = require("../../../../main/js/joynr/messaging/JoynrMessage");
+var MqttAddress = require("../../../../main/js/generated/joynr/system/RoutingTypes/MqttAddress");
+var MessageReplyToAddressCalculator = require("../../../../main/js/joynr/messaging/MessageReplyToAddressCalculator");
 
 describe("libjoynr-js.joynr.messaging.MessageReplyToAddressCalculator", function() {
     var messageReplyToAddressCalculator;

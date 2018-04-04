@@ -18,7 +18,7 @@
  * limitations under the License.
  * #L%
  */
-var ProviderScope = require("../../../joynr/types/ProviderScope");
+var ProviderScope = require("../../../generated/joynr/types/ProviderScope");
 var Util = require("../../util/UtilInternal");
 var defaultSettings = {};
 var discoveryCapability = {

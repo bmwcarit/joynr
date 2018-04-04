@@ -19,15 +19,15 @@
  * #L%
  */
 require("../../node-unit-test-helper");
-var CapabilitiesStore = require("../../../classes/joynr/capabilities/CapabilitiesStore");
-var DiscoveryEntry = require("../../../classes/joynr/types/DiscoveryEntry");
-var DiscoveryQos = require("../../../classes/joynr/types/DiscoveryQos");
-var DiscoveryScope = require("../../../classes/joynr/types/DiscoveryScope");
-var ProviderScope = require("../../../classes/joynr/types/ProviderScope");
-var ProviderQos = require("../../../classes/joynr/types/ProviderQos");
-var CustomParameter = require("../../../classes/joynr/types/CustomParameter");
-var Version = require("../../../classes/joynr/types/Version");
-var Date = require("../../../test-classes/global/Date");
+var CapabilitiesStore = require("../../../../main/js/joynr/capabilities/CapabilitiesStore");
+var DiscoveryEntry = require("../../../../main/js/generated/joynr/types/DiscoveryEntry");
+var DiscoveryQos = require("../../../../main/js/generated/joynr/types/DiscoveryQos");
+var DiscoveryScope = require("../../../../main/js/generated/joynr/types/DiscoveryScope");
+var ProviderScope = require("../../../../main/js/generated/joynr/types/ProviderScope");
+var ProviderQos = require("../../../../main/js/generated/joynr/types/ProviderQos");
+var CustomParameter = require("../../../../main/js/generated/joynr/types/CustomParameter");
+var Version = require("../../../../main/js/generated/joynr/types/Version");
+var Date = require("../../../../test/js/global/Date");
 
 describe("libjoynr-js.joynr.capabilities.CapabilitiesStore", function() {
     var fakeTime = 0,

@@ -19,7 +19,7 @@
  * #L%
  */
 var ArbitrationStrategyCollection = require("../../joynr/types/ArbitrationStrategyCollection");
-var DiscoveryScope = require("../../joynr/types/DiscoveryScope");
+var DiscoveryScope = require("../../generated/joynr/types/DiscoveryScope");
 var Util = require("../util/UtilInternal");
 var LoggingManager = require("../system/LoggingManager");
 

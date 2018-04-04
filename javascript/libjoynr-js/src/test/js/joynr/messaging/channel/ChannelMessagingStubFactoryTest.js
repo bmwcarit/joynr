@@ -18,11 +18,11 @@
  * #L%
  */
 require("../../../node-unit-test-helper");
-var Promise = require("../../../../classes/global/Promise");
-var ChannelAddress = require("../../../../classes/joynr/system/RoutingTypes/ChannelAddress");
-var ChannelMessagingSender = require("../../../../classes/joynr/messaging/channel/ChannelMessagingSender");
-var ChannelMessagingStubFactory = require("../../../../classes/joynr/messaging/channel/ChannelMessagingStubFactory");
-var JoynrMessage = require("../../../../classes/joynr/messaging/JoynrMessage");
+var Promise = require("../../../../../main/js/global/Promise");
+var ChannelAddress = require("../../../../../main/js/generated/joynr/system/RoutingTypes/ChannelAddress");
+var ChannelMessagingSender = require("../../../../../main/js/joynr/messaging/channel/ChannelMessagingSender");
+var ChannelMessagingStubFactory = require("../../../../../main/js/joynr/messaging/channel/ChannelMessagingStubFactory");
+var JoynrMessage = require("../../../../../main/js/joynr/messaging/JoynrMessage");
 
 describe("libjoynr-js.joynr.messaging.channel.ChannelMessagingStubFactory", function() {
     var channelMessagingSender, channelMessagingStubFactory, destChannelId;

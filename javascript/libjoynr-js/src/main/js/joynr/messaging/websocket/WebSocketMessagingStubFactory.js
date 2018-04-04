@@ -20,7 +20,7 @@
  */
 var Typing = require("../../util/Typing");
 var WebSocketMessagingStub = require("./WebSocketMessagingStub");
-var WebSocketAddress = require("../../system/RoutingTypes/WebSocketAddress");
+var WebSocketAddress = require("../../../generated/joynr/system/RoutingTypes/WebSocketAddress");
 
 /**
  * @constructor

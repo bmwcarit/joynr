@@ -19,16 +19,16 @@
  * #L%
  */
 require("../../node-unit-test-helper");
-var RadioProvider = require("../../../test-classes/joynr/vehicle/RadioProvider");
-var RadioStation = require("../../../test-classes/joynr/vehicle/radiotypes/RadioStation");
-var Country = require("../../../test-classes/joynr/datatypes/exampleTypes/Country");
-var StringMap = require("../../../test-classes/joynr/datatypes/exampleTypes/StringMap");
-var ProviderAttribute = require("../../../classes/joynr/provider/ProviderAttribute");
-var ProviderOperation = require("../../../classes/joynr/provider/ProviderOperation");
-var ProviderEvent = require("../../../classes/joynr/provider/ProviderEvent");
-var uuid = require("../../../classes/joynr/util/uuid");
-var TestWithVersionProvider = require("../../../test-classes/joynr/tests/TestWithVersionProvider");
-var TestWithoutVersionProvider = require("../../../test-classes/joynr/tests/TestWithoutVersionProvider");
+var RadioProvider = require("../../../generated/joynr/vehicle/RadioProvider");
+var RadioStation = require("../../../generated/joynr/vehicle/radiotypes/RadioStation");
+var Country = require("../../../generated/joynr/datatypes/exampleTypes/Country");
+var StringMap = require("../../../generated/joynr/datatypes/exampleTypes/StringMap");
+var ProviderAttribute = require("../../../../main/js/joynr/provider/ProviderAttribute");
+var ProviderOperation = require("../../../../main/js/joynr/provider/ProviderOperation");
+var ProviderEvent = require("../../../../main/js/joynr/provider/ProviderEvent");
+var uuid = require("../../../../main/js/joynr/util/uuid");
+var TestWithVersionProvider = require("../../../generated/joynr/tests/TestWithVersionProvider");
+var TestWithoutVersionProvider = require("../../../generated/joynr/tests/TestWithoutVersionProvider");
 describe("libjoynr-js.joynr.provider.Provider", function() {
     var implementation = null;
     var dependencies = {

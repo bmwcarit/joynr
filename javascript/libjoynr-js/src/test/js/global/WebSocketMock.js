@@ -19,10 +19,10 @@
  * limitations under the License.
  * #L%
  */
-var JoynrMessage = require("../../classes/joynr/messaging/JoynrMessage");
-var JSONSerializer = require("../../classes/joynr/util/JSONSerializer");
-var JoynrRuntimeException = require("../../classes/joynr/exceptions/JoynrRuntimeException");
-var LoggingManager = require("../../classes/joynr/system/LoggingManager");
+var JoynrMessage = require("../../../main/js/joynr/messaging/JoynrMessage");
+var JSONSerializer = require("../../../main/js/joynr/util/JSONSerializer");
+var JoynrRuntimeException = require("../../../main/js/joynr/exceptions/JoynrRuntimeException");
+var LoggingManager = require("../../../main/js/joynr/system/LoggingManager");
 if (typeof Buffer !== "function" && typeof TextDecoder !== "function") {
     throw new JoynrRuntimeException(
         "Encoding/Decoding of binary websocket messages not possible. Buffer and TextEncoder/TextDecoder not available."

@@ -20,10 +20,10 @@
  */
 var Promise = require("../../global/Promise");
 var Util = require("../util/UtilInternal");
-var DiscoveryEntry = require("../../joynr/types/DiscoveryEntry");
-var ProviderScope = require("../../joynr/types/ProviderScope");
+var DiscoveryEntry = require("../../generated/joynr/types/DiscoveryEntry");
+var ProviderScope = require("../../generated/joynr/types/ProviderScope");
 var ParticipantIdStorage = require("./ParticipantIdStorage");
-var Version = require("../../joynr/types/Version");
+var Version = require("../../generated/joynr/types/Version");
 var defaultExpiryIntervalMs = 6 * 7 * 24 * 60 * 60 * 1000; // 6 Weeks
 var loggingManager = require("../system/LoggingManager");
 var log = loggingManager.getLogger("joynr.capabilities.CapabilitiesRegistrar");

@@ -19,9 +19,9 @@
  * #L%
  */
 require("../../node-unit-test-helper");
-var RadioProvider = require("../../../test-classes/joynr/vehicle/RadioProvider");
-var ProviderBuilder = require("../../../classes/joynr/provider/ProviderBuilder");
-var ProviderOperation = require("../../../classes/joynr/provider/ProviderOperation");
+var RadioProvider = require("../../../generated/joynr/vehicle/RadioProvider");
+var ProviderBuilder = require("../../../../main/js/joynr/provider/ProviderBuilder");
+var ProviderOperation = require("../../../../main/js/joynr/provider/ProviderOperation");
 
 describe("libjoynr-js.joynr.provider.ProviderBuilder", function() {
     var providerBuilder = null;

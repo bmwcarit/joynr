@@ -19,11 +19,11 @@
  * #L%
  */
 require("../../node-unit-test-helper");
-var SubscriptionQos = require("../../../classes/joynr/proxy/SubscriptionQos");
-var PeriodicSubscriptionQos = require("../../../classes/joynr/proxy/PeriodicSubscriptionQos");
-var OnChangeSubscriptionQos = require("../../../classes/joynr/proxy/OnChangeSubscriptionQos");
-var OnChangeWithKeepAliveSubscriptionQos = require("../../../classes/joynr/proxy/OnChangeWithKeepAliveSubscriptionQos");
-var Date = require("../../../test-classes/global/Date");
+var SubscriptionQos = require("../../../../main/js/joynr/proxy/SubscriptionQos");
+var PeriodicSubscriptionQos = require("../../../../main/js/joynr/proxy/PeriodicSubscriptionQos");
+var OnChangeSubscriptionQos = require("../../../../main/js/joynr/proxy/OnChangeSubscriptionQos");
+var OnChangeWithKeepAliveSubscriptionQos = require("../../../../main/js/joynr/proxy/OnChangeWithKeepAliveSubscriptionQos");
+var Date = require("../../../../test/js/global/Date");
 describe("libjoynr-js.joynr.proxy.SubscriptionQos", function() {
     var qosSettings = {
         minIntervalMs: 50,

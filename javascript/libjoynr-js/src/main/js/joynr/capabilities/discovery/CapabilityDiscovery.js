@@ -22,11 +22,11 @@
  * queried. If a provider needs to be registered, this module selects the places to register at.
  */
 var Promise = require("../../../global/Promise");
-var GlobalDiscoveryEntry = require("../../../joynr/types/GlobalDiscoveryEntry");
+var GlobalDiscoveryEntry = require("../../../generated/joynr/types/GlobalDiscoveryEntry");
 var DiscoveryQos = require("../../proxy/DiscoveryQos");
-var DiscoveryScope = require("../../../joynr/types/DiscoveryScope");
-var ProviderScope = require("../../../joynr/types/ProviderScope");
-var GlobalCapabilitiesDirectoryProxy = require("../../infrastructure/GlobalCapabilitiesDirectoryProxy");
+var DiscoveryScope = require("../../../generated/joynr/types/DiscoveryScope");
+var ProviderScope = require("../../../generated/joynr/types/ProviderScope");
+var GlobalCapabilitiesDirectoryProxy = require("../../../generated/joynr/infrastructure/GlobalCapabilitiesDirectoryProxy");
 var TypeRegistrySingleton = require("../../../joynr/types/TypeRegistrySingleton");
 var Typing = require("../../util/Typing");
 var LoggingManager = require("../../system/LoggingManager");

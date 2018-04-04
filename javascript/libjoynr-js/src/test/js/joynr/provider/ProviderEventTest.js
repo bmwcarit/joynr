@@ -19,9 +19,9 @@
  * #L%
  */
 require("../../node-unit-test-helper");
-var ProviderEvent = require("../../../classes/joynr/provider/ProviderEvent");
-var ProviderQos = require("../../../classes/joynr/types/ProviderQos");
-var BroadcastFilterParameters = require("../../../classes/joynr/proxy/BroadcastFilterParameters");
+var ProviderEvent = require("../../../../main/js/joynr/provider/ProviderEvent");
+var ProviderQos = require("../../../../main/js/generated/joynr/types/ProviderQos");
+var BroadcastFilterParameters = require("../../../../main/js/joynr/proxy/BroadcastFilterParameters");
 
 var safetyTimeoutDelta = 100;
 

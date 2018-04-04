@@ -19,15 +19,15 @@
  * #L%
  */
 require("../../node-unit-test-helper");
-var Promise = require("../../../classes/global/Promise");
-var CapabilitiesRegistrar = require("../../../classes/joynr/capabilities/CapabilitiesRegistrar");
-var ProviderQos = require("../../../classes/joynr/types/ProviderQos");
-var GlobalDiscoveryEntry = require("../../../classes/joynr/types/GlobalDiscoveryEntry");
-var ProviderAttribute = require("../../../classes/joynr/provider/ProviderAttribute");
-var DiscoveryEntry = require("../../../classes/joynr/types/DiscoveryEntry");
-var ProviderScope = require("../../../classes/joynr/types/ProviderScope");
-var Version = require("../../../classes/joynr/types/Version");
-var uuid = require("../../../classes/lib/uuid-annotated");
+var Promise = require("../../../../main/js/global/Promise");
+var CapabilitiesRegistrar = require("../../../../main/js/joynr/capabilities/CapabilitiesRegistrar");
+var ProviderQos = require("../../../../main/js/generated/joynr/types/ProviderQos");
+var GlobalDiscoveryEntry = require("../../../../main/js/generated/joynr/types/GlobalDiscoveryEntry");
+var ProviderAttribute = require("../../../../main/js/joynr/provider/ProviderAttribute");
+var DiscoveryEntry = require("../../../../main/js/generated/joynr/types/DiscoveryEntry");
+var ProviderScope = require("../../../../main/js/generated/joynr/types/ProviderScope");
+var Version = require("../../../../main/js/generated/joynr/types/Version");
+var uuid = require("../../../../main/js/lib/uuid-annotated");
 describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", function() {
     var capabilitiesRegistrar;
     var requestReplyManagerSpy;

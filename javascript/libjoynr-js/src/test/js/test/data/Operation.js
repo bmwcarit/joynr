@@ -19,9 +19,9 @@
  */
 // This data file is used in Test[ProxyProvider]Operation
 require("../../node-unit-test-helper");
-var RadioStation = require("../../../test-classes/joynr/vehicle/radiotypes/RadioStation");
-var ErrorList = require("../../../test-classes/joynr/vehicle/radiotypes/ErrorList");
-var TestEnum = require("../../../test-classes/joynr/tests/testTypes/TestEnum");
+var RadioStation = require("../../../generated/joynr/vehicle/radiotypes/RadioStation");
+var ErrorList = require("../../../generated/joynr/vehicle/radiotypes/ErrorList");
+var TestEnum = require("../../../generated/joynr/tests/testTypes/TestEnum");
 
 var radioStationVar = new RadioStation({
     name: "asdf",

@@ -19,7 +19,7 @@
  * #L%
  */
 require("../../node-unit-test-helper");
-var JoynrMessage = require("../../../classes/joynr/messaging/JoynrMessage");
+var JoynrMessage = require("../../../../main/js/joynr/messaging/JoynrMessage");
 
 describe("libjoynr-js.joynr.messaging.JoynrMessage", function() {
     function getTestMessageFields() {

@@ -18,9 +18,9 @@
  * limitations under the License.
  * #L%
  */
-var DiscoveryEntry = require("../../joynr/types/DiscoveryEntry");
-var GlobalDiscoveryEntry = require("../../joynr/types/GlobalDiscoveryEntry");
-var DiscoveryEntryWithMetaInfo = require("../../joynr/types/DiscoveryEntryWithMetaInfo");
+var DiscoveryEntry = require("../../generated/joynr/types/DiscoveryEntry");
+var GlobalDiscoveryEntry = require("../../generated/joynr/types/GlobalDiscoveryEntry");
+var DiscoveryEntryWithMetaInfo = require("../../generated/joynr/types/DiscoveryEntryWithMetaInfo");
 
 /**
  * @name CapabilitiesUtil

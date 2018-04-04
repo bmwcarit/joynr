@@ -19,21 +19,21 @@
  * #L%
  */
 require("../../node-unit-test-helper");
-var ProxyAttribute = require("../../../classes/joynr/proxy/ProxyAttribute");
-var ProxyOperation = require("../../../classes/joynr/proxy/ProxyOperation");
-var ProxyEvent = require("../../../classes/joynr/proxy/ProxyEvent");
-var MessagingQos = require("../../../classes/joynr/messaging/MessagingQos");
-var Request = require("../../../classes/joynr/dispatching/types/Request");
-var OneWayRequest = require("../../../classes/joynr/dispatching/types/OneWayRequest");
-var TypeRegistrySingleton = require("../../../classes/joynr/types/TypeRegistrySingleton");
-var testDataOperation = require("../../../test-classes/test/data/Operation");
-var Promise = require("../../../classes/global/Promise");
-var TestEnum = require("../../../test-classes/joynr/tests/testTypes/TestEnum");
-var RadioStation = require("../../../test-classes/joynr/vehicle/radiotypes/RadioStation");
-var waitsFor = require("../../../test-classes/global/WaitsFor");
-var DiscoveryEntryWithMetaInfo = require("../../../classes/joynr/types/DiscoveryEntryWithMetaInfo");
-var Version = require("../../../classes/joynr/types/Version");
-var ProviderQos = require("../../../classes/joynr/types/ProviderQos");
+var ProxyAttribute = require("../../../../main/js/joynr/proxy/ProxyAttribute");
+var ProxyOperation = require("../../../../main/js/joynr/proxy/ProxyOperation");
+var ProxyEvent = require("../../../../main/js/joynr/proxy/ProxyEvent");
+var MessagingQos = require("../../../../main/js/joynr/messaging/MessagingQos");
+var Request = require("../../../../main/js/joynr/dispatching/types/Request");
+var OneWayRequest = require("../../../../main/js/joynr/dispatching/types/OneWayRequest");
+var TypeRegistrySingleton = require("../../../../main/js/joynr/types/TypeRegistrySingleton");
+var testDataOperation = require("../../../../test/js/test/data/Operation");
+var Promise = require("../../../../main/js/global/Promise");
+var TestEnum = require("../../../generated/joynr/tests/testTypes/TestEnum");
+var RadioStation = require("../../../generated/joynr/vehicle/radiotypes/RadioStation");
+var waitsFor = require("../../../../test/js/global/WaitsFor");
+var DiscoveryEntryWithMetaInfo = require("../../../../main/js/generated/joynr/types/DiscoveryEntryWithMetaInfo");
+var Version = require("../../../../main/js/generated/joynr/types/Version");
+var ProviderQos = require("../../../../main/js/generated/joynr/types/ProviderQos");
 
 var asyncTimeout = 5000;
 

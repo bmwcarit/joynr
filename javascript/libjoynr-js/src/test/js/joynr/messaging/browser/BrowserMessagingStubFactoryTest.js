@@ -19,8 +19,8 @@
  * #L%
  */
 require("../../../node-unit-test-helper");
-var Util = require("../../../../classes/joynr/util/Util");
-var BrowserMessagingStubFactory = require("../../../../classes/joynr/messaging/browser/BrowserMessagingStubFactory");
+var Util = require("../../../../../main/js/joynr/util/Util");
+var BrowserMessagingStubFactory = require("../../../../../main/js/joynr/messaging/browser/BrowserMessagingStubFactory");
 
 describe("libjoynr-js.joynr.messaging.browser.BrowserMessagingStubFactory", function() {
     var returnValue, webMessagingStub, browserMessagingStubFactory;

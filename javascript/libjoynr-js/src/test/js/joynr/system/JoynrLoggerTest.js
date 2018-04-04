@@ -19,7 +19,7 @@
  * #L%
  */
 require("../../node-unit-test-helper");
-var JoynrLogger = require("../../../classes/joynr/system/JoynrLogger");
+var JoynrLogger = require("../../../../main/js/joynr/system/JoynrLogger");
 
 describe("libjoynr-js.joynr.system.JoynrLogger", function() {
     var loggerInstance, loggingSpy;

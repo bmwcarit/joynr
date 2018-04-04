@@ -19,8 +19,8 @@
  * #L%
  */
 require("../../node-unit-test-helper");
-var LongTimer = require("../../../classes/joynr/util/LongTimer");
-var Typing = require("../../../classes/joynr/util/Typing");
+var LongTimer = require("../../../../main/js/joynr/util/LongTimer");
+var Typing = require("../../../../main/js/joynr/util/Typing");
 
 var maxPow = 35; // make sure this is at lease 31 to test cases with long timeout (> Math.pow(2, 31)-1)
 var concurrentTimeouts = 10;

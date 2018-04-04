@@ -19,9 +19,9 @@
  * #L%
  */
 require("../../../node-unit-test-helper");
-var ParticipantQueue = require("../../../../classes/joynr/messaging/routing/ParticipantQueue");
-var JoynrMessage = require("../../../../classes/joynr/messaging/JoynrMessage");
-var Date = require("../../../../test-classes/global/Date");
+var ParticipantQueue = require("../../../../../main/js/joynr/messaging/routing/ParticipantQueue");
+var JoynrMessage = require("../../../../../main/js/joynr/messaging/JoynrMessage");
+var Date = require("../../../../../test/js/global/Date");
 
 var fakeTime;
 

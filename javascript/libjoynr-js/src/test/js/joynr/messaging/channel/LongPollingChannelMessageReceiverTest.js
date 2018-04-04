@@ -19,15 +19,15 @@
  * #L%
  */
 require("../../../node-unit-test-helper");
-var Promise = require("../../../../classes/global/Promise");
-var CommunicationModule = require("../../../../classes/joynr/messaging/CommunicationModule");
-var LongPollingChannelMessageReceiver = require("../../../../classes/joynr/messaging/channel/LongPollingChannelMessageReceiver");
-var JoynrMessage = require("../../../../classes/joynr/messaging/JoynrMessage");
-var Typing = require("../../../../classes/joynr/util/Typing");
-var LoggingManager = require("../../../../classes/joynr/system/LoggingManager");
-var LocalStorage = require("../../../../test-classes/global/LocalStorageNodeTests");
-var provisioning = require("../../../../test-classes/joynr/provisioning/provisioning_root");
-var waitsFor = require("../../../../test-classes/global/WaitsFor");
+var Promise = require("../../../../../main/js/global/Promise");
+var CommunicationModule = require("../../../../../main/js/joynr/messaging/CommunicationModule");
+var LongPollingChannelMessageReceiver = require("../../../../../main/js/joynr/messaging/channel/LongPollingChannelMessageReceiver");
+var JoynrMessage = require("../../../../../main/js/joynr/messaging/JoynrMessage");
+var Typing = require("../../../../../main/js/joynr/util/Typing");
+var LoggingManager = require("../../../../../main/js/joynr/system/LoggingManager");
+var LocalStorage = require("../../../../../test/js/global/LocalStorageNodeTests");
+var provisioning = require("../../../../resources/joynr/provisioning/provisioning_root");
+var waitsFor = require("../../../../../test/js/global/WaitsFor");
 
 var log = LoggingManager.getLogger("joynr.messaging.TestLongPollingChannelMessageReceiver");
 var localStorage = new LocalStorage();

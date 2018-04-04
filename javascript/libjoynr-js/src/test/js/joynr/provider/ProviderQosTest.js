@@ -19,9 +19,9 @@
  * #L%
  */
 require("../../node-unit-test-helper");
-var ProviderQos = require("../../../classes/joynr/types/ProviderQos");
-var ProviderScope = require("../../../classes/joynr/types/ProviderScope");
-var CustomParameter = require("../../../classes/joynr/types/CustomParameter");
+var ProviderQos = require("../../../../main/js/generated/joynr/types/ProviderQos");
+var ProviderScope = require("../../../../main/js/generated/joynr/types/ProviderScope");
+var CustomParameter = require("../../../../main/js/generated/joynr/types/CustomParameter");
 
 describe("libjoynr-js.joynr.types.ProviderQos", function() {
     it("is instantiable", function() {

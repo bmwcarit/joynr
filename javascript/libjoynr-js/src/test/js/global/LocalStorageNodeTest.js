@@ -18,7 +18,7 @@
  * limitations under the License.
  * #L%
  */
-var LocalStorage = require("../../classes/global/LocalStorageNode");
+var LocalStorage = require("../../../main/js/global/LocalStorageNode");
 var fs = require("fs");
 
 describe("local storage", function() {

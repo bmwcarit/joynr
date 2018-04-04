@@ -19,9 +19,9 @@
  * #L%
  */
 require("../../../node-unit-test-helper");
-var SubscriptionRequest = require("../../../../classes/joynr/dispatching/types/SubscriptionRequest");
-var PeriodicSubscriptionQos = require("../../../../classes/joynr/proxy/PeriodicSubscriptionQos");
-var OnChangeWithKeepAliveSubscriptionQos = require("../../../../classes/joynr/proxy/OnChangeWithKeepAliveSubscriptionQos");
+var SubscriptionRequest = require("../../../../../main/js/joynr/dispatching/types/SubscriptionRequest");
+var PeriodicSubscriptionQos = require("../../../../../main/js/joynr/proxy/PeriodicSubscriptionQos");
+var OnChangeWithKeepAliveSubscriptionQos = require("../../../../../main/js/joynr/proxy/OnChangeWithKeepAliveSubscriptionQos");
 
 describe("libjoynr-js.joynr.dispatching.types.SubscriptionRequest", function() {
     var qosSettings = {

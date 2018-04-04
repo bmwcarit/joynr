@@ -18,7 +18,7 @@
  * limitations under the License.
  * #L%
  */
-var MemoryStorage = require("../../classes/global/MemoryStorage");
+var MemoryStorage = require("../../../main/js/global/MemoryStorage");
 
 describe("memory storage", function() {
     var storage;

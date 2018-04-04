@@ -19,20 +19,20 @@
  * #L%
  */
 require("../../node-unit-test-helper");
-var Typing = require("../../../classes/joynr/util/Typing");
-var TypeRegistry = require("../../../classes/joynr/start/TypeRegistry");
-var LoggingManager = require("../../../classes/joynr/system/LoggingManager");
-var TypeRegistrySingleton = require("../../../classes/joynr/types/TypeRegistrySingleton");
-var DiscoveryEntry = require("../../../classes/joynr/types/DiscoveryEntry");
-var ProviderQos = require("../../../classes/joynr/types/ProviderQos");
-var ProviderScope = require("../../../classes/joynr/types/ProviderScope");
-var Version = require("../../../classes/joynr/types/Version");
-var RadioStation = require("../../../test-classes/joynr/vehicle/radiotypes/RadioStation");
-var ComplexRadioStation = require("../../../test-classes/joynr/datatypes/exampleTypes/ComplexRadioStation");
-var ComplexStruct = require("../../../test-classes/joynr/datatypes/exampleTypes/ComplexStruct");
-var Country = require("../../../test-classes/joynr/datatypes/exampleTypes/Country");
-var TestEnum = require("../../../test-classes/joynr/tests/testTypes/TestEnum");
-var Promise = require("../../../classes/global/Promise");
+var Typing = require("../../../../main/js/joynr/util/Typing");
+var TypeRegistry = require("../../../../main/js/joynr/start/TypeRegistry");
+var LoggingManager = require("../../../../main/js/joynr/system/LoggingManager");
+var TypeRegistrySingleton = require("../../../../main/js/joynr/types/TypeRegistrySingleton");
+var DiscoveryEntry = require("../../../../main/js/generated/joynr/types/DiscoveryEntry");
+var ProviderQos = require("../../../../main/js/generated/joynr/types/ProviderQos");
+var ProviderScope = require("../../../../main/js/generated/joynr/types/ProviderScope");
+var Version = require("../../../../main/js/generated/joynr/types/Version");
+var RadioStation = require("../../../generated/joynr/vehicle/radiotypes/RadioStation");
+var ComplexRadioStation = require("../../../generated/joynr/datatypes/exampleTypes/ComplexRadioStation");
+var ComplexStruct = require("../../../generated/joynr/datatypes/exampleTypes/ComplexStruct");
+var Country = require("../../../generated/joynr/datatypes/exampleTypes/Country");
+var TestEnum = require("../../../generated/joynr/tests/testTypes/TestEnum");
+var Promise = require("../../../../main/js/global/Promise");
 
 function MyCustomObj() {}
 function _TestConstructor123_() {}
