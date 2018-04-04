@@ -146,7 +146,7 @@ function prechecks {
 		exit 1
 	fi
 
-	if [ ! -f "$ILT_DIR/target/discovery.war" ]
+	if [ ! -f "$ILT_DIR/target/discovery-jee.war" ]
 	then
 		log 'discovery.war not found in $ILT_DIR/target/discovery.war'
 		exit 1
@@ -158,7 +158,7 @@ function prechecks {
 		exit 1
 	fi
 
-	if [ ! -f "$ILT_DIR/target/accesscontrol.war" ]
+	if [ ! -f "$ILT_DIR/target/accesscontrol-jee.war" ]
 	then
 		log 'accesscontrol.war not found in $ILT_DIR/target/accesscontrol.war'
 		exit 1
