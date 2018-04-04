@@ -247,7 +247,7 @@ private:
     ADD_LOGGER(LocalCapabilitiesDirectory)
     std::shared_ptr<ICapabilitiesClient> capabilitiesClient;
     std::string localAddress;
-    std::mutex cacheLock;
+    mutable std::mutex cacheLock;
     std::mutex pendingLookupsLock;
 
     capabilities::Storage localCapabilities;

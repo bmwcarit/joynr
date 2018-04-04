@@ -226,39 +226,43 @@ types::GlobalDiscoveryEntry LocalCapabilitiesDirectory::toGlobalDiscoveryEntry(
 
 void LocalCapabilitiesDirectory::remove(const std::string& participantId)
 {
-    std::lock_guard<std::mutex> lock(cacheLock);
+    {
+        std::lock_guard<std::mutex> lock(cacheLock);
 
-    boost::optional<types::DiscoveryEntry> optionalEntry =
-            localCapabilities.lookupByParticipantId(participantId);
-    if (!optionalEntry) {
-        JOYNR_LOG_INFO(logger(), "participantId '{}' not found, cannot be removed", participantId);
-        return;
-    }
-    const types::DiscoveryEntry& entry = *optionalEntry;
+        boost::optional<types::DiscoveryEntry> optionalEntry =
+                localCapabilities.lookupByParticipantId(participantId);
+        if (!optionalEntry) {
+            JOYNR_LOG_INFO(
+                    logger(), "participantId '{}' not found, cannot be removed", participantId);
+            return;
+        }
+        const types::DiscoveryEntry& entry = *optionalEntry;
 
-    if (isGlobal(entry)) {
-        JOYNR_LOG_INFO(logger(), "Removing globally registered participantId: {}", participantId);
-        removeFromGloballyRegisteredCapabilities(entry);
-        globalCapabilities.removeByParticipantId(participantId);
-        capabilitiesClient->remove(participantId);
+        if (isGlobal(entry)) {
+            JOYNR_LOG_INFO(
+                    logger(), "Removing globally registered participantId: {}", participantId);
+            removeFromGloballyRegisteredCapabilities(entry);
+            globalCapabilities.removeByParticipantId(participantId);
+            capabilitiesClient->remove(participantId);
+            JOYNR_LOG_INFO(logger(),
+                           "#globalCapabilities: {}, #registeredGlobalCapabilities: {}",
+                           globalCapabilities.size(),
+                           registeredGlobalCapabilities.size());
+        }
         JOYNR_LOG_INFO(logger(),
-                       "#globalCapabilities: {}, #registeredGlobalCapabilities: {}",
-                       globalCapabilities.size(),
-                       registeredGlobalCapabilities.size());
-    }
-    JOYNR_LOG_INFO(
-            logger(),
-            "Removing locally registered participantId: {}, #localCapabilities before removal: {}",
-            participantId,
-            localCapabilities.size());
-    localCapabilities.removeByParticipantId(participantId);
-    informObserversOnRemove(entry);
-    if (auto messageRouterSharedPtr = messageRouter.lock()) {
-        messageRouterSharedPtr->removeNextHop(participantId);
-    } else {
-        JOYNR_LOG_FATAL(logger(),
-                        "could not removeNextHop for {} because messageRouter is not available",
-                        participantId);
+                       "Removing locally registered participantId: {}, #localCapabilities before "
+                       "removal: {}",
+                       participantId,
+                       localCapabilities.size());
+        localCapabilities.removeByParticipantId(participantId);
+        informObserversOnRemove(entry);
+        if (auto messageRouterSharedPtr = messageRouter.lock()) {
+            messageRouterSharedPtr->removeNextHop(participantId);
+        } else {
+            JOYNR_LOG_FATAL(logger(),
+                            "could not removeNextHop for {} because messageRouter is not available",
+                            participantId);
+        }
     }
     updatePersistedFile();
 }
@@ -304,6 +308,8 @@ void LocalCapabilitiesDirectory::triggerGlobalProviderReregistration(
 std::vector<types::DiscoveryEntry> LocalCapabilitiesDirectory::getCachedGlobalDiscoveryEntries()
         const
 {
+    std::lock_guard<std::mutex> lock(cacheLock);
+
     return std::vector<types::DiscoveryEntry>(
             globalCapabilities.cbegin(), globalCapabilities.cend());
 }
@@ -628,6 +634,7 @@ void LocalCapabilitiesDirectory::callbackCalled(
 std::vector<types::DiscoveryEntry> LocalCapabilitiesDirectory::getCachedLocalCapabilities(
         const std::string& participantId)
 {
+    std::lock_guard<std::mutex> lock(cacheLock);
     return optionalToVector(localCapabilities.lookupByParticipantId(participantId));
 }
 
@@ -639,6 +646,7 @@ std::vector<types::DiscoveryEntry> LocalCapabilitiesDirectory::getCachedLocalCap
 
 void LocalCapabilitiesDirectory::clear()
 {
+    std::lock_guard<std::mutex> lock(cacheLock);
     localCapabilities.clear();
     globalCapabilities.clear();
 }
@@ -847,6 +855,7 @@ void LocalCapabilitiesDirectory::saveLocalCapabilitiesToFile(const std::string& 
     }
 
     try {
+        std::lock_guard<std::mutex> lock(cacheLock);
         joynr::util::saveStringToFile(
                 fileName, joynr::serializer::serializeToJson(localCapabilities));
     } catch (const std::runtime_error& ex) {
@@ -877,6 +886,8 @@ void LocalCapabilitiesDirectory::loadPersistedFile()
     if (jsonString.empty()) {
         return;
     }
+
+    std::lock_guard<std::mutex> lock(cacheLock);
 
     try {
         joynr::serializer::deserializeFromJson(localCapabilities, jsonString);
@@ -1064,29 +1075,35 @@ void LocalCapabilitiesDirectory::checkExpiredDiscoveryEntries(
                         errorCode.message());
     }
 
-    std::lock_guard<std::mutex> lock(cacheLock);
+    bool fileUpdateRequired = false;
+    {
+        std::lock_guard<std::mutex> lock(cacheLock);
 
-    auto removedLocalCapabilities = localCapabilities.removeExpired();
-    auto removedGlobalCapabilities = globalCapabilities.removeExpired();
+        auto removedLocalCapabilities = localCapabilities.removeExpired();
+        auto removedGlobalCapabilities = globalCapabilities.removeExpired();
 
-    if (!removedLocalCapabilities.empty()) {
-        JOYNR_LOG_INFO(logger(),
-                       "Following local discovery entries expired: {}, #localCapabilities: {}",
-                       joinToString(removedLocalCapabilities),
-                       localCapabilities.size());
+        if (!removedLocalCapabilities.empty()) {
+            JOYNR_LOG_INFO(logger(),
+                           "Following local discovery entries expired: {}, #localCapabilities: {}",
+                           joinToString(removedLocalCapabilities),
+                           localCapabilities.size());
+        }
+
+        if (!removedGlobalCapabilities.empty()) {
+            JOYNR_LOG_INFO(
+                    logger(),
+                    "Following global discovery entries expired: {}, #globalCapabilities: {}",
+                    joinToString(removedGlobalCapabilities),
+                    globalCapabilities.size());
+        }
+
+        if (!removedLocalCapabilities.empty() || !removedGlobalCapabilities.empty()) {
+            fileUpdateRequired = true;
+        }
     }
-
-    if (!removedGlobalCapabilities.empty()) {
-        JOYNR_LOG_INFO(logger(),
-                       "Following global discovery entries expired: {}, #globalCapabilities: {}",
-                       joinToString(removedGlobalCapabilities),
-                       globalCapabilities.size());
-    }
-
-    if (!removedLocalCapabilities.empty() || !removedGlobalCapabilities.empty()) {
+    if (fileUpdateRequired) {
         updatePersistedFile();
     }
-
     scheduleCleanupTimer();
 }
 
