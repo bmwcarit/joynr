@@ -142,13 +142,13 @@ function prechecks {
 
 	if [ ! -f "$ILT_BUILD_DIR/bin/ilt-provider-cc" ]
 	then
-		log 'ilt-provider-ws for ILT not found in $ILT_BUILD_DIR/bin/ilt-provider-ws'
+		log 'ilt-provider-cc for ILT not found in $ILT_BUILD_DIR/bin/ilt-provider-cc'
 		exit 1
 	fi
 
 	if [ ! -f "$ILT_DIR/target/discovery-jee.war" ]
 	then
-		log 'discovery.war not found in $ILT_DIR/target/discovery.war'
+		log 'discovery-jee.war not found in $ILT_DIR/target/discovery-jee.war'
 		exit 1
 	fi
 
@@ -160,7 +160,7 @@ function prechecks {
 
 	if [ ! -f "$ILT_DIR/target/accesscontrol-jee.war" ]
 	then
-		log 'accesscontrol.war not found in $ILT_DIR/target/accesscontrol.war'
+		log 'accesscontrol-jee.war not found in $ILT_DIR/target/accesscontrol-jee.war'
 		exit 1
 	fi
 }
