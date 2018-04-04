@@ -8,6 +8,8 @@ the versioning scheme [here](JoynrVersioning.md).
 * **[C++]** Proxy methods can now be passed an optional `joynr::MessagingQos` parameter.
   This allows to overwrite the `MessagingQos` which was specified during proxy building
   for each proxy method call separately.
+* **[C++]** persistence of providers can be disabled upon registration by passing an optional
+  parameter to `registerProvider` and `registerProviderAsync`
 * **[Java]** The String constants `PROPERTY_BACKPRESSURE_ENABLED` and
   `PROPERTY_MAX_INCOMING_MQTT_REQUESTS` are moved from class ConfigurableMessagingSettings
   to LimitAndBackpressureSettings. Please adapt the import statements in case you
