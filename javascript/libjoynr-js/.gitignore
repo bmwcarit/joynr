@@ -2,7 +2,7 @@ userdirectorydb
 .classpath
 .project
 .settings/
-src/main/generated*
+src/main/js/generated*
 src/test/generated*
 capabilitiesdump/capabilities.json
 joynr.properties
