@@ -52,7 +52,8 @@ examples/android-location-provider/AndroidManifest.xml \
 examples/android-location-consumer/AndroidManifest.xml \
 examples/radio-node/pom.xml \
 examples/radio-node/package.json \
-javascript/libjoynr-js/package.json
+javascript/libjoynr-js/package.json\
+javascript/libjoynr-js/src/main/js/package.json
 
 _sed 's/clustercontroller-standalone-'${oldVersion}'.jar/clustercontroller-standalone-'${newVersion}'.jar/g' \
 java/core/clustercontroller-standalone/README

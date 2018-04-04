@@ -41,7 +41,7 @@ describe("local storage", function() {
 
     beforeEach(function(done) {
         testNum++;
-        location = "${project.build.directory}/LocalStorage-" + testNum;
+        location = "localStorageTestResults/LocalStorage-" + testNum;
         storage = new LocalStorage({
             clearPersistency: false,
             location: location

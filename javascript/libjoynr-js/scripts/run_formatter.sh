@@ -24,14 +24,12 @@
 # print commands before they are executed
 set -e -x
 
-# currently, we assume npm and node is installed on the machine running this script
-cd ${project.build.directory}/node-classes
 # format all js files in
 # - src/main/js and its subdirectories
 # - subdirectories of src/test/js but not in src/test/js/integration
 # - src/test/js
 node_modules/.bin/prettier \
     --write \
-    --config "${project.build.directory}/build-resources/js-formatter/prettier.config.json" \
-    "${project.basedir}/src/{{main/js,test/js/!(integration)}/**/*.js,test/js/*.js}"
+    --config scripts/prettier.config.json \
+    "src/{{main/js/!(lib),test/js/!(integration)}/**/*.js,test/js/*.js}"
 

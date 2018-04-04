@@ -71,7 +71,7 @@
 				<filtering>true</filtering>
 			</resource>
 			<resource>
-				<directory>src/main/generated</directory>
+				<directory>src/main/js/generated</directory>
 			</resource>
 		</resources>
 
@@ -109,7 +109,7 @@
 						</goals>
 						<configuration>
 							<sources>
-								<source>src/main/generated</source>
+								<source>src/main/js/generated</source>
 							</sources>
 						</configuration>
 					</execution>
@@ -122,7 +122,7 @@
 				<configuration>
 					<filesets>
 						<fileset>
-							<directory>src/main/generated</directory>
+							<directory>src/main/js/generated</directory>
 							<includes>
 								<include>**</include>
 							</includes>
@@ -156,7 +156,7 @@
 						</goals>
 						<configuration>
 							<model>joynr/DiscoveryTypes.fidl</model>
-							<outputPath>${basedir}/src/main/generated</outputPath>
+							<outputPath>${basedir}/src/main/js/generated</outputPath>
 						</configuration>
 					</execution>
 					<execution>
@@ -167,7 +167,7 @@
 						</goals>
 						<configuration>
 							<model>joynr/Discovery.fidl</model>
-							<outputPath>${basedir}/src/main/generated</outputPath>
+							<outputPath>${basedir}/src/main/js/generated</outputPath>
 						</configuration>
 					</execution>
 					<execution>
@@ -178,7 +178,7 @@
 						</goals>
 						<configuration>
 							<model>joynr/Routing.fidl</model>
-							<outputPath>${basedir}/src/main/generated</outputPath>
+							<outputPath>${basedir}/src/main/js/generated</outputPath>
 						</configuration>
 					</execution>
 					<execution>
@@ -189,7 +189,7 @@
 						</goals>
 						<configuration>
 							<model>joynr/GlobalCapabilitiesDirectory.fidl</model>
-							<outputPath>${basedir}/src/main/generated</outputPath>
+							<outputPath>${basedir}/src/main/js/generated</outputPath>
 						</configuration>
 					</execution>
 					<execution>
@@ -200,7 +200,7 @@
 						</goals>
 						<configuration>
 							<model>common/Types.fidl</model>
-							<outputPath>${basedir}/src/main/generated</outputPath>
+							<outputPath>${basedir}/src/main/js/generated</outputPath>
 						</configuration>
 					</execution>
 					<execution>
@@ -293,228 +293,6 @@
 				</configuration>
 			</plugin>
 
-			<!-- Unpack JavaScript dependencies -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<configuration>
-					<artifactItems>
-						<artifactItem>
-							<groupId>io.joynr.tools</groupId>
-							<artifactId>build-resources</artifactId>
-							<version>${project.version}</version>
-							<outputDirectory>${project.build.directory}/build-resources</outputDirectory>
-							<includes>js-formatter/prettier.config.json</includes>
-						</artifactItem>
-					</artifactItems>
-				</configuration>
-				<executions>
-					<execution>
-						<id>unpack-public-js-source-dependencies</id>
-						<goals>
-							<goal>unpack</goal>
-						</goals>
-						<phase>generate-sources</phase>
-						<configuration>
-							<artifactItems>
-								<artifactItem>
-									<groupId>io.joynr.javascript</groupId>
-									<artifactId>js-dependencies</artifactId>
-									<version>${project.version}</version>
-									<type>jar</type>
-									<outputDirectory>${project.build.directory}/dependencies/</outputDirectory>
-									<includes>JsonParser/JsonParser.js,uuid/uuid-annotated.js</includes>
-								</artifactItem>
-								<artifactItem>
-									<groupId>io.joynr.tools</groupId>
-									<artifactId>build-resources</artifactId>
-									<version>${project.version}</version>
-									<outputDirectory>${project.build.directory}/build-resources</outputDirectory>
-									<includes>js-formatter/prettier.config.json,
-												almond/almond-0.2.5.js</includes>
-								</artifactItem>
-								<artifactItem>
-									<groupId>org.atmosphere.client</groupId>
-									<artifactId>javascript</artifactId>
-									<version>${atmosphere.javascript.version}</version>
-									<type>war</type>
-									<outputDirectory>${project.build.directory}/dependencies/atmosphere</outputDirectory>
-									<includes>javascript/*.js</includes>
-								</artifactItem>
-								<artifactItem>
-									<groupId>org.webjars</groupId>
-									<artifactId>bluebird</artifactId>
-									<version>${bluebird.version}</version>
-									<type>jar</type>
-									<outputDirectory>${project.build.directory}/dependencies/bluebird</outputDirectory>
-									<includes>META-INF/resources/webjars/bluebird/${bluebird.version}/bluebird.js</includes>
-								</artifactItem>
-								<artifactItem>
-									<groupId>org.webjars.npm</groupId>
-									<artifactId>text-encoding</artifactId>
-									<version>${text-encoding.version}</version>
-									<outputDirectory>${project.build.directory}/dependencies/text-encoding</outputDirectory>
-									<includes>META-INF/resources/webjars/text-encoding/${text-encoding.version}/lib/encoding.js</includes>
-								</artifactItem>
-							</artifactItems>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-
-			<!-- jslint-ing src/main/js -->
-			<plugin>
-				<groupId>com.googlecode.jslint4java</groupId>
-				<artifactId>jslint4java-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>lint-project</id>
-						<phase>process-sources</phase>
-					</execution>
-				</executions>
-			</plugin>
-
-			<!-- Copy over dependencies to lib -->
-			<plugin>
-				<artifactId>maven-resources-plugin</artifactId>
-				<version>2.6</version>
-				<executions>
-					<execution>
-						<id>copy-npm-config</id>
-						<phase>process-sources</phase>
-						<goals>
-							<goal>copy-resources</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>${project.build.directory}/node-classes/</outputDirectory>
-							<resources>
-								<resource>
-									<directory>${basedir}</directory>
-									<includes>
-										<include>package.json</include>
-									</includes>
-								</resource>
-							</resources>
-						</configuration>
-					</execution>
-					<execution>
-						<id>copy-source-dependencies</id>
-						<phase>process-sources</phase>
-						<goals>
-							<goal>copy-resources</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>${project.build.directory}/classes/lib/</outputDirectory>
-							<resources>
-								<resource>
-									<directory>${project.build.directory}/dependencies/atmosphere/javascript/</directory>
-									<includes>
-										<include>atmosphere.js</include>
-										<include>atmosphere-min.js</include>
-									</includes>
-								</resource>
-								<resource>
-									<directory>${project.build.directory}/dependencies/bluebird/META-INF/resources/webjars/bluebird/${bluebird.version}/</directory>
-									<includes>
-										<include>bluebird.js</include>
-									</includes>
-								</resource>
-								<resource>
-									<directory>${project.build.directory}/dependencies/text-encoding/META-INF/resources/webjars/text-encoding/${text-encoding.version}/lib/</directory>
-									<includes>
-										<include>encoding.js</include>
-									</includes>
-								</resource>
-								<resource>
-									<directory>${project.build.directory}/dependencies/JsonParser/</directory>
-									<includes>
-										<include>JsonParser.js</include>
-									</includes>
-								</resource>
-								<resource>
-									<directory>${project.build.directory}/dependencies/uuid/</directory>
-									<includes>
-										<include>uuid-annotated.js</include>
-									</includes>
-								</resource>
-							</resources>
-						</configuration>
-					</execution>
-					<execution>
-						<id>prepare-jar-classes</id>
-						<phase>prepare-package</phase>
-						<goals>
-							<goal>copy-resources</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>${project.build.directory}/jar-classes</outputDirectory>
-							<resources>
-								<resource>
-									<directory>${project.build.directory}/classes</directory>
-									<includes>
-										<include>JoynrBuildSignature.js</include>
-										<include>DISCLAIMER</include>
-										<include>META-INF/**</include>
-									</includes>
-								</resource>
-							</resources>
-						</configuration>
-					</execution>
-					<execution>
-						<id>prepare-node-classes</id>
-						<phase>process-classes</phase>
-						<goals>
-							<goal>copy-resources</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>${project.build.directory}/node-classes</outputDirectory>
-							<resources>
-								<resource>
-									<directory>${project.build.directory}/classes</directory>
-									<includes>
-										<include>DISCLAIMER</include>
-										<include>joynr.js</include>
-										<include>libjoynr-deps*.js</include>
-										<include>require.config.node.js</include>
-										<include>joynr/**</include>
-										<include>global/MemoryStorage.js</include>
-										<include>global/LocalStorageNode.js</include>
-										<include>global/LocalStorage.js</include>
-										<include>global/Mqtt.js</include>
-										<include>global/Promise.js</include>
-										<include>global/SmrfNode.js</include>
-										<include>global/WebSocketNode.js</include>
-										<include>global/WebSocket.js</include>
-										<include>global/XMLHttpRequestNode.js</include>
-										<include>global/XMLHttpRequest.js</include>
-										<include>lib/atmosphereNode.js</include>
-										<include>lib/JsonParser.js</include>
-										<include>lib/uuid-annotated.js</include>
-										<include>META-INF/**</include>
-									</includes>
-									<excludes>
-										<exclude>joynr/security/PlatformSecurityManager.js</exclude>
-										<exclude>joynr/system/ConsoleAppender.js</exclude>
-									</excludes>
-								</resource>
-								<resource>
-									<directory>${basedir}/wiki/npm</directory>
-								</resource>
-							</resources>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-
-			<!-- Configure packaging of production version matter libjoynr-js -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<configuration>
-					<classesDirectory>${project.build.directory}/jar-classes</classesDirectory>
-				</configuration>
-			</plugin>
-
 			<plugin>
 				<groupId>com.phasebash.jsdoc</groupId>
 				<artifactId>jsdoc3-maven-plugin</artifactId>
@@ -530,9 +308,14 @@
 				</executions>
 				<configuration>
 					<directoryRoots>
-						<directoryRoot>src/main/js</directoryRoot>
-						<directoryRoot>src/main/generated</directoryRoot>
+						<directoryRoot>src/main/js/joynr</directoryRoot>
+						<directoryRoot>src/main/js/global</directoryRoot>
 					</directoryRoots>
+					<sourceFiles>
+						<sourceFile>src/main/js/joynr.js</sourceFile>
+						<sourceFile>src/main/js/libjoynr-deps.js</sourceFile>
+						<sourceFile>src/main/js/libjoynr-deps.intertab.clustercontroller.js</sourceFile>
+					</sourceFiles>
 					<recursive>true</recursive>
 					<outputDirectory>${project.build.directory}/jsdoc</outputDirectory>
 					<includePrivate>false</includePrivate>
@@ -559,10 +342,13 @@
 						     file header
 						-->
 						<exclude>jsdoc3.conf.json</exclude>
-						<exclude>src/main/resources/libjoynrEndFrag.js</exclude>
 						<exclude>package.json</exclude>
+						<exclude>src/main/js/package.json</exclude>
+						<exclude>src/main/js/lib/uuid-annotated.js</exclude>
+						<exclude>src/main/js/lib/JsonParser.js</exclude>
 						<exclude>src/test/resources/node/shutdown/package.json</exclude>
 						<exclude>src/test/resources/spec/support/jasmine.json</exclude>
+						<exclude>scripts/prettier.config.json</exclude>
 					</excludes>
 				</configuration>
 			</plugin>
@@ -571,175 +357,19 @@
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
 				<executions>
-					<!-- maven doesn't keep the execution permission of
-						${project.build.directory}/run_formatter.sh.
-						So we fix it here -->
 					<execution>
-						<configuration>
-							<executable>chmod</executable>
-							<commandlineArgs>+x ${project.build.outputDirectory}/run_formatter.sh</commandlineArgs>
-						</configuration>
-						<id>process-run-formatter-script</id>
-						<phase>process-resources</phase>
-						<goals>
-							<goal>exec</goal>
-						</goals>
-					</execution>
-					<execution>
-						<id>format-sources</id>
-						<phase>process-resources</phase>
+						<id>buildAll</id>
+						<phase>test</phase>
 						<goals>
 							<goal>exec</goal>
 						</goals>
 						<configuration>
-							<executable>${project.build.outputDirectory}/run_formatter.sh</executable>
-						</configuration>
-					</execution>
-
-					<execution>
-						<configuration>
-							<executable>${project.build.directory}/node-classes/node_modules/.bin/browserify</executable>
+							<executable>npm</executable>
 							<arguments>
-								<argument>${project.build.directory}/node-classes/joynr.js</argument>
-								<argument>-u</argument>
-								<argument>smrf-native-cpp.node</argument>
-								<argument>-u</argument>
-								<argument>wscpp-client.node</argument>
-								<argument>-u</argument>
-								<argument>utf-8-validate</argument>
-								<argument>-u</argument>
-								<argument>node-persist</argument>
-								<argument>-u</argument>
-								<argument>bufferutil</argument>
-								<argument>-r</argument>
-								<argument>${project.build.directory}/node-classes/joynr.js:joynr</argument>
-								<argument>-r</argument>
-								<argument>./joynr/Runtime.inprocess.js:./joynr/Runtime</argument>
-								<argument>-o</argument>
-								<argument>${project.build.directory}/jar-classes/joynr.js</argument>
+								<argument>run</argument>
+								<argument>build</argument>
 							</arguments>
-							<environmentVariables>
-								<NODE_PATH>
-									${project.build.directory}/node-classes/node_modules
-								</NODE_PATH>
-							</environmentVariables>
-							<workingDirectory>${project.build.directory}/node-classes</workingDirectory>
 						</configuration>
-						<id>generate-libjoynr-js</id>
-						<phase>prepare-package</phase>
-						<goals>
-							<goal>exec</goal>
-						</goals>
-					</execution>
-
-					<execution>
-						<configuration>
-							<executable>${project.build.directory}/node-classes/node_modules/.bin/browserify</executable>
-							<arguments>
-								<argument>${project.build.directory}/node-classes/joynr.js</argument>
-								<argument>-u</argument>
-								<argument>smrf-native-cpp.node</argument>
-								<argument>-u</argument>
-								<argument>wscpp-client.node</argument>
-								<argument>-u</argument>
-								<argument>utf-8-validate</argument>
-								<argument>-u</argument>
-								<argument>node-persist</argument>
-								<argument>-u</argument>
-								<argument>bufferutil</argument>
-								<argument>-r</argument>
-								<argument>${project.build.directory}/node-classes/joynr.js:joynr</argument>
-								<argument>-r</argument>
-								<argument>./joynr/Runtime.intertab.clustercontroller.js:./joynr/Runtime</argument>
-								<argument>-r</argument>
-								<argument>./libjoynr-deps.intertab.clustercontroller.js:./libjoynr-deps</argument>
-								<argument>-o</argument>
-								<argument>${project.build.directory}/jar-classes/joynr.intertab.clustercontroller.js</argument>
-							</arguments>
-							<environmentVariables>
-								<NODE_PATH>
-									${project.build.directory}/node-classes/node_modules
-								</NODE_PATH>
-							</environmentVariables>
-							<workingDirectory>${project.build.directory}/node-classes</workingDirectory>
-						</configuration>
-						<id>generate-libjoynr-intertab-clustercontroller-js</id>
-						<phase>prepare-package</phase>
-						<goals>
-							<goal>exec</goal>
-						</goals>
-					</execution>
-
-					<execution>
-						<configuration>
-							<executable>${project.build.directory}/node-classes/node_modules/.bin/browserify</executable>
-							<arguments>
-								<argument>${project.build.directory}/node-classes/joynr.js</argument>
-								<argument>-u</argument>
-								<argument>smrf-native-cpp.node</argument>
-								<argument>-u</argument>
-								<argument>wscpp-client.node</argument>
-								<argument>-u</argument>
-								<argument>bufferutil</argument>
-								<argument>-u</argument>
-								<argument>utf-8-validate</argument>
-								<argument>-u</argument>
-								<argument>node-persist</argument>
-								<argument>-r</argument>
-								<argument>${project.build.directory}/node-classes/joynr.js:joynr</argument>
-								<argument>-r</argument>
-								<argument>./joynr/Runtime.intertab.libjoynr.js:./joynr/Runtime</argument>
-								<argument>-o</argument>
-								<argument>${project.build.directory}/jar-classes/joynr.intertab.libjoynr.js</argument>
-							</arguments>
-							<environmentVariables>
-								<NODE_PATH>
-									${project.build.directory}/node-classes/node_modules
-								</NODE_PATH>
-							</environmentVariables>
-							<workingDirectory>${project.build.directory}/node-classes</workingDirectory>
-						</configuration>
-						<id>generate-libjoynr-intertab-libjoynr-js</id>
-						<phase>prepare-package</phase>
-						<goals>
-							<goal>exec</goal>
-						</goals>
-					</execution>
-
-					<execution>
-						<configuration>
-							<executable>${project.build.directory}/node-classes/node_modules/.bin/browserify</executable>
-							<arguments>
-								<argument>${project.build.directory}/node-classes/joynr.js</argument>
-								<argument>-u</argument>
-								<argument>smrf-native-cpp.node</argument>
-								<argument>-u</argument>
-								<argument>wscpp-client.node</argument>
-								<argument>-u</argument>
-								<argument>utf-8-validate</argument>
-								<argument>-u</argument>
-								<argument>node-persist</argument>
-								<argument>-u</argument>
-								<argument>bufferutil</argument>
-								<argument>-r</argument>
-								<argument>${project.build.directory}/node-classes/joynr.js:joynr</argument>
-								<argument>-r</argument>
-								<argument>./joynr/Runtime.websocket.libjoynr.js:./joynr/Runtime</argument>
-								<argument>-o</argument>
-								<argument>${project.build.directory}/jar-classes/joynr.websocket.libjoynr.js</argument>
-							</arguments>
-							<environmentVariables>
-								<NODE_PATH>
-									${project.build.directory}/node-classes/node_modules
-								</NODE_PATH>
-							</environmentVariables>
-							<workingDirectory>${project.build.directory}/node-classes</workingDirectory>
-						</configuration>
-						<id>generate-libjoynr-websocket-libjoynr-js</id>
-						<phase>prepare-package</phase>
-						<goals>
-							<goal>exec</goal>
-						</goals>
 					</execution>
 				</executions>
 			</plugin>
@@ -801,383 +431,4 @@
 			</plugins>
 		</pluginManagement>
 	</build>
-
-	<profiles>
-		<profile>
-			<id>npm-install-with-skippped-tests</id>
-			<activation>
-				<property>
-					<!-- Tests are disabled by default
-						 even if skipTests is not set -->
-					<name>skipTests</name>
-					<value>!false</value>
-				</property>
-			</activation>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.codehaus.mojo</groupId>
-						<artifactId>exec-maven-plugin</artifactId>
-						<executions>
-							<execution>
-								<id>npm-install-ignore-scripts-production</id>
-								<phase>generate-resources</phase>
-								<configuration>
-									<executable>npm</executable>
-									<arguments>
-										<argument>install</argument>
-										<argument>--prefix=${project.build.directory}/node-classes</argument>
-										<!-- ignore-scripts speeds the build up a lot -->
-										<argument>--ignore-scripts</argument>
-										<!-- do not install devDependencies used only for testing -->
-										<argument>--production</argument>
-									</arguments>
-								</configuration>
-								<goals>
-									<goal>exec</goal>
-								</goals>
-							</execution>
-							<execution>
-								<id>npm-install-ignore-scripts-browserify</id>
-								<phase>generate-resources</phase>
-								<configuration>
-									<executable>npm</executable>
-									<arguments>
-										<argument>install</argument>
-										<argument>--prefix=${project.build.directory}/node-classes</argument>
-										<!-- ignore-scripts speeds the build up a lot -->
-										<argument>--ignore-scripts</argument>
-										<argument>browserify</argument>
-										<argument>prettier</argument>
-									</arguments>
-								</configuration>
-								<goals>
-									<goal>exec</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-
-		<profile>
-			<id>npm-install-with-enabled-tests</id>
-			<activation>
-				<property>
-					<name>skipTests</name>
-					<value>false</value>
-				</property>
-			</activation>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.codehaus.mojo</groupId>
-						<artifactId>exec-maven-plugin</artifactId>
-						<!-- configuration options documentation:
-							http://mojo.codehaus.org/exec-maven-plugin/exec-mojo.html -->
-						<executions>
-							<execution>
-								<id>npm-install</id>
-								<phase>generate-resources</phase>
-								<configuration>
-									<executable>npm</executable>
-									<arguments>
-										<argument>install</argument>
-										<argument>--prefix=${project.build.directory}/node-classes</argument>
-									</arguments>
-								</configuration>
-								<goals>
-									<goal>exec</goal>
-								</goals>
-							</execution>
-							<execution>
-								<id>npm-install-fix-require</id>
-								<phase>generate-resources</phase>
-								<configuration>
-									<executable>npm</executable>
-									<arguments>
-										<argument>run</argument>
-										<argument>--prefix=${project.build.directory}/node-classes</argument>
-										<argument>fixRequire</argument>
-									</arguments>
-								</configuration>
-								<goals>
-									<goal>exec</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-
-		<profile>
-			<id>prepare-tests</id>
-			<activation>
-				<property>
-					<name>skipTests</name>
-					<value>false</value>
-				</property>
-			</activation>
-			<build>
-				<plugins>
-					<!-- Unpack JavaScript dependencies for jetty -->
-					<!-- plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-dependency-plugin</artifactId>
-						<executions>
-							<execution>
-								<id>copy-backend-wars</id>
-								<phase>initialize</phase>
-								<goals>
-									<goal>copy</goal>
-								</goals>
-								<configuration>
-									<artifactItems>
-										<artifactItem>
-											<groupId>io.joynr.java.messaging.bounceproxy</groupId>
-											<artifactId>single-bounceproxy</artifactId>
-											<version>${project.version}</version>
-											<type>war</type>
-											<outputDirectory>${project.build.directory}</outputDirectory>
-											<destFileName>bounceproxy.war</destFileName>
-										</artifactItem>
-									</artifactItems>
-									<overWriteReleases>false</overWriteReleases>
-									<overWriteSnapshots>true</overWriteSnapshots>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin-->
-					<!-- jetty only needs to run in case of test execution -->
-					<!--
-					<plugin>
-						<groupId>org.eclipse.jetty</groupId>
-						<artifactId>jetty-maven-plugin</artifactId>
-						<version>${jetty.version}</version>
-						<executions>
-							<execution>
-								<id>start-jetty</id>
-								<phase>pre-integration-test</phase>
-								<goals>
-									<goal>deploy-war</goal>
-								</goals>
-								<configuration>
-									<daemon>true</daemon>
-								</configuration>
-							</execution>
-							<execution>
-								<id>stop-jetty</id>
-								<phase>post-integration-test</phase>
-								<goals>
-									<goal>stop</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-					-->
-
-					<plugin>
-						<groupId>org.codehaus.mojo</groupId>
-						<artifactId>exec-maven-plugin</artifactId>
-						<!-- configuration options documentation:
-							http://mojo.codehaus.org/exec-maven-plugin/exec-mojo.html -->
-						<executions>
-							<!-- maven doesn't keep the execution permission of
-								${project.build.testOutputDirectory}/node_run_unit_tests.sh.
-								So we fix it here -->
-							<execution>
-								<configuration>
-									<executable>chmod</executable>
-									<commandlineArgs>+x ${project.build.testOutputDirectory}/node_run_tests.sh</commandlineArgs>
-								</configuration>
-								<id>process-tests-nodejs</id>
-								<phase>process-test-classes</phase>
-								<goals>
-									<goal>exec</goal>
-								</goals>
-							</execution>
-							<!-- maven doesn't keep the execution permission of
-								${project.build.testOutputDirectory}/node/shutdown/node_run_shutdown_test.sh.
-								So we fix it here -->
-							<execution>
-								<configuration>
-									<executable>chmod</executable>
-									<commandlineArgs>+x ${project.build.testOutputDirectory}/node/shutdown/node_run_shutdown_test.sh</commandlineArgs>
-								</configuration>
-								<id>process-integration-tests-nodejs</id>
-								<phase>process-test-classes</phase>
-								<goals>
-									<goal>exec</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-		<profile>
-			<!-- To speed up development with "-DskipTests=false", node based test execution during
-			     the maven build can be skipped while still being prepared for execution with maven
-			     option "-P \!run-node-tests" or "-P -run-node-tests"
-			     This allows to run only the required tests manually after the sped up maven build.
-			 -->
-			<id>run-node-tests</id>
-			<activation>
-				<property>
-					<name>skipTests</name>
-					<value>false</value>
-				</property>
-			</activation>
-			<build>
-				<plugins>
-					<!-- run the tests -->
-					<plugin>
-						<groupId>org.codehaus.mojo</groupId>
-						<artifactId>exec-maven-plugin</artifactId>
-						<!-- configuration options documentation:
-							http://mojo.codehaus.org/exec-maven-plugin/exec-mojo.html -->
-						<executions>
-							<!-- run nodejs based tests -->
-							<execution>
-								<configuration>
-									<executable>${project.build.testOutputDirectory}/node_run_tests.sh</executable>
-									<commandlineArgs>node-run-unit-tests.js --captureExceptions --verbose</commandlineArgs>
-									<environmentVariables>
-										<LD_LIBRARY_PATH>
-											/usr/lib
-										</LD_LIBRARY_PATH>
-									</environmentVariables>
-								</configuration>
-								<id>run-unit-tests-nodejs</id>
-								<phase>test</phase>
-								<goals>
-									<goal>exec</goal>
-								</goals>
-							</execution>
-
-							<!-- run nodejs based integration tests -->
-							<execution>
-								<configuration>
-									<executable>${project.build.testOutputDirectory}/node/shutdown/node_run_shutdown_test.sh</executable>
-									<commandlineArgs>--captureExceptions --verbose</commandlineArgs>
-								</configuration>
-								<id>run-integration-tests-nodejs</id>
-								<!-- Disable node shutdown test
-								<phase>integration-test</phase>
-								-->
-								<phase>none</phase>
-								<goals>
-									<goal>exec</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-		<profile>
-			<!-- To speed up development with "-DskipTests=false", automatic karma test execution
-			     during the maven build can be skipped while still being prepared for execution with
-			     maven option: "-P \!run-karma-tests" or "-P -run-karma-tests".
-			     This allows to run only the required tests manually after the sped up maven build.
-			 -->
-			<id>run-karma-tests</id>
-			<activation>
-				<property>
-					<name>skipTests</name>
-					<value>false</value>
-				</property>
-			</activation>
-			<build>
-				<plugins>
-					<!-- run karma -->
-					<plugin>
-						<groupId>com.kelveden</groupId>
-						<artifactId>maven-karma-plugin</artifactId>
-						<version>1.8</version>
-						<executions>
-							<execution>
-								<phase>integration-test</phase>
-								<id>karma-integration-tests</id>
-								<goals>
-									<goal>start</goal>
-								</goals>
-								<configuration>
-									<configFile>${basedir}/src/test/karma/karma.integration.conf.js</configFile>
-								</configuration>
-							</execution>
-							<!-- Disabled since there is no SMRF support inside browser required by end2end tests
-							<execution>
-								<phase>integration-test</phase>
-								<id>karma-system-integration-tests</id>
-								<goals>
-									<goal>start</goal>
-								</goals>
-								<configuration>
-									<configFile>${basedir}/src/test/karma/karma.system.integration.conf.js</configFile>
-								</configuration>
-							</execution>
-							-->
-							<!--execution>
-								<phase>integration-test</phase>
-								<id>karma-intertab-integration-tests</id>
-								<goals>
-									<goal>start</goal>
-								</goals>
-								<configuration>
-									<configFile>${basedir}/src/test/karma/karma.intertab.integration.conf.js</configFile>
-								</configuration>
-							</execution-->
-						</executions>
-						<configuration>
-							<karmaExecutable>${project.build.directory}/node-classes/node_modules/.bin/karma</karmaExecutable>
-							<skipKarma>false</skipKarma>
-							<karmaFailureIgnore>false</karmaFailureIgnore>
-						</configuration>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-
-		<profile>
-			<id>create-mqtt-module</id>
-			<activation>
-				<property>
-					<name>!skipMqttModuleCreation</name>
-				</property>
-			</activation>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.codehaus.mojo</groupId>
-						<artifactId>exec-maven-plugin</artifactId>
-						<!-- configuration options documentation:
-							http://mojo.codehaus.org/exec-maven-plugin/exec-mojo.html -->
-						<executions>
-							<execution>
-								<id>browserify mqtt</id>
-								<phase>process-resources</phase>
-								<configuration>
-									<executable>./cmd.js</executable>
-									<arguments>
-										<argument>${project.build.directory}/node-classes/node_modules/mqtt/mqtt.js</argument>
-										<argument>-s</argument>
-										<argument>mqtt</argument>
-										<argument>-o</argument>
-										<argument>${project.build.directory}/classes/lib/mqtt.js</argument>
-									</arguments>
-									<workingDirectory>${project.build.directory}/node-classes/node_modules/browserify/bin</workingDirectory>
-								</configuration>
-								<goals>
-									<goal>exec</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
 </project>

@@ -44,7 +44,7 @@ var uuid = require("../../classes/joynr/util/uuid");
  */
 var LocalStorageWrapper = function(settings) {
     settings = settings || {};
-    settings.location = settings.location || "${project.build.directory}/LocalStorage-" + uuid();
+    settings.location = settings.location || "localStorageTestResults/LocalStorage-" + uuid();
     return new LocalStorage(settings);
 };
 module.exports = LocalStorageWrapper;
