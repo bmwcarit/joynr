@@ -20,11 +20,11 @@
  * #L%
  */
 
-var Promise = require("../../classes/global/Promise");
+var Promise = require("../../../main/js/global/Promise");
 var joynr = require("joynr"),
     TestEnd2EndDatatypesTestData = require("./TestEnd2EndDatatypesTestData"),
     IntegrationUtils = require("./IntegrationUtils"),
-    provisioning = require("joynr/provisioning/provisioning_cc"),
+    provisioning = require("../../resources/joynr/provisioning/provisioning_cc"),
     End2EndAbstractTest = require("./End2EndAbstractTest"),
     waitsFor = require("../global/WaitsFor");
 describe("libjoynr-js.integration.end2end.datatypes", function() {

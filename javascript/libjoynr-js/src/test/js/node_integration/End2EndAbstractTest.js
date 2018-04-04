@@ -20,11 +20,11 @@
  * #L%
  */
 
-var Promise = require("../../classes/global/Promise");
-var RadioProxy = require("joynr/vehicle/RadioProxy"),
-    DatatypesProxy = require("joynr/datatypes/DatatypesProxy"),
+var Promise = require("../../../main/js/global/Promise");
+var RadioProxy = require("../../generated/joynr/vehicle/RadioProxy"),
+    DatatypesProxy = require("../../generated/joynr/datatypes/DatatypesProxy"),
     IntegrationUtils = require("./IntegrationUtils"),
-    provisioning = require("joynr/provisioning/provisioning_cc"),
+    provisioning = require("../../resources/joynr/provisioning/provisioning_cc"),
     waitsFor = require("../global/WaitsFor");
 var joynr = require("joynr");
 

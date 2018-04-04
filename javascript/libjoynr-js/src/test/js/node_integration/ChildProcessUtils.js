@@ -76,7 +76,7 @@ ChildProcessUtils.registerHandlers = function(initializeTest, startTest, termina
 
 ChildProcessUtils.overrideRequirePaths = function() {
     var mod = require("module");
-    var joynr = require("../../classes/joynr");
+    var joynr = require("../../../main/js/joynr");
     var req = mod.prototype.require;
     var path = require("path");
     mod.prototype.require = function(md) {
@@ -90,22 +90,6 @@ ChildProcessUtils.overrideRequirePaths = function() {
             return req.call(this, appDir + "/LocalStorageMock.js");
         }
 
-        // joynr/vehicle
-        if (
-            md.startsWith("joynr/vehicle") ||
-            md.startsWith("joynr/datatypes") ||
-            md.startsWith("joynr/tests") ||
-            md.startsWith("joynr/provisioning")
-        ) {
-            return req.call(this, "../" + md);
-        }
-
-        if (md.startsWith("joynr")) {
-            return req.call(this, "../../classes/" + md);
-        }
-        if (md === "joynr/Runtime") {
-            return req.call(this, "joynr/Runtime.inprocess");
-        }
         return req.apply(this, arguments);
     };
 };

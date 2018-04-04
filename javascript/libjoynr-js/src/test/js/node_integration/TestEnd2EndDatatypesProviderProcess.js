@@ -23,14 +23,14 @@
 var ChildProcessUtils = require("./ChildProcessUtils");
 ChildProcessUtils.overrideRequirePaths();
 
-var Promise = require("../../classes/global/Promise");
+var Promise = require("../../../main/js/global/Promise");
 // anything that you load here is served through the jsTestDriverServer, if you add an entry you
 // have to make it available through the jsTestDriverIntegrationTests.conf
 var ChildProcessUtils = require("./ChildProcessUtils");
 var joynr = require("joynr");
-var provisioning = require("../joynr/provisioning/provisioning_cc.js");
+var provisioning = require("../../resources/joynr/provisioning/provisioning_cc.js");
 
-var DatatypesProvider = require("joynr/datatypes/DatatypesProvider.js");
+var DatatypesProvider = require("../../generated/joynr/datatypes/DatatypesProvider.js");
 var TestEnd2EndDatatypesTestData = require("./TestEnd2EndDatatypesTestData");
 
 var providerDomain;

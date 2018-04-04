@@ -22,14 +22,14 @@
 var ChildProcessUtils = require("./ChildProcessUtils");
 ChildProcessUtils.overrideRequirePaths();
 
-var Promise = require("../../classes/global/Promise");
-var joynr = require("joynr.js");
+var Promise = require("../../../main/js/global/Promise");
+var joynr = require("joynr");
 
-var provisioning = require("../joynr/provisioning/provisioning_cc.js");
-var RadioProvider = require("joynr/vehicle/RadioProvider.js");
-var RadioStation = require("joynr/vehicle/radiotypes/RadioStation.js");
-var Country = require("joynr/datatypes/exampleTypes/Country.js");
-var ErrorList = require("joynr/vehicle/radiotypes/ErrorList.js");
+var provisioning = require("../../resources/joynr/provisioning/provisioning_cc.js");
+var RadioProvider = require("../../generated/joynr/vehicle/RadioProvider.js");
+var RadioStation = require("../../generated/joynr/vehicle/radiotypes/RadioStation.js");
+var Country = require("../../generated/joynr/datatypes/exampleTypes/Country.js");
+var ErrorList = require("../../generated/joynr/vehicle/radiotypes/ErrorList.js");
 
 // attribute value for provider
 var isOn = true;

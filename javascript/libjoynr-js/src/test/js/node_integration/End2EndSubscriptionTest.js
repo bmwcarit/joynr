@@ -20,15 +20,15 @@
  * #L%
  */
 
-var Promise = require("../../classes/global/Promise");
+var Promise = require("../../../main/js/global/Promise");
 var joynr = require("joynr"),
-    RadioStation = require("joynr/vehicle/radiotypes/RadioStation"),
-    Country = require("joynr/datatypes/exampleTypes/Country"),
-    ComplexTestType = require("joynr/tests/testTypes/ComplexTestType"),
-    SubscriptionException = require("joynr/exceptions/SubscriptionException"),
+    RadioStation = require("../../generated/joynr/vehicle/radiotypes/RadioStation"),
+    Country = require("../../generated/joynr/datatypes/exampleTypes/Country"),
+    ComplexTestType = require("../../generated/joynr/tests/testTypes/ComplexTestType"),
+    SubscriptionException = require("../../../main/js/joynr/exceptions/SubscriptionException"),
     IntegrationUtils = require("./IntegrationUtils"),
     End2EndAbstractTest = require("./End2EndAbstractTest"),
-    provisioning = require("joynr/provisioning/provisioning_cc"),
+    provisioning = require("../../resources/joynr/provisioning/provisioning_cc"),
     waitsFor = require("../global/WaitsFor");
 
 describe("libjoynr-js.integration.end2end.subscription", function() {

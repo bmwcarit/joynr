@@ -18,8 +18,8 @@
  * #L%
  */
 
-var ComplexRadioStation = require("joynr/datatypes/exampleTypes/ComplexRadioStation");
-var Country = require("joynr/datatypes/exampleTypes/Country");
+var ComplexRadioStation = require("../../generated/joynr/datatypes/exampleTypes/ComplexRadioStation");
+var Country = require("../../generated/joynr/datatypes/exampleTypes/Country");
 
 var TestEnd2EndDatatypesTestData = [
     {

@@ -21,16 +21,16 @@
  */
 
 var joynr = require("joynr"),
-    RadioStation = require("joynr/vehicle/radiotypes/RadioStation"),
-    ErrorList = require("joynr/vehicle/radiotypes/ErrorList"),
-    Country = require("joynr/datatypes/exampleTypes/Country"),
-    StringMap = require("joynr/datatypes/exampleTypes/StringMap"),
-    ComplexStructMap = require("joynr/datatypes/exampleTypes/ComplexStructMap"),
-    ComplexStruct = require("joynr/datatypes/exampleTypes/ComplexStruct"),
-    ComplexTestType = require("joynr/tests/testTypes/ComplexTestType"),
+    RadioStation = require("../../generated/joynr/vehicle/radiotypes/RadioStation"),
+    ErrorList = require("../../generated/joynr/vehicle/radiotypes/ErrorList"),
+    Country = require("../../generated/joynr/datatypes/exampleTypes/Country"),
+    StringMap = require("../../generated/joynr/datatypes/exampleTypes/StringMap"),
+    ComplexStructMap = require("../../generated/joynr/datatypes/exampleTypes/ComplexStructMap"),
+    ComplexStruct = require("../../generated/joynr/datatypes/exampleTypes/ComplexStruct"),
+    ComplexTestType = require("../../generated/joynr/tests/testTypes/ComplexTestType"),
     IntegrationUtils = require("./IntegrationUtils"),
     End2EndAbstractTest = require("./End2EndAbstractTest"),
-    provisioning = require("joynr/provisioning/provisioning_cc"),
+    provisioning = require("../../resources/joynr/provisioning/provisioning_cc"),
     waitsFor = require("../global/WaitsFor");
 
 describe("libjoynr-js.integration.end2end.rpc", function() {

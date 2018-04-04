@@ -20,13 +20,13 @@
  */
 
 var joynr = require("joynr"),
-    RadioProxy = require("joynr/vehicle/RadioProxy"),
-    TestWithVersionProvider = require("joynr/tests/TestWithVersionProvider"),
-    TestWithVersionProxy = require("joynr/tests/TestWithVersionProxy"),
+    RadioProxy = require("../../generated/joynr/vehicle/RadioProxy"),
+    TestWithVersionProvider = require("../../generated/joynr/tests/TestWithVersionProvider"),
+    TestWithVersionProxy = require("../../generated/joynr/tests/TestWithVersionProxy"),
     IntegrationUtils = require("./IntegrationUtils"),
-    provisioning = require("joynr/provisioning/provisioning_cc"),
-    DiscoveryQos = require("joynr/proxy/DiscoveryQos"),
-    JoynrException = require("joynr/exceptions/JoynrException");
+    provisioning = require("../../resources/joynr/provisioning/provisioning_cc"),
+    DiscoveryQos = require("../../../../src/main/js/joynr/proxy/DiscoveryQos"),
+    JoynrException = require("../../../main/js/joynr/exceptions/JoynrException");
 
 describe("libjoynr-js.integration.localDiscoveryTest", function() {
     var radioProxy;
