@@ -48,15 +48,15 @@ libjoynrExports = [
     "./joynr/exceptions/ProviderRuntimeException",
     "./joynr/exceptions/PublicationMissedException",
     "./joynr/exceptions/SubscriptionException",
-    "./joynr/types/ProviderQos",
-    "./joynr/types/ProviderScope",
-    "./joynr/types/CustomParameter",
+    "./generated/joynr/types/ProviderQos",
+    "./generated/joynr/types/ProviderScope",
+    "./generated/joynr/types/CustomParameter",
     "./joynr/proxy/DiscoveryQos",
-    "./joynr/types/DiscoveryScope",
-    "./joynr/system/RoutingTypes/BrowserAddress",
-    "./joynr/system/RoutingTypes/ChannelAddress",
-    "./joynr/system/RoutingTypes/WebSocketAddress",
-    "./joynr/system/RoutingTypes/WebSocketClientAddress",
+    "./generated/joynr/types/DiscoveryScope",
+    "./generated/joynr/system/RoutingTypes/BrowserAddress",
+    "./generated/joynr/system/RoutingTypes/ChannelAddress",
+    "./generated/joynr/system/RoutingTypes/WebSocketAddress",
+    "./generated/joynr/system/RoutingTypes/WebSocketClientAddress",
     "./joynr/util/LongTimer"
 ];
 var Runtime = require("./joynr/Runtime");
@@ -80,15 +80,15 @@ var NoCompatibleProviderFoundException = require("./joynr/exceptions/NoCompatibl
 var ProviderRuntimeException = require("./joynr/exceptions/ProviderRuntimeException");
 var PublicationMissedException = require("./joynr/exceptions/PublicationMissedException");
 var SubscriptionException = require("./joynr/exceptions/SubscriptionException");
-var ProviderQos = require("./joynr/types/ProviderQos");
-var ProviderScope = require("./joynr/types/ProviderScope");
-var CustomParameter = require("./joynr/types/CustomParameter");
+var ProviderQos = require("./generated/joynr/types/ProviderQos");
+var ProviderScope = require("./generated/joynr/types/ProviderScope");
+var CustomParameter = require("./generated/joynr/types/CustomParameter");
 var DiscoveryQos = require("./joynr/proxy/DiscoveryQos");
-var DiscoveryScope = require("./joynr/types/DiscoveryScope");
-var BrowserAddress = require("./joynr/system/RoutingTypes/BrowserAddress");
-var ChannelAddress = require("./joynr/system/RoutingTypes/ChannelAddress");
-var WebSocketAddress = require("./joynr/system/RoutingTypes/WebSocketAddress");
-var WebSocketClientAddress = require("./joynr/system/RoutingTypes/WebSocketClientAddress");
+var DiscoveryScope = require("./generated/joynr/types/DiscoveryScope");
+var BrowserAddress = require("./generated/joynr/system/RoutingTypes/BrowserAddress");
+var ChannelAddress = require("./generated/joynr/system/RoutingTypes/ChannelAddress");
+var WebSocketAddress = require("./generated/joynr/system/RoutingTypes/WebSocketAddress");
+var WebSocketClientAddress = require("./generated/joynr/system/RoutingTypes/WebSocketClientAddress");
 var LongTimer = require("./joynr/util/LongTimer");
 
 // load all external modules
@@ -100,6 +100,7 @@ for (i = 0; i < libjoynrExports.length; ++i) {
     nsContext = root;
     nsElems = libjoynrExports[i]
         .replace(/^\.\/joynr\//, "")
+        .replace(/\.\/generated\/joynr\//, "")
         .split("/")
         .reverse();
     //remove "joynr";

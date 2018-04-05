@@ -35,13 +35,12 @@ libjoynrClusterControllerExports = [
     "./joynr/proxy/MulticastSubscriptionQos",
     "./joynr/proxy/OnChangeWithKeepAliveSubscriptionQos",
     "./joynr/types/ArbitrationStrategyCollection",
-    "./joynr/system/RoutingTypes/BrowserAddress",
-    "./joynr/system/RoutingTypes/ChannelAddress",
-    "./joynr/system/RoutingTypes/WebSocketAddress",
-    "./joynr/system/RoutingTypes/WebSocketClientAddress",
+    "./generated/joynr/system/RoutingTypes/BrowserAddress",
+    "./generated/joynr/system/RoutingTypes/ChannelAddress",
+    "./generated/joynr/system/RoutingTypes/WebSocketAddress",
+    "./generated/joynr/system/RoutingTypes/WebSocketClientAddress",
     "./joynr/util/Util"
 ];
-
 var Runtime = require("./joynr/Runtime");
 var buildSignature = require("./joynr/buildSignature");
 var MessagingQos = require("./joynr/messaging/MessagingQos");
@@ -50,10 +49,10 @@ var OnChangeSubscriptionQos = require("./joynr/proxy/OnChangeSubscriptionQos");
 var MulticastSubscriptionQos = require("./joynr/proxy/MulticastSubscriptionQos");
 var OnChangeWithKeepAliveSubscriptionQos = require("./joynr/proxy/OnChangeWithKeepAliveSubscriptionQos");
 var ArbitrationStrategyCollection = require("./joynr/types/ArbitrationStrategyCollection");
-var BrowserAddress = require("./joynr/system/RoutingTypes/BrowserAddress");
-var ChannelAddress = require("./joynr/system/RoutingTypes/ChannelAddress");
-var WebSocketAddress = require("./joynr/system/RoutingTypes/WebSocketAddress");
-var WebSocketClientAddress = require("./joynr/system/RoutingTypes/WebSocketClientAddress");
+var BrowserAddress = require("./generated/joynr/system/RoutingTypes/BrowserAddress");
+var ChannelAddress = require("./generated/joynr/system/RoutingTypes/ChannelAddress");
+var WebSocketAddress = require("./generated/joynr/system/RoutingTypes/WebSocketAddress");
+var WebSocketClientAddress = require("./generated/joynr/system/RoutingTypes/WebSocketClientAddress");
 var Util = require("./joynr/util/Util");
 
 // load all external modules
@@ -65,6 +64,7 @@ for (i = 0; i < libjoynrClusterControllerExports.length; ++i) {
     nsContext = root;
     nsElems = libjoynrClusterControllerExports[i]
         .replace(/^\.\/joynr\//, "")
+        .replace(/\.\/generated\/joynr\//, "")
         .split("/")
         .reverse();
     // go through namespace elements of require.js namespace, i.e. "some/namespace/NameSpaceTest"
