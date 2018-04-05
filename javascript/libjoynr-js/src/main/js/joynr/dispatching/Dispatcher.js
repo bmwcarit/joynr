@@ -818,7 +818,7 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
                 try {
                     var subscriptionStop = new SubscriptionStop(payload);
                     log.info(
-                        "subscription stop " + subscriptionStop.subscriptionId,
+                        "received subscription stop " + subscriptionStop.subscriptionId,
                         DiagnosticTags.forSubscriptionStop({
                             subscriptionId: subscriptionStop.subscriptionId,
                             to: joynrMessage.to,
