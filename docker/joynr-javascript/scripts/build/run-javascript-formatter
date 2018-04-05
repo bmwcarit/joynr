@@ -10,31 +10,9 @@ cd /data/src
 set -e -x
 
 (
-  echo "install root project and basemodel"
-  mvn install -pl ".,basemodel" \
-    -P no-license-and-notice,no-java-formatter,no-checkstyle -DskipTests
-)
-
-(
-  echo "install build-resources and js-generator"
-  cd tools
-  mvn install -pl \
-    ".,build-resources,generator,generator/dependency-libs,generator/framework,generator/js-generator,generator/joynr-generator-maven-plugin" \
-    -P no-license-and-notice,no-java-formatter,no-checkstyle -DskipTests
-)
-
-(
-  echo "install js-dependencies"
-  cd javascript
-  mvn install -pl ".,js-dependencies"
-)
-
-(
   echo "format javascript/libjoynr-js"
   cd javascript/libjoynr-js
-  mvn process-sources resources:resources dependency:unpack
-  npm install --prefix=./target/node-classes prettier@1.8.2
-  chmod +x target/classes/run_formatter.sh
-  target/classes/run_formatter.sh
+  npm i
+  npm run format
 )
 
