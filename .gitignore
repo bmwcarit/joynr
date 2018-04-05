@@ -1,3 +1,4 @@
+.autosave
 target/
 .classpath
 .project
@@ -17,7 +18,7 @@ logs/
 examples/radio-app/gps-provider-joynr.properties
 joynrpersistence/
 derby.log
-/build/
+build/
 javascript/joynr.properties
 javascript/apps/radio/joynr.properties
 java/core/clustercontroller-standalone/joynr.properties

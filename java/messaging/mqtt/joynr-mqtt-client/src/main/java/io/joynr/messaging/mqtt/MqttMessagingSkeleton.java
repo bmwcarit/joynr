@@ -18,17 +18,16 @@
  */
 package io.joynr.messaging.mqtt;
 
-import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_BACKPRESSURE_ENABLED;
-import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_BACKPRESSURE_MAX_INCOMING_MQTT_MESSAGES_IN_QUEUE;
-import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_BACKPRESSURE_REPEATED_MQTT_MESSAGE_IGNORE_PERIOD_MS;
+import static io.joynr.messaging.mqtt.settings.LimitAndBackpressureSettings.PROPERTY_MAX_INCOMING_MQTT_REQUESTS;
 
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.DelayQueue;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.Set;
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,125 +39,62 @@ import com.google.inject.name.Named;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
+import io.joynr.messaging.mqtt.statusmetrics.MqttStatusReceiver;
 import io.joynr.messaging.routing.MessageProcessedListener;
 import io.joynr.messaging.routing.MessageRouter;
-import io.joynr.messaging.routing.TimedDelayed;
 import io.joynr.smrf.EncodingException;
 import io.joynr.smrf.UnsuppportedVersionException;
 import joynr.ImmutableMessage;
+import joynr.Message;
 import joynr.system.RoutingTypes.MqttAddress;
 
 /**
  * Connects to the MQTT broker
  */
 public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessageProcessedListener {
-
     private static final Logger LOG = LoggerFactory.getLogger(MqttMessagingSkeleton.class);
-    private final int repeatedMqttMessageIgnorePeriodMs;
-    private final int maxMqttMessagesInQueue;
-    private MessageRouter messageRouter;
+
+    protected final int maxIncomingMqttRequests;
+    private final MessageRouter messageRouter;
     private JoynrMqttClient mqttClient;
-    private MqttClientFactory mqttClientFactory;
-    private MqttAddress ownAddress;
-    private ConcurrentMap<String, AtomicInteger> multicastSubscriptionCount = Maps.newConcurrentMap();
-    private MqttTopicPrefixProvider mqttTopicPrefixProvider;
-    private RawMessagingPreprocessor rawMessagingPreprocessor;
-    private Set<JoynrMessageProcessor> messageProcessors;
-    private Map<String, MqttAckInformation> processingMessages;
-    private DelayQueue<DelayedMessageId> processedMessagesQueue;
-    private final boolean backpressureEnabled;
-
-    private static class MqttAckInformation {
-        private int mqttId;
-        private int mqttQos;
-
-        MqttAckInformation(int mqttId, int mqttQos) {
-            this.mqttId = mqttId;
-            this.mqttQos = mqttQos;
-        }
-
-        public int getMqttId() {
-            return mqttId;
-        }
-
-        public int getMqttQos() {
-            return mqttQos;
-        }
-    }
-
-    private static class DelayedMessageId extends TimedDelayed {
-
-        private String messageId;
-
-        public DelayedMessageId(String messageId, long delayMs) {
-            super(delayMs);
-            this.messageId = messageId;
-        }
-
-        public String getMessageId() {
-            return messageId;
-        }
-
-        @Override
-        public int hashCode() {
-            final int prime = 31;
-            int result = super.hashCode();
-            result = prime * result + ((messageId == null) ? 0 : messageId.hashCode());
-            return result;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {
-                return true;
-            }
-            if (obj == null)
-                return false;
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
-            DelayedMessageId other = (DelayedMessageId) obj;
-            if (messageId == null) {
-                if (other.messageId != null) {
-                    return false;
-                }
-            } else if (!messageId.equals(other.messageId)) {
-                return false;
-            }
-            return true;
-        }
-    }
+    private final MqttClientFactory mqttClientFactory;
+    private final MqttAddress ownAddress;
+    private final ConcurrentMap<String, AtomicInteger> multicastSubscriptionCount;
+    private final MqttTopicPrefixProvider mqttTopicPrefixProvider;
+    private final RawMessagingPreprocessor rawMessagingPreprocessor;
+    private final Set<JoynrMessageProcessor> messageProcessors;
+    private final Set<String> incomingMqttRequests;
+    private final AtomicLong droppedMessagesCount;
+    private final MqttStatusReceiver mqttStatusReceiver;
 
     @Inject
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 2 LINES
     public MqttMessagingSkeleton(@Named(MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
-                                 @Named(PROPERTY_BACKPRESSURE_REPEATED_MQTT_MESSAGE_IGNORE_PERIOD_MS) int repeatedMqttMessageIgnorePeriodMs,
-                                 @Named(PROPERTY_BACKPRESSURE_MAX_INCOMING_MQTT_MESSAGES_IN_QUEUE) int maxMqttMessagesInQueue,
-                                 @Named(PROPERTY_BACKPRESSURE_ENABLED) boolean backpressureEnabled,
+                                 @Named(PROPERTY_MAX_INCOMING_MQTT_REQUESTS) int maxIncomingMqttRequests,
                                  MessageRouter messageRouter,
                                  MqttClientFactory mqttClientFactory,
                                  MqttTopicPrefixProvider mqttTopicPrefixProvider,
                                  RawMessagingPreprocessor rawMessagingPreprocessor,
-                                 Set<JoynrMessageProcessor> messageProcessors) {
-        this.backpressureEnabled = backpressureEnabled;
+                                 Set<JoynrMessageProcessor> messageProcessors,
+                                 MqttStatusReceiver mqttStatusReceiver) {
         this.ownAddress = ownAddress;
-        this.repeatedMqttMessageIgnorePeriodMs = repeatedMqttMessageIgnorePeriodMs;
-        this.maxMqttMessagesInQueue = maxMqttMessagesInQueue;
+        this.maxIncomingMqttRequests = maxIncomingMqttRequests;
         this.messageRouter = messageRouter;
         this.mqttClientFactory = mqttClientFactory;
         this.mqttTopicPrefixProvider = mqttTopicPrefixProvider;
         this.rawMessagingPreprocessor = rawMessagingPreprocessor;
         this.messageProcessors = messageProcessors;
-        this.processingMessages = new HashMap<>();
-        this.processedMessagesQueue = new DelayQueue<>();
+        this.incomingMqttRequests = Collections.synchronizedSet(new HashSet<String>());
+        this.droppedMessagesCount = new AtomicLong();
+        this.multicastSubscriptionCount = Maps.newConcurrentMap();
+        this.mqttStatusReceiver = mqttStatusReceiver;
     }
 
     @Override
     public void init() {
         LOG.debug("Initializing MQTT skeleton ...");
-        if (backpressureEnabled) {
-            messageRouter.registerMessageProcessedListener(this);
-        }
+
+        messageRouter.registerMessageProcessedListener(this);
 
         mqttClient = mqttClientFactory.create();
         mqttClient.setMessageListener(this);
@@ -208,47 +144,8 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
         return topic;
     }
 
-    private void forwardMessageWithBackpressure(ImmutableMessage message,
-                                                int mqttId,
-                                                int mqttQos,
-                                                FailureAction failureAction) {
-        message.setReceivedFromGlobal(true);
-        synchronized (processingMessages) {
-            // message.getId() == null (NullPointerException) already caught in transmit
-            processingMessages.put(message.getId(), new MqttAckInformation(mqttId, mqttQos));
-        }
-        try {
-            messageRouter.route(message);
-        } catch (Exception e) {
-            LOG.error("Error processing incoming message. Message will be dropped: {} ", e.getMessage());
-            synchronized (processingMessages) {
-                handleMessageProcessed(message.getId(), mqttId, mqttQos);
-            }
-            failureAction.execute(e);
-        }
-        synchronized (processingMessages) {
-            removeProcessedMessageInformation();
-        }
-    }
-
-    private void forwardMessageWithoutBackpressure(ImmutableMessage message,
-                                                   int mqttId,
-                                                   int mqttQos,
-                                                   FailureAction failureAction) {
-        message.setReceivedFromGlobal(true);
-
-        try {
-            messageRouter.route(message);
-        } catch (Exception e) {
-            LOG.error("Error processing incoming message. Message will be dropped: {} ", e.getMessage());
-            failureAction.execute(e);
-        }
-
-        mqttClient.messageReceivedAndProcessingFinished(mqttId, mqttQos);
-    }
-
     @Override
-    public void transmit(byte[] serializedMessage, int mqttId, int mqttQos, FailureAction failureAction) {
+    public void transmit(byte[] serializedMessage, FailureAction failureAction) {
         try {
             HashMap<String, Serializable> context = new HashMap<String, Serializable>();
             byte[] processedMessage = rawMessagingPreprocessor.process(serializedMessage, context);
@@ -265,37 +162,51 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
             }
 
             if (dropMessage(message)) {
+                droppedMessagesCount.incrementAndGet();
+                mqttStatusReceiver.notifyMessageDropped();
                 return;
             }
 
-            if (backpressureEnabled) {
-                forwardMessageWithBackpressure(message, mqttId, mqttQos, failureAction);
-            } else {
-                forwardMessageWithoutBackpressure(message, mqttId, mqttQos, failureAction);
+            message.setReceivedFromGlobal(true);
+
+            if (isRequestMessageTypeThatCanBeDropped(message.getType())) {
+                requestAccepted(message.getId());
+            }
+
+            try {
+                messageRouter.route(message);
+            } catch (Exception e) {
+                LOG.error("Error processing incoming message. Message will be dropped: {} ", e.getMessage());
+                messageProcessed(message.getId());
+                failureAction.execute(e);
             }
         } catch (UnsuppportedVersionException | EncodingException | NullPointerException e) {
             LOG.error("Message: \"{}\", could not be deserialized, exception: {}", serializedMessage, e.getMessage());
-            mqttClient.messageReceivedAndProcessingFinished(mqttId, mqttQos);
             failureAction.execute(e);
         }
     }
 
     private boolean dropMessage(ImmutableMessage message) {
-        if (backpressureEnabled) {
-            synchronized (processingMessages) {
-                // The number of not yet processed (queued) Mqtt messages is the difference between
-                // processingMessages.size() and the number of messages which are already processed but still
-                // not removed from processingMessages.
-                if (processingMessages.size() - processedMessagesQueue.size() >= maxMqttMessagesInQueue) {
-                    LOG.warn("Maximum number of Mqtt messages in message queue reached. "
-                            + "Incoming Mqtt message with id {} cannot be handled now.", message.getId());
-                    return true;
-                }
-                if (processingMessages.containsKey(message.getId())) {
-                    LOG.debug("Dropping already received message with id {}", message.getId());
-                    return true;
-                }
+        // check if a limit for requests is set and
+        // if there are already too many requests still not processed
+        if (maxIncomingMqttRequests > 0 && incomingMqttRequests.size() >= maxIncomingMqttRequests) {
+            if (isRequestMessageTypeThatCanBeDropped(message.getType())) {
+                LOG.warn("Incoming MQTT message with id {} will be dropped as limit of {} requests is reached",
+                         message.getId(),
+                         maxIncomingMqttRequests);
+                return true;
             }
+        }
+
+        return false;
+    }
+
+    // only certain types of messages can be dropped in order not to break
+    // the communication, e.g. a reply message must not be dropped
+    private boolean isRequestMessageTypeThatCanBeDropped(String messageType) {
+        if (messageType.equals(Message.VALUE_MESSAGE_TYPE_REQUEST)
+                || messageType.equals(Message.VALUE_MESSAGE_TYPE_ONE_WAY)) {
+            return true;
         }
 
         return false;
@@ -313,34 +224,26 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
         return mqttTopicPrefixProvider.getMulticastTopicPrefix() + translateWildcard(multicastId);
     }
 
-    private void removeProcessedMessageInformation() {
-        DelayedMessageId delayedMessageId;
-        while ((delayedMessageId = processedMessagesQueue.poll()) != null) {
-            LOG.debug("Message {} removed from list of processed messages", delayedMessageId.getMessageId());
-            processingMessages.remove(delayedMessageId.getMessageId());
-        }
+    public long getDroppedMessagesCount() {
+        return droppedMessagesCount.get();
     }
 
-    private void handleMessageProcessed(String messageId, int mqttId, int mqttQos) {
-        DelayedMessageId delayedMessageId = new DelayedMessageId(messageId, repeatedMqttMessageIgnorePeriodMs);
-        if (!processedMessagesQueue.contains(delayedMessageId)) {
-            LOG.debug("Message {} was processed and will be acknowledged", messageId);
-            mqttClient.messageReceivedAndProcessingFinished(mqttId, mqttQos);
-            processedMessagesQueue.put(delayedMessageId);
-        }
+    protected int getCurrentCountOfUnprocessedMqttRequests() {
+        return incomingMqttRequests.size();
     }
 
     @Override
     public void messageProcessed(String messageId) {
-        synchronized (processingMessages) {
-            MqttAckInformation info = processingMessages.get(messageId);
-            if (info == null) {
-                LOG.debug("Message {} was processed but it is unkown", messageId);
-                return;
-            }
-            handleMessageProcessed(messageId, info.getMqttId(), info.getMqttQos());
-            removeProcessedMessageInformation();
+        if (incomingMqttRequests.remove(messageId)) {
+            requestProcessed(messageId);
         }
     }
 
+    protected void requestAccepted(String messageId) {
+        incomingMqttRequests.add(messageId);
+    }
+
+    protected void requestProcessed(String messageId) {
+        LOG.debug("Request {} was processed and is removed from the MQTT skeleton tracking list", messageId);
+    }
 }

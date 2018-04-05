@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "### start build_docker_image.sh for joynr-backend-jee ###"
+
 if [ -d target ]; then
 	rm -Rf target
 fi
@@ -27,3 +29,5 @@ fi
 docker build -t joynr-backend-jee:latest .
 docker images --filter "dangling=true" -q | xargs docker rmi -f 2>/dev/null
 rm -Rf target
+
+echo "### end build_docker_image.sh for joynr-backend-jee ###"

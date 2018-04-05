@@ -69,12 +69,14 @@ var ChannelMessagingStubFactoryTest = require("../test-classes/joynr/messaging/c
 var ChannelMessagingStubTest = require("../test-classes/joynr/messaging/channel/ChannelMessagingStubTest");
 var DiscoveryQosTest = require("../test-classes/joynr/capabilities/discovery/DiscoveryQosTest");
 var DispatcherTest = require("../test-classes/joynr/dispatching/DispatcherTest");
+var GenerationUtilTest = require("../test-classes/joynr/util/GenerationUtilTest");
 var InProcessAddressTest = require("../test-classes/joynr/messaging/inprocess/InProcessAddressTest");
 var InProcessMessagingSkeletonTest = require("../test-classes/joynr/messaging/inprocess/InProcessMessagingSkeletonTest");
 var InProcessMessagingStubFactoryTest = require("../test-classes/joynr/messaging/inprocess/InProcessMessagingStubFactoryTest");
 var InProcessMessagingStubTest = require("../test-classes/joynr/messaging/inprocess/InProcessMessagingStubTest");
 var InProcessStubAndSkeletonTest = require("../test-classes/joynr/util/InProcessStubAndSkeletonTest");
 var JoynrMessageTest = require("../test-classes/joynr/messaging/JoynrMessageTest");
+var JoynrLoggerTest = require("../test-classes/joynr/system/JoynrLoggerTest");
 var JsonSerializerTest = require("../test-classes/joynr/util/JSONSerializerTest");
 var LocalStorageNodeTest = require("../test-classes/global/LocalStorageNodeTest");
 var LongPollingChannelMessageReceiverTest = require("../test-classes/joynr/messaging/channel/LongPollingChannelMessageReceiverTest");
@@ -125,6 +127,7 @@ var WebSocketMessagingSkeletonTest = require("../test-classes/joynr/messaging/we
 var WebSocketMessagingStubFactoryTest = require("../test-classes/joynr/messaging/websocket/WebSocketMessagingStubFactoryTest");
 var WebSocketMessagingStubTest = require("../test-classes/joynr/messaging/websocket/WebSocketMessagingStubTest");
 var WebSocketNodeTest = require("../test-classes/global/WebSocketNodeTest");
+var WebSocketLibJoynrRuntimeTest = require("../test-classes/joynr/start/WebSocketLibjoynrRuntimeTest");
 
 console.log("all tests modules loaded");
 loadingFinished = true;

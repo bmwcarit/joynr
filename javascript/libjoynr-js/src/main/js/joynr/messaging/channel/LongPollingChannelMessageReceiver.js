@@ -23,11 +23,11 @@ var JoynrMessage = require("../JoynrMessage");
 var JsonParser = require("../../../lib/JsonParser");
 var MessagingQos = require("../MessagingQos");
 var DiagnosticTags = require("../../system/DiagnosticTags");
-var LoggerFactory = require("../../system/LoggerFactory");
+var LoggingManager = require("../../system/LoggingManager");
 var Util = require("../../util/UtilInternal");
 var LongTimer = require("../../util/LongTimer");
 
-var log = LoggerFactory.getLogger("joynr.messaging.LongPollingChannelMessageReceiver");
+var log = LoggingManager.getLogger("joynr.messaging.LongPollingChannelMessageReceiver");
 var storagePrefix = "joynr.channels";
 
 /**

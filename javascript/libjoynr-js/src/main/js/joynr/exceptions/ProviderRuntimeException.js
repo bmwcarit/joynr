@@ -21,7 +21,7 @@
 var TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
 var Util = require("../util/UtilInternal");
 var JoynrRuntimeException = require("./JoynrRuntimeException");
-var LoggerFactory = require("../system/LoggerFactory");
+var LoggingManager = require("../system/LoggingManager");
 var defaultSettings;
 
 /**
@@ -50,7 +50,7 @@ function ProviderRuntimeException(settings) {
         return new ProviderRuntimeException(settings);
     }
 
-    var log = LoggerFactory.getLogger("joynr.exceptions.ProviderRuntimeException");
+    var log = LoggingManager.getLogger("joynr.exceptions.ProviderRuntimeException");
     var runtimeException = new JoynrRuntimeException(settings);
 
     /**

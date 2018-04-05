@@ -94,6 +94,15 @@ TEST_F(IltConsumerGetterSetterTest, callGetAttributeInt8readonlyNoSubscriptions)
     ASSERT_EQ(result, expectedResult);
 }
 
+TEST_F(IltConsumerGetterSetterTest, callGetAttributeByteBuffer)
+{
+    joynr::ByteBuffer result;
+    joynr::ByteBuffer expectedResult = {0, 100, 255};
+    JOYNR_ASSERT_NO_THROW(testInterfaceProxy->setAttributeByteBuffer(expectedResult));
+    JOYNR_ASSERT_NO_THROW(testInterfaceProxy->getAttributeByteBuffer(result));
+    ASSERT_EQ(result, expectedResult);
+}
+
 TEST_F(IltConsumerGetterSetterTest, callSetAttributeArrayOfStringImplicit)
 {
     std::vector<std::string> stringArrayArg = IltUtil::createStringArray();

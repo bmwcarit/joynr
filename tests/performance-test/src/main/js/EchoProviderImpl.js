@@ -19,7 +19,6 @@
  * #L%
  */
 
-
 var joynr = require("joynr");
 var testbase = require("test-base");
 
@@ -28,15 +27,10 @@ var error = testbase.logging.error;
 var log = testbase.logging.log;
 
 exports.implementation = {
-
     simpleAttribute: {
+        set: function() {},
 
-        set : function() {
-        },
-
-        get: function () {
-
-        }
+        get: function() {}
     },
 
     echoString: function(opArgs) {
@@ -44,26 +38,25 @@ exports.implementation = {
     },
 
     echoByteArray: function(opArgs) {
-        return new Promise(function(resolve, reject) {
-            if (opArgs.data === undefined) {
-                reject(new joynr.exceptions.ProviderRuntimeException(
-                        { detailMessage: "echoByteArray: invalid argument data" }));
-            } else {
-                resolve({ responseData: opArgs.data });
-            }
-        });
+        if (opArgs.data === undefined) {
+            throw new joynr.exceptions.ProviderRuntimeException({
+                detailMessage: "echoByteArray: invalid argument data"
+            });
+        } else {
+            return { responseData: opArgs.data };
+        }
     },
 
     echoComplexStruct: function(opArgs) {
-        return new Promise(function(resolve, reject) {
-            if (opArgs.data === undefined) {
-                reject(new joynr.exceptions.ProviderRuntimeException(
-                        { detailMessage: "echoComplexStruct: invalid argument data" }));
-            } else {
-                resolve({ responseData: opArgs.data });
-            }
-        });
-    }
+        if (opArgs.data === undefined) {
+            throw new joynr.exceptions.ProviderRuntimeException({
+                detailMessage: "echoComplexStruct: invalid argument data"
+            });
+        } else {
+            return { responseData: opArgs.data };
+        }
+    },
+    broadcastWithSinglePrimitiveParameter: {}
 };
 
 self = exports.implementation;

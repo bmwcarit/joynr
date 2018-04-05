@@ -36,9 +36,11 @@ import java.util.concurrent.Future;
 import javax.annotation.Nullable;
 
 import joynr.ImmutableMessage;
+import joynr.test.JoynrTestLoggingRule;
 
 import org.junit.Before;
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -54,6 +56,8 @@ import com.jayway.restassured.response.Response;
 public class AttachmentTest {
 
     private static final Logger logger = LoggerFactory.getLogger(AttachmentTest.class);
+    @Rule
+    public JoynrTestLoggingRule joynrTestRule = new JoynrTestLoggingRule(logger);
 
     @BounceProxyServerContext
     public BounceProxyServerSetup configuration;

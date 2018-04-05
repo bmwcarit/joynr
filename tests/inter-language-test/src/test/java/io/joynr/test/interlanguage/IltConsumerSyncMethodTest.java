@@ -40,14 +40,34 @@ import joynr.interlanguagetest.namedTypeCollection2.ExtendedStructOfPrimitives;
 import joynr.interlanguagetest.namedTypeCollection2.ExtendedTypeCollectionEnumerationInTypeCollection;
 import joynr.interlanguagetest.namedTypeCollection2.MapStringString;
 
+import org.apache.commons.lang.ArrayUtils;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
+
+import org.junit.Assert;
 import static org.junit.Assert.fail;
 
 public class IltConsumerSyncMethodTest extends IltConsumerTest {
-    private static final Logger LOG = LoggerFactory.getLogger(IltConsumerTest.class);
+    private static final Logger LOG = LoggerFactory.getLogger(IltConsumerSyncMethodTest.class);
+
+    @BeforeClass
+    public static void setUp() throws Exception {
+        LOG.info("setUp: Entering");
+        setupConsumerRuntime(false);
+        LOG.info("setUp: Leaving");
+    }
+
+    @AfterClass
+    public static void tearDown() throws InterruptedException {
+        LOG.info("tearDown: Entering");
+        generalTearDown();
+        LOG.info("tearDown: Leaving");
+    }
 
     /*
      * SYNCHRONOUS METHOD CALLS
@@ -234,6 +254,41 @@ public class IltConsumerSyncMethodTest extends IltConsumerTest {
         } catch (Exception e) {
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
             return;
+        }
+        LOG.info(name.getMethodName() + " - OK");
+    }
+
+    @Test
+    public void callMethodWithSingleByteBufferParameter() {
+        LOG.info(name.getMethodName());
+        try {
+            Byte[] byteBufferArg = { -128, 0, 127 };
+
+            Byte[] result = testInterfaceProxy.methodWithSingleByteBufferParameter(byteBufferArg);
+
+            Assert.assertNotNull(name.getMethodName() + " - FAILED - got no result", result);
+            Assert.assertArrayEquals(name.getMethodName() + " - FAILED - got invalid result", byteBufferArg, result);
+        } catch (Exception e) {
+            fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
+        }
+        LOG.info(name.getMethodName() + " - OK");
+    }
+
+    @Test
+    public void callMethodWithMultipleByteBufferParameters() {
+        LOG.info(name.getMethodName());
+        try {
+            Byte[] byteBufferArg1 = { -5, 125 };
+            Byte[] byteBufferArg2 = { 78, 0 };
+
+            Byte[] result = testInterfaceProxy.methodWithMultipleByteBufferParameters(byteBufferArg1, byteBufferArg2);
+
+            Assert.assertNotNull(name.getMethodName() + " - FAILED - got no result", result);
+            Assert.assertArrayEquals(name.getMethodName() + " - FAILED - got invalid result",
+                                     (Byte[]) ArrayUtils.addAll(byteBufferArg1, byteBufferArg2),
+                                     result);
+        } catch (Exception e) {
+            fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
         }
         LOG.info(name.getMethodName() + " - OK");
     }

@@ -24,14 +24,14 @@
 var JoynrMessage = require("../joynr/messaging/JoynrMessage");
 var JSONSerializer = require("../joynr/util/JSONSerializer");
 var JoynrRuntimeException = require("../joynr/exceptions/JoynrRuntimeException");
-var LoggerFactory = require("../joynr/system/LoggerFactory");
+var LoggingManager = require("../joynr/system/LoggingManager");
 
 if (typeof TextDecoder !== "function") {
     throw new JoynrRuntimeException(
         "Encoding/Decoding of binary websocket messages not possible. TextEncoder/TextDecoder not available."
     );
 }
-var log = LoggerFactory.getLogger("joynr.messaging.websocket.WebSocket");
+var log = LoggingManager.getLogger("joynr.messaging.websocket.WebSocket");
 var fileReader = new FileReader();
 fileReader.onError = function(error) {
     log.error("Decoding of binary message failed: " + error);

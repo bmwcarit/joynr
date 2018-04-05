@@ -211,8 +211,6 @@ class ProxyGenerator extends InterfaceJsTemplate {
 	«ENDFOR»
 
 			Object.defineProperty(this, "interfaceName", {
-				writable: false,
-				readable: true,
 				value: "«getFQN(francaIntf)»"
 			});
 		};
@@ -223,33 +221,21 @@ class ProxyGenerator extends InterfaceJsTemplate {
 		 * @default «majorVersion»
 		 * @summary The MAJOR_VERSION of the proxy is GENERATED FROM THE INTERFACE DESCRIPTION
 		 */
-		Object.defineProperty(«proxyName», 'MAJOR_VERSION', {
-			enumerable: false,
-			configurable: false,
-			writable: false,
-			readable: true,
-			value: «majorVersion»
-		});
+		Object.defineProperty(«proxyName», 'MAJOR_VERSION', { value: «majorVersion»});
 		/**
 		 * @name «proxyName»#MINOR_VERSION
 		 * @constant {Number}
 		 * @default «minorVersion»
 		 * @summary The MINOR_VERSION of the proxy is GENERATED FROM THE INTERFACE DESCRIPTION
 		 */
-		Object.defineProperty(«proxyName», 'MINOR_VERSION', {
-			enumerable: false,
-			configurable: false,
-			writable: false,
-			readable: true,
-			value: «minorVersion»
-			});
+		Object.defineProperty(«proxyName», 'MINOR_VERSION', { value: «minorVersion»});
 
 		«proxyName».getUsedDatatypes = function getUsedDatatypes(){
 			return [
-						«FOR datatype : francaIntf.getAllComplexTypes SEPARATOR ','»
-						"«datatype.joynrTypeName»"
-						«ENDFOR»
-					];
+				«FOR datatype : francaIntf.getAllComplexTypes SEPARATOR ','»
+				"«datatype.joynrTypeName»"
+				«ENDFOR»
+			];
 		};
 
 		«IF requireJSSupport»
@@ -277,7 +263,10 @@ class ProxyGenerator extends InterfaceJsTemplate {
 			window.«proxyName» = «proxyName»;
 		}
 		«ELSE»
-		window.«proxyName» = «proxyName»;
+		«FOR datatype : francaIntf.getAllComplexTypes(typeSelectorIncludingErrorTypesAndTransitiveTypes)»
+		require("«relativePathToBase() + datatype.getDependencyPath()»");
+		«ENDFOR»
+		module.exports = «proxyName»;
 		«ENDIF»
 	})();
 	'''

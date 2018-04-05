@@ -18,6 +18,7 @@
  * limitations under the License.
  * #L%
  */
+require("../../node-unit-test-helper");
 var ProxyBuilder = require("../../../classes/joynr/proxy/ProxyBuilder");
 var ProxyOperation = require("../../../classes/joynr/proxy/ProxyOperation");
 var ProxyEvent = require("../../../classes/joynr/proxy/ProxyEvent");
@@ -49,7 +50,6 @@ describe("libjoynr-js.joynr.proxy.ProxyBuilder", function() {
     var arbitratedCaps;
     var messagingQos;
     var messageRouterSpy;
-    var loggingManagerSpy;
     var libjoynrMessagingAddress;
 
     beforeEach(function(done) {
@@ -92,7 +92,6 @@ describe("libjoynr-js.joynr.proxy.ProxyBuilder", function() {
 
         arbitratorSpy = jasmine.createSpyObj("arbitratorSpy", ["startArbitration"]);
         messageRouterSpy = jasmine.createSpyObj("messageRouterSpy", ["addNextHop", "setToKnown"]);
-        loggingManagerSpy = jasmine.createSpyObj("loggingManagerSpy", ["setLoggingContext"]);
         libjoynrMessagingAddress = {
             key: "libjoynrMessagingAddress"
         };
@@ -106,8 +105,7 @@ describe("libjoynr-js.joynr.proxy.ProxyBuilder", function() {
             },
             {
                 messageRouter: messageRouterSpy,
-                libjoynrMessagingAddress: libjoynrMessagingAddress,
-                loggingManager: loggingManagerSpy
+                libjoynrMessagingAddress: libjoynrMessagingAddress
             }
         );
         done();
@@ -386,45 +384,6 @@ describe("libjoynr-js.joynr.proxy.ProxyBuilder", function() {
                 expect(messageRouterSpy.setToKnown.calls.mostRecent().args[0]).toEqual(arbitratedCaps[0].participantId);
                 expect(messageRouterSpy.addNextHop.calls.mostRecent().args[1]).toEqual(libjoynrMessagingAddress);
                 expect(messageRouterSpy.addNextHop.calls.mostRecent().args[2]).toEqual(true);
-                done();
-                return null;
-            })
-            .catch(fail);
-    });
-
-    it("sets the logging context", function(done) {
-        var proxy,
-            spy = jasmine.createSpyObj("spy", ["onFulfilled", "onRejected"]);
-        var onFulfilledCalled = false;
-        settings.loggingContext = {
-            myContext: "myContext",
-            myContextNumber: 1
-        };
-        proxyBuilder
-            .build(RadioProxy, settings)
-            .then(function(argument) {
-                onFulfilledCalled = true;
-                spy.onFulfilled(argument);
-                return null;
-            })
-            .catch(function() {
-                spy.onRejected();
-                return null;
-            });
-
-        waitsFor(
-            function() {
-                return onFulfilledCalled;
-            },
-            "until the ProxyBuilder promise is not pending any more",
-            safetyTimeoutDelta
-        )
-            .then(function() {
-                proxy = spy.onFulfilled.calls.argsFor(0)[0];
-                expect(loggingManagerSpy.setLoggingContext).toHaveBeenCalledWith(
-                    proxy.proxyParticipantId,
-                    settings.loggingContext
-                );
                 done();
                 return null;
             })

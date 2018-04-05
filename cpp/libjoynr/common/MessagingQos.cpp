@@ -135,10 +135,15 @@ std::string MessagingQos::toString() const
     return msgQosAsString.str();
 }
 
-// printing RadioStation with google-test and google-mock
 void PrintTo(const MessagingQos& messagingQos, ::std::ostream* os)
 {
-    *os << "MessagingQos::" << messagingQos.toString();
+    *os << messagingQos.toString();
+}
+
+std::ostream& operator<<(std::ostream& os, const MessagingQos& messagingQos)
+{
+    os << messagingQos.toString();
+    return os;
 }
 
 } // namespace joynr

@@ -67,5 +67,10 @@ defaultSettings.persistencySettings = {
     publications: true
 };
 
+defaultSettings.shutdownSettings = {
+    clearSubscriptionsEnabled: true,
+    clearSubscriptionsTimeoutMs: 1000
+};
+
 defaultSettings.capabilities = [discoveryCapability, routingCapability];
 module.exports = defaultSettings;

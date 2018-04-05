@@ -24,7 +24,6 @@
 #include <string>
 
 #include "joynr/BrokerUrl.h"
-#include "joynr/DispatcherUtils.h"
 #include "joynr/ITransportMessageSender.h"
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"

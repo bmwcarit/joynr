@@ -542,8 +542,7 @@ void JoynrClusterControllerRuntime::init()
     requestCallerDirectory =
             std::dynamic_pointer_cast<IRequestCallerDirectory>(inProcessDispatcher);
 
-    std::shared_ptr<ICapabilitiesClient> capabilitiesClient =
-            std::make_shared<CapabilitiesClient>();
+    auto capabilitiesClient = std::make_shared<CapabilitiesClient>(clusterControllerSettings);
     localCapabilitiesDirectory =
             std::make_shared<LocalCapabilitiesDirectory>(clusterControllerSettings,
                                                          capabilitiesClient,
@@ -598,13 +597,17 @@ void JoynrClusterControllerRuntime::init()
     discoveryQos.addCustomParameter(
             "fixedParticipantId", messagingSettings.getCapabilitiesDirectoryParticipantId());
 
-    std::shared_ptr<ProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>>
-            capabilitiesProxyBuilder =
-                    createProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>(
-                            messagingSettings.getDiscoveryDirectoriesDomain());
+    auto capabilitiesProxyBuilder =
+            createProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>(
+                    messagingSettings.getDiscoveryDirectoriesDomain());
     capabilitiesProxyBuilder->setDiscoveryQos(discoveryQos);
 
-    capabilitiesClient->setProxyBuilder(std::move(capabilitiesProxyBuilder));
+    MessagingQos messagingQos;
+    messagingQos.setCompress(
+            clusterControllerSettings.isGlobalCapabilitiesDirectoryCompressedMessagesEnabled());
+    capabilitiesProxyBuilder->setMessagingQos(messagingQos);
+
+    capabilitiesClient->setProxy(capabilitiesProxyBuilder->build(), messagingQos);
 
     // Do this after local capabilities directory and message router have been initialized.
     enableAccessController(provisionedDiscoveryEntries);
@@ -958,6 +961,7 @@ void JoynrClusterControllerRuntime::shutdownClusterController()
 void JoynrClusterControllerRuntime::runForever()
 {
     lifetimeSemaphore.wait();
+    shutdown();
 }
 
 std::shared_ptr<JoynrClusterControllerRuntime> JoynrClusterControllerRuntime::create(

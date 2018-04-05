@@ -22,7 +22,6 @@
 #include <limits>
 
 #include "joynr/BroadcastSubscriptionRequest.h"
-#include "joynr/DispatcherUtils.h"
 #include "joynr/IKeychain.h"
 #include "joynr/IPlatformSecurityManager.h"
 #include "joynr/Message.h"
@@ -213,9 +212,7 @@ void MutableMessageFactory::initMsg(MutableMessage& msg,
         msg.setCustomHeader(it.first, it.second);
     }
 
-    // calculate expiry date
-    JoynrTimePoint expiryDate = DispatcherUtils::convertTtlToAbsoluteTime(ttl);
-    msg.setExpiryDate(expiryDate);
+    msg.setExpiryDate(TimePoint::fromRelativeMs(ttl));
 
     // if the effort has been set to best effort, then activate that in the headers
     if (qos.getEffort() != MessagingQosEffort::Enum::NORMAL) {

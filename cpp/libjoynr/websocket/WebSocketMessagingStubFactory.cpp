@@ -86,6 +86,8 @@ void WebSocketMessagingStubFactory::addClient(
         auto wsClientStub = std::make_shared<WebSocketMessagingStub>(std::move(webSocket));
         {
             std::lock_guard<std::mutex> lock(clientStubMapMutex);
+            JOYNR_LOG_INFO(
+                    logger(), "adding messaging stub for address: {}", clientAddress.toString());
             clientStubMap[clientAddress] = std::move(wsClientStub);
         }
     } else {
@@ -116,7 +118,7 @@ void WebSocketMessagingStubFactory::addServer(
 void WebSocketMessagingStubFactory::onMessagingStubClosed(
         const system::RoutingTypes::Address& address)
 {
-    JOYNR_LOG_DEBUG(logger(), "removing messaging stub for address: {}", address.toString());
+    JOYNR_LOG_INFO(logger(), "removing messaging stub for address: {}", address.toString());
     std::shared_ptr<const system::RoutingTypes::Address> addressPtr = nullptr;
     // if destination is a WS client address
     if (auto webSocketClientAddress =

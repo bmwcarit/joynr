@@ -17,6 +17,7 @@
  * limitations under the License.
  * #L%
  */
+require("../../../node-unit-test-helper");
 var Promise = require("../../../../classes/global/Promise");
 var ChannelAddress = require("../../../../classes/joynr/system/RoutingTypes/ChannelAddress");
 var ChannelMessagingSender = require("../../../../classes/joynr/messaging/channel/ChannelMessagingSender");

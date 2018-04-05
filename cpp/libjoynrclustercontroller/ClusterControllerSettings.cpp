@@ -54,6 +54,11 @@ void ClusterControllerSettings::checkSettings()
                 DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCY_ENABLED());
     }
 
+    if (!settings.contains(SETTING_GLOBAL_CAPABILITIES_DIRECTORY_COMPRESSED_MESSAGES_ENABLED())) {
+        setGlobalCapabilitiesDirectoryCompressedMessagesEnabled(
+                DEFAULT_GLOBAL_CAPABILITIES_DIRECTORY_COMPRESSED_MESSAGES_ENABLED());
+    }
+
     if (!settings.contains(SETTING_MQTT_CLIENT_ID_PREFIX())) {
         setMqttClientIdPrefix(DEFAULT_MQTT_CLIENT_ID_PREFIX());
     }
@@ -107,6 +112,14 @@ void ClusterControllerSettings::checkSettings()
 
     if (!settings.contains(SETTING_MQTT_TLS_ENABLED())) {
         settings.set(SETTING_MQTT_TLS_ENABLED(), DEFAULT_MQTT_TLS_ENABLED());
+    }
+
+    if (!settings.contains(SETTING_MQTT_TLS_VERSION())) {
+        settings.set(SETTING_MQTT_TLS_VERSION(), DEFAULT_MQTT_TLS_VERSION());
+    }
+
+    if (!settings.contains(SETTING_MQTT_TLS_CIPHERS())) {
+        settings.set(SETTING_MQTT_TLS_CIPHERS(), DEFAULT_MQTT_TLS_CIPHERS());
     }
 
     if (!settings.contains(SETTING_ACCESS_CONTROL_AUDIT())) {
@@ -168,14 +181,16 @@ void ClusterControllerSettings::checkSettings()
 const std::string& ClusterControllerSettings::
         SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME()
 {
-    static const std::string value("lib-joynr/local-capabilities-directory-persistence-file");
+    static const std::string value(
+            "cluster-controller/local-capabilities-directory-persistence-file");
     return value;
 }
 
 const std::string& ClusterControllerSettings::
         SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCY_ENABLED()
 {
-    static const std::string value("lib-joynr/local-capabilities-directory-persistency-enabled");
+    static const std::string value(
+            "cluster-controller/local-capabilities-directory-persistency-enabled");
     return value;
 }
 
@@ -270,6 +285,18 @@ const std::string& ClusterControllerSettings::SETTING_MQTT_TLS_ENABLED()
     return value;
 }
 
+const std::string& ClusterControllerSettings::SETTING_MQTT_TLS_VERSION()
+{
+    static const std::string value("cluster-controller/mqtt-tls-version");
+    return value;
+}
+
+const std::string& ClusterControllerSettings::SETTING_MQTT_TLS_CIPHERS()
+{
+    static const std::string value("cluster-controller/mqtt-tls-ciphers");
+    return value;
+}
+
 const std::string& ClusterControllerSettings::SETTING_MQTT_CERTIFICATE_AUTHORITY_PEM_FILENAME()
 {
     static const std::string value("cluster-controller/mqtt-certificate-authority-pem-filename");
@@ -330,6 +357,18 @@ const std::string& ClusterControllerSettings::DEFAULT_MQTT_CLIENT_ID_PREFIX()
 bool ClusterControllerSettings::DEFAULT_MQTT_TLS_ENABLED()
 {
     return false;
+}
+
+const std::string& ClusterControllerSettings::DEFAULT_MQTT_TLS_VERSION()
+{
+    static const std::string value("tlsv1.2");
+    return value;
+}
+
+const std::string& ClusterControllerSettings::DEFAULT_MQTT_TLS_CIPHERS()
+{
+    static const std::string value("");
+    return value;
 }
 
 bool ClusterControllerSettings::DEFAULT_ACCESS_CONTROL_AUDIT()
@@ -551,6 +590,38 @@ bool ClusterControllerSettings::isMqttTlsEnabled() const
     return settings.get<bool>(SETTING_MQTT_TLS_ENABLED());
 }
 
+void ClusterControllerSettings::setMqttTlsVersion(const std::string& tlsVersion)
+{
+    settings.set<std::string>(SETTING_MQTT_TLS_VERSION(), tlsVersion);
+}
+
+std::string ClusterControllerSettings::getMqttTlsVersion() const
+{
+    return settings.get<std::string>(SETTING_MQTT_TLS_VERSION());
+}
+
+void ClusterControllerSettings::setMqttTlsCiphers(const std::string& tlsCiphers)
+{
+    settings.set<std::string>(SETTING_MQTT_TLS_CIPHERS(), tlsCiphers);
+}
+
+std::string ClusterControllerSettings::getMqttTlsCiphers() const
+{
+    return settings.get<std::string>(SETTING_MQTT_TLS_CIPHERS());
+}
+
+bool ClusterControllerSettings::isGlobalCapabilitiesDirectoryCompressedMessagesEnabled() const
+{
+    return settings.get<bool>(SETTING_GLOBAL_CAPABILITIES_DIRECTORY_COMPRESSED_MESSAGES_ENABLED());
+}
+
+void ClusterControllerSettings::setGlobalCapabilitiesDirectoryCompressedMessagesEnabled(
+        bool enabled)
+{
+    return settings.set<bool>(
+            SETTING_GLOBAL_CAPABILITIES_DIRECTORY_COMPRESSED_MESSAGES_ENABLED(), enabled);
+}
+
 const std::string& ClusterControllerSettings::
         DEFAULT_LOCAL_DOMAIN_ACCESS_STORE_PERSISTENCE_FILENAME()
 {
@@ -559,6 +630,11 @@ const std::string& ClusterControllerSettings::
 }
 
 bool ClusterControllerSettings::DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCY_ENABLED()
+{
+    return false;
+}
+
+bool ClusterControllerSettings::DEFAULT_GLOBAL_CAPABILITIES_DIRECTORY_COMPRESSED_MESSAGES_ENABLED()
 {
     return false;
 }
@@ -603,6 +679,14 @@ const std::string& ClusterControllerSettings::
 const std::string& ClusterControllerSettings::SETTING_ACL_ENTRIES_DIRECTORY()
 {
     static const std::string value("cluster-controller/acl-entries-directory");
+    return value;
+}
+
+const std::string& ClusterControllerSettings::
+        SETTING_GLOBAL_CAPABILITIES_DIRECTORY_COMPRESSED_MESSAGES_ENABLED()
+{
+    static const std::string value(
+            "cluster-controller/global-capabilities-directory-compressed-messages-enabled");
     return value;
 }
 
@@ -877,6 +961,11 @@ void ClusterControllerSettings::printSettings() const
                     "SETTING: {} = {})",
                     SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS(),
                     getCapabilitiesFreshnessUpdateIntervalMs().count());
+    JOYNR_LOG_DEBUG(logger(),
+                    "SETTING: {} = {})",
+                    SETTING_GLOBAL_CAPABILITIES_DIRECTORY_COMPRESSED_MESSAGES_ENABLED(),
+                    isGlobalCapabilitiesDirectoryCompressedMessagesEnabled());
+
     if (settings.get<bool>(SETTING_ACCESS_CONTROL_ENABLE())) {
         JOYNR_LOG_DEBUG(logger(),
                         "SETTING: {} = {})",

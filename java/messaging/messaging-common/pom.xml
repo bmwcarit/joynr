@@ -27,7 +27,7 @@
 	<parent>
 		<groupId>io.joynr.java</groupId>
 		<artifactId>messaging</artifactId>
-		<version>1.0.5</version>
+		<version>1.1.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -35,6 +35,11 @@
 		<dependency>
 			<groupId>io.joynr.java</groupId>
 			<artifactId>javaapi</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.joynr.java.common</groupId>
+			<artifactId>status-metrics</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
@@ -86,5 +91,39 @@
 				</executions>
 			</plugin>
 		</plugins>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+			</resource>
+		</resources>
 	</build>
+
+	<profiles>
+		<profile>
+			<id>carit-copyright</id>
+			<build>
+				<plugins>
+					<!-- NOTE the license to be added to the source header files must be
+				 specifically (redundantly) defined below -->
+					<!-- This is a shortcoming of the license-maven-plugin -->
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>license-maven-plugin</artifactId>
+						<configuration>
+							<verbose>false</verbose>
+							<addSvnKeyWords>true</addSvnKeyWords>
+							<licenseName>apache_v2</licenseName>
+							<roots>
+								<root>.</root>
+							</roots>
+							<excludes>
+								<exclude>src/main/resources/provisioned_capabilities.json</exclude>
+							</excludes>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 </project>

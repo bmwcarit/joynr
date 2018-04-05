@@ -17,9 +17,9 @@
  * #L%
  */
 
-define(["JsonParser", "joynr/system/LoggerFactory"], function(JsonParser, LoggerFactory) {
+define(["JsonParser", "joynr/system/LoggingManager"], function(JsonParser, LoggingManager) {
     describe("libjoynr-js.joynr.messaging.JsonParserTest", function() {
-        var log = LoggerFactory.getLogger("JsonParserTest");
+        var log = LoggingManager.getLogger("JsonParserTest");
 
         it("testSimpleObject", function() {
             var object1 = {

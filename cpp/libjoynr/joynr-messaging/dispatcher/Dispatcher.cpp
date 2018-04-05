@@ -23,7 +23,6 @@
 #include <cstdint>
 
 #include "joynr/BroadcastSubscriptionRequest.h"
-#include "joynr/DispatcherUtils.h"
 #include "joynr/IMessageSender.h"
 #include "joynr/ImmutableMessage.h"
 #include "joynr/IRequestInterpreter.h"
@@ -39,6 +38,7 @@
 #include "joynr/SubscriptionReply.h"
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/SubscriptionStop.h"
+#include "joynr/ThreadPool.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/exceptions/JoynrExceptionUtil.h"
 #include "joynr/serializer/Serializer.h"
@@ -84,7 +84,9 @@ void Dispatcher::addRequestCaller(const std::string& participantId,
 
     std::lock_guard<std::mutex> lock(subscriptionHandlingMutex);
     JOYNR_LOG_TRACE(logger(), "addRequestCaller id= {}", participantId);
+
     requestCallerDirectory.add(participantId, requestCaller);
+    locker.unlock();
 
     if (auto publicationManagerSharedPtr = publicationManager.lock()) {
         // publication manager queues received subscription requests, that are
@@ -106,11 +108,20 @@ void Dispatcher::removeRequestCaller(const std::string& participantId)
     }
     std::lock_guard<std::mutex> lock(subscriptionHandlingMutex);
     JOYNR_LOG_TRACE(logger(), "removeRequestCaller id= {}", participantId);
+    locker.unlock();
+
     // TODO if a provider is removed, all publication runnables are stopped
     // the subscription request is deleted,
     // Q: Should it be restored once the provider is registered again?
     if (auto publicationManagerSharedPtr = publicationManager.lock()) {
         publicationManagerSharedPtr->removeAllSubscriptions(participantId);
+    }
+
+    locker.lock();
+    if (isShuttingDown) {
+        JOYNR_LOG_TRACE(
+                logger(), "removeRequestCaller id= {} cancelled, shutting down", participantId);
+        return;
     }
     requestCallerDirectory.remove(participantId);
 }
@@ -190,7 +201,7 @@ void Dispatcher::handleRequestReceived(std::shared_ptr<ImmutableMessage> message
     }
 
     const std::string& requestReplyId = request.getRequestReplyId();
-    JoynrTimePoint requestExpiryDate = message->getExpiryDate();
+    TimePoint requestExpiryDate = message->getExpiryDate();
 
     auto onSuccess = [
         requestReplyId,
@@ -208,14 +219,13 @@ void Dispatcher::handleRequestReceived(std::shared_ptr<ImmutableMessage> message
             reply.setRequestReplyId(std::move(requestReplyId));
             // send reply back to the original sender (ie. sender and receiver ids are reversed
             // on purpose)
-            JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(
-                    std::chrono::system_clock::now());
-            std::int64_t ttl = std::chrono::duration_cast<std::chrono::milliseconds>(
-                                       requestExpiryDate - now).count();
+            const std::chrono::milliseconds ttl = requestExpiryDate.relativeFromNow();
+            MessagingQos messagingQos(ttl.count());
+            messagingQos.setCompress(message->isCompressed());
             thisSharedPtr->messageSender->sendReply(
                     receiverId, // receiver of the request is sender of reply
                     senderId,   // sender of request is receiver of reply
-                    MessagingQos(ttl),
+                    messagingQos,
                     message->getPrefixedCustomHeaders(),
                     std::move(reply));
         }
@@ -239,18 +249,19 @@ void Dispatcher::handleRequestReceived(std::shared_ptr<ImmutableMessage> message
             Reply reply;
             reply.setRequestReplyId(std::move(requestReplyId));
             reply.setError(exception);
-            JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(
-                    std::chrono::system_clock::now());
-            std::int64_t ttl = std::chrono::duration_cast<std::chrono::milliseconds>(
-                                       requestExpiryDate - now).count();
+            const std::chrono::milliseconds ttl = requestExpiryDate.relativeFromNow();
+            MessagingQos messagingQos(ttl.count());
+            messagingQos.setCompress(message->isCompressed());
             thisSharedPtr->messageSender->sendReply(
                     receiverId, // receiver of the request is sender of reply
                     senderId,   // sender of request is receiver of reply
-                    MessagingQos(ttl),
+                    messagingQos,
                     message->getPrefixedCustomHeaders(),
                     std::move(reply));
         }
     };
+    locker.unlock();
+
     // execute request
     requestInterpreter->execute(
             std::move(caller), request, std::move(onSuccess), std::move(onError));
@@ -300,6 +311,7 @@ void Dispatcher::handleOneWayRequestReceived(std::shared_ptr<ImmutableMessage> m
                         e.what());
         return;
     }
+    locker.unlock();
 
     // execute request
     requestInterpreter->execute(std::move(caller), request);
@@ -336,6 +348,7 @@ void Dispatcher::handleReplyReceived(std::shared_ptr<ImmutableMessage> message)
                        requestReplyId);
         return;
     }
+    locker.unlock();
 
     caller->execute(std::move(reply));
 }
@@ -374,6 +387,7 @@ void Dispatcher::handleSubscriptionRequestReceived(std::shared_ptr<ImmutableMess
                         e.what());
         return;
     }
+    locker.unlock();
 
     if (!caller) {
         // Provider not registered yet
@@ -422,6 +436,7 @@ void Dispatcher::handleMulticastSubscriptionRequestReceived(
                 e.what());
         return;
     }
+    locker.unlock();
 
     publicationManagerSharedPtr->add(
             message->getSender(), message->getRecipient(), subscriptionRequest, messageSender);
@@ -464,6 +479,7 @@ void Dispatcher::handleBroadcastSubscriptionRequestReceived(
                 e.what());
         return;
     }
+    locker.unlock();
 
     if (!caller) {
         // Provider not registered yet
@@ -508,6 +524,8 @@ void Dispatcher::handleSubscriptionStopReceived(std::shared_ptr<ImmutableMessage
                         message->toLogMessage());
         return;
     }
+    locker.unlock();
+
     publicationManagerSharedPtr->stopPublication(subscriptionStop.getSubscriptionId());
 }
 
@@ -542,6 +560,7 @@ void Dispatcher::handleSubscriptionReplyReceived(std::shared_ptr<ImmutableMessag
                         subscriptionId);
         return;
     }
+    locker.unlock();
 
     callback->execute(std::move(subscriptionReply));
 }
@@ -577,6 +596,7 @@ void Dispatcher::handleMulticastReceived(std::shared_ptr<ImmutableMessage> messa
                         multicastId);
         return;
     }
+    locker.unlock();
 
     // TODO: enable for periodic attribute subscriptions
     // when MulticastPublication is extended by subscriptionId
@@ -619,6 +639,7 @@ void Dispatcher::handlePublicationReceived(std::shared_ptr<ImmutableMessage> mes
     }
 
     subscriptionManager->touchSubscriptionState(subscriptionId);
+    locker.unlock();
 
     callback->execute(std::move(subscriptionPublication));
 }
@@ -646,9 +667,11 @@ void Dispatcher::registerPublicationManager(std::weak_ptr<PublicationManager> pu
 
 void Dispatcher::shutdown()
 {
-    WriteLocker locker(isShuttingDownLock);
-    assert(!isShuttingDown);
-    isShuttingDown = true;
+    {
+        WriteLocker locker(isShuttingDownLock);
+        assert(!isShuttingDown);
+        isShuttingDown = true;
+    }
     handleReceivedMessageThreadPool->shutdown();
     replyCallerDirectory.shutdown();
     requestCallerDirectory.shutdown();

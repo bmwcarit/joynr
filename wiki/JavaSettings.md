@@ -120,48 +120,6 @@ The number of threads used by the message router to send joynr messages.
 * **User property**: `joynr.messaging.maximumparallelsends`
 * **Default value**: `20`
 
-### `PROPERTY_BACKPRESSURE_ENABLED`
-Controls whether the backpressure mechanism is active.
-
-* **OPTIONAL**
-* **Type**: Boolean
-* **User property**: `joynr.messaging.backpressure.enabled`
-* **Default value**: `false`
-
-### `PROPERTY_BACKPRESSURE_MAX_INCOMING_MQTT_MESSAGES_IN_QUEUE`
-The number of incoming MQTT messages that can be handled by the message router at the same time.
-
-This property is only relevant when `PROPERTY_BACKPRESSURE_ENABLED` is set to true.
-
-To prevent the mqtt broker from flooding the message queue, the reception of further incoming MQTT
-messages will be delayed by not sending acknowledgement messages to the broker until an already
-accepted Mqtt message is removed from the message queue and is marked as processed.
-See also `PROPERTY_BACKPRESSURE_REPEATED_MQTT_MESSAGE_IGNORE_PERIOD_MS`.
-
-* **OPTIONAL**
-* **Type**: int
-* **User property**: `joynr.messaging.backpressure.maxincomingmqttmessagesinqueue`
-* **Default value**: `20`
-
-### `PROPERTY_BACKPRESSURE_REPEATED_MQTT_MESSAGE_IGNORE_PERIOD_MS`
-Time in milliseconds for which the message ID of processed messages is kept to detect duplicated
-incoming Mqtt messages.
-
-This property is only relevant when `PROPERTY_BACKPRESSURE_ENABLED` is set to true.
-
-The Mqtt broker tries to resend a Qos=1 and Qos=2 message when no response (PUBACK/PUBREL) is
-received. Joynr keeps track of received but not yet processed messages and delays the
-acknowledgement until the message is processed by the provider or proxy callback. After a message
-is marked as processed, the message ID is kept for additional
-`joynr.messaging.backpressure.repeatedmqttmessageignoreperiodms` milliseconds to detect duplicated messages which
-were resent by the MQTT broker because it did not receive an acknowledgement for a processed message
-in time.
-
-* **OPTIONAL**
-* **Type**: long
-* **User property**: `joynr.messaging.backpressure.repeatedmqttmessageignoreperiodms`
-* **Default value**: `1000`
-
 ### `PROPERTY_MESSAGING_MAXIMUM_TTL_MS`
 The maximum allowed time-to-live (TTL) of joynr messages. The TTL used in a joynr message is set on
 the proxy builder using the messaging QoS object. These TTLs are only accepted up to the maximum
@@ -252,7 +210,7 @@ for the added time to the retry interval by the exponential backoff algorithm.
 * **User property**: `joynr.messaging.maxDelayWithExponentialBackoffMs`
 * **Default value**: `-1` (no maximum delay for retry interval)
 
-### PROPERTY_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS
+### `PROPERTY_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS`
 
 The cluster controller sends a freshness update message to the global discovery directory every
 PROPERTY_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS milliseconds. The global discovery directory
@@ -263,7 +221,83 @@ updates the ```lastSeenDateMs``` of all capabilities registered via this cluster
 * **User property**: `joynr.capabilities.freshnessupdateintervalms`
 * **Default value**: `3600000`
 
-##Access Control
+## LimitAndBackpressureSettings
+
+LimitAndBackpressureSettings contains the properties that are related to incoming MQTT
+requests and the possible ways of dealing with a heavy load situations, i.e. when requests
+are processed slower (by joynr or the invoked provider implementations) than their arrival
+rate. The following diagram describes the three different possible states/mechanisms that
+can be configured with the properties of this section:
+![Possible states using limit and backpressure properties](/images/PossibleStatesLimitAndBackpressureProperties.png)
+
+The following diagram shows in more detail the interaction between the properties for the case
+when the backpressure mechanism is enabled:
+![Limit and backpressure properties in action](/images/LimitAndBackpressurePropertiesInAction.png)
+
+### `PROPERTY_MAX_INCOMING_MQTT_REQUESTS`
+Setting this limit protects a joynr instance against consuming too much memory.
+This may be the case if the processing of requests (meaning RPCs and fire-and-forget
+methods) coming over MQTT is slower than their incoming rate and there is a resulting need
+of queueing them. In case the set maximum is reached, further incoming MQTT requests
+are dropped and are lost. Pay attention that other types of incoming MQTT messages (e.g.
+replies) will not be dropped in order not to break the joynr communication. New
+requests coming over MQTT will be accepted again when processing of previous ones
+is completed. The default value of `0` means that no limit is enforced and no messages
+will be ever dropped.
+
+* **OPTIONAL**
+* **Type**: int
+* **User property**: `joynr.messaging.maxincomingmqttrequests`
+* **Default value**: `0`
+
+### `PROPERTY_BACKPRESSURE_ENABLED`
+Controls whether the backpressure mechanism is active. It applies only when using shared
+subscriptions, so `PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS` needs to be `true`.
+When backpressure is enabled it is required to set reasonable values also for
+`PROPERTY_MAX_INCOMING_MQTT_REQUESTS`, `PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_UPPER_THRESHOLD`
+and `PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD`. In case that at
+startup an invalid value combination for these three properties is detected an
+IllegalArgumentException is thrown and backpresure is disabled.
+
+* **OPTIONAL**
+* **Type**: Boolean
+* **User property**: `joynr.messaging.backpressure.enabled`
+* **Default value**: `false`
+
+### `PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_UPPER_THRESHOLD`
+Requires `PROPERTY_MAX_INCOMING_MQTT_REQUESTS` > 0 and will have effect only if
+additionally `PROPERTY_BACKPRESSURE_ENABLED` is set to `true`. The value for this
+property has a maximum of 100 (incl.) and represents a percentage. When joynr reaches the
+set percentage of the maximum incoming MQTT requests (`PROPERTY_MAX_INCOMING_MQTT_REQUESTS`),
+the instance will try to temporarily unsubscribe from the MQTT shared subscriptions
+topic where the requests come from. This should stop the inflow of further MQTT
+requests. The joynr instance will try to subscribe again for the mentioned topic
+when the number of queued requests drops below
+`PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD` percent of the maximum.
+The value for the upper threshold must be strictly higher than
+`PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD`.
+
+* **OPTIONAL**
+* **Type**: int
+* **User property**: `joynr.messaging.backpressure.incomingmqttrequests.upperthreshold`
+* **Default value**: `80`
+
+### `PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD`
+Requires `PROPERTY_MAX_INCOMING_MQTT_REQUESTS` > 0 and will have effect only if
+additionally `PROPERTY_BACKPRESSURE_ENABLED` is set to `true`. The value for this
+property has a maximum of 100 (excl.) and represents a percentage. In case the joynr
+instance is temporarily unsubscribed from the MQTT shared subscriptions topic, i.e. the
+source of incoming requests, and the number of currently available unprocessed requests drops
+below the hereby set percentage of the maximum (`PROPERTY_MAX_INCOMING_MQTT_REQUESTS`), then
+the instance will try to subscribe again for the mentioned topic. The value for the
+lower threshold must be strictly below `PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_UPPER_THRESHOLD`.
+
+* **OPTIONAL**
+* **Type**: int
+* **User property**: `joynr.messaging.backpressure.incomingmqttrequests.lowerthreshold`
+* **Default value**: `20`
+
+## Access Control
 ### `PROPERTY_ACCESSCONTROL_ENABLE`
 Enables or disables access control checks.
 
@@ -272,7 +306,7 @@ Enables or disables access control checks.
 * **User property**: `joynr.accesscontrol.enable`
 * **Default value**: `false`
 
-##MessagingPropertyKeys
+## MessagingPropertyKeys
 
 ### `PROPERTY_BOUNCE_PROXY_URL`
 The root URL of the BounceProxy backend service when using HTTP messaging. The cluster controller

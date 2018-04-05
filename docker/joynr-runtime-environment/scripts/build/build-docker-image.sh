@@ -67,8 +67,6 @@ mkdir -p ${FILE_DIR}/performance-test/
 
 cp -R javascript/libjoynr-js ${FILE_DIR}/libjoynr-js/
 cp -R tests/test-base ${FILE_DIR}/test-base/
-cp -R java/backend-services/discovery-directory-servlet/target/discovery-directory-servlet.war ${FILE_DIR}/discovery-directory-servlet.war
-cp java/backend-services/domain-access-controller-servlet/target/domain-access-controller-servlet.war ${FILE_DIR}/domain-access-controller-servlet.war
 cp java/messaging/bounceproxy/single-bounceproxy/target/single-bounceproxy.war ${FILE_DIR}/single-bounceproxy.war
 cp -R tests/performance-test/src ${FILE_DIR}/performance-test/src
 cp tests/performance-test/package.json ${FILE_DIR}/performance-test/package.json

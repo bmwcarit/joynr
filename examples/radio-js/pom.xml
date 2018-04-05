@@ -11,7 +11,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>examples</artifactId>
-		<version>1.0.5</version>
+		<version>1.1.0</version>
 	</parent>
 
 	<dependencies>
@@ -116,14 +116,6 @@
 							<artifactItems>
 								<artifactItem>
 									<groupId>io.joynr.java.backend-services</groupId>
-									<artifactId>domain-access-controller-jee</artifactId>
-									<version>${project.version}</version>
-									<type>war</type>
-									<outputDirectory>${project.build.directory}</outputDirectory>
-									<destFileName>accesscontrol-jee.war</destFileName>
-								</artifactItem>
-								<artifactItem>
-									<groupId>io.joynr.java.backend-services</groupId>
 									<artifactId>discovery-directory-jee</artifactId>
 									<version>${project.version}</version>
 									<type>war</type>
@@ -150,22 +142,6 @@
 									<type>war</type>
 									<outputDirectory>${project.build.directory}</outputDirectory>
 									<destFileName>bounceproxy.war</destFileName>
-								</artifactItem>
-								<artifactItem>
-									<groupId>io.joynr.java.backend-services</groupId>
-									<artifactId>domain-access-controller-servlet</artifactId>
-									<version>${project.version}</version>
-									<type>war</type>
-									<outputDirectory>${project.build.directory}</outputDirectory>
-									<destFileName>accesscontrol.war</destFileName>
-								</artifactItem>
-								<artifactItem>
-									<groupId>io.joynr.java.backend-services</groupId>
-									<artifactId>discovery-directory-servlet</artifactId>
-									<version>${project.version}</version>
-									<type>war</type>
-									<outputDirectory>${project.build.directory}</outputDirectory>
-									<destFileName>discovery.war</destFileName>
 								</artifactItem>
 							</artifactItems>
 							<overWriteReleases>false</overWriteReleases>

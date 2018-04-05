@@ -26,9 +26,9 @@
 
 #include <boost/optional.hpp>
 
-#include "joynr/DispatcherUtils.h"
 #include "joynr/IKeychain.h"
 #include "joynr/Message.h"
+#include "joynr/TimePoint.h"
 #include "joynr/Util.h"
 #include "joynr/serializer/Serializer.h"
 
@@ -93,14 +93,14 @@ public:
      * its value is replaced with the new one.
      * @param expiryDate the "expiry date" header to be set on the message.
      */
-    void setExpiryDate(JoynrTimePoint expiryDate);
+    void setExpiryDate(const TimePoint& expiryDate);
 
     /**
      * @brief Gets the expiry date of the message.
      * @return the "expiry date" header of the message, if the header is set;
      * A default-constructed value, otherwise.
      */
-    JoynrTimePoint getExpiryDate() const;
+    TimePoint getExpiryDate() const;
 
     /**
      * @brief Sets the type of the message. If the type is
@@ -251,7 +251,7 @@ public:
     template <typename Archive>
     void save(Archive& archive)
     {
-        const auto expiryDate = DispatcherUtils::convertAbsoluteTimeToTtl(this->expiryDate);
+        const auto expiryDate = this->expiryDate.toMilliseconds();
         const std::string effort = this->effort.get_value_or(std::string());
         const std::string replyTo = this->replyTo.get_value_or(std::string());
         archive(MUESLI_NVP(sender),
@@ -269,7 +269,7 @@ private:
     std::string sender;
     std::string recipient;
     std::shared_ptr<IKeychain> keyChain;
-    JoynrTimePoint expiryDate;
+    TimePoint expiryDate;
     std::string type;
     std::string id;
     boost::optional<std::string> replyTo;

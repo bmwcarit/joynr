@@ -1,5 +1,5 @@
-/*global unescape: true, Blob: true, Array:true */
-/*jslint es5: true, node: true, node: true */
+/*jslint es5: true, node: true */
+/*global unescape: true, Blob: true, Array: true */
 /*
  * #%L
  * %%
@@ -84,24 +84,25 @@ UtilInternal.forward = function forward(receiver, provider) {
 };
 
 /**
- * Create a wrapper which has all functions of the provider prototype and is frozen and thus creating privacy
- * @param provider
- * @returns {Readonly<{}>}
+ * Create a wrapper for the input prototype which binds the this context to all functions of input
+ * to make sure that they are always called with the right context.
+ * @param {Object} input
+ * @returns {Object} wrapper of input
  */
-UtilInternal.forwardPrototype = function(provider) {
-    var providerWrapper = {};
+UtilInternal.forwardPrototype = function(input) {
+    var inputWrapper = {};
     /*jslint sub: true*/
-    var proto = provider["__proto__"];
-    providerWrapper["__proto__"] = proto;
+    var proto = input["__proto__"];
+    inputWrapper["__proto__"] = proto;
     /*jslint sub: false*/
     var key;
     for (key in proto) {
         if (proto.hasOwnProperty(key)) {
             var func = proto[key];
-            providerWrapper[key] = func.bind(provider);
+            inputWrapper[key] = func.bind(input);
         }
     }
-    return providerWrapper;
+    return inputWrapper;
 };
 
 /**

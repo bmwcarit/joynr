@@ -18,6 +18,7 @@
  * limitations under the License.
  * #L%
  */
+require("../../node-unit-test-helper");
 var defaultMessagingSettings = require("../../../classes/joynr/start/settings/defaultMessagingSettings");
 var MessagingQos = require("../../../classes/joynr/messaging/MessagingQos");
 var MessagingQosEffort = require("../../../classes/joynr/messaging/MessagingQosEffort");

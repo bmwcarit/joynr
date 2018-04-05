@@ -25,6 +25,7 @@
 * [Infrastructure](wiki/infrastructure.md) -- Setting up the joynr infrastucture components for your environment
 * [Glassfish Settings](wiki/Glassfish-settings.md) -- Settings you need to run joynr backend
   services on Glassfish application servers.
+* [Versioning scheme](wiki/JoynrVersioning.md) -- Meaning of joynr version numbers.
 * [Release Notes](wiki/ReleaseNotes.md) -- All joynr releases and API changes at a glance.
 
 # Overview

@@ -68,6 +68,7 @@ import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
 import io.joynr.messaging.IMessagingStub;
 import io.joynr.messaging.JsonMessageSerializerModule;
+import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.inprocess.InProcessMessagingStubFactory;
@@ -177,7 +178,7 @@ public class RpcStubbingTest {
         toDiscoveryEntry.setParticipantId(toParticipantId);
 
         // required to inject static members of JoynMessagingConnectorFactory
-        injector = Guice.createInjector(new JoynrPropertiesModule(PropertyLoader.loadProperties("defaultMessaging.properties")),
+        injector = Guice.createInjector(new JoynrPropertiesModule(PropertyLoader.loadProperties(MessagingPropertyKeys.DEFAULT_MESSAGING_PROPERTIES_FILE)),
                                         new JsonMessageSerializerModule(),
                                         new AbstractModule() {
 

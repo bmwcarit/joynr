@@ -18,6 +18,7 @@
  * limitations under the License.
  * #L%
  */
+require("../../node-unit-test-helper");
 var ProxyAttribute = require("../../../classes/joynr/proxy/ProxyAttribute");
 var DiscoveryQos = require("../../../classes/joynr/proxy/DiscoveryQos");
 var MessagingQos = require("../../../classes/joynr/messaging/MessagingQos");
@@ -51,6 +52,7 @@ describe("libjoynr-js.joynr.proxy.ProxyAttribute", function() {
     var proxyParticipantId;
     var providerParticipantId;
     var providerDiscoveryEntry;
+    var isOnType;
 
     function RadioStation(name, station, source) {
         if (!(this instanceof RadioStation)) {
@@ -76,13 +78,14 @@ describe("libjoynr-js.joynr.proxy.ProxyAttribute", function() {
         messagingQos = new MessagingQos();
 
         requestReplyManagerSpy = jasmine.createSpyObj("requestReplyManager", ["sendRequest"]);
-        requestReplyManagerSpy.sendRequest.and.returnValue(
-            Promise.resolve({
-                result: {
-                    resultKey: "resultValue"
-                }
-            })
-        );
+        requestReplyManagerSpy.sendRequest.and.callFake(function(settings, callbackSettings) {
+            var response = { result: { resultKey: "resultValue" } };
+
+            return Promise.resolve({
+                response: response,
+                settings: callbackSettings
+            });
+        });
 
         subscriptionId = {
             tokenId: "someId",
@@ -120,7 +123,8 @@ describe("libjoynr-js.joynr.proxy.ProxyAttribute", function() {
             providerDiscoveryEntry: providerDiscoveryEntry
         };
 
-        isOn = new ProxyAttribute(proxy, settings, "isOn", "Boolean", "NOTIFYREADWRITE");
+        isOnType = "Boolean";
+        isOn = new ProxyAttribute(proxy, settings, "isOn", isOnType, "NOTIFYREADWRITE");
         isOnNotifyReadOnly = new ProxyAttribute(proxy, settings, "isOnNotifyReadOnly", "Boolean", "NOTIFYREADONLY");
         isOnNotifyWriteOnly = new ProxyAttribute(proxy, settings, "isOnNotifyWriteOnly", "Boolean", "NOTIFYWRITEONLY");
         isOnNotify = new ProxyAttribute(proxy, settings, "isOnNotify", "Boolean", "NOTIFY");
@@ -207,15 +211,18 @@ describe("libjoynr-js.joynr.proxy.ProxyAttribute", function() {
             .then(function() {
                 expect(requestReplyManagerSpy.sendRequest).toHaveBeenCalled();
                 requestReplyId = requestReplyManagerSpy.sendRequest.calls.argsFor(0)[0].request.requestReplyId;
-                expect(requestReplyManagerSpy.sendRequest).toHaveBeenCalledWith({
-                    toDiscoveryEntry: providerDiscoveryEntry,
-                    from: proxyParticipantId,
-                    messagingQos: messagingQos,
-                    request: new Request({
-                        methodName: "getIsOn",
-                        requestReplyId: requestReplyId
-                    })
-                });
+                expect(requestReplyManagerSpy.sendRequest).toHaveBeenCalledWith(
+                    {
+                        toDiscoveryEntry: providerDiscoveryEntry,
+                        from: proxyParticipantId,
+                        messagingQos: messagingQos,
+                        request: new Request({
+                            methodName: "getIsOn",
+                            requestReplyId: requestReplyId
+                        })
+                    },
+                    isOnType
+                );
                 done();
                 return null;
             })
@@ -256,7 +263,13 @@ describe("libjoynr-js.joynr.proxy.ProxyAttribute", function() {
         expect(fixture.get).toBeDefined();
         expect(typeof fixture.get === "function").toBeTruthy();
 
-        requestReplyManagerSpy.sendRequest.and.returnValue(Promise.resolve(["ZERO"]));
+        requestReplyManagerSpy.sendRequest.and.callFake(function(settings, callbackSettings) {
+            return Promise.resolve({
+                response: ["ZERO"],
+                settings: callbackSettings
+            });
+        });
+
         fixture
             .get()
             .then(function(data) {
@@ -316,17 +329,20 @@ describe("libjoynr-js.joynr.proxy.ProxyAttribute", function() {
             .then(function() {
                 expect(requestReplyManagerSpy.sendRequest).toHaveBeenCalled();
                 requestReplyId = requestReplyManagerSpy.sendRequest.calls.argsFor(0)[0].request.requestReplyId;
-                expect(requestReplyManagerSpy.sendRequest).toHaveBeenCalledWith({
-                    toDiscoveryEntry: providerDiscoveryEntry,
-                    from: proxyParticipantId,
-                    messagingQos: messagingQos,
-                    request: new Request({
-                        methodName: "setIsOn",
-                        requestReplyId: requestReplyId,
-                        paramDatatypes: ["Boolean"],
-                        params: [true]
-                    })
-                });
+                expect(requestReplyManagerSpy.sendRequest).toHaveBeenCalledWith(
+                    {
+                        toDiscoveryEntry: providerDiscoveryEntry,
+                        from: proxyParticipantId,
+                        messagingQos: messagingQos,
+                        request: new Request({
+                            methodName: "setIsOn",
+                            requestReplyId: requestReplyId,
+                            paramDatatypes: ["Boolean"],
+                            params: [true]
+                        })
+                    },
+                    isOnType
+                );
                 done();
                 return null;
             })

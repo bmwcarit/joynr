@@ -19,15 +19,15 @@
 #ifndef CAPABILITIESCLIENT_H
 #define CAPABILITIESCLIENT_H
 
+#include <cstdint>
 #include <memory>
-#include <mutex>
 #include <string>
 #include <vector>
 
 #include "joynr/JoynrClusterControllerExport.h"
 #include "joynr/Logger.h"
+#include "joynr/MessagingQos.h"
 #include "joynr/PrivateCopyAssign.h"
-#include "joynr/IProxyBuilder.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy.h"
 #include "joynr/types/DiscoveryQos.h"
@@ -42,6 +42,7 @@
 
 namespace joynr
 {
+class ClusterControllerSettings;
 
 class JOYNRCLUSTERCONTROLLER_EXPORT CapabilitiesClient : public ICapabilitiesClient
 {
@@ -50,11 +51,10 @@ public:
     /*
        Default constructor for the capabilities client.
        This will create a CapabilitiesClient that is not capable of doing actual lookups.
-       To upgrade to a complete CapabilitiesClient the setProxyBuilder method must be called, and a
-       ProxyBuilder must be provided. The Class will take ownership
-       of the ProxyBuilder and will make sure it is deleted.
+       To upgrade to a complete CapabilitiesClient the setProxy method must be called, and a
+       Proxy must be provided.
     */
-    CapabilitiesClient();
+    CapabilitiesClient(const ClusterControllerSettings& clusterControllerSettings);
 
     ~CapabilitiesClient() override = default;
 
@@ -102,20 +102,15 @@ public:
                std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError =
                        nullptr) override;
 
-    void setProxyBuilder(
-            std::shared_ptr<IProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>>
-                    capabilitiesProxyBuilder) override;
+    void setProxy(
+            std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> capabilitiesProxy,
+            MessagingQos messagingQos);
 
 private:
-    std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy>
-    getGlobalCapabilitiesDirectoryProxy(std::int64_t messagingTtl);
-
     DISALLOW_COPY_AND_ASSIGN(CapabilitiesClient);
-
-    std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> defaultCapabilitiesProxy;
-    std::shared_ptr<IProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>>
-            capabilitiesProxyBuilder;
-    std::mutex capabilitiesProxyBuilderMutex;
+    std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> capabilitiesProxy;
+    MessagingQos messagingQos;
+    const std::uint64_t touchTtl;
     ADD_LOGGER(CapabilitiesClient)
 };
 

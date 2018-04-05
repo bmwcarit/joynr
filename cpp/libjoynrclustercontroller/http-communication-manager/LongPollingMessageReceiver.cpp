@@ -26,10 +26,10 @@
 
 #include <boost/lexical_cast.hpp>
 
-#include "joynr/DispatcherUtils.h"
 #include "joynr/Future.h"
 #include "joynr/ImmutableMessage.h"
 #include "joynr/Util.h"
+#include "joynr/TimePoint.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "libjoynrclustercontroller/httpnetworking/HttpNetworking.h"
 #include "libjoynrclustercontroller/httpnetworking/HttpResult.h"
@@ -188,12 +188,12 @@ void LongPollingMessageReceiver::checkServerTime()
                     ->build());
     JOYNR_LOG_TRACE(
             logger(), "CheckServerTime: sending request to Bounce Proxy ({})", timeCheckUrl);
-    std::chrono::system_clock::time_point localTimeBeforeRequest = std::chrono::system_clock::now();
+    const TimePoint localTimeBeforeRequest = TimePoint::now();
     HttpResult timeCheckResult = timeCheckRequest->execute();
-    std::chrono::system_clock::time_point localTimeAfterRequest = std::chrono::system_clock::now();
-    std::uint64_t localTime = (util::toMilliseconds(localTimeBeforeRequest) +
-                               util::toMilliseconds(localTimeAfterRequest)) /
-                              2;
+    const TimePoint localTimeAfterRequest = TimePoint::now();
+
+    std::uint64_t localTime =
+            (localTimeBeforeRequest.toMilliseconds() + localTimeAfterRequest.toMilliseconds()) / 2;
     if (timeCheckResult.getStatusCode() != 200) {
         JOYNR_LOG_ERROR(logger(),
                         "CheckServerTime: Bounce Proxy not reached [statusCode={}] [body={}]",
@@ -222,8 +222,8 @@ void LongPollingMessageReceiver::checkServerTime()
 
         JOYNR_LOG_DEBUG(logger(),
                         "CheckServerTime [server time={}] [local time={}] [diff={} ms]",
-                        util::toDateString(JoynrTimePoint(std::chrono::milliseconds(serverTime))),
-                        util::toDateString(JoynrTimePoint(std::chrono::milliseconds(localTime))),
+                        TimePoint::fromAbsoluteMs(serverTime).toString(),
+                        TimePoint::fromAbsoluteMs(localTime).toString(),
                         diff);
 
         if (diff > 500) {

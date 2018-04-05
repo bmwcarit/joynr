@@ -136,7 +136,11 @@ var loggingValue = {
     configuration: {...} /*
                        * log4j2-style JSON config, but as JavaScript object
                        * See https://logging.apache.org/log4j/2.x/manual/configuration.html#JSON
-                       * for more information
+                       * for more information.
+                       * Since replacing log4javascript due to performance issues,
+                       * not all configuration options are still supported.
+                       * - only one appender is supported. Others will be ignored.
+                       * - reduced complexity of supported patternLayouts.
                        */
 };
 
@@ -165,7 +169,7 @@ var persistencyValue = {
 };
 
 var shutdownSettingsValue = {
-    clearSubscriptionsEnabled: <true|false>, // default false
+    clearSubscriptionsEnabled: <true|false>, // default true
     clearSubscriptionsTimeoutMs: <number> // default 1000
 };
 
@@ -249,4 +253,26 @@ var interTabClusterControllerProvisioning = {
     // update message to the global discovery directory
     capabilitiesFreshnessUpdateIntervalMs : <capabilitiesFreshnessUpdateIntervalMs> // optional, default value is 3600000 (1 hour)
 };
+```
+
+## Browserify for joynr
+
+the npm package of joynr contains the functionality of all the four joynr runtimes. When selecting a runtime
+before loading joynr, only the selected runtime will be required. Browserify won't recognize this when packing
+a compressed joynr. It will include all four joynr runtimes and it's dependencies recursively, which will create
+unnecessary bloat. Therefore it's necessary to manually exclude the three other runtimes. This can for example be done
+with the -i option, which will replace those files with an empty stub.
+For example when using the WebSocket libjoynr runtime, things could work the following way.
+Assume joynr is installed in the node_modules folder and is required by index.js.
+
+```
+browserify index.js \
+-r ./node_modules/joynr:joynr \
+-i ./node_modules/joynr/joynr/Runtime.inprocess.js \
+-i ./node_modules/joynr/joynr/Runtime.intertab.clustercontroller.js \
+-i ./node_modules/joynr/joynr/Runtime.intertab.libjoynr.js \
+-u smrf-native-cpp.node \
+-u wscpp-client.node \
+-u ws \
+-o browserifiedJoynr.js
 ```

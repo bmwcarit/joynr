@@ -46,7 +46,7 @@ enum class StatusCodeEnum : std::uint8_t {
     ERROR = 2,
 
     /**
-     * @brief Future::waitFor() timed out.
+     * @brief Future::wait() timed out.
      */
     WAIT_TIMED_OUT = 3,
 };

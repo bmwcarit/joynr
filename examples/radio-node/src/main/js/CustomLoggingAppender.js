@@ -28,6 +28,8 @@
  */
 function CustomerLoggingAppender() {}
 
+console.debug = console.log;
+
 /**
  * Implementing the appender function of log4javascript appenders
  *
@@ -36,24 +38,9 @@ function CustomerLoggingAppender() {}
  */
 CustomerLoggingAppender.prototype.append = function(loggingEvent) {
     //console.debug does not exist in nodejs
-    console.debug = console.log;
-    var formattedMessage = loggingEvent.getCombinedMessages(), appender = this;
 
-    var getFormattedMessage = function() {
-        try {
-            var layout = appender.getLayout();
-            formattedMessage = layout.format(loggingEvent);
-            if (layout.ignoresThrowable() && loggingEvent.exception) {
-                formattedMessage += loggingEvent.getThrowableStrRep();
-            }
-        } catch (e) {
-        }
-        return formattedMessage;
-    };
-
+    var formattedMessage = loggingEvent.messages.join(",");
     var logLevel = loggingEvent.level.name.toLowerCase();
-    formattedMessage = getFormattedMessage();
-    console[logLevel] = console[logLevel] || console.log;
     console[logLevel](formattedMessage);
 };
 

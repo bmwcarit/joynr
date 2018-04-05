@@ -28,6 +28,8 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Module;
@@ -59,6 +61,7 @@ import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.OwnerAccessControlEntry;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.Role;
+import joynr.test.JoynrTestLoggingRule;
 import joynr.tests.DefaulttestProvider;
 import joynr.tests.testProxy;
 import joynr.types.ProviderQos;
@@ -68,6 +71,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class AccessControllerEnd2EndTest {
+    private static final Logger logger = LoggerFactory.getLogger(AccessControllerEnd2EndTest.class);
+    @Rule
+    public JoynrTestLoggingRule joynrTestRule = new JoynrTestLoggingRule(logger);
+
     private static final String TEST_DOMAIN = "test";
     private static final String GDAC_DOMAIN = "io.joynr";
     private static final long DISCOVERY_TIMEOUT = 4000;

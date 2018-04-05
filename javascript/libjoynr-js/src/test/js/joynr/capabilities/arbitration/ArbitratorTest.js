@@ -18,6 +18,7 @@
  * limitations under the License.
  * #L%
  */
+require("../../../node-unit-test-helper");
 var Arbitrator = require("../../../../classes/joynr/capabilities/arbitration/Arbitrator");
 var DiscoveryEntryWithMetaInfo = require("../../../../classes/joynr/types/DiscoveryEntryWithMetaInfo");
 var ProviderQos = require("../../../../classes/joynr/types/ProviderQos");

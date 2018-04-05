@@ -37,7 +37,6 @@
 #include "joynr/RoutingTable.h"
 #include "joynr/ReadWriteLock.h"
 #include "joynr/Runnable.h"
-#include "joynr/serializer/Serializer.h"
 #include "joynr/SteadyTimer.h"
 #include "joynr/ThreadPoolDelayedScheduler.h"
 #include "joynr/system/RoutingTypes/Address.h"

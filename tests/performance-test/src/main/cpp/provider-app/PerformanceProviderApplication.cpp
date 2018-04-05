@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,9 +24,15 @@
 #include <boost/filesystem/path.hpp>
 #include <boost/program_options.hpp>
 
+#include <joynr/Logger.h>
+#include <joynr/JoynrRuntime.h>
+#include <joynr/WebSocketSettings.h>
+
+#include <joynr/tests/DummyKeychainImpl.h>
+#include <joynr/tests/DummyKeyChainParameters.h>
+
 #include "../provider/PerformanceTestEchoProvider.h"
-#include "joynr/JoynrRuntime.h"
-#include "joynr/Logger.h"
+
 #ifdef JOYNR_ENABLE_DLT_LOGGING
 #include <dlt/dlt.h>
 #endif // JOYNR_ENABLE_DLT_LOGGING
@@ -44,30 +50,61 @@ int main(int argc, char* argv[])
 
     std::string domainName;
     bool globalScope = false;
+    bool useKeyChain = false;
+    const std::string ccUrlForTLS("wss://localhost:4243");
+    joynr::tests::DummyKeyChainParameters keyChainInputParams;
 
     boost::program_options::options_description optionsDescription("Available options");
     optionsDescription.add_options()("help,h", "produce help message")(
             "domain,d", boost::program_options::value(&domainName)->required(), "domain")(
-            "globalscope,g", boost::program_options::value(&globalScope)->default_value(false));
+            "globalscope,g", boost::program_options::value(&globalScope)->default_value(false))(
+            "useKeychain",
+            boost::program_options::value(&useKeyChain)->default_value(false),
+            "Should KeyChain be used? Default: false. If true can run only on localhost.")(
+            "root-certificate",
+            boost::program_options::value(&keyChainInputParams.rootCertFileName),
+            "Root certificate in PEM encoded format.")(
+            "pub-certificate",
+            boost::program_options::value(&keyChainInputParams.pubCertFileName),
+            "Public certificate in PEM encoded format.")(
+            "private-key",
+            boost::program_options::value(&keyChainInputParams.privKeyFileName),
+            "Private key in PEM encoded format.")(
+            "private-key-pwd",
+            boost::program_options::value(&keyChainInputParams.privKeyPassword)->default_value(""),
+            "Passsword of private key. Default: empty string.");
 
     try {
         boost::program_options::variables_map optionsMap;
         boost::program_options::store(
                 boost::program_options::parse_command_line(argc, argv, optionsDescription),
                 optionsMap);
-        boost::program_options::notify(optionsMap);
 
         if (optionsMap.count("help") > 0) {
             std::cout << optionsDescription << std::endl;
             return 0;
         }
 
+        boost::program_options::notify(optionsMap);
+
         boost::filesystem::path appFilename = boost::filesystem::path(argv[0]);
         std::string appDirectory =
                 boost::filesystem::system_complete(appFilename).parent_path().string();
-        std::string pathToSettings(appDirectory + "/resources/performancetest-provider.settings");
+        auto joynrSettings = std::make_unique<joynr::Settings>(
+                (appDirectory + "/resources/performancetest-consumer.settings"));
 
-        std::shared_ptr<JoynrRuntime> runtime(JoynrRuntime::createRuntime(pathToSettings));
+        std::shared_ptr<joynr::IKeychain> keyChain;
+
+        if (useKeyChain) {
+            keyChain = joynr::tests::DummyKeychainImpl::createFromPEMFiles(keyChainInputParams);
+            // also change settings file accordingly
+            joynr::WebSocketSettings wsSettings(*joynrSettings);
+            wsSettings.setClusterControllerMessagingUrl(ccUrlForTLS);
+        }
+
+        std::shared_ptr<joynr::JoynrRuntime> runtime(
+                joynr::JoynrRuntime::createRuntime(std::move(joynrSettings), std::move(keyChain)));
+
         std::shared_ptr<PerformanceTestEchoProvider> provider =
                 std::make_shared<PerformanceTestEchoProvider>();
 

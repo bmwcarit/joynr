@@ -18,13 +18,14 @@
  */
 package io.joynr.messaging.mqtt;
 
-import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_BACKPRESSURE_ENABLED;
-import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_BACKPRESSURE_MAX_INCOMING_MQTT_MESSAGES_IN_QUEUE;
-import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_BACKPRESSURE_REPEATED_MQTT_MESSAGE_IGNORE_PERIOD_MS;
+import static io.joynr.messaging.MessagingPropertyKeys.CHANNELID;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_REPLY_TO_ADDRESS;
-import static io.joynr.messaging.MessagingPropertyKeys.CHANNELID;
+import static io.joynr.messaging.mqtt.settings.LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_ENABLED;
+import static io.joynr.messaging.mqtt.settings.LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD;
+import static io.joynr.messaging.mqtt.settings.LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_UPPER_THRESHOLD;
+import static io.joynr.messaging.mqtt.settings.LimitAndBackpressureSettings.PROPERTY_MAX_INCOMING_MQTT_REQUESTS;
 
 import java.util.Set;
 
@@ -38,6 +39,7 @@ import com.google.inject.name.Named;
 import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
+import io.joynr.messaging.mqtt.statusmetrics.MqttStatusReceiver;
 import io.joynr.messaging.routing.MessageRouter;
 import joynr.system.RoutingTypes.MqttAddress;
 
@@ -54,42 +56,48 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
     protected MqttClientFactory mqttClientFactory;
     private boolean sharedSubscriptionsEnabled;
     private MqttAddress ownAddress;
-    private int repeatedMqttMessageIgnorePeriodMs;
-    private int maxIncomingMqttMessagesInQueue;
+    private int maxIncomingMqttRequests;
     private boolean backpressureEnabled;
+    private int backpressureIncomingMqttRequestsUpperThreshold;
+    private int backpressureIncomingMqttRequestsLowerThreshold;
     private MqttAddress replyToAddress;
     private MessageRouter messageRouter;
     private String channelId;
     private MqttTopicPrefixProvider mqttTopicPrefixProvider;
     private RawMessagingPreprocessor rawMessagingPreprocessor;
     private Set<JoynrMessageProcessor> messageProcessors;
+    private MqttStatusReceiver mqttStatusReceiver;
 
     @Inject
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
-    public MqttMessagingSkeletonProvider(@Named(PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS) String enableSharedSubscriptions,
+    public MqttMessagingSkeletonProvider(@Named(PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS) boolean enableSharedSubscriptions,
                                          @Named(PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
-                                         @Named(PROPERTY_BACKPRESSURE_REPEATED_MQTT_MESSAGE_IGNORE_PERIOD_MS) int repeatedMqttMessageIgnorePeriodMs,
-                                         @Named(PROPERTY_BACKPRESSURE_MAX_INCOMING_MQTT_MESSAGES_IN_QUEUE) int maxIncomingMqttMessagesInQueue,
+                                         @Named(PROPERTY_MAX_INCOMING_MQTT_REQUESTS) int maxIncomingMqttRequests,
                                          @Named(PROPERTY_BACKPRESSURE_ENABLED) boolean backpressureEnabled,
+                                         @Named(PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_UPPER_THRESHOLD) int backpressureIncomingMqttRequestsUpperThreshold,
+                                         @Named(PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD) int backpressureIncomingMqttRequestsLowerThreshold,
                                          @Named(PROPERTY_MQTT_REPLY_TO_ADDRESS) MqttAddress replyToAddress,
                                          MessageRouter messageRouter,
                                          MqttClientFactory mqttClientFactory,
                                          @Named(CHANNELID) String channelId,
                                          MqttTopicPrefixProvider mqttTopicPrefixProvider,
                                          RawMessagingPreprocessor rawMessagingPreprocessor,
-                                         Set<JoynrMessageProcessor> messageProcessors) {
-        sharedSubscriptionsEnabled = Boolean.valueOf(enableSharedSubscriptions);
+                                         Set<JoynrMessageProcessor> messageProcessors,
+                                         MqttStatusReceiver mqttStatusReceiver) {
+        sharedSubscriptionsEnabled = enableSharedSubscriptions;
         this.rawMessagingPreprocessor = rawMessagingPreprocessor;
         this.messageProcessors = messageProcessors;
         this.ownAddress = ownAddress;
-        this.repeatedMqttMessageIgnorePeriodMs = repeatedMqttMessageIgnorePeriodMs;
-        this.maxIncomingMqttMessagesInQueue = maxIncomingMqttMessagesInQueue;
+        this.maxIncomingMqttRequests = maxIncomingMqttRequests;
         this.backpressureEnabled = backpressureEnabled;
+        this.backpressureIncomingMqttRequestsUpperThreshold = backpressureIncomingMqttRequestsUpperThreshold;
+        this.backpressureIncomingMqttRequestsLowerThreshold = backpressureIncomingMqttRequestsLowerThreshold;
         this.replyToAddress = replyToAddress;
         this.messageRouter = messageRouter;
         this.mqttClientFactory = mqttClientFactory;
         this.channelId = channelId;
         this.mqttTopicPrefixProvider = mqttTopicPrefixProvider;
+        this.mqttStatusReceiver = mqttStatusReceiver;
         logger.debug("Created with sharedSubscriptionsEnabled: {} ownAddress: {} channelId: {}", new Object[]{
                 sharedSubscriptionsEnabled, this.ownAddress, this.channelId });
     }
@@ -98,26 +106,27 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
     public IMessagingSkeleton get() {
         if (sharedSubscriptionsEnabled) {
             return new SharedSubscriptionsMqttMessagingSkeleton(ownAddress,
-                                                                repeatedMqttMessageIgnorePeriodMs,
-                                                                maxIncomingMqttMessagesInQueue,
+                                                                maxIncomingMqttRequests,
                                                                 backpressureEnabled,
+                                                                backpressureIncomingMqttRequestsUpperThreshold,
+                                                                backpressureIncomingMqttRequestsLowerThreshold,
                                                                 replyToAddress,
                                                                 messageRouter,
                                                                 mqttClientFactory,
                                                                 channelId,
                                                                 mqttTopicPrefixProvider,
                                                                 rawMessagingPreprocessor,
-                                                                messageProcessors);
+                                                                messageProcessors,
+                                                                mqttStatusReceiver);
         }
         return new MqttMessagingSkeleton(ownAddress,
-                                         repeatedMqttMessageIgnorePeriodMs,
-                                         maxIncomingMqttMessagesInQueue,
-                                         backpressureEnabled,
+                                         maxIncomingMqttRequests,
                                          messageRouter,
                                          mqttClientFactory,
                                          mqttTopicPrefixProvider,
                                          rawMessagingPreprocessor,
-                                         messageProcessors);
+                                         messageProcessors,
+                                         mqttStatusReceiver);
     }
 
 }

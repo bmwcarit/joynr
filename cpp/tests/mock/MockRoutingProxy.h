@@ -23,7 +23,11 @@
 
 #include "joynr/MessagingQos.h"
 #include "joynr/system/RoutingProxy.h"
-#include "joynr/JoynrRuntimeImpl.h"
+
+namespace joynr
+{
+class JoynrRuntimeImpl;
+} // namespace joynr
 
 class MockRoutingProxy : public virtual joynr::system::RoutingProxy {
 public:
@@ -60,8 +64,8 @@ public:
             const joynr::system::RoutingTypes::WebSocketClientAddress& webSocketClientAddress,
             const bool& isGloballyVisible,
             std::function<void()> onSuccess,
-            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
-                    onRuntimeError
+            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError,
+            boost::optional<joynr::MessagingQos> qos
         ) noexcept override
     {
         return addNextHopAsyncMock(
@@ -69,36 +73,40 @@ public:
                 webSocketClientAddress,
                 isGloballyVisible,
                 std::move(onSuccess),
-                std::move(onRuntimeError));
+                std::move(onRuntimeError),
+                std::move(qos));
     }
-    MOCK_METHOD5(addNextHopAsyncMock, std::shared_ptr<joynr::Future<void>>(
+    MOCK_METHOD6(addNextHopAsyncMock, std::shared_ptr<joynr::Future<void>>(
             const std::string& participantId,
             const joynr::system::RoutingTypes::WebSocketClientAddress& webSocketClientAddress,
             const bool& isGloballyVisible,
             std::function<void()> onSuccess,
-            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
-                    onRuntimeError));
+            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError,
+            boost::optional<joynr::MessagingQos> qos));
 
     std::shared_ptr<joynr::Future<bool>> resolveNextHopAsync(
              const std::string& participantId,
              std::function<void(const bool& resolved)> onSuccess,
-             std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError
+             std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError,
+             boost::optional<joynr::MessagingQos> qos
          ) noexcept override
     {
-        return resolveNextHopAsyncMock(participantId, std::move(onSuccess), std::move(onRuntimeError));
+        return resolveNextHopAsyncMock(participantId, std::move(onSuccess), std::move(onRuntimeError), std::move(qos));
     }
-    MOCK_METHOD3(resolveNextHopAsyncMock,
+    MOCK_METHOD4(resolveNextHopAsyncMock,
         std::shared_ptr<joynr::Future<bool>>(
             const std::string& participantId,
                      std::function<void(const bool& resolved)> onSuccess,
-                     std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError));
+                     std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError,
+                     boost::optional<joynr::MessagingQos> qos));
 
     std::shared_ptr<joynr::Future<void>> addMulticastReceiverAsync(
             const std::string& multicastId,
             const std::string& subscriberParticipantId,
             const std::string& providerParticipantId,
             std::function<void()> onSuccess,
-            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError
+            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError,
+            boost::optional<joynr::MessagingQos> qos
         ) noexcept override
     {
         return addMulticastReceiverAsyncMock(
@@ -106,22 +114,25 @@ public:
                 subscriberParticipantId,
                 providerParticipantId,
                 std::move(onSuccess),
-                std::move(onRuntimeError));
+                std::move(onRuntimeError),
+                std::move(qos));
     }
-    MOCK_METHOD5(addMulticastReceiverAsyncMock,
+    MOCK_METHOD6(addMulticastReceiverAsyncMock,
         std::shared_ptr<joynr::Future<void>> (
             const std::string& multicastId,
             const std::string& subscriberParticipantId,
             const std::string& providerParticipantId,
             std::function<void()> onSuccess,
-            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError));
+            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError,
+            boost::optional<joynr::MessagingQos> qos));
 
     std::shared_ptr<joynr::Future<void>> removeMulticastReceiverAsync(
             const std::string& multicastId,
             const std::string& subscriberParticipantId,
             const std::string& providerParticipantId,
             std::function<void()> onSuccess,
-            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError
+            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError,
+            boost::optional<joynr::MessagingQos> qos
         ) noexcept override
     {
         return removeMulticastReceiverAsyncMock(
@@ -129,15 +140,17 @@ public:
                 subscriberParticipantId,
                 providerParticipantId,
                 std::move(onSuccess),
-                std::move(onRuntimeError));
+                std::move(onRuntimeError),
+                std::move(qos));
     }
-    MOCK_METHOD5(removeMulticastReceiverAsyncMock,
+    MOCK_METHOD6(removeMulticastReceiverAsyncMock,
         std::shared_ptr<joynr::Future<void>> (
             const std::string& multicastId,
             const std::string& subscriberParticipantId,
             const std::string& providerParticipantId,
             std::function<void()> onSuccess,
-            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError));
+            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError,
+            boost::optional<joynr::MessagingQos> qos));
 };
 
 #endif // TESTS_MOCK_MOCKROUTINGPROXY_H

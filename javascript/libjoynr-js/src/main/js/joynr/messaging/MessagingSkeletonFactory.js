@@ -20,9 +20,9 @@
  */
 var Typing = require("../util/Typing");
 var Util = require("../util/UtilInternal");
-var LoggerFactory = require("../system/LoggerFactory");
+var LoggingManager = require("../system/LoggingManager");
 
-var log = LoggerFactory.getLogger("joynr/messaging/MessagingSkeletonFactory");
+var log = LoggingManager.getLogger("joynr/messaging/MessagingSkeletonFactory");
 /**
  * @name MessagingSkeletonFactory
  * @constructor

@@ -5,10 +5,10 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 ######## Project settings ########
-project(joynr-1.0.5)
+project(joynr-1.1.0)
 set(JOYNR_MAJOR_VERSION 1)
-set(JOYNR_MINOR_VERSION 0)
-set(JOYNR_PATCH_VERSION 5)
+set(JOYNR_MINOR_VERSION 1)
+set(JOYNR_PATCH_VERSION 0)
 set(
     JOYNR_VERSION
     ${JOYNR_MAJOR_VERSION}.${JOYNR_MINOR_VERSION}.${JOYNR_PATCH_VERSION}
@@ -649,15 +649,16 @@ if(JOYNR_ENABLE_DLT_LOGGING)
 endif(JOYNR_ENABLE_DLT_LOGGING)
 
 ### Add muesli ############################################################
+set(JOYNR_MUESLI_REQUIRED_VERSION 1.0.1)
 if (USE_PLATFORM_MUESLI)
-    find_package(muesli 0.3.1 REQUIRED CONFIG)
+    find_package(muesli ${JOYNR_MUESLI_REQUIRED_VERSION} REQUIRED CONFIG)
 else(USE_PLATFORM_MUESLI)
-    message(STATUS "############ Download: muesli ############")
+    message(STATUS "############ Download: muesli ${JOYNR_MUESLI_REQUIRED_VERSION} ############")
 
     AddExternalProject(
         muesli
         GIT_REPOSITORY https://github.com/bmwcarit/muesli
-        GIT_TAG 0.3.1
+        GIT_TAG ${JOYNR_MUESLI_REQUIRED_VERSION}
         TIMEOUT 10
         # Disable configure step
         #CONFIGURE_COMMAND ""
@@ -696,16 +697,21 @@ get_target_property(muesli_INCLUDE_DIRECTORIES muesli::muesli INTERFACE_INCLUDE_
 
 message(STATUS "variable muesli_INCLUDE_DIRECTORIES= ${muesli_INCLUDE_DIRECTORIES}")
 
+
+### Add mococrw ############################################################
+set(JOYNR_MOCOCRW_REQUIRED_VERSION 0.1.0)
 if (USE_PLATFORM_MOCOCRW)
-    find_package(MoCOCrW 0.1.0 REQUIRED CONFIG)
+    find_package(MoCOCrW ${JOYNR_MOCOCRW_REQUIRED_VERSION} REQUIRED CONFIG)
 else(USE_PLATFORM_MOCOCRW)
     message(ERROR "Retrieving mococrw from an external source is not supported yet.")
 endif(USE_PLATFORM_MOCOCRW)
 
+### Add smrf ############################################################
+set(JOYNR_SMRF_REQUIRED_VERSION 0.2.2)
 if (USE_PLATFORM_SMRF)
-    find_package(smrf 0.2.2 REQUIRED CONFIG)
+    find_package(smrf ${JOYNR_SMRF_REQUIRED_VERSION} REQUIRED CONFIG)
 else(USE_PLATFORM_SMRF)
-    message(STATUS "############ Download: smrf ############")
+    message(STATUS "############ Download: smrf ${JOYNR_SMRF_REQUIRED_VERSION} ############")
 
     get_property(EP_PREFIX DIRECTORY PROPERTY EP_PREFIX)
     set(SMRF_LIBRARY_NAME "${CMAKE_SHARED_LIBRARY_PREFIX}smrf${CMAKE_SHARED_LIBRARY_SUFFIX}")
@@ -714,7 +720,7 @@ else(USE_PLATFORM_SMRF)
     AddExternalProject(
         smrf
         GIT_REPOSITORY https://github.com/bmwcarit/smrf
-        GIT_TAG 0.2.2
+        GIT_TAG ${JOYNR_SMRF_REQUIRED_VERSION}
         TIMEOUT 10
         # Disable configure step
         #CONFIGURE_COMMAND ""
@@ -783,7 +789,7 @@ set(
     ${CMAKE_THREAD_LIBS_INIT}
 )
 
-get_target_property(Joynr_PUBLIC_INCLUDE_DIRECTORY Joynr PUBLIC_INCLUDE_DIRECTORY)
+get_target_property(Joynr_PUBLIC_INCLUDE_DIRECTORY Joynr INTERFACE_INCLUDE_DIRECTORIES)
 get_target_property(JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY JoynrClusterController PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(JoynrClusterControllerRuntime_PUBLIC_INCLUDE_DIRECTORY JoynrClusterControllerRuntime PUBLIC_INCLUDE_DIRECTORY)
 
@@ -834,6 +840,13 @@ get_target_property(JoynrConfig_MOCOCRW_LIBRARIES MoCOCrW::mococrw IMPORTED_LOCA
 
 
 set(JoynrConfig_RESOLVE_DEPENDENCIES)
+
+### Add Config files to project so that can be shown in the editor
+file(GLOB_RECURSE ADD_ALL_CMAKE_FILE_TO_PROJECT
+    RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+    "CMake/*"
+)
+add_custom_target(NOOP_SHOW_CMAKE_FILES SOURCES ${ADD_ALL_CMAKE_FILE_TO_PROJECT})
 
 macro(FillJoynrConfigDependencies DEPENDENCY_FILE)
     file(READ "${CMAKE_CURRENT_LIST_DIR}/CMake/JoynrConfig/${DEPENDENCY_FILE}.cmake.in" FILE_CONTENTS)

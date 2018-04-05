@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 ######## Project settings ########
-project(inter-language-test-1.0.5)
+project(inter-language-test-1.1.0)
 
 # Compile to a bin directory current directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin/")
@@ -23,7 +23,7 @@ message(STATUS "option JOYNR_SERVER=${JOYNR_SERVER}")
 ##### Start of build ####################
 
 # Pull in the Joynr configuration
-find_package(Joynr 1.0.5 REQUIRED)
+find_package(Joynr 1.1.0 REQUIRED)
 
 message(STATUS "joynr variable Joynr_LIB_COMMON_INCLUDE_DIRS=${Joynr_LIB_COMMON_INCLUDE_DIRS}")
 message(STATUS "joynr variable Joynr_LIB_INPROCESS_INCLUDE_DIRS=${Joynr_LIB_INPROCESS_INCLUDE_DIRS}")
@@ -89,6 +89,7 @@ set(ilt-consumer_SOURCES
     "src/main/cpp/IltConsumerAsyncMethodTest.cpp"
     "src/main/cpp/IltConsumerAttributeSubscriptionTest.cpp"
     "src/main/cpp/IltConsumerBroadcastSubscriptionTest.cpp"
+    "src/main/cpp/IltConsumerCompressionTest.cpp"
     "src/main/cpp/IltConsumerFilteredBroadcastSubscriptionTest.cpp"
     "src/main/cpp/IltConsumerFireAndForgetMethodTest.cpp"
     "src/main/cpp/IltConsumerGetterSetterTest.cpp"

@@ -20,9 +20,9 @@
  */
 var Promise = require("../../../global/Promise");
 var JSONSerializer = require("../../util/JSONSerializer");
-var LoggerFactory = require("../../system/LoggerFactory");
+var LoggingManager = require("../../system/LoggingManager");
 
-var log = LoggerFactory.getLogger("joynr/messaging/webmessaging/WebMessagingStub");
+var log = LoggingManager.getLogger("joynr/messaging/webmessaging/WebMessagingStub");
 /**
  * @name WebMessagingStub
  * @constructor

@@ -24,7 +24,6 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "joynr/DispatcherUtils.h"
 #include "joynr/Future.h"
 #include "joynr/ISubscriptionCallback.h"
 #include "joynr/OnChangeSubscriptionQos.h"

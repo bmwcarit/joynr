@@ -25,6 +25,7 @@
 #include "joynr/ObjectWithDecayTime.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/Runnable.h"
+#include "joynr/Logger.h"
 
 namespace joynr
 {

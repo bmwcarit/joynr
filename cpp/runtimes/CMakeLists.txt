@@ -2,8 +2,6 @@ message(STATUS "#############################################")
 message(STATUS "Configuring runtimes...")
 message(STATUS "#############################################\n")
 
-get_target_property(Joynr_PUBLIC_INCLUDE_DIRECTORY Joynr PUBLIC_INCLUDE_DIRECTORY)
-
 set(
     runtime_PUBLIC_INCLUDE_DIRECTORY
     "${CMAKE_CURRENT_SOURCE_DIR}/include"
@@ -24,7 +22,6 @@ set(
     JoynrRuntime_INCLUDE_DIRECTORIES
     ${runtime_PUBLIC_INCLUDE_DIRECTORY}
     "../"
-    ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
 )
 
 include(GenerateJoynrExports)

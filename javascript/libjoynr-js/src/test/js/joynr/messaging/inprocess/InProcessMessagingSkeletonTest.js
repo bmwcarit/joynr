@@ -18,6 +18,7 @@
  * limitations under the License.
  * #L%
  */
+require("../../../node-unit-test-helper");
 var InProcessMessagingSkeleton = require("../../../../classes/joynr/messaging/inprocess/InProcessMessagingSkeleton");
 
 describe("libjoynr-js.joynr.messaging.inprocess.InProcessMessagingSkeleton", function() {
