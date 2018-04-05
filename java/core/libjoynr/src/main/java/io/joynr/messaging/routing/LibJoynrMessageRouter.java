@@ -35,6 +35,7 @@ import io.joynr.runtime.ShutdownNotifier;
 import io.joynr.runtime.SystemServicesSettings;
 import io.joynr.statusmetrics.StatusReceiver;
 import joynr.ImmutableMessage;
+import joynr.Message;
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.system.RoutingProxy;
 import joynr.system.RoutingTypes.Address;
@@ -109,7 +110,7 @@ public class LibJoynrMessageRouter extends AbstractMessageRouter {
     protected Set<Address> getAddresses(ImmutableMessage message) {
         Set<Address> result = super.getAddresses(message);
 
-        if (result.isEmpty() && parentRouter != null) {
+        if (result.isEmpty() && parentRouter != null && message.getType() != Message.VALUE_MESSAGE_TYPE_MULTICAST) {
             String toParticipantId = message.getRecipient();
             Boolean parentHasNextHop = parentRouter.resolveNextHop(toParticipantId);
             if (parentHasNextHop) {
