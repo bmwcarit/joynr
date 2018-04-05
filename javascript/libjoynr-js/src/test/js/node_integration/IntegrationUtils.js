@@ -105,7 +105,7 @@ IntegrationUtils.initializeChildProcess = function(childName, provisioningSuffix
 
     var processConfig = process.env.debugPort ? { execArgv: ["--inspect-brk=" + process.env.debugPort] } : {};
 
-    var forked = child_process.fork("./js/node_integration/" + childName + ".js", [], processConfig);
+    var forked = child_process.fork(__dirname + "/" + childName + ".js", [], processConfig);
     forked.on("message", function(msg) {
         // Handle messages from child process
         console.log("received message: " + JSON.stringify(msg));
