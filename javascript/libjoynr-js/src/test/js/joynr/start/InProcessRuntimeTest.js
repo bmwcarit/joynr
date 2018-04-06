@@ -1,5 +1,5 @@
 /*jslint es5: true */
-/*global fail: true, fit: true */
+/*global fail: true */
 
 /*
  * #%L
@@ -20,7 +20,7 @@
  * #L%
  */
 var provisioning = require("../../../resources/joynr/provisioning/provisioning_cc");
-var InProcessRuntime; //= require("../../../../main/js/joynr/start/InProcessRuntime");
+var InProcessRuntime = require("../../../../main/js/joynr/start/InProcessRuntime");
 var Promise = require("../../../../main/js/global/Promise");
 var waitsFor = require("../../../../test/js/global/WaitsFor");
 
@@ -58,12 +58,8 @@ describe("libjoynr-js.joynr.start.TestInProcessRuntime", function() {
     }
 
     beforeEach(function(done) {
-        // runtime = new InProcessRuntime(provisioning);
+        runtime = new InProcessRuntime(provisioning);
         done();
-    });
-
-    fit("empty test", function() {
-        expect(true).toBe(true);
     });
 
     it("is of correct type and has all members", function(done) {
