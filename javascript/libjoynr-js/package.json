@@ -8,6 +8,7 @@
   "devDependencies": {
     "browserify": "16.1.0",
     "exit-hook": "1.1.1",
+    "eslint": "4.15.0",
     "jasmine": "2.4.1",
     "jasmine-core": "2.4.1",
     "jasmine-node": ">=2.0.0",
@@ -22,6 +23,9 @@
     "prettier": "1.8.2",
     "joynr": "file:./src/main/js"
   },
+  "config": {
+    "glob": "src/{{main/js/global,main/js/joynr,test/js/!(integration)}/**/*.js,main/js/*.js,test/js/*.js}"
+  },
   "engines": {
     "node": ">=0.10.40",
     "npm": ">=1.3.5"
@@ -30,7 +34,9 @@
     "sig": "cd scripts && node createBuildSignature && cd -",
     "clean": "rm -rf node_modules package-lock.json src/test/resources/localStorageTestResults src/test/resources/jstd-test-results src/main/js/node_modules",
     "format": "./scripts/run_formatter.sh",
-    "lint": "echo TODO:lint",
+    "lint": "node_modules/.bin/eslint $npm_package_config_glob",
+    "lint:less": "node_modules/.bin/eslint $npm_package_config_glob --color | less -R",
+    "lint:fix": "node_modules/.bin/eslint $npm_package_config_glob --fix",
     "karma": "node_modules/.bin/karma start src/test/karma/karma.integration.conf.js --single-run",
     "test": "npm run test:unit && npm run test:sit && npm run karma",
     "test:unit": "cd src/test/resources && node node-run-unit-tests.js && cd -",
