@@ -1,5 +1,3 @@
-/*jslint es5: true */
-
 /*
  * #%L
  * %%

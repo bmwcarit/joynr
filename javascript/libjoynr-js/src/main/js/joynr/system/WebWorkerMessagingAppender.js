@@ -1,6 +1,3 @@
-/*jslint node: true */
-
-/*global postMessage: true */
 /*
  * #%L
  * %%

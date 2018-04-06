@@ -1,6 +1,3 @@
-/*jslint es5: true, nomen: true */
-/*global Promise: true, WorkerUtils: true, importScripts: true, joynr: true, Country: true, RadioStation: true, RadioProvider: true, domain: true, interfaceNameComm: true, providerParticipantIdComm: true, providerChannelIdComm: true, globalCapDirCapability: true, channelUrlDirCapability: true, ErrorList: true */
-
 /*
  * #%L
  * %%

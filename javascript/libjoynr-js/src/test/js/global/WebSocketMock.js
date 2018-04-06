@@ -1,6 +1,3 @@
-/*jslint node: true */
-
-/*global Buffer: true, FileReader: true, TextDecoder: true, TextEncoder: true */
 /*
  * #%L
  * %%

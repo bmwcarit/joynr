@@ -1,6 +1,3 @@
-/*jslint node: true */
-/*global sharedTests: true*/
-
 /*
  * #%L
  * %%

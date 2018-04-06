@@ -1,6 +1,3 @@
-/*global postMessage: true, onmessage: true, document: false, window: false, initializeTest: true, startTest: true, terminateTest: true */
-/*jslint es5: true */
-
 /*
  * #%L
  * %%

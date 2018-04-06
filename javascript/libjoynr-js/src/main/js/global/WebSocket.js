@@ -1,7 +1,3 @@
-/*jslint node: true */
-
-/*global WebSocket: true, FileReader: true, TextDecoder: true, TextEncoder: true */
-
 /*
  * #%L
  * %%

@@ -1,5 +1,3 @@
-/*global fail: true */
-/*jslint es5: true, node: true, nomen: true */
 /*
  * #%L
  * %%

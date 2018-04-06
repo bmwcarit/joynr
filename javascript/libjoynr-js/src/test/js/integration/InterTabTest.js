@@ -1,5 +1,3 @@
-/*global fail: true, xit: true */
-/*jslint es5: true, node: true */
 /*
  * #%L
  * %%

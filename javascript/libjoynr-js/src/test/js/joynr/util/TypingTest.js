@@ -1,5 +1,3 @@
-/*jslint es5: true, node: true, newcap: true, nomen: true */
-/*global fail: true, xit: true */
 /*
  * #%L
  * %%

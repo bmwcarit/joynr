@@ -1,4 +1,3 @@
-/*jslint es5: true, node: true */
 /* domain: true, interfaceNameDatatypes: true, globalCapDirCapability: true, channelUrlDirCapability: true */
 
 /*

@@ -1,6 +1,3 @@
-/*jslint node: true*/
-/*global localStorage: true*/
-
 /*
  * #%L
  * %%

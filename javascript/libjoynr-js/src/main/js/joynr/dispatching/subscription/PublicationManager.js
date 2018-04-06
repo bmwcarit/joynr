@@ -1,5 +1,3 @@
-/*jslint es5: true, node: true */
-/*global triggerPublicationTimer: true, triggerPublicationAndClearDebounce: true */
 /*
  * #%L
  * %%

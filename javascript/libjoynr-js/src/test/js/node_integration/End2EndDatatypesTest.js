@@ -1,6 +1,3 @@
-/*global fail: true , OnChangeSubscriptionQos : true */
-/*jslint es5: true, node: true */
-
 /*
  * #%L
  * %%

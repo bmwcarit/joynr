@@ -1,4 +1,3 @@
-/*jslint stupid: true, nomen: true, node: true */
 /*
  * #%L
  * %%

@@ -1,4 +1,3 @@
-/*jslint es5: true, node: true, undef: true */
 // problem with functions postMessage and resend calling each other => it is not possible to bring them in an order without having the jslint "was not defined" error
 /*
  * #%L

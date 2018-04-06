@@ -1,4 +1,3 @@
-/*jslint node: true*/
 /*
  * #%L
  * %%
