@@ -33,7 +33,7 @@
   "scripts": {
     "sig": "cd scripts && node createBuildSignature && cd -",
     "clean": "rm -rf node_modules package-lock.json src/test/resources/localStorageTestResults src/test/resources/jstd-test-results src/main/js/node_modules",
-    "format": "./scripts/run_formatter.sh",
+    "format": "node_modules/.bin/prettier --write --config scripts/prettier.config.json $npm_package_config_glob",
     "lint": "node_modules/.bin/eslint $npm_package_config_glob",
     "lint:less": "node_modules/.bin/eslint $npm_package_config_glob --color | less -R",
     "lint:fix": "node_modules/.bin/eslint $npm_package_config_glob --fix",
