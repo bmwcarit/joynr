@@ -22,16 +22,15 @@ module.exports = function(customMapping) {
         "preprocessor:browserify": [
             "factory",
             function() {
-                // @todo install browserify to correct location in mvn or make it available
-                // in any other way
                 var path = require("path");
                 var karmaModulePath = process.argv[1];
                 var browserify = require(path.join(karmaModulePath, "../../browserify"));
 
                 return function(content, file, done) {
+                    var joynrPath = path.join(karmaModulePath, "../../../src/main/js/");
                     var bundle = browserify()
                         .add(file.path)
-                        .require(path.join(karmaModulePath, "../../../joynr"), { expose: "joynr" });
+                        .require(joynrPath, { expose: "joynr" });
 
                     if (customMapping) {
                         for (var fromModule in customMapping) {
@@ -46,6 +45,9 @@ module.exports = function(customMapping) {
                         .exclude("bufferutil")
                         .exclude("utf-8-validate")
                         .exclude("node-persist")
+                        .ignore(path.join(joynrPath, "joynr/start/InterTabClusterControllerRuntime.js"))
+                        .ignore(path.join(joynrPath, "joynr/start/InterTabLibjoynrRuntime.js"))
+                        .ignore(path.join(joynrPath, "joynr/start/WebSocketLibjoynrRuntime.js"))
                         .bundle(function(err, buffer) {
                             if (err) {
                                 console.log(file, err.toString());
