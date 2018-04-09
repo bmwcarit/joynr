@@ -17,13 +17,16 @@
  * #L%
  */
 
+#include <condition_variable>
 #include <cstdio>
 #include <string>
+#include <thread>
 #include <tuple>
 
 #include <gtest/gtest.h>
 
 #include "joynr/ParticipantIdStorage.h"
+#include "joynr/Util.h"
 
 using namespace joynr;
 
@@ -146,3 +149,140 @@ std::tuple<std::string, std::string> const failingStrings[] = {
 };
 INSTANTIATE_TEST_CASE_P(
   failingStrings, ParticipantIdStorageAssertTest, ::testing::ValuesIn(failingStrings));
+
+
+/*
+ * Scope of the test is to cause a crash if the underlying storage
+ * is accessed simultaneously for reading and writing.
+ * The observed crashed happened because a write moved the memory location
+ * of the underling boost::ptree and the read crashed.
+ */
+static const std::string storageFileParallel("ParticipantIdStorageParallelTest.persist");
+
+class ParticipantIdStorageParallelTest : public ::testing::Test {
+public:
+    ParticipantIdStorageParallelTest():
+        store(storageFileParallel),
+        domain("domain"),
+        interfaceName("interfaceName"),
+        participantId("participantId"),
+        canStart(false)
+    {
+        std::remove(storageFileParallel.c_str());
+    }
+
+    ~ParticipantIdStorageParallelTest() override {
+        std::remove(storageFileParallel.c_str());
+    }
+
+    void writeOneEntryAndNotify() {
+        store.setProviderParticipantId(joynr::util::createUuid(),
+                                       joynr::util::createUuid(),
+                                       joynr::util::createUuid());
+
+        // notify threads
+        std::cout << "Done writing first entry." << std::endl;
+        {
+            std::unique_lock<std::mutex> lock(mutex);
+            canStart = true;
+        }
+
+        cv.notify_all();
+    }
+
+    void writeWithNotify(int numberOfWrites) {
+        writeOneEntryAndNotify();
+        std::cout << "Start writing..." << std::endl;
+        writeToStorage(numberOfWrites);
+    }
+
+    void readAfterNotify(int numberOfReads) {
+        std::unique_lock<std::mutex> lock(mutex);
+        while(!canStart) {
+            cv.wait_for(lock, std::chrono::milliseconds(100));
+        }
+        readFromStorage(numberOfReads);
+    }
+
+    void writeAfterNotify(int numberOfWrites) {
+        std::unique_lock<std::mutex> lock(mutex);
+        while(!canStart) {
+            cv.wait_for(lock, std::chrono::milliseconds(100));
+        }
+        writeToStorage(numberOfWrites);
+    }
+
+protected:
+    void readFromStorage(int numberOfReads) {
+        assert(canStart);
+        for (int i = 0; i < numberOfReads; ++i) {
+            store.getProviderParticipantId(domain, interfaceName);
+        }
+    }
+
+    void writeToStorage(int numberOfWrites) {
+        assert(canStart);
+        for (int i = 0; i < numberOfWrites; ++i) {
+            store.setProviderParticipantId(joynr::util::createUuid(),
+                                           joynr::util::createUuid(),
+                                           joynr::util::createUuid());
+        }
+    }
+
+    ParticipantIdStorage store;
+    const std::string domain;
+    const std::string interfaceName;
+    const std::string participantId;
+
+    std::condition_variable cv;
+    std::mutex mutex;
+    bool canStart;
+};
+
+// This test simulates 2 applications using libJoynr, one doing 10000 lookups and the
+// other registering 1000 providers
+TEST_F(ParticipantIdStorageParallelTest, checkParallel_RW_AccessOfStorage) {
+    std::thread read (&ParticipantIdStorageParallelTest::readAfterNotify, this, 10000);
+    std::thread write (&ParticipantIdStorageParallelTest::writeWithNotify, this, 1000);
+
+    read.join();
+    write.join();
+}
+
+// This test simulates 2 applications using libJoynr, each doing 10000 lookups
+TEST_F(ParticipantIdStorageParallelTest, checkParallel_R_AccessOfStorage) {
+    std::thread read_1 (&ParticipantIdStorageParallelTest::readAfterNotify, this, 10000);
+    std::thread read_2 (&ParticipantIdStorageParallelTest::readAfterNotify, this, 10000);
+
+    writeOneEntryAndNotify();
+
+    read_1.join();
+    read_2.join();
+}
+
+// This test simulates 2 applications using libJoynr, each registering 1000 providers
+TEST_F(ParticipantIdStorageParallelTest, checkParallel_W_AccessOfStorage) {
+    std::thread write_1 (&ParticipantIdStorageParallelTest::writeAfterNotify, this, 1000);
+    std::thread write_2 (&ParticipantIdStorageParallelTest::writeAfterNotify, this, 1000);
+
+    writeOneEntryAndNotify();
+
+    write_1.join();
+    write_2.join();
+}
+
+// This test simulates 10 applications using libJoynr, each registering 100 providers and doing
+// 10 lookups in the storage.
+TEST_F(ParticipantIdStorageParallelTest, checkParallel_RW_AccessOfStorage_multipleThreads) {
+    std::vector<std::thread> threads;
+    for (int i = 0; i < 10; ++i) {
+      threads.push_back(std::thread(&ParticipantIdStorageParallelTest::readAfterNotify, this, 10));
+      threads.push_back(std::thread(&ParticipantIdStorageParallelTest::writeAfterNotify, this, 100));
+    }
+
+    writeOneEntryAndNotify();
+
+    for (auto& t : threads) {
+      t.join();
+    }
+}
