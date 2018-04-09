@@ -17,7 +17,7 @@
  * #L%
  */
 
-define("joynr/security/PlatformSecurityManager", [], function() {
+define("joynr/security/PlatformSecurityManager", [], () => {
     /**
      * @name PlatformSecurityManager
      * @constructor

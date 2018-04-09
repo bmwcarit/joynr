@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-var Typing = require("../../util/Typing");
+const Typing = require("../../util/Typing");
 
 /**
  * @constructor WebSocketMulticastAddressCalculator
@@ -25,7 +25,7 @@ var Typing = require("../../util/Typing");
  * @param {WebSocketAddress}
  *            settings.globalAddress
  */
-var WebSocketMulticastAddressCalculator = function WebSocketMulticastAddressCalculator(settings) {
+const WebSocketMulticastAddressCalculator = function WebSocketMulticastAddressCalculator(settings) {
     Typing.checkProperty(settings, "Object", "settings");
     Typing.checkProperty(settings.globalAddress, "WebSocketAddress", "settings.globalAddress");
 

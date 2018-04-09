@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-var defaultSettings = {};
+const defaultSettings = {};
 defaultSettings.protocol = "ws";
 defaultSettings.path = "";
 module.exports = defaultSettings;

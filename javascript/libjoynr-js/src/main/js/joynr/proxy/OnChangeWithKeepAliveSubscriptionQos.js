@@ -16,12 +16,12 @@
  * limitations under the License.
  * #L%
  */
-var Typing = require("../util/Typing");
-var Util = require("../util/UtilInternal");
-var OnChangeSubscriptionQos = require("./OnChangeSubscriptionQos");
-var LoggingManager = require("../system/LoggingManager");
+const Typing = require("../util/Typing");
+const Util = require("../util/UtilInternal");
+const OnChangeSubscriptionQos = require("./OnChangeSubscriptionQos");
+const LoggingManager = require("../system/LoggingManager");
 
-var defaultSettings;
+let defaultSettings;
 
 /**
  * @classdesc
@@ -103,8 +103,8 @@ function OnChangeWithKeepAliveSubscriptionQos(settings) {
         return new OnChangeWithKeepAliveSubscriptionQos(settings);
     }
 
-    var onChangeSubscriptionQos = new OnChangeSubscriptionQos(settings);
-    var log = LoggingManager.getLogger("joynr.proxy.OnChangeWithKeepAliveSubscriptionQos");
+    const onChangeSubscriptionQos = new OnChangeSubscriptionQos(settings);
+    const log = LoggingManager.getLogger("joynr.proxy.OnChangeWithKeepAliveSubscriptionQos");
 
     /**
      * Used for serialization.

@@ -16,16 +16,16 @@
  * limitations under the License.
  * #L%
  */
-var Promise = require("../../global/Promise");
-var Util = require("../util/UtilInternal");
-var Typing = require("../util/Typing");
-var TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
-var ProviderRuntimeException = require("../exceptions/ProviderRuntimeException");
+const Promise = require("../../global/Promise");
+const Util = require("../util/UtilInternal");
+const Typing = require("../util/Typing");
+const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
+const ProviderRuntimeException = require("../exceptions/ProviderRuntimeException");
 
-var typeRegistry = TypeRegistrySingleton.getInstance();
+const typeRegistry = TypeRegistrySingleton.getInstance();
 
 // prettier-ignore
-var asNotify = (function() {
+const asNotify = (function() {
     /**
      * If this attribute is changed the application should call this function with the new value,
      * whereafter the new value gets published
@@ -85,7 +85,7 @@ var asNotify = (function() {
 }());
 
 // prettier-ignore
-var asWrite = (function() {
+const asWrite = (function() {
     /**
      * Registers the setter function for this attribute
      *
@@ -117,21 +117,21 @@ var asWrite = (function() {
      * @see ProviderAttribute#registerSetter
      */
     function set(value) {
-        var originalValue;
-        var that = this;
+        let originalValue;
+        const that = this;
         if (!this.privateSetterFunc) {
             throw new Error("no setter function registered for provider attribute");
         }
 
-        var setterParams = Typing.augmentTypes(value, typeRegistry, that.attributeType);
+        const setterParams = Typing.augmentTypes(value, typeRegistry, that.attributeType);
         return Promise.resolve(this.privateGetterFunc())
             .then(
-                function(getterValue) {
+                (getterValue) => {
                     originalValue = getterValue;
                     return that.privateSetterFunc(setterParams);
                 }
             )
-            .then(function() {
+            .then(() => {
                 if (originalValue !== value && that.valueChanged instanceof Function) {
                     that.valueChanged(value);
                 }
@@ -150,7 +150,7 @@ function toArray(returnValue) {
 }
 
 // prettier-ignore
-var asRead = (function() {
+const asRead = (function() {
     /**
      * Registers the getter function for this attribute
      *
@@ -212,7 +212,7 @@ var asRead = (function() {
 }());
 
 // prettier-ignore
-var asReadOrWrite = (function() {
+const asReadOrWrite = (function() {
     /**
      * Check Getter and Setter functions.
      *

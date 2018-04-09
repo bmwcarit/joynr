@@ -17,14 +17,14 @@
  * limitations under the License.
  * #L%
  */
-var Promise = require("../../../global/Promise");
-var Util = require("../../util/UtilInternal");
-var Typing = require("../../util/Typing");
-var JSONSerializer = require("../../util/JSONSerializer");
-var JoynrMessage = require("../JoynrMessage");
-var LongTimer = require("../../util/LongTimer");
-var DiagnosticTags = require("../../system/DiagnosticTags");
-var LoggingManager = require("../../system/LoggingManager");
+const Promise = require("../../../global/Promise");
+const Util = require("../../util/UtilInternal");
+const Typing = require("../../util/Typing");
+const JSONSerializer = require("../../util/JSONSerializer");
+const JoynrMessage = require("../JoynrMessage");
+const LongTimer = require("../../util/LongTimer");
+const DiagnosticTags = require("../../system/DiagnosticTags");
+const LoggingManager = require("../../system/LoggingManager");
 
 /**
  * ChannelMessagingSender sends JoynrMessages to their destinations via Http
@@ -35,31 +35,31 @@ var LoggingManager = require("../../system/LoggingManager");
  *            settings the settings object holding the dependencies
  */
 function ChannelMessagingSender(settings) {
-    var log = LoggingManager.getLogger("joynr.messaging.ChannelMessagingSender");
-    var messageQueue = []; // use push to add at the back, and shift to take from the front
-    var messageProcessors =
+    const log = LoggingManager.getLogger("joynr.messaging.ChannelMessagingSender");
+    let messageQueue = []; // use push to add at the back, and shift to take from the front
+    let messageProcessors =
         settings.channelQos && settings.channelQos.messageProcessors ? settings.channelQos.messageProcessors : 4;
-    var resendDelay_ms =
+    const resendDelay_ms =
         settings.channelQos && settings.channelQos.resendDelay_ms ? settings.channelQos.resendDelay_ms : 1000;
-    var communicationModule = settings.communicationModule;
-    var started = false;
-    var terminated = false;
+    const communicationModule = settings.communicationModule;
+    let started = false;
+    let terminated = false;
 
-    var getRelativeExpiryDate = function getRelativeExpiryDate(joynrMessage) {
+    const getRelativeExpiryDate = function getRelativeExpiryDate(joynrMessage) {
         return parseInt(joynrMessage.expiryDate, 10) - Date.now();
     };
 
-    var checkIfExpired = function(queuedMessage) {
+    const checkIfExpired = function(queuedMessage) {
         if (queuedMessage.pending === false || queuedMessage.expiryTimer === undefined) {
             return true;
         }
 
-        var isExpired = getRelativeExpiryDate(queuedMessage.message) <= 0;
+        const isExpired = getRelativeExpiryDate(queuedMessage.message) <= 0;
         if (isExpired) {
             queuedMessage.pending = false;
             LongTimer.clearTimeout(queuedMessage.expiryTimer);
             delete queuedMessage.expiryTimer;
-            var errMsg = "DISCARDED " + JSONSerializer.stringify(queuedMessage.message) + ": ttl expired";
+            const errMsg = "DISCARDED " + JSONSerializer.stringify(queuedMessage.message) + ": ttl expired";
             log.warn(errMsg);
             queuedMessage.reject(new Error(errMsg));
         }
@@ -86,7 +86,7 @@ function ChannelMessagingSender(settings) {
             queuedMessage.reject(new Error("ChannelMessagingSender is already shut down"));
             return;
         }
-        var timeout = getRelativeExpiryDate(queuedMessage.message);
+        let timeout = getRelativeExpiryDate(queuedMessage.message);
 
         // XMLHttpRequest uses a timeout of 0 to mean that there is no timeout.
         // ttl = 0 means the opposite (is already expired)
@@ -137,7 +137,7 @@ function ChannelMessagingSender(settings) {
                 type: "POST",
                 url: queuedMessage.to,
                 data: JSONSerializer.stringify(queuedMessage.message),
-                timeout: timeout
+                timeout
             })
             .then(createXMLHTTPRequestOnSuccess)
             .catch(createXMLHTTPRequestOnError);
@@ -153,7 +153,7 @@ function ChannelMessagingSender(settings) {
      */
     function notify() {
         if (messageProcessors > 0 && started) {
-            var nextMessage = messageQueue.shift();
+            const nextMessage = messageQueue.shift();
             if (nextMessage === undefined) {
                 return;
             }
@@ -210,8 +210,8 @@ function ChannelMessagingSender(settings) {
         if (terminated) {
             return Promise.reject(new Error("ChannelMessagingSender is already shut down"));
         }
-        var deferred = Util.createDeferred();
-        var queuedMessage = {
+        const deferred = Util.createDeferred();
+        const queuedMessage = {
             message: joynrMessage,
             to: toChannelAddress.messagingEndpointUrl + "messageWithoutContentType/",
             resolve: deferred.resolve,

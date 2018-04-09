@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-var Promise = require("../../../global/Promise");
+const Promise = require("../../../global/Promise");
 
 /**
  * @name ChannelMessagingStub
@@ -37,7 +37,7 @@ function ChannelMessagingStub(settings) {
  */
 ChannelMessagingStub.prototype.transmit = function transmit(joynrMessage) {
     if (this._settings.destinationChannelAddress === this._settings.myChannelAddress) {
-        var errorMsg =
+        const errorMsg =
             "Discarding message " +
             joynrMessage.msgId +
             ": message marked as outgoing, but channel address " +

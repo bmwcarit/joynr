@@ -16,11 +16,11 @@
  * limitations under the License.
  * #L%
  */
-var Typing = require("../util/Typing");
-var Util = require("../util/UtilInternal");
-var SubscriptionQos = require("./SubscriptionQos");
+const Typing = require("../util/Typing");
+const Util = require("../util/UtilInternal");
+const SubscriptionQos = require("./SubscriptionQos");
 
-var defaultSettings;
+let defaultSettings;
 
 /**
  * @classdesc
@@ -57,7 +57,7 @@ function MulticastSubscriptionQos(settings) {
         return new MulticastSubscriptionQos(settings);
     }
 
-    var subscriptionQos = new SubscriptionQos(settings);
+    const subscriptionQos = new SubscriptionQos(settings);
 
     /**
      * Used for serialization.

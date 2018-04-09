@@ -27,7 +27,7 @@
  * @see Arbitrator
  * @see DiscoveryQos
  */
-var ArbitrationStrategyCollection = {};
+const ArbitrationStrategyCollection = {};
 
 /**
  * The ArbitrationStrategyCollection.Nothing just returns the passed array
@@ -62,7 +62,7 @@ ArbitrationStrategyCollection.HighestPriority = function(capabilities) {
     }
 
     // sort with descending priority
-    return capabilities.sort(function(a, b) {
+    return capabilities.sort((a, b) => {
         return b.qos.priority - a.qos.priority;
     });
 };
@@ -83,7 +83,7 @@ ArbitrationStrategyCollection.HighestPriority = function(capabilities) {
  * @returns {Array} an array of capabilities sorted by the highest priority
  */
 ArbitrationStrategyCollection.Keyword = function(keyword, capabilities) {
-    var capId,
+    let capId,
         qosId,
         qosParam,
         cap,
@@ -128,7 +128,7 @@ ArbitrationStrategyCollection.LastSeen = function(capabilities) {
     }
 
     // sort with descending priority
-    return capabilities.sort(function(a, b) {
+    return capabilities.sort((a, b) => {
         return b.lastSeenDateMs - a.lastSeenDateMs;
     });
 };

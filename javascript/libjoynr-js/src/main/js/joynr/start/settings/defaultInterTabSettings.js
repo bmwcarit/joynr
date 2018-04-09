@@ -17,11 +17,11 @@
  * #L%
  */
 
-var window = global.window || {
+const window = global.window || {
     location: {}
 };
-var location = global.location || {};
-var defaultSettings = {};
+const location = global.location || {};
+const defaultSettings = {};
 defaultSettings.window = window;
 defaultSettings.parentWindow = window.opener || window.top;
 defaultSettings.parentOrigin = location.origin || window.location.protocol + "//" + window.location.host;

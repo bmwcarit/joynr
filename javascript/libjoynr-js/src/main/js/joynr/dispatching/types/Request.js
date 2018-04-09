@@ -16,17 +16,17 @@
  * limitations under the License.
  * #L%
  */
-var Util = require("../../util/UtilInternal");
-var Typing = require("../../util/Typing");
-var uuid = require("../../../lib/uuid-annotated");
+const Util = require("../../util/UtilInternal");
+const Typing = require("../../util/Typing");
+const uuid = require("../../../lib/uuid-annotated");
 
-var defaultSettings = {
+const defaultSettings = {
     paramDatatypes: [],
     params: []
 };
 
-var rrBase = uuid();
-var rrIndex = 0;
+const rrBase = uuid();
+let rrIndex = 0;
 
 /**
  * @name Request
@@ -48,7 +48,7 @@ var rrIndex = 0;
  *            settings.params.array
  */
 function Request(settings) {
-    var i;
+    let i;
     settings.requestReplyId = settings.requestReplyId || rrBase + "_" + rrIndex++;
 
     if (settings.params) {

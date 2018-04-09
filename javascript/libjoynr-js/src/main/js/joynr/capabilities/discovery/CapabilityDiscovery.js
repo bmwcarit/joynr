@@ -20,18 +20,18 @@
  * The <code>CapabilityDiscovery</code> is a joynr internal interface. When the Arbitrator does a lookup for capabilities, this module is
  * queried. If a provider needs to be registered, this module selects the places to register at.
  */
-var Promise = require("../../../global/Promise");
-var GlobalDiscoveryEntry = require("../../../generated/joynr/types/GlobalDiscoveryEntry");
-var DiscoveryQos = require("../../proxy/DiscoveryQos");
-var DiscoveryScope = require("../../../generated/joynr/types/DiscoveryScope");
-var ProviderScope = require("../../../generated/joynr/types/ProviderScope");
-var GlobalCapabilitiesDirectoryProxy = require("../../../generated/joynr/infrastructure/GlobalCapabilitiesDirectoryProxy");
-var TypeRegistrySingleton = require("../../../joynr/types/TypeRegistrySingleton");
-var Typing = require("../../util/Typing");
-var LoggingManager = require("../../system/LoggingManager");
-var Util = require("../../util/UtilInternal");
-var ProviderRuntimeException = require("../../exceptions/ProviderRuntimeException");
-var CapabilitiesUtil = require("../../util/CapabilitiesUtil");
+const Promise = require("../../../global/Promise");
+const GlobalDiscoveryEntry = require("../../../generated/joynr/types/GlobalDiscoveryEntry");
+const DiscoveryQos = require("../../proxy/DiscoveryQos");
+const DiscoveryScope = require("../../../generated/joynr/types/DiscoveryScope");
+const ProviderScope = require("../../../generated/joynr/types/ProviderScope");
+const GlobalCapabilitiesDirectoryProxy = require("../../../generated/joynr/infrastructure/GlobalCapabilitiesDirectoryProxy");
+const TypeRegistrySingleton = require("../../../joynr/types/TypeRegistrySingleton");
+const Typing = require("../../util/Typing");
+const LoggingManager = require("../../system/LoggingManager");
+const Util = require("../../util/UtilInternal");
+const ProviderRuntimeException = require("../../exceptions/ProviderRuntimeException");
+const CapabilitiesUtil = require("../../util/CapabilitiesUtil");
 
 /**
  * The CapabilitiesDiscovery looks up the local and global capabilities directory
@@ -59,12 +59,12 @@ function CapabilityDiscovery(
     proxyBuilder,
     globalCapabilitiesDomain
 ) {
-    var log = LoggingManager.getLogger("joynr/capabilities/discovery/CapabilityDiscovery");
-    var TTL_30DAYS_IN_MS = 30 * 24 * 60 * 60 * 1000;
-    var globalAddress, globalAddressSerialized;
-    var typeRegistry = TypeRegistrySingleton.getInstance();
-    var queuedGlobalDiscoveryEntries = [];
-    var queuedGlobalLookups = [];
+    const log = LoggingManager.getLogger("joynr/capabilities/discovery/CapabilityDiscovery");
+    const TTL_30DAYS_IN_MS = 30 * 24 * 60 * 60 * 1000;
+    let globalAddress, globalAddressSerialized;
+    const typeRegistry = TypeRegistrySingleton.getInstance();
+    let queuedGlobalDiscoveryEntries = [];
+    let queuedGlobalLookups = [];
 
     if (
         !localCapabilitiesStore ||
@@ -113,35 +113,35 @@ function CapabilityDiscovery(
             .build(GlobalCapabilitiesDirectoryProxy, {
                 domain: globalCapabilitiesDomain,
                 messagingQos: {
-                    ttl: ttl
+                    ttl
                 },
                 discoveryQos: new DiscoveryQos({
                     discoveryScope: DiscoveryScope.GLOBAL_ONLY,
                     cacheMaxAgeMs: Util.getMaxLongValue()
                 })
             })
-            .catch(function(error) {
+            .catch(error => {
                 throw new Error("Failed to create global capabilities directory proxy: " + error);
             });
     }
 
     function lookupGlobal(domains, interfaceName, ttl, capabilities) {
-        return getGlobalCapabilitiesDirectoryProxy(ttl).then(function(globalCapabilitiesDirectoryProxy) {
+        return getGlobalCapabilitiesDirectoryProxy(ttl).then(globalCapabilitiesDirectoryProxy => {
             return globalCapabilitiesDirectoryProxy
                 .lookup({
-                    domains: domains,
-                    interfaceName: interfaceName
+                    domains,
+                    interfaceName
                 })
-                .then(function(opArgs) {
-                    var i,
+                .then(opArgs => {
+                    let i,
                         messageRouterPromises = [],
                         globalCapabilities = opArgs.result;
-                    var globalAddress;
+                    let globalAddress;
                     if (globalCapabilities === undefined) {
                         log.error("globalCapabilitiesDirectoryProxy.lookup() returns with missing result");
                     } else {
                         for (i = globalCapabilities.length - 1; i >= 0; i--) {
-                            var globalDiscoveryEntry = globalCapabilities[i];
+                            const globalDiscoveryEntry = globalCapabilities[i];
                             if (globalDiscoveryEntry.address === globalAddressSerialized) {
                                 globalCapabilities.splice(i, 1);
                             } else {
@@ -158,7 +158,7 @@ function CapabilityDiscovery(
                                     continue;
                                 }
                                 // Update routing table
-                                var isGloballyVisible = globalDiscoveryEntry.qos.scope === ProviderScope.GLOBAL;
+                                const isGloballyVisible = globalDiscoveryEntry.qos.scope === ProviderScope.GLOBAL;
                                 messageRouterPromises.push(
                                     messageRouter.addNextHop(
                                         globalDiscoveryEntry.participantId,
@@ -172,7 +172,7 @@ function CapabilityDiscovery(
                             }
                         }
                     }
-                    return Promise.all(messageRouterPromises).then(function() {
+                    return Promise.all(messageRouterPromises).then(() => {
                         return capabilities;
                     });
                 });
@@ -192,14 +192,14 @@ function CapabilityDiscovery(
      * @returns {Array} - the capabilities array filled with the capabilities found in the global capabilities directory
      */
     function lookupGlobalCapabilities(domains, interfaceName, ttl, capabilities) {
-        var promise;
+        let promise;
         if (!globalAddressSerialized) {
-            var deferred = Util.createDeferred();
+            const deferred = Util.createDeferred();
             queuedGlobalLookups.push({
-                domains: domains,
-                interfaceName: interfaceName,
-                ttl: ttl,
-                capabilities: capabilities,
+                domains,
+                interfaceName,
+                ttl,
+                capabilities,
                 resolve: deferred.resolve,
                 reject: deferred.reject
             });
@@ -216,13 +216,13 @@ function CapabilityDiscovery(
      * @returns {Object} an A+ promise
      */
     function addGlobal(discoveryEntry) {
-        return getGlobalCapabilitiesDirectoryProxy(TTL_30DAYS_IN_MS).then(function(globalCapabilitiesDirectoryProxy) {
+        return getGlobalCapabilitiesDirectoryProxy(TTL_30DAYS_IN_MS).then(globalCapabilitiesDirectoryProxy => {
             discoveryEntry.address = globalAddressSerialized;
             return globalCapabilitiesDirectoryProxy
                 .add({
                     globalDiscoveryEntry: new GlobalDiscoveryEntry(discoveryEntry)
                 })
-                .catch(function(error) {
+                .catch(error => {
                     throw new Error('Error calling operation "add" of GlobalCapabilitiesDirectory because: ' + error);
                 });
         });
@@ -249,7 +249,7 @@ function CapabilityDiscovery(
      *            globalAddress the address used to register discovery entries globally
      */
     this.globalAddressReady = function globalAddressReady(newGlobalAddress) {
-        var i, parameters;
+        let i, parameters;
         globalAddress = newGlobalAddress;
         globalAddressSerialized = JSON.stringify(newGlobalAddress);
         for (i = 0; i < queuedGlobalDiscoveryEntries.length; i++) {
@@ -284,7 +284,7 @@ function CapabilityDiscovery(
      *          then({Array[GlobalDiscoveryEntry]} discoveredCaps).catch({Error} error)
      */
     this.lookup = function lookup(domains, interfaceName, discoveryQos) {
-        var localCapabilities, globalCapabilities;
+        let localCapabilities, globalCapabilities;
 
         if (domains.length !== 1) {
             return Promise.reject(
@@ -298,8 +298,8 @@ function CapabilityDiscovery(
             // only interested in local results
             case DiscoveryScope.LOCAL_ONLY.value:
                 localCapabilities = localCapabilitiesStore.lookup({
-                    domains: domains,
-                    interfaceName: interfaceName
+                    domains,
+                    interfaceName
                 });
                 return Promise.resolve(
                     CapabilitiesUtil.convertToDiscoveryEntryWithMetaInfoArray(true, localCapabilities)
@@ -308,8 +308,8 @@ function CapabilityDiscovery(
             // if anything local use it. Otherwise lookup global.
             case DiscoveryScope.LOCAL_THEN_GLOBAL.value:
                 localCapabilities = localCapabilitiesStore.lookup({
-                    domains: domains,
-                    interfaceName: interfaceName
+                    domains,
+                    interfaceName
                 });
                 if (localCapabilities.length > 0) {
                     return Promise.resolve(
@@ -317,8 +317,8 @@ function CapabilityDiscovery(
                     );
                 }
                 globalCapabilities = globalCapabilitiesCache.lookup({
-                    domains: domains,
-                    interfaceName: interfaceName,
+                    domains,
+                    interfaceName,
                     cacheMaxAge: discoveryQos.cacheMaxAge
                 });
                 if (globalCapabilities.length > 0) {
@@ -331,12 +331,12 @@ function CapabilityDiscovery(
             // Use local results, but then lookup global
             case DiscoveryScope.LOCAL_AND_GLOBAL.value:
                 localCapabilities = localCapabilitiesStore.lookup({
-                    domains: domains,
-                    interfaceName: interfaceName
+                    domains,
+                    interfaceName
                 });
                 globalCapabilities = globalCapabilitiesCache.lookup({
-                    domains: domains,
-                    interfaceName: interfaceName,
+                    domains,
+                    interfaceName,
                     cacheMaxAge: discoveryQos.cacheMaxAge
                 });
                 if (globalCapabilities.length === 0) {
@@ -355,8 +355,8 @@ function CapabilityDiscovery(
 
             case DiscoveryScope.GLOBAL_ONLY.value:
                 globalCapabilities = globalCapabilitiesCache.lookup({
-                    domains: domains,
-                    interfaceName: interfaceName,
+                    domains,
+                    interfaceName,
                     cacheMaxAge: discoveryQos.cacheMaxAge
                 });
                 if (globalCapabilities.length > 0) {
@@ -390,18 +390,18 @@ function CapabilityDiscovery(
      */
     this.add = function add(discoveryEntry) {
         localCapabilitiesStore.add({
-            discoveryEntry: discoveryEntry,
+            discoveryEntry,
             remote: false
         });
-        var promise;
+        let promise;
         discoveryEntry.lastSeenDateMs = Date.now();
         if (discoveryEntry.qos.scope === ProviderScope.LOCAL) {
             promise = Promise.resolve();
         } else if (discoveryEntry.qos.scope === ProviderScope.GLOBAL) {
             if (!globalAddressSerialized) {
-                var deferred = Util.createDeferred();
+                const deferred = Util.createDeferred();
                 queuedGlobalDiscoveryEntries.push({
-                    discoveryEntry: discoveryEntry,
+                    discoveryEntry,
                     resolve: deferred.resolve,
                     reject: deferred.reject
                 });
@@ -428,10 +428,10 @@ function CapabilityDiscovery(
      */
     this.touch = function touch(clusterControllerId, ttlMs) {
         return getGlobalCapabilitiesDirectoryProxy(ttlMs)
-            .then(function(globalCapabilitiesDirectoryProxy) {
-                return globalCapabilitiesDirectoryProxy.touch({ clusterControllerId: clusterControllerId });
+            .then(globalCapabilitiesDirectoryProxy => {
+                return globalCapabilitiesDirectoryProxy.touch({ clusterControllerId });
             })
-            .catch(function(error) {
+            .catch(error => {
                 throw new Error('Error calling operation "touch" of GlobalCapabilitiesDirectory because: ' + error);
             });
     };
@@ -448,12 +448,12 @@ function CapabilityDiscovery(
      * @returns {Object} an A+ promise
      */
     function removeParticipantIdFromGlobalCapabilitiesDirectory(participantId) {
-        return getGlobalCapabilitiesDirectoryProxy(TTL_30DAYS_IN_MS).then(function(globalCapabilitiesDirectoryProxy) {
+        return getGlobalCapabilitiesDirectoryProxy(TTL_30DAYS_IN_MS).then(globalCapabilitiesDirectoryProxy => {
             return globalCapabilitiesDirectoryProxy
                 .remove({
-                    participantId: participantId
+                    participantId
                 })
-                .catch(function(error) {
+                .catch(error => {
                     throw new Error(
                         'Error calling operation "remove" of GlobalCapabilitiesDirectory because: ' + error
                     );
@@ -474,13 +474,13 @@ function CapabilityDiscovery(
      * @returns {Object} an A+ promise
      */
     this.remove = function remove(participantId) {
-        var discoveryEntries = localCapabilitiesStore.lookup({
-            participantId: participantId
+        const discoveryEntries = localCapabilitiesStore.lookup({
+            participantId
         });
-        var promise;
+        let promise;
 
         localCapabilitiesStore.remove({
-            participantId: participantId
+            participantId
         });
         if (discoveryEntries === undefined || discoveryEntries.length !== 1) {
             log.warn(
@@ -489,16 +489,14 @@ function CapabilityDiscovery(
                     ". Trying to remove the capability from global directory"
             );
             promise = removeParticipantIdFromGlobalCapabilitiesDirectory(participantId);
+        } else if (discoveryEntries[0].qos.scope === ProviderScope.LOCAL || discoveryEntries.length < 1) {
+            promise = Promise.resolve();
+        } else if (discoveryEntries[0].qos.scope === ProviderScope.GLOBAL) {
+            promise = removeParticipantIdFromGlobalCapabilitiesDirectory(participantId);
         } else {
-            if (discoveryEntries[0].qos.scope === ProviderScope.LOCAL || discoveryEntries.length < 1) {
-                promise = Promise.resolve();
-            } else if (discoveryEntries[0].qos.scope === ProviderScope.GLOBAL) {
-                promise = removeParticipantIdFromGlobalCapabilitiesDirectory(participantId);
-            } else {
-                promise = Promise.reject(
-                    new Error('Encountered unknown ProviderQos scope "' + discoveryEntries[0].qos.scope + '"')
-                );
-            }
+            promise = Promise.reject(
+                new Error('Encountered unknown ProviderQos scope "' + discoveryEntries[0].qos.scope + '"')
+            );
         }
         return promise;
     };

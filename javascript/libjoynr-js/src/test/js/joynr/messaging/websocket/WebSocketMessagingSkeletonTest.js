@@ -17,45 +17,45 @@
  * #L%
  */
 require("../../../node-unit-test-helper");
-var WebSocketMessagingSkeleton = require("../../../../../main/js/joynr/messaging/websocket/WebSocketMessagingSkeleton");
-var JoynrMessage = require("../../../../../main/js/joynr/messaging/JoynrMessage");
-var WebSocketAddress = require("../../../../../main/js/generated/joynr/system/RoutingTypes/WebSocketAddress");
-var WebSocketClientAddress = require("../../../../../main/js/generated/joynr/system/RoutingTypes/WebSocketClientAddress");
-var SharedWebSocket = require("../../../../../main/js/joynr/messaging/websocket/SharedWebSocket");
-var WebSocket = require("../../../../../test/js/global/WebSocketMock");
+const WebSocketMessagingSkeleton = require("../../../../../main/js/joynr/messaging/websocket/WebSocketMessagingSkeleton");
+const JoynrMessage = require("../../../../../main/js/joynr/messaging/JoynrMessage");
+const WebSocketAddress = require("../../../../../main/js/generated/joynr/system/RoutingTypes/WebSocketAddress");
+const WebSocketClientAddress = require("../../../../../main/js/generated/joynr/system/RoutingTypes/WebSocketClientAddress");
+const SharedWebSocket = require("../../../../../main/js/joynr/messaging/websocket/SharedWebSocket");
+const WebSocket = require("../../../../../test/js/global/WebSocketMock");
 
-describe("libjoynr-js.joynr.messaging.websocket.WebSocketMessagingSkeleton", function() {
-    var window = null;
-    var sharedWebSocket = null;
-    var webSocketMessagingSkeleton = null;
-    var listener = null;
-    var data = null;
-    var event = null;
-    var multicastEvent;
-    var ccAddress = new WebSocketAddress({
+describe("libjoynr-js.joynr.messaging.websocket.WebSocketMessagingSkeleton", () => {
+    let window = null;
+    let sharedWebSocket = null;
+    let webSocketMessagingSkeleton = null;
+    let listener = null;
+    let data = null;
+    let event = null;
+    let multicastEvent;
+    const ccAddress = new WebSocketAddress({
         protocol: "ws",
         host: "host",
         port: 1234,
         path: "/test"
     });
-    var localAddress = new WebSocketClientAddress({
+    const localAddress = new WebSocketClientAddress({
         id: "1234"
     });
 
-    beforeEach(function(done) {
+    beforeEach(done => {
         function Window() {}
         window = new Window();
         window.addEventListener = jasmine.createSpy("addEventListener");
 
         sharedWebSocket = new SharedWebSocket({
             remoteAddress: ccAddress,
-            localAddress: localAddress
+            localAddress
         });
 
         spyOn(sharedWebSocket, "send").and.callThrough();
 
         webSocketMessagingSkeleton = new WebSocketMessagingSkeleton({
-            sharedWebSocket: sharedWebSocket,
+            sharedWebSocket,
             mainTransport: true
         });
 
@@ -81,7 +81,7 @@ describe("libjoynr-js.joynr.messaging.websocket.WebSocketMessagingSkeleton", fun
             );
         } else if (typeof TextEncoder === "function") {
             // browser
-            var textEncoder = new TextEncoder();
+            const textEncoder = new TextEncoder();
             event.data = textEncoder.encode(JSON.stringify(data));
             event.target = {
                 binaryType: "arraybuffer"
@@ -100,7 +100,7 @@ describe("libjoynr-js.joynr.messaging.websocket.WebSocketMessagingSkeleton", fun
         done();
     });
 
-    it("is of correct type and has all members", function(done) {
+    it("is of correct type and has all members", done => {
         expect(WebSocketMessagingSkeleton).toBeDefined();
         expect(typeof WebSocketMessagingSkeleton === "function").toBeTruthy();
         expect(webSocketMessagingSkeleton).toBeDefined();
@@ -112,45 +112,45 @@ describe("libjoynr-js.joynr.messaging.websocket.WebSocketMessagingSkeleton", fun
         done();
     });
 
-    it("throws if arguments are missing or of wrong type", function(done) {
-        expect(function() {
+    it("throws if arguments are missing or of wrong type", done => {
+        expect(() => {
             webSocketMessagingSkeleton = new WebSocketMessagingSkeleton({
-                sharedWebSocket: sharedWebSocket,
+                sharedWebSocket,
                 mainTransport: true
             });
         }).not.toThrow(); // correct call
-        expect(function() {
+        expect(() => {
             webSocketMessagingSkeleton = new WebSocketMessagingSkeleton({
-                sharedWebSocket: sharedWebSocket
+                sharedWebSocket
             });
         }).toThrow(); // mainTransport missing
-        expect(function() {
+        expect(() => {
             webSocketMessagingSkeleton = new WebSocketMessagingSkeleton({});
         }).toThrow(); // incorrect call
 
-        expect(function() {
-            webSocketMessagingSkeleton.registerListener(function() {});
+        expect(() => {
+            webSocketMessagingSkeleton.registerListener(() => {});
         }).not.toThrow(); // correct call
-        expect(function() {
+        expect(() => {
             webSocketMessagingSkeleton.registerListener("");
         }).toThrow(); // listener is of wrong type
-        expect(function() {
+        expect(() => {
             webSocketMessagingSkeleton.registerListener({});
         }).toThrow(); // listener is of wrong type
 
-        expect(function() {
-            webSocketMessagingSkeleton.unregisterListener(function() {});
+        expect(() => {
+            webSocketMessagingSkeleton.unregisterListener(() => {});
         }).not.toThrow(); // correct call
-        expect(function() {
+        expect(() => {
             webSocketMessagingSkeleton.unregisterListener("");
         }).toThrow(); // listener is of wrong type
-        expect(function() {
+        expect(() => {
             webSocketMessagingSkeleton.unregisterListener({});
         }).toThrow(); // listener is of wrong type
         done();
     });
 
-    it("event calls through to registered listener", function() {
+    it("event calls through to registered listener", () => {
         webSocketMessagingSkeleton.registerListener(listener);
         expect(listener).not.toHaveBeenCalled();
 
@@ -160,7 +160,7 @@ describe("libjoynr-js.joynr.messaging.websocket.WebSocketMessagingSkeleton", fun
         expect(listener.calls.count()).toBe(1);
     });
 
-    it("event does not call through to unregistered listener", function() {
+    it("event does not call through to unregistered listener", () => {
         webSocketMessagingSkeleton.registerListener(listener);
         sharedWebSocket.onmessage(event);
         expect(listener).toHaveBeenCalled();
@@ -180,13 +180,13 @@ describe("libjoynr-js.joynr.messaging.websocket.WebSocketMessagingSkeleton", fun
         expect(listener.calls.argsFor(0)[0].isReceivedFromGlobal).toBe(expectedValue);
     }
 
-    it("sets isReceivedFromGlobal if web socket is main transport", function() {
+    it("sets isReceivedFromGlobal if web socket is main transport", () => {
         receiveMessageAndCheckForIsReceivedFromGlobalFlag(true);
     });
 
-    it("does not set isReceivedFromGlobal if web socket is NOT main transport", function() {
+    it("does not set isReceivedFromGlobal if web socket is NOT main transport", () => {
         webSocketMessagingSkeleton = new WebSocketMessagingSkeleton({
-            sharedWebSocket: sharedWebSocket,
+            sharedWebSocket,
             mainTransport: false
         });
 

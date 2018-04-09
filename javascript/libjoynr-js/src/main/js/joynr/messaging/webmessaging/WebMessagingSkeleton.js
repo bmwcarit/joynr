@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-var Typing = require("../../util/Typing");
-var Util = require("../../util/UtilInternal");
+const Typing = require("../../util/Typing");
+const Util = require("../../util/UtilInternal");
 
 /**
  * @constructor WebMessagingSkeleton
@@ -37,8 +37,8 @@ function WebMessagingSkeleton(settings) {
         );
     }
 
-    var receiverCallbacks = [];
-    var callbackFct = function(event) {
+    const receiverCallbacks = [];
+    const callbackFct = function(event) {
         Util.fire(receiverCallbacks, event.data);
     };
 

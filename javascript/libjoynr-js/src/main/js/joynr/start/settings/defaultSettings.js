@@ -16,6 +16,6 @@
  * limitations under the License.
  * #L%
  */
-var defaultSettings = {};
+const defaultSettings = {};
 // do nothing
 module.exports = defaultSettings;

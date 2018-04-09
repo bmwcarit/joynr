@@ -17,25 +17,25 @@
  * #L%
  */
 require("../../../node-unit-test-helper");
-var SharedWebSocket = require("../../../../../main/js/joynr/messaging/websocket/SharedWebSocket");
-var JoynrMessage = require("../../../../../main/js/joynr/messaging/JoynrMessage");
-var WebSocketAddress = require("../../../../../main/js/generated/joynr/system/RoutingTypes/WebSocketAddress");
-var WebSocketClientAddress = require("../../../../../main/js/generated/joynr/system/RoutingTypes/WebSocketClientAddress");
-var WebSocket = require("../../../../../test/js/global/WebSocketMock");
+const SharedWebSocket = require("../../../../../main/js/joynr/messaging/websocket/SharedWebSocket");
+const JoynrMessage = require("../../../../../main/js/joynr/messaging/JoynrMessage");
+const WebSocketAddress = require("../../../../../main/js/generated/joynr/system/RoutingTypes/WebSocketAddress");
+const WebSocketClientAddress = require("../../../../../main/js/generated/joynr/system/RoutingTypes/WebSocketClientAddress");
+const WebSocket = require("../../../../../test/js/global/WebSocketMock");
 
-describe("libjoynr-js.joynr.messaging.webmessaging.SharedWebSocket", function() {
-    var window = null;
-    var localAddress;
-    var ccAddress;
-    var websocket = null;
-    var sharedWebSocket = null;
-    var listener1 = null;
-    var listener2 = null;
-    var data = null;
-    var event = null;
-    var joynrMessage = null;
+describe("libjoynr-js.joynr.messaging.webmessaging.SharedWebSocket", () => {
+    let window = null;
+    let localAddress;
+    let ccAddress;
+    let websocket = null;
+    let sharedWebSocket = null;
+    let listener1 = null;
+    let listener2 = null;
+    let data = null;
+    let event = null;
+    let joynrMessage = null;
 
-    beforeEach(function(done) {
+    beforeEach(done => {
         function JoynrMessage() {}
         joynrMessage = new JoynrMessage();
 
@@ -56,7 +56,7 @@ describe("libjoynr-js.joynr.messaging.webmessaging.SharedWebSocket", function() 
         });
 
         sharedWebSocket = new SharedWebSocket({
-            localAddress: localAddress,
+            localAddress,
             remoteAddress: ccAddress
         });
 
@@ -71,7 +71,7 @@ describe("libjoynr-js.joynr.messaging.webmessaging.SharedWebSocket", function() 
         done();
     });
 
-    it("is of correct type and has all members", function(done) {
+    it("is of correct type and has all members", done => {
         expect(SharedWebSocket).toBeDefined();
         expect(typeof SharedWebSocket === "function").toBeTruthy();
         expect(sharedWebSocket).toBeDefined();
@@ -81,33 +81,33 @@ describe("libjoynr-js.joynr.messaging.webmessaging.SharedWebSocket", function() 
         done();
     });
 
-    it("throws if arguments are missing or of wrong type", function(done) {
-        expect(function() {
+    it("throws if arguments are missing or of wrong type", done => {
+        expect(() => {
             sharedWebSocket = new SharedWebSocket({
-                localAddress: localAddress,
+                localAddress,
                 remoteAddress: ccAddress
             });
         }).not.toThrow(); // correct
         // call
 
-        expect(function() {
+        expect(() => {
             sharedWebSocket.send(new JoynrMessage({}));
         }).not.toThrow(); // correct call
-        expect(function() {
+        expect(() => {
             sharedWebSocket.onmessage = undefined;
         }).toThrow(); // callback must be a function
 
-        expect(function() {
+        expect(() => {
             sharedWebSocket.onmessage = function() {};
         }).not.toThrow(); // correct call
 
-        expect(function() {
+        expect(() => {
             sharedWebSocket.onmessage = {};
         }).toThrow(); // callback must be a function
         done();
     });
 
-    it("calls websocket.send correctly", function(done) {
+    it("calls websocket.send correctly", done => {
         websocket.readyState = WebSocket.OPEN;
         sharedWebSocket.send(joynrMessage);
         expect(websocket.send).toHaveBeenCalledWith(websocket.marshalJoynrMessage(joynrMessage), {

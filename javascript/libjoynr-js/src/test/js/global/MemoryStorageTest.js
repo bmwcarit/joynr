@@ -16,45 +16,45 @@
  * limitations under the License.
  * #L%
  */
-var MemoryStorage = require("../../../main/js/global/MemoryStorage");
+const MemoryStorage = require("../../../main/js/global/MemoryStorage");
 
-describe("memory storage", function() {
-    var storage;
-    var item = {
+describe("memory storage", () => {
+    let storage;
+    const item = {
         hi: "bla"
     };
-    var key = "key";
+    const key = "key";
 
-    beforeEach(function(done) {
+    beforeEach(done => {
         storage = new MemoryStorage();
         done();
     });
 
-    it("can set and load item", function() {
+    it("can set and load item", () => {
         storage.setItem(key, JSON.stringify(item));
-        var result = JSON.parse(storage.getItem(key));
+        const result = JSON.parse(storage.getItem(key));
         expect(result).toEqual(item);
     });
 
-    it("can set and load long items", function() {
-        var longString = new Array(200).join("a");
+    it("can set and load long items", () => {
+        const longString = new Array(200).join("a");
 
         storage.setItem(longString, JSON.stringify(item));
-        var result = JSON.parse(storage.getItem(longString));
+        const result = JSON.parse(storage.getItem(longString));
         expect(result).toEqual(item);
     });
 
-    it("can remove items", function() {
+    it("can remove items", () => {
         storage.setItem(key, JSON.stringify(item));
         storage.removeItem(key);
-        var result = storage.getItem(key);
+        const result = storage.getItem(key);
         expect(result).toEqual(undefined);
     });
 
-    it("can clear items", function() {
+    it("can clear items", () => {
         storage.setItem(key, JSON.stringify(item));
         storage.clear();
-        var result = storage.getItem(key);
+        const result = storage.getItem(key);
         expect(result).toEqual(undefined);
     });
 });

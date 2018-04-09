@@ -16,9 +16,9 @@
  * limitations under the License.
  * #L%
  */
-var BroadcastOutputParameters = require("./BroadcastOutputParameters");
-var Util = require("../util/UtilInternal");
-var SubscriptionUtil = require("../dispatching/subscription/util/SubscriptionUtil");
+const BroadcastOutputParameters = require("./BroadcastOutputParameters");
+const Util = require("../util/UtilInternal");
+const SubscriptionUtil = require("../dispatching/subscription/util/SubscriptionUtil");
 
 /**
  * Constructor of ProviderEvent object that is used in the generation of provider objects
@@ -56,7 +56,7 @@ function ProviderEvent(settings) {
  *
  */
 ProviderEvent.prototype.checkFilterParameters = function checkFilterParameters(filterParametersInput) {
-    var filterParameters = filterParametersInput || {};
+    const filterParameters = filterParametersInput || {};
     return SubscriptionUtil.checkFilterParameters(
         this._settings.filterSettings,
         filterParameters.filterParameters,
@@ -85,8 +85,8 @@ ProviderEvent.prototype.createBroadcastOutputParameters = function createBroadca
 ProviderEvent.prototype.fire = function fire(broadcastOutputParameters, partitions) {
     SubscriptionUtil.validatePartitions(partitions);
     // the Util.fire method accepts exactly one argument for the callback
-    var data = {
-        broadcastOutputParameters: broadcastOutputParameters,
+    const data = {
+        broadcastOutputParameters,
         filters: this._filters,
         partitions: partitions || []
     };

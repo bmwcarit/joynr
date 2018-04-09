@@ -17,7 +17,7 @@
  * #L%
  */
 
-var LocalStorageMock = function() {
+const LocalStorageMock = function() {
     this.map = {};
 };
 

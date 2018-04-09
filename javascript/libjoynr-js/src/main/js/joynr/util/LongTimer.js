@@ -25,17 +25,17 @@
  * @name LongTimer
  * @class
  */
-var LongTimer = {};
+const LongTimer = {};
 
 LongTimer.maxTime = Math.pow(2, 31) - 1;
 LongTimer.idPrefix = "lt";
 
-var highestTimeoutId = 0;
+let highestTimeoutId = 0;
 LongTimer.timeoutMap = {};
 
 function timeoutPortion(timeoutId) {
     // retrieve timeout object
-    var timeoutObj = LongTimer.timeoutMap[timeoutId];
+    const timeoutObj = LongTimer.timeoutMap[timeoutId];
 
     // timeout has been cancelled
     if (timeoutObj === undefined) {
@@ -50,7 +50,7 @@ function timeoutPortion(timeoutId) {
     }
 
     // recalculate remaining timeout and start next portion of timeout
-    var timeToWait = Math.min(LongTimer.maxTime, timeoutObj.remainingTimeout);
+    const timeToWait = Math.min(LongTimer.maxTime, timeoutObj.remainingTimeout);
     timeoutObj.remainingTimeout -= timeToWait;
     timeoutObj.currentTimeout = setTimeout(timeoutPortion, timeToWait, timeoutId);
 }
@@ -70,17 +70,17 @@ function timeoutPortion(timeoutId) {
  */
 LongTimer.setTimeout = function(func, timeout) {
     if (timeout <= LongTimer.maxTime) {
-        return setTimeout.apply(null, arguments);
+        return setTimeout(...arguments);
     }
 
     // get next timeout id and prefix it to avoid possible collisions in environents
     // where setTimeout returns a number (e.g. in browsers).
     highestTimeoutId++;
-    var timeoutId = LongTimer.idPrefix + highestTimeoutId;
+    const timeoutId = LongTimer.idPrefix + highestTimeoutId;
 
     // put timeout object into map
     LongTimer.timeoutMap[timeoutId] = {
-        func: func,
+        func,
         remainingTimeout: timeout,
         args: Array.prototype.slice.call(arguments, 2)
         // get the arbitrary arguments
@@ -107,7 +107,7 @@ LongTimer.setTimeout = function(func, timeout) {
  */
 LongTimer.clearTimeout = function(timeoutId) {
     // retrieve timeout object
-    var timeoutObj = LongTimer.timeoutMap[timeoutId];
+    const timeoutObj = LongTimer.timeoutMap[timeoutId];
 
     // timeout has run out, been cancelled already or was less than maxTime
     if (timeoutObj === undefined) {
@@ -119,8 +119,8 @@ LongTimer.clearTimeout = function(timeoutId) {
     LongTimer.timeoutMap[timeoutId] = undefined;
 };
 
-var highestIntervalId = -1;
-var intervalMap = {};
+let highestIntervalId = -1;
+const intervalMap = {};
 
 /**
  * Implementation for long (>2^31-1 ms) window.setInterval only allows intervals of 2^31-1 ms
@@ -137,11 +137,11 @@ var intervalMap = {};
  */
 LongTimer.setInterval = function(func, interval) {
     // get next interval id
-    var intervalId = ++highestIntervalId;
+    const intervalId = ++highestIntervalId;
 
     function intervalPortion() {
         // retrieve timeout object
-        var intervalObj = intervalMap[intervalId];
+        const intervalObj = intervalMap[intervalId];
 
         // interval has been cancelled
         if (intervalObj === undefined) {
@@ -155,16 +155,16 @@ LongTimer.setInterval = function(func, interval) {
         }
 
         // recalculate remaining timeout and start next portion of interval
-        var timeToWait = Math.min(LongTimer.maxTime, intervalObj.remainingInterval);
+        const timeToWait = Math.min(LongTimer.maxTime, intervalObj.remainingInterval);
         intervalObj.remainingInterval -= timeToWait;
         intervalObj.currentTimeout = setTimeout(intervalPortion, timeToWait);
     }
 
     // put interval object into map
     intervalMap[intervalId] = {
-        func: func,
+        func,
         remainingInterval: interval,
-        interval: interval
+        interval
     };
 
     // start interval
@@ -185,7 +185,7 @@ LongTimer.setInterval = function(func, interval) {
  */
 LongTimer.clearInterval = function(intervalId) {
     // retrieve interval object
-    var interval = intervalMap[intervalId];
+    const interval = intervalMap[intervalId];
 
     // interval has run out or been cancelled already
     if (interval === undefined) {

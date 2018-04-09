@@ -16,13 +16,13 @@
  * limitations under the License.
  * #L%
  */
-var Util = require("../../util/UtilInternal");
-var Typing = require("../../util/Typing");
-var PeriodicSubscriptionQos = require("../../proxy/PeriodicSubscriptionQos");
-var OnChangeSubscriptionQos = require("../../proxy/OnChangeSubscriptionQos");
-var OnChangeWithKeepAliveSubscriptionQos = require("../../proxy/OnChangeWithKeepAliveSubscriptionQos");
+const Util = require("../../util/UtilInternal");
+const Typing = require("../../util/Typing");
+const PeriodicSubscriptionQos = require("../../proxy/PeriodicSubscriptionQos");
+const OnChangeSubscriptionQos = require("../../proxy/OnChangeSubscriptionQos");
+const OnChangeWithKeepAliveSubscriptionQos = require("../../proxy/OnChangeWithKeepAliveSubscriptionQos");
 
-var defaultSettings = {
+const defaultSettings = {
     qos: new PeriodicSubscriptionQos()
 };
 

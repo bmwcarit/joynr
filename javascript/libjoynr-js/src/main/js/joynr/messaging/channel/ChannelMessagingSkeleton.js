@@ -16,13 +16,13 @@
  * limitations under the License.
  * #L%
  */
-var Typing = require("../../util/Typing");
-var LoggingManager = require("../../system/LoggingManager");
-var DiagnosticTags = require("../../system/DiagnosticTags");
-var JoynrException = require("../../exceptions/JoynrException");
-var JoynrMessage = require("../JoynrMessage");
+const Typing = require("../../util/Typing");
+const LoggingManager = require("../../system/LoggingManager");
+const DiagnosticTags = require("../../system/DiagnosticTags");
+const JoynrException = require("../../exceptions/JoynrException");
+const JoynrMessage = require("../JoynrMessage");
 
-var log = LoggingManager.getLogger("joynr/messaging/channel/ChannelMessagingSkeleton");
+const log = LoggingManager.getLogger("joynr/messaging/channel/ChannelMessagingSkeleton");
 /**
  * @name ChannelMessagingSkeleton
  * @constructor

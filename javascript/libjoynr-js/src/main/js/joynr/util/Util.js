@@ -16,14 +16,14 @@
  * limitations under the License.
  * #L%
  */
-var Typing = require("./Typing");
-var TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
+const Typing = require("./Typing");
+const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
 
 /**
  * @name Util
  * @class
  */
-var Util = {};
+const Util = {};
 
 /**
  * @function Util#ensureTypedValues
@@ -31,7 +31,7 @@ var Util = {};
  * @param {Object} typeRegistry
  */
 Util.ensureTypedValues = function(value, typeRegistry) {
-    var i;
+    let i;
 
     typeRegistry = typeRegistry || TypeRegistrySingleton.getInstance();
 
@@ -43,7 +43,7 @@ Util.ensureTypedValues = function(value, typeRegistry) {
         } else if (typeof value === "object" && !Typing.isComplexJoynrObject(value)) {
             value = Typing.augmentTypes(value, typeRegistry);
             /*jslint nomen: true */
-            var Constructor = typeRegistry.getConstructor(value._typeName);
+            const Constructor = typeRegistry.getConstructor(value._typeName);
             /*jslint nomen: false */
             if (Constructor.checkMembers) {
                 Constructor.checkMembers(value, Typing.checkPropertyIfDefined);

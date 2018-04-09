@@ -21,10 +21,10 @@
  * @name GenerationUtil
  * @class
  */
-var GenerationUtil = {};
+const GenerationUtil = {};
 
 function equalsCompound(other) {
-    var key, member, otherMember, hasEquals, length, i;
+    let key, member, otherMember, hasEquals, length, i;
     if (this === other) {
         return true;
     }
@@ -72,10 +72,8 @@ function equalsCompound(other) {
                 if (!member.equals(otherMember)) {
                     return false;
                 }
-            } else {
-                if (member !== otherMember) {
-                    return false;
-                }
+            } else if (member !== otherMember) {
+                return false;
             }
         }
     }
@@ -155,7 +153,7 @@ GenerationUtil.addMapUtility = function(joynrObject, propertyTypeName) {
 
     Object.defineProperty(joynrObject, "checkMembers", {
         value: function checkMembers(instance, check) {
-            var memberKey;
+            let memberKey;
             for (memberKey in instance) {
                 if (instance.hasOwnProperty(memberKey)) {
                     if (memberKey !== "_typeName") {

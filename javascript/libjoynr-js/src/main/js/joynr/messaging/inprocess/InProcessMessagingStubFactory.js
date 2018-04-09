@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-var InProcessMessagingStub = require("./InProcessMessagingStub");
+const InProcessMessagingStub = require("./InProcessMessagingStub");
 
 /**
  * @constructor

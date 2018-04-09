@@ -21,7 +21,7 @@
  * but the logic relies on the persistency.
  * @constructor
  */
-var MemoryStorage = function() {
+const MemoryStorage = function() {
     this.map = {};
 };
 

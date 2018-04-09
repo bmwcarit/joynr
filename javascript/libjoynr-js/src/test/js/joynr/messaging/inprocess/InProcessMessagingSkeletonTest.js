@@ -17,12 +17,12 @@
  * #L%
  */
 require("../../../node-unit-test-helper");
-var InProcessMessagingSkeleton = require("../../../../../main/js/joynr/messaging/inprocess/InProcessMessagingSkeleton");
+const InProcessMessagingSkeleton = require("../../../../../main/js/joynr/messaging/inprocess/InProcessMessagingSkeleton");
 
-describe("libjoynr-js.joynr.messaging.inprocess.InProcessMessagingSkeleton", function() {
-    var listener, inProcessMessagingSkeleton, joynrMessage;
+describe("libjoynr-js.joynr.messaging.inprocess.InProcessMessagingSkeleton", () => {
+    let listener, inProcessMessagingSkeleton, joynrMessage;
 
-    beforeEach(function() {
+    beforeEach(() => {
         listener = jasmine.createSpy("listener");
         inProcessMessagingSkeleton = new InProcessMessagingSkeleton();
         inProcessMessagingSkeleton.registerListener(listener);
@@ -31,7 +31,7 @@ describe("libjoynr-js.joynr.messaging.inprocess.InProcessMessagingSkeleton", fun
         };
     });
 
-    it("is instantiable and of correct type", function() {
+    it("is instantiable and of correct type", () => {
         expect(InProcessMessagingSkeleton).toBeDefined();
         expect(typeof InProcessMessagingSkeleton === "function").toBeTruthy();
         expect(inProcessMessagingSkeleton).toBeDefined();
@@ -42,7 +42,7 @@ describe("libjoynr-js.joynr.messaging.inprocess.InProcessMessagingSkeleton", fun
         expect(typeof inProcessMessagingSkeleton.registerListener === "function").toBeTruthy();
     });
 
-    it("transmits a message", function() {
+    it("transmits a message", () => {
         inProcessMessagingSkeleton.receiveMessage(joynrMessage);
         expect(listener).toHaveBeenCalledWith(joynrMessage);
     });

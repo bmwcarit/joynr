@@ -17,14 +17,14 @@
  * #L%
  */
 require("../../node-unit-test-helper");
-var JoynrLogger = require("../../../../main/js/joynr/system/JoynrLogger");
+const JoynrLogger = require("../../../../main/js/joynr/system/JoynrLogger");
 
-describe("libjoynr-js.joynr.system.JoynrLogger", function() {
-    var loggerInstance, loggingSpy;
-    var loggerName = "joynrLogger";
-    var message = "some message";
+describe("libjoynr-js.joynr.system.JoynrLogger", () => {
+    let loggerInstance, loggingSpy;
+    const loggerName = "joynrLogger";
+    const message = "some message";
 
-    beforeEach(function() {
+    beforeEach(() => {
         loggingSpy = jasmine.createSpy("loggingSpy");
         JoynrLogger.setOutput(loggingSpy);
         loggerInstance = new JoynrLogger(loggerName);
@@ -32,11 +32,11 @@ describe("libjoynr-js.joynr.system.JoynrLogger", function() {
         jasmine.clock().mockDate();
     });
 
-    afterEach(function() {
+    afterEach(() => {
         jasmine.clock().uninstall();
     });
 
-    it("uses the expected defaults without a config", function() {
+    it("uses the expected defaults without a config", () => {
         expect(loggerInstance.name).toEqual(loggerName);
         expect(loggerInstance.level).toEqual("off");
         expect(loggerInstance.isDebugEnabled()).toBeFalsy();
@@ -54,7 +54,7 @@ describe("libjoynr-js.joynr.system.JoynrLogger", function() {
         loggingSpy.calls.reset();
     }
 
-    it("works with different logLevels", function() {
+    it("works with different logLevels", () => {
         loglevelHelper(JoynrLogger.LogLevel.FATAL);
         loglevelHelper(JoynrLogger.LogLevel.ERROR);
         loglevelHelper(JoynrLogger.LogLevel.WARN);
@@ -69,7 +69,7 @@ describe("libjoynr-js.joynr.system.JoynrLogger", function() {
         loggingSpy.calls.reset();
     }
 
-    it("adds the logLevel to the logEvent", function() {
+    it("adds the logLevel to the logEvent", () => {
         JoynrLogger.setLogLevel(JoynrLogger.LogLevel.TRACE);
         logEventHelper(JoynrLogger.LogLevel.TRACE);
         logEventHelper(JoynrLogger.LogLevel.DEBUG);
@@ -80,23 +80,23 @@ describe("libjoynr-js.joynr.system.JoynrLogger", function() {
     });
 
     function getDateString() {
-        var date = new Date();
+        const date = new Date();
         return date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds() + "," + date.getMilliseconds();
     }
 
-    it("works with simple formatting", function() {
+    it("works with simple formatting", () => {
         JoynrLogger.setLogLevel("trace");
         JoynrLogger.setFormatting("%d%c%p%m");
         loggerInstance.debug(message);
-        var formattedMessage = getDateString() + loggerName + "debug" + message;
+        const formattedMessage = getDateString() + loggerName + "debug" + message;
         expect(loggingSpy).toHaveBeenCalledWith({ level: { name: "debug" }, messages: [formattedMessage] });
     });
 
-    it("works with complicated formatting", function() {
+    it("works with complicated formatting", () => {
         JoynrLogger.setLogLevel("trace");
         JoynrLogger.setFormatting("[%d{HH:mm:ss,SSS}][%c][%p] %m{2}");
         loggerInstance.debug(message);
-        var formattedMessage = "[" + getDateString() + "][" + loggerName + "][debug] " + message;
+        const formattedMessage = "[" + getDateString() + "][" + loggerName + "][debug] " + message;
         expect(loggingSpy).toHaveBeenCalledWith({ level: { name: "debug" }, messages: [formattedMessage] });
     });
 });

@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-var JoynrMessage = require("./JoynrMessage");
+const JoynrMessage = require("./JoynrMessage");
 
 /**
  * @name MessageReplyToAddressCalculator
@@ -51,7 +51,7 @@ MessageReplyToAddressCalculator.prototype.setReplyToAddress = function(serialize
 };
 
 MessageReplyToAddressCalculator.prototype.setReplyTo = function(message) {
-    var type = message.type;
+    const type = message.type;
     if (
         type !== undefined &&
         message.replyChannelId === undefined &&

@@ -17,16 +17,16 @@
  * #L%
  */
 require("../../../node-unit-test-helper");
-var MqttMessagingSkeleton = require("../../../../../main/js/joynr/messaging/mqtt/MqttMessagingSkeleton");
-var JoynrMessage = require("../../../../../main/js/joynr/messaging/JoynrMessage");
-var MessageRouter = require("../../../../../main/js/joynr/messaging/routing/MessageRouter");
-var Promise = require("../../../../../main/js/global/Promise");
+const MqttMessagingSkeleton = require("../../../../../main/js/joynr/messaging/mqtt/MqttMessagingSkeleton");
+const JoynrMessage = require("../../../../../main/js/joynr/messaging/JoynrMessage");
+const MessageRouter = require("../../../../../main/js/joynr/messaging/routing/MessageRouter");
+const Promise = require("../../../../../main/js/global/Promise");
 
-describe("libjoynr-js.joynr.messaging.mqtt.MqttMessagingSkeleton", function() {
-    var sharedMqttClient, mqttMessagingSkeleton;
-    var messageRouterSpy;
+describe("libjoynr-js.joynr.messaging.mqtt.MqttMessagingSkeleton", () => {
+    let sharedMqttClient, mqttMessagingSkeleton;
+    let messageRouterSpy;
 
-    beforeEach(function() {
+    beforeEach(() => {
         function SharedMqttClient() {
             this.subscribe = function() {};
         }
@@ -57,7 +57,7 @@ describe("libjoynr-js.joynr.messaging.mqtt.MqttMessagingSkeleton", function() {
         sharedMqttClient.subscribe.calls.reset();
     }
 
-    it("correctly transform multicastIds to mqtt topics", function() {
+    it("correctly transform multicastIds to mqtt topics", () => {
         testCorrectMulticastIdTransformation("a/b", "a/b");
         testCorrectMulticastIdTransformation("a/+/b", "a/+/b");
         testCorrectMulticastIdTransformation("a/*", "a/#");
@@ -73,18 +73,18 @@ describe("libjoynr-js.joynr.messaging.mqtt.MqttMessagingSkeleton", function() {
         expect(messageRouterSpy.route.calls.argsFor(0)[0].isReceivedFromGlobal).toEqual(true);
     }
 
-    it("sets receivedFromGlobal", function() {
-        var requestMessage = new JoynrMessage({
+    it("sets receivedFromGlobal", () => {
+        const requestMessage = new JoynrMessage({
             type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
         });
         setsReceivedFromGlobal(requestMessage);
 
-        var multicastMessage = new JoynrMessage({
+        const multicastMessage = new JoynrMessage({
             type: JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST
         });
         setsReceivedFromGlobal(multicastMessage);
 
-        var subscriptionRequestMessage = new JoynrMessage({
+        const subscriptionRequestMessage = new JoynrMessage({
             type: JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REQUEST
         });
         setsReceivedFromGlobal(subscriptionRequestMessage);

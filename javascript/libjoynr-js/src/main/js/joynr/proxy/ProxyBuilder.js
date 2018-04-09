@@ -16,24 +16,24 @@
  * limitations under the License.
  * #L%
  */
-var Promise = require("../../global/Promise");
-var ProxyAttribute = require("./ProxyAttribute");
-var ProxyOperation = require("./ProxyOperation");
-var ProxyEvent = require("./ProxyEvent");
-var uuid = require("../../lib/uuid-annotated");
-var DiscoveryQos = require("./DiscoveryQos");
-var MessagingQos = require("../messaging/MessagingQos");
-var TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
-var Version = require("../../generated/joynr/types/Version");
-var Typing = require("../util/Typing");
-var LoggingManager = require("../system/LoggingManager");
+const Promise = require("../../global/Promise");
+const ProxyAttribute = require("./ProxyAttribute");
+const ProxyOperation = require("./ProxyOperation");
+const ProxyEvent = require("./ProxyEvent");
+const uuid = require("../../lib/uuid-annotated");
+const DiscoveryQos = require("./DiscoveryQos");
+const MessagingQos = require("../messaging/MessagingQos");
+const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
+const Version = require("../../generated/joynr/types/Version");
+const Typing = require("../util/Typing");
+const LoggingManager = require("../system/LoggingManager");
 
-var proxyElementTypes = {
-    ProxyAttribute: ProxyAttribute,
-    ProxyOperation: ProxyOperation,
-    ProxyEvent: ProxyEvent
+const proxyElementTypes = {
+    ProxyAttribute,
+    ProxyOperation,
+    ProxyEvent
 };
-var typeRegistry = TypeRegistrySingleton.getInstance();
+const typeRegistry = TypeRegistrySingleton.getInstance();
 
 /**
  * @name ProxyBuilder
@@ -65,9 +65,9 @@ var typeRegistry = TypeRegistrySingleton.getInstance();
  *            type information
  */
 function ProxyBuilder(proxyDependencies, dependencies) {
-    var arbitrator = proxyDependencies.arbitrator;
-    var log = LoggingManager.getLogger("joynr.proxy.ProxyBuilder");
-    var typeRegisteredTimeout_ms = 3000; //3 secs
+    const arbitrator = proxyDependencies.arbitrator;
+    const log = LoggingManager.getLogger("joynr.proxy.ProxyBuilder");
+    const typeRegisteredTimeout_ms = 3000; //3 secs
 
     /**
      * A function that constructs, arbitrates a object and provides the result and error using
@@ -117,17 +117,17 @@ function ProxyBuilder(proxyDependencies, dependencies) {
 
         settings.dependencies = proxyDependencies;
         settings.proxyElementTypes = proxyElementTypes;
-        var proxy = new ProxyConstructor(settings);
+        let proxy = new ProxyConstructor(settings);
         proxy.domain = settings.domain;
         proxy.proxyParticipantId = uuid();
         proxy.messagingQos = settings.messagingQos;
 
-        var datatypePromises = ProxyConstructor.getUsedDatatypes().map(function(datatype) {
+        const datatypePromises = ProxyConstructor.getUsedDatatypes().map(datatype => {
             return typeRegistry.getTypeRegisteredPromise(datatype, typeRegisteredTimeout_ms);
         });
 
         function dataTypePromisesOnSuccess() {
-            var proxyVersion = new Version({
+            const proxyVersion = new Version({
                 majorVersion: proxy.constructor.MAJOR_VERSION,
                 minorVersion: proxy.constructor.MINOR_VERSION
             });
@@ -136,7 +136,7 @@ function ProxyBuilder(proxyDependencies, dependencies) {
                 interfaceName: proxy.interfaceName,
                 discoveryQos: settings.discoveryQos,
                 staticArbitration: settings.staticArbitration,
-                proxyVersion: proxyVersion
+                proxyVersion
             });
         }
 
@@ -144,7 +144,7 @@ function ProxyBuilder(proxyDependencies, dependencies) {
             if (settings.loggingContext !== undefined) {
                 log.warn("loggingContext is currently not supported");
             }
-            var isGloballyVisible = false;
+            let isGloballyVisible = false;
             if (arbitratedCaps && arbitratedCaps.length > 0) {
                 proxy.providerDiscoveryEntry = arbitratedCaps[0];
                 if (!arbitratedCaps[0].isLocal) {
@@ -154,7 +154,7 @@ function ProxyBuilder(proxyDependencies, dependencies) {
 
             dependencies.messageRouter
                 .addNextHop(proxy.proxyParticipantId, dependencies.libjoynrMessagingAddress, isGloballyVisible)
-                .catch(function(error) {
+                .catch(error => {
                     log.debug(
                         "Exception occured while registering the address for interface " +
                             proxy.interfaceName +
@@ -167,7 +167,7 @@ function ProxyBuilder(proxyDependencies, dependencies) {
                 });
             dependencies.messageRouter.setToKnown(proxy.providerDiscoveryEntry.participantId);
 
-            var freeze = settings.freeze === undefined || settings.freeze;
+            const freeze = settings.freeze === undefined || settings.freeze;
             if (freeze) {
                 // make proxy object immutable and return asynchronously
                 proxy = Object.freeze(proxy);

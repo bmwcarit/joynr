@@ -17,12 +17,12 @@
  * #L%
  */
 require("../../node-unit-test-helper");
-var ProviderQos = require("../../../../main/js/generated/joynr/types/ProviderQos");
-var ProviderScope = require("../../../../main/js/generated/joynr/types/ProviderScope");
-var CustomParameter = require("../../../../main/js/generated/joynr/types/CustomParameter");
+const ProviderQos = require("../../../../main/js/generated/joynr/types/ProviderQos");
+const ProviderScope = require("../../../../main/js/generated/joynr/types/ProviderScope");
+const CustomParameter = require("../../../../main/js/generated/joynr/types/CustomParameter");
 
-describe("libjoynr-js.joynr.types.ProviderQos", function() {
-    it("is instantiable", function() {
+describe("libjoynr-js.joynr.types.ProviderQos", () => {
+    it("is instantiable", () => {
         expect(
             new ProviderQos({
                 customParameters: [
@@ -38,8 +38,8 @@ describe("libjoynr-js.joynr.types.ProviderQos", function() {
         ).toBeDefined();
     });
 
-    it("is of correct type", function() {
-        var providerQos = new ProviderQos({
+    it("is of correct type", () => {
+        const providerQos = new ProviderQos({
             customParameters: [
                 new CustomParameter({
                     name: "theName",
@@ -57,11 +57,11 @@ describe("libjoynr-js.joynr.types.ProviderQos", function() {
     });
 
     function testValues(customParameters, version, priority, scope, supportsOnChangeSubscriptions) {
-        var providerQos = new ProviderQos({
-            customParameters: customParameters,
-            priority: priority,
-            scope: scope,
-            supportsOnChangeSubscriptions: supportsOnChangeSubscriptions
+        const providerQos = new ProviderQos({
+            customParameters,
+            priority,
+            scope,
+            supportsOnChangeSubscriptions
         });
         expect(providerQos.customParameters).toEqual(customParameters);
         expect(providerQos.priority).toEqual(priority);
@@ -99,7 +99,7 @@ describe("libjoynr-js.joynr.types.ProviderQos", function() {
      });
      */
 
-    it("constructs with correct member values", function() {
+    it("constructs with correct member values", () => {
         testValues([], 0, 0, ProviderScope.LOCAL);
         testValues(
             [

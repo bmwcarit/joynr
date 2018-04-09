@@ -16,11 +16,11 @@
  * limitations under the License.
  * #L%
  */
-var Promise = require("../../../global/Promise");
-var JSONSerializer = require("../../util/JSONSerializer");
-var LoggingManager = require("../../system/LoggingManager");
+const Promise = require("../../../global/Promise");
+const JSONSerializer = require("../../util/JSONSerializer");
+const LoggingManager = require("../../system/LoggingManager");
 
-var log = LoggingManager.getLogger("joynr/messaging/webmessaging/WebMessagingStub");
+const log = LoggingManager.getLogger("joynr/messaging/webmessaging/WebMessagingStub");
 /**
  * @name WebMessagingStub
  * @constructor

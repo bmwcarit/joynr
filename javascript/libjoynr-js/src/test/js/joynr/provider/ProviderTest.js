@@ -17,131 +17,131 @@
  * #L%
  */
 require("../../node-unit-test-helper");
-var RadioProvider = require("../../../generated/joynr/vehicle/RadioProvider");
-var RadioStation = require("../../../generated/joynr/vehicle/radiotypes/RadioStation");
-var Country = require("../../../generated/joynr/datatypes/exampleTypes/Country");
-var StringMap = require("../../../generated/joynr/datatypes/exampleTypes/StringMap");
-var ProviderAttribute = require("../../../../main/js/joynr/provider/ProviderAttribute");
-var ProviderOperation = require("../../../../main/js/joynr/provider/ProviderOperation");
-var ProviderEvent = require("../../../../main/js/joynr/provider/ProviderEvent");
-var uuid = require("../../../../main/js/joynr/util/uuid");
-var TestWithVersionProvider = require("../../../generated/joynr/tests/TestWithVersionProvider");
-var TestWithoutVersionProvider = require("../../../generated/joynr/tests/TestWithoutVersionProvider");
-describe("libjoynr-js.joynr.provider.Provider", function() {
-    var implementation = null;
-    var dependencies = {
-        ProviderAttribute: ProviderAttribute,
-        ProviderOperation: ProviderOperation,
-        ProviderEvent: ProviderEvent,
-        uuid: uuid
+const RadioProvider = require("../../../generated/joynr/vehicle/RadioProvider");
+const RadioStation = require("../../../generated/joynr/vehicle/radiotypes/RadioStation");
+const Country = require("../../../generated/joynr/datatypes/exampleTypes/Country");
+const StringMap = require("../../../generated/joynr/datatypes/exampleTypes/StringMap");
+const ProviderAttribute = require("../../../../main/js/joynr/provider/ProviderAttribute");
+const ProviderOperation = require("../../../../main/js/joynr/provider/ProviderOperation");
+const ProviderEvent = require("../../../../main/js/joynr/provider/ProviderEvent");
+const uuid = require("../../../../main/js/joynr/util/uuid");
+const TestWithVersionProvider = require("../../../generated/joynr/tests/TestWithVersionProvider");
+const TestWithoutVersionProvider = require("../../../generated/joynr/tests/TestWithoutVersionProvider");
+describe("libjoynr-js.joynr.provider.Provider", () => {
+    let implementation = null;
+    const dependencies = {
+        ProviderAttribute,
+        ProviderOperation,
+        ProviderEvent,
+        uuid
     };
 
-    beforeEach(function() {
+    beforeEach(() => {
         implementation = {
             isOn: {
                 value: false,
-                get: function() {
+                get() {
                     return this.value;
                 },
-                set: function(newValue) {
+                set(newValue) {
                     this.value = newValue;
                 }
             },
             StartWithCapitalLetter: {
                 value: false,
-                get: function() {
+                get() {
                     return this.value;
                 },
-                set: function(newValue) {
+                set(newValue) {
                     this.value = newValue;
                 }
             },
             numberOfStations: {
                 value: 0,
-                get: function() {
+                get() {
                     return this.value;
                 },
-                set: function(newValue) {
+                set(newValue) {
                     this.value = newValue;
                 }
             },
             mixedSubscriptions: {
                 value: "testvalue",
-                get: function() {
+                get() {
                     return this.value;
                 },
-                set: function(newValue) {
+                set(newValue) {
                     this.value = newValue;
                 }
             },
             enumAttribute: {
                 value: Country.GERMANY,
-                get: function() {
+                get() {
                     return this.value;
                 },
-                set: function(newValue) {
+                set(newValue) {
                     this.value = newValue;
                 }
             },
             enumArrayAttribute: {
                 value: [Country.GERMANY],
-                get: function() {
+                get() {
                     return this.value;
                 },
-                set: function(newValue) {
+                set(newValue) {
                     this.value = newValue;
                 }
             },
             byteBufferAttribute: {
                 value: [],
-                get: function() {
+                get() {
                     return this.value;
                 },
-                set: function(newValue) {
+                set(newValue) {
                     this.value = newValue;
                 }
             },
             stringMapAttribute: {
                 value: {},
-                get: function() {
+                get() {
                     return this.value;
                 },
-                set: function(newValue) {
+                set(newValue) {
                     this.value = newValue;
                 }
             },
             complexStructMapAttribute: {
                 value: {},
-                get: function() {
+                get() {
                     return this.value;
                 },
-                set: function(newValue) {
+                set(newValue) {
                     this.value = newValue;
                 }
             },
             failingSyncAttribute: {
                 value: 0,
-                get: function() {
+                get() {
                     return this.value;
                 }
             },
             failingAsyncAttribute: {
                 value: 0,
-                get: function() {
+                get() {
                     return this.value;
                 }
             },
             attrProvidedImpl: {
                 value: "testValue2",
-                get: function() {
+                get() {
                     return this.value;
                 },
-                set: function(newValue) {
+                set(newValue) {
                     this.value = newValue;
                 }
             },
             attributeTestingProviderInterface: {
-                get: function() {
+                get() {
                     return undefined;
                 }
             },
@@ -150,19 +150,19 @@ describe("libjoynr-js.joynr.provider.Provider", function() {
                     name: "radioStation",
                     byteBuffer: []
                 }),
-                get: function() {
+                get() {
                     return this.value;
                 },
-                set: function(newValue) {
+                set(newValue) {
                     this.value = newValue;
                 }
             },
             typeDefForPrimitive: {
                 value: 0,
-                get: function() {
+                get() {
                     return this.value;
                 },
-                set: function(newValue) {
+                set(newValue) {
                     this.value = newValue;
                 }
             },
@@ -186,27 +186,27 @@ describe("libjoynr-js.joynr.provider.Provider", function() {
         };
     });
 
-    it("version is set correctly", function() {
+    it("version is set correctly", () => {
         expect(TestWithVersionProvider.MAJOR_VERSION).toBeDefined();
         expect(TestWithVersionProvider.MAJOR_VERSION).toEqual(47);
         expect(TestWithVersionProvider.MINOR_VERSION).toBeDefined();
         expect(TestWithVersionProvider.MINOR_VERSION).toEqual(11);
     });
 
-    it("default version is set correctly", function() {
+    it("default version is set correctly", () => {
         expect(TestWithoutVersionProvider.MAJOR_VERSION).toBeDefined();
         expect(TestWithoutVersionProvider.MAJOR_VERSION).toEqual(0);
         expect(TestWithoutVersionProvider.MINOR_VERSION).toBeDefined();
         expect(TestWithoutVersionProvider.MINOR_VERSION).toEqual(0);
     });
 
-    it("RadioProvider does not throw when instantiated with different implementations", function() {
-        expect(function() {
-            var radioProvider = new RadioProvider({}, dependencies);
+    it("RadioProvider does not throw when instantiated with different implementations", () => {
+        expect(() => {
+            const radioProvider = new RadioProvider({}, dependencies);
         }).not.toThrow();
 
-        expect(function() {
-            var radioProvider = new RadioProvider(
+        expect(() => {
+            const radioProvider = new RadioProvider(
                 {
                     isOn: {}
                 },
@@ -214,11 +214,11 @@ describe("libjoynr-js.joynr.provider.Provider", function() {
             );
         }).not.toThrow();
 
-        expect(function() {
-            var radioProvider = new RadioProvider(
+        expect(() => {
+            const radioProvider = new RadioProvider(
                 {
                     isOn: {
-                        get: function() {
+                        get() {
                             return false;
                         }
                     }
@@ -227,49 +227,49 @@ describe("libjoynr-js.joynr.provider.Provider", function() {
             );
         }).not.toThrow();
 
-        expect(function() {
-            var radioProvider = new RadioProvider(
+        expect(() => {
+            const radioProvider = new RadioProvider(
                 {
                     isOn: {
-                        set: function(value) {}
+                        set(value) {}
                     }
                 },
                 dependencies
             );
         }).not.toThrow();
 
-        expect(function() {
-            var radioProvider = new RadioProvider(
+        expect(() => {
+            const radioProvider = new RadioProvider(
                 {
                     isOn: {
-                        get: function() {
+                        get() {
                             return false;
                         },
-                        set: function(value) {}
+                        set(value) {}
                     }
                 },
                 dependencies
             );
         }).not.toThrow();
 
-        expect(function() {
-            var radioProvider = new RadioProvider(
+        expect(() => {
+            const radioProvider = new RadioProvider(
                 {
                     isOn: {
-                        get: function() {
+                        get() {
                             return false;
                         },
-                        set: function(value) {}
+                        set(value) {}
                     }
                 },
                 dependencies
             );
         }).not.toThrow();
 
-        expect(function() {
-            var radioProvider = new RadioProvider(
+        expect(() => {
+            const radioProvider = new RadioProvider(
                 {
-                    addFavoriteStation: function(opArgs) {
+                    addFavoriteStation(opArgs) {
                         return true;
                     }
                 },
@@ -278,16 +278,16 @@ describe("libjoynr-js.joynr.provider.Provider", function() {
         }).not.toThrow();
     });
 
-    it("RadioProvider is instantiable", function() {
-        var radioProvider = new RadioProvider({}, dependencies);
+    it("RadioProvider is instantiable", () => {
+        const radioProvider = new RadioProvider({}, dependencies);
         expect(radioProvider).toBeDefined();
         expect(radioProvider).not.toBeNull();
         expect(typeof radioProvider === "object").toBeTruthy();
         expect(radioProvider instanceof RadioProvider).toBeTruthy();
     });
 
-    it("RadioProvider has all members", function() {
-        var radioProvider = new RadioProvider({}, dependencies);
+    it("RadioProvider has all members", () => {
+        const radioProvider = new RadioProvider({}, dependencies);
         expect(radioProvider.isOn).toBeDefined();
         expect(radioProvider.enumAttribute).toBeDefined();
         expect(radioProvider.enumArrayAttribute).toBeDefined();
@@ -305,41 +305,41 @@ describe("libjoynr-js.joynr.provider.Provider", function() {
         expect(typeof radioProvider.interfaceName).toEqual("string");
     });
 
-    it("RadioProvider recognizes a correct implementation", function() {
-        var radioProvider = new RadioProvider(implementation, dependencies);
+    it("RadioProvider recognizes a correct implementation", () => {
+        const radioProvider = new RadioProvider(implementation, dependencies);
         expect(radioProvider.checkImplementation).toBeDefined();
         expect(radioProvider.checkImplementation()).toBeTruthy();
         expect(radioProvider.checkImplementation().length).toEqual(0);
     });
 
-    it("RadioProvider recognizes an incorrect implementation", function() {
+    it("RadioProvider recognizes an incorrect implementation", () => {
         delete implementation.addFavoriteStation;
-        var radioProvider = new RadioProvider(implementation, dependencies);
+        const radioProvider = new RadioProvider(implementation, dependencies);
         expect(radioProvider.checkImplementation).toBeDefined();
         expect(radioProvider.checkImplementation()).toBeTruthy();
         expect(radioProvider.checkImplementation().length).toEqual(1);
     });
 
-    it("RadioProvider recognizes a missing getter", function() {
+    it("RadioProvider recognizes a missing getter", () => {
         delete implementation.isOn.get;
-        var radioProvider = new RadioProvider(implementation, dependencies);
+        const radioProvider = new RadioProvider(implementation, dependencies);
         expect(radioProvider.checkImplementation).toBeDefined();
         expect(radioProvider.checkImplementation()).toBeTruthy();
         expect(radioProvider.checkImplementation().length).toEqual(1);
     });
 
-    it("RadioProvider recognizes a missing setter", function() {
+    it("RadioProvider recognizes a missing setter", () => {
         delete implementation.isOn.set;
-        var radioProvider = new RadioProvider(implementation, dependencies);
+        const radioProvider = new RadioProvider(implementation, dependencies);
         expect(radioProvider.checkImplementation).toBeDefined();
         expect(radioProvider.checkImplementation()).toBeTruthy();
         expect(radioProvider.checkImplementation().length).toEqual(1);
     });
 
-    it("RadioProvider recognizes multiple missing implementation functions", function() {
+    it("RadioProvider recognizes multiple missing implementation functions", () => {
         delete implementation.isOn.get;
         delete implementation.addFavoriteStation;
-        var radioProvider = new RadioProvider(implementation, dependencies);
+        const radioProvider = new RadioProvider(implementation, dependencies);
         expect(radioProvider.checkImplementation).toBeDefined();
         expect(radioProvider.checkImplementation()).toBeTruthy();
         expect(radioProvider.checkImplementation().length).toEqual(2);

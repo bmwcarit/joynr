@@ -16,18 +16,18 @@
  * limitations under the License.
  * #L%
  */
-var Promise = require("../../../global/Promise");
-var uuid = require("../../../lib/uuid-annotated");
-var JoynrMessage = require("../JoynrMessage");
-var JsonParser = require("../../../lib/JsonParser");
-var MessagingQos = require("../MessagingQos");
-var DiagnosticTags = require("../../system/DiagnosticTags");
-var LoggingManager = require("../../system/LoggingManager");
-var Util = require("../../util/UtilInternal");
-var LongTimer = require("../../util/LongTimer");
+const Promise = require("../../../global/Promise");
+const uuid = require("../../../lib/uuid-annotated");
+const JoynrMessage = require("../JoynrMessage");
+const JsonParser = require("../../../lib/JsonParser");
+const MessagingQos = require("../MessagingQos");
+const DiagnosticTags = require("../../system/DiagnosticTags");
+const LoggingManager = require("../../system/LoggingManager");
+const Util = require("../../util/UtilInternal");
+const LongTimer = require("../../util/LongTimer");
 
-var log = LoggingManager.getLogger("joynr.messaging.LongPollingChannelMessageReceiver");
-var storagePrefix = "joynr.channels";
+const log = LoggingManager.getLogger("joynr.messaging.LongPollingChannelMessageReceiver");
+const storagePrefix = "joynr.channels";
 
 /**
  * LongPollingChannelMessageReceiver handles the long poll to the bounce proxy.
@@ -75,7 +75,7 @@ function LongPollingChannelMessageReceiver(settings) {
  * @private
  */
 LongPollingChannelMessageReceiver.prototype._getReceiverId = function(channelId) {
-    var receiverId = this._persistency.getItem(storagePrefix + "." + channelId + ".receiverId");
+    let receiverId = this._persistency.getItem(storagePrefix + "." + channelId + ".receiverId");
     if (receiverId === undefined || receiverId === null) {
         receiverId = "tid-" + uuid();
         this._persistency.setItem(storagePrefix + "." + channelId + ".receiverId", receiverId);
@@ -84,9 +84,9 @@ LongPollingChannelMessageReceiver.prototype._getReceiverId = function(channelId)
 };
 
 LongPollingChannelMessageReceiver.prototype._callCreate = function callCreate() {
-    var that = this;
-    var createChannelUrl = this._bounceProxyChannelBaseUrl + "?ccid=" + encodeURIComponent(this._channelId);
-    var receiverId = this._getReceiverId(this._channelId);
+    const that = this;
+    const createChannelUrl = this._bounceProxyChannelBaseUrl + "?ccid=" + encodeURIComponent(this._channelId);
+    const receiverId = this._getReceiverId(this._channelId);
 
     function callCreateOnSuccess(xhr) {
         that._channelUrl = xhr.getResponseHeader("Location");
@@ -123,7 +123,7 @@ LongPollingChannelMessageReceiver.prototype._logChannelCreationError = function(
 };
 
 LongPollingChannelMessageReceiver.prototype._createInternal = function createInternal(resolve, reject) {
-    var that = this;
+    const that = this;
 
     function createInternalOnError(xhr, errorType) {
         that._logChannelCreationError(xhr);
@@ -159,10 +159,10 @@ LongPollingChannelMessageReceiver.prototype.stop = function stop() {
  * @returns {Object} a promise object for async event handling
  */
 LongPollingChannelMessageReceiver.prototype.clear = function clear() {
-    var that = this;
+    const that = this;
 
     function createXMLHTTPRequestOnError(xhr, errorType) {
-        var errorString =
+        const errorString =
             "error while deleting channel on bounce proxy: " +
             errorType +
             (xhr.statusText ? ", " + xhr.statusText : "") +
@@ -207,8 +207,8 @@ LongPollingChannelMessageReceiver.prototype.clear = function clear() {
  *            onError callback used to inform about errors occurred during message recieve
  */
 LongPollingChannelMessageReceiver.prototype.start = function start(onMessageCallback, onError) {
-    var pollRequest;
-    var receiverId = this._getReceiverId(this._channelId);
+    let pollRequest;
+    const receiverId = this._getReceiverId(this._channelId);
 
     this._communicationModule.atmosphere.unsubscribeUrl(this._channelUrl);
 
@@ -233,7 +233,7 @@ LongPollingChannelMessageReceiver.prototype.start = function start(onMessageCall
     // messages are received
     // from the bounceproxy.
     pollRequest.onMessage = function onMessage(response) {
-        var detectedTransport = response.transport,
+        let detectedTransport = response.transport,
             data,
             jsonParser,
             joynrMessage;
@@ -287,7 +287,7 @@ LongPollingChannelMessageReceiver.prototype.start = function start(onMessageCall
  * @returns {Object} a promise object for async event handling
  */
 LongPollingChannelMessageReceiver.prototype.create = function(theChannelId) {
-    var that = this;
+    const that = this;
     if (this._channelId !== undefined) {
         throw new Error(
             "LongPollingChannelMessageReceiver.create has already been called for channelId: " + theChannelId
@@ -301,7 +301,7 @@ LongPollingChannelMessageReceiver.prototype.create = function(theChannelId) {
         if (that._createChannelTimestamp + that._channelCreationTimeout_ms <= Date.now()) {
             throw new Error("Error creating channel");
         } else {
-            var deferred = Util.createDeferred();
+            const deferred = Util.createDeferred();
             LongTimer.setTimeout(
                 that._createInternal.bind(that),
                 that._channelCreationRetryDelay_ms,

@@ -17,19 +17,19 @@
  * #L%
  */
 
-var Promise = require("../../../main/js/global/Promise");
-var joynr = require("joynr"),
+const Promise = require("../../../main/js/global/Promise");
+let joynr = require("joynr"),
     TestEnd2EndDatatypesTestData = require("./TestEnd2EndDatatypesTestData"),
     IntegrationUtils = require("./IntegrationUtils"),
     provisioning = require("../../resources/joynr/provisioning/provisioning_cc"),
     End2EndAbstractTest = require("./End2EndAbstractTest"),
     waitsFor = require("../global/WaitsFor");
-describe("libjoynr-js.integration.end2end.datatypes", function() {
-    var datatypesProxy;
-    var abstractTest = new End2EndAbstractTest("End2EndDatatypesTest", true);
+describe("libjoynr-js.integration.end2end.datatypes", () => {
+    let datatypesProxy;
+    const abstractTest = new End2EndAbstractTest("End2EndDatatypesTest", true);
 
-    beforeEach(function(done) {
-        abstractTest.beforeEach().then(function(settings) {
+    beforeEach(done => {
+        abstractTest.beforeEach().then(settings => {
             datatypesProxy = settings.dataProxy;
             done();
         });
@@ -37,23 +37,23 @@ describe("libjoynr-js.integration.end2end.datatypes", function() {
 
     it(
         "supports all datatypes in attributes get/set",
-        function(done) {
-            var i, j;
+        done => {
+            let i, j;
 
             function testAttrType(attributeName, attributeValue) {
-                return new Promise(function(resolve, reject) {
-                    var attribute;
+                return new Promise((resolve, reject) => {
+                    let attribute;
                     attribute = datatypesProxy[attributeName];
                     attribute
                         .set({
                             value: attributeValue
                         })
-                        .then(function() {
+                        .then(() => {
                             // get the value
                             attribute.get().then(resolve, reject);
                             return null;
                         })
-                        .catch(function(error) {
+                        .catch(error => {
                             reject(error);
                             IntegrationUtils.outputPromiseError(error);
                         });
@@ -61,10 +61,10 @@ describe("libjoynr-js.integration.end2end.datatypes", function() {
             }
 
             function setAndGetAttribute(attributeName, attributeValue, promiseChain) {
-                return promiseChain.then(function() {
-                    var onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
+                return promiseChain.then(() => {
+                    const onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
                     return testAttrType(attributeName, attributeValue)
-                        .then(function(value) {
+                        .then(value => {
                             expect(value).toEqual(attributeValue);
                             IntegrationUtils.checkValueAndType(value, attributeValue);
                         })
@@ -72,15 +72,15 @@ describe("libjoynr-js.integration.end2end.datatypes", function() {
                 });
             }
 
-            var promiseChain = Promise.resolve();
+            let promiseChain = Promise.resolve();
             for (i = 0; i < TestEnd2EndDatatypesTestData.length; ++i) {
-                var test = TestEnd2EndDatatypesTestData[i];
+                const test = TestEnd2EndDatatypesTestData[i];
                 for (j = 0; j < test.values.length; ++j) {
                     promiseChain = setAndGetAttribute(test.attribute, test.values[j], promiseChain);
                 }
             }
             promiseChain
-                .then(function() {
+                .then(() => {
                     done();
                     return null;
                 })
@@ -91,27 +91,27 @@ describe("libjoynr-js.integration.end2end.datatypes", function() {
 
     it(
         "supports all datatypes as operation arguments",
-        function(done) {
-            var i;
+        done => {
+            let i;
 
             function testGetJavascriptType(arg, expectedReturnValue, promiseChain) {
-                return promiseChain.then(function() {
-                    var onFulfilledSpy;
+                return promiseChain.then(() => {
+                    let onFulfilledSpy;
                     onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
                     datatypesProxy
                         .getJavascriptType({
-                            arg: arg
+                            arg
                         })
                         .then(onFulfilledSpy)
                         .catch(IntegrationUtils.outputPromiseError);
 
                     return waitsFor(
-                        function() {
+                        () => {
                             return onFulfilledSpy.calls.count() > 0;
                         },
                         "operation is called",
                         provisioning.ttl
-                    ).then(function() {
+                    ).then(() => {
                         expect(onFulfilledSpy).toHaveBeenCalled();
                         expect(onFulfilledSpy).toHaveBeenCalledWith({
                             javascriptType: expectedReturnValue
@@ -120,13 +120,13 @@ describe("libjoynr-js.integration.end2end.datatypes", function() {
                 });
             }
 
-            var promiseChain = Promise.resolve();
+            let promiseChain = Promise.resolve();
             for (i = 0; i < TestEnd2EndDatatypesTestData.length; ++i) {
-                var test = TestEnd2EndDatatypesTestData[i];
+                const test = TestEnd2EndDatatypesTestData[i];
                 promiseChain = testGetJavascriptType(test.values[0], test.jsRuntimeType, promiseChain);
             }
             promiseChain
-                .then(function() {
+                .then(() => {
                     done();
                     return null;
                 })
@@ -137,16 +137,16 @@ describe("libjoynr-js.integration.end2end.datatypes", function() {
 
     it(
         "supports all datatypes as operation argument and return value",
-        function(done) {
-            var i;
+        done => {
+            let i;
 
             function testGetArgumentBack(arg, promiseChain) {
-                return promiseChain.then(function() {
+                return promiseChain.then(() => {
                     return datatypesProxy
                         .getArgumentBack({
-                            arg: arg
+                            arg
                         })
-                        .then(function(value) {
+                        .then(value => {
                             expect(value).toEqual({ returnValue: arg });
                             IntegrationUtils.checkValueAndType(value.returnValue, arg);
                         })
@@ -154,13 +154,13 @@ describe("libjoynr-js.integration.end2end.datatypes", function() {
                 });
             }
 
-            var promiseChain = Promise.resolve();
+            let promiseChain = Promise.resolve();
             for (i = 0; i < TestEnd2EndDatatypesTestData.length; ++i) {
-                var test = TestEnd2EndDatatypesTestData[i];
+                const test = TestEnd2EndDatatypesTestData[i];
                 promiseChain = testGetArgumentBack(test.values[0], promiseChain);
             }
             promiseChain
-                .then(function() {
+                .then(() => {
                     done();
                     return null;
                 })
@@ -171,11 +171,11 @@ describe("libjoynr-js.integration.end2end.datatypes", function() {
 
     it(
         "supports multiple operation arguments",
-        function(done) {
-            var i;
+        done => {
+            let i;
 
             function testMultipleArguments(opArgs) {
-                var onFulfilledSpy;
+                let onFulfilledSpy;
 
                 onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
                 datatypesProxy
@@ -184,12 +184,12 @@ describe("libjoynr-js.integration.end2end.datatypes", function() {
                     .catch(IntegrationUtils.outputPromiseError);
 
                 return waitsFor(
-                    function() {
+                    () => {
                         return onFulfilledSpy.calls.count() > 0;
                     },
                     "operation is called",
                     provisioning.ttl
-                ).then(function() {
+                ).then(() => {
                     expect(onFulfilledSpy).toHaveBeenCalled();
                     expect(onFulfilledSpy).toHaveBeenCalledWith({
                         serialized: JSON.stringify(opArgs)
@@ -197,16 +197,16 @@ describe("libjoynr-js.integration.end2end.datatypes", function() {
                 });
             }
 
-            var opArgs = {};
+            const opArgs = {};
             for (i = 0; i < TestEnd2EndDatatypesTestData.length; ++i) {
-                var test = TestEnd2EndDatatypesTestData[i];
+                const test = TestEnd2EndDatatypesTestData[i];
                 /* replace all dots with _ */
-                var paramName = test.joynrType.replace(/\./g, "_") + "Arg";
+                let paramName = test.joynrType.replace(/\./g, "_") + "Arg";
                 paramName = paramName.slice(0, 1).toLowerCase() + paramName.slice(1);
                 opArgs[paramName] = test.values[0];
             }
             testMultipleArguments(opArgs)
-                .then(function() {
+                .then(() => {
                     done();
                     return null;
                 })

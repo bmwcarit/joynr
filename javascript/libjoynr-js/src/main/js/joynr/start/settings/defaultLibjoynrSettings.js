@@ -16,10 +16,10 @@
  * limitations under the License.
  * #L%
  */
-var ProviderScope = require("../../../generated/joynr/types/ProviderScope");
-var Util = require("../../util/UtilInternal");
-var defaultSettings = {};
-var discoveryCapability = {
+const ProviderScope = require("../../../generated/joynr/types/ProviderScope");
+const Util = require("../../util/UtilInternal");
+const defaultSettings = {};
+const discoveryCapability = {
     providerVersion: {
         majorVersion: 0,
         minorVersion: 1
@@ -39,7 +39,7 @@ var discoveryCapability = {
     isLocal: true
 };
 
-var routingCapability = {
+const routingCapability = {
     providerVersion: {
         majorVersion: 0,
         minorVersion: 1

@@ -16,11 +16,11 @@
  * limitations under the License.
  * #L%
  */
-var JoynrMessage = require("../JoynrMessage");
-var JSONSerializer = require("../../util/JSONSerializer");
-var LoggingManager = require("../../system/LoggingManager");
+const JoynrMessage = require("../JoynrMessage");
+const JSONSerializer = require("../../util/JSONSerializer");
+const LoggingManager = require("../../system/LoggingManager");
 
-var log = LoggingManager.getLogger("joynr/messaging/mqtt/MqttMessagingStub");
+const log = LoggingManager.getLogger("joynr/messaging/mqtt/MqttMessagingStub");
 /**
  * @name MqttMessagingStub
  * @constructor
@@ -41,7 +41,7 @@ function MqttMessagingStub(settings) {
  */
 MqttMessagingStub.prototype.transmit = function transmit(message) {
     log.debug('transmit message: "' + JSONSerializer.stringify(message) + '"');
-    var topic = this._settings.address.topic;
+    let topic = this._settings.address.topic;
     if (!(JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST === message.type)) {
         topic += MqttMessagingStub.PRIORITY_LOW + message.to;
     }

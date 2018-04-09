@@ -17,25 +17,25 @@
  * #L%
  */
 require("../../node-unit-test-helper");
-var Util = require("../../../../main/js/joynr/util/UtilInternal");
-var Dispatcher = require("../../../../main/js/joynr/dispatching/Dispatcher");
-var JoynrMessage = require("../../../../main/js/joynr/messaging/JoynrMessage");
-var MessagingQos = require("../../../../main/js/joynr/messaging/MessagingQos");
-var DiscoveryEntryWithMetaInfo = require("../../../../main/js/generated/joynr/types/DiscoveryEntryWithMetaInfo");
-var Request = require("../../../../main/js/joynr/dispatching/types/Request");
-var Reply = require("../../../../main/js/joynr/dispatching/types/Reply");
-var BroadcastSubscriptionRequest = require("../../../../main/js/joynr/dispatching/types/BroadcastSubscriptionRequest");
-var MulticastSubscriptionRequest = require("../../../../main/js/joynr/dispatching/types/MulticastSubscriptionRequest");
-var SubscriptionRequest = require("../../../../main/js/joynr/dispatching/types/SubscriptionRequest");
-var SubscriptionReply = require("../../../../main/js/joynr/dispatching/types/SubscriptionReply");
-var SubscriptionStop = require("../../../../main/js/joynr/dispatching/types/SubscriptionStop");
-var MulticastPublication = require("../../../../main/js/joynr/dispatching/types/MulticastPublication");
-var SubscriptionPublication = require("../../../../main/js/joynr/dispatching/types/SubscriptionPublication");
-var uuid = require("../../../../main/js/lib/uuid-annotated");
-var Promise = require("../../../../main/js/global/Promise");
+const Util = require("../../../../main/js/joynr/util/UtilInternal");
+const Dispatcher = require("../../../../main/js/joynr/dispatching/Dispatcher");
+const JoynrMessage = require("../../../../main/js/joynr/messaging/JoynrMessage");
+const MessagingQos = require("../../../../main/js/joynr/messaging/MessagingQos");
+const DiscoveryEntryWithMetaInfo = require("../../../../main/js/generated/joynr/types/DiscoveryEntryWithMetaInfo");
+const Request = require("../../../../main/js/joynr/dispatching/types/Request");
+const Reply = require("../../../../main/js/joynr/dispatching/types/Reply");
+const BroadcastSubscriptionRequest = require("../../../../main/js/joynr/dispatching/types/BroadcastSubscriptionRequest");
+const MulticastSubscriptionRequest = require("../../../../main/js/joynr/dispatching/types/MulticastSubscriptionRequest");
+const SubscriptionRequest = require("../../../../main/js/joynr/dispatching/types/SubscriptionRequest");
+const SubscriptionReply = require("../../../../main/js/joynr/dispatching/types/SubscriptionReply");
+const SubscriptionStop = require("../../../../main/js/joynr/dispatching/types/SubscriptionStop");
+const MulticastPublication = require("../../../../main/js/joynr/dispatching/types/MulticastPublication");
+const SubscriptionPublication = require("../../../../main/js/joynr/dispatching/types/SubscriptionPublication");
+const uuid = require("../../../../main/js/lib/uuid-annotated");
+const Promise = require("../../../../main/js/global/Promise");
 
-var providerId = "providerId";
-var providerDiscoveryEntry = new DiscoveryEntryWithMetaInfo({
+const providerId = "providerId";
+const providerDiscoveryEntry = new DiscoveryEntryWithMetaInfo({
     domain: "testProviderDomain",
     interfaceName: "interfaceName",
     participantId: providerId,
@@ -44,16 +44,16 @@ var providerDiscoveryEntry = new DiscoveryEntryWithMetaInfo({
     publicKeyId: "publicKeyId",
     isLocal: false
 });
-var proxyId = "proxyId";
-var noTtlUplift = 0;
-var ttlUpliftMs = 10000;
-var toleranceMs = 50;
+const proxyId = "proxyId";
+const noTtlUplift = 0;
+const ttlUpliftMs = 10000;
+const toleranceMs = 50;
 
-var customMatchers = {
-    toEqualWithPositiveTolerance: function(util, customEqualityTesters) {
+const customMatchers = {
+    toEqualWithPositiveTolerance(util, customEqualityTesters) {
         return {
-            compare: function(actual, expected) {
-                var result = {};
+            compare(actual, expected) {
+                const result = {};
                 if (expected === undefined || expected === null) {
                     result.pass = false;
                     result.message = "Expected expectation not to be " + expected;
@@ -65,7 +65,7 @@ var customMatchers = {
                     return result;
                 }
 
-                var diff = actual - expected;
+                const diff = actual - expected;
                 result.pass = diff >= 0;
                 if (!result.pass) {
                     result.message = "Expected " + actual + " to be greater or equal than " + expected;
@@ -83,19 +83,19 @@ var customMatchers = {
     }
 };
 
-describe("libjoynr-js.joynr.ttlUpliftTest", function() {
-    var dispatcher, dispatcherWithTtlUplift;
-    var clusterControllerMessagingStub, securityManager;
-    var requestReplyManager, subscriptionManager, publicationManager, messageRouter;
-    var subscriptionId = "mySubscriptionId-" + uuid();
-    var multicastId = "multicastId-" + uuid();
-    var requestReplyId = "requestReplyId";
+describe("libjoynr-js.joynr.ttlUpliftTest", () => {
+    let dispatcher, dispatcherWithTtlUplift;
+    let clusterControllerMessagingStub, securityManager;
+    let requestReplyManager, subscriptionManager, publicationManager, messageRouter;
+    const subscriptionId = "mySubscriptionId-" + uuid();
+    const multicastId = "multicastId-" + uuid();
+    const requestReplyId = "requestReplyId";
 
-    var ttl, messagingQos, expiryDateMs, expiryDateWithTtlUplift;
-    var publicationTtlMs, subscriptionQos;
+    let ttl, messagingQos, expiryDateMs, expiryDateWithTtlUplift;
+    let publicationTtlMs, subscriptionQos;
 
     function receiveJoynrMessage(parameters) {
-        var joynrMessage = new JoynrMessage({
+        const joynrMessage = new JoynrMessage({
             type: parameters.type,
             payload: JSON.stringify(parameters.payload)
         });
@@ -106,7 +106,7 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
     }
 
     function receiveJoynrMessageTtlUplift(parameters) {
-        var joynrMessage = new JoynrMessage({
+        const joynrMessage = new JoynrMessage({
             type: parameters.type,
             payload: JSON.stringify(parameters.payload)
         });
@@ -118,7 +118,7 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
 
     function checkMessageFromProxyWithTolerance(messageType, expectedExpiryDate) {
         expect(clusterControllerMessagingStub.transmit).toHaveBeenCalled();
-        var msg = clusterControllerMessagingStub.transmit.calls.mostRecent().args[0];
+        const msg = clusterControllerMessagingStub.transmit.calls.mostRecent().args[0];
         expect(msg.type).toEqual(messageType);
         expect(msg.from).toEqual(proxyId);
         expect(msg.to).toEqual(providerId);
@@ -127,7 +127,7 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
 
     function checkMessageFromProvider(messageType, expectedExpiryDate) {
         expect(clusterControllerMessagingStub.transmit).toHaveBeenCalled();
-        var msg = clusterControllerMessagingStub.transmit.calls.mostRecent().args[0];
+        const msg = clusterControllerMessagingStub.transmit.calls.mostRecent().args[0];
         expect(msg.type).toEqual(messageType);
         expect(msg.from).toEqual(providerId);
         expect(msg.to).toEqual(proxyId);
@@ -142,11 +142,11 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
         checkMessageFromProvider(JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REPLY, expectedExpiryDate);
     }
 
-    beforeEach(function() {
+    beforeEach(() => {
         jasmine.addMatchers(customMatchers);
 
-        var sendRequestReply = function(providerParticipantId, request, cb, replySettings) {
-            var reply = new Reply({
+        const sendRequestReply = function(providerParticipantId, request, cb, replySettings) {
+            const reply = new Reply({
                 response: "response",
                 requestReplyId: request.requestReplyId
             });
@@ -161,7 +161,7 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
             "handleMulticastPublication",
             "handlePublication"
         ]);
-        var sendSubscriptionReply = function(
+        const sendSubscriptionReply = function(
             proxyParticipantId,
             providerParticipantId,
             subscriptionRequest,
@@ -180,7 +180,7 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
             handleSubscriptionRequest: sendSubscriptionReply,
             handleBroadcastSubscriptionRequest: sendSubscriptionReply,
             handleMulticastSubscriptionRequest: sendSubscriptionReply,
-            handleSubscriptionStop: function() {}
+            handleSubscriptionStop() {}
         };
         spyOn(publicationManager, "handleSubscriptionRequest").and.callThrough();
         spyOn(publicationManager, "handleBroadcastSubscriptionRequest").and.callThrough();
@@ -208,25 +208,25 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
 
         ttl = 300;
         messagingQos = new MessagingQos({
-            ttl: ttl
+            ttl
         });
         publicationTtlMs = 1000;
         expiryDateMs = Date.now() + ttl;
         expiryDateWithTtlUplift = expiryDateMs + ttlUpliftMs;
 
         subscriptionQos = {
-            expiryDateMs: expiryDateMs,
-            publicationTtlMs: publicationTtlMs,
+            expiryDateMs,
+            publicationTtlMs,
             minIntervalMs: 0
         };
     });
 
-    describe("no ttl uplift (default)", function() {
-        it("send request", function() {
-            var settings = {
+    describe("no ttl uplift (default)", () => {
+        it("send request", () => {
+            const settings = {
                 from: proxyId,
                 toDiscoveryEntry: providerDiscoveryEntry,
-                messagingQos: messagingQos,
+                messagingQos,
                 request: "request"
             };
 
@@ -235,11 +235,11 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
             checkMessageFromProxyWithTolerance(JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST, expiryDateMs);
         });
 
-        it("send one way request", function() {
-            var settings = {
+        it("send one way request", () => {
+            const settings = {
                 from: proxyId,
                 toDiscoveryEntry: providerDiscoveryEntry,
-                messagingQos: messagingQos,
+                messagingQos,
                 request: "oneWayRequest"
             };
 
@@ -248,11 +248,11 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
             checkMessageFromProxyWithTolerance(JoynrMessage.JOYNRMESSAGE_TYPE_ONE_WAY, expiryDateMs);
         });
 
-        it("send subscription request", function() {
-            var settings = {
+        it("send subscription request", () => {
+            const settings = {
                 from: proxyId,
                 toDiscoveryEntry: providerDiscoveryEntry,
-                messagingQos: messagingQos,
+                messagingQos,
                 subscriptionRequest: new SubscriptionRequest({
                     subscriptionId: "subscriptionId",
                     subscribedToName: "attributeName",
@@ -264,11 +264,11 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
             checkMessageFromProxyWithTolerance(JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REQUEST, expiryDateMs);
         });
 
-        it("send broadcast subscription request", function() {
-            var settings = {
+        it("send broadcast subscription request", () => {
+            const settings = {
                 from: proxyId,
                 toDiscoveryEntry: providerDiscoveryEntry,
-                messagingQos: messagingQos,
+                messagingQos,
                 subscriptionRequest: new BroadcastSubscriptionRequest({
                     subscriptionId: "subscriptionId",
                     subscribedToName: "broadcastEvent",
@@ -284,11 +284,11 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
             );
         });
 
-        it("send multicast subscription request", function(done) {
-            var settings = {
+        it("send multicast subscription request", done => {
+            const settings = {
                 from: proxyId,
                 toDiscoveryEntry: providerDiscoveryEntry,
-                messagingQos: messagingQos,
+                messagingQos,
                 subscriptionRequest: new MulticastSubscriptionRequest({
                     multicastId: "multicastId",
                     subscriptionId: "subscriptionId",
@@ -297,7 +297,7 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
                 })
             };
 
-            dispatcher.sendBroadcastSubscriptionRequest(settings).then(function() {
+            dispatcher.sendBroadcastSubscriptionRequest(settings).then(() => {
                 checkMessageFromProxyWithTolerance(
                     JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST,
                     expiryDateMs
@@ -306,11 +306,11 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
             });
         });
 
-        it("send multicast subscription stop", function() {
-            var settings = {
+        it("send multicast subscription stop", () => {
+            const settings = {
                 from: proxyId,
                 toDiscoveryEntry: providerDiscoveryEntry,
-                messagingQos: messagingQos,
+                messagingQos,
                 multicastId: "multicastId",
                 subscriptionStop: new SubscriptionStop({
                     subscriptionId: "subscriptionId"
@@ -322,11 +322,11 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
             checkMessageFromProxyWithTolerance(JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_STOP, expiryDateMs);
         });
 
-        it("send subscription stop", function() {
-            var settings = {
+        it("send subscription stop", () => {
+            const settings = {
                 from: proxyId,
                 toDiscoveryEntry: providerDiscoveryEntry,
-                messagingQos: messagingQos,
+                messagingQos,
                 subscriptionStop: new SubscriptionStop({
                     subscriptionId: "subscriptionId"
                 })
@@ -337,13 +337,13 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
             checkMessageFromProxyWithTolerance(JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_STOP, expiryDateMs);
         });
 
-        it("send publication", function() {
-            var settings = {
+        it("send publication", () => {
+            const settings = {
                 from: proxyId,
                 to: providerId,
                 expiryDate: expiryDateMs
             };
-            var publication = new SubscriptionPublication({
+            const publication = new SubscriptionPublication({
                 subscriptionId: "subscriptionId"
             });
 
@@ -352,36 +352,36 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
             checkMessageFromProxyWithTolerance(JoynrMessage.JOYNRMESSAGE_TYPE_PUBLICATION, expiryDateMs);
         });
 
-        it("send multicast publication", function() {
-            var settings = {
+        it("send multicast publication", () => {
+            const settings = {
                 from: providerId,
                 expiryDate: expiryDateMs
             };
-            var multicastId = "multicastId";
-            var publication = new MulticastPublication({
-                multicastId: multicastId
+            const multicastId = "multicastId";
+            const publication = new MulticastPublication({
+                multicastId
             });
 
             dispatcher.sendMulticastPublication(settings, publication);
 
             expect(clusterControllerMessagingStub.transmit).toHaveBeenCalled();
-            var msg = clusterControllerMessagingStub.transmit.calls.mostRecent().args[0];
+            const msg = clusterControllerMessagingStub.transmit.calls.mostRecent().args[0];
             expect(msg.type).toEqual(JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST);
             expect(msg.from).toEqual(providerId);
             expect(msg.to).toEqual(multicastId);
             expect(msg.expiryDate).toEqualWithPositiveTolerance(expiryDateMs);
         });
 
-        it("request and reply", function(done) {
-            var payload = {
+        it("request and reply", done => {
+            const payload = {
                 methodName: "methodName"
             };
 
             receiveJoynrMessage({
                 type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
-                payload: payload,
+                payload,
                 expiryDate: expiryDateMs
-            }).then(function() {
+            }).then(() => {
                 expect(requestReplyManager.handleRequest).toHaveBeenCalled();
                 expect(requestReplyManager.handleRequest).toHaveBeenCalledWith(
                     providerId,
@@ -397,7 +397,7 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
             });
         });
 
-        it("subscription expiry date and subscription reply", function() {
+        it("subscription expiry date and subscription reply", () => {
             //                var expiryDateMs = Date.now() + 100000;
             //                var publicationTtlMs = 10000;
             //                var qos = {
@@ -405,18 +405,18 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
             //                    publicationTtlMs : publicationTtlMs,
             //                    minIntervalMs : 0
             //                };
-            var payload = {
+            const payload = {
                 subscribedToName: "attributeName",
-                subscriptionId: subscriptionId,
+                subscriptionId,
                 qos: subscriptionQos
             };
 
-            var payloadCopy = Util.extendDeep({}, payload);
-            var expectedSubscriptionRequest = new SubscriptionRequest(payloadCopy);
+            const payloadCopy = Util.extendDeep({}, payload);
+            const expectedSubscriptionRequest = new SubscriptionRequest(payloadCopy);
 
             receiveJoynrMessage({
                 type: JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REQUEST,
-                payload: payload,
+                payload,
                 expiryDate: expiryDateMs
             });
 
@@ -432,19 +432,19 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
             checkSubscriptionReplyMessage(expiryDateMs);
         });
 
-        it("broadcast subscription expiry date and subscription reply", function() {
-            var payload = {
+        it("broadcast subscription expiry date and subscription reply", () => {
+            const payload = {
                 subscribedToName: "broadcastEvent",
-                subscriptionId: subscriptionId,
+                subscriptionId,
                 qos: subscriptionQos
             };
 
-            var payloadCopy = Util.extendDeep({}, payload);
-            var expectedSubscriptionRequest = new BroadcastSubscriptionRequest(payloadCopy);
+            const payloadCopy = Util.extendDeep({}, payload);
+            const expectedSubscriptionRequest = new BroadcastSubscriptionRequest(payloadCopy);
 
             receiveJoynrMessage({
                 type: JoynrMessage.JOYNRMESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST,
-                payload: payload,
+                payload,
                 expiryDate: expiryDateMs
             });
 
@@ -460,20 +460,20 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
             checkSubscriptionReplyMessage(expiryDateMs);
         });
 
-        it("multicast subscription expiryDate and subscription reply", function() {
-            var payload = {
+        it("multicast subscription expiryDate and subscription reply", () => {
+            const payload = {
                 subscribedToName: "multicastEvent",
-                subscriptionId: subscriptionId,
-                multicastId: multicastId,
+                subscriptionId,
+                multicastId,
                 qos: subscriptionQos
             };
 
-            var payloadCopy = Util.extendDeep({}, payload);
-            var expectedSubscriptionRequest = new MulticastSubscriptionRequest(payloadCopy);
+            const payloadCopy = Util.extendDeep({}, payload);
+            const expectedSubscriptionRequest = new MulticastSubscriptionRequest(payloadCopy);
 
             receiveJoynrMessage({
                 type: JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST,
-                payload: payload,
+                payload,
                 expiryDate: expiryDateMs
             });
 
@@ -490,12 +490,12 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
         });
     }); // describe "no ttl uplift (default)"
 
-    describe("with ttlUplift", function() {
-        it("send request", function() {
-            var settings = {
+    describe("with ttlUplift", () => {
+        it("send request", () => {
+            const settings = {
                 from: proxyId,
                 toDiscoveryEntry: providerDiscoveryEntry,
-                messagingQos: messagingQos,
+                messagingQos,
                 request: "request"
             };
 
@@ -504,11 +504,11 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
             checkMessageFromProxyWithTolerance(JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST, expiryDateWithTtlUplift);
         });
 
-        it("send one way request", function() {
-            var settings = {
+        it("send one way request", () => {
+            const settings = {
                 from: proxyId,
                 toDiscoveryEntry: providerDiscoveryEntry,
-                messagingQos: messagingQos,
+                messagingQos,
                 request: "oneWayRequest"
             };
 
@@ -517,11 +517,11 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
             checkMessageFromProxyWithTolerance(JoynrMessage.JOYNRMESSAGE_TYPE_ONE_WAY, expiryDateWithTtlUplift);
         });
 
-        it("send subscription request", function() {
-            var settings = {
+        it("send subscription request", () => {
+            const settings = {
                 from: proxyId,
                 toDiscoveryEntry: providerDiscoveryEntry,
-                messagingQos: messagingQos,
+                messagingQos,
                 subscriptionRequest: new SubscriptionRequest({
                     subscriptionId: "subscriptionId",
                     subscribedToName: "attributeName",
@@ -537,11 +537,11 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
             );
         });
 
-        it("send broadcast subscription request", function() {
-            var settings = {
+        it("send broadcast subscription request", () => {
+            const settings = {
                 from: proxyId,
                 toDiscoveryEntry: providerDiscoveryEntry,
-                messagingQos: messagingQos,
+                messagingQos,
                 subscriptionRequest: new BroadcastSubscriptionRequest({
                     subscriptionId: "subscriptionId",
                     subscribedToName: "broadcastEvent",
@@ -557,11 +557,11 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
             );
         });
 
-        it("send multicast subscription request", function(done) {
-            var settings = {
+        it("send multicast subscription request", done => {
+            const settings = {
                 from: proxyId,
                 toDiscoveryEntry: providerDiscoveryEntry,
-                messagingQos: messagingQos,
+                messagingQos,
                 subscriptionRequest: new MulticastSubscriptionRequest({
                     multicastId: "multicastId",
                     subscriptionId: "subscriptionId",
@@ -570,7 +570,7 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
                 })
             };
 
-            dispatcherWithTtlUplift.sendBroadcastSubscriptionRequest(settings).then(function() {
+            dispatcherWithTtlUplift.sendBroadcastSubscriptionRequest(settings).then(() => {
                 checkMessageFromProxyWithTolerance(
                     JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST,
                     expiryDateWithTtlUplift
@@ -579,11 +579,11 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
             });
         });
 
-        it("send multicast subscription stop", function() {
-            var settings = {
+        it("send multicast subscription stop", () => {
+            const settings = {
                 from: proxyId,
                 toDiscoveryEntry: providerDiscoveryEntry,
-                messagingQos: messagingQos,
+                messagingQos,
                 multicastId: "multicastId",
                 subscriptionStop: new SubscriptionStop({
                     subscriptionId: "subscriptionId"
@@ -598,11 +598,11 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
             );
         });
 
-        it("send subscription stop", function() {
-            var settings = {
+        it("send subscription stop", () => {
+            const settings = {
                 from: proxyId,
                 toDiscoveryEntry: providerDiscoveryEntry,
-                messagingQos: messagingQos,
+                messagingQos,
                 subscriptionStop: new SubscriptionStop({
                     subscriptionId: "subscriptionId"
                 })
@@ -616,13 +616,13 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
             );
         });
 
-        it("send publication", function() {
-            var settings = {
+        it("send publication", () => {
+            const settings = {
                 from: proxyId,
                 to: providerId,
                 expiryDate: expiryDateMs
             };
-            var publication = new SubscriptionPublication({
+            const publication = new SubscriptionPublication({
                 subscriptionId: "subscriptionId"
             });
 
@@ -631,36 +631,36 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
             checkMessageFromProxyWithTolerance(JoynrMessage.JOYNRMESSAGE_TYPE_PUBLICATION, expiryDateWithTtlUplift);
         });
 
-        it("send multicast publication", function() {
-            var settings = {
+        it("send multicast publication", () => {
+            const settings = {
                 from: providerId,
                 expiryDate: expiryDateMs
             };
-            var multicastId = "multicastId";
-            var publication = new MulticastPublication({
-                multicastId: multicastId
+            const multicastId = "multicastId";
+            const publication = new MulticastPublication({
+                multicastId
             });
 
             dispatcherWithTtlUplift.sendMulticastPublication(settings, publication);
 
             expect(clusterControllerMessagingStub.transmit).toHaveBeenCalled();
-            var msg = clusterControllerMessagingStub.transmit.calls.mostRecent().args[0];
+            const msg = clusterControllerMessagingStub.transmit.calls.mostRecent().args[0];
             expect(msg.type).toEqual(JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST);
             expect(msg.from).toEqual(providerId);
             expect(msg.to).toEqual(multicastId);
             expect(msg.expiryDate).toEqualWithPositiveTolerance(expiryDateWithTtlUplift);
         });
 
-        it("request and reply", function(done) {
-            var payload = {
+        it("request and reply", done => {
+            const payload = {
                 methodName: "methodName"
             };
 
             receiveJoynrMessageTtlUplift({
                 type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
-                payload: payload,
+                payload,
                 expiryDate: expiryDateMs + ttlUpliftMs
-            }).then(function() {
+            }).then(() => {
                 expect(requestReplyManager.handleRequest).toHaveBeenCalled();
                 expect(requestReplyManager.handleRequest).toHaveBeenCalledWith(
                     providerId,
@@ -676,20 +676,20 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
             });
         });
 
-        it("subscription expiry date and subscription reply", function() {
-            var payload = {
+        it("subscription expiry date and subscription reply", () => {
+            const payload = {
                 subscribedToName: "attributeName",
-                subscriptionId: subscriptionId,
+                subscriptionId,
                 qos: subscriptionQos
             };
 
-            var payloadCopy = Util.extendDeep({}, payload);
-            var expectedSubscriptionRequest = new SubscriptionRequest(payloadCopy);
+            const payloadCopy = Util.extendDeep({}, payload);
+            const expectedSubscriptionRequest = new SubscriptionRequest(payloadCopy);
             expectedSubscriptionRequest.qos.expiryDateMs = expiryDateWithTtlUplift;
 
             receiveJoynrMessageTtlUplift({
                 type: JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REQUEST,
-                payload: payload,
+                payload,
                 expiryDate: expiryDateMs + ttlUpliftMs
             });
 
@@ -705,20 +705,20 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
             checkSubscriptionReplyMessage(expiryDateWithTtlUplift);
         });
 
-        it("broadcast subscription expiry date and subscription reply", function() {
-            var payload = {
+        it("broadcast subscription expiry date and subscription reply", () => {
+            const payload = {
                 subscribedToName: "broadcastEvent",
-                subscriptionId: subscriptionId,
+                subscriptionId,
                 qos: subscriptionQos
             };
 
-            var payloadCopy = Util.extendDeep({}, payload);
-            var expectedSubscriptionRequest = new BroadcastSubscriptionRequest(payloadCopy);
+            const payloadCopy = Util.extendDeep({}, payload);
+            const expectedSubscriptionRequest = new BroadcastSubscriptionRequest(payloadCopy);
             expectedSubscriptionRequest.qos.expiryDateMs = expiryDateWithTtlUplift;
 
             receiveJoynrMessageTtlUplift({
                 type: JoynrMessage.JOYNRMESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST,
-                payload: payload,
+                payload,
                 expiryDate: expiryDateMs + ttlUpliftMs
             });
 
@@ -734,21 +734,21 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
             checkSubscriptionReplyMessage(expiryDateWithTtlUplift);
         });
 
-        it("multicast subscription expiry date and subscription reply", function() {
-            var payload = {
+        it("multicast subscription expiry date and subscription reply", () => {
+            const payload = {
                 subscribedToName: "multicastEvent",
-                subscriptionId: subscriptionId,
-                multicastId: multicastId,
+                subscriptionId,
+                multicastId,
                 qos: subscriptionQos
             };
 
-            var payloadCopy = Util.extendDeep({}, payload);
-            var expectedSubscriptionRequest = new MulticastSubscriptionRequest(payloadCopy);
+            const payloadCopy = Util.extendDeep({}, payload);
+            const expectedSubscriptionRequest = new MulticastSubscriptionRequest(payloadCopy);
             expectedSubscriptionRequest.qos.expiryDateMs = expiryDateWithTtlUplift;
 
             receiveJoynrMessageTtlUplift({
                 type: JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST,
-                payload: payload,
+                payload,
                 expiryDate: expiryDateMs + ttlUpliftMs
             });
 

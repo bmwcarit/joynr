@@ -16,11 +16,11 @@
  * limitations under the License.
  * #L%
  */
-var Typing = require("../../util/Typing");
-var MulticastSubscriptionQos = require("../../proxy/MulticastSubscriptionQos");
-var LoggingManager = require("../../system/LoggingManager");
-var log = LoggingManager.getLogger("joynr/dispatching/types/MulticastSubscriptionRequest");
-var defaultSettings = {
+const Typing = require("../../util/Typing");
+const MulticastSubscriptionQos = require("../../proxy/MulticastSubscriptionQos");
+const LoggingManager = require("../../system/LoggingManager");
+const log = LoggingManager.getLogger("joynr/dispatching/types/MulticastSubscriptionRequest");
+const defaultSettings = {
     qos: new MulticastSubscriptionQos()
 };
 

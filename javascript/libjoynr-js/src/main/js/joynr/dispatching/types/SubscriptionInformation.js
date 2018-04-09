@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-var Typing = require("../../util/Typing");
-var SubscriptionRequest = require("./SubscriptionRequest");
+const Typing = require("../../util/Typing");
+const SubscriptionRequest = require("./SubscriptionRequest");
 
 /**
  * @name SubscriptionInformation

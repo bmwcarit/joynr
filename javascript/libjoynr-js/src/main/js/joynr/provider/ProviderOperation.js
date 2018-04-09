@@ -16,15 +16,15 @@
  * limitations under the License.
  * #L%
  */
-var Typing = require("../util/Typing");
-var MethodUtil = require("../util/MethodUtil");
-var TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
-var ApplicationException = require("../exceptions/ApplicationException");
-var ProviderRuntimeException = require("../exceptions/ProviderRuntimeException");
-var Util = require("../util/UtilInternal");
-var Promise = require("../../global/Promise");
+const Typing = require("../util/Typing");
+const MethodUtil = require("../util/MethodUtil");
+const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
+const ApplicationException = require("../exceptions/ApplicationException");
+const ProviderRuntimeException = require("../exceptions/ProviderRuntimeException");
+const Util = require("../util/UtilInternal");
+const Promise = require("../../global/Promise");
 
-var typeRegistry = TypeRegistrySingleton.getInstance();
+const typeRegistry = TypeRegistrySingleton.getInstance();
 /**
  * Checks if the given argumentDatatypes and arguments match the given operationSignature
  *
@@ -55,7 +55,7 @@ var typeRegistry = TypeRegistrySingleton.getInstance();
  *            containing a named argument map, e.g. &#123;nr: 1234,str: "asdf"&#125;
  */
 function getNamedArguments(unnamedArguments, argumentDatatypes, operationSignature) {
-    var i,
+    let i,
         argument,
         argumentName,
         namedArguments = {},
@@ -146,7 +146,7 @@ ProviderOperation.prototype.registerOperation = function registerOperation(opera
 };
 
 function privateOperationOnError(exceptionOrErrorEnumValue) {
-    var exception;
+    let exception;
     if (exceptionOrErrorEnumValue instanceof ProviderRuntimeException) {
         exception = exceptionOrErrorEnumValue;
     } else if (Typing.isComplexJoynrObject(exceptionOrErrorEnumValue)) {
@@ -185,11 +185,11 @@ function privateOperationOnError(exceptionOrErrorEnumValue) {
  * @returns {?} the return type of the called operation function
  */
 ProviderOperation.prototype.callOperation = function callOperation(operationArguments, operationArgumentTypes) {
-    var i, j;
-    var argument, namedArguments, signature;
-    var result;
-    var errorEnumType;
-    var exception;
+    let i, j;
+    let argument, namedArguments, signature;
+    let result;
+    let errorEnumType;
+    let exception;
 
     // cycle through multiple available operation signatures
     for (i = 0; i < this._operationSignatures.length && namedArguments === undefined; ++i) {

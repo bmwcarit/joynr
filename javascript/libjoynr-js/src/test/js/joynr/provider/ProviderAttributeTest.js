@@ -17,38 +17,38 @@
  * #L%
  */
 require("../../node-unit-test-helper");
-var ProviderAttribute = require("../../../../main/js/joynr/provider/ProviderAttribute");
-var ProviderQos = require("../../../../main/js/generated/joynr/types/ProviderQos");
-var TestEnum = require("../../../generated/joynr/tests/testTypes/TestEnum");
-var ComplexRadioStation = require("../../../generated/joynr/datatypes/exampleTypes/ComplexRadioStation");
-var Country = require("../../../generated/joynr/datatypes/exampleTypes/Country");
-var Promise = require("../../../../main/js/global/Promise");
-var waitsFor = require("../../../../test/js/global/WaitsFor");
+const ProviderAttribute = require("../../../../main/js/joynr/provider/ProviderAttribute");
+const ProviderQos = require("../../../../main/js/generated/joynr/types/ProviderQos");
+const TestEnum = require("../../../generated/joynr/tests/testTypes/TestEnum");
+const ComplexRadioStation = require("../../../generated/joynr/datatypes/exampleTypes/ComplexRadioStation");
+const Country = require("../../../generated/joynr/datatypes/exampleTypes/Country");
+const Promise = require("../../../../main/js/global/Promise");
+const waitsFor = require("../../../../test/js/global/WaitsFor");
 
-var safetyTimeoutDelta = 100;
+const safetyTimeoutDelta = 100;
 
-describe("libjoynr-js.joynr.provider.ProviderAttribute", function() {
-    var i, implementation, isOn, isOnNotifyReadOnly, isOnNotifyWriteOnly;
-    var isOnNotify, isOnReadWrite, isOnReadOnly, isOnWriteOnly;
-    var allAttributes, allNotifyAttributes;
+describe("libjoynr-js.joynr.provider.ProviderAttribute", () => {
+    let i, implementation, isOn, isOnNotifyReadOnly, isOnNotifyWriteOnly;
+    let isOnNotify, isOnReadWrite, isOnReadOnly, isOnWriteOnly;
+    let allAttributes, allNotifyAttributes;
 
-    beforeEach(function(done) {
+    beforeEach(done => {
         implementation = {
             value: {
                 key: "value",
                 1: 0,
                 object: {}
             },
-            get: function() {
+            get() {
                 return implementation.value;
             },
-            set: function(newValue) {
+            set(newValue) {
                 implementation.value = newValue;
             }
         };
         spyOn(implementation, "get").and.callThrough();
         spyOn(implementation, "set").and.callThrough();
-        var provider = {};
+        const provider = {};
 
         isOn = new ProviderAttribute(provider, implementation, "isOn", "Boolean", "NOTIFYREADWRITE");
         isOnNotifyReadOnly = new ProviderAttribute(
@@ -84,14 +84,14 @@ describe("libjoynr-js.joynr.provider.ProviderAttribute", function() {
         done();
     });
 
-    it("got initialized", function(done) {
+    it("got initialized", done => {
         expect(isOn).toBeDefined();
         expect(isOn).not.toBeNull();
         expect(typeof isOn === "object").toBeTruthy();
         done();
     });
 
-    it("has correct members (ProviderAttribute with NOTIFYREADWRITE)", function(done) {
+    it("has correct members (ProviderAttribute with NOTIFYREADWRITE)", done => {
         expect(isOn.registerGetter).toBeDefined();
         expect(isOn.registerSetter).toBeDefined();
         expect(isOn.valueChanged).toBeDefined();
@@ -100,7 +100,7 @@ describe("libjoynr-js.joynr.provider.ProviderAttribute", function() {
         done();
     });
 
-    it("has correct members (ProviderAttribute with NOTIFYREADONLY)", function(done) {
+    it("has correct members (ProviderAttribute with NOTIFYREADONLY)", done => {
         expect(isOnNotifyReadOnly.registerGetter).toBeDefined();
         expect(isOnNotifyReadOnly.registerSetter).toBeUndefined();
         expect(isOnNotifyReadOnly.valueChanged).toBeDefined();
@@ -109,7 +109,7 @@ describe("libjoynr-js.joynr.provider.ProviderAttribute", function() {
         done();
     });
 
-    it("has correct members (ProviderAttribute with NOTIFYWRITEONLY)", function(done) {
+    it("has correct members (ProviderAttribute with NOTIFYWRITEONLY)", done => {
         expect(isOnNotifyWriteOnly.registerGetter).toBeUndefined();
         expect(isOnNotifyWriteOnly.registerSetter).toBeDefined();
         expect(isOnNotifyWriteOnly.valueChanged).toBeDefined();
@@ -118,7 +118,7 @@ describe("libjoynr-js.joynr.provider.ProviderAttribute", function() {
         done();
     });
 
-    it("has correct members (ProviderAttribute with NOTIFY)", function(done) {
+    it("has correct members (ProviderAttribute with NOTIFY)", done => {
         expect(isOnNotify.registerGetter).toBeUndefined();
         expect(isOnNotify.registerSetter).toBeUndefined();
         expect(isOnNotify.valueChanged).toBeDefined();
@@ -127,7 +127,7 @@ describe("libjoynr-js.joynr.provider.ProviderAttribute", function() {
         done();
     });
 
-    it("has correct members (ProviderAttribute with READWRITE)", function(done) {
+    it("has correct members (ProviderAttribute with READWRITE)", done => {
         expect(isOnReadWrite.registerGetter).toBeDefined();
         expect(isOnReadWrite.registerSetter).toBeDefined();
         expect(isOnReadWrite.valueChanged).toBeUndefined();
@@ -136,7 +136,7 @@ describe("libjoynr-js.joynr.provider.ProviderAttribute", function() {
         done();
     });
 
-    it("has correct members (ProviderAttribute with READONLY)", function(done) {
+    it("has correct members (ProviderAttribute with READONLY)", done => {
         expect(isOnReadOnly.registerGetter).toBeDefined();
         expect(isOnReadOnly.registerSetter).toBeUndefined();
         expect(isOnReadOnly.valueChanged).toBeUndefined();
@@ -145,7 +145,7 @@ describe("libjoynr-js.joynr.provider.ProviderAttribute", function() {
         done();
     });
 
-    it("has correct members (ProviderAttribute with WRITEONLY)", function(done) {
+    it("has correct members (ProviderAttribute with WRITEONLY)", done => {
         expect(isOnWriteOnly.registerGetter).toBeUndefined();
         expect(isOnWriteOnly.registerSetter).toBeDefined();
         expect(isOnWriteOnly.valueChanged).toBeUndefined();
@@ -154,31 +154,31 @@ describe("libjoynr-js.joynr.provider.ProviderAttribute", function() {
         done();
     });
 
-    it("call[G|S]etter calls through to registered [g|s]etters", function(done) {
-        var result;
-        var testParam = "myTestParameter";
-        var promiseChain;
+    it("call[G|S]etter calls through to registered [g|s]etters", done => {
+        let result;
+        const testParam = "myTestParameter";
+        let promiseChain;
 
-        var createFunc = function(attribute, promiseChain) {
-            var spy = jasmine.createSpy("ProviderAttributeSpy");
+        const createFunc = function(attribute, promiseChain) {
+            const spy = jasmine.createSpy("ProviderAttributeSpy");
             attribute.registerSetter(spy);
             return promiseChain
-                .then(function() {
+                .then(() => {
                     return attribute.set(testParam);
                 })
-                .then(function() {
+                .then(() => {
                     expect(spy).toHaveBeenCalled();
                     expect(spy).toHaveBeenCalledWith(testParam);
                 });
         };
 
         promiseChain = Promise.all(
-            allAttributes.map(function(attribute) {
+            allAttributes.map(attribute => {
                 if (attribute.get instanceof Function) {
-                    var spy = jasmine.createSpy("ProviderAttributeSpy");
+                    const spy = jasmine.createSpy("ProviderAttributeSpy");
                     spy.and.returnValue(testParam);
                     attribute.registerGetter(spy);
-                    return attribute.get().then(function(result) {
+                    return attribute.get().then(result => {
                         expect(spy).toHaveBeenCalled();
                         expect(result).toEqual([testParam]);
                     });
@@ -192,39 +192,39 @@ describe("libjoynr-js.joynr.provider.ProviderAttribute", function() {
             }
         }
         promiseChain
-            .then(function() {
+            .then(() => {
                 done();
                 return null;
             })
             .catch(fail);
     });
 
-    it("call[G|S]etter calls through to provided implementation", function(done) {
-        var spy;
-        var result;
-        var testParam = "myTestParameter";
-        var promiseChain = Promise.resolve();
+    it("call[G|S]etter calls through to provided implementation", done => {
+        let spy;
+        let result;
+        const testParam = "myTestParameter";
+        let promiseChain = Promise.resolve();
 
-        var createFunc = function(attribute, promiseChain) {
+        const createFunc = function(attribute, promiseChain) {
             return promiseChain
-                .then(function() {
+                .then(() => {
                     implementation.set.calls.reset();
                     return attribute.set(testParam);
                 })
-                .then(function() {
+                .then(() => {
                     expect(implementation.set).toHaveBeenCalled();
                     expect(implementation.set).toHaveBeenCalledWith(testParam);
                 });
         };
 
         promiseChain = Promise.all(
-            allAttributes.map(function(attribute) {
+            allAttributes.map(attribute => {
                 // only check getter if the attribute is readable
                 if (attribute.get instanceof Function) {
                     implementation.get.calls.reset();
                     implementation.get.and.returnValue(testParam);
 
-                    return attribute.get().then(function(result) {
+                    return attribute.get().then(result => {
                         expect(implementation.get).toHaveBeenCalled();
                         expect(result).toEqual([testParam]);
                     });
@@ -238,7 +238,7 @@ describe("libjoynr-js.joynr.provider.ProviderAttribute", function() {
             }
         }
         promiseChain
-            .then(function() {
+            .then(() => {
                 done();
                 return null;
             })
@@ -251,8 +251,8 @@ describe("libjoynr-js.joynr.provider.ProviderAttribute", function() {
         };
     }
 
-    it("implements the observer concept correctly", function(done) {
-        var i,
+    it("implements the observer concept correctly", done => {
+        let i,
             spy1,
             spy2,
             attribute,
@@ -304,7 +304,7 @@ describe("libjoynr-js.joynr.provider.ProviderAttribute", function() {
     });
 
     function setNewValueCallsValueChangedObserver(attribute, promiseChain) {
-        var spy1, spy2, func1, func2, value, done;
+        let spy1, spy2, func1, func2, value, done;
         spy1 = jasmine.createSpy("spy1");
         spy2 = jasmine.createSpy("spy2");
 
@@ -325,10 +325,10 @@ describe("libjoynr-js.joynr.provider.ProviderAttribute", function() {
 
         // expect 2 observers to be called
         return promiseChain
-            .then(function() {
+            .then(() => {
                 return attribute.set(value);
             })
-            .then(function() {
+            .then(() => {
                 expect(spy1).toHaveBeenCalled();
                 expect(spy1).toHaveBeenCalledWith([value]);
                 expect(spy2).toHaveBeenCalled();
@@ -345,7 +345,7 @@ describe("libjoynr-js.joynr.provider.ProviderAttribute", function() {
 
                 return attribute.set(value);
             })
-            .then(function() {
+            .then(() => {
                 expect(spy1.calls.count()).toEqual(2);
                 expect(spy2.calls.count()).toEqual(1);
 
@@ -360,15 +360,15 @@ describe("libjoynr-js.joynr.provider.ProviderAttribute", function() {
 
                 return attribute.set(value);
             })
-            .then(function() {
+            .then(() => {
                 expect(spy1.calls.count()).toEqual(2);
                 expect(spy2.calls.count()).toEqual(1);
             });
     }
 
-    it("notifies observer when calling set with new value", function(done) {
-        var i, attribute;
-        var promiseChain = Promise.resolve();
+    it("notifies observer when calling set with new value", done => {
+        let i, attribute;
+        let promiseChain = Promise.resolve();
 
         for (i = 0; i < allNotifyAttributes.length; ++i) {
             attribute = allNotifyAttributes[i];
@@ -377,7 +377,7 @@ describe("libjoynr-js.joynr.provider.ProviderAttribute", function() {
             }
         }
         promiseChain
-            .then(function() {
+            .then(() => {
                 done();
                 return null;
             })
@@ -385,7 +385,7 @@ describe("libjoynr-js.joynr.provider.ProviderAttribute", function() {
     });
 
     function setSameValueDoesNotCallValueChangedObserver(attribute, promiseChain) {
-        var spy1, spy2, func1, func2, value;
+        let spy1, spy2, func1, func2, value;
         spy1 = jasmine.createSpy("spy1");
         spy2 = jasmine.createSpy("spy2");
 
@@ -406,25 +406,25 @@ describe("libjoynr-js.joynr.provider.ProviderAttribute", function() {
 
         // expect 2 observers to be called
         return promiseChain
-            .then(function() {
+            .then(() => {
                 return attribute.set(value);
             })
-            .then(function() {
+            .then(() => {
                 expect(spy1).toHaveBeenCalled();
                 expect(spy1).toHaveBeenCalledWith([value]);
                 expect(spy2).toHaveBeenCalled();
                 expect(spy2).toHaveBeenCalledWith([value]);
                 return attribute.set(value);
             })
-            .then(function() {
+            .then(() => {
                 expect(spy1.calls.count()).toEqual(1);
                 expect(spy2.calls.count()).toEqual(1);
             });
     }
 
-    it("doesn't notify observer when calling set with same values", function(done) {
-        var i, spy1, spy2, attribute, func1, func2, value;
-        var promiseChain = Promise.resolve();
+    it("doesn't notify observer when calling set with same values", done => {
+        let i, spy1, spy2, attribute, func1, func2, value;
+        let promiseChain = Promise.resolve();
 
         for (i = 0; i < allNotifyAttributes.length; ++i) {
             attribute = allNotifyAttributes[i];
@@ -433,16 +433,16 @@ describe("libjoynr-js.joynr.provider.ProviderAttribute", function() {
             }
         }
         promiseChain
-            .then(function() {
+            .then(() => {
                 done();
                 return null;
             })
             .catch(fail);
     });
 
-    it("calls provided setter implementation with enum as operation argument", function(done) {
+    it("calls provided setter implementation with enum as operation argument", done => {
         /*jslint nomen: true */
-        var fixture = new ProviderAttribute(
+        const fixture = new ProviderAttribute(
             {},
             implementation,
             "testWithEnumAsAttributeType",
@@ -453,7 +453,7 @@ describe("libjoynr-js.joynr.provider.ProviderAttribute", function() {
 
         fixture
             .set("ZERO")
-            .then(function() {
+            .then(() => {
                 expect(implementation.set).toHaveBeenCalledWith(TestEnum.ZERO);
                 done();
                 return null;

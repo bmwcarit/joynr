@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-var libjoynrClusterControllerExports;
+let libjoynrClusterControllerExports;
 // will receive the module names that should be exported
 // this instrumentation of the define method is there to...
 // ...leave the code block afterwards fully intact, so that static code analysis of require.js
@@ -39,23 +39,23 @@ libjoynrClusterControllerExports = [
     "./generated/joynr/system/RoutingTypes/WebSocketClientAddress",
     "./joynr/util/Util"
 ];
-var Runtime = require("./joynr/Runtime");
-var buildSignature = require("./joynr/buildSignature");
-var MessagingQos = require("./joynr/messaging/MessagingQos");
-var PeriodicSubscriptionQos = require("./joynr/proxy/PeriodicSubscriptionQos");
-var OnChangeSubscriptionQos = require("./joynr/proxy/OnChangeSubscriptionQos");
-var MulticastSubscriptionQos = require("./joynr/proxy/MulticastSubscriptionQos");
-var OnChangeWithKeepAliveSubscriptionQos = require("./joynr/proxy/OnChangeWithKeepAliveSubscriptionQos");
-var ArbitrationStrategyCollection = require("./joynr/types/ArbitrationStrategyCollection");
-var BrowserAddress = require("./generated/joynr/system/RoutingTypes/BrowserAddress");
-var ChannelAddress = require("./generated/joynr/system/RoutingTypes/ChannelAddress");
-var WebSocketAddress = require("./generated/joynr/system/RoutingTypes/WebSocketAddress");
-var WebSocketClientAddress = require("./generated/joynr/system/RoutingTypes/WebSocketClientAddress");
-var Util = require("./joynr/util/Util");
+const Runtime = require("./joynr/Runtime");
+const buildSignature = require("./joynr/buildSignature");
+const MessagingQos = require("./joynr/messaging/MessagingQos");
+const PeriodicSubscriptionQos = require("./joynr/proxy/PeriodicSubscriptionQos");
+const OnChangeSubscriptionQos = require("./joynr/proxy/OnChangeSubscriptionQos");
+const MulticastSubscriptionQos = require("./joynr/proxy/MulticastSubscriptionQos");
+const OnChangeWithKeepAliveSubscriptionQos = require("./joynr/proxy/OnChangeWithKeepAliveSubscriptionQos");
+const ArbitrationStrategyCollection = require("./joynr/types/ArbitrationStrategyCollection");
+const BrowserAddress = require("./generated/joynr/system/RoutingTypes/BrowserAddress");
+const ChannelAddress = require("./generated/joynr/system/RoutingTypes/ChannelAddress");
+const WebSocketAddress = require("./generated/joynr/system/RoutingTypes/WebSocketAddress");
+const WebSocketClientAddress = require("./generated/joynr/system/RoutingTypes/WebSocketClientAddress");
+const Util = require("./joynr/util/Util");
 
 // load all external modules
-var nsContext, nsElem, nsElems, i, value;
-var root = {};
+let nsContext, nsElem, nsElems, i, value;
+const root = {};
 // cycle over all exports
 for (i = 0; i < libjoynrClusterControllerExports.length; ++i) {
     // Window in case of a Browser or DedicatedWebWorkerContext in a WebWorker Environment
@@ -87,7 +87,7 @@ for (i = 0; i < libjoynrClusterControllerExports.length; ++i) {
             enumerable: true,
             configurable: false,
             writable: false,
-            value: value
+            value
         });
         nsContext = value;
     }

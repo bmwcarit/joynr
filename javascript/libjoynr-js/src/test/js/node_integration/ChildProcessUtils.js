@@ -17,7 +17,7 @@
  * #L%
  */
 
-var ChildProcessUtils = {};
+const ChildProcessUtils = {};
 
 ChildProcessUtils.postReady = function() {
     process.send({
@@ -26,7 +26,7 @@ ChildProcessUtils.postReady = function() {
 };
 
 ChildProcessUtils.postStarted = function(argument) {
-    var object = {
+    const object = {
         type: "started"
     };
     if (argument !== undefined) {
@@ -42,14 +42,14 @@ ChildProcessUtils.postFinished = function() {
 };
 
 ChildProcessUtils.registerHandlers = function(initializeTest, startTest, terminateTest) {
-    var runtime;
-    var handler = function(msg) {
+    let runtime;
+    const handler = function(msg) {
         console.log(JSON.stringify(msg));
         if (msg.type === "initialize") {
             if (!initializeTest) {
                 throw new Error("cannot initialize test, child does not define an initializeTest method");
             }
-            initializeTest(msg.provisioningSuffix, msg.domain).then(function(providedRuntime) {
+            initializeTest(msg.provisioningSuffix, msg.domain).then(providedRuntime => {
                 runtime = providedRuntime;
                 ChildProcessUtils.postReady();
             });
@@ -57,7 +57,7 @@ ChildProcessUtils.registerHandlers = function(initializeTest, startTest, termina
             if (!startTest) {
                 throw new Error("cannot start test, child does not define a startTest method");
             }
-            startTest().then(function(argument) {
+            startTest().then(argument => {
                 ChildProcessUtils.postStarted(argument);
             });
         } else if (msg.type === "terminate") {
@@ -73,10 +73,10 @@ ChildProcessUtils.registerHandlers = function(initializeTest, startTest, termina
 };
 
 ChildProcessUtils.overrideRequirePaths = function() {
-    var mod = require("module");
-    var joynr = require("../../../main/js/joynr");
-    var req = mod.prototype.require;
-    var path = require("path");
+    const mod = require("module");
+    const joynr = require("../../../main/js/joynr");
+    const req = mod.prototype.require;
+    const path = require("path");
     mod.prototype.require = function(md) {
         if (md === "joynr") {
             return joynr;
@@ -84,7 +84,7 @@ ChildProcessUtils.overrideRequirePaths = function() {
 
         // mock localStorage
         if (md.endsWith("LocalStorageNode")) {
-            var appDir = path.dirname(require.main.filename);
+            const appDir = path.dirname(require.main.filename);
             return req.call(this, appDir + "/LocalStorageMock.js");
         }
 

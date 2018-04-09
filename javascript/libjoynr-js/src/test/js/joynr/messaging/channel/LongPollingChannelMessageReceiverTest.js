@@ -17,34 +17,34 @@
  * #L%
  */
 require("../../../node-unit-test-helper");
-var Promise = require("../../../../../main/js/global/Promise");
-var CommunicationModule = require("../../../../../main/js/joynr/messaging/CommunicationModule");
-var LongPollingChannelMessageReceiver = require("../../../../../main/js/joynr/messaging/channel/LongPollingChannelMessageReceiver");
-var JoynrMessage = require("../../../../../main/js/joynr/messaging/JoynrMessage");
-var Typing = require("../../../../../main/js/joynr/util/Typing");
-var LoggingManager = require("../../../../../main/js/joynr/system/LoggingManager");
-var LocalStorage = require("../../../../../test/js/global/LocalStorageNodeTests");
-var provisioning = require("../../../../resources/joynr/provisioning/provisioning_root");
-var waitsFor = require("../../../../../test/js/global/WaitsFor");
+const Promise = require("../../../../../main/js/global/Promise");
+const CommunicationModule = require("../../../../../main/js/joynr/messaging/CommunicationModule");
+const LongPollingChannelMessageReceiver = require("../../../../../main/js/joynr/messaging/channel/LongPollingChannelMessageReceiver");
+const JoynrMessage = require("../../../../../main/js/joynr/messaging/JoynrMessage");
+const Typing = require("../../../../../main/js/joynr/util/Typing");
+const LoggingManager = require("../../../../../main/js/joynr/system/LoggingManager");
+const LocalStorage = require("../../../../../test/js/global/LocalStorageNodeTests");
+const provisioning = require("../../../../resources/joynr/provisioning/provisioning_root");
+const waitsFor = require("../../../../../test/js/global/WaitsFor");
 
-var log = LoggingManager.getLogger("joynr.messaging.TestLongPollingChannelMessageReceiver");
-var localStorage = new LocalStorage();
+const log = LoggingManager.getLogger("joynr.messaging.TestLongPollingChannelMessageReceiver");
+const localStorage = new LocalStorage();
 
-describe("libjoynr-js.joynr.messaging.LongPollingChannelMessageReceiver", function() {
-    var atmosphereSpy, communicationModuleSpy, longPollingChannelMessageReceiver;
-    var channelId, channelUrl, joynrMessage;
-    var channelCreationTimeout_ms, channelCreationRetryDelay_ms;
+describe("libjoynr-js.joynr.messaging.LongPollingChannelMessageReceiver", () => {
+    let atmosphereSpy, communicationModuleSpy, longPollingChannelMessageReceiver;
+    let channelId, channelUrl, joynrMessage;
+    let channelCreationTimeout_ms, channelCreationRetryDelay_ms;
 
     function outputPromiseError(error) {
         expect(error.toString()).toBeFalsy();
     }
 
     function createChannel() {
-        var spy = jasmine.createSpyObj("spy", ["onFulfilled", "onRejected"]);
+        const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onRejected"]);
 
         communicationModuleSpy.createXMLHTTPRequest.and.returnValue(
             Promise.resolve({
-                getResponseHeader: function() {
+                getResponseHeader() {
                     return channelUrl;
                 }
             })
@@ -55,27 +55,27 @@ describe("libjoynr-js.joynr.messaging.LongPollingChannelMessageReceiver", functi
             .catch(spy.onRejected)
             .catch(outputPromiseError);
 
-        var returnValue = waitsFor(
-            function() {
+        const returnValue = waitsFor(
+            () => {
                 return spy.onFulfilled.calls.count() > 0;
             },
             "channel is created",
             provisioning.ttl
-        ).then(function() {
-            return new Promise(function(resolve, reject) {
+        ).then(() => {
+            return new Promise((resolve, reject) => {
                 resolve(spy);
             });
         });
         return returnValue;
     }
 
-    beforeEach(function(done) {
+    beforeEach(done => {
         localStorage.clear();
         channelId = "myChannel" + Date.now();
         channelUrl = provisioning.bounceProxyUrl + "/channels/" + channelId;
         channelCreationTimeout_ms = 1000;
         channelCreationRetryDelay_ms = 50;
-        var channelQos = {
+        const channelQos = {
             creationTimeout_ms: channelCreationTimeout_ms,
             creationRetryDelay_ms: channelCreationRetryDelay_ms
         };
@@ -96,13 +96,13 @@ describe("libjoynr-js.joynr.messaging.LongPollingChannelMessageReceiver", functi
             persistency: localStorage,
             bounceProxyUrl: provisioning.bounceProxyUrl,
             communicationModule: communicationModuleSpy,
-            channelQos: channelQos
+            channelQos
         });
         done();
     });
 
-    it("create fails only if channelCreationTimeout_ms exceed", function(done) {
-        var createChannelCallTimestamp;
+    it("create fails only if channelCreationTimeout_ms exceed", done => {
+        let createChannelCallTimestamp;
 
         communicationModuleSpy.createXMLHTTPRequest.and.returnValue(
             Promise.reject(new Error("fake http request failed"))
@@ -110,17 +110,17 @@ describe("libjoynr-js.joynr.messaging.LongPollingChannelMessageReceiver", functi
         createChannelCallTimestamp = Date.now();
         longPollingChannelMessageReceiver
             .create(channelId)
-            .then(function() {
+            .then(() => {
                 fail("create longPollingChannelMessageReceiver succeeded");
                 return null;
             })
-            .catch(function() {
+            .catch(() => {
                 expect(Date.now() - createChannelCallTimestamp + 1).toBeGreaterThan(channelCreationTimeout_ms);
                 done();
             });
     });
 
-    it("is instantiable and has all members", function(done) {
+    it("is instantiable and has all members", done => {
         expect(longPollingChannelMessageReceiver).toBeDefined();
         expect(longPollingChannelMessageReceiver instanceof LongPollingChannelMessageReceiver).toBeTruthy();
         expect(longPollingChannelMessageReceiver.create).toBeDefined();
@@ -134,9 +134,9 @@ describe("libjoynr-js.joynr.messaging.LongPollingChannelMessageReceiver", functi
         done();
     });
 
-    it("create is successful if channel is created", function(done) {
+    it("create is successful if channel is created", done => {
         createChannel()
-            .then(function(spy) {
+            .then(spy => {
                 expect(spy.onFulfilled).toHaveBeenCalled();
                 expect(spy.onFulfilled).toHaveBeenCalledWith(channelUrl);
                 expect(spy.onRejected).not.toHaveBeenCalled();
@@ -145,13 +145,13 @@ describe("libjoynr-js.joynr.messaging.LongPollingChannelMessageReceiver", functi
                 done();
                 return null;
             })
-            .catch(function(error) {
+            .catch(error => {
                 fail("spy not returned: error " + error);
                 return null;
             });
     });
 
-    it("create is unsuccessful if channel is not created", function(done) {
+    it("create is unsuccessful if channel is not created", done => {
         communicationModuleSpy.createXMLHTTPRequest.and.returnValue(
             Promise.reject(
                 {
@@ -163,24 +163,24 @@ describe("libjoynr-js.joynr.messaging.LongPollingChannelMessageReceiver", functi
         );
         longPollingChannelMessageReceiver
             .create(channelId)
-            .then(function() {
+            .then(() => {
                 fail("create longPollingChannelMessageReceiver unexpectedly successfull");
                 return null;
             })
-            .catch(function(error) {
+            .catch(error => {
                 expect(Object.prototype.toString.call(error) === "[object Error]").toBeTruthy();
                 done();
                 return null;
             });
     });
 
-    it("after a call to start, messages are transmitted", function(done) {
-        var messageSpy = jasmine.createSpy("messageSpy");
+    it("after a call to start, messages are transmitted", done => {
+        const messageSpy = jasmine.createSpy("messageSpy");
         longPollingChannelMessageReceiver.start(messageSpy);
         expect(atmosphereSpy.subscribe).toHaveBeenCalled();
         expect(atmosphereSpy.unsubscribeUrl).toHaveBeenCalled();
 
-        var messageCallback = atmosphereSpy.subscribe.calls.argsFor(0)[0].onMessage;
+        const messageCallback = atmosphereSpy.subscribe.calls.argsFor(0)[0].onMessage;
         expect(messageSpy).not.toHaveBeenCalled();
         messageCallback({
             status: 200,
@@ -192,13 +192,13 @@ describe("libjoynr-js.joynr.messaging.LongPollingChannelMessageReceiver", functi
         done();
     });
 
-    it("clear is successful if channel is cleared", function(done) {
-        var spy = jasmine.createSpyObj("spy", ["onFulfilled", "onRejected"]);
+    it("clear is successful if channel is cleared", done => {
+        const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onRejected"]);
         createChannel()
-            .then(function() {
+            .then(() => {
                 communicationModuleSpy.createXMLHTTPRequest.and.returnValue(
                     Promise.resolve({
-                        getResponseHeader: function() {
+                        getResponseHeader() {
                             return channelUrl;
                         }
                     })
@@ -210,30 +210,30 @@ describe("libjoynr-js.joynr.messaging.LongPollingChannelMessageReceiver", functi
                     .catch(outputPromiseError);
 
                 return waitsFor(
-                    function() {
+                    () => {
                         return spy.onFulfilled.calls.count() > 0;
                     },
                     "channel is cleared",
                     provisioning.ttl
                 );
             })
-            .then(function() {
+            .then(() => {
                 expect(spy.onFulfilled).toHaveBeenCalled();
                 expect(spy.onFulfilled).toHaveBeenCalledWith(undefined);
                 expect(spy.onRejected).not.toHaveBeenCalled();
                 done();
                 return null;
             })
-            .catch(function(error) {
+            .catch(error => {
                 fail("create Channel failed: " + error);
                 return null;
             });
     });
 
-    it("clear is unsuccessful if channel is not cleared", function(done) {
+    it("clear is unsuccessful if channel is not cleared", done => {
         createChannel()
-            .then(function() {
-                var spy = jasmine.createSpyObj("spy", ["onFulfilled", "onRejected"]);
+            .then(() => {
+                const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onRejected"]);
                 communicationModuleSpy.createXMLHTTPRequest.and.returnValue(
                     Promise.reject(
                         {
@@ -245,33 +245,33 @@ describe("libjoynr-js.joynr.messaging.LongPollingChannelMessageReceiver", functi
                 );
                 longPollingChannelMessageReceiver
                     .clear()
-                    .then(function() {
+                    .then(() => {
                         fail("clear returned successfully");
                         return null;
                     })
-                    .catch(function(error) {
+                    .catch(error => {
                         expect(Object.prototype.toString.call(error) === "[object Error]").toBeTruthy();
                         done();
                         return null;
                     });
                 return null;
             })
-            .catch(function(error) {
+            .catch(error => {
                 fail("create channel failed");
                 return null;
             });
     });
 
-    it("stops", function(done) {
+    it("stops", done => {
         createChannel()
-            .then(function() {
+            .then(() => {
                 longPollingChannelMessageReceiver.stop();
                 expect(atmosphereSpy.unsubscribeUrl).toHaveBeenCalled();
                 expect(atmosphereSpy.unsubscribeUrl).toHaveBeenCalledWith(channelUrl);
                 done();
                 return null;
             })
-            .catch(function(error) {
+            .catch(error => {
                 fail("create channel failed");
                 return null;
             });

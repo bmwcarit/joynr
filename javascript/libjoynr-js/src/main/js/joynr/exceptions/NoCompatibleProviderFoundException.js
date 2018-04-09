@@ -16,11 +16,11 @@
  * limitations under the License.
  * #L%
  */
-var TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
-var Util = require("../util/UtilInternal");
-var DiscoveryException = require("./DiscoveryException");
-var LoggingManager = require("../system/LoggingManager");
-var defaultSettings;
+const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
+const Util = require("../util/UtilInternal");
+const DiscoveryException = require("./DiscoveryException");
+const LoggingManager = require("../system/LoggingManager");
+let defaultSettings;
 
 /**
  * @classdesc
@@ -54,8 +54,8 @@ function NoCompatibleProviderFoundException(settings) {
         return new NoCompatibleProviderFoundException(settings);
     }
 
-    var log = LoggingManager.getLogger("joynr.exceptions.NoCompatibleProviderFoundException");
-    var discoveryException = new DiscoveryException(settings);
+    const log = LoggingManager.getLogger("joynr.exceptions.NoCompatibleProviderFoundException");
+    const discoveryException = new DiscoveryException(settings);
 
     /**
      * Used for serialization.

@@ -16,13 +16,13 @@
  * limitations under the License.
  * #L%
  */
-var Typing = require("./Typing");
-var Util = require("./UtilInternal");
+const Typing = require("./Typing");
+const Util = require("./UtilInternal");
 
 /**
  * @exports MethodUtil
  */
-var MethodUtil = {};
+const MethodUtil = {};
 
 /**
  * @param {Object[]} operationArguments Arguments coming from the proxy or provider
@@ -30,7 +30,7 @@ var MethodUtil = {};
  * @returns {Object} Object in the form of { paramDatatypes: [Array of types], params: [Array of values] };
  */
 MethodUtil.transformParameterMapToArray = function transformParameterMapToArray(operationArguments, parameters) {
-    var argument,
+    let argument,
         objectType,
         argumentId,
         argumentValue,
@@ -75,8 +75,8 @@ MethodUtil.transformParameterMapToArray = function transformParameterMapToArray(
         params.push(argumentValue);
     }
     return {
-        paramDatatypes: paramDatatypes,
-        params: params
+        paramDatatypes,
+        params
     };
 };
 

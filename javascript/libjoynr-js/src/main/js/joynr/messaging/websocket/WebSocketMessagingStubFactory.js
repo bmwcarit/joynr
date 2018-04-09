@@ -16,9 +16,9 @@
  * limitations under the License.
  * #L%
  */
-var Typing = require("../../util/Typing");
-var WebSocketMessagingStub = require("./WebSocketMessagingStub");
-var WebSocketAddress = require("../../../generated/joynr/system/RoutingTypes/WebSocketAddress");
+const Typing = require("../../util/Typing");
+const WebSocketMessagingStub = require("./WebSocketMessagingStub");
+const WebSocketAddress = require("../../../generated/joynr/system/RoutingTypes/WebSocketAddress");
 
 /**
  * @constructor
@@ -30,12 +30,12 @@ var WebSocketAddress = require("../../../generated/joynr/system/RoutingTypes/Web
  * @param {WebSocketAddress}
  *            settings.address of the websocket for the websocket server
  */
-var WebSocketMessagingStubFactory = function WebSocketMessagingStubFactory(settings) {
+const WebSocketMessagingStubFactory = function WebSocketMessagingStubFactory(settings) {
     Typing.checkProperty(settings, "Object", "settings");
     Typing.checkProperty(settings.address, "WebSocketAddress", "address");
     Typing.checkProperty(settings.sharedWebSocket, "SharedWebSocket", "sharedWebSocket");
 
-    var addresses = {};
+    const addresses = {};
     addresses[settings.address] = new WebSocketMessagingStub({
         sharedWebSocket: settings.sharedWebSocket
     });

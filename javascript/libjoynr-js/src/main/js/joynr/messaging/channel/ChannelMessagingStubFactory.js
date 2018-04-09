@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-var Typing = require("../../util/Typing");
-var ChannelMessagingStub = require("./ChannelMessagingStub");
+const Typing = require("../../util/Typing");
+const ChannelMessagingStub = require("./ChannelMessagingStub");
 
 /**
  * @constructor
@@ -55,7 +55,7 @@ ChannelMessagingStubFactory.prototype.globalAddressReady = function globalAddres
 ChannelMessagingStubFactory.prototype.build = function build(address) {
     Typing.checkProperty(address, "ChannelAddress", "address");
     if (!this._globalAddress) {
-        var error = new Error("global channel address not yet set");
+        const error = new Error("global channel address not yet set");
         error.delay = true;
         throw error;
     }

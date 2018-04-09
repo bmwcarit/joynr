@@ -16,9 +16,9 @@
  * limitations under the License.
  * #L%
  */
-var Typing = require("../util/Typing");
-var Util = require("../util/UtilInternal");
-var LoggingManager = require("../system/LoggingManager");
+const Typing = require("../util/Typing");
+const Util = require("../util/UtilInternal");
+const LoggingManager = require("../system/LoggingManager");
 
 function makeSetterFunction(obj, parameterName) {
     return function(arg) {
@@ -45,7 +45,7 @@ function BroadcastFilterParameters(filterParameterProperties) {
         return new BroadcastFilterParameters(filterParameterProperties);
     }
 
-    var log = LoggingManager.getLogger("joynr.proxy.BroadcastFilterParameters");
+    const log = LoggingManager.getLogger("joynr.proxy.BroadcastFilterParameters");
 
     /**
      * @name BroadcastFilterParameters#_typeName
@@ -54,19 +54,19 @@ function BroadcastFilterParameters(filterParameterProperties) {
     Util.objectDefineProperty(this, "_typeName", "joynr.BroadcastFilterParameters");
     Typing.checkPropertyIfDefined(filterParameterProperties, "Object", "filterParameters");
 
-    var parameterName;
-    var funcName;
+    let parameterName;
+    let funcName;
 
     if (filterParameterProperties === undefined) {
-        var filterParameters = null;
+        let filterParameters = null;
         Object.defineProperty(this, "filterParameters", {
             readable: true,
             enumerable: true,
             configurable: false,
-            get: function() {
+            get() {
                 return filterParameters;
             },
-            set: function(value) {
+            set(value) {
                 filterParameters = value;
             }
         });

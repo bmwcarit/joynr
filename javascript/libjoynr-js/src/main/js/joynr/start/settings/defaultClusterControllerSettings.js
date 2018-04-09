@@ -16,17 +16,17 @@
  * limitations under the License.
  * #L%
  */
-var ProviderScope = require("../../../generated/joynr/types/ProviderScope");
-var Util = require("../../util/UtilInternal");
-var defaultClusterControllerSettings = function(settings) {
-    var defaultSettings = {};
+const ProviderScope = require("../../../generated/joynr/types/ProviderScope");
+const Util = require("../../util/UtilInternal");
+const defaultClusterControllerSettings = function(settings) {
+    const defaultSettings = {};
     defaultSettings.discoveryChannel = "discoverydirectory_channelid";
 
     defaultSettings.getDefaultDiscoveryChannelUrl = function() {
         return settings.bounceProxyBaseUrl + "/discovery/channels/" + defaultSettings.discoveryChannel + "/";
     };
 
-    var globalCapDirCapability = {
+    const globalCapDirCapability = {
         providerVersion: {
             majorVersion: 0,
             minorVersion: 1

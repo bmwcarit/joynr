@@ -17,34 +17,34 @@
  * #L%
  */
 require("../../../node-unit-test-helper");
-var Promise = require("../../../../../main/js/global/Promise");
-var ChannelMessagingSender = require("../../../../../main/js/joynr/messaging/channel/ChannelMessagingSender");
-var JoynrMessage = require("../../../../../main/js/joynr/messaging/JoynrMessage");
-var ChannelAddress = require("../../../../../main/js/generated/joynr/system/RoutingTypes/ChannelAddress");
-var Typing = require("../../../../../main/js/joynr/util/Typing");
-var LoggingManager = require("../../../../../main/js/joynr/system/LoggingManager");
-var provisioningRoot = require("../../../../resources/joynr/provisioning/provisioning_root");
-var waitsFor = require("../../../../../test/js/global/WaitsFor");
+const Promise = require("../../../../../main/js/global/Promise");
+const ChannelMessagingSender = require("../../../../../main/js/joynr/messaging/channel/ChannelMessagingSender");
+const JoynrMessage = require("../../../../../main/js/joynr/messaging/JoynrMessage");
+const ChannelAddress = require("../../../../../main/js/generated/joynr/system/RoutingTypes/ChannelAddress");
+const Typing = require("../../../../../main/js/joynr/util/Typing");
+const LoggingManager = require("../../../../../main/js/joynr/system/LoggingManager");
+const provisioningRoot = require("../../../../resources/joynr/provisioning/provisioning_root");
+const waitsFor = require("../../../../../test/js/global/WaitsFor");
 
-var log = LoggingManager.getLogger("joynr.messaging.TestChannelMessagingSender");
+const log = LoggingManager.getLogger("joynr.messaging.TestChannelMessagingSender");
 
-describe("libjoynr-js.joynr.messaging.ChannelMessagingSender", function() {
-    var communicationModuleSpy, channelMessageSender;
-    var channelAddress, channelUrlInformation, joynrMessage;
-    var resendDelay_ms;
+describe("libjoynr-js.joynr.messaging.ChannelMessagingSender", () => {
+    let communicationModuleSpy, channelMessageSender;
+    let channelAddress, channelUrlInformation, joynrMessage;
+    let resendDelay_ms;
 
     function outputPromiseError(error) {
         expect(error.toString()).toBeFalsy();
     }
 
-    beforeEach(function(done) {
+    beforeEach(done => {
         resendDelay_ms = 500;
         channelAddress = new ChannelAddress({
             messagingEndpointUrl: "http://testurl.com",
             channelId: "myChannel" + Date.now()
         });
-        var channelQos = {
-            resendDelay_ms: resendDelay_ms
+        const channelQos = {
+            resendDelay_ms
         };
 
         joynrMessage = new JoynrMessage({
@@ -59,12 +59,12 @@ describe("libjoynr-js.joynr.messaging.ChannelMessagingSender", function() {
 
         channelMessageSender = new ChannelMessagingSender({
             communicationModule: communicationModuleSpy,
-            channelQos: channelQos
+            channelQos
         });
         done();
     });
 
-    it("is instantiable and has all members", function(done) {
+    it("is instantiable and has all members", done => {
         expect(ChannelMessagingSender).toBeDefined();
         expect(typeof ChannelMessagingSender === "function").toBeTruthy();
         expect(channelMessageSender).toBeDefined();
@@ -76,9 +76,9 @@ describe("libjoynr-js.joynr.messaging.ChannelMessagingSender", function() {
 
     it(
         "if communicationModule.createXMLHTTPRequest call fails, channelMessageSender only fails if message expires",
-        function(done) {
-            var timeStamp;
-            var relativeExpiryDate = resendDelay_ms * 3;
+        done => {
+            let timeStamp;
+            const relativeExpiryDate = resendDelay_ms * 3;
 
             communicationModuleSpy.createXMLHTTPRequest.and.returnValue(
                 Promise.reject(
@@ -96,7 +96,7 @@ describe("libjoynr-js.joynr.messaging.ChannelMessagingSender", function() {
             channelMessageSender
                 .send(joynrMessage, channelAddress)
                 .then(fail)
-                .catch(function(error) {
+                .catch(error => {
                     expect(joynrMessage.expiryDate).toBeLessThan(Date.now() + 1);
                     expect(Object.prototype.toString.call(error) === "[object Error]").toBeTruthy();
                     expect(communicationModuleSpy.createXMLHTTPRequest).toHaveBeenCalled();
@@ -107,12 +107,12 @@ describe("libjoynr-js.joynr.messaging.ChannelMessagingSender", function() {
         resendDelay_ms * 3 * 5
     );
 
-    it("if channelMessageSender.send fails after expiryDate, if ChannelMessagingSender is not started", function(done) {
+    it("if channelMessageSender.send fails after expiryDate, if ChannelMessagingSender is not started", done => {
         joynrMessage.expiryDate = Date.now() + resendDelay_ms;
         channelMessageSender
             .send(joynrMessage, channelAddress)
             .then(fail)
-            .catch(function(error) {
+            .catch(error => {
                 expect(joynrMessage.expiryDate).toBeLessThan(Date.now() + 1);
                 expect(Object.prototype.toString.call(error) === "[object Error]").toBeTruthy();
                 expect(communicationModuleSpy.createXMLHTTPRequest).not.toHaveBeenCalled();
@@ -121,12 +121,12 @@ describe("libjoynr-js.joynr.messaging.ChannelMessagingSender", function() {
             });
     });
 
-    it("sends message using communicationModule.createXMLHTTPRequest", function(done) {
+    it("sends message using communicationModule.createXMLHTTPRequest", done => {
         communicationModuleSpy.createXMLHTTPRequest.and.returnValue(Promise.resolve());
         channelMessageSender.start();
         channelMessageSender
             .send(joynrMessage, channelAddress)
-            .then(function(result) {
+            .then(result => {
                 expect(result).toEqual(undefined);
                 expect(communicationModuleSpy.createXMLHTTPRequest).toHaveBeenCalled();
                 done();
@@ -135,9 +135,9 @@ describe("libjoynr-js.joynr.messaging.ChannelMessagingSender", function() {
             .catch(fail);
     });
 
-    it("reject queued messages once shut down", function(done) {
+    it("reject queued messages once shut down", done => {
         communicationModuleSpy.createXMLHTTPRequest.and.returnValue(Promise.resolve());
-        var sendPromise = channelMessageSender.send(joynrMessage, channelAddress);
+        const sendPromise = channelMessageSender.send(joynrMessage, channelAddress);
         expect(communicationModuleSpy.createXMLHTTPRequest).not.toHaveBeenCalled();
         channelMessageSender.shutdown();
         sendPromise.then(fail).catch(done);

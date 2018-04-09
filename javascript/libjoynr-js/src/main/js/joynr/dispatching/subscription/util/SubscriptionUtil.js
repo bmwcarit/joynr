@@ -19,7 +19,7 @@
 /**
  * @exports SubscriptionUtil
  */
-var SubscriptionUtil = {};
+const SubscriptionUtil = {};
 /**
  * @param {Map.<String, SubscriptionInformation>} subscriptions - Map&lt;String,
  *     SubscriptionInformation> containing the subscriptions to be serialized
@@ -27,7 +27,7 @@ var SubscriptionUtil = {};
  * @returns {String} serialized subscriptions
  */
 SubscriptionUtil.serializeSubscriptions = function(subscriptions) {
-    var result = [],
+    let result = [],
         subscriptionId;
     for (subscriptionId in subscriptions) {
         if (subscriptions.hasOwnProperty(subscriptionId)) {
@@ -45,7 +45,7 @@ SubscriptionUtil.serializeSubscriptions = function(subscriptions) {
  * @returns {String} serialized subscriptionIds
  */
 SubscriptionUtil.serializeSubscriptionIds = function(subscriptions) {
-    var result = [],
+    let result = [],
         subscriptionId;
     for (subscriptionId in subscriptions) {
         if (subscriptions.hasOwnProperty(subscriptionId)) {
@@ -63,7 +63,7 @@ SubscriptionUtil.serializeSubscriptionIds = function(subscriptions) {
  *     as Map.&lt;String, SubscriptionInformation>
  */
 SubscriptionUtil.deserializeSubscriptions = function(subscriptions) {
-    var array,
+    let array,
         result = {},
         subscription;
     if (JSON && JSON.parse) {
@@ -76,7 +76,7 @@ SubscriptionUtil.deserializeSubscriptions = function(subscriptions) {
 
     for (subscription in array) {
         if (array.hasOwnProperty(subscription)) {
-            var object = array[subscription];
+            const object = array[subscription];
             result[object.subscriptionId] = object;
         }
     }
@@ -89,7 +89,7 @@ SubscriptionUtil.deserializeSubscriptions = function(subscriptions) {
  * @returns {Array.<String>} deserialized subscriptionIds as Array of String
  */
 SubscriptionUtil.deserializeSubscriptionIds = function(subscriptions) {
-    var result = [];
+    let result = [];
     if (JSON && JSON.parse) {
         try {
             result = JSON.parse(subscriptions);
@@ -110,7 +110,7 @@ SubscriptionUtil.deserializeSubscriptionIds = function(subscriptions) {
  *                   the expected filter parameters
  */
 SubscriptionUtil.checkFilterParameters = function(expectedFilterParameters, actualFilterParameters, broadcastName) {
-    var i,
+    let i,
         result = {
             caughtErrors: []
         };
@@ -121,8 +121,8 @@ SubscriptionUtil.checkFilterParameters = function(expectedFilterParameters, actu
     ) {
         return result;
     }
-    var targetKeys = Object.keys(expectedFilterParameters);
-    var sourceKeys = Object.keys(actualFilterParameters);
+    const targetKeys = Object.keys(expectedFilterParameters);
+    const sourceKeys = Object.keys(actualFilterParameters);
     for (i = 0; i < targetKeys.length; i++) {
         if (sourceKeys.indexOf(targetKeys[i]) === -1) {
             result.caughtErrors.push(
@@ -139,7 +139,7 @@ SubscriptionUtil.checkFilterParameters = function(expectedFilterParameters, actu
  * @param {Array} paritions - partitions of this multicast
  */
 SubscriptionUtil.createMulticastId = function(providerParticipantId, multicastName, partitions) {
-    var i,
+    let i,
         multicastId = providerParticipantId + "/" + multicastName;
     if (partitions !== undefined) {
         for (i = 0; i < partitions.length; i++) {
@@ -156,7 +156,7 @@ SubscriptionUtil.createMulticastId = function(providerParticipantId, multicastNa
  * @throws {Error} if partitions contains invalid characters
  */
 SubscriptionUtil.validatePartitions = function(partitions) {
-    var i, partition;
+    let i, partition;
     if (partitions !== undefined) {
         for (i = 0; i < partitions.length; i++) {
             partition = partitions[i];

@@ -17,22 +17,22 @@
  * #L%
  */
 require("../../../node-unit-test-helper");
-var Promise = require("../../../../../main/js/global/Promise");
-var SharedMqttClient = require("../../../../../main/js/joynr/messaging/mqtt/SharedMqttClient");
-var MqttAddress = require("../../../../../main/js/generated/joynr/system/RoutingTypes/MqttAddress");
-var MqttMessagingStub = require("../../../../../main/js/joynr/messaging/mqtt/MqttMessagingStub");
-var JoynrMessage = require("../../../../../main/js/joynr/messaging/JoynrMessage");
+const Promise = require("../../../../../main/js/global/Promise");
+const SharedMqttClient = require("../../../../../main/js/joynr/messaging/mqtt/SharedMqttClient");
+const MqttAddress = require("../../../../../main/js/generated/joynr/system/RoutingTypes/MqttAddress");
+const MqttMessagingStub = require("../../../../../main/js/joynr/messaging/mqtt/MqttMessagingStub");
+const JoynrMessage = require("../../../../../main/js/joynr/messaging/JoynrMessage");
 
-describe("libjoynr-js.joynr.messaging.mqtt.MqttMessagingStub", function() {
-    var destinationMqttAddress, topic;
-    var mqttClient, mqttMessagingStub;
-    var joynrMessage, multicastMessage;
+describe("libjoynr-js.joynr.messaging.mqtt.MqttMessagingStub", () => {
+    let destinationMqttAddress, topic;
+    let mqttClient, mqttMessagingStub;
+    let joynrMessage, multicastMessage;
 
-    beforeEach(function(done) {
+    beforeEach(done => {
         topic = "testTopic";
         destinationMqttAddress = new MqttAddress({
             brokerUri: "testBrokerUri",
-            topic: topic
+            topic
         });
         mqttClient = jasmine.createSpyObj("mqttClient", ["send"]);
         mqttClient.send.and.returnValue(Promise.resolve());
@@ -56,7 +56,7 @@ describe("libjoynr-js.joynr.messaging.mqtt.MqttMessagingStub", function() {
         done();
     });
 
-    it("is instantiable and of correct type", function(done) {
+    it("is instantiable and of correct type", done => {
         expect(MqttMessagingStub).toBeDefined();
         expect(typeof MqttMessagingStub).toEqual("function");
         expect(mqttMessagingStub).toBeDefined();
@@ -66,15 +66,15 @@ describe("libjoynr-js.joynr.messaging.mqtt.MqttMessagingStub", function() {
         done();
     });
 
-    it("transmits a message", function(done) {
-        var expectedTopic = topic + "/low/" + joynrMessage.to;
+    it("transmits a message", done => {
+        const expectedTopic = topic + "/low/" + joynrMessage.to;
         mqttMessagingStub.transmit(joynrMessage);
         expect(mqttClient.send).toHaveBeenCalledWith(expectedTopic, joynrMessage);
         done();
     });
 
-    it("keeps topic of multicast messages", function(done) {
-        var expectedTopic = topic;
+    it("keeps topic of multicast messages", done => {
+        const expectedTopic = topic;
         mqttMessagingStub.transmit(multicastMessage);
         expect(mqttClient.send).toHaveBeenCalledWith(expectedTopic, multicastMessage);
         done();

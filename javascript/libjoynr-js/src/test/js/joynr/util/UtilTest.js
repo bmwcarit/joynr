@@ -17,27 +17,27 @@
  * #L%
  */
 require("../../node-unit-test-helper");
-var Promise = require("../../../../main/js/global/Promise");
-var Util = require("../../../../main/js/joynr/util/UtilInternal");
-var JoynrMessage = require("../../../../main/js/joynr/messaging/JoynrMessage");
-var TypeRegistry = require("../../../../main/js/joynr/start/TypeRegistry");
-var RadioStation = require("../../../generated/joynr/vehicle/radiotypes/RadioStation");
+const Promise = require("../../../../main/js/global/Promise");
+const Util = require("../../../../main/js/joynr/util/UtilInternal");
+const JoynrMessage = require("../../../../main/js/joynr/messaging/JoynrMessage");
+const TypeRegistry = require("../../../../main/js/joynr/start/TypeRegistry");
+const RadioStation = require("../../../generated/joynr/vehicle/radiotypes/RadioStation");
 
-var argument = {
+const argument = {
     someObjectKey: "andValue"
 };
 
-describe("libjoynr-js.joynr.Util", function() {
-    it("is defined and of correct type", function() {
+describe("libjoynr-js.joynr.Util", () => {
+    it("is defined and of correct type", () => {
         expect(Util).toBeDefined();
         expect(Util).not.toBeNull();
         expect(typeof Util === "object").toBeTruthy();
     });
 });
 
-describe("libjoynr-js.joynr.Util.extend", function() {
-    it("extends objects", function() {
-        var merged, message, subobject, object1, object2, object3;
+describe("libjoynr-js.joynr.Util.extend", () => {
+    it("extends objects", () => {
+        let merged, message, subobject, object1, object2, object3;
         merged = {};
 
         message = new JoynrMessage({
@@ -56,7 +56,7 @@ describe("libjoynr-js.joynr.Util.extend", function() {
             originalField: "originalField"
         };
         object2 = {
-            message: message,
+            message,
             number: 2.0,
             array: [1, 2, 3, 4, 5],
             string: "string",
@@ -79,8 +79,8 @@ describe("libjoynr-js.joynr.Util.extend", function() {
         expect(typeof merged.string === "string").toBeTruthy();
         expect(typeof merged.bool === "boolean").toBeTruthy();
     });
-    it("deep extends objects", function() {
-        var merged, from;
+    it("deep extends objects", () => {
+        let merged, from;
         merged = {};
 
         from = {
@@ -117,9 +117,9 @@ describe("libjoynr-js.joynr.Util.extend", function() {
     });
 });
 
-describe("libjoynr-js.joynr.Util.transform", function() {
-    it("transform array", function() {
-        var origin, element, transformed, postFix;
+describe("libjoynr-js.joynr.Util.transform", () => {
+    it("transform array", () => {
+        let origin, element, transformed, postFix;
         postFix = "_transformed";
         origin = [];
         element = {
@@ -128,8 +128,8 @@ describe("libjoynr-js.joynr.Util.transform", function() {
         origin.push(element);
 
         // now, let's transform
-        transformed = Util.transform(origin, function(element, key) {
-            var id,
+        transformed = Util.transform(origin, (element, key) => {
+            let id,
                 member,
                 result = {};
             for (id in element) {
@@ -146,8 +146,8 @@ describe("libjoynr-js.joynr.Util.transform", function() {
     });
 });
 
-describe("libjoynr-js.joynr.Util.firstLower", function() {
-    it("decapitalizes first character correctly", function() {
+describe("libjoynr-js.joynr.Util.firstLower", () => {
+    it("decapitalizes first character correctly", () => {
         expect(Util.firstLower("")).toEqual("");
         expect(Util.firstLower("asdf")).toEqual("asdf");
         expect(Util.firstLower("b")).toEqual("b");
@@ -155,23 +155,23 @@ describe("libjoynr-js.joynr.Util.firstLower", function() {
         expect(Util.firstLower("D")).toEqual("d");
         expect(Util.firstLower("ESDFASDF")).toEqual("eSDFASDF");
         expect(Util.firstLower("FsDfAsDf")).toEqual("fsDfAsDf");
-        var rettyLongString =
+        const rettyLongString =
             "RETTYLONGSTRINGprettylongstringPRETTYLONGSTRINGprettylongstringPRETTYLONGSTRINGprettylongstringPRETTYLONGSTRINGprettylongstringPRETTYLONGSTRINGprettylongstringPRETTYLONGSTRINGprettylongstringPRETTYLONGSTRING";
         expect(Util.firstLower("P" + rettyLongString)).toEqual("p" + rettyLongString);
     });
 
-    it("throws on nullable input", function() {
-        expect(function() {
+    it("throws on nullable input", () => {
+        expect(() => {
             Util.firstLower(null);
         }).toThrow();
-        expect(function() {
+        expect(() => {
             Util.firstLower(undefined);
         }).toThrow();
     });
 });
 
-describe("libjoynr-js.joynr.Util.firstUpper", function() {
-    it("capitalizes first character correctly", function() {
+describe("libjoynr-js.joynr.Util.firstUpper", () => {
+    it("capitalizes first character correctly", () => {
         expect(Util.firstUpper("")).toEqual("");
         expect(Util.firstUpper("asdf")).toEqual("Asdf");
         expect(Util.firstUpper("b")).toEqual("B");
@@ -179,23 +179,23 @@ describe("libjoynr-js.joynr.Util.firstUpper", function() {
         expect(Util.firstUpper("D")).toEqual("D");
         expect(Util.firstUpper("esdfasdf")).toEqual("Esdfasdf");
         expect(Util.firstUpper("fSdFaSdF")).toEqual("FSdFaSdF");
-        var rettyLongString =
+        const rettyLongString =
             "rettylongstringPRETTYLONGSTRINGprettylongstringPRETTYLONGSTRINGprettylongstringPRETTYLONGSTRINGprettylongstringPRETTYLONGSTRINGprettylongstringPRETTYLONGSTRINGprettylongstringPRETTYLONGSTRINGprettylongstring";
         expect(Util.firstUpper("p" + rettyLongString)).toEqual("P" + rettyLongString);
     });
 
-    it("throws on nullable input", function() {
-        expect(function() {
+    it("throws on nullable input", () => {
+        expect(() => {
             Util.firstLower(null);
         }).toThrow();
-        expect(function() {
+        expect(() => {
             Util.firstLower(undefined);
         }).toThrow();
     });
 });
 
-describe("libjoynr-js.joynr.Util.isPromise", function() {
-    it("returns only true if param is promis", function() {
+describe("libjoynr-js.joynr.Util.isPromise", () => {
+    it("returns only true if param is promis", () => {
         expect(Util.isPromise(Promise.resolve())).toBe(true);
         expect(Util.isPromise("")).toBe(false);
         expect(Util.isPromise(true)).toBe(false);
@@ -203,13 +203,13 @@ describe("libjoynr-js.joynr.Util.isPromise", function() {
     });
 });
 
-describe("libjoynr-js.joynr.Util.ensureTypedValues", function() {
-    var typeRegistry = new TypeRegistry();
+describe("libjoynr-js.joynr.Util.ensureTypedValues", () => {
+    const typeRegistry = new TypeRegistry();
     typeRegistry.addType("joynr.vehicle.radiotypes.RadioStation", RadioStation);
 
-    it("types untyped objects", function() {
-        var returnValue = null;
-        var untypedValue = {
+    it("types untyped objects", () => {
+        let returnValue = null;
+        const untypedValue = {
             name: "radioStationName",
             _typeName: "joynr.vehicle.radiotypes.RadioStation"
         };
@@ -219,9 +219,9 @@ describe("libjoynr-js.joynr.Util.ensureTypedValues", function() {
         expect(returnValue.name === untypedValue.name).toBe(true);
     });
 
-    it("types untyped arrays", function() {
-        var returnValue = null;
-        var untypedArray = [
+    it("types untyped arrays", () => {
+        let returnValue = null;
+        const untypedArray = [
             {
                 name: "radioStationName1",
                 _typeName: "joynr.vehicle.radiotypes.RadioStation"
@@ -239,11 +239,11 @@ describe("libjoynr-js.joynr.Util.ensureTypedValues", function() {
         expect(returnValue[1].name === untypedArray[1].name).toBe(true);
     });
 
-    it("accepts primitive types", function() {
-        var returnValue = null;
-        var numberValue = 1;
-        var booleanValue = true;
-        var stringValue = "string";
+    it("accepts primitive types", () => {
+        let returnValue = null;
+        const numberValue = 1;
+        const booleanValue = true;
+        const stringValue = "string";
 
         returnValue = Util.ensureTypedValues(numberValue, typeRegistry);
         expect(typeof returnValue === "number").toBe(true);
@@ -256,34 +256,34 @@ describe("libjoynr-js.joynr.Util.ensureTypedValues", function() {
     });
 });
 
-describe("libjoynr-js.joynr.Util.forward", function() {
-    it("forwards methods to another object", function() {
-        var receiver = {};
-        var producer = {
-            someFunction: function() {
+describe("libjoynr-js.joynr.Util.forward", () => {
+    it("forwards methods to another object", () => {
+        const receiver = {};
+        const producer = {
+            someFunction() {
                 return "some result";
             },
             someObject: "some Value"
         };
 
-        var augmentedReceiver = Util.forward(receiver, producer);
+        const augmentedReceiver = Util.forward(receiver, producer);
 
         expect(typeof augmentedReceiver.someFunction).toBe("function");
         expect(augmentedReceiver.someObject).toBeUndefined();
     });
 });
 
-describe("libjoynr-js.joynr.Util.forwardPrototype", function() {
-    it("forwards methods to another object", function() {
-        var someValue = "some Value";
-        var ObjectWithPrivateVars = function() {
+describe("libjoynr-js.joynr.Util.forwardPrototype", () => {
+    it("forwards methods to another object", () => {
+        const someValue = "some Value";
+        const ObjectWithPrivateVars = function() {
             this.someObject = someValue;
             return Util.forwardPrototype(this);
         };
         ObjectWithPrivateVars.prototype.someFunction = function() {
             return this.someObject;
         };
-        var privateObject = new ObjectWithPrivateVars();
+        const privateObject = new ObjectWithPrivateVars();
 
         expect(typeof privateObject.someFunction).toBe("function");
         expect(privateObject.someObject).toBeUndefined();
@@ -291,15 +291,15 @@ describe("libjoynr-js.joynr.Util.forwardPrototype", function() {
     });
 });
 
-describe("libjoynr-js.joynr.Util.timeoutPromise", function() {
-    beforeEach(function() {
+describe("libjoynr-js.joynr.Util.timeoutPromise", () => {
+    beforeEach(() => {
         jasmine.clock().install();
     });
-    afterEach(function() {
+    afterEach(() => {
         jasmine.clock().uninstall();
     });
-    it("resolves Promise normally when Promise finished before timeout", function(done) {
-        var promise = new Promise(function(resolve, reject) {
+    it("resolves Promise normally when Promise finished before timeout", done => {
+        const promise = new Promise((resolve, reject) => {
             setTimeout(resolve, 100);
         });
         Util.timeoutPromise(promise, 200)
@@ -309,8 +309,8 @@ describe("libjoynr-js.joynr.Util.timeoutPromise", function() {
         jasmine.clock().tick(100);
     });
 
-    it("timeouts after before the promise resolves", function(done) {
-        var promise = new Promise(function(resolve, reject) {
+    it("timeouts after before the promise resolves", done => {
+        const promise = new Promise((resolve, reject) => {
             setTimeout(resolve, 200);
         });
         Util.timeoutPromise(promise, 100)
@@ -321,9 +321,9 @@ describe("libjoynr-js.joynr.Util.timeoutPromise", function() {
     });
 });
 
-describe("libjoynr-js.joynr.Util.createDeferred", function() {
-    it("create a correct Deferred Object", function(done) {
-        var deferred = Util.createDeferred();
+describe("libjoynr-js.joynr.Util.createDeferred", () => {
+    it("create a correct Deferred Object", done => {
+        const deferred = Util.createDeferred();
         deferred.resolve();
         deferred.promise.then(done).catch(fail);
     });

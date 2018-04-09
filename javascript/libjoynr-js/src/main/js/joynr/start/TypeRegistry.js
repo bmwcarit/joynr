@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-var LoggingManager = require("../system/LoggingManager");
-var Promise = require("../../global/Promise");
+const LoggingManager = require("../system/LoggingManager");
+const Promise = require("../../global/Promise");
 
 /**
  * The <code>TypeRegistry</code> contains a mapping of type names (which are sent on the wire
@@ -32,10 +32,10 @@ var Promise = require("../../global/Promise");
  * @constructor
  */
 function TypeRegistry() {
-    var registry = {};
-    var enumRegistry = {};
-    var registryPromise = {};
-    var log = LoggingManager.getLogger("joynr.start.TypeRegistry");
+    const registry = {};
+    const enumRegistry = {};
+    const registryPromise = {};
+    const log = LoggingManager.getLogger("joynr.start.TypeRegistry");
 
     /**
      * Adds a typeName to constructor entry in the type registry.
@@ -108,7 +108,7 @@ function TypeRegistry() {
             registryPromise[joynrTypeName] = {
                 pending: true
             };
-            registryPromise[joynrTypeName].promise = new Promise(function(resolve, reject) {
+            registryPromise[joynrTypeName].promise = new Promise((resolve, reject) => {
                 registryPromise[joynrTypeName].resolve = resolve;
                 registryPromise[joynrTypeName].reject = reject;
             });
@@ -118,7 +118,7 @@ function TypeRegistry() {
             }
         }
         if (registryPromise[joynrTypeName].pending && timeout && timeout > 0) {
-            registryPromise[joynrTypeName].timeoutTimer = setTimeout(function() {
+            registryPromise[joynrTypeName].timeoutTimer = setTimeout(() => {
                 if (registryPromise[joynrTypeName].pending) {
                     delete registryPromise[joynrTypeName].timeoutTimer;
                     registryPromise[joynrTypeName].pending = false;
@@ -142,7 +142,7 @@ function TypeRegistry() {
      * @name TypeRegistry#shutdown
      */
     this.shutdown = function shutdown() {
-        var typeName;
+        let typeName;
         for (typeName in registryPromise) {
             if (registryPromise.hasOwnProperty(typeName)) {
                 if (registryPromise[typeName].timeoutTimer !== undefined) {

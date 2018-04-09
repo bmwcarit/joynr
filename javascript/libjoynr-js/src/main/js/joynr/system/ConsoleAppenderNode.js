@@ -33,8 +33,8 @@ function ConsoleAppender() {}
  * @function
  */
 ConsoleAppender.prototype.append = function(loggingEvent) {
-    var logLevel = loggingEvent.level.name.toLowerCase();
-    var formattedMessage = loggingEvent.messages.join(",");
+    const logLevel = loggingEvent.level.name.toLowerCase();
+    const formattedMessage = loggingEvent.messages.join(",");
     console[logLevel] = console[logLevel] || console.log;
     console[logLevel](formattedMessage);
 };

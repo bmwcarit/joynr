@@ -16,12 +16,12 @@
  * limitations under the License.
  * #L%
  */
-var Typing = require("../../util/Typing");
-var LoggingManager = require("../../system/LoggingManager");
-var DiagnosticTags = require("../../system/DiagnosticTags");
-var JoynrException = require("../../exceptions/JoynrException");
+const Typing = require("../../util/Typing");
+const LoggingManager = require("../../system/LoggingManager");
+const DiagnosticTags = require("../../system/DiagnosticTags");
+const JoynrException = require("../../exceptions/JoynrException");
 
-var log = LoggingManager.getLogger("joynr/messaging/mqtt/MqttMessagingSkeleton");
+const log = LoggingManager.getLogger("joynr/messaging/mqtt/MqttMessagingSkeleton");
 /**
  * @constructor MqttMessagingSkeleton
  * @param {Object} settings
@@ -29,7 +29,7 @@ var log = LoggingManager.getLogger("joynr/messaging/mqtt/MqttMessagingSkeleton")
  * @param {MessageRouter} settings.messageRouter the message router
  * @param {MqttAddress} settings.address own address of joynr client
  */
-var MqttMessagingSkeleton = function MqttMessagingSkeleton(settings) {
+const MqttMessagingSkeleton = function MqttMessagingSkeleton(settings) {
     Typing.checkProperty(settings, "Object", "settings");
     Typing.checkProperty(settings.client, "SharedMqttClient", "settings.client");
     Typing.checkProperty(settings.messageRouter, "MessageRouter", "settings.messageRouter");
@@ -62,7 +62,7 @@ MqttMessagingSkeleton.prototype.registerMulticastSubscription = function(multica
 };
 
 MqttMessagingSkeleton.prototype.unregisterMulticastSubscription = function(multicastId) {
-    var subscribersCount = this._multicastSubscriptionCount[multicastId];
+    let subscribersCount = this._multicastSubscriptionCount[multicastId];
     if (subscribersCount !== undefined) {
         subscribersCount--;
         if (subscribersCount === 0) {

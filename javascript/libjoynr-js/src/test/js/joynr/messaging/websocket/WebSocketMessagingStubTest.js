@@ -17,39 +17,39 @@
  * #L%
  */
 require("../../../node-unit-test-helper");
-var WebSocketMessagingStub = require("../../../../../main/js/joynr/messaging/websocket/WebSocketMessagingStub");
-var WebSocketMessagingStubFactory = require("../../../../../main/js/joynr/messaging/websocket/WebSocketMessagingStubFactory");
-var WebSocketAddress = require("../../../../../main/js/generated/joynr/system/RoutingTypes/WebSocketAddress");
-var WebSocketProtocol = require("../../../../../main/js/generated/joynr/system/RoutingTypes/WebSocketProtocol");
-var WebSocketClientAddress = require("../../../../../main/js/generated/joynr/system/RoutingTypes/WebSocketClientAddress");
-var SharedWebSocket = require("../../../../../main/js/joynr/messaging/websocket/SharedWebSocket");
+const WebSocketMessagingStub = require("../../../../../main/js/joynr/messaging/websocket/WebSocketMessagingStub");
+const WebSocketMessagingStubFactory = require("../../../../../main/js/joynr/messaging/websocket/WebSocketMessagingStubFactory");
+const WebSocketAddress = require("../../../../../main/js/generated/joynr/system/RoutingTypes/WebSocketAddress");
+const WebSocketProtocol = require("../../../../../main/js/generated/joynr/system/RoutingTypes/WebSocketProtocol");
+const WebSocketClientAddress = require("../../../../../main/js/generated/joynr/system/RoutingTypes/WebSocketClientAddress");
+const SharedWebSocket = require("../../../../../main/js/joynr/messaging/websocket/SharedWebSocket");
 
-describe("libjoynr-js.joynr.messaging.webmessaging.WebSocketMessagingStub", function() {
-    var webSocketMessagingStub = null;
-    var factory = null;
-    var joynrMessage = null;
-    var sharedWebSocket = null;
-    var ccAddress = new WebSocketAddress({
+describe("libjoynr-js.joynr.messaging.webmessaging.WebSocketMessagingStub", () => {
+    let webSocketMessagingStub = null;
+    let factory = null;
+    let joynrMessage = null;
+    let sharedWebSocket = null;
+    const ccAddress = new WebSocketAddress({
         protocol: WebSocketProtocol.WS,
         host: "host",
         port: 1234,
         path: "/test"
     });
-    var localAddress = new WebSocketClientAddress({
+    const localAddress = new WebSocketClientAddress({
         id: "1234"
     });
 
-    beforeEach(function(done) {
+    beforeEach(done => {
         sharedWebSocket = new SharedWebSocket({
             remoteAddress: ccAddress,
-            localAddress: localAddress
+            localAddress
         });
         spyOn(sharedWebSocket, "send").and.callThrough();
         sharedWebSocket.addEventListener = jasmine.createSpy("addEventListener");
 
         factory = new WebSocketMessagingStubFactory({
             address: ccAddress,
-            sharedWebSocket: sharedWebSocket
+            sharedWebSocket
         });
 
         webSocketMessagingStub = factory.build(ccAddress);
@@ -59,7 +59,7 @@ describe("libjoynr-js.joynr.messaging.webmessaging.WebSocketMessagingStub", func
         done();
     });
 
-    it("is of correct type and has all members", function(done) {
+    it("is of correct type and has all members", done => {
         expect(WebSocketMessagingStub).toBeDefined();
         expect(typeof WebSocketMessagingStub === "function").toBeTruthy();
         expect(webSocketMessagingStub).toBeDefined();
@@ -69,7 +69,7 @@ describe("libjoynr-js.joynr.messaging.webmessaging.WebSocketMessagingStub", func
         done();
     });
 
-    it("calls websocket.send correctly", function(done) {
+    it("calls websocket.send correctly", done => {
         webSocketMessagingStub.transmit(joynrMessage);
         expect(sharedWebSocket.send).toHaveBeenCalledWith(joynrMessage);
         done();

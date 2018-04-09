@@ -21,12 +21,12 @@
 function loadJasmine() {
     console.log("joynr Jasmine 2.x node unit tests");
 
-    var Jasmine = require("jasmine");
-    var jasmine = new Jasmine();
+    const Jasmine = require("jasmine");
+    const jasmine = new Jasmine();
     jasmine.loadConfigFile(__dirname + "/../resources/spec/support/jasmine.json");
     console.log("Jasmine version: " + jasmine.version);
 
-    var mod = require("module");
+    const mod = require("module");
     // expose req as a global variable for WebSocketNode (that the mock won't be required)
     req = mod.prototype.require;
 
@@ -39,7 +39,7 @@ function loadJasmine() {
         return req.call(this, md);
     };
 
-    setTimeout(function() {
+    setTimeout(() => {
         console.log("all tests modules loaded");
         jasmine.execute();
     }, 0);

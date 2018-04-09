@@ -16,65 +16,65 @@
  * limitations under the License.
  * #L%
  */
-var Promise = require("../../global/Promise");
-var Arbitrator = require("../capabilities/arbitration/Arbitrator");
-var ProviderBuilder = require("../provider/ProviderBuilder");
-var ProxyBuilder = require("../proxy/ProxyBuilder");
-var GlobalDiscoveryEntry = require("../../generated/joynr/types/GlobalDiscoveryEntry");
-var CapabilitiesRegistrar = require("../capabilities/CapabilitiesRegistrar");
-var ParticipantIdStorage = require("../capabilities/ParticipantIdStorage");
-var CapabilityDiscovery = require("../capabilities/discovery/CapabilityDiscovery");
-var CapabilitiesStore = require("../capabilities/CapabilitiesStore");
-var RequestReplyManager = require("../dispatching/RequestReplyManager");
-var PublicationManager = require("../dispatching/subscription/PublicationManager");
-var SubscriptionManager = require("../dispatching/subscription/SubscriptionManager");
-var Dispatcher = require("../dispatching/Dispatcher");
-var PlatformSecurityManager = require("../security/PlatformSecurityManagerNode");
-var ChannelMessagingSender = require("../messaging/channel/ChannelMessagingSender");
-var ChannelMessagingStubFactory = require("../messaging/channel/ChannelMessagingStubFactory");
-var ChannelMessagingSkeleton = require("../messaging/channel/ChannelMessagingSkeleton");
-var ChannelAddress = require("../../generated/joynr/system/RoutingTypes/ChannelAddress");
-var MqttMessagingStubFactory = require("../messaging/mqtt/MqttMessagingStubFactory");
-var MqttMessagingSkeleton = require("../messaging/mqtt/MqttMessagingSkeleton");
-var MqttAddress = require("../../generated/joynr/system/RoutingTypes/MqttAddress");
-var SharedMqttClient = require("../messaging/mqtt/SharedMqttClient");
-var MqttMulticastAddressCalculator = require("../messaging/mqtt/MqttMulticastAddressCalculator");
-var MessagingSkeletonFactory = require("../messaging/MessagingSkeletonFactory");
-var MessagingStubFactory = require("../messaging/MessagingStubFactory");
-var MessageRouter = require("../messaging/routing/MessageRouter");
-var MessageQueue = require("../messaging/routing/MessageQueue");
-var CommunicationModule = require("../messaging/CommunicationModule");
-var InProcessSkeleton = require("../util/InProcessSkeleton");
-var InProcessStub = require("../util/InProcessStub");
-var InProcessMessagingStubFactory = require("../messaging/inprocess/InProcessMessagingStubFactory");
-var InProcessMessagingSkeleton = require("../messaging/inprocess/InProcessMessagingSkeleton");
-var InProcessMessagingStub = require("../messaging/inprocess/InProcessMessagingStub");
-var InProcessAddress = require("../messaging/inprocess/InProcessAddress");
-var LongPollingChannelMessageReceiver = require("../messaging/channel/LongPollingChannelMessageReceiver");
-var MessagingQos = require("../messaging/MessagingQos");
-var DiscoveryQos = require("../proxy/DiscoveryQos");
-var DiscoveryScope = require("../../generated/joynr/types/DiscoveryScope");
-var TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
-var Util = require("../util/UtilInternal");
-var CapabilitiesUtil = require("../util/CapabilitiesUtil");
-var WebWorkerMessagingAppender = require("../system/WebWorkerMessagingAppender");
-var loggingManager = require("../system/LoggingManager");
-var uuid = require("../../lib/uuid-annotated");
-var defaultSettings = require("./settings/defaultSettings");
-var defaultLibjoynrSettings = require("./settings/defaultLibjoynrSettings");
-var defaultClusterControllerSettings = require("./settings/defaultClusterControllerSettings");
-var Typing = require("../util/Typing");
-var LongTimer = require("../util/LongTimer");
-var LocalStorage = require("../../global/LocalStorageNode");
-var JoynrStates = {
+const Promise = require("../../global/Promise");
+const Arbitrator = require("../capabilities/arbitration/Arbitrator");
+const ProviderBuilder = require("../provider/ProviderBuilder");
+const ProxyBuilder = require("../proxy/ProxyBuilder");
+const GlobalDiscoveryEntry = require("../../generated/joynr/types/GlobalDiscoveryEntry");
+const CapabilitiesRegistrar = require("../capabilities/CapabilitiesRegistrar");
+const ParticipantIdStorage = require("../capabilities/ParticipantIdStorage");
+const CapabilityDiscovery = require("../capabilities/discovery/CapabilityDiscovery");
+const CapabilitiesStore = require("../capabilities/CapabilitiesStore");
+const RequestReplyManager = require("../dispatching/RequestReplyManager");
+const PublicationManager = require("../dispatching/subscription/PublicationManager");
+const SubscriptionManager = require("../dispatching/subscription/SubscriptionManager");
+const Dispatcher = require("../dispatching/Dispatcher");
+const PlatformSecurityManager = require("../security/PlatformSecurityManagerNode");
+const ChannelMessagingSender = require("../messaging/channel/ChannelMessagingSender");
+const ChannelMessagingStubFactory = require("../messaging/channel/ChannelMessagingStubFactory");
+const ChannelMessagingSkeleton = require("../messaging/channel/ChannelMessagingSkeleton");
+const ChannelAddress = require("../../generated/joynr/system/RoutingTypes/ChannelAddress");
+const MqttMessagingStubFactory = require("../messaging/mqtt/MqttMessagingStubFactory");
+const MqttMessagingSkeleton = require("../messaging/mqtt/MqttMessagingSkeleton");
+const MqttAddress = require("../../generated/joynr/system/RoutingTypes/MqttAddress");
+const SharedMqttClient = require("../messaging/mqtt/SharedMqttClient");
+const MqttMulticastAddressCalculator = require("../messaging/mqtt/MqttMulticastAddressCalculator");
+const MessagingSkeletonFactory = require("../messaging/MessagingSkeletonFactory");
+const MessagingStubFactory = require("../messaging/MessagingStubFactory");
+const MessageRouter = require("../messaging/routing/MessageRouter");
+const MessageQueue = require("../messaging/routing/MessageQueue");
+const CommunicationModule = require("../messaging/CommunicationModule");
+const InProcessSkeleton = require("../util/InProcessSkeleton");
+const InProcessStub = require("../util/InProcessStub");
+const InProcessMessagingStubFactory = require("../messaging/inprocess/InProcessMessagingStubFactory");
+const InProcessMessagingSkeleton = require("../messaging/inprocess/InProcessMessagingSkeleton");
+const InProcessMessagingStub = require("../messaging/inprocess/InProcessMessagingStub");
+const InProcessAddress = require("../messaging/inprocess/InProcessAddress");
+const LongPollingChannelMessageReceiver = require("../messaging/channel/LongPollingChannelMessageReceiver");
+const MessagingQos = require("../messaging/MessagingQos");
+const DiscoveryQos = require("../proxy/DiscoveryQos");
+const DiscoveryScope = require("../../generated/joynr/types/DiscoveryScope");
+const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
+const Util = require("../util/UtilInternal");
+const CapabilitiesUtil = require("../util/CapabilitiesUtil");
+const WebWorkerMessagingAppender = require("../system/WebWorkerMessagingAppender");
+const loggingManager = require("../system/LoggingManager");
+const uuid = require("../../lib/uuid-annotated");
+const defaultSettings = require("./settings/defaultSettings");
+const defaultLibjoynrSettings = require("./settings/defaultLibjoynrSettings");
+const defaultClusterControllerSettings = require("./settings/defaultClusterControllerSettings");
+const Typing = require("../util/Typing");
+const LongTimer = require("../util/LongTimer");
+const LocalStorage = require("../../global/LocalStorageNode");
+const JoynrStates = {
     SHUTDOWN: "shut down",
     STARTING: "starting",
     STARTED: "started",
     SHUTTINGDOWN: "shutting down"
 };
 
-var TWO_DAYS_IN_MS = 172800000;
-var clusterControllerSettings;
+const TWO_DAYS_IN_MS = 172800000;
+let clusterControllerSettings;
 
 /**
  * The InProcessRuntime is the version of the libjoynr-js runtime that hosts its own
@@ -86,40 +86,40 @@ var clusterControllerSettings;
  * @param provisioning
  */
 function InProcessRuntime(provisioning) {
-    var initialRoutingTable;
-    var untypedCapabilities;
-    var typedCapabilities;
-    var channelMessagingSender;
-    var channelMessagingStubFactory;
-    var messagingSkeletonFactory;
-    var messagingStubFactory;
-    var messageRouter;
-    var communicationModule;
-    var longPollingMessageReceiver;
-    var libjoynrMessagingSkeleton;
-    var clusterControllerMessagingSkeleton;
-    var mqttMessagingSkeleton;
-    var clusterControllerChannelMessagingSkeleton;
-    var clusterControllerMessagingStub, dispatcher;
-    var typeRegistry;
-    var requestReplyManager;
-    var subscriptionManager;
-    var publicationManager;
-    var participantIdStorage;
-    var capabilityDiscovery;
-    var arbitrator;
-    var channelId;
-    var bounceProxyBaseUrl;
-    var providerBuilder;
-    var proxyBuilder;
-    var capabilitiesRegistrar;
-    var localCapabilitiesStore;
-    var globalCapabilitiesCache;
-    var discoveryStub;
-    var messageQueueSettings;
-    var persistency;
-    var longPollingCreatePromise;
-    var freshnessIntervalId;
+    let initialRoutingTable;
+    let untypedCapabilities;
+    let typedCapabilities;
+    let channelMessagingSender;
+    let channelMessagingStubFactory;
+    let messagingSkeletonFactory;
+    let messagingStubFactory;
+    let messageRouter;
+    let communicationModule;
+    let longPollingMessageReceiver;
+    let libjoynrMessagingSkeleton;
+    let clusterControllerMessagingSkeleton;
+    let mqttMessagingSkeleton;
+    let clusterControllerChannelMessagingSkeleton;
+    let clusterControllerMessagingStub, dispatcher;
+    let typeRegistry;
+    let requestReplyManager;
+    let subscriptionManager;
+    let publicationManager;
+    let participantIdStorage;
+    let capabilityDiscovery;
+    let arbitrator;
+    let channelId;
+    let bounceProxyBaseUrl;
+    let providerBuilder;
+    let proxyBuilder;
+    let capabilitiesRegistrar;
+    let localCapabilitiesStore;
+    let globalCapabilitiesCache;
+    let discoveryStub;
+    let messageQueueSettings;
+    let persistency;
+    let longPollingCreatePromise;
+    let freshnessIntervalId;
 
     // this is required at load time of libjoynr
     typeRegistry = Object.freeze(TypeRegistrySingleton.getInstance());
@@ -129,7 +129,7 @@ function InProcessRuntime(provisioning) {
      * @type TypeRegistry
      */
     Object.defineProperty(this, "typeRegistry", {
-        get: function() {
+        get() {
             return typeRegistry;
         },
         enumerable: true
@@ -140,7 +140,7 @@ function InProcessRuntime(provisioning) {
      * @type CapabilitiesRegistrar
      */
     Object.defineProperty(this, "registration", {
-        get: function() {
+        get() {
             return capabilitiesRegistrar;
         },
         enumerable: true
@@ -151,7 +151,7 @@ function InProcessRuntime(provisioning) {
      * @type ParticipantIdStorage
      */
     Object.defineProperty(this, "participantIdStorage", {
-        get: function() {
+        get() {
             return participantIdStorage;
         },
         enumerable: true
@@ -162,7 +162,7 @@ function InProcessRuntime(provisioning) {
      * @type ProviderBuilder
      */
     Object.defineProperty(this, "providerBuilder", {
-        get: function() {
+        get() {
             return providerBuilder;
         },
         enumerable: true
@@ -173,7 +173,7 @@ function InProcessRuntime(provisioning) {
      * @type ProxyBuilder
      */
     Object.defineProperty(this, "proxyBuilder", {
-        get: function() {
+        get() {
             return proxyBuilder;
         },
         enumerable: true
@@ -184,13 +184,13 @@ function InProcessRuntime(provisioning) {
      * @type LoggingManager
      */
     Object.defineProperty(this, "logging", {
-        get: function() {
+        get() {
             return loggingManager;
         },
         enumerable: true
     });
 
-    var log, relativeTtl;
+    let log, relativeTtl;
 
     if (provisioning.logging && provisioning.logging.ttl) {
         relativeTtl = provisioning.logging.ttl;
@@ -198,20 +198,20 @@ function InProcessRuntime(provisioning) {
         relativeTtl = TWO_DAYS_IN_MS;
     }
 
-    var loggingMessagingQos = new MessagingQos({
+    const loggingMessagingQos = new MessagingQos({
         ttl: relativeTtl
     });
 
-    var joynrState = JoynrStates.SHUTDOWN;
+    let joynrState = JoynrStates.SHUTDOWN;
 
     if (provisioning.capabilities && provisioning.capabilities.discoveryQos) {
-        var discoveryQos = provisioning.capabilities.discoveryQos;
+        const discoveryQos = provisioning.capabilities.discoveryQos;
 
         if (discoveryQos.discoveryExpiryIntervalMs) {
             CapabilitiesRegistrar.setDefaultExpiryIntervalMs(discoveryQos.discoveryExpiryIntervalMs);
         }
 
-        var discoveryQosSettings = {};
+        const discoveryQosSettings = {};
 
         if (discoveryQos.discoveryRetryDelayMs) {
             discoveryQosSettings.discoveryRetryDelayMs = discoveryQos.discoveryRetryDelayMs;
@@ -234,7 +234,7 @@ function InProcessRuntime(provisioning) {
      *             if libjoynr is not in SHUTDOWN state
      */
     this.start = function start() {
-        var i, j;
+        let i, j;
 
         if (joynrState !== JoynrStates.SHUTDOWN) {
             throw new Error("Cannot start libjoynr because it's currently \"" + joynrState + '"');
@@ -247,11 +247,11 @@ function InProcessRuntime(provisioning) {
 
         // initialize Logger with external logging configuration or default
         // values
-        var logLevel, logLayout, appenderNames, appenderName;
+        let logLevel, logLayout, appenderNames, appenderName;
 
         log = loggingManager.getLogger("joynr.start.InProcessRuntime");
 
-        var persistencyProvisioning = provisioning.persistency || {};
+        const persistencyProvisioning = provisioning.persistency || {};
         persistency = new LocalStorage({
             clearPersistency: persistencyProvisioning.clearPersistency,
             location: persistencyProvisioning.location
@@ -278,7 +278,7 @@ function InProcessRuntime(provisioning) {
             bounceProxyBaseUrl: provisioning.bounceProxyBaseUrl,
             brokerUri: provisioning.brokerUri
         });
-        var defaultClusterControllerCapabilities = clusterControllerSettings.capabilities || [];
+        const defaultClusterControllerCapabilities = clusterControllerSettings.capabilities || [];
 
         untypedCapabilities = untypedCapabilities.concat(defaultClusterControllerCapabilities);
         // allow use of _typeName once
@@ -287,9 +287,9 @@ function InProcessRuntime(provisioning) {
         typeRegistry.addType(new MqttAddress()._typeName, MqttAddress, false);
         /*jslint nomen: false */
         typedCapabilities = [];
-        var errorMessage;
+        let errorMessage;
         for (i = 0; i < untypedCapabilities.length; i++) {
-            var capability = new GlobalDiscoveryEntry(untypedCapabilities[i]);
+            const capability = new GlobalDiscoveryEntry(untypedCapabilities[i]);
             if (!capability.address) {
                 throw new Error("provisioned capability is missing address: " + JSON.stringify(capability));
             }
@@ -317,20 +317,20 @@ function InProcessRuntime(provisioning) {
         //    channelMessagingSender : channelMessagingSender
         //});
 
-        var globalClusterControllerAddress = new MqttAddress({
+        const globalClusterControllerAddress = new MqttAddress({
             brokerUri: provisioning.brokerUri,
             topic: channelId
         });
-        var serializedGlobalClusterControllerAddress = JSON.stringify(globalClusterControllerAddress);
+        const serializedGlobalClusterControllerAddress = JSON.stringify(globalClusterControllerAddress);
 
-        var mqttClient = new SharedMqttClient({
+        const mqttClient = new SharedMqttClient({
             address: globalClusterControllerAddress,
             provisioning: provisioning.mqtt || {}
         });
 
         messagingSkeletonFactory = new MessagingSkeletonFactory();
 
-        var messagingStubFactories = {};
+        const messagingStubFactories = {};
         /*jslint nomen: true */
         messagingStubFactories[InProcessAddress._typeName] = new InProcessMessagingStubFactory();
         //messagingStubFactories[ChannelAddress._typeName] = channelMessagingStubFactory;
@@ -341,16 +341,16 @@ function InProcessRuntime(provisioning) {
         /*jslint nomen: false */
 
         messagingStubFactory = new MessagingStubFactory({
-            messagingStubFactories: messagingStubFactories
+            messagingStubFactories
         });
 
         messageRouter = new MessageRouter({
-            initialRoutingTable: initialRoutingTable,
-            persistency: persistency,
+            initialRoutingTable,
+            persistency,
             joynrInstanceId: channelId,
-            typeRegistry: typeRegistry,
-            messagingStubFactory: messagingStubFactory,
-            messagingSkeletonFactory: messagingSkeletonFactory,
+            typeRegistry,
+            messagingStubFactory,
+            messagingSkeletonFactory,
             multicastAddressCalculator: new MqttMulticastAddressCalculator({
                 globalAddress: globalClusterControllerAddress
             }),
@@ -367,13 +367,13 @@ function InProcessRuntime(provisioning) {
 
         // link up clustercontroller messaging to channel
         clusterControllerChannelMessagingSkeleton = new ChannelMessagingSkeleton({
-            messageRouter: messageRouter
+            messageRouter
         });
 
         mqttMessagingSkeleton = new MqttMessagingSkeleton({
             address: globalClusterControllerAddress,
             client: mqttClient,
-            messageRouter: messageRouter
+            messageRouter
         });
 
         //longPollingCreatePromise = longPollingMessageReceiver.create(channelId).then(
@@ -394,7 +394,7 @@ function InProcessRuntime(provisioning) {
         //            channelMessagingSender.start();
         //            return null;
         //        });
-        mqttClient.onConnected().then(function() {
+        mqttClient.onConnected().then(() => {
             capabilityDiscovery.globalAddressReady(globalClusterControllerAddress);
             //channelMessagingStubFactory.globalAddressReady(channelAddress);
             return null;
@@ -407,14 +407,14 @@ function InProcessRuntime(provisioning) {
         // clustercontroller messaging handled by the messageRouter
         clusterControllerMessagingSkeleton.registerListener(messageRouter.route);
 
-        var ttlUpLiftMs =
+        const ttlUpLiftMs =
             provisioning.messaging && provisioning.messaging.TTL_UPLIFT ? provisioning.messaging.TTL_UPLIFT : undefined;
         dispatcher = new Dispatcher(clusterControllerMessagingStub, new PlatformSecurityManager(), ttlUpLiftMs);
 
         libjoynrMessagingSkeleton = new InProcessMessagingSkeleton();
         libjoynrMessagingSkeleton.registerListener(dispatcher.receive);
 
-        var messagingSkeletons = {};
+        const messagingSkeletons = {};
         /*jslint nomen: true */
         messagingSkeletons[InProcessAddress._typeName] = libjoynrMessagingSkeleton;
         messagingSkeletons[MqttAddress._typeName] = mqttMessagingSkeleton;
@@ -440,12 +440,12 @@ function InProcessRuntime(provisioning) {
         discoveryStub = new InProcessStub();
         capabilitiesRegistrar = Object.freeze(
             new CapabilitiesRegistrar({
-                discoveryStub: discoveryStub,
-                messageRouter: messageRouter,
-                requestReplyManager: requestReplyManager,
-                publicationManager: publicationManager,
+                discoveryStub,
+                messageRouter,
+                requestReplyManager,
+                publicationManager,
                 libjoynrMessagingAddress: new InProcessAddress(libjoynrMessagingSkeleton),
-                participantIdStorage: participantIdStorage
+                participantIdStorage
             })
         );
 
@@ -454,21 +454,21 @@ function InProcessRuntime(provisioning) {
         proxyBuilder = Object.freeze(
             new ProxyBuilder(
                 {
-                    arbitrator: arbitrator,
-                    requestReplyManager: requestReplyManager,
-                    subscriptionManager: subscriptionManager,
-                    publicationManager: publicationManager
+                    arbitrator,
+                    requestReplyManager,
+                    subscriptionManager,
+                    publicationManager
                 },
                 {
-                    messageRouter: messageRouter,
+                    messageRouter,
                     libjoynrMessagingAddress: new InProcessAddress(libjoynrMessagingSkeleton)
                 }
             )
         );
 
-        var internalMessagingQos = new MessagingQos(provisioning.internalMessagingQos);
+        const internalMessagingQos = new MessagingQos(provisioning.internalMessagingQos);
 
-        var defaultProxyBuildSettings = {
+        const defaultProxyBuildSettings = {
             domain: "io.joynr",
             messagingQos: internalMessagingQos,
             discoveryQos: new DiscoveryQos({
@@ -487,9 +487,9 @@ function InProcessRuntime(provisioning) {
 
         discoveryStub.setSkeleton(new InProcessSkeleton(capabilityDiscovery));
 
-        var period = provisioning.capabilitiesFreshnessUpdateIntervalMs || 3600000; // default: 1 hour
-        freshnessIntervalId = LongTimer.setInterval(function() {
-            capabilityDiscovery.touch(channelId, period).catch(function(error) {
+        const period = provisioning.capabilitiesFreshnessUpdateIntervalMs || 3600000; // default: 1 hour
+        freshnessIntervalId = LongTimer.setInterval(() => {
+            capabilityDiscovery.touch(channelId, period).catch(error => {
                 log.error("error sending freshness update: " + error);
             });
             return null;
@@ -521,10 +521,10 @@ function InProcessRuntime(provisioning) {
         }
         joynrState = JoynrStates.SHUTTINGDOWN;
 
-        var shutdownProvisioning = provisioning.shutdownSettings || {};
+        const shutdownProvisioning = provisioning.shutdownSettings || {};
         settings = settings || {};
         if (settings.clearSubscriptionsEnabled || shutdownProvisioning.clearSubscriptionsEnabled) {
-            var clearSubscriptionTimeoutMs =
+            const clearSubscriptionTimeoutMs =
                 settings.clearSubscriptionsTimeoutMs || shutdownProvisioning.clearSubscriptionsTimeoutMs || 1000;
             subscriptionManager.terminateSubscriptions(clearSubscriptionTimeoutMs);
         }

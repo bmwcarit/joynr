@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-var Util = require("../../util/UtilInternal");
-var Typing = require("../../util/Typing");
+const Util = require("../../util/UtilInternal");
+const Typing = require("../../util/Typing");
 
 /**
  * @name Reply
@@ -33,7 +33,7 @@ var Typing = require("../../util/Typing");
  *            [settings.error] The exception object in case of request failure
  */
 function Reply(settings) {
-    var i;
+    let i;
     if (settings.response) {
         for (i = 0; i < settings.response.length; i++) {
             settings.response[i] = Util.ensureTypedValues(settings.response[i]);

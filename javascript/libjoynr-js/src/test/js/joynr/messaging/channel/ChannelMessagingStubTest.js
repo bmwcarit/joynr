@@ -17,17 +17,17 @@
  * #L%
  */
 require("../../../node-unit-test-helper");
-var Promise = require("../../../../../main/js/global/Promise");
-var ChannelAddress = require("../../../../../main/js/generated/joynr/system/RoutingTypes/ChannelAddress");
-var ChannelMessagingStub = require("../../../../../main/js/joynr/messaging/channel/ChannelMessagingStub");
-var JoynrMessage = require("../../../../../main/js/joynr/messaging/JoynrMessage");
+const Promise = require("../../../../../main/js/global/Promise");
+const ChannelAddress = require("../../../../../main/js/generated/joynr/system/RoutingTypes/ChannelAddress");
+const ChannelMessagingStub = require("../../../../../main/js/joynr/messaging/channel/ChannelMessagingStub");
+const JoynrMessage = require("../../../../../main/js/joynr/messaging/JoynrMessage");
 
-describe("libjoynr-js.joynr.messaging.channel.ChannelMessagingStub", function() {
-    var channelMessagingSender, destinationChannelAddress, myChannelAddress;
-    var channelMessagingStub1, channelMessagingStub2, joynrMessage;
-    var url = "http://testurl";
+describe("libjoynr-js.joynr.messaging.channel.ChannelMessagingStub", () => {
+    let channelMessagingSender, destinationChannelAddress, myChannelAddress;
+    let channelMessagingStub1, channelMessagingStub2, joynrMessage;
+    const url = "http://testurl";
 
-    beforeEach(function(done) {
+    beforeEach(done => {
         channelMessagingSender = jasmine.createSpyObj("channelMessagingSender", ["send"]);
         channelMessagingSender.send.and.returnValue(Promise.resolve());
         destinationChannelAddress = new ChannelAddress({
@@ -40,14 +40,14 @@ describe("libjoynr-js.joynr.messaging.channel.ChannelMessagingStub", function() 
         });
 
         channelMessagingStub1 = new ChannelMessagingStub({
-            destinationChannelAddress: destinationChannelAddress,
-            myChannelAddress: myChannelAddress,
-            channelMessagingSender: channelMessagingSender
+            destinationChannelAddress,
+            myChannelAddress,
+            channelMessagingSender
         });
         channelMessagingStub2 = new ChannelMessagingStub({
-            destinationChannelAddress: destinationChannelAddress,
+            destinationChannelAddress,
             myChannelAddress: destinationChannelAddress,
-            channelMessagingSender: channelMessagingSender
+            channelMessagingSender
         });
         joynrMessage = new JoynrMessage({
             key: "joynrMessage",
@@ -56,7 +56,7 @@ describe("libjoynr-js.joynr.messaging.channel.ChannelMessagingStub", function() 
         done();
     });
 
-    it("is instantiable and of correct type", function(done) {
+    it("is instantiable and of correct type", done => {
         expect(ChannelMessagingStub).toBeDefined();
         expect(typeof ChannelMessagingStub).toEqual("function");
         expect(channelMessagingStub1).toBeDefined();
@@ -66,8 +66,8 @@ describe("libjoynr-js.joynr.messaging.channel.ChannelMessagingStub", function() 
         done();
     });
 
-    it("drop outgoing message if destChannel = myChannel", function(done) {
-        channelMessagingStub2.transmit(joynrMessage).catch(function() {
+    it("drop outgoing message if destChannel = myChannel", done => {
+        channelMessagingStub2.transmit(joynrMessage).catch(() => {
             return null;
         });
         expect(channelMessagingSender.send).not.toHaveBeenCalled();
@@ -75,7 +75,7 @@ describe("libjoynr-js.joynr.messaging.channel.ChannelMessagingStub", function() 
         done();
     });
 
-    it("transmits a message", function(done) {
+    it("transmits a message", done => {
         channelMessagingStub1.transmit(joynrMessage);
         expect(channelMessagingSender.send).toHaveBeenCalledWith(joynrMessage, destinationChannelAddress);
         done();

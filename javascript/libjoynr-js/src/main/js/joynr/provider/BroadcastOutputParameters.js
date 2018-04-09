@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-var Typing = require("../util/Typing");
-var Util = require("../util/UtilInternal");
+const Typing = require("../util/Typing");
+const Util = require("../util/UtilInternal");
 
 function makeSetterFunction(obj, pos) {
     return function(arg) {
@@ -56,10 +56,10 @@ function BroadcastOutputParameters(outputParameterProperties) {
     Util.objectDefineProperty(this, "_typeName", "joynr.BroadcastOutputParameters");
     Typing.checkPropertyIfDefined(outputParameterProperties, "Array", "outputParameters");
 
-    var parameterName;
-    var setterFuncName;
-    var getterFuncName;
-    var i;
+    let parameterName;
+    let setterFuncName;
+    let getterFuncName;
+    let i;
 
     //for (parameterName in outputParameterProperties) {
     for (i = 0; i < outputParameterProperties.length; i++) {

@@ -17,7 +17,7 @@
  * #L%
  */
 
-var Typing = require("../../util/Typing");
+const Typing = require("../../util/Typing");
 
 /**
  * @constructor BrowserMulticastAddressCalculator
@@ -26,7 +26,7 @@ var Typing = require("../../util/Typing");
  * @param {BrowserAddress}
  *            settings.globalAddress
  */
-var BrowserMulticastAddressCalculator = function BrowserMulticastAddressCalculator(settings) {
+const BrowserMulticastAddressCalculator = function BrowserMulticastAddressCalculator(settings) {
     Typing.checkProperty(settings, "Object", "settings");
     Typing.checkProperty(settings.globalAddress, "BrowserAddress", "settings.globalAddress");
     this._settings = settings;

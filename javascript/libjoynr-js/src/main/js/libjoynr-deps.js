@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-var libjoynrExports;
+let libjoynrExports;
 // will receive the module names that should be exported
 // this instrumentation of the define method is there to...
 // ...leave the code block afterwards fully intact, so that static code analysis of require.js optimizer can still find all dependencies in
@@ -57,41 +57,41 @@ libjoynrExports = [
     "./generated/joynr/system/RoutingTypes/WebSocketClientAddress",
     "./joynr/util/LongTimer"
 ];
-var Runtime = require("./joynr/Runtime");
-var buildSignature = require("./joynr/buildSignature");
-var MessagingQos = require("./joynr/messaging/MessagingQos");
-var PeriodicSubscriptionQos = require("./joynr/proxy/PeriodicSubscriptionQos");
-var OnChangeSubscriptionQos = require("./joynr/proxy/OnChangeSubscriptionQos");
-var MulticastSubscriptionQos = require("./joynr/proxy/MulticastSubscriptionQos");
-var OnChangeWithKeepAliveSubscriptionQos = require("./joynr/proxy/OnChangeWithKeepAliveSubscriptionQos");
-var BroadcastFilterParameters = require("./joynr/proxy/BroadcastFilterParameters");
-var ArbitrationStrategyCollection = require("./joynr/types/ArbitrationStrategyCollection");
-var Util = require("./joynr/util/Util");
-var GenerationUtil = require("./joynr/util/GenerationUtil");
-var JoynrException = require("./joynr/exceptions/JoynrException");
-var JoynrRuntimeException = require("./joynr/exceptions/JoynrRuntimeException");
-var ApplicationException = require("./joynr/exceptions/ApplicationException");
-var DiscoveryException = require("./joynr/exceptions/DiscoveryException");
-var IllegalAccessException = require("./joynr/exceptions/IllegalAccessException");
-var MethodInvocationException = require("./joynr/exceptions/MethodInvocationException");
-var NoCompatibleProviderFoundException = require("./joynr/exceptions/NoCompatibleProviderFoundException");
-var ProviderRuntimeException = require("./joynr/exceptions/ProviderRuntimeException");
-var PublicationMissedException = require("./joynr/exceptions/PublicationMissedException");
-var SubscriptionException = require("./joynr/exceptions/SubscriptionException");
-var ProviderQos = require("./generated/joynr/types/ProviderQos");
-var ProviderScope = require("./generated/joynr/types/ProviderScope");
-var CustomParameter = require("./generated/joynr/types/CustomParameter");
-var DiscoveryQos = require("./joynr/proxy/DiscoveryQos");
-var DiscoveryScope = require("./generated/joynr/types/DiscoveryScope");
-var BrowserAddress = require("./generated/joynr/system/RoutingTypes/BrowserAddress");
-var ChannelAddress = require("./generated/joynr/system/RoutingTypes/ChannelAddress");
-var WebSocketAddress = require("./generated/joynr/system/RoutingTypes/WebSocketAddress");
-var WebSocketClientAddress = require("./generated/joynr/system/RoutingTypes/WebSocketClientAddress");
-var LongTimer = require("./joynr/util/LongTimer");
+const Runtime = require("./joynr/Runtime");
+const buildSignature = require("./joynr/buildSignature");
+const MessagingQos = require("./joynr/messaging/MessagingQos");
+const PeriodicSubscriptionQos = require("./joynr/proxy/PeriodicSubscriptionQos");
+const OnChangeSubscriptionQos = require("./joynr/proxy/OnChangeSubscriptionQos");
+const MulticastSubscriptionQos = require("./joynr/proxy/MulticastSubscriptionQos");
+const OnChangeWithKeepAliveSubscriptionQos = require("./joynr/proxy/OnChangeWithKeepAliveSubscriptionQos");
+const BroadcastFilterParameters = require("./joynr/proxy/BroadcastFilterParameters");
+const ArbitrationStrategyCollection = require("./joynr/types/ArbitrationStrategyCollection");
+const Util = require("./joynr/util/Util");
+const GenerationUtil = require("./joynr/util/GenerationUtil");
+const JoynrException = require("./joynr/exceptions/JoynrException");
+const JoynrRuntimeException = require("./joynr/exceptions/JoynrRuntimeException");
+const ApplicationException = require("./joynr/exceptions/ApplicationException");
+const DiscoveryException = require("./joynr/exceptions/DiscoveryException");
+const IllegalAccessException = require("./joynr/exceptions/IllegalAccessException");
+const MethodInvocationException = require("./joynr/exceptions/MethodInvocationException");
+const NoCompatibleProviderFoundException = require("./joynr/exceptions/NoCompatibleProviderFoundException");
+const ProviderRuntimeException = require("./joynr/exceptions/ProviderRuntimeException");
+const PublicationMissedException = require("./joynr/exceptions/PublicationMissedException");
+const SubscriptionException = require("./joynr/exceptions/SubscriptionException");
+const ProviderQos = require("./generated/joynr/types/ProviderQos");
+const ProviderScope = require("./generated/joynr/types/ProviderScope");
+const CustomParameter = require("./generated/joynr/types/CustomParameter");
+const DiscoveryQos = require("./joynr/proxy/DiscoveryQos");
+const DiscoveryScope = require("./generated/joynr/types/DiscoveryScope");
+const BrowserAddress = require("./generated/joynr/system/RoutingTypes/BrowserAddress");
+const ChannelAddress = require("./generated/joynr/system/RoutingTypes/ChannelAddress");
+const WebSocketAddress = require("./generated/joynr/system/RoutingTypes/WebSocketAddress");
+const WebSocketClientAddress = require("./generated/joynr/system/RoutingTypes/WebSocketClientAddress");
+const LongTimer = require("./joynr/util/LongTimer");
 
 // load all external modules
-var nsContext, nsElem, nsElems, i, value;
-var root = {};
+let nsContext, nsElem, nsElems, i, value;
+const root = {};
 // cycle over all exports
 for (i = 0; i < libjoynrExports.length; ++i) {
     // Window in case of a Browser or DedicatedWebWorkerContext in a WebWorker Environment
@@ -123,7 +123,7 @@ for (i = 0; i < libjoynrExports.length; ++i) {
             enumerable: true,
             configurable: false,
             writable: false,
-            value: value
+            value
         });
         nsContext = value;
     }

@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-var Typing = require("../../util/Typing");
-var MqttAddress = require("../../../generated/joynr/system/RoutingTypes/MqttAddress");
+const Typing = require("../../util/Typing");
+const MqttAddress = require("../../../generated/joynr/system/RoutingTypes/MqttAddress");
 
 /**
  * @constructor MqttMulticastAddressCalculator
@@ -26,7 +26,7 @@ var MqttAddress = require("../../../generated/joynr/system/RoutingTypes/MqttAddr
  * @param {WebSocketAddress}
  *            settings.globalAddress
  */
-var MqttMulticastAddressCalculator = function MqttMulticastAddressCalculator(settings) {
+const MqttMulticastAddressCalculator = function MqttMulticastAddressCalculator(settings) {
     Typing.checkProperty(settings, "Object", "settings");
     Typing.checkProperty(settings.globalAddress, "MqttAddress", "settings.globalAddress");
     this._settings = settings;

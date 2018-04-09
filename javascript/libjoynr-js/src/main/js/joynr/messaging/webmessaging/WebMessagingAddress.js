@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-var Typing = require("../../util/Typing");
+const Typing = require("../../util/Typing");
 
 /**
  * @constructor WebMessagingAddress

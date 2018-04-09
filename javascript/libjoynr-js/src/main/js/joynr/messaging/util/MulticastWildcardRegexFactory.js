@@ -24,7 +24,7 @@
 function MulticastWildcardRegexFactory() {}
 
 MulticastWildcardRegexFactory.prototype.createIdPattern = function(multicastId) {
-    var patternString = multicastId.replace(/^\+\//g, "[^/]+/");
+    let patternString = multicastId.replace(/^\+\//g, "[^/]+/");
     patternString = patternString.replace(/\/\+\//g, "/[^/]+/");
     patternString = patternString.replace(/([\w\W]*)\/[\\+]$/, "$1/[^/]+$");
     patternString = patternString.replace(/([\w\W]*)\/[\\*]$/, "$1(/.*)?$");

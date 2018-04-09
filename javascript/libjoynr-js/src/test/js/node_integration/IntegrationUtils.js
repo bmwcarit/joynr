@@ -17,24 +17,24 @@
  * #L%
  */
 
-var Promise = require("../../../main/js/global/Promise");
-var provisioning_root = require("../../resources/joynr/provisioning/provisioning_root");
-var waitsFor = require("../global/WaitsFor");
-var child_process = require("child_process");
+const Promise = require("../../../main/js/global/Promise");
+const provisioning_root = require("../../resources/joynr/provisioning/provisioning_root");
+const waitsFor = require("../global/WaitsFor");
+const child_process = require("child_process");
 
-var IntegrationUtils = {};
-var currentlyRunningChildCC;
-var childReady = {},
+const IntegrationUtils = {};
+let currentlyRunningChildCC;
+let childReady = {},
     childStarted = {},
     childFinished = {},
     child = {},
     processId = 0,
     queuedLogs = {};
-var joynr;
+let joynr;
 
 IntegrationUtils.log = function log(msg, id) {
     if (joynr !== undefined) {
-        var logger = joynr.logging.getLogger(id);
+        const logger = joynr.logging.getLogger(id);
         logger[msg.level](msg.message);
     } else {
         if (queuedLogs[id] === undefined) {
@@ -50,7 +50,7 @@ IntegrationUtils.initialize = function initialize(asynclib) {
         ttl: provisioning_root.ttl
     });
 
-    var queuedMsgs, id, msg;
+    let queuedMsgs, id, msg;
     for (id in queuedLogs) {
         if (queuedLogs.hasOwnProperty(id)) {
             queuedMsgs = queuedLogs[id];
@@ -72,8 +72,8 @@ IntegrationUtils.getObjectType = function getObjectType(obj) {
     if (obj === null || obj === undefined) {
         throw new Error("cannot determine the type of an undefined object");
     }
-    var funcNameRegex = /function ([$\w]+)\(/;
-    var results = funcNameRegex.exec(obj.constructor.toString());
+    const funcNameRegex = /function ([$\w]+)\(/;
+    const results = funcNameRegex.exec(obj.constructor.toString());
     return results && results.length > 1 ? results[1] : "";
 };
 
@@ -83,8 +83,8 @@ IntegrationUtils.checkValueAndType = function checkValueAndType(arg1, arg2) {
     expect(IntegrationUtils.getObjectType(arg1)).toEqual(IntegrationUtils.getObjectType(arg2));
 };
 IntegrationUtils.createPromise = function createPromise() {
-    var map = {};
-    map.promise = new Promise(function(resolve, reject) {
+    const map = {};
+    map.promise = new Promise((resolve, reject) => {
         map.resolve = resolve;
         map.reject = reject;
     });
@@ -94,7 +94,7 @@ IntegrationUtils.createPromise = function createPromise() {
 
 IntegrationUtils.initializeChildProcess = function(childName, provisioningSuffix, domain, cc) {
     processId++;
-    var newChildId = processId;
+    const newChildId = processId;
     if (cc) {
         currentlyRunningChildCC = newChildId;
     }
@@ -102,10 +102,10 @@ IntegrationUtils.initializeChildProcess = function(childName, provisioningSuffix
     childStarted[processId] = IntegrationUtils.createPromise();
     childFinished[processId] = IntegrationUtils.createPromise();
 
-    var processConfig = process.env.debugPort ? { execArgv: ["--inspect-brk=" + process.env.debugPort] } : {};
+    const processConfig = process.env.debugPort ? { execArgv: ["--inspect-brk=" + process.env.debugPort] } : {};
 
-    var forked = child_process.fork(__dirname + "/" + childName + ".js", [], processConfig);
-    forked.on("message", function(msg) {
+    const forked = child_process.fork(__dirname + "/" + childName + ".js", [], processConfig);
+    forked.on("message", msg => {
         // Handle messages from child process
         console.log("received message: " + JSON.stringify(msg));
         if (msg.type === "ready") {
@@ -119,8 +119,8 @@ IntegrationUtils.initializeChildProcess = function(childName, provisioningSuffix
     child[newChildId] = forked;
     child[newChildId].send({
         type: "initialize",
-        provisioningSuffix: provisioningSuffix,
-        domain: domain
+        provisioningSuffix,
+        domain
     });
 
     return childReady[newChildId].promise;
@@ -139,7 +139,7 @@ IntegrationUtils.buildProxy = function buildProxy(ProxyConstructor, domain) {
     }
     return joynr.proxyBuilder
         .build(ProxyConstructor, {
-            domain: domain,
+            domain,
             messagingQos: IntegrationUtils.messagingQos
         })
         .catch(IntegrationUtils.outputPromiseError);
@@ -147,14 +147,14 @@ IntegrationUtils.buildProxy = function buildProxy(ProxyConstructor, domain) {
 
 IntegrationUtils.shutdownChildProcess = function(childId) {
     // signal child to shut down
-    var promise = null;
+    let promise = null;
     if (child[childId]) {
         child[childId].send({
             type: "terminate"
         });
 
         // wait for child to be shut down
-        childFinished[childId].promise.then(function() {
+        childFinished[childId].promise.then(() => {
             if (currentlyRunningChildCC === childId) {
                 currentlyRunningChildCC = undefined;
             }
@@ -167,7 +167,7 @@ IntegrationUtils.shutdownChildProcess = function(childId) {
 
         promise = childFinished[childId].promise;
     } else {
-        promise = new Promise(function(resolve) {
+        promise = new Promise(resolve => {
             resolve();
         });
     }
@@ -176,21 +176,21 @@ IntegrationUtils.shutdownChildProcess = function(childId) {
 };
 
 IntegrationUtils.shutdownLibjoynr = function() {
-    var promise = joynr.shutdown();
+    const promise = joynr.shutdown();
 
-    promise.catch(function(error) {
+    promise.catch(error => {
         IntegrationUtils.outputPromiseError(error);
     });
     return promise;
 };
 
 IntegrationUtils.waitALittle = function waitALittle(time) {
-    var start;
+    let start;
     start = Date.now();
 
     // wait for childProcess to be shut down
     return waitsFor(
-        function() {
+        () => {
             return Date.now() - start > time;
         },
         time + " ms to elapse",

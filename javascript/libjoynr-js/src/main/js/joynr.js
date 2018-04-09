@@ -18,7 +18,7 @@
  */
 
 function populateJoynrApi(joynr, api) {
-    var key;
+    let key;
     for (key in api) {
         if (api.hasOwnProperty(key)) {
             joynr[key] = api[key];
@@ -27,8 +27,8 @@ function populateJoynrApi(joynr, api) {
 }
 
 function recursiveFreeze(object) {
-    var property;
-    var propertyKey = null;
+    let property;
+    let propertyKey = null;
     Object.freeze(object); // First freeze the object.
     for (propertyKey in object) {
         if (object.hasOwnProperty(propertyKey)) {
@@ -72,9 +72,9 @@ function freeze(joynr, capabilitiesWritable) {
     });
 }
 
-var Promise = require("./global/Promise");
+const Promise = require("./global/Promise");
 
-var GenerationUtil = require("./joynr/util/GenerationUtil");
+const GenerationUtil = require("./joynr/util/GenerationUtil");
 
 /**
  * @name joynr
@@ -91,12 +91,12 @@ var joynr = {
      */
     load: function load(provisioning, capabilitiesWritable) {
         joynr.loaded = true;
-        var joynrapi = require("./libjoynr-deps");
-        var runtime;
+        const joynrapi = require("./libjoynr-deps");
+        let runtime;
         runtime = new joynrapi.Runtime(provisioning);
         return runtime
             .start()
-            .then(function() {
+            .then(() => {
                 populateJoynrApi(joynr, joynrapi);
                 //remove Runtime, as it is not required for the end user
                 delete joynr.Runtime;
@@ -109,7 +109,7 @@ var joynr = {
                 // had already been invoked manually before reaching this
                 // point.
                 if (typeof process === "object" && typeof process.on === "function") {
-                    process.on("exit", function() {
+                    process.on("exit", () => {
                         try {
                             joynr.shutdown();
                         } catch (error) {
@@ -119,7 +119,7 @@ var joynr = {
                 }
                 return joynr;
             })
-            .catch(function(error) {
+            .catch(error => {
                 return Promise.reject(error);
             });
     },
@@ -138,11 +138,11 @@ var joynr = {
      *            isEnum - optional flag if the added type is an enumeration type
      */
     addType: function registerType(name, type, isEnum) {
-        var TypeRegistrySingleton = require("./joynr/types/TypeRegistrySingleton");
+        const TypeRegistrySingleton = require("./joynr/types/TypeRegistrySingleton");
         TypeRegistrySingleton.getInstance().addType(name, type, isEnum);
     },
     JoynrObject: function JoynrObject() {},
-    util: { GenerationUtil: GenerationUtil }
+    util: { GenerationUtil }
 };
 
 if (typeof window === "object") {

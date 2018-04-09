@@ -17,10 +17,10 @@
  * #L%
  */
 
-var smrfSpy = jasmine.createSpyObj("smrfSpy", ["serialize"]);
-smrfSpy.serialize.and.callFake(function(message) {
-    var msg;
-    var callback = message.signingCallback;
+const smrfSpy = jasmine.createSpyObj("smrfSpy", ["serialize"]);
+smrfSpy.serialize.and.callFake(message => {
+    let msg;
+    const callback = message.signingCallback;
     if (callback && typeof callback === "function") {
         msg = "callback was called";
     } else {

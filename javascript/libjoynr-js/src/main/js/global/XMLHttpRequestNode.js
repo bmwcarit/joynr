@@ -24,7 +24,7 @@
 if (global.window !== undefined) {
     module.exports = require("./XMLHttpRequest");
 } else {
-    var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
+    const XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
     global.XMLHttpRequest = XMLHttpRequest;
     module.exports = XMLHttpRequest;
 }

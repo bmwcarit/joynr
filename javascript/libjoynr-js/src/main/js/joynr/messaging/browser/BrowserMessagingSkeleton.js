@@ -16,11 +16,11 @@
  * limitations under the License.
  * #L%
  */
-var JoynrMessage = require("../JoynrMessage");
-var Typing = require("../../util/Typing");
-var Util = require("../../util/UtilInternal");
-var JSONSerializer = require("../../util/JSONSerializer");
-var LoggingManager = require("../../system/LoggingManager");
+const JoynrMessage = require("../JoynrMessage");
+const Typing = require("../../util/Typing");
+const Util = require("../../util/UtilInternal");
+const JSONSerializer = require("../../util/JSONSerializer");
+const LoggingManager = require("../../system/LoggingManager");
 
 /**
  * @constructor BrowserMessagingSkeleton
@@ -29,16 +29,16 @@ var LoggingManager = require("../../system/LoggingManager");
  * @param {WebMessagingSkeleton} settings.webMessagingSkeleton a web messaging skeleton receiving web messages
  */
 function BrowserMessagingSkeleton(settings) {
-    var log = LoggingManager.getLogger("joynr/messaging/browser/BrowserMessagingSkeleton");
+    const log = LoggingManager.getLogger("joynr/messaging/browser/BrowserMessagingSkeleton");
     Typing.checkProperty(settings, "Object", "settings");
     Typing.checkProperty(settings.webMessagingSkeleton, Object, "settings.webMessagingSkeleton");
 
-    var that = this;
+    const that = this;
     this.receiverCallbacks = [];
 
     function webMessagingSkeletonListener(message) {
         if (message !== undefined) {
-            var joynrMessage = new JoynrMessage(message);
+            const joynrMessage = new JoynrMessage(message);
 
             Util.fire(that.receiverCallbacks, joynrMessage);
         } else {

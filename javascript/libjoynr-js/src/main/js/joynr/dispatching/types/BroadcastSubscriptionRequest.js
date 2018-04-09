@@ -16,12 +16,12 @@
  * limitations under the License.
  * #L%
  */
-var Util = require("../../util/UtilInternal");
-var Typing = require("../../util/Typing");
-var OnChangeSubscriptionQos = require("../../proxy/OnChangeSubscriptionQos");
-var BroadcastFilterParameters = require("../../proxy/BroadcastFilterParameters");
+const Util = require("../../util/UtilInternal");
+const Typing = require("../../util/Typing");
+const OnChangeSubscriptionQos = require("../../proxy/OnChangeSubscriptionQos");
+const BroadcastFilterParameters = require("../../proxy/BroadcastFilterParameters");
 
-var defaultSettings = {
+const defaultSettings = {
     qos: new OnChangeSubscriptionQos()
 };
 

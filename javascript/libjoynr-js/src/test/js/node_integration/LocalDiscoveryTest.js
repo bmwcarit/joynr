@@ -17,7 +17,7 @@
  * #L%
  */
 
-var joynr = require("joynr"),
+let joynr = require("joynr"),
     RadioProxy = require("../../generated/joynr/vehicle/RadioProxy"),
     TestWithVersionProvider = require("../../generated/joynr/tests/TestWithVersionProvider"),
     TestWithVersionProxy = require("../../generated/joynr/tests/TestWithVersionProxy"),
@@ -26,25 +26,25 @@ var joynr = require("joynr"),
     DiscoveryQos = require("../../../../src/main/js/joynr/proxy/DiscoveryQos"),
     JoynrException = require("../../../main/js/joynr/exceptions/JoynrException");
 
-describe("libjoynr-js.integration.localDiscoveryTest", function() {
-    var radioProxy;
-    var provisioningSuffix;
-    var domain;
-    var childId;
-    var MyTestWithVersionProvider = function() {};
+describe("libjoynr-js.integration.localDiscoveryTest", () => {
+    let radioProxy;
+    let provisioningSuffix;
+    let domain;
+    let childId;
+    const MyTestWithVersionProvider = function() {};
 
-    afterEach(function(done) {
+    afterEach(done => {
         IntegrationUtils.shutdownLibjoynr()
-            .then(function() {
+            .then(() => {
                 done();
                 return null;
             })
-            .catch(function() {
+            .catch(() => {
                 throw new Error("shutdown ChildProcess and Libjoynr failed");
             });
     });
 
-    beforeEach(function(done) {
+    beforeEach(done => {
         radioProxy = undefined;
 
         provisioningSuffix = "LocalDiscoveryTest" + "-" + Date.now();
@@ -56,13 +56,13 @@ describe("libjoynr-js.integration.localDiscoveryTest", function() {
 
         joynr
             .load(provisioning)
-            .then(function(newjoynr) {
+            .then(newjoynr => {
                 joynr = newjoynr;
                 IntegrationUtils.initialize(joynr);
                 done();
                 return null;
             })
-            .catch(function(error) {
+            .catch(error => {
                 if (error instanceof JoynrException) {
                     done.fail("error in beforeEach: " + error.detailMessage);
                 } else {
@@ -76,7 +76,7 @@ describe("libjoynr-js.integration.localDiscoveryTest", function() {
             "TestEnd2EndCommProviderProcess",
             provisioningSuffix,
             domain
-        ).then(function(newChildId) {
+        ).then(newChildId => {
             childId = newChildId;
             return IntegrationUtils.startChildProcess(childId);
         });
@@ -88,73 +88,76 @@ describe("libjoynr-js.integration.localDiscoveryTest", function() {
 
     function buildProxyForGlobalDiscoveryEntry() {
         return joynr.proxyBuilder.build(RadioProxy, {
-            domain: domain,
+            domain,
             messagingQos: new joynr.messaging.MessagingQos(),
             discoveryQos: new DiscoveryQos()
         });
     }
 
-    it("local discovery entry is forwarded to proxy", function(done) {
-        var providerQos = new joynr.types.ProviderQos({
+    it("local discovery entry is forwarded to proxy", done => {
+        const providerQos = new joynr.types.ProviderQos({
             customParameters: [],
             priority: Date.now(),
             scope: joynr.types.ProviderScope.GLOBAL,
             supportsOnChangeSubscriptions: true
         });
 
-        var testWithVersionProviderImpl = new MyTestWithVersionProvider();
-        var testWithVersionProvider = joynr.providerBuilder.build(TestWithVersionProvider, testWithVersionProviderImpl);
+        const testWithVersionProviderImpl = new MyTestWithVersionProvider();
+        const testWithVersionProvider = joynr.providerBuilder.build(
+            TestWithVersionProvider,
+            testWithVersionProviderImpl
+        );
         joynr.registration
             .registerProvider(domain, testWithVersionProvider, providerQos)
-            .then(function() {
+            .then(() => {
                 return joynr.proxyBuilder.build(TestWithVersionProxy, {
-                    domain: domain,
+                    domain,
                     messagingQos: new joynr.messaging.MessagingQos(),
                     discoveryQos: new DiscoveryQos()
                 });
             })
-            .then(function(testWithVersionProxy) {
+            .then(testWithVersionProxy => {
                 expect(testWithVersionProxy.providerDiscoveryEntry.isLocal).toBeDefined();
                 expect(testWithVersionProxy.providerDiscoveryEntry.isLocal).toBe(true);
-                joynr.registration.unregisterProvider(domain, testWithVersionProvider).then(function() {
+                joynr.registration.unregisterProvider(domain, testWithVersionProvider).then(() => {
                     done();
                     return null;
                 });
             });
     });
 
-    it("global discovery entry is forwarded to proxy", function(done) {
+    it("global discovery entry is forwarded to proxy", done => {
         registerGlobalDiscoveryEntry()
-            .then(function() {
+            .then(() => {
                 return buildProxyForGlobalDiscoveryEntry();
             })
-            .then(function(radioProxy) {
+            .then(radioProxy => {
                 expect(radioProxy.providerDiscoveryEntry.isLocal).toBeDefined();
                 expect(radioProxy.providerDiscoveryEntry.isLocal).toBe(false);
                 return unregisterGlobalDiscoveryEntry();
             })
-            .then(function() {
+            .then(() => {
                 done();
                 return null;
             });
     });
 
-    it("cached global discovery entry is forwarded to proxy", function(done) {
+    it("cached global discovery entry is forwarded to proxy", done => {
         registerGlobalDiscoveryEntry()
-            .then(function() {
+            .then(() => {
                 // build proxy to fill global capabilities cache
                 return buildProxyForGlobalDiscoveryEntry();
             })
-            .then(function() {
+            .then(() => {
                 // build proxy from global capabilities cache
                 return buildProxyForGlobalDiscoveryEntry();
             })
-            .then(function(radioProxy) {
+            .then(radioProxy => {
                 expect(radioProxy.providerDiscoveryEntry.isLocal).toBeDefined();
                 expect(radioProxy.providerDiscoveryEntry.isLocal).toBe(false);
                 return unregisterGlobalDiscoveryEntry();
             })
-            .then(function() {
+            .then(() => {
                 done();
                 return null;
             });

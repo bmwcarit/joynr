@@ -16,14 +16,14 @@
  * limitations under the License.
  * #L%
  */
-var joynr = require("joynr");
-var TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
+const joynr = require("joynr");
+const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
 
 /**
  * @name Typing
  * @class
  */
-var Typing = {};
+const Typing = {};
 
 Typing.checkProperty = function(obj, type, description) {
     if (obj === undefined) {
@@ -106,7 +106,7 @@ Typing.getObjectType = function(obj) {
  *             untyped object is not (Boolean|Number|String|Array|Object)
  */
 Typing.augmentTypes = function(untyped, typeRegistry, typeHint) {
-    var i, typedObj, typeName;
+    let i, typedObj, typeName;
 
     // return nullable values immediately
     if (untyped === null || untyped === undefined) {
@@ -119,7 +119,7 @@ Typing.augmentTypes = function(untyped, typeRegistry, typeHint) {
     }
 
     // retrieve the javascript runtime type info
-    var type = Typing.getObjectType(untyped);
+    const type = Typing.getObjectType(untyped);
 
     // what should we do with a function?
     if (type === "Function") {
@@ -131,7 +131,7 @@ Typing.augmentTypes = function(untyped, typeRegistry, typeHint) {
     if (type === "Array") {
         typedObj = [];
         for (i = 0; i < untyped.length; ++i) {
-            var filteredTypeHint =
+            const filteredTypeHint =
                 typeHint !== undefined && typeHint.length > 2 && typeHint.substr(typeHint.length - 2, 2) === "[]"
                     ? typeHint.substring(0, typeHint.length - 2)
                     : typeHint;
@@ -146,8 +146,8 @@ Typing.augmentTypes = function(untyped, typeRegistry, typeHint) {
     } else if (type === "Object") {
         // try to type each single member of an object, and use registered constructor if available
         /*jslint nomen: true */
-        var Constructor = typeRegistry.getConstructor(untyped._typeName);
-        var isEnumType = typeRegistry.isEnumType(untyped._typeName);
+        const Constructor = typeRegistry.getConstructor(untyped._typeName);
+        const isEnumType = typeRegistry.isEnumType(untyped._typeName);
         /*jslint nomen: false */
 
         // if object has joynr type name and corresponding constructor is found in the
@@ -218,10 +218,10 @@ Typing.isComplexJoynrObject = function isComplexJoynrObject(value) {
  * @returns {Boolean} true if the provided value is an enum type
  */
 Typing.isEnumType = function isEnumType(value, checkForJoynrObject) {
-    var isJoynrObject =
+    const isJoynrObject =
         checkForJoynrObject === undefined || (!checkForJoynrObject || Typing.isComplexJoynrObject(value));
     /*jslint nomen: true */
-    var result =
+    const result =
         value !== undefined &&
         value !== null &&
         typeof value === "object" &&

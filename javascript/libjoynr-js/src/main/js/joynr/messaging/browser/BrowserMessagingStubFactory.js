@@ -17,8 +17,8 @@
  * #L%
  */
 
-var Typing = require("../../util/Typing");
-var BrowserMessagingStub = require("./BrowserMessagingStub");
+const Typing = require("../../util/Typing");
+const BrowserMessagingStub = require("./BrowserMessagingStub");
 
 /**
  * @constructor

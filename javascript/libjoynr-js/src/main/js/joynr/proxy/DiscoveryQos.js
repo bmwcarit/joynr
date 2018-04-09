@@ -16,12 +16,12 @@
  * limitations under the License.
  * #L%
  */
-var ArbitrationStrategyCollection = require("../../joynr/types/ArbitrationStrategyCollection");
-var DiscoveryScope = require("../../generated/joynr/types/DiscoveryScope");
-var Util = require("../util/UtilInternal");
-var LoggingManager = require("../system/LoggingManager");
+const ArbitrationStrategyCollection = require("../../joynr/types/ArbitrationStrategyCollection");
+const DiscoveryScope = require("../../generated/joynr/types/DiscoveryScope");
+const Util = require("../util/UtilInternal");
+const LoggingManager = require("../system/LoggingManager");
 
-var defaultSettings = {
+let defaultSettings = {
     discoveryTimeoutMs: 10 * 60 * 1000, // 10 minutes
     discoveryRetryDelayMs: 10 * 1000, // 10 seconds
     arbitrationStrategy: ArbitrationStrategyCollection.LastSeen,
@@ -54,7 +54,7 @@ function DiscoveryQos(settings) {
         return new DiscoveryQos(settings);
     }
 
-    var log = LoggingManager.getLogger("joynr.proxy.DiscoveryQos");
+    const log = LoggingManager.getLogger("joynr.proxy.DiscoveryQos");
 
     settings = Util.extend({}, defaultSettings, settings);
 

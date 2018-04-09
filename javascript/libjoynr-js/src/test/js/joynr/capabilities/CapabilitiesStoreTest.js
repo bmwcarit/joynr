@@ -17,24 +17,24 @@
  * #L%
  */
 require("../../node-unit-test-helper");
-var CapabilitiesStore = require("../../../../main/js/joynr/capabilities/CapabilitiesStore");
-var DiscoveryEntry = require("../../../../main/js/generated/joynr/types/DiscoveryEntry");
-var DiscoveryQos = require("../../../../main/js/generated/joynr/types/DiscoveryQos");
-var DiscoveryScope = require("../../../../main/js/generated/joynr/types/DiscoveryScope");
-var ProviderScope = require("../../../../main/js/generated/joynr/types/ProviderScope");
-var ProviderQos = require("../../../../main/js/generated/joynr/types/ProviderQos");
-var CustomParameter = require("../../../../main/js/generated/joynr/types/CustomParameter");
-var Version = require("../../../../main/js/generated/joynr/types/Version");
-var Date = require("../../../../test/js/global/Date");
+const CapabilitiesStore = require("../../../../main/js/joynr/capabilities/CapabilitiesStore");
+const DiscoveryEntry = require("../../../../main/js/generated/joynr/types/DiscoveryEntry");
+const DiscoveryQos = require("../../../../main/js/generated/joynr/types/DiscoveryQos");
+const DiscoveryScope = require("../../../../main/js/generated/joynr/types/DiscoveryScope");
+const ProviderScope = require("../../../../main/js/generated/joynr/types/ProviderScope");
+const ProviderQos = require("../../../../main/js/generated/joynr/types/ProviderQos");
+const CustomParameter = require("../../../../main/js/generated/joynr/types/CustomParameter");
+const Version = require("../../../../main/js/generated/joynr/types/Version");
+const Date = require("../../../../test/js/global/Date");
 
-describe("libjoynr-js.joynr.capabilities.CapabilitiesStore", function() {
-    var fakeTime = 0,
+describe("libjoynr-js.joynr.capabilities.CapabilitiesStore", () => {
+    let fakeTime = 0,
         cacheMaxAge,
         directory,
         discoveryQos,
         discoveryEntry1;
-    var discoveryEntry2, discoveryEntry3, discoveryEntry4;
-    var settings = {
+    let discoveryEntry2, discoveryEntry3, discoveryEntry4;
+    const settings = {
         providerVersion: new Version({
             majorVersion: 47,
             minorVersion: 11
@@ -65,7 +65,7 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesStore", function() {
     /**
      * Called before each test.
      */
-    beforeEach(function() {
+    beforeEach(() => {
         jasmine.clock().install();
         directory = new CapabilitiesStore();
         discoveryEntry1 = new DiscoveryEntry(settings);
@@ -74,16 +74,16 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesStore", function() {
         discoveryEntry4 = new DiscoveryEntry(settings);
         cacheMaxAge = 100;
         discoveryQos = new DiscoveryQos({
-            cacheMaxAge: cacheMaxAge,
+            cacheMaxAge,
             discoveryScope: DiscoveryScope.LOCAL_ONLY
         });
 
-        spyOn(Date, "now").and.callFake(function() {
+        spyOn(Date, "now").and.callFake(() => {
             return fakeTime;
         });
     });
 
-    afterEach(function() {
+    afterEach(() => {
         jasmine.clock().uninstall();
     });
 
@@ -99,7 +99,7 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesStore", function() {
             participantId: discoveryEntry4.participantId
         });
 
-        var result = directory.lookup({
+        let result = directory.lookup({
             participantId: discoveryEntry1.participantId,
             cacheMaxAge: discoveryQos.cacheMaxAge
         });
@@ -120,15 +120,15 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesStore", function() {
         expect(result.length).toBe(2);
     }
 
-    it("is instantiable", function() {
+    it("is instantiable", () => {
         expect(directory).toBeDefined();
     });
 
-    it("can register a capability", function() {
+    it("can register a capability", () => {
         directory.add({
             discoveryEntry: discoveryEntry1
         });
-        var result = directory.lookup({
+        const result = directory.lookup({
             participantId: discoveryEntry1.participantId,
             cacheMaxAge: discoveryQos.cacheMaxAge
         });
@@ -137,14 +137,14 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesStore", function() {
         expect(result[0]).toEqual(discoveryEntry1);
     });
 
-    it("register global entry, returned when looking for global entries", function() {
+    it("register global entry, returned when looking for global entries", () => {
         discoveryEntry2.participantId = "701";
         directory.add({
             discoveryEntry: discoveryEntry1,
             remote: true
         });
 
-        var result = directory.lookup({
+        let result = directory.lookup({
             domains: [settings.domain],
             interfaceName: settings.interfaceName,
             cacheMaxAge: discoveryQos.cacheMaxAge
@@ -165,7 +165,7 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesStore", function() {
         expect(result.length).toBe(0);
     });
 
-    it("does not register duplicate capabilities", function() {
+    it("does not register duplicate capabilities", () => {
         directory.add({
             discoveryEntry: discoveryEntry1
         });
@@ -180,14 +180,14 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesStore", function() {
             discoveryEntry: discoveryEntry2
         }); // register cap with different qos, this should be a duplicate
 
-        var result = directory.lookup({
+        const result = directory.lookup({
             participantId: discoveryEntry1.participantId,
             cacheMaxAge: discoveryQos.cacheMaxAge
         });
         expect(result).toBeDefined();
     });
 
-    it("registers an array of capabilities", function() {
+    it("registers an array of capabilities", () => {
         // different domain, interfaceName and participant Id
         discoveryEntry2.domain = "mySecondDomain";
         discoveryEntry2.interfaceName = "music";
@@ -197,12 +197,12 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesStore", function() {
             discoveryEntries: [discoveryEntry1, discoveryEntry2]
         });
 
-        var result = directory.lookup({
+        const result = directory.lookup({
             participantId: discoveryEntry1.participantId,
             cacheMaxAge: discoveryQos.cacheMaxAge
         });
         expect(result).toBeDefined();
-        var result2 = directory.lookup({
+        const result2 = directory.lookup({
             participantId: discoveryEntry2.participantId,
             cacheMaxAge: discoveryQos.cacheMaxAge
         });
@@ -213,7 +213,7 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesStore", function() {
         // expect(result[0].channelId).toBe(result[1].channelId);
     });
 
-    it("gets capability for participant id", function() {
+    it("gets capability for participant id", () => {
         // same participant id
         discoveryEntry2.domain = "mySecondDomain";
         discoveryEntry2.interfaceName = "music";
@@ -228,7 +228,7 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesStore", function() {
         directory.add({
             discoveryEntries: [discoveryEntry1, discoveryEntry2, discoveryEntry3]
         });
-        var result = directory.lookup({
+        const result = directory.lookup({
             participantId: discoveryEntry2.participantId,
             cacheMaxAge: discoveryQos.cacheMaxAge
         });
@@ -237,7 +237,7 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesStore", function() {
         expect(result[0]).toBe(discoveryEntry2);
     });
 
-    it("gets capabilities for domain/interface", function() {
+    it("gets capabilities for domain/interface", () => {
         // different provider qos
         discoveryEntry2.qos = {
             blah: "lala"
@@ -252,7 +252,7 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesStore", function() {
         directory.add({
             discoveryEntries: [discoveryEntry1, discoveryEntry2, discoveryEntry3, discoveryEntry4]
         });
-        var result = directory.lookup({
+        const result = directory.lookup({
             domains: [discoveryEntry1.domain],
             interfaceName: discoveryEntry1.interfaceName,
             cacheMaxAge: discoveryQos.cacheMaxAge
@@ -261,15 +261,15 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesStore", function() {
         expect(result[0].participantId).not.toBe(result[1].participantId);
     });
 
-    it("can unregister capabilities with exact registered object", function() {
+    it("can unregister capabilities with exact registered object", () => {
         checkCapabilitiesDirectoryStateForUnregister(discoveryEntry1);
     });
 
-    it("can unregister capabilities with a copy of the registered capability", function() {
+    it("can unregister capabilities with a copy of the registered capability", () => {
         checkCapabilitiesDirectoryStateForUnregister(discoveryEntry4);
     });
 
-    it("can unregister multiple capabilities", function() {
+    it("can unregister multiple capabilities", () => {
         discoveryEntry2.participantId = "701";
         discoveryEntry3.participantId = "702";
         directory.add({
@@ -278,7 +278,7 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesStore", function() {
         directory.remove({
             participantIds: [discoveryEntry2.participantId, discoveryEntry3.participantId]
         });
-        var result = directory.lookup({
+        let result = directory.lookup({
             participantId: discoveryEntry2.participantId,
             cacheMaxAge: discoveryQos.cacheMaxAge
         });

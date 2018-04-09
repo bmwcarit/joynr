@@ -16,25 +16,25 @@
  * limitations under the License.
  * #L%
  */
-var Promise = require("../../../global/Promise");
-var MessagingQos = require("../../messaging/MessagingQos");
-var MulticastWildcardRegexFactory = require("../../messaging/util/MulticastWildcardRegexFactory");
-var defaultMessagingSettings = require("../../start/settings/defaultMessagingSettings");
-var SubscriptionQos = require("../../proxy/SubscriptionQos");
-var SubscriptionStop = require("../types/SubscriptionStop");
-var SubscriptionRequest = require("../types/SubscriptionRequest");
-var MulticastSubscriptionRequest = require("../types/MulticastSubscriptionRequest");
-var BroadcastSubscriptionRequest = require("../types/BroadcastSubscriptionRequest");
-var SubscriptionListener = require("./SubscriptionListener");
-var SubscriptionUtil = require("./util/SubscriptionUtil");
-var LongTimer = require("../../util/LongTimer");
-var LoggingManager = require("../../system/LoggingManager");
-var uuid = require("../../../lib/uuid-annotated");
-var Util = require("../../util/UtilInternal");
-var Typing = require("../../util/Typing");
-var TypeRegistrySingleton = require("../../../joynr/types/TypeRegistrySingleton");
-var PublicationMissedException = require("../../exceptions/PublicationMissedException");
-var JSONSerializer = require("../../util/JSONSerializer");
+const Promise = require("../../../global/Promise");
+const MessagingQos = require("../../messaging/MessagingQos");
+const MulticastWildcardRegexFactory = require("../../messaging/util/MulticastWildcardRegexFactory");
+const defaultMessagingSettings = require("../../start/settings/defaultMessagingSettings");
+const SubscriptionQos = require("../../proxy/SubscriptionQos");
+const SubscriptionStop = require("../types/SubscriptionStop");
+const SubscriptionRequest = require("../types/SubscriptionRequest");
+const MulticastSubscriptionRequest = require("../types/MulticastSubscriptionRequest");
+const BroadcastSubscriptionRequest = require("../types/BroadcastSubscriptionRequest");
+const SubscriptionListener = require("./SubscriptionListener");
+const SubscriptionUtil = require("./util/SubscriptionUtil");
+const LongTimer = require("../../util/LongTimer");
+const LoggingManager = require("../../system/LoggingManager");
+const uuid = require("../../../lib/uuid-annotated");
+const Util = require("../../util/UtilInternal");
+const Typing = require("../../util/Typing");
+const TypeRegistrySingleton = require("../../../joynr/types/TypeRegistrySingleton");
+const PublicationMissedException = require("../../exceptions/PublicationMissedException");
+const JSONSerializer = require("../../util/JSONSerializer");
 /**
  * @name SubscriptionManager
  * @constructor
@@ -42,9 +42,9 @@ var JSONSerializer = require("../../util/JSONSerializer");
  *            dispatcher
  */
 function SubscriptionManager(dispatcher) {
-    var multicastWildcardRegexFactory = new MulticastWildcardRegexFactory();
-    var log = LoggingManager.getLogger("joynr.dispatching.subscription.SubscriptionManager");
-    var typeRegistry = TypeRegistrySingleton.getInstance();
+    const multicastWildcardRegexFactory = new MulticastWildcardRegexFactory();
+    const log = LoggingManager.getLogger("joynr.dispatching.subscription.SubscriptionManager");
+    const typeRegistry = TypeRegistrySingleton.getInstance();
     if (!(this instanceof SubscriptionManager)) {
         // in case someone calls constructor without new keyword (e.g. var c =
         // Constructor({..}))
@@ -52,15 +52,15 @@ function SubscriptionManager(dispatcher) {
     }
 
     // stores subscriptionId - SubscriptionInfo pairs
-    var subscriptionInfos = {};
+    const subscriptionInfos = {};
     // stores subscriptionId - SubscriptionListener
-    var subscriptionListeners = {};
+    const subscriptionListeners = {};
     // stores the object which is returned by setTimeout mapped to the subscriptionId
-    var publicationCheckTimerIds = {};
-    var subscriptionReplyCallers = {};
-    var started = true;
+    let publicationCheckTimerIds = {};
+    let subscriptionReplyCallers = {};
+    let started = true;
 
-    var multicastSubscribers = {};
+    const multicastSubscribers = {};
 
     function isReady() {
         return started;
@@ -91,11 +91,11 @@ function SubscriptionManager(dispatcher) {
             log.warn('subscriptionEnds has been called with unresolved subscriptionId "' + subscriptionId + '"');
             return true;
         }
-        var expiryDateMs = subscriptionInfos[subscriptionId].qos.expiryDateMs;
+        const expiryDateMs = subscriptionInfos[subscriptionId].qos.expiryDateMs;
         // log.debug("Checking subscription end for subscriptionId: " + subscriptionId + "
         // expiryDateMs: " + expiryDateMs + "
         // current time: " + Date.now());
-        var ends = expiryDateMs <= Date.now() + delay_ms;
+        const ends = expiryDateMs <= Date.now() + delay_ms;
         // if (ends === true) {
         // log.info("Subscription end date reached for id: " + subscriptionId);
         // }
@@ -109,22 +109,22 @@ function SubscriptionManager(dispatcher) {
      *            alertAfterIntervalMs maximum delay between two incoming publications
      */
     function checkPublication(subscriptionId, alertAfterIntervalMs) {
-        var subscriptionListener = subscriptionListeners[subscriptionId];
-        var timeSinceLastPublication = Date.now() - getLastPublicationTime(subscriptionId);
+        const subscriptionListener = subscriptionListeners[subscriptionId];
+        const timeSinceLastPublication = Date.now() - getLastPublicationTime(subscriptionId);
         // log.debug("timeSinceLastPublication : " + timeSinceLastPublication + "
         // alertAfterIntervalMs: " + alertAfterIntervalMs);
         if (alertAfterIntervalMs > 0 && timeSinceLastPublication >= alertAfterIntervalMs) {
             // log.warn("publication missed for subscription id: " + subscriptionId);
             if (subscriptionListener.onError) {
-                var publicationMissedException = new PublicationMissedException({
+                const publicationMissedException = new PublicationMissedException({
                     detailMessage: "alertAfterIntervalMs period exceeded without receiving publication",
-                    subscriptionId: subscriptionId
+                    subscriptionId
                 });
                 subscriptionListener.onError(publicationMissedException);
             }
         }
 
-        var delay_ms;
+        let delay_ms;
         if (timeSinceLastPublication > alertAfterIntervalMs) {
             delay_ms = alertAfterIntervalMs;
         } else {
@@ -143,7 +143,7 @@ function SubscriptionManager(dispatcher) {
     }
 
     function calculateTtl(subscriptionQos) {
-        var ttl;
+        let ttl;
         if (subscriptionQos.expiryDateMs === SubscriptionQos.NO_EXPIRY_DATE) {
             return defaultMessagingSettings.MAX_MESSAGING_TTL_MS;
         }
@@ -155,14 +155,14 @@ function SubscriptionManager(dispatcher) {
     }
 
     function storeSubscriptionRequest(settings, subscriptionRequest) {
-        var onReceiveWrapper;
+        let onReceiveWrapper;
         if (settings.attributeType !== undefined) {
             onReceiveWrapper = function(response) {
                 settings.onReceive(Typing.augmentTypes(response[0], typeRegistry, settings.attributeType));
             };
         } else {
             onReceiveWrapper = function(response) {
-                var responseKey;
+                let responseKey;
                 for (responseKey in response) {
                     if (response.hasOwnProperty(responseKey)) {
                         response[responseKey] = Typing.augmentTypes(
@@ -180,7 +180,7 @@ function SubscriptionManager(dispatcher) {
             onError: settings.onError,
             onSubscribed: settings.onSubscribed
         });
-        var subscriptionInfo = Util.extend(
+        const subscriptionInfo = Util.extend(
             {
                 proxyId: settings.proxyId,
                 providerDiscoveryEntry: settings.providerDiscoveryEntry,
@@ -191,7 +191,7 @@ function SubscriptionManager(dispatcher) {
 
         subscriptionInfos[subscriptionRequest.subscriptionId] = subscriptionInfo;
 
-        var alertAfterIntervalMs = subscriptionRequest.qos.alertAfterIntervalMs;
+        const alertAfterIntervalMs = subscriptionRequest.qos.alertAfterIntervalMs;
         if (alertAfterIntervalMs !== undefined && alertAfterIntervalMs > 0) {
             publicationCheckTimerIds[subscriptionRequest.subscriptionId] = LongTimer.setTimeout(
                 checkPublication,
@@ -203,7 +203,7 @@ function SubscriptionManager(dispatcher) {
     }
 
     function removeRequestFromMulticastSubscribers(multicastId, subscriptionId) {
-        var i, multicastIdPattern, subscribers;
+        let i, multicastIdPattern, subscribers;
         for (multicastIdPattern in multicastSubscribers) {
             if (multicastSubscribers.hasOwnProperty(multicastIdPattern)) {
                 subscribers = multicastSubscribers[multicastIdPattern];
@@ -221,7 +221,7 @@ function SubscriptionManager(dispatcher) {
 
     function cleanupSubscription(subscriptionId) {
         if (subscriptionInfos[subscriptionId] !== undefined) {
-            var subscriptionInfo = subscriptionInfos[subscriptionId];
+            const subscriptionInfo = subscriptionInfos[subscriptionId];
             if (subscriptionInfo.multicastId !== undefined) {
                 removeRequestFromMulticastSubscribers(subscriptionInfo.multicastId, subscriptionId);
             }
@@ -279,7 +279,7 @@ function SubscriptionManager(dispatcher) {
         if (!isReady()) {
             return Promise.reject(new Error("SubscriptionManager is already shut down"));
         }
-        var subscriptionId = settings.subscriptionId || uuid();
+        const subscriptionId = settings.subscriptionId || uuid();
         // log.debug("Registering Subscription Id " + subscriptionId);
 
         if (settings.attributeName === undefined) {
@@ -313,17 +313,17 @@ function SubscriptionManager(dispatcher) {
                     '" has been done without receive callback function. You will not be informed about incoming publications. Please specify the "onReceive" parameter while subscribing!'
             );
         }
-        var subscriptionRequest = new SubscriptionRequest({
-            subscriptionId: subscriptionId,
+        const subscriptionRequest = new SubscriptionRequest({
+            subscriptionId,
             subscribedToName: settings.attributeName,
             qos: settings.qos
         });
 
-        var messagingQos = new MessagingQos({
+        const messagingQos = new MessagingQos({
             ttl: calculateTtl(subscriptionRequest.qos)
         });
 
-        var deferred = Util.createDeferred();
+        const deferred = Util.createDeferred();
 
         subscriptionReplyCallers[subscriptionId] = {
             resolve: deferred.resolve,
@@ -335,16 +335,16 @@ function SubscriptionManager(dispatcher) {
         dispatcher.sendSubscriptionRequest({
             from: settings.proxyId,
             toDiscoveryEntry: settings.providerDiscoveryEntry,
-            messagingQos: messagingQos,
-            subscriptionRequest: subscriptionRequest
+            messagingQos,
+            subscriptionRequest
         });
 
         return deferred.promise;
     };
 
     function addRequestToMulticastSubscribers(multicastId, subscriptionId) {
-        var i, subscribers;
-        var multicastIdPattern = multicastWildcardRegexFactory.createIdPattern(multicastId);
+        let i, subscribers;
+        const multicastIdPattern = multicastWildcardRegexFactory.createIdPattern(multicastId);
         if (multicastSubscribers[multicastIdPattern] === undefined) {
             multicastSubscribers[multicastIdPattern] = [];
         }
@@ -358,7 +358,7 @@ function SubscriptionManager(dispatcher) {
     }
 
     function createBroadcastSubscriptionRequest(parameters) {
-        var i, request;
+        let i, request;
         if (parameters.selective) {
             request = new BroadcastSubscriptionRequest({
                 subscriptionId: parameters.subscriptionId || uuid(),
@@ -418,14 +418,14 @@ function SubscriptionManager(dispatcher) {
      *          upon failure
      */
     this.registerBroadcastSubscription = function(parameters) {
-        var messagingQos;
+        let messagingQos;
 
         if (!isReady()) {
             return Promise.reject(new Error("SubscriptionManager is already shut down"));
         }
 
-        var deferred = Util.createDeferred();
-        var subscriptionRequest = createBroadcastSubscriptionRequest(parameters);
+        const deferred = Util.createDeferred();
+        const subscriptionRequest = createBroadcastSubscriptionRequest(parameters);
 
         messagingQos = new MessagingQos({
             ttl: calculateTtl(subscriptionRequest.qos)
@@ -451,8 +451,8 @@ function SubscriptionManager(dispatcher) {
             .sendBroadcastSubscriptionRequest({
                 from: parameters.proxyId,
                 toDiscoveryEntry: parameters.providerDiscoveryEntry,
-                messagingQos: messagingQos,
-                subscriptionRequest: subscriptionRequest
+                messagingQos,
+                subscriptionRequest
             })
             .catch(sendBroadcastSubscriptionRequestOnError);
 
@@ -466,8 +466,8 @@ function SubscriptionManager(dispatcher) {
      *            {SubscriptionReply} incoming subscriptionReply
      */
     this.handleSubscriptionReply = function handleSubscriptionReply(subscriptionReply) {
-        var subscriptionReplyCaller = subscriptionReplyCallers[subscriptionReply.subscriptionId];
-        var subscriptionListener = subscriptionListeners[subscriptionReply.subscriptionId];
+        const subscriptionReplyCaller = subscriptionReplyCallers[subscriptionReply.subscriptionId];
+        const subscriptionListener = subscriptionListeners[subscriptionReply.subscriptionId];
 
         if (subscriptionReplyCaller === undefined && subscriptionListener === undefined) {
             log.error(
@@ -516,7 +516,7 @@ function SubscriptionManager(dispatcher) {
      *            {MulticastPublication} incoming multicast publication
      */
     this.handleMulticastPublication = function handleMulticastPublication(publication) {
-        var i,
+        let i,
             multicastIdPattern,
             subscribers,
             subscribersFound = false;
@@ -527,7 +527,7 @@ function SubscriptionManager(dispatcher) {
                     if (subscribers !== undefined) {
                         subscribersFound = true;
                         for (i = 0; i < subscribers.length; i++) {
-                            var subscriptionListener = subscriptionListeners[subscribers[i]];
+                            const subscriptionListener = subscriptionListeners[subscribers[i]];
                             if (publication.error) {
                                 if (subscriptionListener.onError) {
                                     subscriptionListener.onError(publication.error);
@@ -580,7 +580,7 @@ function SubscriptionManager(dispatcher) {
             );
         }
         setLastPublicationTime(publication.subscriptionId, Date.now());
-        var subscriptionListener = subscriptionListeners[publication.subscriptionId];
+        const subscriptionListener = subscriptionListeners[publication.subscriptionId];
         if (publication.error) {
             if (subscriptionListener.onError) {
                 subscriptionListener.onError(publication.error);
@@ -620,33 +620,33 @@ function SubscriptionManager(dispatcher) {
             throw new Error("SubscriptionManager is already shut down");
         }
 
-        var subscriptionInfo = subscriptionInfos[settings.subscriptionId];
-        var errorMessage;
+        const subscriptionInfo = subscriptionInfos[settings.subscriptionId];
+        let errorMessage;
         if (subscriptionInfo === undefined) {
             errorMessage = "Cannot find subscription with id: " + settings.subscriptionId;
             log.error(errorMessage);
             return Promise.reject(new Error(errorMessage));
         }
 
-        var subscriptionStop = new SubscriptionStop({
+        const subscriptionStop = new SubscriptionStop({
             subscriptionId: settings.subscriptionId
         });
 
-        var promise;
+        let promise;
         if (subscriptionInfo.multicastId !== undefined) {
             promise = dispatcher.sendMulticastSubscriptionStop({
                 from: subscriptionInfo.proxyId,
                 toDiscoveryEntry: subscriptionInfo.providerDiscoveryEntry,
                 messagingQos: settings.messagingQos,
                 multicastId: subscriptionInfo.multicastId,
-                subscriptionStop: subscriptionStop
+                subscriptionStop
             });
         } else {
             promise = dispatcher.sendSubscriptionStop({
                 from: subscriptionInfo.proxyId,
                 toDiscoveryEntry: subscriptionInfo.providerDiscoveryEntry,
                 messagingQos: settings.messagingQos,
-                subscriptionStop: subscriptionStop
+                subscriptionStop
             });
         }
 
@@ -665,10 +665,10 @@ function SubscriptionManager(dispatcher) {
     };
 
     this.hasOpenSubscriptions = function() {
-        var hasSubscriptionInfos = Object.keys(subscriptionInfos).length > 0;
-        var hasSubscriptionListeners = Object.keys(subscriptionListeners).length > 0;
-        var hasPublicationCheckTimerIds = Object.keys(publicationCheckTimerIds).length > 0;
-        var hasSubscriptionReplyCallers = Object.keys(subscriptionReplyCallers).length > 0;
+        const hasSubscriptionInfos = Object.keys(subscriptionInfos).length > 0;
+        const hasSubscriptionListeners = Object.keys(subscriptionListeners).length > 0;
+        const hasPublicationCheckTimerIds = Object.keys(publicationCheckTimerIds).length > 0;
+        const hasSubscriptionReplyCallers = Object.keys(subscriptionReplyCallers).length > 0;
         return (
             hasSubscriptionInfos ||
             hasSubscriptionListeners ||
@@ -686,11 +686,11 @@ function SubscriptionManager(dispatcher) {
      * @param {number} clearSubscriptionsTimeoutMs
      */
     this.terminateSubscriptions = function(clearSubscriptionsTimeoutMs) {
-        var cleanUpPromises = [];
-        var activeSubscriptionId;
+        const cleanUpPromises = [];
+        let activeSubscriptionId;
         for (activeSubscriptionId in subscriptionInfos) {
             if (Object.prototype.hasOwnProperty.call(subscriptionInfos, activeSubscriptionId)) {
-                var promise = this.unregisterSubscription({ subscriptionId: activeSubscriptionId });
+                const promise = this.unregisterSubscription({ subscriptionId: activeSubscriptionId });
                 cleanUpPromises.push(promise);
             }
         }
@@ -703,10 +703,10 @@ function SubscriptionManager(dispatcher) {
      * @function
      */
     this.shutdown = function shutdown() {
-        var subscriptionId;
+        let subscriptionId;
         for (subscriptionId in publicationCheckTimerIds) {
             if (publicationCheckTimerIds.hasOwnProperty(subscriptionId)) {
-                var timerId = publicationCheckTimerIds[subscriptionId];
+                const timerId = publicationCheckTimerIds[subscriptionId];
                 if (timerId !== undefined) {
                     LongTimer.clearTimeout(timerId);
                 }
@@ -715,7 +715,7 @@ function SubscriptionManager(dispatcher) {
         publicationCheckTimerIds = {};
         for (subscriptionId in subscriptionReplyCallers) {
             if (subscriptionReplyCallers.hasOwnProperty(subscriptionId)) {
-                var subscriptionReplyCaller = subscriptionReplyCallers[subscriptionId];
+                const subscriptionReplyCaller = subscriptionReplyCallers[subscriptionId];
                 if (subscriptionReplyCaller) {
                     subscriptionReplyCaller.reject(new Error("Subscription Manager is already shut down"));
                 }

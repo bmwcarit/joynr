@@ -16,12 +16,12 @@
  * limitations under the License.
  * #L%
  */
-var Typing = require("../util/Typing");
-var Util = require("../util/UtilInternal");
-var SubscriptionQos = require("./SubscriptionQos");
-var LoggingManager = require("../system/LoggingManager");
+const Typing = require("../util/Typing");
+const Util = require("../util/UtilInternal");
+const SubscriptionQos = require("./SubscriptionQos");
+const LoggingManager = require("../system/LoggingManager");
 
-var defaultSettings;
+let defaultSettings;
 
 /**
  * @classdesc
@@ -83,8 +83,8 @@ function PeriodicSubscriptionQos(settings) {
         return new PeriodicSubscriptionQos(settings);
     }
 
-    var subscriptionQos = new SubscriptionQos(settings);
-    var log = LoggingManager.getLogger("joynr.proxy.PeriodicSubscriptionQos");
+    const subscriptionQos = new SubscriptionQos(settings);
+    const log = LoggingManager.getLogger("joynr.proxy.PeriodicSubscriptionQos");
 
     /**
      * Used for serialization.

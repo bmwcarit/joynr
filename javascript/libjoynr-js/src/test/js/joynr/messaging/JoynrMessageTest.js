@@ -17,11 +17,11 @@
  * #L%
  */
 require("../../node-unit-test-helper");
-var JoynrMessage = require("../../../../main/js/joynr/messaging/JoynrMessage");
+const JoynrMessage = require("../../../../main/js/joynr/messaging/JoynrMessage");
 
-describe("libjoynr-js.joynr.messaging.JoynrMessage", function() {
+describe("libjoynr-js.joynr.messaging.JoynrMessage", () => {
     function getTestMessageFields() {
-        var suffix = Date.now();
+        const suffix = Date.now();
         return {
             to: "to" + suffix,
             from: "from" + suffix,
@@ -31,7 +31,7 @@ describe("libjoynr-js.joynr.messaging.JoynrMessage", function() {
         };
     }
 
-    it("is instantiable", function(done) {
+    it("is instantiable", done => {
         expect(
             new JoynrMessage({
                 type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
@@ -40,8 +40,8 @@ describe("libjoynr-js.joynr.messaging.JoynrMessage", function() {
         done();
     });
 
-    it("is of correct type", function(done) {
-        var joynrMessage = new JoynrMessage({
+    it("is of correct type", done => {
+        const joynrMessage = new JoynrMessage({
             type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
         });
         expect(joynrMessage).toBeDefined();
@@ -51,8 +51,8 @@ describe("libjoynr-js.joynr.messaging.JoynrMessage", function() {
         done();
     });
 
-    it("constructs with correct member values", function(done) {
-        var joynrMessage = new JoynrMessage({
+    it("constructs with correct member values", done => {
+        const joynrMessage = new JoynrMessage({
             type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
         });
         /*jslint newcap: true, nomen: true */
@@ -63,13 +63,13 @@ describe("libjoynr-js.joynr.messaging.JoynrMessage", function() {
         done();
     });
 
-    it("has a header that can be set", function(done) {
-        var payload = "hello";
-        var joynrMessage = new JoynrMessage({
+    it("has a header that can be set", done => {
+        const payload = "hello";
+        const joynrMessage = new JoynrMessage({
             type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
-            payload: payload
+            payload
         });
-        var fields = getTestMessageFields();
+        const fields = getTestMessageFields();
 
         joynrMessage.expiryDate = fields.expiryDate;
         joynrMessage.replyChannelId = fields.replyChannelId;
@@ -81,13 +81,13 @@ describe("libjoynr-js.joynr.messaging.JoynrMessage", function() {
         done();
     });
 
-    it("allows setting custom headers", function(done) {
-        var joynrMessage = new JoynrMessage({
+    it("allows setting custom headers", done => {
+        const joynrMessage = new JoynrMessage({
             type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
         });
-        var headerKey = "headerKey";
-        var customHeaderKey = "custom-" + headerKey;
-        var customHeaders = {};
+        const headerKey = "headerKey";
+        const customHeaderKey = "custom-" + headerKey;
+        const customHeaders = {};
         customHeaders[headerKey] = "customHeaderValue";
 
         joynrMessage.setCustomHeaders(customHeaders);
@@ -95,15 +95,15 @@ describe("libjoynr-js.joynr.messaging.JoynrMessage", function() {
         done();
     });
 
-    it("allows getting custom headers", function(done) {
-        var retrievedCustomHeaders;
-        var headerKey = "headerKey";
-        var customHeaderKey = "custom-" + headerKey;
-        var headerValue = "headerValue";
-        var myCustomHeaders = {};
+    it("allows getting custom headers", done => {
+        let retrievedCustomHeaders;
+        const headerKey = "headerKey";
+        const customHeaderKey = "custom-" + headerKey;
+        const headerValue = "headerValue";
+        const myCustomHeaders = {};
         myCustomHeaders[headerKey] = "customHeaderValue";
 
-        var joynrMessage = new JoynrMessage({
+        const joynrMessage = new JoynrMessage({
             type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
         });
         joynrMessage.setCustomHeaders(myCustomHeaders);
@@ -118,17 +118,17 @@ describe("libjoynr-js.joynr.messaging.JoynrMessage", function() {
         done();
     });
 
-    it("has a payload that can be set", function() {
-        var payload = "hello";
-        var joynrMessage = new JoynrMessage({
+    it("has a payload that can be set", () => {
+        const payload = "hello";
+        const joynrMessage = new JoynrMessage({
             type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
-            payload: payload
+            payload
         });
         expect(joynrMessage.payload).toEqual(payload);
     });
 
-    it("allows to change receivedFromGlobal", function() {
-        var joynrMessage = new JoynrMessage({
+    it("allows to change receivedFromGlobal", () => {
+        const joynrMessage = new JoynrMessage({
             type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
             payload: "hello"
         });
@@ -137,8 +137,8 @@ describe("libjoynr-js.joynr.messaging.JoynrMessage", function() {
         expect(joynrMessage.isReceivedFromGlobal).toBe(true);
     });
 
-    it("allows to change isLocalMessage", function() {
-        var joynrMessage = new JoynrMessage({
+    it("allows to change isLocalMessage", () => {
+        const joynrMessage = new JoynrMessage({
             type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
             payload: "hello"
         });
@@ -147,8 +147,8 @@ describe("libjoynr-js.joynr.messaging.JoynrMessage", function() {
         expect(joynrMessage.isLocalMessage).toBe(true);
     });
 
-    it("allows to change compress", function() {
-        var joynrMessage = new JoynrMessage({
+    it("allows to change compress", () => {
+        const joynrMessage = new JoynrMessage({
             type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
             payload: "hello"
         });
@@ -157,11 +157,11 @@ describe("libjoynr-js.joynr.messaging.JoynrMessage", function() {
         expect(joynrMessage.compress).toBe(true);
     });
 
-    it("has comfort functions for setting values", function() {
-        var joynrMessage = new JoynrMessage({
+    it("has comfort functions for setting values", () => {
+        const joynrMessage = new JoynrMessage({
             type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
         });
-        var fields = getTestMessageFields();
+        const fields = getTestMessageFields();
 
         joynrMessage.to = fields.to;
         joynrMessage.from = fields.from;
@@ -169,11 +169,11 @@ describe("libjoynr-js.joynr.messaging.JoynrMessage", function() {
         joynrMessage.replyChannelId = fields.replyChannelId;
     });
 
-    it("has members that can be stringified to json", function() {
-        var joynrMessage = new JoynrMessage({
+    it("has members that can be stringified to json", () => {
+        const joynrMessage = new JoynrMessage({
             type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
         });
-        var fields = getTestMessageFields();
+        const fields = getTestMessageFields();
 
         joynrMessage.to = fields.to;
         joynrMessage.from = fields.from;
@@ -182,8 +182,8 @@ describe("libjoynr-js.joynr.messaging.JoynrMessage", function() {
         joynrMessage.replyChannelId = fields.replyChannelId;
 
         // stringify and parse to create a new copy
-        var json = JSON.stringify(joynrMessage);
-        var newJoynrMessage = JoynrMessage.parseMessage(JSON.parse(json));
+        const json = JSON.stringify(joynrMessage);
+        const newJoynrMessage = JoynrMessage.parseMessage(JSON.parse(json));
 
         expect(newJoynrMessage.expiryDate).toEqual(fields.expiryDate);
 

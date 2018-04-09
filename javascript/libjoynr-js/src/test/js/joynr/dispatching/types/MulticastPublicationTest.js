@@ -17,19 +17,19 @@
  * #L%
  */
 require("../../../node-unit-test-helper");
-var MulticastPublication = require("../../../../../main/js/joynr/dispatching/types/MulticastPublication");
-var RadioStation = require("../../../../generated/joynr/vehicle/radiotypes/RadioStation");
+const MulticastPublication = require("../../../../../main/js/joynr/dispatching/types/MulticastPublication");
+const RadioStation = require("../../../../generated/joynr/vehicle/radiotypes/RadioStation");
 
-describe("libjoynr-js.joynr.dispatching.types.MulticastPublication", function() {
-    it("is defined", function() {
+describe("libjoynr-js.joynr.dispatching.types.MulticastPublication", () => {
+    it("is defined", () => {
         expect(MulticastPublication).toBeDefined();
     });
 
-    it("is instantiable", function() {
-        var response = "response";
-        var publication = new MulticastPublication({
+    it("is instantiable", () => {
+        const response = "response";
+        const publication = new MulticastPublication({
             multicastId: "testMulticastId",
-            response: response
+            response
         });
         expect(publication).toBeDefined();
         expect(publication).not.toBeNull();
@@ -37,13 +37,13 @@ describe("libjoynr-js.joynr.dispatching.types.MulticastPublication", function() 
         expect(publication instanceof MulticastPublication).toBeTruthy();
     });
 
-    it("is constructs with correct member values", function() {
-        var multicastId = "testMulticastId";
-        var response = "response";
+    it("is constructs with correct member values", () => {
+        const multicastId = "testMulticastId";
+        const response = "response";
 
-        var publication = new MulticastPublication({
-            multicastId: multicastId,
-            response: response
+        const publication = new MulticastPublication({
+            multicastId,
+            response
         });
 
         expect(publication.multicastId).toEqual(multicastId);

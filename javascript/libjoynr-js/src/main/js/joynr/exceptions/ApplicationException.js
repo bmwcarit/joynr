@@ -16,12 +16,12 @@
  * limitations under the License.
  * #L%
  */
-var TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
-var Typing = require("../util/Typing");
-var Util = require("../util/UtilInternal");
-var JoynrException = require("./JoynrException");
-var LoggingManager = require("../system/LoggingManager");
-var defaultSettings;
+const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
+const Typing = require("../util/Typing");
+const Util = require("../util/UtilInternal");
+const JoynrException = require("./JoynrException");
+const LoggingManager = require("../system/LoggingManager");
+let defaultSettings;
 
 /**
  * @classdesc
@@ -52,8 +52,8 @@ function ApplicationException(settings) {
         return new ApplicationException(settings);
     }
 
-    var log = LoggingManager.getLogger("joynr.exceptions.ApplicationException");
-    var exception = new JoynrException(settings);
+    const log = LoggingManager.getLogger("joynr.exceptions.ApplicationException");
+    const exception = new JoynrException(settings);
 
     /**
      * Used for serialization.

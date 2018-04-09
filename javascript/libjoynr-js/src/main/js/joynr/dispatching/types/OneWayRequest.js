@@ -16,10 +16,10 @@
  * limitations under the License.
  * #L%
  */
-var Util = require("../../util/UtilInternal");
-var Typing = require("../../util/Typing");
+const Util = require("../../util/UtilInternal");
+const Typing = require("../../util/Typing");
 
-var defaultSettings = {
+const defaultSettings = {
     paramDatatypes: [],
     params: []
 };
@@ -47,7 +47,7 @@ function OneWayRequest(settings) {
         // = Constructor({..}))
         return new OneWayRequest(settings);
     }
-    var i;
+    let i;
 
     if (settings.params) {
         for (i = 0; i < settings.params.length; i++) {

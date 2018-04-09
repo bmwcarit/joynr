@@ -22,9 +22,9 @@
  * See: http://dev.w3.org/html5/websockets/#the-websocket-interface
  *
  */
-var JoynrRuntimeException = require("../joynr/exceptions/JoynrRuntimeException");
-var Util = require("../joynr/util/UtilInternal.js");
-var MessageSerializer = require("../joynr/messaging/MessageSerializer");
+const JoynrRuntimeException = require("../joynr/exceptions/JoynrRuntimeException");
+const Util = require("../joynr/util/UtilInternal.js");
+const MessageSerializer = require("../joynr/messaging/MessageSerializer");
 
 function useWebSocketNode() {
     if (typeof Buffer !== "function") {
@@ -36,7 +36,7 @@ function useWebSocketNode() {
      * fall back to JS implementation. Temporarily silence error output for first
      * load attempt.
      */
-    var ws;
+    let ws;
     try {
         ws = require("wscpp");
     } catch (e) {
@@ -44,17 +44,17 @@ function useWebSocketNode() {
     }
 
     function WebSocketNodeWrapper(remoteUrl, keychain, useUnencryptedTls) {
-        var clientOptions = keychain
+        const clientOptions = keychain
             ? {
                   cert: keychain.tlsCert,
                   key: keychain.tlsKey,
                   ca: keychain.tlsCa,
                   rejectUnauthorized: true,
-                  useUnencryptedTls: useUnencryptedTls
+                  useUnencryptedTls
               }
             : undefined;
 
-        var webSocketObj = new ws(remoteUrl, clientOptions);
+        const webSocketObj = new ws(remoteUrl, clientOptions);
 
         webSocketObj.encodeString = function(string) {
             return Buffer.from(string);
@@ -67,7 +67,7 @@ function useWebSocketNode() {
             return MessageSerializer.stringify(data);
         };
         webSocketObj.unmarshalJoynrMessage = function(event, callback) {
-            var joynrMessage = MessageSerializer.parse(event.data);
+            const joynrMessage = MessageSerializer.parse(event.data);
             if (joynrMessage) {
                 callback(joynrMessage);
             }

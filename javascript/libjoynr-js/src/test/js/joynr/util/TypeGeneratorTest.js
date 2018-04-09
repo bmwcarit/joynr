@@ -17,23 +17,23 @@
  * #L%
  */
 require("../../node-unit-test-helper");
-var EnumInsideTypeCollectionWithoutVersion = require("../../../generated/joynr/types/TestTypesWithoutVersion/EnumInsideTypeCollectionWithoutVersion");
-var MapInsideTypeCollectionWithoutVersion = require("../../../generated/joynr/types/TestTypesWithoutVersion/MapInsideTypeCollectionWithoutVersion");
-var StructInsideTypeCollectionWithoutVersion = require("../../../generated/joynr/types/TestTypesWithoutVersion/StructInsideTypeCollectionWithoutVersion");
-var TEnum = require("../../../generated/joynr/types/TestTypes/TEnum");
-var TStringKeyMap = require("../../../generated/joynr/types/TestTypes/TStringKeyMap");
-var TStruct = require("../../../generated/joynr/types/TestTypes/TStruct");
-var TStructWithTypedefMembers = require("../../../generated/joynr/types/TestTypes/TStructWithTypedefMembers");
-var Typing = require("../../../../main/js/joynr/util/Typing");
+const EnumInsideTypeCollectionWithoutVersion = require("../../../generated/joynr/types/TestTypesWithoutVersion/EnumInsideTypeCollectionWithoutVersion");
+const MapInsideTypeCollectionWithoutVersion = require("../../../generated/joynr/types/TestTypesWithoutVersion/MapInsideTypeCollectionWithoutVersion");
+const StructInsideTypeCollectionWithoutVersion = require("../../../generated/joynr/types/TestTypesWithoutVersion/StructInsideTypeCollectionWithoutVersion");
+const TEnum = require("../../../generated/joynr/types/TestTypes/TEnum");
+const TStringKeyMap = require("../../../generated/joynr/types/TestTypes/TStringKeyMap");
+const TStruct = require("../../../generated/joynr/types/TestTypes/TStruct");
+const TStructWithTypedefMembers = require("../../../generated/joynr/types/TestTypes/TStructWithTypedefMembers");
+const Typing = require("../../../../main/js/joynr/util/Typing");
 
-describe("libjoynr-js.joynr.TypeGenerator.Enum", function() {
-    it("type collection enum default version is set correctly", function() {
+describe("libjoynr-js.joynr.TypeGenerator.Enum", () => {
+    it("type collection enum default version is set correctly", () => {
         expect(EnumInsideTypeCollectionWithoutVersion.MAJOR_VERSION).toBeDefined();
         expect(EnumInsideTypeCollectionWithoutVersion.MAJOR_VERSION).toEqual(0);
         expect(EnumInsideTypeCollectionWithoutVersion.MINOR_VERSION).toBeDefined();
         expect(EnumInsideTypeCollectionWithoutVersion.MINOR_VERSION).toEqual(0);
     });
-    it("type collection enum version is set correctly", function() {
+    it("type collection enum version is set correctly", () => {
         expect(TEnum.MAJOR_VERSION).toBeDefined();
         expect(TEnum.MAJOR_VERSION).toEqual(49);
         expect(TEnum.MINOR_VERSION).toBeDefined();
@@ -41,14 +41,14 @@ describe("libjoynr-js.joynr.TypeGenerator.Enum", function() {
     });
 }); // describe Enum
 
-describe("libjoynr-js.joynr.TypeGenerator.Map", function() {
-    it("type collection map default version is set correctly", function() {
+describe("libjoynr-js.joynr.TypeGenerator.Map", () => {
+    it("type collection map default version is set correctly", () => {
         expect(MapInsideTypeCollectionWithoutVersion.MAJOR_VERSION).toBeDefined();
         expect(MapInsideTypeCollectionWithoutVersion.MAJOR_VERSION).toEqual(0);
         expect(MapInsideTypeCollectionWithoutVersion.MINOR_VERSION).toBeDefined();
         expect(MapInsideTypeCollectionWithoutVersion.MINOR_VERSION).toEqual(0);
     });
-    it("type collection map version is set correctly", function() {
+    it("type collection map version is set correctly", () => {
         expect(TStringKeyMap.MAJOR_VERSION).toBeDefined();
         expect(TStringKeyMap.MAJOR_VERSION).toEqual(49);
         expect(TStringKeyMap.MINOR_VERSION).toBeDefined();
@@ -56,10 +56,10 @@ describe("libjoynr-js.joynr.TypeGenerator.Map", function() {
     });
 }); // describe Map
 
-describe("libjoynr-js.joynr.TypeGenerator.Compound", function() {
-    var testStructWithTypeDefMembers;
+describe("libjoynr-js.joynr.TypeGenerator.Compound", () => {
+    let testStructWithTypeDefMembers;
 
-    beforeEach(function() {
+    beforeEach(() => {
         testStructWithTypeDefMembers = new TStructWithTypedefMembers({
             typeDefForPrimitive: 42,
             typeDefForTStruct: new TStruct({
@@ -79,13 +79,13 @@ describe("libjoynr-js.joynr.TypeGenerator.Compound", function() {
         });
     });
 
-    it("type collection struct default version is set correctly", function() {
+    it("type collection struct default version is set correctly", () => {
         expect(StructInsideTypeCollectionWithoutVersion.MAJOR_VERSION).toBeDefined();
         expect(StructInsideTypeCollectionWithoutVersion.MAJOR_VERSION).toEqual(0);
         expect(StructInsideTypeCollectionWithoutVersion.MINOR_VERSION).toBeDefined();
         expect(StructInsideTypeCollectionWithoutVersion.MINOR_VERSION).toEqual(0);
     });
-    it("type collection struct version is set correctly", function() {
+    it("type collection struct version is set correctly", () => {
         expect(TStruct.MAJOR_VERSION).toBeDefined();
         expect(TStruct.MAJOR_VERSION).toEqual(49);
         expect(TStruct.MINOR_VERSION).toBeDefined();
@@ -103,7 +103,7 @@ describe("libjoynr-js.joynr.TypeGenerator.Compound", function() {
     });
 
     it("StructWithTypedefMembers: checkMembers detects wrong types", function() {
-        var testStruct;
+        let testStruct;
 
         testStruct = new TStructWithTypedefMembers(testStructWithTypeDefMembers);
         testStruct.typeDefForPrimitive = "string";

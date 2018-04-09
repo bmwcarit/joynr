@@ -17,40 +17,40 @@
  * #L%
  */
 require("../../node-unit-test-helper");
-var ProxyBuilder = require("../../../../main/js/joynr/proxy/ProxyBuilder");
-var ProxyOperation = require("../../../../main/js/joynr/proxy/ProxyOperation");
-var ProxyEvent = require("../../../../main/js/joynr/proxy/ProxyEvent");
-var DiscoveryQos = require("../../../../main/js/joynr/proxy/DiscoveryQos");
-var MessagingQos = require("../../../../main/js/joynr/messaging/MessagingQos");
-var ProviderQos = require("../../../../main/js/generated/joynr/types/ProviderQos");
-var ProviderScope = require("../../../../main/js/generated/joynr/types/ProviderScope");
-var DiscoveryEntryWithMetaInfo = require("../../../../main/js/generated/joynr/types/DiscoveryEntryWithMetaInfo");
-var ArbitrationStrategyCollection = require("../../../../main/js/joynr/types/ArbitrationStrategyCollection");
-var DiscoveryScope = require("../../../../main/js/generated/joynr/types/DiscoveryScope");
-var Version = require("../../../../main/js/generated/joynr/types/Version");
-var InProcessAddress = require("../../../../main/js/joynr/messaging/inprocess/InProcessAddress");
-var RadioProxy = require("../../../generated/joynr/vehicle/RadioProxy");
-var RadioStation = require("../../../generated/joynr/vehicle/radiotypes/RadioStation");
-var Promise = require("../../../../main/js/global/Promise");
-var waitsFor = require("../../../../test/js/global/WaitsFor");
+const ProxyBuilder = require("../../../../main/js/joynr/proxy/ProxyBuilder");
+const ProxyOperation = require("../../../../main/js/joynr/proxy/ProxyOperation");
+const ProxyEvent = require("../../../../main/js/joynr/proxy/ProxyEvent");
+const DiscoveryQos = require("../../../../main/js/joynr/proxy/DiscoveryQos");
+const MessagingQos = require("../../../../main/js/joynr/messaging/MessagingQos");
+const ProviderQos = require("../../../../main/js/generated/joynr/types/ProviderQos");
+const ProviderScope = require("../../../../main/js/generated/joynr/types/ProviderScope");
+const DiscoveryEntryWithMetaInfo = require("../../../../main/js/generated/joynr/types/DiscoveryEntryWithMetaInfo");
+const ArbitrationStrategyCollection = require("../../../../main/js/joynr/types/ArbitrationStrategyCollection");
+const DiscoveryScope = require("../../../../main/js/generated/joynr/types/DiscoveryScope");
+const Version = require("../../../../main/js/generated/joynr/types/Version");
+const InProcessAddress = require("../../../../main/js/joynr/messaging/inprocess/InProcessAddress");
+const RadioProxy = require("../../../generated/joynr/vehicle/RadioProxy");
+const RadioStation = require("../../../generated/joynr/vehicle/radiotypes/RadioStation");
+const Promise = require("../../../../main/js/global/Promise");
+const waitsFor = require("../../../../test/js/global/WaitsFor");
 
-var safetyTimeoutDelta = 100;
+const safetyTimeoutDelta = 100;
 
-var interfaceName = "io/joynr/apps/radio";
+let interfaceName = "io/joynr/apps/radio";
 
-describe("libjoynr-js.joynr.proxy.ProxyBuilder", function() {
-    var proxyBuilder;
-    var domain;
-    var arbitratorSpy;
-    var discoveryQos;
-    var settings;
-    var capInfo;
-    var arbitratedCaps;
-    var messagingQos;
-    var messageRouterSpy;
-    var libjoynrMessagingAddress;
+describe("libjoynr-js.joynr.proxy.ProxyBuilder", () => {
+    let proxyBuilder;
+    let domain;
+    let arbitratorSpy;
+    let discoveryQos;
+    let settings;
+    let capInfo;
+    let arbitratedCaps;
+    let messagingQos;
+    let messageRouterSpy;
+    let libjoynrMessagingAddress;
 
-    beforeEach(function(done) {
+    beforeEach(done => {
         domain = "myDomain";
         interfaceName = "vehicle/Radio";
         discoveryQos = new DiscoveryQos({
@@ -63,16 +63,16 @@ describe("libjoynr-js.joynr.proxy.ProxyBuilder", function() {
         });
         messagingQos = new MessagingQos();
         settings = {
-            domain: domain,
-            discoveryQos: discoveryQos,
-            messagingQos: messagingQos,
+            domain,
+            discoveryQos,
+            messagingQos,
             staticArbitration: false
         };
 
         capInfo = new DiscoveryEntryWithMetaInfo({
             providerVersion: new Version({ majorVersion: 47, minorVersion: 11 }),
-            domain: domain,
-            interfaceName: interfaceName,
+            domain,
+            interfaceName,
             participantId: "myParticipantId",
             qos: new ProviderQos({
                 customParameter: [],
@@ -94,7 +94,7 @@ describe("libjoynr-js.joynr.proxy.ProxyBuilder", function() {
             key: "libjoynrMessagingAddress"
         };
 
-        var resolvedPromise = Promise.resolve(arbitratedCaps);
+        const resolvedPromise = Promise.resolve(arbitratedCaps);
         arbitratorSpy.startArbitration.and.returnValue(resolvedPromise);
         messageRouterSpy.addNextHop.and.returnValue(resolvedPromise);
         proxyBuilder = new ProxyBuilder(
@@ -103,36 +103,36 @@ describe("libjoynr-js.joynr.proxy.ProxyBuilder", function() {
             },
             {
                 messageRouter: messageRouterSpy,
-                libjoynrMessagingAddress: libjoynrMessagingAddress
+                libjoynrMessagingAddress
             }
         );
         done();
     });
 
-    it("is defined and of correct type", function(done) {
+    it("is defined and of correct type", done => {
         expect(proxyBuilder).toBeDefined();
         expect(typeof proxyBuilder.build === "function").toBe(true);
         done();
     });
 
-    it("throws exceptions upon missing or wrongly typed arguments", function(done) {
+    it("throws exceptions upon missing or wrongly typed arguments", done => {
         // settings is undefined
-        expect(function() {
+        expect(() => {
             proxyBuilder.build(RadioProxy);
         }).toThrow();
         // settings is not of type object
-        expect(function() {
+        expect(() => {
             proxyBuilder.build(RadioProxy, "notObject");
         }).toThrow();
         // domain is undefined
-        expect(function() {
+        expect(() => {
             proxyBuilder.build(RadioProxy, {
                 discoveryQos: new DiscoveryQos(),
                 messagingQos: new MessagingQos()
             });
         }).toThrow();
         // domain is not of type string
-        expect(function() {
+        expect(() => {
             proxyBuilder.build(RadioProxy, {
                 domain: 1234,
                 discoveryQos: new DiscoveryQos(),
@@ -140,7 +140,7 @@ describe("libjoynr-js.joynr.proxy.ProxyBuilder", function() {
             });
         }).toThrow();
         // discoveryQos is not of type DiscoveryQos
-        expect(function() {
+        expect(() => {
             proxyBuilder.build(RadioProxy, {
                 domain: "",
                 discoveryQos: {},
@@ -148,7 +148,7 @@ describe("libjoynr-js.joynr.proxy.ProxyBuilder", function() {
             });
         }).not.toThrow();
         // messagingQos is is not of type MessagingQos
-        expect(function() {
+        expect(() => {
             proxyBuilder.build(RadioProxy, {
                 domain: "",
                 discoveryQos: new DiscoveryQos(),
@@ -156,27 +156,27 @@ describe("libjoynr-js.joynr.proxy.ProxyBuilder", function() {
             });
         }).not.toThrow();
         // discoveryQos is missing
-        expect(function() {
+        expect(() => {
             proxyBuilder.build(RadioProxy, {
                 domain: "",
                 messagingQos: new MessagingQos()
             });
         }).not.toThrow();
         // messagingQos is missing
-        expect(function() {
+        expect(() => {
             proxyBuilder.build(RadioProxy, {
                 domain: "",
                 discoveryQos: new DiscoveryQos()
             });
         }).not.toThrow();
         // messagingQos and discoveryQos are missing
-        expect(function() {
+        expect(() => {
             proxyBuilder.build(RadioProxy, {
                 domain: ""
             });
         }).not.toThrow();
         // ok
-        expect(function() {
+        expect(() => {
             proxyBuilder.build(RadioProxy, {
                 domain: "",
                 discoveryQos: new DiscoveryQos(),
@@ -186,15 +186,15 @@ describe("libjoynr-js.joynr.proxy.ProxyBuilder", function() {
         done();
     });
 
-    it("does not throw", function(done) {
-        expect(function() {
+    it("does not throw", done => {
+        expect(() => {
             proxyBuilder.build(RadioProxy, settings);
         }).not.toThrow();
         done();
     });
 
-    it("returns an A+ Promise object", function(done) {
-        var promise = proxyBuilder.build(RadioProxy, settings);
+    it("returns an A+ Promise object", done => {
+        const promise = proxyBuilder.build(RadioProxy, settings);
         expect(promise).toBeDefined();
         expect(promise).not.toBeNull();
         expect(typeof promise === "object").toBeTruthy();
@@ -202,21 +202,21 @@ describe("libjoynr-js.joynr.proxy.ProxyBuilder", function() {
         done();
     });
 
-    it("calls arbitrator with correct arguments", function(done) {
+    it("calls arbitrator with correct arguments", done => {
         proxyBuilder.build(RadioProxy, settings);
 
         waitsFor(
-            function() {
+            () => {
                 return arbitratorSpy.startArbitration.calls.count() > 0;
             },
             "startArbitration invoked",
             100
         )
-            .then(function() {
+            .then(() => {
                 expect(arbitratorSpy.startArbitration).toHaveBeenCalled();
                 expect(arbitratorSpy.startArbitration).toHaveBeenCalledWith({
                     domains: [settings.domain],
-                    interfaceName: interfaceName,
+                    interfaceName,
                     discoveryQos: settings.discoveryQos,
                     staticArbitration: settings.staticArbitration,
                     proxyVersion: new Version({ majorVersion: 47, minorVersion: 11 })
@@ -227,28 +227,28 @@ describe("libjoynr-js.joynr.proxy.ProxyBuilder", function() {
             .catch(fail);
     });
 
-    it("returned promise is resolved with a frozen proxy object by default", function(done) {
-        var spy = jasmine.createSpyObj("spy", ["onFulfilled", "onRejected"]);
+    it("returned promise is resolved with a frozen proxy object by default", done => {
+        const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onRejected"]);
 
         proxyBuilder
             .build(RadioProxy, settings)
-            .then(function(argument) {
+            .then(argument => {
                 spy.onFulfilled(argument);
             })
             .catch(spy.onRejected);
 
         waitsFor(
-            function() {
+            () => {
                 return spy.onFulfilled.calls.count() > 0;
             },
             "until the ProxyBuilder promise is not pending any more",
             safetyTimeoutDelta
         )
-            .then(function() {
+            .then(() => {
                 expect(spy.onFulfilled).toHaveBeenCalled();
                 expect(spy.onFulfilled).toHaveBeenCalledWith(jasmine.any(RadioProxy));
                 expect(spy.onRejected).not.toHaveBeenCalled();
-                var proxy = spy.onFulfilled.calls.mostRecent().args[0];
+                const proxy = spy.onFulfilled.calls.mostRecent().args[0];
                 proxy.adaptfrozenObjectShouldNotWork = "adaptfrozenObjectShouldNotWork";
                 expect(proxy.adaptfrozenObjectShouldNotWork).not.toBeDefined();
                 done();
@@ -257,29 +257,29 @@ describe("libjoynr-js.joynr.proxy.ProxyBuilder", function() {
             .catch(fail);
     });
 
-    it("returned promise is resolved with an unfrozen proxy object if set accordingly", function(done) {
-        var spy = jasmine.createSpyObj("spy", ["onFulfilled", "onRejected"]);
+    it("returned promise is resolved with an unfrozen proxy object if set accordingly", done => {
+        const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onRejected"]);
 
         settings.freeze = false;
         proxyBuilder
             .build(RadioProxy, settings)
-            .then(function(argument) {
+            .then(argument => {
                 spy.onFulfilled(argument);
             })
             .catch(spy.onRejected);
 
         waitsFor(
-            function() {
+            () => {
                 return spy.onFulfilled.calls.count() > 0;
             },
             "until the ProxyBuilder promise is not pending any more",
             safetyTimeoutDelta
         )
-            .then(function() {
+            .then(() => {
                 expect(spy.onFulfilled).toHaveBeenCalled();
                 expect(spy.onFulfilled).toHaveBeenCalledWith(jasmine.any(RadioProxy));
                 expect(spy.onRejected).not.toHaveBeenCalled();
-                var proxy = spy.onFulfilled.calls.mostRecent().args[0];
+                const proxy = spy.onFulfilled.calls.mostRecent().args[0];
                 proxy.adaptUnfrozenObjectShouldWork = "adaptUnfrozenObjectShouldWork";
                 expect(proxy.adaptUnfrozenObjectShouldWork).toEqual("adaptUnfrozenObjectShouldWork");
                 done();
@@ -288,11 +288,11 @@ describe("libjoynr-js.joynr.proxy.ProxyBuilder", function() {
             .catch(fail);
     });
 
-    it("returned promise is rejected with error", function(done) {
-        var spy = jasmine.createSpyObj("spy", ["onFulfilled", "onRejected"]);
-        var error = new Error("MyError");
+    it("returned promise is rejected with error", done => {
+        const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onRejected"]);
+        const error = new Error("MyError");
 
-        var onRejectedCalled = false;
+        let onRejectedCalled = false;
 
         arbitratorSpy.startArbitration.and.returnValue(Promise.reject(error));
         proxyBuilder = new ProxyBuilder({
@@ -301,19 +301,19 @@ describe("libjoynr-js.joynr.proxy.ProxyBuilder", function() {
         proxyBuilder
             .build(RadioProxy, settings)
             .then(spy.onFulfilled)
-            .catch(function(error) {
+            .catch(error => {
                 onRejectedCalled = true;
                 spy.onRejected(error);
             });
 
         waitsFor(
-            function() {
+            () => {
                 return onRejectedCalled;
             },
             "until the ProxyBuilder promise is not pending any more",
             safetyTimeoutDelta
         )
-            .then(function() {
+            .then(() => {
                 expect(spy.onFulfilled).not.toHaveBeenCalled();
                 expect(spy.onRejected).toHaveBeenCalled();
                 expect(spy.onRejected).toHaveBeenCalledWith(error);
@@ -323,27 +323,27 @@ describe("libjoynr-js.joynr.proxy.ProxyBuilder", function() {
             .catch(fail);
     });
 
-    it("returned promise is resolved with proxy object with injected providerParticipantId", function(done) {
-        var spy = jasmine.createSpyObj("spy", ["onFulfilled", "onRejected"]);
+    it("returned promise is resolved with proxy object with injected providerParticipantId", done => {
+        const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onRejected"]);
 
-        var onFulfilledCalled = false;
+        let onFulfilledCalled = false;
 
         proxyBuilder
             .build(RadioProxy, settings)
-            .then(function(argument) {
+            .then(argument => {
                 onFulfilledCalled = true;
                 spy.onFulfilled(argument);
             })
             .catch(spy.onRejected);
 
         waitsFor(
-            function() {
+            () => {
                 return onFulfilledCalled;
             },
             "until the ProxyBuilder promise is not pending any more",
             safetyTimeoutDelta
         )
-            .then(function() {
+            .then(() => {
                 expect(spy.onFulfilled.calls.argsFor(0)[0].providerDiscoveryEntry).toEqual(arbitratedCaps[0]);
                 done();
                 return null;
@@ -351,32 +351,32 @@ describe("libjoynr-js.joynr.proxy.ProxyBuilder", function() {
             .catch(fail);
     });
 
-    it("adds a routing table entry for proxy and knows provider", function(done) {
-        var promise,
+    it("adds a routing table entry for proxy and knows provider", done => {
+        let promise,
             spy = jasmine.createSpyObj("spy", ["onFulfilled", "onRejected"]);
 
-        var onFulfilledCalled = false;
+        let onFulfilledCalled = false;
 
         proxyBuilder
             .build(RadioProxy, settings)
-            .then(function(argument) {
+            .then(argument => {
                 onFulfilledCalled = true;
                 spy.onFulfilled(argument);
                 return null;
             })
-            .catch(function() {
+            .catch(() => {
                 spy.onRejected();
                 return null;
             });
 
         waitsFor(
-            function() {
+            () => {
                 return onFulfilledCalled;
             },
             "until the ProxyBuilder promise is not pending any more",
             safetyTimeoutDelta
         )
-            .then(function() {
+            .then(() => {
                 expect(spy.onFulfilled.calls.argsFor(0)[0].providerDiscoveryEntry).toEqual(arbitratedCaps[0]);
                 expect(typeof messageRouterSpy.addNextHop.calls.mostRecent().args[0] === "string").toBeTruthy();
                 expect(messageRouterSpy.setToKnown.calls.mostRecent().args[0]).toEqual(arbitratedCaps[0].participantId);
