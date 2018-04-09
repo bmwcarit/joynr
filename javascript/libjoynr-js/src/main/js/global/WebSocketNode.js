@@ -1,3 +1,4 @@
+/*eslint global-require: "off"*/
 /*
  * #%L
  * %%

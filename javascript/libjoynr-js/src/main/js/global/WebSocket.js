@@ -40,9 +40,9 @@ WebSocket.encodeString = function(string) {
 };
 WebSocket.decodeEventData = function(event, callback) {
     if (event.target.binaryType.toLocaleLowerCase() === "blob") {
-        fileReader.onload = function(event) {
+        fileReader.onload = function(loadEvent) {
             // TODO error handling, unit test for WebSocket+WebSocketNode
-            callback(event.target.result);
+            callback(loadEvent.target.result);
         };
         fileReader.readAsText(event.data);
     } else if (event.target.binaryType.toLocaleLowerCase() === "arraybuffer") {
