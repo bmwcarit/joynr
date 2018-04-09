@@ -27,7 +27,8 @@
 namespace joynr
 {
 
-ParticipantIdStorage::ParticipantIdStorage(const std::string& filename) : storage(filename)
+ParticipantIdStorage::ParticipantIdStorage(const std::string& filename)
+        : fileMutex(), storageMutex(), storage(filename)
 {
 }
 
@@ -45,7 +46,10 @@ void ParticipantIdStorage::setProviderParticipantId(const std::string& domain,
     assert(!interfaceName.empty());
 
     std::string providerKey = createProviderKey(domain, interfaceName);
-    storage.set(providerKey, participantId);
+    {
+        WriteLocker lockAccessToStorage(storageMutex);
+        storage.set(providerKey, participantId);
+    }
     sync();
 }
 
@@ -64,8 +68,13 @@ std::string ParticipantIdStorage::getProviderParticipantId(const std::string& do
 
     std::string providerKey = createProviderKey(domain, interfaceName);
 
-    if (boost::optional<std::string> participantId =
-                storage.getOptional<std::string>(providerKey)) {
+    boost::optional<std::string> participantId = boost::none;
+    {
+        ReadLocker lockAccessToStorage(storageMutex);
+        participantId = storage.getOptional<std::string>(providerKey);
+    }
+
+    if (participantId) {
         return *participantId;
     } else {
         return (!defaultValue.empty()) ? defaultValue : util::createUuid();
@@ -74,7 +83,9 @@ std::string ParticipantIdStorage::getProviderParticipantId(const std::string& do
 
 void ParticipantIdStorage::sync()
 {
-    std::lock_guard<std::mutex> lockAccessToFile(mutex);
+    std::lock_guard<std::mutex> lockAccessToFile(fileMutex);
+    WriteLocker lockAccessToStorage(storageMutex);
+
     storage.sync();
 }
 

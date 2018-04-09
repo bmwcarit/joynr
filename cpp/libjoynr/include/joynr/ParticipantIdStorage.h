@@ -24,6 +24,7 @@
 
 #include "joynr/JoynrExport.h"
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/ReadWriteLock.h"
 #include "joynr/Settings.h"
 
 namespace joynr
@@ -78,7 +79,9 @@ private:
     DISALLOW_COPY_AND_ASSIGN(ParticipantIdStorage);
     std::string createProviderKey(const std::string& domain, const std::string& interfaceName);
 
-    std::mutex mutex;
+    std::mutex fileMutex;
+    ReadWriteLock storageMutex;
+
     joynr::Settings storage;
 };
 
