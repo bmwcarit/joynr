@@ -18,7 +18,6 @@
  */
 const Typing = require("../../util/Typing");
 const WebSocketMessagingStub = require("./WebSocketMessagingStub");
-const WebSocketAddress = require("../../../generated/joynr/system/RoutingTypes/WebSocketAddress");
 
 /**
  * @constructor

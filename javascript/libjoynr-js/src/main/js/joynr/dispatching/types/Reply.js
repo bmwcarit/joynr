@@ -17,7 +17,6 @@
  * #L%
  */
 const Util = require("../../util/UtilInternal");
-const Typing = require("../../util/Typing");
 
 /**
  * @name Reply

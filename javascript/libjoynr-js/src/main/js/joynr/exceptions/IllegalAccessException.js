@@ -19,7 +19,6 @@
 const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
 const Util = require("../util/UtilInternal");
 const JoynrRuntimeException = require("./JoynrRuntimeException");
-const LoggingManager = require("../system/LoggingManager");
 let defaultSettings;
 
 /**
@@ -48,7 +47,6 @@ function IllegalAccessException(settings) {
         return new IllegalAccessException(settings);
     }
 
-    const log = LoggingManager.getLogger("joynr.exceptions.IllegalAccessException");
     const joynrRuntimeException = new JoynrRuntimeException(settings);
 
     /**

@@ -1,3 +1,4 @@
+/*eslint global-require: "off"*/
 /*
  * #%L
  * %%
@@ -22,20 +23,6 @@ function populateJoynrApi(joynr, api) {
     for (key in api) {
         if (api.hasOwnProperty(key)) {
             joynr[key] = api[key];
-        }
-    }
-}
-
-function recursiveFreeze(object) {
-    let property;
-    let propertyKey = null;
-    Object.freeze(object); // First freeze the object.
-    for (propertyKey in object) {
-        if (object.hasOwnProperty(propertyKey)) {
-            property = object[propertyKey];
-            if (typeof property === "object" && !Object.isFrozen(property)) {
-                recursiveFreeze(property);
-            }
         }
     }
 }
@@ -80,7 +67,7 @@ const GenerationUtil = require("./joynr/util/GenerationUtil");
  * @name joynr
  * @class
  */
-var joynr = {
+let joynr = {
     loaded: false,
     /**
      * @name joynr#load
@@ -158,7 +145,7 @@ if (typeof window === "object") {
 
 joynr.selectRuntime = function selectRuntime(runtime) {
     if (joynr.loaded) {
-        throw new Error("joynr.selectRuntime: this method must " + "be invoked before calling joynr.load()");
+        throw new Error("joynr.selectRuntime: this method must be invoked before calling joynr.load()");
     }
     joynr._selectedRuntime = runtime;
 };

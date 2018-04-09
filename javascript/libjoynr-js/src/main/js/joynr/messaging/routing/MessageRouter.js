@@ -67,7 +67,7 @@ function MessageRouter(settings) {
     const that = this;
     const multicastWildcardRegexFactory = new MulticastWildcardRegexFactory();
     const log = LoggingManager.getLogger("joynr/messaging/routing/MessageRouter");
-    let listener, routingProxy, messagingStub;
+    let routingProxy, messagingStub;
     let queuedAddNextHopCalls = [],
         queuedRemoveNextHopCalls = [],
         queuedAddMulticastReceiverCalls = [],
@@ -765,22 +765,10 @@ function MessageRouter(settings) {
      * @returns void
      */
     this.participantRegistered = function participantRegistered(participantId) {
-        let i,
-            msgContainer,
-            messageQueue = settings.messageQueue.getAndRemoveMessages(participantId);
-
-        function handleError(error) {
-            log.error(
-                "queued message could not be sent to " +
-                    participantId +
-                    ", error: " +
-                    error +
-                    (error instanceof JoynrException ? " " + error.detailMessage : "")
-            );
-        }
+        let messageQueue = settings.messageQueue.getAndRemoveMessages(participantId);
 
         if (messageQueue !== undefined) {
-            i = messageQueue.length;
+            let i = messageQueue.length;
             while (i--) {
                 that.route(messageQueue[i]);
             }

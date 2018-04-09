@@ -358,7 +358,7 @@ function SubscriptionManager(dispatcher) {
     }
 
     function createBroadcastSubscriptionRequest(parameters) {
-        let i, request;
+        let request;
         if (parameters.selective) {
             request = new BroadcastSubscriptionRequest({
                 subscriptionId: parameters.subscriptionId || uuid(),

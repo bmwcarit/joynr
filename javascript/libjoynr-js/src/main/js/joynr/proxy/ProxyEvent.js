@@ -19,7 +19,6 @@
 const Promise = require("../../global/Promise");
 const BroadcastFilterParameters = require("./BroadcastFilterParameters");
 const SubscriptionUtil = require("../dispatching/subscription/util/SubscriptionUtil");
-const Util = require("../util/UtilInternal");
 
 /**
  * Checks if the given datatypes and values match the given broadcast parameters
@@ -39,9 +38,7 @@ const Util = require("../util/UtilInternal");
 function getNamedParameters(unnamedBroadcastValues, broadcastParameter) {
     let i,
         parameter,
-        parameterName,
-        namedParameters = {},
-        filteredParameterType;
+        namedParameters = {};
 
     // check if number of given parameters matches number
     // of parameters in broadcast signature (keys.length)

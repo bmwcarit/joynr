@@ -19,8 +19,6 @@
 const Util = require("../../util/UtilInternal");
 const Typing = require("../../util/Typing");
 const PeriodicSubscriptionQos = require("../../proxy/PeriodicSubscriptionQos");
-const OnChangeSubscriptionQos = require("../../proxy/OnChangeSubscriptionQos");
-const OnChangeWithKeepAliveSubscriptionQos = require("../../proxy/OnChangeWithKeepAliveSubscriptionQos");
 
 const defaultSettings = {
     qos: new PeriodicSubscriptionQos()

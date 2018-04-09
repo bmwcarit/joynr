@@ -19,7 +19,6 @@
 const ArbitrationStrategyCollection = require("../../joynr/types/ArbitrationStrategyCollection");
 const DiscoveryScope = require("../../generated/joynr/types/DiscoveryScope");
 const Util = require("../util/UtilInternal");
-const LoggingManager = require("../system/LoggingManager");
 
 let defaultSettings = {
     discoveryTimeoutMs: 10 * 60 * 1000, // 10 minutes
@@ -53,8 +52,6 @@ function DiscoveryQos(settings) {
         // in case someone calls constructor without new keyword (e.g. var c = Constructor({..}))
         return new DiscoveryQos(settings);
     }
-
-    const log = LoggingManager.getLogger("joynr.proxy.DiscoveryQos");
 
     settings = Util.extend({}, defaultSettings, settings);
 

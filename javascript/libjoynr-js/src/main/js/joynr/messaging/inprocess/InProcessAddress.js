@@ -57,7 +57,6 @@ Object.defineProperty(InProcessAddress.prototype, "equals", {
     writable: false,
     readable: true,
     value: function equals(other) {
-        let i;
         if (this === other) {
             return true;
         }

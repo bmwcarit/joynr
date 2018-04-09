@@ -20,7 +20,6 @@ const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton")
 const Typing = require("../util/Typing");
 const Util = require("../util/UtilInternal");
 const JoynrRuntimeException = require("./JoynrRuntimeException");
-const LoggingManager = require("../system/LoggingManager");
 let defaultSettings;
 
 /**
@@ -51,7 +50,6 @@ function PublicationMissedException(settings) {
         return new PublicationMissedException(settings);
     }
 
-    const log = LoggingManager.getLogger("joynr.exceptions.PublicationMissedException");
     const runtimeException = new JoynrRuntimeException(settings);
 
     Typing.checkProperty(settings.subscriptionId, "String", "settings.subscriptionId");

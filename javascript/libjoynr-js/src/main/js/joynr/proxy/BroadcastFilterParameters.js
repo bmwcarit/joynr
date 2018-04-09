@@ -18,7 +18,6 @@
  */
 const Typing = require("../util/Typing");
 const Util = require("../util/UtilInternal");
-const LoggingManager = require("../system/LoggingManager");
 
 function makeSetterFunction(obj, parameterName) {
     return function(arg) {
@@ -44,8 +43,6 @@ function BroadcastFilterParameters(filterParameterProperties) {
         // = Constructor({..}))
         return new BroadcastFilterParameters(filterParameterProperties);
     }
-
-    const log = LoggingManager.getLogger("joynr.proxy.BroadcastFilterParameters");
 
     /**
      * @name BroadcastFilterParameters#_typeName

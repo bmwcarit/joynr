@@ -17,12 +17,6 @@
  * #L%
  */
 const Util = require("../../util/UtilInternal");
-const Typing = require("../../util/Typing");
-
-const defaultSettings = {
-    paramDatatypes: [],
-    params: []
-};
 
 /**
  * @name OneWayRequest

@@ -18,12 +18,9 @@
  */
 const Promise = require("../../global/Promise");
 const Reply = require("./types/Reply");
-const MessagingQos = require("../messaging/MessagingQos");
-const InProcessAddress = require("../messaging/inprocess/InProcessAddress");
 const Typing = require("../util/Typing");
 const Util = require("../util/UtilInternal");
 const JSONSerializer = require("../util/JSONSerializer");
-const LongTimer = require("../util/LongTimer");
 const MethodInvocationException = require("../exceptions/MethodInvocationException");
 const ProviderRuntimeException = require("../exceptions/ProviderRuntimeException");
 const Version = require("../../generated/joynr/types/Version");

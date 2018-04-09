@@ -21,7 +21,6 @@ const MethodUtil = require("../util/MethodUtil");
 const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
 const ApplicationException = require("../exceptions/ApplicationException");
 const ProviderRuntimeException = require("../exceptions/ProviderRuntimeException");
-const Util = require("../util/UtilInternal");
 const Promise = require("../../global/Promise");
 
 const typeRegistry = TypeRegistrySingleton.getInstance();
@@ -187,9 +186,6 @@ function privateOperationOnError(exceptionOrErrorEnumValue) {
 ProviderOperation.prototype.callOperation = function callOperation(operationArguments, operationArgumentTypes) {
     let i, j;
     let argument, namedArguments, signature;
-    let result;
-    let errorEnumType;
-    let exception;
 
     // cycle through multiple available operation signatures
     for (i = 0; i < this._operationSignatures.length && namedArguments === undefined; ++i) {
@@ -204,9 +200,6 @@ ProviderOperation.prototype.callOperation = function callOperation(operationArgu
     }
 
     if (namedArguments) {
-        if (signature.error && signature.error.type) {
-            errorEnumType = signature.error.type;
-        }
         // augment types
         for (j = 0; j < signature.inputParameter.length; ++j) {
             argument = signature.inputParameter[j];

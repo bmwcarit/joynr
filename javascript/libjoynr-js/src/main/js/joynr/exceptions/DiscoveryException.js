@@ -19,7 +19,6 @@
 const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
 const Util = require("../util/UtilInternal");
 const JoynrRuntimeException = require("./JoynrRuntimeException");
-const LoggingManager = require("../system/LoggingManager");
 let defaultSettings;
 
 /**
@@ -47,7 +46,6 @@ function DiscoveryException(settings) {
         return new DiscoveryException(settings);
     }
 
-    const log = LoggingManager.getLogger("joynr.exceptions.DiscoveryException");
     const joynrRuntimeException = new JoynrRuntimeException(settings);
 
     /**

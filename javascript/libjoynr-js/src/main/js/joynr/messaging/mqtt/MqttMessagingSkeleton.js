@@ -17,11 +17,7 @@
  * #L%
  */
 const Typing = require("../../util/Typing");
-const LoggingManager = require("../../system/LoggingManager");
-const DiagnosticTags = require("../../system/DiagnosticTags");
-const JoynrException = require("../../exceptions/JoynrException");
 
-const log = LoggingManager.getLogger("joynr/messaging/mqtt/MqttMessagingSkeleton");
 /**
  * @constructor MqttMessagingSkeleton
  * @param {Object} settings

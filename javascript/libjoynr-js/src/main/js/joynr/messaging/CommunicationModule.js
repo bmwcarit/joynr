@@ -16,7 +16,6 @@
  * limitations under the License.
  * #L%
  */
-const Promise = require("../../global/Promise");
 const XMLHttpRequestDependency = require("../../global/XMLHttpRequestNode");
 const atmosphereDependency = require("../../lib/atmosphereNode");
 const LongTimer = require("../util/LongTimer");

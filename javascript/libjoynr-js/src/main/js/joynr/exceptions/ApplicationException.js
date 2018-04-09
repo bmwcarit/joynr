@@ -20,7 +20,6 @@ const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton")
 const Typing = require("../util/Typing");
 const Util = require("../util/UtilInternal");
 const JoynrException = require("./JoynrException");
-const LoggingManager = require("../system/LoggingManager");
 let defaultSettings;
 
 /**
@@ -52,7 +51,6 @@ function ApplicationException(settings) {
         return new ApplicationException(settings);
     }
 
-    const log = LoggingManager.getLogger("joynr.exceptions.ApplicationException");
     const exception = new JoynrException(settings);
 
     /**

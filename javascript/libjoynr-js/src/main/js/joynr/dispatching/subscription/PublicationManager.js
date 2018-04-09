@@ -1,3 +1,4 @@
+/*eslint no-use-before-define: "off"*/
 /*
  * #%L
  * %%
@@ -16,19 +17,14 @@
  * limitations under the License.
  * #L%
  */
-const Promise = require("../../../global/Promise");
 const SubscriptionQos = require("../../proxy/SubscriptionQos");
 const PeriodicSubscriptionQos = require("../../proxy/PeriodicSubscriptionQos");
-const BroadcastSubscriptionRequest = require("../types/BroadcastSubscriptionRequest");
-const SubscriptionRequest = require("../types/SubscriptionRequest");
 const MulticastPublication = require("../types/MulticastPublication");
 const SubscriptionPublication = require("../types/SubscriptionPublication");
 const SubscriptionReply = require("../types/SubscriptionReply");
 const SubscriptionStop = require("../types/SubscriptionStop");
 const SubscriptionInformation = require("../types/SubscriptionInformation");
-const Reply = require("../types/Reply");
 const ProviderEvent = require("../../provider/ProviderEvent");
-const Typing = require("../../util/Typing");
 const SubscriptionUtil = require("./util/SubscriptionUtil");
 const SubscriptionException = require("../../exceptions/SubscriptionException");
 const JSONSerializer = require("../../util/JSONSerializer");
@@ -504,7 +500,6 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         }
         let publish;
         let i;
-        let filterParameters;
         let subscriptionId,
             subscriptions = getSubscriptionsForProviderEvent(providerId, eventName);
         const filters = data.filters;
@@ -754,7 +749,6 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
     function removePublicationAttribute(providerId, attributeName, attribute) {
         let subscriptions,
             subscription,
-            subscriptionObject,
             key = getProviderIdAttributeKey(providerId, attributeName);
 
         subscriptions = getSubscriptionsForProviderAttribute(providerId, attributeName);
@@ -788,7 +782,6 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
     function removePublicationEvent(providerId, eventName, event) {
         let subscriptions,
             subscription,
-            subscriptionObject,
             key = getProviderIdEventKey(providerId, eventName);
 
         subscriptions = getSubscriptionsForProviderEvent(providerId, eventName);
@@ -1418,7 +1411,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         if (!isReady()) {
             throw new Error("PublicationManager is already shut down");
         }
-        let propertyName, property;
+        let propertyName;
 
         // cycles over all provider members
         for (propertyName in provider) {
@@ -1453,7 +1446,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
      *            provider
      */
     this.addPublicationProvider = function addPublicationProvider(participantId, provider) {
-        let propertyName, property, pendingSubscriptions, pendingSubscription, subscriptionObject;
+        let propertyName, pendingSubscriptions, pendingSubscription, subscriptionObject;
         if (!isReady()) {
             throw new Error("PublicationManager is already shut down");
         }
@@ -1492,23 +1485,20 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
                             subscriptionObject.providerParticipantId,
                             subscriptionObject
                         );
+                    } else if (
+                        subscriptionObject.subscriptionType === SubscriptionInformation.SUBSCRIPTION_TYPE_BROADCAST
+                    ) {
+                        this.handleBroadcastSubscriptionRequest(
+                            subscriptionObject.proxyParticipantId,
+                            subscriptionObject.providerParticipantId,
+                            subscriptionObject
+                        );
                     } else {
-                        // call broadcast subscription handler
-                        if (
-                            subscriptionObject.subscriptionType === SubscriptionInformation.SUBSCRIPTION_TYPE_BROADCAST
-                        ) {
-                            this.handleBroadcastSubscriptionRequest(
-                                subscriptionObject.proxyParticipantId,
-                                subscriptionObject.providerParticipantId,
-                                subscriptionObject
-                            );
-                        } else {
-                            this.handleMulticastSubscriptionRequest(
-                                subscriptionObject.proxyParticipantId,
-                                subscriptionObject.providerParticipantId,
-                                subscriptionObject
-                            );
-                        }
+                        this.handleMulticastSubscriptionRequest(
+                            subscriptionObject.proxyParticipantId,
+                            subscriptionObject.providerParticipantId,
+                            subscriptionObject
+                        );
                     }
                 }
             }
@@ -1536,11 +1526,10 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
                 subscriptionId;
             for (subscriptionId in subscriptionIds) {
                 if (subscriptionIds.hasOwnProperty(subscriptionId)) {
-                    var item = persistency.getItem(subscriptionIds[subscriptionId]),
-                        subscriptionInfo;
+                    let item = persistency.getItem(subscriptionIds[subscriptionId]);
                     if (item !== null && item !== undefined) {
                         try {
-                            subscriptionInfo = JSON.parse(item);
+                            let subscriptionInfo = JSON.parse(item);
                             if (
                                 subscriptionInfo.subscriptionType ===
                                 SubscriptionInformation.SUBSCRIPTION_TYPE_ATTRIBUTE
@@ -1552,26 +1541,24 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
                                     subscriptionInfo,
                                     callbackAsync
                                 );
-                            } else {
+                            } else if (
+                                subscriptionInfo.subscriptionType ===
+                                SubscriptionInformation.SUBSCRIPTION_TYPE_BROADCAST
+                            ) {
                                 // call broadcast subscription handler
-                                if (
-                                    subscriptionInfo.subscriptionType ===
-                                    SubscriptionInformation.SUBSCRIPTION_TYPE_BROADCAST
-                                ) {
-                                    this.handleBroadcastSubscriptionRequest(
-                                        subscriptionInfo.proxyParticipantId,
-                                        subscriptionInfo.providerParticipantId,
-                                        subscriptionInfo,
-                                        callbackAsync
-                                    );
-                                } else {
-                                    this.handleMulticastSubscriptionRequest(
-                                        subscriptionInfo.proxyParticipantId,
-                                        subscriptionInfo.providerParticipantId,
-                                        subscriptionInfo,
-                                        callbackAsync
-                                    );
-                                }
+                                this.handleBroadcastSubscriptionRequest(
+                                    subscriptionInfo.proxyParticipantId,
+                                    subscriptionInfo.providerParticipantId,
+                                    subscriptionInfo,
+                                    callbackAsync
+                                );
+                            } else {
+                                this.handleMulticastSubscriptionRequest(
+                                    subscriptionInfo.proxyParticipantId,
+                                    subscriptionInfo.providerParticipantId,
+                                    subscriptionInfo,
+                                    callbackAsync
+                                );
                             }
                         } catch (err) {
                             throw new Error(err);

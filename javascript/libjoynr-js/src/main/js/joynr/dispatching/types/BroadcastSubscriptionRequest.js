@@ -16,10 +16,8 @@
  * limitations under the License.
  * #L%
  */
-const Util = require("../../util/UtilInternal");
 const Typing = require("../../util/Typing");
 const OnChangeSubscriptionQos = require("../../proxy/OnChangeSubscriptionQos");
-const BroadcastFilterParameters = require("../../proxy/BroadcastFilterParameters");
 
 const defaultSettings = {
     qos: new OnChangeSubscriptionQos()

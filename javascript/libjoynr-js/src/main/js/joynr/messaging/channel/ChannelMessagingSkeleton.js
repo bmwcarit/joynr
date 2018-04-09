@@ -17,12 +17,8 @@
  * #L%
  */
 const Typing = require("../../util/Typing");
-const LoggingManager = require("../../system/LoggingManager");
-const DiagnosticTags = require("../../system/DiagnosticTags");
-const JoynrException = require("../../exceptions/JoynrException");
 const JoynrMessage = require("../JoynrMessage");
 
-const log = LoggingManager.getLogger("joynr/messaging/channel/ChannelMessagingSkeleton");
 /**
  * @name ChannelMessagingSkeleton
  * @constructor

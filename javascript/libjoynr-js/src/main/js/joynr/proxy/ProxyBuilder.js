@@ -162,7 +162,8 @@ function ProxyBuilder(proxyDependencies, dependencies) {
                             proxy.domain +
                             ", proxyParticipantId " +
                             proxy.proxyParticipantId +
-                            " to message router"
+                            " to message router. Error: " +
+                            error.stack
                     );
                 });
             dependencies.messageRouter.setToKnown(proxy.providerDiscoveryEntry.participantId);

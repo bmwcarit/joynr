@@ -1,3 +1,4 @@
+/*eslint no-useless-escape: "off"*/
 /*
  * #%L
  * %%

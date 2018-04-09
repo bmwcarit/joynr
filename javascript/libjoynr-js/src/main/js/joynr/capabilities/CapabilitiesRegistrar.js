@@ -17,10 +17,8 @@
  * #L%
  */
 const Promise = require("../../global/Promise");
-const Util = require("../util/UtilInternal");
 const DiscoveryEntry = require("../../generated/joynr/types/DiscoveryEntry");
 const ProviderScope = require("../../generated/joynr/types/ProviderScope");
-const ParticipantIdStorage = require("./ParticipantIdStorage");
 const Version = require("../../generated/joynr/types/Version");
 let defaultExpiryIntervalMs = 6 * 7 * 24 * 60 * 60 * 1000; // 6 Weeks
 const loggingManager = require("../system/LoggingManager");
@@ -57,23 +55,6 @@ function CapabilitiesRegistrar(dependencies) {
     this._requestReplyManager = dependencies.requestReplyManager;
     this._publicationManager = dependencies.publicationManager;
     this._started = true;
-}
-
-/**
- * @param provider
- *            to scan for a ProviderOperation
- * @returns {Boolean} true if provider contains a ProviderOperation
- */
-function hasOperation(provider) {
-    let property;
-    for (property in provider) {
-        if (provider.hasOwnProperty(property)) {
-            if (provider[property].constructor.name === "ProviderOperation") {
-                return true;
-            }
-        }
-    }
-    return false;
 }
 
 /*

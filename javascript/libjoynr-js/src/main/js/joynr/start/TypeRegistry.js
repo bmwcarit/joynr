@@ -16,7 +16,6 @@
  * limitations under the License.
  * #L%
  */
-const LoggingManager = require("../system/LoggingManager");
 const Promise = require("../../global/Promise");
 
 /**
@@ -35,7 +34,6 @@ function TypeRegistry() {
     const registry = {};
     const enumRegistry = {};
     const registryPromise = {};
-    const log = LoggingManager.getLogger("joynr.start.TypeRegistry");
 
     /**
      * Adds a typeName to constructor entry in the type registry.

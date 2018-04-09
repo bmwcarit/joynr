@@ -1,3 +1,4 @@
+/*eslint no-unused-vars: "off"*/
 /*
  * #%L
  * %%
@@ -16,15 +17,11 @@
  * limitations under the License.
  * #L%
  */
-const Promise = require("../../../global/Promise");
 const Mqtt = require("../../../global/Mqtt");
 const MessagingQosEffort = require("../MessagingQosEffort");
-const LongTimer = require("../../util/LongTimer");
 const Typing = require("../../util/Typing");
-const LoggingManager = require("../../system/LoggingManager");
 const MessageSerializer = require("../MessageSerializer");
 const Util = require("../../util/UtilInternal");
-const log = LoggingManager.getLogger("joynr.messaging.mqtt.SharedMqttClient");
 
 /**
  * @param {mqtt}
@@ -33,7 +30,7 @@ const log = LoggingManager.getLogger("joynr.messaging.mqtt.SharedMqttClient");
  *            queuedMessages
  */
 function sendQueuedMessages(client, queuedMessages) {
-    let queued, topic;
+    let queued;
     while (queuedMessages.length) {
         queued = queuedMessages.shift();
         try {
@@ -49,7 +46,7 @@ function sendQueuedMessages(client, queuedMessages) {
 }
 
 function sendQueuedUnsubscriptions(client, queuedUnsubscriptions) {
-    let i, topic;
+    let i;
     for (i = 0; i < queuedUnsubscriptions.length; i++) {
         client.unsubscribe(queuedUnsubscriptions[i]);
     }

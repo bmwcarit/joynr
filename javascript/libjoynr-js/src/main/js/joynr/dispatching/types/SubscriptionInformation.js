@@ -17,7 +17,6 @@
  * #L%
  */
 const Typing = require("../../util/Typing");
-const SubscriptionRequest = require("./SubscriptionRequest");
 
 /**
  * @name SubscriptionInformation

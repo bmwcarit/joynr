@@ -469,7 +469,6 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
      */
     function sendRequestReply(settings, reply) {
         const toParticipantId = settings.to;
-        const requestReplyId = reply.requestReplyId;
         log.info(
             "replying",
             DiagnosticTags.forReply({
@@ -501,7 +500,6 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
      */
     function sendSubscriptionReply(settings, subscriptionReply) {
         const toParticipantId = settings.to;
-        const subscriptionId = subscriptionReply.subscriptionId;
         log.info(
             "replying",
             DiagnosticTags.forSubscriptionReply({

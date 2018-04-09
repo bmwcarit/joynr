@@ -17,13 +17,7 @@
  * #L%
  */
 const Util = require("../../util/UtilInternal");
-const Typing = require("../../util/Typing");
 const uuid = require("../../../lib/uuid-annotated");
-
-const defaultSettings = {
-    paramDatatypes: [],
-    params: []
-};
 
 const rrBase = uuid();
 let rrIndex = 0;

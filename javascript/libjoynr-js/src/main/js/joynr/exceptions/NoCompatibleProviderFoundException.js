@@ -19,7 +19,6 @@
 const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
 const Util = require("../util/UtilInternal");
 const DiscoveryException = require("./DiscoveryException");
-const LoggingManager = require("../system/LoggingManager");
 let defaultSettings;
 
 /**
@@ -54,7 +53,6 @@ function NoCompatibleProviderFoundException(settings) {
         return new NoCompatibleProviderFoundException(settings);
     }
 
-    const log = LoggingManager.getLogger("joynr.exceptions.NoCompatibleProviderFoundException");
     const discoveryException = new DiscoveryException(settings);
 
     /**

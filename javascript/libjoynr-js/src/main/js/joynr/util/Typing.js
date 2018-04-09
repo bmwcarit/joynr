@@ -106,7 +106,7 @@ Typing.getObjectType = function(obj) {
  *             untyped object is not (Boolean|Number|String|Array|Object)
  */
 Typing.augmentTypes = function(untyped, typeRegistry, typeHint) {
-    let i, typedObj, typeName;
+    let i, typedObj;
 
     // return nullable values immediately
     if (untyped === null || untyped === undefined) {

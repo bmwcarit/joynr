@@ -28,10 +28,8 @@ const LongTimer = require("./LongTimer");
 const UtilInternal = {};
 
 function extend(to, from, deep) {
-    let i, key, args;
-
     if (from) {
-        for (key in from) {
+        for (let key in from) {
             if (from.hasOwnProperty(key)) {
                 if (deep && typeof from[key] === "object") {
                     if (Array.isArray(from[key]) && !Array.isArray(to[key])) {
@@ -54,7 +52,7 @@ function extend(to, from, deep) {
  * @function UtilInternal#extend
  */
 UtilInternal.extend = function(out) {
-    let i, key, args;
+    let i, args;
     // calling using prototype because slice is not available on
     // special arguments array
     args = Array.prototype.slice.call(arguments, 1);
@@ -106,7 +104,7 @@ UtilInternal.forwardPrototype = function(input) {
  * @function UtilInternal#extendDeep
  */
 UtilInternal.extendDeep = function(out) {
-    let i, key, args;
+    let i, args;
     // calling using prototype because slice is not available on
     // special arguments array
     args = Array.prototype.slice.call(arguments, 1);

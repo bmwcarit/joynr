@@ -1,4 +1,4 @@
-// problem with functions postMessage and resend calling each other => it is not possible to bring them in an order without having the jslint "was not defined" error
+/*eslint no-use-before-define: "off", no-unused-vars: "error"*/
 /*
  * #%L
  * %%
@@ -120,7 +120,7 @@ function ChannelMessagingSender(settings) {
             return xhr;
         }
 
-        function createXMLHTTPRequestOnError(xhr, errorType) {
+        function createXMLHTTPRequestOnError(xhr) {
             try {
                 log.debug("sending msgId: " + queuedMessage.message.msgId + " failed");
                 resend(queuedMessage);

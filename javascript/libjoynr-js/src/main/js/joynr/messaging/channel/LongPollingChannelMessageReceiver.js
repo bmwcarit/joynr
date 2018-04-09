@@ -1,3 +1,4 @@
+/*eslint no-unused-vars: "error"*/
 /*
  * #%L
  * %%
@@ -16,7 +17,6 @@
  * limitations under the License.
  * #L%
  */
-const Promise = require("../../../global/Promise");
 const uuid = require("../../../lib/uuid-annotated");
 const JoynrMessage = require("../JoynrMessage");
 const JsonParser = require("../../../lib/JsonParser");
@@ -125,7 +125,7 @@ LongPollingChannelMessageReceiver.prototype._logChannelCreationError = function(
 LongPollingChannelMessageReceiver.prototype._createInternal = function createInternal(resolve, reject) {
     const that = this;
 
-    function createInternalOnError(xhr, errorType) {
+    function createInternalOnError(xhr) {
         that._logChannelCreationError(xhr);
 
         if (that._createChannelTimestamp + that._channelCreationTimeout_ms <= Date.now()) {
@@ -233,10 +233,7 @@ LongPollingChannelMessageReceiver.prototype.start = function start(onMessageCall
     // messages are received
     // from the bounceproxy.
     pollRequest.onMessage = function onMessage(response) {
-        let detectedTransport = response.transport,
-            data,
-            jsonParser,
-            joynrMessage;
+        let data, jsonParser, joynrMessage;
 
         try {
             if (response.status === 200) {
@@ -296,7 +293,7 @@ LongPollingChannelMessageReceiver.prototype.create = function(theChannelId) {
     this._channelId = theChannelId;
     this._createChannelTimestamp = Date.now();
 
-    function _callCreateOnError(xhr, errorType) {
+    function _callCreateOnError(xhr) {
         that._logChannelCreationError(xhr);
         if (that._createChannelTimestamp + that._channelCreationTimeout_ms <= Date.now()) {
             throw new Error("Error creating channel");

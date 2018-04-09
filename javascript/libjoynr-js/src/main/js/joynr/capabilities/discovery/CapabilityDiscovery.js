@@ -61,7 +61,9 @@ function CapabilityDiscovery(
 ) {
     const log = LoggingManager.getLogger("joynr/capabilities/discovery/CapabilityDiscovery");
     const TTL_30DAYS_IN_MS = 30 * 24 * 60 * 60 * 1000;
+    /*eslint-disable no-unused-vars*/
     let globalAddress, globalAddressSerialized;
+    /*eslint-enable no-unused-vars*/
     const typeRegistry = TypeRegistrySingleton.getInstance();
     let queuedGlobalDiscoveryEntries = [];
     let queuedGlobalLookups = [];
@@ -365,6 +367,8 @@ function CapabilityDiscovery(
                     );
                 }
                 return lookupGlobalCapabilities(domains, interfaceName, TTL_30DAYS_IN_MS, globalCapabilities);
+            default:
+                log.error("unknown discoveryScope value: " + discoveryQos.discoveryScope.value);
         }
     };
 

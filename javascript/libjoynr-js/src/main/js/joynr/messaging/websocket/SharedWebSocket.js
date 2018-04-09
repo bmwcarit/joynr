@@ -1,3 +1,4 @@
+/*eslint no-use-before-define: "off"*/
 /*
  * #%L
  * %%
@@ -19,9 +20,7 @@
 const Promise = require("../../../global/Promise");
 const WebSocket = require("../../../global/WebSocketNode");
 const Typing = require("../../util/Typing");
-const JSONSerializer = require("../../util/JSONSerializer");
 const LongTimer = require("../../util/LongTimer");
-const Util = require("../../util/UtilInternal");
 const LoggingManager = require("../../system/LoggingManager");
 const log = LoggingManager.getLogger("joynr.messaging.websocket.SharedWebSocket");
 /**
@@ -115,13 +114,10 @@ const SharedWebSocket = function SharedWebSocket(settings) {
     const remoteUrl = webSocketAddressToUrl(settings.remoteAddress);
     let onmessageCallback = null;
     const queuedMessages = [];
-    let onOpen;
-    let onError;
-    let onClose;
     let closed = false;
     let reconnectTimer;
 
-    const resetConnection = function resetConnection() {
+    function resetConnection() {
         reconnectTimer = undefined;
         if (closed) {
             return;
@@ -133,9 +129,9 @@ const SharedWebSocket = function SharedWebSocket(settings) {
         if (onmessageCallback !== null) {
             websocket.onmessage = onmessageCallback;
         }
-    };
+    }
 
-    onError = function onError(event) {
+    function onError(event) {
         if (closed) {
             return;
         }
@@ -153,9 +149,9 @@ const SharedWebSocket = function SharedWebSocket(settings) {
             websocket = null;
         }
         reconnectTimer = LongTimer.setTimeout(resetConnection, reconnectSleepTimeMs);
-    };
+    }
 
-    onClose = function onClose(event) {
+    function onClose(event) {
         if (closed) {
             return;
         }
@@ -182,10 +178,10 @@ const SharedWebSocket = function SharedWebSocket(settings) {
                 websocket = null;
             }
         }
-    };
+    }
 
     // send all queued messages, requeuing to the front in case of a problem
-    onOpen = function onOpen() {
+    function onOpen() {
         try {
             log.debug("connection opened.");
             initializeConnection(websocket, localAddress);
@@ -193,7 +189,7 @@ const SharedWebSocket = function SharedWebSocket(settings) {
         } catch (e) {
             resetConnection();
         }
-    };
+    }
 
     resetConnection();
 
