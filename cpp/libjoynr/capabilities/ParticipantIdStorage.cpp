@@ -41,6 +41,9 @@ void ParticipantIdStorage::setProviderParticipantId(const std::string& domain,
                                                     const std::string& interfaceName,
                                                     const std::string& participantId)
 {
+    assert(!domain.empty());
+    assert(!interfaceName.empty());
+
     std::string providerKey = createProviderKey(domain, interfaceName);
     storage.set(providerKey, participantId);
     sync();
@@ -56,6 +59,9 @@ std::string ParticipantIdStorage::getProviderParticipantId(const std::string& do
                                                            const std::string& interfaceName,
                                                            const std::string& defaultValue)
 {
+    assert(!domain.empty());
+    assert(!interfaceName.empty());
+
     std::string providerKey = createProviderKey(domain, interfaceName);
 
     if (boost::optional<std::string> participantId =
