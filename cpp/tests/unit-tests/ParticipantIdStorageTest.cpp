@@ -19,6 +19,7 @@
 
 #include <cstdio>
 #include <string>
+#include <tuple>
 
 #include <gtest/gtest.h>
 
@@ -28,80 +29,120 @@ using namespace joynr;
 
 static const std::string storageFile("test-participantIdStorageTest.persist");
 
-class ParticipantIdStorageTest : public ::testing::Test {
+class ParticipantIdStorageTest : public ::testing::TestWithParam<std::tuple<std::string, std::string> > {
 public:
-    ParticipantIdStorageTest(){}
-
-    void SetUp()
-    {
+    ParticipantIdStorageTest() {
         std::remove(storageFile.c_str());
+
+        auto inputPair = GetParam();
+        domain = std::get<0>(inputPair);
+        intefaceName = std::get<1>(inputPair);
     }
+
+    std::string domain;
+    std::string intefaceName;
 };
 
+class ParticipantIdStorageAssertTest : public ParticipantIdStorageTest {};
+
 // Test that the default participant id is used when no provider exists"
-TEST_F(ParticipantIdStorageTest, defaultProviderParticipantId)
+TEST_P(ParticipantIdStorageTest, defaultProviderParticipantId)
 {
     ParticipantIdStorage store(storageFile);
 
-    std::string participantId = store.getProviderParticipantId("domain.myDomain",
-                                                           "interface.mytest",
-                                                           "defaultParticipantId");
+    std::string participantId = store.getProviderParticipantId(this->domain,
+                                                               this->intefaceName,
+                                                               "defaultParticipantId");
     ASSERT_EQ(std::string("defaultParticipantId"), participantId);
 }
 
 // Test that a participant id is created when no provider exists and
 // no default value is given
-TEST_F(ParticipantIdStorageTest, newProviderParticipantId)
+TEST_P(ParticipantIdStorageTest, newProviderParticipantId)
 {
     ParticipantIdStorage store(storageFile);
-    std::string participantId = store.getProviderParticipantId("domain.myDomain",
-                                                           "interface.mytest",
-                                                           std::string());
+    std::string participantId = store.getProviderParticipantId(this->domain,
+                                                               this->intefaceName,
+                                                               std::string());
     // Check that the id is long enough to be a UUID
     ASSERT_TRUE(participantId.size() > 32);
 
     // also check get function without default value
-    participantId = store.getProviderParticipantId("domain.myDomain",
-                                                   "interface.mytest");
+    participantId = store.getProviderParticipantId(this->domain,
+                                                   this->intefaceName);
     // Check that the id is long enough to be a UUID
     ASSERT_TRUE(participantId.size() > 32);
 }
 
 // Test that a persisted participant id is used
-TEST_F(ParticipantIdStorageTest, persistedProviderParticipantId)
+TEST_P(ParticipantIdStorageTest, persistedProviderParticipantId)
 {
     std::string expectedParticipantId;
     {
         ParticipantIdStorage store(storageFile);
-        expectedParticipantId = store.getProviderParticipantId("domain.myDomain",
-                                                               "interface.mytest");
-        store.setProviderParticipantId("domain.myDomain", "interface.mytest", expectedParticipantId);
+        expectedParticipantId = store.getProviderParticipantId(this->domain,
+                                                               this->intefaceName);
+        store.setProviderParticipantId(this->domain, this->intefaceName, expectedParticipantId);
     }
 
-    // create a new store
+    // create a new storage
     ParticipantIdStorage store(storageFile);
 
     // Check that the setting was persisted
-    std::string participantId = store.getProviderParticipantId("domain.myDomain",
-                                                               "interface.mytest");
+    std::string participantId = store.getProviderParticipantId(this->domain,
+                                                               this->intefaceName);
 
     ASSERT_EQ(expectedParticipantId, participantId);
 }
 
-TEST_F(ParticipantIdStorageTest, settingsAreNotAutomaticallySyncedToFile)
+TEST_P(ParticipantIdStorageTest, settingsAreNotAutomaticallySyncedToFile)
 {
     const std::string participantID = "participantID-should-not-be-saved-to-file";
     {
         ParticipantIdStorage store(storageFile);
-        store.getProviderParticipantId("domain.myDomain",
-                                       "interface.mytest");
+        store.getProviderParticipantId(this->domain,
+                                       this->intefaceName);
     }
     {
         ParticipantIdStorage store(storageFile);
-        std::string queriedParticipantID = store.getProviderParticipantId("domain.myDomain",
-                                                                          "interface.mytest");
+        std::string queriedParticipantID = store.getProviderParticipantId(this->domain,
+                                                                          this->intefaceName);
         //participantID does not exist
         EXPECT_NE(queriedParticipantID, participantID);
     }
 }
 
+std::tuple<std::string, std::string> const stringValues[] = {
+    // domain: tuple[0]
+    // interfaceName: tuple[1]
+    std::make_tuple( "domain", "interfaceName"),
+    std::make_tuple( "dom.ain", "interfa/ceName"),
+    std::make_tuple( "dom/ain", "interfa.ceName"),
+    std::make_tuple( "dömain", "interßäceName"),
+    std::make_tuple( "0123456789012345678912", "0123456789012345678912")
+};
+INSTANTIATE_TEST_CASE_P(
+  checkStrings, ParticipantIdStorageTest, ::testing::ValuesIn(stringValues));
+
+TEST_P(ParticipantIdStorageAssertTest, assertOnGetProviderParticipantId) {
+    ParticipantIdStorage store(storageFile);
+    EXPECT_DEATH(store.getProviderParticipantId(this->domain,
+                                                this->intefaceName), "Assertion.*");
+}
+
+TEST_P(ParticipantIdStorageAssertTest, assertOnSetProviderParticipantId) {
+    ParticipantIdStorage store(storageFile);
+    EXPECT_DEATH(store.setProviderParticipantId(this->domain,
+                                                this->intefaceName,
+                                                "participantID"), "Assertion.*");
+}
+
+std::tuple<std::string, std::string> const failingStrings[] = {
+    // domain: tuple[0]
+    // interfaceName: tuple[1]
+    std::make_tuple( "", ""),
+    std::make_tuple( "", "interfaceName"),
+    std::make_tuple( "domain", "")
+};
+INSTANTIATE_TEST_CASE_P(
+  failingStrings, ParticipantIdStorageAssertTest, ::testing::ValuesIn(failingStrings));
