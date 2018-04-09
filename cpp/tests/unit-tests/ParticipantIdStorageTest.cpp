@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -36,11 +36,11 @@ public:
 
         auto inputPair = GetParam();
         domain = std::get<0>(inputPair);
-        intefaceName = std::get<1>(inputPair);
+        interfaceName = std::get<1>(inputPair);
     }
 
     std::string domain;
-    std::string intefaceName;
+    std::string interfaceName;
 };
 
 class ParticipantIdStorageAssertTest : public ParticipantIdStorageTest {};
@@ -51,7 +51,7 @@ TEST_P(ParticipantIdStorageTest, defaultProviderParticipantId)
     ParticipantIdStorage store(storageFile);
 
     std::string participantId = store.getProviderParticipantId(this->domain,
-                                                               this->intefaceName,
+                                                               this->interfaceName,
                                                                "defaultParticipantId");
     ASSERT_EQ(std::string("defaultParticipantId"), participantId);
 }
@@ -62,14 +62,14 @@ TEST_P(ParticipantIdStorageTest, newProviderParticipantId)
 {
     ParticipantIdStorage store(storageFile);
     std::string participantId = store.getProviderParticipantId(this->domain,
-                                                               this->intefaceName,
+                                                               this->interfaceName,
                                                                std::string());
     // Check that the id is long enough to be a UUID
     ASSERT_TRUE(participantId.size() > 32);
 
     // also check get function without default value
     participantId = store.getProviderParticipantId(this->domain,
-                                                   this->intefaceName);
+                                                   this->interfaceName);
     // Check that the id is long enough to be a UUID
     ASSERT_TRUE(participantId.size() > 32);
 }
@@ -81,8 +81,8 @@ TEST_P(ParticipantIdStorageTest, persistedProviderParticipantId)
     {
         ParticipantIdStorage store(storageFile);
         expectedParticipantId = store.getProviderParticipantId(this->domain,
-                                                               this->intefaceName);
-        store.setProviderParticipantId(this->domain, this->intefaceName, expectedParticipantId);
+                                                               this->interfaceName);
+        store.setProviderParticipantId(this->domain, this->interfaceName, expectedParticipantId);
     }
 
     // create a new storage
@@ -90,7 +90,7 @@ TEST_P(ParticipantIdStorageTest, persistedProviderParticipantId)
 
     // Check that the setting was persisted
     std::string participantId = store.getProviderParticipantId(this->domain,
-                                                               this->intefaceName);
+                                                               this->interfaceName);
 
     ASSERT_EQ(expectedParticipantId, participantId);
 }
@@ -101,12 +101,12 @@ TEST_P(ParticipantIdStorageTest, settingsAreNotAutomaticallySyncedToFile)
     {
         ParticipantIdStorage store(storageFile);
         store.getProviderParticipantId(this->domain,
-                                       this->intefaceName);
+                                       this->interfaceName);
     }
     {
         ParticipantIdStorage store(storageFile);
         std::string queriedParticipantID = store.getProviderParticipantId(this->domain,
-                                                                          this->intefaceName);
+                                                                          this->interfaceName);
         //participantID does not exist
         EXPECT_NE(queriedParticipantID, participantID);
     }
@@ -127,13 +127,13 @@ INSTANTIATE_TEST_CASE_P(
 TEST_P(ParticipantIdStorageAssertTest, assertOnGetProviderParticipantId) {
     ParticipantIdStorage store(storageFile);
     EXPECT_DEATH(store.getProviderParticipantId(this->domain,
-                                                this->intefaceName), "Assertion.*");
+                                                this->interfaceName), "Assertion.*");
 }
 
 TEST_P(ParticipantIdStorageAssertTest, assertOnSetProviderParticipantId) {
     ParticipantIdStorage store(storageFile);
     EXPECT_DEATH(store.setProviderParticipantId(this->domain,
-                                                this->intefaceName,
+                                                this->interfaceName,
                                                 "participantID"), "Assertion.*");
 }
 
