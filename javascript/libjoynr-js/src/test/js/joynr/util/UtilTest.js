@@ -253,41 +253,6 @@ describe("libjoynr-js.joynr.Util.ensureTypedValues", () => {
     });
 });
 
-describe("libjoynr-js.joynr.Util.forward", () => {
-    it("forwards methods to another object", () => {
-        const receiver = {};
-        const producer = {
-            someFunction() {
-                return "some result";
-            },
-            someObject: "some Value"
-        };
-
-        const augmentedReceiver = Util.forward(receiver, producer);
-
-        expect(typeof augmentedReceiver.someFunction).toBe("function");
-        expect(augmentedReceiver.someObject).toBeUndefined();
-    });
-});
-
-describe("libjoynr-js.joynr.Util.forwardPrototype", () => {
-    it("forwards methods to another object", () => {
-        const someValue = "some Value";
-        const ObjectWithPrivateVars = function() {
-            this.someObject = someValue;
-            return Util.forwardPrototype(this);
-        };
-        ObjectWithPrivateVars.prototype.someFunction = function() {
-            return this.someObject;
-        };
-        const privateObject = new ObjectWithPrivateVars();
-
-        expect(typeof privateObject.someFunction).toBe("function");
-        expect(privateObject.someObject).toBeUndefined();
-        expect(privateObject.someFunction()).toBe(someValue);
-    });
-});
-
 describe("libjoynr-js.joynr.Util.timeoutPromise", () => {
     beforeEach(() => {
         jasmine.clock().install();

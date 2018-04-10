@@ -17,7 +17,6 @@
  * #L%
  */
 const MESSAGE_CUSTOM_HEADER_PREFIX = "custom-";
-const Util = require("../util/UtilInternal");
 const uuid = require("../../lib/uuid-annotated");
 
 const jmBase = uuid();
@@ -47,7 +46,7 @@ JoynrMessage.setSigningCallback = function(callback) {
 JoynrMessage.parseMessage = function(settings) {
     settings.headers = settings.headers || {};
     settings.headers.id = settings.headers.id || jmBase + "_" + jmIndex++;
-    Util.setPrototypeOf(settings, JoynrMessage.prototype);
+    Object.setPrototypeOf(settings, JoynrMessage.prototype);
     return settings;
 };
 

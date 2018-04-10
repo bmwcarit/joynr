@@ -80,26 +80,6 @@ UtilInternal.forward = function forward(receiver, provider) {
 };
 
 /**
- * Create a wrapper for the input prototype which binds the this context to all functions of input
- * to make sure that they are always called with the right context.
- * @param {Object} input
- * @returns {Object} wrapper of input
- */
-UtilInternal.forwardPrototype = function(input) {
-    const inputWrapper = {};
-    const proto = input["__proto__"];
-    inputWrapper["__proto__"] = proto;
-    let key;
-    for (key in proto) {
-        if (proto.hasOwnProperty(key)) {
-            const func = proto[key];
-            inputWrapper[key] = func.bind(input);
-        }
-    }
-    return inputWrapper;
-};
-
-/**
  * Deeply copies all attributes to a given out parameter from optional in parameters
  * @function UtilInternal#extendDeep
  */
@@ -281,19 +261,6 @@ UtilInternal.fire = function fire(callbacks, data) {
             callbacks[callbackFct](data);
         }
     }
-};
-
-UtilInternal.enrichObjectWithSetPrototypeOf = function() {
-    //if Object.setPrototypeOf already exists? -> do nothing;
-    Object.setPrototypeOf =
-        Object.setPrototypeOf ||
-        function(object, prototype) {
-            object["__proto__"] = prototype;
-        };
-};
-
-UtilInternal.setPrototypeOf = function(object, prototype) {
-    object["__proto__"] = prototype;
 };
 
 function timeoutToPromise(time) {
