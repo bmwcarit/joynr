@@ -17,7 +17,6 @@
  * #L%
  */
 const Promise = require("../../global/Promise");
-const WebSocket = require("../../global/WebSocketNode");
 const Arbitrator = require("../capabilities/arbitration/Arbitrator");
 const ProviderBuilder = require("../provider/ProviderBuilder");
 const ProxyBuilder = require("../proxy/ProxyBuilder");
@@ -51,15 +50,10 @@ const DiscoveryProxy = require("../../generated/joynr/system/DiscoveryProxy");
 const RoutingProxy = require("../../generated/joynr/system/RoutingProxy");
 const TypeRegistrySingleton = require("../types/TypeRegistrySingleton");
 const DiscoveryScope = require("../../generated/joynr/types/DiscoveryScope");
-const DiscoveryEntry = require("../../generated/joynr/types/DiscoveryEntry");
 const DiscoveryEntryWithMetaInfo = require("../../generated/joynr/types/DiscoveryEntryWithMetaInfo");
 const Util = require("../util/UtilInternal");
-const CapabilitiesUtil = require("../util/CapabilitiesUtil");
-const Typing = require("../util/Typing");
-const WebWorkerMessagingAppender = require("../system/WebWorkerMessagingAppender");
 const uuid = require("../../lib/uuid-annotated");
 const loggingManager = require("../system/LoggingManager");
-const defaultSettings = require("./settings/defaultSettings");
 const defaultWebSocketSettings = require("./settings/defaultWebSocketSettings");
 const defaultLibjoynrSettings = require("./settings/defaultLibjoynrSettings");
 const LocalStorage = require("../../global/LocalStorageNode");
@@ -109,7 +103,6 @@ function WebSocketLibjoynrRuntime(provisioning) {
     let messageRouterStub;
     let persistency;
     let localAddress;
-    const TWO_DAYS_IN_MS = 172800000;
     const keychain = provisioning.keychain;
     let internalShutdown;
     let bufferedOwnerId;
@@ -183,18 +176,6 @@ function WebSocketLibjoynrRuntime(provisioning) {
         enumerable: true
     });
 
-    let relativeTtl;
-
-    if (provisioning.logging && provisioning.logging.ttl) {
-        relativeTtl = provisioning.logging.ttl;
-    } else {
-        relativeTtl = TWO_DAYS_IN_MS;
-    }
-
-    const loggingMessagingQos = new MessagingQos({
-        ttl: relativeTtl
-    });
-
     if (Util.checkNullUndefined(provisioning.ccAddress)) {
         throw new Error("ccAddress not set in provisioning.ccAddress");
     }
@@ -260,7 +241,7 @@ function WebSocketLibjoynrRuntime(provisioning) {
      *             if libjoynr is not in SHUTDOWN state
      */
     this.start = function start() {
-        let i, j, routingProxyPromise, discoveryProxyPromise;
+        let i, routingProxyPromise, discoveryProxyPromise;
 
         if (joynrState !== JoynrStates.SHUTDOWN) {
             throw new Error("Cannot start libjoynr because it's currently \"" + joynrState + '"');

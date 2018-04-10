@@ -52,11 +52,8 @@ const TypeRegistrySingleton = require("../types/TypeRegistrySingleton");
 const DiscoveryScope = require("../../generated/joynr/types/DiscoveryScope");
 const DiscoveryEntryWithMetaInfo = require("../../generated/joynr/types/DiscoveryEntryWithMetaInfo");
 const Util = require("../util/UtilInternal");
-const CapabilitiesUtil = require("../util/CapabilitiesUtil");
-const WebWorkerMessagingAppender = require("../system/WebWorkerMessagingAppender");
 const uuid = require("../../lib/uuid-annotated");
 const loggingManager = require("../system/LoggingManager");
-const defaultSettings = require("./settings/defaultSettings");
 const defaultInterTabSettings = require("./settings/defaultInterTabSettings");
 const defaultLibjoynrSettings = require("./settings/defaultLibjoynrSettings");
 const LocalStorage = require("../../global/LocalStorageNode");
@@ -67,7 +64,6 @@ const JoynrStates = {
     SHUTTINGDOWN: "shutting down"
 };
 
-const TWO_DAYS_IN_MS = 172800000;
 const CC_WINDOWID = "ClusterController";
 
 /**
@@ -177,17 +173,7 @@ function InterTabLibjoynrRuntime(provisioning) {
         enumerable: true
     });
 
-    let log, relativeTtl;
-
-    if (provisioning.logging && provisioning.logging.ttl) {
-        relativeTtl = provisioning.logging.ttl;
-    } else {
-        relativeTtl = TWO_DAYS_IN_MS;
-    }
-
-    const loggingMessagingQos = new MessagingQos({
-        ttl: relativeTtl
-    });
+    let log;
 
     let joynrState = JoynrStates.SHUTDOWN;
 
@@ -221,7 +207,7 @@ function InterTabLibjoynrRuntime(provisioning) {
      *             if libjoynr is not in SHUTDOWN state
      */
     this.start = function start() {
-        let i, j;
+        let i;
         ccAddress = new BrowserAddress({
             windowId: CC_WINDOWID
         });
@@ -531,7 +517,6 @@ function InterTabLibjoynrRuntime(provisioning) {
         return Promise.all([] /* TODO: insert promises here */).then(() => {
             joynrState = JoynrStates.SHUTDOWN;
             log.debug("joynr shut down");
-            return;
         });
     };
 

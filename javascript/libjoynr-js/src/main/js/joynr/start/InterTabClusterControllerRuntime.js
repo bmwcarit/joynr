@@ -30,9 +30,6 @@ const PublicationManager = require("../dispatching/subscription/PublicationManag
 const SubscriptionManager = require("../dispatching/subscription/SubscriptionManager");
 const Dispatcher = require("../dispatching/Dispatcher");
 const PlatformSecurityManager = require("../security/PlatformSecurityManagerNode");
-const ChannelMessagingSender = require("../messaging/channel/ChannelMessagingSender");
-const ChannelMessagingStubFactory = require("../messaging/channel/ChannelMessagingStubFactory");
-const ChannelMessagingSkeleton = require("../messaging/channel/ChannelMessagingSkeleton");
 const MqttMessagingStubFactory = require("../messaging/mqtt/MqttMessagingStubFactory");
 const MqttMessagingSkeleton = require("../messaging/mqtt/MqttMessagingSkeleton");
 const MqttAddress = require("../../generated/joynr/system/RoutingTypes/MqttAddress");
@@ -45,7 +42,6 @@ const MessageQueue = require("../messaging/routing/MessageQueue");
 const CommunicationModule = require("../messaging/CommunicationModule");
 const InProcessSkeleton = require("../util/InProcessSkeleton");
 const InProcessStub = require("../util/InProcessStub");
-const ChannelAddress = require("../../generated/joynr/system/RoutingTypes/ChannelAddress");
 const InProcessMessagingStubFactory = require("../messaging/inprocess/InProcessMessagingStubFactory");
 const InProcessMessagingSkeleton = require("../messaging/inprocess/InProcessMessagingSkeleton");
 const InProcessMessagingStub = require("../messaging/inprocess/InProcessMessagingStub");
@@ -55,7 +51,6 @@ const BrowserMessagingSkeleton = require("../messaging/browser/BrowserMessagingS
 const BrowserAddress = require("../../generated/joynr/system/RoutingTypes/BrowserAddress");
 const WebMessagingStub = require("../messaging/webmessaging/WebMessagingStub");
 const WebMessagingSkeleton = require("../messaging/webmessaging/WebMessagingSkeleton");
-const LongPollingChannelMessageReceiver = require("../messaging/channel/LongPollingChannelMessageReceiver");
 const MessagingQos = require("../messaging/MessagingQos");
 const DiscoveryQos = require("../proxy/DiscoveryQos");
 const ProviderQos = require("../../generated/joynr/types/ProviderQos");
@@ -65,10 +60,8 @@ const DiscoveryProvider = require("../../generated/joynr/system/DiscoveryProvide
 const RoutingProvider = require("../../generated/joynr/system/RoutingProvider");
 const TypeRegistrySingleton = require("../types/TypeRegistrySingleton");
 const Util = require("../util/UtilInternal");
-const WebWorkerMessagingAppender = require("../system/WebWorkerMessagingAppender");
 const uuid = require("../../lib/uuid-annotated");
 const loggingManager = require("../system/LoggingManager");
-const defaultSettings = require("./settings/defaultSettings");
 const defaultInterTabSettings = require("./settings/defaultInterTabSettings");
 const defaultClusterControllerSettings = require("./settings/defaultClusterControllerSettings");
 const Typing = require("../util/Typing");
@@ -81,7 +74,6 @@ const JoynrStates = {
     SHUTTINGDOWN: "shutting down"
 };
 
-const TWO_DAYS_IN_MS = 172800000;
 let clusterControllerSettings;
 
 /**
@@ -97,20 +89,18 @@ function InterTabClusterControllerRuntime(provisioning) {
     let initialRoutingTable;
     let untypedCapabilities;
     let typedCapabilities;
-    let channelMessagingSender;
-    let channelMessagingStubFactory;
     let messagingSkeletonFactory;
     let messagingStubFactory;
     let webMessagingStub;
     let webMessagingSkeleton;
     let browserMessagingSkeleton;
     let messageRouter;
+    /*eslint-disable no-unused-vars */
     let communicationModule;
-    let longPollingMessageReceiver;
+    /*eslint-enable no-unused-vars */
     let libjoynrMessagingSkeleton;
     let clusterControllerMessagingSkeleton;
     let mqttMessagingSkeleton;
-    let clusterControllerChannelMessagingSkeleton;
     let clusterControllerMessagingStub;
     let dispatcher;
     let typeRegistry;
@@ -121,7 +111,6 @@ function InterTabClusterControllerRuntime(provisioning) {
     let capabilityDiscovery;
     let arbitrator;
     let channelId;
-    let bounceProxyBaseUrl;
     let providerBuilder;
     let proxyBuilder;
     let capabilitiesRegistrar;
@@ -135,7 +124,6 @@ function InterTabClusterControllerRuntime(provisioning) {
     let registerDiscoveryProviderPromise;
     let registerRoutingProviderPromise;
     let persistency;
-    let longPollingCreatePromise;
     let freshnessIntervalId;
 
     // this is required at load time of libjoynr
@@ -207,17 +195,7 @@ function InterTabClusterControllerRuntime(provisioning) {
         enumerable: true
     });
 
-    let log, relativeTtl;
-
-    if (provisioning.logging && provisioning.logging.ttl) {
-        relativeTtl = provisioning.logging.ttl;
-    } else {
-        relativeTtl = TWO_DAYS_IN_MS;
-    }
-
-    const loggingMessagingQos = new MessagingQos({
-        ttl: relativeTtl
-    });
+    let log;
 
     let joynrState = JoynrStates.SHUTDOWN;
 
@@ -250,7 +228,7 @@ function InterTabClusterControllerRuntime(provisioning) {
      *             if libjoynr is not in SHUTDOWN state
      */
     this.start = function start() {
-        let i, j;
+        let i;
 
         if (joynrState !== JoynrStates.SHUTDOWN) {
             throw new Error("Cannot start libjoynr because it's currently \"" + joynrState + '"');
@@ -288,7 +266,6 @@ function InterTabClusterControllerRuntime(provisioning) {
         }
 
         initialRoutingTable = {};
-        bounceProxyBaseUrl = provisioning.bounceProxyBaseUrl;
 
         channelId = provisioning.channelId || persistency.getItem("joynr.channels.channelId.1") || "chjs_" + uuid();
         persistency.setItem("joynr.channels.channelId.1", channelId);
@@ -319,11 +296,6 @@ function InterTabClusterControllerRuntime(provisioning) {
 
         communicationModule = new CommunicationModule();
 
-        //channelMessagingSender = new ChannelMessagingSender({
-        //    communicationModule : communicationModule,
-        //    channelQos : provisioning.channelQos
-        //});
-
         messageQueueSettings = {};
         if (provisioning.messaging !== undefined && provisioning.messaging.maxQueueSizeInKBytes !== undefined) {
             messageQueueSettings.maxQueueSizeInKBytes = provisioning.messaging.maxQueueSizeInKBytes;
@@ -343,10 +315,6 @@ function InterTabClusterControllerRuntime(provisioning) {
         browserMessagingSkeleton = new BrowserMessagingSkeleton({
             webMessagingSkeleton
         });
-
-        //channelMessagingStubFactory = new ChannelMessagingStubFactory({
-        //    channelMessagingSender : channelMessagingSender
-        //});
 
         const globalClusterControllerAddress = new MqttAddress({
             brokerUri: provisioning.brokerUri,
@@ -391,42 +359,12 @@ function InterTabClusterControllerRuntime(provisioning) {
         messageRouter.setReplyToAddress(serializedGlobalClusterControllerAddress);
         browserMessagingSkeleton.registerListener(messageRouter.route);
 
-        //longPollingMessageReceiver = new LongPollingChannelMessageReceiver({
-        //    persistency : persistency,
-        //    bounceProxyUrl : bounceProxyBaseUrl + "/bounceproxy/",
-        //    communicationModule : communicationModule,
-        //    channelQos: provisioning.channelQos
-        //});
-
-        //// link up clustercontroller messaging to channel
-        //clusterControllerChannelMessagingSkeleton =
-        //        new ChannelMessagingSkeleton({
-        //            messageRouter : messageRouter
-        //        });
-        // clusterControllerChannelMessagingSkeleton.registerListener(messageRouter.route);
-
         mqttMessagingSkeleton = new MqttMessagingSkeleton({
             address: globalClusterControllerAddress,
             client: mqttClient,
             messageRouter
         });
 
-        //longPollingCreatePromise = longPollingMessageReceiver.create(channelId).then(
-        //        function(channelUrl) {
-        //            var channelAddress = new ChannelAddress({
-        //                channelId: channelId,
-        //                messagingEndpointUrl: channelUrl
-        //            });
-        //            mqttClient.onConnected().then(function() {
-        //                capabilityDiscovery.globalAddressReady(globalClusterControllerAddress);
-        //                channelMessagingStubFactory.globalAddressReady(channelAddress);
-        //                return null;
-        //            });
-        //            longPollingMessageReceiver
-        //                    .start(clusterControllerChannelMessagingSkeleton.receiveMessage);
-        //            channelMessagingSender.start();
-        //            return null;
-        //        });
         mqttClient.onConnected().then(() => {
             capabilityDiscovery.globalAddressReady(globalClusterControllerAddress);
             //channelMessagingStubFactory.globalAddressReady(channelAddress);
@@ -610,7 +548,7 @@ function InterTabClusterControllerRuntime(provisioning) {
                             resolved: isResolved
                         };
                     })
-                    .catch(error => {
+                    .catch(() => {
                         return false;
                     });
             },

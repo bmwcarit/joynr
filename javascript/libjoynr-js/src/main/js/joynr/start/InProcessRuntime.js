@@ -30,8 +30,6 @@ const PublicationManager = require("../dispatching/subscription/PublicationManag
 const SubscriptionManager = require("../dispatching/subscription/SubscriptionManager");
 const Dispatcher = require("../dispatching/Dispatcher");
 const PlatformSecurityManager = require("../security/PlatformSecurityManagerNode");
-const ChannelMessagingSender = require("../messaging/channel/ChannelMessagingSender");
-const ChannelMessagingStubFactory = require("../messaging/channel/ChannelMessagingStubFactory");
 const ChannelMessagingSkeleton = require("../messaging/channel/ChannelMessagingSkeleton");
 const ChannelAddress = require("../../generated/joynr/system/RoutingTypes/ChannelAddress");
 const MqttMessagingStubFactory = require("../messaging/mqtt/MqttMessagingStubFactory");
@@ -50,17 +48,14 @@ const InProcessMessagingStubFactory = require("../messaging/inprocess/InProcessM
 const InProcessMessagingSkeleton = require("../messaging/inprocess/InProcessMessagingSkeleton");
 const InProcessMessagingStub = require("../messaging/inprocess/InProcessMessagingStub");
 const InProcessAddress = require("../messaging/inprocess/InProcessAddress");
-const LongPollingChannelMessageReceiver = require("../messaging/channel/LongPollingChannelMessageReceiver");
 const MessagingQos = require("../messaging/MessagingQos");
 const DiscoveryQos = require("../proxy/DiscoveryQos");
 const DiscoveryScope = require("../../generated/joynr/types/DiscoveryScope");
 const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
 const Util = require("../util/UtilInternal");
 const CapabilitiesUtil = require("../util/CapabilitiesUtil");
-const WebWorkerMessagingAppender = require("../system/WebWorkerMessagingAppender");
 const loggingManager = require("../system/LoggingManager");
 const uuid = require("../../lib/uuid-annotated");
-const defaultSettings = require("./settings/defaultSettings");
 const defaultLibjoynrSettings = require("./settings/defaultLibjoynrSettings");
 const defaultClusterControllerSettings = require("./settings/defaultClusterControllerSettings");
 const Typing = require("../util/Typing");
@@ -73,7 +68,6 @@ const JoynrStates = {
     SHUTTINGDOWN: "shutting down"
 };
 
-const TWO_DAYS_IN_MS = 172800000;
 let clusterControllerSettings;
 
 /**
@@ -89,17 +83,12 @@ function InProcessRuntime(provisioning) {
     let initialRoutingTable;
     let untypedCapabilities;
     let typedCapabilities;
-    let channelMessagingSender;
-    let channelMessagingStubFactory;
     let messagingSkeletonFactory;
     let messagingStubFactory;
     let messageRouter;
-    let communicationModule;
-    let longPollingMessageReceiver;
     let libjoynrMessagingSkeleton;
     let clusterControllerMessagingSkeleton;
     let mqttMessagingSkeleton;
-    let clusterControllerChannelMessagingSkeleton;
     let clusterControllerMessagingStub, dispatcher;
     let typeRegistry;
     let requestReplyManager;
@@ -109,7 +98,6 @@ function InProcessRuntime(provisioning) {
     let capabilityDiscovery;
     let arbitrator;
     let channelId;
-    let bounceProxyBaseUrl;
     let providerBuilder;
     let proxyBuilder;
     let capabilitiesRegistrar;
@@ -118,8 +106,11 @@ function InProcessRuntime(provisioning) {
     let discoveryStub;
     let messageQueueSettings;
     let persistency;
-    let longPollingCreatePromise;
     let freshnessIntervalId;
+    /*eslint-disable no-unused-vars */
+    let communicationModule;
+    let clusterControllerChannelMessagingSkeleton;
+    /*eslint-enable no-unused-vars */
 
     // this is required at load time of libjoynr
     typeRegistry = Object.freeze(TypeRegistrySingleton.getInstance());
@@ -190,17 +181,7 @@ function InProcessRuntime(provisioning) {
         enumerable: true
     });
 
-    let log, relativeTtl;
-
-    if (provisioning.logging && provisioning.logging.ttl) {
-        relativeTtl = provisioning.logging.ttl;
-    } else {
-        relativeTtl = TWO_DAYS_IN_MS;
-    }
-
-    const loggingMessagingQos = new MessagingQos({
-        ttl: relativeTtl
-    });
+    let log;
 
     let joynrState = JoynrStates.SHUTDOWN;
 
@@ -234,7 +215,7 @@ function InProcessRuntime(provisioning) {
      *             if libjoynr is not in SHUTDOWN state
      */
     this.start = function start() {
-        let i, j;
+        let i;
 
         if (joynrState !== JoynrStates.SHUTDOWN) {
             throw new Error("Cannot start libjoynr because it's currently \"" + joynrState + '"');
@@ -244,10 +225,6 @@ function InProcessRuntime(provisioning) {
         if (!provisioning) {
             throw new Error("Constructor has not been invoked with provisioned data");
         }
-
-        // initialize Logger with external logging configuration or default
-        // values
-        let logLevel, logLayout, appenderNames, appenderName;
 
         log = loggingManager.getLogger("joynr.start.InProcessRuntime");
 
@@ -268,7 +245,6 @@ function InProcessRuntime(provisioning) {
         }
 
         initialRoutingTable = {};
-        bounceProxyBaseUrl = provisioning.bounceProxyBaseUrl;
 
         channelId = provisioning.channelId || persistency.getItem("joynr.channels.channelId.1") || "chjs_" + uuid();
         persistency.setItem("joynr.channels.channelId.1", channelId);
@@ -285,7 +261,6 @@ function InProcessRuntime(provisioning) {
         typeRegistry.addType(new ChannelAddress()._typeName, ChannelAddress, false);
         typeRegistry.addType(new MqttAddress()._typeName, MqttAddress, false);
         typedCapabilities = [];
-        let errorMessage;
         for (i = 0; i < untypedCapabilities.length; i++) {
             const capability = new GlobalDiscoveryEntry(untypedCapabilities[i]);
             if (!capability.address) {
@@ -299,21 +274,10 @@ function InProcessRuntime(provisioning) {
         }
 
         communicationModule = new CommunicationModule();
-
-        //channelMessagingSender = new ChannelMessagingSender({
-        //    communicationModule : communicationModule,
-        //    channelQos : provisioning.channelQos
-        //});
-
         messageQueueSettings = {};
         if (provisioning.messaging !== undefined && provisioning.messaging.maxQueueSizeInKBytes !== undefined) {
             messageQueueSettings.maxQueueSizeInKBytes = provisioning.messaging.maxQueueSizeInKBytes;
         }
-
-        //channelMessagingStubFactory = new ChannelMessagingStubFactory({
-        //    myChannelId : channelId,
-        //    channelMessagingSender : channelMessagingSender
-        //});
 
         const globalClusterControllerAddress = new MqttAddress({
             brokerUri: provisioning.brokerUri,
@@ -354,13 +318,6 @@ function InProcessRuntime(provisioning) {
         });
         messageRouter.setReplyToAddress(serializedGlobalClusterControllerAddress);
 
-        //longPollingMessageReceiver = new LongPollingChannelMessageReceiver({
-        //    persistency : persistency,
-        //    bounceProxyUrl : bounceProxyBaseUrl + "/bounceproxy/",
-        //    communicationModule : communicationModule,
-        //    channelQos: provisioning.channelQos
-        //});
-
         // link up clustercontroller messaging to channel
         clusterControllerChannelMessagingSkeleton = new ChannelMessagingSkeleton({
             messageRouter
@@ -372,24 +329,6 @@ function InProcessRuntime(provisioning) {
             messageRouter
         });
 
-        //longPollingCreatePromise = longPollingMessageReceiver.create(channelId).then(
-        //        function(channelUrl) {
-        //            var channelAddress = new ChannelAddress({
-        //                channelId: channelId,
-        //                messagingEndpointUrl: channelUrl
-        //            });
-
-        //            mqttClient.onConnected().then(function() {
-        //                capabilityDiscovery.globalAddressReady(globalClusterControllerAddress);
-        //                channelMessagingStubFactory.globalAddressReady(channelAddress);
-        //                return null;
-        //            });
-
-        //            longPollingMessageReceiver
-        //                    .start(clusterControllerChannelMessagingSkeleton.receiveMessage);
-        //            channelMessagingSender.start();
-        //            return null;
-        //        });
         mqttClient.onConnected().then(() => {
             capabilityDiscovery.globalAddressReady(globalClusterControllerAddress);
             //channelMessagingStubFactory.globalAddressReady(channelAddress);
