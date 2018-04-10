@@ -1,4 +1,5 @@
 /*eslint no-console: "off"*/
+/*global req: true*/
 /*
  * #%L
  * %%
@@ -18,31 +19,27 @@
  * #L%
  */
 
-// run Jasmine 2.x unit tests via node
-function loadJasmine() {
-    console.log("joynr Jasmine 2.x node unit tests");
+const Jasmine = require("jasmine");
+const jasmine = new Jasmine();
+const path = require("path");
+const jasminePath = path.join(__dirname, "..", "resources/spec/support/jasmine.json");
+jasmine.loadConfigFile(jasminePath);
+console.log("Jasmine version: " + jasmine.version);
 
-    const Jasmine = require("jasmine");
-    const jasmine = new Jasmine();
-    jasmine.loadConfigFile(__dirname + "/../resources/spec/support/jasmine.json");
-    console.log("Jasmine version: " + jasmine.version);
+const mod = require("module");
+// expose req as a global variable for WebSocketNode (that the mock won't be required)
+req = mod.prototype.require;
 
-    const mod = require("module");
-    // expose req as a global variable for WebSocketNode (that the mock won't be required)
-    req = mod.prototype.require;
+// load mocks
+mod.prototype.require = function(md) {
+    if (md.indexOf("Test") === -1) {
+        md = md.replace("/global/WebSocketNode", "/../../test/js/global/WebSocketMock");
+        md = md.replace("/global/SmrfNode", "/../../test/js/global/SmrfMock");
+    }
+    return req.call(this, md);
+};
 
-    // load mocks
-    mod.prototype.require = function(md) {
-        if (md.indexOf("Test") === -1) {
-            md = md.replace("/global/WebSocketNode", "/../../test/js/global/WebSocketMock");
-            md = md.replace("/global/SmrfNode", "/../../test/js/global/SmrfMock");
-        }
-        return req.call(this, md);
-    };
-
-    setTimeout(() => {
-        console.log("all tests modules loaded");
-        jasmine.execute();
-    }, 0);
-}
-module.exports = loadJasmine();
+setTimeout(() => {
+    console.log("all tests modules loaded");
+    jasmine.execute();
+}, 0);
