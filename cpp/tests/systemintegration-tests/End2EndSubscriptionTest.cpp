@@ -29,7 +29,7 @@
 #include "joynr/MessagingSettings.h"
 #include "joynr/OnChangeSubscriptionQos.h"
 #include "joynr/tests/testAbstractProvider.h"
-#include "joynr/LibjoynrSettings.h"
+#include "joynr/Settings.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/tests/DefaulttestProvider.h"
 #include "tests/JoynrTest.h"
