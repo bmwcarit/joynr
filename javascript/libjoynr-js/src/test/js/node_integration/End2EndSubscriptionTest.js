@@ -1,3 +1,4 @@
+/*eslint no-unused-vars: "off" */
 /*
  * #%L
  * %%
@@ -740,7 +741,6 @@ describe("libjoynr-js.integration.end2end.subscription", () => {
 
     it("resolves attribute subscription and calls onSubscribed", done => {
         const spy = jasmine.createSpyObj("spy", ["onReceive", "onError", "onSubscribed"]);
-        let subscriptionId, detailMessage;
         const qosSettings = new joynr.proxy.PeriodicSubscriptionQos();
         let storedSubscriptionId;
 
@@ -789,9 +789,7 @@ describe("libjoynr-js.integration.end2end.subscription", () => {
                 onError: spy.onError,
                 onSubscribed: spy.onSubscribed
             })
-            .then(subscriptionId => {
-                fail("unexpected success");
-            })
+            .then(fail)
             .catch(error => {
                 expect(error).toBeDefined();
                 expect(error instanceof SubscriptionException);
@@ -833,9 +831,7 @@ describe("libjoynr-js.integration.end2end.subscription", () => {
                 onError: spy.onError,
                 onSubscribed: spy.onSubscribed
             })
-            .then(subscriptionId => {
-                fail("unexpected success");
-            })
+            .then(fail)
             .catch(error => {
                 expect(error).toBeDefined();
                 expect(error instanceof SubscriptionException);
@@ -885,9 +881,7 @@ describe("libjoynr-js.integration.end2end.subscription", () => {
                 onReceive: spy.onReceive,
                 onError: spy.onError
             })
-            .then(subscriptionId => {
-                fail("unexpected success");
-            })
+            .then(fail)
             .catch(error => {
                 expect(error).toBeDefined();
                 expect(error instanceof SubscriptionException);

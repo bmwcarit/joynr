@@ -20,33 +20,15 @@ require("../../../node-unit-test-helper");
 const SubscriptionUtil = require("../../../../../main/js/joynr/dispatching/subscription/util/SubscriptionUtil");
 const SubscriptionInformation = require("../../../../../main/js/joynr/dispatching/types/SubscriptionInformation");
 const SubscriptionRequest = require("../../../../../main/js/joynr/dispatching/types/SubscriptionRequest");
-const SubscriptionStop = require("../../../../../main/js/joynr/dispatching/types/SubscriptionStop");
 const PeriodicSubscriptionQos = require("../../../../../main/js/joynr/proxy/PeriodicSubscriptionQos");
 const OnChangeSubscriptionQos = require("../../../../../main/js/joynr/proxy/OnChangeSubscriptionQos");
 const OnChangeWithKeepAliveSubscriptionQos = require("../../../../../main/js/joynr/proxy/OnChangeWithKeepAliveSubscriptionQos");
-const ProviderQos = require("../../../../../main/js/generated/joynr/types/ProviderQos");
 const uuid = require("../../../../../main/js/lib/uuid-annotated");
-const LoggingManager = require("../../../../../main/js/joynr/system/LoggingManager");
 
 describe("libjoynr-js.joynr.dispatching.subscription.types.SubscriptionUtil", () => {
     let proxyId;
     let providerId;
-    let publicationManager;
-    let dispatcherSpy;
-    let provider;
-    let fakeTime;
-    let intervalSubscriptionRequest;
-    let onChangeSubscriptionRequest;
-    let mixedSubscriptionRequest;
     let testAttributeName;
-    let value;
-    let minIntervalMs;
-    let maxIntervalMs;
-    let maxNrOfTimes;
-    let subscriptionLength;
-    let testAttribute;
-    let providerSettings;
-    const log = LoggingManager.getLogger("joynr.dispatching.subscription.TestSubscriptionUtil");
 
     function createSubscriptionInformation(proxy, provider, periodMs, subscriptionLength, onChange, minIntervalMs) {
         let qosSettings;

@@ -1,3 +1,4 @@
+/* eslint no-console: "off" */
 /*
  * #%L
  * %%
@@ -21,6 +22,7 @@ const Promise = require("../../../main/js/global/Promise");
 const provisioning_root = require("../../resources/joynr/provisioning/provisioning_root");
 const waitsFor = require("../global/WaitsFor");
 const child_process = require("child_process");
+const path = require("path");
 
 const IntegrationUtils = {};
 let currentlyRunningChildCC;
@@ -104,7 +106,7 @@ IntegrationUtils.initializeChildProcess = function(childName, provisioningSuffix
 
     const processConfig = process.env.debugPort ? { execArgv: ["--inspect-brk=" + process.env.debugPort] } : {};
 
-    const forked = child_process.fork(__dirname + "/" + childName + ".js", [], processConfig);
+    const forked = child_process.fork(path.join(__dirname, childName + ".js"), [], processConfig);
     forked.on("message", msg => {
         // Handle messages from child process
         console.log("received message: " + JSON.stringify(msg));

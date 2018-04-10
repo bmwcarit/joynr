@@ -22,7 +22,6 @@ const Dispatcher = require("../../../../main/js/joynr/dispatching/Dispatcher");
 const JoynrMessage = require("../../../../main/js/joynr/messaging/JoynrMessage");
 const MessagingQos = require("../../../../main/js/joynr/messaging/MessagingQos");
 const DiscoveryEntryWithMetaInfo = require("../../../../main/js/generated/joynr/types/DiscoveryEntryWithMetaInfo");
-const Request = require("../../../../main/js/joynr/dispatching/types/Request");
 const Reply = require("../../../../main/js/joynr/dispatching/types/Reply");
 const BroadcastSubscriptionRequest = require("../../../../main/js/joynr/dispatching/types/BroadcastSubscriptionRequest");
 const MulticastSubscriptionRequest = require("../../../../main/js/joynr/dispatching/types/MulticastSubscriptionRequest");
@@ -30,7 +29,6 @@ const SubscriptionRequest = require("../../../../main/js/joynr/dispatching/types
 const SubscriptionReply = require("../../../../main/js/joynr/dispatching/types/SubscriptionReply");
 const SubscriptionStop = require("../../../../main/js/joynr/dispatching/types/SubscriptionStop");
 const MulticastPublication = require("../../../../main/js/joynr/dispatching/types/MulticastPublication");
-const SubscriptionPublication = require("../../../../main/js/joynr/dispatching/types/SubscriptionPublication");
 const uuid = require("../../../../main/js/lib/uuid-annotated");
 const Promise = require("../../../../main/js/global/Promise");
 
@@ -50,7 +48,7 @@ const ttlUpliftMs = 10000;
 const toleranceMs = 50;
 
 const customMatchers = {
-    toEqualWithPositiveTolerance(util, customEqualityTesters) {
+    toEqualWithPositiveTolerance() {
         return {
             compare(actual, expected) {
                 const result = {};
@@ -89,7 +87,6 @@ describe("libjoynr-js.joynr.ttlUpliftTest", () => {
     let requestReplyManager, subscriptionManager, publicationManager, messageRouter;
     const subscriptionId = "mySubscriptionId-" + uuid();
     const multicastId = "multicastId-" + uuid();
-    const requestReplyId = "requestReplyId";
 
     let ttl, messagingQos, expiryDateMs, expiryDateWithTtlUplift;
     let publicationTtlMs, subscriptionQos;
@@ -343,9 +340,6 @@ describe("libjoynr-js.joynr.ttlUpliftTest", () => {
                 to: providerId,
                 expiryDate: expiryDateMs
             };
-            const publication = new SubscriptionPublication({
-                subscriptionId: "subscriptionId"
-            });
 
             dispatcher.sendPublication(settings, "publication");
 
@@ -622,9 +616,6 @@ describe("libjoynr-js.joynr.ttlUpliftTest", () => {
                 to: providerId,
                 expiryDate: expiryDateMs
             };
-            const publication = new SubscriptionPublication({
-                subscriptionId: "subscriptionId"
-            });
 
             dispatcherWithTtlUplift.sendPublication(settings, "publication");
 

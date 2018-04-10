@@ -1,3 +1,5 @@
+/*eslint no-unused-vars: "off"*/
+/*global req*/
 /*
  * #%L
  * %%
@@ -35,9 +37,6 @@ const WebsocketNode = req("../../main/js/global/WebSocketNode");
 describe("websocket node", () => {
     let websocketNode;
     const remoteUrl = "url";
-    const keychain = {
-        ownerId: "ownerId"
-    };
     const keychainWithCerts = {
         tlsCert: "tlsCert",
         tlsKey: "tlsKey",

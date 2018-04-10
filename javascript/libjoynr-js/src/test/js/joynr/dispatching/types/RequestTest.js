@@ -18,7 +18,6 @@
  */
 require("../../../node-unit-test-helper");
 const Request = require("../../../../../main/js/joynr/dispatching/types/Request");
-const TypeRegistrySingleton = require("../../../../../main/js/joynr/types/TypeRegistrySingleton");
 const RadioStation = require("../../../../generated/joynr/vehicle/radiotypes/RadioStation");
 
 describe("libjoynr-js.joynr.dispatching.types.Request", () => {

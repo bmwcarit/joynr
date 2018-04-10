@@ -43,7 +43,7 @@ function MyType(a, b, c, d, e) {
     this.e = e;
 }
 
-MyType.getMemberType = function(i) {};
+MyType.getMemberType = function() {};
 
 function MySecondType(a, b, c, d, e) {
     this._typeName = "MySecondTypeName";
@@ -54,7 +54,7 @@ function MySecondType(a, b, c, d, e) {
     this.e = e;
 }
 
-MySecondType.getMemberType = function(i) {};
+MySecondType.getMemberType = function() {};
 
 beforeEach(done => {
     const datatypePromises = [

@@ -87,7 +87,7 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesStore", () => {
         jasmine.clock().uninstall();
     });
 
-    function checkCapabilitiesDirectoryStateForUnregister(capabilityToRemove) {
+    function checkCapabilitiesDirectoryStateForUnregister() {
         discoveryEntry2.participantId = "701";
         discoveryEntry3.participantId = "702";
         directory.add({

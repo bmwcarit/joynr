@@ -29,8 +29,6 @@ describe("libjoynr-js.joynr.messaging.webmessaging.SharedWebSocket", () => {
     let ccAddress;
     let websocket = null;
     let sharedWebSocket = null;
-    let listener1 = null;
-    let listener2 = null;
     let data = null;
     let event = null;
     let joynrMessage = null;
@@ -60,8 +58,6 @@ describe("libjoynr-js.joynr.messaging.webmessaging.SharedWebSocket", () => {
             remoteAddress: ccAddress
         });
 
-        listener1 = jasmine.createSpy("listener1");
-        listener2 = jasmine.createSpy("listener2");
         function MessageEvent() {}
         event = new MessageEvent();
         data = new JoynrMessage({

@@ -18,7 +18,6 @@
  */
 require("../../../node-unit-test-helper");
 const SubscriptionPublication = require("../../../../../main/js/joynr/dispatching/types/SubscriptionPublication");
-const RadioStation = require("../../../../generated/joynr/vehicle/radiotypes/RadioStation");
 
 describe("libjoynr-js.joynr.dispatching.types.SubscriptionPublication", () => {
     it("is defined", () => {

@@ -20,11 +20,8 @@ require("../../node-unit-test-helper");
 const Promise = require("../../../../main/js/global/Promise");
 const CapabilitiesRegistrar = require("../../../../main/js/joynr/capabilities/CapabilitiesRegistrar");
 const ProviderQos = require("../../../../main/js/generated/joynr/types/ProviderQos");
-const GlobalDiscoveryEntry = require("../../../../main/js/generated/joynr/types/GlobalDiscoveryEntry");
 const ProviderAttribute = require("../../../../main/js/joynr/provider/ProviderAttribute");
-const DiscoveryEntry = require("../../../../main/js/generated/joynr/types/DiscoveryEntry");
 const ProviderScope = require("../../../../main/js/generated/joynr/types/ProviderScope");
-const Version = require("../../../../main/js/generated/joynr/types/Version");
 const uuid = require("../../../../main/js/lib/uuid-annotated");
 describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", () => {
     let capabilitiesRegistrar;
@@ -37,10 +34,7 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", () => {
     let messageRouterSpy;
     let libjoynrMessagingAddress;
     let provider;
-    let capability;
-    let localChannelId;
     let providerQos;
-    let address;
     let checkImplementation;
     let TestProvider;
 
@@ -86,10 +80,7 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", () => {
             "Boolean",
             "NOTIFYREADWRITE"
         );
-
-        localChannelId = "localChannelId";
         domain = "testdomain";
-        address = "address";
         participantId = "myParticipantId";
         participantIdStorageSpy = jasmine.createSpyObj("participantIdStorage", ["getParticipantId"]);
         participantIdStorageSpy.getParticipantId.and.returnValue(participantId);
@@ -114,16 +105,6 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", () => {
             publicationManager: publicationManagerSpy
         });
 
-        capability = new GlobalDiscoveryEntry({
-            providerVersion: new Version({ majorVersion: 47, minorVersion: 11 }),
-            domain,
-            interfaceName: provider.interfaceName,
-            qos: providerQos,
-            channelId: localChannelId,
-            participantId,
-            publicKeyId: "",
-            address
-        });
         done();
     });
 

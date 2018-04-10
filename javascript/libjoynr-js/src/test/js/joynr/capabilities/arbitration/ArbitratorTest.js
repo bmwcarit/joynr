@@ -22,7 +22,6 @@ const DiscoveryEntryWithMetaInfo = require("../../../../../main/js/generated/joy
 const ProviderQos = require("../../../../../main/js/generated/joynr/types/ProviderQos");
 const CustomParameter = require("../../../../../main/js/generated/joynr/types/CustomParameter");
 const DiscoveryQos = require("../../../../../main/js/joynr/proxy/DiscoveryQos");
-const DiscoveryQosGen = require("../../../../../main/js/generated/joynr/types/DiscoveryQos");
 const ArbitrationStrategyCollection = require("../../../../../main/js/joynr/types/ArbitrationStrategyCollection");
 const DiscoveryScope = require("../../../../../main/js/generated/joynr/types/DiscoveryScope");
 const DiscoveryException = require("../../../../../main/js/joynr/exceptions/DiscoveryException");
@@ -34,14 +33,10 @@ const Date = require("../../../../../test/js/global/Date");
 const waitsFor = require("../../../../../test/js/global/WaitsFor");
 let capabilities, fakeTime, staticArbitrationSettings, staticArbitrationSpy, domain;
 let interfaceName, discoveryQos, capDiscoverySpy, arbitrator, discoveryEntries, nrTimes;
-let discoveryEntriesWithDifferentProviderVersions;
-const safetyTimeoutDelta = 100;
 let discoveryEntryWithMajor47AndMinor0, discoveryEntryWithMajor47AndMinor1;
 let discoveryEntryWithMajor47AndMinor2, discoveryEntryWithMajor47AndMinor3;
 let discoveryEntryWithMajor48AndMinor2;
 // save values once before installing jasmine clock mocks
-const originalSetInterval = setInterval;
-const originalClearInterval = clearInterval;
 
 function increaseFakeTime(time_ms) {
     fakeTime = fakeTime + time_ms;
@@ -654,10 +649,7 @@ describe("libjoynr-js.joynr.capabilities.arbitration.Arbitrator", () => {
                     increaseFakeTime(discoveryQos.discoveryTimeoutMs);
                     return null;
                 })
-                .catch(error => {
-                    fail("caught reject from promise chain");
-                    return null;
-                });
+                .catch(fail);
         },
         7000
     );
@@ -849,8 +841,7 @@ describe("libjoynr-js.joynr.capabilities.arbitration.Arbitrator", () => {
     });
 
     it("fails if arbitrationStrategy throws an exception", done => {
-        let rejectCalled = false;
-        spyOn(discoveryQos, "arbitrationStrategy").and.callFake(discoveredCaps => {
+        spyOn(discoveryQos, "arbitrationStrategy").and.callFake(() => {
             throw new Error("myError");
         });
 
@@ -867,13 +858,9 @@ describe("libjoynr-js.joynr.capabilities.arbitration.Arbitrator", () => {
 
         arbitrator
             .startArbitration(staticArbitrationSettings)
-            .then(result => {
-                fail("arbitration should have failed");
-                return null;
-            })
+            .then(fail)
             .catch(error => {
                 expect(Object.prototype.toString.call(error) === "[object Error]").toBeTruthy();
-                rejectCalled = true;
                 staticArbitrationSpy.reject(error);
                 done();
                 return null;
@@ -884,7 +871,6 @@ describe("libjoynr-js.joynr.capabilities.arbitration.Arbitrator", () => {
     });
 
     it("rejects pending arbitrations when shutting down", done => {
-        const rejectCalled = false;
         capDiscoverySpy.lookup.and.returnValue(Promise.resolve([]));
         spyOn(discoveryQos, "arbitrationStrategy").and.returnValue([]);
         arbitrator = new Arbitrator(capDiscoverySpy);

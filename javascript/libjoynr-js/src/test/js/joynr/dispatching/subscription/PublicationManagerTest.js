@@ -1,3 +1,4 @@
+/*eslint no-use-before-define: "off"*/
 /*
  * #%L
  * %%
@@ -19,7 +20,6 @@
 require("../../../node-unit-test-helper");
 const Promise = require("../../../../../main/js/global/Promise");
 const PublicationManager = require("../../../../../main/js/joynr/dispatching/subscription/PublicationManager");
-const MessagingQos = require("../../../../../main/js/joynr/messaging/MessagingQos");
 const SubscriptionReply = require("../../../../../main/js/joynr/dispatching/types/SubscriptionReply");
 const SubscriptionRequest = require("../../../../../main/js/joynr/dispatching/types/SubscriptionRequest");
 const BroadcastSubscriptionRequest = require("../../../../../main/js/joynr/dispatching/types/BroadcastSubscriptionRequest");
@@ -54,7 +54,6 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", () => 
     let testBroadcastName, testBroadcast;
     let testNonSelectiveBroadcastName, testNonSelectiveBroadcast;
     let persistency; // localStorage was renamed to persistency because it's impossible to reassign it because of jslint
-    let callbackDispatcherSettings;
 
     function createSubscriptionRequest(
         isAttribute,
@@ -152,7 +151,6 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", () => 
         maxNrOfTimes = 5;
         asyncGetterCallDelay = 10;
         subscriptionLength = (maxNrOfTimes + 1) * maxIntervalMs;
-        callbackDispatcherSettings = {};
 
         dispatcherSpy = jasmine.createSpyObj("Dispatcher", ["sendPublication", "sendMulticastPublication"]);
         publicationManager = new PublicationManager(dispatcherSpy, persistency, joynrInstanceId);
@@ -232,11 +230,13 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", () => 
 
         provider[asyncTestAttributeName] = asyncTestAttribute;
         spyOn(asyncTestAttribute, "get").and.callFake(() => {
+            /* eslint-disable no-unused-vars*/
             return new Promise((resolve, reject) => {
                 LongTimer.setTimeout(() => {
                     resolve("asyncAttributeValue");
                 }, asyncGetterCallDelay);
             });
+            /* eslint-enable no-unused-vars*/
         });
 
         jasmine.clock().install();
@@ -310,7 +310,9 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", () => 
         it("is instantiable", done => {
             expect(publicationManager).toBeDefined();
             expect(() => {
+                /*eslint-disable*/
                 const p = new PublicationManager(dispatcherSpy, persistency);
+                /*eslint-enable*/
             }).not.toThrow();
             done();
         });
@@ -374,8 +376,6 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", () => 
         });
 
         it("publishes first value once immediately after subscription", done => {
-            let times;
-
             publicationManager.addPublicationProvider(providerId, provider);
             expect(testAttribute.get).not.toHaveBeenCalled();
             expect(dispatcherSpy.sendPublication).not.toHaveBeenCalled();
@@ -551,8 +551,6 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", () => 
         }
 
         it("does not publish when interval subscription has an endDate in the past", done => {
-            let times;
-
             intervalSubscriptionRequest.qos.expiryDateMs = Date.now() - 1;
             publicationManager.addPublicationProvider(providerId, provider);
             publicationManager.handleSubscriptionRequest(
@@ -714,7 +712,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", () => 
             testAttribute.get.calls.reset();
             dispatcherSpy.sendPublication.calls.reset();
 
-            for (times = 0; times < maxNrOfTimes; times++) {
+            for (let times = 0; times < maxNrOfTimes; times++) {
                 increaseFakeTime(50);
                 testAttribute.valueChanged(value + times);
                 expect(dispatcherSpy.sendPublication.calls.count()).toEqual(times + 1);
@@ -741,7 +739,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", () => 
             testAttribute.get.calls.reset();
             dispatcherSpy.sendPublication.calls.reset();
 
-            testAttribute.valueChanged(value + times);
+            testAttribute.valueChanged(value + "someChange");
 
             increaseFakeTime(asyncGetterCallDelay);
 
@@ -872,8 +870,6 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", () => 
         });
 
         it("creates a mixed subscription and does not send two publications within minintervalMs in case async getter calls and valueChanged occur at the same time", done => {
-            let times;
-
             publicationManager.addPublicationProvider(providerId, provider);
             publicationManager.handleSubscriptionRequest(
                 proxyId,
@@ -1093,7 +1089,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", () => 
                 });
             };
 
-            for (times = 0; times < maxNrOfTimes; times++) {
+            for (let times = 0; times < maxNrOfTimes; times++) {
                 promiseChain = internalCheck(times, promiseChain);
             }
 
@@ -1152,7 +1148,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", () => 
                     });
                 });
             };
-            for (times = 0; times < maxNrOfTimes; times++) {
+            for (let times = 0; times < maxNrOfTimes; times++) {
                 promiseChain = internalCheck(times, promiseChain);
             }
 
@@ -1192,7 +1188,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", () => 
                     dispatcherSpy.sendPublication.calls.reset();
 
                     const shortInterval = Math.round((mixedSubscriptionRequest.qos.minIntervalMs - 2) / maxNrOfTimes);
-                    for (times = 0; times < maxNrOfTimes; times++) {
+                    for (let times = 0; times < maxNrOfTimes; times++) {
                         expect(testAttribute.get).not.toHaveBeenCalled();
                         expect(dispatcherSpy.sendPublication).not.toHaveBeenCalled();
                         increaseFakeTime(shortInterval);
@@ -1635,7 +1631,6 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", () => 
         });
 
         it("removes publication provider", done => {
-            let times;
             spyOn(testAttribute, "registerObserver").and.callThrough();
             spyOn(testAttribute, "unregisterObserver").and.callThrough();
             publicationManager.addPublicationProvider(providerId, provider);
@@ -1944,7 +1939,6 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", () => 
 
             expect(dispatcherSpy.sendMulticastPublication).toHaveBeenCalled();
 
-            const settings = dispatcherSpy.sendMulticastPublication.calls.argsFor(0)[0];
             const multicastPublication = dispatcherSpy.sendMulticastPublication.calls.argsFor(0)[1];
 
             expect(multicastPublication.multicastId).toEqual(request.multicastId);

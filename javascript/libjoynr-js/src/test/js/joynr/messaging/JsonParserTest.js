@@ -17,10 +17,8 @@
  * #L%
  */
 
-define(["JsonParser", "joynr/system/LoggingManager"], (JsonParser, LoggingManager) => {
+define(["JsonParser"], JsonParser => {
     describe("libjoynr-js.joynr.messaging.JsonParserTest", () => {
-        const log = LoggingManager.getLogger("JsonParserTest");
-
         it("testSimpleObject", () => {
             const object1 = {
                 x: "xü/"

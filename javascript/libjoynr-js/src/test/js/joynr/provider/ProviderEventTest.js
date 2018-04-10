@@ -18,10 +18,7 @@
  */
 require("../../node-unit-test-helper");
 const ProviderEvent = require("../../../../main/js/joynr/provider/ProviderEvent");
-const ProviderQos = require("../../../../main/js/generated/joynr/types/ProviderQos");
 const BroadcastFilterParameters = require("../../../../main/js/joynr/proxy/BroadcastFilterParameters");
-
-const safetyTimeoutDelta = 100;
 
 describe("libjoynr-js.joynr.provider.ProviderEvent", () => {
     let weakSignal;
@@ -69,17 +66,12 @@ describe("libjoynr-js.joynr.provider.ProviderEvent", () => {
     }
 
     it("implements the observer concept correctly", done => {
-        let i,
-            spy1,
-            spy2,
-            attribute,
-            func1,
-            func2,
-            value = {
-                key: "value",
-                1: 2,
-                object: {}
-            };
+        let spy1, spy2, func1, func2;
+        let value = {
+            key: "value",
+            1: 2,
+            object: {}
+        };
 
         spy1 = jasmine.createSpy("spy1");
         spy2 = jasmine.createSpy("spy2");
@@ -122,10 +114,6 @@ describe("libjoynr-js.joynr.provider.ProviderEvent", () => {
         done();
     });
 
-    function isPartOfList(list, data) {
-        return list.indexOf(data) !== -1;
-    }
-
     function buildObserver2(spy) {
         return function(data) {
             const filters = data.filters;
@@ -147,13 +135,12 @@ describe("libjoynr-js.joynr.provider.ProviderEvent", () => {
     }
 
     it("implements the broadcast filter list correctly", done => {
-        let i, spy1, spy2, attribute, observerFunc, filterFunc;
+        let spy1, spy2, observerFunc, filterFunc;
         const value = {
             key: "value",
             1: 2,
             object: {}
         };
-        let spy3;
 
         spy1 = jasmine.createSpy("spy1");
         spy2 = jasmine.createSpy("spy2");

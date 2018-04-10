@@ -18,8 +18,6 @@
  */
 require("../../node-unit-test-helper");
 //TODO: some of this relies on the dummy implementation, change accordingly when implementing
-const ProxyAttribute = require("../../../../main/js/joynr/proxy/ProxyAttribute");
-const ProxyOperation = require("../../../../main/js/joynr/proxy/ProxyOperation");
 const ProxyEvent = require("../../../../main/js/joynr/proxy/ProxyEvent");
 const DiscoveryQos = require("../../../../main/js/joynr/proxy/DiscoveryQos");
 const MessagingQos = require("../../../../main/js/joynr/messaging/MessagingQos");
@@ -132,9 +130,9 @@ describe("libjoynr-js.joynr.proxy.ProxyEvent", () => {
 
     it("subscribe calls subscriptionManager", done => {
         const partitions = ["1", "2", "3"];
-        const onReceive = function(value) {};
-        const onError = function(value) {};
-        const onSubscribed = function(value) {};
+        const onReceive = function() {};
+        const onError = function() {};
+        const onSubscribed = function() {};
 
         const expectedPartitions = Util.extend([], partitions);
         const expectedSubscriptionQos = new MulticastSubscriptionQos(Util.extendDeep({}, subscriptionQos));
@@ -191,7 +189,7 @@ describe("libjoynr-js.joynr.proxy.ProxyEvent", () => {
         weakSignal
             .subscribe({
                 subscriptionQos,
-                onReceive(value) {}
+                onReceive() {}
             })
             .then(spy.onFulfilled)
             .catch(spy.onRejected)
@@ -234,7 +232,7 @@ describe("libjoynr-js.joynr.proxy.ProxyEvent", () => {
         weakSignal
             .subscribe({
                 subscriptionQos,
-                receive(value) {}
+                receive() {}
             })
             .then(spySubscribePromise.onFulfilled)
             .catch(spySubscribePromise.onRejected)
@@ -278,13 +276,13 @@ describe("libjoynr-js.joynr.proxy.ProxyEvent", () => {
         weakSignal
             .subscribe({
                 subscriptionQos,
-                receive(value) {}
+                receive() {}
             })
             .then(() => {
                 //subscribing with empty filter parameters should work
                 return weakSignal.subscribe({
                     subscriptionQos,
-                    receive(value) {},
+                    receive() {},
                     filterParameters: weakSignal.createFilterParameters()
                 });
             })
@@ -292,14 +290,14 @@ describe("libjoynr-js.joynr.proxy.ProxyEvent", () => {
                 //subscribing with filter parameters having value null should work
                 return weakSignal.subscribe({
                     subscriptionQos,
-                    receive(value) {}
+                    receive() {}
                 });
             })
             .then(() => {
                 //subscribing with filter parameters having value null should work
                 return weakSignal.subscribe({
                     subscriptionQos,
-                    receive(value) {},
+                    receive() {},
                     filterParameters: null
                 });
             })
@@ -312,7 +310,7 @@ describe("libjoynr-js.joynr.proxy.ProxyEvent", () => {
                 return weakSignal
                     .subscribe({
                         subscriptionQos,
-                        receive(value) {},
+                        receive() {},
                         filterParameters
                     })
                     .then(fail)
@@ -326,31 +324,17 @@ describe("libjoynr-js.joynr.proxy.ProxyEvent", () => {
         expect(weakSignal.subscribe).toBeDefined();
         expect(typeof weakSignal.subscribe === "function").toBeTruthy();
 
-        let promise; // saved to allow jasmine to "waitsFor" its status
-
-        const spySubscribePromise = jasmine.createSpyObj("spySubscribePromise", ["onFulfilled", "onRejected"]);
-
         const expectedError = new Error("error registering broadcast");
         subscriptionManagerSpy.registerBroadcastSubscription.and.returnValue(Promise.reject(expectedError));
 
-        promise = weakSignal
+        weakSignal
             .subscribe({
                 subscriptionQos,
-                receive(value) {}
+                receive() {}
             })
-            .then(spySubscribePromise.onFulfilled)
-            .catch(spySubscribePromise.onRejected);
-
-        waitsFor(
-            () => {
-                return spySubscribePromise.onRejected.calls.count() > 0;
-            },
-            "The promise is not pending any more",
-            asyncTimeout
-        )
-            .then(() => {
-                expect(spySubscribePromise.onFulfilled).not.toHaveBeenCalled();
-                expect(spySubscribePromise.onRejected).toHaveBeenCalledWith(expectedError);
+            .then(fail)
+            .catch(error => {
+                expect(error).toEqual(expectedError);
                 done();
                 return null;
             })
@@ -372,7 +356,7 @@ describe("libjoynr-js.joynr.proxy.ProxyEvent", () => {
         weakSignal
             .subscribe({
                 subscriptionQos,
-                receive(value) {}
+                receive() {}
             })
             .then(passedSubscriptionId => {
                 return weakSignal.unsubscribe({

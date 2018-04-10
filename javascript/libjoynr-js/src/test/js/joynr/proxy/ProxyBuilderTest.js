@@ -18,8 +18,6 @@
  */
 require("../../node-unit-test-helper");
 const ProxyBuilder = require("../../../../main/js/joynr/proxy/ProxyBuilder");
-const ProxyOperation = require("../../../../main/js/joynr/proxy/ProxyOperation");
-const ProxyEvent = require("../../../../main/js/joynr/proxy/ProxyEvent");
 const DiscoveryQos = require("../../../../main/js/joynr/proxy/DiscoveryQos");
 const MessagingQos = require("../../../../main/js/joynr/messaging/MessagingQos");
 const ProviderQos = require("../../../../main/js/generated/joynr/types/ProviderQos");
@@ -28,9 +26,7 @@ const DiscoveryEntryWithMetaInfo = require("../../../../main/js/generated/joynr/
 const ArbitrationStrategyCollection = require("../../../../main/js/joynr/types/ArbitrationStrategyCollection");
 const DiscoveryScope = require("../../../../main/js/generated/joynr/types/DiscoveryScope");
 const Version = require("../../../../main/js/generated/joynr/types/Version");
-const InProcessAddress = require("../../../../main/js/joynr/messaging/inprocess/InProcessAddress");
 const RadioProxy = require("../../../generated/joynr/vehicle/RadioProxy");
-const RadioStation = require("../../../generated/joynr/vehicle/radiotypes/RadioStation");
 const Promise = require("../../../../main/js/global/Promise");
 const waitsFor = require("../../../../test/js/global/WaitsFor");
 
@@ -352,9 +348,7 @@ describe("libjoynr-js.joynr.proxy.ProxyBuilder", () => {
     });
 
     it("adds a routing table entry for proxy and knows provider", done => {
-        let promise,
-            spy = jasmine.createSpyObj("spy", ["onFulfilled", "onRejected"]);
-
+        let spy = jasmine.createSpyObj("spy", ["onFulfilled", "onRejected"]);
         let onFulfilledCalled = false;
 
         proxyBuilder

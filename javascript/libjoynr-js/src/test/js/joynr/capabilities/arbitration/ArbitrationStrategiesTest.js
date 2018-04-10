@@ -23,7 +23,6 @@ const ProviderScope = require("../../../../../main/js/generated/joynr/types/Prov
 const ProviderQos = require("../../../../../main/js/generated/joynr/types/ProviderQos");
 const CustomParameter = require("../../../../../main/js/generated/joynr/types/CustomParameter");
 const Version = require("../../../../../main/js/generated/joynr/types/Version");
-const InProcessAddress = require("../../../../../main/js/joynr/messaging/inprocess/InProcessAddress");
 
 describe("libjoynr-js.joynr.types.ArbitrationStrategyCollection", () => {
     it("is defined and of correct type", () => {

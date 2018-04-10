@@ -38,7 +38,7 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
     let store, typeRegistry;
     let senderParticipantId, receiverParticipantId, receiverParticipantId2;
     let joynrMessage, joynrMessage2;
-    let myChannelId, persistencySpy, otherChannelId, resultObj, address;
+    let persistencySpy, address;
     let messagingStubSpy, messagingSkeletonSpy, messagingStubFactorySpy, messagingSkeletonFactorySpy;
     let messageQueueSpy, messageRouter, routingProxySpy, parentMessageRouterAddress, incomingAddress;
     let multicastAddressCalculatorSpy;
@@ -89,8 +89,6 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
         joynrMessage2.from = "senderParticipantId";
         joynrMessage2.payload = "hello2";
 
-        myChannelId = "myChannelId";
-        otherChannelId = "otherChannelId";
         address = {
             addressInformation: "some info"
         };
@@ -200,7 +198,6 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
     it("resolves a previously persisted browser address", done => {
         let participantId = "participantId",
             browserAddress;
-        const resolveNextHopSpy = jasmine.createSpy("resolveNextHopSpy");
 
         browserAddress = new BrowserAddress({
             windowId: "windowId"

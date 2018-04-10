@@ -19,7 +19,6 @@
 require("../../../node-unit-test-helper");
 const CapabilityDiscovery = require("../../../../../main/js/joynr/capabilities/discovery/CapabilityDiscovery");
 const DiscoveryQos = require("../../../../../main/js/generated/joynr/types/DiscoveryQos");
-const ArbitrationStrategyCollection = require("../../../../../main/js/joynr/types/ArbitrationStrategyCollection");
 const ProviderQos = require("../../../../../main/js/generated/joynr/types/ProviderQos");
 const CustomParameter = require("../../../../../main/js/generated/joynr/types/CustomParameter");
 const ProviderScope = require("../../../../../main/js/generated/joynr/types/ProviderScope");
@@ -35,8 +34,7 @@ const CapabilitiesUtil = require("../../../../../main/js/joynr/util/Capabilities
 let domain, interfaceName, discoveryQos;
 let discoveryEntries, discoveryEntriesReturned, globalDiscoveryEntries, globalDiscoveryEntriesReturned;
 let capabilityDiscovery, messageRouterSpy, proxyBuilderSpy, address, localCapStoreSpy;
-let globalCapCacheSpy, globalCapDirSpy, capabilityInfo;
-const asyncTimeout = 5000;
+let globalCapCacheSpy, globalCapDirSpy;
 let startDateMs;
 
 messageRouterSpy = jasmine.createSpyObj("routingTable", ["addNextHop", "resolveNextHop"]);
@@ -178,38 +176,25 @@ describe("libjoynr-js.joynr.capabilities.discovery.CapabilityDiscovery", () => {
     });
 
     it("throws when constructor arguments are missing", done => {
-        expect(() => {
-            const capDisc = new CapabilityDiscovery();
-        }).toThrow();
-        expect(() => {
-            const capDisc = new CapabilityDiscovery(localCapStoreSpy);
-        }).toThrow();
-        expect(() => {
-            const capDisc = new CapabilityDiscovery(messageRouterSpy);
-        }).toThrow();
-        expect(() => {
-            const capDisc = new CapabilityDiscovery(localCapStoreSpy, globalCapCacheSpy, proxyBuilderSpy);
-        }).toThrow();
-        expect(() => {
-            const capDisc = new CapabilityDiscovery(
-                localCapStoreSpy,
-                globalCapCacheSpy,
-                messageRouterSpy,
-                proxyBuilderSpy
-            );
-        }).toThrow();
-        expect(() => {
-            const capDisc = new CapabilityDiscovery(localCapStoreSpy, globalCapCacheSpy, messageRouterSpy);
-        }).toThrow();
-        expect(() => {
-            const capDisc = new CapabilityDiscovery(
-                localCapStoreSpy,
-                globalCapCacheSpy,
-                messageRouterSpy,
-                proxyBuilderSpy,
-                "domain"
-            );
-        }).not.toThrow();
+        expect(() => new CapabilityDiscovery()).toThrow();
+        expect(() => new CapabilityDiscovery(localCapStoreSpy)).toThrow();
+        expect(() => new CapabilityDiscovery(messageRouterSpy)).toThrow();
+        expect(() => new CapabilityDiscovery(localCapStoreSpy, globalCapCacheSpy, proxyBuilderSpy)).toThrow();
+        expect(
+            () => new CapabilityDiscovery(localCapStoreSpy, globalCapCacheSpy, messageRouterSpy, proxyBuilderSpy)
+        ).toThrow();
+        expect(() => new CapabilityDiscovery(localCapStoreSpy, globalCapCacheSpy, messageRouterSpy)).toThrow();
+        expect(
+            () =>
+                new CapabilityDiscovery(
+                    localCapStoreSpy,
+                    globalCapCacheSpy,
+                    messageRouterSpy,
+                    proxyBuilderSpy,
+                    "domain"
+                )
+        ).not.toThrow();
+
         done();
     });
 
@@ -365,8 +350,6 @@ describe("libjoynr-js.joynr.capabilities.discovery.CapabilityDiscovery", () => {
         globalCapabilityInfos,
         expectedReturnValue
     ) {
-        let onFulfilledSpy = jasmine.createSpy("onFulfilled" + descriptor),
-            onRejectedSpy = jasmine.createSpy("onRejected" + descriptor);
         const localCapStoreSpy = getSpiedLookupObjWithReturnValue(
             "localCapStoreSpy" + descriptor,
             localdiscoveryEntries
@@ -413,7 +396,7 @@ describe("libjoynr-js.joynr.capabilities.discovery.CapabilityDiscovery", () => {
                     }
                 }
             })
-            .catch(error => {
+            .catch(() => {
                 if (expectedReturnValue !== undefined) {
                     fail("a return value was expected: " + expectedReturnValue);
                 }
@@ -660,29 +643,6 @@ describe("libjoynr-js.joynr.capabilities.discovery.CapabilityDiscovery", () => {
         });
     }
 
-    function getGlobalDiscoveryEntryWithScope(scope) {
-        return new GlobalDiscoveryEntry({
-            providerVersion: new Version({ majorVersion: 47, minorVersion: 11 }),
-            domain: "domain",
-            interfaceName: "interfaceName",
-            lastSeenDateMs: Date.now(),
-            qos: new ProviderQos({
-                customParameters: [
-                    new CustomParameter({
-                        name: "theName",
-                        value: "theValue"
-                    })
-                ],
-                priority: 1234,
-                scope,
-                supportsOnChangeSubscriptions: true
-            }),
-            address: JSON.stringify(address),
-            participantId: "700",
-            publicKeyId: ""
-        });
-    }
-
     it("calls local cap dir correctly", done => {
         const discoveryEntry = getDiscoveryEntryWithScope(ProviderScope.LOCAL);
         capabilityDiscovery
@@ -795,12 +755,7 @@ describe("libjoynr-js.joynr.capabilities.discovery.CapabilityDiscovery", () => {
         capabilityDiscovery.globalAddressReady(address);
         capabilityDiscovery
             .lookup([domain, domain], interfaceName, discoveryQos)
-            .then(() => {
-                fail("unexpected success");
-            })
-            .catch(error => {
-                done();
-                return null;
-            });
+            .then(fail)
+            .catch(done);
     });
 });

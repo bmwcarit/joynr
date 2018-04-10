@@ -148,7 +148,6 @@ describe("libjoynr-js.joynr.LongTimer.Interval", () => {
     }
 
     function testCancelInterval(interval) {
-        let i;
         jasmine.clock().uninstall();
         jasmine.clock().install();
         const intervalSpy = jasmine.createSpy("intervalSpy");

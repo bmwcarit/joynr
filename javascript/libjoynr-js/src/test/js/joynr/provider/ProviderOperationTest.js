@@ -18,7 +18,6 @@
  */
 require("../../node-unit-test-helper");
 const ProviderOperation = require("../../../../main/js/joynr/provider/ProviderOperation");
-const ProviderQos = require("../../../../main/js/generated/joynr/types/ProviderQos");
 const testDataOperation = require("../../../../test/js/test/data/Operation");
 const TestEnum = require("../../../generated/joynr/tests/testTypes/TestEnum");
 const Util = require("../../../../main/js/joynr/util/UtilInternal");
@@ -27,8 +26,6 @@ const Promise = require("../../../../main/js/global/Promise");
 const ProviderRuntimeException = require("../../../../main/js/joynr/exceptions/ProviderRuntimeException");
 const ApplicationException = require("../../../../main/js/joynr/exceptions/ApplicationException");
 const waitsFor = require("../../../../test/js/global/WaitsFor");
-
-const safetyTimeoutDelta = 100;
 
 describe("libjoynr-js.joynr.provider.ProviderOperation", () => {
     let implementation, myOperation, operationSpy, operationName, provider, thenSpy, catchSpy;
@@ -161,11 +158,7 @@ describe("libjoynr-js.joynr.provider.ProviderOperation", () => {
         myOperation = new ProviderOperation(provider, implementation, operationName, [testData.signature]);
         myOperation.registerOperation(operationSpy);
         operationSpy.calls.reset();
-        operationSpy.and.callFake(() => {
-            return new Promise((resolve, reject) => {
-                resolve(testData.returnValue);
-            });
-        });
+        operationSpy.and.callFake(() => Promise.resolve(testData.returnValue));
         const result = myOperation.callOperation(testData.params, testData.paramDatatypes);
         const b = Util.isPromise(result);
         expect(b).toBeTruthy();

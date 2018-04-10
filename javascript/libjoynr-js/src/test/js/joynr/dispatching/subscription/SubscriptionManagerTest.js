@@ -21,15 +21,12 @@ const SubscriptionManager = require("../../../../../main/js/joynr/dispatching/su
 const MessagingQos = require("../../../../../main/js/joynr/messaging/MessagingQos");
 const defaultMessagingSettings = require("../../../../../main/js/joynr/start/settings/defaultMessagingSettings");
 const MulticastSubscriptionRequest = require("../../../../../main/js/joynr/dispatching/types/MulticastSubscriptionRequest");
-const SubscriptionReply = require("../../../../../main/js/joynr/dispatching/types/SubscriptionReply");
-const SubscriptionRequest = require("../../../../../main/js/joynr/dispatching/types/SubscriptionRequest");
 const SubscriptionStop = require("../../../../../main/js/joynr/dispatching/types/SubscriptionStop");
 const OnChangeWithKeepAliveSubscriptionQos = require("../../../../../main/js/joynr/proxy/OnChangeWithKeepAliveSubscriptionQos");
 const OnChangeSubscriptionQos = require("../../../../../main/js/joynr/proxy/OnChangeSubscriptionQos");
 const SubscriptionQos = require("../../../../../main/js/joynr/proxy/SubscriptionQos");
 const SubscriptionPublication = require("../../../../../main/js/joynr/dispatching/types/SubscriptionPublication");
 const Promise = require("../../../../../main/js/global/Promise");
-const Reply = require("../../../../../main/js/joynr/dispatching/types/Reply");
 const PublicationMissedException = require("../../../../../main/js/joynr/exceptions/PublicationMissedException");
 const SubscriptionException = require("../../../../../main/js/joynr/exceptions/SubscriptionException");
 const LoggingManager = require("../../../../../main/js/joynr/system/LoggingManager");
@@ -216,7 +213,6 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", () =>
     it("alerts on missed publication and stops", done => {
         const publicationReceivedSpy = jasmine.createSpy("publicationReceivedSpy");
         const publicationMissedSpy = jasmine.createSpy("publicationMissedSpy");
-        let subscriptionId;
         const alertAfterIntervalMs = OnChangeWithKeepAliveSubscriptionQos.DEFAULT_MAX_INTERVAL_MS;
 
         //log.debug("registering subscription");
@@ -856,7 +852,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", () =>
                 onSubscribed: publicationSubscribedSpy
             })
             .then(subscriptionId => {
-                fail("unexpected success");
+                fail("unexpected success: " + subscriptionId);
             })
             .catch(error => {
                 expect(error instanceof SubscriptionException);
@@ -901,7 +897,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", () =>
                 onSubscribed: publicationSubscribedSpy
             })
             .then(subscriptionId => {
-                fail("unexpected success");
+                fail("unexpected success: " + subscriptionId);
             })
             .catch(error => {
                 expect(error instanceof SubscriptionException);

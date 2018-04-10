@@ -19,7 +19,6 @@
 require("../../node-unit-test-helper");
 const Promise = require("../../../../main/js/global/Promise");
 const RadioProxy = require("../../../generated/joynr/vehicle/RadioProxy");
-const RadioStation = require("../../../generated/joynr/vehicle/radiotypes/RadioStation");
 const ProxyAttribute = require("../../../../main/js/joynr/proxy/ProxyAttribute");
 const ProxyOperation = require("../../../../main/js/joynr/proxy/ProxyOperation");
 const ProxyEvent = require("../../../../main/js/joynr/proxy/ProxyEvent");
@@ -30,7 +29,7 @@ const TestWithVersionProxy = require("../../../generated/joynr/tests/TestWithVer
 const TestWithoutVersionProxy = require("../../../generated/joynr/tests/TestWithoutVersionProxy");
 
 describe("libjoynr-js.joynr.proxy.Proxy", () => {
-    let settings, dependencies, radioProxy;
+    let settings, radioProxy;
     const typeRegistry = TypeRegistrySingleton.getInstance();
 
     beforeEach(done => {
@@ -83,8 +82,6 @@ describe("libjoynr-js.joynr.proxy.Proxy", () => {
 
     it("RadioProxy.getUsedDatatype can be used to synchronize to the successful registration of all used datatypes", done => {
         let datatypePromises;
-        let allDatatypesRegistered;
-        allDatatypesRegistered = false;
         expect(RadioProxy.getUsedDatatypes).toBeDefined();
         datatypePromises = RadioProxy.getUsedDatatypes().map(datatype => {
             return typeRegistry.getTypeRegisteredPromise(datatype, 1000);
@@ -94,10 +91,7 @@ describe("libjoynr-js.joynr.proxy.Proxy", () => {
                 done();
                 return null;
             })
-            .catch(error => {
-                fail("failed to register all datatypes at the typeRegistry");
-                return null;
-            });
+            .catch(fail);
     });
 
     it("RadioProxy saves settings object", done => {

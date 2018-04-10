@@ -18,14 +18,10 @@
  */
 require("../../node-unit-test-helper");
 const ProviderAttribute = require("../../../../main/js/joynr/provider/ProviderAttribute");
-const ProviderQos = require("../../../../main/js/generated/joynr/types/ProviderQos");
 const TestEnum = require("../../../generated/joynr/tests/testTypes/TestEnum");
 const ComplexRadioStation = require("../../../generated/joynr/datatypes/exampleTypes/ComplexRadioStation");
 const Country = require("../../../generated/joynr/datatypes/exampleTypes/Country");
 const Promise = require("../../../../main/js/global/Promise");
-const waitsFor = require("../../../../test/js/global/WaitsFor");
-
-const safetyTimeoutDelta = 100;
 
 describe("libjoynr-js.joynr.provider.ProviderAttribute", () => {
     let i, implementation, isOn, isOnNotifyReadOnly, isOnNotifyWriteOnly;
@@ -155,7 +151,6 @@ describe("libjoynr-js.joynr.provider.ProviderAttribute", () => {
     });
 
     it("call[G|S]etter calls through to registered [g|s]etters", done => {
-        let result;
         const testParam = "myTestParameter";
         let promiseChain;
 
@@ -200,8 +195,6 @@ describe("libjoynr-js.joynr.provider.ProviderAttribute", () => {
     });
 
     it("call[G|S]etter calls through to provided implementation", done => {
-        let spy;
-        let result;
         const testParam = "myTestParameter";
         let promiseChain = Promise.resolve();
 
@@ -304,7 +297,7 @@ describe("libjoynr-js.joynr.provider.ProviderAttribute", () => {
     });
 
     function setNewValueCallsValueChangedObserver(attribute, promiseChain) {
-        let spy1, spy2, func1, func2, value, done;
+        let spy1, spy2, func1, func2, value;
         spy1 = jasmine.createSpy("spy1");
         spy2 = jasmine.createSpy("spy2");
 
@@ -423,7 +416,7 @@ describe("libjoynr-js.joynr.provider.ProviderAttribute", () => {
     }
 
     it("doesn't notify observer when calling set with same values", done => {
-        let i, spy1, spy2, attribute, func1, func2, value;
+        let i, attribute;
         let promiseChain = Promise.resolve();
 
         for (i = 0; i < allNotifyAttributes.length; ++i) {

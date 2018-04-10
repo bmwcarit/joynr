@@ -36,7 +36,6 @@ let enumAttribute = Country.GERMANY;
 let enumArrayAttribute = [Country.GERMANY];
 let attrProvidedImpl;
 let numberOfStations = -1;
-let mixedSubscriptions = null;
 let byteBufferAttribute = null;
 let stringMapAttribute = null;
 let complexStructMapAttribute = null;
@@ -121,9 +120,7 @@ function initializeTest(provisioningSuffix, providedDomain) {
                     return mixedSubscriptionsValue;
                 });
 
-                radioProvider.mixedSubscriptions.registerSetter(value => {
-                    mixedSubscriptions = value;
-                });
+                radioProvider.mixedSubscriptions.registerSetter(() => {});
 
                 radioProvider.attributeTestingProviderInterface.registerGetter(() => {
                     return undefined;
@@ -179,7 +176,7 @@ function initializeTest(provisioningSuffix, providedDomain) {
                     byteBufferAttribute = value;
                 });
 
-                radioProvider.byteBufferAttribute.registerGetter(value => {
+                radioProvider.byteBufferAttribute.registerGetter(() => {
                     return byteBufferAttribute;
                 });
 
@@ -187,7 +184,7 @@ function initializeTest(provisioningSuffix, providedDomain) {
                     typeDefForStruct = value;
                 });
 
-                radioProvider.typeDefForStruct.registerGetter(value => {
+                radioProvider.typeDefForStruct.registerGetter(() => {
                     return typeDefForStruct;
                 });
 
@@ -195,7 +192,7 @@ function initializeTest(provisioningSuffix, providedDomain) {
                     typeDefForPrimitive = value;
                 });
 
-                radioProvider.typeDefForPrimitive.registerGetter(value => {
+                radioProvider.typeDefForPrimitive.registerGetter(() => {
                     return typeDefForPrimitive;
                 });
 
@@ -319,9 +316,7 @@ function initializeTest(provisioningSuffix, providedDomain) {
                     if (opArgs.syncTest) {
                         return returnValue;
                     }
-                    return new Promise((resolve, reject) => {
-                        resolve(returnValue);
-                    });
+                    return Promise.resolve(returnValue);
                 });
 
                 // register operation function "operationWithEnumsAsInputAndEnumArrayAsOutput"
@@ -379,7 +374,7 @@ function initializeTest(provisioningSuffix, providedDomain) {
                     };
                 });
 
-                radioProvider.methodWithComplexMap.registerOperation(opArgs => {
+                radioProvider.methodWithComplexMap.registerOperation(() => {
                     return;
                 });
 
@@ -423,10 +418,9 @@ function initializeTest(provisioningSuffix, providedDomain) {
                             let i;
                             for (i = 0; i < opArgs.times; i++) {
                                 if (opArgs.hierarchicBroadcast && opArgs.partitions !== undefined) {
-                                    var j,
-                                        hierarchicPartitions = [];
+                                    let hierarchicPartitions = [];
                                     broadcast.fire(outputParams, hierarchicPartitions);
-                                    for (j = 0; j < opArgs.partitions.length; j++) {
+                                    for (let j = 0; j < opArgs.partitions.length; j++) {
                                         hierarchicPartitions.push(opArgs.partitions[j]);
                                         broadcast.fire(outputParams, hierarchicPartitions);
                                     }
@@ -445,14 +439,14 @@ function initializeTest(provisioningSuffix, providedDomain) {
                 radioProvider.triggerBroadcasts.registerOperation(triggerBroadcastsInternal);
                 radioProvider.triggerBroadcastsWithPartitions.registerOperation(triggerBroadcastsInternal);
 
-                radioProvider.methodFireAndForgetWithoutParams.registerOperation(opArgs => {
+                radioProvider.methodFireAndForgetWithoutParams.registerOperation(() => {
                     const broadcast = radioProvider.fireAndForgetCallArrived;
                     const outputParams = broadcast.createBroadcastOutputParameters();
                     outputParams.setMethodName("methodFireAndForgetWithoutParams");
                     broadcast.fire(outputParams);
                 });
 
-                radioProvider.methodFireAndForget.registerOperation(opArgs => {
+                radioProvider.methodFireAndForget.registerOperation(() => {
                     const broadcast = radioProvider.fireAndForgetCallArrived;
                     const outputParams = broadcast.createBroadcastOutputParameters();
                     outputParams.setMethodName("methodFireAndForget");
@@ -481,22 +475,20 @@ function initializeTest(provisioningSuffix, providedDomain) {
 }
 
 function startTest() {
-    return new Promise((resolve, reject) => {
-        // change attribute value of numberOfStations periodically
-        libjoynrAsync.util.LongTimer.setInterval(() => {
-            radioProvider.numberOfStations.valueChanged(++numberOfStations);
-        }, valueChangedInterval);
+    // change attribute value of numberOfStations periodically
+    libjoynrAsync.util.LongTimer.setInterval(() => {
+        radioProvider.numberOfStations.valueChanged(++numberOfStations);
+    }, valueChangedInterval);
 
+    libjoynrAsync.util.LongTimer.setTimeout(() => {
+        mixedSubscriptionsValue = "valueChanged1";
+        radioProvider.mixedSubscriptions.valueChanged(mixedSubscriptionsValue);
         libjoynrAsync.util.LongTimer.setTimeout(() => {
-            mixedSubscriptionsValue = "valueChanged1";
+            mixedSubscriptionsValue = "valueChanged2";
             radioProvider.mixedSubscriptions.valueChanged(mixedSubscriptionsValue);
-            libjoynrAsync.util.LongTimer.setTimeout(() => {
-                mixedSubscriptionsValue = "valueChanged2";
-                radioProvider.mixedSubscriptions.valueChanged(mixedSubscriptionsValue);
-            }, 10);
-        }, mixedSubscriptionDelay);
-        resolve(libjoynrAsync.participantIdStorage.getParticipantId(providerDomain, radioProvider));
-    });
+        }, 10);
+    }, mixedSubscriptionDelay);
+    return Promise.resolve(libjoynrAsync.participantIdStorage.getParticipantId(providerDomain, radioProvider));
 }
 function terminateTest() {
     return libjoynrAsync.registration.unregisterProvider(providerDomain, radioProvider);

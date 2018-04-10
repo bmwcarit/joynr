@@ -1,3 +1,4 @@
+/* eslint no-useless-concat: "off"*/
 /*
  * #%L
  * %%
@@ -85,8 +86,9 @@ describe("libjoynr-js.joynr.messaging.routing.MessageQueue", () => {
             expect(messageQueue.currentQueueSize).toEqual(oldQueueSize + Util.getLengthInBytes(payload));
         }
         //now, the next message shall lead to a queue overflow
-        newJoynrMessage.to = receiverParticipantId + "ExceedsQueueBuffer";
-        newJoynrMessage.from = "senderParticipantId" + "ExceedsQueueBuffer";
+        const ExceedsBufferSuffix = "ExceedsQueueBuffer";
+        newJoynrMessage.to = receiverParticipantId + ExceedsBufferSuffix;
+        newJoynrMessage.from = "senderParticipantId" + ExceedsBufferSuffix;
         oldQueueSize = messageQueue.currentQueueSize;
         i = 0;
         while (i < 10) {

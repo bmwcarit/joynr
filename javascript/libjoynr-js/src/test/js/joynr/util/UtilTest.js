@@ -1,3 +1,4 @@
+/*eslint no-unused-vars: "off"*/
 /*
  * #%L
  * %%
@@ -22,10 +23,6 @@ const Util = require("../../../../main/js/joynr/util/UtilInternal");
 const JoynrMessage = require("../../../../main/js/joynr/messaging/JoynrMessage");
 const TypeRegistry = require("../../../../main/js/joynr/start/TypeRegistry");
 const RadioStation = require("../../../generated/joynr/vehicle/radiotypes/RadioStation");
-
-const argument = {
-    someObjectKey: "andValue"
-};
 
 describe("libjoynr-js.joynr.Util", () => {
     it("is defined and of correct type", () => {

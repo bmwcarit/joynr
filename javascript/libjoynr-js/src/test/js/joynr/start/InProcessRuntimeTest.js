@@ -18,29 +18,9 @@
  */
 const provisioning = require("../../../resources/joynr/provisioning/provisioning_cc");
 const InProcessRuntime = require("../../../../main/js/joynr/start/InProcessRuntime");
-const Promise = require("../../../../main/js/global/Promise");
-const waitsFor = require("../../../../test/js/global/WaitsFor");
 
 function outputPromiseError(error) {
     expect(error.toString()).toBeFalsy();
-}
-
-// type that usually goes into proxy generation
-function RadioStation(name, station, source) {
-    if (!(this instanceof RadioStation)) {
-        // in case someone calls constructor without new keyword (e.g. var c = Constructor({..}))
-        return new RadioStation(name, station, source);
-    }
-    this.name = name;
-    this.station = station;
-    this.source = source;
-
-    Object.defineProperty(this, "_typeName", {
-        configurable: false,
-        writable: false,
-        enumerable: true,
-        value: ".vehicle.RadioStation"
-    });
 }
 
 describe("libjoynr-js.joynr.start.TestInProcessRuntime", () => {
@@ -81,7 +61,6 @@ describe("libjoynr-js.joynr.start.TestInProcessRuntime", () => {
     });
 
     it("can be started and shutdown successfully", done => {
-        const log = runtime.logging.getLogger("joynr.start.TestInProcessRuntime");
         startInProcessRuntime()
             .then(shutdownInProcessRuntime)
             .then(() => {

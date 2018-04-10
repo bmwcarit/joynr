@@ -18,7 +18,6 @@
  */
 require("../../../node-unit-test-helper");
 const MulticastPublication = require("../../../../../main/js/joynr/dispatching/types/MulticastPublication");
-const RadioStation = require("../../../../generated/joynr/vehicle/radiotypes/RadioStation");
 
 describe("libjoynr-js.joynr.dispatching.types.MulticastPublication", () => {
     it("is defined", () => {

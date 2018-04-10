@@ -301,10 +301,9 @@ function End2EndAbstractTest(provisioningSuffix, buildDataProxy) {
     };
 
     this.setupSubscriptionAndReturnSpy = function(subscribingEntity, subscriptionQos, partitions) {
-        let promise,
-            spy = jasmine.createSpyObj("spy", ["onFulfilled", "onReceive", "onError"]);
+        let spy = jasmine.createSpyObj("spy", ["onFulfilled", "onReceive", "onError"]);
 
-        promise = radioProxy[subscribingEntity]
+        radioProxy[subscribingEntity]
             .subscribe({
                 subscriptionQos,
                 partitions,

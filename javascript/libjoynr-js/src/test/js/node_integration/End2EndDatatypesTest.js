@@ -18,8 +18,7 @@
  */
 
 const Promise = require("../../../main/js/global/Promise");
-let joynr = require("joynr"),
-    TestEnd2EndDatatypesTestData = require("./TestEnd2EndDatatypesTestData"),
+let TestEnd2EndDatatypesTestData = require("./TestEnd2EndDatatypesTestData"),
     IntegrationUtils = require("./IntegrationUtils"),
     provisioning = require("../../resources/joynr/provisioning/provisioning_cc"),
     End2EndAbstractTest = require("./End2EndAbstractTest"),
@@ -62,7 +61,6 @@ describe("libjoynr-js.integration.end2end.datatypes", () => {
 
             function setAndGetAttribute(attributeName, attributeValue, promiseChain) {
                 return promiseChain.then(() => {
-                    const onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
                     return testAttrType(attributeName, attributeValue)
                         .then(value => {
                             expect(value).toEqual(attributeValue);

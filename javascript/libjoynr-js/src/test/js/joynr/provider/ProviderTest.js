@@ -20,7 +20,6 @@ require("../../node-unit-test-helper");
 const RadioProvider = require("../../../generated/joynr/vehicle/RadioProvider");
 const RadioStation = require("../../../generated/joynr/vehicle/radiotypes/RadioStation");
 const Country = require("../../../generated/joynr/datatypes/exampleTypes/Country");
-const StringMap = require("../../../generated/joynr/datatypes/exampleTypes/StringMap");
 const ProviderAttribute = require("../../../../main/js/joynr/provider/ProviderAttribute");
 const ProviderOperation = require("../../../../main/js/joynr/provider/ProviderOperation");
 const ProviderEvent = require("../../../../main/js/joynr/provider/ProviderEvent");
@@ -201,81 +200,13 @@ describe("libjoynr-js.joynr.provider.Provider", () => {
     });
 
     it("RadioProvider does not throw when instantiated with different implementations", () => {
-        expect(() => {
-            const radioProvider = new RadioProvider({}, dependencies);
-        }).not.toThrow();
+        expect(() => new RadioProvider({}, dependencies)).not.toThrow();
+        expect(() => new RadioProvider({ isOn: {} }, dependencies)).not.toThrow();
 
-        expect(() => {
-            const radioProvider = new RadioProvider(
-                {
-                    isOn: {}
-                },
-                dependencies
-            );
-        }).not.toThrow();
-
-        expect(() => {
-            const radioProvider = new RadioProvider(
-                {
-                    isOn: {
-                        get() {
-                            return false;
-                        }
-                    }
-                },
-                dependencies
-            );
-        }).not.toThrow();
-
-        expect(() => {
-            const radioProvider = new RadioProvider(
-                {
-                    isOn: {
-                        set(value) {}
-                    }
-                },
-                dependencies
-            );
-        }).not.toThrow();
-
-        expect(() => {
-            const radioProvider = new RadioProvider(
-                {
-                    isOn: {
-                        get() {
-                            return false;
-                        },
-                        set(value) {}
-                    }
-                },
-                dependencies
-            );
-        }).not.toThrow();
-
-        expect(() => {
-            const radioProvider = new RadioProvider(
-                {
-                    isOn: {
-                        get() {
-                            return false;
-                        },
-                        set(value) {}
-                    }
-                },
-                dependencies
-            );
-        }).not.toThrow();
-
-        expect(() => {
-            const radioProvider = new RadioProvider(
-                {
-                    addFavoriteStation(opArgs) {
-                        return true;
-                    }
-                },
-                dependencies
-            );
-        }).not.toThrow();
+        expect(() => new RadioProvider({ isOn: { get: () => false } }, dependencies)).not.toThrow();
+        expect(() => new RadioProvider({ isOn: { set: () => {} } }, dependencies)).not.toThrow();
+        expect(() => new RadioProvider({ isOn: { get: () => false, set: () => {} } }, dependencies)).not.toThrow();
+        expect(() => new RadioProvider({ addFavoriteStation: () => true }, dependencies)).not.toThrow();
     });
 
     it("RadioProvider is instantiable", () => {

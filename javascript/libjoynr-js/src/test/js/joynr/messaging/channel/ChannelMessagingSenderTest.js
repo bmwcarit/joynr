@@ -1,3 +1,4 @@
+/* eslint prefer-promise-reject-errors: "off" */
 /*
  * #%L
  * %%
@@ -21,21 +22,11 @@ const Promise = require("../../../../../main/js/global/Promise");
 const ChannelMessagingSender = require("../../../../../main/js/joynr/messaging/channel/ChannelMessagingSender");
 const JoynrMessage = require("../../../../../main/js/joynr/messaging/JoynrMessage");
 const ChannelAddress = require("../../../../../main/js/generated/joynr/system/RoutingTypes/ChannelAddress");
-const Typing = require("../../../../../main/js/joynr/util/Typing");
-const LoggingManager = require("../../../../../main/js/joynr/system/LoggingManager");
-const provisioningRoot = require("../../../../resources/joynr/provisioning/provisioning_root");
-const waitsFor = require("../../../../../test/js/global/WaitsFor");
-
-const log = LoggingManager.getLogger("joynr.messaging.TestChannelMessagingSender");
 
 describe("libjoynr-js.joynr.messaging.ChannelMessagingSender", () => {
     let communicationModuleSpy, channelMessageSender;
-    let channelAddress, channelUrlInformation, joynrMessage;
+    let channelAddress, joynrMessage;
     let resendDelay_ms;
-
-    function outputPromiseError(error) {
-        expect(error.toString()).toBeFalsy();
-    }
 
     beforeEach(done => {
         resendDelay_ms = 500;
@@ -77,7 +68,6 @@ describe("libjoynr-js.joynr.messaging.ChannelMessagingSender", () => {
     it(
         "if communicationModule.createXMLHTTPRequest call fails, channelMessageSender only fails if message expires",
         done => {
-            let timeStamp;
             const relativeExpiryDate = resendDelay_ms * 3;
 
             communicationModuleSpy.createXMLHTTPRequest.and.returnValue(
@@ -92,7 +82,6 @@ describe("libjoynr-js.joynr.messaging.ChannelMessagingSender", () => {
             );
             joynrMessage.expiryDate = Date.now() + relativeExpiryDate;
             channelMessageSender.start();
-            timeStamp = Date.now();
             channelMessageSender
                 .send(joynrMessage, channelAddress)
                 .then(fail)

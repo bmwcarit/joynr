@@ -47,6 +47,7 @@ define(
             });
 
             it("handles missing parameters correctly", () => {
+                /* eslint-disable no-unused-vars*/
                 // does not throw, with qos
                 expect(() => {
                     const subReq = new MulticastSubscriptionRequest({
@@ -131,6 +132,7 @@ define(
                         qos: new OnChangeSubscriptionQos(qosSettings)
                     });
                 }).not.toThrow();
+                /* eslint-enable no-unused-vars*/
             });
 
             it("is constructs with correct member values", () => {

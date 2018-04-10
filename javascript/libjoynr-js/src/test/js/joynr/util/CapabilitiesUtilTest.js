@@ -17,7 +17,6 @@
  * #L%
  */
 require("../../node-unit-test-helper");
-const Promise = require("../../../../main/js/global/Promise");
 const CapabilitiesUtil = require("../../../../main/js/joynr/util/CapabilitiesUtil");
 const DiscoveryEntry = require("../../../../main/js/generated/joynr/types/DiscoveryEntry");
 const DiscoveryEntryWithMetaInfo = require("../../../../main/js/generated/joynr/types/DiscoveryEntryWithMetaInfo");

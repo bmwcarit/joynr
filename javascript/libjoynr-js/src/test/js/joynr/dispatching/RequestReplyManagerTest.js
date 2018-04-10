@@ -82,16 +82,7 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", () => {
         });
     }
 
-    RadioStation.getMemberType = function(i) {};
-
-    const Country = {
-        AUSTRALIA: "AUSTRALIA",
-        AUSTRIA: "AUSTRIA",
-        CANADA: "CANADA",
-        GERMANY: "GERMANY",
-        ITALY: "ITALY",
-        UNITED_KINGDOM: "UNITED_KINGDOM"
-    };
+    RadioStation.getMemberType = function() {};
 
     function ComplexTypeWithComplexAndSimpleProperties(radioStation, myBoolean, myString) {
         if (!(this instanceof ComplexTypeWithComplexAndSimpleProperties)) {
@@ -117,7 +108,7 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", () => {
         });
     }
 
-    ComplexTypeWithComplexAndSimpleProperties.getMemberType = function(i) {};
+    ComplexTypeWithComplexAndSimpleProperties.getMemberType = function() {};
 
     /**
      * Called before each test.
@@ -603,8 +594,6 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", () => {
                 callOperation: jasmine.createSpy("operationSpy")
             }
         };
-
-        const callbackDispatcher = jasmine.createSpy("callbackDispatcher");
 
         const oneWayRequest = new OneWayRequest({
             methodName: "fireAndForgetMethod",

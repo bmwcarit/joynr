@@ -17,7 +17,6 @@
  * #L%
  */
 require("../../../node-unit-test-helper");
-const Util = require("../../../../../main/js/joynr/util/Util");
 const BrowserMessagingStubFactory = require("../../../../../main/js/joynr/messaging/browser/BrowserMessagingStubFactory");
 
 describe("libjoynr-js.joynr.messaging.browser.BrowserMessagingStubFactory", () => {

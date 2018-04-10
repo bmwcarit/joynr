@@ -22,7 +22,6 @@ const JoynrMessage = require("../../../../../main/js/joynr/messaging/JoynrMessag
 const WebSocketAddress = require("../../../../../main/js/generated/joynr/system/RoutingTypes/WebSocketAddress");
 const WebSocketClientAddress = require("../../../../../main/js/generated/joynr/system/RoutingTypes/WebSocketClientAddress");
 const SharedWebSocket = require("../../../../../main/js/joynr/messaging/websocket/SharedWebSocket");
-const WebSocket = require("../../../../../test/js/global/WebSocketMock");
 
 describe("libjoynr-js.joynr.messaging.websocket.WebSocketMessagingSkeleton", () => {
     let window = null;

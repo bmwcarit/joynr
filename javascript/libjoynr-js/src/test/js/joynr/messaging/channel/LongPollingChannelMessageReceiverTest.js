@@ -1,3 +1,4 @@
+/* eslint prefer-promise-reject-errors: "off" */
 /*
  * #%L
  * %%
@@ -18,16 +19,11 @@
  */
 require("../../../node-unit-test-helper");
 const Promise = require("../../../../../main/js/global/Promise");
-const CommunicationModule = require("../../../../../main/js/joynr/messaging/CommunicationModule");
 const LongPollingChannelMessageReceiver = require("../../../../../main/js/joynr/messaging/channel/LongPollingChannelMessageReceiver");
 const JoynrMessage = require("../../../../../main/js/joynr/messaging/JoynrMessage");
-const Typing = require("../../../../../main/js/joynr/util/Typing");
-const LoggingManager = require("../../../../../main/js/joynr/system/LoggingManager");
 const LocalStorage = require("../../../../../test/js/global/LocalStorageNodeTests");
 const provisioning = require("../../../../resources/joynr/provisioning/provisioning_root");
 const waitsFor = require("../../../../../test/js/global/WaitsFor");
-
-const log = LoggingManager.getLogger("joynr.messaging.TestLongPollingChannelMessageReceiver");
 const localStorage = new LocalStorage();
 
 describe("libjoynr-js.joynr.messaging.LongPollingChannelMessageReceiver", () => {
@@ -61,11 +57,7 @@ describe("libjoynr-js.joynr.messaging.LongPollingChannelMessageReceiver", () => 
             },
             "channel is created",
             provisioning.ttl
-        ).then(() => {
-            return new Promise((resolve, reject) => {
-                resolve(spy);
-            });
-        });
+        ).then(() => Promise.resolve(spy));
         return returnValue;
     }
 
@@ -233,7 +225,6 @@ describe("libjoynr-js.joynr.messaging.LongPollingChannelMessageReceiver", () => 
     it("clear is unsuccessful if channel is not cleared", done => {
         createChannel()
             .then(() => {
-                const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onRejected"]);
                 communicationModuleSpy.createXMLHTTPRequest.and.returnValue(
                     Promise.reject(
                         {
@@ -257,8 +248,7 @@ describe("libjoynr-js.joynr.messaging.LongPollingChannelMessageReceiver", () => 
                 return null;
             })
             .catch(error => {
-                fail("create channel failed");
-                return null;
+                fail("create channel failed: " + error);
             });
     });
 
@@ -272,8 +262,7 @@ describe("libjoynr-js.joynr.messaging.LongPollingChannelMessageReceiver", () => 
                 return null;
             })
             .catch(error => {
-                fail("create channel failed");
-                return null;
+                fail("create channel failed: " + error);
             });
     });
 });

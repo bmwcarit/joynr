@@ -17,9 +17,7 @@
  * #L%
  */
 require("../../node-unit-test-helper");
-const ProxyAttribute = require("../../../../main/js/joynr/proxy/ProxyAttribute");
 const ProxyOperation = require("../../../../main/js/joynr/proxy/ProxyOperation");
-const ProxyEvent = require("../../../../main/js/joynr/proxy/ProxyEvent");
 const MessagingQos = require("../../../../main/js/joynr/messaging/MessagingQos");
 const Request = require("../../../../main/js/joynr/dispatching/types/Request");
 const OneWayRequest = require("../../../../main/js/joynr/dispatching/types/OneWayRequest");
@@ -147,10 +145,7 @@ describe("libjoynr-js.joynr.proxy.ProxyOperation", () => {
         addFavoriteStation({
             nonexistingArgument: "value"
         })
-            .then(message => {
-                fail("unexpectedly returned from addFavoriteStation");
-                return null;
-            })
+            .then(fail)
             .catch(message => {
                 //expect(message).toContain(
                 //        "Cannot call operation with nullable value");
@@ -164,10 +159,7 @@ describe("libjoynr-js.joynr.proxy.ProxyOperation", () => {
         addFavoriteStation({
             radioStation: 1
         })
-            .then(message => {
-                fail("unexpected resolve from addFavoriteStation");
-                return null;
-            })
+            .then(fail)
             .catch(message => {
                 //expect(message).toContain(
                 //    "Signature does not match");
@@ -186,10 +178,7 @@ describe("libjoynr-js.joynr.proxy.ProxyOperation", () => {
         addFavoriteStation({
             radioStation
         })
-            .then(() => {
-                fail("unpexected resolve from addFavoriteStation");
-                return null;
-            })
+            .then(fail)
             .catch(message => {
                 //expect(message)
                 //    .toContain(
@@ -207,15 +196,11 @@ describe("libjoynr-js.joynr.proxy.ProxyOperation", () => {
             .then(result => {
                 expect(result).toBeUndefined();
                 done();
-                return null;
             })
-            .catch(error => {
-                fail("unexpected reject from addFavoriteStation");
-                return null;
-            });
+            .catch(fail);
     });
 
-    const testForCorrectReturnValues = function(methodName, outputParameter, replyResponse, done) {
+    const testForCorrectReturnValues = function(methodName, outputParameter, replyResponse) {
         const originalArguments = arguments;
         const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onRejected"]);
         const proxy = {
@@ -388,10 +373,7 @@ describe("libjoynr-js.joynr.proxy.ProxyOperation", () => {
         addFavoriteStation({
             radioStation: "stringStation"
         })
-            .then(returnValue => {
-                done();
-                return null;
-            })
+            .then(done)
             .catch(fail);
     });
 
@@ -651,7 +633,6 @@ describe("libjoynr-js.joynr.proxy.ProxyOperation", () => {
 
     it("calls RequestReplyManager with correct request", done => {
         let i;
-        const requestReplyManagerSpy = jasmine.createSpyObj("requestReplyManager", ["sendRequest"]);
 
         function makeFunc(promiseChain, testOp) {
             if (testOp.signature.fireAndForget) {

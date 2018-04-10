@@ -27,7 +27,6 @@ let joynr = require("joynr"),
     JoynrException = require("../../../main/js/joynr/exceptions/JoynrException");
 
 describe("libjoynr-js.integration.localDiscoveryTest", () => {
-    let radioProxy;
     let provisioningSuffix;
     let domain;
     let childId;
@@ -45,9 +44,7 @@ describe("libjoynr-js.integration.localDiscoveryTest", () => {
     });
 
     beforeEach(done => {
-        radioProxy = undefined;
-
-        provisioningSuffix = "LocalDiscoveryTest" + "-" + Date.now();
+        provisioningSuffix = "LocalDiscoveryTest-" + Date.now();
         domain = provisioningSuffix;
 
         provisioning.channelId = provisioningSuffix;

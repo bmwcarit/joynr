@@ -18,20 +18,15 @@
  */
 require("../../node-unit-test-helper");
 const ProxyAttribute = require("../../../../main/js/joynr/proxy/ProxyAttribute");
-const DiscoveryQos = require("../../../../main/js/joynr/proxy/DiscoveryQos");
 const MessagingQos = require("../../../../main/js/joynr/messaging/MessagingQos");
 const OnChangeWithKeepAliveSubscriptionQos = require("../../../../main/js/joynr/proxy/OnChangeWithKeepAliveSubscriptionQos");
-const RequestReplyManager = require("../../../../main/js/joynr/dispatching/RequestReplyManager");
 const Request = require("../../../../main/js/joynr/dispatching/types/Request");
 const TestEnum = require("../../../generated/joynr/tests/testTypes/TestEnum");
-const ComplexTestType = require("../../../generated/joynr/tests/testTypes/ComplexTestType");
 const TypeRegistrySingleton = require("../../../../main/js/joynr/types/TypeRegistrySingleton");
 const Promise = require("../../../../main/js/global/Promise");
 const DiscoveryEntryWithMetaInfo = require("../../../../main/js/generated/joynr/types/DiscoveryEntryWithMetaInfo");
 const Version = require("../../../../main/js/generated/joynr/types/Version");
 const ProviderQos = require("../../../../main/js/generated/joynr/types/ProviderQos");
-
-const asyncTimeout = 5000;
 
 describe("libjoynr-js.joynr.proxy.ProxyAttribute", () => {
     let settings;
@@ -383,8 +378,8 @@ describe("libjoynr-js.joynr.proxy.ProxyAttribute", () => {
         isOn
             .subscribe({
                 subscriptionQos,
-                onReceive(value) {},
-                onError(value) {}
+                onReceive() {},
+                onError() {}
             })
             .then(() => {
                 done();
@@ -397,13 +392,11 @@ describe("libjoynr-js.joynr.proxy.ProxyAttribute", () => {
     });
 
     it("subscribe provides a subscriptionId", done => {
-        const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onRejected"]);
-
         isOn
             .subscribe({
                 subscriptionQos,
-                onReceive(value) {},
-                onError(value) {}
+                onReceive() {},
+                onError() {}
             })
             .then(id => {
                 expect(id).toEqual(subscriptionId);
@@ -456,8 +449,8 @@ describe("libjoynr-js.joynr.proxy.ProxyAttribute", () => {
         isOn
             .subscribe({
                 subscriptionQos,
-                onReceive(value) {},
-                onError(value) {}
+                onReceive() {},
+                onError() {}
             })
             .then(subscriptionId => {
                 return isOn.unsubscribe({

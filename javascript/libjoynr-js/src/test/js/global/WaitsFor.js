@@ -22,12 +22,11 @@
 const Promise = require("../../../main/js/global/Promise");
 const originalSetInterval = setInterval;
 const originalClearInterval = clearInterval;
-const originalSetTimeout = setTimeout;
 function waitsFor(checker, message, delayMs, checkIntervalMs) {
     return new Promise((resolve, reject) => {
         delayMs = delayMs || 5000;
         checkIntervalMs = checkIntervalMs || 10;
-        var intervalId = originalSetInterval(() => {
+        let intervalId = originalSetInterval(() => {
             if (checker() === true) {
                 originalClearInterval(intervalId);
                 resolve();

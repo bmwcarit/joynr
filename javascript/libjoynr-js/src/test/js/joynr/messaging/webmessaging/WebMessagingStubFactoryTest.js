@@ -21,8 +21,6 @@ const WebMessagingStubFactory = require("../../../../../main/js/joynr/messaging/
 const JSONSerializer = require("../../../../../main/js/joynr/util/JSONSerializer");
 
 describe("libjoynr-js.joynr.messaging.webmessaging.WebMessagingStubFactory", () => {
-    let returnValue;
-    let webMessagingSender;
     let webMessagingStubFactory;
     let window;
     let origin;
@@ -30,9 +28,6 @@ describe("libjoynr-js.joynr.messaging.webmessaging.WebMessagingStubFactory", () 
     let joynrMessage;
 
     beforeEach(done => {
-        returnValue = {
-            key: "returnValue"
-        };
         webMessagingStubFactory = new WebMessagingStubFactory();
 
         function Window() {}
@@ -66,7 +61,7 @@ describe("libjoynr-js.joynr.messaging.webmessaging.WebMessagingStubFactory", () 
         const param = {
             message: joynrMessage
         };
-        const result = webMessagingStub.transmit(param);
+        webMessagingStub.transmit(param);
         expect(window.postMessage).toHaveBeenCalledWith(JSON.parse(JSONSerializer.stringify(param)), origin);
         done();
     });

@@ -1,3 +1,4 @@
+/* eslint prefer-promise-reject-errors: "off" */
 /*
  * #%L
  * %%
@@ -31,7 +32,6 @@ const SubscriptionReply = require("../../../../main/js/joynr/dispatching/types/S
 const SubscriptionStop = require("../../../../main/js/joynr/dispatching/types/SubscriptionStop");
 const MulticastPublication = require("../../../../main/js/joynr/dispatching/types/MulticastPublication");
 const SubscriptionPublication = require("../../../../main/js/joynr/dispatching/types/SubscriptionPublication");
-const TestEnum = require("../../../generated/joynr/tests/testTypes/TestEnum");
 const TypeRegistrySingleton = require("../../../../main/js/joynr/types/TypeRegistrySingleton");
 const DiscoveryEntryWithMetaInfo = require("../../../../main/js/generated/joynr/types/DiscoveryEntryWithMetaInfo");
 const Version = require("../../../../main/js/generated/joynr/types/Version");
@@ -668,9 +668,6 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", () => {
         joynrMessage.from = proxyId;
         joynrMessage.to = providerId;
 
-        const subscriptionReplyPayload = {
-            subscriptionId
-        };
         const subscriptionReply = new SubscriptionReply(payload);
 
         /*

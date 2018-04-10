@@ -34,7 +34,6 @@ const MessageRouter = require("../../../../main/js/joynr/messaging/routing/Messa
 const MessageQueue = require("../../../../main/js/joynr/messaging/routing/MessageQueue");
 const Dispatcher = require("../../../../main/js/joynr/dispatching/Dispatcher");
 const ParticipantIdStorage = require("../../../../main/js/joynr/capabilities/ParticipantIdStorage");
-const MemoryStorage = require("../../../../main/js/global/MemoryStorage");
 const PublicationManager = require("../../../../main/js/joynr/dispatching/subscription/PublicationManager");
 const LocalStorage = require("../../../../main/js/global/LocalStorageNode");
 const MessagingQos = require("../../../../main/js/joynr/messaging/MessagingQos");
@@ -69,9 +68,8 @@ function wrapClass(Class, fixClass) {
     return wrappedClass;
 }
 
-let setRoutingProxySpy;
 function fixMessageRouter() {
-    setRoutingProxySpy = spyOn(this, "setRoutingProxy").and.returnValue(Promise.resolve());
+    spyOn(this, "setRoutingProxy").and.returnValue(Promise.resolve());
 }
 
 let terminateSubscriptionsSpy;

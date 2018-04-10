@@ -22,7 +22,6 @@ const ProviderQos = require("../../../../main/js/generated/joynr/types/ProviderQ
 const ProviderScope = require("../../../../main/js/generated/joynr/types/ProviderScope");
 const CustomParameter = require("../../../../main/js/generated/joynr/types/CustomParameter");
 const Version = require("../../../../main/js/generated/joynr/types/Version");
-const InProcessAddress = require("../../../../main/js/joynr/messaging/inprocess/InProcessAddress");
 const InProcessStub = require("../../../../main/js/joynr/util/InProcessStub");
 const InProcessSkeleton = require("../../../../main/js/joynr/util/InProcessSkeleton");
 
@@ -195,10 +194,7 @@ const providerQos = new ProviderQos({
 });
 
 const myDomain = "myDomain";
-
 const myInterfaceName = "myInterfaceName";
-
-const myChannelId = "myChannelId";
 
 const participantId = {
     participandId: "participantId"
@@ -276,12 +272,8 @@ describe("libjoynr-js.joynr.util.InProcessStubAndSkeleton", () => {
     ];
 
     function testValue(obj) {
-        expect(() => {
-            const o = new InProcessStub(obj);
-        }).toThrow();
-        expect(() => {
-            const o = new InProcessStub().setSkeleton(obj);
-        }).toThrow();
+        expect(() => new InProcessStub(obj)).toThrow();
+        expect(() => new InProcessStub().setSkeleton(obj)).toThrow();
     }
 
     it("throws when Stub receives object which is not of type InProcessSkeleton", done => {
@@ -289,9 +281,7 @@ describe("libjoynr-js.joynr.util.InProcessStubAndSkeleton", () => {
         for (i = 0; i < objects.length; ++i) {
             testValue(objects[i]);
         }
-        expect(() => {
-            const o = new InProcessStub();
-        }).not.toThrow();
+        expect(() => new InProcessStub()).not.toThrow();
         done();
     });
 
