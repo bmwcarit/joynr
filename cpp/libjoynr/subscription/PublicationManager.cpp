@@ -157,7 +157,8 @@ PublicationManager::PublicationManager(boost::asio::io_service& ioService,
           currentScheduledPublicationsMutex(),
           broadcastFilterLock(),
           ttlUplift(ttlUplift),
-          enableSubscriptionStorage(enableSubscriptionStorage)
+          enableSubscriptionStorage(enableSubscriptionStorage),
+          publicationsMutex()
 {
 }
 
@@ -735,7 +736,9 @@ void PublicationManager::removeAttributePublication(const std::string& subscript
 {
     JOYNR_LOG_TRACE(logger(), "removePublication: {}", subscriptionId);
 
+    std::unique_lock<std::mutex> publicationsLock(publicationsMutex);
     std::shared_ptr<Publication> publication = publications.take(subscriptionId);
+    publicationsLock.unlock();
     std::shared_ptr<SubscriptionRequestInformation> request =
             subscriptionId2SubscriptionRequest.take(subscriptionId);
 
@@ -755,7 +758,9 @@ void PublicationManager::removeBroadcastPublication(const std::string& subscript
 {
     JOYNR_LOG_TRACE(logger(), "removeBroadcast: {}", subscriptionId);
 
+    std::unique_lock<std::mutex> publicationsLock(publicationsMutex);
     std::shared_ptr<Publication> publication = publications.take(subscriptionId);
+    publicationsLock.unlock();
 
     std::shared_ptr<BroadcastSubscriptionRequestInformation> request =
             subscriptionId2BroadcastSubscriptionRequest.take(subscriptionId);
@@ -918,12 +923,14 @@ void PublicationManager::pollSubscription(const std::string& subscriptionId)
     }
 
     // Get the subscription details
+    std::unique_lock<std::mutex> publicationsLock(publicationsMutex);
     std::shared_ptr<Publication> publication = publications.value(subscriptionId);
     std::shared_ptr<SubscriptionRequestInformation> subscriptionRequest =
             subscriptionId2SubscriptionRequest.value(subscriptionId);
 
     if (publication && subscriptionRequest) {
         std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
+        publicationsLock.unlock();
         // See if the publication is needed
         const std::shared_ptr<SubscriptionQos> qos = subscriptionRequest->getQos();
         std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -1117,14 +1124,17 @@ void PublicationManager::PublicationEndRunnable::shutdown()
 void PublicationManager::PublicationEndRunnable::run()
 {
     if (auto publicationManagerSharedPtr = publicationManager.lock()) {
+        std::unique_lock<std::mutex> publicationsLock(
+                publicationManagerSharedPtr->publicationsMutex);
         std::shared_ptr<Publication> publication =
                 publicationManagerSharedPtr->publications.value(subscriptionId);
-        publicationManagerSharedPtr->removePublication(subscriptionId);
-
         if (publication) {
             std::lock_guard<std::recursive_mutex> lock((publication->mutex));
             publication->publicationEndRunnableHandle = DelayedScheduler::INVALID_RUNNABLE_HANDLE;
         }
+        publicationsLock.unlock();
+        // publicationsMutex is acquired again in next call
+        publicationManagerSharedPtr->removePublication(subscriptionId);
     }
 }
 
