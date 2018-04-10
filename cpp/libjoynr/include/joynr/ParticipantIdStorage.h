@@ -22,13 +22,25 @@
 #include <mutex>
 #include <string>
 
+#include <boost/multi_index_container.hpp>
+#include <boost/multi_index/indexed_by.hpp>
+#include <boost/multi_index/member.hpp>
+#include <boost/multi_index/ordered_index.hpp>
+#include <boost/multi_index/random_access_index.hpp>
+
 #include "joynr/JoynrExport.h"
+#include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/ReadWriteLock.h"
-#include "joynr/Settings.h"
 
 namespace joynr
 {
+
+namespace participantIdStorageTags
+{
+struct write;
+struct read;
+}
 
 /**
  * Creates and persists participant ids.
@@ -76,13 +88,43 @@ public:
     void sync();
 
 private:
+    struct StorageItem
+    {
+        const std::string key;
+        const std::string participantId;
+
+        std::string toIniForm() const
+        {
+            std::stringstream iniForm;
+            iniForm << key << "=" << participantId << std::endl;
+            return iniForm.str();
+        }
+    };
+
+    // Use one view for writing and one for reading:
+    //  - reading is ordered alphabetically and hence optimized for lookups
+    //  - writing is ordered sequentially so that we only write the diff to disk
+    using MultiIndexContainer = boost::multi_index_container<
+            StorageItem,
+            boost::multi_index::indexed_by<
+                    boost::multi_index::ordered_non_unique<
+                            boost::multi_index::tag<participantIdStorageTags::read>,
+                            BOOST_MULTI_INDEX_MEMBER(StorageItem, const std::string, key)>,
+                    boost::multi_index::random_access<
+                            boost::multi_index::tag<participantIdStorageTags::write>>>>;
+
     DISALLOW_COPY_AND_ASSIGN(ParticipantIdStorage);
+    ADD_LOGGER(ParticipantIdStorage)
+
     std::string createProviderKey(const std::string& domain, const std::string& interfaceName);
+    void loadEntriesFromFile();
 
     std::mutex fileMutex;
     ReadWriteLock storageMutex;
 
-    joynr::Settings storage;
+    MultiIndexContainer storage;
+    size_t entriesWrittenToDisk;
+    std::string fileName;
 };
 
 } // namespace joynr
