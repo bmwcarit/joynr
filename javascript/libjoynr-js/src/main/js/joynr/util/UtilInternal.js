@@ -89,10 +89,8 @@ UtilInternal.forward = function forward(receiver, provider) {
  */
 UtilInternal.forwardPrototype = function(input) {
     const inputWrapper = {};
-    /*jslint sub: true*/
     const proto = input["__proto__"];
     inputWrapper["__proto__"] = proto;
-    /*jslint sub: false*/
     let key;
     for (key in proto) {
         if (proto.hasOwnProperty(key)) {
@@ -292,16 +290,12 @@ UtilInternal.enrichObjectWithSetPrototypeOf = function() {
     Object.setPrototypeOf =
         Object.setPrototypeOf ||
         function(object, prototype) {
-            /*jslint sub: true*/
             object["__proto__"] = prototype;
-            /*jslint sub: false*/
         };
 };
 
 UtilInternal.setPrototypeOf = function(object, prototype) {
-    /*jslint sub: true*/
     object["__proto__"] = prototype;
-    /*jslint sub: false*/
 };
 
 function timeoutToPromise(time) {

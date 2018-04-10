@@ -27,9 +27,7 @@ const typeRegistry = TypeRegistrySingleton.getInstance();
 
 function checkArgument(value) {
     if (!Util.checkNullUndefined(value)) {
-        /*jslint nomen: true*/
         const Constructor = typeRegistry.getConstructor(value._typeName);
-        /*jslint nomen: false*/
 
         try {
             if (Constructor && Constructor.checkMembers) {

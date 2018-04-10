@@ -66,9 +66,7 @@ function Request(settings) {
      * @name Request#_typeName
      * @type String
      */
-    /*jslint nomen: true*/
     settings._typeName = "joynr.Request";
-    /*jslint nomen: false */
 
     return settings;
 }

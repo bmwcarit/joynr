@@ -42,9 +42,7 @@ Util.ensureTypedValues = function(value, typeRegistry) {
             }
         } else if (typeof value === "object" && !Typing.isComplexJoynrObject(value)) {
             value = Typing.augmentTypes(value, typeRegistry);
-            /*jslint nomen: true */
             const Constructor = typeRegistry.getConstructor(value._typeName);
-            /*jslint nomen: false */
             if (Constructor.checkMembers) {
                 Constructor.checkMembers(value, Typing.checkPropertyIfDefined);
             }

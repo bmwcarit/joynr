@@ -441,7 +441,6 @@ describe("libjoynr-js.joynr.provider.ProviderAttribute", () => {
     });
 
     it("calls provided setter implementation with enum as operation argument", done => {
-        /*jslint nomen: true */
         const fixture = new ProviderAttribute(
             {},
             implementation,
@@ -449,7 +448,6 @@ describe("libjoynr-js.joynr.provider.ProviderAttribute", () => {
             TestEnum.ZERO._typeName,
             "WRITEONLY"
         );
-        /*jslint nomen: false */
 
         fixture
             .set("ZERO")

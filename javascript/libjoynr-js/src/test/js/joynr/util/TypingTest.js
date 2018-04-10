@@ -302,7 +302,6 @@ describe("libjoynr-js.joynr.Typing.augmentType", () => {
             times = 5000,
             typeRegistry = TypeRegistrySingleton.getInstance();
         typeRegistry.addType("joynr.datatypes.exampleTypes.ComplexStruct", ComplexStruct);
-        /*jslint nomen: true */
         rawInput = {
             _typeName: "joynr.datatypes.exampleTypes.ComplexStruct",
             num32: "123456",
@@ -310,7 +309,6 @@ describe("libjoynr-js.joynr.Typing.augmentType", () => {
             str: "looooooooooooooooooooooooooooooooooooooongStriiiiiiiiiiiiiiiiiiiiiiiing",
             data: []
         };
-        /*jslint nomen: false */
         for (i = 0; i < 1000; i++) {
             rawInput.data.push("0");
         }
@@ -369,14 +367,12 @@ describe("libjoynr-js.joynr.Typing.augmentType", () => {
 
     it("augmentTypes is able to deal with structs containing enum members", done => {
         let fixture, expected;
-        /*jslint nomen: true */
         fixture = {
             _typeName: "joynr.datatypes.exampleTypes.ComplexRadioStation",
             name: "name",
             station: "station",
             source: "AUSTRIA"
         };
-        /*jslint nomen: false */
         expected = new ComplexRadioStation({
             name: fixture.name,
             station: fixture.station,
@@ -401,7 +397,6 @@ describe("libjoynr-js.joynr.Typing.augmentType", () => {
             minorVersion: 2
         };
 
-        /*jslint nomen: true */
         fixture = {
             _typeName: "joynr.types.DiscoveryEntry",
             domain: "domain",
@@ -413,7 +408,6 @@ describe("libjoynr-js.joynr.Typing.augmentType", () => {
             publicKeyId: "publicKeyId",
             expiryDateMs: 1234
         };
-        /*jslint nomen: false */
 
         expected = new DiscoveryEntry({
             domain: fixture.domain,
@@ -440,9 +434,7 @@ describe("libjoynr-js.joynr.Typing.augmentType", () => {
 
 function augmentTypeName(obj, expectedType, customMember) {
     const objWithTypeName = Typing.augmentTypeName(obj, "joynr", customMember);
-    /*jslint nomen: true */
     expect(objWithTypeName[customMember || "_typeName"]).toEqual("joynr." + expectedType);
-    /*jslint nomen: false */
 }
 
 describe("libjoynr-js.joynr.Typing.augmentTypeName", () => {

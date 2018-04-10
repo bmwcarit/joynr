@@ -270,7 +270,6 @@ describe("libjoynr-js.joynr.proxy.ProxyOperation", () => {
             });
     };
     it("expect correct joynr enum object as return value", done => {
-        /*jslint nomen: true */
         testForCorrectReturnValues(
             "testMethodHavingEnumAsReturnValue",
             [
@@ -292,7 +291,6 @@ describe("libjoynr-js.joynr.proxy.ProxyOperation", () => {
             .catch(() => {
                 return null;
             });
-        /*jslint nomen: false */
     });
 
     it("expect undefined as return value for missing output parameters", done => {
@@ -319,7 +317,6 @@ describe("libjoynr-js.joynr.proxy.ProxyOperation", () => {
     });
 
     it("expect multiple return values", done => {
-        /*jslint nomen: true */
         testForCorrectReturnValues(
             "testMultipleReturnValues",
             [
@@ -345,11 +342,9 @@ describe("libjoynr-js.joynr.proxy.ProxyOperation", () => {
                 return null;
             })
             .catch(fail);
-        /*jslint nomen: false */
     });
 
     it("expect correct joynr enum object array as return value", done => {
-        /*jslint nomen: true */
         testForCorrectReturnValues(
             "testMethodHavingEnumArrayAsReturnValue",
             [
@@ -370,7 +365,6 @@ describe("libjoynr-js.joynr.proxy.ProxyOperation", () => {
                 return null;
             })
             .catch(fail);
-        /*jslint nomen: false */
     });
 
     it("expect no error reporting after operation call with correct complex argument", done => {

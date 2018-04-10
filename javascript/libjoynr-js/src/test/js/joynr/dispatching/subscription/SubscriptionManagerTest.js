@@ -400,7 +400,6 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", () =>
 
         //log.debug("registering subscription");
         // register the subscription and call the resolve method when ready
-        /*jslint nomen: true */
         subscriptionManager
             .registerSubscription({
                 proxyId: "subscriber",
@@ -415,7 +414,6 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", () =>
             })
             .then(resolveSpy.resolveMethod);
         increaseFakeTime(1);
-        /*jslint nomen: false */
 
         waitsFor(
             () => {
@@ -458,7 +456,6 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", () =>
 
         //log.debug("registering subscription");
         // register the subscription and call the resolve method when ready
-        /*jslint nomen: true */
         subscriptionManager
             .registerBroadcastSubscription({
                 proxyId: "subscriber",
@@ -486,7 +483,6 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", () =>
             })
             .then(resolveSpy.resolveMethod);
         increaseFakeTime(1);
-        /*jslint nomen: false */
 
         waitsFor(
             () => {

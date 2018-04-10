@@ -1485,7 +1485,6 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
                     subscriptionObject = pendingSubscriptions[pendingSubscription];
                     delete pendingSubscriptions[pendingSubscription];
 
-                    /*jslint nomen:true*/
                     if (subscriptionObject.subscriptionType === SubscriptionInformation.SUBSCRIPTION_TYPE_ATTRIBUTE) {
                         // call attribute subscription handler
                         this.handleSubscriptionRequest(
@@ -1511,7 +1510,6 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
                             );
                         }
                     }
-                    /*jslint nomen:false*/
                 }
             }
         }
@@ -1543,7 +1541,6 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
                     if (item !== null && item !== undefined) {
                         try {
                             subscriptionInfo = JSON.parse(item);
-                            /*jslint nomen:true*/
                             if (
                                 subscriptionInfo.subscriptionType ===
                                 SubscriptionInformation.SUBSCRIPTION_TYPE_ATTRIBUTE
@@ -1576,7 +1573,6 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
                                     );
                                 }
                             }
-                            /*jslint nomen:false*/
                         } catch (err) {
                             throw new Error(err);
                         }

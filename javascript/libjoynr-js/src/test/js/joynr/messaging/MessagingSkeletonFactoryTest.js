@@ -34,10 +34,8 @@ define(
                 inProcessMessagingSkeleton = jasmine.createSpyObj("inProcessMessagingSkeleton", ["shutdown"]);
                 messagingSkeletonFactory = new MessagingSkeletonFactory();
                 const messagingSkeletons = {};
-                /*jslint nomen: true */
                 messagingSkeletons[InProcessAddress._typeName] = inProcessMessagingSkeleton;
                 messagingSkeletons[MqttAddress._typeName] = mqttMessagingSkeleton;
-                /*jslint nomen: false */
                 messagingSkeletonFactory.setSkeletons(messagingSkeletons);
             });
 

@@ -137,9 +137,7 @@ describe("libjoynr-js.joynr.provider.ProviderOperation", () => {
     });
 
     it("calls provided implementation with enum as operation argument", done => {
-        /*jslint nomen: true */
         const typeName = TestEnum.ZERO._typeName;
-        /*jslint nomen: false */
         const signature = {
             inputParameter: [
                 {

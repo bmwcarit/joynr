@@ -157,12 +157,10 @@ define([
             require([ "joynr/vehicle/RadioProvider"
             ], function(RadioProvider) {
                 /* ensure all required datatypes are loaded once the RadioProvider is resolved */
-                /*jslint nomen: true */
                 var untypedObject = {
                     _typeName : "joynr.vehicle.radiotypes.DatatypeForTestLibjoynr",
                     name : "untypedObject"
                 };
-                /*jslint nomen: false */
                 joynr.util.Util.ensureTypedValues(untypedObject, joynr.typeRegistry);
                 radioProvider = joynr.providerBuilder.build(RadioProvider, {});
                 testMutability(radioProvider, "isOn");

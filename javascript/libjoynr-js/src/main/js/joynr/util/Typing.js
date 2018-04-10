@@ -145,10 +145,8 @@ Typing.augmentTypes = function(untyped, typeRegistry, typeHint) {
         typedObj = untyped;
     } else if (type === "Object") {
         // try to type each single member of an object, and use registered constructor if available
-        /*jslint nomen: true */
         const Constructor = typeRegistry.getConstructor(untyped._typeName);
         const isEnumType = typeRegistry.isEnumType(untyped._typeName);
-        /*jslint nomen: false */
 
         // if object has joynr type name and corresponding constructor is found in the
         // type registry, construct it, otherwise throw an error
@@ -220,14 +218,12 @@ Typing.isComplexJoynrObject = function isComplexJoynrObject(value) {
 Typing.isEnumType = function isEnumType(value, checkForJoynrObject) {
     const isJoynrObject =
         checkForJoynrObject === undefined || (!checkForJoynrObject || Typing.isComplexJoynrObject(value));
-    /*jslint nomen: true */
     const result =
         value !== undefined &&
         value !== null &&
         typeof value === "object" &&
         isJoynrObject &&
         TypeRegistrySingleton.getInstance().isEnumType(value._typeName);
-    /*jslint nomen: false */
     return result;
 };
 

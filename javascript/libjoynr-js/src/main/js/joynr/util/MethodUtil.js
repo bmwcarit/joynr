@@ -55,9 +55,7 @@ MethodUtil.transformParameterMapToArray = function transformParameterMapToArray(
         }
         // check if the parameter type matches the type of the argument value
         // allow dangling _ in variable once
-        /*jslint nomen: true */
         objectType = Array.isArray(argumentValue) ? "Array" : argumentValue._typeName || typeof argumentValue;
-        /*jslint nomen: false */
         if (argument.javascriptType !== objectType) {
             // signature does not match
             throw new Error(

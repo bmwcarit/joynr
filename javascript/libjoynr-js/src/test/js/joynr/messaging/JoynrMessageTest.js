@@ -55,9 +55,7 @@ describe("libjoynr-js.joynr.messaging.JoynrMessage", () => {
         const joynrMessage = new JoynrMessage({
             type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
         });
-        /*jslint newcap: true, nomen: true */
         expect(joynrMessage._typeName).toEqual("joynr.JoynrMessage");
-        /*jslint newcap: false, nomen: false */
         expect(joynrMessage.type).toEqual(JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST);
         expect(joynrMessage.compress).toEqual(false);
         done();

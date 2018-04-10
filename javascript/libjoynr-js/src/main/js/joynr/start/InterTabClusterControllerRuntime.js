@@ -302,10 +302,8 @@ function InterTabClusterControllerRuntime(provisioning) {
 
         untypedCapabilities = untypedCapabilities.concat(defaultCapabilities);
         // allow use of _typeName once
-        /*jslint nomen: true */
         //typeRegistry.addType(new ChannelAddress()._typeName, ChannelAddress, false);
         typeRegistry.addType(new MqttAddress()._typeName, MqttAddress, false);
-        /*jslint nomen: false */
         typedCapabilities = [];
         for (i = 0; i < untypedCapabilities.length; i++) {
             const capability = new GlobalDiscoveryEntry(untypedCapabilities[i]);
@@ -364,7 +362,6 @@ function InterTabClusterControllerRuntime(provisioning) {
         messagingSkeletonFactory = new MessagingSkeletonFactory();
 
         const messagingStubFactories = {};
-        /*jslint nomen: true */
         messagingStubFactories[InProcessAddress._typeName] = new InProcessMessagingStubFactory();
         messagingStubFactories[BrowserAddress._typeName] = new BrowserMessagingStubFactory({
             webMessagingStub
@@ -374,7 +371,6 @@ function InterTabClusterControllerRuntime(provisioning) {
             client: mqttClient,
             address: globalClusterControllerAddress
         });
-        /*jslint nomen: false */
 
         messagingStubFactory = new MessagingStubFactory({
             messagingStubFactories

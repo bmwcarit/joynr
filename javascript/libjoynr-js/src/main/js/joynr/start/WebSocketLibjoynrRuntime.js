@@ -334,13 +334,11 @@ function WebSocketLibjoynrRuntime(provisioning) {
         messagingSkeletonFactory = new MessagingSkeletonFactory();
 
         const messagingStubFactories = {};
-        /*jslint nomen: true */
         messagingStubFactories[InProcessAddress._typeName] = new InProcessMessagingStubFactory();
         messagingStubFactories[WebSocketAddress._typeName] = new WebSocketMessagingStubFactory({
             address: ccAddress,
             sharedWebSocket
         });
-        /*jslint nomen: false */
 
         messagingStubFactory = new MessagingStubFactory({
             messagingStubFactories
@@ -377,10 +375,8 @@ function WebSocketLibjoynrRuntime(provisioning) {
         libjoynrMessagingSkeleton.registerListener(dispatcher.receive);
 
         const messagingSkeletons = {};
-        /*jslint nomen: true */
         messagingSkeletons[InProcessAddress._typeName] = libjoynrMessagingSkeleton;
         messagingSkeletons[WebSocketAddress._typeName] = webSocketMessagingSkeleton;
-        /*jslint nomen: false */
         messagingSkeletonFactory.setSkeletons(messagingSkeletons);
 
         requestReplyManager = new RequestReplyManager(dispatcher, typeRegistry);

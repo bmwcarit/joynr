@@ -282,10 +282,8 @@ function InProcessRuntime(provisioning) {
 
         untypedCapabilities = untypedCapabilities.concat(defaultClusterControllerCapabilities);
         // allow use of _typeName once
-        /*jslint nomen: true */
         typeRegistry.addType(new ChannelAddress()._typeName, ChannelAddress, false);
         typeRegistry.addType(new MqttAddress()._typeName, MqttAddress, false);
-        /*jslint nomen: false */
         typedCapabilities = [];
         let errorMessage;
         for (i = 0; i < untypedCapabilities.length; i++) {
@@ -331,14 +329,12 @@ function InProcessRuntime(provisioning) {
         messagingSkeletonFactory = new MessagingSkeletonFactory();
 
         const messagingStubFactories = {};
-        /*jslint nomen: true */
         messagingStubFactories[InProcessAddress._typeName] = new InProcessMessagingStubFactory();
         //messagingStubFactories[ChannelAddress._typeName] = channelMessagingStubFactory;
         messagingStubFactories[MqttAddress._typeName] = new MqttMessagingStubFactory({
             client: mqttClient,
             address: globalClusterControllerAddress
         });
-        /*jslint nomen: false */
 
         messagingStubFactory = new MessagingStubFactory({
             messagingStubFactories
@@ -415,10 +411,8 @@ function InProcessRuntime(provisioning) {
         libjoynrMessagingSkeleton.registerListener(dispatcher.receive);
 
         const messagingSkeletons = {};
-        /*jslint nomen: true */
         messagingSkeletons[InProcessAddress._typeName] = libjoynrMessagingSkeleton;
         messagingSkeletons[MqttAddress._typeName] = mqttMessagingSkeleton;
-        /*jslint nomen: false */
         messagingSkeletonFactory.setSkeletons(messagingSkeletons);
 
         requestReplyManager = new RequestReplyManager(dispatcher, typeRegistry);

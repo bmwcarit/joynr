@@ -298,12 +298,10 @@ function InterTabLibjoynrRuntime(provisioning) {
         messagingSkeletonFactory = new MessagingSkeletonFactory();
 
         const messagingStubFactories = {};
-        /*jslint nomen: true */
         messagingStubFactories[InProcessAddress._typeName] = new InProcessMessagingStubFactory();
         messagingStubFactories[BrowserAddress._typeName] = new BrowserMessagingStubFactory({
             webMessagingStub
         });
-        /*jslint nomen: false */
         messagingStubFactory = new MessagingStubFactory({
             messagingStubFactories
         });
@@ -338,10 +336,8 @@ function InterTabLibjoynrRuntime(provisioning) {
         libjoynrMessagingSkeleton.registerListener(dispatcher.receive);
 
         const messagingSkeletons = {};
-        /*jslint nomen: true */
         messagingSkeletons[InProcessAddress._typeName] = libjoynrMessagingSkeleton;
         messagingSkeletons[BrowserAddress._typeName] = browserMessagingSkeleton;
-        /*jslint nomen: false */
         messagingSkeletonFactory.setSkeletons(messagingSkeletons);
 
         requestReplyManager = new RequestReplyManager(dispatcher, typeRegistry);

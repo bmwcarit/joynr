@@ -87,7 +87,6 @@ function checkArguments(operationArguments) {
         if (operationArguments.hasOwnProperty(argumentName)) {
             argumentValue = operationArguments[argumentName];
             // make sure types of complex type members are also ok
-            /*jslint nomen: true */
             if (!Util.checkNullUndefined(argumentValue)) {
                 const Constructor = typeRegistry.getConstructor(argumentValue._typeName);
 
@@ -101,7 +100,6 @@ function checkArguments(operationArguments) {
             } else {
                 errors.push('Argument "' + argumentName + '" undefined.');
             }
-            /*jslint nomen: false */
         }
     }
     return errors;
