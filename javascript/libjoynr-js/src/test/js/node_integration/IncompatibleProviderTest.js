@@ -25,7 +25,11 @@ var End2EndAbstractTest = require("./End2EndAbstractTest"),
     MultipleVersionsInterfaceProvider = require("joynr/tests/v1/MultipleVersionsInterfaceProvider"),
     NoCompatibleProviderFoundException = require("joynr/exceptions/NoCompatibleProviderFoundException");
 
-var abstractTest = new End2EndAbstractTest("IncompatibleProviderTest", "TestMultipleVersionsInterfaceProcess");
+var abstractTest = new End2EndAbstractTest(
+    "IncompatibleProviderTest",
+    "TestMultipleVersionsInterfaceProcess",
+    "packageVersion1"
+);
 
 describe("Incompatible provider test", function() {
     it("Proxy version greater than provider version", function(done) {

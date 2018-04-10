@@ -51,7 +51,9 @@ ChildProcessUtils.registerHandlers = function(initializeTest, startTest, termina
             if (!initializeTest) {
                 throw new Error("cannot initialize test, child does not define an initializeTest method");
             }
-            initializeTest(msg.provisioningSuffix, msg.domain).then(function(providedRuntime) {
+            initializeTest(msg.provisioningSuffix, msg.domain, msg.processSpecialization).then(function(
+                providedRuntime
+            ) {
                 runtime = providedRuntime;
                 ChildProcessUtils.postReady();
             });

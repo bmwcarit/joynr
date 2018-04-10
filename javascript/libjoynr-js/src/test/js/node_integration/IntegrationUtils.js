@@ -93,7 +93,7 @@ IntegrationUtils.createPromise = function createPromise() {
     return map;
 };
 
-IntegrationUtils.initializeChildProcess = function(childName, provisioningSuffix, domain, cc) {
+IntegrationUtils.initializeChildProcess = function(childName, provisioningSuffix, domain, processSpecialization, cc) {
     processId++;
     var newChildId = processId;
     if (cc) {
@@ -121,7 +121,8 @@ IntegrationUtils.initializeChildProcess = function(childName, provisioningSuffix
     child[newChildId].send({
         type: "initialize",
         provisioningSuffix: provisioningSuffix,
-        domain: domain
+        domain: domain,
+        processSpecialization: processSpecialization
     });
 
     return childReady[newChildId].promise;

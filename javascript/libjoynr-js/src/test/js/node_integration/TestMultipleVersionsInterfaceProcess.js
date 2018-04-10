@@ -23,11 +23,10 @@ var ChildProcessUtils = require("./ChildProcessUtils");
 ChildProcessUtils.overrideRequirePaths();
 
 var joynr = require("joynr"),
-    MultipleVersionsInterfaceProvider = require("joynr/tests/v1/MultipleVersionsInterfaceProvider"),
     Promise = require("../../classes/global/Promise"),
     provisioning = require("../joynr/provisioning/provisioning_cc.js");
 
-var loadedJoynr, providerDomain, multipleVersionsInterfaceProvider;
+var loadedJoynr, providerDomain, multipleVersionsInterfaceProvider, MultipleVersionsInterfaceProvider;
 
 var providerImplementation = {
     getTrue: function() {
@@ -35,7 +34,7 @@ var providerImplementation = {
     }
 };
 
-function initializeTest(provisioningSuffix, providedDomain) {
+function initializeTest(provisioningSuffix, providedDomain, versioning) {
     providerDomain = providedDomain;
 
     joynr.selectRuntime("inprocess");
@@ -47,6 +46,18 @@ function initializeTest(provisioningSuffix, providedDomain) {
             scope: joynr.types.ProviderScope.GLOBAL,
             supportsOnChangeSubscriptions: false
         });
+
+        switch (versioning) {
+            case "nameVersion2":
+                MultipleVersionsInterfaceProvider = require("joynr/tests/MultipleVersionsInterface2Provider");
+                break;
+            case "packageVersion1":
+                MultipleVersionsInterfaceProvider = require("joynr/tests/v1/MultipleVersionsInterfaceProvider");
+                break;
+            case "packageVersion2":
+                MultipleVersionsInterfaceProvider = require("joynr/tests/v2/MultipleVersionsInterfaceProvider");
+                break;
+        }
 
         multipleVersionsInterfaceProvider = joynr.providerBuilder.build(
             MultipleVersionsInterfaceProvider,

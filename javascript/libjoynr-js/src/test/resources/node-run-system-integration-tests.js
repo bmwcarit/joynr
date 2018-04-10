@@ -63,6 +63,7 @@ mod.prototype.require = function(md) {
     return req.apply(this, arguments);
 };
 console.log("require config setup");
+var CompatibleProvidersTest = require("../test-classes/node_integration/CompatibleProvidersTest.js");
 var End2EndRPCTest = require("../test-classes/node_integration/End2EndRPCTest.js");
 var End2EndSubscriptionTest = require("../test-classes/node_integration/End2EndSubscriptionTest.js");
 var End2EndDatatypesTest = require("../test-classes/node_integration/End2EndDatatypesTest.js");

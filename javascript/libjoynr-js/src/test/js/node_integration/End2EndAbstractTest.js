@@ -29,7 +29,7 @@ var RadioProxy = require("joynr/vehicle/RadioProxy"),
     waitsFor = require("../global/WaitsFor");
 var joynr = require("joynr");
 
-function End2EndAbstractTest(provisioningSuffix, providerChildProcessName) {
+function End2EndAbstractTest(provisioningSuffix, providerChildProcessName, processSpecialization) {
     var radioProxy, dataProxy, multipleVersionsInterfaceProxy, loadedJoynr;
     var childId;
     var testIdentifier = 0;
@@ -49,7 +49,8 @@ function End2EndAbstractTest(provisioningSuffix, providerChildProcessName) {
                 return IntegrationUtils.initializeChildProcess(
                     providerChildProcessName,
                     provisioningSuffixForTest,
-                    domain
+                    domain,
+                    processSpecialization
                 );
             })
             .then(function(newChildId) {
@@ -84,7 +85,7 @@ function End2EndAbstractTest(provisioningSuffix, providerChildProcessName) {
                         });
                     case "TestMultipleVersionsInterfaceProcess":
                         var discoveryQos = new joynr.proxy.DiscoveryQos({
-                            discoveryTimeoutMs: 100
+                            discoveryTimeoutMs: 1000
                         });
                         return joynr.proxyBuilder
                             .build(MultipleVersionsInterfaceProxy, {
