@@ -53,8 +53,11 @@
             <testResource>
                 <directory>src/test/franca</directory>
             </testResource>
+            <testResource>
+                <directory>src/test/franca-with-version</directory>
+            </testResource>
         </testResources>
-		
+
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
