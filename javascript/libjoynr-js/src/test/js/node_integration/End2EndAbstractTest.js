@@ -23,7 +23,7 @@
 var Promise = require("../../classes/global/Promise");
 var RadioProxy = require("joynr/vehicle/RadioProxy"),
     DatatypesProxy = require("joynr/datatypes/DatatypesProxy"),
-    MultipleVersionsInterfaceProxy = require("joynr/tests/v2/MultipleVersionsInterfaceProxy"),
+    MultipleVersionsInterfaceProxy = require("joynr/tests/MultipleVersionsInterfaceProxy"),
     IntegrationUtils = require("./IntegrationUtils"),
     provisioning = require("joynr/provisioning/provisioning_cc"),
     waitsFor = require("../global/WaitsFor");
@@ -82,6 +82,18 @@ function End2EndAbstractTest(provisioningSuffix, providerChildProcessName) {
                             Object.freeze.and.callThrough();
                             radioProxy = Object.freeze(radioProxy);
                         });
+                    case "TestMultipleVersionsInterfaceProcess":
+                        var discoveryQos = new joynr.proxy.DiscoveryQos({
+                            discoveryTimeoutMs: 100
+                        });
+                        return joynr.proxyBuilder
+                            .build(MultipleVersionsInterfaceProxy, {
+                                domain: domain,
+                                discoveryQos: discoveryQos
+                            })
+                            .then(function(newProxy) {
+                                multipleVersionsInterfaceProxy = newProxy;
+                            });
                     default:
                         throw new Error("Please specify the process to invoke!");
                 }
