@@ -82,11 +82,6 @@ public:
                                                  const std::string& interfaceName,
                                                  const std::string& defaultValue);
 
-    /**
-     * Sync/Persist changes in the storage to file.
-     */
-    void sync();
-
 private:
     struct StorageItem
     {
@@ -118,6 +113,7 @@ private:
 
     std::string createProviderKey(const std::string& domain, const std::string& interfaceName);
     void loadEntriesFromFile();
+    void writeStoreToFile();
 
     std::mutex fileMutex;
     ReadWriteLock storageMutex;

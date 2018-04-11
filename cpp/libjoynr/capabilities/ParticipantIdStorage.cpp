@@ -88,7 +88,8 @@ void ParticipantIdStorage::setProviderParticipantId(const std::string& domain,
         auto retVal = storage.insert(std::move(item));
         assert(retVal.second);
     }
-    sync();
+
+    writeStoreToFile();
 }
 
 std::string ParticipantIdStorage::getProviderParticipantId(const std::string& domain,
@@ -120,7 +121,7 @@ std::string ParticipantIdStorage::getProviderParticipantId(const std::string& do
     }
 }
 
-void ParticipantIdStorage::sync()
+void ParticipantIdStorage::writeStoreToFile()
 {
     std::lock_guard<std::mutex> lockAccessToFile(fileMutex);
     WriteLocker lockAccessToStorage(storageMutex);
