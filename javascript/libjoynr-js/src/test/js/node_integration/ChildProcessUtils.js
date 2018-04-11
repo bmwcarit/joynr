@@ -17,6 +17,8 @@
  * limitations under the License.
  * #L%
  */
+const mod = require("module");
+const path = require("path");
 
 const ChildProcessUtils = {};
 
@@ -74,15 +76,8 @@ ChildProcessUtils.registerHandlers = function(initializeTest, startTest, termina
 };
 
 ChildProcessUtils.overrideRequirePaths = function() {
-    const mod = require("module");
-    const joynr = require("../../../main/js/joynr");
     const req = mod.prototype.require;
-    const path = require("path");
     mod.prototype.require = function(md) {
-        if (md === "joynr") {
-            return joynr;
-        }
-
         // mock localStorage
         if (md.endsWith("LocalStorageNode")) {
             const appDir = path.dirname(require.main.filename);
