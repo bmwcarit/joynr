@@ -26,7 +26,6 @@ ChildProcessUtils.overrideRequirePaths();
 var Promise = require("../../classes/global/Promise");
 // anything that you load here is served through the jsTestDriverServer, if you add an entry you
 // have to make it available through the jsTestDriverIntegrationTests.conf
-var ChildProcessUtils = require("./ChildProcessUtils");
 var joynr = require("joynr");
 var provisioning = require("../joynr/provisioning/provisioning_cc.js");
 

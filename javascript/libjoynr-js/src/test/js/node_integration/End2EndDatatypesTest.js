@@ -29,7 +29,7 @@ var joynr = require("joynr"),
     waitsFor = require("../global/WaitsFor");
 describe("libjoynr-js.integration.end2end.datatypes", function() {
     var datatypesProxy;
-    var abstractTest = new End2EndAbstractTest("End2EndDatatypesTest", true);
+    var abstractTest = new End2EndAbstractTest("End2EndDatatypesTest", "TestEnd2EndDatatypesProviderProcess");
 
     beforeEach(function(done) {
         abstractTest.beforeEach().then(function(settings) {

@@ -39,7 +39,7 @@ describe("libjoynr-js.integration.end2end.subscription", function() {
     var subscriptionQosMulticast;
     var subscriptionQosMixed;
     var radioProxy;
-    var abstractTest = new End2EndAbstractTest("End2EndSubscriptionTest");
+    var abstractTest = new End2EndAbstractTest("End2EndSubscriptionTest", "TestEnd2EndCommProviderProcess");
     var setAttribute = abstractTest.setAttribute;
     var setupSubscriptionAndReturnSpy = abstractTest.setupSubscriptionAndReturnSpy;
     var unsubscribeSubscription = abstractTest.unsubscribeSubscription;

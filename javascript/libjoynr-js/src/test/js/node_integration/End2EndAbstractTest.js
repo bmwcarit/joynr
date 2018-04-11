@@ -23,13 +23,14 @@
 var Promise = require("../../classes/global/Promise");
 var RadioProxy = require("joynr/vehicle/RadioProxy"),
     DatatypesProxy = require("joynr/datatypes/DatatypesProxy"),
+    MultipleVersionsInterfaceProxy = require("joynr/tests/v2/MultipleVersionsInterfaceProxy"),
     IntegrationUtils = require("./IntegrationUtils"),
     provisioning = require("joynr/provisioning/provisioning_cc"),
     waitsFor = require("../global/WaitsFor");
 var joynr = require("joynr");
 
-function End2EndAbstractTest(provisioningSuffix, buildDataProxy) {
-    var radioProxy, dataProxy, loadedJoynr;
+function End2EndAbstractTest(provisioningSuffix, providerChildProcessName) {
+    var radioProxy, dataProxy, multipleVersionsInterfaceProxy, loadedJoynr;
     var childId;
     var testIdentifier = 0;
 
@@ -45,9 +46,6 @@ function End2EndAbstractTest(provisioningSuffix, buildDataProxy) {
             .then(function(newJoynr) {
                 loadedJoynr = newJoynr;
                 IntegrationUtils.initialize(loadedJoynr);
-                var providerChildProcessName = buildDataProxy
-                    ? "TestEnd2EndDatatypesProviderProcess"
-                    : "TestEnd2EndCommProviderProcess";
                 return IntegrationUtils.initializeChildProcess(
                     providerChildProcessName,
                     provisioningSuffixForTest,
@@ -56,34 +54,37 @@ function End2EndAbstractTest(provisioningSuffix, buildDataProxy) {
             })
             .then(function(newChildId) {
                 childId = newChildId;
-                if (buildDataProxy) {
-                    return IntegrationUtils.buildProxy(DatatypesProxy, domain).then(function(newDataProxy) {
-                        dataProxy = newDataProxy;
-                    });
+                switch (providerChildProcessName) {
+                    case "TestEnd2EndDatatypesProviderProcess":
+                        return IntegrationUtils.buildProxy(DatatypesProxy, domain).then(function(newDataProxy) {
+                            dataProxy = newDataProxy;
+                        });
+                    case "TestEnd2EndCommProviderProcess":
+                        // Prevent freezing of object through proxy build
+                        // since we need to add faked attribute below
+                        spyOn(Object, "freeze").and.callFake(function(obj) {
+                            return obj;
+                        });
+                        return IntegrationUtils.buildProxy(RadioProxy, domain).then(function(newRadioProxy) {
+                            radioProxy = newRadioProxy;
+
+                            // Add an attribute that does not exist on provider side
+                            // for special subscription test
+                            radioProxy.nonExistingAttributeOnProviderSide = new radioProxy.settings.proxyElementTypes.ProxyAttribute(
+                                radioProxy,
+                                radioProxy.settings,
+                                "nonExistingAttributeOnProviderSide",
+                                "Integer",
+                                "NOTIFYREADWRITE"
+                            );
+
+                            // restore freeze behavior
+                            Object.freeze.and.callThrough();
+                            radioProxy = Object.freeze(radioProxy);
+                        });
+                    default:
+                        throw new Error("Please specify the process to invoke!");
                 }
-
-                // Prevent freezing of object through proxy build
-                // since we need to add faked attribute below
-                spyOn(Object, "freeze").and.callFake(function(obj) {
-                    return obj;
-                });
-                return IntegrationUtils.buildProxy(RadioProxy, domain).then(function(newRadioProxy) {
-                    radioProxy = newRadioProxy;
-
-                    // Add an attribute that does not exist on provider side
-                    // for special subscription test
-                    radioProxy.nonExistingAttributeOnProviderSide = new radioProxy.settings.proxyElementTypes.ProxyAttribute(
-                        radioProxy,
-                        radioProxy.settings,
-                        "nonExistingAttributeOnProviderSide",
-                        "Integer",
-                        "NOTIFYREADWRITE"
-                    );
-
-                    // restore freeze behavior
-                    Object.freeze.and.callThrough();
-                    radioProxy = Object.freeze(radioProxy);
-                });
             })
             .then(function() {
                 return IntegrationUtils.startChildProcess(childId);
@@ -92,7 +93,8 @@ function End2EndAbstractTest(provisioningSuffix, buildDataProxy) {
                 return Promise.resolve({
                     joynr: loadedJoynr,
                     radioProxy: radioProxy,
-                    dataProxy: dataProxy
+                    dataProxy: dataProxy,
+                    multipleVersionsInterfaceProxy: multipleVersionsInterfaceProxy
                 });
             });
     };

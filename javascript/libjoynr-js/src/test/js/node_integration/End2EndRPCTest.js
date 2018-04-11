@@ -36,7 +36,7 @@ var joynr = require("joynr"),
 describe("libjoynr-js.integration.end2end.rpc", function() {
     var subscriptionQosOnChange;
     var radioProxy;
-    var abstractTest = new End2EndAbstractTest("End2EndRPCTest");
+    var abstractTest = new End2EndAbstractTest("End2EndRPCTest", "TestEnd2EndCommProviderProcess");
     var getAttribute = abstractTest.getAttribute;
     var getFailingAttribute = abstractTest.getFailingAttribute;
     var setAttribute = abstractTest.setAttribute;
