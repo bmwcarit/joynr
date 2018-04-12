@@ -17,7 +17,7 @@
  * #L%
  */
 const Promise = require("../../global/Promise");
-const Util = require("../util/UtilInternal");
+const UtilInternal = require("../util/UtilInternal");
 const Request = require("../dispatching/types/Request");
 const MessagingQos = require("../messaging/MessagingQos");
 const Typing = require("../util/Typing");
@@ -26,7 +26,7 @@ const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton")
 const typeRegistry = TypeRegistrySingleton.getInstance();
 
 function checkArgument(value) {
-    if (!Util.checkNullUndefined(value)) {
+    if (!UtilInternal.checkNullUndefined(value)) {
         const Constructor = typeRegistry.getConstructor(value._typeName);
 
         try {
@@ -58,7 +58,7 @@ const asRead = (function() {
             // deferred object
             settings = settings || {};
             const request = new Request({
-                methodName: "get" + Util.firstUpper(context.attributeName)
+                methodName: "get" + UtilInternal.firstUpper(context.attributeName)
             });
             return context.executeRequest(request, settings);
         };
@@ -95,7 +95,7 @@ const asWrite = (function() {
         }
 
         const request = new Request({
-            methodName: "set" + Util.firstUpper(this.attributeName),
+            methodName: "set" + UtilInternal.firstUpper(this.attributeName),
             paramDatatypes: [this.attributeType],
             params: [settings.value]
         });
@@ -170,7 +170,7 @@ const asNotify = (function() {
         // passed in (right-most) messagingQos have precedence; undefined values are
         // ignored
         const messagingQos = new MessagingQos(
-            Util.extend({}, this.parent.messagingQos, this.settings.messagingQos, requestSettings.messagingQos)
+            UtilInternal.extend({}, this.parent.messagingQos, this.settings.messagingQos, requestSettings.messagingQos)
         );
 
         // return promise to caller
@@ -267,7 +267,7 @@ function sendRequestOnSuccess(settings) {
 ProxyAttribute.prototype.executeRequest = function(request, requestSettings) {
     // passed in (right-most) messagingQos have precedence; undefined values are
     // ignored
-    const messagingQos = Util.extend(
+    const messagingQos = UtilInternal.extend(
         new MessagingQos(),
         this.parent.messagingQos,
         this.settings.messagingQos,

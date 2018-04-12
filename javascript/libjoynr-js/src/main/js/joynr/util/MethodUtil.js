@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-const Util = require("./UtilInternal");
+const UtilInternal = require("./UtilInternal");
 
 /**
  * @exports MethodUtil
@@ -47,7 +47,7 @@ MethodUtil.transformParameterMapToArray = function transformParameterMapToArray(
         // retrieve the argument value
         argumentValue = operationArguments[argument.name];
         // if argument value is not given by the application
-        if (Util.checkNullUndefined(argumentValue)) {
+        if (UtilInternal.checkNullUndefined(argumentValue)) {
             throw new Error(
                 'Cannot call operation with nullable value "' + argumentValue + '" of argument "' + argument.name + '"'
             );

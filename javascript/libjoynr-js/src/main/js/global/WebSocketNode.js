@@ -24,7 +24,7 @@
  *
  */
 const JoynrRuntimeException = require("../joynr/exceptions/JoynrRuntimeException");
-const Util = require("../joynr/util/UtilInternal.js");
+const UtilInternal = require("../joynr/util/UtilInternal.js");
 const MessageSerializer = require("../joynr/messaging/MessageSerializer");
 
 function useWebSocketNode() {
@@ -77,7 +77,7 @@ function useWebSocketNode() {
         return webSocketObj;
     }
 
-    Util.extend(WebSocketNodeWrapper, ws);
+    UtilInternal.extend(WebSocketNodeWrapper, ws);
 
     return WebSocketNodeWrapper;
 }

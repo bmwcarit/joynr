@@ -26,7 +26,7 @@ const TypeRegistry = require("../../../../../main/js/joynr/start/TypeRegistry");
 const Promise = require("../../../../../main/js/global/Promise");
 const Date = require("../../../../../test/js/global/Date");
 const waitsFor = require("../../../../../test/js/global/WaitsFor");
-const Util = require("../../../../../main/js/joynr/util/UtilInternal");
+const UtilInternal = require("../../../../../main/js/joynr/util/UtilInternal");
 const uuid = require("../../../../../main/js/lib/uuid-annotated");
 let fakeTime;
 
@@ -758,7 +758,7 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
             messageRouter.addNextHop(joynrMessage.to, address, isGloballyVisible);
 
             joynrMessage.isLocalMessage = false;
-            const expectedJoynrMessage = JoynrMessage.parseMessage(Util.extendDeep({}, joynrMessage));
+            const expectedJoynrMessage = JoynrMessage.parseMessage(UtilInternal.extendDeep({}, joynrMessage));
             expectedJoynrMessage.replyChannelId = serializedTestGlobalClusterControllerAddress;
 
             messageRouter

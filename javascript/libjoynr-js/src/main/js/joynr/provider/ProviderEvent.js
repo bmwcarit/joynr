@@ -17,7 +17,7 @@
  * #L%
  */
 const BroadcastOutputParameters = require("./BroadcastOutputParameters");
-const Util = require("../util/UtilInternal");
+const UtilInternal = require("../util/UtilInternal");
 const SubscriptionUtil = require("../dispatching/subscription/util/SubscriptionUtil");
 
 /**
@@ -84,13 +84,13 @@ ProviderEvent.prototype.createBroadcastOutputParameters = function createBroadca
  */
 ProviderEvent.prototype.fire = function fire(broadcastOutputParameters, partitions) {
     SubscriptionUtil.validatePartitions(partitions);
-    // the Util.fire method accepts exactly one argument for the callback
+    // the UtilInternal.fire method accepts exactly one argument for the callback
     const data = {
         broadcastOutputParameters,
         filters: this._filters,
         partitions: partitions || []
     };
-    Util.fire(this._callbacks, data);
+    UtilInternal.fire(this._callbacks, data);
 };
 
 /**
@@ -118,7 +118,7 @@ ProviderEvent.prototype.registerObserver = function registerObserver(observer) {
  * @see ProviderEvent#registerObserver
  */
 ProviderEvent.prototype.unregisterObserver = function unregisterObserver(observer) {
-    Util.removeElementFromArray(this._callbacks, observer);
+    UtilInternal.removeElementFromArray(this._callbacks, observer);
 };
 
 /**
@@ -146,7 +146,7 @@ ProviderEvent.prototype.addBroadcastFilter = function addBroadcastFilter(filter)
  * @see ProviderEvent#addBroadcastFilter
  */
 ProviderEvent.prototype.deleteBroadcastFilter = function deleteBroadcastFilter(filter) {
-    Util.removeElementFromArray(this._filters, filter);
+    UtilInternal.removeElementFromArray(this._filters, filter);
 };
 
 module.exports = ProviderEvent;

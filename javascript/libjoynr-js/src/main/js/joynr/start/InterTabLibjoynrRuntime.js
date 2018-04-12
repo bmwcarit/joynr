@@ -51,7 +51,7 @@ const RoutingProxy = require("../../generated/joynr/system/RoutingProxy");
 const TypeRegistrySingleton = require("../types/TypeRegistrySingleton");
 const DiscoveryScope = require("../../generated/joynr/types/DiscoveryScope");
 const DiscoveryEntryWithMetaInfo = require("../../generated/joynr/types/DiscoveryEntryWithMetaInfo");
-const Util = require("../util/UtilInternal");
+const UtilInternal = require("../util/UtilInternal");
 const uuid = require("../../lib/uuid-annotated");
 const loggingManager = require("../system/LoggingManager");
 const defaultInterTabSettings = require("./settings/defaultInterTabSettings");
@@ -233,7 +233,7 @@ function InterTabLibjoynrRuntime(provisioning) {
             location: persistencyProvisioning.location
         });
 
-        if (Util.checkNullUndefined(provisioning.parentWindow)) {
+        if (UtilInternal.checkNullUndefined(provisioning.parentWindow)) {
             log.debug(
                 'provisioning.parentWindow not set. Use default setting "' +
                     defaultInterTabSettings.parentWindow +
@@ -241,7 +241,7 @@ function InterTabLibjoynrRuntime(provisioning) {
             );
         }
 
-        if (Util.checkNullUndefined(provisioning.windowId)) {
+        if (UtilInternal.checkNullUndefined(provisioning.windowId)) {
             throw new Error("windowId not set in provisioning.windowId");
         }
 

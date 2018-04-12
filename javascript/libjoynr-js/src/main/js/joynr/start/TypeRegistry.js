@@ -17,7 +17,7 @@
  * #L%
  */
 const Promise = require("../../global/Promise");
-const util = require("../util/UtilInternal");
+const UtilInternal = require("../util/UtilInternal");
 
 /**
  * The <code>TypeRegistry</code> contains a mapping of type names (which are sent on the wire

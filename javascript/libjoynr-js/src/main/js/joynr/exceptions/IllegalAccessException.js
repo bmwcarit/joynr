@@ -17,7 +17,7 @@
  * #L%
  */
 const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
-const Util = require("../util/UtilInternal");
+const UtilInternal = require("../util/UtilInternal");
 const JoynrRuntimeException = require("./JoynrRuntimeException");
 let defaultSettings;
 
@@ -54,7 +54,7 @@ function IllegalAccessException(settings) {
      * @name IllegalAccessException#_typeName
      * @type String
      */
-    Util.objectDefineProperty(this, "_typeName", "joynr.exceptions.IllegalAccessException");
+    UtilInternal.objectDefineProperty(this, "_typeName", "joynr.exceptions.IllegalAccessException");
 
     /**
      * See [constructor description]{@link IllegalAccessException}.
@@ -63,7 +63,7 @@ function IllegalAccessException(settings) {
      */
     this.detailMessage = undefined;
 
-    Util.extend(this, defaultSettings, settings, joynrRuntimeException);
+    UtilInternal.extend(this, defaultSettings, settings, joynrRuntimeException);
 }
 
 defaultSettings = {};

@@ -18,7 +18,7 @@
  */
 const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
 const Typing = require("../util/Typing");
-const Util = require("../util/UtilInternal");
+const UtilInternal = require("../util/UtilInternal");
 const JoynrRuntimeException = require("./JoynrRuntimeException");
 let defaultSettings;
 
@@ -58,13 +58,13 @@ function SubscriptionException(settings) {
      * @name SubscriptionException#_typeName
      * @type String
      */
-    Util.objectDefineProperty(this, "_typeName", "joynr.exceptions.SubscriptionException");
+    UtilInternal.objectDefineProperty(this, "_typeName", "joynr.exceptions.SubscriptionException");
 
     if (settings) {
         Typing.checkPropertyIfDefined(settings.subscriptionId, "String", "settings.subscriptionId");
     }
 
-    Util.extend(this, defaultSettings, settings, runtimeException);
+    UtilInternal.extend(this, defaultSettings, settings, runtimeException);
 }
 
 defaultSettings = {};

@@ -17,7 +17,7 @@
  * #L%
  */
 const Typing = require("../util/Typing");
-const Util = require("../util/UtilInternal");
+const UtilInternal = require("../util/UtilInternal");
 const SubscriptionQos = require("./SubscriptionQos");
 const LoggingManager = require("../system/LoggingManager");
 
@@ -87,7 +87,7 @@ function OnChangeSubscriptionQos(settings) {
      * @name OnChangeSubscriptionQos#_typeName
      * @type String
      */
-    Util.objectDefineProperty(this, "_typeName", "joynr.OnChangeSubscriptionQos");
+    UtilInternal.objectDefineProperty(this, "_typeName", "joynr.OnChangeSubscriptionQos");
     Typing.checkPropertyIfDefined(settings, "Object", "settings");
     if (settings && !(settings instanceof OnChangeSubscriptionQos)) {
         Typing.checkPropertyIfDefined(settings.minIntervalMs, "Number", "settings.minIntervalMs");
@@ -108,7 +108,7 @@ function OnChangeSubscriptionQos(settings) {
      * @name OnChangeSubscriptionQos#publicationTtlMs
      * @type Number
      */
-    Util.extend(this, defaultSettings, settings, subscriptionQos);
+    UtilInternal.extend(this, defaultSettings, settings, subscriptionQos);
     if (this.minIntervalMs < OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS) {
         log.warn(
             "minIntervalMs < MIN_MIN_INTERVAL_MS. Using MIN_MIN_INTERVAL_MS: " +

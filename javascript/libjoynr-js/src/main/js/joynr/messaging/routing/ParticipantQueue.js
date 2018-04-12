@@ -17,7 +17,7 @@
  * #L%
  */
 
-const Util = require("../../util/UtilInternal");
+const UtilInternal = require("../../util/UtilInternal");
 
 /**
  * This is a helper class for MessageQueue. It manages the messages waiting for a single participant.
@@ -49,7 +49,7 @@ ParticipantQueue.prototype.filterExpiredMessages = function() {
     for (i = 0; i < this._queue.length; i++) {
         const msg = this._queue[i];
         if (now > msg.expiryDate) {
-            totalBytesRemoved += Util.getLengthInBytes(msg.payload);
+            totalBytesRemoved += UtilInternal.getLengthInBytes(msg.payload);
         } else {
             newQueue.push(msg);
         }

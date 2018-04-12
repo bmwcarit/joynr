@@ -29,7 +29,7 @@ const GlobalCapabilitiesDirectoryProxy = require("../../../generated/joynr/infra
 const TypeRegistrySingleton = require("../../../joynr/types/TypeRegistrySingleton");
 const Typing = require("../../util/Typing");
 const LoggingManager = require("../../system/LoggingManager");
-const Util = require("../../util/UtilInternal");
+const UtilInternal = require("../../util/UtilInternal");
 const ProviderRuntimeException = require("../../exceptions/ProviderRuntimeException");
 const CapabilitiesUtil = require("../../util/CapabilitiesUtil");
 
@@ -119,7 +119,7 @@ function CapabilityDiscovery(
                 },
                 discoveryQos: new DiscoveryQos({
                     discoveryScope: DiscoveryScope.GLOBAL_ONLY,
-                    cacheMaxAgeMs: Util.getMaxLongValue()
+                    cacheMaxAgeMs: UtilInternal.getMaxLongValue()
                 })
             })
             .catch(error => {
@@ -196,7 +196,7 @@ function CapabilityDiscovery(
     function lookupGlobalCapabilities(domains, interfaceName, ttl, capabilities) {
         let promise;
         if (!globalAddressSerialized) {
-            const deferred = Util.createDeferred();
+            const deferred = UtilInternal.createDeferred();
             queuedGlobalLookups.push({
                 domains,
                 interfaceName,
@@ -403,7 +403,7 @@ function CapabilityDiscovery(
             promise = Promise.resolve();
         } else if (discoveryEntry.qos.scope === ProviderScope.GLOBAL) {
             if (!globalAddressSerialized) {
-                const deferred = Util.createDeferred();
+                const deferred = UtilInternal.createDeferred();
                 queuedGlobalDiscoveryEntries.push({
                     discoveryEntry,
                     resolve: deferred.resolve,

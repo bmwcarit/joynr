@@ -17,7 +17,7 @@
  * #L%
  */
 const Typing = require("../util/Typing");
-const Util = require("../util/UtilInternal");
+const UtilInternal = require("../util/UtilInternal");
 
 function makeSetterFunction(obj, parameterName) {
     return function(arg) {
@@ -48,7 +48,7 @@ function BroadcastFilterParameters(filterParameterProperties) {
      * @name BroadcastFilterParameters#_typeName
      * @type String
      */
-    Util.objectDefineProperty(this, "_typeName", "joynr.BroadcastFilterParameters");
+    UtilInternal.objectDefineProperty(this, "_typeName", "joynr.BroadcastFilterParameters");
     Typing.checkPropertyIfDefined(filterParameterProperties, "Object", "filterParameters");
 
     let parameterName;

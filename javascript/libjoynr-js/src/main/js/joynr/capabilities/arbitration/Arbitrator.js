@@ -18,7 +18,7 @@
  */
 const Promise = require("../../../global/Promise");
 const DiscoveryQos = require("../../../generated/joynr/types/DiscoveryQos");
-const Util = require("../../util/UtilInternal");
+const UtilInternal = require("../../util/UtilInternal");
 const DiscoveryException = require("../../exceptions/DiscoveryException");
 const NoCompatibleProviderFoundException = require("../../exceptions/NoCompatibleProviderFoundException");
 const LongTimer = require("../../util/LongTimer");
@@ -230,8 +230,8 @@ Arbitrator.prototype.startArbitration = function startArbitration(settings) {
         return Promise.reject(new Error("Arbitrator is already shut down"));
     }
 
-    const startArbitrationDeferred = Util.createDeferred();
-    settings = Util.extendDeep({}, settings);
+    const startArbitrationDeferred = UtilInternal.createDeferred();
+    settings = UtilInternal.extendDeep({}, settings);
 
     this._arbitrationId++;
     const deferred = {

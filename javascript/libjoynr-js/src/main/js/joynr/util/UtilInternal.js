@@ -111,7 +111,7 @@ UtilInternal.transform = function transform(from, transformFunction) {
 
 /**
  * Checks explicitly if value is null or undefined, use if you don't want !!"" to become false,
- * but !Util.checkNullUndefined("") to be true
+ * but !UtilInternal.checkNullUndefined("") to be true
  * @function UtilInternal#checkNullUndefined
  *
  * @param {?}

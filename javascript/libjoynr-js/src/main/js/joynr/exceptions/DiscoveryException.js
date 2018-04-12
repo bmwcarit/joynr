@@ -17,7 +17,7 @@
  * #L%
  */
 const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
-const Util = require("../util/UtilInternal");
+const UtilInternal = require("../util/UtilInternal");
 const JoynrRuntimeException = require("./JoynrRuntimeException");
 let defaultSettings;
 
@@ -53,7 +53,7 @@ function DiscoveryException(settings) {
      * @name DiscoveryException#_typeName
      * @type String
      */
-    Util.objectDefineProperty(this, "_typeName", "joynr.exceptions.DiscoveryException");
+    UtilInternal.objectDefineProperty(this, "_typeName", "joynr.exceptions.DiscoveryException");
 
     /**
      * See [constructor description]{@link DiscoveryException}.
@@ -62,7 +62,7 @@ function DiscoveryException(settings) {
      */
     this.detailMessage = undefined;
 
-    Util.extend(this, defaultSettings, settings, joynrRuntimeException);
+    UtilInternal.extend(this, defaultSettings, settings, joynrRuntimeException);
 }
 
 defaultSettings = {};

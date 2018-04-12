@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-const Util = require("../util/UtilInternal");
+const UtilInternal = require("../util/UtilInternal");
 const LoggingManager = require("../system/LoggingManager");
 
 const log = LoggingManager.getLogger("joynr/messaging/MessagingSkeletonFactory");
@@ -43,7 +43,7 @@ MessagingSkeletonFactory.prototype.getSkeleton = function getSkeleton(address) {
     const className = address._typeName;
     const skeleton = this._messagingSkeletons[className];
 
-    if (Util.checkNullUndefined(skeleton)) {
+    if (UtilInternal.checkNullUndefined(skeleton)) {
         const errorMsg =
             'Could not find a messaging skeleton for "' +
             className +

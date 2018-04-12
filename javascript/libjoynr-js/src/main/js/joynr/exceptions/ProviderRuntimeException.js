@@ -17,7 +17,7 @@
  * #L%
  */
 const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
-const Util = require("../util/UtilInternal");
+const UtilInternal = require("../util/UtilInternal");
 const JoynrRuntimeException = require("./JoynrRuntimeException");
 let defaultSettings;
 
@@ -54,9 +54,9 @@ function ProviderRuntimeException(settings) {
      * @name ProviderRuntimeException#_typeName
      * @type String
      */
-    Util.objectDefineProperty(this, "_typeName", "joynr.exceptions.ProviderRuntimeException");
+    UtilInternal.objectDefineProperty(this, "_typeName", "joynr.exceptions.ProviderRuntimeException");
 
-    Util.extend(this, defaultSettings, settings, runtimeException);
+    UtilInternal.extend(this, defaultSettings, settings, runtimeException);
 }
 
 defaultSettings = {};

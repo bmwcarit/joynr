@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-const Util = require("../../util/UtilInternal");
+const UtilInternal = require("../../util/UtilInternal");
 const Typing = require("../../util/Typing");
 const PeriodicSubscriptionQos = require("../../proxy/PeriodicSubscriptionQos");
 
@@ -57,7 +57,7 @@ function SubscriptionRequest(settings) {
      * @name SubscriptionRequest#attributeName
      * @type String
      */
-    Util.extend(this, defaultSettings, settings);
+    UtilInternal.extend(this, defaultSettings, settings);
 
     /**
      * The joynr type name

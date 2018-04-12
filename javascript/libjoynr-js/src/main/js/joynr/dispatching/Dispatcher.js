@@ -31,7 +31,7 @@ const JoynrMessage = require("../messaging/JoynrMessage");
 const MessagingQosEffort = require("../messaging/MessagingQosEffort");
 const defaultMessagingSettings = require("../start/settings/defaultMessagingSettings");
 const DiagnosticTags = require("../system/DiagnosticTags");
-const Util = require("../util/UtilInternal");
+const UtilInternal = require("../util/UtilInternal");
 const JSONSerializer = require("../util/JSONSerializer");
 const Typing = require("../util/Typing");
 const SubscriptionQos = require("../proxy/SubscriptionQos");
@@ -66,8 +66,8 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
      */
     function upLiftTtl(expiryDate) {
         expiryDate += ttlUpLiftMs !== undefined ? ttlUpLiftMs : defaultMessagingSettings.TTL_UPLIFT;
-        if (expiryDate > Util.getMaxLongValue()) {
-            expiryDate = Util.getMaxLongValue();
+        if (expiryDate > UtilInternal.getMaxLongValue()) {
+            expiryDate = UtilInternal.getMaxLongValue();
         }
 
         return expiryDate;

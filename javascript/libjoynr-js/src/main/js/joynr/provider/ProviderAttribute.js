@@ -17,7 +17,7 @@
  * #L%
  */
 const Promise = require("../../global/Promise");
-const Util = require("../util/UtilInternal");
+const UtilInternal = require("../util/UtilInternal");
 const Typing = require("../util/Typing");
 const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
 const ProviderRuntimeException = require("../exceptions/ProviderRuntimeException");
@@ -40,7 +40,7 @@ const asNotify = (function() {
      * @see ProviderAttribute#unregisterObserver
      */
     function valueChanged(value) {
-        Util.fire(this.callbacks, [value]);
+        UtilInternal.fire(this.callbacks, [value]);
     }
 
     /**
@@ -72,7 +72,7 @@ const asNotify = (function() {
      * @see ProviderAttribute#registerObserver
      */
     function unregisterObserver(observer) {
-        Util.removeElementFromArray(this.callbacks, observer);
+        UtilInternal.removeElementFromArray(this.callbacks, observer);
     }
 
     return function() {

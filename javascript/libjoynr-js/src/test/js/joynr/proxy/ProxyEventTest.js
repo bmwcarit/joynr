@@ -25,7 +25,7 @@ const MulticastSubscriptionQos = require("../../../../main/js/joynr/proxy/Multic
 const DiscoveryEntryWithMetaInfo = require("../../../../main/js/generated/joynr/types/DiscoveryEntryWithMetaInfo");
 const Version = require("../../../../main/js/generated/joynr/types/Version");
 const ProviderQos = require("../../../../main/js/generated/joynr/types/ProviderQos");
-const Util = require("../../../../main/js/joynr/util/UtilInternal");
+const UtilInternal = require("../../../../main/js/joynr/util/UtilInternal");
 const Promise = require("../../../../main/js/global/Promise");
 const waitsFor = require("../../../../test/js/global/WaitsFor");
 
@@ -134,9 +134,9 @@ describe("libjoynr-js.joynr.proxy.ProxyEvent", () => {
         const onError = function() {};
         const onSubscribed = function() {};
 
-        const expectedPartitions = Util.extend([], partitions);
-        const expectedSubscriptionQos = new MulticastSubscriptionQos(Util.extendDeep({}, subscriptionQos));
-        let expectedDiscoveryEntry = Util.extendDeep({}, providerDiscoveryEntry);
+        const expectedPartitions = UtilInternal.extend([], partitions);
+        const expectedSubscriptionQos = new MulticastSubscriptionQos(UtilInternal.extendDeep({}, subscriptionQos));
+        let expectedDiscoveryEntry = UtilInternal.extendDeep({}, providerDiscoveryEntry);
         expectedDiscoveryEntry.providerVersion = new Version(expectedDiscoveryEntry.providerVersion);
         expectedDiscoveryEntry.qos = new ProviderQos(expectedDiscoveryEntry.qos);
         expectedDiscoveryEntry = new DiscoveryEntryWithMetaInfo(expectedDiscoveryEntry);

@@ -18,7 +18,7 @@
  */
 const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
 const Typing = require("../util/Typing");
-const Util = require("../util/UtilInternal");
+const UtilInternal = require("../util/UtilInternal");
 let defaultSettings;
 
 /**
@@ -52,7 +52,7 @@ function JoynrException(settings) {
      * @name JoynrException#_typeName
      * @type String
      */
-    Util.objectDefineProperty(this, "_typeName", "joynr.exceptions.JoynrException");
+    UtilInternal.objectDefineProperty(this, "_typeName", "joynr.exceptions.JoynrException");
     Typing.checkPropertyIfDefined(settings, "Object", "settings");
     if (settings && settings.detailMessage) {
         Typing.checkPropertyIfDefined(settings.detailMessage, "String", "settings.detailMessage");
@@ -65,7 +65,7 @@ function JoynrException(settings) {
          */
         this.detailMessage = undefined;
     }
-    Util.extend(this, defaultSettings, settings);
+    UtilInternal.extend(this, defaultSettings, settings);
 }
 
 defaultSettings = {};

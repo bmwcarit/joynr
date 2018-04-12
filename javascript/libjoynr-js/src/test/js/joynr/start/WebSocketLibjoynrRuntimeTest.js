@@ -18,7 +18,7 @@
  */
 require("../../node-unit-test-helper");
 const Promise = require("../../../../main/js/global/Promise");
-const Util = require("../../../../main/js/joynr/util/UtilInternal");
+const UtilInternal = require("../../../../main/js/joynr/util/UtilInternal");
 
 const provisioning_root = require("../../../resources/joynr/provisioning/provisioning_root"); // logger and mqtt
 provisioning_root.ccAddress = {
@@ -143,7 +143,7 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
         SharedWebSocket.prototype.constructor.calls.reset();
         WebSocketMessagingStubFactory.prototype.constructor.calls.reset();
 
-        provisioning = Util.extend({}, provisioning_root);
+        provisioning = UtilInternal.extend({}, provisioning_root);
         done();
     });
 

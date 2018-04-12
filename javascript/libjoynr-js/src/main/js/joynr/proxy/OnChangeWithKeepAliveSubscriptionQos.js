@@ -17,7 +17,7 @@
  * #L%
  */
 const Typing = require("../util/Typing");
-const Util = require("../util/UtilInternal");
+const UtilInternal = require("../util/UtilInternal");
 const OnChangeSubscriptionQos = require("./OnChangeSubscriptionQos");
 const LoggingManager = require("../system/LoggingManager");
 
@@ -111,7 +111,7 @@ function OnChangeWithKeepAliveSubscriptionQos(settings) {
      * @name OnChangeWithKeepAliveSubscriptionQos#_typeName
      * @type String
      */
-    Util.objectDefineProperty(this, "_typeName", "joynr.OnChangeWithKeepAliveSubscriptionQos");
+    UtilInternal.objectDefineProperty(this, "_typeName", "joynr.OnChangeWithKeepAliveSubscriptionQos");
     Typing.checkPropertyIfDefined(settings, "Object", "settings");
     if (settings && !(settings instanceof OnChangeWithKeepAliveSubscriptionQos)) {
         Typing.checkPropertyIfDefined(settings.maxIntervalMs, "Number", "settings.maxIntervalMs");
@@ -143,7 +143,7 @@ function OnChangeWithKeepAliveSubscriptionQos(settings) {
      * @name OnChangeWithKeepAliveSubscriptionQos#publicationTtlMs
      * @type Number
      */
-    Util.extend(this, defaultSettings, settings, onChangeSubscriptionQos);
+    UtilInternal.extend(this, defaultSettings, settings, onChangeSubscriptionQos);
 
     if (this.maxIntervalMs < OnChangeWithKeepAliveSubscriptionQos.MIN_MAX_INTERVAL_MS) {
         log.warn(

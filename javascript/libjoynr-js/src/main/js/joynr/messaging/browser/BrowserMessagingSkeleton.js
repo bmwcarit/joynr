@@ -18,7 +18,7 @@
  */
 const JoynrMessage = require("../JoynrMessage");
 const Typing = require("../../util/Typing");
-const Util = require("../../util/UtilInternal");
+const UtilInternal = require("../../util/UtilInternal");
 const JSONSerializer = require("../../util/JSONSerializer");
 const LoggingManager = require("../../system/LoggingManager");
 
@@ -40,7 +40,7 @@ function BrowserMessagingSkeleton(settings) {
         if (message !== undefined) {
             const joynrMessage = new JoynrMessage(message);
 
-            Util.fire(that.receiverCallbacks, joynrMessage);
+            UtilInternal.fire(that.receiverCallbacks, joynrMessage);
         } else {
             log.warn('message with content "' + JSONSerializer.stringify(message) + '" could not be processed');
         }
@@ -72,7 +72,7 @@ BrowserMessagingSkeleton.prototype.registerListener = function(listener) {
 BrowserMessagingSkeleton.prototype.unregisterListener = function(listener) {
     Typing.checkProperty(listener, "Function", "listener");
 
-    Util.removeElementFromArray(this.receiverCallbacks, listener);
+    UtilInternal.removeElementFromArray(this.receiverCallbacks, listener);
 };
 
 module.exports = BrowserMessagingSkeleton;

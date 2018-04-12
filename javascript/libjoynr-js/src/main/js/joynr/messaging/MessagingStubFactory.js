@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-const Util = require("../util/UtilInternal");
+const UtilInternal = require("../util/UtilInternal");
 const LoggingManager = require("../system/LoggingManager");
 
 const log = LoggingManager.getLogger("joynr/messaging/MessagingStubFactory");
@@ -43,7 +43,7 @@ MessagingStubFactory.prototype.createMessagingStub = function createMessagingStu
     const className = address._typeName;
     const factory = this._messagingStubFactories[className];
 
-    if (Util.checkNullUndefined(factory)) {
+    if (UtilInternal.checkNullUndefined(factory)) {
         const errorMsg =
             'Could not find a MessagingStubFactory for "' +
             className +

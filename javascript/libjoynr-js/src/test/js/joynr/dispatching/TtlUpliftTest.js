@@ -17,7 +17,7 @@
  * #L%
  */
 require("../../node-unit-test-helper");
-const Util = require("../../../../main/js/joynr/util/UtilInternal");
+const UtilInternal = require("../../../../main/js/joynr/util/UtilInternal");
 const Dispatcher = require("../../../../main/js/joynr/dispatching/Dispatcher");
 const JoynrMessage = require("../../../../main/js/joynr/messaging/JoynrMessage");
 const MessagingQos = require("../../../../main/js/joynr/messaging/MessagingQos");
@@ -405,7 +405,7 @@ describe("libjoynr-js.joynr.ttlUpliftTest", () => {
                 qos: subscriptionQos
             };
 
-            const payloadCopy = Util.extendDeep({}, payload);
+            const payloadCopy = UtilInternal.extendDeep({}, payload);
             const expectedSubscriptionRequest = new SubscriptionRequest(payloadCopy);
 
             receiveJoynrMessage({
@@ -433,7 +433,7 @@ describe("libjoynr-js.joynr.ttlUpliftTest", () => {
                 qos: subscriptionQos
             };
 
-            const payloadCopy = Util.extendDeep({}, payload);
+            const payloadCopy = UtilInternal.extendDeep({}, payload);
             const expectedSubscriptionRequest = new BroadcastSubscriptionRequest(payloadCopy);
 
             receiveJoynrMessage({
@@ -462,7 +462,7 @@ describe("libjoynr-js.joynr.ttlUpliftTest", () => {
                 qos: subscriptionQos
             };
 
-            const payloadCopy = Util.extendDeep({}, payload);
+            const payloadCopy = UtilInternal.extendDeep({}, payload);
             const expectedSubscriptionRequest = new MulticastSubscriptionRequest(payloadCopy);
 
             receiveJoynrMessage({
@@ -674,7 +674,7 @@ describe("libjoynr-js.joynr.ttlUpliftTest", () => {
                 qos: subscriptionQos
             };
 
-            const payloadCopy = Util.extendDeep({}, payload);
+            const payloadCopy = UtilInternal.extendDeep({}, payload);
             const expectedSubscriptionRequest = new SubscriptionRequest(payloadCopy);
             expectedSubscriptionRequest.qos.expiryDateMs = expiryDateWithTtlUplift;
 
@@ -703,7 +703,7 @@ describe("libjoynr-js.joynr.ttlUpliftTest", () => {
                 qos: subscriptionQos
             };
 
-            const payloadCopy = Util.extendDeep({}, payload);
+            const payloadCopy = UtilInternal.extendDeep({}, payload);
             const expectedSubscriptionRequest = new BroadcastSubscriptionRequest(payloadCopy);
             expectedSubscriptionRequest.qos.expiryDateMs = expiryDateWithTtlUplift;
 
@@ -733,7 +733,7 @@ describe("libjoynr-js.joynr.ttlUpliftTest", () => {
                 qos: subscriptionQos
             };
 
-            const payloadCopy = Util.extendDeep({}, payload);
+            const payloadCopy = UtilInternal.extendDeep({}, payload);
             const expectedSubscriptionRequest = new MulticastSubscriptionRequest(payloadCopy);
             expectedSubscriptionRequest.qos.expiryDateMs = expiryDateWithTtlUplift;
 

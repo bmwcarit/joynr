@@ -17,7 +17,7 @@
  * #L%
  */
 const Promise = require("../../global/Promise");
-const Util = require("../util/UtilInternal");
+const UtilInternal = require("../util/UtilInternal");
 const JSONSerializer = require("../util/JSONSerializer");
 const Typing = require("../util/Typing");
 const MethodUtil = require("../util/MethodUtil");
@@ -87,7 +87,7 @@ function checkArguments(operationArguments) {
         if (operationArguments.hasOwnProperty(argumentName)) {
             argumentValue = operationArguments[argumentName];
             // make sure types of complex type members are also ok
-            if (!Util.checkNullUndefined(argumentValue)) {
+            if (!UtilInternal.checkNullUndefined(argumentValue)) {
                 const Constructor = typeRegistry.getConstructor(argumentValue._typeName);
 
                 try {
@@ -306,7 +306,7 @@ function ProxyOperation(parent, settings, operationName, operationSignatures) {
 
     // passed in (right-most) messagingQos have precedence; undefined values are
     // ignored
-    this.messagingQos = new MessagingQos(Util.extend({}, parent.messagingQos, settings.messagingQos));
+    this.messagingQos = new MessagingQos(UtilInternal.extend({}, parent.messagingQos, settings.messagingQos));
 
     this.settings = settings;
 

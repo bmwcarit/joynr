@@ -59,7 +59,7 @@ const DiscoveryScope = require("../../generated/joynr/types/DiscoveryScope");
 const DiscoveryProvider = require("../../generated/joynr/system/DiscoveryProvider");
 const RoutingProvider = require("../../generated/joynr/system/RoutingProvider");
 const TypeRegistrySingleton = require("../types/TypeRegistrySingleton");
-const Util = require("../util/UtilInternal");
+const UtilInternal = require("../util/UtilInternal");
 const uuid = require("../../lib/uuid-annotated");
 const loggingManager = require("../system/LoggingManager");
 const defaultInterTabSettings = require("./settings/defaultInterTabSettings");
@@ -251,13 +251,13 @@ function InterTabClusterControllerRuntime(provisioning) {
             location: persistencyProvisioning.location
         });
 
-        if (Util.checkNullUndefined(provisioning.bounceProxyUrl)) {
+        if (UtilInternal.checkNullUndefined(provisioning.bounceProxyUrl)) {
             throw new Error("bounce proxy URL not set in provisioning.bounceProxyUrl");
         }
-        if (Util.checkNullUndefined(provisioning.bounceProxyBaseUrl)) {
+        if (UtilInternal.checkNullUndefined(provisioning.bounceProxyBaseUrl)) {
             throw new Error("bounce proxy base URL not set in provisioning.bounceProxyBaseUrl");
         }
-        if (Util.checkNullUndefined(provisioning.parentWindow)) {
+        if (UtilInternal.checkNullUndefined(provisioning.parentWindow)) {
             log.debug(
                 'provisioning.parentWindow not set. Use default setting "' +
                     defaultInterTabSettings.parentWindow +
@@ -443,7 +443,7 @@ function InterTabClusterControllerRuntime(provisioning) {
             messagingQos: internalMessagingQos,
             discoveryQos: new DiscoveryQos({
                 discoveryScope: DiscoveryScope.GLOBAL_ONLY,
-                cacheMaxAgeMs: Util.getMaxLongValue()
+                cacheMaxAgeMs: UtilInternal.getMaxLongValue()
             })
         };
 

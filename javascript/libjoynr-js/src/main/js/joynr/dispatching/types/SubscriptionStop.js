@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-const Util = require("../../util/UtilInternal");
+const UtilInternal = require("../../util/UtilInternal");
 const Typing = require("../../util/Typing");
 
 /**
@@ -35,7 +35,7 @@ function SubscriptionStop(settings) {
      * @name SubscriptionStop#subscriptionId
      * @type String
      */
-    Util.extend(this, settings);
+    UtilInternal.extend(this, settings);
 
     /**
      * The joynr type name

@@ -27,7 +27,7 @@ const DiscoveryScope = require("../../../../../main/js/generated/joynr/types/Dis
 const DiscoveryException = require("../../../../../main/js/joynr/exceptions/DiscoveryException");
 const NoCompatibleProviderFoundException = require("../../../../../main/js/joynr/exceptions/NoCompatibleProviderFoundException");
 const Version = require("../../../../../main/js/generated/joynr/types/Version");
-const Util = require("../../../../../main/js/joynr/util/UtilInternal");
+const UtilInternal = require("../../../../../main/js/joynr/util/UtilInternal");
 const Promise = require("../../../../../main/js/global/Promise");
 const Date = require("../../../../../test/js/global/Date");
 const waitsFor = require("../../../../../test/js/global/WaitsFor");
@@ -300,7 +300,7 @@ describe("libjoynr-js.joynr.capabilities.arbitration.Arbitrator", () => {
             .startArbitration({
                 domains: [domain],
                 interfaceName,
-                discoveryQos: new DiscoveryQos(Util.extend(discoveryQos, { providerMustSupportOnChange })),
+                discoveryQos: new DiscoveryQos(UtilInternal.extend(discoveryQos, { providerMustSupportOnChange })),
                 proxyVersion: new Version({ majorVersion: 47, minorVersion: 11 })
             })
             .then(onFulfilledSpy)
@@ -322,7 +322,7 @@ describe("libjoynr-js.joynr.capabilities.arbitration.Arbitrator", () => {
     }
 
     function setSupportsOnChangeSubscriptionsToTrue(discoveryEntry) {
-        discoveryEntry.qos = new ProviderQos(Util.extend(discoveryEntry.qos, { supportsOnChangeSubscriptions: true }));
+        discoveryEntry.qos = new ProviderQos(UtilInternal.extend(discoveryEntry.qos, { supportsOnChangeSubscriptions: true }));
     }
 
     it("returns capabilities from discovery", done => {
@@ -701,7 +701,7 @@ describe("libjoynr-js.joynr.capabilities.arbitration.Arbitrator", () => {
         staticArbitrationSettings.domains = settings.domains;
         staticArbitrationSettings.interfaceName = settings.interfaceName;
         staticArbitrationSettings.discoveryQos = new DiscoveryQos(
-            Util.extend(staticArbitrationSettings.discoveryQos, {
+            UtilInternal.extend(staticArbitrationSettings.discoveryQos, {
                 providerMustSupportOnChange: settings.providerMustSupportOnChange || false
             })
         );

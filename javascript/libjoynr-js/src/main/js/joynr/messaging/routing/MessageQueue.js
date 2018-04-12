@@ -23,7 +23,7 @@
  */
 const LoggingManager = require("../../system/LoggingManager");
 const DiagnosticTags = require("../../system/DiagnosticTags");
-const Util = require("../../util/UtilInternal");
+const UtilInternal = require("../../util/UtilInternal");
 const ParticipantQueue = require("./ParticipantQueue");
 
 const log = LoggingManager.getLogger("joynr/messaging/routing/MessageQueue");
@@ -45,7 +45,7 @@ const CHECK_TTL_ON_QUEUED_MESSAGES_INTERVAL_MS = 10000; // a very loose interval
  */
 function MessageQueue(settings) {
     this._participantQueues = {};
-    Util.extend(this, defaultSettings, settings);
+    UtilInternal.extend(this, defaultSettings, settings);
     this.currentQueueSize = 0;
 
     const that = this;
@@ -83,7 +83,7 @@ defaultSettings = {
 MessageQueue.prototype.putMessage = function putMessage(message) {
     // drop message if maximum queue size has been reached
     if (message.payload !== undefined) {
-        const messageSize = Util.getLengthInBytes(message.payload);
+        const messageSize = UtilInternal.getLengthInBytes(message.payload);
         if (this.currentQueueSize + messageSize <= this.maxQueueSizeInKBytes * 1024) {
             this.currentQueueSize = this.currentQueueSize + messageSize;
             if (this._participantQueues[message.to] === undefined) {

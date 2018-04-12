@@ -17,7 +17,7 @@
  * #L%
  */
 const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
-const Util = require("../util/UtilInternal");
+const UtilInternal = require("../util/UtilInternal");
 const DiscoveryException = require("./DiscoveryException");
 let defaultSettings;
 
@@ -60,7 +60,7 @@ function NoCompatibleProviderFoundException(settings) {
      * @name NoCompatibleProviderFoundException#_typeName
      * @type String
      */
-    Util.objectDefineProperty(this, "_typeName", "joynr.exceptions.NoCompatibleProviderFoundException");
+    UtilInternal.objectDefineProperty(this, "_typeName", "joynr.exceptions.NoCompatibleProviderFoundException");
 
     /**
      * See [constructor description]{@link NoCompatibleProviderFoundException}.
@@ -83,7 +83,7 @@ function NoCompatibleProviderFoundException(settings) {
      */
     this.interfaceName = undefined;
 
-    Util.extend(this, defaultSettings, settings, discoveryException);
+    UtilInternal.extend(this, defaultSettings, settings, discoveryException);
 }
 
 defaultSettings = {};

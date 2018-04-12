@@ -17,7 +17,7 @@
  * #L%
  */
 const ProviderScope = require("../../../generated/joynr/types/ProviderScope");
-const Util = require("../../util/UtilInternal");
+const UtilInternal = require("../../util/UtilInternal");
 const defaultClusterControllerSettings = function(settings) {
     const defaultSettings = {};
     defaultSettings.discoveryChannel = "discoverydirectory_channelid";
@@ -41,7 +41,7 @@ const defaultClusterControllerSettings = function(settings) {
             supportsOnChangeSubscriptions: true
         },
         lastSeenDateMs: Date.now(),
-        expiryDateMs: Util.getMaxLongValue(),
+        expiryDateMs: UtilInternal.getMaxLongValue(),
         publicKeyId: "",
         address: JSON.stringify({
             _typeName: "joynr.system.RoutingTypes.MqttAddress",

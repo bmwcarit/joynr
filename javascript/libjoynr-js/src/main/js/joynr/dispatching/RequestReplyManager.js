@@ -19,7 +19,7 @@
 const Promise = require("../../global/Promise");
 const Reply = require("./types/Reply");
 const Typing = require("../util/Typing");
-const Util = require("../util/UtilInternal");
+const UtilInternal = require("../util/UtilInternal");
 const JSONSerializer = require("../util/JSONSerializer");
 const MethodInvocationException = require("../exceptions/MethodInvocationException");
 const ProviderRuntimeException = require("../exceptions/ProviderRuntimeException");
@@ -85,7 +85,7 @@ function RequestReplyManager(dispatcher, typeRegistry) {
     this.sendRequest = function sendRequest(settings, callbackSettings) {
         checkIfReady();
 
-        const deferred = Util.createDeferred();
+        const deferred = UtilInternal.createDeferred();
         this.addReplyCaller(
             settings.request.requestReplyId,
             {
@@ -258,7 +258,7 @@ function RequestReplyManager(dispatcher, typeRegistry) {
             const getSet = match[1];
             if (getSet) {
                 const attributeName = match[2];
-                const attributeObject = provider[attributeName] || provider[Util.firstLower(attributeName)];
+                const attributeObject = provider[attributeName] || provider[UtilInternal.firstLower(attributeName)];
                 // if the attribute exists in the provider
                 if (attributeObject && !attributeObject.callOperation) {
                     try {
@@ -316,7 +316,7 @@ function RequestReplyManager(dispatcher, typeRegistry) {
          * and call then the callbackDispatcher
          */
 
-        if (!exception && Util.isPromise(result)) {
+        if (!exception && UtilInternal.isPromise(result)) {
             return result.then(createReplyFromSuccess).catch(createReplyFromError);
         }
         if (exception) {

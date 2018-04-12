@@ -37,7 +37,7 @@ const TypeRegistrySingleton = require("../../../../../main/js/joynr/types/TypeRe
 const DiscoveryEntryWithMetaInfo = require("../../../../../main/js/generated/joynr/types/DiscoveryEntryWithMetaInfo");
 const Version = require("../../../../../main/js/generated/joynr/types/Version");
 const ProviderQos = require("../../../../../main/js/generated/joynr/types/ProviderQos");
-const Util = require("../../../../../main/js/joynr/util/UtilInternal");
+const UtilInternal = require("../../../../../main/js/joynr/util/UtilInternal");
 
 describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", () => {
     let subscriptionManager;
@@ -168,7 +168,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", () =>
                 expiryDateMs: Date.now() + ttl
             })
         };
-        let expectedDiscoveryEntry = Util.extendDeep({}, providerDiscoveryEntry);
+        let expectedDiscoveryEntry = UtilInternal.extendDeep({}, providerDiscoveryEntry);
         expectedDiscoveryEntry.providerVersion = new Version(expectedDiscoveryEntry.providerVersion);
         expectedDiscoveryEntry.qos = new ProviderQos(expectedDiscoveryEntry.qos);
         expectedDiscoveryEntry = new DiscoveryEntryWithMetaInfo(expectedDiscoveryEntry);
@@ -626,7 +626,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", () =>
         const publicationReceivedSpy = jasmine.createSpy("publicationReceivedSpy");
         const publicationMissedSpy = jasmine.createSpy("publicationMissedSpy");
         const alertAfterIntervalMs = OnChangeWithKeepAliveSubscriptionQos.DEFAULT_MAX_INTERVAL_MS;
-        let expectedDiscoveryEntry = Util.extendDeep({}, providerDiscoveryEntry);
+        let expectedDiscoveryEntry = UtilInternal.extendDeep({}, providerDiscoveryEntry);
         expectedDiscoveryEntry.providerVersion = new Version(expectedDiscoveryEntry.providerVersion);
         expectedDiscoveryEntry.qos = new ProviderQos(expectedDiscoveryEntry.qos);
         expectedDiscoveryEntry = new DiscoveryEntryWithMetaInfo(expectedDiscoveryEntry);
@@ -692,7 +692,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", () =>
             broadcastName: "broadcastName",
             selective: false
         });
-        let expectedDiscoveryEntry = Util.extendDeep({}, providerDiscoveryEntry);
+        let expectedDiscoveryEntry = UtilInternal.extendDeep({}, providerDiscoveryEntry);
         expectedDiscoveryEntry.providerVersion = new Version(expectedDiscoveryEntry.providerVersion);
         expectedDiscoveryEntry.qos = new ProviderQos(expectedDiscoveryEntry.qos);
         expectedDiscoveryEntry = new DiscoveryEntryWithMetaInfo(expectedDiscoveryEntry);
@@ -752,7 +752,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", () =>
         const publicationErrorSpy = jasmine.createSpy("publicationErrorSpy");
         const publicationSubscribedSpy = jasmine.createSpy("publicationSubscribedSpy");
         dispatcherSpy.sendSubscriptionRequest.calls.reset();
-        let expectedDiscoveryEntry = Util.extendDeep({}, providerDiscoveryEntry);
+        let expectedDiscoveryEntry = UtilInternal.extendDeep({}, providerDiscoveryEntry);
         expectedDiscoveryEntry.providerVersion = new Version(providerDiscoveryEntry.providerVersion);
         expectedDiscoveryEntry.qos = new ProviderQos(providerDiscoveryEntry.qos);
         expectedDiscoveryEntry = new DiscoveryEntryWithMetaInfo(expectedDiscoveryEntry);

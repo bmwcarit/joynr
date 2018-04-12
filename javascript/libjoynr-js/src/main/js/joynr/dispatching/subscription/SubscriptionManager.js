@@ -30,7 +30,7 @@ const SubscriptionUtil = require("./util/SubscriptionUtil");
 const LongTimer = require("../../util/LongTimer");
 const LoggingManager = require("../../system/LoggingManager");
 const uuid = require("../../../lib/uuid-annotated");
-const Util = require("../../util/UtilInternal");
+const UtilInternal = require("../../util/UtilInternal");
 const Typing = require("../../util/Typing");
 const TypeRegistrySingleton = require("../../../joynr/types/TypeRegistrySingleton");
 const PublicationMissedException = require("../../exceptions/PublicationMissedException");
@@ -180,7 +180,7 @@ function SubscriptionManager(dispatcher) {
             onError: settings.onError,
             onSubscribed: settings.onSubscribed
         });
-        const subscriptionInfo = Util.extend(
+        const subscriptionInfo = UtilInternal.extend(
             {
                 proxyId: settings.proxyId,
                 providerDiscoveryEntry: settings.providerDiscoveryEntry,
@@ -323,7 +323,7 @@ function SubscriptionManager(dispatcher) {
             ttl: calculateTtl(subscriptionRequest.qos)
         });
 
-        const deferred = Util.createDeferred();
+        const deferred = UtilInternal.createDeferred();
 
         subscriptionReplyCallers[subscriptionId] = {
             resolve: deferred.resolve,
@@ -424,7 +424,7 @@ function SubscriptionManager(dispatcher) {
             return Promise.reject(new Error("SubscriptionManager is already shut down"));
         }
 
-        const deferred = Util.createDeferred();
+        const deferred = UtilInternal.createDeferred();
         const subscriptionRequest = createBroadcastSubscriptionRequest(parameters);
 
         messagingQos = new MessagingQos({
@@ -694,7 +694,7 @@ function SubscriptionManager(dispatcher) {
                 cleanUpPromises.push(promise);
             }
         }
-        return Util.timeoutPromise(Promise.all(cleanUpPromises), clearSubscriptionsTimeoutMs);
+        return UtilInternal.timeoutPromise(Promise.all(cleanUpPromises), clearSubscriptionsTimeoutMs);
     };
 
     /**

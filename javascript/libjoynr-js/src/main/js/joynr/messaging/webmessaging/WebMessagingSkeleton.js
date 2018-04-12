@@ -17,7 +17,7 @@
  * #L%
  */
 const Typing = require("../../util/Typing");
-const Util = require("../../util/UtilInternal");
+const UtilInternal = require("../../util/UtilInternal");
 
 /**
  * @constructor WebMessagingSkeleton
@@ -39,7 +39,7 @@ function WebMessagingSkeleton(settings) {
 
     const receiverCallbacks = [];
     const callbackFct = function(event) {
-        Util.fire(receiverCallbacks, event.data);
+        UtilInternal.fire(receiverCallbacks, event.data);
     };
 
     settings.window.addEventListener("message", callbackFct);
@@ -65,7 +65,7 @@ function WebMessagingSkeleton(settings) {
     this.unregisterListener = function unregisterListener(listener) {
         Typing.checkPropertyIfDefined(listener, "Function", "listener");
 
-        Util.removeElementFromArray(receiverCallbacks, listener);
+        UtilInternal.removeElementFromArray(receiverCallbacks, listener);
     };
 
     /**

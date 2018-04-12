@@ -18,7 +18,7 @@
  */
 const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
 const Typing = require("../util/Typing");
-const Util = require("../util/UtilInternal");
+const UtilInternal = require("../util/UtilInternal");
 const JoynrRuntimeException = require("./JoynrRuntimeException");
 let defaultSettings;
 
@@ -58,7 +58,7 @@ function MethodInvocationException(settings) {
      * @name MethodInvocationException#_typeName
      * @type String
      */
-    Util.objectDefineProperty(this, "_typeName", "joynr.exceptions.MethodInvocationException");
+    UtilInternal.objectDefineProperty(this, "_typeName", "joynr.exceptions.MethodInvocationException");
 
     /**
      * The provider version information
@@ -70,7 +70,7 @@ function MethodInvocationException(settings) {
         Typing.checkPropertyIfDefined(settings.providerVersion, "Version", "settings.providerVersion");
     }
 
-    Util.extend(this, defaultSettings, settings, runtimeException);
+    UtilInternal.extend(this, defaultSettings, settings, runtimeException);
 }
 
 defaultSettings = {};

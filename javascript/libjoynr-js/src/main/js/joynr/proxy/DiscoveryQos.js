@@ -18,7 +18,7 @@
  */
 const ArbitrationStrategyCollection = require("../../joynr/types/ArbitrationStrategyCollection");
 const DiscoveryScope = require("../../generated/joynr/types/DiscoveryScope");
-const Util = require("../util/UtilInternal");
+const UtilInternal = require("../util/UtilInternal");
 
 let defaultSettings = {
     discoveryTimeoutMs: 10 * 60 * 1000, // 10 minutes
@@ -53,7 +53,7 @@ function DiscoveryQos(settings) {
         return new DiscoveryQos(settings);
     }
 
-    settings = Util.extend({}, defaultSettings, settings);
+    settings = UtilInternal.extend({}, defaultSettings, settings);
 
     /**
      * @name DiscoveryQos#discoveryTimeoutMs
@@ -98,7 +98,7 @@ function DiscoveryQos(settings) {
 }
 
 DiscoveryQos.setDefaultSettings = function(settings) {
-    defaultSettings = Util.extend({}, defaultSettings, settings);
+    defaultSettings = UtilInternal.extend({}, defaultSettings, settings);
 };
 
 module.exports = DiscoveryQos;

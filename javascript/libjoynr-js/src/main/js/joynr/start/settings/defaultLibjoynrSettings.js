@@ -17,7 +17,7 @@
  * #L%
  */
 const ProviderScope = require("../../../generated/joynr/types/ProviderScope");
-const Util = require("../../util/UtilInternal");
+const UtilInternal = require("../../util/UtilInternal");
 const defaultSettings = {};
 const discoveryCapability = {
     providerVersion: {
@@ -34,7 +34,7 @@ const discoveryCapability = {
         supportsOnChangeSubscriptions: true
     },
     lastSeenDateMs: Date.now(),
-    expiryDateMs: Util.getMaxLongValue(),
+    expiryDateMs: UtilInternal.getMaxLongValue(),
     publicKeyId: "",
     isLocal: true
 };
@@ -54,7 +54,7 @@ const routingCapability = {
         supportsOnChangeSubscriptions: true
     },
     lastSeenDateMs: Date.now(),
-    expiryDateMs: Util.getMaxLongValue(),
+    expiryDateMs: UtilInternal.getMaxLongValue(),
     publicKeyId: "",
     isLocal: true
 };

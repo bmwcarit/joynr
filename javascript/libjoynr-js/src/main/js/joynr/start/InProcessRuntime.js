@@ -52,7 +52,7 @@ const MessagingQos = require("../messaging/MessagingQos");
 const DiscoveryQos = require("../proxy/DiscoveryQos");
 const DiscoveryScope = require("../../generated/joynr/types/DiscoveryScope");
 const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
-const Util = require("../util/UtilInternal");
+const UtilInternal = require("../util/UtilInternal");
 const CapabilitiesUtil = require("../util/CapabilitiesUtil");
 const loggingManager = require("../system/LoggingManager");
 const uuid = require("../../lib/uuid-annotated");
@@ -234,13 +234,13 @@ function InProcessRuntime(provisioning) {
             location: persistencyProvisioning.location
         });
 
-        if (Util.checkNullUndefined(provisioning.bounceProxyUrl)) {
+        if (UtilInternal.checkNullUndefined(provisioning.bounceProxyUrl)) {
             throw new Error("bounce proxy URL not set in provisioning.bounceProxyUrl");
         }
-        if (Util.checkNullUndefined(provisioning.bounceProxyBaseUrl)) {
+        if (UtilInternal.checkNullUndefined(provisioning.bounceProxyBaseUrl)) {
             throw new Error("bounce proxy base URL not set in provisioning.bounceProxyBaseUrl");
         }
-        if (Util.checkNullUndefined(provisioning.brokerUri)) {
+        if (UtilInternal.checkNullUndefined(provisioning.brokerUri)) {
             throw new Error("broker URI not set in provisioning.brokerUri");
         }
 
@@ -406,7 +406,7 @@ function InProcessRuntime(provisioning) {
             messagingQos: internalMessagingQos,
             discoveryQos: new DiscoveryQos({
                 discoveryScope: DiscoveryScope.GLOBAL_ONLY,
-                cacheMaxAgeMs: Util.getMaxLongValue()
+                cacheMaxAgeMs: UtilInternal.getMaxLongValue()
             })
         };
 

@@ -23,7 +23,7 @@ const JsonParser = require("../../../lib/JsonParser");
 const MessagingQos = require("../MessagingQos");
 const DiagnosticTags = require("../../system/DiagnosticTags");
 const LoggingManager = require("../../system/LoggingManager");
-const Util = require("../../util/UtilInternal");
+const UtilInternal = require("../../util/UtilInternal");
 const LongTimer = require("../../util/LongTimer");
 
 const log = LoggingManager.getLogger("joynr.messaging.LongPollingChannelMessageReceiver");
@@ -298,7 +298,7 @@ LongPollingChannelMessageReceiver.prototype.create = function(theChannelId) {
         if (that._createChannelTimestamp + that._channelCreationTimeout_ms <= Date.now()) {
             throw new Error("Error creating channel");
         } else {
-            const deferred = Util.createDeferred();
+            const deferred = UtilInternal.createDeferred();
             LongTimer.setTimeout(
                 that._createInternal.bind(that),
                 that._channelCreationRetryDelay_ms,

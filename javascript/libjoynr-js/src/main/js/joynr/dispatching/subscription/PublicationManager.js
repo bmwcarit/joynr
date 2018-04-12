@@ -29,7 +29,7 @@ const SubscriptionUtil = require("./util/SubscriptionUtil");
 const SubscriptionException = require("../../exceptions/SubscriptionException");
 const JSONSerializer = require("../../util/JSONSerializer");
 const LongTimer = require("../../util/LongTimer");
-const Util = require("../../util/UtilInternal");
+const UtilInternal = require("../../util/UtilInternal");
 const LoggingManager = require("../../system/LoggingManager");
 
 /**
@@ -103,9 +103,9 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
     };
 
     if (!persistency) {
-        storeSubscriptions = Util.emptyFunction;
-        removeSubscriptionFromPersistency = Util.emptyFunction;
-        addSubscriptionToPersistency = Util.emptyFunction;
+        storeSubscriptions = UtilInternal.emptyFunction;
+        removeSubscriptionFromPersistency = UtilInternal.emptyFunction;
+        addSubscriptionToPersistency = UtilInternal.emptyFunction;
     }
 
     /**

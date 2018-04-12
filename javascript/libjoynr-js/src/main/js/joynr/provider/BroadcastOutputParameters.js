@@ -17,7 +17,7 @@
  * #L%
  */
 const Typing = require("../util/Typing");
-const Util = require("../util/UtilInternal");
+const UtilInternal = require("../util/UtilInternal");
 
 function makeSetterFunction(obj, pos) {
     return function(arg) {
@@ -53,7 +53,7 @@ function BroadcastOutputParameters(outputParameterProperties) {
      * @name BroadcastOutputParameters#_typeName
      * @type String
      */
-    Util.objectDefineProperty(this, "_typeName", "joynr.BroadcastOutputParameters");
+    UtilInternal.objectDefineProperty(this, "_typeName", "joynr.BroadcastOutputParameters");
     Typing.checkPropertyIfDefined(outputParameterProperties, "Array", "outputParameters");
 
     let parameterName;

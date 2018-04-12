@@ -20,7 +20,7 @@ require("../../node-unit-test-helper");
 const ProviderOperation = require("../../../../main/js/joynr/provider/ProviderOperation");
 const testDataOperation = require("../../../../test/js/test/data/Operation");
 const TestEnum = require("../../../generated/joynr/tests/testTypes/TestEnum");
-const Util = require("../../../../main/js/joynr/util/UtilInternal");
+const UtilInternal = require("../../../../main/js/joynr/util/UtilInternal");
 const TypeRegistrySingleton = require("../../../../main/js/joynr/types/TypeRegistrySingleton");
 const Promise = require("../../../../main/js/global/Promise");
 const ProviderRuntimeException = require("../../../../main/js/joynr/exceptions/ProviderRuntimeException");
@@ -160,7 +160,7 @@ describe("libjoynr-js.joynr.provider.ProviderOperation", () => {
         operationSpy.calls.reset();
         operationSpy.and.callFake(() => Promise.resolve(testData.returnValue));
         const result = myOperation.callOperation(testData.params, testData.paramDatatypes);
-        const b = Util.isPromise(result);
+        const b = UtilInternal.isPromise(result);
         expect(b).toBeTruthy();
         thenSpy = jasmine.createSpy("thenSpy");
         catchSpy = jasmine.createSpy("catchSpy");
@@ -207,7 +207,7 @@ describe("libjoynr-js.joynr.provider.ProviderOperation", () => {
             });
         });
         const result = myOperation.callOperation(testData.params, testData.paramDatatypes);
-        const b = Util.isPromise(result);
+        const b = UtilInternal.isPromise(result);
         expect(b).toBeTruthy();
         thenSpy = jasmine.createSpy("thenSpy");
         catchSpy = jasmine.createSpy("catchSpy");
@@ -254,7 +254,7 @@ describe("libjoynr-js.joynr.provider.ProviderOperation", () => {
             });
         });
         const result = myOperation.callOperation(testData.params, testData.paramDatatypes);
-        const b = Util.isPromise(result);
+        const b = UtilInternal.isPromise(result);
         expect(b).toBeTruthy();
         thenSpy = jasmine.createSpy("thenSpy");
         catchSpy = jasmine.createSpy("catchSpy");

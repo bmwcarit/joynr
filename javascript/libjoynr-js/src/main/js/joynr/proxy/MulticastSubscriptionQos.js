@@ -17,7 +17,7 @@
  * #L%
  */
 const Typing = require("../util/Typing");
-const Util = require("../util/UtilInternal");
+const UtilInternal = require("../util/UtilInternal");
 const SubscriptionQos = require("./SubscriptionQos");
 
 let defaultSettings;
@@ -64,7 +64,7 @@ function MulticastSubscriptionQos(settings) {
      * @name MulticastSubscriptionQos#_typeName
      * @type String
      */
-    Util.objectDefineProperty(this, "_typeName", "joynr.MulticastSubscriptionQos");
+    UtilInternal.objectDefineProperty(this, "_typeName", "joynr.MulticastSubscriptionQos");
     Typing.checkPropertyIfDefined(settings, "Object", "settings");
 
     /**
@@ -72,7 +72,7 @@ function MulticastSubscriptionQos(settings) {
      * @name MulticastSubscriptionQos#expiryDateMs
      * @type Number
      */
-    Util.extend(this, defaultSettings, settings, subscriptionQos);
+    UtilInternal.extend(this, defaultSettings, settings, subscriptionQos);
 }
 
 defaultSettings = {};

@@ -19,7 +19,7 @@
 const XMLHttpRequestDependency = require("../../global/XMLHttpRequestNode");
 const atmosphereDependency = require("../../lib/atmosphereNode");
 const LongTimer = require("../util/LongTimer");
-const Util = require("../util/UtilInternal");
+const UtilInternal = require("../util/UtilInternal");
 
 /**
  * Constructor of CommunicationModule object that is used to stsub communication with the outer world
@@ -58,7 +58,7 @@ function CommunicationModule() {
  * @param {String} parameters.url - the location
  */
 CommunicationModule.prototype.createXMLHTTPRequest = function(parameters) {
-    const deferred = Util.createDeferred();
+    const deferred = UtilInternal.createDeferred();
 
     const xhr = new XMLHttpRequestDependency();
     const async = true;

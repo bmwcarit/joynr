@@ -17,7 +17,7 @@
  * #L%
  */
 const Typing = require("../util/Typing");
-const Util = require("../util/UtilInternal");
+const UtilInternal = require("../util/UtilInternal");
 const LoggingManager = require("../system/LoggingManager");
 
 let defaultSettings;
@@ -92,7 +92,7 @@ function SubscriptionQos(settings) {
      * @name SubscriptionQos#_typeName
      * @type String
      */
-    Util.objectDefineProperty(this, "_typeName", "joynr.SubscriptionQos");
+    UtilInternal.objectDefineProperty(this, "_typeName", "joynr.SubscriptionQos");
     Typing.checkPropertyIfDefined(settings, "Object", "settings");
     if (settings && !(settings instanceof SubscriptionQos)) {
         if (settings.validityMs !== undefined) {
@@ -119,7 +119,7 @@ function SubscriptionQos(settings) {
      * @name SubscriptionQos#publicationTtlMs
      * @type Number
      */
-    Util.extend(this, defaultSettings, settings);
+    UtilInternal.extend(this, defaultSettings, settings);
     if (this.publicationTtlMs < SubscriptionQos.MIN_PUBLICATION_TTL_MS) {
         log.warn(
             "publicationTtlMs < MIN_PUBLICATION_TTL_MS. Using MIN_PUBLICATION_TTL_MS: " +
@@ -202,11 +202,11 @@ SubscriptionQos.NO_EXPIRY_DATE = 0;
 /**
  * @name SubscriptionQos.NO_EXPIRY_DATE_TTL
  * @type Number
- * @default Util.getMaxLongValue()
+ * @default UtilInternal.getMaxLongValue()
  * @static
  * @readonly
  */
-SubscriptionQos.NO_EXPIRY_DATE_TTL = Util.getMaxLongValue();
+SubscriptionQos.NO_EXPIRY_DATE_TTL = UtilInternal.getMaxLongValue();
 /**
  * Default value for [publicationTtlMs]{@link SubscriptionQos#publicationTtlMs} in
  * milliseconds (10 secs). See [constructor description]{@link SubscriptionQos}.

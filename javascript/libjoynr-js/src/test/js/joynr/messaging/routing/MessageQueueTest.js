@@ -18,7 +18,7 @@
  * #L%
  */
 require("../../../node-unit-test-helper");
-const Util = require("../../../../../main/js/joynr/util/UtilInternal");
+const UtilInternal = require("../../../../../main/js/joynr/util/UtilInternal");
 const MessageQueue = require("../../../../../main/js/joynr/messaging/routing/MessageQueue");
 const JoynrMessage = require("../../../../../main/js/joynr/messaging/JoynrMessage");
 const Date = require("../../../../../test/js/global/Date");
@@ -69,7 +69,7 @@ describe("libjoynr-js.joynr.messaging.routing.MessageQueue", () => {
             i = 0,
             payload = "hello",
             oldQueueSize,
-            maxIterations = Math.floor(messageQueue.maxQueueSizeInKBytes * 1024 / Util.getLengthInBytes(payload));
+            maxIterations = Math.floor(messageQueue.maxQueueSizeInKBytes * 1024 / UtilInternal.getLengthInBytes(payload));
         newJoynrMessage = new JoynrMessage({
             type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
             payload
@@ -83,7 +83,7 @@ describe("libjoynr-js.joynr.messaging.routing.MessageQueue", () => {
             messageQueue.putMessage(joynrMessage);
             i++;
             //until now, all messages shall be in the queue
-            expect(messageQueue.currentQueueSize).toEqual(oldQueueSize + Util.getLengthInBytes(payload));
+            expect(messageQueue.currentQueueSize).toEqual(oldQueueSize + UtilInternal.getLengthInBytes(payload));
         }
         //now, the next message shall lead to a queue overflow
         const ExceedsBufferSuffix = "ExceedsQueueBuffer";

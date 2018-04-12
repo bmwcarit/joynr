@@ -26,7 +26,7 @@ const MessageReplyToAddressCalculator = require("../MessageReplyToAddressCalcula
 const JoynrException = require("../../exceptions/JoynrException");
 const JoynrRuntimeException = require("../../exceptions/JoynrRuntimeException");
 const Typing = require("../../util/Typing");
-const Util = require("../../util/UtilInternal");
+const UtilInternal = require("../../util/UtilInternal");
 const JSONSerializer = require("../../util/JSONSerializer");
 
 /**
@@ -117,7 +117,7 @@ function MessageRouter(settings) {
     };
 
     if (!persistency) {
-        getAddressFromPersistency = Util.emptyFunction;
+        getAddressFromPersistency = UtilInternal.emptyFunction;
     }
 
     function isReady() {
@@ -172,7 +172,7 @@ function MessageRouter(settings) {
             });
         }
         if (parentMessageRouterAddress !== undefined) {
-            const deferred = Util.createDeferred();
+            const deferred = UtilInternal.createDeferred();
             queuedRemoveNextHopCalls.push({
                 participantId,
                 resolve: deferred.resolve,
@@ -482,7 +482,7 @@ function MessageRouter(settings) {
         ) {
             try {
                 const replyToAddress = joynrMessage.replyChannelId;
-                if (!Util.checkNullUndefined(replyToAddress)) {
+                if (!UtilInternal.checkNullUndefined(replyToAddress)) {
                     // because the message is received via global transport, isGloballyVisible must be true
                     const isGloballyVisible = true;
                     that.addNextHop(
@@ -623,7 +623,7 @@ function MessageRouter(settings) {
             // register remotely
             promise = that.addNextHopToParentRoutingTable(participantId, isGloballyVisible);
         } else if (parentMessageRouterAddress !== undefined) {
-            const deferred = Util.createDeferred();
+            const deferred = UtilInternal.createDeferred();
             queuedAddNextHopCalls.push({
                 participantId,
                 isGloballyVisible,
@@ -684,7 +684,7 @@ function MessageRouter(settings) {
             return routingProxy.addMulticastReceiver(parameters);
         }
 
-        const deferred = Util.createDeferred();
+        const deferred = UtilInternal.createDeferred();
         queuedAddMulticastReceiverCalls.push({
             parameters,
             resolve: deferred.resolve,
@@ -747,7 +747,7 @@ function MessageRouter(settings) {
             return routingProxy.removeMulticastReceiver(parameters);
         }
 
-        const deferred = Util.createDeferred();
+        const deferred = UtilInternal.createDeferred();
         queuedRemoveMulticastReceiverCalls.push({
             parameters,
             resolve: deferred.resolve,

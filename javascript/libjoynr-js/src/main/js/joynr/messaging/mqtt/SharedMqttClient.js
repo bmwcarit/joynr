@@ -21,7 +21,7 @@ const Mqtt = require("../../../global/Mqtt");
 const MessagingQosEffort = require("../MessagingQosEffort");
 const Typing = require("../../util/Typing");
 const MessageSerializer = require("../MessageSerializer");
-const Util = require("../../util/UtilInternal");
+const UtilInternal = require("../../util/UtilInternal");
 
 /**
  * @param {mqtt}
@@ -54,7 +54,7 @@ function sendQueuedUnsubscriptions(client, queuedUnsubscriptions) {
 }
 
 function sendQueuedSubscriptions(client, queuedSubscriptions, qosLevel) {
-    const deferred = Util.createDeferred();
+    const deferred = UtilInternal.createDeferred();
     let i,
         topic,
         subscribeObject = {};
@@ -71,7 +71,7 @@ function sendQueuedSubscriptions(client, queuedSubscriptions, qosLevel) {
 }
 
 function sendMessage(client, topic, joynrMessage, sendQosLevel, queuedMessages) {
-    const deferred = Util.createDeferred();
+    const deferred = UtilInternal.createDeferred();
     try {
         client.publish(topic, MessageSerializer.stringify(joynrMessage), { qos: sendQosLevel });
         deferred.resolve();
@@ -110,7 +110,7 @@ const SharedMqttClient = function SharedMqttClient(settings) {
     this._queuedMessages = [];
     this._closed = false;
     this._connected = false;
-    this._onConnectedDeferred = Util.createDeferred();
+    this._onConnectedDeferred = UtilInternal.createDeferred();
 
     this._qosLevel =
         settings.provisioning.qosLevel !== undefined

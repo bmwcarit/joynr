@@ -19,7 +19,7 @@
  */
 const defaultMessagingSettings = require("../start/settings/defaultMessagingSettings");
 const LoggingManager = require("../system/LoggingManager");
-const Util = require("../util/UtilInternal");
+const UtilInternal = require("../util/UtilInternal");
 const MessagingQosEffort = require("./MessagingQosEffort");
 
 const log = LoggingManager.getLogger("joynr/messaging/MessagingQos");
@@ -51,7 +51,7 @@ function MessagingQos(settings) {
         return new MessagingQos(settings);
     }
 
-    settings = Util.extend({}, defaultSettings, settings);
+    settings = UtilInternal.extend({}, defaultSettings, settings);
 
     if (!MessagingQosEffort.isValid(settings.effort)) {
         settings.effort = MessagingQosEffort.NORMAL;

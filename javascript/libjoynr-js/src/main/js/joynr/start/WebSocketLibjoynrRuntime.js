@@ -51,7 +51,7 @@ const RoutingProxy = require("../../generated/joynr/system/RoutingProxy");
 const TypeRegistrySingleton = require("../types/TypeRegistrySingleton");
 const DiscoveryScope = require("../../generated/joynr/types/DiscoveryScope");
 const DiscoveryEntryWithMetaInfo = require("../../generated/joynr/types/DiscoveryEntryWithMetaInfo");
-const Util = require("../util/UtilInternal");
+const UtilInternal = require("../util/UtilInternal");
 const uuid = require("../../lib/uuid-annotated");
 const loggingManager = require("../system/LoggingManager");
 const defaultWebSocketSettings = require("./settings/defaultWebSocketSettings");
@@ -176,7 +176,7 @@ function WebSocketLibjoynrRuntime(provisioning) {
         enumerable: true
     });
 
-    if (Util.checkNullUndefined(provisioning.ccAddress)) {
+    if (UtilInternal.checkNullUndefined(provisioning.ccAddress)) {
         throw new Error("ccAddress not set in provisioning.ccAddress");
     }
 
@@ -213,16 +213,16 @@ function WebSocketLibjoynrRuntime(provisioning) {
     }
 
     if (keychain) {
-        if (Util.checkNullUndefined(keychain.tlsCert)) {
+        if (UtilInternal.checkNullUndefined(keychain.tlsCert)) {
             throw new Error("tlsCert not set in keychain.tlsCert");
         }
-        if (Util.checkNullUndefined(keychain.tlsKey)) {
+        if (UtilInternal.checkNullUndefined(keychain.tlsKey)) {
             throw new Error("tlsKey not set in keychain.tlsKey");
         }
-        if (Util.checkNullUndefined(keychain.tlsCa)) {
+        if (UtilInternal.checkNullUndefined(keychain.tlsCa)) {
             throw new Error("tlsCa not set in keychain.tlsCa");
         }
-        if (Util.checkNullUndefined(keychain.ownerId)) {
+        if (UtilInternal.checkNullUndefined(keychain.ownerId)) {
             throw new Error("ownerId not set in keychain.ownerId");
         }
 
@@ -258,7 +258,7 @@ function WebSocketLibjoynrRuntime(provisioning) {
 
         log = loggingManager.getLogger("joynr.start.WebSocketLibjoynrRuntime");
 
-        const persistencyProvisioning = Util.extend(
+        const persistencyProvisioning = UtilInternal.extend(
             {},
             defaultLibjoynrSettings.persistencySettings,
             provisioning.persistency
@@ -511,7 +511,7 @@ function WebSocketLibjoynrRuntime(provisioning) {
 
         settings = settings || {};
 
-        const shutdownSettings = Util.extend(
+        const shutdownSettings = UtilInternal.extend(
             {},
             defaultLibjoynrSettings.shutdownSettings,
             provisioning.shutdownSettings,

@@ -20,7 +20,7 @@
 /**
  * @exports DiagnosticTags
  */
-const Util = require("../util/UtilInternal");
+const UtilInternal = require("../util/UtilInternal");
 const loggingManager = require("./LoggingManager");
 const DiagnosticTags = {};
 
@@ -219,11 +219,11 @@ DiagnosticTags.forMulticastPublication = function forMulticastPublication(public
 
 function logLevelChangedCb(level) {
     if (level !== loggingManager.LogLevel.DEBUG && level !== loggingManager.LogLevel.TRACE) {
-        forRequestHelper = Util.emptyFunction;
-        forOneWayRequestHelper = Util.emptyFunction;
-        forReplyHelper = Util.emptyFunction;
-        forPublicationHelper = Util.emptyFunction;
-        forMulticastPublicationHelper = Util.emptyFunction;
+        forRequestHelper = UtilInternal.emptyFunction;
+        forOneWayRequestHelper = UtilInternal.emptyFunction;
+        forReplyHelper = UtilInternal.emptyFunction;
+        forPublicationHelper = UtilInternal.emptyFunction;
+        forMulticastPublicationHelper = UtilInternal.emptyFunction;
     }
 }
 

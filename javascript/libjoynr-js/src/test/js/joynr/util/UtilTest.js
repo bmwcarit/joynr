@@ -19,7 +19,7 @@
  */
 require("../../node-unit-test-helper");
 const Promise = require("../../../../main/js/global/Promise");
-const Util = require("../../../../main/js/joynr/util/UtilInternal");
+const UtilInternal = require("../../../../main/js/joynr/util/UtilInternal");
 const JoynrMessage = require("../../../../main/js/joynr/messaging/JoynrMessage");
 const TypeRegistry = require("../../../../main/js/joynr/start/TypeRegistry");
 const RadioStation = require("../../../generated/joynr/vehicle/radiotypes/RadioStation");
@@ -32,7 +32,7 @@ describe("libjoynr-js.joynr.Util", () => {
     });
 });
 
-describe("libjoynr-js.joynr.Util.extend", () => {
+describe("libjoynr-js.joynr.UtilInternal.extend", () => {
     it("extends objects", () => {
         let merged, message, subobject, object1, object2, object3;
         merged = {};
@@ -64,7 +64,7 @@ describe("libjoynr-js.joynr.Util.extend", () => {
             level12: subobject
         };
 
-        Util.extend(merged, object1, object2, object3);
+        UtilInternal.extend(merged, object1, object2, object3);
 
         expect(merged.originalField).toEqual("originalField");
         expect(merged.message).toEqual(message);
@@ -89,7 +89,7 @@ describe("libjoynr-js.joynr.Util.extend", () => {
             }
         };
 
-        Util.extendDeep(merged, from);
+        UtilInternal.extendDeep(merged, from);
 
         delete from.subobject.number;
         delete from.subobject.array;
@@ -114,7 +114,7 @@ describe("libjoynr-js.joynr.Util.extend", () => {
     });
 });
 
-describe("libjoynr-js.joynr.Util.transform", () => {
+describe("libjoynr-js.joynr.UtilInternal.transform", () => {
     it("transform array", () => {
         let origin, element, transformed, postFix;
         postFix = "_transformed";
@@ -125,7 +125,7 @@ describe("libjoynr-js.joynr.Util.transform", () => {
         origin.push(element);
 
         // now, let's transform
-        transformed = Util.transform(origin, (element, key) => {
+        transformed = UtilInternal.transform(origin, (element, key) => {
             let id,
                 member,
                 result = {};
@@ -143,64 +143,64 @@ describe("libjoynr-js.joynr.Util.transform", () => {
     });
 });
 
-describe("libjoynr-js.joynr.Util.firstLower", () => {
+describe("libjoynr-js.joynr.UtilInternal.firstLower", () => {
     it("decapitalizes first character correctly", () => {
-        expect(Util.firstLower("")).toEqual("");
-        expect(Util.firstLower("asdf")).toEqual("asdf");
-        expect(Util.firstLower("b")).toEqual("b");
-        expect(Util.firstLower("Csdf")).toEqual("csdf");
-        expect(Util.firstLower("D")).toEqual("d");
-        expect(Util.firstLower("ESDFASDF")).toEqual("eSDFASDF");
-        expect(Util.firstLower("FsDfAsDf")).toEqual("fsDfAsDf");
+        expect(UtilInternal.firstLower("")).toEqual("");
+        expect(UtilInternal.firstLower("asdf")).toEqual("asdf");
+        expect(UtilInternal.firstLower("b")).toEqual("b");
+        expect(UtilInternal.firstLower("Csdf")).toEqual("csdf");
+        expect(UtilInternal.firstLower("D")).toEqual("d");
+        expect(UtilInternal.firstLower("ESDFASDF")).toEqual("eSDFASDF");
+        expect(UtilInternal.firstLower("FsDfAsDf")).toEqual("fsDfAsDf");
         const rettyLongString =
             "RETTYLONGSTRINGprettylongstringPRETTYLONGSTRINGprettylongstringPRETTYLONGSTRINGprettylongstringPRETTYLONGSTRINGprettylongstringPRETTYLONGSTRINGprettylongstringPRETTYLONGSTRINGprettylongstringPRETTYLONGSTRING";
-        expect(Util.firstLower("P" + rettyLongString)).toEqual("p" + rettyLongString);
+        expect(UtilInternal.firstLower("P" + rettyLongString)).toEqual("p" + rettyLongString);
     });
 
     it("throws on nullable input", () => {
         expect(() => {
-            Util.firstLower(null);
+            UtilInternal.firstLower(null);
         }).toThrow();
         expect(() => {
-            Util.firstLower(undefined);
+            UtilInternal.firstLower(undefined);
         }).toThrow();
     });
 });
 
-describe("libjoynr-js.joynr.Util.firstUpper", () => {
+describe("libjoynr-js.joynr.UtilInternal.firstUpper", () => {
     it("capitalizes first character correctly", () => {
-        expect(Util.firstUpper("")).toEqual("");
-        expect(Util.firstUpper("asdf")).toEqual("Asdf");
-        expect(Util.firstUpper("b")).toEqual("B");
-        expect(Util.firstUpper("Csdf")).toEqual("Csdf");
-        expect(Util.firstUpper("D")).toEqual("D");
-        expect(Util.firstUpper("esdfasdf")).toEqual("Esdfasdf");
-        expect(Util.firstUpper("fSdFaSdF")).toEqual("FSdFaSdF");
+        expect(UtilInternal.firstUpper("")).toEqual("");
+        expect(UtilInternal.firstUpper("asdf")).toEqual("Asdf");
+        expect(UtilInternal.firstUpper("b")).toEqual("B");
+        expect(UtilInternal.firstUpper("Csdf")).toEqual("Csdf");
+        expect(UtilInternal.firstUpper("D")).toEqual("D");
+        expect(UtilInternal.firstUpper("esdfasdf")).toEqual("Esdfasdf");
+        expect(UtilInternal.firstUpper("fSdFaSdF")).toEqual("FSdFaSdF");
         const rettyLongString =
             "rettylongstringPRETTYLONGSTRINGprettylongstringPRETTYLONGSTRINGprettylongstringPRETTYLONGSTRINGprettylongstringPRETTYLONGSTRINGprettylongstringPRETTYLONGSTRINGprettylongstringPRETTYLONGSTRINGprettylongstring";
-        expect(Util.firstUpper("p" + rettyLongString)).toEqual("P" + rettyLongString);
+        expect(UtilInternal.firstUpper("p" + rettyLongString)).toEqual("P" + rettyLongString);
     });
 
     it("throws on nullable input", () => {
         expect(() => {
-            Util.firstLower(null);
+            UtilInternal.firstLower(null);
         }).toThrow();
         expect(() => {
-            Util.firstLower(undefined);
+            UtilInternal.firstLower(undefined);
         }).toThrow();
     });
 });
 
-describe("libjoynr-js.joynr.Util.isPromise", () => {
+describe("libjoynr-js.joynr.UtilInternal.isPromise", () => {
     it("returns only true if param is promis", () => {
-        expect(Util.isPromise(Promise.resolve())).toBe(true);
-        expect(Util.isPromise("")).toBe(false);
-        expect(Util.isPromise(true)).toBe(false);
-        expect(Util.isPromise()).toBe(false);
+        expect(UtilInternal.isPromise(Promise.resolve())).toBe(true);
+        expect(UtilInternal.isPromise("")).toBe(false);
+        expect(UtilInternal.isPromise(true)).toBe(false);
+        expect(UtilInternal.isPromise()).toBe(false);
     });
 });
 
-describe("libjoynr-js.joynr.Util.ensureTypedValues", () => {
+describe("libjoynr-js.joynr.UtilInternal.ensureTypedValues", () => {
     const typeRegistry = new TypeRegistry();
     typeRegistry.addType("joynr.vehicle.radiotypes.RadioStation", RadioStation);
 
@@ -211,7 +211,7 @@ describe("libjoynr-js.joynr.Util.ensureTypedValues", () => {
             _typeName: "joynr.vehicle.radiotypes.RadioStation"
         };
 
-        returnValue = Util.ensureTypedValues(untypedValue, typeRegistry);
+        returnValue = UtilInternal.ensureTypedValues(untypedValue, typeRegistry);
         expect(returnValue instanceof RadioStation).toBe(true);
         expect(returnValue.name === untypedValue.name).toBe(true);
     });
@@ -229,7 +229,7 @@ describe("libjoynr-js.joynr.Util.ensureTypedValues", () => {
             }
         ];
 
-        returnValue = Util.ensureTypedValues(untypedArray, typeRegistry);
+        returnValue = UtilInternal.ensureTypedValues(untypedArray, typeRegistry);
         expect(returnValue[0] instanceof RadioStation).toBe(true);
         expect(returnValue[1] instanceof RadioStation).toBe(true);
         expect(returnValue[0].name === untypedArray[0].name).toBe(true);
@@ -242,18 +242,18 @@ describe("libjoynr-js.joynr.Util.ensureTypedValues", () => {
         const booleanValue = true;
         const stringValue = "string";
 
-        returnValue = Util.ensureTypedValues(numberValue, typeRegistry);
+        returnValue = UtilInternal.ensureTypedValues(numberValue, typeRegistry);
         expect(typeof returnValue === "number").toBe(true);
 
-        returnValue = Util.ensureTypedValues(booleanValue, typeRegistry);
+        returnValue = UtilInternal.ensureTypedValues(booleanValue, typeRegistry);
         expect(typeof returnValue === "boolean").toBe(true);
 
-        returnValue = Util.ensureTypedValues(stringValue, typeRegistry);
+        returnValue = UtilInternal.ensureTypedValues(stringValue, typeRegistry);
         expect(typeof returnValue === "string").toBe(true);
     });
 });
 
-describe("libjoynr-js.joynr.Util.timeoutPromise", () => {
+describe("libjoynr-js.joynr.UtilInternal.timeoutPromise", () => {
     beforeEach(() => {
         jasmine.clock().install();
     });
@@ -264,7 +264,7 @@ describe("libjoynr-js.joynr.Util.timeoutPromise", () => {
         const promise = new Promise((resolve, reject) => {
             setTimeout(resolve, 100);
         });
-        Util.timeoutPromise(promise, 200)
+        UtilInternal.timeoutPromise(promise, 200)
             .then(done)
             .catch(fail);
         jasmine.clock().tick(101);
@@ -275,7 +275,7 @@ describe("libjoynr-js.joynr.Util.timeoutPromise", () => {
         const promise = new Promise((resolve, reject) => {
             setTimeout(resolve, 200);
         });
-        Util.timeoutPromise(promise, 100)
+        UtilInternal.timeoutPromise(promise, 100)
             .then(fail)
             .catch(done);
         jasmine.clock().tick(101);
@@ -283,9 +283,9 @@ describe("libjoynr-js.joynr.Util.timeoutPromise", () => {
     });
 });
 
-describe("libjoynr-js.joynr.Util.createDeferred", () => {
+describe("libjoynr-js.joynr.UtilInternal.createDeferred", () => {
     it("create a correct Deferred Object", done => {
-        const deferred = Util.createDeferred();
+        const deferred = UtilInternal.createDeferred();
         deferred.resolve();
         deferred.promise.then(done).catch(fail);
     });

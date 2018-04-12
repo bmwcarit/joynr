@@ -17,7 +17,7 @@
  * #L%
  */
 const Typing = require("../util/Typing");
-const Util = require("../util/UtilInternal");
+const UtilInternal = require("../util/UtilInternal");
 const SubscriptionQos = require("./SubscriptionQos");
 const LoggingManager = require("../system/LoggingManager");
 
@@ -91,7 +91,7 @@ function PeriodicSubscriptionQos(settings) {
      * @name PeriodicSubscriptionQos#_typeName
      * @type String
      */
-    Util.objectDefineProperty(this, "_typeName", "joynr.PeriodicSubscriptionQos");
+    UtilInternal.objectDefineProperty(this, "_typeName", "joynr.PeriodicSubscriptionQos");
     Typing.checkPropertyIfDefined(settings, "Object", "settings");
     if (settings && !(settings instanceof PeriodicSubscriptionQos)) {
         Typing.checkPropertyIfDefined(settings.periodMs, "Number", "settings.periodMs");
@@ -118,7 +118,7 @@ function PeriodicSubscriptionQos(settings) {
      * @name PeriodicSubscriptionQos#publicationTtlMs
      * @type Number
      */
-    Util.extend(this, defaultSettings, settings, subscriptionQos);
+    UtilInternal.extend(this, defaultSettings, settings, subscriptionQos);
 
     if (this.periodMs < PeriodicSubscriptionQos.MIN_PERIOD_MS) {
         throw new Error(

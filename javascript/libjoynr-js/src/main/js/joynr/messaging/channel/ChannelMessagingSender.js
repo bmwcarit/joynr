@@ -18,7 +18,7 @@
  * #L%
  */
 const Promise = require("../../../global/Promise");
-const Util = require("../../util/UtilInternal");
+const UtilInternal = require("../../util/UtilInternal");
 const Typing = require("../../util/Typing");
 const JSONSerializer = require("../../util/JSONSerializer");
 const JoynrMessage = require("../JoynrMessage");
@@ -210,7 +210,7 @@ function ChannelMessagingSender(settings) {
         if (terminated) {
             return Promise.reject(new Error("ChannelMessagingSender is already shut down"));
         }
-        const deferred = Util.createDeferred();
+        const deferred = UtilInternal.createDeferred();
         const queuedMessage = {
             message: joynrMessage,
             to: toChannelAddress.messagingEndpointUrl + "messageWithoutContentType/",
