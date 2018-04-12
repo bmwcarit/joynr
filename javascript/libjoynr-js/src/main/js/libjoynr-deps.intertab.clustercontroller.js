@@ -84,7 +84,6 @@ for (i = 0; i < libjoynrClusterControllerExports.length; ++i) {
         }
         // export namespace fragment or module read-only to the parent namespace
         Object.defineProperty(nsContext, nsElem, {
-            readable: true,
             enumerable: true,
             configurable: false,
             writable: false,

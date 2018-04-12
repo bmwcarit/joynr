@@ -68,7 +68,6 @@ function SubscriptionRequest(settings) {
 
     Object.defineProperty(this, "_typeName", {
         value: "joynr.SubscriptionRequest",
-        readable: true,
         writable: false,
         enumerable: true,
         configurable: false
@@ -85,7 +84,6 @@ function SubscriptionRequest(settings) {
  */
 Object.defineProperty(SubscriptionRequest, "_typeName", {
     value: "joynr.SubscriptionRequest",
-    readable: true,
     writable: false,
     enumerable: true,
     configurable: false

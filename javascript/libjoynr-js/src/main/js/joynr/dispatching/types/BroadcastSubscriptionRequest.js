@@ -76,7 +76,6 @@ function BroadcastSubscriptionRequest(settings) {
 
     Object.defineProperty(this, "_typeName", {
         value: "joynr.BroadcastSubscriptionRequest",
-        readable: true,
         writable: false,
         enumerable: true,
         configurable: false
@@ -93,7 +92,6 @@ function BroadcastSubscriptionRequest(settings) {
  */
 Object.defineProperty(BroadcastSubscriptionRequest, "_typeName", {
     value: "joynr.BroadcastSubscriptionRequest",
-    readable: true,
     writable: false,
     enumerable: true,
     configurable: false

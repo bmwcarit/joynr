@@ -172,8 +172,6 @@ UtilInternal.isPromise = function isPromise(arg) {
  * @param {?}
  *            [value] default value is undefined
  * @param {Boolean}
- *            [readable] default value is true
- * @param {Boolean}
  *            [writable] default value is false
  * @param {Boolean}
  *            [enumerable] default value is true
@@ -184,14 +182,12 @@ UtilInternal.objectDefineProperty = function objectDefineProperty(
     object,
     memberName,
     value,
-    readable,
     writable,
     enumerable,
     configurable
 ) {
     Object.defineProperty(object, memberName, {
         value,
-        readable: readable === undefined ? true : readable,
         writable: writable === undefined ? false : writable,
         enumerable: enumerable === undefined ? true : enumerable,
         configurable: configurable === undefined ? false : configurable

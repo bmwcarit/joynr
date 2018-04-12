@@ -135,7 +135,6 @@ let joynr = {
 if (typeof window === "object") {
     // export namespace fragment or module read-only to the parent namespace
     Object.defineProperty(window, "joynr", {
-        readable: true,
         enumerable: true,
         configurable: false,
         writable: false,

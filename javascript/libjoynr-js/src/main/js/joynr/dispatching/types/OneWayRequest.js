@@ -73,7 +73,6 @@ function OneWayRequest(settings) {
      */
     Object.defineProperty(this, "_typeName", {
         value: "joynr.OneWayRequest",
-        readable: true,
         writable: false,
         enumerable: true,
         configurable: false

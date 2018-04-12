@@ -84,7 +84,6 @@ function MulticastSubscriptionRequest(settings) {
      */
     Object.defineProperty(this, "_typeName", {
         value: "joynr.MulticastSubscriptionRequest",
-        readable: true,
         writable: false,
         enumerable: true,
         configurable: false
@@ -101,7 +100,6 @@ function MulticastSubscriptionRequest(settings) {
  */
 Object.defineProperty(MulticastSubscriptionRequest, "_typeName", {
     value: "joynr.MulticastSubscriptionRequest",
-    readable: true,
     writable: false,
     enumerable: true,
     configurable: false

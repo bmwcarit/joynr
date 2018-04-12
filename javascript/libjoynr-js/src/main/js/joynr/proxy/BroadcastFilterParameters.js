@@ -57,7 +57,6 @@ function BroadcastFilterParameters(filterParameterProperties) {
     if (filterParameterProperties === undefined) {
         let filterParameters = null;
         Object.defineProperty(this, "filterParameters", {
-            readable: true,
             enumerable: true,
             configurable: false,
             get() {

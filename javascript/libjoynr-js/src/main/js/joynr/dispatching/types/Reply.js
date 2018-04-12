@@ -70,7 +70,6 @@ function Reply(settings) {
      */
     Object.defineProperty(this, "_typeName", {
         value: "joynr.Reply",
-        readable: true,
         writable: false,
         enumerable: true,
         configurable: false

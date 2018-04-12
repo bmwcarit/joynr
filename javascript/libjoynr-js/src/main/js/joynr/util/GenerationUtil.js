@@ -106,7 +106,6 @@ GenerationUtil.addEqualsCompound = function(compoundJoynrObject) {
         enumerable: false,
         configurable: false,
         writable: false,
-        readable: true,
         value: equalsCompound
     });
 };
@@ -121,7 +120,6 @@ GenerationUtil.addEqualsEnum = function(enumJoynrObject) {
         enumerable: false,
         configurable: false,
         writable: false,
-        readable: true,
         value: equalsEnum
     });
 };
