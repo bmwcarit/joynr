@@ -2,6 +2,8 @@
 
 source /data/src/docker/joynr-base/scripts/global.sh
 
+log "### start cpp-clean-build.sh ###"
+
 GCOV='OFF'
 ENABLE_CLANG_FORMATTER='ON'
 BUILD_TESTS='ON'
@@ -96,3 +98,5 @@ tar czf joynr-clean-build.tar.gz bin
 END=$(date +%s)
 DIFF=$(( $END - $START ))
 log "C++ build time: $DIFF seconds"
+
+log "### end cpp-clean-build.sh ###"

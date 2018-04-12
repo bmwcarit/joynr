@@ -31,15 +31,13 @@ var SubscriptionPublication = require("./types/SubscriptionPublication");
 var MulticastPublication = require("./types/MulticastPublication");
 var JoynrMessage = require("../messaging/JoynrMessage");
 var MessagingQosEffort = require("../messaging/MessagingQosEffort");
-var InProcessAddress = require("../messaging/inprocess/InProcessAddress");
 var defaultMessagingSettings = require("../start/settings/defaultMessagingSettings");
 var DiagnosticTags = require("../system/DiagnosticTags");
 var Util = require("../util/UtilInternal");
 var JSONSerializer = require("../util/JSONSerializer");
 var Typing = require("../util/Typing");
 var SubscriptionQos = require("../proxy/SubscriptionQos");
-var LoggerFactory = require("../system/LoggerFactory");
-var JoynrException = require("../exceptions/JoynrException");
+var LoggingManager = require("../system/LoggingManager");
 
 /**
  * @name Dispatcher
@@ -51,7 +49,7 @@ var JoynrException = require("../exceptions/JoynrException");
  *            securityManager for setting the creator user ID header
  */
 function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs) {
-    var log = LoggerFactory.getLogger("joynr.dispatching.Dispatcher");
+    var log = LoggingManager.getLogger("joynr.dispatching.Dispatcher");
 
     var requestReplyManager;
     var subscriptionManager;
@@ -323,32 +321,35 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
             payload: JSONSerializer.stringify(settings.subscriptionRequest)
         });
 
+        function addMulticastReceiverOnSuccess() {
+            return sendJoynrMessage(requestMessage, settings);
+        }
+
         if (type === JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST) {
             log.info(
-                "broadcast subscription to " + settings.subscriptionRequest.subscribedToName,
+                "multicast subscription to " + settings.subscriptionRequest.subscribedToName,
                 DiagnosticTags.forMulticastSubscriptionRequest({
                     subscriptionRequest: settings.subscriptionRequest,
                     to: settings.toDiscoveryEntry.participantId,
                     from: settings.from
                 })
             );
-            if (messageRouter !== undefined) {
-                messageRouter.addMulticastReceiver({
+            return messageRouter
+                .addMulticastReceiver({
                     multicastId: settings.subscriptionRequest.multicastId,
                     subscriberParticipantId: settings.from,
                     providerParticipantId: settings.toDiscoveryEntry.participantId
-                });
-            }
-        } else {
-            log.info(
-                "broadcast subscription to " + settings.subscriptionRequest.subscribedToName,
-                DiagnosticTags.forBroadcastSubscriptionRequest({
-                    subscriptionRequest: settings.subscriptionRequest,
-                    to: settings.toDiscoveryEntry.participantId,
-                    from: settings.from
                 })
-            );
+                .then(addMulticastReceiverOnSuccess);
         }
+        log.info(
+            "broadcast subscription to " + settings.subscriptionRequest.subscribedToName,
+            DiagnosticTags.forBroadcastSubscriptionRequest({
+                subscriptionRequest: settings.subscriptionRequest,
+                to: settings.toDiscoveryEntry.participantId,
+                from: settings.from
+            })
+        );
         return sendJoynrMessage(requestMessage, settings);
     };
 
@@ -371,15 +372,12 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
      * @returns {Object} A+ promise object
      */
     this.sendMulticastSubscriptionStop = function sendMulticastSubscriptionStop(settings) {
-        var result = this.sendSubscriptionStop(settings);
-        if (messageRouter !== undefined) {
-            messageRouter.removeMulticastReceiver({
-                multicastId: settings.multicastId,
-                subscriberParticipantId: settings.from,
-                providerParticipantId: settings.toDiscoveryEntry.participantId
-            });
-        }
-        return result;
+        this.sendSubscriptionStop(settings);
+        return messageRouter.removeMulticastReceiver({
+            multicastId: settings.multicastId,
+            subscriberParticipantId: settings.from,
+            providerParticipantId: settings.toDiscoveryEntry.participantId
+        });
     };
 
     /**
@@ -446,6 +444,10 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
         // set custom headers
         joynrMessage.setCustomHeaders(settings.customHeaders);
 
+        if (settings.compress) {
+            joynrMessage.compress = true;
+        }
+
         if (log.isDebugEnabled()) {
             log.debug("sendReply, message = " + JSON.stringify(joynrMessage));
         }
@@ -481,30 +483,7 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
 
         settings.reply = JSONSerializer.stringify(reply, reply.error !== undefined);
         settings.messageType = JoynrMessage.JOYNRMESSAGE_TYPE_REPLY;
-        try {
-            sendReply(settings).catch(function(error) {
-                log.error(
-                    "Failed to send reply for request " +
-                        requestReplyId +
-                        " to " +
-                        toParticipantId +
-                        ": " +
-                        error +
-                        (error instanceof JoynrException ? " " + error.detailMessage : "")
-                );
-            });
-        } catch (error) {
-            // Errors should be returned via the Promise
-            log.fatal(
-                "Failed to send reply for request " +
-                    requestReplyId +
-                    " to " +
-                    toParticipantId +
-                    ": " +
-                    error +
-                    (error instanceof JoynrException ? " " + error.detailMessage : "")
-            );
-        }
+        return sendReply(settings);
     }
     /**
      * @private
@@ -536,30 +515,7 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
 
         settings.reply = JSONSerializer.stringify(subscriptionReply, subscriptionReply.error !== undefined);
         settings.messageType = JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REPLY;
-        try {
-            sendReply(settings).catch(function(error) {
-                log.error(
-                    "Failed to send subscription reply for subscription " +
-                        subscriptionId +
-                        " to " +
-                        toParticipantId +
-                        ": " +
-                        error +
-                        (error instanceof JoynrException ? " " + error.detailMessage : "")
-                );
-            });
-        } catch (error) {
-            // Errors should be returned via the Promise
-            log.fatal(
-                "Failed to send subscription reply for subscription " +
-                    subscriptionId +
-                    " to " +
-                    toParticipantId +
-                    ": " +
-                    error +
-                    (error instanceof JoynrException ? " " + error.detailMessage : "")
-            );
-        }
+        sendReply(settings);
     }
 
     function sendPublicationInternal(settings, type, publication) {
@@ -578,24 +534,7 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
         if (log.isDebugEnabled()) {
             log.debug("sendPublicationInternal, message = " + JSON.stringify(publicationMessage));
         }
-        try {
-            clusterControllerMessagingStub.transmit(publicationMessage).catch(function(error) {
-                log.error(
-                    "Failed to send publication to " +
-                        toParticipantId +
-                        error +
-                        (error instanceof JoynrException ? " " + error.detailMessage : "")
-                );
-            });
-        } catch (error) {
-            // Errors should be returned via the Promise
-            log.fatal(
-                "Failed to send publication to " +
-                    toParticipantId +
-                    error +
-                    (error instanceof JoynrException ? " " + error.detailMessage : "")
-            );
-        }
+        clusterControllerMessagingStub.transmit(publicationMessage);
     }
 
     /**
@@ -679,28 +618,17 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
         if (log.isDebugEnabled()) {
             log.debug("sendMulticastPublication, message = " + JSON.stringify(publicationMessage));
         }
-        try {
-            clusterControllerMessagingStub.transmit(publicationMessage).catch(function(error) {
-                // TODO error could be caught by the provider implementation when calling the fire method
-                log.error(
-                    "Failed to send MulticastPublication to " +
-                        multicastId +
-                        ", error: " +
-                        error +
-                        (error instanceof JoynrException ? " " + error.detailMessage : "")
-                );
-            });
-        } catch (error) {
-            // Errors should be returned via the Promise
-            log.fatal(
-                "Failed to send MulticastPublication to " +
-                    multicastId +
-                    ", error: " +
-                    error +
-                    (error instanceof JoynrException ? " " + error.detailMessage : "")
-            );
-        }
+        clusterControllerMessagingStub.transmit(publicationMessage);
     };
+
+    function createReplySettings(joynrMessage) {
+        return {
+            from: joynrMessage.to,
+            to: joynrMessage.from,
+            expiryDate: joynrMessage.expiryDate,
+            customHeaders: joynrMessage.getCustomHeaders()
+        };
+    }
 
     /**
      * receives a new JoynrMessage that has to be routed to one of the managers
@@ -736,16 +664,18 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
                         })
                     );
 
-                    var handleReplySettings = {
-                        from: joynrMessage.to,
-                        to: joynrMessage.from,
-                        expiryDate: joynrMessage.expiryDate,
-                        customHeaders: joynrMessage.getCustomHeaders()
-                    };
+                    var handleReplySettings = createReplySettings(joynrMessage);
 
-                    return requestReplyManager
-                        .handleRequest(joynrMessage.to, request)
-                        .then(sendRequestReply.bind(this, handleReplySettings));
+                    if (joynrMessage.compress) {
+                        handleReplySettings.compress = true;
+                    }
+
+                    return requestReplyManager.handleRequest(
+                        joynrMessage.to,
+                        request,
+                        sendRequestReply,
+                        handleReplySettings
+                    );
                 } catch (errorInRequest) {
                     // TODO handle error in handling the request
                     log.error("error handling request: " + errorInRequest);
@@ -798,21 +728,13 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
                             from: joynrMessage.from
                         })
                     );
+
                     publicationManager.handleSubscriptionRequest(
                         joynrMessage.from,
                         joynrMessage.to,
                         subscriptionRequest,
-                        function(subscriptionReply) {
-                            sendSubscriptionReply(
-                                {
-                                    from: joynrMessage.to,
-                                    to: joynrMessage.from,
-                                    expiryDate: joynrMessage.expiryDate,
-                                    customHeaders: joynrMessage.getCustomHeaders()
-                                },
-                                subscriptionReply
-                            );
-                        }
+                        sendSubscriptionReply,
+                        createReplySettings(joynrMessage)
                     );
                 } catch (errorInSubscriptionRequest) {
                     // TODO handle error in handling the subscriptionRequest
@@ -833,21 +755,13 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
                             from: joynrMessage.from
                         })
                     );
+
                     publicationManager.handleBroadcastSubscriptionRequest(
                         joynrMessage.from,
                         joynrMessage.to,
                         broadcastSubscriptionRequest,
-                        function(subscriptionReply) {
-                            sendSubscriptionReply(
-                                {
-                                    from: joynrMessage.to,
-                                    to: joynrMessage.from,
-                                    expiryDate: joynrMessage.expiryDate,
-                                    customHeaders: joynrMessage.getCustomHeaders()
-                                },
-                                subscriptionReply
-                            );
-                        }
+                        sendSubscriptionReply,
+                        createReplySettings(joynrMessage)
                     );
                 } catch (errorInBroadcastSubscriptionRequest) {
                     // TODO handle error in handling the subscriptionRequest
@@ -868,21 +782,13 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
                             from: joynrMessage.from
                         })
                     );
+
                     publicationManager.handleMulticastSubscriptionRequest(
                         joynrMessage.from,
                         joynrMessage.to,
                         multicastSubscriptionRequest,
-                        function(subscriptionReply) {
-                            sendSubscriptionReply(
-                                {
-                                    from: joynrMessage.to,
-                                    to: joynrMessage.from,
-                                    expiryDate: joynrMessage.expiryDate,
-                                    customHeaders: joynrMessage.getCustomHeaders()
-                                },
-                                subscriptionReply
-                            );
-                        }
+                        sendSubscriptionReply,
+                        createReplySettings(joynrMessage)
                     );
                 } catch (errorInMulticastSubscriptionRequest) {
                     // TODO handle error in handling the subscriptionRequest
@@ -912,7 +818,7 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
                 try {
                     var subscriptionStop = new SubscriptionStop(payload);
                     log.info(
-                        "subscription stop " + subscriptionStop.subscriptionId,
+                        "received subscription stop " + subscriptionStop.subscriptionId,
                         DiagnosticTags.forSubscriptionStop({
                             subscriptionId: subscriptionStop.subscriptionId,
                             to: joynrMessage.to,

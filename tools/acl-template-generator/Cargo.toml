@@ -1,0 +1,12 @@
+[package]
+authors = ["Donato Sciarra <donato.sciarra@bmw-carit.de>"]
+license = "Apache-2.0"
+name = "acl-template-generator"
+version = "0.1.0"
+
+[dependencies]
+rand = "0.4.2"
+structopt = "0.2.3"
+serde = "1.0.27"
+serde_derive = "1.0.27"
+serde_json = "1.0.9"

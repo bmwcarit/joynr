@@ -41,9 +41,11 @@ import com.google.common.io.Files;
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
+import com.google.inject.name.Names;
 
 import io.joynr.generator.loading.IUriProvider;
 import io.joynr.generator.loading.ModelStore;
+import io.joynr.generator.templates.util.JoynrGeneratorExtensions;
 import io.joynr.generator.util.FileSystemAccessUtil;
 import io.joynr.generator.util.InvocationArguments;
 
@@ -79,6 +81,10 @@ public abstract class AbstractJoynrJavaGeneratorTest {
 
                                                                     @Override
                                                                     protected void configure() {
+                                                                        bindConstant().annotatedWith(Names.named(JoynrGeneratorExtensions.JOYNR_GENERATOR_CLEAN))
+                                                                                      .to(false);
+                                                                        bindConstant().annotatedWith(Names.named(JoynrGeneratorExtensions.JOYNR_GENERATOR_GENERATE))
+                                                                                      .to(true);
                                                                         bind(IFileSystemAccess.class).to(JavaIoFileSystemAccess.class);
                                                                     }
                                                                 });

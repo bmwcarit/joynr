@@ -20,8 +20,8 @@
  */
 var JoynrMessage = require("../JoynrMessage");
 var Typing = require("../../util/Typing");
-var LoggerFactory = require("../../system/LoggerFactory");
-var log = LoggerFactory.getLogger("joynr.messaging.websocket.WebSocketMessagingSkeleton");
+var LoggingManager = require("../../system/LoggingManager");
+var log = LoggingManager.getLogger("joynr.messaging.websocket.WebSocketMessagingSkeleton");
 
 /**
  * @constructor WebSocketMessagingSkeleton

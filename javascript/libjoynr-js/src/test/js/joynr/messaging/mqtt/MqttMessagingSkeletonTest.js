@@ -18,6 +18,7 @@
  * limitations under the License.
  * #L%
  */
+require("../../../node-unit-test-helper");
 var MqttMessagingSkeleton = require("../../../../classes/joynr/messaging/mqtt/MqttMessagingSkeleton");
 var JoynrMessage = require("../../../../classes/joynr/messaging/JoynrMessage");
 var MessageRouter = require("../../../../classes/joynr/messaging/routing/MessageRouter");

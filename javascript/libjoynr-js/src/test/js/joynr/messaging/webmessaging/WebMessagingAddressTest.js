@@ -18,6 +18,7 @@
  * limitations under the License.
  * #L%
  */
+require("../../../node-unit-test-helper");
 var WebMessagingAddress = require("../../../../classes/joynr/messaging/webmessaging/WebMessagingAddress");
 
 describe("libjoynr-js.joynr.messaging.webmessaging.WebMessagingAddress", function() {

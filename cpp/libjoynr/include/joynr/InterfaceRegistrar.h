@@ -24,12 +24,13 @@
 #include <string>
 #include <unordered_map>
 
-#include "joynr/IRequestInterpreter.h"
 #include "joynr/JoynrExport.h"
-#include "joynr/RequestCaller.h"
+#include "joynr/PrivateCopyAssign.h"
 
 namespace joynr
 {
+
+class IRequestInterpreter;
 
 /**
   * Registers RequestInterpreters for generated interfaces.

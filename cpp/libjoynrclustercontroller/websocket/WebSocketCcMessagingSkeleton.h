@@ -254,6 +254,9 @@ private:
         }
         auto it = clients.find(hdl);
         if (it != clients.cend()) {
+            JOYNR_LOG_INFO(logger(),
+                           "Closed connection for websocket client id: {}",
+                           it->second.webSocketClientAddress.getId());
             messagingStubFactory->onMessagingStubClosed(it->second.webSocketClientAddress);
             clients.erase(it);
         }

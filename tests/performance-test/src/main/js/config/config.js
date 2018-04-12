@@ -41,8 +41,15 @@ module.exports = {
         },
         {
             name: "registerPlentyOfConsumers",
-            enabled: "false",
+            enabled: "true",
             numRuns: 500
+        },
+        {
+            name: "simpleBroadcast",
+            enabled: "false",
+            numRuns: 5000,
+            type: "broadcast",
+            numProxies: 4
         }
     ],
     global: {
@@ -53,6 +60,7 @@ module.exports = {
             port: "4242"
         },
         measureMemory: "false",
+        heapSnapShot: "false",
         stringLength: 10,
         timeout: 3600000,
         byteArraySize: 1000,

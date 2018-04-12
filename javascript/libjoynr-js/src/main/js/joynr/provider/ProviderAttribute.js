@@ -1,4 +1,4 @@
-/*jslint es5: true, node: true, node: true */
+/*jslint es5: true, node: true, nomen: true */
 /*
  * #%L
  * %%
@@ -21,6 +21,7 @@ var Promise = require("../../global/Promise");
 var Util = require("../util/UtilInternal");
 var Typing = require("../util/Typing");
 var TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
+var ProviderRuntimeException = require("../exceptions/ProviderRuntimeException");
 
 var typeRegistry = TypeRegistrySingleton.getInstance();
 
@@ -76,7 +77,8 @@ var asNotify = (function() {
     }
 
     return function() {
-        this.valueChanged = valueChanged;
+        // since ValueChanged is copied to the implementation bind is necessary here. (or in the generated code)
+        this.valueChanged = valueChanged.bind(this);
         this.registerObserver = registerObserver;
         this.unregisterObserver = unregisterObserver;
         this.callbacks = [];
@@ -121,12 +123,14 @@ var asWrite = (function() {
         if (!this.privateSetterFunc) {
             throw new Error("no setter function registered for provider attribute");
         }
+
+        var setterParams = Typing.augmentTypes(value, typeRegistry, that.attributeType);
         return Promise.resolve(this.privateGetterFunc())
             .then(
                 function(getterValue) {
                     originalValue = getterValue;
-                    return this.privateSetterFunc(Typing.augmentTypes(value, typeRegistry, this.attributeType));
-                }.bind(this)
+                    return that.privateSetterFunc(setterParams);
+                }
             )
             .then(function() {
                 if (originalValue !== value && that.valueChanged instanceof Function) {
@@ -142,6 +146,10 @@ var asWrite = (function() {
     };
 }());
 
+function toArray(returnValue) {
+    return [returnValue];
+}
+
 // prettier-ignore
 var asRead = (function() {
     /**
@@ -155,7 +163,20 @@ var asRead = (function() {
      * @returns {ProviderAttribute} fluent interface to call multiple methods
      */
     function registerGetter(getterFunc) {
-        this.privateGetterFunc = getterFunc;
+        this.privateGetterFunc = function(){
+            return Promise.resolve().then(getterFunc);
+        };
+    }
+
+    function curryCreateError(context){
+        return function createError(error){
+            if (error instanceof ProviderRuntimeException) {
+                throw error;
+            }
+            throw new ProviderRuntimeException({
+                detailMessage: "getter method for attribute " + context.attributeName + " reported an error"
+            });
+        };
     }
 
     /**
@@ -165,32 +186,27 @@ var asRead = (function() {
      * @name ProviderAttribute#get
      * @function
      *
-     * @returns {?} the attribute value
+     * @returns {?} a Promise which resolves the attribute value
      *
-     * @throws {Error} if no getter function was registered before calling it
-     * @throws {Error} if registered getter returns a compound type with incorrect values
+     * rejects {Error} if no getter function was registered before calling it
+     * rejects {Error} if registered getter returns a compound type with incorrect values
      *
      * @see ProviderAttribute#registerGetter
      */
     function get() {
-        var value;
-        if (!this.privateGetterFunc) {
-            throw new Error("no getter function registered for provider attribute");
-        }
-        // call getter function with the same arguments as this function
-        value = this.privateGetterFunc();
+        try{
+            if (!this.privateGetterFunc) {
+                return Promise.reject(new Error("no getter function registered for provider attribute: " + this.attributeName));
+            }
+            return Promise.resolve(this.privateGetterFunc()).then(toArray).catch(this._createError);
 
-        function toArray(returnValue) {
-            return [returnValue];
+        } catch (e){
+            return Promise.reject(e);
         }
-
-        if (Util.isPromise(value)) {
-            return value.then(toArray);
-        }
-        return [value];
     }
 
     return function() {
+        this._createError = curryCreateError(this);
         this.get = get;
         this.registerGetter = registerGetter;
     };
@@ -276,14 +292,13 @@ function ProviderAttribute(parent, implementation, attributeName, attributeType,
         asReadOrWrite.call(this);
     }
 
-    var publicProviderAttribute = Util.forward({}, this);
-    publicProviderAttribute.isNotifiable = this.isNotifiable.bind(this);
-
     // place these functions after the forwarding we don't want them public
-    this.privateGetterFunc = implementation ? implementation.get : undefined;
-    this.privateSetterFunc = implementation ? implementation.set : undefined;
-
-    return Object.freeze(publicProviderAttribute);
+    if (implementation && typeof implementation.get === "function") {
+        this.privateGetterFunc = implementation.get;
+    }
+    if (implementation && typeof implementation.set === "function") {
+        this.privateSetterFunc = implementation.set;
+    }
 }
 
 ProviderAttribute.prototype.isNotifiable = function() {

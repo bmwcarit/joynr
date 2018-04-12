@@ -22,10 +22,10 @@ var Mqtt = require("../../../global/Mqtt");
 var MessagingQosEffort = require("../MessagingQosEffort");
 var LongTimer = require("../../util/LongTimer");
 var Typing = require("../../util/Typing");
-var LoggerFactory = require("../../system/LoggerFactory");
+var LoggingManager = require("../../system/LoggingManager");
 var MessageSerializer = require("../MessageSerializer");
 var Util = require("../../util/UtilInternal");
-var log = LoggerFactory.getLogger("joynr.messaging.mqtt.SharedMqttClient");
+var log = LoggingManager.getLogger("joynr.messaging.mqtt.SharedMqttClient");
 
 /**
  * @param {mqtt}

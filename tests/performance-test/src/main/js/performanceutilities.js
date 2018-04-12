@@ -65,6 +65,7 @@ PerformanceUtilities.getCommandLineOptionsOrDefaults = function() {
         skipByteArraySizeTimesK,
         testRuns,
         measureMemory,
+        heapSnapShot,
         testType;
 
     var environment = process.env;
@@ -76,6 +77,7 @@ PerformanceUtilities.getCommandLineOptionsOrDefaults = function() {
     byteArrayLength = global.byteArraySize || 100;
     timeout = global.timeout || 3600000;
     measureMemory = global.measureMemory || "true";
+    heapSnapShot = global.heapSnapShot || "false";
     cchost = global.cc.host || "localhost";
     ccport = global.cc.port || 4242;
     testType = global.testType || "burst";
@@ -96,6 +98,7 @@ PerformanceUtilities.getCommandLineOptionsOrDefaults = function() {
         ccport: ccport,
         skipByteArraySizeTimesK: skipByteArraySizeTimesK,
         measureMemory: measureMemory,
+        heapSnapShot,
         testType
     };
 };
@@ -150,6 +153,21 @@ PerformanceUtilities.findBenchmarks = function() {
     var benchmarks = config.benchmarks.filter(item => item.enabled === "true");
 
     return benchmarks;
+};
+
+PerformanceUtilities.getProvisioning = function(isProvider) {
+    let useFSLogger = config.logging && config.logging.output === "fs";
+
+    if (useFSLogger) {
+        let loggingPath = isProvider ? "provider" : "proxy";
+        loggingPath += process.pid;
+        let level = config.logging.level || "info";
+        return require("./config/provisioningFsLogger")(loggingPath, level);
+    }
+
+    var provisioning = require("test-base").provisioning_common;
+    provisioning.logging.configuration.loggers.root.level = "error";
+    return provisioning;
 };
 
 module.exports = PerformanceUtilities;

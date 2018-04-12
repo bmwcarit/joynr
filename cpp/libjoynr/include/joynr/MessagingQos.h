@@ -192,5 +192,7 @@ private:
  */
 void PrintTo(const MessagingQos& messagingQos, ::std::ostream* os);
 
+std::ostream& operator<<(std::ostream& os, const MessagingQos& messagingQos);
+
 } // namespace joynr
 #endif // MESSAGINGQOS_H

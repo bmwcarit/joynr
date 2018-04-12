@@ -18,6 +18,7 @@
  * limitations under the License.
  * #L%
  */
+require("../../../node-unit-test-helper");
 var SubscriptionManager = require("../../../../classes/joynr/dispatching/subscription/SubscriptionManager");
 var MessagingQos = require("../../../../classes/joynr/messaging/MessagingQos");
 var defaultMessagingSettings = require("../../../../classes/joynr/start/settings/defaultMessagingSettings");
@@ -33,7 +34,7 @@ var Promise = require("../../../../classes/global/Promise");
 var Reply = require("../../../../classes/joynr/dispatching/types/Reply");
 var PublicationMissedException = require("../../../../classes/joynr/exceptions/PublicationMissedException");
 var SubscriptionException = require("../../../../classes/joynr/exceptions/SubscriptionException");
-var LoggerFactory = require("../../../../classes/joynr/system/LoggerFactory");
+var LoggingManager = require("../../../../classes/joynr/system/LoggingManager");
 var Date = require("../../../../test-classes/global/Date");
 var waitsFor = require("../../../../test-classes/global/WaitsFor");
 var TestEnum = require("../../../../test-classes/joynr/tests/testTypes/TestEnum");
@@ -46,7 +47,7 @@ var Util = require("../../../../classes/joynr/util/UtilInternal");
 describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", function() {
     var subscriptionManager;
     var subscriptionManagerOnError;
-    var log = LoggerFactory.getLogger("joynr.dispatching.SubscriptionManagerTest");
+    var log = LoggingManager.getLogger("joynr.dispatching.SubscriptionManagerTest");
     var fakeTime = 1371553100000;
     var dispatcherSpy;
     var dispatcherSpyOnError;

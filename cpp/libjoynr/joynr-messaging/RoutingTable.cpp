@@ -76,19 +76,30 @@ void RoutingTable::add(const std::string& participantId,
     auto result = multiIndexContainer.insert(routingEntry);
     if (!result.second) {
         multiIndexContainer.replace(result.first, routingEntry);
+        JOYNR_LOG_INFO(logger(),
+                       "Replaced routing entry: {}, #entries: {}",
+                       routingEntry.toString(),
+                       multiIndexContainer.size());
+    } else {
+        JOYNR_LOG_INFO(logger(),
+                       "Added routing entry: {}, #entries: {}",
+                       routingEntry.toString(),
+                       multiIndexContainer.size());
     }
-    JOYNR_LOG_TRACE(logger(), "Added participantId: {}", participantId);
 }
 
 void RoutingTable::remove(const std::string& participantId)
 {
-    JOYNR_LOG_TRACE(logger(), "Removing registered participantId: {}", participantId);
+    JOYNR_LOG_INFO(logger(),
+                   "Removing routing entry for participantId: {}, #entries before removal: {}",
+                   participantId,
+                   multiIndexContainer.size());
     multiIndexContainer.erase(participantId);
 }
 
 void RoutingTable::purge()
 {
-    JOYNR_LOG_TRACE(logger(), "Purging expired entries");
+    bool expiredEntriesFound = false;
     auto& index = boost::multi_index::get<routingtable::tags::ExpiryDate>(multiIndexContainer);
     auto now = std::chrono::duration_cast<std::chrono::milliseconds>(
                        std::chrono::system_clock::now().time_since_epoch()).count();
@@ -98,7 +109,11 @@ void RoutingTable::purge()
          ++routingEntryIterator) {
         if (!routingEntryIterator->isSticky) {
             expiredParticipantIds.push_back(routingEntryIterator->participantId);
+            expiredEntriesFound = true;
         }
+    }
+    if (expiredEntriesFound) {
+        JOYNR_LOG_INFO(logger(), "Purging expired routing entries");
     }
     for (auto& participantId : expiredParticipantIds) {
         remove(participantId);

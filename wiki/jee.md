@@ -427,6 +427,30 @@ node which sent the request. A possible solution could be to provide extra
 logic on the load balancer. However, without this you should only use
 fire-and-forget semantics for outgoing messages.
 
+## <a name="status_monitoring"></a> Joynr Status Monitoring
+
+Joynr provides metrics which can be used to detect invalid states and situations
+which require a restart of an instance. In order to access this information,
+inject an object of type ```JoynrStatusMetrics```. See the documentation of
+```JoynrStatusMetrics``` for more information.
+
+	import io.joynr.jeeintegration;;
+
+	@Stateless
+	public class MyHealthCheck {
+
+		private final JoynrStatusMetrics joynrStatusMetrics;
+
+		@Inject
+		public MyConsumer(JoynrStatusMetrics joynrStatusMetrics) {
+			this.joynrStatusMetrics = joynrStatusMetrics;
+		}
+
+		public boolean getVerdictExample() {
+			// Evaluate data from joynrStatusMetrics here
+		}
+	}
+
 ## Overriding Jackson library used at runtime
 
 ### glassfish-web.xml

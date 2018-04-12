@@ -18,6 +18,7 @@
  * limitations under the License.
  * #L%
  */
+require("../../../node-unit-test-helper");
 var BrowserMessagingSkeleton = require("../../../../classes/joynr/messaging/browser/BrowserMessagingSkeleton");
 var JoynrMessage = require("../../../../classes/joynr/messaging/JoynrMessage");
 

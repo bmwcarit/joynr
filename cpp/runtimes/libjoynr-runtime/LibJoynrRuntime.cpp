@@ -217,7 +217,7 @@ void LibJoynrRuntime::init(
     std::shared_ptr<ProxyBuilder<joynr::system::RoutingProxy>> routingProxyBuilder =
             createProxyBuilder<joynr::system::RoutingProxy>(systemServicesDomain);
 
-    std::uint64_t routingProxyTtl = 10000;
+    std::uint64_t routingProxyTtl = 60000;
     auto routingProxy = routingProxyBuilder->setMessagingQos(MessagingQos(routingProxyTtl))
                                 ->setDiscoveryQos(routingProviderDiscoveryQos)
                                 ->build();
@@ -282,7 +282,8 @@ void LibJoynrRuntime::init(
     std::shared_ptr<ProxyBuilder<joynr::system::DiscoveryProxy>> discoveryProxyBuilder =
             createProxyBuilder<joynr::system::DiscoveryProxy>(systemServicesDomain);
 
-    auto proxy = discoveryProxyBuilder->setMessagingQos(MessagingQos(40000))
+    std::uint64_t discoveryProxyTtl = 60000;
+    auto proxy = discoveryProxyBuilder->setMessagingQos(MessagingQos(discoveryProxyTtl))
                          ->setDiscoveryQos(discoveryProviderDiscoveryQos)
                          ->build();
 

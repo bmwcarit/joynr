@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.DelayQueue;
 import java.util.concurrent.Semaphore;
 
 import org.slf4j.Logger;
@@ -55,6 +56,8 @@ import joynr.types.Version;
  */
 public class Arbitrator {
     private static final Logger logger = LoggerFactory.getLogger(Arbitrator.class);
+    static final DelayQueue<DelayableArbitration> arbitrationQueue = new DelayQueue<>();
+
     private final long MINIMUM_ARBITRATION_RETRY_DELAY;
     protected DiscoveryQos discoveryQos;
     protected DiscoveryAsync localDiscoveryAggregator;
@@ -63,6 +66,7 @@ public class Arbitrator {
     protected ArbitrationCallback arbitrationListener;
     // Initialized with 0 to block until the listener is registered
     private Semaphore arbitrationListenerSemaphore = new Semaphore(0);
+    private long retryDelay = 0;
     private long arbitrationDeadline;
     private Set<String> domains;
     private String interfaceName;
@@ -111,7 +115,12 @@ public class Arbitrator {
     /**
      * Called by the proxy builder to start the arbitration process.
      */
-    public void startArbitration() {
+    public void scheduleArbitration() {
+        DelayableArbitration arbitration = new DelayableArbitration(this, retryDelay);
+        arbitrationQueue.put(arbitration);
+    }
+
+    void attemptArbitration() {
         logger.debug("DISCOVERY lookup for domain: {}, interface: {}", domains, interfaceName);
         localDiscoveryAggregator.lookup(new DiscoveryCallback(),
                                         domains.toArray(new String[domains.size()]),
@@ -163,16 +172,9 @@ public class Arbitrator {
     }
 
     protected void restartArbitration() {
-        logger.trace("Restarting Arbitration");
-        long backoff = Math.max(discoveryQos.getRetryIntervalMs(), MINIMUM_ARBITRATION_RETRY_DELAY);
-        try {
-            if (backoff > 0) {
-                Thread.sleep(backoff);
-            }
-            startArbitration();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+        retryDelay = Math.max(discoveryQos.getRetryIntervalMs(), MINIMUM_ARBITRATION_RETRY_DELAY);
+        logger.trace("Rescheduling arbitration with delay {}ms", retryDelay);
+        scheduleArbitration();
     }
 
     protected void arbitrationFailed() {
@@ -218,6 +220,80 @@ public class Arbitrator {
             reason = new MultiDomainNoCompatibleProviderFoundException(exceptionsByDomain);
         }
         return reason;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + (int) (MINIMUM_ARBITRATION_RETRY_DELAY ^ (MINIMUM_ARBITRATION_RETRY_DELAY >>> 32));
+        result = prime * result + (int) (arbitrationDeadline ^ (arbitrationDeadline >>> 32));
+        result = prime * result + ((arbitrationResult == null) ? 0 : arbitrationResult.hashCode());
+        result = prime * result + ((arbitrationStatus == null) ? 0 : arbitrationStatus.hashCode());
+        result = prime * result + ((discoveredVersions == null) ? 0 : discoveredVersions.hashCode());
+        result = prime * result + ((domains == null) ? 0 : domains.hashCode());
+        result = prime * result + ((interfaceName == null) ? 0 : interfaceName.hashCode());
+        result = prime * result + ((interfaceVersion == null) ? 0 : interfaceVersion.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        Arbitrator other = (Arbitrator) obj;
+        if (MINIMUM_ARBITRATION_RETRY_DELAY != other.MINIMUM_ARBITRATION_RETRY_DELAY) {
+            return false;
+        }
+        if (arbitrationDeadline != other.arbitrationDeadline) {
+            return false;
+        }
+        if (arbitrationResult == null) {
+            if (other.arbitrationResult != null) {
+                return false;
+            }
+        } else if (!arbitrationResult.equals(other.arbitrationResult)) {
+            return false;
+        }
+        if (arbitrationStatus != other.arbitrationStatus) {
+            return false;
+        }
+        if (discoveredVersions == null) {
+            if (other.discoveredVersions != null) {
+                return false;
+            }
+        } else if (!discoveredVersions.equals(other.discoveredVersions)) {
+            return false;
+        }
+        if (domains == null) {
+            if (other.domains != null) {
+                return false;
+            }
+        } else if (!domains.equals(other.domains)) {
+            return false;
+        }
+        if (interfaceName == null) {
+            if (other.interfaceName != null) {
+                return false;
+            }
+        } else if (!interfaceName.equals(other.interfaceName)) {
+            return false;
+        }
+        if (interfaceVersion == null) {
+            if (other.interfaceVersion != null) {
+                return false;
+            }
+        } else if (!interfaceVersion.equals(other.interfaceVersion)) {
+            return false;
+        }
+        return true;
     }
 
     private class DiscoveryCallback extends Callback<DiscoveryEntryWithMetaInfo[]> {

@@ -63,8 +63,13 @@ var routingCapability = {
 
 defaultSettings.persistencySettings = {
     routingTable: false,
-    capabilities: false,
+    capabilities: true,
     publications: true
+};
+
+defaultSettings.shutdownSettings = {
+    clearSubscriptionsEnabled: true,
+    clearSubscriptionsTimeoutMs: 1000
 };
 
 defaultSettings.capabilities = [discoveryCapability, routingCapability];

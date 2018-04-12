@@ -1,4 +1,5 @@
-/*jslint es5: true, node: true, node: true */
+/*jslint es5: true, node: true */
+
 /*
  * #%L
  * %%
@@ -59,13 +60,13 @@ var CapabilitiesUtil = require("../util/CapabilitiesUtil");
 var Typing = require("../util/Typing");
 var WebWorkerMessagingAppender = require("../system/WebWorkerMessagingAppender");
 var uuid = require("../../lib/uuid-annotated");
-var LoggingManager = require("../system/LoggingManager");
-var LoggerFactory = require("../system/LoggerFactory");
+var loggingManager = require("../system/LoggingManager");
 var defaultSettings = require("./settings/defaultSettings");
 var defaultWebSocketSettings = require("./settings/defaultWebSocketSettings");
 var defaultLibjoynrSettings = require("./settings/defaultLibjoynrSettings");
 var LocalStorage = require("../../global/LocalStorageNode");
 var MemoryStorage = require("../../global/MemoryStorage");
+var JoynrMessage = require("../../joynr/messaging/JoynrMessage");
 var JoynrStates = {
     SHUTDOWN: "shut down",
     STARTING: "starting",
@@ -83,7 +84,7 @@ var JoynrStates = {
  * @param {Object} provisioning
  */
 function WebSocketLibjoynrRuntime(provisioning) {
-    var log, loggingManager;
+    var log;
     var initialRoutingTable;
     var untypedCapabilities;
     var typedCapabilities;
@@ -113,6 +114,7 @@ function WebSocketLibjoynrRuntime(provisioning) {
     var TWO_DAYS_IN_MS = 172800000;
     var keychain = provisioning.keychain;
     var internalShutdown;
+    var bufferedOwnerId;
 
     // this is required at load time of libjoynr
     typeRegistry = Object.freeze(TypeRegistrySingleton.getInstance());
@@ -194,8 +196,6 @@ function WebSocketLibjoynrRuntime(provisioning) {
     var loggingMessagingQos = new MessagingQos({
         ttl: relativeTtl
     });
-    loggingManager = Object.freeze(new LoggingManager());
-    LoggerFactory.init(loggingManager);
 
     if (Util.checkNullUndefined(provisioning.ccAddress)) {
         throw new Error("ccAddress not set in provisioning.ccAddress");
@@ -229,6 +229,10 @@ function WebSocketLibjoynrRuntime(provisioning) {
         DiscoveryQos.setDefaultSettings(discoveryQosSettings);
     }
 
+    function signingCallback() {
+        return bufferedOwnerId;
+    }
+
     if (keychain) {
         if (Util.checkNullUndefined(keychain.tlsCert)) {
             throw new Error("tlsCert not set in keychain.tlsCert");
@@ -242,6 +246,9 @@ function WebSocketLibjoynrRuntime(provisioning) {
         if (Util.checkNullUndefined(keychain.ownerId)) {
             throw new Error("ownerId not set in keychain.ownerId");
         }
+
+        bufferedOwnerId = Buffer.from(keychain.ownerId);
+        JoynrMessage.setSigningCallback(signingCallback);
     }
 
     /**
@@ -266,15 +273,11 @@ function WebSocketLibjoynrRuntime(provisioning) {
             throw new Error("Constructor has been invoked without provisioning");
         }
 
-        // initialize Logger with external logging configuration or default
-        // values
-        loggingManager.registerAppenderClass("WebWorker", WebWorkerMessagingAppender);
-
         if (provisioning.logging) {
             loggingManager.configure(provisioning.logging);
         }
 
-        log = LoggerFactory.getLogger("joynr.start.WebSocketLibjoynrRuntime");
+        log = loggingManager.getLogger("joynr.start.WebSocketLibjoynrRuntime");
 
         var persistencyProvisioning = Util.extend(
             {},
@@ -359,16 +362,8 @@ function WebSocketLibjoynrRuntime(provisioning) {
             parentMessageRouterAddress: ccAddress,
             incomingAddress: localAddress
         });
-        webSocketMessagingSkeleton.registerListener(function(joynrMessage) {
-            try {
-                messageRouter.route(joynrMessage).catch(function(error) {
-                    // already logged in messageRouter
-                });
-            } catch (error) {
-                // Errors should be returned via the Promise
-                log.fatal("Caught error from messageRouter.Route in WebSocketMessagingSkeleton: " + error);
-            }
-        });
+
+        webSocketMessagingSkeleton.registerListener(messageRouter.route);
 
         // link up clustercontroller messaging to dispatcher
         messageRouterSkeleton = new InProcessMessagingSkeleton();
@@ -409,8 +404,7 @@ function WebSocketLibjoynrRuntime(provisioning) {
                 requestReplyManager: requestReplyManager,
                 publicationManager: publicationManager,
                 libjoynrMessagingAddress: new InProcessAddress(libjoynrMessagingSkeleton),
-                participantIdStorage: participantIdStorage,
-                loggingManager: loggingManager
+                participantIdStorage: participantIdStorage
             })
         );
 
@@ -429,8 +423,7 @@ function WebSocketLibjoynrRuntime(provisioning) {
                 },
                 {
                     messageRouter: messageRouter,
-                    libjoynrMessagingAddress: new InProcessAddress(libjoynrMessagingSkeleton),
-                    loggingManager: loggingManager
+                    libjoynrMessagingAddress: new InProcessAddress(libjoynrMessagingSkeleton)
                 }
             )
         );
@@ -541,12 +534,17 @@ function WebSocketLibjoynrRuntime(provisioning) {
         }
         joynrState = JoynrStates.SHUTTINGDOWN;
 
-        var shutdownProvisioning = provisioning.shutdownSettings || {};
         settings = settings || {};
-        if (settings.clearSubscriptionsEnabled || shutdownProvisioning.clearSubscriptionsEnabled) {
-            var clearSubscriptionTimeoutMs =
-                settings.clearSubscriptionsTimeoutMs || shutdownProvisioning.clearSubscriptionsTimeoutMs || 1000;
-            subscriptionManager.terminateSubscriptions(clearSubscriptionTimeoutMs);
+
+        var shutdownSettings = Util.extend(
+            {},
+            defaultLibjoynrSettings.shutdownSettings,
+            provisioning.shutdownSettings,
+            settings
+        );
+
+        if (shutdownSettings.clearSubscriptionsEnabled) {
+            subscriptionManager.terminateSubscriptions(shutdownSettings.clearSubscriptionsTimeoutMs);
         }
 
         if (webSocketMessagingSkeleton !== undefined) {
@@ -583,10 +581,6 @@ function WebSocketLibjoynrRuntime(provisioning) {
 
         if (typeRegistry !== undefined) {
             typeRegistry.shutdown();
-        }
-
-        if (loggingManager !== undefined) {
-            loggingManager.shutdown();
         }
 
         joynrState = JoynrStates.SHUTDOWN;

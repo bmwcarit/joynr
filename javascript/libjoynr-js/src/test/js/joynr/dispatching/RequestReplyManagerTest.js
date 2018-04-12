@@ -18,6 +18,7 @@
  * limitations under the License.
  * #L%
  */
+require("../../node-unit-test-helper");
 var RequestReplyManager = require("../../../classes/joynr/dispatching/RequestReplyManager");
 var OneWayRequest = require("../../../classes/joynr/dispatching/types/OneWayRequest");
 var Request = require("../../../classes/joynr/dispatching/types/Request");
@@ -45,6 +46,7 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", function() {
         requestReplyId: requestReplyId,
         response: testResponse
     });
+    var replySettings = {};
 
     var providerDiscoveryEntry = new DiscoveryEntryWithMetaInfo({
         providerVersion: new Version({ majorVersion: 0, minorVersion: 23 }),
@@ -318,6 +320,7 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", function() {
 
     it("calls registered replyCaller when a reply arrives", function(done) {
         var replyCallerSpy = jasmine.createSpyObj("promise", ["resolve", "reject"]);
+        replyCallerSpy.callbackSettings = {};
 
         var timeout = toleranceMs + ttl_ms;
 
@@ -333,7 +336,10 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", function() {
         )
             .then(function() {
                 expect(replyCallerSpy.resolve).toHaveBeenCalled();
-                expect(replyCallerSpy.resolve).toHaveBeenCalledWith(testResponse);
+                expect(replyCallerSpy.resolve).toHaveBeenCalledWith({
+                    response: testResponse,
+                    settings: replyCallerSpy.callbackSettings
+                });
                 expect(replyCallerSpy.reject).not.toHaveBeenCalled();
                 done();
                 return null;
@@ -392,8 +398,8 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", function() {
 
                 var result = replyCallerSpy.resolve.calls.argsFor(0)[0];
                 for (i = 0; i < params.length; i++) {
-                    expect(result[i]).toEqual(params[i]);
-                    expect(Typing.getObjectType(result[i])).toEqual(Typing.getObjectType(params[i]));
+                    expect(result.response[i]).toEqual(params[i]);
+                    expect(Typing.getObjectType(result.response[i])).toEqual(Typing.getObjectType(params[i]));
                 }
             })
             .catch(function(error) {
@@ -416,7 +422,13 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", function() {
             .catch(fail);
     });
 
-    function callRequestReplyManagerSync(methodName, testParam, testParamDatatype, useInvalidProviderParticipantId) {
+    function callRequestReplyManagerSync(
+        methodName,
+        testParam,
+        testParamDatatype,
+        useInvalidProviderParticipantId,
+        callbackContext
+    ) {
         var providerParticipantId = "providerParticipantId";
         var TestProvider = function() {};
         TestProvider.MAJOR_VERSION = 47;
@@ -465,7 +477,7 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", function() {
             providerParticipantId = "nonExistentProviderId";
         }
 
-        requestReplyManager.handleRequest(providerParticipantId, request).then(callbackDispatcher);
+        requestReplyManager.handleRequest(providerParticipantId, request, callbackDispatcher, callbackContext);
 
         return {
             provider: provider,
@@ -474,12 +486,19 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", function() {
         };
     }
 
-    function callRequestReplyManager(methodName, testParam, testParamDatatype, useInvalidProviderParticipantId) {
+    function callRequestReplyManager(
+        methodName,
+        testParam,
+        testParamDatatype,
+        useInvalidProviderParticipantId,
+        callbackContext
+    ) {
         var test = callRequestReplyManagerSync(
             methodName,
             testParam,
             testParamDatatype,
-            useInvalidProviderParticipantId
+            useInvalidProviderParticipantId,
+            callbackContext
         );
 
         return waitsFor(
@@ -499,7 +518,7 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", function() {
     var testParamDatatype = "String";
 
     it("calls attribute getter correctly", function(done) {
-        callRequestReplyManager("getAttributeName", testParam, testParamDatatype)
+        callRequestReplyManager("getAttributeName", testParam, testParamDatatype, undefined, replySettings)
             .then(function(test) {
                 expect(test.provider.attributeName.get).toHaveBeenCalled();
                 expect(test.provider.attributeName.get).toHaveBeenCalledWith();
@@ -512,6 +531,7 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", function() {
 
                 expect(test.callbackDispatcher).toHaveBeenCalled();
                 expect(test.callbackDispatcher).toHaveBeenCalledWith(
+                    replySettings,
                     new Reply({
                         response: [testParam],
                         requestReplyId: test.request.requestReplyId
@@ -524,7 +544,7 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", function() {
     });
 
     it("calls attribute setter correctly", function(done) {
-        callRequestReplyManager("setAttributeName", testParam, testParamDatatype)
+        callRequestReplyManager("setAttributeName", testParam, testParamDatatype, undefined, replySettings)
             .then(function(test) {
                 expect(test.provider.attributeName.get).not.toHaveBeenCalled();
                 expect(test.provider.attributeName.set).toHaveBeenCalled();
@@ -537,6 +557,7 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", function() {
 
                 expect(test.callbackDispatcher).toHaveBeenCalled();
                 expect(test.callbackDispatcher).toHaveBeenCalledWith(
+                    replySettings,
                     new Reply({
                         response: [],
                         requestReplyId: test.request.requestReplyId
@@ -549,7 +570,7 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", function() {
     });
 
     it("calls operation function correctly", function(done) {
-        callRequestReplyManager("operationName", testParam, testParamDatatype)
+        callRequestReplyManager("operationName", testParam, testParamDatatype, undefined, replySettings)
             .then(function(test) {
                 expect(test.provider.attributeName.set).not.toHaveBeenCalled();
                 expect(test.provider.attributeName.get).not.toHaveBeenCalled();
@@ -565,6 +586,7 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", function() {
 
                 expect(test.callbackDispatcher).toHaveBeenCalled();
                 expect(test.callbackDispatcher).toHaveBeenCalledWith(
+                    replySettings,
                     new Reply({
                         response: [testParam],
                         requestReplyId: test.request.requestReplyId
@@ -648,10 +670,11 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", function() {
     });
 
     it("delivers exception upon non-existent provider", function(done) {
-        callRequestReplyManager("testFunction", testParam, testParamDatatype, true)
+        callRequestReplyManager("testFunction", testParam, testParamDatatype, true, replySettings)
             .then(function(test) {
                 expect(test.callbackDispatcher).toHaveBeenCalled();
                 expect(test.callbackDispatcher).toHaveBeenCalledWith(
+                    replySettings,
                     new Reply({
                         error: new MethodInvocationException({
                             detailMessage:
@@ -669,10 +692,17 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", function() {
     });
 
     it("delivers exception when calling not existing operation", function(done) {
-        callRequestReplyManager("notExistentOperationOrAttribute", testParam, testParamDatatype)
+        callRequestReplyManager(
+            "notExistentOperationOrAttribute",
+            testParam,
+            testParamDatatype,
+            undefined,
+            replySettings
+        )
             .then(function(test) {
                 expect(test.callbackDispatcher).toHaveBeenCalled();
                 expect(test.callbackDispatcher).toHaveBeenCalledWith(
+                    replySettings,
                     new Reply({
                         error: new MethodInvocationException({
                             detailMessage:
@@ -691,10 +721,17 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", function() {
             .catch(fail);
     });
     it("delivers exception when calling getter for not existing attribute", function(done) {
-        callRequestReplyManager("getNotExistentOperationOrAttribute", testParam, testParamDatatype)
+        callRequestReplyManager(
+            "getNotExistentOperationOrAttribute",
+            testParam,
+            testParamDatatype,
+            undefined,
+            replySettings
+        )
             .then(function(test) {
                 expect(test.callbackDispatcher).toHaveBeenCalled();
                 expect(test.callbackDispatcher).toHaveBeenCalledWith(
+                    replySettings,
                     new Reply({
                         error: new MethodInvocationException({
                             detailMessage:
@@ -713,10 +750,17 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", function() {
             .catch(fail);
     });
     it("delivers exception when calling setter for not existing attribute", function(done) {
-        callRequestReplyManager("setNotExistentOperationOrAttribute", testParam, testParamDatatype)
+        callRequestReplyManager(
+            "setNotExistentOperationOrAttribute",
+            testParam,
+            testParamDatatype,
+            undefined,
+            replySettings
+        )
             .then(function(test) {
                 expect(test.callbackDispatcher).toHaveBeenCalled();
                 expect(test.callbackDispatcher).toHaveBeenCalledWith(
+                    replySettings,
                     new Reply({
                         error: new MethodInvocationException({
                             detailMessage:
@@ -740,11 +784,12 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", function() {
         expect(function() {
             requestReplyManager.removeRequestCaller("providerParticipantId");
         }).toThrow();
-        requestReplyManager
-            .handleRequest("providerParticipantId", {
+        requestReplyManager.handleRequest(
+            "providerParticipantId",
+            {
                 requestReplyId: requestReplyId
-            })
-            .then(function(reply) {
+            },
+            function(reply) {
                 expect(reply instanceof Reply);
                 expect(reply.error instanceof MethodInvocationException);
                 expect(function() {
@@ -762,7 +807,9 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", function() {
                     requestReplyManager.sendRequest({});
                 }).toThrow();
                 done();
-            });
+            },
+            replySettings
+        );
     });
     it(" rejects reply callers when shut down", function(done) {
         var replyCallerSpy = jasmine.createSpyObj("promise", ["resolve", "reject"]);

@@ -19,11 +19,11 @@
  * #L%
  */
 var Typing = require("../../util/Typing");
-var LoggerFactory = require("../../system/LoggerFactory");
+var LoggingManager = require("../../system/LoggingManager");
 var DiagnosticTags = require("../../system/DiagnosticTags");
 var JoynrException = require("../../exceptions/JoynrException");
 
-var log = LoggerFactory.getLogger("joynr/messaging/mqtt/MqttMessagingSkeleton");
+var log = LoggingManager.getLogger("joynr/messaging/mqtt/MqttMessagingSkeleton");
 /**
  * @constructor MqttMessagingSkeleton
  * @param {Object} settings
@@ -42,26 +42,7 @@ var MqttMessagingSkeleton = function MqttMessagingSkeleton(settings) {
 
     settings.client.onmessage = function(topic, message) {
         message.isReceivedFromGlobal = true;
-        try {
-            settings.messageRouter.route(message).catch(function(e) {
-                log.error(
-                    "unable to process message: " +
-                        e +
-                        (e instanceof JoynrException ? " " + e.detailMessage : "") +
-                        " \nmessage: " +
-                        DiagnosticTags.forJoynrMessage(message)
-                );
-            });
-        } catch (e) {
-            // Errors should be returned via the Promise
-            log.fatal(
-                "unable to process message: " +
-                    e +
-                    (e instanceof JoynrException ? " " + e.detailMessage : "") +
-                    " \nmessage: " +
-                    DiagnosticTags.forJoynrMessage(message)
-            );
-        }
+        settings.messageRouter.route(message);
     };
 
     settings.client.subscribe(settings.address.topic + "/#");

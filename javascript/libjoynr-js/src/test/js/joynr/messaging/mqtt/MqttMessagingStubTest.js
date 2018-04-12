@@ -17,6 +17,7 @@
  * limitations under the License.
  * #L%
  */
+require("../../../node-unit-test-helper");
 var Promise = require("../../../../classes/global/Promise");
 var SharedMqttClient = require("../../../../classes/joynr/messaging/mqtt/SharedMqttClient");
 var MqttAddress = require("../../../../classes/joynr/system/RoutingTypes/MqttAddress");

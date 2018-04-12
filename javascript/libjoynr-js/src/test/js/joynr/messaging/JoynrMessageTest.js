@@ -18,6 +18,7 @@
  * limitations under the License.
  * #L%
  */
+require("../../node-unit-test-helper");
 var JoynrMessage = require("../../../classes/joynr/messaging/JoynrMessage");
 
 describe("libjoynr-js.joynr.messaging.JoynrMessage", function() {

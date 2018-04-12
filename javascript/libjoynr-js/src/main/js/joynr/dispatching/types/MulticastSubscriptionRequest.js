@@ -20,8 +20,8 @@
  */
 var Typing = require("../../util/Typing");
 var MulticastSubscriptionQos = require("../../proxy/MulticastSubscriptionQos");
-var LoggerFactory = require("../../system/LoggerFactory");
-var log = LoggerFactory.getLogger("joynr/dispatching/types/MulticastSubscriptionRequest");
+var LoggingManager = require("../../system/LoggingManager");
+var log = LoggingManager.getLogger("joynr/dispatching/types/MulticastSubscriptionRequest");
 var defaultSettings = {
     qos: new MulticastSubscriptionQos()
 };

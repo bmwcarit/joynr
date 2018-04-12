@@ -331,7 +331,10 @@ Note that the message order on Joynr RPCs will not be preserved.
         ...
         <ReturnTypeN> retvalN;
 
-        <interface>Proxy-><method>([retval1, ..., retvalN,][inputVal1, ..., inputValN);
+        // optionally, a MessagingQos can be specified per request
+        std::int64_t ttl_ms = 10000 ;
+        MessagingQos messagingQos(ttl_ms);
+        <interface>Proxy-><method>([retval1, ..., retvalN,][inputVal1, ..., inputValN], [messagingQos]);
     } catch (joynr::exceptions::JoynrRuntimeException& e) {
         // error handling
     } catch (joynr::exceptions::ApplicationException& e) {
@@ -355,6 +358,10 @@ The message order on Joynr RPCs will not be preserved.
 ...
 <ReturnTypeN> retvalN;
 
+// optionally, a MessagingQos can be specified per request
+std::int64_t ttl_ms = 10000 ;
+MessagingQos messagingQos(ttl_ms);
+
 // optional callback functions
 std::function<void(const <ReturnType1> retval1 [, ..., const <ReturnTypeN> retvalN])> onSuccess =
     [] (const <ReturnType1> retval1 [, ..., const <ReturnTypeN> retvalN]) {
@@ -365,7 +372,7 @@ std::function<void(const joynr::exceptions::JoynrException&)> onError =
         // error handling
     };
 
-auto future = <interface>Proxy-><method>(... arguments ..., [onSuccess [, onError]]);
+auto future = <interface>Proxy-><method>(... arguments ..., [onSuccess [, onError] [, messagingQos]]);
 try {
     std::uint16_t optionalTimeoutMs = 500;
     future->get([optionalTimeoutMs, ]retval1 [, ..., retvalN ]);

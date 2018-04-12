@@ -18,6 +18,7 @@
  * limitations under the License.
  * #L%
  */
+require("../../../node-unit-test-helper");
 var ChannelMessagingSkeleton = require("../../../../classes/joynr/messaging/channel/ChannelMessagingSkeleton");
 var ChannelAddress = require("../../../../classes/joynr/system/RoutingTypes/ChannelAddress");
 var JoynrMessage = require("../../../../classes/joynr/messaging/JoynrMessage");

@@ -81,6 +81,8 @@ import io.joynr.proxy.ProxyBuilderFactoryImpl;
 import io.joynr.proxy.ProxyInvocationHandler;
 import io.joynr.proxy.ProxyInvocationHandlerFactory;
 import io.joynr.proxy.ProxyInvocationHandlerImpl;
+import io.joynr.statusmetrics.DefaultStatusReceiver;
+import io.joynr.statusmetrics.StatusReceiver;
 import joynr.system.DiscoveryAsync;
 import joynr.system.RoutingTypes.Address;
 
@@ -140,6 +142,7 @@ abstract class AbstractRuntimeModule extends AbstractModule {
         bind(RawMessagingPreprocessor.class).to(NoOpRawMessagingPreprocessor.class);
         bind(ScheduledExecutorService.class).annotatedWith(Names.named(MessageRouter.SCHEDULEDTHREADPOOL))
                                             .toProvider(DefaultScheduledExecutorServiceProvider.class);
+        bind(StatusReceiver.class).to(DefaultStatusReceiver.class);
 
         install(new StaticCapabilitiesProvisioningModule());
 

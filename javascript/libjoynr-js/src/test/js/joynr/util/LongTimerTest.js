@@ -18,6 +18,7 @@
  * limitations under the License.
  * #L%
  */
+require("../../node-unit-test-helper");
 var LongTimer = require("../../../classes/joynr/util/LongTimer");
 var Typing = require("../../../classes/joynr/util/Typing");
 

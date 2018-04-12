@@ -1,4 +1,5 @@
-/*jslint es5: true, node: true, node: true */
+/*jslint es5: true, node: true */
+
 /*
  * #%L
  * %%
@@ -28,7 +29,7 @@ var LongTimer = require("../util/LongTimer");
 var MethodInvocationException = require("../exceptions/MethodInvocationException");
 var ProviderRuntimeException = require("../exceptions/ProviderRuntimeException");
 var Version = require("../../joynr/types/Version");
-var LoggerFactory = require("../system/LoggerFactory");
+var LoggingManager = require("../system/LoggingManager");
 /**
  * The RequestReplyManager is responsible maintaining a list of providers that wish to
  * receive incoming requests, and also a list of requestReplyIds which is used to match
@@ -44,7 +45,7 @@ var LoggerFactory = require("../system/LoggerFactory");
  *            together with their constructor.
  */
 function RequestReplyManager(dispatcher, typeRegistry) {
-    var log = LoggerFactory.getLogger("joynr.dispatching.RequestReplyManager");
+    var log = LoggingManager.getLogger("joynr.dispatching.RequestReplyManager");
 
     var providers = {};
     var replyCallers = {};
@@ -86,9 +87,11 @@ function RequestReplyManager(dispatcher, typeRegistry) {
      *            settings.messagingQos quality-of-service parameters such as time-to-live
      * @param {Request}
      *            settings.request the Request to send
+     * @param {Object} callbackSettings
+     *          additional settings to handle the reply.
      * @returns {Promise} the Promise for the Request
      */
-    this.sendRequest = function sendRequest(settings) {
+    this.sendRequest = function sendRequest(settings, callbackSettings) {
         checkIfReady();
 
         var deferred = Util.createDeferred();
@@ -96,18 +99,14 @@ function RequestReplyManager(dispatcher, typeRegistry) {
             settings.request.requestReplyId,
             {
                 resolve: deferred.resolve,
-                reject: deferred.reject
+                reject: deferred.reject,
+                callbackSettings: callbackSettings
             },
             settings.messagingQos.ttl
         );
         // resolve will be called upon successful response
 
-        function requestErrorCatcher(error) {
-            delete replyCallers[settings.request.requestReplyId];
-            deferred.reject(error);
-        }
-
-        dispatcher.sendRequest(settings).catch(requestErrorCatcher);
+        dispatcher.sendRequest(settings);
 
         return deferred.promise;
     };
@@ -194,26 +193,31 @@ function RequestReplyManager(dispatcher, typeRegistry) {
 
     /**
      * @name RequestReplyManager#handleRequest
-     * @function
-     *
-     * @param {Request}
-     *            request
+     * @param {String} providerParticipantId
+     * @param {Request} request
+     * @param {Function} handleReplyCallback
+     *          callback for handling the reply
+     * @param {Object} replySettings
+     *          settings for handleReplyCallback to avoid unnecessary function object creation
+     * @returns {*}
      */
-    this.handleRequest = function handleRequest(providerParticipantId, request) {
+    this.handleRequest = function handleRequest(providerParticipantId, request, handleReplyCallback, replySettings) {
         var exception;
 
         function createReplyFromError(exception) {
-            return new Reply({
+            var reply = new Reply({
                 error: exception,
                 requestReplyId: request.requestReplyId
             });
+            return handleReplyCallback(replySettings, reply);
         }
 
         function createReplyFromSuccess(response) {
-            return new Reply({
+            var reply = new Reply({
                 response: response,
                 requestReplyId: request.requestReplyId
             });
+            return handleReplyCallback(replySettings, reply);
         }
 
         try {
@@ -395,7 +399,7 @@ function RequestReplyManager(dispatcher, typeRegistry) {
                     replyCaller.reject(Typing.augmentTypes(reply.error, typeRegistry));
                 }
             } else {
-                replyCaller.resolve(reply.response);
+                replyCaller.resolve({ response: reply.response, settings: replyCaller.callbackSettings });
             }
 
             delete replyCallers[reply.requestReplyId];

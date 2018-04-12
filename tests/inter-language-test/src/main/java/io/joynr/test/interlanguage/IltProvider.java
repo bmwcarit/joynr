@@ -44,6 +44,8 @@ import joynr.interlanguagetest.namedTypeCollection2.ExtendedStructOfPrimitives;
 import joynr.interlanguagetest.namedTypeCollection2.ExtendedTypeCollectionEnumerationInTypeCollection;
 import joynr.interlanguagetest.namedTypeCollection2.MapStringString;
 
+import org.apache.commons.lang.ArrayUtils;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,6 +56,7 @@ public class IltProvider extends TestInterfaceAbstractProvider {
     protected String attributeStringNoSubscriptions;
     protected Byte attributeInt8readonlyNoSubscriptions;
     protected String[] attributeArrayOfStringImplicit;
+    protected Byte[] attributeByteBuffer;
     protected Enumeration attributeEnumeration;
     protected ExtendedEnumerationWithPartlyDefinedValues attributeExtendedEnumerationReadonly;
     protected BaseStruct attributeBaseStruct;
@@ -143,6 +146,22 @@ public class IltProvider extends TestInterfaceAbstractProvider {
         DeferredVoid deferred = new DeferredVoid();
         this.attributeArrayOfStringImplicit = attributeArrayOfStringImplicit;
         attributeArrayOfStringImplicitChanged(attributeArrayOfStringImplicit);
+        deferred.resolve();
+        return new Promise<DeferredVoid>(deferred);
+    }
+
+    @Override
+    public Promise<Deferred<Byte[]>> getAttributeByteBuffer() {
+        Deferred<Byte[]> deferred = new Deferred<Byte[]>();
+        deferred.resolve(attributeByteBuffer);
+        return new Promise<Deferred<Byte[]>>(deferred);
+    }
+
+    @Override
+    public Promise<DeferredVoid> setAttributeByteBuffer(Byte[] attributeByteBuffer) {
+        DeferredVoid deferred = new DeferredVoid();
+        this.attributeByteBuffer = attributeByteBuffer;
+        attributeByteBufferChanged(attributeByteBuffer);
         deferred.resolve();
         return new Promise<DeferredVoid>(deferred);
     }
@@ -399,6 +418,44 @@ public class IltProvider extends TestInterfaceAbstractProvider {
 
         deferred.resolve(uInt64ArrayOut, structWithStringArrayArrayOut);
         return new Promise<MethodWithMultipleArrayParametersDeferred>(deferred);
+    }
+
+    /*
+     *methodWithSingleByteBufferParameter
+     *
+     *Return the same ByteBuffer that was put in as parameter
+     */
+    @Override
+    public Promise<MethodWithSingleByteBufferParameterDeferred> methodWithSingleByteBufferParameter(Byte[] byteBufferArg) {
+        logger.info("********************************************************");
+        logger.info("* IltProvider.methodWithSingleByteBufferParameter called");
+        logger.info("********************************************************");
+        MethodWithSingleByteBufferParameterDeferred deferred = new MethodWithSingleByteBufferParameterDeferred();
+
+        // prepare output parameter
+        deferred.resolve(byteBufferArg);
+        return new Promise<MethodWithSingleByteBufferParameterDeferred>(deferred);
+    }
+
+    /*
+     *methodWithMultipleByteBufferParameters
+     *
+     *Return the componentwise sum of the two ByteBuffers
+     */
+    @Override
+    public Promise<MethodWithMultipleByteBufferParametersDeferred> methodWithMultipleByteBufferParameters(Byte[] byteBufferArg1,
+                                                                                                          Byte[] byteBufferArg2) {
+        logger.info("***********************************************************");
+        logger.info("* IltProvider.methodWithMultipleByteBufferParameters called");
+        logger.info("***********************************************************");
+        MethodWithMultipleByteBufferParametersDeferred deferred = new MethodWithMultipleByteBufferParametersDeferred();
+
+        //calculate result
+        Byte[] result = (Byte[]) ArrayUtils.addAll(byteBufferArg1, byteBufferArg2);
+
+        //prepare output parameter
+        deferred.resolve(result);
+        return new Promise<MethodWithMultipleByteBufferParametersDeferred>(deferred);
     }
 
     /*
@@ -822,6 +879,37 @@ public class IltProvider extends TestInterfaceAbstractProvider {
         Long[] uInt64ArrayOut = IltUtil.createUInt64Array();
         StructWithStringArray[] structWithStringArrayArrayOut = IltUtil.createStructWithStringArrayArray();
         fireBroadcastWithMultipleArrayParameters(uInt64ArrayOut, structWithStringArrayArrayOut, partitions);
+        deferred.resolve();
+        return new Promise<DeferredVoid>(deferred);
+    }
+
+    /*
+     * methodToFireBroadcastWithSingleByteBufferParameter
+     */
+    @Override
+    public Promise<DeferredVoid> methodToFireBroadcastWithSingleByteBufferParameter(Byte[] byteBufferIn,
+                                                                                    String[] partitions) {
+        logger.info("***********************************************************************");
+        logger.info("* IltProvider.methodToFireBroadcastWithSingleByteBufferParameter called");
+        logger.info("***********************************************************************");
+        DeferredVoid deferred = new DeferredVoid();
+        fireBroadcastWithSingleByteBufferParameter(byteBufferIn, partitions);
+        deferred.resolve();
+        return new Promise<DeferredVoid>(deferred);
+    }
+
+    /*
+     * methodToFireBroadcastWithMultipleByteBufferParameters
+     */
+    @Override
+    public Promise<DeferredVoid> methodToFireBroadcastWithMultipleByteBufferParameters(Byte[] byteBufferIn1,
+                                                                                       Byte[] byteBufferIn2,
+                                                                                       String[] partitions) {
+        logger.info("**************************************************************************");
+        logger.info("* IltProvider.methodToFireBroadcastWithMultipleByteBufferParameters called");
+        logger.info("**************************************************************************");
+        DeferredVoid deferred = new DeferredVoid();
+        fireBroadcastWithMultipleByteBufferParameters(byteBufferIn1, byteBufferIn2, partitions);
         deferred.resolve();
         return new Promise<DeferredVoid>(deferred);
     }

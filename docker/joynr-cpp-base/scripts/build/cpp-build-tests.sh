@@ -5,6 +5,8 @@ set -e
 
 source /data/src/docker/joynr-base/scripts/global.sh
 
+log "### start cpp-build-tests.sh ###"
+
 START=$(date +%s)
 CLANGFORMATTER='ON'
 BUILDTYPE='Debug'
@@ -153,3 +155,5 @@ fi
 END=$(date +%s)
 DIFF=$(( $END - $START ))
 log "Test build time: $DIFF seconds"
+
+log "### end cpp-build-tests.sh ###"

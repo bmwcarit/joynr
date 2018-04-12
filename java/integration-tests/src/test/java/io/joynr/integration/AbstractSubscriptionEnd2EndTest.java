@@ -60,6 +60,7 @@ import joynr.OnChangeWithKeepAliveSubscriptionQos;
 import joynr.PeriodicSubscriptionQos;
 import joynr.exceptions.ApplicationException;
 import joynr.exceptions.ProviderRuntimeException;
+import joynr.test.JoynrTestLoggingRule;
 import joynr.tests.testProxy;
 import joynr.tests.testTypes.TestEnum;
 import joynr.types.Localisation.GpsLocation;
@@ -78,6 +79,8 @@ import org.slf4j.LoggerFactory;
 
 public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
     private static final Logger logger = LoggerFactory.getLogger(AbstractSubscriptionEnd2EndTest.class);
+    @Rule
+    public JoynrTestLoggingRule joynrTestRule = new JoynrTestLoggingRule(logger);
 
     private static final long EXPECTED_LATENCY_MS = 50;
 

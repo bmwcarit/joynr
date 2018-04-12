@@ -45,9 +45,12 @@ import joynr.OneWayRequest;
 import joynr.system.RoutingTypes.WebSocketAddress;
 import joynr.system.RoutingTypes.WebSocketClientAddress;
 import joynr.system.RoutingTypes.WebSocketProtocol;
+import joynr.test.JoynrTestLoggingRule;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatcher;
@@ -69,6 +72,9 @@ import static org.mockito.AdditionalAnswers.returnsFirstArg;
 @RunWith(MockitoJUnitRunner.class)
 public class WebSocketTest {
     private static Logger logger = LoggerFactory.getLogger(WebSocketTest.class);
+    @Rule
+    public JoynrTestLoggingRule joynrTestRule = new JoynrTestLoggingRule(logger);
+
     private WebSocketMessagingStub webSocketMessagingStub;
     private WebSocketMessagingSkeleton ccWebSocketMessagingSkeleton;
     private WebSocketAddress serverAddress;

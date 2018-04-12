@@ -125,3 +125,17 @@ TEST_F(ImmutableMessageTest, TestOwnerSigningCallbackInMutableMessage)
     std::string signatureStr(signatureByteArrayView.data(), signatureByteArrayView.data() + signatureByteArrayView.size());
     EXPECT_EQ(signatureWithOwnerIdStr, signatureStr);
 }
+
+TEST_F(ImmutableMessageTest, isNotCompressedByDefault)
+{
+    auto immutableMessage = mutableMessage.getImmutableMessage();
+    EXPECT_FALSE(immutableMessage->isCompressed());
+}
+
+TEST_F(ImmutableMessageTest, isCompressed)
+{
+    const bool expectedValue = true;
+    mutableMessage.setCompress(expectedValue);
+    auto immutableMessage = mutableMessage.getImmutableMessage();
+    EXPECT_EQ(immutableMessage->isCompressed(), expectedValue);
+}

@@ -18,6 +18,9 @@
  */
 package io.joynr.test.interlanguage;
 
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
+
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.CallbackWithModeledError;
@@ -34,10 +37,13 @@ import joynr.interlanguagetest.namedTypeCollection2.BaseStructWithoutElements;
 import joynr.interlanguagetest.namedTypeCollection2.ExtendedExtendedBaseStruct;
 import joynr.interlanguagetest.namedTypeCollection2.ExtendedStructOfPrimitives;
 
+import org.apache.commons.lang.ArrayUtils;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -357,6 +363,132 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
         }
         LOG.info(name.getMethodName() + " - OK");
         return;
+    }
+
+    // variables that are to be changed inside callbacks must be declared global
+    volatile boolean methodWithSingleByteBufferParameterAsyncCallbackResult = false;
+
+    @Test
+    public void callMethodWithSingleByteBufferParameterAsync() {
+        LOG.info(name.getMethodName());
+
+        final Semaphore resultAvailable = new Semaphore(0);
+        try {
+            // setup input parameter
+            final Byte[] byteBufferArg = { -128, 0, 127 };
+
+            Callback<Byte[]> callback = new Callback<Byte[]>() {
+                @Override
+                public void onSuccess(Byte[] byteBufferOut) {
+                    // check result
+                    if (!java.util.Objects.deepEquals(byteBufferOut, byteBufferArg)) {
+                        LOG.info(name.getMethodName() + " - invalid byteBufferOut from callback");
+                        LOG.info(name.getMethodName() + " - FAILED");
+                        methodWithSingleByteBufferParameterAsyncCallbackResult = false;
+                        resultAvailable.release();
+                        return;
+                    }
+                    methodWithSingleByteBufferParameterAsyncCallbackResult = true;
+                    resultAvailable.release();
+                }
+
+                @Override
+                public void onFailure(JoynrRuntimeException error) {
+                    methodWithSingleByteBufferParameterAsyncCallbackResult = false;
+                    if (error instanceof JoynrRuntimeException) {
+                        LOG.info(name.getMethodName() + " - callback - caught exception "
+                                + ((JoynrRuntimeException) error).getMessage());
+                    } else {
+                        LOG.info(name.getMethodName() + " - callback - caught exception");
+                    }
+                    LOG.info(name.getMethodName() + " - FAILED");
+                    resultAvailable.release();
+                }
+            };
+
+            testInterfaceProxy.methodWithSingleByteBufferParameter(callback, byteBufferArg);
+
+            try {
+                // wait for callback
+                LOG.info(name.getMethodName() + " - about to wait for callback");
+                Assert.assertTrue(name.getMethodName() + " - FAILED - callback not received in time",
+                                  resultAvailable.tryAcquire(10, TimeUnit.SECONDS));
+
+                // check result from callback
+                LOG.info(name.getMethodName() + " - wait for callback is over");
+                Assert.assertTrue(name.getMethodName() + " - FAILED - callback reported error",
+                                  methodWithSingleByteBufferParameterAsyncCallbackResult);
+            } catch (InterruptedException | JoynrRuntimeException e) {
+                fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
+            }
+        } catch (Exception e) {
+            fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
+        }
+        LOG.info(name.getMethodName() + " - OK");
+    }
+
+    // variables that are to be changed inside callbacks must be declared global
+    volatile boolean methodWithMultipleByteBufferParametersAsyncCallbackResult = false;
+
+    @Test
+    public void callMethodWithMultipleByteBufferParametersAsync() {
+        LOG.info(name.getMethodName());
+
+        final Semaphore resultAvailable = new Semaphore(0);
+        try {
+            // setup input parameter
+            final Byte[] byteBufferArg1 = { -5, 125 };
+            final Byte[] byteBufferArg2 = { 78, 0 };
+
+            Callback<Byte[]> callback = new Callback<Byte[]>() {
+                @Override
+                public void onSuccess(Byte[] byteBufferOut) {
+                    // check result
+                    if (!java.util.Objects.deepEquals(byteBufferOut,
+                                                      (Byte[]) ArrayUtils.addAll(byteBufferArg1, byteBufferArg2))) {
+                        LOG.info(name.getMethodName() + " - invalid byteBufferOut from callback");
+                        LOG.info(name.getMethodName() + " - FAILED");
+                        methodWithMultipleByteBufferParametersAsyncCallbackResult = false;
+                        resultAvailable.release();
+                        return;
+                    }
+                    methodWithMultipleByteBufferParametersAsyncCallbackResult = true;
+                    resultAvailable.release();
+                }
+
+                @Override
+                public void onFailure(JoynrRuntimeException error) {
+                    methodWithMultipleByteBufferParametersAsyncCallbackResult = false;
+                    if (error instanceof JoynrRuntimeException) {
+                        LOG.info(name.getMethodName() + " - callback - caught exception "
+                                + ((JoynrRuntimeException) error).getMessage());
+                    } else {
+                        LOG.info(name.getMethodName() + " - callback - caught exception");
+                    }
+                    LOG.info(name.getMethodName() + " - FAILED");
+                    resultAvailable.release();
+                }
+            };
+
+            testInterfaceProxy.methodWithMultipleByteBufferParameters(callback, byteBufferArg1, byteBufferArg2);
+
+            try {
+                // wait for callback
+                LOG.info(name.getMethodName() + " - about to wait for callback");
+                Assert.assertTrue(name.getMethodName() + " - FAILED - callback not received in time",
+                                  resultAvailable.tryAcquire(10, TimeUnit.SECONDS));
+
+                // check result from callback
+                LOG.info(name.getMethodName() + " - wait for callback is over");
+                Assert.assertTrue(name.getMethodName() + " - FAILED - callback reported error",
+                                  methodWithMultipleByteBufferParametersAsyncCallbackResult);
+            } catch (InterruptedException | JoynrRuntimeException e) {
+                fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
+            }
+        } catch (Exception e) {
+            fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
+        }
+        LOG.info(name.getMethodName() + " - OK");
     }
 
     /*

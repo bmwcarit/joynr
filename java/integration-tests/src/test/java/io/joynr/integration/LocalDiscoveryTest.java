@@ -38,6 +38,7 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -48,6 +49,8 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Sets;
 import com.google.inject.AbstractModule;
@@ -91,6 +94,7 @@ import io.joynr.runtime.SystemServicesSettings;
 import io.joynr.util.VersionUtil;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.MqttAddress;
+import joynr.test.JoynrTestLoggingRule;
 import joynr.tests.testProxy;
 import joynr.types.DiscoveryEntry;
 import joynr.types.DiscoveryEntryWithMetaInfo;
@@ -142,6 +146,10 @@ class ProxyInvocationHandlerFactoryImpl implements ProxyInvocationHandlerFactory
  */
 @RunWith(MockitoJUnitRunner.class)
 public class LocalDiscoveryTest {
+    private static final Logger logger = LoggerFactory.getLogger(LocalDiscoveryTest.class);
+    @Rule
+    public JoynrTestLoggingRule joynrTestRule = new JoynrTestLoggingRule(logger);
+
     private JoynrRuntime runtime;
 
     @Mock

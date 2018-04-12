@@ -34,6 +34,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
+import io.joynr.arbitration.ArbitratorFactory;
 import io.joynr.capabilities.CapabilitiesRegistrar;
 import io.joynr.discovery.LocalDiscoveryAggregator;
 import io.joynr.dispatching.Dispatcher;
@@ -120,6 +121,7 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
         }
 
         localDiscoveryAggregator.forceQueryOfDiscoveryProxy();
+        ArbitratorFactory.start();
 
         messagingSkeletonFactory.start();
     }

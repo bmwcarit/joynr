@@ -17,6 +17,7 @@
  * limitations under the License.
  * #L%
  */
+require("../../node-unit-test-helper");
 var JoynrMessage = require("../../../classes/joynr/messaging/JoynrMessage");
 var MqttAddress = require("../../../classes/joynr/system/RoutingTypes/MqttAddress");
 var MessageReplyToAddressCalculator = require("../../../classes/joynr/messaging/MessageReplyToAddressCalculator");

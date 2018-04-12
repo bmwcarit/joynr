@@ -905,4 +905,17 @@ IltUtil.cmpDouble = function(a, b) {
     return Math.abs(a - b) < 0.001;
 };
 
+// Compares two ByteBuffers componentwise.
+IltUtil.cmpByteBuffers = function(a, b) {
+    if (a.length != b.length) {
+        return false;
+    }
+    for (var i = 0; i < a.length; ++i) {
+        if (a[i] != b[i]) {
+            return false;
+        }
+    }
+    return true;
+};
+
 module.exports = IltUtil;

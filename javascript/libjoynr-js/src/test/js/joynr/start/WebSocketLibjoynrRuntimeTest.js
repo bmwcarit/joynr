@@ -1,4 +1,4 @@
-/*jslint es5: true, nomen: true */
+/*jslint es5: true, nomen: true, node: true */
 /*global fail: true, beforeAll: true */
 
 /*
@@ -19,7 +19,7 @@
  * limitations under the License.
  * #L%
  */
-
+require("../../node-unit-test-helper");
 var Promise = require("../../../classes/global/Promise");
 var Util = require("../../../classes/joynr/util/UtilInternal");
 
@@ -44,6 +44,8 @@ var MessagingQos = require("../../../classes/joynr/messaging/MessagingQos");
 var WebSocketMessagingSkeleton = require("../../../classes/joynr/messaging/websocket/WebSocketMessagingSkeleton");
 var SharedWebSocket = require("../../../classes/joynr/messaging/websocket/SharedWebSocket");
 var WebSocketMessagingStubFactory = require("../../../classes/joynr/messaging/websocket/WebSocketMessagingStubFactory");
+var JoynrMessage = require("../../../classes/joynr/messaging/JoynrMessage");
+var SubscriptionManager = require("../../../classes/joynr/dispatching/subscription/SubscriptionManager");
 
 /**
  * this function creates a wrapper class, which calls Class not by its normal constructor but by Class.prototype.constructor
@@ -75,9 +77,15 @@ function fixMessageRouter() {
     setRoutingProxySpy = spyOn(this, "setRoutingProxy").and.returnValue(Promise.resolve());
 }
 
+var terminateSubscriptionsSpy;
+function fixSubScriptionManager() {
+    terminateSubscriptionsSpy = spyOn(this, "terminateSubscriptions").and.returnValue(Promise.resolve());
+}
+
 var mocks = {};
 
 mocks.MessageRouterMock = wrapClass(MessageRouter, fixMessageRouter);
+mocks.SubscriptionManagerMock = wrapClass(SubscriptionManager, fixSubScriptionManager);
 mocks.MessageQueueMock = wrapClass(MessageQueue);
 mocks.DispatcherMock = wrapClass(Dispatcher);
 mocks.ParticipantIdStorageMock = wrapClass(ParticipantIdStorage);
@@ -198,7 +206,7 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", function() {
         expect(MessageRouter.prototype.constructor.calls.count()).toEqual(1);
         expect(MessageRouter.prototype.constructor.calls.argsFor(0)[0].persistency).toBeUndefined();
         expect(ParticipantIdStorage.prototype.constructor.calls.count()).toEqual(1);
-        expect(ParticipantIdStorage.prototype.constructor.calls.argsFor(0)[0]).toEqual(jasmine.any(MemoryStorage));
+        expect(ParticipantIdStorage.prototype.constructor.calls.argsFor(0)[0]).toEqual(jasmine.any(LocalStorage));
         expect(PublicationManager.prototype.constructor.calls.count()).toEqual(1);
         expect(PublicationManager.prototype.constructor.calls.argsFor(0)[1]).toEqual(jasmine.any(LocalStorage));
     });
@@ -272,5 +280,63 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", function() {
             .then(done)
             .catch(fail);
         expect(MessagingQos.prototype.constructor).toHaveBeenCalledWith({ ttl: ttl });
+    });
+
+    it("will set the signingCallback to the joynrMessage.prototype", function() {
+        provisioning.keychain = {
+            tlsCert: "tlsCert",
+            tlsKey: "tlsKey",
+            tlsCa: "tlsCa",
+            ownerId: "ownerID"
+        };
+        spyOn(JoynrMessage, "setSigningCallback").and.callThrough();
+        runtime = new WebSocketLibjoynrRuntime(provisioning);
+        expect(JoynrMessage.setSigningCallback).toHaveBeenCalled();
+        var joynrMessage = new JoynrMessage({ payload: "payload", type: "type" });
+        expect(joynrMessage.signingCallback()).toEqual(Buffer.from(provisioning.keychain.ownerId));
+    });
+
+    it("terminates Subscriptions upon shutdown with default timeout", function(done) {
+        runtime = new WebSocketLibjoynrRuntime(provisioning);
+        runtime
+            .start()
+            .then(runtime.shutdown)
+            .then(function() {
+                expect(terminateSubscriptionsSpy).toHaveBeenCalledWith(1000);
+                done();
+            })
+            .catch(fail);
+    });
+
+    it("won't terminate Subscriptions upon shutdown when specified by provisioning", function(done) {
+        runtime = new WebSocketLibjoynrRuntime(provisioning);
+
+        provisioning.shutdownSettings = { clearSubscriptionsEnabled: false };
+        runtime
+            .start()
+            .then(function() {
+                runtime.shutdown();
+            })
+            .then(function() {
+                expect(terminateSubscriptionsSpy).not.toHaveBeenCalled();
+                done();
+            })
+            .catch(fail);
+    });
+
+    it("won't terminate Subscriptions when explicitly called with shutdown", function(done) {
+        runtime = new WebSocketLibjoynrRuntime(provisioning);
+
+        provisioning.shutdownSettings = { clearSubscriptionsEnabled: false };
+        runtime
+            .start()
+            .then(function() {
+                runtime.shutdown({ clearSubscriptionsEnabled: false });
+            })
+            .then(function() {
+                expect(terminateSubscriptionsSpy).not.toHaveBeenCalled();
+                done();
+            })
+            .catch(fail);
     });
 });

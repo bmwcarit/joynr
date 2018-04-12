@@ -18,7 +18,7 @@
  * limitations under the License.
  * #L%
  */
-
+require("../../../node-unit-test-helper");
 var ParticipantQueue = require("../../../../classes/joynr/messaging/routing/ParticipantQueue");
 var JoynrMessage = require("../../../../classes/joynr/messaging/JoynrMessage");
 var Date = require("../../../../test-classes/global/Date");
