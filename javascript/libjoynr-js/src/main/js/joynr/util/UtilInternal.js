@@ -17,7 +17,6 @@
  * #L%
  */
 const Promise = require("../../global/Promise");
-const UtilExternal = require("./Util");
 const LongTimer = require("./LongTimer");
 
 /**
@@ -288,6 +287,4 @@ UtilInternal.createDeferred = function() {
 };
 
 UtilInternal.emptyFunction = function() {};
-
-UtilInternal.extend(UtilInternal, UtilExternal);
 module.exports = UtilInternal;
