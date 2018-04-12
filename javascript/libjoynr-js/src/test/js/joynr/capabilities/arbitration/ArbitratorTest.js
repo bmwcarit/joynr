@@ -322,7 +322,9 @@ describe("libjoynr-js.joynr.capabilities.arbitration.Arbitrator", () => {
     }
 
     function setSupportsOnChangeSubscriptionsToTrue(discoveryEntry) {
-        discoveryEntry.qos = new ProviderQos(UtilInternal.extend(discoveryEntry.qos, { supportsOnChangeSubscriptions: true }));
+        discoveryEntry.qos = new ProviderQos(
+            UtilInternal.extend(discoveryEntry.qos, { supportsOnChangeSubscriptions: true })
+        );
     }
 
     it("returns capabilities from discovery", done => {

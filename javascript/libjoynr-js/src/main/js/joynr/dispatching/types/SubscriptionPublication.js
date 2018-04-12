@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-const UtilInternal = require("../../util/UtilInternal");
+const Util = require("../../util/Util");
 const Typing = require("../../util/Typing");
 
 /**

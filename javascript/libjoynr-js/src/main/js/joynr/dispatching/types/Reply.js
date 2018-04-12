@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-const UtilInternal = require("../../util/UtilInternal");
+const Util = require("../../util/Util");
 
 /**
  * @name Reply
@@ -35,7 +35,7 @@ function Reply(settings) {
     let i;
     if (settings.response) {
         for (i = 0; i < settings.response.length; i++) {
-            settings.response[i] = UtilInternal.ensureTypedValues(settings.response[i]);
+            settings.response[i] = Util.ensureTypedValues(settings.response[i]);
         }
     }
     // must contain exactly one of the two alternatives

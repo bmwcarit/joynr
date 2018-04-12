@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-const UtilInternal = require("../../util/UtilInternal");
+const Util = require("../../util/Util");
 const uuid = require("../../../lib/uuid-annotated");
 
 const rrBase = uuid();
@@ -47,7 +47,7 @@ function Request(settings) {
 
     if (settings.params) {
         for (i = 0; i < settings.params.length; i++) {
-            settings.params[i] = UtilInternal.ensureTypedValues(settings.params[i]);
+            settings.params[i] = Util.ensureTypedValues(settings.params[i]);
         }
     }
     if (!settings.paramDatatypes) {

@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-const UtilInternal = require("../../util/UtilInternal");
+const Util = require("../../util/Util");
 
 /**
  * @name OneWayRequest
@@ -45,7 +45,7 @@ function OneWayRequest(settings) {
 
     if (settings.params) {
         for (i = 0; i < settings.params.length; i++) {
-            settings.params[i] = UtilInternal.ensureTypedValues(settings.params[i]);
+            settings.params[i] = Util.ensureTypedValues(settings.params[i]);
         }
     }
 

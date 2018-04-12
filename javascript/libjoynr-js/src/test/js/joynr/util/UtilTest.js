@@ -20,6 +20,7 @@
 require("../../node-unit-test-helper");
 const Promise = require("../../../../main/js/global/Promise");
 const UtilInternal = require("../../../../main/js/joynr/util/UtilInternal");
+const Util = require("../../../../main/js/joynr/util/Util");
 const JoynrMessage = require("../../../../main/js/joynr/messaging/JoynrMessage");
 const TypeRegistry = require("../../../../main/js/joynr/start/TypeRegistry");
 const RadioStation = require("../../../generated/joynr/vehicle/radiotypes/RadioStation");
@@ -200,7 +201,7 @@ describe("libjoynr-js.joynr.UtilInternal.isPromise", () => {
     });
 });
 
-describe("libjoynr-js.joynr.UtilInternal.ensureTypedValues", () => {
+describe("libjoynr-js.joynr.Util.ensureTypedValues", () => {
     const typeRegistry = new TypeRegistry();
     typeRegistry.addType("joynr.vehicle.radiotypes.RadioStation", RadioStation);
 
@@ -211,7 +212,7 @@ describe("libjoynr-js.joynr.UtilInternal.ensureTypedValues", () => {
             _typeName: "joynr.vehicle.radiotypes.RadioStation"
         };
 
-        returnValue = UtilInternal.ensureTypedValues(untypedValue, typeRegistry);
+        returnValue = Util.ensureTypedValues(untypedValue, typeRegistry);
         expect(returnValue instanceof RadioStation).toBe(true);
         expect(returnValue.name === untypedValue.name).toBe(true);
     });
@@ -229,7 +230,7 @@ describe("libjoynr-js.joynr.UtilInternal.ensureTypedValues", () => {
             }
         ];
 
-        returnValue = UtilInternal.ensureTypedValues(untypedArray, typeRegistry);
+        returnValue = Util.ensureTypedValues(untypedArray, typeRegistry);
         expect(returnValue[0] instanceof RadioStation).toBe(true);
         expect(returnValue[1] instanceof RadioStation).toBe(true);
         expect(returnValue[0].name === untypedArray[0].name).toBe(true);
@@ -242,13 +243,13 @@ describe("libjoynr-js.joynr.UtilInternal.ensureTypedValues", () => {
         const booleanValue = true;
         const stringValue = "string";
 
-        returnValue = UtilInternal.ensureTypedValues(numberValue, typeRegistry);
+        returnValue = Util.ensureTypedValues(numberValue, typeRegistry);
         expect(typeof returnValue === "number").toBe(true);
 
-        returnValue = UtilInternal.ensureTypedValues(booleanValue, typeRegistry);
+        returnValue = Util.ensureTypedValues(booleanValue, typeRegistry);
         expect(typeof returnValue === "boolean").toBe(true);
 
-        returnValue = UtilInternal.ensureTypedValues(stringValue, typeRegistry);
+        returnValue = Util.ensureTypedValues(stringValue, typeRegistry);
         expect(typeof returnValue === "string").toBe(true);
     });
 });

@@ -105,7 +105,7 @@ function TypeRegistry() {
         if (registry[joynrTypeName]) {
             return Promise.resolve();
         }
-        registryPromise[joynrTypeName] = util.createDeferred();
+        registryPromise[joynrTypeName] = UtilInternal.createDeferred();
         if (timeout && timeout > 0) {
             registryPromise[joynrTypeName].timeoutTimer = setTimeout(() => {
                 if (registryPromise[joynrTypeName].pending) {

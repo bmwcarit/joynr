@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-const UtilInternal = require("../../util/UtilInternal");
+const Util = require("../../util/Util");
 const Typing = require("../../util/Typing");
 
 /**
@@ -32,7 +32,7 @@ const Typing = require("../../util/Typing");
  */
 function MulticastPublication(settings) {
     if (settings.response) {
-        settings.response = UtilInternal.ensureTypedValues(settings.response);
+        settings.response = Util.ensureTypedValues(settings.response);
     }
 
     /**
