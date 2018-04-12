@@ -17,8 +17,10 @@
  * #L%
  */
 
+#include <algorithm>
 #include <condition_variable>
 #include <cstdio>
+#include <fstream>
 #include <string>
 #include <thread>
 #include <tuple>
@@ -150,6 +152,23 @@ std::tuple<std::string, std::string> const failingStrings[] = {
 INSTANTIATE_TEST_CASE_P(
   failingStrings, ParticipantIdStorageAssertTest, ::testing::ValuesIn(failingStrings));
 
+TEST(ParticipantIdStorageTest, writeIniFile) {
+    std::remove(storageFile.c_str());
+    ParticipantIdStorage store(storageFile);
+
+    const int entriesToWrite = 100;
+    for (int i=0; i < entriesToWrite; ++i) {
+        store.setProviderParticipantId(joynr::util::createUuid(),
+                                       joynr::util::createUuid(),
+                                       joynr::util::createUuid());
+    }
+
+    std::ifstream fileStream (storageFile.c_str());
+    size_t numberOfEntriesInFile = std::count(std::istreambuf_iterator<char>(fileStream),
+               std::istreambuf_iterator<char>(), '\n');
+
+    EXPECT_EQ(entriesToWrite, numberOfEntriesInFile);
+}
 
 /*
  * Scope of the test is to cause a crash if the underlying storage
