@@ -69,6 +69,7 @@ var OnChangeWithKeepAliveSubscriptionQos = require("./joynr/proxy/OnChangeWithKe
 var BroadcastFilterParameters = require("./joynr/proxy/BroadcastFilterParameters");
 var ArbitrationStrategyCollection = require("./joynr/types/ArbitrationStrategyCollection");
 var Util = require("./joynr/util/Util");
+var GenerationUtil = require("./joynr/util/GenerationUtil");
 var JoynrException = require("./joynr/exceptions/JoynrException");
 var JoynrRuntimeException = require("./joynr/exceptions/JoynrRuntimeException");
 var ApplicationException = require("./joynr/exceptions/ApplicationException");

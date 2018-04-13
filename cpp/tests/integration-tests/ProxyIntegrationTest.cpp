@@ -29,6 +29,7 @@
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/vehicle/GpsProxy.h"
 #include "joynr/LibjoynrSettings.h"
+#include "joynr/Settings.h"
 
 #include "tests/mock/MockInProcessConnectorFactory.h"
 #include "tests/mock/MockJoynrRuntime.h"

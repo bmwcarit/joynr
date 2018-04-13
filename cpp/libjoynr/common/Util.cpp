@@ -46,17 +46,29 @@ bool fileExists(const std::string& fileName)
     return fileToTest.good();
 }
 
-void saveStringToFile(const std::string& fileName, const std::string& strToSave)
+void writeToFile(const std::string& fileName,
+                 const std::string& strToSave,
+                 std::ios_base::openmode mode)
 {
-    std::fstream file;
-    file.open(fileName, std::ios::out);
+    std::ofstream file;
+    file.open(fileName, mode);
     if (!file.is_open()) {
         throw std::runtime_error("Could not open file " + fileName + " for writing: " +
                                  std::strerror(errno));
     }
 
-    // save input string to file
+    // append input string to file
     file << strToSave;
+}
+
+void saveStringToFile(const std::string& fileName, const std::string& strToSave)
+{
+    writeToFile(fileName, strToSave, std::ios::out);
+}
+
+void appendStringToFile(const std::string& fileName, const std::string& strToSave)
+{
+    writeToFile(fileName, strToSave, std::ios::app);
 }
 
 std::string loadStringFromFile(const std::string& fileName)

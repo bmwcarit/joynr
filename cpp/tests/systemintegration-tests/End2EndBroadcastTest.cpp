@@ -34,6 +34,7 @@
 #include "joynr/OnChangeSubscriptionQos.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/tests/testProxy.h"
+#include "joynr/Settings.h"
 
 #include "tests/JoynrTest.h"
 #include "tests/mock/MockGpsFloatSubscriptionListener.h"
