@@ -269,6 +269,9 @@ private:
     // Configuration if persistency is enabled or not
     bool enableSubscriptionStorage;
 
+    // lock for publications map
+    std::mutex publicationsMutex;
+
     // PublisherRunnables are used to send publications via a ThreadPool
     class PublisherRunnable;
 
@@ -422,6 +425,7 @@ void PublicationManager::attributeValueChanged(const std::string& subscriptionId
     JOYNR_LOG_DEBUG(logger(), "attributeValueChanged for onChange subscription {}", subscriptionId);
 
     // See if the subscription is still valid
+    std::unique_lock<std::mutex> publicationsLock(publicationsMutex);
     std::shared_ptr<Publication> publication = publications.value(subscriptionId);
     std::shared_ptr<SubscriptionRequestInformation> subscriptionRequest =
             subscriptionId2SubscriptionRequest.value(subscriptionId);
@@ -434,6 +438,7 @@ void PublicationManager::attributeValueChanged(const std::string& subscriptionId
 
     {
         std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
+        publicationsLock.unlock();
         if (!isPublicationAlreadyScheduled(subscriptionId)) {
             std::int64_t timeUntilNextPublication =
                     getTimeUntilNextPublication(publication, subscriptionRequest->getQos());
@@ -481,6 +486,7 @@ void PublicationManager::broadcastOccurred(const std::string& subscriptionId, co
                     subscriptionId,
                     sizeof...(Ts));
 
+    std::unique_lock<std::mutex> publicationsLock(publicationsMutex);
     std::shared_ptr<Publication> publication = publications.value(subscriptionId);
     std::shared_ptr<BroadcastSubscriptionRequestInformation> subscriptionRequest =
             subscriptionId2BroadcastSubscriptionRequest.value(subscriptionId);
@@ -494,6 +500,7 @@ void PublicationManager::broadcastOccurred(const std::string& subscriptionId, co
 
     {
         std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
+        publicationsLock.unlock();
         // Only proceed if publication can immediately be sent
         std::int64_t timeUntilNextPublication =
                 getTimeUntilNextPublication(publication, subscriptionRequest->getQos());
@@ -526,6 +533,7 @@ void PublicationManager::selectiveBroadcastOccurred(
                     subscriptionId,
                     sizeof...(Ts));
 
+    std::unique_lock<std::mutex> publicationsLock(publicationsMutex);
     std::shared_ptr<Publication> publication = publications.value(subscriptionId);
     std::shared_ptr<BroadcastSubscriptionRequestInformation> subscriptionRequest =
             subscriptionId2BroadcastSubscriptionRequest.value(subscriptionId);
@@ -540,6 +548,7 @@ void PublicationManager::selectiveBroadcastOccurred(
 
     {
         std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
+        publicationsLock.unlock();
         // Only proceed if publication can immediately be sent
         std::int64_t timeUntilNextPublication =
                 getTimeUntilNextPublication(publication, subscriptionRequest->getQos());

@@ -27,6 +27,7 @@
 #include "joynr/JoynrClusterControllerRuntime.h"
 #include "joynr/infrastructure/IGlobalCapabilitiesDirectory.h"
 #include "joynr/types/Version.h"
+#include "joynr/Settings.h"
 
 #include "libjoynrclustercontroller/capabilities-client/CapabilitiesClient.h"
 #include "libjoynrclustercontroller/messaging/MessagingPropertiesPersistence.h"

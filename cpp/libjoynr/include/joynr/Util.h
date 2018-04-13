@@ -94,10 +94,24 @@ std::string attributeGetterFromName(const std::string& attributeName);
 std::string loadStringFromFile(const std::string& fileName);
 
 /*
+ * It opens a file with the provided flags and writes to it.
+ * The file does not need to exist.
+ */
+void writeToFile(const std::string& fileName,
+                 const std::string& strToSave,
+                 std::ios_base::openmode mode);
+
+/*
  * It saves strToSave to the specified fileName.
  * The file does not need to exists.
  */
 void saveStringToFile(const std::string& fileName, const std::string& strToSave);
+
+/*
+ * It appends strToSave to the specified file.
+ * The file does not need to exist.
+ */
+void appendStringToFile(const std::string& fileName, const std::string& strToSave);
 
 /**
  * Create a Uuid for use in Joynr.

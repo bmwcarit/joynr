@@ -25,7 +25,7 @@
 
 #include "joynr/Future.h"
 #include "joynr/JoynrClusterControllerRuntime.h"
-#include "joynr/LibjoynrSettings.h"
+#include "joynr/Settings.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/tests/testProxy.h"
 

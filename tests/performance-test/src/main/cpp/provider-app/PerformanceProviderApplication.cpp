@@ -26,6 +26,7 @@
 
 #include <joynr/Logger.h>
 #include <joynr/JoynrRuntime.h>
+#include <joynr/Settings.h>
 #include <joynr/WebSocketSettings.h>
 
 #include <joynr/tests/DummyKeychainImpl.h>

@@ -30,6 +30,7 @@
 #include "libjoynrclustercontroller/access-control/LocalDomainAccessStore.h"
 
 #include "joynr/Semaphore.h"
+#include "joynr/Settings.h"
 #include "joynr/PrivateCopyAssign.h"
 
 #include "tests/JoynrTest.h"
