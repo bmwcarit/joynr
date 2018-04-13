@@ -2,6 +2,16 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.1.1
+
+## API relevant changes
+None.
+
+## Other changes
+* **[C++]** Fixed race condition for subscriptions / publications.
+* **[C++]** Fixed race condition in ParticipantIdStorage.
+* **[JS]** fix browserify issue with missing GenerationUtil File.
+
 # joynr 1.1.0
 
 ## API relevant changes
