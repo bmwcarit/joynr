@@ -81,15 +81,18 @@ void ParticipantIdStorage::setProviderParticipantId(const std::string& domain,
     assert(!interfaceName.empty());
     assert(!participantId.empty());
 
+    bool fileNeedsUpdate = false;
     std::string providerKey = createProviderKey(domain, interfaceName);
     StorageItem item{providerKey, participantId};
     {
         WriteLocker lockAccessToStorage(storageMutex);
         auto retVal = storage.insert(std::move(item));
-        assert(retVal.second);
+        fileNeedsUpdate = retVal.second;
     }
 
-    writeStoreToFile();
+    if (fileNeedsUpdate) {
+        writeStoreToFile();
+    }
 }
 
 std::string ParticipantIdStorage::getProviderParticipantId(const std::string& domain,

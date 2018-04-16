@@ -35,6 +35,7 @@
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/RequestCallerFactory.h"
 #include "joynr/Util.h"
+#include "joynr/Settings.h"
 #include "joynr/system/IDiscovery.h"
 #include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/types/DiscoveryEntry.h"

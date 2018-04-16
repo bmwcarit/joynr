@@ -41,7 +41,7 @@ function equalsCompound(other) {
     }
 
     for (key in this) {
-        if (this.hasOwnProperty(key)) {
+        if (Object.prototype.hasOwnProperty.call(this, key)) {
             member = this[key];
             otherMember = other[key];
             if (otherMember === undefined || otherMember === null) {
@@ -158,7 +158,7 @@ GenerationUtil.addMapUtility = function(joynrObject, propertyTypeName) {
         value: function checkMembers(instance, check) {
             var memberKey;
             for (memberKey in instance) {
-                if (instance.hasOwnProperty(memberKey)) {
+                if (Object.prototype.hasOwnProperty.call(instance, memberKey)) {
                     if (memberKey !== "_typeName") {
                         check(instance[memberKey], propertyTypeName, memberKey);
                     }

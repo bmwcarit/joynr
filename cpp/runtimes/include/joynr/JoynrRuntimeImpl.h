@@ -38,6 +38,7 @@
 #include "joynr/SystemServicesSettings.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/system/DiscoveryProxy.h"
+#include "joynr/Settings.h"
 
 namespace joynr
 {
