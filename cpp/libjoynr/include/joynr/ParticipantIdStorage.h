@@ -102,7 +102,7 @@ private:
     using MultiIndexContainer = boost::multi_index_container<
             StorageItem,
             boost::multi_index::indexed_by<
-                    boost::multi_index::ordered_non_unique<
+                    boost::multi_index::ordered_unique<
                             boost::multi_index::tag<participantIdStorageTags::read>,
                             BOOST_MULTI_INDEX_MEMBER(StorageItem, const std::string, key)>,
                     boost::multi_index::random_access<
