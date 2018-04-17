@@ -762,11 +762,11 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
                     );
                 }
             }
-            resetSubscriptionsForProviderAttribute();
+            resetSubscriptionsForProviderAttribute(providerId, attributeName);
         }
 
         attribute.unregisterObserver(attributeObserverFunctions[key]);
-        attributeObserverFunctions[key] = undefined;
+        delete attributeObserverFunctions[key];
     }
 
     /**
@@ -795,11 +795,11 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
                     );
                 }
             }
-            resetSubscriptionsForProviderEvent();
+            resetSubscriptionsForProviderEvent(providerId, eventName);
         }
 
         event.unregisterObserver(eventObserverFunctions[key]);
-        eventObserverFunctions[key] = undefined;
+        delete eventObserverFunctions[key];
     }
 
     /**
@@ -1431,7 +1431,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         }
 
         // stores the participantId to
-        participantIdToProvider[participantId] = undefined;
+        delete participantIdToProvider[participantId];
     };
 
     /**
