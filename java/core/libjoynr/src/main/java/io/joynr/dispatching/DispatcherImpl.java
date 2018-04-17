@@ -26,14 +26,20 @@ import java.util.Set;
 
 import javax.inject.Singleton;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
+
 import io.joynr.dispatching.subscription.PublicationManager;
 import io.joynr.dispatching.subscription.SubscriptionManager;
 import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.sender.MessageSender;
@@ -53,9 +59,6 @@ import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
 import joynr.types.DiscoveryEntryWithMetaInfo;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class DispatcherImpl implements Dispatcher {
 
     private static final Logger logger = LoggerFactory.getLogger(DispatcherImpl.class);
@@ -66,6 +69,7 @@ public class DispatcherImpl implements Dispatcher {
     private final MessageRouter messageRouter;
     private final MessageSender messageSender;
     private ObjectMapper objectMapper;
+    private boolean overrideCompress;
 
     @Inject
     @Singleton
@@ -76,7 +80,8 @@ public class DispatcherImpl implements Dispatcher {
                           MessageRouter messageRouter,
                           MessageSender messageSender,
                           MutableMessageFactory messageFactory,
-                          ObjectMapper objectMapper) {
+                          ObjectMapper objectMapper,
+                          @Named(MessagingPropertyKeys.PROPERTY_MESSAGING_COMPRESS_REPLIES) boolean overrideCompress) {
         this.requestReplyManager = requestReplyManager;
         this.subscriptionManager = subscriptionManager;
         this.publicationManager = publicationManager;
@@ -84,6 +89,7 @@ public class DispatcherImpl implements Dispatcher {
         this.messageSender = messageSender;
         this.messageFactory = messageFactory;
         this.objectMapper = objectMapper;
+        this.overrideCompress = overrideCompress;
     }
 
     // CHECKSTYLE:ON
@@ -155,9 +161,12 @@ public class DispatcherImpl implements Dispatcher {
                           Reply reply,
                           final long expiryDateMs,
                           Map<String, String> customHeaders,
-                          final boolean compress) throws IOException {
+                          boolean compress) throws IOException {
         MessagingQos messagingQos = new MessagingQos(expiryDateMs);
         messagingQos.getCustomMessageHeaders().putAll(customHeaders);
+        if (overrideCompress) {
+            compress = true;
+        }
         messagingQos.setCompress(compress);
         MutableMessage message = messageFactory.createReply(fromParticipantId, toParticipantId, reply, messagingQos);
         messageSender.sendMessage(message);

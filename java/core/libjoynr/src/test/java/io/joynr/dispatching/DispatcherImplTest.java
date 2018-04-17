@@ -19,10 +19,10 @@
 package io.joynr.dispatching;
 
 import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.argThat;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.eq;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -39,6 +39,16 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatcher;
+import org.mockito.Captor;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.runners.MockitoJUnitRunner;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.AbstractModule;
@@ -47,6 +57,7 @@ import com.google.inject.Injector;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Names;
+
 import io.joynr.dispatching.rpc.RpcUtils;
 import io.joynr.dispatching.subscription.PublicationManager;
 import io.joynr.dispatching.subscription.SubscriptionManager;
@@ -72,16 +83,6 @@ import joynr.OneWayRequest;
 import joynr.Reply;
 import joynr.Request;
 import joynr.SubscriptionRequest;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.ArgumentMatcher;
-import org.mockito.Captor;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DispatcherImplTest {
@@ -105,6 +106,7 @@ public class DispatcherImplTest {
     private Dispatcher fixture;
     private ProviderDirectory requestCallerDirectory;
     private MutableMessageFactory messageFactory;
+    final boolean compress = false;
 
     @Before
     public void setUp() throws NoSuchMethodException, SecurityException {
@@ -203,14 +205,14 @@ public class DispatcherImplTest {
     public void testSendMulticastMessage() {
         MutableMessageFactory messageFactoryMock = mock(MutableMessageFactory.class);
         ObjectMapper objectMapperMock = mock(ObjectMapper.class);
-
         fixture = new DispatcherImpl(requestReplyManagerMock,
                                      subscriptionManagerMock,
                                      publicationManagerMock,
                                      messageRouterMock,
                                      messageSenderMock,
                                      messageFactoryMock,
-                                     objectMapperMock);
+                                     objectMapperMock,
+                                     compress);
 
         String fromParticipantId = "fromParticipantId";
         MulticastPublication multicastPublication = mock(MulticastPublication.class);
@@ -244,7 +246,8 @@ public class DispatcherImplTest {
                                      messageRouterMock,
                                      messageSenderMock,
                                      messageFactoryMock,
-                                     objectMapperMock);
+                                     objectMapperMock,
+                                     compress);
 
         fixture.messageArrived(joynrMessage.getImmutableMessage());
 
