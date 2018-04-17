@@ -1679,6 +1679,63 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", functi
                 .catch(fail);
         });
 
+        it("behaves correctly when resubscribing to a publication", function(done) {
+            spyOn(testAttribute, "registerObserver").and.callThrough();
+            spyOn(testAttribute, "unregisterObserver").and.callThrough();
+            publicationManager.addPublicationProvider(providerId, provider);
+            expect(testAttribute.registerObserver).toHaveBeenCalled();
+            spyOn(publicationManager, "handleSubscriptionStop").and.callThrough();
+
+            publicationManager.handleSubscriptionRequest(
+                proxyId,
+                providerId,
+                intervalSubscriptionRequest,
+                callbackDispatcher
+            );
+
+            // get to the bottom of the event loop
+            Promise.resolve()
+                .then(function() {
+                    expect(testAttribute.get.calls.count()).toEqual(1);
+                    expect(dispatcherSpy.sendPublication.calls.count()).toEqual(1);
+                    expect(testAttribute.unregisterObserver).not.toHaveBeenCalled();
+                    expect(publicationManager.handleSubscriptionStop).not.toHaveBeenCalled();
+
+                    publicationManager.removePublicationProvider(providerId, provider);
+                })
+                .then(function() {
+                    expect(testAttribute.unregisterObserver).toHaveBeenCalled();
+                    expect(publicationManager.handleSubscriptionStop).toHaveBeenCalledWith(
+                        new SubscriptionStop({
+                            subscriptionId: intervalSubscriptionRequest.subscriptionId
+                        })
+                    );
+
+                    expect(publicationManager.hasSubscriptions()).toBeFalsy();
+
+                    callbackDispatcher.calls.reset();
+                    increaseFakeTime(1000);
+                    publicationManager.addPublicationProvider(providerId, provider);
+                    publicationManager.handleSubscriptionRequest(
+                        proxyId,
+                        providerId,
+                        intervalSubscriptionRequest,
+                        callbackDispatcher
+                    );
+                })
+                .then(function() {
+                    expect(callbackDispatcher.calls.count()).toEqual(1);
+
+                    // cleanup
+                    stopSubscription(intervalSubscriptionRequest);
+                    expect(
+                        publicationManager.hasSubscriptionsForProviderAttribute(providerId, testAttributeName)
+                    ).toBeFalsy();
+                    done();
+                })
+                .catch(fail);
+        });
+
         it("rejects attribute subscription if expiryDateMs lies in the past", function(done) {
             var request = new SubscriptionRequest({
                 subscriptionId: "subscriptionId" + uuid(),
