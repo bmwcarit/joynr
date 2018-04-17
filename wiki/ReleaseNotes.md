@@ -2,6 +2,18 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.2.0
+
+## API relevant changes
+None.
+
+## Other changes
+None.
+
+## Configuration property changes
+* **[Java]** Introduced `PROPERTY_MESSAGING_COMPRESS_REPLIES` for compressing all outgoing replies by
+  default. See [Java Configuration Reference](JavaSettings.md)for more details.
+
 # joynr 1.1.2
 
 ## API relevant changes

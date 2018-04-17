@@ -329,6 +329,13 @@ Longpolling is not supported in Jee.
 * **User property**: `joynr.messaging.primaryglobaltransport`
 * **Default value**: NOT SET
 
+### `PROPERTY_MESSAGING_COMPRESS_REPLIES`
+compress all outgoing replies by default, even if the request was not compressed.
+If the property set to be false then replies are only compressed if the corresponding request is set to be compressed.
+* **Type**: boolean
+* **User property**: `joynr.messaging.compressreplies`
+* **Default value**: false
+
 ### `MQTT_TOPIC_PREFIX_REPLYTO`
 Set the mqtt prefix to be prepended to replyTo topics when using shared subscriptions.
 If shared subscriptions are disabled, the unicast prefix is used, i.e. the replyTo address
