@@ -39,6 +39,7 @@ public final class MessagingPropertyKeys {
     public static final String PROPERTY_SERVLET_HOST_PATH = "joynr.servlet.hostpath";
     public static final String PROPERTY_SERVLET_SKIP_LONGPOLL_DEREGISTRATION = "joynr.servlet.skiplongpollderegistration";
     public static final String PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT = "joynr.messaging.primaryglobaltransport";
+    public static final String PROPERTY_MESSAGING_COMPRESS_REPLIES = "joynr.messaging.compressreplies";
 
     public static final String MQTT_TOPIC_PREFIX_REPLYTO = "joynr.messaging.mqtt.topicprefix.sharedsubscriptionsreplyto";
     public static final String MQTT_TOPIC_PREFIX_UNICAST = "joynr.messaging.mqtt.topicprefix.unicast";
