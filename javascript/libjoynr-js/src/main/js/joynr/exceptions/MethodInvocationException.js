@@ -1,5 +1,3 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
@@ -18,12 +16,11 @@
  * limitations under the License.
  * #L%
  */
-var TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
-var Typing = require("../util/Typing");
-var Util = require("../util/UtilInternal");
-var JoynrRuntimeException = require("./JoynrRuntimeException");
-var LoggerFactory = require("../system/LoggerFactory");
-var defaultSettings;
+const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
+const Typing = require("../util/Typing");
+const UtilInternal = require("../util/UtilInternal");
+const JoynrRuntimeException = require("./JoynrRuntimeException");
+let defaultSettings;
 
 /**
  * @classdesc
@@ -54,15 +51,14 @@ function MethodInvocationException(settings) {
         return new MethodInvocationException(settings);
     }
 
-    var log = LoggerFactory.getLogger("joynr.exceptions.MethodInvocationException");
-    var runtimeException = new JoynrRuntimeException(settings);
+    const runtimeException = new JoynrRuntimeException(settings);
 
     /**
      * Used for serialization.
      * @name MethodInvocationException#_typeName
      * @type String
      */
-    Util.objectDefineProperty(this, "_typeName", "joynr.exceptions.MethodInvocationException");
+    UtilInternal.objectDefineProperty(this, "_typeName", "joynr.exceptions.MethodInvocationException");
 
     /**
      * The provider version information
@@ -74,7 +70,7 @@ function MethodInvocationException(settings) {
         Typing.checkPropertyIfDefined(settings.providerVersion, "Version", "settings.providerVersion");
     }
 
-    Util.extend(this, defaultSettings, settings, runtimeException);
+    UtilInternal.extend(this, defaultSettings, settings, runtimeException);
 }
 
 defaultSettings = {};

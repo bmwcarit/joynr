@@ -1,5 +1,3 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
@@ -18,22 +16,18 @@
  * limitations under the License.
  * #L%
  */
-var WebMessagingStubFactory = require("../../../../classes/joynr/messaging/webmessaging/WebMessagingStubFactory");
-var JSONSerializer = require("../../../../classes/joynr/util/JSONSerializer");
+require("../../../node-unit-test-helper");
+const WebMessagingStubFactory = require("../../../../../main/js/joynr/messaging/webmessaging/WebMessagingStubFactory");
+const JSONSerializer = require("../../../../../main/js/joynr/util/JSONSerializer");
 
-describe("libjoynr-js.joynr.messaging.webmessaging.WebMessagingStubFactory", function() {
-    var returnValue;
-    var webMessagingSender;
-    var webMessagingStubFactory;
-    var window;
-    var origin;
-    var webMessagingAddress;
-    var joynrMessage;
+describe("libjoynr-js.joynr.messaging.webmessaging.WebMessagingStubFactory", () => {
+    let webMessagingStubFactory;
+    let window;
+    let origin;
+    let webMessagingAddress;
+    let joynrMessage;
 
-    beforeEach(function(done) {
-        returnValue = {
-            key: "returnValue"
-        };
+    beforeEach(done => {
         webMessagingStubFactory = new WebMessagingStubFactory();
 
         function Window() {}
@@ -49,7 +43,7 @@ describe("libjoynr-js.joynr.messaging.webmessaging.WebMessagingStubFactory", fun
         done();
     });
 
-    it("is instantiable and of correct type", function(done) {
+    it("is instantiable and of correct type", done => {
         expect(WebMessagingStubFactory).toBeDefined();
         expect(typeof WebMessagingStubFactory === "function").toBeTruthy();
         expect(webMessagingStubFactory).toBeDefined();
@@ -59,15 +53,15 @@ describe("libjoynr-js.joynr.messaging.webmessaging.WebMessagingStubFactory", fun
         done();
     });
 
-    it("creates a messaging stub and uses it correctly", function(done) {
-        var webMessagingStub = webMessagingStubFactory.build(webMessagingAddress);
+    it("creates a messaging stub and uses it correctly", done => {
+        const webMessagingStub = webMessagingStubFactory.build(webMessagingAddress);
         expect(webMessagingAddress.getWindow).toHaveBeenCalledWith();
         expect(webMessagingAddress.getOrigin).toHaveBeenCalledWith();
 
-        var param = {
+        const param = {
             message: joynrMessage
         };
-        var result = webMessagingStub.transmit(param);
+        webMessagingStub.transmit(param);
         expect(window.postMessage).toHaveBeenCalledWith(JSON.parse(JSONSerializer.stringify(param)), origin);
         done();
     });

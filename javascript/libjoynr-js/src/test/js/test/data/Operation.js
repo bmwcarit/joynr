@@ -1,4 +1,3 @@
-/*jslint nomen: true, node: true */
 /*
  * #%L
  * %%
@@ -18,15 +17,16 @@
  * #L%
  */
 // This data file is used in Test[ProxyProvider]Operation
-var RadioStation = require("../../../test-classes/joynr/vehicle/radiotypes/RadioStation");
-var ErrorList = require("../../../test-classes/joynr/vehicle/radiotypes/ErrorList");
-var TestEnum = require("../../../test-classes/joynr/tests/testTypes/TestEnum");
+require("../../node-unit-test-helper");
+const RadioStation = require("../../../generated/joynr/vehicle/radiotypes/RadioStation");
+const ErrorList = require("../../../generated/joynr/vehicle/radiotypes/ErrorList");
+const TestEnum = require("../../../generated/joynr/tests/testTypes/TestEnum");
 
-var radioStationVar = new RadioStation({
+const radioStationVar = new RadioStation({
     name: "asdf",
     byteBuffer: []
 });
-var testData = [
+const testData = [
     {
         signature: {
             inputParameter: [

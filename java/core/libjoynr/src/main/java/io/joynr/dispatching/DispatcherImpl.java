@@ -26,14 +26,20 @@ import java.util.Set;
 
 import javax.inject.Singleton;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
+
 import io.joynr.dispatching.subscription.PublicationManager;
 import io.joynr.dispatching.subscription.SubscriptionManager;
 import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.sender.MessageSender;
@@ -53,9 +59,6 @@ import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
 import joynr.types.DiscoveryEntryWithMetaInfo;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class DispatcherImpl implements Dispatcher {
 
     private static final Logger logger = LoggerFactory.getLogger(DispatcherImpl.class);
@@ -66,6 +69,7 @@ public class DispatcherImpl implements Dispatcher {
     private final MessageRouter messageRouter;
     private final MessageSender messageSender;
     private ObjectMapper objectMapper;
+    private boolean overrideCompress;
 
     @Inject
     @Singleton
@@ -76,7 +80,8 @@ public class DispatcherImpl implements Dispatcher {
                           MessageRouter messageRouter,
                           MessageSender messageSender,
                           MutableMessageFactory messageFactory,
-                          ObjectMapper objectMapper) {
+                          ObjectMapper objectMapper,
+                          @Named(MessagingPropertyKeys.PROPERTY_MESSAGING_COMPRESS_REPLIES) boolean overrideCompress) {
         this.requestReplyManager = requestReplyManager;
         this.subscriptionManager = subscriptionManager;
         this.publicationManager = publicationManager;
@@ -84,6 +89,7 @@ public class DispatcherImpl implements Dispatcher {
         this.messageSender = messageSender;
         this.messageFactory = messageFactory;
         this.objectMapper = objectMapper;
+        this.overrideCompress = overrideCompress;
     }
 
     // CHECKSTYLE:ON
@@ -153,10 +159,15 @@ public class DispatcherImpl implements Dispatcher {
     public void sendReply(final String fromParticipantId,
                           final String toParticipantId,
                           Reply reply,
-                          long expiryDateMs,
-                          Map<String, String> customHeaders) throws IOException {
+                          final long expiryDateMs,
+                          Map<String, String> customHeaders,
+                          boolean compress) throws IOException {
         MessagingQos messagingQos = new MessagingQos(expiryDateMs);
         messagingQos.getCustomMessageHeaders().putAll(customHeaders);
+        if (overrideCompress) {
+            compress = true;
+        }
+        messagingQos.setCompress(compress);
         MutableMessage message = messageFactory.createReply(fromParticipantId, toParticipantId, reply, messagingQos);
         messageSender.sendMessage(message);
     }
@@ -218,7 +229,12 @@ public class DispatcherImpl implements Dispatcher {
                 request.setCreatorUserId(message.getCreatorUserId());
                 request.setContext(message.getContext());
                 logger.trace("Parsed request from message payload :" + payload);
-                handle(request, message.getSender(), message.getRecipient(), expiryDate, customHeaders);
+                handle(request,
+                       message.getSender(),
+                       message.getRecipient(),
+                       expiryDate,
+                       customHeaders,
+                       message.isCompressed());
             } else if (Message.VALUE_MESSAGE_TYPE_ONE_WAY.equals(type)) {
                 OneWayRequest oneWayRequest = objectMapper.readValue(payload, OneWayRequest.class);
                 oneWayRequest.setCreatorUserId(message.getCreatorUserId());
@@ -258,13 +274,14 @@ public class DispatcherImpl implements Dispatcher {
                         final String fromParticipantId,
                         final String toParticipantId,
                         final long expiryDate,
-                        final Map<String, String> customHeaders) {
+                        final Map<String, String> customHeaders,
+                        final boolean compress) {
         requestReplyManager.handleRequest(new ProviderCallback<Reply>() {
             @Override
             public void onSuccess(Reply reply) {
                 try {
                     if (!DispatcherUtils.isExpired(expiryDate)) {
-                        sendReply(toParticipantId, fromParticipantId, reply, expiryDate, customHeaders);
+                        sendReply(toParticipantId, fromParticipantId, reply, expiryDate, customHeaders, compress);
                     } else {
                         logger.error("Error: reply {} is not send to caller, as the expiryDate of the reply message {} has been reached.",
                                      reply,
@@ -283,7 +300,7 @@ public class DispatcherImpl implements Dispatcher {
                 }
                 Reply reply = new Reply(request.getRequestReplyId(), error);
                 try {
-                    sendReply(toParticipantId, fromParticipantId, reply, expiryDate, customHeaders);
+                    sendReply(toParticipantId, fromParticipantId, reply, expiryDate, customHeaders, compress);
                 } catch (Exception e) {
                     logger.error("Error sending error reply: \r\n {}", reply, e);
                 }

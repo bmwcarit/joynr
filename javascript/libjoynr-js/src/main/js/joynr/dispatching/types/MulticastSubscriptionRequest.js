@@ -1,5 +1,3 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
@@ -18,11 +16,11 @@
  * limitations under the License.
  * #L%
  */
-var Typing = require("../../util/Typing");
-var MulticastSubscriptionQos = require("../../proxy/MulticastSubscriptionQos");
-var LoggerFactory = require("../../system/LoggerFactory");
-var log = LoggerFactory.getLogger("joynr/dispatching/types/MulticastSubscriptionRequest");
-var defaultSettings = {
+const Typing = require("../../util/Typing");
+const MulticastSubscriptionQos = require("../../proxy/MulticastSubscriptionQos");
+const LoggingManager = require("../../system/LoggingManager");
+const log = LoggingManager.getLogger("joynr/dispatching/types/MulticastSubscriptionRequest");
+const defaultSettings = {
     qos: new MulticastSubscriptionQos()
 };
 
@@ -86,7 +84,6 @@ function MulticastSubscriptionRequest(settings) {
      */
     Object.defineProperty(this, "_typeName", {
         value: "joynr.MulticastSubscriptionRequest",
-        readable: true,
         writable: false,
         enumerable: true,
         configurable: false
@@ -103,7 +100,6 @@ function MulticastSubscriptionRequest(settings) {
  */
 Object.defineProperty(MulticastSubscriptionRequest, "_typeName", {
     value: "joynr.MulticastSubscriptionRequest",
-    readable: true,
     writable: false,
     enumerable: true,
     configurable: false

@@ -2,8 +2,9 @@ userdirectorydb
 .classpath
 .project
 .settings/
-src/main/generated*
+src/main/js/generated*
 src/test/generated*
+src/main/js/joynr/buildSignature.js
 capabilitiesdump/capabilities.json
 joynr.properties
 joynr_participantIds.properties

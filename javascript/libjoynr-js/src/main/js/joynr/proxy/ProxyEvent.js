@@ -1,5 +1,3 @@
-/*jslint es5: true, nomen: true, node: true */
-
 /*
  * #%L
  * %%
@@ -18,10 +16,9 @@
  * limitations under the License.
  * #L%
  */
-var Promise = require("../../global/Promise");
-var BroadcastFilterParameters = require("./BroadcastFilterParameters");
-var SubscriptionUtil = require("../dispatching/subscription/util/SubscriptionUtil");
-var Util = require("../util/UtilInternal");
+const Promise = require("../../global/Promise");
+const BroadcastFilterParameters = require("./BroadcastFilterParameters");
+const SubscriptionUtil = require("../dispatching/subscription/util/SubscriptionUtil");
 
 /**
  * Checks if the given datatypes and values match the given broadcast parameters
@@ -39,11 +36,9 @@ var Util = require("../util/UtilInternal");
  * @returns undefined if unnamedBroadcastValues does not match broadcastSignature
  */
 function getNamedParameters(unnamedBroadcastValues, broadcastParameter) {
-    var i,
+    let i,
         parameter,
-        parameterName,
-        namedParameters = {},
-        filteredParameterType;
+        namedParameters = {};
 
     // check if number of given parameters matches number
     // of parameters in broadcast signature (keys.length)
@@ -131,13 +126,13 @@ function ProxyEvent(parent, settings) {
 ProxyEvent.prototype.subscribe = function subscribe(subscribeParameters) {
     SubscriptionUtil.validatePartitions(subscribeParameters.partitions);
     if (subscribeParameters.filterParameters !== undefined && subscribeParameters.filterParameters !== null) {
-        var checkResult = SubscriptionUtil.checkFilterParameters(
+        const checkResult = SubscriptionUtil.checkFilterParameters(
             this._settings.filterParameters,
             subscribeParameters.filterParameters.filterParameters,
             this._settings.broadcastName
         );
         if (checkResult.caughtErrors.length !== 0) {
-            var errorMessage = JSON.stringify(checkResult.caughtErrors);
+            const errorMessage = JSON.stringify(checkResult.caughtErrors);
             return Promise.reject(
                 new Error(
                     'SubscriptionRequest could not be processed, as the filterParameters "' +
@@ -148,7 +143,7 @@ ProxyEvent.prototype.subscribe = function subscribe(subscribeParameters) {
             );
         }
     }
-    var that = this;
+    const that = this;
     return this._settings.dependencies.subscriptionManager.registerBroadcastSubscription({
         proxyId: this._parent.proxyParticipantId,
         providerDiscoveryEntry: this._parent.providerDiscoveryEntry,
@@ -156,7 +151,7 @@ ProxyEvent.prototype.subscribe = function subscribe(subscribeParameters) {
         broadcastParameter: this._settings.broadcastParameter,
         subscriptionQos: subscribeParameters.subscriptionQos,
         subscriptionId: subscribeParameters.subscriptionId,
-        onReceive: function(response) {
+        onReceive(response) {
             subscribeParameters.onReceive(getNamedParameters(response, that._settings.broadcastParameter));
         },
         selective: this._settings.selective,

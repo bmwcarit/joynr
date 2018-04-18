@@ -1,5 +1,3 @@
-/*jslint es5: true, nomen: true, node: true */
-
 /*
  * #%L
  * %%
@@ -45,8 +43,8 @@ function ParticipantIdStorage(persistency, uuid) {
  * @returns {String} the retrieved or generated participantId
  */
 ParticipantIdStorage.prototype.getParticipantId = function getParticipantId(domain, provider) {
-    var key = "joynr.participant." + domain + "." + provider.interfaceName;
-    var participantId = this._persistency.getItem(key);
+    const key = "joynr.participant." + domain + "." + provider.interfaceName;
+    let participantId = this._persistency.getItem(key);
     if (!participantId) {
         participantId = this._uuid();
         this._persistency.setItem(key, participantId);

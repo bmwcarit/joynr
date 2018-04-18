@@ -1,5 +1,3 @@
-/*jslint es5: true, node: true, node: true */
-/*global fail: true */
 /*
  * #%L
  * %%
@@ -18,32 +16,32 @@
  * limitations under the License.
  * #L%
  */
-var Promise = require("../../../classes/global/Promise");
-var RadioProxy = require("../../../test-classes/joynr/vehicle/RadioProxy");
-var RadioStation = require("../../../test-classes/joynr/vehicle/radiotypes/RadioStation");
-var ProxyAttribute = require("../../../classes/joynr/proxy/ProxyAttribute");
-var ProxyOperation = require("../../../classes/joynr/proxy/ProxyOperation");
-var ProxyEvent = require("../../../classes/joynr/proxy/ProxyEvent");
-var TypeRegistrySingleton = require("../../../classes/joynr/types/TypeRegistrySingleton");
-var DiscoveryQos = require("../../../classes/joynr/proxy/DiscoveryQos");
-var MessagingQos = require("../../../classes/joynr/messaging/MessagingQos");
-var TestWithVersionProxy = require("../../../test-classes/joynr/tests/TestWithVersionProxy");
-var TestWithoutVersionProxy = require("../../../test-classes/joynr/tests/TestWithoutVersionProxy");
+require("../../node-unit-test-helper");
+const Promise = require("../../../../main/js/global/Promise");
+const RadioProxy = require("../../../generated/joynr/vehicle/RadioProxy");
+const ProxyAttribute = require("../../../../main/js/joynr/proxy/ProxyAttribute");
+const ProxyOperation = require("../../../../main/js/joynr/proxy/ProxyOperation");
+const ProxyEvent = require("../../../../main/js/joynr/proxy/ProxyEvent");
+const TypeRegistrySingleton = require("../../../../main/js/joynr/types/TypeRegistrySingleton");
+const DiscoveryQos = require("../../../../main/js/joynr/proxy/DiscoveryQos");
+const MessagingQos = require("../../../../main/js/joynr/messaging/MessagingQos");
+const TestWithVersionProxy = require("../../../generated/joynr/tests/TestWithVersionProxy");
+const TestWithoutVersionProxy = require("../../../generated/joynr/tests/TestWithoutVersionProxy");
 
-describe("libjoynr-js.joynr.proxy.Proxy", function() {
-    var settings, dependencies, radioProxy;
-    var typeRegistry = TypeRegistrySingleton.getInstance();
+describe("libjoynr-js.joynr.proxy.Proxy", () => {
+    let settings, radioProxy;
+    const typeRegistry = TypeRegistrySingleton.getInstance();
 
-    beforeEach(function(done) {
+    beforeEach(done => {
         settings = {
             domain: "",
             interfaceName: "",
             discoveryQos: new DiscoveryQos(),
             messagingQos: new MessagingQos(),
             proxyElementTypes: {
-                ProxyAttribute: ProxyAttribute,
-                ProxyOperation: ProxyOperation,
-                ProxyEvent: ProxyEvent
+                ProxyAttribute,
+                ProxyOperation,
+                ProxyEvent
             },
             dependencies: {
                 subscriptionManager: {}
@@ -53,7 +51,7 @@ describe("libjoynr-js.joynr.proxy.Proxy", function() {
         done();
     });
 
-    it("version is set correctly", function(done) {
+    it("version is set correctly", done => {
         expect(TestWithVersionProxy.MAJOR_VERSION).toBeDefined();
         expect(TestWithVersionProxy.MAJOR_VERSION).toEqual(47);
         expect(TestWithVersionProxy.MINOR_VERSION).toBeDefined();
@@ -61,7 +59,7 @@ describe("libjoynr-js.joynr.proxy.Proxy", function() {
         done();
     });
 
-    it("default version is set correctly", function(done) {
+    it("default version is set correctly", done => {
         expect(TestWithoutVersionProxy.MAJOR_VERSION).toBeDefined();
         expect(TestWithoutVersionProxy.MAJOR_VERSION).toEqual(0);
         expect(TestWithoutVersionProxy.MINOR_VERSION).toBeDefined();
@@ -69,7 +67,7 @@ describe("libjoynr-js.joynr.proxy.Proxy", function() {
         done();
     });
 
-    it("RadioProxy is instantiable", function(done) {
+    it("RadioProxy is instantiable", done => {
         expect(radioProxy).toBeDefined();
         expect(radioProxy).not.toBeNull();
         expect(typeof radioProxy === "object").toBeTruthy();
@@ -77,38 +75,31 @@ describe("libjoynr-js.joynr.proxy.Proxy", function() {
         done();
     });
 
-    it("RadioProxy provides API to access used datatypes", function(done) {
+    it("RadioProxy provides API to access used datatypes", done => {
         expect(RadioProxy.getUsedDatatypes).toBeDefined();
         done();
     });
 
-    it("RadioProxy.getUsedDatatype can be used to synchronize to the successful registration of all used datatypes", function(
-        done
-    ) {
-        var datatypePromises;
-        var allDatatypesRegistered;
-        allDatatypesRegistered = false;
+    it("RadioProxy.getUsedDatatype can be used to synchronize to the successful registration of all used datatypes", done => {
+        let datatypePromises;
         expect(RadioProxy.getUsedDatatypes).toBeDefined();
-        datatypePromises = RadioProxy.getUsedDatatypes().map(function(datatype) {
+        datatypePromises = RadioProxy.getUsedDatatypes().map(datatype => {
             return typeRegistry.getTypeRegisteredPromise(datatype, 1000);
         });
         Promise.all(datatypePromises)
-            .then(function() {
+            .then(() => {
                 done();
                 return null;
             })
-            .catch(function(error) {
-                fail("failed to register all datatypes at the typeRegistry");
-                return null;
-            });
+            .catch(fail);
     });
 
-    it("RadioProxy saves settings object", function(done) {
+    it("RadioProxy saves settings object", done => {
         expect(radioProxy.settings).toEqual(settings);
         done();
     });
 
-    it("RadioProxy has all members", function(done) {
+    it("RadioProxy has all members", done => {
         expect(radioProxy.isOn).toBeDefined();
         expect(radioProxy.addFavoriteStation).toBeDefined();
         expect(typeof radioProxy.addFavoriteStation === "function").toBeTruthy();

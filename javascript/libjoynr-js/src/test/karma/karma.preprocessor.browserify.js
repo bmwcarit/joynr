@@ -17,45 +17,50 @@
  * #L%
  */
 
-module.exports = function (customMapping) {
+module.exports = function(customMapping) {
     return {
-        'preprocessor:browserify': ['factory', function() {
-            // @todo install browserify to correct location in mvn or make it available
-            // in any other way
-            var path = require('path');
-            var karmaModulePath = process.argv[1];
-            var browserify = require(path.join(karmaModulePath, '../../browserify'));
+        "preprocessor:browserify": [
+            "factory",
+            function() {
+                var path = require("path");
+                var karmaModulePath = process.argv[1];
+                var browserify = require(path.join(karmaModulePath, "../../browserify"));
 
-            return function (content, file, done) {
-                var bundle = browserify()
-                    .add(file.path)
-                    .require(path.join(karmaModulePath, '../../../joynr'), {expose: 'joynr'});
+                return function(content, file, done) {
+                    var joynrPath = path.join(karmaModulePath, "../../../src/main/js/");
+                    var bundle = browserify()
+                        .add(file.path)
+                        .require(joynrPath, { expose: "joynr" });
 
-                if (customMapping) {
-                    for(var fromModule in customMapping) {
-                        var toModule = customMapping[fromModule];
-                        bundle = bundle.require(toModule, {expose: fromModule});
-                    }
-                }
-
-                bundle
-                    .exclude('smrf-native-cpp.node')
-                    .exclude('wscpp')
-                    .exclude('bufferutil')
-                    .exclude('utf-8-validate')
-                    .exclude('node-persist')
-                    .bundle(function (err, buffer) {
-                        if (err) {
-                            console.log(file, err.toString());
-                            process.exit(1);
+                    if (customMapping) {
+                        for (var fromModule in customMapping) {
+                            var toModule = customMapping[fromModule];
+                            bundle = bundle.require(toModule, { expose: fromModule });
                         }
-                        done(null, buffer.toString());
-                    })
-                    .on('error', function (err) {
-                        console.log(file, err)
-                        process.exit(1);
-                    });
-            };
-        }]
+                    }
+
+                    bundle
+                        .exclude("smrf-native-cpp.node")
+                        .exclude("wscpp")
+                        .exclude("bufferutil")
+                        .exclude("utf-8-validate")
+                        .exclude("node-persist")
+                        .ignore(path.join(joynrPath, "joynr/start/InterTabClusterControllerRuntime.js"))
+                        .ignore(path.join(joynrPath, "joynr/start/InterTabLibjoynrRuntime.js"))
+                        .ignore(path.join(joynrPath, "joynr/start/WebSocketLibjoynrRuntime.js"))
+                        .bundle(function(err, buffer) {
+                            if (err) {
+                                console.log(file, err.toString());
+                                process.exit(1);
+                            }
+                            done(null, buffer.toString());
+                        })
+                        .on("error", function(err) {
+                            console.log(file, err);
+                            process.exit(1);
+                        });
+                };
+            }
+        ]
     };
-}
+};

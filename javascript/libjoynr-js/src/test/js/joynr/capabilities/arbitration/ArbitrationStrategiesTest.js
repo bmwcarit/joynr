@@ -1,5 +1,3 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
@@ -18,22 +16,22 @@
  * limitations under the License.
  * #L%
  */
-var ArbitrationStrategyCollection = require("../../../../classes/joynr/types/ArbitrationStrategyCollection");
-var DiscoveryEntry = require("../../../../classes/joynr/types/DiscoveryEntry");
-var ProviderScope = require("../../../../classes/joynr/types/ProviderScope");
-var ProviderQos = require("../../../../classes/joynr/types/ProviderQos");
-var CustomParameter = require("../../../../classes/joynr/types/CustomParameter");
-var Version = require("../../../../classes/joynr/types/Version");
-var InProcessAddress = require("../../../../classes/joynr/messaging/inprocess/InProcessAddress");
+require("../../../node-unit-test-helper");
+const ArbitrationStrategyCollection = require("../../../../../main/js/joynr/types/ArbitrationStrategyCollection");
+const DiscoveryEntry = require("../../../../../main/js/generated/joynr/types/DiscoveryEntry");
+const ProviderScope = require("../../../../../main/js/generated/joynr/types/ProviderScope");
+const ProviderQos = require("../../../../../main/js/generated/joynr/types/ProviderQos");
+const CustomParameter = require("../../../../../main/js/generated/joynr/types/CustomParameter");
+const Version = require("../../../../../main/js/generated/joynr/types/Version");
 
-describe("libjoynr-js.joynr.types.ArbitrationStrategyCollection", function() {
-    it("is defined and of correct type", function() {
+describe("libjoynr-js.joynr.types.ArbitrationStrategyCollection", () => {
+    it("is defined and of correct type", () => {
         expect(ArbitrationStrategyCollection).toBeDefined();
         expect(ArbitrationStrategyCollection).not.toBeNull();
         expect(typeof ArbitrationStrategyCollection === "object").toBeTruthy();
     });
 
-    it("has all required strategies of type function", function() {
+    it("has all required strategies of type function", () => {
         expect(ArbitrationStrategyCollection.Nothing).toBeDefined();
         expect(ArbitrationStrategyCollection.HighestPriority).toBeDefined();
         expect(ArbitrationStrategyCollection.Keyword).toBeDefined();
@@ -162,14 +160,14 @@ describe("libjoynr-js.joynr.types.ArbitrationStrategyCollection", function() {
         ];
     }
 
-    it("Strategy 'Nothing' does nothing", function() {
+    it("Strategy 'Nothing' does nothing", () => {
         expect(ArbitrationStrategyCollection.Nothing(getDiscoveryEntryList())).toEqual(getDiscoveryEntryList());
     });
 
-    it("Strategy 'HighestPriority' includes all capability infos", function() {
-        var discoveryEntryList = getDiscoveryEntryList();
-        var discoveryEntryId;
-        var highestPriority = ArbitrationStrategyCollection.HighestPriority(discoveryEntryList);
+    it("Strategy 'HighestPriority' includes all capability infos", () => {
+        const discoveryEntryList = getDiscoveryEntryList();
+        let discoveryEntryId;
+        const highestPriority = ArbitrationStrategyCollection.HighestPriority(discoveryEntryList);
         for (discoveryEntryId in discoveryEntryList) {
             if (discoveryEntryList.hasOwnProperty(discoveryEntryId)) {
                 expect(highestPriority).toContain(discoveryEntryList[discoveryEntryId]);
@@ -177,18 +175,18 @@ describe("libjoynr-js.joynr.types.ArbitrationStrategyCollection", function() {
         }
     });
 
-    it("Strategy 'HighestPriority' sorts according to providerQos priority", function() {
-        var highestPriority = ArbitrationStrategyCollection.HighestPriority(getDiscoveryEntryList());
-        var i;
+    it("Strategy 'HighestPriority' sorts according to providerQos priority", () => {
+        const highestPriority = ArbitrationStrategyCollection.HighestPriority(getDiscoveryEntryList());
+        let i;
         for (i = 0; i < highestPriority.length - 1; ++i) {
             expect(highestPriority[i].qos.priority).toBeGreaterThan(highestPriority[i + 1].qos.priority);
         }
     });
 
-    it("Strategy 'LastSeen' includes all capability infos", function() {
-        var discoveryEntryList = getDiscoveryEntryList();
-        var discoveryEntryId;
-        var latestSeen = ArbitrationStrategyCollection.LastSeen(discoveryEntryList);
+    it("Strategy 'LastSeen' includes all capability infos", () => {
+        const discoveryEntryList = getDiscoveryEntryList();
+        let discoveryEntryId;
+        const latestSeen = ArbitrationStrategyCollection.LastSeen(discoveryEntryList);
         for (discoveryEntryId in discoveryEntryList) {
             if (discoveryEntryList.hasOwnProperty(discoveryEntryId)) {
                 expect(latestSeen).toContain(discoveryEntryList[discoveryEntryId]);
@@ -196,21 +194,21 @@ describe("libjoynr-js.joynr.types.ArbitrationStrategyCollection", function() {
         }
     });
 
-    it("Strategy 'LastSeen' sorts according to lastSeenDateMs priority", function() {
-        var lastSeen = ArbitrationStrategyCollection.LastSeen(getDiscoveryEntryList());
-        var i;
+    it("Strategy 'LastSeen' sorts according to lastSeenDateMs priority", () => {
+        const lastSeen = ArbitrationStrategyCollection.LastSeen(getDiscoveryEntryList());
+        let i;
         for (i = 0; i < lastSeen.length - 1; ++i) {
             expect(lastSeen[i].lastSeenDateMs).toBeGreaterThan(lastSeen[i + 1].lastSeenDateMs);
         }
     });
 
-    it("Strategy 'Keyword' only includes capability infos that have the keyword Qos set to 'myKeyword'", function() {
-        var discoveryEntryId;
-        var qosId;
-        var found;
-        var qosParam;
-        var keyword = "myKeyword";
-        var discoveryEntryList = getDiscoveryEntryList();
+    it("Strategy 'Keyword' only includes capability infos that have the keyword Qos set to 'myKeyword'", () => {
+        let discoveryEntryId;
+        let qosId;
+        let found;
+        let qosParam;
+        const keyword = "myKeyword";
+        const discoveryEntryList = getDiscoveryEntryList();
         // The arbitrator only calls the strategy with the list
         // of capabillities, so Keyword should be tested with bind()
         // which however is not supported by PhantomJS 1
@@ -222,11 +220,11 @@ describe("libjoynr-js.joynr.types.ArbitrationStrategyCollection", function() {
                         var keywordCapInfoList =
                             arbitrationStrategy(discoveryEntryList);
                          */
-        var keywordCapInfoList = ArbitrationStrategyCollection.Keyword(keyword, discoveryEntryList);
+        const keywordCapInfoList = ArbitrationStrategyCollection.Keyword(keyword, discoveryEntryList);
         expect(keywordCapInfoList.length).toBe(2);
         for (discoveryEntryId in discoveryEntryList) {
             if (discoveryEntryList.hasOwnProperty(discoveryEntryId)) {
-                var capInfo = discoveryEntryList[discoveryEntryId];
+                const capInfo = discoveryEntryList[discoveryEntryId];
                 found = false;
                 if (capInfo.qos.customParameters && Array.isArray(capInfo.qos.customParameters)) {
                     for (qosId in capInfo.qos.customParameters) {

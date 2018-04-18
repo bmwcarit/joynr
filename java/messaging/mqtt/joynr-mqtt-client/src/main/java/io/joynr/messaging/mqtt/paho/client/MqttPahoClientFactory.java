@@ -34,6 +34,7 @@ import io.joynr.messaging.mqtt.JoynrMqttClient;
 import io.joynr.messaging.mqtt.MqttClientFactory;
 import io.joynr.messaging.mqtt.MqttClientIdProvider;
 import io.joynr.messaging.mqtt.MqttModule;
+import io.joynr.messaging.mqtt.statusmetrics.MqttStatusReceiver;
 import io.joynr.messaging.routing.MessageRouter;
 import joynr.system.RoutingTypes.MqttAddress;
 
@@ -51,6 +52,7 @@ public class MqttPahoClientFactory implements MqttClientFactory {
     private int maxMsgSizeBytes;
     private ScheduledExecutorService scheduledExecutorService;
     private MqttClientIdProvider clientIdProvider;
+    private MqttStatusReceiver mqttStatusReceiver;
     private boolean cleanSession;
 
     @Inject(optional = true)
@@ -80,11 +82,13 @@ public class MqttPahoClientFactory implements MqttClientFactory {
                                  @Named(MqttModule.PROPERTY_KEY_MQTT_MAX_MESSAGE_SIZE_BYTES) int maxMsgSizeBytes,
                                  @Named(MqttModule.PROPERTY_MQTT_CLEAN_SESSION) boolean cleanSession,
                                  @Named(MessageRouter.SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduledExecutorService,
-                                 MqttClientIdProvider mqttClientIdProvider) {
+                                 MqttClientIdProvider mqttClientIdProvider,
+                                 MqttStatusReceiver mqttStatusReceiver) {
         this.ownAddress = ownAddress;
         this.reconnectSleepMs = reconnectSleepMs;
         this.scheduledExecutorService = scheduledExecutorService;
         this.clientIdProvider = mqttClientIdProvider;
+        this.mqttStatusReceiver = mqttStatusReceiver;
         this.keepAliveTimerSec = keepAliveTimerSec;
         this.connectionTimeoutSec = connectionTimeoutSec;
         this.timeToWaitMs = timeToWaitMs;
@@ -124,7 +128,8 @@ public class MqttPahoClientFactory implements MqttClientFactory {
                                             keyStorePath,
                                             trustStorePath,
                                             keyStorePWD,
-                                            trustStorePWD);
+                                            trustStorePWD,
+                                            mqttStatusReceiver);
         } catch (MqttException e) {
             logger.error("Create MqttClient failed", e);
         }

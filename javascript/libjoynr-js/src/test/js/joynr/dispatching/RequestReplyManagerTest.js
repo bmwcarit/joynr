@@ -1,5 +1,3 @@
-/*jslint es5: true, node: true, node: true */
-/*global fail: true */
 /*
  * #%L
  * %%
@@ -18,36 +16,37 @@
  * limitations under the License.
  * #L%
  */
-var RequestReplyManager = require("../../../classes/joynr/dispatching/RequestReplyManager");
-var OneWayRequest = require("../../../classes/joynr/dispatching/types/OneWayRequest");
-var Request = require("../../../classes/joynr/dispatching/types/Request");
-var Reply = require("../../../classes/joynr/dispatching/types/Reply");
-var TypeRegistrySingleton = require("../../../classes/joynr/types/TypeRegistrySingleton");
-var Typing = require("../../../classes/joynr/util/Typing");
-var UtilInternal = require("../../../classes/joynr/util/UtilInternal");
-var JSONSerializer = require("../../../classes/joynr/util/JSONSerializer");
-var MethodInvocationException = require("../../../classes/joynr/exceptions/MethodInvocationException");
-var Version = require("../../../classes/joynr/types/Version");
-var DiscoveryEntryWithMetaInfo = require("../../../classes/joynr/types/DiscoveryEntryWithMetaInfo");
-var ProviderQos = require("../../../classes/joynr/types/ProviderQos");
-var MessagingQos = require("../../../classes/joynr/messaging/MessagingQos");
-var Promise = require("../../../classes/global/Promise");
-var waitsFor = require("../../../test-classes/global/WaitsFor");
-describe("libjoynr-js.joynr.dispatching.RequestReplyManager", function() {
-    var dispatcherSpy;
-    var requestReplyManager;
-    var typeRegistry;
-    var ttl_ms = 50;
-    var toleranceMs = 1500; // at least 1000 since that's the cleanup interval
-    var requestReplyId = "requestReplyId";
-    var testResponse = ["testResponse"];
-    var reply = new Reply({
-        requestReplyId: requestReplyId,
+require("../../node-unit-test-helper");
+const RequestReplyManager = require("../../../../main/js/joynr/dispatching/RequestReplyManager");
+const OneWayRequest = require("../../../../main/js/joynr/dispatching/types/OneWayRequest");
+const Request = require("../../../../main/js/joynr/dispatching/types/Request");
+const Reply = require("../../../../main/js/joynr/dispatching/types/Reply");
+const TypeRegistrySingleton = require("../../../../main/js/joynr/types/TypeRegistrySingleton");
+const Typing = require("../../../../main/js/joynr/util/Typing");
+const UtilInternal = require("../../../../main/js/joynr/util/UtilInternal");
+const JSONSerializer = require("../../../../main/js/joynr/util/JSONSerializer");
+const MethodInvocationException = require("../../../../main/js/joynr/exceptions/MethodInvocationException");
+const Version = require("../../../../main/js/generated/joynr/types/Version");
+const DiscoveryEntryWithMetaInfo = require("../../../../main/js/generated/joynr/types/DiscoveryEntryWithMetaInfo");
+const ProviderQos = require("../../../../main/js/generated/joynr/types/ProviderQos");
+const MessagingQos = require("../../../../main/js/joynr/messaging/MessagingQos");
+const Promise = require("../../../../main/js/global/Promise");
+const waitsFor = require("../../../../test/js/global/WaitsFor");
+describe("libjoynr-js.joynr.dispatching.RequestReplyManager", () => {
+    let dispatcherSpy;
+    let requestReplyManager;
+    let typeRegistry;
+    const ttl_ms = 50;
+    const toleranceMs = 1500; // at least 1000 since that's the cleanup interval
+    const requestReplyId = "requestReplyId";
+    const testResponse = ["testResponse"];
+    const reply = new Reply({
+        requestReplyId,
         response: testResponse
     });
-    var replySettings = {};
+    const replySettings = {};
 
-    var providerDiscoveryEntry = new DiscoveryEntryWithMetaInfo({
+    const providerDiscoveryEntry = new DiscoveryEntryWithMetaInfo({
         providerVersion: new Version({ majorVersion: 0, minorVersion: 23 }),
         domain: "testProviderDomain",
         interfaceName: "interfaceName",
@@ -83,16 +82,7 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", function() {
         });
     }
 
-    RadioStation.getMemberType = function(i) {};
-
-    var Country = {
-        AUSTRALIA: "AUSTRALIA",
-        AUSTRIA: "AUSTRIA",
-        CANADA: "CANADA",
-        GERMANY: "GERMANY",
-        ITALY: "ITALY",
-        UNITED_KINGDOM: "UNITED_KINGDOM"
-    };
+    RadioStation.getMemberType = function() {};
 
     function ComplexTypeWithComplexAndSimpleProperties(radioStation, myBoolean, myString) {
         if (!(this instanceof ComplexTypeWithComplexAndSimpleProperties)) {
@@ -118,12 +108,12 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", function() {
         });
     }
 
-    ComplexTypeWithComplexAndSimpleProperties.getMemberType = function(i) {};
+    ComplexTypeWithComplexAndSimpleProperties.getMemberType = function() {};
 
     /**
      * Called before each test.
      */
-    beforeEach(function() {
+    beforeEach(() => {
         dispatcherSpy = jasmine.createSpyObj("DispatcherSpy", ["sendOneWayRequest", "sendRequest"]);
         typeRegistry = TypeRegistrySingleton.getInstance();
         typeRegistry.addType("test.RadioStation", RadioStation);
@@ -134,19 +124,19 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", function() {
         requestReplyManager = new RequestReplyManager(dispatcherSpy, typeRegistry);
     });
 
-    afterEach(function() {
+    afterEach(() => {
         requestReplyManager.shutdown();
     });
 
-    it("is instantiable", function(done) {
+    it("is instantiable", done => {
         expect(requestReplyManager).toBeDefined();
         done();
     });
 
-    var tripleJ = new RadioStation("TripleJ", "107.7", "AUSTRALIA");
-    var fm4 = new RadioStation("FM4", "104.0", "AUSTRIA");
-    var complex = new ComplexTypeWithComplexAndSimpleProperties(tripleJ, true, "hello");
-    var testData = [
+    const tripleJ = new RadioStation("TripleJ", "107.7", "AUSTRALIA");
+    const fm4 = new RadioStation("FM4", "104.0", "AUSTRIA");
+    const complex = new ComplexTypeWithComplexAndSimpleProperties(tripleJ, true, "hello");
+    const testData = [
         {
             paramDatatype: ["Boolean"],
             params: [true]
@@ -186,8 +176,8 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", function() {
     ];
 
     function testHandleRequestForGetterSetterMethod(attributeName, params, promiseChain) {
-        var providerParticipantId = "providerParticipantId";
-        var provider = {};
+        const providerParticipantId = "providerParticipantId";
+        const provider = {};
         provider[attributeName] = {
             get: jasmine.createSpy("getSpy"),
             set: jasmine.createSpy("setSpy")
@@ -197,8 +187,8 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", function() {
         provider[attributeName].set.and.returnValue([]);
 
         return promiseChain
-            .then(function() {
-                var request = new Request({
+            .then(() => {
+                const request = new Request({
                     methodName: "get" + UtilInternal.firstUpper(attributeName),
                     paramDatatypes: [],
                     params: []
@@ -209,15 +199,15 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", function() {
                 requestReplyManager.handleRequest(providerParticipantId, request, jasmine.createSpy);
 
                 return waitsFor(
-                    function() {
+                    () => {
                         return provider[attributeName].get.calls.count() > 0;
                     },
                     "getAttribute to be called",
                     100
                 );
             })
-            .then(function() {
-                var request = new Request({
+            .then(() => {
+                const request = new Request({
                     methodName: "set" + UtilInternal.firstUpper(attributeName),
                     paramDatatypes: [],
                     // untype objects through serialization and deserialization
@@ -229,26 +219,26 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", function() {
                 requestReplyManager.handleRequest(providerParticipantId, request, jasmine.createSpy);
 
                 return waitsFor(
-                    function() {
+                    () => {
                         return provider[attributeName].set.calls.count() > 0;
                     },
                     "setAttribute to be called",
                     100
                 );
             })
-            .then(function() {
+            .then(() => {
                 expect(provider[attributeName].get).toHaveBeenCalledWith();
 
                 expect(provider[attributeName].set).toHaveBeenCalledWith(params[0]);
 
-                var result = provider[attributeName].set.calls.argsFor(0)[0];
+                const result = provider[attributeName].set.calls.argsFor(0)[0];
                 expect(result).toEqual(params[0]);
             });
     }
 
     function testHandleRequestWithExpectedType(paramDatatypes, params, promiseChain) {
-        var providerParticipantId = "providerParticipantId";
-        var provider = {
+        const providerParticipantId = "providerParticipantId";
+        const provider = {
             testFunction: {
                 callOperation: jasmine.createSpy("operationSpy")
             }
@@ -257,10 +247,10 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", function() {
         provider.testFunction.callOperation.and.returnValue([]);
 
         return promiseChain
-            .then(function() {
-                var request = new Request({
+            .then(() => {
+                const request = new Request({
                     methodName: "testFunction",
-                    paramDatatypes: paramDatatypes,
+                    paramDatatypes,
                     // untype objects through serialization and deserialization
                     params: JSON.parse(JSONSerializer.stringify(params))
                 });
@@ -269,25 +259,25 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", function() {
                 requestReplyManager.handleRequest(providerParticipantId, request, jasmine.createSpy);
 
                 return waitsFor(
-                    function() {
+                    () => {
                         return provider.testFunction.callOperation.calls.count() > 0;
                     },
                     "callOperation to be called",
                     100
                 );
             })
-            .then(function() {
+            .then(() => {
                 expect(provider.testFunction.callOperation).toHaveBeenCalled();
                 expect(provider.testFunction.callOperation).toHaveBeenCalledWith(params, paramDatatypes);
 
-                var result = provider.testFunction.callOperation.calls.argsFor(0)[0];
+                const result = provider.testFunction.callOperation.calls.argsFor(0)[0];
                 expect(result).toEqual(params);
                 expect(Typing.getObjectType(result)).toEqual(Typing.getObjectType(params));
             });
     }
 
-    it("calls registered requestCaller for attribute", function(done) {
-        var promiseChain = Promise.resolve();
+    it("calls registered requestCaller for attribute", done => {
+        const promiseChain = Promise.resolve();
         testHandleRequestForGetterSetterMethod("attributeA", ["attributeA"], promiseChain);
         testHandleRequestForGetterSetterMethod(
             "AttributeWithStartingCapitalLetter",
@@ -295,45 +285,45 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", function() {
             promiseChain
         );
         promiseChain
-            .then(function() {
+            .then(() => {
                 done();
                 return null;
             })
             .catch(fail);
     });
 
-    it("calls registered requestCaller with correctly typed object", function(done) {
-        var i, test;
-        var promiseChain = Promise.resolve();
+    it("calls registered requestCaller with correctly typed object", done => {
+        let i, test;
+        let promiseChain = Promise.resolve();
         for (i = 0; i < testData.length; ++i) {
             test = testData[i];
             promiseChain = testHandleRequestWithExpectedType(test.paramDatatype, test.params, promiseChain);
         }
         promiseChain
-            .then(function() {
+            .then(() => {
                 done();
                 return null;
             })
             .catch(fail);
     });
 
-    it("calls registered replyCaller when a reply arrives", function(done) {
-        var replyCallerSpy = jasmine.createSpyObj("promise", ["resolve", "reject"]);
+    it("calls registered replyCaller when a reply arrives", done => {
+        const replyCallerSpy = jasmine.createSpyObj("promise", ["resolve", "reject"]);
         replyCallerSpy.callbackSettings = {};
 
-        var timeout = toleranceMs + ttl_ms;
+        const timeout = toleranceMs + ttl_ms;
 
         requestReplyManager.addReplyCaller(requestReplyId, replyCallerSpy, ttl_ms);
         requestReplyManager.handleReply(reply);
 
         waitsFor(
-            function() {
+            () => {
                 return replyCallerSpy.resolve.calls.count() > 0 || replyCallerSpy.reject.calls.count() > 0;
             },
             "reject or fulfill to be called",
             timeout
         )
-            .then(function() {
+            .then(() => {
                 expect(replyCallerSpy.resolve).toHaveBeenCalled();
                 expect(replyCallerSpy.resolve).toHaveBeenCalledWith({
                     response: testResponse,
@@ -346,21 +336,21 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", function() {
             .catch(fail);
     });
 
-    it("calls registered replyCaller fail if no reply arrives in time", function(done) {
-        var replyCallerSpy = jasmine.createSpyObj("deferred", ["resolve", "reject"]);
+    it("calls registered replyCaller fail if no reply arrives in time", done => {
+        const replyCallerSpy = jasmine.createSpyObj("deferred", ["resolve", "reject"]);
 
-        var timeout = toleranceMs + ttl_ms;
+        const timeout = toleranceMs + ttl_ms;
 
         requestReplyManager.addReplyCaller("requestReplyId", replyCallerSpy, ttl_ms);
 
         waitsFor(
-            function() {
+            () => {
                 return replyCallerSpy.resolve.calls.count() > 0 || replyCallerSpy.reject.calls.count() > 0;
             },
             "reject or fulfill to be called",
             timeout
         )
-            .then(function() {
+            .then(() => {
                 expect(replyCallerSpy.resolve).not.toHaveBeenCalled();
                 expect(replyCallerSpy.reject).toHaveBeenCalled();
                 done();
@@ -370,11 +360,11 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", function() {
     });
 
     function testHandleReplyWithExpectedType(params, promiseChain) {
-        var replyCallerSpy = jasmine.createSpyObj("deferred", ["resolve", "reject"]);
+        const replyCallerSpy = jasmine.createSpyObj("deferred", ["resolve", "reject"]);
         return promiseChain
-            .then(function() {
-                var reply = new Reply({
-                    requestReplyId: requestReplyId,
+            .then(() => {
+                const reply = new Reply({
+                    requestReplyId,
                     // untype object by serializing and deserializing it
                     response: JSON.parse(JSONSerializer.stringify(params))
                 });
@@ -383,38 +373,38 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", function() {
                 requestReplyManager.handleReply(reply);
 
                 return waitsFor(
-                    function() {
+                    () => {
                         return replyCallerSpy.resolve.calls.count() > 0 || replyCallerSpy.reject.calls.count() > 0;
                     },
                     "reject or fulfill to be called",
                     ttl_ms * 2
                 );
             })
-            .then(function() {
-                var i;
+            .then(() => {
+                let i;
                 expect(replyCallerSpy.resolve).toHaveBeenCalled();
                 expect(replyCallerSpy.reject).not.toHaveBeenCalled();
 
-                var result = replyCallerSpy.resolve.calls.argsFor(0)[0];
+                const result = replyCallerSpy.resolve.calls.argsFor(0)[0];
                 for (i = 0; i < params.length; i++) {
                     expect(result.response[i]).toEqual(params[i]);
                     expect(Typing.getObjectType(result.response[i])).toEqual(Typing.getObjectType(params[i]));
                 }
             })
-            .catch(function(error) {
+            .catch(error => {
                 fail(error);
             });
     }
 
-    it("calls registered replyCaller with correctly typed object", function(done) {
-        var i, test;
-        var promiseChain = Promise.resolve();
+    it("calls registered replyCaller with correctly typed object", done => {
+        let i, test;
+        let promiseChain = Promise.resolve();
         for (i = 0; i < testData.length; ++i) {
             test = testData[i];
             promiseChain = testHandleReplyWithExpectedType(test.params, promiseChain);
         }
         promiseChain
-            .then(function() {
+            .then(() => {
                 done();
                 return null;
             })
@@ -428,11 +418,11 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", function() {
         useInvalidProviderParticipantId,
         callbackContext
     ) {
-        var providerParticipantId = "providerParticipantId";
-        var TestProvider = function() {};
+        let providerParticipantId = "providerParticipantId";
+        const TestProvider = function() {};
         TestProvider.MAJOR_VERSION = 47;
         TestProvider.MINOR_VERSION = 11;
-        var provider = new TestProvider();
+        const provider = new TestProvider();
         UtilInternal.extend(
             provider,
             {
@@ -462,10 +452,10 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", function() {
         provider.getOperationStartingWithGet.callOperation.and.returnValue([testParam]);
         provider.getOperationHasPriority.callOperation.and.returnValue([testParam]);
 
-        var callbackDispatcher = jasmine.createSpy("callbackDispatcher");
+        const callbackDispatcher = jasmine.createSpy("callbackDispatcher");
 
-        var request = new Request({
-            methodName: methodName,
+        const request = new Request({
+            methodName,
             paramDatatypes: [testParamDatatype],
             params: [testParam]
         });
@@ -479,9 +469,9 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", function() {
         requestReplyManager.handleRequest(providerParticipantId, request, callbackDispatcher, callbackContext);
 
         return {
-            provider: provider,
-            callbackDispatcher: callbackDispatcher,
-            request: request
+            provider,
+            callbackDispatcher,
+            request
         };
     }
 
@@ -492,7 +482,7 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", function() {
         useInvalidProviderParticipantId,
         callbackContext
     ) {
-        var test = callRequestReplyManagerSync(
+        const test = callRequestReplyManagerSync(
             methodName,
             testParam,
             testParamDatatype,
@@ -501,24 +491,24 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", function() {
         );
 
         return waitsFor(
-            function() {
+            () => {
                 return test.callbackDispatcher.calls.count() > 0;
             },
             "callbackDispatcher to be called",
             100
-        ).then(function() {
+        ).then(() => {
             return Promise.resolve(test);
         });
 
         //return test;
     }
 
-    var testParam = "myTestParameter";
-    var testParamDatatype = "String";
+    const testParam = "myTestParameter";
+    const testParamDatatype = "String";
 
-    it("calls attribute getter correctly", function(done) {
+    it("calls attribute getter correctly", done => {
         callRequestReplyManager("getAttributeName", testParam, testParamDatatype, undefined, replySettings)
-            .then(function(test) {
+            .then(test => {
                 expect(test.provider.attributeName.get).toHaveBeenCalled();
                 expect(test.provider.attributeName.get).toHaveBeenCalledWith();
                 expect(test.provider.attributeName.set).not.toHaveBeenCalled();
@@ -542,9 +532,9 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", function() {
             .catch(fail);
     });
 
-    it("calls attribute setter correctly", function(done) {
+    it("calls attribute setter correctly", done => {
         callRequestReplyManager("setAttributeName", testParam, testParamDatatype, undefined, replySettings)
-            .then(function(test) {
+            .then(test => {
                 expect(test.provider.attributeName.get).not.toHaveBeenCalled();
                 expect(test.provider.attributeName.set).toHaveBeenCalled();
                 expect(test.provider.attributeName.set).toHaveBeenCalledWith(testParam);
@@ -568,9 +558,9 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", function() {
             .catch(fail);
     });
 
-    it("calls operation function correctly", function(done) {
+    it("calls operation function correctly", done => {
         callRequestReplyManager("operationName", testParam, testParamDatatype, undefined, replySettings)
-            .then(function(test) {
+            .then(test => {
                 expect(test.provider.attributeName.set).not.toHaveBeenCalled();
                 expect(test.provider.attributeName.get).not.toHaveBeenCalled();
                 expect(test.provider.operationName.callOperation).toHaveBeenCalled();
@@ -597,17 +587,15 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", function() {
             .catch(fail);
     });
 
-    it("calls operation function for one-way request correctly", function(done) {
-        var providerParticipantId = "oneWayProviderParticipantId";
-        var provider = {
+    it("calls operation function for one-way request correctly", done => {
+        const providerParticipantId = "oneWayProviderParticipantId";
+        const provider = {
             fireAndForgetMethod: {
                 callOperation: jasmine.createSpy("operationSpy")
             }
         };
 
-        var callbackDispatcher = jasmine.createSpy("callbackDispatcher");
-
-        var oneWayRequest = new OneWayRequest({
+        const oneWayRequest = new OneWayRequest({
             methodName: "fireAndForgetMethod",
             paramDatatypes: [testParamDatatype],
             params: [testParam]
@@ -618,13 +606,13 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", function() {
         requestReplyManager.handleOneWayRequest(providerParticipantId, oneWayRequest);
 
         waitsFor(
-            function() {
+            () => {
                 return provider.fireAndForgetMethod.callOperation.calls.count() > 0;
             },
             "callOperation to be called",
             1000
         )
-            .then(function() {
+            .then(() => {
                 expect(provider.fireAndForgetMethod.callOperation).toHaveBeenCalled();
                 expect(provider.fireAndForgetMethod.callOperation).toHaveBeenCalledWith(
                     [testParam],
@@ -636,11 +624,9 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", function() {
             .catch(fail);
     });
 
-    it('calls operation "getOperationStartingWithGet" when no attribute "operationStartingWithGet" exists', function(
-        done
-    ) {
+    it('calls operation "getOperationStartingWithGet" when no attribute "operationStartingWithGet" exists', done => {
         callRequestReplyManager("getOperationStartingWithGet", testParam, testParamDatatype)
-            .then(function(test) {
+            .then(test => {
                 expect(test.provider.getOperationStartingWithGet.callOperation).toHaveBeenCalled();
                 expect(test.provider.getOperationStartingWithGet.callOperation).toHaveBeenCalledWith(
                     [testParam],
@@ -652,9 +638,9 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", function() {
             .catch(fail);
     });
 
-    it('calls operation "getOperationHasPriority" when attribute "operationHasPriority" exists', function(done) {
+    it('calls operation "getOperationHasPriority" when attribute "operationHasPriority" exists', done => {
         callRequestReplyManager("getOperationHasPriority", testParam, testParamDatatype)
-            .then(function(test) {
+            .then(test => {
                 expect(test.provider.operationHasPriority.set).not.toHaveBeenCalled();
                 expect(test.provider.operationHasPriority.get).not.toHaveBeenCalled();
                 expect(test.provider.getOperationHasPriority.callOperation).toHaveBeenCalled();
@@ -668,9 +654,9 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", function() {
             .catch(fail);
     });
 
-    it("delivers exception upon non-existent provider", function(done) {
+    it("delivers exception upon non-existent provider", done => {
         callRequestReplyManager("testFunction", testParam, testParamDatatype, true, replySettings)
-            .then(function(test) {
+            .then(test => {
                 expect(test.callbackDispatcher).toHaveBeenCalled();
                 expect(test.callbackDispatcher).toHaveBeenCalledWith(
                     replySettings,
@@ -690,7 +676,7 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", function() {
             .catch(fail);
     });
 
-    it("delivers exception when calling not existing operation", function(done) {
+    it("delivers exception when calling not existing operation", done => {
         callRequestReplyManager(
             "notExistentOperationOrAttribute",
             testParam,
@@ -698,7 +684,7 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", function() {
             undefined,
             replySettings
         )
-            .then(function(test) {
+            .then(test => {
                 expect(test.callbackDispatcher).toHaveBeenCalled();
                 expect(test.callbackDispatcher).toHaveBeenCalledWith(
                     replySettings,
@@ -719,7 +705,7 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", function() {
             })
             .catch(fail);
     });
-    it("delivers exception when calling getter for not existing attribute", function(done) {
+    it("delivers exception when calling getter for not existing attribute", done => {
         callRequestReplyManager(
             "getNotExistentOperationOrAttribute",
             testParam,
@@ -727,7 +713,7 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", function() {
             undefined,
             replySettings
         )
-            .then(function(test) {
+            .then(test => {
                 expect(test.callbackDispatcher).toHaveBeenCalled();
                 expect(test.callbackDispatcher).toHaveBeenCalledWith(
                     replySettings,
@@ -748,7 +734,7 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", function() {
             })
             .catch(fail);
     });
-    it("delivers exception when calling setter for not existing attribute", function(done) {
+    it("delivers exception when calling setter for not existing attribute", done => {
         callRequestReplyManager(
             "setNotExistentOperationOrAttribute",
             testParam,
@@ -756,7 +742,7 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", function() {
             undefined,
             replySettings
         )
-            .then(function(test) {
+            .then(test => {
                 expect(test.callbackDispatcher).toHaveBeenCalled();
                 expect(test.callbackDispatcher).toHaveBeenCalledWith(
                     replySettings,
@@ -778,31 +764,31 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", function() {
             .catch(fail);
     });
 
-    it(" throws exception when called while shut down", function(done) {
+    it(" throws exception when called while shut down", done => {
         requestReplyManager.shutdown();
-        expect(function() {
+        expect(() => {
             requestReplyManager.removeRequestCaller("providerParticipantId");
         }).toThrow();
         requestReplyManager.handleRequest(
             "providerParticipantId",
             {
-                requestReplyId: requestReplyId
+                requestReplyId
             },
-            function(reply) {
+            reply => {
                 expect(reply instanceof Reply);
                 expect(reply.error instanceof MethodInvocationException);
-                expect(function() {
-                    var replyCallerSpy = jasmine.createSpyObj("promise", ["resolve", "reject"]);
+                expect(() => {
+                    const replyCallerSpy = jasmine.createSpyObj("promise", ["resolve", "reject"]);
 
                     requestReplyManager.addReplyCaller(requestReplyId, replyCallerSpy);
                 }).toThrow();
-                expect(function() {
+                expect(() => {
                     requestReplyManager.addRequestCaller("providerParticipantId", {});
                 }).toThrow();
-                expect(function() {
+                expect(() => {
                     requestReplyManager.sendOneWayRequest({});
                 }).toThrow();
-                expect(function() {
+                expect(() => {
                     requestReplyManager.sendRequest({});
                 }).toThrow();
                 done();
@@ -810,8 +796,8 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", function() {
             replySettings
         );
     });
-    it(" rejects reply callers when shut down", function(done) {
-        var replyCallerSpy = jasmine.createSpyObj("promise", ["resolve", "reject"]);
+    it(" rejects reply callers when shut down", done => {
+        const replyCallerSpy = jasmine.createSpyObj("promise", ["resolve", "reject"]);
 
         requestReplyManager.addReplyCaller(requestReplyId, replyCallerSpy, ttl_ms);
         expect(replyCallerSpy.reject).not.toHaveBeenCalled();
@@ -820,8 +806,8 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", function() {
         done();
     });
 
-    it("sendOneWayRequest calls dispatcher with correct arguments", function(done) {
-        var parameters = {
+    it("sendOneWayRequest calls dispatcher with correct arguments", done => {
+        const parameters = {
             from: "fromParticipantId",
             toDiscoveryEntry: providerDiscoveryEntry,
             messagingQos: new MessagingQos({
@@ -831,7 +817,7 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", function() {
                 methodName: "testMethodName"
             })
         };
-        var expectedArguments = UtilInternal.extendDeep({}, parameters);
+        const expectedArguments = UtilInternal.extendDeep({}, parameters);
         expectedArguments.messagingQos = new MessagingQos(parameters.messagingQos);
         expectedArguments.toDiscoveryEntry = new DiscoveryEntryWithMetaInfo(parameters.toDiscoveryEntry);
         expectedArguments.request = new OneWayRequest(parameters.request);

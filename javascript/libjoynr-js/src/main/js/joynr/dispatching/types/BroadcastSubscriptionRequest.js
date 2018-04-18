@@ -1,5 +1,3 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
@@ -18,12 +16,10 @@
  * limitations under the License.
  * #L%
  */
-var Util = require("../../util/UtilInternal");
-var Typing = require("../../util/Typing");
-var OnChangeSubscriptionQos = require("../../proxy/OnChangeSubscriptionQos");
-var BroadcastFilterParameters = require("../../proxy/BroadcastFilterParameters");
+const Typing = require("../../util/Typing");
+const OnChangeSubscriptionQos = require("../../proxy/OnChangeSubscriptionQos");
 
-var defaultSettings = {
+const defaultSettings = {
     qos: new OnChangeSubscriptionQos()
 };
 
@@ -80,7 +76,6 @@ function BroadcastSubscriptionRequest(settings) {
 
     Object.defineProperty(this, "_typeName", {
         value: "joynr.BroadcastSubscriptionRequest",
-        readable: true,
         writable: false,
         enumerable: true,
         configurable: false
@@ -97,7 +92,6 @@ function BroadcastSubscriptionRequest(settings) {
  */
 Object.defineProperty(BroadcastSubscriptionRequest, "_typeName", {
     value: "joynr.BroadcastSubscriptionRequest",
-    readable: true,
     writable: false,
     enumerable: true,
     configurable: false

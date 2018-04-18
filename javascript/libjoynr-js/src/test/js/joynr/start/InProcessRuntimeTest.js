@@ -1,6 +1,3 @@
-/*jslint es5: true */
-/*global fail: true */
-
 /*
  * #%L
  * %%
@@ -19,36 +16,15 @@
  * limitations under the License.
  * #L%
  */
-
-var provisioning = require("../../../test-classes/joynr/provisioning/provisioning_cc");
-var InProcessRuntime = require("../../../classes/joynr/start/InProcessRuntime");
-var Promise = require("../../../classes/global/Promise");
-var waitsFor = require("../../../test-classes/global/WaitsFor");
+const provisioning = require("../../../resources/joynr/provisioning/provisioning_cc");
+const InProcessRuntime = require("../../../../main/js/joynr/start/InProcessRuntime");
 
 function outputPromiseError(error) {
     expect(error.toString()).toBeFalsy();
 }
 
-// type that usually goes into proxy generation
-function RadioStation(name, station, source) {
-    if (!(this instanceof RadioStation)) {
-        // in case someone calls constructor without new keyword (e.g. var c = Constructor({..}))
-        return new RadioStation(name, station, source);
-    }
-    this.name = name;
-    this.station = station;
-    this.source = source;
-
-    Object.defineProperty(this, "_typeName", {
-        configurable: false,
-        writable: false,
-        enumerable: true,
-        value: ".vehicle.RadioStation"
-    });
-}
-
-describe("libjoynr-js.joynr.start.TestInProcessRuntime", function() {
-    var runtime;
+describe("libjoynr-js.joynr.start.TestInProcessRuntime", () => {
+    let runtime;
 
     function startInProcessRuntime() {
         return runtime.start().catch(outputPromiseError);
@@ -58,12 +34,12 @@ describe("libjoynr-js.joynr.start.TestInProcessRuntime", function() {
         return runtime.shutdown().catch(outputPromiseError);
     }
 
-    beforeEach(function(done) {
+    beforeEach(done => {
         runtime = new InProcessRuntime(provisioning);
         done();
     });
 
-    it("is of correct type and has all members", function(done) {
+    it("is of correct type and has all members", done => {
         expect(InProcessRuntime).toBeDefined();
         expect(runtime).toBeDefined();
         expect(runtime instanceof InProcessRuntime).toBeTruthy();
@@ -74,7 +50,7 @@ describe("libjoynr-js.joynr.start.TestInProcessRuntime", function() {
         expect(runtime.proxyBuilder).toBeUndefined();
 
         startInProcessRuntime()
-            .then(function() {
+            .then(() => {
                 expect(runtime.typeRegistry).toBeDefined();
                 expect(runtime.registration).toBeDefined();
                 expect(runtime.proxyBuilder).toBeDefined();
@@ -84,58 +60,57 @@ describe("libjoynr-js.joynr.start.TestInProcessRuntime", function() {
             .catch(fail);
     });
 
-    it("can be started and shutdown successfully", function(done) {
-        var log = runtime.logging.getLogger("joynr.start.TestInProcessRuntime");
+    it("can be started and shutdown successfully", done => {
         startInProcessRuntime()
             .then(shutdownInProcessRuntime)
-            .then(function() {
+            .then(() => {
                 done();
                 return null;
             })
             .catch(fail);
     });
 
-    var nrRestarts = 3;
-    it("can be started and shut down successfully " + nrRestarts + " times", function(done) {
-        var i;
+    const nrRestarts = 3;
+    it("can be started and shut down successfully " + nrRestarts + " times", done => {
+        let i;
 
         function createFunc(promiseChain) {
             return promiseChain.then(shutdownInProcessRuntime).then(startInProcessRuntime);
         }
 
-        var promiseChain = startInProcessRuntime();
+        let promiseChain = startInProcessRuntime();
         for (i = 1; i < nrRestarts; ++i) {
             promiseChain = createFunc(promiseChain);
         }
         promiseChain
             .then(shutdownInProcessRuntime)
-            .then(function() {
+            .then(() => {
                 done();
                 return null;
             })
             .catch(fail);
     });
 
-    it("throws when started in state STARTED", function(done) {
+    it("throws when started in state STARTED", done => {
         startInProcessRuntime()
-            .then(function() {
-                expect(function() {
+            .then(() => {
+                expect(() => {
                     runtime.start();
                 }).toThrow();
                 return shutdownInProcessRuntime();
             })
-            .then(function() {
+            .then(() => {
                 done();
                 return null;
             })
             .catch(fail);
     });
 
-    it("throws when shutdown in state SHUTDOWN", function(done) {
+    it("throws when shutdown in state SHUTDOWN", done => {
         startInProcessRuntime()
             .then(shutdownInProcessRuntime)
-            .then(function() {
-                expect(function() {
+            .then(() => {
+                expect(() => {
                     runtime.shutdown();
                 }).toThrow();
                 done();

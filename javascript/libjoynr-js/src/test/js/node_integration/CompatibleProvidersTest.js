@@ -20,11 +20,11 @@
  * #L%
  */
 
-var End2EndAbstractTest = require("./End2EndAbstractTest");
+let End2EndAbstractTest = require("./End2EndAbstractTest");
 
-describe("Compatibility tests for providers created by new generator", function() {
-    it("Provider with version in package name and original proxy", function(done) {
-        var abstractTest = new End2EndAbstractTest(
+describe("Compatibility tests for providers created by new generator", () => {
+    it("Provider with version in package name and original proxy", done => {
+        const abstractTest = new End2EndAbstractTest(
             "ProviderWithVersionedPackageNameTest",
             "TestMultipleVersionsInterfaceProcess",
             "packageVersion2"
@@ -37,8 +37,8 @@ describe("Compatibility tests for providers created by new generator", function(
             .catch(fail);
     });
 
-    it("Provider with version in name and original proxy", function(done) {
-        var abstractTest = new End2EndAbstractTest(
+    it("Provider with version in name and original proxy", done => {
+        const abstractTest = new End2EndAbstractTest(
             "ProviderWithVersionedNameTest",
             "TestMultipleVersionsInterfaceProcess",
             "nameVersion2"

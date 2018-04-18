@@ -1,4 +1,3 @@
-/*jslint es5: true, node: true, nomen: true */
 /*
  * #%L
  * %%
@@ -17,12 +16,13 @@
  * limitations under the License.
  * #L%
  */
-var JSONSerializer = require("../../../classes/joynr/util/JSONSerializer");
-var TestEnum = require("../../../test-classes/joynr/tests/testTypes/TestEnum");
+require("../../node-unit-test-helper");
+const JSONSerializer = require("../../../../main/js/joynr/util/JSONSerializer");
+const TestEnum = require("../../../generated/joynr/tests/testTypes/TestEnum");
 
-describe("libjoynr-js.joynr.JSONSerializer.ensureCorrectSerialization", function() {
-    it("Test enum serialization", function() {
-        var fixture = TestEnum.ZERO,
+describe("libjoynr-js.joynr.JSONSerializer.ensureCorrectSerialization", () => {
+    it("Test enum serialization", () => {
+        let fixture = TestEnum.ZERO,
             actual;
 
         actual = JSONSerializer.stringify(fixture);

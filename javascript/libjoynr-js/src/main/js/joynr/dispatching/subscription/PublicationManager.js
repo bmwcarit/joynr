@@ -1,5 +1,4 @@
-/*jslint es5: true, node: true */
-/*global triggerPublicationTimer: true, triggerPublicationAndClearDebounce: true */
+/*eslint no-use-before-define: "off"*/
 /*
  * #%L
  * %%
@@ -18,25 +17,20 @@
  * limitations under the License.
  * #L%
  */
-var Promise = require("../../../global/Promise");
-var SubscriptionQos = require("../../proxy/SubscriptionQos");
-var PeriodicSubscriptionQos = require("../../proxy/PeriodicSubscriptionQos");
-var BroadcastSubscriptionRequest = require("../types/BroadcastSubscriptionRequest");
-var SubscriptionRequest = require("../types/SubscriptionRequest");
-var MulticastPublication = require("../types/MulticastPublication");
-var SubscriptionPublication = require("../types/SubscriptionPublication");
-var SubscriptionReply = require("../types/SubscriptionReply");
-var SubscriptionStop = require("../types/SubscriptionStop");
-var SubscriptionInformation = require("../types/SubscriptionInformation");
-var Reply = require("../types/Reply");
-var ProviderEvent = require("../../provider/ProviderEvent");
-var Typing = require("../../util/Typing");
-var SubscriptionUtil = require("./util/SubscriptionUtil");
-var SubscriptionException = require("../../exceptions/SubscriptionException");
-var JSONSerializer = require("../../util/JSONSerializer");
-var LongTimer = require("../../util/LongTimer");
-var Util = require("../../util/UtilInternal");
-var LoggerFactory = require("../../system/LoggerFactory");
+const SubscriptionQos = require("../../proxy/SubscriptionQos");
+const PeriodicSubscriptionQos = require("../../proxy/PeriodicSubscriptionQos");
+const MulticastPublication = require("../types/MulticastPublication");
+const SubscriptionPublication = require("../types/SubscriptionPublication");
+const SubscriptionReply = require("../types/SubscriptionReply");
+const SubscriptionStop = require("../types/SubscriptionStop");
+const SubscriptionInformation = require("../types/SubscriptionInformation");
+const ProviderEvent = require("../../provider/ProviderEvent");
+const SubscriptionUtil = require("./util/SubscriptionUtil");
+const SubscriptionException = require("../../exceptions/SubscriptionException");
+const JSONSerializer = require("../../util/JSONSerializer");
+const LongTimer = require("../../util/LongTimer");
+const UtilInternal = require("../../util/UtilInternal");
+const LoggingManager = require("../../system/LoggingManager");
 
 /**
  * The PublicationManager is responsible for handling subscription requests.
@@ -51,37 +45,37 @@ var LoggerFactory = require("../../system/LoggerFactory");
  *            joynrInstanceId: the Id of the actual joynr instance
  */
 function PublicationManager(dispatcher, persistency, joynrInstanceId) {
-    var log = LoggerFactory.getLogger("joynr.dispatching.subscription.PublicationManager");
+    const log = LoggingManager.getLogger("joynr.dispatching.subscription.PublicationManager");
 
     // map: key is the provider's participantId, value is the provider object
-    var participantIdToProvider = {};
+    const participantIdToProvider = {};
 
-    var that = this;
+    const that = this;
 
-    var attributeObserverFunctions = {};
+    const attributeObserverFunctions = {};
 
-    var eventObserverFunctions = {};
-
-    // map: subscriptionId to SubscriptionRequest
-    var subscriptionInfos = {};
+    const eventObserverFunctions = {};
 
     // map: subscriptionId to SubscriptionRequest
-    var queuedSubscriptionInfos = {};
+    const subscriptionInfos = {};
+
+    // map: subscriptionId to SubscriptionRequest
+    const queuedSubscriptionInfos = {};
 
     // queued subscriptions for deferred providers
-    var queuedProviderParticipantIdToSubscriptionRequestsMapping = {};
+    const queuedProviderParticipantIdToSubscriptionRequestsMapping = {};
 
     // map: providerId+attributeName -> subscriptionIds -> subscription
-    var onChangeProviderAttributeToSubscriptions = {};
+    const onChangeProviderAttributeToSubscriptions = {};
 
     // map: providerId+eventName -> subscriptionIds -> subscription
-    var onChangeProviderEventToSubscriptions = {};
+    const onChangeProviderEventToSubscriptions = {};
 
-    var multicastSubscriptions = {};
+    const multicastSubscriptions = {};
 
-    var subscriptionPersistenceKey = PublicationManager.SUBSCRIPTIONS_STORAGE_PREFIX + "_" + joynrInstanceId;
+    const subscriptionPersistenceKey = PublicationManager.SUBSCRIPTIONS_STORAGE_PREFIX + "_" + joynrInstanceId;
 
-    var started = true;
+    let started = true;
 
     function isReady() {
         return started;
@@ -93,25 +87,25 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
      * @private
      *
      */
-    var storeSubscriptions = function storeSubscriptions() {
-        var item = SubscriptionUtil.serializeSubscriptionIds(subscriptionInfos);
+    let storeSubscriptions = function storeSubscriptions() {
+        const item = SubscriptionUtil.serializeSubscriptionIds(subscriptionInfos);
         persistency.setItem(subscriptionPersistenceKey, item);
     };
 
-    var removeSubscriptionFromPersistency = function removeSubscriptionFromPersistency(subscriptionId) {
+    let removeSubscriptionFromPersistency = function removeSubscriptionFromPersistency(subscriptionId) {
         persistency.removeItem(subscriptionId);
         storeSubscriptions();
     };
 
-    var addSubscriptionToPersistency = function(subscriptionId, subscriptionInfo) {
+    let addSubscriptionToPersistency = function(subscriptionId, subscriptionInfo) {
         persistency.setItem(subscriptionId, JSON.stringify(subscriptionInfo));
         storeSubscriptions();
     };
 
     if (!persistency) {
-        storeSubscriptions = Util.emptyFunction;
-        removeSubscriptionFromPersistency = Util.emptyFunction;
-        addSubscriptionToPersistency = Util.emptyFunction;
+        storeSubscriptions = UtilInternal.emptyFunction;
+        removeSubscriptionFromPersistency = UtilInternal.emptyFunction;
+        addSubscriptionToPersistency = UtilInternal.emptyFunction;
     }
 
     /**
@@ -127,7 +121,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
      * @returns {ProviderAttribute} the provider attribute
      */
     function getAttribute(participantId, attributeName) {
-        var provider = participantIdToProvider[participantId];
+        const provider = participantIdToProvider[participantId];
         return provider[attributeName];
     }
 
@@ -148,7 +142,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
      *            error upon failure
      */
     function getAttributeValue(subscriptionInfo) {
-        var attribute = getAttribute(subscriptionInfo.providerParticipantId, subscriptionInfo.subscribedToName);
+        const attribute = getAttribute(subscriptionInfo.providerParticipantId, subscriptionInfo.subscribedToName);
 
         return attribute.get();
     }
@@ -167,7 +161,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
                 value
         );
         subscriptionInfo.lastPublication = Date.now();
-        var subscriptionPublication;
+        let subscriptionPublication;
 
         if (exception) {
             subscriptionPublication = new SubscriptionPublication({
@@ -203,7 +197,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
      * @private
      */
     function prepareAttributePublication(subscriptionInfo, value) {
-        var timeSinceLastPublication = Date.now() - subscriptionInfo.lastPublication;
+        const timeSinceLastPublication = Date.now() - subscriptionInfo.lastPublication;
         if (
             subscriptionInfo.qos.minIntervalMs === undefined ||
             timeSinceLastPublication >= subscriptionInfo.qos.minIntervalMs
@@ -238,7 +232,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
      * @private
      */
     function prepareBroadcastPublication(subscriptionInfo, value) {
-        var timeSinceLastPublication = Date.now() - subscriptionInfo.lastPublication;
+        const timeSinceLastPublication = Date.now() - subscriptionInfo.lastPublication;
         if (
             subscriptionInfo.qos.minIntervalMs === undefined ||
             timeSinceLastPublication >= subscriptionInfo.qos.minIntervalMs
@@ -325,7 +319,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
                   e.g. [{ participantId : "...", attributeName : "..." }]
      */
     function getSubscriptionsForProviderAttribute(providerId, attributeName) {
-        var key = getProviderIdAttributeKey(providerId, attributeName);
+        const key = getProviderIdAttributeKey(providerId, attributeName);
         // make sure the mapping exists, so that subscriptions can register here
         if (onChangeProviderAttributeToSubscriptions[key] === undefined) {
             onChangeProviderAttributeToSubscriptions[key] = {};
@@ -338,7 +332,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
      * @private
      */
     function resetSubscriptionsForProviderAttribute(providerId, attributeName) {
-        var key = getProviderIdAttributeKey(providerId, attributeName);
+        const key = getProviderIdAttributeKey(providerId, attributeName);
         delete onChangeProviderAttributeToSubscriptions[key];
     }
 
@@ -393,7 +387,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
                     "already shut down"
             );
         }
-        var subscriptionId,
+        let subscriptionId,
             subscriptions = getSubscriptionsForProviderAttribute(providerId, attributeName);
         if (!subscriptions) {
             log.error(
@@ -410,7 +404,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
 
         for (subscriptionId in subscriptions) {
             if (subscriptions.hasOwnProperty(subscriptionId)) {
-                var subscriptionInfo = subscriptions[subscriptionId];
+                const subscriptionInfo = subscriptions[subscriptionId];
                 prepareAttributePublication(subscriptionInfo, value);
             }
         }
@@ -429,7 +423,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
      *            attributeName
      */
     function addPublicationAttribute(providerId, attributeName, attribute) {
-        var key = getProviderIdAttributeKey(providerId, attributeName);
+        const key = getProviderIdAttributeKey(providerId, attributeName);
 
         attributeObserverFunctions[key] = function(value) {
             publishAttributeValue(providerId, attributeName, attribute, value);
@@ -452,7 +446,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
                   e.g. [{ participantId : "...", eventName : "..." }]
      */
     function getSubscriptionsForProviderEvent(providerId, eventName) {
-        var key = getProviderIdEventKey(providerId, eventName);
+        const key = getProviderIdEventKey(providerId, eventName);
         // make sure the mapping exists, so that subscriptions can register here
         if (onChangeProviderEventToSubscriptions[key] === undefined) {
             onChangeProviderEventToSubscriptions[key] = {};
@@ -461,10 +455,10 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
     }
 
     function prepareMulticastPublication(providerId, eventName, partitions, outputParameters) {
-        var multicastId = SubscriptionUtil.createMulticastId(providerId, eventName, partitions);
-        var publication = new MulticastPublication({
+        const multicastId = SubscriptionUtil.createMulticastId(providerId, eventName, partitions);
+        const publication = new MulticastPublication({
             response: outputParameters,
-            multicastId: multicastId
+            multicastId
         });
         dispatcher.sendMulticastPublication(
             {
@@ -488,7 +482,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
      *            value
      */
     function publishEventValue(providerId, eventName, event, data) {
-        var value = data.broadcastOutputParameters;
+        const value = data.broadcastOutputParameters;
         if (!isReady()) {
             throw new Error(
                 'event publication for providerId "' +
@@ -504,12 +498,11 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
             prepareMulticastPublication(providerId, eventName, data.partitions, value.outputParameters);
             return;
         }
-        var publish;
-        var i;
-        var filterParameters;
-        var subscriptionId,
+        let publish;
+        let i;
+        let subscriptionId,
             subscriptions = getSubscriptionsForProviderEvent(providerId, eventName);
-        var filters = data.filters;
+        const filters = data.filters;
         if (!subscriptions) {
             log.error("ProviderEvent " + eventName + " for providerId " + providerId + " is not registered");
             // TODO: proper error handling for empty subscription map =>
@@ -519,7 +512,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
 
         for (subscriptionId in subscriptions) {
             if (subscriptions.hasOwnProperty(subscriptionId)) {
-                var subscriptionInfo = subscriptions[subscriptionId];
+                const subscriptionInfo = subscriptions[subscriptionId];
                 // if any filters present, check them
                 publish = true;
                 if (filters && filters.length > 0) {
@@ -553,7 +546,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
      *            eventName
      */
     function addPublicationEvent(providerId, eventName, event) {
-        var key = getProviderIdEventKey(providerId, eventName);
+        const key = getProviderIdEventKey(providerId, eventName);
 
         eventObserverFunctions[key] = function(data) {
             publishEventValue(providerId, eventName, event, data || {});
@@ -566,14 +559,14 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
      * @private
      */
     function resetSubscriptionsForProviderEvent(providerId, eventName) {
-        var key = getProviderIdEventKey(providerId, eventName);
+        const key = getProviderIdEventKey(providerId, eventName);
         delete onChangeProviderEventToSubscriptions[key];
     }
 
     // End of broadcast specific implementation
 
     function addRequestToMulticastSubscriptions(multicastId, subscriptionId) {
-        var i, subscriptions;
+        let i, subscriptions;
         if (multicastSubscriptions[multicastId] === undefined) {
             multicastSubscriptions[multicastId] = [];
         }
@@ -588,7 +581,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
 
     function removeRequestFromMulticastSubscriptions(multicastId, subscriptionId) {
         if (multicastId !== undefined && multicastSubscriptions[multicastId] !== undefined) {
-            var i;
+            let i;
             for (i = 0; i < multicastSubscriptions[multicastId].length; i++) {
                 if (multicastSubscriptions[multicastId][i] === subscriptionId) {
                     multicastSubscriptions[multicastId].splice(i, 1);
@@ -613,10 +606,10 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
      */
     function removeSubscription(subscriptionId, silent) {
         // make sure subscription info exists
-        var subscriptionInfo = subscriptionInfos[subscriptionId];
-        var pendingSubscriptions;
-        var pendingSubscription;
-        var subscriptionObject;
+        let subscriptionInfo = subscriptionInfos[subscriptionId];
+        let pendingSubscriptions;
+        let pendingSubscription;
+        let subscriptionObject;
         if (subscriptionInfo === undefined) {
             if (silent !== true) {
                 log.warn("no subscription info found for subscriptionId " + subscriptionId);
@@ -648,24 +641,24 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
             delete queuedSubscriptionInfos[subscriptionId];
             return;
         }
-        var providerParticipantId = subscriptionInfo.providerParticipantId;
+        const providerParticipantId = subscriptionInfo.providerParticipantId;
 
         // make sure the provider exists for the given participantId
-        var provider = participantIdToProvider[providerParticipantId];
+        const provider = participantIdToProvider[providerParticipantId];
         if (provider === undefined) {
             log.error("no provider found for " + providerParticipantId);
             // TODO: proper error handling for a non-existent provider
             return;
         }
 
-        var subscription;
+        let subscription;
 
         if (subscriptionInfo.subscriptionType === SubscriptionInformation.SUBSCRIPTION_TYPE_ATTRIBUTE) {
             // This is an attribute subscription
 
-            var attributeName = subscriptionInfo.subscribedToName;
+            const attributeName = subscriptionInfo.subscribedToName;
 
-            var attributeSubscriptions = getSubscriptionsForProviderAttribute(providerParticipantId, attributeName);
+            const attributeSubscriptions = getSubscriptionsForProviderAttribute(providerParticipantId, attributeName);
             if (attributeSubscriptions === undefined) {
                 log.error(
                     "ProviderAttribute " +
@@ -686,10 +679,10 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         } else {
             // subscriptionInfo.type === SubscriptionInformation.SUBSCRIPTION_TYPE_BROADCAST
             // This is a event subscription
-            var eventName = subscriptionInfo.subscribedToName;
+            const eventName = subscriptionInfo.subscribedToName;
 
             // find all subscriptions for the event/providerParticipantId
-            var eventSubscriptions = getSubscriptionsForProviderEvent(providerParticipantId, eventName);
+            const eventSubscriptions = getSubscriptionsForProviderEvent(providerParticipantId, eventName);
             if (eventSubscriptions === undefined) {
                 log.error(
                     "ProviderEvent " +
@@ -754,9 +747,8 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
      *            attributeName
      */
     function removePublicationAttribute(providerId, attributeName, attribute) {
-        var subscriptions,
+        let subscriptions,
             subscription,
-            subscriptionObject,
             key = getProviderIdAttributeKey(providerId, attributeName);
 
         subscriptions = getSubscriptionsForProviderAttribute(providerId, attributeName);
@@ -770,11 +762,11 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
                     );
                 }
             }
-            resetSubscriptionsForProviderAttribute();
+            resetSubscriptionsForProviderAttribute(providerId, attributeName);
         }
 
         attribute.unregisterObserver(attributeObserverFunctions[key]);
-        attributeObserverFunctions[key] = undefined;
+        delete attributeObserverFunctions[key];
     }
 
     /**
@@ -788,9 +780,8 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
      *            eventName
      */
     function removePublicationEvent(providerId, eventName, event) {
-        var subscriptions,
+        let subscriptions,
             subscription,
-            subscriptionObject,
             key = getProviderIdEventKey(providerId, eventName);
 
         subscriptions = getSubscriptionsForProviderEvent(providerId, eventName);
@@ -804,11 +795,11 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
                     );
                 }
             }
-            resetSubscriptionsForProviderEvent();
+            resetSubscriptionsForProviderEvent(providerId, eventName);
         }
 
         event.unregisterObserver(eventObserverFunctions[key]);
-        eventObserverFunctions[key] = undefined;
+        delete eventObserverFunctions[key];
     }
 
     /**
@@ -823,8 +814,8 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
      * @returns true if a subscription exists for the given event
      */
     this.hasSubscriptionsForProviderEvent = function hasSubscriptionsForProviderEvent(providerId, eventName) {
-        var subscriptions = getSubscriptionsForProviderEvent(providerId, eventName);
-        var subscriptionId;
+        const subscriptions = getSubscriptionsForProviderEvent(providerId, eventName);
+        let subscriptionId;
         if (subscriptions !== undefined) {
             for (subscriptionId in subscriptions) {
                 if (subscriptions.hasOwnProperty(subscriptionId)) {
@@ -850,8 +841,8 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         providerId,
         attributeName
     ) {
-        var subscriptions = getSubscriptionsForProviderAttribute(providerId, attributeName);
-        var subscriptionId;
+        const subscriptions = getSubscriptionsForProviderAttribute(providerId, attributeName);
+        let subscriptionId;
         if (subscriptions !== undefined) {
             for (subscriptionId in subscriptions) {
                 if (subscriptions.hasOwnProperty(subscriptionId)) {
@@ -896,10 +887,10 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         callbackDispatcher,
         callbackDispatcherSettings
     ) {
-        var exception;
-        var timeToEndDate = 0;
-        var attributeName = subscriptionRequest.subscribedToName;
-        var subscriptionId = subscriptionRequest.subscriptionId;
+        let exception;
+        let timeToEndDate = 0;
+        const attributeName = subscriptionRequest.subscribedToName;
+        const subscriptionId = subscriptionRequest.subscriptionId;
 
         // if endDate is defined (also exclude default value 0 for
         // the expiryDateMs qos-property)
@@ -923,14 +914,14 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
                         " for providerId " +
                         providerParticipantId +
                         " lies in the past",
-                    subscriptionId: subscriptionId
+                    subscriptionId
                 });
                 log.error(exception.detailMessage);
                 callbackDispatcherAsync(
                     callbackDispatcherSettings,
                     {
                         error: exception,
-                        subscriptionId: subscriptionId
+                        subscriptionId
                     },
                     callbackDispatcher
                 );
@@ -959,9 +950,9 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
             );
             return;
         }
-        var provider = participantIdToProvider[providerParticipantId];
+        const provider = participantIdToProvider[providerParticipantId];
         // construct subscriptionInfo from subscriptionRequest and participantIds
-        var subscriptionInfo = new SubscriptionInformation(
+        const subscriptionInfo = new SubscriptionInformation(
             SubscriptionInformation.SUBSCRIPTION_TYPE_ATTRIBUTE,
             proxyParticipantId,
             providerParticipantId,
@@ -978,7 +969,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
                 "Provider with participantId " + providerParticipantId + " not found. Queueing subscription request..."
             );
             queuedSubscriptionInfos[subscriptionId] = subscriptionInfo;
-            var pendingSubscriptions = queuedProviderParticipantIdToSubscriptionRequestsMapping[providerParticipantId];
+            let pendingSubscriptions = queuedProviderParticipantIdToSubscriptionRequestsMapping[providerParticipantId];
             if (pendingSubscriptions === undefined) {
                 pendingSubscriptions = [];
                 queuedProviderParticipantIdToSubscriptionRequestsMapping[providerParticipantId] = pendingSubscriptions;
@@ -988,7 +979,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         }
 
         // make sure the provider contains the attribute being subscribed to
-        var attribute = provider[attributeName];
+        const attribute = provider[attributeName];
         if (attribute === undefined) {
             exception = new SubscriptionException({
                 detailMessage:
@@ -998,14 +989,14 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
                     providerParticipantId +
                     " misses attribute " +
                     attributeName,
-                subscriptionId: subscriptionId
+                subscriptionId
             });
             log.error(exception.detailMessage);
             callbackDispatcherAsync(
                 callbackDispatcherSettings,
                 {
                     error: exception,
-                    subscriptionId: subscriptionId
+                    subscriptionId
                 },
                 callbackDispatcher
             );
@@ -1024,14 +1015,14 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
                     " attribute " +
                     attributeName +
                     " is not notifiable",
-                subscriptionId: subscriptionId
+                subscriptionId
             });
             log.error(exception.detailMessage);
             callbackDispatcherAsync(
                 callbackDispatcherSettings,
                 {
                     error: exception,
-                    subscriptionId: subscriptionId
+                    subscriptionId
                 },
                 callbackDispatcher
             );
@@ -1039,7 +1030,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         }
 
         // make sure a ProviderAttribute is registered
-        var subscriptions = getSubscriptionsForProviderAttribute(providerParticipantId, attributeName);
+        const subscriptions = getSubscriptionsForProviderAttribute(providerParticipantId, attributeName);
         if (subscriptions === undefined) {
             exception = new SubscriptionException({
                 detailMessage:
@@ -1050,14 +1041,14 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
                     " for providerId " +
                     providerParticipantId +
                     " is not registered or notifiable",
-                subscriptionId: subscriptionId
+                subscriptionId
             });
             log.error(exception.detailMessage);
             callbackDispatcherAsync(
                 callbackDispatcherSettings,
                 {
                     error: exception,
-                    subscriptionId: subscriptionId
+                    subscriptionId
                 },
                 callbackDispatcher
             );
@@ -1066,7 +1057,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
 
         // Set up publication interval if maxIntervalMs is a number
         //(not (is not a number)) ...
-        var periodMs = getPeriod(subscriptionInfo);
+        const periodMs = getPeriod(subscriptionInfo);
 
         if (!isNaN(periodMs)) {
             if (periodMs < PeriodicSubscriptionQos.MIN_PERIOD_MS) {
@@ -1078,14 +1069,14 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
                         periodMs +
                         " is smaller than PeriodicSubscriptionQos.MIN_PERIOD_MS " +
                         PeriodicSubscriptionQos.MIN_PERIOD_MS,
-                    subscriptionId: subscriptionId
+                    subscriptionId
                 });
                 log.error(exception.detailMessage);
                 callbackDispatcherAsync(
                     callbackDispatcherSettings,
                     {
                         error: exception,
-                        subscriptionId: subscriptionId
+                        subscriptionId
                     },
                     callbackDispatcher
                 );
@@ -1109,7 +1100,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         addSubscriptionToPersistency(subscriptionId, subscriptionInfo);
 
         triggerPublication(subscriptionInfo);
-        callbackDispatcherAsync(callbackDispatcherSettings, { subscriptionId: subscriptionId }, callbackDispatcher);
+        callbackDispatcherAsync(callbackDispatcherSettings, { subscriptionId }, callbackDispatcher);
     };
 
     function handleBroadcastSubscriptionRequestInternal(
@@ -1120,11 +1111,11 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         callbackDispatcherSettings,
         multicast
     ) {
-        var requestType = (multicast ? "multicast" : "broadcast") + " subscription request";
-        var exception;
-        var timeToEndDate = 0;
-        var eventName = subscriptionRequest.subscribedToName;
-        var subscriptionId = subscriptionRequest.subscriptionId;
+        const requestType = (multicast ? "multicast" : "broadcast") + " subscription request";
+        let exception;
+        let timeToEndDate = 0;
+        const eventName = subscriptionRequest.subscribedToName;
+        const subscriptionId = subscriptionRequest.subscriptionId;
 
         // if endDate is defined (also exclude default value 0 for
         // the expiryDateMs qos-property)
@@ -1150,14 +1141,14 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
                         " for providerId " +
                         providerParticipantId +
                         " lies in the past",
-                    subscriptionId: subscriptionId
+                    subscriptionId
                 });
                 log.error(exception.detailMessage);
                 callbackDispatcherAsync(
                     callbackDispatcherSettings,
                     {
                         error: exception,
-                        subscriptionId: subscriptionId
+                        subscriptionId
                     },
                     callbackDispatcher
                 );
@@ -1188,10 +1179,10 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
             );
             return;
         }
-        var provider = participantIdToProvider[providerParticipantId];
+        const provider = participantIdToProvider[providerParticipantId];
         // construct subscriptionInfo from subscriptionRequest and participantIds
 
-        var subscriptionInfo = new SubscriptionInformation(
+        const subscriptionInfo = new SubscriptionInformation(
             multicast
                 ? SubscriptionInformation.SUBSCRIPTION_TYPE_MULTICAST
                 : SubscriptionInformation.SUBSCRIPTION_TYPE_BROADCAST,
@@ -1210,7 +1201,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
                 "Provider with participantId " + providerParticipantId + " not found. Queueing " + requestType + "..."
             );
             queuedSubscriptionInfos[subscriptionId] = subscriptionInfo;
-            var pendingSubscriptions = queuedProviderParticipantIdToSubscriptionRequestsMapping[providerParticipantId];
+            let pendingSubscriptions = queuedProviderParticipantIdToSubscriptionRequestsMapping[providerParticipantId];
             if (pendingSubscriptions === undefined) {
                 pendingSubscriptions = [];
                 queuedProviderParticipantIdToSubscriptionRequestsMapping[providerParticipantId] = pendingSubscriptions;
@@ -1220,7 +1211,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         }
 
         // make sure the provider contains the event being subscribed to
-        var event = provider[eventName];
+        const event = provider[eventName];
         if (event === undefined) {
             exception = new SubscriptionException({
                 detailMessage:
@@ -1232,14 +1223,14 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
                     providerParticipantId +
                     " misses event " +
                     eventName,
-                subscriptionId: subscriptionId
+                subscriptionId
             });
             log.error(exception.detailMessage);
             callbackDispatcherAsync(
                 callbackDispatcherSettings,
                 {
                     error: exception,
-                    subscriptionId: subscriptionId
+                    subscriptionId
                 },
                 callbackDispatcher
             );
@@ -1247,7 +1238,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         }
 
         // make sure a ProviderEvent is registered
-        var subscriptions = getSubscriptionsForProviderEvent(providerParticipantId, eventName);
+        const subscriptions = getSubscriptionsForProviderEvent(providerParticipantId, eventName);
         if (subscriptions === undefined) {
             exception = new SubscriptionException({
                 detailMessage:
@@ -1260,14 +1251,14 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
                     " for providerId " +
                     providerParticipantId +
                     " is not registered",
-                subscriptionId: subscriptionId
+                subscriptionId
             });
             log.error(exception.detailMessage);
             callbackDispatcherAsync(
                 callbackDispatcherSettings,
                 {
                     error: exception,
-                    subscriptionId: subscriptionId
+                    subscriptionId
                 },
                 callbackDispatcher
             );
@@ -1275,7 +1266,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         }
 
         if (multicast) {
-            var multicastId = subscriptionInfo.multicastId;
+            const multicastId = subscriptionInfo.multicastId;
             if (event.selective) {
                 exception = new SubscriptionException({
                     detailMessage:
@@ -1286,14 +1277,14 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
                         " event " +
                         eventName +
                         " is marked as selective, which is not allowed for multicasts",
-                    subscriptionId: subscriptionId
+                    subscriptionId
                 });
                 log.error(exception.detailMessage);
                 callbackDispatcherAsync(
                     callbackDispatcherSettings,
                     {
                         error: exception,
-                        subscriptionId: subscriptionId
+                        subscriptionId
                     },
                     callbackDispatcher
                 );
@@ -1301,7 +1292,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
             }
             addRequestToMulticastSubscriptions(multicastId, subscriptionId);
         } else {
-            var checkResult = event.checkFilterParameters(subscriptionRequest.filterParameters);
+            const checkResult = event.checkFilterParameters(subscriptionRequest.filterParameters);
             if (checkResult.caughtErrors.length !== 0) {
                 exception = new SubscriptionException({
                     detailMessage:
@@ -1311,14 +1302,14 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
                         providerParticipantId +
                         ": " +
                         JSON.stringify(checkResult.caughtErrors),
-                    subscriptionId: subscriptionId
+                    subscriptionId
                 });
                 log.error(exception.detailMessage);
                 callbackDispatcherAsync(
                     callbackDispatcherSettings,
                     {
                         error: exception,
-                        subscriptionId: subscriptionId
+                        subscriptionId
                     },
                     callbackDispatcher
                 );
@@ -1341,7 +1332,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         callbackDispatcherAsync(
             callbackDispatcherSettings,
             {
-                subscriptionId: subscriptionId
+                subscriptionId
             },
             callbackDispatcher
         );
@@ -1420,7 +1411,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         if (!isReady()) {
             throw new Error("PublicationManager is already shut down");
         }
-        var propertyName, property;
+        let propertyName;
 
         // cycles over all provider members
         for (propertyName in provider) {
@@ -1440,7 +1431,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         }
 
         // stores the participantId to
-        participantIdToProvider[participantId] = undefined;
+        delete participantIdToProvider[participantId];
     };
 
     /**
@@ -1455,7 +1446,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
      *            provider
      */
     this.addPublicationProvider = function addPublicationProvider(participantId, provider) {
-        var propertyName, property, pendingSubscriptions, pendingSubscription, subscriptionObject;
+        let propertyName, pendingSubscriptions, pendingSubscription, subscriptionObject;
         if (!isReady()) {
             throw new Error("PublicationManager is already shut down");
         }
@@ -1487,7 +1478,6 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
                     subscriptionObject = pendingSubscriptions[pendingSubscription];
                     delete pendingSubscriptions[pendingSubscription];
 
-                    /*jslint nomen:true*/
                     if (subscriptionObject.subscriptionType === SubscriptionInformation.SUBSCRIPTION_TYPE_ATTRIBUTE) {
                         // call attribute subscription handler
                         this.handleSubscriptionRequest(
@@ -1495,25 +1485,21 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
                             subscriptionObject.providerParticipantId,
                             subscriptionObject
                         );
+                    } else if (
+                        subscriptionObject.subscriptionType === SubscriptionInformation.SUBSCRIPTION_TYPE_BROADCAST
+                    ) {
+                        this.handleBroadcastSubscriptionRequest(
+                            subscriptionObject.proxyParticipantId,
+                            subscriptionObject.providerParticipantId,
+                            subscriptionObject
+                        );
                     } else {
-                        // call broadcast subscription handler
-                        if (
-                            subscriptionObject.subscriptionType === SubscriptionInformation.SUBSCRIPTION_TYPE_BROADCAST
-                        ) {
-                            this.handleBroadcastSubscriptionRequest(
-                                subscriptionObject.proxyParticipantId,
-                                subscriptionObject.providerParticipantId,
-                                subscriptionObject
-                            );
-                        } else {
-                            this.handleMulticastSubscriptionRequest(
-                                subscriptionObject.proxyParticipantId,
-                                subscriptionObject.providerParticipantId,
-                                subscriptionObject
-                            );
-                        }
+                        this.handleMulticastSubscriptionRequest(
+                            subscriptionObject.proxyParticipantId,
+                            subscriptionObject.providerParticipantId,
+                            subscriptionObject
+                        );
                     }
-                    /*jslint nomen:false*/
                 }
             }
         }
@@ -1534,18 +1520,16 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
             return;
         }
 
-        var subscriptions = persistency.getItem(subscriptionPersistenceKey);
+        const subscriptions = persistency.getItem(subscriptionPersistenceKey);
         if (subscriptions && JSON && JSON.parse) {
-            var subscriptionIds = SubscriptionUtil.deserializeSubscriptionIds(subscriptions),
+            let subscriptionIds = SubscriptionUtil.deserializeSubscriptionIds(subscriptions),
                 subscriptionId;
             for (subscriptionId in subscriptionIds) {
                 if (subscriptionIds.hasOwnProperty(subscriptionId)) {
-                    var item = persistency.getItem(subscriptionIds[subscriptionId]),
-                        subscriptionInfo;
+                    let item = persistency.getItem(subscriptionIds[subscriptionId]);
                     if (item !== null && item !== undefined) {
                         try {
-                            subscriptionInfo = JSON.parse(item);
-                            /*jslint nomen:true*/
+                            let subscriptionInfo = JSON.parse(item);
                             if (
                                 subscriptionInfo.subscriptionType ===
                                 SubscriptionInformation.SUBSCRIPTION_TYPE_ATTRIBUTE
@@ -1557,28 +1541,25 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
                                     subscriptionInfo,
                                     callbackAsync
                                 );
-                            } else {
+                            } else if (
+                                subscriptionInfo.subscriptionType ===
+                                SubscriptionInformation.SUBSCRIPTION_TYPE_BROADCAST
+                            ) {
                                 // call broadcast subscription handler
-                                if (
-                                    subscriptionInfo.subscriptionType ===
-                                    SubscriptionInformation.SUBSCRIPTION_TYPE_BROADCAST
-                                ) {
-                                    this.handleBroadcastSubscriptionRequest(
-                                        subscriptionInfo.proxyParticipantId,
-                                        subscriptionInfo.providerParticipantId,
-                                        subscriptionInfo,
-                                        callbackAsync
-                                    );
-                                } else {
-                                    this.handleMulticastSubscriptionRequest(
-                                        subscriptionInfo.proxyParticipantId,
-                                        subscriptionInfo.providerParticipantId,
-                                        subscriptionInfo,
-                                        callbackAsync
-                                    );
-                                }
+                                this.handleBroadcastSubscriptionRequest(
+                                    subscriptionInfo.proxyParticipantId,
+                                    subscriptionInfo.providerParticipantId,
+                                    subscriptionInfo,
+                                    callbackAsync
+                                );
+                            } else {
+                                this.handleMulticastSubscriptionRequest(
+                                    subscriptionInfo.proxyParticipantId,
+                                    subscriptionInfo.providerParticipantId,
+                                    subscriptionInfo,
+                                    callbackAsync
+                                );
                             }
-                            /*jslint nomen:false*/
                         } catch (err) {
                             throw new Error(err);
                         }
@@ -1593,17 +1574,17 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
     };
 
     this.hasSubscriptions = function() {
-        var hasSubscriptionInfos = Object.keys(subscriptionInfos).length > 0;
+        const hasSubscriptionInfos = Object.keys(subscriptionInfos).length > 0;
 
-        var hasQueuedSubscriptionInfos = Object.keys(queuedSubscriptionInfos).length > 0;
+        const hasQueuedSubscriptionInfos = Object.keys(queuedSubscriptionInfos).length > 0;
 
-        var hasQueuedProviderParticipantIdToSubscriptionRequestsMapping =
+        const hasQueuedProviderParticipantIdToSubscriptionRequestsMapping =
             Object.keys(queuedProviderParticipantIdToSubscriptionRequestsMapping).length > 0;
 
-        var hasOnChangeProviderAttributeToSubscriptions =
+        const hasOnChangeProviderAttributeToSubscriptions =
             Object.keys(onChangeProviderAttributeToSubscriptions).length > 0;
 
-        var hasOnChangeProviderEventToSubscriptions = Object.keys(onChangeProviderEventToSubscriptions).length > 0;
+        const hasOnChangeProviderEventToSubscriptions = Object.keys(onChangeProviderEventToSubscriptions).length > 0;
 
         return (
             hasSubscriptionInfos ||
@@ -1622,10 +1603,10 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
      * @name PublicationManager#shutdown
      */
     this.shutdown = function shutdown() {
-        var subscriptionId;
+        let subscriptionId;
         for (subscriptionId in subscriptionInfos) {
             if (subscriptionInfos.hasOwnProperty(subscriptionId)) {
-                var subscriptionInfo = subscriptionInfos[subscriptionId];
+                const subscriptionInfo = subscriptionInfos[subscriptionId];
                 if (subscriptionInfo.subscriptionInterval !== undefined) {
                     LongTimer.clearTimeout(subscriptionInfo.subscriptionInterval);
                 }

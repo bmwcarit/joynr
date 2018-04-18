@@ -17,39 +17,37 @@
  * #L%
  */
 
-define(["JsonParser", "joynr/system/LoggerFactory"], function(JsonParser, LoggerFactory) {
-    describe("libjoynr-js.joynr.messaging.JsonParserTest", function() {
-        var log = LoggerFactory.getLogger("JsonParserTest");
-
-        it("testSimpleObject", function() {
-            var object1 = {
+define(["JsonParser"], JsonParser => {
+    describe("libjoynr-js.joynr.messaging.JsonParserTest", () => {
+        it("testSimpleObject", () => {
+            const object1 = {
                 x: "xü/"
             };
 
-            var json = JSON.stringify(object1);
-            var jsonParser = new JsonParser(json);
-            var object1result = jsonParser.next;
+            const json = JSON.stringify(object1);
+            const jsonParser = new JsonParser(json);
+            const object1result = jsonParser.next;
 
             expect(object1).toEqual(object1result);
         });
 
-        it("testParseMultipleObjects", function() {
-            var object1 = {
+        it("testParseMultipleObjects", () => {
+            const object1 = {
                 x: "x"
             };
-            var object2 = {
+            const object2 = {
                 y: "y"
             };
 
-            var concatenatedJson = JSON.stringify(object1) + JSON.stringify(object2);
-            var jsonParser = new JsonParser(concatenatedJson);
-            var object1result = jsonParser.next;
+            const concatenatedJson = JSON.stringify(object1) + JSON.stringify(object2);
+            const jsonParser = new JsonParser(concatenatedJson);
+            const object1result = jsonParser.next;
 
             expect(object1).toEqual(object1result);
         });
 
-        it("testParseMultipleComplexObjects", function() {
-            var objs = [
+        it("testParseMultipleComplexObjects", () => {
+            const objs = [
                 {
                     dog: "dog",
                     cat: "cat",
@@ -90,32 +88,32 @@ define(["JsonParser", "joynr/system/LoggerFactory"], function(JsonParser, Logger
                     }
                 }
             ];
-            var i;
-            var concatenatedJson = "";
+            let i;
+            let concatenatedJson = "";
             for (i = 0; i < objs.length; i++) {
                 concatenatedJson += JSON.stringify(objs[i]);
             }
 
-            var jsonParser = new JsonParser(concatenatedJson);
-            var x = 0;
+            const jsonParser = new JsonParser(concatenatedJson);
+            let x = 0;
             while (jsonParser.hasNext) {
-                var next = jsonParser.next;
+                const next = jsonParser.next;
                 expect(objs[x]).toEqual(next);
                 x++;
             }
             expect(x).toEqual(objs.length);
         });
 
-        it("testParseInvalidObjects", function() {
-            var object1 = {
+        it("testParseInvalidObjects", () => {
+            const object1 = {
                 x: "x"
             };
-            var object2 = "a";
+            const object2 = "a";
 
-            var concatenatedJson = JSON.stringify(object1) + JSON.stringify(object2);
-            var jsonParser = new JsonParser(concatenatedJson);
+            const concatenatedJson = JSON.stringify(object1) + JSON.stringify(object2);
+            const jsonParser = new JsonParser(concatenatedJson);
 
-            var next = null;
+            let next = null;
             // TODO this should work with:
             // assertException(jsonParser.next, "SyntaxError");
             try {

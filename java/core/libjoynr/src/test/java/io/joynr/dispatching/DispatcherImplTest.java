@@ -19,9 +19,11 @@
 package io.joynr.dispatching;
 
 import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.eq;
+import static org.mockito.Matchers.argThat;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -38,6 +40,16 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatcher;
+import org.mockito.Captor;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.runners.MockitoJUnitRunner;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.AbstractModule;
@@ -46,33 +58,33 @@ import com.google.inject.Injector;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Names;
+
 import io.joynr.dispatching.rpc.RpcUtils;
 import io.joynr.dispatching.subscription.PublicationManager;
 import io.joynr.dispatching.subscription.SubscriptionManager;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.JsonMessageSerializerModule;
 import io.joynr.messaging.MessageReceiver;
+import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.ReceiverStatusListener;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.sender.MessageSender;
 import io.joynr.provider.AbstractSubscriptionPublisher;
+import io.joynr.provider.ProviderCallback;
 import io.joynr.provider.ProviderContainer;
 import io.joynr.proxy.JoynrMessagingConnectorFactory;
+import io.joynr.smrf.EncodingException;
+import io.joynr.smrf.UnsuppportedVersionException;
+import joynr.ImmutableMessage;
 import joynr.MulticastPublication;
 import joynr.MulticastSubscriptionRequest;
 import joynr.MutableMessage;
 import joynr.OnChangeSubscriptionQos;
 import joynr.OneWayRequest;
+import joynr.Reply;
 import joynr.Request;
 import joynr.SubscriptionRequest;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DispatcherImplTest {
@@ -90,9 +102,13 @@ public class DispatcherImplTest {
     @Spy
     private MessageReceiverMock messageReceiverMock = new MessageReceiverMock();
 
+    @Captor
+    private ArgumentCaptor<ProviderCallback<Reply>> providerCallbackReply;
+
     private Dispatcher fixture;
     private ProviderDirectory requestCallerDirectory;
     private MutableMessageFactory messageFactory;
+    final boolean compress = false;
 
     @Before
     public void setUp() throws NoSuchMethodException, SecurityException {
@@ -101,6 +117,8 @@ public class DispatcherImplTest {
             @Override
             protected void configure() {
                 bind(Dispatcher.class).to(DispatcherImpl.class);
+                bind(Boolean.class).annotatedWith(Names.named(MessagingPropertyKeys.PROPERTY_MESSAGING_COMPRESS_REPLIES))
+                                   .toInstance(false);
                 bind(RequestReplyManager.class).toInstance(requestReplyManagerMock);
                 bind(SubscriptionManager.class).toInstance(subscriptionManagerMock);
                 bind(PublicationManager.class).toInstance(publicationManagerMock);
@@ -191,14 +209,14 @@ public class DispatcherImplTest {
     public void testSendMulticastMessage() {
         MutableMessageFactory messageFactoryMock = mock(MutableMessageFactory.class);
         ObjectMapper objectMapperMock = mock(ObjectMapper.class);
-
         fixture = new DispatcherImpl(requestReplyManagerMock,
                                      subscriptionManagerMock,
                                      publicationManagerMock,
                                      messageRouterMock,
                                      messageSenderMock,
                                      messageFactoryMock,
-                                     objectMapperMock);
+                                     objectMapperMock,
+                                     compress);
 
         String fromParticipantId = "fromParticipantId";
         MulticastPublication multicastPublication = mock(MulticastPublication.class);
@@ -207,7 +225,6 @@ public class DispatcherImplTest {
         fixture.sendMulticast(fromParticipantId, multicastPublication, messagingQos);
 
         verify(messageFactoryMock).createMulticast(eq(fromParticipantId), eq(multicastPublication), eq(messagingQos));
-        verify(messageSenderMock).sendMessage(Mockito.<MutableMessage> any());
     }
 
     @Test
@@ -233,10 +250,108 @@ public class DispatcherImplTest {
                                      messageRouterMock,
                                      messageSenderMock,
                                      messageFactoryMock,
-                                     objectMapperMock);
+                                     objectMapperMock,
+                                     compress);
 
         fixture.messageArrived(joynrMessage.getImmutableMessage());
 
         verify(publicationManagerMock).addSubscriptionRequest(eq(from), eq(to), eq(subscriptionRequest));
+    }
+
+    private void testPropagateCompressFlagFromRequestToRepliesImpl(final boolean compress,
+                                                                   final boolean compressAllOutgoingReplies)
+                                                                                                            throws Exception {
+        MessagingQos messagingQos = new MessagingQos(1000L);
+        messagingQos.setCompress(compress);
+
+        String requestReplyId = UUID.randomUUID().toString();
+        Request request = new Request("methodName", new Object[]{}, new String[]{}, requestReplyId);
+        final String providerParticipantId = "toParticipantId";
+
+        MutableMessage joynrMessage = messageFactory.createRequest("fromParticipantId",
+                                                                   providerParticipantId,
+                                                                   request,
+                                                                   messagingQos);
+
+        ImmutableMessage outgoingMessage = joynrMessage.getImmutableMessage();
+
+        if (!compressAllOutgoingReplies) {
+            fixture.messageArrived(outgoingMessage);
+            verify(requestReplyManagerMock).handleRequest(providerCallbackReply.capture(),
+                                                          eq(providerParticipantId),
+                                                          eq(request),
+                                                          eq(joynrMessage.getTtlMs()));
+            providerCallbackReply.getValue().onSuccess(new Reply(requestReplyId));
+            verify(messageSenderMock).sendMessage(argThat(new MessageIsCompressedMatcher(compress)));
+        } else {
+            MutableMessageFactory messageFactoryMock = mock(MutableMessageFactory.class);
+            ObjectMapper objectMapperMock = mock(ObjectMapper.class);
+
+            when(objectMapperMock.readValue(any(String.class), eq(Request.class))).thenReturn(request);
+
+            fixture = new DispatcherImpl(requestReplyManagerMock,
+                                         subscriptionManagerMock,
+                                         publicationManagerMock,
+                                         messageRouterMock,
+                                         messageSenderMock,
+                                         messageFactoryMock,
+                                         objectMapperMock,
+                                         compressAllOutgoingReplies);
+
+            fixture.messageArrived(outgoingMessage);
+            verify(requestReplyManagerMock).handleRequest(providerCallbackReply.capture(),
+                                                          eq(providerParticipantId),
+                                                          eq(request),
+                                                          eq(joynrMessage.getTtlMs()));
+
+            providerCallbackReply.getValue().onSuccess(new Reply(requestReplyId));
+
+            ArgumentCaptor<MessagingQos> qosCaptor = ArgumentCaptor.forClass(MessagingQos.class);
+            verify(messageFactoryMock).createReply(eq(providerParticipantId),
+                                                   anyString(),
+                                                   any(Reply.class),
+                                                   qosCaptor.capture());
+            assertEquals(true, qosCaptor.getValue().getCompress());
+        }
+    }
+
+    @Test
+    public void testPropagateCompressFlagFromRequestToReplies() throws Exception {
+        boolean compressAllOutgoingReplies = false;
+        boolean compress = true;
+        testPropagateCompressFlagFromRequestToRepliesImpl(compress, compressAllOutgoingReplies);
+        compress = false;
+        testPropagateCompressFlagFromRequestToRepliesImpl(compress, compressAllOutgoingReplies);
+    }
+
+    @Test
+    public void testCompressReplies() throws Exception {
+        boolean compressAllOutgoingReplies = true;
+        boolean compress = true;
+        testPropagateCompressFlagFromRequestToRepliesImpl(compress, compressAllOutgoingReplies);
+        compress = false;
+        testPropagateCompressFlagFromRequestToRepliesImpl(compress, compressAllOutgoingReplies);
+    }
+
+    private static class MessageIsCompressedMatcher extends ArgumentMatcher<MutableMessage> {
+        private final boolean shouldMessageBeCompressed;
+
+        public MessageIsCompressedMatcher(final boolean compressed) {
+            this.shouldMessageBeCompressed = compressed;
+        }
+
+        @Override
+        public boolean matches(Object argument) {
+            if (!(argument instanceof MutableMessage)) {
+                return false;
+            }
+
+            try {
+                return ((MutableMessage) argument).getImmutableMessage().isCompressed() == shouldMessageBeCompressed;
+            } catch (SecurityException | EncodingException | UnsuppportedVersionException e) {
+                e.printStackTrace();
+                return false;
+            }
+        }
     }
 }

@@ -1,5 +1,3 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
@@ -18,13 +16,11 @@
  * limitations under the License.
  * #L%
  */
-var Util = require("../../util/UtilInternal");
-var Typing = require("../../util/Typing");
-var PeriodicSubscriptionQos = require("../../proxy/PeriodicSubscriptionQos");
-var OnChangeSubscriptionQos = require("../../proxy/OnChangeSubscriptionQos");
-var OnChangeWithKeepAliveSubscriptionQos = require("../../proxy/OnChangeWithKeepAliveSubscriptionQos");
+const UtilInternal = require("../../util/UtilInternal");
+const Typing = require("../../util/Typing");
+const PeriodicSubscriptionQos = require("../../proxy/PeriodicSubscriptionQos");
 
-var defaultSettings = {
+const defaultSettings = {
     qos: new PeriodicSubscriptionQos()
 };
 
@@ -61,7 +57,7 @@ function SubscriptionRequest(settings) {
      * @name SubscriptionRequest#attributeName
      * @type String
      */
-    Util.extend(this, defaultSettings, settings);
+    UtilInternal.extend(this, defaultSettings, settings);
 
     /**
      * The joynr type name
@@ -72,7 +68,6 @@ function SubscriptionRequest(settings) {
 
     Object.defineProperty(this, "_typeName", {
         value: "joynr.SubscriptionRequest",
-        readable: true,
         writable: false,
         enumerable: true,
         configurable: false
@@ -89,7 +84,6 @@ function SubscriptionRequest(settings) {
  */
 Object.defineProperty(SubscriptionRequest, "_typeName", {
     value: "joynr.SubscriptionRequest",
-    readable: true,
     writable: false,
     enumerable: true,
     configurable: false

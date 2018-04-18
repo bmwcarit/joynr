@@ -1,5 +1,3 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
@@ -18,13 +16,14 @@
  * limitations under the License.
  * #L%
  */
-var GlobalDiscoveryEntry = require("../../../classes/joynr/types/GlobalDiscoveryEntry");
-var ProviderQos = require("../../../classes/joynr/types/ProviderQos");
-var ProviderScope = require("../../../classes/joynr/types/ProviderScope");
-var Version = require("../../../classes/joynr/types/Version");
+require("../../node-unit-test-helper");
+const GlobalDiscoveryEntry = require("../../../../main/js/generated/joynr/types/GlobalDiscoveryEntry");
+const ProviderQos = require("../../../../main/js/generated/joynr/types/ProviderQos");
+const ProviderScope = require("../../../../main/js/generated/joynr/types/ProviderScope");
+const Version = require("../../../../main/js/generated/joynr/types/Version");
 
-var capInfo;
-beforeEach(function() {
+let capInfo;
+beforeEach(() => {
     capInfo = new GlobalDiscoveryEntry({
         providerVersion: new Version({
             majorVersion: 47,
@@ -44,12 +43,12 @@ beforeEach(function() {
     });
 });
 
-describe("libjoynr-js.joynr.capabilities.GlobalDiscoveryEntry", function() {
-    it("is instantiable", function() {
+describe("libjoynr-js.joynr.capabilities.GlobalDiscoveryEntry", () => {
+    it("is instantiable", () => {
         expect(capInfo).toBeDefined();
         expect(capInfo instanceof GlobalDiscoveryEntry).toBeTruthy();
     });
-    it("providerVersion is set", function() {
+    it("providerVersion is set", () => {
         expect(capInfo.providerVersion).toBeDefined();
         expect(capInfo.providerVersion instanceof Version).toBeTruthy();
     });

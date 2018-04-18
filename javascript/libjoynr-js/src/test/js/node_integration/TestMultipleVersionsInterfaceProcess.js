@@ -19,17 +19,20 @@
  * #L%
  */
 
-var ChildProcessUtils = require("./ChildProcessUtils");
+const ChildProcessUtils = require("./ChildProcessUtils");
 ChildProcessUtils.overrideRequirePaths();
 
-var joynr = require("joynr"),
-    Promise = require("../../classes/global/Promise"),
-    provisioning = require("../joynr/provisioning/provisioning_cc.js");
+let joynr = require("joynr"),
+    Promise = require("../../../main/js/global/Promise"),
+    provisioning = require("../../resources/joynr/provisioning/provisioning_cc.js"),
+    MultipleVersionsInterfaceProviderNameVersion = require("../../generated/joynr/tests/MultipleVersionsInterface2Provider"),
+    MultipleVersionsInterfaceProviderPackageVersion1 = require("../../generated/joynr/tests/v1/MultipleVersionsInterfaceProvider"),
+    MultipleVersionsInterfaceProviderPackageVersion2 = require("../../generated/joynr/tests/v2/MultipleVersionsInterfaceProvider");
 
-var loadedJoynr, providerDomain, multipleVersionsInterfaceProvider, MultipleVersionsInterfaceProvider;
+let loadedJoynr, providerDomain, multipleVersionsInterfaceProvider, MultipleVersionsInterfaceProvider;
 
-var providerImplementation = {
-    getTrue: function() {
+let providerImplementation = {
+    getTrue: () => {
         return true;
     }
 };
@@ -38,9 +41,9 @@ function initializeTest(provisioningSuffix, providedDomain, versioning) {
     providerDomain = providedDomain;
 
     joynr.selectRuntime("inprocess");
-    return joynr.load(provisioning).then(function(newJoynr) {
+    return joynr.load(provisioning).then(newJoynr => {
         loadedJoynr = newJoynr;
-        var providerQos = new joynr.types.ProviderQos({
+        const providerQos = new joynr.types.ProviderQos({
             customParameters: [],
             providerpriority: 5,
             scope: joynr.types.ProviderScope.GLOBAL,
@@ -49,14 +52,16 @@ function initializeTest(provisioningSuffix, providedDomain, versioning) {
 
         switch (versioning) {
             case "nameVersion2":
-                MultipleVersionsInterfaceProvider = require("joynr/tests/MultipleVersionsInterface2Provider");
+                MultipleVersionsInterfaceProvider = MultipleVersionsInterfaceProviderNameVersion;
                 break;
             case "packageVersion1":
-                MultipleVersionsInterfaceProvider = require("joynr/tests/v1/MultipleVersionsInterfaceProvider");
+                MultipleVersionsInterfaceProvider = MultipleVersionsInterfaceProviderPackageVersion1;
                 break;
             case "packageVersion2":
-                MultipleVersionsInterfaceProvider = require("joynr/tests/v2/MultipleVersionsInterfaceProvider");
+                MultipleVersionsInterfaceProvider = MultipleVersionsInterfaceProviderPackageVersion2;
                 break;
+            default:
+                throw new Error("Please specify the versioning type used for provider generation!");
         }
 
         multipleVersionsInterfaceProvider = joynr.providerBuilder.build(
@@ -66,7 +71,7 @@ function initializeTest(provisioningSuffix, providedDomain, versioning) {
 
         return loadedJoynr.registration
             .registerProvider(providerDomain, multipleVersionsInterfaceProvider, providerQos)
-            .then(function() {
+            .then(() => {
                 return loadedJoynr;
             });
     });
@@ -78,11 +83,9 @@ function startTest() {
 }
 
 function terminateTest() {
-    return loadedJoynr.registration
-        .unregisterProvider(providerDomain, multipleVersionsInterfaceProvider)
-        .then(function() {
-            loadedJoynr.shutdown();
-        });
+    return loadedJoynr.registration.unregisterProvider(providerDomain, multipleVersionsInterfaceProvider).then(() => {
+        loadedJoynr.shutdown();
+    });
 }
 
 ChildProcessUtils.registerHandlers(initializeTest, startTest, terminateTest);

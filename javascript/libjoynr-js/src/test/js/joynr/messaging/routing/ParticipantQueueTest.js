@@ -1,5 +1,3 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
@@ -18,20 +16,20 @@
  * limitations under the License.
  * #L%
  */
+require("../../../node-unit-test-helper");
+const ParticipantQueue = require("../../../../../main/js/joynr/messaging/routing/ParticipantQueue");
+const JoynrMessage = require("../../../../../main/js/joynr/messaging/JoynrMessage");
+const Date = require("../../../../../test/js/global/Date");
 
-var ParticipantQueue = require("../../../../classes/joynr/messaging/routing/ParticipantQueue");
-var JoynrMessage = require("../../../../classes/joynr/messaging/JoynrMessage");
-var Date = require("../../../../test-classes/global/Date");
-
-var fakeTime;
+let fakeTime;
 
 function increaseFakeTime(time_ms) {
     fakeTime = fakeTime + time_ms;
     jasmine.clock().tick(time_ms);
 }
 
-describe("libjoynr-js.joynr.messaging.routing.ParticipantQueue", function() {
-    var participantQueue, joynrMessage, joynrMessage2, receiverParticipantId;
+describe("libjoynr-js.joynr.messaging.routing.ParticipantQueue", () => {
+    let participantQueue, joynrMessage, joynrMessage2, receiverParticipantId;
     receiverParticipantId = "TestparticipantQueue_participantId_" + Date.now();
     joynrMessage = new JoynrMessage({
         type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
@@ -46,35 +44,35 @@ describe("libjoynr-js.joynr.messaging.routing.ParticipantQueue", function() {
     joynrMessage2.to = receiverParticipantId;
     joynrMessage2.from = "senderParticipantId2";
 
-    beforeEach(function(done) {
+    beforeEach(done => {
         participantQueue = new ParticipantQueue({});
         fakeTime = Date.now();
         jasmine.clock().install();
-        spyOn(Date, "now").and.callFake(function() {
+        spyOn(Date, "now").and.callFake(() => {
             return fakeTime;
         });
         done();
     });
 
-    afterEach(function(done) {
+    afterEach(done => {
         jasmine.clock().uninstall();
         done();
     });
 
-    it("increases queueSize when calling putMessage", function() {
-        var queueSize = participantQueue.getSize();
+    it("increases queueSize when calling putMessage", () => {
+        const queueSize = participantQueue.getSize();
         participantQueue.putMessage(joynrMessage, joynrMessage.payload.length);
         expect(participantQueue.getSize()).toBe(queueSize + joynrMessage.payload.length);
     });
 
-    it("returns inserted messages when calling getMessages", function() {
+    it("returns inserted messages when calling getMessages", () => {
         participantQueue.putMessage(joynrMessage, joynrMessage.payload.length);
         participantQueue.putMessage(joynrMessage2, joynrMessage2.payload.length);
-        var queue = participantQueue.getMessages();
+        const queue = participantQueue.getMessages();
         expect(queue).toEqual([joynrMessage, joynrMessage2]);
     });
 
-    it("filters expired messages", function() {
+    it("filters expired messages", () => {
         joynrMessage.expiryDate = Date.now() + 1000;
         joynrMessage2.expiryDate = Date.now() + 2000;
         participantQueue.putMessage(joynrMessage, joynrMessage.payload.length);
@@ -84,7 +82,7 @@ describe("libjoynr-js.joynr.messaging.routing.ParticipantQueue", function() {
         expect(participantQueue.getMessages()).toEqual([joynrMessage2]);
     });
 
-    it("filters expired messages with first ttl > second ttl", function() {
+    it("filters expired messages with first ttl > second ttl", () => {
         joynrMessage.expiryDate = Date.now() + 2000;
         joynrMessage2.expiryDate = Date.now() + 1000;
         participantQueue.putMessage(joynrMessage, joynrMessage.payload.length);

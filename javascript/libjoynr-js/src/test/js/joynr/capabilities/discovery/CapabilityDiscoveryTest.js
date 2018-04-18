@@ -1,5 +1,3 @@
-/*jslint es5: true, node: true, node: true */
-/*global fail: true */
 /*
  * #%L
  * %%
@@ -18,27 +16,26 @@
  * limitations under the License.
  * #L%
  */
-var CapabilityDiscovery = require("../../../../classes/joynr/capabilities/discovery/CapabilityDiscovery");
-var DiscoveryQos = require("../../../../classes/joynr/types/DiscoveryQos");
-var ArbitrationStrategyCollection = require("../../../../classes/joynr/types/ArbitrationStrategyCollection");
-var ProviderQos = require("../../../../classes/joynr/types/ProviderQos");
-var CustomParameter = require("../../../../classes/joynr/types/CustomParameter");
-var ProviderScope = require("../../../../classes/joynr/types/ProviderScope");
-var DiscoveryScope = require("../../../../classes/joynr/types/DiscoveryScope");
-var DiscoveryEntry = require("../../../../classes/joynr/types/DiscoveryEntry");
-var GlobalDiscoveryEntry = require("../../../../classes/joynr/types/GlobalDiscoveryEntry");
-var ChannelAddress = require("../../../../classes/joynr/system/RoutingTypes/ChannelAddress");
-var Version = require("../../../../classes/joynr/types/Version");
-var Promise = require("../../../../classes/global/Promise");
-var waitsFor = require("../../../../test-classes/global/WaitsFor");
-var CapabilitiesUtil = require("../../../../classes/joynr/util/CapabilitiesUtil");
+require("../../../node-unit-test-helper");
+const CapabilityDiscovery = require("../../../../../main/js/joynr/capabilities/discovery/CapabilityDiscovery");
+const DiscoveryQos = require("../../../../../main/js/generated/joynr/types/DiscoveryQos");
+const ProviderQos = require("../../../../../main/js/generated/joynr/types/ProviderQos");
+const CustomParameter = require("../../../../../main/js/generated/joynr/types/CustomParameter");
+const ProviderScope = require("../../../../../main/js/generated/joynr/types/ProviderScope");
+const DiscoveryScope = require("../../../../../main/js/generated/joynr/types/DiscoveryScope");
+const DiscoveryEntry = require("../../../../../main/js/generated/joynr/types/DiscoveryEntry");
+const GlobalDiscoveryEntry = require("../../../../../main/js/generated/joynr/types/GlobalDiscoveryEntry");
+const ChannelAddress = require("../../../../../main/js/generated/joynr/system/RoutingTypes/ChannelAddress");
+const Version = require("../../../../../main/js/generated/joynr/types/Version");
+const Promise = require("../../../../../main/js/global/Promise");
+const waitsFor = require("../../../../../test/js/global/WaitsFor");
+const CapabilitiesUtil = require("../../../../../main/js/joynr/util/CapabilitiesUtil");
 
-var domain, interfaceName, discoveryQos;
-var discoveryEntries, discoveryEntriesReturned, globalDiscoveryEntries, globalDiscoveryEntriesReturned;
-var capabilityDiscovery, messageRouterSpy, proxyBuilderSpy, address, localCapStoreSpy;
-var globalCapCacheSpy, globalCapDirSpy, capabilityInfo;
-var asyncTimeout = 5000;
-var startDateMs;
+let domain, interfaceName, discoveryQos;
+let discoveryEntries, discoveryEntriesReturned, globalDiscoveryEntries, globalDiscoveryEntriesReturned;
+let capabilityDiscovery, messageRouterSpy, proxyBuilderSpy, address, localCapStoreSpy;
+let globalCapCacheSpy, globalCapDirSpy;
+let startDateMs;
 
 messageRouterSpy = jasmine.createSpyObj("routingTable", ["addNextHop", "resolveNextHop"]);
 
@@ -46,7 +43,7 @@ messageRouterSpy.addNextHop.and.returnValue(Promise.resolve());
 messageRouterSpy.resolveNextHop.and.returnValue(Promise.resolve());
 
 function getSpiedLookupObjWithReturnValue(name, returnValue) {
-    var spyObj = jasmine.createSpyObj(name, ["lookup", "add", "remove", "touch"]);
+    const spyObj = jasmine.createSpyObj(name, ["lookup", "add", "remove", "touch"]);
     spyObj.lookup.and.returnValue(returnValue);
     spyObj.add.and.returnValue(returnValue);
     spyObj.remove.and.returnValue(spyObj);
@@ -56,8 +53,8 @@ function getSpiedLookupObjWithReturnValue(name, returnValue) {
 function getGlobalDiscoveryEntry(domain, interfaceName, newGlobalAddress) {
     return new GlobalDiscoveryEntry({
         providerVersion: new Version({ majorVersion: 47, minorVersion: 11 }),
-        domain: domain,
-        interfaceName: interfaceName,
+        domain,
+        interfaceName,
         lastSeenDateMs: Date.now(),
         qos: new ProviderQos({
             customParameters: [
@@ -93,8 +90,8 @@ function assertDiscoveryEntryEquals(expected, actual) {
 function getDiscoveryEntry(domain, interfaceName) {
     return new DiscoveryEntry({
         providerVersion: new Version({ majorVersion: 47, minorVersion: 11 }),
-        domain: domain,
-        interfaceName: interfaceName,
+        domain,
+        interfaceName,
         qos: new ProviderQos({
             customParameters: [
                 new CustomParameter({
@@ -113,9 +110,9 @@ function getDiscoveryEntry(domain, interfaceName) {
     });
 }
 
-describe("libjoynr-js.joynr.capabilities.discovery.CapabilityDiscovery", function() {
-    beforeEach(function(done) {
-        var i, discoveryEntry;
+describe("libjoynr-js.joynr.capabilities.discovery.CapabilityDiscovery", () => {
+    beforeEach(done => {
+        let i, discoveryEntry;
         startDateMs = Date.now();
         domain = "myDomain";
         interfaceName = "myInterfaceName";
@@ -170,7 +167,7 @@ describe("libjoynr-js.joynr.capabilities.discovery.CapabilityDiscovery", functio
         done();
     });
 
-    it("is instantiable, of correct type and has all members", function(done) {
+    it("is instantiable, of correct type and has all members", done => {
         expect(capabilityDiscovery).toBeDefined();
         expect(capabilityDiscovery instanceof CapabilityDiscovery).toBeTruthy();
         expect(capabilityDiscovery.lookup).toBeDefined();
@@ -178,45 +175,30 @@ describe("libjoynr-js.joynr.capabilities.discovery.CapabilityDiscovery", functio
         done();
     });
 
-    it("throws when constructor arguments are missing", function(done) {
-        expect(function() {
-            var capDisc = new CapabilityDiscovery();
-        }).toThrow();
-        expect(function() {
-            var capDisc = new CapabilityDiscovery(localCapStoreSpy);
-        }).toThrow();
-        expect(function() {
-            var capDisc = new CapabilityDiscovery(messageRouterSpy);
-        }).toThrow();
-        expect(function() {
-            var capDisc = new CapabilityDiscovery(localCapStoreSpy, globalCapCacheSpy, proxyBuilderSpy);
-        }).toThrow();
-        expect(function() {
-            var capDisc = new CapabilityDiscovery(
-                localCapStoreSpy,
-                globalCapCacheSpy,
-                messageRouterSpy,
-                proxyBuilderSpy
-            );
-        }).toThrow();
-        expect(function() {
-            var capDisc = new CapabilityDiscovery(localCapStoreSpy, globalCapCacheSpy, messageRouterSpy);
-        }).toThrow();
-        expect(function() {
-            var capDisc = new CapabilityDiscovery(
-                localCapStoreSpy,
-                globalCapCacheSpy,
-                messageRouterSpy,
-                proxyBuilderSpy,
-                "domain"
-            );
-        }).not.toThrow();
+    it("throws when constructor arguments are missing", done => {
+        expect(() => new CapabilityDiscovery()).toThrow();
+        expect(() => new CapabilityDiscovery(localCapStoreSpy)).toThrow();
+        expect(() => new CapabilityDiscovery(messageRouterSpy)).toThrow();
+        expect(() => new CapabilityDiscovery(localCapStoreSpy, globalCapCacheSpy, proxyBuilderSpy)).toThrow();
+        expect(
+            () => new CapabilityDiscovery(localCapStoreSpy, globalCapCacheSpy, messageRouterSpy, proxyBuilderSpy)
+        ).toThrow();
+        expect(() => new CapabilityDiscovery(localCapStoreSpy, globalCapCacheSpy, messageRouterSpy)).toThrow();
+        expect(
+            () =>
+                new CapabilityDiscovery(
+                    localCapStoreSpy,
+                    globalCapCacheSpy,
+                    messageRouterSpy,
+                    proxyBuilderSpy,
+                    "domain"
+                )
+        ).not.toThrow();
+
         done();
     });
 
-    it("calls local capabilities directory according to discoveryQos.discoveryScope LOCAL_THEN_GLOBAL when local cache provides non-empty result", function(
-        done
-    ) {
+    it("calls local capabilities directory according to discoveryQos.discoveryScope LOCAL_THEN_GLOBAL when local cache provides non-empty result", done => {
         localCapStoreSpy = getSpiedLookupObjWithReturnValue("localCapStoreSpy", discoveryEntries);
         globalCapCacheSpy = getSpiedLookupObjWithReturnValue("globalCapCacheSpy", []);
         capabilityDiscovery = new CapabilityDiscovery(
@@ -231,58 +213,52 @@ describe("libjoynr-js.joynr.capabilities.discovery.CapabilityDiscovery", functio
         capabilityDiscovery.lookup([domain], interfaceName, discoveryQos);
         expect(localCapStoreSpy.lookup).toHaveBeenCalledWith({
             domains: [domain],
-            interfaceName: interfaceName
+            interfaceName
         });
         expect(globalCapDirSpy.lookup).not.toHaveBeenCalled();
         expect(globalCapCacheSpy.lookup).not.toHaveBeenCalled();
         done();
     });
 
-    it("calls local and global capabilities directory according to discoveryQos.discoveryScope LOCAL_THEN_GLOBAL when local cache provides empty result", function(
-        done
-    ) {
+    it("calls local and global capabilities directory according to discoveryQos.discoveryScope LOCAL_THEN_GLOBAL when local cache provides empty result", done => {
         discoveryQos.discoveryScope = DiscoveryScope.LOCAL_THEN_GLOBAL;
         capabilityDiscovery.lookup([domain], interfaceName, discoveryQos);
-        setTimeout(function() {
+        setTimeout(() => {
             expect(localCapStoreSpy.lookup).toHaveBeenCalledWith({
                 domains: [domain],
-                interfaceName: interfaceName
+                interfaceName
             });
             expect(globalCapCacheSpy.lookup).toHaveBeenCalledWith({
                 domains: [domain],
-                interfaceName: interfaceName,
+                interfaceName,
                 cacheMaxAge: discoveryQos.cacheMaxAge
             });
             expect(globalCapDirSpy.lookup).toHaveBeenCalledWith({
                 domains: [domain],
-                interfaceName: interfaceName
+                interfaceName
             });
 
             done();
         }, 10);
     });
 
-    it("calls local and not global cache and not global capabilities directory according to discoveryQos.discoveryScope LOCAL_THEN_GLOBAL when local store provides non-empty result", function(
-        done
-    ) {
+    it("calls local and not global cache and not global capabilities directory according to discoveryQos.discoveryScope LOCAL_THEN_GLOBAL when local store provides non-empty result", done => {
         localCapStoreSpy.lookup.and.returnValue([getDiscoveryEntry(domain, interfaceName)]);
         capabilityDiscovery.lookup([domain], interfaceName, discoveryQos);
         expect(localCapStoreSpy.lookup).toHaveBeenCalledWith({
             domains: [domain],
-            interfaceName: interfaceName
+            interfaceName
         });
         expect(globalCapCacheSpy.lookup).not.toHaveBeenCalled();
         expect(globalCapDirSpy.lookup).not.toHaveBeenCalled();
         done();
     });
 
-    it("calls local and global cache and global capabilities directory according to discoveryQos.discoveryScope LOCAL_THEN_GLOBAL when local store and global cache provides non-empty result", function(
-        done
-    ) {
+    it("calls local and global cache and global capabilities directory according to discoveryQos.discoveryScope LOCAL_THEN_GLOBAL when local store and global cache provides non-empty result", done => {
         discoveryQos.discoveryScope = DiscoveryScope.LOCAL_THEN_GLOBAL;
         capabilityDiscovery.lookup([domain], interfaceName, discoveryQos);
         waitsFor(
-            function() {
+            () => {
                 return (
                     localCapStoreSpy.lookup.calls.count() >= 1 &&
                     globalCapCacheSpy.lookup.calls.count() >= 1 &&
@@ -292,19 +268,19 @@ describe("libjoynr-js.joynr.capabilities.discovery.CapabilityDiscovery", functio
             "wait for lookups to be done",
             1000
         )
-            .then(function() {
+            .then(() => {
                 expect(localCapStoreSpy.lookup).toHaveBeenCalledWith({
                     domains: [domain],
-                    interfaceName: interfaceName
+                    interfaceName
                 });
                 expect(globalCapCacheSpy.lookup).toHaveBeenCalledWith({
                     domains: [domain],
-                    interfaceName: interfaceName,
+                    interfaceName,
                     cacheMaxAge: discoveryQos.cacheMaxAge
                 });
                 expect(globalCapDirSpy.lookup).toHaveBeenCalledWith({
                     domains: [domain],
-                    interfaceName: interfaceName
+                    interfaceName
                 });
                 done();
                 return null;
@@ -312,39 +288,39 @@ describe("libjoynr-js.joynr.capabilities.discovery.CapabilityDiscovery", functio
             .catch(done.fail);
     });
 
-    it("calls local capabilities directory according to discoveryQos.discoveryScope LOCAL_ONLY", function(done) {
+    it("calls local capabilities directory according to discoveryQos.discoveryScope LOCAL_ONLY", done => {
         discoveryQos.discoveryScope = DiscoveryScope.LOCAL_ONLY;
         capabilityDiscovery.lookup([domain], interfaceName, discoveryQos);
         expect(localCapStoreSpy.lookup).toHaveBeenCalledWith({
             domains: [domain],
-            interfaceName: interfaceName
+            interfaceName
         });
         expect(globalCapCacheSpy.lookup).not.toHaveBeenCalled();
         expect(globalCapDirSpy.lookup).not.toHaveBeenCalled();
         done();
     });
 
-    it("calls global capabilities directory according to discoveryQos.discoveryScope GLOBAL_ONLY", function(done) {
+    it("calls global capabilities directory according to discoveryQos.discoveryScope GLOBAL_ONLY", done => {
         discoveryQos.discoveryScope = DiscoveryScope.GLOBAL_ONLY;
         capabilityDiscovery.lookup([domain], interfaceName, discoveryQos);
 
         waitsFor(
-            function() {
+            () => {
                 return globalCapCacheSpy.lookup.calls.count() >= 1 && globalCapDirSpy.lookup.calls.count() >= 1;
             },
             "waiting for globalCapCacheSpy to get called",
             1000
         )
-            .then(function() {
+            .then(() => {
                 expect(localCapStoreSpy.lookup).not.toHaveBeenCalled();
                 expect(globalCapCacheSpy.lookup).toHaveBeenCalledWith({
                     domains: [domain],
-                    interfaceName: interfaceName,
+                    interfaceName,
                     cacheMaxAge: discoveryQos.cacheMaxAge
                 });
                 expect(globalCapDirSpy.lookup).toHaveBeenCalledWith({
                     domains: [domain],
-                    interfaceName: interfaceName
+                    interfaceName
                 });
                 done();
                 return null;
@@ -352,16 +328,14 @@ describe("libjoynr-js.joynr.capabilities.discovery.CapabilityDiscovery", functio
             .catch(done.fail);
     });
 
-    it("does not call global capabilities directory according to discoveryQos.discoveryScope GLOBAL_ONLY, if global cache is non-empty", function(
-        done
-    ) {
+    it("does not call global capabilities directory according to discoveryQos.discoveryScope GLOBAL_ONLY, if global cache is non-empty", done => {
         globalCapCacheSpy.lookup.and.returnValue([getDiscoveryEntry(domain, interfaceName)]);
         discoveryQos.discoveryScope = DiscoveryScope.GLOBAL_ONLY;
         capabilityDiscovery.lookup([domain], interfaceName, discoveryQos);
         expect(localCapStoreSpy.lookup).not.toHaveBeenCalled();
         expect(globalCapCacheSpy.lookup).toHaveBeenCalledWith({
             domains: [domain],
-            interfaceName: interfaceName,
+            interfaceName,
             cacheMaxAge: discoveryQos.cacheMaxAge
         });
         expect(globalCapDirSpy.lookup).not.toHaveBeenCalled();
@@ -376,23 +350,24 @@ describe("libjoynr-js.joynr.capabilities.discovery.CapabilityDiscovery", functio
         globalCapabilityInfos,
         expectedReturnValue
     ) {
-        var onFulfilledSpy = jasmine.createSpy("onFulfilled" + descriptor),
-            onRejectedSpy = jasmine.createSpy("onRejected" + descriptor);
-        var localCapStoreSpy = getSpiedLookupObjWithReturnValue("localCapStoreSpy" + descriptor, localdiscoveryEntries);
-        var globalCapCacheSpy = getSpiedLookupObjWithReturnValue(
+        const localCapStoreSpy = getSpiedLookupObjWithReturnValue(
+            "localCapStoreSpy" + descriptor,
+            localdiscoveryEntries
+        );
+        const globalCapCacheSpy = getSpiedLookupObjWithReturnValue(
             "globalCapCacheSpy" + descriptor,
             globalCapCacheEntries
         );
-        var globalCapDirSpy = getSpiedLookupObjWithReturnValue(
+        const globalCapDirSpy = getSpiedLookupObjWithReturnValue(
             "globalCapDirSpy" + descriptor,
             Promise.resolve({
                 result: globalCapabilityInfos
             })
         );
 
-        var proxyBuilderSpy = jasmine.createSpyObj("proxyBuilderSpy", ["build"]);
+        const proxyBuilderSpy = jasmine.createSpyObj("proxyBuilderSpy", ["build"]);
         proxyBuilderSpy.build.and.returnValue(Promise.resolve(globalCapDirSpy));
-        var capabilityDiscovery = new CapabilityDiscovery(
+        const capabilityDiscovery = new CapabilityDiscovery(
             localCapStoreSpy,
             globalCapCacheSpy,
             messageRouterSpy,
@@ -400,16 +375,16 @@ describe("libjoynr-js.joynr.capabilities.discovery.CapabilityDiscovery", functio
             "io.joynr"
         );
         capabilityDiscovery.globalAddressReady(address);
-        var discoveryQos = new DiscoveryQos({
+        const discoveryQos = new DiscoveryQos({
             cacheMaxAge: 0,
-            discoveryScope: discoveryScope
+            discoveryScope
         });
 
         return capabilityDiscovery
             .lookup([domain], interfaceName, discoveryQos)
-            .then(function(fulfilledWith) {
-                var i;
-                var endDateMs = Date.now();
+            .then(fulfilledWith => {
+                let i;
+                const endDateMs = Date.now();
                 if (expectedReturnValue === undefined) {
                     fail("no return value was expected");
                 } else {
@@ -421,15 +396,15 @@ describe("libjoynr-js.joynr.capabilities.discovery.CapabilityDiscovery", functio
                     }
                 }
             })
-            .catch(function(error) {
+            .catch(() => {
                 if (expectedReturnValue !== undefined) {
                     fail("a return value was expected: " + expectedReturnValue);
                 }
             });
     }
 
-    it("discovers correct discoveryEntries according to discoveryScope", function(done) {
-        var promises = [];
+    it("discovers correct discoveryEntries according to discoveryScope", done => {
+        const promises = [];
         promises.push(testDiscoveryResult("00", DiscoveryScope.LOCAL_THEN_GLOBAL, [], [], [], []));
         promises.push(
             testDiscoveryResult(
@@ -639,7 +614,7 @@ describe("libjoynr-js.joynr.capabilities.discovery.CapabilityDiscovery", functio
         );
 
         Promise.all(promises)
-            .then(function() {
+            .then(() => {
                 done();
                 return null;
             })
@@ -659,7 +634,7 @@ describe("libjoynr-js.joynr.capabilities.discovery.CapabilityDiscovery", functio
                     })
                 ],
                 priority: 1234,
-                scope: scope,
+                scope,
                 supportsOnChangeSubscriptions: true
             }),
             participantId: "700",
@@ -668,37 +643,14 @@ describe("libjoynr-js.joynr.capabilities.discovery.CapabilityDiscovery", functio
         });
     }
 
-    function getGlobalDiscoveryEntryWithScope(scope) {
-        return new GlobalDiscoveryEntry({
-            providerVersion: new Version({ majorVersion: 47, minorVersion: 11 }),
-            domain: "domain",
-            interfaceName: "interfaceName",
-            lastSeenDateMs: Date.now(),
-            qos: new ProviderQos({
-                customParameters: [
-                    new CustomParameter({
-                        name: "theName",
-                        value: "theValue"
-                    })
-                ],
-                priority: 1234,
-                scope: scope,
-                supportsOnChangeSubscriptions: true
-            }),
-            address: JSON.stringify(address),
-            participantId: "700",
-            publicKeyId: ""
-        });
-    }
-
-    it("calls local cap dir correctly", function(done) {
-        var discoveryEntry = getDiscoveryEntryWithScope(ProviderScope.LOCAL);
+    it("calls local cap dir correctly", done => {
+        const discoveryEntry = getDiscoveryEntryWithScope(ProviderScope.LOCAL);
         capabilityDiscovery
             .add(discoveryEntry)
-            .then(function() {
+            .then(() => {
                 expect(localCapStoreSpy.add).toHaveBeenCalled();
                 expect(localCapStoreSpy.add).toHaveBeenCalledWith({
-                    discoveryEntry: discoveryEntry,
+                    discoveryEntry,
                     remote: false
                 });
                 expect(globalCapDirSpy.add).not.toHaveBeenCalledWith(undefined);
@@ -708,13 +660,13 @@ describe("libjoynr-js.joynr.capabilities.discovery.CapabilityDiscovery", functio
             .catch(fail);
     });
 
-    it("calls global cap dir correctly", function(done) {
-        var actualDiscoveryEntry;
-        var discoveryEntry = getDiscoveryEntryWithScope(ProviderScope.GLOBAL);
-        var expectedDiscoveryEntry = CapabilitiesUtil.discoveryEntry2GlobalDiscoveryEntry(discoveryEntry, address);
+    it("calls global cap dir correctly", done => {
+        let actualDiscoveryEntry;
+        const discoveryEntry = getDiscoveryEntryWithScope(ProviderScope.GLOBAL);
+        const expectedDiscoveryEntry = CapabilitiesUtil.discoveryEntry2GlobalDiscoveryEntry(discoveryEntry, address);
         capabilityDiscovery
             .add(discoveryEntry)
-            .then(function() {
+            .then(() => {
                 expect(globalCapDirSpy.add).toHaveBeenCalled();
                 actualDiscoveryEntry = globalCapDirSpy.add.calls.argsFor(0)[0].globalDiscoveryEntry;
                 // lastSeenDate is set to Date.now() in CapabilityDiscovery.add
@@ -728,14 +680,14 @@ describe("libjoynr-js.joynr.capabilities.discovery.CapabilityDiscovery", functio
             .catch(fail);
     });
 
-    it("touch calls global cap dir correctly", function(done) {
-        var actualClusterControllerId;
-        var actualTtl;
-        var expectedTtl = 1337;
-        var expectedClusterControllerId = "testTouchClusterControllerId";
+    it("touch calls global cap dir correctly", done => {
+        let actualClusterControllerId;
+        let actualTtl;
+        const expectedTtl = 1337;
+        const expectedClusterControllerId = "testTouchClusterControllerId";
         capabilityDiscovery
             .touch(expectedClusterControllerId, expectedTtl)
-            .then(function() {
+            .then(() => {
                 expect(globalCapDirSpy.touch).toHaveBeenCalled();
                 actualTtl = proxyBuilderSpy.build.calls.argsFor(0)[1].messagingQos.ttl;
                 actualClusterControllerId = globalCapDirSpy.touch.calls.argsFor(0)[0].clusterControllerId;
@@ -747,20 +699,20 @@ describe("libjoynr-js.joynr.capabilities.discovery.CapabilityDiscovery", functio
             .catch(fail);
     });
 
-    it("reports error from global cap dir", function(done) {
-        var actualDiscoveryEntry;
-        var discoveryEntry = getDiscoveryEntryWithScope(ProviderScope.GLOBAL);
-        var expectedDiscoveryEntry = CapabilitiesUtil.discoveryEntry2GlobalDiscoveryEntry(discoveryEntry, address);
+    it("reports error from global cap dir", done => {
+        let actualDiscoveryEntry;
+        const discoveryEntry = getDiscoveryEntryWithScope(ProviderScope.GLOBAL);
+        const expectedDiscoveryEntry = CapabilitiesUtil.discoveryEntry2GlobalDiscoveryEntry(discoveryEntry, address);
         globalCapDirSpy = getSpiedLookupObjWithReturnValue("globalCapDirSpy", Promise.reject(new Error("Some error.")));
 
         proxyBuilderSpy.build.and.returnValue(Promise.resolve(globalCapDirSpy));
         capabilityDiscovery
             .add(discoveryEntry)
-            .then(function() {
+            .then(() => {
                 fail("expected an error to have been reported");
                 return null;
             })
-            .catch(function(error) {
+            .catch(error => {
                 expect(globalCapDirSpy.add).toHaveBeenCalled();
                 actualDiscoveryEntry = globalCapDirSpy.add.calls.argsFor(0)[0].globalDiscoveryEntry;
                 // lastSeenDate is set to Date.now() in CapabilityDiscovery.add
@@ -773,15 +725,15 @@ describe("libjoynr-js.joynr.capabilities.discovery.CapabilityDiscovery", functio
             });
     });
 
-    it("throws on unknown provider scope", function(done) {
-        var discoveryEntry = getDiscoveryEntryWithScope("UnknownScope");
+    it("throws on unknown provider scope", done => {
+        const discoveryEntry = getDiscoveryEntryWithScope("UnknownScope");
         capabilityDiscovery
             .add(discoveryEntry)
-            .then(function() {
+            .then(() => {
                 fail("expected an error");
                 return null;
             })
-            .catch(function(error) {
+            .catch(error => {
                 expect(globalCapDirSpy.add).not.toHaveBeenCalled();
                 expect(localCapStoreSpy.add).not.toHaveBeenCalledWith();
                 expect(Object.prototype.toString.call(error) === "[object Error]").toBeTruthy();
@@ -790,7 +742,7 @@ describe("libjoynr-js.joynr.capabilities.discovery.CapabilityDiscovery", functio
             });
     });
 
-    it("lookup with multiple domains should throw an exception", function(done) {
+    it("lookup with multiple domains should throw an exception", done => {
         localCapStoreSpy = getSpiedLookupObjWithReturnValue("localCapStoreSpy", discoveryEntries);
         globalCapCacheSpy = getSpiedLookupObjWithReturnValue("globalCapCacheSpy", []);
         capabilityDiscovery = new CapabilityDiscovery(
@@ -803,12 +755,7 @@ describe("libjoynr-js.joynr.capabilities.discovery.CapabilityDiscovery", functio
         capabilityDiscovery.globalAddressReady(address);
         capabilityDiscovery
             .lookup([domain, domain], interfaceName, discoveryQos)
-            .then(function() {
-                fail("unexpected success");
-            })
-            .catch(function(error) {
-                done();
-                return null;
-            });
+            .then(fail)
+            .catch(done);
     });
 });

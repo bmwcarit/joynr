@@ -1,5 +1,3 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
@@ -18,14 +16,14 @@
  * limitations under the License.
  * #L%
  */
-var Util = require("../../../../classes/joynr/util/Util");
-var BrowserMessagingStubFactory = require("../../../../classes/joynr/messaging/browser/BrowserMessagingStubFactory");
+require("../../../node-unit-test-helper");
+const BrowserMessagingStubFactory = require("../../../../../main/js/joynr/messaging/browser/BrowserMessagingStubFactory");
 
-describe("libjoynr-js.joynr.messaging.browser.BrowserMessagingStubFactory", function() {
-    var returnValue, webMessagingStub, browserMessagingStubFactory;
-    var windowId, browserAddress, joynrMessage;
+describe("libjoynr-js.joynr.messaging.browser.BrowserMessagingStubFactory", () => {
+    let returnValue, webMessagingStub, browserMessagingStubFactory;
+    let windowId, browserAddress, joynrMessage;
 
-    beforeEach(function(done) {
+    beforeEach(done => {
         returnValue = {
             key: "returnValue"
         };
@@ -34,7 +32,7 @@ describe("libjoynr-js.joynr.messaging.browser.BrowserMessagingStubFactory", func
         webMessagingStub.transmit = jasmine.createSpy("transmit");
         webMessagingStub.transmit.and.returnValue(returnValue);
         browserMessagingStubFactory = new BrowserMessagingStubFactory({
-            webMessagingStub: webMessagingStub
+            webMessagingStub
         });
         windowId = "windowId";
         function BrowserAddress() {}
@@ -45,7 +43,7 @@ describe("libjoynr-js.joynr.messaging.browser.BrowserMessagingStubFactory", func
         done();
     });
 
-    it("is instantiable and of correct type", function(done) {
+    it("is instantiable and of correct type", done => {
         expect(BrowserMessagingStubFactory).toBeDefined();
         expect(typeof BrowserMessagingStubFactory === "function").toBeTruthy();
         expect(browserMessagingStubFactory).toBeDefined();
@@ -55,51 +53,51 @@ describe("libjoynr-js.joynr.messaging.browser.BrowserMessagingStubFactory", func
         done();
     });
 
-    it("throws on missing or wrongly typed arguments in constructor", function(done) {
-        expect(function() {
+    it("throws on missing or wrongly typed arguments in constructor", done => {
+        expect(() => {
             browserMessagingStubFactory = new BrowserMessagingStubFactory();
         }).toThrow(); // settings is undefined
-        expect(function() {
+        expect(() => {
             browserMessagingStubFactory = new BrowserMessagingStubFactory("");
         }).toThrow(); // settings is of wrong type
-        expect(function() {
+        expect(() => {
             browserMessagingStubFactory = new BrowserMessagingStubFactory({});
         }).toThrow(); // webMessagingStub is missing
-        expect(function() {
+        expect(() => {
             browserMessagingStubFactory = new BrowserMessagingStubFactory({
                 webMessagingStub: {}
             });
         }).toThrow(); // webMessagingStub is of wrong type
-        expect(function() {
+        expect(() => {
             browserMessagingStubFactory = new BrowserMessagingStubFactory({
                 webMessagingStub: ""
             });
         }).toThrow(); // webMessagingStub is of wrong type
-        expect(function() {
+        expect(() => {
             browserMessagingStubFactory = new BrowserMessagingStubFactory({
-                webMessagingStub: webMessagingStub
+                webMessagingStub
             });
         }).not.toThrow(); // correct call
         done();
     });
 
-    it("throws on missing or wrongly typed arguments in build", function(done) {
-        expect(function() {
+    it("throws on missing or wrongly typed arguments in build", done => {
+        expect(() => {
             browserMessagingStubFactory.build();
         }).toThrow(); // address is undefined
-        expect(function() {
+        expect(() => {
             browserMessagingStubFactory.build(browserAddress);
         }).not.toThrow(); // correct call
         done();
     });
 
-    it("creates a messaging stub and uses it correctly", function(done) {
-        var browserMessagingStub = browserMessagingStubFactory.build(browserAddress);
+    it("creates a messaging stub and uses it correctly", done => {
+        const browserMessagingStub = browserMessagingStubFactory.build(browserAddress);
         //expect(browserAddress.getTabId).toHaveBeenCalledWith();
 
-        var result = browserMessagingStub.transmit(joynrMessage);
+        const result = browserMessagingStub.transmit(joynrMessage);
         expect(webMessagingStub.transmit).toHaveBeenCalledWith({
-            windowId: windowId,
+            windowId,
             message: joynrMessage
         });
         expect(result).toEqual(returnValue);

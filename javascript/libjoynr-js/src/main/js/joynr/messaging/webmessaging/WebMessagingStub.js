@@ -1,5 +1,3 @@
-/*jslint es5: true, nomen: true, node: true */
-
 /*
  * #%L
  * %%
@@ -18,11 +16,11 @@
  * limitations under the License.
  * #L%
  */
-var Promise = require("../../../global/Promise");
-var JSONSerializer = require("../../util/JSONSerializer");
-var LoggerFactory = require("../../system/LoggerFactory");
+const Promise = require("../../../global/Promise");
+const JSONSerializer = require("../../util/JSONSerializer");
+const LoggingManager = require("../../system/LoggingManager");
 
-var log = LoggerFactory.getLogger("joynr/messaging/webmessaging/WebMessagingStub");
+const log = LoggingManager.getLogger("joynr/messaging/webmessaging/WebMessagingStub");
 /**
  * @name WebMessagingStub
  * @constructor

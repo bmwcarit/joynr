@@ -25,19 +25,19 @@ define(
         "joynr/datatypes/exampleTypes/ExtendedComplexStruct",
         "joynr/tests/testTypes/TestEnum"
     ],
-    function(ComplexRadioStation, ComplexStruct, Country, ExtendedComplexStruct, TestEnum) {
-        beforeEach(function() {});
+    (ComplexRadioStation, ComplexStruct, Country, ExtendedComplexStruct, TestEnum) => {
+        beforeEach(() => {});
 
-        describe("Enum type", function() {
-            it("equals", function() {
-                var fixture = TestEnum.ZERO;
+        describe("Enum type", () => {
+            it("equals", () => {
+                const fixture = TestEnum.ZERO;
                 expect(fixture.equals(TestEnum.ZERO)).toBeTruthy();
                 expect(fixture.equals(TestEnum.ONE)).toBeFalsy();
                 expect(fixture.equals(TestEnum.TWO)).toBeFalsy();
             });
         });
 
-        describe("Compound type", function() {
+        describe("Compound type", () => {
             function testEqualsWithPrimitiveParams(fixture) {
                 expect(fixture.equals("")).toBeFalsy();
                 expect(fixture.equals(1)).toBeFalsy();
@@ -47,7 +47,7 @@ define(
             }
 
             function testEqualsForComplexStruct(settings, Constructor) {
-                var fixture = new Constructor(settings);
+                const fixture = new Constructor(settings);
                 testEqualsWithPrimitiveParams(fixture);
                 expect(fixture.equals(new Constructor())).toBeFalsy();
                 expect(fixture.equals(fixture)).toBeTruthy();
@@ -72,8 +72,8 @@ define(
                 return fixture;
             }
 
-            it("equals of basic struct", function() {
-                var settings = {
+            it("equals of basic struct", () => {
+                const settings = {
                     num32: 32,
                     num64: 64,
                     data: [],
@@ -82,13 +82,13 @@ define(
                 testEqualsForComplexStruct(settings, ComplexStruct);
             });
 
-            it("equals of struct containing enum member", function() {
-                var settings = {
+            it("equals of struct containing enum member", () => {
+                const settings = {
                     name: "name",
                     station: "station",
                     source: Country.GERMANY
                 };
-                var fixture = new ComplexRadioStation(settings);
+                const fixture = new ComplexRadioStation(settings);
                 testEqualsWithPrimitiveParams(fixture);
                 expect(fixture.equals(Country.GERMANY)).toBeFalsy();
 
@@ -105,15 +105,15 @@ define(
                 settings.source = Country.GERMANY;
             });
 
-            it("equals of hierarchic struct having struct as member", function() {
-                var settings = {
+            it("equals of hierarchic struct having struct as member", () => {
+                const settings = {
                     num32: 32,
                     num64: 64,
                     data: [],
                     str: "string",
                     structMember: new ExtendedComplexStruct()
                 };
-                var fixture = testEqualsForComplexStruct(settings, ExtendedComplexStruct);
+                const fixture = testEqualsForComplexStruct(settings, ExtendedComplexStruct);
 
                 settings.structMember = new ExtendedComplexStruct({
                     num32: 0

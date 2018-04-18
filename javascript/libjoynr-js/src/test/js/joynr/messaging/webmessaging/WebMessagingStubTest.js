@@ -1,5 +1,3 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
@@ -18,21 +16,22 @@
  * limitations under the License.
  * #L%
  */
-var WebMessagingStub = require("../../../../classes/joynr/messaging/webmessaging/WebMessagingStub");
-var JSONSerializer = require("../../../../classes/joynr/util/JSONSerializer");
+require("../../../node-unit-test-helper");
+const WebMessagingStub = require("../../../../../main/js/joynr/messaging/webmessaging/WebMessagingStub");
+const JSONSerializer = require("../../../../../main/js/joynr/util/JSONSerializer");
 
-describe("libjoynr-js.joynr.messaging.webmessaging.WebMessagingStub", function() {
-    var window, origin, webMessagingStub, joynrMessage;
+describe("libjoynr-js.joynr.messaging.webmessaging.WebMessagingStub", () => {
+    let window, origin, webMessagingStub, joynrMessage;
 
-    beforeEach(function(done) {
+    beforeEach(done => {
         function Window() {}
         window = new Window();
         window.postMessage = jasmine.createSpy("postMessage");
         origin = "defaultOrigin";
 
         webMessagingStub = new WebMessagingStub({
-            window: window,
-            origin: origin
+            window,
+            origin
         });
 
         function JoynrMessage() {}
@@ -40,7 +39,7 @@ describe("libjoynr-js.joynr.messaging.webmessaging.WebMessagingStub", function()
         done();
     });
 
-    it("is of correct type and has all members", function(done) {
+    it("is of correct type and has all members", done => {
         expect(WebMessagingStub).toBeDefined();
         expect(typeof WebMessagingStub === "function").toBeTruthy();
         expect(webMessagingStub).toBeDefined();
@@ -50,19 +49,19 @@ describe("libjoynr-js.joynr.messaging.webmessaging.WebMessagingStub", function()
         done();
     });
 
-    it("throws on missing or wrongly typed arguments in transmit", function() {
-        expect(function() {
+    it("throws on missing or wrongly typed arguments in transmit", () => {
+        expect(() => {
             webMessagingStub.transmit(undefined);
         }).toThrow();
-        expect(function() {
+        expect(() => {
             webMessagingStub.transmit({
                 message: joynrMessage
             });
         }).not.toThrow();
     });
 
-    it("calls window.postMessage correctly", function(done) {
-        var param = {
+    it("calls window.postMessage correctly", done => {
+        const param = {
             message: joynrMessage
         };
         webMessagingStub.transmit(param);

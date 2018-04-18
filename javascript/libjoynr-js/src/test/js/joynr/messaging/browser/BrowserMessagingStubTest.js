@@ -1,5 +1,3 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
@@ -18,18 +16,19 @@
  * limitations under the License.
  * #L%
  */
-var BrowserMessagingStub = require("../../../../classes/joynr/messaging/browser/BrowserMessagingStub");
+require("../../../node-unit-test-helper");
+const BrowserMessagingStub = require("../../../../../main/js/joynr/messaging/browser/BrowserMessagingStub");
 
-describe("libjoynr-js.joynr.messaging.browser.BrowserMessagingStub", function() {
-    var webMessagingStub, browserMessagingStub, windowId, joynrMessage;
+describe("libjoynr-js.joynr.messaging.browser.BrowserMessagingStub", () => {
+    let webMessagingStub, browserMessagingStub, windowId, joynrMessage;
 
-    beforeEach(function() {
+    beforeEach(() => {
         function WebMessagingStub() {}
         webMessagingStub = new WebMessagingStub();
         webMessagingStub.transmit = jasmine.createSpy("transmit");
 
         browserMessagingStub = new BrowserMessagingStub({
-            webMessagingStub: webMessagingStub
+            webMessagingStub
         });
 
         windowId = "mywindowId";
@@ -37,7 +36,7 @@ describe("libjoynr-js.joynr.messaging.browser.BrowserMessagingStub", function() 
         joynrMessage = new JoynrMessage();
     });
 
-    it("is of correct type and has all members", function() {
+    it("is of correct type and has all members", () => {
         expect(BrowserMessagingStub).toBeDefined();
         expect(typeof BrowserMessagingStub === "function").toBeTruthy();
         expect(browserMessagingStub).toBeDefined();
@@ -46,7 +45,7 @@ describe("libjoynr-js.joynr.messaging.browser.BrowserMessagingStub", function() 
         expect(typeof browserMessagingStub.transmit === "function").toBeTruthy();
     });
 
-    it("calls correctly webMessagingStub.transmit correctly", function() {
+    it("calls correctly webMessagingStub.transmit correctly", () => {
         browserMessagingStub.transmit(joynrMessage);
         expect(webMessagingStub.transmit).toHaveBeenCalledWith({
             windowId: undefined,
@@ -54,15 +53,15 @@ describe("libjoynr-js.joynr.messaging.browser.BrowserMessagingStub", function() 
         });
     });
 
-    it("calls correctly webMessagingStub.transmit with windowId correctly", function() {
+    it("calls correctly webMessagingStub.transmit with windowId correctly", () => {
         browserMessagingStub = new BrowserMessagingStub({
-            windowId: windowId,
-            webMessagingStub: webMessagingStub
+            windowId,
+            webMessagingStub
         });
 
         browserMessagingStub.transmit(joynrMessage);
         expect(webMessagingStub.transmit).toHaveBeenCalledWith({
-            windowId: windowId,
+            windowId,
             message: joynrMessage
         });
     });

@@ -25,6 +25,7 @@
 #include "joynr/JoynrClusterControllerRuntime.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/tests/testProxy.h"
+#include "joynr/Settings.h"
 
 #include "tests/mock/MockSubscriptionListener.h"
 #include "tests/mock/MockTestProvider.h"

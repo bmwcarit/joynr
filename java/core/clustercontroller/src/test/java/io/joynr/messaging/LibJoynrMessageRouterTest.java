@@ -18,8 +18,12 @@
  */
 package io.joynr.messaging;
 
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.concurrent.DelayQueue;
@@ -46,6 +50,7 @@ import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.messaging.routing.MulticastReceiverRegistry;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.runtime.ShutdownNotifier;
+import io.joynr.statusmetrics.StatusReceiver;
 import joynr.ImmutableMessage;
 import joynr.Message;
 import joynr.system.RoutingProxy;
@@ -102,7 +107,7 @@ public class LibJoynrMessageRouterTest {
         when(routingTable.containsKey(unknownParticipantId)).thenReturn(false);
         when(messageRouterParent.resolveNextHop(unknownParticipantId)).thenReturn(true);
         when(messageRouterParent.getReplyToAddress()).thenReturn(globalAddress);
-        when(messagingStubFactory.create(Mockito.any(Address.class))).thenReturn(messagingStub);
+        when(messagingStubFactory.create(any(Address.class))).thenReturn(messagingStub);
         when(parentAddress.getChannelId()).thenReturn("LibJoynrMessageRouterTestChannel");
 
         messageRouter = new LibJoynrMessageRouter(routingTable,
@@ -117,7 +122,8 @@ public class LibJoynrMessageRouterTest {
                                                   addressManager,
                                                   multicastReceiverRegistry,
                                                   messageQueue,
-                                                  shutdownNotifier);
+                                                  shutdownNotifier,
+                                                  mock(StatusReceiver.class));
         messageRouter.setParentRouter(messageRouterParent, parentAddress, "parentParticipantId", "proxyParticipantId");
     }
 
@@ -125,7 +131,7 @@ public class LibJoynrMessageRouterTest {
     public void itQueriesParentForNextHop() throws Exception {
         messageRouter.route(message);
         Thread.sleep(100);
-        Mockito.verify(messageRouterParent).resolveNextHop(Mockito.eq(unknownParticipantId));
+        verify(messageRouterParent).resolveNextHop(eq(unknownParticipantId));
     }
 
     @Test
@@ -136,21 +142,19 @@ public class LibJoynrMessageRouterTest {
         final long expiryDateMs = Long.MAX_VALUE;
         final boolean isSticky = false;
         final boolean allowUpdate = false;
-        Mockito.verify(routingTable).put(Mockito.eq(unknownParticipantId),
-                                         Mockito.eq(parentAddress),
-                                         Mockito.eq(isGloballyVisible),
-                                         Mockito.eq(expiryDateMs),
-                                         Mockito.eq(isSticky),
-                                         Mockito.eq(allowUpdate));
+        verify(routingTable).put(eq(unknownParticipantId),
+                                 eq(parentAddress),
+                                 eq(isGloballyVisible),
+                                 eq(expiryDateMs),
+                                 eq(isSticky),
+                                 eq(allowUpdate));
     }
 
     @Test
     public void passesNextHopToParent() {
         final boolean isGloballyVisible = true;
         messageRouter.addNextHop(unknownParticipantId, nextHopAddress, isGloballyVisible);
-        Mockito.verify(messageRouterParent).addNextHop(Mockito.eq(unknownParticipantId),
-                                                       Mockito.eq(incomingAddress),
-                                                       Mockito.eq(isGloballyVisible));
+        verify(messageRouterParent).addNextHop(eq(unknownParticipantId), eq(incomingAddress), eq(isGloballyVisible));
     }
 
     ScheduledExecutorService provideMessageSchedulerThreadPoolExecutor() {
@@ -171,9 +175,9 @@ public class LibJoynrMessageRouterTest {
 
         messageRouter.addMulticastReceiver(multicastId, subscriberParticipantId, providerParticipantId);
         // we expect this to be called because the provider is not reachable via an InProcessAddress
-        Mockito.verify(messageRouterParent).addMulticastReceiver(Mockito.eq(multicastId),
-                                                                 Mockito.eq(subscriberParticipantId),
-                                                                 Mockito.eq(providerParticipantId));
+        verify(messageRouterParent).addMulticastReceiver(eq(multicastId),
+                                                         eq(subscriberParticipantId),
+                                                         eq(providerParticipantId));
     }
 
     @Test
@@ -186,9 +190,9 @@ public class LibJoynrMessageRouterTest {
 
         messageRouter.addMulticastReceiver(multicastId, subscriberParticipantId, providerParticipantId);
         // we don't expect this to be called
-        Mockito.verify(messageRouterParent, times(0)).addMulticastReceiver(Mockito.any(String.class),
-                                                                           Mockito.any(String.class),
-                                                                           Mockito.any(String.class));
+        verify(messageRouterParent, times(0)).addMulticastReceiver(any(String.class),
+                                                                   any(String.class),
+                                                                   any(String.class));
     }
 
     @Test
@@ -200,8 +204,8 @@ public class LibJoynrMessageRouterTest {
         when(routingTable.get(providerParticipantId)).thenReturn(mockWebSocketAddress);
 
         messageRouter.addMulticastReceiver(multicastId, subscriberParticipantId, providerParticipantId);
-        Mockito.verify(messageRouterParent).addMulticastReceiver(Mockito.eq(multicastId),
-                                                                 Mockito.eq(subscriberParticipantId),
-                                                                 Mockito.eq(providerParticipantId));
+        verify(messageRouterParent).addMulticastReceiver(eq(multicastId),
+                                                         eq(subscriberParticipantId),
+                                                         eq(providerParticipantId));
     }
 }

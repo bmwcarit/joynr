@@ -1,5 +1,3 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
@@ -18,10 +16,10 @@
  * limitations under the License.
  * #L%
  */
-var ProviderScope = require("../../../joynr/types/ProviderScope");
-var Util = require("../../util/UtilInternal");
-var defaultSettings = {};
-var discoveryCapability = {
+const ProviderScope = require("../../../generated/joynr/types/ProviderScope");
+const UtilInternal = require("../../util/UtilInternal");
+const defaultSettings = {};
+const discoveryCapability = {
     providerVersion: {
         majorVersion: 0,
         minorVersion: 1
@@ -36,12 +34,12 @@ var discoveryCapability = {
         supportsOnChangeSubscriptions: true
     },
     lastSeenDateMs: Date.now(),
-    expiryDateMs: Util.getMaxLongValue(),
+    expiryDateMs: UtilInternal.getMaxLongValue(),
     publicKeyId: "",
     isLocal: true
 };
 
-var routingCapability = {
+const routingCapability = {
     providerVersion: {
         majorVersion: 0,
         minorVersion: 1
@@ -56,7 +54,7 @@ var routingCapability = {
         supportsOnChangeSubscriptions: true
     },
     lastSeenDateMs: Date.now(),
-    expiryDateMs: Util.getMaxLongValue(),
+    expiryDateMs: UtilInternal.getMaxLongValue(),
     publicKeyId: "",
     isLocal: true
 };
@@ -65,6 +63,11 @@ defaultSettings.persistencySettings = {
     routingTable: false,
     capabilities: true,
     publications: true
+};
+
+defaultSettings.shutdownSettings = {
+    clearSubscriptionsEnabled: true,
+    clearSubscriptionsTimeoutMs: 1000
 };
 
 defaultSettings.capabilities = [discoveryCapability, routingCapability];

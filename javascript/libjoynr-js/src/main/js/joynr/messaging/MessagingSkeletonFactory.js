@@ -1,5 +1,3 @@
-/*jslint es5: true, nomen: true, node: true */
-
 /*
  * #%L
  * %%
@@ -18,11 +16,10 @@
  * limitations under the License.
  * #L%
  */
-var Typing = require("../util/Typing");
-var Util = require("../util/UtilInternal");
-var LoggerFactory = require("../system/LoggerFactory");
+const UtilInternal = require("../util/UtilInternal");
+const LoggingManager = require("../system/LoggingManager");
 
-var log = LoggerFactory.getLogger("joynr/messaging/MessagingSkeletonFactory");
+const log = LoggingManager.getLogger("joynr/messaging/MessagingSkeletonFactory");
 /**
  * @name MessagingSkeletonFactory
  * @constructor
@@ -43,11 +40,11 @@ MessagingSkeletonFactory.prototype.setSkeletons = function setSkeletons(newMessa
  * return {MessagingSkeleton} the skeleton matching the address
  */
 MessagingSkeletonFactory.prototype.getSkeleton = function getSkeleton(address) {
-    var className = address._typeName;
-    var skeleton = this._messagingSkeletons[className];
+    const className = address._typeName;
+    const skeleton = this._messagingSkeletons[className];
 
-    if (Util.checkNullUndefined(skeleton)) {
-        var errorMsg =
+    if (UtilInternal.checkNullUndefined(skeleton)) {
+        const errorMsg =
             'Could not find a messaging skeleton for "' +
             className +
             '" within messagingSkeletons [' +

@@ -18,10 +18,14 @@
  */
 package io.joynr.messaging.mqtt.paho.client;
 
+import static com.google.inject.util.Modules.override;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -31,6 +35,8 @@ import java.net.URL;
 import java.util.Properties;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
@@ -40,6 +46,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -57,7 +64,6 @@ import com.google.inject.name.Names;
 import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
-import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.MessagingPropertyKeys;
@@ -68,6 +74,8 @@ import io.joynr.messaging.mqtt.JoynrMqttClient;
 import io.joynr.messaging.mqtt.MqttClientFactory;
 import io.joynr.messaging.mqtt.MqttClientIdProvider;
 import io.joynr.messaging.mqtt.MqttModule;
+import io.joynr.messaging.mqtt.settings.LimitAndBackpressureSettings;
+import io.joynr.messaging.mqtt.statusmetrics.MqttStatusReceiver;
 import io.joynr.messaging.routing.MessageRouter;
 import joynr.system.RoutingTypes.MqttAddress;
 
@@ -119,8 +127,10 @@ public class MqttPahoClientTest {
         properties.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_UNICAST, "");
         properties.put(MqttModule.PROPERTY_KEY_MQTT_MAX_MSGS_INFLIGHT, "100");
         properties.put(MessagingPropertyKeys.CHANNELID, "myChannelId");
-        properties.put(ConfigurableMessagingSettings.PROPERTY_MAX_INCOMING_MQTT_REQUESTS, "0");
-        properties.put(ConfigurableMessagingSettings.PROPERTY_BACKPRESSURE_ENABLED, "false");
+        properties.put(LimitAndBackpressureSettings.PROPERTY_MAX_INCOMING_MQTT_REQUESTS, "0");
+        properties.put(LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_ENABLED, "false");
+        properties.put(LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_UPPER_THRESHOLD, "80");
+        properties.put(LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD, "20");
         properties.put(MqttModule.PROPERTY_MQTT_CLEAN_SESSION, "false");
         properties.put(MqttModule.PROPERTY_KEY_MQTT_MAX_MESSAGE_SIZE_BYTES, "0");
         serializedMessage = new byte[10];
@@ -148,7 +158,7 @@ public class MqttPahoClientTest {
     }
 
     private void createJoynrMqttClient(boolean isSecureConnection) {
-        joynrMqttClient = createMqttClientWithoutSubscription(isSecureConnection);
+        joynrMqttClient = createMqttClientWithoutSubscription(isSecureConnection, null);
 
         ownTopic = injector.getInstance((Key.get(MqttAddress.class,
                                                  Names.named(MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS))));
@@ -156,36 +166,44 @@ public class MqttPahoClientTest {
     }
 
     private JoynrMqttClient createMqttClientWithoutSubscription() {
-        return createMqttClientWithoutSubscription(NON_SECURE_CONNECTION);
+        return createMqttClientWithoutSubscription(NON_SECURE_CONNECTION, null);
     }
 
-    private JoynrMqttClient createMqttClientWithoutSubscription(boolean isSecureConnection) {
+    private JoynrMqttClient createMqttClientWithoutSubscription(boolean isSecureConnection,
+                                                                final MqttStatusReceiver mqttStatusReceiver) {
         if (isSecureConnection) {
             properties.put(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "ssl://localhost:8883");
         } else {
             properties.put(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "tcp://localhost:1883");
         }
+        JoynrMqttClient client = createMqttClientInternal(mqttStatusReceiver);
+        client.start();
+        return client;
+    }
 
-        injector = Guice.createInjector(new MqttPahoModule(),
-                                        new JoynrPropertiesModule(properties),
-                                        new AbstractModule() {
-
-                                            @Override
-                                            protected void configure() {
-                                                bind(MessageRouter.class).toInstance(mockMessageRouter);
-                                                bind(ScheduledExecutorService.class).annotatedWith(Names.named(MessageRouter.SCHEDULEDTHREADPOOL))
-                                                                                    .toInstance(Executors.newScheduledThreadPool(10));
-                                                bind(RawMessagingPreprocessor.class).to(NoOpRawMessagingPreprocessor.class);
-                                                Multibinder.newSetBinder(binder(),
-                                                                         new TypeLiteral<JoynrMessageProcessor>() {
-                                                                         });
-                                            }
-                                        });
+    private JoynrMqttClient createMqttClientInternal(final MqttStatusReceiver mqttStatusReceiver) {
+        injector = Guice.createInjector(override(new MqttPahoModule()).with(new AbstractModule() {
+            @Override
+            protected void configure() {
+                if (mqttStatusReceiver != null) {
+                    bind(MqttStatusReceiver.class).toInstance(mqttStatusReceiver);
+                }
+            }
+        }), new JoynrPropertiesModule(properties), new AbstractModule() {
+            @Override
+            protected void configure() {
+                bind(MessageRouter.class).toInstance(mockMessageRouter);
+                bind(ScheduledExecutorService.class).annotatedWith(Names.named(MessageRouter.SCHEDULEDTHREADPOOL))
+                                                    .toInstance(Executors.newScheduledThreadPool(10));
+                bind(RawMessagingPreprocessor.class).to(NoOpRawMessagingPreprocessor.class);
+                Multibinder.newSetBinder(binder(), new TypeLiteral<JoynrMessageProcessor>() {
+                });
+            }
+        });
         // create a new Factory because the factory caches its client.
         mqttClientFactory = injector.getInstance(MqttClientFactory.class);
 
         JoynrMqttClient client = mqttClientFactory.create();
-        client.start();
         client.setMessageListener(mockReceiver);
         return client;
     }
@@ -431,7 +449,8 @@ public class MqttPahoClientTest {
                                              "",
                                              "",
                                              "",
-                                             "");
+                                             "",
+                                             mock(MqttStatusReceiver.class));
 
         joynrMqttClient.start();
         joynrMqttClient.setMessageListener(mockReceiver);
@@ -444,6 +463,67 @@ public class MqttPahoClientTest {
         mqttPahoClient.connectionLost(exeption);
 
         joynrMqttClientPublishAndVerifyReceivedMessage(serializedMessage);
+    }
+
+    // This test was disabled, because it runs perfectly on a local machine but not in the CI.
+    // Further investigations are required to stabilize this test.
+    @Test
+    @Ignore
+    public void testClientNotifiesStatusReceiverAboutBrokerDisconnect() throws Exception {
+        final MqttStatusReceiver mqttStatusReceiver = mock(MqttStatusReceiver.class);
+        @SuppressWarnings("unused")
+        final JoynrMqttClient mqttClient = createMqttClientWithoutSubscription(false, mqttStatusReceiver);
+
+        verify(mqttStatusReceiver).notifyConnectionStatusChanged(MqttStatusReceiver.ConnectionStatus.CONNECTED);
+
+        stopBroker();
+        Thread.sleep(1000);
+        verify(mqttStatusReceiver).notifyConnectionStatusChanged(MqttStatusReceiver.ConnectionStatus.NOT_CONNECTED);
+
+        startBroker();
+        Thread.sleep(2000);
+        verify(mqttStatusReceiver, times(2)).notifyConnectionStatusChanged(MqttStatusReceiver.ConnectionStatus.CONNECTED);
+    }
+
+    @Test
+    public void testClientNotifiesStatusReceiverAboutShutdownDisconnect() throws Exception {
+        final MqttStatusReceiver mqttStatusReceiver = mock(MqttStatusReceiver.class);
+        final JoynrMqttClient mqttClient = createMqttClientWithoutSubscription(false, mqttStatusReceiver);
+
+        verify(mqttStatusReceiver).notifyConnectionStatusChanged(MqttStatusReceiver.ConnectionStatus.CONNECTED);
+
+        mqttClient.shutdown();
+        verify(mqttStatusReceiver).notifyConnectionStatusChanged(MqttStatusReceiver.ConnectionStatus.NOT_CONNECTED);
+    }
+
+    @Test
+    public void mqttClientTestShutdownIfDisconnectFromMQTT() throws Exception {
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "tcp://localhost:1111");
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_RECONNECT_SLEEP_MS, "100");
+        // create and start client
+        final JoynrMqttClient client = createMqttClientInternal(mock(MqttStatusReceiver.class));
+        final Semaphore semaphoreBeforeStartMethod = new Semaphore(0);
+        final Semaphore semaphoreAfterStartMethod = new Semaphore(0);
+        final int timeout = 500;
+        Runnable myRunnable = new Runnable() {
+            @Override
+            public void run() {
+                semaphoreBeforeStartMethod.release();
+                client.start();
+                semaphoreAfterStartMethod.release();
+            }
+        };
+        new Thread(myRunnable).start();
+        assertTrue(semaphoreBeforeStartMethod.tryAcquire(timeout, TimeUnit.MILLISECONDS));
+        // sleep in order to increase the probability of the runnable
+        // to be in the sleep part of the start method
+        Thread.sleep(timeout);
+        // At this point the semaphoreAfterStartMethod is supposed to be not released
+        // because we expect to be still in start()
+        assertFalse(semaphoreAfterStartMethod.tryAcquire());
+
+        client.shutdown();
+        assertTrue(semaphoreAfterStartMethod.tryAcquire(timeout, TimeUnit.MILLISECONDS));
     }
 
 }

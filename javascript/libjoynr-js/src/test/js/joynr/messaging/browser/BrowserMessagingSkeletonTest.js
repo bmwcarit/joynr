@@ -1,5 +1,3 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
@@ -18,18 +16,19 @@
  * limitations under the License.
  * #L%
  */
-var BrowserMessagingSkeleton = require("../../../../classes/joynr/messaging/browser/BrowserMessagingSkeleton");
-var JoynrMessage = require("../../../../classes/joynr/messaging/JoynrMessage");
+require("../../../node-unit-test-helper");
+const BrowserMessagingSkeleton = require("../../../../../main/js/joynr/messaging/browser/BrowserMessagingSkeleton");
+const JoynrMessage = require("../../../../../main/js/joynr/messaging/JoynrMessage");
 
-describe("libjoynr-js.joynr.messaging.browser.BrowserMessagingSkeleton", function() {
-    var webMessagingSkeleton, browserMessagingSkeleton, listener1, listener2;
-    var windowId, joynrMessage, untypedJoynrMessage, browserMessage;
+describe("libjoynr-js.joynr.messaging.browser.BrowserMessagingSkeleton", () => {
+    let webMessagingSkeleton, browserMessagingSkeleton, listener1, listener2;
+    let windowId, joynrMessage, untypedJoynrMessage, browserMessage;
 
-    beforeEach(function(done) {
+    beforeEach(done => {
         webMessagingSkeleton = jasmine.createSpyObj("webMessagingSkeleton", ["registerListener"]);
 
         browserMessagingSkeleton = new BrowserMessagingSkeleton({
-            webMessagingSkeleton: webMessagingSkeleton
+            webMessagingSkeleton
         });
 
         listener1 = jasmine.createSpy("listener1");
@@ -41,13 +40,13 @@ describe("libjoynr-js.joynr.messaging.browser.BrowserMessagingSkeleton", functio
         joynrMessage = new JoynrMessage();
         untypedJoynrMessage = JSON.parse(JSON.stringify(joynrMessage));
         browserMessage = {
-            windowId: windowId,
+            windowId,
             message: untypedJoynrMessage
         };
         done();
     });
 
-    it("is of correct type and has all members", function(done) {
+    it("is of correct type and has all members", done => {
         expect(BrowserMessagingSkeleton).toBeDefined();
         expect(typeof BrowserMessagingSkeleton === "function").toBeTruthy();
         expect(browserMessagingSkeleton).toBeDefined();
@@ -59,52 +58,52 @@ describe("libjoynr-js.joynr.messaging.browser.BrowserMessagingSkeleton", functio
         done();
     });
 
-    it("throws if arguments are missing or of wrong type", function(done) {
-        expect(function() {
+    it("throws if arguments are missing or of wrong type", done => {
+        expect(() => {
             browserMessagingSkeleton = new BrowserMessagingSkeleton({
-                webMessagingSkeleton: webMessagingSkeleton
+                webMessagingSkeleton
             });
         }).not.toThrow(); // correct call
-        expect(function() {
+        expect(() => {
             browserMessagingSkeleton = new BrowserMessagingSkeleton({});
         }).toThrow(); // webMessagingSkeleton is missing
-        expect(function() {
+        expect(() => {
             browserMessagingSkeleton = new BrowserMessagingSkeleton({
                 webMessagingSkeleton: ""
             });
         }).toThrow(); // webMessagingSkeleton is of wrong type
 
-        expect(function() {
-            browserMessagingSkeleton.registerListener(function() {});
+        expect(() => {
+            browserMessagingSkeleton.registerListener(() => {});
         }).not.toThrow(); // correct call
-        expect(function() {
+        expect(() => {
             browserMessagingSkeleton.registerListener("");
         }).toThrow(); // listener is of wrong type
-        expect(function() {
+        expect(() => {
             browserMessagingSkeleton.registerListener({});
         }).toThrow(); // listener is of wrong type
 
-        expect(function() {
-            browserMessagingSkeleton.unregisterListener(function() {});
+        expect(() => {
+            browserMessagingSkeleton.unregisterListener(() => {});
         }).not.toThrow(); // correct call
-        expect(function() {
+        expect(() => {
             browserMessagingSkeleton.unregisterListener("");
         }).toThrow(); // listener is of wrong type
-        expect(function() {
+        expect(() => {
             browserMessagingSkeleton.unregisterListener({});
         }).toThrow(); // listener is of wrong type
         done();
     });
 
     function callAllRegisteredListeners(calls, browserMessage) {
-        var i;
+        let i;
 
         for (i = 0; i < calls.count(); ++i) {
             calls.argsFor(i)[0](browserMessage);
         }
     }
 
-    it("event calls through to registered listeners", function(done) {
+    it("event calls through to registered listeners", done => {
         browserMessagingSkeleton.registerListener(listener1);
         browserMessagingSkeleton.registerListener(listener2);
         expect(listener1).not.toHaveBeenCalled();
@@ -117,7 +116,7 @@ describe("libjoynr-js.joynr.messaging.browser.BrowserMessagingSkeleton", functio
         done();
     });
 
-    it("event does not call through to unregistered listeners", function(done) {
+    it("event does not call through to unregistered listeners", done => {
         browserMessagingSkeleton.registerListener(listener1);
         browserMessagingSkeleton.registerListener(listener2);
         browserMessagingSkeleton.unregisterListener(listener1);

@@ -30,7 +30,7 @@
 #include "joynr/types/ProviderQos.h"
 #include "joynr/Future.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
-#include "joynr/LibjoynrSettings.h"
+#include "joynr/Settings.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "tests/JoynrTest.h"
 

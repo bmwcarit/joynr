@@ -31,7 +31,6 @@ import com.google.inject.util.Modules;
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioning;
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.messaging.AtmosphereMessagingModule;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
 import io.joynr.performance.EchoProviderInvocationParameters.BackendConfig;
@@ -168,9 +167,10 @@ public class EchoProviderApplication extends AbstractJoynrApplication {
     }
 
     private static Module getBackendModule() throws Exception {
+        Module backendTransportModules = Modules.EMPTY_MODULE;
         switch (invocationParams.getBackendTransportMode()) {
         case MQTT:
-            return Modules.combine(new AtmosphereMessagingModule(), new MqttPahoModule());
+            return Modules.combine(backendTransportModules, new MqttPahoModule());
         default:
             throw new Exception("Unknown backend requested");
         }

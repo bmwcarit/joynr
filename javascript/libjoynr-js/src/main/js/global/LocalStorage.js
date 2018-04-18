@@ -1,6 +1,4 @@
-/*jslint node: true*/
-/*global localStorage: true*/
-
+/*global localStorage*/
 /*
  * #%L
  * %%
@@ -25,7 +23,7 @@
  *
  * @returns constructor for a localStorage object
  */
-var Typing = require("../joynr/util/Typing");
+const Typing = require("../joynr/util/Typing");
 
 /**
  * constructor for a localStorage object
@@ -36,7 +34,7 @@ var Typing = require("../joynr/util/Typing");
  *
  * @constructor LocalStorage
  */
-var LocalStorage = function(settings) {
+const LocalStorage = function(settings) {
     settings = settings || {};
     Typing.checkPropertyIfDefined(settings.clearPersistency, "Boolean", "settings.clearPersistency");
     if (settings.clearPersistency) {

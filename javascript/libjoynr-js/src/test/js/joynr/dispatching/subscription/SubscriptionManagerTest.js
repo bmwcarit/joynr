@@ -1,5 +1,3 @@
-/*jslint es5: true, node: true, node: true */
-/*global fail: true */
 /*
  * #%L
  * %%
@@ -18,45 +16,43 @@
  * limitations under the License.
  * #L%
  */
-var SubscriptionManager = require("../../../../classes/joynr/dispatching/subscription/SubscriptionManager");
-var MessagingQos = require("../../../../classes/joynr/messaging/MessagingQos");
-var defaultMessagingSettings = require("../../../../classes/joynr/start/settings/defaultMessagingSettings");
-var MulticastSubscriptionRequest = require("../../../../classes/joynr/dispatching/types/MulticastSubscriptionRequest");
-var SubscriptionReply = require("../../../../classes/joynr/dispatching/types/SubscriptionReply");
-var SubscriptionRequest = require("../../../../classes/joynr/dispatching/types/SubscriptionRequest");
-var SubscriptionStop = require("../../../../classes/joynr/dispatching/types/SubscriptionStop");
-var OnChangeWithKeepAliveSubscriptionQos = require("../../../../classes/joynr/proxy/OnChangeWithKeepAliveSubscriptionQos");
-var OnChangeSubscriptionQos = require("../../../../classes/joynr/proxy/OnChangeSubscriptionQos");
-var SubscriptionQos = require("../../../../classes/joynr/proxy/SubscriptionQos");
-var SubscriptionPublication = require("../../../../classes/joynr/dispatching/types/SubscriptionPublication");
-var Promise = require("../../../../classes/global/Promise");
-var Reply = require("../../../../classes/joynr/dispatching/types/Reply");
-var PublicationMissedException = require("../../../../classes/joynr/exceptions/PublicationMissedException");
-var SubscriptionException = require("../../../../classes/joynr/exceptions/SubscriptionException");
-var LoggerFactory = require("../../../../classes/joynr/system/LoggerFactory");
-var Date = require("../../../../test-classes/global/Date");
-var waitsFor = require("../../../../test-classes/global/WaitsFor");
-var TestEnum = require("../../../../test-classes/joynr/tests/testTypes/TestEnum");
-var TypeRegistrySingleton = require("../../../../classes/joynr/types/TypeRegistrySingleton");
-var DiscoveryEntryWithMetaInfo = require("../../../../classes/joynr/types/DiscoveryEntryWithMetaInfo");
-var Version = require("../../../../classes/joynr/types/Version");
-var ProviderQos = require("../../../../classes/joynr/types/ProviderQos");
-var Util = require("../../../../classes/joynr/util/UtilInternal");
+require("../../../node-unit-test-helper");
+const SubscriptionManager = require("../../../../../main/js/joynr/dispatching/subscription/SubscriptionManager");
+const MessagingQos = require("../../../../../main/js/joynr/messaging/MessagingQos");
+const defaultMessagingSettings = require("../../../../../main/js/joynr/start/settings/defaultMessagingSettings");
+const MulticastSubscriptionRequest = require("../../../../../main/js/joynr/dispatching/types/MulticastSubscriptionRequest");
+const SubscriptionStop = require("../../../../../main/js/joynr/dispatching/types/SubscriptionStop");
+const OnChangeWithKeepAliveSubscriptionQos = require("../../../../../main/js/joynr/proxy/OnChangeWithKeepAliveSubscriptionQos");
+const OnChangeSubscriptionQos = require("../../../../../main/js/joynr/proxy/OnChangeSubscriptionQos");
+const SubscriptionQos = require("../../../../../main/js/joynr/proxy/SubscriptionQos");
+const SubscriptionPublication = require("../../../../../main/js/joynr/dispatching/types/SubscriptionPublication");
+const Promise = require("../../../../../main/js/global/Promise");
+const PublicationMissedException = require("../../../../../main/js/joynr/exceptions/PublicationMissedException");
+const SubscriptionException = require("../../../../../main/js/joynr/exceptions/SubscriptionException");
+const LoggingManager = require("../../../../../main/js/joynr/system/LoggingManager");
+const Date = require("../../../../../test/js/global/Date");
+const waitsFor = require("../../../../../test/js/global/WaitsFor");
+const TestEnum = require("../../../../generated/joynr/tests/testTypes/TestEnum");
+const TypeRegistrySingleton = require("../../../../../main/js/joynr/types/TypeRegistrySingleton");
+const DiscoveryEntryWithMetaInfo = require("../../../../../main/js/generated/joynr/types/DiscoveryEntryWithMetaInfo");
+const Version = require("../../../../../main/js/generated/joynr/types/Version");
+const ProviderQos = require("../../../../../main/js/generated/joynr/types/ProviderQos");
+const UtilInternal = require("../../../../../main/js/joynr/util/UtilInternal");
 
-describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", function() {
-    var subscriptionManager;
-    var subscriptionManagerOnError;
-    var log = LoggerFactory.getLogger("joynr.dispatching.SubscriptionManagerTest");
-    var fakeTime = 1371553100000;
-    var dispatcherSpy;
-    var dispatcherSpyOnError;
-    var storedSubscriptionId;
-    var providerDiscoveryEntry;
+describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", () => {
+    let subscriptionManager;
+    let subscriptionManagerOnError;
+    const log = LoggingManager.getLogger("joynr.dispatching.SubscriptionManagerTest");
+    let fakeTime = 1371553100000;
+    let dispatcherSpy;
+    let dispatcherSpyOnError;
+    let storedSubscriptionId;
+    let providerDiscoveryEntry;
 
     /**
      * Called before each test.
      */
-    beforeEach(function(done) {
+    beforeEach(done => {
         providerDiscoveryEntry = new DiscoveryEntryWithMetaInfo({
             providerVersion: new Version({ majorVersion: 0, minorVersion: 23 }),
             domain: "testProviderDomain",
@@ -75,7 +71,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", funct
             "sendSubscriptionStop"
         ]);
 
-        dispatcherSpy.sendBroadcastSubscriptionRequest.and.callFake(function(settings) {
+        dispatcherSpy.sendBroadcastSubscriptionRequest.and.callFake(settings => {
             storedSubscriptionId = settings.subscriptionRequest.subscriptionId;
             subscriptionManager.handleSubscriptionReply({
                 subscriptionId: settings.subscriptionRequest.subscriptionId
@@ -83,7 +79,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", funct
             return Promise.resolve();
         });
 
-        dispatcherSpy.sendSubscriptionRequest.and.callFake(function(settings) {
+        dispatcherSpy.sendSubscriptionRequest.and.callFake(settings => {
             storedSubscriptionId = settings.subscriptionRequest.subscriptionId;
             subscriptionManager.handleSubscriptionReply({
                 subscriptionId: settings.subscriptionRequest.subscriptionId
@@ -91,7 +87,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", funct
             return Promise.resolve();
         });
 
-        dispatcherSpy.sendSubscriptionStop.and.callFake(function() {
+        dispatcherSpy.sendSubscriptionStop.and.callFake(() => {
             return Promise.resolve();
         });
 
@@ -104,7 +100,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", funct
             "sendSubscriptionStop"
         ]);
 
-        dispatcherSpyOnError.sendBroadcastSubscriptionRequest.and.callFake(function(settings) {
+        dispatcherSpyOnError.sendBroadcastSubscriptionRequest.and.callFake(settings => {
             storedSubscriptionId = settings.subscriptionRequest.subscriptionId;
             subscriptionManagerOnError.handleSubscriptionReply({
                 subscriptionId: settings.subscriptionRequest.subscriptionId,
@@ -115,7 +111,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", funct
             return Promise.resolve();
         });
 
-        dispatcherSpyOnError.sendSubscriptionRequest.and.callFake(function(settings) {
+        dispatcherSpyOnError.sendSubscriptionRequest.and.callFake(settings => {
             storedSubscriptionId = settings.subscriptionRequest.subscriptionId;
             subscriptionManagerOnError.handleSubscriptionReply({
                 subscriptionId: settings.subscriptionRequest.subscriptionId,
@@ -129,7 +125,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", funct
         subscriptionManagerOnError = new SubscriptionManager(dispatcherSpyOnError);
 
         jasmine.clock().install();
-        spyOn(Date, "now").and.callFake(function() {
+        spyOn(Date, "now").and.callFake(() => {
             return fakeTime;
         });
 
@@ -141,14 +137,14 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", funct
          */
         TypeRegistrySingleton.getInstance()
             .getTypeRegisteredPromise("joynr.tests.testTypes.TestEnum", 1000)
-            .then(function() {
+            .then(() => {
                 done();
                 return null;
             })
             .catch(fail);
     });
 
-    afterEach(function() {
+    afterEach(() => {
         jasmine.clock().uninstall();
     });
 
@@ -157,28 +153,28 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", funct
         jasmine.clock().tick(time_ms);
     }
 
-    it("is instantiable", function(done) {
+    it("is instantiable", done => {
         expect(subscriptionManager).toBeDefined();
         done();
     });
 
-    it("sends broadcast subscription requests", function(done) {
-        var ttl = 250;
-        var parameters = {
+    it("sends broadcast subscription requests", done => {
+        const ttl = 250;
+        const parameters = {
             proxyId: "subscriber",
-            providerDiscoveryEntry: providerDiscoveryEntry,
+            providerDiscoveryEntry,
             broadcastName: "broadcastName",
             subscriptionQos: new OnChangeSubscriptionQos({
                 expiryDateMs: Date.now() + ttl
             })
         };
-        var expectedDiscoveryEntry = Util.extendDeep({}, providerDiscoveryEntry);
+        let expectedDiscoveryEntry = UtilInternal.extendDeep({}, providerDiscoveryEntry);
         expectedDiscoveryEntry.providerVersion = new Version(expectedDiscoveryEntry.providerVersion);
         expectedDiscoveryEntry.qos = new ProviderQos(expectedDiscoveryEntry.qos);
         expectedDiscoveryEntry = new DiscoveryEntryWithMetaInfo(expectedDiscoveryEntry);
 
         dispatcherSpy.sendBroadcastSubscriptionRequest.calls.reset();
-        var spySubscribePromise = jasmine.createSpyObj("spySubscribePromise", ["resolve", "reject"]);
+        const spySubscribePromise = jasmine.createSpyObj("spySubscribePromise", ["resolve", "reject"]);
 
         subscriptionManager
             .registerBroadcastSubscription(parameters)
@@ -187,13 +183,13 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", funct
         increaseFakeTime(1);
 
         waitsFor(
-            function() {
+            () => {
                 return dispatcherSpy.sendBroadcastSubscriptionRequest.calls.count() === 1;
             },
             "dispatcherSpy.sendBroadcastSubscriptionRequest called",
             100
         )
-            .then(function() {
+            .then(() => {
                 expect(dispatcherSpy.sendBroadcastSubscriptionRequest).toHaveBeenCalled();
                 expect(dispatcherSpy.sendBroadcastSubscriptionRequest.calls.argsFor(0)[0].messagingQos.ttl).toEqual(
                     ttl
@@ -214,27 +210,26 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", funct
             .catch(fail);
     });
 
-    it("alerts on missed publication and stops", function(done) {
-        var publicationReceivedSpy = jasmine.createSpy("publicationReceivedSpy");
-        var publicationMissedSpy = jasmine.createSpy("publicationMissedSpy");
-        var subscriptionId;
-        var alertAfterIntervalMs = OnChangeWithKeepAliveSubscriptionQos.DEFAULT_MAX_INTERVAL_MS;
+    it("alerts on missed publication and stops", done => {
+        const publicationReceivedSpy = jasmine.createSpy("publicationReceivedSpy");
+        const publicationMissedSpy = jasmine.createSpy("publicationMissedSpy");
+        const alertAfterIntervalMs = OnChangeWithKeepAliveSubscriptionQos.DEFAULT_MAX_INTERVAL_MS;
 
         //log.debug("registering subscription");
         subscriptionManager
             .registerSubscription({
                 proxyId: "subscriber",
-                providerDiscoveryEntry: providerDiscoveryEntry,
+                providerDiscoveryEntry,
                 attributeName: "testAttribute",
                 attributeType: "String",
                 qos: new OnChangeWithKeepAliveSubscriptionQos({
-                    alertAfterIntervalMs: alertAfterIntervalMs,
+                    alertAfterIntervalMs,
                     expiryDateMs: Date.now() + 50 + 2 * alertAfterIntervalMs
                 }),
                 onReceive: publicationReceivedSpy,
                 onError: publicationMissedSpy
             })
-            .then(function(subscriptionId) {
+            .then(subscriptionId => {
                 expect(publicationMissedSpy).not.toHaveBeenCalled();
                 increaseFakeTime(alertAfterIntervalMs + 1);
                 expect(publicationMissedSpy).toHaveBeenCalled();
@@ -250,7 +245,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", funct
                 done();
                 return null;
             })
-            .catch(function(error) {
+            .catch(error => {
                 log.error("Error in sendSubscriptionRequest :" + error);
                 fail();
             });
@@ -258,50 +253,50 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", funct
         increaseFakeTime(1);
     });
 
-    it("sets messagingQos.ttl correctly according to subscriptionQos.expiryDateMs", function(done) {
-        var ttl = 250;
-        var subscriptionSettings = {
+    it("sets messagingQos.ttl correctly according to subscriptionQos.expiryDateMs", done => {
+        const ttl = 250;
+        const subscriptionSettings = {
             proxyId: "subscriber",
-            providerDiscoveryEntry: providerDiscoveryEntry,
+            providerDiscoveryEntry,
             attributeName: "testAttribute",
             attributeType: "String",
             qos: new OnChangeWithKeepAliveSubscriptionQos({
                 alertAfterIntervalMs: OnChangeWithKeepAliveSubscriptionQos.DEFAULT_MAX_INTERVAL_MS,
                 expiryDateMs: Date.now() + ttl
             }),
-            onReceive: function() {},
-            onError: function() {}
+            onReceive() {},
+            onError() {}
         };
 
         dispatcherSpy.sendSubscriptionRequest.calls.reset();
-        subscriptionManager.registerSubscription(subscriptionSettings).catch(function(error) {
+        subscriptionManager.registerSubscription(subscriptionSettings).catch(error => {
             expect("Error in sendSubscriptionRequest :" + error).toBeTruthy();
         });
         increaseFakeTime(1);
 
         waitsFor(
-            function() {
+            () => {
                 return dispatcherSpy.sendSubscriptionRequest.calls.count() === 1;
             },
             "dispatcherSpy.sendSubscriptionRequest called the first time",
             100
         )
-            .then(function() {
+            .then(() => {
                 expect(dispatcherSpy.sendSubscriptionRequest.calls.argsFor(0)[0].messagingQos.ttl).toEqual(ttl);
                 subscriptionSettings.qos.expiryDateMs = SubscriptionQos.NO_EXPIRY_DATE;
-                subscriptionManager.registerSubscription(subscriptionSettings).catch(function(error) {
+                subscriptionManager.registerSubscription(subscriptionSettings).catch(error => {
                     expect("Error in sendSubscriptionRequest :" + error).toBeTruthy();
                 });
                 increaseFakeTime(1);
                 return waitsFor(
-                    function() {
+                    () => {
                         return dispatcherSpy.sendSubscriptionRequest.calls.count() === 2;
                     },
                     "dispatcherSpy.sendSubscriptionRequest called the first time",
                     100
                 );
             })
-            .then(function() {
+            .then(() => {
                 expect(dispatcherSpy.sendSubscriptionRequest.calls.count()).toEqual(2);
                 expect(dispatcherSpy.sendSubscriptionRequest.calls.argsFor(1)[0].messagingQos.ttl).toEqual(
                     defaultMessagingSettings.MAX_MESSAGING_TTL_MS
@@ -312,20 +307,20 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", funct
             .catch(fail);
     });
 
-    it("forwards publication payload", function(done) {
-        var publicationReceivedSpy = jasmine.createSpy("publicationReceivedSpy");
-        var publicationMissedSpy = jasmine.createSpy("publicationMissedSpy");
-        var alertAfterIntervalMs = OnChangeWithKeepAliveSubscriptionQos.DEFAULT_MAX_INTERVAL_MS;
+    it("forwards publication payload", done => {
+        const publicationReceivedSpy = jasmine.createSpy("publicationReceivedSpy");
+        const publicationMissedSpy = jasmine.createSpy("publicationMissedSpy");
+        const alertAfterIntervalMs = OnChangeWithKeepAliveSubscriptionQos.DEFAULT_MAX_INTERVAL_MS;
 
-        var resolveSpy = {
+        const resolveSpy = {
             // called when the subscription is registered successfully (see below)
-            resolveMethod: function(subscriptionId) {
+            resolveMethod(subscriptionId) {
                 // increase time by 50ms and see if alert was triggered
                 increaseFakeTime(alertAfterIntervalMs / 2);
                 expect(publicationMissedSpy).not.toHaveBeenCalled();
-                var publication = new SubscriptionPublication({
+                const publication = new SubscriptionPublication({
                     response: ["test"],
-                    subscriptionId: subscriptionId
+                    subscriptionId
                 });
                 // simulate incoming publication
                 subscriptionManager.handlePublication(publication);
@@ -347,12 +342,12 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", funct
         subscriptionManager
             .registerSubscription({
                 proxyId: "subscriber",
-                providerDiscoveryEntry: providerDiscoveryEntry,
+                providerDiscoveryEntry,
                 messagingQos: new MessagingQos(),
                 attributeName: "testAttribute",
                 attributeType: "String",
                 qos: new OnChangeWithKeepAliveSubscriptionQos({
-                    alertAfterIntervalMs: alertAfterIntervalMs,
+                    alertAfterIntervalMs,
                     expiryDateMs: Date.now() + 50 + 2 * alertAfterIntervalMs
                 }),
                 onReceive: publicationReceivedSpy,
@@ -362,33 +357,33 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", funct
         increaseFakeTime(1);
 
         waitsFor(
-            function() {
+            () => {
                 // wait until the subscriptionReply was received
                 return resolveSpy.resolveMethod.calls.count() > 0;
             },
             "resolveSpy.resolveMethod called",
             100
         )
-            .then(function() {
+            .then(() => {
                 done();
                 return null;
             })
             .catch(fail);
     });
 
-    it("augments incoming publications with information from the joynr type system", function(done) {
-        var publicationReceivedSpy = jasmine.createSpy("publicationReceivedSpy");
-        var publicationMissedSpy = jasmine.createSpy("publicationMissedSpy");
+    it("augments incoming publications with information from the joynr type system", done => {
+        const publicationReceivedSpy = jasmine.createSpy("publicationReceivedSpy");
+        const publicationMissedSpy = jasmine.createSpy("publicationMissedSpy");
 
-        var resolveSpy = {
+        const resolveSpy = {
             // called when the subscription is registered successfully (see below)
-            resolveMethod: function(subscriptionId) {
+            resolveMethod(subscriptionId) {
                 // increase time by 50ms and see if alert was triggered
                 increaseFakeTime(50);
                 expect(publicationMissedSpy).not.toHaveBeenCalled();
-                var publication = new SubscriptionPublication({
+                const publication = new SubscriptionPublication({
                     response: ["ZERO"],
-                    subscriptionId: subscriptionId
+                    subscriptionId
                 });
                 // simulate incoming publication
                 subscriptionManager.handlePublication(publication);
@@ -401,11 +396,10 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", funct
 
         //log.debug("registering subscription");
         // register the subscription and call the resolve method when ready
-        /*jslint nomen: true */
         subscriptionManager
             .registerSubscription({
                 proxyId: "subscriber",
-                providerDiscoveryEntry: providerDiscoveryEntry,
+                providerDiscoveryEntry,
                 attributeName: "testAttribute",
                 attributeType: TestEnum.ZERO._typeName,
                 qos: new OnChangeSubscriptionQos({
@@ -416,37 +410,36 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", funct
             })
             .then(resolveSpy.resolveMethod);
         increaseFakeTime(1);
-        /*jslint nomen: false */
 
         waitsFor(
-            function() {
+            () => {
                 // wait until the subscriptionReply was received
                 return resolveSpy.resolveMethod.calls.count() > 0;
             },
             "resolveSpy.resolveMethod called",
             100
         )
-            .then(function() {
+            .then(() => {
                 done();
                 return null;
             })
             .catch(fail);
     });
 
-    it("augments incoming broadcasts with information from the joynr type system", function(done) {
-        var publicationReceivedSpy = jasmine.createSpy("publicationReceivedSpy");
-        var onErrorSpy = jasmine.createSpy("onErrorSpy");
+    it("augments incoming broadcasts with information from the joynr type system", done => {
+        const publicationReceivedSpy = jasmine.createSpy("publicationReceivedSpy");
+        const onErrorSpy = jasmine.createSpy("onErrorSpy");
 
-        var resolveSpy = {
+        const resolveSpy = {
             // called when the subscription is registered successfully (see below)
-            resolveMethod: function(subscriptionId) {
-                var testString = "testString";
-                var testInt = 2;
-                var testEnum = TestEnum.ZERO;
+            resolveMethod(subscriptionId) {
+                const testString = "testString";
+                const testInt = 2;
+                const testEnum = TestEnum.ZERO;
                 expect(onErrorSpy).not.toHaveBeenCalled();
-                var publication = new SubscriptionPublication({
+                const publication = new SubscriptionPublication({
                     response: [testString, testInt, testEnum.name],
-                    subscriptionId: subscriptionId
+                    subscriptionId
                 });
                 // simulate incoming publication
                 subscriptionManager.handlePublication(publication);
@@ -459,11 +452,10 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", funct
 
         //log.debug("registering subscription");
         // register the subscription and call the resolve method when ready
-        /*jslint nomen: true */
         subscriptionManager
             .registerBroadcastSubscription({
                 proxyId: "subscriber",
-                providerDiscoveryEntry: providerDiscoveryEntry,
+                providerDiscoveryEntry,
                 broadcastName: "broadcastName",
                 broadcastParameter: [
                     {
@@ -487,17 +479,16 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", funct
             })
             .then(resolveSpy.resolveMethod);
         increaseFakeTime(1);
-        /*jslint nomen: false */
 
         waitsFor(
-            function() {
+            () => {
                 // wait until the subscriptionReply was received
                 return resolveSpy.resolveMethod.calls.count() > 0;
             },
             "resolveSpy.resolveMethod called",
             100
         )
-            .then(function() {
+            .then(() => {
                 done();
                 return null;
             })
@@ -505,11 +496,11 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", funct
     });
 
     function createDummyBroadcastSubscriptionRequest(parameters) {
-        var onReceiveSpy = jasmine.createSpy("onReceiveSpy");
-        var onErrorSpy = jasmine.createSpy("onErrorSpy");
+        const onReceiveSpy = jasmine.createSpy("onReceiveSpy");
+        const onErrorSpy = jasmine.createSpy("onErrorSpy");
         return {
             proxyId: "proxy",
-            providerDiscoveryEntry: providerDiscoveryEntry,
+            providerDiscoveryEntry,
             broadcastName: parameters.broadcastName,
             broadcastParameter: [
                 {
@@ -528,12 +519,12 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", funct
     }
 
     function createDummySubscriptionRequest() {
-        var onReceiveSpy = jasmine.createSpy("onReceiveSpy");
-        var onErrorSpy = jasmine.createSpy("onErrorSpy");
+        const onReceiveSpy = jasmine.createSpy("onReceiveSpy");
+        const onErrorSpy = jasmine.createSpy("onErrorSpy");
 
         return {
             proxyId: "subscriber",
-            providerDiscoveryEntry: providerDiscoveryEntry,
+            providerDiscoveryEntry,
             attributeName: "testAttribute",
             attributeType: "String",
             qos: new OnChangeSubscriptionQos({
@@ -544,17 +535,17 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", funct
         };
     }
 
-    it("register multicast subscription request", function(done) {
-        var request = createDummyBroadcastSubscriptionRequest({
+    it("register multicast subscription request", done => {
+        const request = createDummyBroadcastSubscriptionRequest({
             broadcastName: "broadcastName",
             selective: false
         });
         expect(subscriptionManager.hasMulticastSubscriptions()).toBe(false);
         subscriptionManager
             .registerBroadcastSubscription(request)
-            .then(function() {
+            .then(() => {
                 expect(dispatcherSpy.sendBroadcastSubscriptionRequest).toHaveBeenCalled();
-                var forwardedRequest = dispatcherSpy.sendBroadcastSubscriptionRequest.calls.argsFor(0)[0]
+                const forwardedRequest = dispatcherSpy.sendBroadcastSubscriptionRequest.calls.argsFor(0)[0]
                     .subscriptionRequest;
                 expect(forwardedRequest instanceof MulticastSubscriptionRequest).toBe(true);
                 expect(forwardedRequest.subscribedToName).toEqual(request.broadcastName);
@@ -565,21 +556,21 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", funct
             .catch(fail);
     });
 
-    it("register and unregisters multicast subscription request", function(done) {
-        var request = createDummyBroadcastSubscriptionRequest({
+    it("register and unregisters multicast subscription request", done => {
+        const request = createDummyBroadcastSubscriptionRequest({
             broadcastName: "broadcastName",
             selective: false
         });
         expect(subscriptionManager.hasMulticastSubscriptions()).toBe(false);
         subscriptionManager
             .registerBroadcastSubscription(request)
-            .then(function(subscriptionId) {
+            .then(subscriptionId => {
                 expect(subscriptionManager.hasMulticastSubscriptions()).toBe(true);
                 return subscriptionManager.unregisterSubscription({
-                    subscriptionId: subscriptionId
+                    subscriptionId
                 });
             })
-            .then(function() {
+            .then(() => {
                 expect(subscriptionManager.hasMulticastSubscriptions()).toBe(false);
                 expect(subscriptionManager.hasOpenSubscriptions()).toBe(false);
                 done();
@@ -588,26 +579,26 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", funct
             .catch(fail);
     });
 
-    it("is able to handle multicast publications", function(done) {
-        var request = createDummyBroadcastSubscriptionRequest({
+    it("is able to handle multicast publications", done => {
+        const request = createDummyBroadcastSubscriptionRequest({
             broadcastName: "broadcastName",
             selective: false
         });
-        var response = ["response"];
+        const response = ["response"];
         subscriptionManager
             .registerBroadcastSubscription(request)
-            .then(function(subscriptionId) {
+            .then(subscriptionId => {
                 request.subscriptionId = subscriptionId;
                 request.multicastId = dispatcherSpy.sendBroadcastSubscriptionRequest.calls.argsFor(
                     0
                 )[0].subscriptionRequest.multicastId;
                 subscriptionManager.handleMulticastPublication({
                     multicastId: request.multicastId,
-                    response: response
+                    response
                 });
                 return null;
             })
-            .then(function() {
+            .then(() => {
                 expect(request.onReceive).toHaveBeenCalled();
                 expect(request.onReceive).toHaveBeenCalledWith(response);
                 //stop subscription
@@ -616,13 +607,13 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", funct
                     subscriptionId: request.subscriptionId
                 });
             })
-            .then(function() {
+            .then(() => {
                 //send another publication and do not expect calls
                 expect(subscriptionManager.hasOpenSubscriptions()).toBe(false);
-                expect(function() {
+                expect(() => {
                     subscriptionManager.handleMulticastPublication({
                         multicastId: request.multicastId,
-                        response: response
+                        response
                     });
                 }).toThrow();
                 expect(request.onReceive).not.toHaveBeenCalled();
@@ -631,11 +622,11 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", funct
             .catch(fail);
     });
 
-    it("sends out subscriptionStop and stops alerts on unsubscribe", function(done) {
-        var publicationReceivedSpy = jasmine.createSpy("publicationReceivedSpy");
-        var publicationMissedSpy = jasmine.createSpy("publicationMissedSpy");
-        var alertAfterIntervalMs = OnChangeWithKeepAliveSubscriptionQos.DEFAULT_MAX_INTERVAL_MS;
-        var expectedDiscoveryEntry = Util.extendDeep({}, providerDiscoveryEntry);
+    it("sends out subscriptionStop and stops alerts on unsubscribe", done => {
+        const publicationReceivedSpy = jasmine.createSpy("publicationReceivedSpy");
+        const publicationMissedSpy = jasmine.createSpy("publicationMissedSpy");
+        const alertAfterIntervalMs = OnChangeWithKeepAliveSubscriptionQos.DEFAULT_MAX_INTERVAL_MS;
+        let expectedDiscoveryEntry = UtilInternal.extendDeep({}, providerDiscoveryEntry);
         expectedDiscoveryEntry.providerVersion = new Version(expectedDiscoveryEntry.providerVersion);
         expectedDiscoveryEntry.qos = new ProviderQos(expectedDiscoveryEntry.qos);
         expectedDiscoveryEntry = new DiscoveryEntryWithMetaInfo(expectedDiscoveryEntry);
@@ -644,17 +635,17 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", funct
         subscriptionManager
             .registerSubscription({
                 proxyId: "subscriber",
-                providerDiscoveryEntry: providerDiscoveryEntry,
+                providerDiscoveryEntry,
                 attributeName: "testAttribute",
                 attributeType: "String",
                 qos: new OnChangeWithKeepAliveSubscriptionQos({
-                    alertAfterIntervalMs: alertAfterIntervalMs,
+                    alertAfterIntervalMs,
                     expiryDateMs: Date.now() + 5 * alertAfterIntervalMs
                 }),
                 onReceive: publicationReceivedSpy,
                 onError: publicationMissedSpy
             })
-            .then(function(subscriptionId) {
+            .then(subscriptionId => {
                 increaseFakeTime(alertAfterIntervalMs / 2);
                 expect(publicationMissedSpy).not.toHaveBeenCalled();
                 increaseFakeTime(alertAfterIntervalMs / 2 + 1);
@@ -664,20 +655,20 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", funct
                 expect(publicationMissedSpy.calls.count()).toEqual(2);
 
                 // unsubscribe and expect no more missed publication alerts
-                var unsubscrMsgQos = new MessagingQos();
+                const unsubscrMsgQos = new MessagingQos();
                 subscriptionManager.unregisterSubscription({
-                    subscriptionId: subscriptionId,
+                    subscriptionId,
                     messagingQos: unsubscrMsgQos
                 });
 
-                var subscriptionStop = new SubscriptionStop({
-                    subscriptionId: subscriptionId
+                const subscriptionStop = new SubscriptionStop({
+                    subscriptionId
                 });
 
                 expect(dispatcherSpy.sendSubscriptionStop).toHaveBeenCalledWith({
                     from: "subscriber",
                     toDiscoveryEntry: expectedDiscoveryEntry,
-                    subscriptionStop: subscriptionStop,
+                    subscriptionStop,
                     messagingQos: unsubscrMsgQos
                 });
                 increaseFakeTime(alertAfterIntervalMs + 1);
@@ -689,79 +680,79 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", funct
                 done();
                 return null;
             })
-            .catch(function(error) {
+            .catch(error => {
                 log.error("Error in sendSubscriptionRequest :" + error);
                 fail();
             });
         increaseFakeTime(1);
     });
 
-    it("sends out MulticastSubscriptionStop", function(done) {
-        var request = createDummyBroadcastSubscriptionRequest({
+    it("sends out MulticastSubscriptionStop", done => {
+        const request = createDummyBroadcastSubscriptionRequest({
             broadcastName: "broadcastName",
             selective: false
         });
-        var expectedDiscoveryEntry = Util.extendDeep({}, providerDiscoveryEntry);
+        let expectedDiscoveryEntry = UtilInternal.extendDeep({}, providerDiscoveryEntry);
         expectedDiscoveryEntry.providerVersion = new Version(expectedDiscoveryEntry.providerVersion);
         expectedDiscoveryEntry.qos = new ProviderQos(expectedDiscoveryEntry.qos);
         expectedDiscoveryEntry = new DiscoveryEntryWithMetaInfo(expectedDiscoveryEntry);
 
         subscriptionManager
             .registerBroadcastSubscription(request)
-            .then(function(subscriptionId) {
+            .then(subscriptionId => {
                 expect(dispatcherSpy.sendBroadcastSubscriptionRequest).toHaveBeenCalled();
 
-                var multicastId = dispatcherSpy.sendBroadcastSubscriptionRequest.calls.argsFor(0)[0].subscriptionRequest
-                    .multicastId;
+                const multicastId = dispatcherSpy.sendBroadcastSubscriptionRequest.calls.argsFor(0)[0]
+                    .subscriptionRequest.multicastId;
                 expect(multicastId).toBeDefined();
                 expect(multicastId).not.toEqual(null);
 
-                var unsubscrMsgQos = new MessagingQos();
+                const unsubscrMsgQos = new MessagingQos();
                 subscriptionManager.unregisterSubscription({
-                    subscriptionId: subscriptionId,
+                    subscriptionId,
                     messagingQos: unsubscrMsgQos
                 });
 
-                var subscriptionStop = new SubscriptionStop({
-                    subscriptionId: subscriptionId
+                const subscriptionStop = new SubscriptionStop({
+                    subscriptionId
                 });
 
                 expect(dispatcherSpy.sendMulticastSubscriptionStop).toHaveBeenCalledWith({
                     from: request.proxyId,
                     toDiscoveryEntry: expectedDiscoveryEntry,
                     messagingQos: unsubscrMsgQos,
-                    multicastId: multicastId,
-                    subscriptionStop: subscriptionStop
+                    multicastId,
+                    subscriptionStop
                 });
                 done();
                 return null;
             })
-            .catch(function(error) {
+            .catch(error => {
                 fail("caught error: " + error);
             });
     });
 
-    it("returns a rejected promise when unsubscribing with a non-existant subscriptionId", function(done) {
+    it("returns a rejected promise when unsubscribing with a non-existant subscriptionId", done => {
         subscriptionManager
             .unregisterSubscription({
                 subscriptionId: "non-existant"
             })
             .then()
-            .catch(function(value) {
+            .catch(value => {
                 expect(value).toBeDefined();
-                var className = Object.prototype.toString.call(value).slice(8, -1);
+                const className = Object.prototype.toString.call(value).slice(8, -1);
                 expect(className).toMatch("Error");
                 done();
                 return null;
             });
     });
 
-    it("registers subscription, resolves with subscriptionId and calls onSubscribed callback", function(done) {
-        var publicationReceivedSpy = jasmine.createSpy("publicationReceivedSpy");
-        var publicationErrorSpy = jasmine.createSpy("publicationErrorSpy");
-        var publicationSubscribedSpy = jasmine.createSpy("publicationSubscribedSpy");
+    it("registers subscription, resolves with subscriptionId and calls onSubscribed callback", done => {
+        const publicationReceivedSpy = jasmine.createSpy("publicationReceivedSpy");
+        const publicationErrorSpy = jasmine.createSpy("publicationErrorSpy");
+        const publicationSubscribedSpy = jasmine.createSpy("publicationSubscribedSpy");
         dispatcherSpy.sendSubscriptionRequest.calls.reset();
-        var expectedDiscoveryEntry = Util.extendDeep({}, providerDiscoveryEntry);
+        let expectedDiscoveryEntry = UtilInternal.extendDeep({}, providerDiscoveryEntry);
         expectedDiscoveryEntry.providerVersion = new Version(providerDiscoveryEntry.providerVersion);
         expectedDiscoveryEntry.qos = new ProviderQos(providerDiscoveryEntry.qos);
         expectedDiscoveryEntry = new DiscoveryEntryWithMetaInfo(expectedDiscoveryEntry);
@@ -769,7 +760,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", funct
         subscriptionManager
             .registerSubscription({
                 proxyId: "subscriber",
-                providerDiscoveryEntry: providerDiscoveryEntry,
+                providerDiscoveryEntry,
                 attributeName: "testAttribute",
                 attributeType: "String",
                 qos: new OnChangeSubscriptionQos(),
@@ -777,18 +768,18 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", funct
                 onError: publicationErrorSpy,
                 onSubscribed: publicationSubscribedSpy
             })
-            .then(function(receivedSubscriptionId) {
+            .then(receivedSubscriptionId => {
                 expect(receivedSubscriptionId).toBeDefined();
                 expect(receivedSubscriptionId).toEqual(storedSubscriptionId);
                 return waitsFor(
-                    function() {
+                    () => {
                         return publicationSubscribedSpy.calls.count() === 1;
                     },
                     "publicationSubscribedSpy called",
                     1000
                 );
             })
-            .then(function() {
+            .then(() => {
                 expect(publicationReceivedSpy).not.toHaveBeenCalled();
                 expect(publicationErrorSpy).not.toHaveBeenCalled();
                 expect(publicationSubscribedSpy).toHaveBeenCalled();
@@ -805,35 +796,33 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", funct
         increaseFakeTime(1);
     });
 
-    it("registers broadcast subscription, resolves with subscriptionId and calls onSubscribed callback", function(
-        done
-    ) {
-        var publicationReceivedSpy = jasmine.createSpy("publicationReceivedSpy");
-        var publicationErrorSpy = jasmine.createSpy("publicationErrorSpy");
-        var publicationSubscribedSpy = jasmine.createSpy("publicationSubscribedSpy");
+    it("registers broadcast subscription, resolves with subscriptionId and calls onSubscribed callback", done => {
+        const publicationReceivedSpy = jasmine.createSpy("publicationReceivedSpy");
+        const publicationErrorSpy = jasmine.createSpy("publicationErrorSpy");
+        const publicationSubscribedSpy = jasmine.createSpy("publicationSubscribedSpy");
 
         subscriptionManager
             .registerBroadcastSubscription({
                 proxyId: "subscriber",
-                providerDiscoveryEntry: providerDiscoveryEntry,
+                providerDiscoveryEntry,
                 broadcastName: "broadcastName",
                 qos: new OnChangeSubscriptionQos(),
                 onReceive: publicationReceivedSpy,
                 onError: publicationErrorSpy,
                 onSubscribed: publicationSubscribedSpy
             })
-            .then(function(receivedSubscriptionId) {
+            .then(receivedSubscriptionId => {
                 expect(receivedSubscriptionId).toBeDefined();
                 expect(receivedSubscriptionId).toEqual(storedSubscriptionId);
                 return waitsFor(
-                    function() {
+                    () => {
                         return publicationSubscribedSpy.calls.count() === 1;
                     },
                     "publicationSubscribedSpy called",
                     1000
                 );
             })
-            .then(function() {
+            .then(() => {
                 expect(publicationReceivedSpy).not.toHaveBeenCalled();
                 expect(publicationErrorSpy).not.toHaveBeenCalled();
                 expect(publicationSubscribedSpy).toHaveBeenCalled();
@@ -846,15 +835,15 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", funct
         increaseFakeTime(1);
     });
 
-    it("rejects on subscription registration failures and calls onError callback", function(done) {
-        var publicationReceivedSpy = jasmine.createSpy("publicationReceivedSpy");
-        var publicationErrorSpy = jasmine.createSpy("publicationErrorSpy");
-        var publicationSubscribedSpy = jasmine.createSpy("publicationSubscribedSpy");
+    it("rejects on subscription registration failures and calls onError callback", done => {
+        const publicationReceivedSpy = jasmine.createSpy("publicationReceivedSpy");
+        const publicationErrorSpy = jasmine.createSpy("publicationErrorSpy");
+        const publicationSubscribedSpy = jasmine.createSpy("publicationSubscribedSpy");
 
         subscriptionManagerOnError
             .registerSubscription({
                 proxyId: "subscriber",
-                providerDiscoveryEntry: providerDiscoveryEntry,
+                providerDiscoveryEntry,
                 attributeName: "testAttribute",
                 attributeType: "String",
                 qos: new OnChangeSubscriptionQos(),
@@ -862,23 +851,23 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", funct
                 onError: publicationErrorSpy,
                 onSubscribed: publicationSubscribedSpy
             })
-            .then(function(subscriptionId) {
-                fail("unexpected success");
+            .then(subscriptionId => {
+                fail("unexpected success: " + subscriptionId);
             })
-            .catch(function(error) {
+            .catch(error => {
                 expect(error instanceof SubscriptionException);
                 expect(error.subscriptionId).toBeDefined();
                 expect(error.subscriptionId).toEqual(storedSubscriptionId);
 
                 return waitsFor(
-                    function() {
+                    () => {
                         return publicationErrorSpy.calls.count() === 1;
                     },
                     "publicationErrorSpy called",
                     1000
                 );
             })
-            .then(function() {
+            .then(() => {
                 expect(publicationReceivedSpy).not.toHaveBeenCalled();
                 expect(publicationSubscribedSpy).not.toHaveBeenCalled();
                 expect(publicationErrorSpy).toHaveBeenCalled();
@@ -892,38 +881,38 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", funct
         increaseFakeTime(1);
     });
 
-    it("rejects on broadcast subscription registration failures and calls onError callback", function(done) {
-        var publicationReceivedSpy = jasmine.createSpy("publicationReceivedSpy");
-        var publicationErrorSpy = jasmine.createSpy("publicationErrorSpy");
-        var publicationSubscribedSpy = jasmine.createSpy("publicationSubscribedSpy");
+    it("rejects on broadcast subscription registration failures and calls onError callback", done => {
+        const publicationReceivedSpy = jasmine.createSpy("publicationReceivedSpy");
+        const publicationErrorSpy = jasmine.createSpy("publicationErrorSpy");
+        const publicationSubscribedSpy = jasmine.createSpy("publicationSubscribedSpy");
 
         subscriptionManagerOnError
             .registerBroadcastSubscription({
                 proxyId: "subscriber",
-                providerDiscoveryEntry: providerDiscoveryEntry,
+                providerDiscoveryEntry,
                 broadcastName: "broadcastName",
                 qos: new OnChangeSubscriptionQos(),
                 onReceive: publicationReceivedSpy,
                 onError: publicationErrorSpy,
                 onSubscribed: publicationSubscribedSpy
             })
-            .then(function(subscriptionId) {
-                fail("unexpected success");
+            .then(subscriptionId => {
+                fail("unexpected success: " + subscriptionId);
             })
-            .catch(function(error) {
+            .catch(error => {
                 expect(error instanceof SubscriptionException);
                 expect(error.subscriptionId).toBeDefined();
                 expect(error.subscriptionId).toEqual(storedSubscriptionId);
 
                 return waitsFor(
-                    function() {
+                    () => {
                         return publicationErrorSpy.calls.count() === 1;
                     },
                     "publicationErrorSpy called",
                     1000
                 );
             })
-            .then(function() {
+            .then(() => {
                 expect(publicationReceivedSpy).not.toHaveBeenCalled();
                 expect(publicationSubscribedSpy).not.toHaveBeenCalled();
                 expect(publicationErrorSpy).toHaveBeenCalled();
@@ -937,17 +926,17 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", funct
         increaseFakeTime(1);
     });
 
-    it(" throws exception when called while shut down", function(done) {
+    it(" throws exception when called while shut down", done => {
         subscriptionManager.shutdown();
 
         subscriptionManager
             .registerSubscription({})
             .then(fail)
-            .catch(function() {
+            .catch(() => {
                 return subscriptionManager.registerBroadcastSubscription({}).then(fail);
             })
-            .catch(function() {
-                expect(function() {
+            .catch(() => {
+                expect(() => {
                     subscriptionManager.unregisterSubscription({});
                 }).toThrow();
                 done();
@@ -955,19 +944,19 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", funct
     });
 
     it(" it unsubscribes all Subscriptions when terminateSubscriptions is being called", function(done) {
-        var subscriptionSettings = createDummySubscriptionRequest();
-        var broadcastSettings = createDummyBroadcastSubscriptionRequest({
+        const subscriptionSettings = createDummySubscriptionRequest();
+        const broadcastSettings = createDummyBroadcastSubscriptionRequest({
             broadcastName: "broadcastName",
             selective: false
         });
-        var clearSubscriptionsTimeoutMs = 1000;
+        const clearSubscriptionsTimeoutMs = 1000;
 
         subscriptionManager
             .registerSubscription(subscriptionSettings)
             .then(subscriptionManager.registerBroadcastSubscription.bind(this, broadcastSettings))
             .then(subscriptionManager.terminateSubscriptions.bind(subscriptionManager, clearSubscriptionsTimeoutMs))
             .then(subscriptionManager.shutdown)
-            .then(function() {
+            .then(() => {
                 expect(dispatcherSpy.sendSubscriptionStop).toHaveBeenCalled();
                 expect(dispatcherSpy.sendMulticastSubscriptionStop).toHaveBeenCalled();
                 done();

@@ -33,7 +33,7 @@
 #include "joynr/MulticastSubscriptionQos.h"
 #include "joynr/OnChangeSubscriptionQos.h"
 #include "joynr/tests/testAbstractProvider.h"
-#include "joynr/LibjoynrSettings.h"
+#include "joynr/Settings.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/BrokerUrl.h"
 

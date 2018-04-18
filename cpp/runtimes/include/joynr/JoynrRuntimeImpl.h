@@ -38,6 +38,7 @@
 #include "joynr/SystemServicesSettings.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/system/DiscoveryProxy.h"
+#include "joynr/Settings.h"
 
 namespace joynr
 {
@@ -69,6 +70,8 @@ public:
      * @param onSucess: Will be invoked when provider registration succeeded.
      * @param onError: Will be invoked when the provider could not be registered. An exception,
      * which describes the error, is passed as the parameter.
+     * @param persist if set to true, participant ID of the provider will be persisted,
+     * otherwise it will not; default is true
      * @return The globally unique participant ID of the provider. It is assigned by the joynr
      * communication framework.
      */
@@ -78,12 +81,13 @@ public:
             std::shared_ptr<TIntfProvider> provider,
             const joynr::types::ProviderQos& providerQos,
             std::function<void()> onSuccess,
-            std::function<void(const exceptions::JoynrRuntimeException&)> onError) noexcept
+            std::function<void(const exceptions::JoynrRuntimeException&)> onError,
+            bool persist = true) noexcept
     {
         assert(capabilitiesRegistrar);
         assert(!domain.empty());
         return capabilitiesRegistrar->addAsync(
-                domain, provider, providerQos, std::move(onSuccess), std::move(onError));
+                domain, provider, providerQos, std::move(onSuccess), std::move(onError), persist);
     }
 
     /**
@@ -94,13 +98,16 @@ public:
      * identical at the client to be able to find the provider.
      * @param provider The provider instance to register.
      * @param providerQos The qos associated with the registered provider.
+     * @param persist if set to true, participant ID of the provider will be persisted,
+     * otherwise it will not; default is true
      * @return The globally unique participant ID of the provider. It is assigned by the joynr
      * communication framework.
      */
     template <class TIntfProvider>
     std::string registerProvider(const std::string& domain,
                                  std::shared_ptr<TIntfProvider> provider,
-                                 const joynr::types::ProviderQos& providerQos)
+                                 const joynr::types::ProviderQos& providerQos,
+                                 bool persist = true)
     {
         Future<void> future;
         auto onSuccess = [&future]() { future.onSuccess(); };
@@ -109,7 +116,7 @@ public:
         };
 
         std::string participiantId = registerProviderAsync(
-                domain, provider, providerQos, std::move(onSuccess), std::move(onError));
+                domain, provider, providerQos, std::move(onSuccess), std::move(onError), persist);
         future.get();
         return participiantId;
     }

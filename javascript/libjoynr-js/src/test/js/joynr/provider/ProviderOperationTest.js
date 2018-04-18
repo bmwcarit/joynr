@@ -1,5 +1,3 @@
-/*jslint es5: true, node: true, nomen: true */
-/*global fail: true */
 /*
  * #%L
  * %%
@@ -18,23 +16,21 @@
  * limitations under the License.
  * #L%
  */
-var ProviderOperation = require("../../../classes/joynr/provider/ProviderOperation");
-var ProviderQos = require("../../../classes/joynr/types/ProviderQos");
-var testDataOperation = require("../../../test-classes/test/data/Operation");
-var TestEnum = require("../../../test-classes/joynr/tests/testTypes/TestEnum");
-var Util = require("../../../classes/joynr/util/UtilInternal");
-var TypeRegistrySingleton = require("../../../classes/joynr/types/TypeRegistrySingleton");
-var Promise = require("../../../classes/global/Promise");
-var ProviderRuntimeException = require("../../../classes/joynr/exceptions/ProviderRuntimeException");
-var ApplicationException = require("../../../classes/joynr/exceptions/ApplicationException");
-var waitsFor = require("../../../test-classes/global/WaitsFor");
+require("../../node-unit-test-helper");
+const ProviderOperation = require("../../../../main/js/joynr/provider/ProviderOperation");
+const testDataOperation = require("../../../../test/js/test/data/Operation");
+const TestEnum = require("../../../generated/joynr/tests/testTypes/TestEnum");
+const UtilInternal = require("../../../../main/js/joynr/util/UtilInternal");
+const TypeRegistrySingleton = require("../../../../main/js/joynr/types/TypeRegistrySingleton");
+const Promise = require("../../../../main/js/global/Promise");
+const ProviderRuntimeException = require("../../../../main/js/joynr/exceptions/ProviderRuntimeException");
+const ApplicationException = require("../../../../main/js/joynr/exceptions/ApplicationException");
+const waitsFor = require("../../../../test/js/global/WaitsFor");
 
-var safetyTimeoutDelta = 100;
+describe("libjoynr-js.joynr.provider.ProviderOperation", () => {
+    let implementation, myOperation, operationSpy, operationName, provider, thenSpy, catchSpy;
 
-describe("libjoynr-js.joynr.provider.ProviderOperation", function() {
-    var implementation, myOperation, operationSpy, operationName, provider, thenSpy, catchSpy;
-
-    beforeEach(function(done) {
+    beforeEach(done => {
         provider = {};
         operationName = "myOperation";
         implementation = jasmine.createSpy("implementation");
@@ -75,14 +71,14 @@ describe("libjoynr-js.joynr.provider.ProviderOperation", function() {
          */
         TypeRegistrySingleton.getInstance()
             .getTypeRegisteredPromise("joynr.tests.testTypes.TestEnum", 1000)
-            .then(function() {
+            .then(() => {
                 done();
                 return null;
             })
             .catch(fail);
     });
 
-    it("is of correct type", function(done) {
+    it("is of correct type", done => {
         expect(myOperation).toBeDefined();
         expect(myOperation).not.toBeNull();
         expect(typeof myOperation === "object").toBeTruthy();
@@ -90,17 +86,17 @@ describe("libjoynr-js.joynr.provider.ProviderOperation", function() {
         done();
     });
 
-    it("has correct members", function(done) {
+    it("has correct members", done => {
         expect(myOperation.registerOperation).toBeDefined();
         done();
     });
 
     function testCallRegisteredOperation(testData) {
-        var operation = new ProviderOperation(provider, implementation, operationName, [testData.signature]);
-        var spy = jasmine.createSpy("operation spy");
+        const operation = new ProviderOperation(provider, implementation, operationName, [testData.signature]);
+        const spy = jasmine.createSpy("operation spy");
         operation.registerOperation(spy);
         spy.and.returnValue(testData.returnValue);
-        return operation.callOperation(testData.params, testData.paramDatatypes).then(function(result) {
+        return operation.callOperation(testData.params, testData.paramDatatypes).then(result => {
             expect(result).toBeDefined();
             expect(result).toEqual(testData.returnParams);
             expect(implementation).not.toHaveBeenCalled();
@@ -108,9 +104,9 @@ describe("libjoynr-js.joynr.provider.ProviderOperation", function() {
         });
     }
 
-    it("calls registered implementation with the correct operation arguments", function(done) {
-        var promises = [];
-        var i;
+    it("calls registered implementation with the correct operation arguments", done => {
+        const promises = [];
+        let i;
         for (i = 0; i < testDataOperation.length; ++i) {
             promises.push(testCallRegisteredOperation(testDataOperation[i]));
         }
@@ -118,30 +114,28 @@ describe("libjoynr-js.joynr.provider.ProviderOperation", function() {
     });
 
     function testCallProvidedOperation(testData) {
-        var impl = jasmine.createSpy("implementation");
-        var operation = new ProviderOperation(provider, impl, operationName, [testData.signature]);
+        const impl = jasmine.createSpy("implementation");
+        const operation = new ProviderOperation(provider, impl, operationName, [testData.signature]);
 
         impl.and.returnValue(testData.returnValue);
-        return operation.callOperation(testData.params, testData.paramDatatypes).then(function(result) {
+        return operation.callOperation(testData.params, testData.paramDatatypes).then(result => {
             expect(impl).toHaveBeenCalledWith(testData.namedArguments);
             return result;
         });
     }
 
-    it("calls provided implementation with the correct operation arguments", function(done) {
-        var promises = [];
-        var i;
+    it("calls provided implementation with the correct operation arguments", done => {
+        const promises = [];
+        let i;
         for (i = 0; i < testDataOperation.length; ++i) {
             promises.push(testCallProvidedOperation(testDataOperation[i]));
         }
         Promise.all(promises).then(done);
     });
 
-    it("calls provided implementation with enum as operation argument", function(done) {
-        /*jslint nomen: true */
-        var typeName = TestEnum.ZERO._typeName;
-        /*jslint nomen: false */
-        var signature = {
+    it("calls provided implementation with enum as operation argument", done => {
+        const typeName = TestEnum.ZERO._typeName;
+        const signature = {
             inputParameter: [
                 {
                     name: "enumArgument",
@@ -152,7 +146,7 @@ describe("libjoynr-js.joynr.provider.ProviderOperation", function() {
         myOperation = new ProviderOperation(provider, implementation, operationName, [signature]);
 
         implementation.calls.reset();
-        myOperation.callOperation(["ZERO"], [typeName]).then(function() {
+        myOperation.callOperation(["ZERO"], [typeName]).then(() => {
             expect(implementation).toHaveBeenCalledWith({
                 enumArgument: TestEnum.ZERO
             });
@@ -164,31 +158,27 @@ describe("libjoynr-js.joynr.provider.ProviderOperation", function() {
         myOperation = new ProviderOperation(provider, implementation, operationName, [testData.signature]);
         myOperation.registerOperation(operationSpy);
         operationSpy.calls.reset();
-        operationSpy.and.callFake(function() {
-            return new Promise(function(resolve, reject) {
-                resolve(testData.returnValue);
-            });
-        });
-        var result = myOperation.callOperation(testData.params, testData.paramDatatypes);
-        var b = Util.isPromise(result);
+        operationSpy.and.callFake(() => Promise.resolve(testData.returnValue));
+        const result = myOperation.callOperation(testData.params, testData.paramDatatypes);
+        const b = UtilInternal.isPromise(result);
         expect(b).toBeTruthy();
         thenSpy = jasmine.createSpy("thenSpy");
         catchSpy = jasmine.createSpy("catchSpy");
         result
-            .then(function(value) {
+            .then(value => {
                 thenSpy(value);
             })
-            .catch(function(error) {
+            .catch(error => {
                 catchSpy(error);
             });
 
         return waitsFor(
-            function() {
+            () => {
                 return thenSpy.calls.count() > 0;
             },
             "thenSpy called",
             100
-        ).then(function() {
+        ).then(() => {
             expect(catchSpy).not.toHaveBeenCalled();
             expect(thenSpy).toHaveBeenCalled();
             expect(thenSpy).toHaveBeenCalledWith(testData.returnParams);
@@ -197,9 +187,9 @@ describe("libjoynr-js.joynr.provider.ProviderOperation", function() {
         });
     }
 
-    it("resolves for async implementation ", function(done) {
+    it("resolves for async implementation ", done => {
         testCallAsyncOperationResolves(testDataOperation[2])
-            .then(function() {
+            .then(() => {
                 done();
                 return null;
             })
@@ -207,35 +197,35 @@ describe("libjoynr-js.joynr.provider.ProviderOperation", function() {
     });
 
     function testCallAsyncOperationRejectsWithProviderRuntimeException(testData) {
-        var exampleDetailMessage = "faked error";
+        const exampleDetailMessage = "faked error";
         myOperation = new ProviderOperation(provider, implementation, operationName, [testData.signature]);
         myOperation.registerOperation(operationSpy);
         operationSpy.calls.reset();
-        operationSpy.and.callFake(function() {
-            return new Promise(function(resolve, reject) {
+        operationSpy.and.callFake(() => {
+            return new Promise((resolve, reject) => {
                 reject(new ProviderRuntimeException({ detailMessage: exampleDetailMessage }));
             });
         });
-        var result = myOperation.callOperation(testData.params, testData.paramDatatypes);
-        var b = Util.isPromise(result);
+        const result = myOperation.callOperation(testData.params, testData.paramDatatypes);
+        const b = UtilInternal.isPromise(result);
         expect(b).toBeTruthy();
         thenSpy = jasmine.createSpy("thenSpy");
         catchSpy = jasmine.createSpy("catchSpy");
         result
-            .then(function(value) {
+            .then(value => {
                 thenSpy(value);
             })
-            .catch(function(error) {
+            .catch(error => {
                 catchSpy(error);
             });
 
         return waitsFor(
-            function() {
+            () => {
                 return catchSpy.calls.count() > 0;
             },
             "catchSpy called",
             1000
-        ).then(function() {
+        ).then(() => {
             expect(thenSpy).not.toHaveBeenCalled();
             expect(catchSpy).toHaveBeenCalled();
             expect(catchSpy.calls.argsFor(0)[0] instanceof ProviderRuntimeException).toBeTruthy();
@@ -245,9 +235,9 @@ describe("libjoynr-js.joynr.provider.ProviderOperation", function() {
         });
     }
 
-    it("rejects with ProviderRuntimeException for async implementation ", function(done) {
+    it("rejects with ProviderRuntimeException for async implementation ", done => {
         testCallAsyncOperationRejectsWithProviderRuntimeException(testDataOperation[2])
-            .then(function() {
+            .then(() => {
                 done();
                 return null;
             })
@@ -258,33 +248,33 @@ describe("libjoynr-js.joynr.provider.ProviderOperation", function() {
         myOperation = new ProviderOperation(provider, implementation, operationName, [testData.signature]);
         myOperation.registerOperation(operationSpy);
         operationSpy.calls.reset();
-        operationSpy.and.callFake(function() {
-            return new Promise(function(resolve, reject) {
+        operationSpy.and.callFake(() => {
+            return new Promise((resolve, reject) => {
                 reject(testData.error);
             });
         });
-        var result = myOperation.callOperation(testData.params, testData.paramDatatypes);
-        var b = Util.isPromise(result);
+        const result = myOperation.callOperation(testData.params, testData.paramDatatypes);
+        const b = UtilInternal.isPromise(result);
         expect(b).toBeTruthy();
         thenSpy = jasmine.createSpy("thenSpy");
         catchSpy = jasmine.createSpy("catchSpy");
         result
-            .then(function(value) {
+            .then(value => {
                 thenSpy(value);
                 return null;
             })
-            .catch(function(error) {
+            .catch(error => {
                 catchSpy(error);
                 return null;
             });
 
         return waitsFor(
-            function() {
+            () => {
                 return catchSpy.calls.count() > 0;
             },
             "catchSpy called",
             1000
-        ).then(function() {
+        ).then(() => {
             expect(thenSpy).not.toHaveBeenCalled();
             expect(catchSpy).toHaveBeenCalled();
             expect(catchSpy.calls.argsFor(0)[0] instanceof ApplicationException).toBeTruthy();
@@ -293,9 +283,9 @@ describe("libjoynr-js.joynr.provider.ProviderOperation", function() {
         });
     }
 
-    it("rejects with ApplicationException for async implementation ", function(done) {
+    it("rejects with ApplicationException for async implementation ", done => {
         testCallAsyncOperationRejectsWithApplicationException(testDataOperation[2])
-            .then(function() {
+            .then(() => {
                 done();
                 return null;
             })
@@ -303,28 +293,28 @@ describe("libjoynr-js.joynr.provider.ProviderOperation", function() {
     });
 
     function testCallSyncOperationThrowsWithProviderRuntimeException(testData) {
-        var exampleDetailMessage = "faked error";
+        const exampleDetailMessage = "faked error";
         myOperation = new ProviderOperation(provider, implementation, operationName, [testData.signature]);
         myOperation.registerOperation(operationSpy);
         operationSpy.calls.reset();
         operationSpy.and.returnValue(42);
-        operationSpy.and.callFake(function() {
+        operationSpy.and.callFake(() => {
             throw new ProviderRuntimeException({ detailMessage: exampleDetailMessage });
         });
 
         return myOperation
             .callOperation(testData.params, testData.paramDatatypes)
             .then(fail)
-            .catch(function(error) {
+            .catch(error => {
                 expect(error instanceof ProviderRuntimeException).toBeTruthy();
                 expect(error.detailMessage).toEqual(exampleDetailMessage);
                 expect(operationSpy).toHaveBeenCalledWith(testData.namedArguments);
             });
     }
 
-    it("throws ProviderRuntimeException for synchronous implementation", function(done) {
+    it("throws ProviderRuntimeException for synchronous implementation", done => {
         testCallSyncOperationThrowsWithProviderRuntimeException(testDataOperation[2])
-            .then(function() {
+            .then(() => {
                 done();
                 return null;
             })
@@ -336,23 +326,23 @@ describe("libjoynr-js.joynr.provider.ProviderOperation", function() {
         myOperation.registerOperation(operationSpy);
         operationSpy.calls.reset();
         operationSpy.and.returnValue(42);
-        operationSpy.and.callFake(function() {
+        operationSpy.and.callFake(() => {
             throw testData.error;
         });
 
         return myOperation
             .callOperation(testData.params, testData.paramDatatypes)
             .then(fail)
-            .catch(function(error) {
+            .catch(error => {
                 expect(error instanceof ApplicationException).toBeTruthy();
                 expect(error.error).toEqual(testData.error);
                 expect(operationSpy).toHaveBeenCalledWith(testData.namedArguments);
             });
     }
 
-    it("throws ApplicationException for synchronous implementation", function(done) {
+    it("throws ApplicationException for synchronous implementation", done => {
         testCallSyncOperationThrowsWithApplicationException(testDataOperation[2])
-            .then(function() {
+            .then(() => {
                 done();
                 return null;
             })

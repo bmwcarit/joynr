@@ -1,5 +1,3 @@
-/*jslint es5: true, nomen: true, node: true */
-
 /*
  * #%L
  * %%
@@ -18,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-var InProcessSkeleton = require("./InProcessSkeleton");
+const InProcessSkeleton = require("./InProcessSkeleton");
 
 /**
  * Creates a proxy function that calls the proxyObjectFunction with the original arguments
@@ -76,14 +74,14 @@ InProcessStub.prototype.setSkeleton = function(inProcessSkeleton) {
     }
 
     // get proxy object from skeleton
-    var key,
+    let key,
         proxyObject = inProcessSkeleton.getProxyObject();
 
     // cycle over all members in the proxy object
     for (key in proxyObject) {
         if (proxyObject.hasOwnProperty(key)) {
             // get the member of the proxy object
-            var proxyObjectMember = proxyObject[key];
+            const proxyObjectMember = proxyObject[key];
             // if it is a function
             if (typeof proxyObjectMember === "function") {
                 // attach a function to this object

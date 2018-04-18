@@ -1,6 +1,4 @@
-/*jslint node: true */
-
-/*global console: true */
+/*eslint no-console: "off"*/
 /*
  * #%L
  * %%
@@ -36,22 +34,8 @@ function ConsoleAppender() {}
  * @function
  */
 ConsoleAppender.prototype.append = function(loggingEvent) {
-    var formattedMessage = loggingEvent.getCombinedMessages(),
-        appender = this;
-
-    var getFormattedMessage = function() {
-        try {
-            var layout = appender.getLayout();
-            formattedMessage = layout.format(loggingEvent);
-            if (layout.ignoresThrowable() && loggingEvent.exception) {
-                formattedMessage += loggingEvent.getThrowableStrRep();
-            }
-        } catch (e) {}
-        return formattedMessage;
-    };
-
-    var logLevel = loggingEvent.level.name.toLowerCase();
-    formattedMessage = getFormattedMessage();
+    const logLevel = loggingEvent.level.name.toLowerCase();
+    const formattedMessage = loggingEvent.messages.join(",");
     console[logLevel] = console[logLevel] || console.log;
     console[logLevel](formattedMessage);
 };

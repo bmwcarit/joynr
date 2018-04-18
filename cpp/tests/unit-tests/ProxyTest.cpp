@@ -25,6 +25,7 @@
 #include "joynr/tests/TestWithoutVersionProxy.h"
 #include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 #include "AbstractSyncAsyncTest.cpp"
+#include "joynr/Settings.h"
 
 #include "tests/mock/MockInProcessConnectorFactory.h"
 #include "tests/mock/MockJoynrRuntime.h"

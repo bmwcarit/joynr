@@ -28,7 +28,6 @@ import javax.inject.Named;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.Singleton;
@@ -46,9 +45,7 @@ public class DefaultScheduledExecutorServiceProvider implements Provider<Schedul
     @Inject
     public DefaultScheduledExecutorServiceProvider(@Named(ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_PARALLEL_SENDS) int maximumParallelSends,
                                                    ShutdownNotifier shutdownNotifier) {
-        ThreadFactory schedulerNamedThreadFactory = new ThreadFactoryBuilder().setNameFormat("joynr.MessageScheduler-scheduler-%d")
-                                                                              .setDaemon(true)
-                                                                              .build();
+        ThreadFactory schedulerNamedThreadFactory = new JoynrThreadFactory("ScheduledExecutorService", true);
         scheduler = new ScheduledThreadPoolExecutor(maximumParallelSends + MAX_SKELETON_THREADS + MQTT_THREADS,
                                                     schedulerNamedThreadFactory);
         scheduler.setKeepAliveTime(100, TimeUnit.SECONDS);

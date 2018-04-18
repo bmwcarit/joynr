@@ -27,12 +27,14 @@ import com.google.inject.name.Named;
 
 import io.joynr.discovery.LocalDiscoveryAggregator;
 import io.joynr.dispatching.Dispatcher;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.routing.LibJoynrMessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.messaging.sender.LibJoynrMessageSender;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.ProxyBuilderFactory;
+import io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback;
 import joynr.system.RoutingProxy;
 import joynr.system.RoutingTypes.Address;
 
@@ -51,10 +53,10 @@ public class LibjoynrRuntime extends JoynrRuntimeImpl {
                            @Named(SystemServicesSettings.PROPERTY_SYSTEM_SERVICES_DOMAIN) String systemServicesDomain,
                            @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) Address dispatcherAddress,
                            @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS) Address discoveryProviderAddress,
-                           @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS) Address ccMessagingAddress,
-                           LibJoynrMessageRouter messageRouter,
-                           LibJoynrMessageSender messageSender,
-                           @Named(SystemServicesSettings.PROPERTY_CC_ROUTING_PROVIDER_PARTICIPANT_ID) String parentRoutingProviderParticipantId) {
+                           @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS) final Address ccMessagingAddress,
+                           final LibJoynrMessageRouter messageRouter,
+                           final LibJoynrMessageSender messageSender,
+                           @Named(SystemServicesSettings.PROPERTY_CC_ROUTING_PROVIDER_PARTICIPANT_ID) final String parentRoutingProviderParticipantId) {
         super(objectMapper,
               proxyBuilderFactory,
               dispatcher,
@@ -65,12 +67,25 @@ public class LibjoynrRuntime extends JoynrRuntimeImpl {
               dispatcherAddress,
               discoveryProviderAddress);
         // CHECKSTYLE:ON
-        ProxyBuilder<RoutingProxy> proxyBuilder = getProxyBuilder(systemServicesDomain, RoutingProxy.class);
-        RoutingProxy routingProxy = proxyBuilder.build();
-        messageRouter.setParentRouter(routingProxy,
-                                      ccMessagingAddress,
-                                      parentRoutingProviderParticipantId,
-                                      proxyBuilder.getParticipantId());
-        messageSender.setReplyToAddress(routingProxy.getReplyToAddress());
+
+        final ProxyBuilder<RoutingProxy> proxyBuilder = getProxyBuilder(systemServicesDomain, RoutingProxy.class);
+
+        ProxyCreatedCallback<RoutingProxy> routingProxyCreatedCallback = new ProxyCreatedCallback<RoutingProxy>() {
+
+            @Override
+            public void onProxyCreationFinished(RoutingProxy routingProxy) {
+                messageRouter.setParentRouter(routingProxy,
+                                              ccMessagingAddress,
+                                              parentRoutingProviderParticipantId,
+                                              proxyBuilder.getParticipantId());
+                messageSender.setReplyToAddress(routingProxy.getReplyToAddress());
+            }
+
+            @Override
+            public void onProxyCreationError(JoynrRuntimeException error) {
+                logger.error("Routing proxy creation failed: " + error);
+            }
+        };
+        proxyBuilder.build(routingProxyCreatedCallback);
     }
 }

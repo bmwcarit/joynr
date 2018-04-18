@@ -26,10 +26,13 @@ import java.util.concurrent.Semaphore;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Sets;
 import com.google.inject.Module;
@@ -50,6 +53,7 @@ import io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback;
 import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
+import joynr.test.JoynrTestLoggingRule;
 import joynr.tests.testAsync;
 import joynr.tests.testBroadcastInterface;
 import joynr.tests.testProvider;
@@ -61,6 +65,10 @@ import joynr.types.ProviderScope;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ProxyErrorsTest {
+    private static final Logger logger = LoggerFactory.getLogger(ProxyErrorsTest.class);
+    @Rule
+    public JoynrTestLoggingRule joynrTestRule = new JoynrTestLoggingRule(logger);
+
     private static final long CONST_DEFAULT_TEST_TIMEOUT = 3000;
 
     // Dummy interface with a major version incompatible to the provider's version

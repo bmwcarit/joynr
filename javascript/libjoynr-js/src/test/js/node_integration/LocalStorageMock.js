@@ -1,4 +1,3 @@
-/*jslint es5: true, node: true */
 /*
  * #%L
  * %%
@@ -18,7 +17,7 @@
  * #L%
  */
 
-var LocalStorageMock = function() {
+const LocalStorageMock = function() {
     this.map = {};
 };
 

@@ -36,11 +36,19 @@ import org.hamcrest.CoreMatchers;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.jayway.restassured.RestAssured;
 
+import joynr.test.JoynrTestLoggingRule;
+
 public class AnnotatedWebFilterLoadingTest {
+    private static final Logger logger = LoggerFactory.getLogger(AnnotatedWebFilterLoadingTest.class);
+    @Rule
+    public JoynrTestLoggingRule joynrTestRule = new JoynrTestLoggingRule(logger);
 
     private static String serverUrl;
     private static Server server;

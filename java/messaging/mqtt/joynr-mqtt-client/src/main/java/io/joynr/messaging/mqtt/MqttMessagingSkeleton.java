@@ -18,16 +18,16 @@
  */
 package io.joynr.messaging.mqtt;
 
-import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_MAX_INCOMING_MQTT_REQUESTS;
+import static io.joynr.messaging.mqtt.settings.LimitAndBackpressureSettings.PROPERTY_MAX_INCOMING_MQTT_REQUESTS;
 
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.Set;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +39,7 @@ import com.google.inject.name.Named;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
+import io.joynr.messaging.mqtt.statusmetrics.MqttStatusReceiver;
 import io.joynr.messaging.routing.MessageProcessedListener;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.smrf.EncodingException;
@@ -54,16 +55,17 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
     private static final Logger LOG = LoggerFactory.getLogger(MqttMessagingSkeleton.class);
 
     protected final int maxIncomingMqttRequests;
-    private MessageRouter messageRouter;
+    private final MessageRouter messageRouter;
     private JoynrMqttClient mqttClient;
-    private MqttClientFactory mqttClientFactory;
-    private MqttAddress ownAddress;
-    private ConcurrentMap<String, AtomicInteger> multicastSubscriptionCount = Maps.newConcurrentMap();
-    private MqttTopicPrefixProvider mqttTopicPrefixProvider;
-    private RawMessagingPreprocessor rawMessagingPreprocessor;
-    private Set<JoynrMessageProcessor> messageProcessors;
-    private Set<String> incomingMqttRequests;
-    private AtomicLong droppedMessagesCount;
+    private final MqttClientFactory mqttClientFactory;
+    private final MqttAddress ownAddress;
+    private final ConcurrentMap<String, AtomicInteger> multicastSubscriptionCount;
+    private final MqttTopicPrefixProvider mqttTopicPrefixProvider;
+    private final RawMessagingPreprocessor rawMessagingPreprocessor;
+    private final Set<JoynrMessageProcessor> messageProcessors;
+    private final Set<String> incomingMqttRequests;
+    private final AtomicLong droppedMessagesCount;
+    private final MqttStatusReceiver mqttStatusReceiver;
 
     @Inject
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 2 LINES
@@ -73,7 +75,8 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
                                  MqttClientFactory mqttClientFactory,
                                  MqttTopicPrefixProvider mqttTopicPrefixProvider,
                                  RawMessagingPreprocessor rawMessagingPreprocessor,
-                                 Set<JoynrMessageProcessor> messageProcessors) {
+                                 Set<JoynrMessageProcessor> messageProcessors,
+                                 MqttStatusReceiver mqttStatusReceiver) {
         this.ownAddress = ownAddress;
         this.maxIncomingMqttRequests = maxIncomingMqttRequests;
         this.messageRouter = messageRouter;
@@ -83,6 +86,8 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
         this.messageProcessors = messageProcessors;
         this.incomingMqttRequests = Collections.synchronizedSet(new HashSet<String>());
         this.droppedMessagesCount = new AtomicLong();
+        this.multicastSubscriptionCount = Maps.newConcurrentMap();
+        this.mqttStatusReceiver = mqttStatusReceiver;
     }
 
     @Override
@@ -158,13 +163,14 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
 
             if (dropMessage(message)) {
                 droppedMessagesCount.incrementAndGet();
+                mqttStatusReceiver.notifyMessageDropped();
                 return;
             }
 
             message.setReceivedFromGlobal(true);
 
             if (isRequestMessageTypeThatCanBeDropped(message.getType())) {
-                incomingMqttRequests.add(message.getId());
+                requestAccepted(message.getId());
             }
 
             try {
@@ -222,11 +228,22 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
         return droppedMessagesCount.get();
     }
 
+    protected int getCurrentCountOfUnprocessedMqttRequests() {
+        return incomingMqttRequests.size();
+    }
+
     @Override
     public void messageProcessed(String messageId) {
         if (incomingMqttRequests.remove(messageId)) {
-            LOG.debug("Request {} was processed and is removed from the MQTT skeleton tracking list", messageId);
+            requestProcessed(messageId);
         }
     }
 
+    protected void requestAccepted(String messageId) {
+        incomingMqttRequests.add(messageId);
+    }
+
+    protected void requestProcessed(String messageId) {
+        LOG.debug("Request {} was processed and is removed from the MQTT skeleton tracking list", messageId);
+    }
 }

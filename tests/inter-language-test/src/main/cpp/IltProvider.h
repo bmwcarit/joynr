@@ -92,6 +92,19 @@ public:
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
                     onError) override;
 
+    void methodWithSingleByteBufferParameter(
+            const joynr::ByteBuffer& byteBufferIn,
+            std::function<void(const joynr::ByteBuffer& byteBufferOut)> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
+                    onError) override;
+
+    void methodWithMultipleByteBufferParameters(
+            const joynr::ByteBuffer& byteBufferIn1,
+            const joynr::ByteBuffer& byteBufferIn2,
+            std::function<void(const joynr::ByteBuffer& ByteBufferOut)> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
+                    onError) override;
+
     void methodWithSingleEnumParameters(
             const joynr::interlanguagetest::namedTypeCollection2::
                     ExtendedEnumerationWithPartlyDefinedValues::Enum& enumerationArg,
@@ -240,6 +253,21 @@ public:
                     onError) override;
 
     void methodToFireBroadcastWithMultipleArrayParameters(
+            const std::vector<std::string>& partitions,
+            std::function<void()> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
+                    onError) override;
+
+    void methodToFireBroadcastWithSingleByteBufferParameter(
+            const joynr::ByteBuffer& byteBufferIn,
+            const std::vector<std::string>& partitions,
+            std::function<void()> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
+                    onError) override;
+
+    void methodToFireBroadcastWithMultipleByteBufferParameters(
+            const joynr::ByteBuffer& byteBufferIn1,
+            const joynr::ByteBuffer& byteBufferIn2,
             const std::vector<std::string>& partitions,
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>

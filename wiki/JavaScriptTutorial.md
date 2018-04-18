@@ -65,7 +65,7 @@ asadmin deploy <RADIO_HOME>/target/discovery-jee.war
 asadmin deploy <RADIO_HOME>/target/accesscontrol-jee.war
 ```
 
-See [JEE Developer Guide](wiki/jee.md) or [Radio App Tutorial](wiki/Tutorial.md) for the
+See [JEE Developer Guide](jee.md) or [Radio App Tutorial](Tutorial.md) for the
 configuration of Payara.
 
 ### Deploy provider and consumer on a Jetty server
@@ -136,7 +136,11 @@ var loggingValue = {
     configuration: {...} /*
                        * log4j2-style JSON config, but as JavaScript object
                        * See https://logging.apache.org/log4j/2.x/manual/configuration.html#JSON
-                       * for more information
+                       * for more information.
+                       * Since replacing log4javascript due to performance issues,
+                       * not all configuration options are still supported.
+                       * - only one appender is supported. Others will be ignored.
+                       * - reduced complexity of supported patternLayouts.
                        */
 };
 
@@ -165,7 +169,7 @@ var persistencyValue = {
 };
 
 var shutdownSettingsValue = {
-    clearSubscriptionsEnabled: <true|false>, // default false
+    clearSubscriptionsEnabled: <true|false>, // default true
     clearSubscriptionsTimeoutMs: <number> // default 1000
 };
 

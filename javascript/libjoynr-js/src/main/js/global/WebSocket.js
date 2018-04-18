@@ -1,7 +1,3 @@
-/*jslint node: true */
-
-/*global WebSocket: true, FileReader: true, TextDecoder: true, TextEncoder: true */
-
 /*
  * #%L
  * %%
@@ -21,32 +17,32 @@
  * #L%
  */
 
-var JoynrMessage = require("../joynr/messaging/JoynrMessage");
-var JSONSerializer = require("../joynr/util/JSONSerializer");
-var JoynrRuntimeException = require("../joynr/exceptions/JoynrRuntimeException");
-var LoggerFactory = require("../joynr/system/LoggerFactory");
+const JoynrMessage = require("../joynr/messaging/JoynrMessage");
+const JSONSerializer = require("../joynr/util/JSONSerializer");
+const JoynrRuntimeException = require("../joynr/exceptions/JoynrRuntimeException");
+const LoggingManager = require("../joynr/system/LoggingManager");
 
 if (typeof TextDecoder !== "function") {
     throw new JoynrRuntimeException(
         "Encoding/Decoding of binary websocket messages not possible. TextEncoder/TextDecoder not available."
     );
 }
-var log = LoggerFactory.getLogger("joynr.messaging.websocket.WebSocket");
-var fileReader = new FileReader();
+const log = LoggingManager.getLogger("joynr.messaging.websocket.WebSocket");
+const fileReader = new FileReader();
 fileReader.onError = function(error) {
     log.error("Decoding of binary message failed: " + error);
 };
-var textDecoder = new TextDecoder();
-var textEncoder = new TextEncoder();
+const textDecoder = new TextDecoder();
+const textEncoder = new TextEncoder();
 
 WebSocket.encodeString = function(string) {
     return textEncoder.encode(string);
 };
 WebSocket.decodeEventData = function(event, callback) {
     if (event.target.binaryType.toLocaleLowerCase() === "blob") {
-        fileReader.onload = function(event) {
+        fileReader.onload = function(loadEvent) {
             // TODO error handling, unit test for WebSocket+WebSocketNode
-            callback(event.target.result);
+            callback(loadEvent.target.result);
         };
         fileReader.readAsText(event.data);
     } else if (event.target.binaryType.toLocaleLowerCase() === "arraybuffer") {
@@ -61,7 +57,7 @@ WebSocket.marshalJoynrMessage = function(joynrMessage) {
 
 WebSocket.unmarshalJoynrMessage = function(event, callback) {
     if (typeof event.data === "object") {
-        var callbackWrapper = function(joynrMessageData) {
+        const callbackWrapper = function(joynrMessageData) {
             if (joynrMessageData !== null && joynrMessageData !== undefined) {
                 callback(JoynrMessage.parseMessage(JSON.parse(joynrMessageData)));
             }

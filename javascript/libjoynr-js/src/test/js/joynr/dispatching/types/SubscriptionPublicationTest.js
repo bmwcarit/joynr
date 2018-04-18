@@ -1,5 +1,3 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
@@ -18,19 +16,19 @@
  * limitations under the License.
  * #L%
  */
-var SubscriptionPublication = require("../../../../classes/joynr/dispatching/types/SubscriptionPublication");
-var RadioStation = require("../../../../test-classes/joynr/vehicle/radiotypes/RadioStation");
+require("../../../node-unit-test-helper");
+const SubscriptionPublication = require("../../../../../main/js/joynr/dispatching/types/SubscriptionPublication");
 
-describe("libjoynr-js.joynr.dispatching.types.SubscriptionPublication", function() {
-    it("is defined", function() {
+describe("libjoynr-js.joynr.dispatching.types.SubscriptionPublication", () => {
+    it("is defined", () => {
         expect(SubscriptionPublication).toBeDefined();
     });
 
-    it("is instantiable", function() {
-        var response = "response";
-        var publication = new SubscriptionPublication({
+    it("is instantiable", () => {
+        const response = "response";
+        const publication = new SubscriptionPublication({
             subscriptionId: "testSubscriptionId",
-            response: response
+            response
         });
         expect(publication).toBeDefined();
         expect(publication).not.toBeNull();
@@ -38,13 +36,13 @@ describe("libjoynr-js.joynr.dispatching.types.SubscriptionPublication", function
         expect(publication instanceof SubscriptionPublication).toBeTruthy();
     });
 
-    it("is constructs with correct member values", function() {
-        var subscriptionId = "testSubscriptionId";
-        var response = "response";
+    it("is constructs with correct member values", () => {
+        const subscriptionId = "testSubscriptionId";
+        const response = "response";
 
-        var publication = new SubscriptionPublication({
-            subscriptionId: subscriptionId,
-            response: response
+        const publication = new SubscriptionPublication({
+            subscriptionId,
+            response
         });
 
         expect(publication.subscriptionId).toEqual(subscriptionId);

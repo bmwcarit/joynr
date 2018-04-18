@@ -1,4 +1,3 @@
-/*jslint es5: true, nomen: true, node: true */
 /*
  * #%L
  * %%
@@ -17,11 +16,10 @@
  * limitations under the License.
  * #L%
  */
-var Typing = require("../util/Typing");
-var Util = require("../util/UtilInternal");
-var LoggerFactory = require("../system/LoggerFactory");
+const UtilInternal = require("../util/UtilInternal");
+const LoggingManager = require("../system/LoggingManager");
 
-var log = LoggerFactory.getLogger("joynr/messaging/MessagingStubFactory");
+const log = LoggingManager.getLogger("joynr/messaging/MessagingStubFactory");
 /**
  * @name MessagingStubFactory
  * @constructor
@@ -42,11 +40,11 @@ function MessagingStubFactory(settings) {
  * @param {MessagingStub} address the address to create a messaging stub for
  */
 MessagingStubFactory.prototype.createMessagingStub = function createMessagingStub(address) {
-    var className = address._typeName;
-    var factory = this._messagingStubFactories[className];
+    const className = address._typeName;
+    const factory = this._messagingStubFactories[className];
 
-    if (Util.checkNullUndefined(factory)) {
-        var errorMsg =
+    if (UtilInternal.checkNullUndefined(factory)) {
+        const errorMsg =
             'Could not find a MessagingStubFactory for "' +
             className +
             '" within messagingStubFactories [' +

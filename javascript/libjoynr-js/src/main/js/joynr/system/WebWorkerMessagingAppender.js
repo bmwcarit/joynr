@@ -1,6 +1,3 @@
-/*jslint node: true */
-
-/*global postMessage: true */
 /*
  * #%L
  * %%
@@ -36,12 +33,12 @@ function WebWorkerMessagingAppender() {}
  * @function
  */
 WebWorkerMessagingAppender.prototype.append = function(loggingEvent) {
-    var formattedMessage = loggingEvent.getCombinedMessages(),
+    let formattedMessage = loggingEvent.getCombinedMessages(),
         appender = this;
 
-    var getFormattedMessage = function() {
+    const getFormattedMessage = function() {
         try {
-            var layout = appender.getLayout();
+            const layout = appender.getLayout();
             formattedMessage = layout.format(loggingEvent);
             if (layout.ignoresThrowable() && loggingEvent.exception) {
                 formattedMessage += loggingEvent.getThrowableStrRep();

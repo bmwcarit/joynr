@@ -1,5 +1,3 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
@@ -18,12 +16,13 @@
  * limitations under the License.
  * #L%
  */
-var DiscoveryQos = require("../../../../classes/joynr/proxy/DiscoveryQos");
-var ArbitrationStrategyCollection = require("../../../../classes/joynr/types/ArbitrationStrategyCollection");
-var DiscoveryScope = require("../../../../classes/joynr/types/DiscoveryScope");
+require("../../../node-unit-test-helper");
+const DiscoveryQos = require("../../../../../main/js/joynr/proxy/DiscoveryQos");
+const ArbitrationStrategyCollection = require("../../../../../main/js/joynr/types/ArbitrationStrategyCollection");
+const DiscoveryScope = require("../../../../../main/js/generated/joynr/types/DiscoveryScope");
 
-describe("libjoynr-js.joynr.capabilities.arbitration.DiscoveryQos", function() {
-    it("is instantiable", function() {
+describe("libjoynr-js.joynr.capabilities.arbitration.DiscoveryQos", () => {
+    it("is instantiable", () => {
         expect(new DiscoveryQos()).toBeDefined();
         expect(
             new DiscoveryQos({
@@ -37,14 +36,14 @@ describe("libjoynr-js.joynr.capabilities.arbitration.DiscoveryQos", function() {
         ).toBeDefined();
     });
 
-    it("is of correct type", function() {
-        var emptyDiscoveryQos = new DiscoveryQos();
+    it("is of correct type", () => {
+        const emptyDiscoveryQos = new DiscoveryQos();
         expect(emptyDiscoveryQos).toBeDefined();
         expect(emptyDiscoveryQos).not.toBeNull();
         expect(typeof emptyDiscoveryQos === "object").toBeTruthy();
         expect(emptyDiscoveryQos instanceof DiscoveryQos).toBeTruthy();
 
-        var defaultDiscoveryQos = new DiscoveryQos({
+        const defaultDiscoveryQos = new DiscoveryQos({
             discoveryTimeoutMs: 30000,
             discoveryRetryDelayMs: 1000,
             arbitrationStrategy: ArbitrationStrategyCollection.HighestPriority,
@@ -58,7 +57,7 @@ describe("libjoynr-js.joynr.capabilities.arbitration.DiscoveryQos", function() {
         expect(defaultDiscoveryQos instanceof DiscoveryQos).toEqual(true);
     });
 
-    it("constructs correct default object", function() {
+    it("constructs correct default object", () => {
         expect(new DiscoveryQos()).toEqual(
             new DiscoveryQos({
                 discoveryTimeoutMs: 600000,
@@ -71,7 +70,7 @@ describe("libjoynr-js.joynr.capabilities.arbitration.DiscoveryQos", function() {
         );
     });
 
-    it("adapts to new default values", function() {
+    it("adapts to new default values", () => {
         DiscoveryQos.setDefaultSettings({
             discoveryTimeoutMs: 30000,
             discoveryRetryDelayMs: 1000,
@@ -92,8 +91,8 @@ describe("libjoynr-js.joynr.capabilities.arbitration.DiscoveryQos", function() {
         );
     });
 
-    it("constructs with correct member values", function() {
-        var discoveryQos = new DiscoveryQos({
+    it("constructs with correct member values", () => {
+        const discoveryQos = new DiscoveryQos({
             discoveryTimeoutMs: 12345,
             discoveryRetryDelayMs: 123456,
             arbitrationStrategy: ArbitrationStrategyCollection.HighestPriority,

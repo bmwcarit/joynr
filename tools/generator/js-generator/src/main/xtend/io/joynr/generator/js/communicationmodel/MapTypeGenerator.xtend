@@ -79,7 +79,7 @@ class MapTypeGenerator extends MapTemplate {
 			if (settings !== undefined) {
 				var settingKey;
 				for (settingKey in settings) {
-					if (settings.hasOwnProperty(settingKey)){
+					if (Object.prototype.hasOwnProperty.call(settings, settingKey)){
 						this[settingKey] = settings[settingKey];
 					}
 				}

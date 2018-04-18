@@ -35,6 +35,7 @@
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/RequestCallerFactory.h"
 #include "joynr/Util.h"
+#include "joynr/Settings.h"
 #include "joynr/system/IDiscovery.h"
 #include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/types/DiscoveryEntry.h"
@@ -60,12 +61,13 @@ public:
             const std::string& globalAddress);
 
     template <class T>
-    std::string addAsync(const std::string& domain,
-                         std::shared_ptr<T> provider,
-                         const types::ProviderQos& providerQos,
-                         std::function<void()> onSuccess,
-                         std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
-                                 onError) noexcept
+    std::string addAsync(
+            const std::string& domain,
+            std::shared_ptr<T> provider,
+            const types::ProviderQos& providerQos,
+            std::function<void()> onSuccess,
+            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError,
+            bool persist = true) noexcept
     {
         const std::string interfaceName = T::INTERFACE_NAME();
         const std::string participantId =
@@ -102,7 +104,8 @@ public:
             discoveryProxy = util::as_weak_ptr(discoveryProxy),
             entry = std::move(entry),
             onSuccess = std::move(onSuccess),
-            onError
+            onError,
+            persist
         ]()
         {
             for (std::shared_ptr<IDispatcher> currentDispatcher : dispatcherList) {
@@ -112,10 +115,12 @@ public:
                 currentDispatcher->addRequestCaller(participantId, caller);
             }
 
-            // Sync persistency to disk now that registration is done.
-            if (auto participantIdStoragePtr = participantIdStorage.lock()) {
-                participantIdStoragePtr->setProviderParticipantId(
-                        domain, interfaceName, participantId);
+            if (persist) {
+                // Sync persistency to disk now that registration is done.
+                if (auto participantIdStoragePtr = participantIdStorage.lock()) {
+                    participantIdStoragePtr->setProviderParticipantId(
+                            domain, interfaceName, participantId);
+                }
             }
 
             auto onErrorWrapper = [

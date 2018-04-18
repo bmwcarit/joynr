@@ -1,5 +1,3 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
@@ -18,12 +16,13 @@
  * limitations under the License.
  * #L%
  */
-var InProcessMessagingStub = require("../../../../classes/joynr/messaging/inprocess/InProcessMessagingStub");
+require("../../../node-unit-test-helper");
+const InProcessMessagingStub = require("../../../../../main/js/joynr/messaging/inprocess/InProcessMessagingStub");
 
-describe("libjoynr-js.joynr.messaging.inprocess.InProcessMessagingStub", function() {
-    var skeletonCallReturn, inProcessMessagingSkeleton, inProcessMessagingStub, joynrMessage;
+describe("libjoynr-js.joynr.messaging.inprocess.InProcessMessagingStub", () => {
+    let skeletonCallReturn, inProcessMessagingSkeleton, inProcessMessagingStub, joynrMessage;
 
-    beforeEach(function(done) {
+    beforeEach(done => {
         skeletonCallReturn = {
             key: "skeletonCallReturn"
         };
@@ -36,7 +35,7 @@ describe("libjoynr-js.joynr.messaging.inprocess.InProcessMessagingStub", functio
         done();
     });
 
-    it("is instantiable and of correct type", function(done) {
+    it("is instantiable and of correct type", done => {
         expect(InProcessMessagingStub).toBeDefined();
         expect(typeof InProcessMessagingStub === "function").toBeTruthy();
         expect(inProcessMessagingStub).toBeDefined();
@@ -46,8 +45,8 @@ describe("libjoynr-js.joynr.messaging.inprocess.InProcessMessagingStub", functio
         done();
     });
 
-    it("transmits a message", function(done) {
-        var result = inProcessMessagingStub.transmit(joynrMessage);
+    it("transmits a message", done => {
+        const result = inProcessMessagingStub.transmit(joynrMessage);
         expect(inProcessMessagingSkeleton.receiveMessage).toHaveBeenCalledWith(joynrMessage);
         expect(result).toEqual(skeletonCallReturn);
         done();

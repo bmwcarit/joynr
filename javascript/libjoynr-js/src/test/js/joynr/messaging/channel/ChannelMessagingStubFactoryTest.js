@@ -1,4 +1,3 @@
-/*jslint es5: true, node: true, node: true */
 /*
  * #%L
  * %%
@@ -17,17 +16,18 @@
  * limitations under the License.
  * #L%
  */
-var Promise = require("../../../../classes/global/Promise");
-var ChannelAddress = require("../../../../classes/joynr/system/RoutingTypes/ChannelAddress");
-var ChannelMessagingSender = require("../../../../classes/joynr/messaging/channel/ChannelMessagingSender");
-var ChannelMessagingStubFactory = require("../../../../classes/joynr/messaging/channel/ChannelMessagingStubFactory");
-var JoynrMessage = require("../../../../classes/joynr/messaging/JoynrMessage");
+require("../../../node-unit-test-helper");
+const Promise = require("../../../../../main/js/global/Promise");
+const ChannelAddress = require("../../../../../main/js/generated/joynr/system/RoutingTypes/ChannelAddress");
+const ChannelMessagingSender = require("../../../../../main/js/joynr/messaging/channel/ChannelMessagingSender");
+const ChannelMessagingStubFactory = require("../../../../../main/js/joynr/messaging/channel/ChannelMessagingStubFactory");
+const JoynrMessage = require("../../../../../main/js/joynr/messaging/JoynrMessage");
 
-describe("libjoynr-js.joynr.messaging.channel.ChannelMessagingStubFactory", function() {
-    var channelMessagingSender, channelMessagingStubFactory, destChannelId;
-    var url, myChannelId, channelAddress1, channelAddress2, joynrMessage;
+describe("libjoynr-js.joynr.messaging.channel.ChannelMessagingStubFactory", () => {
+    let channelMessagingSender, channelMessagingStubFactory, destChannelId;
+    let url, myChannelId, channelAddress1, channelAddress2, joynrMessage;
 
-    beforeEach(function(done) {
+    beforeEach(done => {
         destChannelId = "destChannelId";
         myChannelId = "myChannelId";
         url = "http://testurl";
@@ -43,7 +43,7 @@ describe("libjoynr-js.joynr.messaging.channel.ChannelMessagingStubFactory", func
             messagingEndpointUrl: url
         });
         channelMessagingStubFactory = new ChannelMessagingStubFactory({
-            channelMessagingSender: channelMessagingSender
+            channelMessagingSender
         });
 
         channelMessagingStubFactory.globalAddressReady(channelAddress2);
@@ -53,7 +53,7 @@ describe("libjoynr-js.joynr.messaging.channel.ChannelMessagingStubFactory", func
         done();
     });
 
-    it("is instantiable and of correct type", function(done) {
+    it("is instantiable and of correct type", done => {
         expect(ChannelMessagingStubFactory).toBeDefined();
         expect(typeof ChannelMessagingStubFactory).toEqual("function");
         expect(channelMessagingStubFactory).toBeDefined();
@@ -63,9 +63,9 @@ describe("libjoynr-js.joynr.messaging.channel.ChannelMessagingStubFactory", func
         done();
     });
 
-    it("creates a messaging stub and uses it correctly", function(done) {
-        var channelMessagingStub = channelMessagingStubFactory.build(channelAddress1);
-        channelMessagingStub.transmit(joynrMessage).catch(function() {
+    it("creates a messaging stub and uses it correctly", done => {
+        let channelMessagingStub = channelMessagingStubFactory.build(channelAddress1);
+        channelMessagingStub.transmit(joynrMessage).catch(() => {
             return null;
         });
         expect(channelMessagingSender.send).toHaveBeenCalledWith(joynrMessage, channelAddress1);
@@ -73,7 +73,7 @@ describe("libjoynr-js.joynr.messaging.channel.ChannelMessagingStubFactory", func
         channelMessagingSender.send.calls.reset();
         //in case of target channelId is the local one --> missconfiguration, drop the message
         channelMessagingStub = channelMessagingStubFactory.build(channelAddress2);
-        channelMessagingStub.transmit(joynrMessage).catch(function() {
+        channelMessagingStub.transmit(joynrMessage).catch(() => {
             return null;
         });
         expect(channelMessagingSender.send).not.toHaveBeenCalled();

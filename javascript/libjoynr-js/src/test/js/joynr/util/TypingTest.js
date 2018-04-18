@@ -1,5 +1,3 @@
-/*jslint es5: true, node: true, newcap: true, nomen: true */
-/*global fail: true, xit: true */
 /*
  * #%L
  * %%
@@ -18,20 +16,21 @@
  * limitations under the License.
  * #L%
  */
-var Typing = require("../../../classes/joynr/util/Typing");
-var TypeRegistry = require("../../../classes/joynr/start/TypeRegistry");
-var LoggerFactory = require("../../../classes/joynr/system/LoggerFactory");
-var TypeRegistrySingleton = require("../../../classes/joynr/types/TypeRegistrySingleton");
-var DiscoveryEntry = require("../../../classes/joynr/types/DiscoveryEntry");
-var ProviderQos = require("../../../classes/joynr/types/ProviderQos");
-var ProviderScope = require("../../../classes/joynr/types/ProviderScope");
-var Version = require("../../../classes/joynr/types/Version");
-var RadioStation = require("../../../test-classes/joynr/vehicle/radiotypes/RadioStation");
-var ComplexRadioStation = require("../../../test-classes/joynr/datatypes/exampleTypes/ComplexRadioStation");
-var ComplexStruct = require("../../../test-classes/joynr/datatypes/exampleTypes/ComplexStruct");
-var Country = require("../../../test-classes/joynr/datatypes/exampleTypes/Country");
-var TestEnum = require("../../../test-classes/joynr/tests/testTypes/TestEnum");
-var Promise = require("../../../classes/global/Promise");
+require("../../node-unit-test-helper");
+const Typing = require("../../../../main/js/joynr/util/Typing");
+const TypeRegistry = require("../../../../main/js/joynr/start/TypeRegistry");
+const LoggingManager = require("../../../../main/js/joynr/system/LoggingManager");
+const TypeRegistrySingleton = require("../../../../main/js/joynr/types/TypeRegistrySingleton");
+const DiscoveryEntry = require("../../../../main/js/generated/joynr/types/DiscoveryEntry");
+const ProviderQos = require("../../../../main/js/generated/joynr/types/ProviderQos");
+const ProviderScope = require("../../../../main/js/generated/joynr/types/ProviderScope");
+const Version = require("../../../../main/js/generated/joynr/types/Version");
+const RadioStation = require("../../../generated/joynr/vehicle/radiotypes/RadioStation");
+const ComplexRadioStation = require("../../../generated/joynr/datatypes/exampleTypes/ComplexRadioStation");
+const ComplexStruct = require("../../../generated/joynr/datatypes/exampleTypes/ComplexStruct");
+const Country = require("../../../generated/joynr/datatypes/exampleTypes/Country");
+const TestEnum = require("../../../generated/joynr/tests/testTypes/TestEnum");
+const Promise = require("../../../../main/js/global/Promise");
 
 function MyCustomObj() {}
 function _TestConstructor123_() {}
@@ -44,7 +43,7 @@ function MyType(a, b, c, d, e) {
     this.e = e;
 }
 
-MyType.getMemberType = function(i) {};
+MyType.getMemberType = function() {};
 
 function MySecondType(a, b, c, d, e) {
     this._typeName = "MySecondTypeName";
@@ -55,29 +54,29 @@ function MySecondType(a, b, c, d, e) {
     this.e = e;
 }
 
-MySecondType.getMemberType = function(i) {};
+MySecondType.getMemberType = function() {};
 
-beforeEach(function(done) {
-    var datatypePromises = [
+beforeEach(done => {
+    const datatypePromises = [
         "joynr.vehicle.radiotypes.RadioStation",
         "joynr.datatypes.exampleTypes.ComplexRadioStation",
         "joynr.datatypes.exampleTypes.ComplexStruct",
         "joynr.datatypes.exampleTypes.Country",
         "joynr.tests.testTypes.TestEnum"
-    ].map(function(datatype) {
+    ].map(datatype => {
         return TypeRegistrySingleton.getInstance().getTypeRegisteredPromise(datatype, 1000);
     });
 
     Promise.all(datatypePromises)
-        .then(function() {
+        .then(() => {
             done();
             return null;
         })
         .catch(fail);
 });
 
-describe("libjoynr-js.joynr.Typing", function() {
-    it("is defined and of correct type", function(done) {
+describe("libjoynr-js.joynr.Typing", () => {
+    it("is defined and of correct type", done => {
         expect(Typing).toBeDefined();
         expect(Typing).not.toBeNull();
         expect(typeof Typing === "object").toBeTruthy();
@@ -85,8 +84,8 @@ describe("libjoynr-js.joynr.Typing", function() {
     });
 });
 
-describe("libjoynr-js.joynr.Typing.getObjectType", function() {
-    it("returns the correct type strings", function(done) {
+describe("libjoynr-js.joynr.Typing.getObjectType", () => {
+    it("returns the correct type strings", done => {
         expect(Typing.getObjectType(true)).toEqual("Boolean");
         expect(Typing.getObjectType(false)).toEqual("Boolean");
 
@@ -97,7 +96,7 @@ describe("libjoynr-js.joynr.Typing.getObjectType", function() {
 
         expect(Typing.getObjectType("a string")).toEqual("String");
 
-        expect(Typing.getObjectType(function() {})).toEqual("Function");
+        expect(Typing.getObjectType(() => {})).toEqual("Function");
 
         expect(Typing.getObjectType(new MyCustomObj())).toEqual("MyCustomObj");
         expect(Typing.getObjectType(new _TestConstructor123_())).toEqual("_TestConstructor123_");
@@ -109,24 +108,24 @@ describe("libjoynr-js.joynr.Typing.getObjectType", function() {
         done();
     });
 
-    it("throws if no object is provided", function(done) {
-        expect(function() {
+    it("throws if no object is provided", done => {
+        expect(() => {
             Typing.getObjectType();
         }).toThrow();
-        expect(function() {
+        expect(() => {
             Typing.getObjectType(null);
         }).toThrow();
-        expect(function() {
+        expect(() => {
             Typing.getObjectType(undefined);
         }).toThrow();
         done();
     });
 });
 
-describe("libjoynr-js.joynr.Typing.augmentType", function() {
-    var log = LoggerFactory.getLogger("joynr.util.TypingTest");
+describe("libjoynr-js.joynr.Typing.augmentType", () => {
+    const log = LoggingManager.getLogger("joynr.util.TypingTest");
 
-    var tests = [
+    const tests = [
         {
             untyped: null,
             typed: null
@@ -278,12 +277,12 @@ describe("libjoynr-js.joynr.Typing.augmentType", function() {
         }
     ];
 
-    var typeRegistry = new TypeRegistry();
+    const typeRegistry = new TypeRegistry();
     typeRegistry.addType("MyTypeName", MyType);
     typeRegistry.addType("MySecondTypeName", MySecondType);
 
-    it("types all objects correctly", function(done) {
-        var i, typed;
+    it("types all objects correctly", done => {
+        let i, typed;
         for (i = 0; i < tests.length; ++i) {
             typed = Typing.augmentTypes(tests[i].untyped, typeRegistry);
             expect(typed).toEqual(tests[i].typed);
@@ -295,15 +294,14 @@ describe("libjoynr-js.joynr.Typing.augmentType", function() {
         done();
     });
 
-    xit("performance measurement of augmenting struct types", function() {
-        var i,
+    xit("performance measurement of augmenting struct types", () => {
+        let i,
             rawInput,
             timeStart,
             delta,
             times = 5000,
             typeRegistry = TypeRegistrySingleton.getInstance();
         typeRegistry.addType("joynr.datatypes.exampleTypes.ComplexStruct", ComplexStruct);
-        /*jslint nomen: true */
         rawInput = {
             _typeName: "joynr.datatypes.exampleTypes.ComplexStruct",
             num32: "123456",
@@ -311,7 +309,6 @@ describe("libjoynr-js.joynr.Typing.augmentType", function() {
             str: "looooooooooooooooooooooooooooooooooooooongStriiiiiiiiiiiiiiiiiiiiiiiing",
             data: []
         };
-        /*jslint nomen: false */
         for (i = 0; i < 1000; i++) {
             rawInput.data.push("0");
         }
@@ -324,23 +321,23 @@ describe("libjoynr-js.joynr.Typing.augmentType", function() {
         log.info('Time took for augmenting struct type "ComplexStruct"' + times + " times: " + delta + "ms");
     });
 
-    it("throws when giving a function or an object with a custom type", function(done) {
-        expect(function() {
-            Typing.augmentTypes(function() {}, typeRegistry);
+    it("throws when giving a function or an object with a custom type", done => {
+        expect(() => {
+            Typing.augmentTypes(() => {}, typeRegistry);
         }).toThrow();
 
-        expect(function() {
+        expect(() => {
             Typing.augmentTypes(new MyType(), typeRegistry);
         }).toThrow();
 
-        expect(function() {
+        expect(() => {
             Typing.augmentTypes(new MySecondType(), typeRegistry);
         }).toThrow();
         done();
     });
 
-    it("augmentTypes is able to deal with enums as input", function(done) {
-        var fixture, expected;
+    it("augmentTypes is able to deal with enums as input", done => {
+        let fixture, expected;
         fixture = "ZERO";
         expected = TestEnum.ZERO;
         expect(Typing.augmentTypes(fixture, TypeRegistrySingleton.getInstance())).toBe(fixture);
@@ -350,8 +347,8 @@ describe("libjoynr-js.joynr.Typing.augmentType", function() {
         done();
     });
 
-    it("augmentTypes is able to deal with error enums as input", function() {
-        var fixture,
+    it("augmentTypes is able to deal with error enums as input", () => {
+        let fixture,
             expected,
             result,
             typeRegistry = TypeRegistrySingleton.getInstance();
@@ -368,16 +365,14 @@ describe("libjoynr-js.joynr.Typing.augmentType", function() {
         expect(result).toBe(expected);
     });
 
-    it("augmentTypes is able to deal with structs containing enum members", function(done) {
-        var fixture, expected;
-        /*jslint nomen: true */
+    it("augmentTypes is able to deal with structs containing enum members", done => {
+        let fixture, expected;
         fixture = {
             _typeName: "joynr.datatypes.exampleTypes.ComplexRadioStation",
             name: "name",
             station: "station",
             source: "AUSTRIA"
         };
-        /*jslint nomen: false */
         expected = new ComplexRadioStation({
             name: fixture.name,
             station: fixture.station,
@@ -387,10 +382,8 @@ describe("libjoynr-js.joynr.Typing.augmentType", function() {
         done();
     });
 
-    it("augmentTypes is able to deal with complex structs containing enum array and other structs as members", function(
-        done
-    ) {
-        var fixture, providerQos, providerVersion, expected;
+    it("augmentTypes is able to deal with complex structs containing enum array and other structs as members", done => {
+        let fixture, providerQos, providerVersion, expected;
         providerQos = {
             _typeName: "joynr.types.ProviderQos",
             customParameters: [],
@@ -404,19 +397,17 @@ describe("libjoynr-js.joynr.Typing.augmentType", function() {
             minorVersion: 2
         };
 
-        /*jslint nomen: true */
         fixture = {
             _typeName: "joynr.types.DiscoveryEntry",
             domain: "domain",
             interfaceName: "interfaceName",
             participantId: "participantId",
             qos: providerQos,
-            providerVersion: providerVersion,
+            providerVersion,
             lastSeenDateMs: 123,
             publicKeyId: "publicKeyId",
             expiryDateMs: 1234
         };
-        /*jslint nomen: false */
 
         expected = new DiscoveryEntry({
             domain: fixture.domain,
@@ -442,14 +433,12 @@ describe("libjoynr-js.joynr.Typing.augmentType", function() {
 });
 
 function augmentTypeName(obj, expectedType, customMember) {
-    var objWithTypeName = Typing.augmentTypeName(obj, "joynr", customMember);
-    /*jslint nomen: true */
+    const objWithTypeName = Typing.augmentTypeName(obj, "joynr", customMember);
     expect(objWithTypeName[customMember || "_typeName"]).toEqual("joynr." + expectedType);
-    /*jslint nomen: false */
 }
 
-describe("libjoynr-js.joynr.Typing.augmentTypeName", function() {
-    it("augments type into _typeName member", function(done) {
+describe("libjoynr-js.joynr.Typing.augmentTypeName", () => {
+    it("augments type into _typeName member", done => {
         augmentTypeName(new MyCustomObj(), "MyCustomObj");
         augmentTypeName(new _TestConstructor123_(), "_TestConstructor123_");
         augmentTypeName(new MyType(), "MyType");
@@ -457,7 +446,7 @@ describe("libjoynr-js.joynr.Typing.augmentTypeName", function() {
         done();
     });
 
-    it("augments type into custom member", function(done) {
+    it("augments type into custom member", done => {
         augmentTypeName(new MyCustomObj(), "MyCustomObj", "myCustomMember");
         augmentTypeName(new _TestConstructor123_(), "_TestConstructor123_", "myCustomMember");
         augmentTypeName(new MyType(), "MyType", "myCustomMember");
@@ -465,21 +454,21 @@ describe("libjoynr-js.joynr.Typing.augmentTypeName", function() {
         done();
     });
 
-    it("throws if no object is provided", function(done) {
-        expect(function() {
+    it("throws if no object is provided", done => {
+        expect(() => {
             Typing.augmentTypeName();
         }).toThrow();
-        expect(function() {
+        expect(() => {
             Typing.augmentTypeName(null);
         }).toThrow();
-        expect(function() {
+        expect(() => {
             Typing.augmentTypeName(undefined);
         }).toThrow();
         done();
     });
 
-    it("isEnumType accepts enum types", function(done) {
-        var fixture = TestEnum.ZERO,
+    it("isEnumType accepts enum types", done => {
+        let fixture = TestEnum.ZERO,
             radioStation;
         radioStation = new RadioStation({
             name: "name",
@@ -497,11 +486,11 @@ describe("libjoynr-js.joynr.Typing.augmentTypeName", function() {
 function testTypingCheckProperty(functionName) {
     function CustomObj() {}
     function AnotherCustomObj() {}
-    var objects = [true, 1, "a string", [], {}, function() {}, new CustomObj(), new AnotherCustomObj()];
-    var types = ["Boolean", "Number", "String", "Array", "Object", "Function", CustomObj, AnotherCustomObj];
+    const objects = [true, 1, "a string", [], {}, function() {}, new CustomObj(), new AnotherCustomObj()];
+    const types = ["Boolean", "Number", "String", "Array", "Object", "Function", CustomObj, AnotherCustomObj];
 
-    it("provides the correct type information", function() {
-        var i, j;
+    it("provides the correct type information", () => {
+        let i, j;
         function functionBuilder(object, type) {
             return function() {
                 Typing[functionName](object, type, "some description");
@@ -510,7 +499,7 @@ function testTypingCheckProperty(functionName) {
 
         for (i = 0; i < objects.length; ++i) {
             for (j = 0; j < types.length; ++j) {
-                var test = expect(functionBuilder(objects[i], types[j]));
+                const test = expect(functionBuilder(objects[i], types[j]));
 
                 if (i === j) {
                     test.not.toThrow();
@@ -521,41 +510,41 @@ function testTypingCheckProperty(functionName) {
         }
     });
 
-    it("supports type alternatives", function() {
-        var type = ["Object", "CustomObj"];
-        expect(function() {
+    it("supports type alternatives", () => {
+        const type = ["Object", "CustomObj"];
+        expect(() => {
             Typing[functionName]({}, type, "some description");
         }).not.toThrow();
-        expect(function() {
+        expect(() => {
             Typing[functionName](new CustomObj(), type, "some description");
         }).not.toThrow();
-        expect(function() {
+        expect(() => {
             Typing[functionName](new AnotherCustomObj(), type, "some description");
         }).toThrow();
     });
 }
 
-describe("libjoynr-js.joynr.Typing.checkProperty", function() {
+describe("libjoynr-js.joynr.Typing.checkProperty", () => {
     testTypingCheckProperty("checkProperty");
 
-    it("throws on null and undefined", function() {
-        expect(function() {
+    it("throws on null and undefined", () => {
+        expect(() => {
             Typing.checkProperty(undefined, "undefined", "some description");
         }).toThrow();
-        expect(function() {
+        expect(() => {
             Typing.checkProperty(null, "null", "some description");
         }).toThrow();
     });
 });
 
-describe("libjoynr-js.joynr.Typing.checkPropertyIfDefined", function() {
+describe("libjoynr-js.joynr.Typing.checkPropertyIfDefined", () => {
     testTypingCheckProperty("checkPropertyIfDefined");
 
-    it("does not throw on null or undefined", function() {
-        expect(function() {
+    it("does not throw on null or undefined", () => {
+        expect(() => {
             Typing.checkPropertyIfDefined(undefined, "undefined", "some description");
         }).not.toThrow();
-        expect(function() {
+        expect(() => {
             Typing.checkPropertyIfDefined(null, "null", "some description");
         }).not.toThrow();
     });

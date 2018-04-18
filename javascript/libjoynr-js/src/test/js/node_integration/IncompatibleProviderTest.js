@@ -20,25 +20,23 @@
  * #L%
  */
 
-var End2EndAbstractTest = require("./End2EndAbstractTest"),
-    joynr = require("joynr"),
-    MultipleVersionsInterfaceProvider = require("joynr/tests/v1/MultipleVersionsInterfaceProvider"),
+let End2EndAbstractTest = require("./End2EndAbstractTest"),
     NoCompatibleProviderFoundException = require("joynr/exceptions/NoCompatibleProviderFoundException");
 
-var abstractTest = new End2EndAbstractTest(
+const abstractTest = new End2EndAbstractTest(
     "IncompatibleProviderTest",
     "TestMultipleVersionsInterfaceProcess",
     "packageVersion1"
 );
 
-describe("Incompatible provider test", function() {
-    it("Proxy version greater than provider version", function(done) {
+describe("Incompatible provider test", () => {
+    it("Proxy version greater than provider version", done => {
         abstractTest
             .beforeEach()
-            .then(function() {
+            .then(() => {
                 fail("Expected NoCompatibleProviderFoundException was not thrown");
             })
-            .catch(function(error) {
+            .catch(error => {
                 expect(error instanceof NoCompatibleProviderFoundException).toBe(true);
                 expect(error.discoveredVersions.length).toEqual(1);
                 expect(error.discoveredVersions[0].majorVersion).toEqual(1);

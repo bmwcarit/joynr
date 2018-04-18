@@ -1,5 +1,4 @@
-/*jslint es5: true, node: true */
-
+/* eslint no-console: "off" */
 /*
  * #%L
  * %%
@@ -18,8 +17,10 @@
  * limitations under the License.
  * #L%
  */
+const mod = require("module");
+const path = require("path");
 
-var ChildProcessUtils = {};
+const ChildProcessUtils = {};
 
 ChildProcessUtils.postReady = function() {
     process.send({
@@ -28,7 +29,7 @@ ChildProcessUtils.postReady = function() {
 };
 
 ChildProcessUtils.postStarted = function(argument) {
-    var object = {
+    const object = {
         type: "started"
     };
     if (argument !== undefined) {
@@ -44,16 +45,14 @@ ChildProcessUtils.postFinished = function() {
 };
 
 ChildProcessUtils.registerHandlers = function(initializeTest, startTest, terminateTest) {
-    var runtime;
-    var handler = function(msg) {
+    let runtime;
+    const handler = function(msg) {
         console.log(JSON.stringify(msg));
         if (msg.type === "initialize") {
             if (!initializeTest) {
                 throw new Error("cannot initialize test, child does not define an initializeTest method");
             }
-            initializeTest(msg.provisioningSuffix, msg.domain, msg.processSpecialization).then(function(
-                providedRuntime
-            ) {
+            initializeTest(msg.provisioningSuffix, msg.domain, msg.processSpecialization).then(providedRuntime => {
                 runtime = providedRuntime;
                 ChildProcessUtils.postReady();
             });
@@ -61,7 +60,7 @@ ChildProcessUtils.registerHandlers = function(initializeTest, startTest, termina
             if (!startTest) {
                 throw new Error("cannot start test, child does not define a startTest method");
             }
-            startTest().then(function(argument) {
+            startTest().then(argument => {
                 ChildProcessUtils.postStarted(argument);
             });
         } else if (msg.type === "terminate") {
@@ -77,37 +76,14 @@ ChildProcessUtils.registerHandlers = function(initializeTest, startTest, termina
 };
 
 ChildProcessUtils.overrideRequirePaths = function() {
-    var mod = require("module");
-    var joynr = require("../../classes/joynr");
-    var req = mod.prototype.require;
-    var path = require("path");
+    const req = mod.prototype.require;
     mod.prototype.require = function(md) {
-        if (md === "joynr") {
-            return joynr;
-        }
-
         // mock localStorage
         if (md.endsWith("LocalStorageNode")) {
-            var appDir = path.dirname(require.main.filename);
+            const appDir = path.dirname(require.main.filename);
             return req.call(this, appDir + "/LocalStorageMock.js");
         }
 
-        // joynr/vehicle
-        if (
-            md.startsWith("joynr/vehicle") ||
-            md.startsWith("joynr/datatypes") ||
-            md.startsWith("joynr/tests") ||
-            md.startsWith("joynr/provisioning")
-        ) {
-            return req.call(this, "../" + md);
-        }
-
-        if (md.startsWith("joynr")) {
-            return req.call(this, "../../classes/" + md);
-        }
-        if (md === "joynr/Runtime") {
-            return req.call(this, "joynr/Runtime.inprocess");
-        }
         return req.apply(this, arguments);
     };
 };

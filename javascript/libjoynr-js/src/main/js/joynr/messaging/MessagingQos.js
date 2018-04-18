@@ -1,5 +1,4 @@
-/*jslint es5: true, nomen: true, node: true */
-
+/*eslint no-useless-escape: "off"*/
 /*
  * #%L
  * %%
@@ -18,13 +17,13 @@
  * limitations under the License.
  * #L%
  */
-var defaultMessagingSettings = require("../start/settings/defaultMessagingSettings");
-var LoggerFactory = require("../system/LoggerFactory");
-var Util = require("../util/UtilInternal");
-var MessagingQosEffort = require("./MessagingQosEffort");
+const defaultMessagingSettings = require("../start/settings/defaultMessagingSettings");
+const LoggingManager = require("../system/LoggingManager");
+const UtilInternal = require("../util/UtilInternal");
+const MessagingQosEffort = require("./MessagingQosEffort");
 
-var log = LoggerFactory.getLogger("joynr/messaging/MessagingQos");
-var defaultSettings = {
+const log = LoggingManager.getLogger("joynr/messaging/MessagingQos");
+const defaultSettings = {
     ttl: 60000,
     customHeaders: {},
     encrypt: false,
@@ -45,14 +44,14 @@ var defaultSettings = {
  * @returns {MessagingQos} a messaging Qos Object
  */
 function MessagingQos(settings) {
-    var errorMsg;
+    let errorMsg;
 
     if (!(this instanceof MessagingQos)) {
         // in case someone calls constructor without new keyword (e.g. var c = Constructor({..}))
         return new MessagingQos(settings);
     }
 
-    settings = Util.extend({}, defaultSettings, settings);
+    settings = UtilInternal.extend({}, defaultSettings, settings);
 
     if (!MessagingQosEffort.isValid(settings.effort)) {
         settings.effort = MessagingQosEffort.NORMAL;
@@ -126,10 +125,10 @@ function MessagingQos(settings) {
  *            dot, star, forward slash and back slash.
  */
 function checkKeyAndValue(key, value) {
-    var keyPattern = /^[a-zA-Z0-9\-]*$/;
-    var valuePattern = /^[a-zA-Z0-9 ;:,+&\?\-\.\*\/\\]*$/;
-    var keyOk = keyPattern.test(key);
-    var valueOk = valuePattern.test(value);
+    const keyPattern = /^[a-zA-Z0-9\-]*$/;
+    const valuePattern = /^[a-zA-Z0-9 ;:,+&\?\-\.\*\/\\]*$/;
+    const keyOk = keyPattern.test(key);
+    const valueOk = valuePattern.test(value);
     if (!keyOk) {
         throw new Error("custom header key may only contain alphanumeric characters");
     }
@@ -154,7 +153,7 @@ Object.defineProperty(MessagingQos.prototype, "putCustomMessageHeader", {
     enumerable: false,
     configurable: false,
     writable: false,
-    value: function(key, value) {
+    value(key, value) {
         checkKeyAndValue(key, value);
         this.customHeaders[key] = value;
     }

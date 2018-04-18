@@ -1,5 +1,3 @@
-/*jslint es5: true, node: true*/
-/*global fail: true */
 /*
  * #%L
  * %%
@@ -18,35 +16,29 @@
  * limitations under the License.
  * #L%
  */
-var Promise = require("../../../classes/global/Promise");
-var CapabilitiesRegistrar = require("../../../classes/joynr/capabilities/CapabilitiesRegistrar");
-var ProviderQos = require("../../../classes/joynr/types/ProviderQos");
-var GlobalDiscoveryEntry = require("../../../classes/joynr/types/GlobalDiscoveryEntry");
-var ProviderAttribute = require("../../../classes/joynr/provider/ProviderAttribute");
-var DiscoveryEntry = require("../../../classes/joynr/types/DiscoveryEntry");
-var ProviderScope = require("../../../classes/joynr/types/ProviderScope");
-var Version = require("../../../classes/joynr/types/Version");
-var uuid = require("../../../classes/lib/uuid-annotated");
-describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", function() {
-    var capabilitiesRegistrar;
-    var requestReplyManagerSpy;
-    var publicationManagerSpy;
-    var participantId;
-    var domain;
-    var participantIdStorageSpy;
-    var discoveryStubSpy;
-    var messageRouterSpy;
-    var loggingManagerSpy;
-    var libjoynrMessagingAddress;
-    var provider;
-    var capability;
-    var localChannelId;
-    var providerQos;
-    var address;
-    var checkImplementation;
-    var TestProvider;
+require("../../node-unit-test-helper");
+const Promise = require("../../../../main/js/global/Promise");
+const CapabilitiesRegistrar = require("../../../../main/js/joynr/capabilities/CapabilitiesRegistrar");
+const ProviderQos = require("../../../../main/js/generated/joynr/types/ProviderQos");
+const ProviderAttribute = require("../../../../main/js/joynr/provider/ProviderAttribute");
+const ProviderScope = require("../../../../main/js/generated/joynr/types/ProviderScope");
+const uuid = require("../../../../main/js/lib/uuid-annotated");
+describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", () => {
+    let capabilitiesRegistrar;
+    let requestReplyManagerSpy;
+    let publicationManagerSpy;
+    let participantId;
+    let domain;
+    let participantIdStorageSpy;
+    let discoveryStubSpy;
+    let messageRouterSpy;
+    let libjoynrMessagingAddress;
+    let provider;
+    let providerQos;
+    let checkImplementation;
+    let TestProvider;
 
-    beforeEach(function(done) {
+    beforeEach(done => {
         // default checkImplemenation, can be overwritten by individual tests as
         // needed
         checkImplementation = function checkImplementationDefault() {
@@ -88,10 +80,7 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", function() {
             "Boolean",
             "NOTIFYREADWRITE"
         );
-
-        localChannelId = "localChannelId";
         domain = "testdomain";
-        address = "address";
         participantId = "myParticipantId";
         participantIdStorageSpy = jasmine.createSpyObj("participantIdStorage", ["getParticipantId"]);
         participantIdStorageSpy.getParticipantId.and.returnValue(participantId);
@@ -106,72 +95,60 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", function() {
             toBe: "a",
             object: {}
         };
-        loggingManagerSpy = jasmine.createSpyObj("loggingManager", ["setLoggingContext"]);
 
         capabilitiesRegistrar = new CapabilitiesRegistrar({
             discoveryStub: discoveryStubSpy,
             messageRouter: messageRouterSpy,
             participantIdStorage: participantIdStorageSpy,
-            libjoynrMessagingAddress: libjoynrMessagingAddress,
+            libjoynrMessagingAddress,
             requestReplyManager: requestReplyManagerSpy,
-            publicationManager: publicationManagerSpy,
-            loggingManager: loggingManagerSpy
+            publicationManager: publicationManagerSpy
         });
 
-        capability = new GlobalDiscoveryEntry({
-            providerVersion: new Version({ majorVersion: 47, minorVersion: 11 }),
-            domain: domain,
-            interfaceName: provider.interfaceName,
-            qos: providerQos,
-            channelId: localChannelId,
-            participantId: participantId,
-            publicKeyId: "",
-            address: address
-        });
         done();
     });
 
-    it("is instantiable", function(done) {
+    it("is instantiable", done => {
         expect(capabilitiesRegistrar).toBeDefined();
         expect(capabilitiesRegistrar instanceof CapabilitiesRegistrar).toBeTruthy();
         done();
     });
 
-    it("is has all members", function(done) {
+    it("is has all members", done => {
         expect(capabilitiesRegistrar.registerProvider).toBeDefined();
         expect(typeof capabilitiesRegistrar.registerProvider === "function").toBeTruthy();
         expect(typeof capabilitiesRegistrar.register === "function").toBeTruthy();
         done();
     });
 
-    it("is checks the provider's implementation", function(done) {
+    it("is checks the provider's implementation", done => {
         capabilitiesRegistrar
             .registerProvider(domain, provider, providerQos)
-            .then(function() {
+            .then(() => {
                 return null;
             })
-            .catch(function() {
+            .catch(() => {
                 return null;
             });
         expect(provider.checkImplementation).toHaveBeenCalled();
         done();
     });
 
-    it("defaultDelayMs can be configured", function(done) {
-        var overwrittenDelay = 100000;
+    it("defaultDelayMs can be configured", done => {
+        const overwrittenDelay = 100000;
 
         jasmine.clock().install();
-        var baseTime = new Date();
+        const baseTime = new Date();
         jasmine.clock().mockDate(baseTime);
 
         CapabilitiesRegistrar.setDefaultExpiryIntervalMs(overwrittenDelay);
 
         capabilitiesRegistrar
             .registerProvider(domain, provider, providerQos)
-            .then(function() {
+            .then(() => {
                 return null;
             })
-            .catch(function() {
+            .catch(() => {
                 return null;
             });
 
@@ -185,12 +162,12 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", function() {
         done();
     });
 
-    it("is checks the provider's implementation, and throws if incomplete", function(done) {
+    it("is checks the provider's implementation, and throws if incomplete", done => {
         provider.checkImplementation = function() {
             return ["Operation:addFavoriteStation"];
         };
 
-        expect(function() {
+        expect(() => {
             capabilitiesRegistrar.registerProvider(domain, provider, providerQos);
         }).toThrow(
             new Error(
@@ -200,13 +177,13 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", function() {
         done();
     });
 
-    it("fetches participantId from the participantIdStorage", function(done) {
+    it("fetches participantId from the participantIdStorage", done => {
         capabilitiesRegistrar
             .registerProvider(domain, provider, providerQos)
-            .then(function() {
+            .then(() => {
                 return null;
             })
-            .catch(function() {
+            .catch(() => {
                 return null;
             });
         expect(participantIdStorageSpy.getParticipantId).toHaveBeenCalled();
@@ -214,16 +191,16 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", function() {
         done();
     });
 
-    it("registers next hop with routing table", function(done) {
+    it("registers next hop with routing table", done => {
         capabilitiesRegistrar
             .registerProvider(domain, provider, providerQos)
-            .then(function() {
+            .then(() => {
                 return null;
             })
-            .catch(function() {
+            .catch(() => {
                 return null;
             });
-        var isGloballyVisible = providerQos.scope === ProviderScope.GLOBAL;
+        const isGloballyVisible = providerQos.scope === ProviderScope.GLOBAL;
         expect(messageRouterSpy.addNextHop).toHaveBeenCalled();
         expect(messageRouterSpy.addNextHop).toHaveBeenCalledWith(
             participantId,
@@ -233,13 +210,13 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", function() {
         done();
     });
 
-    it("registers provider at RequestReplyManager", function(done) {
+    it("registers provider at RequestReplyManager", done => {
         capabilitiesRegistrar
             .registerProvider(domain, provider, providerQos)
-            .then(function() {
+            .then(() => {
                 return null;
             })
-            .catch(function() {
+            .catch(() => {
                 return null;
             });
         expect(requestReplyManagerSpy.addRequestCaller).toHaveBeenCalled();
@@ -247,17 +224,17 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", function() {
         done();
     });
 
-    it("handles calls to function register", function(done) {
+    it("handles calls to function register", done => {
         capabilitiesRegistrar
             .register({
                 domain: "domain",
-                provider: provider,
-                providerQos: providerQos
+                provider,
+                providerQos
             })
-            .then(function() {
+            .then(() => {
                 return null;
             })
-            .catch(function() {
+            .catch(() => {
                 return null;
             });
         expect(requestReplyManagerSpy.addRequestCaller).toHaveBeenCalled();
@@ -265,19 +242,19 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", function() {
         done();
     });
 
-    it("uses passed-in participantId", function(done) {
-        var myParticipantId = "myParticipantId";
+    it("uses passed-in participantId", done => {
+        const myParticipantId = "myParticipantId";
         capabilitiesRegistrar
             .register({
                 domain: "domain",
-                provider: provider,
-                providerQos: providerQos,
+                provider,
+                providerQos,
                 participantId: myParticipantId
             })
-            .then(function() {
+            .then(() => {
                 return null;
             })
-            .catch(function() {
+            .catch(() => {
                 return null;
             });
         expect(requestReplyManagerSpy.addRequestCaller).toHaveBeenCalled();
@@ -285,13 +262,13 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", function() {
         done();
     });
 
-    it("registers a provider with PublicationManager if it has an attribute", function(done) {
+    it("registers a provider with PublicationManager if it has an attribute", done => {
         capabilitiesRegistrar
             .registerProvider(domain, provider, providerQos)
-            .then(function() {
+            .then(() => {
                 return null;
             })
-            .catch(function() {
+            .catch(() => {
                 return null;
             });
         expect(publicationManagerSpy.addPublicationProvider).toHaveBeenCalled();
@@ -299,16 +276,16 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", function() {
         done();
     });
 
-    it("registers capability at capabilities stub", function(done) {
-        var actualDiscoveryEntry;
-        var upperBound;
-        var lowerBound = Date.now();
+    it("registers capability at capabilities stub", done => {
+        let actualDiscoveryEntry;
+        let upperBound;
+        const lowerBound = Date.now();
         capabilitiesRegistrar
             .registerProvider(domain, provider, providerQos)
-            .then(function() {
+            .then(() => {
                 return null;
             })
-            .catch(function() {
+            .catch(() => {
                 return null;
             });
         upperBound = Date.now();
@@ -325,60 +302,42 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", function() {
         done();
     });
 
-    it("registers logging context with the ContextManager", function(done) {
-        var expiryDateMs = -1;
-        var loggingContext = {
-            myContext: "myContext"
-        };
-        capabilitiesRegistrar
-            .registerProvider(domain, provider, providerQos, expiryDateMs, loggingContext)
-            .then(function() {
-                return null;
-            })
-            .catch(function() {
-                return null;
-            });
-        expect(loggingManagerSpy.setLoggingContext).toHaveBeenCalled();
-        expect(loggingManagerSpy.setLoggingContext).toHaveBeenCalledWith(participantId, loggingContext);
-        done();
-    });
-
-    it("returns the provider participant ID", function(done) {
+    it("returns the provider participant ID", done => {
         capabilitiesRegistrar
             .registerProvider(domain, provider, providerQos)
-            .then(function(result) {
+            .then(result => {
                 expect(result).toEqual(participantId);
                 done();
                 return null;
             })
-            .catch(function(error) {
+            .catch(error => {
                 fail("unexpected error: " + error);
                 return null;
             });
     });
 
-    it("returns the promise onRejected from capabilites stub", function(done) {
+    it("returns the promise onRejected from capabilites stub", done => {
         discoveryStubSpy.add.and.returnValue(Promise.reject(new Error("Some error.")));
 
         capabilitiesRegistrar
             .registerProvider(domain, provider, providerQos)
-            .then(function() {
+            .then(() => {
                 fail("expected an error");
                 return null;
             })
-            .catch(function(error) {
+            .catch(error => {
                 expect(Object.prototype.toString.call(error) === "[object Error]").toBeTruthy();
                 done();
                 return null;
             });
     });
 
-    it("CapabilitiesRegistrar throws exception when called while shut down", function(done) {
+    it("CapabilitiesRegistrar throws exception when called while shut down", done => {
         capabilitiesRegistrar.shutdown();
-        expect(function() {
+        expect(() => {
             capabilitiesRegistrar.registerProvider(domain, provider, providerQos);
         }).toThrow();
-        expect(function() {
+        expect(() => {
             capabilitiesRegistrar.unregisterProvider(domain, provider);
         }).toThrow();
         done();

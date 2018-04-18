@@ -1,4 +1,3 @@
-/*jslint nomen: true, node: true */
 /*
  * #%L
  * %%
@@ -17,25 +16,25 @@
  * limitations under the License.
  * #L%
  */
-var Request = require("../../../../classes/joynr/dispatching/types/Request");
-var TypeRegistrySingleton = require("../../../../classes/joynr/types/TypeRegistrySingleton");
-var RadioStation = require("../../../../test-classes/joynr/vehicle/radiotypes/RadioStation");
+require("../../../node-unit-test-helper");
+const Request = require("../../../../../main/js/joynr/dispatching/types/Request");
+const RadioStation = require("../../../../generated/joynr/vehicle/radiotypes/RadioStation");
 
-describe("libjoynr-js.joynr.dispatching.types.Request", function() {
-    it("is instantiable", function() {
-        var methodName = "myMethodName";
-        var request = new Request({
-            methodName: methodName
+describe("libjoynr-js.joynr.dispatching.types.Request", () => {
+    it("is instantiable", () => {
+        const methodName = "myMethodName";
+        const request = new Request({
+            methodName
         });
         expect(request).toBeDefined();
         expect(request._typeName).toEqual("joynr.Request");
         expect(request.methodName).toEqual(methodName);
     });
 
-    it("converts an untyped param to typed", function() {
-        var methodName = "myMethodName";
-        var request = new Request({
-            methodName: methodName,
+    it("converts an untyped param to typed", () => {
+        const methodName = "myMethodName";
+        const request = new Request({
+            methodName,
             paramDatatypes: ["joynr.vehicle.radiotypes.RadioStation"],
             params: [
                 {

@@ -1,5 +1,3 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
@@ -18,12 +16,11 @@
  * limitations under the License.
  * #L%
  */
-var TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
-var Typing = require("../util/Typing");
-var Util = require("../util/UtilInternal");
-var JoynrRuntimeException = require("./JoynrRuntimeException");
-var LoggerFactory = require("../system/LoggerFactory");
-var defaultSettings;
+const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
+const Typing = require("../util/Typing");
+const UtilInternal = require("../util/UtilInternal");
+const JoynrRuntimeException = require("./JoynrRuntimeException");
+let defaultSettings;
 
 /**
  * @classdesc
@@ -53,8 +50,7 @@ function PublicationMissedException(settings) {
         return new PublicationMissedException(settings);
     }
 
-    var log = LoggerFactory.getLogger("joynr.exceptions.PublicationMissedException");
-    var runtimeException = new JoynrRuntimeException(settings);
+    const runtimeException = new JoynrRuntimeException(settings);
 
     Typing.checkProperty(settings.subscriptionId, "String", "settings.subscriptionId");
 
@@ -63,9 +59,9 @@ function PublicationMissedException(settings) {
      * @name PublicationMissedException#_typeName
      * @type String
      */
-    Util.objectDefineProperty(this, "_typeName", "joynr.exceptions.PublicationMissedException");
+    UtilInternal.objectDefineProperty(this, "_typeName", "joynr.exceptions.PublicationMissedException");
 
-    Util.extend(this, defaultSettings, settings, runtimeException);
+    UtilInternal.extend(this, defaultSettings, settings, runtimeException);
 }
 
 defaultSettings = {};

@@ -1,5 +1,3 @@
-/*jslint es5: true, node: true */
-
 /*
  * #%L
  * %%
@@ -18,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-var Typing = require("./Typing");
+const Typing = require("./Typing");
 
 /**
  * @name JSONSerializer
@@ -26,7 +24,7 @@ var Typing = require("./Typing");
  * @classdesc Provides functions for the serialization from arbitrary objects
  *            to Strings in JSON notation
  */
-var JSONSerializer = {};
+const JSONSerializer = {};
 
 function replacerFunction(key, src) {
     if (Typing.isEnumType(src)) {

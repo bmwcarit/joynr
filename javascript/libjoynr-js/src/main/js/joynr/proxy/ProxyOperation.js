@@ -1,5 +1,3 @@
-/*jslint es5: true, node: true */
-
 /*
  * #%L
  * %%
@@ -18,17 +16,17 @@
  * limitations under the License.
  * #L%
  */
-var Promise = require("../../global/Promise");
-var Util = require("../util/UtilInternal");
-var JSONSerializer = require("../util/JSONSerializer");
-var Typing = require("../util/Typing");
-var MethodUtil = require("../util/MethodUtil");
-var TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
-var Request = require("../dispatching/types/Request");
-var OneWayRequest = require("../dispatching/types/OneWayRequest");
-var MessagingQos = require("../messaging/MessagingQos");
+const Promise = require("../../global/Promise");
+const UtilInternal = require("../util/UtilInternal");
+const JSONSerializer = require("../util/JSONSerializer");
+const Typing = require("../util/Typing");
+const MethodUtil = require("../util/MethodUtil");
+const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
+const Request = require("../dispatching/types/Request");
+const OneWayRequest = require("../dispatching/types/OneWayRequest");
+const MessagingQos = require("../messaging/MessagingQos");
 
-var typeRegistry = TypeRegistrySingleton.getInstance();
+const typeRegistry = TypeRegistrySingleton.getInstance();
 /**
  * Checks if the given operationSignature is valid to be called for the given operation
  * arguments. valid means, that for all operationArguments there is a matching
@@ -64,7 +62,7 @@ function checkSignatureMatch(operationSignature, operationArguments) {
     // if for all operationArguments there is a matching (name and type) parameter found
     // in the operationSignature, this object will hold name, type and value and is
     // qualified to be used for serialization and will be returned
-    var result = {};
+    const result = {};
 
     try {
         result.signature = {
@@ -82,16 +80,15 @@ function checkSignatureMatch(operationSignature, operationArguments) {
 }
 
 function checkArguments(operationArguments) {
-    var errors = [];
-    var argumentName;
-    var argumentValue;
+    const errors = [];
+    let argumentName;
+    let argumentValue;
     for (argumentName in operationArguments) {
         if (operationArguments.hasOwnProperty(argumentName)) {
             argumentValue = operationArguments[argumentName];
             // make sure types of complex type members are also ok
-            /*jslint nomen: true */
-            if (!Util.checkNullUndefined(argumentValue)) {
-                var Constructor = typeRegistry.getConstructor(argumentValue._typeName);
+            if (!UtilInternal.checkNullUndefined(argumentValue)) {
+                const Constructor = typeRegistry.getConstructor(argumentValue._typeName);
 
                 try {
                     if (Constructor && Constructor.checkMembers) {
@@ -103,16 +100,15 @@ function checkArguments(operationArguments) {
             } else {
                 errors.push('Argument "' + argumentName + '" undefined.');
             }
-            /*jslint nomen: false */
         }
     }
     return errors;
 }
 
 function operationFunctionOnSuccess(settings) {
-    var response = settings.response,
+    let response = settings.response,
         foundValidOperationSignature = settings.settings;
-    var responseKey, argumentValue;
+    let responseKey, argumentValue;
     if (foundValidOperationSignature.outputParameter && foundValidOperationSignature.outputParameter.length > 0) {
         argumentValue = {};
         for (responseKey in response) {
@@ -174,10 +170,10 @@ function operationFunctionOnSuccess(settings) {
  *            in A+ promise style instead of using the function parameters
  */
 function operationFunction(operationArguments) {
-    var i;
+    let i;
 
     // ensure operationArguments variable holds a valid object and initialize promise object
-    var argumentErrors = checkArguments(operationArguments);
+    const argumentErrors = checkArguments(operationArguments);
     if (argumentErrors.length > 0) {
         return Promise.reject(
             new Error("error calling operation: " + this.operationName + ": " + argumentErrors.toString())
@@ -185,7 +181,7 @@ function operationFunction(operationArguments) {
     }
 
     try {
-        var foundValidOperationSignature,
+        let foundValidOperationSignature,
             checkResult,
             caughtErrors = [];
 
@@ -223,7 +219,7 @@ function operationFunction(operationArguments) {
         // send it through request reply manager
         if (foundValidOperationSignature.fireAndForget === true) {
             // build outgoing request
-            var oneWayRequest = new OneWayRequest({
+            const oneWayRequest = new OneWayRequest({
                 methodName: this.operationName,
                 paramDatatypes: foundValidOperationSignature.inputParameter.paramDatatypes,
                 params: foundValidOperationSignature.inputParameter.params
@@ -238,7 +234,7 @@ function operationFunction(operationArguments) {
         }
         if (foundValidOperationSignature.fireAndForget !== true) {
             // build outgoing request
-            var request = new Request({
+            const request = new Request({
                 methodName: this.operationName,
                 paramDatatypes: foundValidOperationSignature.inputParameter.paramDatatypes,
                 params: foundValidOperationSignature.inputParameter.params
@@ -250,7 +246,7 @@ function operationFunction(operationArguments) {
                         toDiscoveryEntry: this.parent.providerDiscoveryEntry,
                         from: this.parent.proxyParticipantId,
                         messagingQos: this.messagingQos,
-                        request: request
+                        request
                     },
                     foundValidOperationSignature
                 )
@@ -310,7 +306,7 @@ function ProxyOperation(parent, settings, operationName, operationSignatures) {
 
     // passed in (right-most) messagingQos have precedence; undefined values are
     // ignored
-    this.messagingQos = new MessagingQos(Util.extend({}, parent.messagingQos, settings.messagingQos));
+    this.messagingQos = new MessagingQos(UtilInternal.extend({}, parent.messagingQos, settings.messagingQos));
 
     this.settings = settings;
 

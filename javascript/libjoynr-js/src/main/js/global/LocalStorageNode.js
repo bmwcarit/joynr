@@ -1,4 +1,4 @@
-/*jslint stupid: true, nomen: true, node: true */
+/*eslint global-require: "off"*/
 /*
  * #%L
  * %%
@@ -24,8 +24,8 @@
 if (global.window !== undefined) {
     module.exports = require("./LocalStorage");
 } else {
-    var Typing = require("../joynr/util/Typing");
-    var storage = require("node-persist");
+    const Typing = require("../joynr/util/Typing");
+    const storage = require("node-persist");
     /**
      * LocalStorage constructor (node wrapper for LocalStorage)
      * @constructor LocalStorageWrapper
@@ -38,10 +38,10 @@ if (global.window !== undefined) {
      * @param {String}
      *            settings.location optional, passed on to node-persist LocalStorage constructor
      */
-    var LocalStorageWrapper = function(settings) {
+    const LocalStorageWrapper = function(settings) {
         settings = settings || {};
         //the local storage wrapper uses the optionally given location
-        var location = settings.location || "./localStorageStorage";
+        const location = settings.location || "./localStorageStorage";
 
         this._myStorage = storage.create({
             dir: location,
@@ -60,7 +60,7 @@ if (global.window !== undefined) {
         return this._myStorage.setItemSync(key, value);
     };
     LocalStorageWrapper.prototype.getItem = function(key) {
-        var item = this._myStorage.getItemSync(key);
+        const item = this._myStorage.getItemSync(key);
         if (item === undefined) {
             return null;
         }

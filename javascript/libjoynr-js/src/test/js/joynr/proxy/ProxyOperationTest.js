@@ -1,5 +1,3 @@
-/*jslint es5: true, node: true, node: true */
-/*global fail: true */
 /*
  * #%L
  * %%
@@ -18,36 +16,35 @@
  * limitations under the License.
  * #L%
  */
-var ProxyAttribute = require("../../../classes/joynr/proxy/ProxyAttribute");
-var ProxyOperation = require("../../../classes/joynr/proxy/ProxyOperation");
-var ProxyEvent = require("../../../classes/joynr/proxy/ProxyEvent");
-var MessagingQos = require("../../../classes/joynr/messaging/MessagingQos");
-var Request = require("../../../classes/joynr/dispatching/types/Request");
-var OneWayRequest = require("../../../classes/joynr/dispatching/types/OneWayRequest");
-var TypeRegistrySingleton = require("../../../classes/joynr/types/TypeRegistrySingleton");
-var testDataOperation = require("../../../test-classes/test/data/Operation");
-var Promise = require("../../../classes/global/Promise");
-var TestEnum = require("../../../test-classes/joynr/tests/testTypes/TestEnum");
-var RadioStation = require("../../../test-classes/joynr/vehicle/radiotypes/RadioStation");
-var waitsFor = require("../../../test-classes/global/WaitsFor");
-var DiscoveryEntryWithMetaInfo = require("../../../classes/joynr/types/DiscoveryEntryWithMetaInfo");
-var Version = require("../../../classes/joynr/types/Version");
-var ProviderQos = require("../../../classes/joynr/types/ProviderQos");
+require("../../node-unit-test-helper");
+const ProxyOperation = require("../../../../main/js/joynr/proxy/ProxyOperation");
+const MessagingQos = require("../../../../main/js/joynr/messaging/MessagingQos");
+const Request = require("../../../../main/js/joynr/dispatching/types/Request");
+const OneWayRequest = require("../../../../main/js/joynr/dispatching/types/OneWayRequest");
+const TypeRegistrySingleton = require("../../../../main/js/joynr/types/TypeRegistrySingleton");
+const testDataOperation = require("../../../../test/js/test/data/Operation");
+const Promise = require("../../../../main/js/global/Promise");
+const TestEnum = require("../../../generated/joynr/tests/testTypes/TestEnum");
+const RadioStation = require("../../../generated/joynr/vehicle/radiotypes/RadioStation");
+const waitsFor = require("../../../../test/js/global/WaitsFor");
+const DiscoveryEntryWithMetaInfo = require("../../../../main/js/generated/joynr/types/DiscoveryEntryWithMetaInfo");
+const Version = require("../../../../main/js/generated/joynr/types/Version");
+const ProviderQos = require("../../../../main/js/generated/joynr/types/ProviderQos");
 
-var asyncTimeout = 5000;
+const asyncTimeout = 5000;
 
 function outputPromiseError(error) {
     expect(error.toString()).toBeFalsy();
 }
 
-describe("libjoynr-js.joynr.proxy.ProxyOperation", function() {
-    var addFavoriteStation;
-    var operationName;
-    var proxyParticipantId;
-    var providerParticipantId;
-    var providerDiscoveryEntry;
-    var proxy;
-    var requestReplyManagerSpy;
+describe("libjoynr-js.joynr.proxy.ProxyOperation", () => {
+    let addFavoriteStation;
+    let operationName;
+    let proxyParticipantId;
+    let providerParticipantId;
+    let providerDiscoveryEntry;
+    let proxy;
+    let requestReplyManagerSpy;
 
     function checkSpy(spy, errorExpected) {
         if (errorExpected) {
@@ -62,13 +59,13 @@ describe("libjoynr-js.joynr.proxy.ProxyOperation", function() {
         }
     }
 
-    beforeEach(function(done) {
+    beforeEach(done => {
         requestReplyManagerSpy = jasmine.createSpyObj("requestReplyManager", ["sendRequest", "sendOneWayRequest"]);
-        requestReplyManagerSpy.sendRequest.and.callFake(function(settings, callbackSettings) {
-            var response = { result: "resultValue" };
+        requestReplyManagerSpy.sendRequest.and.callFake((settings, callbackSettings) => {
+            const response = { result: "resultValue" };
 
             return Promise.resolve({
-                response: response,
+                response,
                 settings: callbackSettings
             });
         });
@@ -88,8 +85,8 @@ describe("libjoynr-js.joynr.proxy.ProxyOperation", function() {
             isLocal: true
         });
         proxy = {
-            proxyParticipantId: proxyParticipantId,
-            providerDiscoveryEntry: providerDiscoveryEntry
+            proxyParticipantId,
+            providerDiscoveryEntry
         };
 
         addFavoriteStation = new ProxyOperation(
@@ -131,28 +128,25 @@ describe("libjoynr-js.joynr.proxy.ProxyOperation", function() {
          */
         TypeRegistrySingleton.getInstance()
             .getTypeRegisteredPromise("joynr.tests.testTypes.TestEnum", 1000)
-            .then(function() {
+            .then(() => {
                 done();
                 return null;
             })
             .catch(fail);
     });
 
-    it("is of correct type", function(done) {
+    it("is of correct type", done => {
         expect(addFavoriteStation).toBeDefined();
         expect(typeof addFavoriteStation === "function").toBeTruthy();
         done();
     });
 
-    it("expect correct error reporting after operation call with wrong argument", function(done) {
+    it("expect correct error reporting after operation call with wrong argument", done => {
         addFavoriteStation({
             nonexistingArgument: "value"
         })
-            .then(function(message) {
-                fail("unexpectedly returned from addFavoriteStation");
-                return null;
-            })
-            .catch(function(message) {
+            .then(fail)
+            .catch(message => {
                 //expect(message).toContain(
                 //        "Cannot call operation with nullable value");
                 expect(message).toMatch("Cannot call operation with nullable value");
@@ -161,15 +155,12 @@ describe("libjoynr-js.joynr.proxy.ProxyOperation", function() {
             });
     });
 
-    it("expect correct error reporting after operation call with wrong type of argument", function(done) {
+    it("expect correct error reporting after operation call with wrong type of argument", done => {
         addFavoriteStation({
             radioStation: 1
         })
-            .then(function(message) {
-                fail("unexpected resolve from addFavoriteStation");
-                return null;
-            })
-            .catch(function(message) {
+            .then(fail)
+            .catch(message => {
                 //expect(message).toContain(
                 //    "Signature does not match");
                 expect(message).toMatch("Signature does not match");
@@ -178,22 +169,17 @@ describe("libjoynr-js.joynr.proxy.ProxyOperation", function() {
             });
     });
 
-    it("expect correct error reporting after operation call with correctly typed but invalid complex argument value", function(
-        done
-    ) {
+    it("expect correct error reporting after operation call with correctly typed but invalid complex argument value", done => {
         // name should be a string
-        var radioStation = new RadioStation({
+        const radioStation = new RadioStation({
             name: 1
         });
 
         addFavoriteStation({
-            radioStation: radioStation
+            radioStation
         })
-            .then(function() {
-                fail("unpexected resolve from addFavoriteStation");
-                return null;
-            })
-            .catch(function(message) {
+            .then(fail)
+            .catch(message => {
                 //expect(message)
                 //    .toContain(
                 //        "members.name is not of type String. Actual type is Number");
@@ -203,37 +189,33 @@ describe("libjoynr-js.joynr.proxy.ProxyOperation", function() {
             });
     });
 
-    it("expect no error reporting after operation call with correct string argument", function(done) {
+    it("expect no error reporting after operation call with correct string argument", done => {
         addFavoriteStation({
             radioStation: "correctValue"
         })
-            .then(function(result) {
+            .then(result => {
                 expect(result).toBeUndefined();
                 done();
-                return null;
             })
-            .catch(function(error) {
-                fail("unexpected reject from addFavoriteStation");
-                return null;
-            });
+            .catch(fail);
     });
 
-    var testForCorrectReturnValues = function(methodName, outputParameter, replyResponse, done) {
-        var originalArguments = arguments;
-        var spy = jasmine.createSpyObj("spy", ["onFulfilled", "onRejected"]);
-        var proxy = {
-            proxyParticipantId: proxyParticipantId,
-            providerDiscoveryEntry: providerDiscoveryEntry
+    const testForCorrectReturnValues = function(methodName, outputParameter, replyResponse) {
+        const originalArguments = arguments;
+        const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onRejected"]);
+        const proxy = {
+            proxyParticipantId,
+            providerDiscoveryEntry
         };
 
-        requestReplyManagerSpy.sendRequest.and.callFake(function(settings, callbackSettings) {
+        requestReplyManagerSpy.sendRequest.and.callFake((settings, callbackSettings) => {
             return Promise.resolve({
                 response: replyResponse,
                 settings: callbackSettings
             });
         });
 
-        var testMethod = new ProxyOperation(
+        const testMethod = new ProxyOperation(
             proxy,
             {
                 dependencies: {
@@ -244,7 +226,7 @@ describe("libjoynr-js.joynr.proxy.ProxyOperation", function() {
             [
                 {
                     inputParameter: [],
-                    outputParameter: outputParameter
+                    outputParameter
                 }
             ]
         ).buildFunction();
@@ -254,26 +236,25 @@ describe("libjoynr-js.joynr.proxy.ProxyOperation", function() {
             .catch(spy.onRejected);
 
         return waitsFor(
-            function() {
+            () => {
                 return spy.onFulfilled.calls.count() > 0;
             },
             "The promise is not pending any more",
             asyncTimeout
         )
-            .then(function() {
+            .then(() => {
                 checkSpy(spy);
-                var expectedSpy = expect(spy.onFulfilled);
+                const expectedSpy = expect(spy.onFulfilled);
                 /* The following line takes all arguments expect the first 3 and passes them to the toHaveBeenCalledWith function.
                  * This way, it is possible to use the testForCorrectReturnValues function with a
                  */
-                expectedSpy.toHaveBeenCalledWith.apply(expectedSpy, Array.prototype.slice.call(originalArguments, 3));
+                expectedSpy.toHaveBeenCalledWith(...Array.prototype.slice.call(originalArguments, 3));
             })
-            .catch(function() {
+            .catch(() => {
                 checkSpy(spy);
             });
     };
-    it("expect correct joynr enum object as return value", function(done) {
-        /*jslint nomen: true */
+    it("expect correct joynr enum object as return value", done => {
         testForCorrectReturnValues(
             "testMethodHavingEnumAsReturnValue",
             [
@@ -288,19 +269,18 @@ describe("libjoynr-js.joynr.proxy.ProxyOperation", function() {
                 returnEnum: TestEnum.ZERO
             }
         )
-            .then(function() {
+            .then(() => {
                 done();
                 return null;
             })
-            .catch(function() {
+            .catch(() => {
                 return null;
             });
-        /*jslint nomen: false */
     });
 
-    it("expect undefined as return value for missing output parameters", function(done) {
+    it("expect undefined as return value for missing output parameters", done => {
         testForCorrectReturnValues("testMethodHavingNoOutputParameter", [], [], undefined)
-            .then(function() {
+            .then(() => {
                 return testForCorrectReturnValues(
                     "testMethodHavingNoOutputParameter",
                     [],
@@ -308,21 +288,20 @@ describe("libjoynr-js.joynr.proxy.ProxyOperation", function() {
                     undefined
                 );
             })
-            .then(function() {
+            .then(() => {
                 return testForCorrectReturnValues("testMethodWithUndefinedOutputParameter", undefined, [], undefined);
             })
-            .then(function() {
+            .then(() => {
                 done();
                 return null;
             })
-            .catch(function() {
+            .catch(() => {
                 fail("Test failure detected");
                 return null;
             });
     });
 
-    it("expect multiple return values", function(done) {
-        /*jslint nomen: true */
+    it("expect multiple return values", done => {
         testForCorrectReturnValues(
             "testMultipleReturnValues",
             [
@@ -343,16 +322,14 @@ describe("libjoynr-js.joynr.proxy.ProxyOperation", function() {
                 returnString: "stringValue"
             }
         )
-            .then(function() {
+            .then(() => {
                 done();
                 return null;
             })
             .catch(fail);
-        /*jslint nomen: false */
     });
 
-    it("expect correct joynr enum object array as return value", function(done) {
-        /*jslint nomen: true */
+    it("expect correct joynr enum object array as return value", done => {
         testForCorrectReturnValues(
             "testMethodHavingEnumArrayAsReturnValue",
             [
@@ -368,24 +345,23 @@ describe("libjoynr-js.joynr.proxy.ProxyOperation", function() {
                 returnEnum: [TestEnum.ZERO, TestEnum.ONE]
             }
         )
-            .then(function() {
+            .then(() => {
                 done();
                 return null;
             })
             .catch(fail);
-        /*jslint nomen: false */
     });
 
-    it("expect no error reporting after operation call with correct complex argument", function(done) {
-        var radioStation = new RadioStation({
+    it("expect no error reporting after operation call with correct complex argument", done => {
+        const radioStation = new RadioStation({
             name: "correctValue",
             byteBuffer: []
         });
 
         addFavoriteStation({
-            radioStation: radioStation
+            radioStation
         })
-            .then(function(returnValue) {
+            .then(returnValue => {
                 expect(returnValue).toEqual(undefined);
                 done();
                 return null;
@@ -393,19 +369,16 @@ describe("libjoynr-js.joynr.proxy.ProxyOperation", function() {
             .catch(fail);
     });
 
-    it("notifies", function(done) {
+    it("notifies", done => {
         addFavoriteStation({
             radioStation: "stringStation"
         })
-            .then(function(returnValue) {
-                done();
-                return null;
-            })
+            .then(done)
             .catch(fail);
     });
 
     function testOperationOverloading(operationArguments, errorExpected) {
-        var spy = jasmine.createSpyObj("spy", ["onFulfilled", "onRejected"]);
+        const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onRejected"]);
 
         addFavoriteStation(operationArguments)
             .then(spy.onFulfilled)
@@ -413,28 +386,28 @@ describe("libjoynr-js.joynr.proxy.ProxyOperation", function() {
             .catch(outputPromiseError);
 
         return waitsFor(
-            function() {
+            () => {
                 return errorExpected ? spy.onRejected.calls.count() > 0 : spy.onFulfilled.calls.count() > 0;
             },
             "The promise is not pending any more",
             asyncTimeout
         )
-            .then(function() {
+            .then(() => {
                 checkSpy(spy, errorExpected);
                 return null;
             })
-            .catch(function() {
+            .catch(() => {
                 checkSpy(spy, errorExpected);
                 return null;
             });
     }
 
-    it("provides overloading operations", function(done) {
+    it("provides overloading operations", done => {
         // correct version one
         testOperationOverloading({
             radioStation: "stringStation"
         })
-            .then(function() {
+            .then(() => {
                 return testOperationOverloading({
                     radioStation: new RadioStation({
                         name: "typedStation",
@@ -442,7 +415,7 @@ describe("libjoynr-js.joynr.proxy.ProxyOperation", function() {
                     })
                 }); // correct version two
             })
-            .then(function() {
+            .then(() => {
                 return testOperationOverloading(
                     {
                         wrongName: "stringStation"
@@ -450,10 +423,10 @@ describe("libjoynr-js.joynr.proxy.ProxyOperation", function() {
                     true
                 ); // wrong argument name
             })
-            .then(function() {
+            .then(() => {
                 return testOperationOverloading({}, true); // wrong number of arguments
             })
-            .then(function() {
+            .then(() => {
                 return testOperationOverloading(
                     {
                         radioStation: []
@@ -461,7 +434,7 @@ describe("libjoynr-js.joynr.proxy.ProxyOperation", function() {
                     true
                 ); // wrong number argument type (Array instead of String|RadioStation)
             })
-            .then(function() {
+            .then(() => {
                 return testOperationOverloading(
                     {
                         radioStation: 1
@@ -469,7 +442,7 @@ describe("libjoynr-js.joynr.proxy.ProxyOperation", function() {
                     true
                 ); // wrong number argument type (Number instead of String|RadioStation)
             })
-            .then(function() {
+            .then(() => {
                 return testOperationOverloading(
                     {
                         radioStation: "stringStation",
@@ -478,7 +451,7 @@ describe("libjoynr-js.joynr.proxy.ProxyOperation", function() {
                     true
                 ); // wrong additional argument
             })
-            .then(function() {
+            .then(() => {
                 return testOperationOverloading(
                     {
                         radioStation: new RadioStation({
@@ -490,7 +463,7 @@ describe("libjoynr-js.joynr.proxy.ProxyOperation", function() {
                     true
                 ); // wrong additional arguments
             })
-            .then(function() {
+            .then(() => {
                 return testOperationOverloading(
                     {
                         radioStation: null
@@ -498,7 +471,7 @@ describe("libjoynr-js.joynr.proxy.ProxyOperation", function() {
                     true
                 ); // nullable argument
             })
-            .then(function() {
+            .then(() => {
                 return testOperationOverloading(
                     {
                         radioStation: undefined
@@ -506,22 +479,22 @@ describe("libjoynr-js.joynr.proxy.ProxyOperation", function() {
                     true
                 ); // nullable argument
             })
-            .then(function() {
+            .then(() => {
                 return testOperationOverloading(undefined, true); // nullable settings object
             })
-            .then(function() {
+            .then(() => {
                 return testOperationOverloading(null, true); // nullable settings object
             })
-            .then(function() {
+            .then(() => {
                 done();
                 return null;
             })
             .catch(fail);
     });
 
-    it("does not throw when giving wrong or nullable operation arguments", function(done) {
-        var spy = jasmine.createSpyObj("spy", ["onFulfilled", "onRejected"]);
-        expect(function() {
+    it("does not throw when giving wrong or nullable operation arguments", done => {
+        const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onRejected"]);
+        expect(() => {
             addFavoriteStation({
                 radioStation: "myRadioStation"
             })
@@ -529,7 +502,7 @@ describe("libjoynr-js.joynr.proxy.ProxyOperation", function() {
                 .catch(spy.onRejected);
         }).not.toThrow();
 
-        expect(function() {
+        expect(() => {
             addFavoriteStation({
                 radioStation: undefined
             })
@@ -537,19 +510,19 @@ describe("libjoynr-js.joynr.proxy.ProxyOperation", function() {
                 .catch(spy.onRejected);
         }).not.toThrow();
 
-        expect(function() {
+        expect(() => {
             addFavoriteStation({})
                 .then(spy.onFulfilled)
                 .catch(spy.onRejected);
         }).not.toThrow();
 
-        expect(function() {
+        expect(() => {
             addFavoriteStation(undefined)
                 .then(spy.onFulfilled)
                 .catch(spy.onRejected);
         }).not.toThrow();
 
-        expect(function() {
+        expect(() => {
             addFavoriteStation(null)
                 .then(spy.onFulfilled)
                 .catch(spy.onRejected);
@@ -560,7 +533,7 @@ describe("libjoynr-js.joynr.proxy.ProxyOperation", function() {
 
     function checkRequestReplyManagerCall(testData) {
         // construct new ProxyOperation
-        var myOperation = new ProxyOperation(
+        const myOperation = new ProxyOperation(
             proxy,
             {
                 dependencies: {
@@ -571,7 +544,7 @@ describe("libjoynr-js.joynr.proxy.ProxyOperation", function() {
             [testData.signature]
         ).buildFunction();
 
-        requestReplyManagerSpy.sendRequest.and.callFake(function(settings, callbackSettings) {
+        requestReplyManagerSpy.sendRequest.and.callFake((settings, callbackSettings) => {
             return Promise.resolve({
                 response: testData.returnParams,
                 settings: callbackSettings
@@ -583,17 +556,17 @@ describe("libjoynr-js.joynr.proxy.ProxyOperation", function() {
         myOperation(testData.namedArguments).catch(outputPromiseError);
 
         return waitsFor(
-            function() {
+            () => {
                 return requestReplyManagerSpy.sendRequest.calls.count() > 0;
             },
             "requestReplyManagerSpy.sendRequest call",
             100
         )
-            .then(function() {
+            .then(() => {
                 // check if requestReplyManager has been called correctly
                 expect(requestReplyManagerSpy.sendRequest).toHaveBeenCalled();
 
-                var requestReplyId = requestReplyManagerSpy.sendRequest.calls.argsFor(0)[0].request.requestReplyId;
+                const requestReplyId = requestReplyManagerSpy.sendRequest.calls.argsFor(0)[0].request.requestReplyId;
                 expect(requestReplyManagerSpy.sendRequest).toHaveBeenCalledWith(
                     {
                         toDiscoveryEntry: providerDiscoveryEntry,
@@ -603,19 +576,19 @@ describe("libjoynr-js.joynr.proxy.ProxyOperation", function() {
                             methodName: operationName,
                             paramDatatypes: testData.paramDatatypes,
                             params: testData.params,
-                            requestReplyId: requestReplyId
+                            requestReplyId
                         })
                     },
                     jasmine.any(Object)
                 );
             })
-            .catch(function() {
+            .catch(() => {
                 expect(requestReplyManagerSpy.sendRequest).toHaveBeenCalled();
             });
     }
 
     function checkRequestReplyManagerFireAndForgetCall(testData) {
-        var myOperation = new ProxyOperation(
+        const myOperation = new ProxyOperation(
             proxy,
             {
                 dependencies: {
@@ -633,13 +606,13 @@ describe("libjoynr-js.joynr.proxy.ProxyOperation", function() {
         myOperation(testData.namedArguments).catch(outputPromiseError);
 
         return waitsFor(
-            function() {
+            () => {
                 return requestReplyManagerSpy.sendOneWayRequest.calls.count() > 0;
             },
             "requestReplyManagerSpy.sendOneWayRequest call",
             100
         )
-            .then(function() {
+            .then(() => {
                 // check if requestReplyManager has been called correctly
                 expect(requestReplyManagerSpy.sendOneWayRequest).toHaveBeenCalled();
                 expect(requestReplyManagerSpy.sendOneWayRequest).toHaveBeenCalledWith({
@@ -653,27 +626,26 @@ describe("libjoynr-js.joynr.proxy.ProxyOperation", function() {
                     })
                 });
             })
-            .catch(function() {
+            .catch(() => {
                 expect(requestReplyManagerSpy.sendRequest).toHaveBeenCalled();
             });
     }
 
-    it("calls RequestReplyManager with correct request", function(done) {
-        var i;
-        var requestReplyManagerSpy = jasmine.createSpyObj("requestReplyManager", ["sendRequest"]);
+    it("calls RequestReplyManager with correct request", done => {
+        let i;
 
         function makeFunc(promiseChain, testOp) {
             if (testOp.signature.fireAndForget) {
-                return promiseChain.then(function() {
+                return promiseChain.then(() => {
                     return checkRequestReplyManagerFireAndForgetCall(testOp);
                 });
             }
-            return promiseChain.then(function() {
+            return promiseChain.then(() => {
                 return checkRequestReplyManagerCall(testOp);
             });
         }
 
-        var promiseChain;
+        let promiseChain;
         if (testDataOperation[0].signature.fireAndForget) {
             promiseChain = checkRequestReplyManagerFireAndForgetCall(testDataOperation[0]);
         } else {
@@ -684,7 +656,7 @@ describe("libjoynr-js.joynr.proxy.ProxyOperation", function() {
             promiseChain = makeFunc(promiseChain, testDataOperation[i]);
         }
         promiseChain
-            .then(function() {
+            .then(() => {
                 done();
                 return null;
             })

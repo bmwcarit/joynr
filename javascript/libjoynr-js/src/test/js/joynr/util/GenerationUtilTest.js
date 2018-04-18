@@ -1,4 +1,3 @@
-/*jslint es5: true, node: true, nomen: true */
 /*
  * #%L
  * %%
@@ -17,22 +16,23 @@
  * limitations under the License.
  * #L%
  */
-var Util = require("../../../classes/joynr/util/GenerationUtil");
+require("../../node-unit-test-helper");
+const Util = require("../../../../main/js/joynr/util/GenerationUtil");
 
-describe("libjoynr-js.joynr.GenerationUtil", function() {
-    it("is defined and of correct type", function() {
+describe("libjoynr-js.joynr.GenerationUtil", () => {
+    it("is defined and of correct type", () => {
         expect(Util).toBeDefined();
         expect(Util).not.toBeNull();
         expect(typeof Util === "object").toBeTruthy();
     });
 
-    describe(".addEqualsEnum", function() {
-        var EnumObject, enumObject, comparatorObject;
+    describe(".addEqualsEnum", () => {
+        let EnumObject, enumObject, comparatorObject;
 
-        beforeEach(function() {
+        beforeEach(() => {
             EnumObject = function(settings) {
                 this._typeName = "EnumJoynrObject";
-                var key;
+                let key;
                 for (key in settings) {
                     if (settings.hasOwnProperty(key)) {
                         this[key] = settings[key];
@@ -43,28 +43,28 @@ describe("libjoynr-js.joynr.GenerationUtil", function() {
             enumObject = new EnumObject({ name: "name", value: "value" });
         });
 
-        it("adds equals function to prototype of compoundJoynrObject", function() {
+        it("adds equals function to prototype of compoundJoynrObject", () => {
             expect(typeof EnumObject.prototype.equals === "function");
         });
 
-        it("returns false when the other Object is undefined or null", function() {
+        it("returns false when the other Object is undefined or null", () => {
             enumObject = new EnumObject();
             expect(enumObject.equals(undefined)).toBeFalsy();
             expect(enumObject.equals(null)).toBeFalsy();
         });
 
-        it("returns false when the _typeName is not set", function() {
+        it("returns false when the _typeName is not set", () => {
             comparatorObject = new EnumObject({ name: "name", value: "value" });
             delete comparatorObject._typeName;
             expect(enumObject.equals(comparatorObject)).toBeFalsy();
         });
 
-        it("returns true when name and value are the same", function() {
+        it("returns true when name and value are the same", () => {
             comparatorObject = new EnumObject({ name: "name", value: "value" });
             expect(enumObject.equals(comparatorObject)).toBeTruthy();
         });
 
-        it("returns false when name or value are different", function() {
+        it("returns false when name or value are different", () => {
             comparatorObject = new EnumObject({ name: "otherName", value: "value" });
             expect(enumObject.equals(comparatorObject)).toBeFalsy();
 
@@ -73,13 +73,13 @@ describe("libjoynr-js.joynr.GenerationUtil", function() {
         });
     });
 
-    describe(".addEqualsCompound", function() {
-        var CompoundJoynrObject, compoundObject, comparatorObject;
+    describe(".addEqualsCompound", () => {
+        let CompoundJoynrObject, compoundObject, comparatorObject;
 
-        beforeEach(function() {
+        beforeEach(() => {
             CompoundJoynrObject = function(settings) {
                 this._typeName = "CompoundJoynrObject";
-                var key;
+                let key;
                 for (key in settings) {
                     if (settings.hasOwnProperty(key)) {
                         this[key] = settings[key];
@@ -90,35 +90,35 @@ describe("libjoynr-js.joynr.GenerationUtil", function() {
             comparatorObject = { _typeName: "CompoundJoynrObject" };
         });
 
-        it("adds equals function to prototype of compoundJoynrObject", function() {
+        it("adds equals function to prototype of compoundJoynrObject", () => {
             expect(typeof CompoundJoynrObject.prototype.equals === "function");
         });
 
-        it("returns false when the other Object is undefined or null", function() {
+        it("returns false when the other Object is undefined or null", () => {
             compoundObject = new CompoundJoynrObject();
             expect(compoundObject.equals(undefined)).toBeFalsy();
             expect(compoundObject.equals(null)).toBeFalsy();
         });
 
-        it("returns true for simple identical Objects", function() {
+        it("returns true for simple identical Objects", () => {
             compoundObject = new CompoundJoynrObject({ key1: "key1" });
             comparatorObject = new CompoundJoynrObject({ key1: "key1" });
             expect(compoundObject.equals(comparatorObject)).toBeTruthy();
         });
 
-        it("returns false when the _typeName is not set", function() {
+        it("returns false when the _typeName is not set", () => {
             comparatorObject = new CompoundJoynrObject({ name: "name", value: "value" });
             delete comparatorObject._typeName;
             expect(compoundObject.equals(comparatorObject)).toBeFalsy();
         });
 
-        it("returns false when the second Object has additional keys", function() {
+        it("returns false when the second Object has additional keys", () => {
             compoundObject = new CompoundJoynrObject({ key1: "key1" });
             comparatorObject = new CompoundJoynrObject({ key1: "key1", key2: "key2" });
             expect(compoundObject.equals(comparatorObject)).toBeFalsy();
         });
 
-        it("returns false when array keys are different", function() {
+        it("returns false when array keys are different", () => {
             compoundObject = new CompoundJoynrObject({ key1: [1, 2] });
             comparatorObject = new CompoundJoynrObject({ key1: [1, 3] });
             expect(compoundObject.equals(comparatorObject)).toBeFalsy();
@@ -126,24 +126,24 @@ describe("libjoynr-js.joynr.GenerationUtil", function() {
             expect(compoundObject.equals(comparatorObject)).toBeFalsy();
         });
 
-        it("returns true when array keys are identical", function() {
+        it("returns true when array keys are identical", () => {
             compoundObject = new CompoundJoynrObject({ key1: [1, 2] });
             comparatorObject = new CompoundJoynrObject({ key1: [1, 2] });
             expect(compoundObject.equals(comparatorObject)).toBeTruthy();
         });
 
-        it("calls equals when the childObject has an equals function", function() {
-            var equalsSpy = jasmine.createSpy("equalsSpy").and.returnValue(true);
-            var otherMember = { someData: "data" };
+        it("calls equals when the childObject has an equals function", () => {
+            const equalsSpy = jasmine.createSpy("equalsSpy").and.returnValue(true);
+            const otherMember = { someData: "data" };
             compoundObject = new CompoundJoynrObject({ key1: { equals: equalsSpy } });
             comparatorObject = new CompoundJoynrObject({ key1: otherMember });
             expect(compoundObject.equals(comparatorObject)).toBeTruthy();
             expect(equalsSpy).toHaveBeenCalledWith(otherMember);
         });
 
-        it("calls equals when the array elements have an equals function", function() {
-            var equalsSpy = jasmine.createSpy("equalsSpy").and.returnValue(true);
-            var otherMember = { someData: "data" };
+        it("calls equals when the array elements have an equals function", () => {
+            const equalsSpy = jasmine.createSpy("equalsSpy").and.returnValue(true);
+            const otherMember = { someData: "data" };
             compoundObject = new CompoundJoynrObject({ key1: [{ equals: equalsSpy }] });
             comparatorObject = new CompoundJoynrObject({ key1: [otherMember] });
             expect(compoundObject.equals(comparatorObject)).toBeTruthy();
@@ -151,10 +151,10 @@ describe("libjoynr-js.joynr.GenerationUtil", function() {
         });
     });
 
-    describe(".addMemberTypeGetter", function() {
-        it("adds the getMemberType function, which works successfully", function() {
-            var memberName = "someName";
-            var testObject = { _memberTypes: { memberName: memberName } };
+    describe(".addMemberTypeGetter", () => {
+        it("adds the getMemberType function, which works successfully", () => {
+            const memberName = "someName";
+            const testObject = { _memberTypes: { memberName } };
             Util.addMemberTypeGetter(testObject);
             expect(testObject.getMemberType).toEqual(jasmine.any(Function));
             expect(testObject.getMemberType("memberName")).toEqual(memberName);

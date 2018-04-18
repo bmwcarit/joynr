@@ -1,5 +1,3 @@
-/*jslint es5: true, nomen: true, node: true */
-
 /*
  * #%L
  * %%
@@ -18,11 +16,11 @@
  * limitations under the License.
  * #L%
  */
-var JoynrMessage = require("../JoynrMessage");
-var JSONSerializer = require("../../util/JSONSerializer");
-var LoggerFactory = require("../../system/LoggerFactory");
+const JoynrMessage = require("../JoynrMessage");
+const JSONSerializer = require("../../util/JSONSerializer");
+const LoggingManager = require("../../system/LoggingManager");
 
-var log = LoggerFactory.getLogger("joynr/messaging/mqtt/MqttMessagingStub");
+const log = LoggingManager.getLogger("joynr/messaging/mqtt/MqttMessagingStub");
 /**
  * @name MqttMessagingStub
  * @constructor
@@ -43,7 +41,7 @@ function MqttMessagingStub(settings) {
  */
 MqttMessagingStub.prototype.transmit = function transmit(message) {
     log.debug('transmit message: "' + JSONSerializer.stringify(message) + '"');
-    var topic = this._settings.address.topic;
+    let topic = this._settings.address.topic;
     if (!(JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST === message.type)) {
         topic += MqttMessagingStub.PRIORITY_LOW + message.to;
     }
