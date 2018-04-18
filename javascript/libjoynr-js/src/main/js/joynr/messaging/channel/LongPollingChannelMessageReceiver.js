@@ -17,7 +17,7 @@
  * limitations under the License.
  * #L%
  */
-const uuid = require("../../../lib/uuid-annotated");
+const uuid = require("uuid/v4");
 const JoynrMessage = require("../JoynrMessage");
 const JsonParser = require("../../../lib/JsonParser");
 const MessagingQos = require("../MessagingQos");

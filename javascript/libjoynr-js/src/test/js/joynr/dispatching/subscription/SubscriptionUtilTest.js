@@ -23,7 +23,7 @@ const SubscriptionRequest = require("../../../../../main/js/joynr/dispatching/ty
 const PeriodicSubscriptionQos = require("../../../../../main/js/joynr/proxy/PeriodicSubscriptionQos");
 const OnChangeSubscriptionQos = require("../../../../../main/js/joynr/proxy/OnChangeSubscriptionQos");
 const OnChangeWithKeepAliveSubscriptionQos = require("../../../../../main/js/joynr/proxy/OnChangeWithKeepAliveSubscriptionQos");
-const uuid = require("../../../../../main/js/lib/uuid-annotated");
+const uuid = require("uuid/v4");
 
 describe("libjoynr-js.joynr.dispatching.subscription.types.SubscriptionUtil", () => {
     let proxyId;

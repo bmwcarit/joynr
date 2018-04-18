@@ -16,6 +16,6 @@
  * limitations under the License.
  * #L%
  */
-const uuid = require("../../lib/uuid-annotated");
+const uuid = require("uuid/v4");
 
 module.exports = uuid;

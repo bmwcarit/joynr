@@ -17,7 +17,7 @@
  * #L%
  */
 const Util = require("../../util/Util");
-const uuid = require("../../../lib/uuid-annotated");
+const uuid = require("uuid/v4");
 
 const rrBase = uuid();
 let rrIndex = 0;

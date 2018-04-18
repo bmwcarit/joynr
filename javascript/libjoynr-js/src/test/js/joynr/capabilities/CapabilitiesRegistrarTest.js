@@ -22,7 +22,7 @@ const CapabilitiesRegistrar = require("../../../../main/js/joynr/capabilities/Ca
 const ProviderQos = require("../../../../main/js/generated/joynr/types/ProviderQos");
 const ProviderAttribute = require("../../../../main/js/joynr/provider/ProviderAttribute");
 const ProviderScope = require("../../../../main/js/generated/joynr/types/ProviderScope");
-const uuid = require("../../../../main/js/lib/uuid-annotated");
+const uuid = require("uuid/v4");
 describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", () => {
     let capabilitiesRegistrar;
     let requestReplyManagerSpy;

@@ -27,7 +27,7 @@ const Promise = require("../../../../../main/js/global/Promise");
 const Date = require("../../../../../test/js/global/Date");
 const waitsFor = require("../../../../../test/js/global/WaitsFor");
 const UtilInternal = require("../../../../../main/js/joynr/util/UtilInternal");
-const uuid = require("../../../../../main/js/lib/uuid-annotated");
+const uuid = require("uuid/v4");
 let fakeTime;
 
 function increaseFakeTime(time_ms) {

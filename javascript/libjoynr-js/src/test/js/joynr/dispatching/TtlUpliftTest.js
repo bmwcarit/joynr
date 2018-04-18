@@ -29,7 +29,7 @@ const SubscriptionRequest = require("../../../../main/js/joynr/dispatching/types
 const SubscriptionReply = require("../../../../main/js/joynr/dispatching/types/SubscriptionReply");
 const SubscriptionStop = require("../../../../main/js/joynr/dispatching/types/SubscriptionStop");
 const MulticastPublication = require("../../../../main/js/joynr/dispatching/types/MulticastPublication");
-const uuid = require("../../../../main/js/lib/uuid-annotated");
+const uuid = require("uuid/v4");
 const Promise = require("../../../../main/js/global/Promise");
 
 const providerId = "providerId";

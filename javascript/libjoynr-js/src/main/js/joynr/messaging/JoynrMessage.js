@@ -17,7 +17,7 @@
  * #L%
  */
 const MESSAGE_CUSTOM_HEADER_PREFIX = "custom-";
-const uuid = require("../../lib/uuid-annotated");
+const uuid = require("uuid/v4");
 
 const jmBase = uuid();
 let jmIndex = 0;

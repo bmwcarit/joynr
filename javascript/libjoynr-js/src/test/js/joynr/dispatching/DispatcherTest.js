@@ -36,7 +36,7 @@ const TypeRegistrySingleton = require("../../../../main/js/joynr/types/TypeRegis
 const DiscoveryEntryWithMetaInfo = require("../../../../main/js/generated/joynr/types/DiscoveryEntryWithMetaInfo");
 const Version = require("../../../../main/js/generated/joynr/types/Version");
 const ProviderQos = require("../../../../main/js/generated/joynr/types/ProviderQos");
-const uuid = require("../../../../main/js/lib/uuid-annotated");
+const uuid = require("uuid/v4");
 const Promise = require("../../../../main/js/global/Promise");
 const LoggingManager = require("../../../../main/js/joynr/system/LoggingManager");
 
