@@ -19,7 +19,6 @@ This project has dependencies to:
   Hamcrest Core under New BSD License
   io.joynr.javascript.inter-tab:inter-tab-comm under The Apache Software License, Version 2.0
   io.joynr.javascript:inter-tab under The Apache Software License, Version 2.0
-  io.joynr.javascript:js-dependencies under The Apache Software License, Version 2.0
   io.joynr.javascript:libjoynr-js under The Apache Software License, Version 2.0
   io.joynr:basemodel under The Apache Software License, Version 2.0
   io.joynr:javascript under The Apache Software License, Version 2.0

@@ -14,7 +14,6 @@
 	</parent>
 
 	<modules>
-		<module>js-dependencies</module>
 		<module>inter-tab</module>
 		<module>libjoynr-js</module>
 	</modules>

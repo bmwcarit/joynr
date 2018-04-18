@@ -39,7 +39,6 @@ const MessagingSkeletonFactory = require("../messaging/MessagingSkeletonFactory"
 const MessagingStubFactory = require("../messaging/MessagingStubFactory");
 const MessageRouter = require("../messaging/routing/MessageRouter");
 const MessageQueue = require("../messaging/routing/MessageQueue");
-const CommunicationModule = require("../messaging/CommunicationModule");
 const InProcessSkeleton = require("../util/InProcessSkeleton");
 const InProcessStub = require("../util/InProcessStub");
 const InProcessMessagingStubFactory = require("../messaging/inprocess/InProcessMessagingStubFactory");
@@ -95,9 +94,6 @@ function InterTabClusterControllerRuntime(provisioning) {
     let webMessagingSkeleton;
     let browserMessagingSkeleton;
     let messageRouter;
-    /*eslint-disable no-unused-vars */
-    let communicationModule;
-    /*eslint-enable no-unused-vars */
     let libjoynrMessagingSkeleton;
     let clusterControllerMessagingSkeleton;
     let mqttMessagingSkeleton;
@@ -293,8 +289,6 @@ function InterTabClusterControllerRuntime(provisioning) {
             );
             typedCapabilities.push(capability);
         }
-
-        communicationModule = new CommunicationModule();
 
         messageQueueSettings = {};
         if (provisioning.messaging !== undefined && provisioning.messaging.maxQueueSizeInKBytes !== undefined) {

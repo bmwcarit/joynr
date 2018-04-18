@@ -47,11 +47,6 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>io.joynr.javascript</groupId>
-			<artifactId>js-dependencies</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
 			<groupId>io.joynr</groupId>
 			<artifactId>basemodel</artifactId>
 			<version>${project.version}</version>

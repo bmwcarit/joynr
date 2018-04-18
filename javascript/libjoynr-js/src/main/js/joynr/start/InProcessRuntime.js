@@ -30,7 +30,6 @@ const PublicationManager = require("../dispatching/subscription/PublicationManag
 const SubscriptionManager = require("../dispatching/subscription/SubscriptionManager");
 const Dispatcher = require("../dispatching/Dispatcher");
 const PlatformSecurityManager = require("../security/PlatformSecurityManagerNode");
-const ChannelMessagingSkeleton = require("../messaging/channel/ChannelMessagingSkeleton");
 const ChannelAddress = require("../../generated/joynr/system/RoutingTypes/ChannelAddress");
 const MqttMessagingStubFactory = require("../messaging/mqtt/MqttMessagingStubFactory");
 const MqttMessagingSkeleton = require("../messaging/mqtt/MqttMessagingSkeleton");
@@ -41,7 +40,6 @@ const MessagingSkeletonFactory = require("../messaging/MessagingSkeletonFactory"
 const MessagingStubFactory = require("../messaging/MessagingStubFactory");
 const MessageRouter = require("../messaging/routing/MessageRouter");
 const MessageQueue = require("../messaging/routing/MessageQueue");
-const CommunicationModule = require("../messaging/CommunicationModule");
 const InProcessSkeleton = require("../util/InProcessSkeleton");
 const InProcessStub = require("../util/InProcessStub");
 const InProcessMessagingStubFactory = require("../messaging/inprocess/InProcessMessagingStubFactory");
@@ -107,10 +105,6 @@ function InProcessRuntime(provisioning) {
     let messageQueueSettings;
     let persistency;
     let freshnessIntervalId;
-    /*eslint-disable no-unused-vars */
-    let communicationModule;
-    let clusterControllerChannelMessagingSkeleton;
-    /*eslint-enable no-unused-vars */
 
     // this is required at load time of libjoynr
     typeRegistry = Object.freeze(TypeRegistrySingleton.getInstance());
@@ -273,7 +267,6 @@ function InProcessRuntime(provisioning) {
             typedCapabilities.push(capability);
         }
 
-        communicationModule = new CommunicationModule();
         messageQueueSettings = {};
         if (provisioning.messaging !== undefined && provisioning.messaging.maxQueueSizeInKBytes !== undefined) {
             messageQueueSettings.maxQueueSizeInKBytes = provisioning.messaging.maxQueueSizeInKBytes;
@@ -317,11 +310,6 @@ function InProcessRuntime(provisioning) {
             messageQueue: new MessageQueue(messageQueueSettings)
         });
         messageRouter.setReplyToAddress(serializedGlobalClusterControllerAddress);
-
-        // link up clustercontroller messaging to channel
-        clusterControllerChannelMessagingSkeleton = new ChannelMessagingSkeleton({
-            messageRouter
-        });
 
         mqttMessagingSkeleton = new MqttMessagingSkeleton({
             address: globalClusterControllerAddress,
