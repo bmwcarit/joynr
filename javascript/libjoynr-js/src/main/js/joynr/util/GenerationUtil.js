@@ -1,4 +1,3 @@
-/*jslint node: true, nomen: true */
 /*
  * #%L
  * %%
@@ -22,10 +21,10 @@
  * @name GenerationUtil
  * @class
  */
-var GenerationUtil = {};
+const GenerationUtil = {};
 
 function equalsCompound(other) {
-    var key, member, otherMember, hasEquals, length, i;
+    let key, member, otherMember, hasEquals, length, i;
     if (this === other) {
         return true;
     }
@@ -73,10 +72,8 @@ function equalsCompound(other) {
                 if (!member.equals(otherMember)) {
                     return false;
                 }
-            } else {
-                if (member !== otherMember) {
-                    return false;
-                }
+            } else if (member !== otherMember) {
+                return false;
             }
         }
     }
@@ -109,7 +106,6 @@ GenerationUtil.addEqualsCompound = function(compoundJoynrObject) {
         enumerable: false,
         configurable: false,
         writable: false,
-        readable: true,
         value: equalsCompound
     });
 };
@@ -124,7 +120,6 @@ GenerationUtil.addEqualsEnum = function(enumJoynrObject) {
         enumerable: false,
         configurable: false,
         writable: false,
-        readable: true,
         value: equalsEnum
     });
 };
@@ -156,7 +151,7 @@ GenerationUtil.addMapUtility = function(joynrObject, propertyTypeName) {
 
     Object.defineProperty(joynrObject, "checkMembers", {
         value: function checkMembers(instance, check) {
-            var memberKey;
+            let memberKey;
             for (memberKey in instance) {
                 if (Object.prototype.hasOwnProperty.call(instance, memberKey)) {
                     if (memberKey !== "_typeName") {

@@ -1,5 +1,3 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
@@ -18,12 +16,12 @@
  * limitations under the License.
  * #L%
  */
-var Typing = require("../util/Typing");
-var Util = require("../util/UtilInternal");
-var SubscriptionQos = require("./SubscriptionQos");
-var LoggingManager = require("../system/LoggingManager");
+const Typing = require("../util/Typing");
+const UtilInternal = require("../util/UtilInternal");
+const SubscriptionQos = require("./SubscriptionQos");
+const LoggingManager = require("../system/LoggingManager");
 
-var defaultSettings;
+let defaultSettings;
 
 /**
  * @classdesc
@@ -81,15 +79,15 @@ function OnChangeSubscriptionQos(settings) {
         return new OnChangeSubscriptionQos(settings);
     }
 
-    var subscriptionQos = new SubscriptionQos(settings);
-    var log = LoggingManager.getLogger("joynr.proxy.OnChangeSubscriptionQos");
+    const subscriptionQos = new SubscriptionQos(settings);
+    const log = LoggingManager.getLogger("joynr.proxy.OnChangeSubscriptionQos");
 
     /**
      * Used for serialization.
      * @name OnChangeSubscriptionQos#_typeName
      * @type String
      */
-    Util.objectDefineProperty(this, "_typeName", "joynr.OnChangeSubscriptionQos");
+    UtilInternal.objectDefineProperty(this, "_typeName", "joynr.OnChangeSubscriptionQos");
     Typing.checkPropertyIfDefined(settings, "Object", "settings");
     if (settings && !(settings instanceof OnChangeSubscriptionQos)) {
         Typing.checkPropertyIfDefined(settings.minIntervalMs, "Number", "settings.minIntervalMs");
@@ -110,7 +108,7 @@ function OnChangeSubscriptionQos(settings) {
      * @name OnChangeSubscriptionQos#publicationTtlMs
      * @type Number
      */
-    Util.extend(this, defaultSettings, settings, subscriptionQos);
+    UtilInternal.extend(this, defaultSettings, settings, subscriptionQos);
     if (this.minIntervalMs < OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS) {
         log.warn(
             "minIntervalMs < MIN_MIN_INTERVAL_MS. Using MIN_MIN_INTERVAL_MS: " +

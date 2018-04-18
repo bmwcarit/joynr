@@ -1,4 +1,4 @@
-/*jslint es5: true, nomen: true, node: true */
+/*eslint no-unused-vars: "off"*/
 /*
  * #%L
  * %%
@@ -17,15 +17,11 @@
  * limitations under the License.
  * #L%
  */
-var Promise = require("../../../global/Promise");
-var Mqtt = require("../../../global/Mqtt");
-var MessagingQosEffort = require("../MessagingQosEffort");
-var LongTimer = require("../../util/LongTimer");
-var Typing = require("../../util/Typing");
-var LoggingManager = require("../../system/LoggingManager");
-var MessageSerializer = require("../MessageSerializer");
-var Util = require("../../util/UtilInternal");
-var log = LoggingManager.getLogger("joynr.messaging.mqtt.SharedMqttClient");
+const Mqtt = require("../../../global/Mqtt");
+const MessagingQosEffort = require("../MessagingQosEffort");
+const Typing = require("../../util/Typing");
+const MessageSerializer = require("../MessageSerializer");
+const UtilInternal = require("../../util/UtilInternal");
 
 /**
  * @param {mqtt}
@@ -34,7 +30,7 @@ var log = LoggingManager.getLogger("joynr.messaging.mqtt.SharedMqttClient");
  *            queuedMessages
  */
 function sendQueuedMessages(client, queuedMessages) {
-    var queued, topic;
+    let queued;
     while (queuedMessages.length) {
         queued = queuedMessages.shift();
         try {
@@ -50,7 +46,7 @@ function sendQueuedMessages(client, queuedMessages) {
 }
 
 function sendQueuedUnsubscriptions(client, queuedUnsubscriptions) {
-    var i, topic;
+    let i;
     for (i = 0; i < queuedUnsubscriptions.length; i++) {
         client.unsubscribe(queuedUnsubscriptions[i]);
     }
@@ -58,15 +54,15 @@ function sendQueuedUnsubscriptions(client, queuedUnsubscriptions) {
 }
 
 function sendQueuedSubscriptions(client, queuedSubscriptions, qosLevel) {
-    var deferred = Util.createDeferred();
-    var i,
+    const deferred = UtilInternal.createDeferred();
+    let i,
         topic,
         subscribeObject = {};
     for (i = 0; i < queuedSubscriptions.length; i++) {
         topic = queuedSubscriptions[i];
         subscribeObject[topic] = qosLevel;
     }
-    client.subscribe(subscribeObject, undefined, function(err, granted) {
+    client.subscribe(subscribeObject, undefined, (err, granted) => {
         //TODO error handling
         queuedSubscriptions = [];
         deferred.resolve();
@@ -75,7 +71,7 @@ function sendQueuedSubscriptions(client, queuedSubscriptions, qosLevel) {
 }
 
 function sendMessage(client, topic, joynrMessage, sendQosLevel, queuedMessages) {
-    var deferred = Util.createDeferred();
+    const deferred = UtilInternal.createDeferred();
     try {
         client.publish(topic, MessageSerializer.stringify(joynrMessage), { qos: sendQosLevel });
         deferred.resolve();
@@ -88,7 +84,7 @@ function sendMessage(client, topic, joynrMessage, sendQosLevel, queuedMessages) 
             options: {
                 qos: sendQosLevel
             },
-            topic: topic
+            topic
         });
         throw e;
     }
@@ -104,7 +100,7 @@ function sendMessage(client, topic, joynrMessage, sendQosLevel, queuedMessages) 
  * @param {MqttAddress}
  *            settings.address to be used to connect to mqtt broker
  */
-var SharedMqttClient = function SharedMqttClient(settings) {
+const SharedMqttClient = function SharedMqttClient(settings) {
     Typing.checkProperty(settings, "Object", "settings");
     Typing.checkProperty(settings.address, "MqttAddress", "settings.address");
 
@@ -114,7 +110,7 @@ var SharedMqttClient = function SharedMqttClient(settings) {
     this._queuedMessages = [];
     this._closed = false;
     this._connected = false;
-    this._onConnectedDeferred = Util.createDeferred();
+    this._onConnectedDeferred = UtilInternal.createDeferred();
 
     this._qosLevel =
         settings.provisioning.qosLevel !== undefined
@@ -128,13 +124,13 @@ var SharedMqttClient = function SharedMqttClient(settings) {
     // the same API as WebSocket but have a setter function called when
     // the attribute is set.
     Object.defineProperty(this, "onmessage", {
-        set: function(newCallback) {
+        set(newCallback) {
             this._onmessageCallback = newCallback;
             if (typeof newCallback !== "function") {
                 throw new Error("onmessage callback must be a function, but instead was of type " + typeof newCallback);
             }
         },
-        get: function() {
+        get() {
             return this._onmessageCallback;
         },
         enumerable: false,
@@ -185,7 +181,7 @@ SharedMqttClient.prototype._onOpen = function onOpen() {
  *            joynrMessage the joynr message to transmit
  */
 SharedMqttClient.prototype.send = function send(topic, joynrMessage) {
-    var sendQosLevel = this._qosLevel;
+    let sendQosLevel = this._qosLevel;
     if (MessagingQosEffort.BEST_EFFORT === joynrMessage.effort) {
         sendQosLevel = SharedMqttClient.BEST_EFFORT_QOS_LEVEL;
     }

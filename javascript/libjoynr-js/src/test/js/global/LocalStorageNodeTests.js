@@ -1,5 +1,3 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
@@ -26,8 +24,8 @@
  *
  * @returns constructor for a localStorage object
  */
-var LocalStorage = require("../../classes/global/LocalStorageNode");
-var uuid = require("../../classes/joynr/util/uuid");
+const LocalStorage = require("../../../main/js/global/LocalStorageNode");
+const uuid = require("../../../main/js/joynr/util/uuid");
 /**
  * LocalStorage constructor (node wrapper for LocalStorage)
  * @constructor LocalStorageWrapper
@@ -42,9 +40,9 @@ var uuid = require("../../classes/joynr/util/uuid");
  * @param {Number}
  *            settings.quota optional, passed on to node-localstorage LocalStorage constructor
  */
-var LocalStorageWrapper = function(settings) {
+const LocalStorageWrapper = function(settings) {
     settings = settings || {};
-    settings.location = settings.location || "${project.build.directory}/LocalStorage-" + uuid();
+    settings.location = settings.location || "localStorageTestResults/LocalStorage-" + uuid();
     return new LocalStorage(settings);
 };
 module.exports = LocalStorageWrapper;

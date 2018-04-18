@@ -17,20 +17,18 @@
  * #L%
  */
 
-({
-    name: "almond",
-    include: ["joynr"],
-    out: "${project.build.directory}/jar-classes/joynr.intertab.js",
-    wrap: {
-        startFile: "${project.build.outputDirectory}/libjoynrStartFrag.js",
-        endFile: "${project.build.outputDirectory}/libjoynrEndFrag.js"
-    },
-
-   // require.js runtime config file
-    mainConfigFile: "${project.build.outputDirectory}/require.optimizer.js",
-    optimize: "none", // use if you want to debug production version of joynrlib
-    paths: {
-        "almond": "${project.build.optimizerResources}/almond-0.2.5",
-        "joynr/Runtime" : "joynr/Runtime.intertab.libjoynr"
-    }
-})
+/**
+ * node wrapper for atmosphere
+ *
+ * @returns atmosphere-client which is the equivalent for atmosphere in node.js
+ */
+module.exports = function () {
+    var oldWindow = global.window;
+    var oldNavigator = global.navigator;
+    global.window = {};
+    global.navigator = {userAgent: 'node'}
+    var result = require('atmosphere.js');
+    global.window = oldWindow;
+    global.navigator = oldNavigator;
+    return result;
+}();

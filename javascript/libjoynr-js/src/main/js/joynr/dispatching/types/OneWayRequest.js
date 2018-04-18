@@ -1,5 +1,3 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
@@ -18,13 +16,7 @@
  * limitations under the License.
  * #L%
  */
-var Util = require("../../util/UtilInternal");
-var Typing = require("../../util/Typing");
-
-var defaultSettings = {
-    paramDatatypes: [],
-    params: []
-};
+const Util = require("../../util/Util");
 
 /**
  * @name OneWayRequest
@@ -49,7 +41,7 @@ function OneWayRequest(settings) {
         // = Constructor({..}))
         return new OneWayRequest(settings);
     }
-    var i;
+    let i;
 
     if (settings.params) {
         for (i = 0; i < settings.params.length; i++) {
@@ -81,7 +73,6 @@ function OneWayRequest(settings) {
      */
     Object.defineProperty(this, "_typeName", {
         value: "joynr.OneWayRequest",
-        readable: true,
         writable: false,
         enumerable: true,
         configurable: false

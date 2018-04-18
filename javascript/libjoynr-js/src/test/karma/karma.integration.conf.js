@@ -32,41 +32,42 @@ module.exports = function(config) {
             // Karma will require() these plugins
             "karma-jasmine",
             "karma-chrome-launcher",
-            "karma-phantomjs-launcher",
             "karma-junit-reporter",
             "karma-verbose-reporter",
             require("./karma.preprocessor.browserify")()
         ],
 
         // base path that will be used to resolve all patterns (eg. files, exclude)
-        basePath: "../../../target",
+        // libjoynr/src in this case
+        basePath: "../..",
 
         // frameworks to use
         // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
         frameworks: ["jasmine"],
 
         // list of files / patterns to load in the browser
+        // in other words load nothing but the InProcessRuntimeTest.js
         files: [
-            { pattern: "classes/lib/*.js", included: false },
-            { pattern: "jar-classes/*.js", included: false },
-            { pattern: "test-classes/global/*.js", included: false },
-            { pattern: "classes/global/*.js", included: false },
-            { pattern: "classes/joynr.js", included: false },
-            { pattern: "classes/libjoynr-deps.js", included: false },
-            { pattern: "classes/joynr/**/*.js", included: false },
-            { pattern: "test-classes/test/**/*.js", included: false },
-            { pattern: "test-classes/joynr/provisioning/*.js", included: false },
-            { pattern: "test-classes/joynr/start/InProcessRuntimeTest.js", included: true }
+            { pattern: "main/js/lib/*.js", included: false },
+            { pattern: "*.js", included: false },
+            { pattern: "test/js/global/*.js", included: false },
+            { pattern: "main/js/global/*.js", included: false },
+            { pattern: "main/js/joynr.js", included: false },
+            { pattern: "main/js/libjoynr-deps.js", included: false },
+            { pattern: "main/js/joynr/**/*.js", included: false },
+            { pattern: "test/js/test/**/*.js", included: false },
+            { pattern: "test/js/joynr/provisioning/*.js", included: false },
+            { pattern: "test/js/joynr/start/InProcessRuntimeTest.js", included: true }
             //{pattern: 'test-classes/integration/HttpMessagingTest.js', included: false},
         ],
 
         // list of files to exclude
-        exclude: ["test-classes/global/**/*Test.js"],
+        exclude: ["test/js/global/**/*Test.js"],
 
         // preprocess matching files before serving them to the browser
         // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
         preprocessors: {
-            "test-classes/joynr/start/InProcessRuntimeTest.js": ["browserify"]
+            "test/js/joynr/start/InProcessRuntimeTest.js": ["browserify"]
         },
 
         // test results reporter to use
@@ -106,7 +107,7 @@ module.exports = function(config) {
 
         // outputDir is already located in 'target'
         junitReporter: {
-            outputDir: "test-results",
+            outputDir: "../target/test-results",
             outputFile: "TestIntegration.xml",
             suite: "",
             useBrowserName: false,

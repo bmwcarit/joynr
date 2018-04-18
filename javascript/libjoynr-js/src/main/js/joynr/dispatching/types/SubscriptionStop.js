@@ -1,5 +1,3 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
@@ -18,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-var Util = require("../../util/UtilInternal");
-var Typing = require("../../util/Typing");
+const UtilInternal = require("../../util/UtilInternal");
+const Typing = require("../../util/Typing");
 
 /**
  * @name SubscriptionStop
@@ -37,7 +35,7 @@ function SubscriptionStop(settings) {
      * @name SubscriptionStop#subscriptionId
      * @type String
      */
-    Util.extend(this, settings);
+    UtilInternal.extend(this, settings);
 
     /**
      * The joynr type name

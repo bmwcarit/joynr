@@ -1,5 +1,3 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
@@ -19,24 +17,23 @@
  * #L%
  */
 require("../../../node-unit-test-helper");
-var SubscriptionRequest = require("../../../../classes/joynr/dispatching/types/SubscriptionRequest");
-var PeriodicSubscriptionQos = require("../../../../classes/joynr/proxy/PeriodicSubscriptionQos");
-var OnChangeWithKeepAliveSubscriptionQos = require("../../../../classes/joynr/proxy/OnChangeWithKeepAliveSubscriptionQos");
+const SubscriptionRequest = require("../../../../../main/js/joynr/dispatching/types/SubscriptionRequest");
+const PeriodicSubscriptionQos = require("../../../../../main/js/joynr/proxy/PeriodicSubscriptionQos");
 
-describe("libjoynr-js.joynr.dispatching.types.SubscriptionRequest", function() {
-    var qosSettings = {
+describe("libjoynr-js.joynr.dispatching.types.SubscriptionRequest", () => {
+    const qosSettings = {
         periodMs: 50,
         expiryDateMs: 3,
         alertAfterIntervalMs: 80,
         publicationTtlMs: 100
     };
 
-    it("is defined", function() {
+    it("is defined", () => {
         expect(SubscriptionRequest).toBeDefined();
     });
 
-    it("is instantiable", function() {
-        var subscriptionRequest = new SubscriptionRequest({
+    it("is instantiable", () => {
+        const subscriptionRequest = new SubscriptionRequest({
             subscribedToName: "attributeName",
             subscriptionId: "testSubscriptionId"
         });
@@ -46,10 +43,10 @@ describe("libjoynr-js.joynr.dispatching.types.SubscriptionRequest", function() {
         expect(subscriptionRequest instanceof SubscriptionRequest).toBeTruthy();
     });
 
-    it("handles missing parameters correctly", function() {
+    it("handles missing parameters correctly", () => {
         // does not throw, with qos
-        expect(function() {
-            var subReq = new SubscriptionRequest({
+        expect(() => {
+            return new SubscriptionRequest({
                 subscribedToName: "attributeName",
                 subscriptionId: "testSubscriptionId",
                 subscriptionQos: new PeriodicSubscriptionQos(qosSettings)
@@ -57,44 +54,44 @@ describe("libjoynr-js.joynr.dispatching.types.SubscriptionRequest", function() {
         }).not.toThrow();
 
         // does not throw, without qos
-        expect(function() {
-            var subReq = new SubscriptionRequest({
+        expect(() => {
+            return new SubscriptionRequest({
                 subscribedToName: "attributeName",
                 subscriptionId: "testSubscriptionId"
             });
         }).not.toThrow();
 
         // throws on wrongly typed attributeName
-        expect(function() {
-            var subReq = new SubscriptionRequest({
+        expect(() => {
+            return new SubscriptionRequest({
                 subscribedToName: {},
                 subscriptionId: "testSubscriptionId"
             });
         }).toThrow();
 
         // throws on missing attributeName
-        expect(function() {
-            var subReq = new SubscriptionRequest({
+        expect(() => {
+            return new SubscriptionRequest({
                 subscriptionId: "testSubscriptionId"
             });
         }).toThrow();
 
         // throws on missing subscriptionId
-        expect(function() {
-            var subReq = new SubscriptionRequest({
+        expect(() => {
+            return new SubscriptionRequest({
                 subscribedToName: "attributeName",
                 subscriptionQos: new PeriodicSubscriptionQos(qosSettings)
             });
         }).toThrow();
 
         // throws on missing settings object type
-        expect(function() {
-            var subReq = new SubscriptionRequest();
+        expect(() => {
+            return new SubscriptionRequest();
         }).toThrow();
 
         // throws on wrong settings object type
-        expect(function() {
-            var subReq = new SubscriptionRequest("wrong type");
+        expect(() => {
+            return new SubscriptionRequest("wrong type");
         }).toThrow();
 
         // throws on incorrect qos
@@ -107,15 +104,15 @@ describe("libjoynr-js.joynr.dispatching.types.SubscriptionRequest", function() {
         // }).toThrow();
     });
 
-    it("is constructs with correct member values", function() {
-        var subscribedToName = "attributeName";
-        var subscriptionQos = new PeriodicSubscriptionQos(qosSettings);
-        var subscriptionId = "testSubscriptionId";
+    it("is constructs with correct member values", () => {
+        const subscribedToName = "attributeName";
+        const subscriptionQos = new PeriodicSubscriptionQos(qosSettings);
+        const subscriptionId = "testSubscriptionId";
 
-        var subscriptionRequest = new SubscriptionRequest({
-            subscribedToName: subscribedToName,
-            subscriptionQos: subscriptionQos,
-            subscriptionId: subscriptionId
+        const subscriptionRequest = new SubscriptionRequest({
+            subscribedToName,
+            subscriptionQos,
+            subscriptionId
         });
 
         expect(subscriptionRequest.subscribedToName).toEqual(subscribedToName);

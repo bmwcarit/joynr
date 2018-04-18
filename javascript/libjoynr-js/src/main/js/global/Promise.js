@@ -1,6 +1,4 @@
-/*jslint node: true */
-/*global Promise: true */
-
+/*eslint global-require: "off"*/
 /*
  * #%L
  * %%

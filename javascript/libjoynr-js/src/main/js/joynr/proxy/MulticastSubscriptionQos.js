@@ -1,5 +1,3 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
@@ -18,11 +16,11 @@
  * limitations under the License.
  * #L%
  */
-var Typing = require("../util/Typing");
-var Util = require("../util/UtilInternal");
-var SubscriptionQos = require("./SubscriptionQos");
+const Typing = require("../util/Typing");
+const UtilInternal = require("../util/UtilInternal");
+const SubscriptionQos = require("./SubscriptionQos");
 
-var defaultSettings;
+let defaultSettings;
 
 /**
  * @classdesc
@@ -59,14 +57,14 @@ function MulticastSubscriptionQos(settings) {
         return new MulticastSubscriptionQos(settings);
     }
 
-    var subscriptionQos = new SubscriptionQos(settings);
+    const subscriptionQos = new SubscriptionQos(settings);
 
     /**
      * Used for serialization.
      * @name MulticastSubscriptionQos#_typeName
      * @type String
      */
-    Util.objectDefineProperty(this, "_typeName", "joynr.MulticastSubscriptionQos");
+    UtilInternal.objectDefineProperty(this, "_typeName", "joynr.MulticastSubscriptionQos");
     Typing.checkPropertyIfDefined(settings, "Object", "settings");
 
     /**
@@ -74,7 +72,7 @@ function MulticastSubscriptionQos(settings) {
      * @name MulticastSubscriptionQos#expiryDateMs
      * @type Number
      */
-    Util.extend(this, defaultSettings, settings, subscriptionQos);
+    UtilInternal.extend(this, defaultSettings, settings, subscriptionQos);
 }
 
 defaultSettings = {};

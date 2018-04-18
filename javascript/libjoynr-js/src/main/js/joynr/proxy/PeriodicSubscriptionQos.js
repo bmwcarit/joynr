@@ -1,5 +1,3 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
@@ -18,12 +16,12 @@
  * limitations under the License.
  * #L%
  */
-var Typing = require("../util/Typing");
-var Util = require("../util/UtilInternal");
-var SubscriptionQos = require("./SubscriptionQos");
-var LoggingManager = require("../system/LoggingManager");
+const Typing = require("../util/Typing");
+const UtilInternal = require("../util/UtilInternal");
+const SubscriptionQos = require("./SubscriptionQos");
+const LoggingManager = require("../system/LoggingManager");
 
-var defaultSettings;
+let defaultSettings;
 
 /**
  * @classdesc
@@ -85,15 +83,15 @@ function PeriodicSubscriptionQos(settings) {
         return new PeriodicSubscriptionQos(settings);
     }
 
-    var subscriptionQos = new SubscriptionQos(settings);
-    var log = LoggingManager.getLogger("joynr.proxy.PeriodicSubscriptionQos");
+    const subscriptionQos = new SubscriptionQos(settings);
+    const log = LoggingManager.getLogger("joynr.proxy.PeriodicSubscriptionQos");
 
     /**
      * Used for serialization.
      * @name PeriodicSubscriptionQos#_typeName
      * @type String
      */
-    Util.objectDefineProperty(this, "_typeName", "joynr.PeriodicSubscriptionQos");
+    UtilInternal.objectDefineProperty(this, "_typeName", "joynr.PeriodicSubscriptionQos");
     Typing.checkPropertyIfDefined(settings, "Object", "settings");
     if (settings && !(settings instanceof PeriodicSubscriptionQos)) {
         Typing.checkPropertyIfDefined(settings.periodMs, "Number", "settings.periodMs");
@@ -120,7 +118,7 @@ function PeriodicSubscriptionQos(settings) {
      * @name PeriodicSubscriptionQos#publicationTtlMs
      * @type Number
      */
-    Util.extend(this, defaultSettings, settings, subscriptionQos);
+    UtilInternal.extend(this, defaultSettings, settings, subscriptionQos);
 
     if (this.periodMs < PeriodicSubscriptionQos.MIN_PERIOD_MS) {
         throw new Error(

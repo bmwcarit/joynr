@@ -1,5 +1,3 @@
-/*jslint es5: true, nomen: true, node: true */
-
 /*
  * #%L
  * %%
@@ -18,9 +16,9 @@
  * limitations under the License.
  * #L%
  */
-var BroadcastOutputParameters = require("./BroadcastOutputParameters");
-var Util = require("../util/UtilInternal");
-var SubscriptionUtil = require("../dispatching/subscription/util/SubscriptionUtil");
+const BroadcastOutputParameters = require("./BroadcastOutputParameters");
+const UtilInternal = require("../util/UtilInternal");
+const SubscriptionUtil = require("../dispatching/subscription/util/SubscriptionUtil");
 
 /**
  * Constructor of ProviderEvent object that is used in the generation of provider objects
@@ -58,7 +56,7 @@ function ProviderEvent(settings) {
  *
  */
 ProviderEvent.prototype.checkFilterParameters = function checkFilterParameters(filterParametersInput) {
-    var filterParameters = filterParametersInput || {};
+    const filterParameters = filterParametersInput || {};
     return SubscriptionUtil.checkFilterParameters(
         this._settings.filterSettings,
         filterParameters.filterParameters,
@@ -86,13 +84,13 @@ ProviderEvent.prototype.createBroadcastOutputParameters = function createBroadca
  */
 ProviderEvent.prototype.fire = function fire(broadcastOutputParameters, partitions) {
     SubscriptionUtil.validatePartitions(partitions);
-    // the Util.fire method accepts exactly one argument for the callback
-    var data = {
-        broadcastOutputParameters: broadcastOutputParameters,
+    // the UtilInternal.fire method accepts exactly one argument for the callback
+    const data = {
+        broadcastOutputParameters,
         filters: this._filters,
         partitions: partitions || []
     };
-    Util.fire(this._callbacks, data);
+    UtilInternal.fire(this._callbacks, data);
 };
 
 /**
@@ -120,7 +118,7 @@ ProviderEvent.prototype.registerObserver = function registerObserver(observer) {
  * @see ProviderEvent#registerObserver
  */
 ProviderEvent.prototype.unregisterObserver = function unregisterObserver(observer) {
-    Util.removeElementFromArray(this._callbacks, observer);
+    UtilInternal.removeElementFromArray(this._callbacks, observer);
 };
 
 /**
@@ -148,7 +146,7 @@ ProviderEvent.prototype.addBroadcastFilter = function addBroadcastFilter(filter)
  * @see ProviderEvent#addBroadcastFilter
  */
 ProviderEvent.prototype.deleteBroadcastFilter = function deleteBroadcastFilter(filter) {
-    Util.removeElementFromArray(this._filters, filter);
+    UtilInternal.removeElementFromArray(this._filters, filter);
 };
 
 module.exports = ProviderEvent;

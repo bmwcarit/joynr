@@ -1,5 +1,3 @@
-/*global Promise: true, WorkerUtils: true, importScripts: true, joynr: true */
-
 /*
  * #%L
  * %%

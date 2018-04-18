@@ -1,5 +1,3 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
@@ -19,10 +17,10 @@
  * #L%
  */
 require("../../node-unit-test-helper");
-var BroadcastOutputParameters = require("../../../classes/joynr/provider/BroadcastOutputParameters");
+const BroadcastOutputParameters = require("../../../../main/js/joynr/provider/BroadcastOutputParameters");
 
-describe("libjoynr-js.joynr.provider.BroadcastOutputParameters", function() {
-    it("is instantiable", function() {
+describe("libjoynr-js.joynr.provider.BroadcastOutputParameters", () => {
+    it("is instantiable", () => {
         expect(
             new BroadcastOutputParameters([
                 {
@@ -37,8 +35,8 @@ describe("libjoynr-js.joynr.provider.BroadcastOutputParameters", function() {
         ).toBeDefined();
     });
 
-    it("is of correct type", function() {
-        var broadcastOutputParameters = new BroadcastOutputParameters([
+    it("is of correct type", () => {
+        const broadcastOutputParameters = new BroadcastOutputParameters([
             {
                 name: "param1",
                 type: "String"
@@ -54,16 +52,16 @@ describe("libjoynr-js.joynr.provider.BroadcastOutputParameters", function() {
         expect(broadcastOutputParameters instanceof BroadcastOutputParameters).toEqual(true);
     });
 
-    it("can be empty", function() {
-        var broadcastOutputParameters = new BroadcastOutputParameters([]);
+    it("can be empty", () => {
+        const broadcastOutputParameters = new BroadcastOutputParameters([]);
         expect(broadcastOutputParameters).toBeDefined();
         expect(broadcastOutputParameters).not.toBeNull();
         expect(typeof broadcastOutputParameters === "object").toBeTruthy();
         expect(broadcastOutputParameters instanceof BroadcastOutputParameters).toEqual(true);
     });
 
-    it("has setters and getters for each output parameter", function() {
-        var broadcastOutputParameters = new BroadcastOutputParameters([
+    it("has setters and getters for each output parameter", () => {
+        const broadcastOutputParameters = new BroadcastOutputParameters([
             {
                 name: "param1",
                 type: "String"
@@ -83,8 +81,8 @@ describe("libjoynr-js.joynr.provider.BroadcastOutputParameters", function() {
         expect(typeof broadcastOutputParameters.getParam2 === "function").toBeTruthy();
     });
 
-    it("setters and getters store and retrieve correct values", function() {
-        var broadcastOutputParameters = new BroadcastOutputParameters([
+    it("setters and getters store and retrieve correct values", () => {
+        const broadcastOutputParameters = new BroadcastOutputParameters([
             {
                 name: "param1",
                 type: "String"
@@ -100,8 +98,8 @@ describe("libjoynr-js.joynr.provider.BroadcastOutputParameters", function() {
         expect(broadcastOutputParameters.getParam2()).toEqual("world");
     });
 
-    it("array outputParameters contains correct values", function() {
-        var broadcastOutputParameters = new BroadcastOutputParameters([
+    it("array outputParameters contains correct values", () => {
+        const broadcastOutputParameters = new BroadcastOutputParameters([
             {
                 name: "param1",
                 type: "String"

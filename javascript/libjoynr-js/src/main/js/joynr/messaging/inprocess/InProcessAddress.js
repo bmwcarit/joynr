@@ -1,4 +1,3 @@
-/*jslint es5: true, nomen: true, node: true */
 /*
  * #%L
  * %%
@@ -56,9 +55,7 @@ Object.defineProperty(InProcessAddress.prototype, "equals", {
     enumerable: false,
     configurable: false,
     writable: false,
-    readable: true,
     value: function equals(other) {
-        var i;
         if (this === other) {
             return true;
         }

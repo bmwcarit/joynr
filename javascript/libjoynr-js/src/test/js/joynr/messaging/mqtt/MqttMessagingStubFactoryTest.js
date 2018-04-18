@@ -1,4 +1,3 @@
-/*jslint es5: true, node: true, node: true */
 /*
  * #%L
  * %%
@@ -18,17 +17,17 @@
  * #L%
  */
 require("../../../node-unit-test-helper");
-var Promise = require("../../../../classes/global/Promise");
-var SharedMqttClient = require("../../../../classes/joynr/messaging/mqtt/SharedMqttClient");
-var MqttAddress = require("../../../../classes/joynr/system/RoutingTypes/MqttAddress");
-var MqttMessagingStubFactory = require("../../../../classes/joynr/messaging/mqtt/MqttMessagingStubFactory");
-var JoynrMessage = require("../../../../classes/joynr/messaging/JoynrMessage");
+const Promise = require("../../../../../main/js/global/Promise");
+const SharedMqttClient = require("../../../../../main/js/joynr/messaging/mqtt/SharedMqttClient");
+const MqttAddress = require("../../../../../main/js/generated/joynr/system/RoutingTypes/MqttAddress");
+const MqttMessagingStubFactory = require("../../../../../main/js/joynr/messaging/mqtt/MqttMessagingStubFactory");
+const JoynrMessage = require("../../../../../main/js/joynr/messaging/JoynrMessage");
 
-describe("libjoynr-js.joynr.messaging.mqtt.MqttMessagingStubFactory", function() {
-    var mqttMessagingStubFactory, mqttClient;
-    var mqttAddress, brokerUri, topic, joynrMessage;
+describe("libjoynr-js.joynr.messaging.mqtt.MqttMessagingStubFactory", () => {
+    let mqttMessagingStubFactory, mqttClient;
+    let mqttAddress, brokerUri, topic, joynrMessage;
 
-    beforeEach(function(done) {
+    beforeEach(done => {
         mqttClient = Object.create(SharedMqttClient.prototype);
         mqttClient.send = jasmine.createSpy("channelMessagingSender.send");
         mqttClient.send.and.returnValue(Promise.resolve());
@@ -40,8 +39,8 @@ describe("libjoynr-js.joynr.messaging.mqtt.MqttMessagingStubFactory", function()
         brokerUri = "testBrokerUri";
         topic = "testTopic";
         mqttAddress = new MqttAddress({
-            brokerUri: brokerUri,
-            topic: topic
+            brokerUri,
+            topic
         });
         joynrMessage = new JoynrMessage({
             key: "joynrMessage" // TODO understand what is this key thing?
@@ -50,7 +49,7 @@ describe("libjoynr-js.joynr.messaging.mqtt.MqttMessagingStubFactory", function()
         done();
     });
 
-    it("is instantiable and of correct type", function(done) {
+    it("is instantiable and of correct type", done => {
         expect(MqttMessagingStubFactory).toBeDefined();
         expect(typeof MqttMessagingStubFactory).toEqual("function");
         expect(mqttMessagingStubFactory).toBeDefined();
@@ -60,9 +59,9 @@ describe("libjoynr-js.joynr.messaging.mqtt.MqttMessagingStubFactory", function()
         done();
     });
 
-    it("creates a messaging stub and uses it correctly", function(done) {
-        var mqttMessagingStub = mqttMessagingStubFactory.build(mqttAddress);
-        mqttMessagingStub.transmit(joynrMessage).catch(function() {
+    it("creates a messaging stub and uses it correctly", done => {
+        const mqttMessagingStub = mqttMessagingStubFactory.build(mqttAddress);
+        mqttMessagingStub.transmit(joynrMessage).catch(() => {
             return null;
         });
         expect(mqttClient.send).toHaveBeenCalledWith(jasmine.any(String), joynrMessage);

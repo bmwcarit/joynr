@@ -1,5 +1,3 @@
-/*jslint es5: true, nomen: true, node: true */
-
 /*
  * #%L
  * %%
@@ -18,11 +16,10 @@
  * limitations under the License.
  * #L%
  */
-var Promise = require("../../global/Promise");
-var XMLHttpRequestDependency = require("../../global/XMLHttpRequestNode");
-var atmosphereDependency = require("../../lib/atmosphereNode");
-var LongTimer = require("../util/LongTimer");
-var Util = require("../util/UtilInternal");
+const XMLHttpRequestDependency = require("../../global/XMLHttpRequestNode");
+const atmosphereDependency = require("../../lib/atmosphereNode");
+const LongTimer = require("../util/LongTimer");
+const UtilInternal = require("../util/UtilInternal");
 
 /**
  * Constructor of CommunicationModule object that is used to stsub communication with the outer world
@@ -61,16 +58,16 @@ function CommunicationModule() {
  * @param {String} parameters.url - the location
  */
 CommunicationModule.prototype.createXMLHTTPRequest = function(parameters) {
-    var deferred = Util.createDeferred();
+    const deferred = UtilInternal.createDeferred();
 
-    var xhr = new XMLHttpRequestDependency();
-    var async = true;
+    const xhr = new XMLHttpRequestDependency();
+    const async = true;
 
     xhr.open(parameters.type, parameters.url, async);
     //xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
     xhr.setRequestHeader("Content-type", "text/plain"); // workaround for TODO # 1174
     if (parameters.headers) {
-        var headerEntry;
+        let headerEntry;
         for (headerEntry in parameters.headers) {
             if (parameters.headers.hasOwnProperty(headerEntry)) {
                 xhr.setRequestHeader(headerEntry, parameters.headers[headerEntry]);
@@ -84,7 +81,7 @@ CommunicationModule.prototype.createXMLHTTPRequest = function(parameters) {
         deferred.reject(new Error('xhr, "request timed out after " + parameters.timeout + "ms."'));
     }
 
-    var postTimeout = LongTimer.setTimeout(postTimeoutHandler, parameters.timeout);
+    const postTimeout = LongTimer.setTimeout(postTimeoutHandler, parameters.timeout);
 
     function xhrOnReadyStateChange() {
         /*
@@ -95,7 +92,7 @@ CommunicationModule.prototype.createXMLHTTPRequest = function(parameters) {
              * 3: processing request
              * 4: request finished and response is ready
              */
-        var isRequestFinishedAndResponseReady = xhr.readyState === 4;
+        const isRequestFinishedAndResponseReady = xhr.readyState === 4;
         if (isRequestFinishedAndResponseReady) {
             LongTimer.clearTimeout(postTimeout);
             // Unless stated otherwise, the response status will be 200

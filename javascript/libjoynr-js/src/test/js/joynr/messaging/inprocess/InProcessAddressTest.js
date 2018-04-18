@@ -1,5 +1,3 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
@@ -19,19 +17,19 @@
  * #L%
  */
 require("../../../node-unit-test-helper");
-var InProcessAddress = require("../../../../classes/joynr/messaging/inprocess/InProcessAddress");
+const InProcessAddress = require("../../../../../main/js/joynr/messaging/inprocess/InProcessAddress");
 
-describe("libjoynr-js.joynr.messaging.inprocess.InProcessAddress", function() {
-    var skeleton, inProcessAddress;
+describe("libjoynr-js.joynr.messaging.inprocess.InProcessAddress", () => {
+    let skeleton, inProcessAddress;
 
-    beforeEach(function() {
+    beforeEach(() => {
         skeleton = {
             key: "skeleton"
         };
         inProcessAddress = new InProcessAddress(skeleton);
     });
 
-    it("is instantiable and of correct type", function() {
+    it("is instantiable and of correct type", () => {
         expect(InProcessAddress).toBeDefined();
         expect(typeof InProcessAddress === "function").toBeTruthy();
         expect(inProcessAddress).toBeDefined();
@@ -40,11 +38,11 @@ describe("libjoynr-js.joynr.messaging.inprocess.InProcessAddress", function() {
         expect(typeof inProcessAddress.getSkeleton === "function").toBeTruthy();
     });
 
-    it("retrieves skeleton correctly", function() {
+    it("retrieves skeleton correctly", () => {
         expect(inProcessAddress.getSkeleton()).toEqual(skeleton);
     });
 
-    it("equals", function() {
+    it("equals", () => {
         expect(inProcessAddress.equals(new InProcessAddress(1))).toBeFalsy();
         expect(inProcessAddress.equals(undefined)).toBeFalsy();
         expect(inProcessAddress.equals(null)).toBeFalsy();

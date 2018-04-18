@@ -1,5 +1,3 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
@@ -19,32 +17,31 @@
  * #L%
  */
 require("../../node-unit-test-helper");
-var GlobalDiscoveryEntry = require("../../../classes/joynr/types/GlobalDiscoveryEntry");
-var ProviderQos = require("../../../classes/joynr/types/ProviderQos");
-var ProviderScope = require("../../../classes/joynr/types/ProviderScope");
-var CustomParameter = require("../../../classes/joynr/types/CustomParameter");
-var Version = require("../../../classes/joynr/types/Version");
-var InProcessAddress = require("../../../classes/joynr/messaging/inprocess/InProcessAddress");
-var InProcessStub = require("../../../classes/joynr/util/InProcessStub");
-var InProcessSkeleton = require("../../../classes/joynr/util/InProcessSkeleton");
+const GlobalDiscoveryEntry = require("../../../../main/js/generated/joynr/types/GlobalDiscoveryEntry");
+const ProviderQos = require("../../../../main/js/generated/joynr/types/ProviderQos");
+const ProviderScope = require("../../../../main/js/generated/joynr/types/ProviderScope");
+const CustomParameter = require("../../../../main/js/generated/joynr/types/CustomParameter");
+const Version = require("../../../../main/js/generated/joynr/types/Version");
+const InProcessStub = require("../../../../main/js/joynr/util/InProcessStub");
+const InProcessSkeleton = require("../../../../main/js/joynr/util/InProcessSkeleton");
 
-describe("libjoynr-js.joynr.util.InProcessStubAndSkeleton", function() {
-    it("InProcessSkeleton is instantiable", function(done) {
+describe("libjoynr-js.joynr.util.InProcessStubAndSkeleton", () => {
+    it("InProcessSkeleton is instantiable", done => {
         expect(new InProcessSkeleton()).toBeDefined();
         expect(new InProcessSkeleton() instanceof InProcessSkeleton).toBeTruthy();
         done();
     });
 });
 
-describe("libjoynr-js.joynr.util.InProcessStubAndSkeleton", function() {
-    it("InProcessStub is instantiable", function(done) {
+describe("libjoynr-js.joynr.util.InProcessStubAndSkeleton", () => {
+    it("InProcessStub is instantiable", done => {
         expect(new InProcessStub(new InProcessSkeleton())).toBeDefined();
         expect(new InProcessStub(new InProcessSkeleton()) instanceof InProcessStub).toBeTruthy();
         done();
     });
 });
 
-var capability = {
+const capability = {
     discoveryEntry: new GlobalDiscoveryEntry({
         providerVersion: new Version({
             majorVersion: 47,
@@ -69,7 +66,7 @@ var capability = {
     })
 };
 
-var arrayOfCapabilities = {
+const arrayOfCapabilities = {
     discoveryEntries: [
         new GlobalDiscoveryEntry({
             providerVersion: new Version({
@@ -184,7 +181,7 @@ var arrayOfCapabilities = {
     ]
 };
 
-var providerQos = new ProviderQos({
+const providerQos = new ProviderQos({
     qos: [
         {
             name: "theName",
@@ -196,26 +193,23 @@ var providerQos = new ProviderQos({
     priority: 1234
 });
 
-var myDomain = "myDomain";
+const myDomain = "myDomain";
+const myInterfaceName = "myInterfaceName";
 
-var myInterfaceName = "myInterfaceName";
-
-var myChannelId = "myChannelId";
-
-var participantId = {
+const participantId = {
     participandId: "participantId"
 };
 
-var participantIds = {
+const participantIds = {
     participantIds: [participantId, "participantId2"]
 };
 
-describe("libjoynr-js.joynr.util.InProcessStubAndSkeleton", function() {
+describe("libjoynr-js.joynr.util.InProcessStubAndSkeleton", () => {
     function check(stub, spy) {
-        var lookupTest = {
+        const lookupTest = {
             domain: myDomain,
             interfaceName: myInterfaceName,
-            providerQos: providerQos
+            providerQos
         };
         // make calls on the stub
         stub.remove(participantId);
@@ -234,27 +228,27 @@ describe("libjoynr-js.joynr.util.InProcessStubAndSkeleton", function() {
         expect(spy.lookup.calls.argsFor(1)[0]).toEqual(participantId);
     }
 
-    var spy;
-    beforeEach(function() {
+    let spy;
+    beforeEach(() => {
         // create mock object for capabilities directory
         spy = jasmine.createSpyObj("capabilitiesDirectory", ["remove", "add", "lookup"]);
     });
 
-    it("all methods get called through stub and skeleton correctly", function(done) {
-        var stub = new InProcessStub(new InProcessSkeleton(spy));
+    it("all methods get called through stub and skeleton correctly", done => {
+        const stub = new InProcessStub(new InProcessSkeleton(spy));
         check(stub, spy);
         done();
     });
 
-    it("all methods get called through stub and skeleton correctly with late initialization", function(done) {
-        var stub = new InProcessStub();
+    it("all methods get called through stub and skeleton correctly with late initialization", done => {
+        const stub = new InProcessStub();
         stub.setSkeleton(new InProcessSkeleton(spy));
         check(stub, spy);
         done();
     });
 
-    it("all methods get called through stub and skeleton correctly after overwrite", function(done) {
-        var stub = new InProcessStub();
+    it("all methods get called through stub and skeleton correctly after overwrite", done => {
+        const stub = new InProcessStub();
         stub.setSkeleton(
             new InProcessSkeleton({
                 someKey: "someValue"
@@ -265,7 +259,7 @@ describe("libjoynr-js.joynr.util.InProcessStubAndSkeleton", function() {
         done();
     });
 
-    var objects = [
+    const objects = [
         {
             key: "value"
         },
@@ -278,30 +272,24 @@ describe("libjoynr-js.joynr.util.InProcessStubAndSkeleton", function() {
     ];
 
     function testValue(obj) {
-        expect(function() {
-            var o = new InProcessStub(obj);
-        }).toThrow();
-        expect(function() {
-            var o = new InProcessStub().setSkeleton(obj);
-        }).toThrow();
+        expect(() => new InProcessStub(obj)).toThrow();
+        expect(() => new InProcessStub().setSkeleton(obj)).toThrow();
     }
 
-    it("throws when Stub receives object which is not of type InProcessSkeleton", function(done) {
-        var i;
+    it("throws when Stub receives object which is not of type InProcessSkeleton", done => {
+        let i;
         for (i = 0; i < objects.length; ++i) {
             testValue(objects[i]);
         }
-        expect(function() {
-            var o = new InProcessStub();
-        }).not.toThrow();
+        expect(() => new InProcessStub()).not.toThrow();
         done();
     });
 
-    it("throws when inProcessSkeleton is undefined or null ", function(done) {
-        expect(function() {
+    it("throws when inProcessSkeleton is undefined or null ", done => {
+        expect(() => {
             new InProcessStub().setSkeleton(undefined);
         }).toThrow();
-        expect(function() {
+        expect(() => {
             new InProcessStub().setSkeleton(null);
         }).toThrow();
         done();

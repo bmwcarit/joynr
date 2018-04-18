@@ -1,5 +1,3 @@
-/*jslint es5: true, node: true */
-/*global unescape: true, Blob: true, Array: true */
 /*
  * #%L
  * %%
@@ -18,22 +16,19 @@
  * limitations under the License.
  * #L%
  */
-var Promise = require("../../global/Promise");
-var UtilExternal = require("./Util");
-var LongTimer = require("./LongTimer");
+const Promise = require("../../global/Promise");
+const LongTimer = require("./LongTimer");
 
 /**
  * @name UtilInternal
  * @class
  * @classdesc extends the Util class by additional methods
  */
-var UtilInternal = {};
+const UtilInternal = {};
 
 function extend(to, from, deep) {
-    var i, key, args;
-
     if (from) {
-        for (key in from) {
+        for (let key in from) {
             if (from.hasOwnProperty(key)) {
                 if (deep && typeof from[key] === "object") {
                     if (Array.isArray(from[key]) && !Array.isArray(to[key])) {
@@ -56,7 +51,7 @@ function extend(to, from, deep) {
  * @function UtilInternal#extend
  */
 UtilInternal.extend = function(out) {
-    var i, key, args;
+    let i, args;
     // calling using prototype because slice is not available on
     // special arguments array
     args = Array.prototype.slice.call(arguments, 1);
@@ -73,7 +68,7 @@ UtilInternal.extend = function(out) {
  * @returns {*}
  */
 UtilInternal.forward = function forward(receiver, provider) {
-    var methodName;
+    let methodName;
     for (methodName in provider) {
         if (provider.hasOwnProperty(methodName) && typeof provider[methodName] === "function") {
             receiver[methodName] = provider[methodName].bind(provider);
@@ -84,33 +79,11 @@ UtilInternal.forward = function forward(receiver, provider) {
 };
 
 /**
- * Create a wrapper for the input prototype which binds the this context to all functions of input
- * to make sure that they are always called with the right context.
- * @param {Object} input
- * @returns {Object} wrapper of input
- */
-UtilInternal.forwardPrototype = function(input) {
-    var inputWrapper = {};
-    /*jslint sub: true*/
-    var proto = input["__proto__"];
-    inputWrapper["__proto__"] = proto;
-    /*jslint sub: false*/
-    var key;
-    for (key in proto) {
-        if (proto.hasOwnProperty(key)) {
-            var func = proto[key];
-            inputWrapper[key] = func.bind(input);
-        }
-    }
-    return inputWrapper;
-};
-
-/**
  * Deeply copies all attributes to a given out parameter from optional in parameters
  * @function UtilInternal#extendDeep
  */
 UtilInternal.extendDeep = function(out) {
-    var i, key, args;
+    let i, args;
     // calling using prototype because slice is not available on
     // special arguments array
     args = Array.prototype.slice.call(arguments, 1);
@@ -125,7 +98,7 @@ UtilInternal.extendDeep = function(out) {
  * @function UtilInternal#transform
  */
 UtilInternal.transform = function transform(from, transformFunction) {
-    var i,
+    let i,
         value,
         transformedArray = [];
     for (i = 0; i < from.length; i++) {
@@ -137,7 +110,7 @@ UtilInternal.transform = function transform(from, transformFunction) {
 
 /**
  * Checks explicitly if value is null or undefined, use if you don't want !!"" to become false,
- * but !Util.checkNullUndefined("") to be true
+ * but !UtilInternal.checkNullUndefined("") to be true
  * @function UtilInternal#checkNullUndefined
  *
  * @param {?}
@@ -199,8 +172,6 @@ UtilInternal.isPromise = function isPromise(arg) {
  * @param {?}
  *            [value] default value is undefined
  * @param {Boolean}
- *            [readable] default value is true
- * @param {Boolean}
  *            [writable] default value is false
  * @param {Boolean}
  *            [enumerable] default value is true
@@ -211,14 +182,12 @@ UtilInternal.objectDefineProperty = function objectDefineProperty(
     object,
     memberName,
     value,
-    readable,
     writable,
     enumerable,
     configurable
 ) {
     Object.defineProperty(object, memberName, {
-        value: value,
-        readable: readable === undefined ? true : readable,
+        value,
         writable: writable === undefined ? false : writable,
         enumerable: enumerable === undefined ? true : enumerable,
         configurable: configurable === undefined ? false : configurable
@@ -262,7 +231,7 @@ UtilInternal.getMaxLongValue = function getMaxLongValue() {
  *          item to be removed
  */
 UtilInternal.removeElementFromArray = function removeElementFromArray(array, item) {
-    var i = array.indexOf(item);
+    const i = array.indexOf(item);
     if (i > -1) {
         array.splice(i, 1);
     }
@@ -281,7 +250,7 @@ UtilInternal.removeElementFromArray = function removeElementFromArray(array, ite
  *          data.filters filter array provided as callback argument
  */
 UtilInternal.fire = function fire(callbacks, data) {
-    var callbackFct;
+    let callbackFct;
     for (callbackFct in callbacks) {
         if (callbacks.hasOwnProperty(callbackFct)) {
             callbacks[callbackFct](data);
@@ -289,31 +258,14 @@ UtilInternal.fire = function fire(callbacks, data) {
     }
 };
 
-UtilInternal.enrichObjectWithSetPrototypeOf = function() {
-    //if Object.setPrototypeOf already exists? -> do nothing;
-    Object.setPrototypeOf =
-        Object.setPrototypeOf ||
-        function(object, prototype) {
-            /*jslint sub: true*/
-            object["__proto__"] = prototype;
-            /*jslint sub: false*/
-        };
-};
-
-UtilInternal.setPrototypeOf = function(object, prototype) {
-    /*jslint sub: true*/
-    object["__proto__"] = prototype;
-    /*jslint sub: false*/
-};
-
 function timeoutToPromise(time) {
-    var deferred = UtilInternal.createDeferred();
+    const deferred = UtilInternal.createDeferred();
     LongTimer.setTimeout(deferred.resolve, time);
     return deferred.promise;
 }
 
 UtilInternal.timeoutPromise = function(promise, timeoutMs) {
-    var deferred = UtilInternal.createDeferred();
+    const deferred = UtilInternal.createDeferred();
     promise.then(deferred.resolve).catch(deferred.reject);
     timeoutToPromise(timeoutMs).then(deferred.reject);
     return deferred.promise;
@@ -325,12 +277,10 @@ function defer(resolve, reject) {
 }
 
 UtilInternal.createDeferred = function() {
-    var deferred = {};
+    const deferred = {};
     deferred.promise = new Promise(defer.bind(deferred));
     return deferred;
 };
 
 UtilInternal.emptyFunction = function() {};
-
-UtilInternal.extend(UtilInternal, UtilExternal);
 module.exports = UtilInternal;

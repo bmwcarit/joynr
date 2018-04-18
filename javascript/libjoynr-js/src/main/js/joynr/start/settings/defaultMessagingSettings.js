@@ -1,5 +1,3 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
@@ -18,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-var MessagingQosEffort = require("../../messaging/MessagingQosEffort");
+const MessagingQosEffort = require("../../messaging/MessagingQosEffort");
 module.exports = {
     // 30 days
     MAX_MESSAGING_TTL_MS: 2592000000,

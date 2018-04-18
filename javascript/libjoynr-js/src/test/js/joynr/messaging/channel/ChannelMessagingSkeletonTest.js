@@ -1,5 +1,3 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
@@ -19,19 +17,19 @@
  * #L%
  */
 require("../../../node-unit-test-helper");
-var ChannelMessagingSkeleton = require("../../../../classes/joynr/messaging/channel/ChannelMessagingSkeleton");
-var ChannelAddress = require("../../../../classes/joynr/system/RoutingTypes/ChannelAddress");
-var JoynrMessage = require("../../../../classes/joynr/messaging/JoynrMessage");
-var Promise = require("../../../../classes/global/Promise");
+const ChannelMessagingSkeleton = require("../../../../../main/js/joynr/messaging/channel/ChannelMessagingSkeleton");
+const ChannelAddress = require("../../../../../main/js/generated/joynr/system/RoutingTypes/ChannelAddress");
+const JoynrMessage = require("../../../../../main/js/joynr/messaging/JoynrMessage");
+const Promise = require("../../../../../main/js/global/Promise");
 
-describe("libjoynr-js.joynr.messaging.channel.ChannelMessagingSkeleton", function() {
-    var channelMessagingSkeleton, joynrMessage1, joynrMessage2, messageRouterSpy;
-    var channelAddress = new ChannelAddress({
+describe("libjoynr-js.joynr.messaging.channel.ChannelMessagingSkeleton", () => {
+    let channelMessagingSkeleton, joynrMessage1, joynrMessage2, messageRouterSpy;
+    const channelAddress = new ChannelAddress({
         channelId: "channelId",
         messagingEndpointUrl: "http://testurl"
     });
 
-    beforeEach(function(done) {
+    beforeEach(done => {
         messageRouterSpy = jasmine.createSpyObj("messageRouterSpy", ["addNextHop", "route"]);
         messageRouterSpy.route.and.returnValue(Promise.resolve());
         channelMessagingSkeleton = new ChannelMessagingSkeleton({
@@ -48,7 +46,7 @@ describe("libjoynr-js.joynr.messaging.channel.ChannelMessagingSkeleton", functio
         done();
     });
 
-    it("is of correct type and has all members", function(done) {
+    it("is of correct type and has all members", done => {
         expect(ChannelMessagingSkeleton).toBeDefined();
         expect(typeof ChannelMessagingSkeleton === "function").toBeTruthy();
         expect(channelMessagingSkeleton).toBeDefined();
@@ -56,11 +54,11 @@ describe("libjoynr-js.joynr.messaging.channel.ChannelMessagingSkeleton", functio
         done();
     });
 
-    it("throws if arguments are missing or of wrong type", function(done) {
-        expect(function() {
+    it("throws if arguments are missing or of wrong type", done => {
+        expect(() => {
             channelMessagingSkeleton = new ChannelMessagingSkeleton();
         }).toThrow(); // correct call
-        expect(function() {
+        expect(() => {
             channelMessagingSkeleton = new ChannelMessagingSkeleton({
                 messageRouter: messageRouterSpy
             });
@@ -68,7 +66,7 @@ describe("libjoynr-js.joynr.messaging.channel.ChannelMessagingSkeleton", functio
         done();
     });
 
-    it("event calls through to messageRouter", function(done) {
+    it("event calls through to messageRouter", done => {
         expect(messageRouterSpy.route).not.toHaveBeenCalled();
 
         channelMessagingSkeleton.receiveMessage(joynrMessage1);
@@ -92,18 +90,18 @@ describe("libjoynr-js.joynr.messaging.channel.ChannelMessagingSkeleton", functio
         expect(messageRouterSpy.route.calls.argsFor(0)[0].isReceivedFromGlobal).toEqual(true);
     }
 
-    it("sets receivedFromGlobal", function() {
-        var requestMessage = new JoynrMessage({
+    it("sets receivedFromGlobal", () => {
+        const requestMessage = new JoynrMessage({
             type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
         });
         setsReceivedFromGlobal(requestMessage);
 
-        var multicastMessage = new JoynrMessage({
+        const multicastMessage = new JoynrMessage({
             type: JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST
         });
         setsReceivedFromGlobal(multicastMessage);
 
-        var subscriptionRequestMessage = new JoynrMessage({
+        const subscriptionRequestMessage = new JoynrMessage({
             type: JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REQUEST
         });
         setsReceivedFromGlobal(subscriptionRequestMessage);

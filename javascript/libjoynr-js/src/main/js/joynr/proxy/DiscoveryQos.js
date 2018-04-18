@@ -1,5 +1,3 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
@@ -18,12 +16,11 @@
  * limitations under the License.
  * #L%
  */
-var ArbitrationStrategyCollection = require("../../joynr/types/ArbitrationStrategyCollection");
-var DiscoveryScope = require("../../joynr/types/DiscoveryScope");
-var Util = require("../util/UtilInternal");
-var LoggingManager = require("../system/LoggingManager");
+const ArbitrationStrategyCollection = require("../../joynr/types/ArbitrationStrategyCollection");
+const DiscoveryScope = require("../../generated/joynr/types/DiscoveryScope");
+const UtilInternal = require("../util/UtilInternal");
 
-var defaultSettings = {
+let defaultSettings = {
     discoveryTimeoutMs: 10 * 60 * 1000, // 10 minutes
     discoveryRetryDelayMs: 10 * 1000, // 10 seconds
     arbitrationStrategy: ArbitrationStrategyCollection.LastSeen,
@@ -56,9 +53,7 @@ function DiscoveryQos(settings) {
         return new DiscoveryQos(settings);
     }
 
-    var log = LoggingManager.getLogger("joynr.proxy.DiscoveryQos");
-
-    settings = Util.extend({}, defaultSettings, settings);
+    settings = UtilInternal.extend({}, defaultSettings, settings);
 
     /**
      * @name DiscoveryQos#discoveryTimeoutMs
@@ -103,7 +98,7 @@ function DiscoveryQos(settings) {
 }
 
 DiscoveryQos.setDefaultSettings = function(settings) {
-    defaultSettings = Util.extend({}, defaultSettings, settings);
+    defaultSettings = UtilInternal.extend({}, defaultSettings, settings);
 };
 
 module.exports = DiscoveryQos;

@@ -1,5 +1,3 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
@@ -18,11 +16,10 @@
  * limitations under the License.
  * #L%
  */
-var TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
-var Util = require("../util/UtilInternal");
-var JoynrRuntimeException = require("./JoynrRuntimeException");
-var LoggingManager = require("../system/LoggingManager");
-var defaultSettings;
+const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
+const UtilInternal = require("../util/UtilInternal");
+const JoynrRuntimeException = require("./JoynrRuntimeException");
+let defaultSettings;
 
 /**
  * @classdesc
@@ -50,15 +47,14 @@ function IllegalAccessException(settings) {
         return new IllegalAccessException(settings);
     }
 
-    var log = LoggingManager.getLogger("joynr.exceptions.IllegalAccessException");
-    var joynrRuntimeException = new JoynrRuntimeException(settings);
+    const joynrRuntimeException = new JoynrRuntimeException(settings);
 
     /**
      * Used for serialization.
      * @name IllegalAccessException#_typeName
      * @type String
      */
-    Util.objectDefineProperty(this, "_typeName", "joynr.exceptions.IllegalAccessException");
+    UtilInternal.objectDefineProperty(this, "_typeName", "joynr.exceptions.IllegalAccessException");
 
     /**
      * See [constructor description]{@link IllegalAccessException}.
@@ -67,7 +63,7 @@ function IllegalAccessException(settings) {
      */
     this.detailMessage = undefined;
 
-    Util.extend(this, defaultSettings, settings, joynrRuntimeException);
+    UtilInternal.extend(this, defaultSettings, settings, joynrRuntimeException);
 }
 
 defaultSettings = {};

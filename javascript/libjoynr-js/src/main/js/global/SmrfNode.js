@@ -1,5 +1,4 @@
-/*jslint node: true */
-
+/*eslint no-console: "off"*/
 /*
  * #%L
  * %%

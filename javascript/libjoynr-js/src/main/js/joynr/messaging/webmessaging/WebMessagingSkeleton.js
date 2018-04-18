@@ -1,5 +1,3 @@
-/*jslint es5: true, nomen: true, node: true */
-
 /*
  * #%L
  * %%
@@ -18,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-var Typing = require("../../util/Typing");
-var Util = require("../../util/UtilInternal");
+const Typing = require("../../util/Typing");
+const UtilInternal = require("../../util/UtilInternal");
 
 /**
  * @constructor WebMessagingSkeleton
@@ -39,9 +37,9 @@ function WebMessagingSkeleton(settings) {
         );
     }
 
-    var receiverCallbacks = [];
-    var callbackFct = function(event) {
-        Util.fire(receiverCallbacks, event.data);
+    const receiverCallbacks = [];
+    const callbackFct = function(event) {
+        UtilInternal.fire(receiverCallbacks, event.data);
     };
 
     settings.window.addEventListener("message", callbackFct);
@@ -67,7 +65,7 @@ function WebMessagingSkeleton(settings) {
     this.unregisterListener = function unregisterListener(listener) {
         Typing.checkPropertyIfDefined(listener, "Function", "listener");
 
-        Util.removeElementFromArray(receiverCallbacks, listener);
+        UtilInternal.removeElementFromArray(receiverCallbacks, listener);
     };
 
     /**

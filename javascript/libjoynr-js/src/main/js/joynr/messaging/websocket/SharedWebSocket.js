@@ -1,5 +1,4 @@
-/*jslint es5: true, nomen: true, node: true */
-
+/*eslint no-use-before-define: "off"*/
 /*
  * #%L
  * %%
@@ -18,14 +17,12 @@
  * limitations under the License.
  * #L%
  */
-var Promise = require("../../../global/Promise");
-var WebSocket = require("../../../global/WebSocketNode");
-var Typing = require("../../util/Typing");
-var JSONSerializer = require("../../util/JSONSerializer");
-var LongTimer = require("../../util/LongTimer");
-var Util = require("../../util/UtilInternal");
-var LoggingManager = require("../../system/LoggingManager");
-var log = LoggingManager.getLogger("joynr.messaging.websocket.SharedWebSocket");
+const Promise = require("../../../global/Promise");
+const WebSocket = require("../../../global/WebSocketNode");
+const Typing = require("../../util/Typing");
+const LongTimer = require("../../util/LongTimer");
+const LoggingManager = require("../../system/LoggingManager");
+const log = LoggingManager.getLogger("joynr.messaging.websocket.SharedWebSocket");
 /**
  * @param address
  * @param {WebSocketAddress}
@@ -33,7 +30,7 @@ var log = LoggingManager.getLogger("joynr.messaging.websocket.SharedWebSocket");
  * @returns {String} a url
  */
 function webSocketAddressToUrl(address) {
-    var url = address.protocol + "://" + address.host + ":" + address.port;
+    let url = address.protocol + "://" + address.host + ":" + address.port;
     if (address.path) {
         url += address.path;
     }
@@ -58,7 +55,7 @@ function initializeConnection(websocket, localAddress) {
  *            queuedMessages
  */
 function sendQueuedMessages(websocket, queuedMessages) {
-    var queued;
+    let queued;
     while (queuedMessages.length) {
         queued = queuedMessages.shift();
         try {
@@ -104,26 +101,23 @@ function sendMessage(websocket, joynrMessage, queuedMessages) {
  * @param {Number} settings.provisioning.reconnectSleepTimeMs
  * @param {Object} settings.keychain
  */
-var SharedWebSocket = function SharedWebSocket(settings) {
+const SharedWebSocket = function SharedWebSocket(settings) {
     Typing.checkProperty(settings, "Object", "settings");
     Typing.checkProperty(settings.localAddress, "WebSocketClientAddress", "localAddress");
     Typing.checkProperty(settings.remoteAddress, "WebSocketAddress", "remoteAddress");
 
-    var websocket = null;
-    var provisioning = settings.provisioning || {};
-    var reconnectSleepTimeMs = provisioning.reconnectSleepTimeMs || 1000; // default value = 1000ms
-    var useUnencryptedTls = provisioning.useUnencryptedTls || true; // default to unencrypted Tls communication
-    var localAddress = settings.localAddress;
-    var remoteUrl = webSocketAddressToUrl(settings.remoteAddress);
-    var onmessageCallback = null;
-    var queuedMessages = [];
-    var onOpen;
-    var onError;
-    var onClose;
-    var closed = false;
-    var reconnectTimer;
+    let websocket = null;
+    const provisioning = settings.provisioning || {};
+    const reconnectSleepTimeMs = provisioning.reconnectSleepTimeMs || 1000; // default value = 1000ms
+    const useUnencryptedTls = provisioning.useUnencryptedTls || true; // default to unencrypted Tls communication
+    const localAddress = settings.localAddress;
+    const remoteUrl = webSocketAddressToUrl(settings.remoteAddress);
+    let onmessageCallback = null;
+    const queuedMessages = [];
+    let closed = false;
+    let reconnectTimer;
 
-    var resetConnection = function resetConnection() {
+    function resetConnection() {
         reconnectTimer = undefined;
         if (closed) {
             return;
@@ -135,9 +129,9 @@ var SharedWebSocket = function SharedWebSocket(settings) {
         if (onmessageCallback !== null) {
             websocket.onmessage = onmessageCallback;
         }
-    };
+    }
 
-    onError = function onError(event) {
+    function onError(event) {
         if (closed) {
             return;
         }
@@ -155,9 +149,9 @@ var SharedWebSocket = function SharedWebSocket(settings) {
             websocket = null;
         }
         reconnectTimer = LongTimer.setTimeout(resetConnection, reconnectSleepTimeMs);
-    };
+    }
 
-    onClose = function onClose(event) {
+    function onClose(event) {
         if (closed) {
             return;
         }
@@ -184,10 +178,10 @@ var SharedWebSocket = function SharedWebSocket(settings) {
                 websocket = null;
             }
         }
-    };
+    }
 
     // send all queued messages, requeuing to the front in case of a problem
-    onOpen = function onOpen() {
+    function onOpen() {
         try {
             log.debug("connection opened.");
             initializeConnection(websocket, localAddress);
@@ -195,7 +189,7 @@ var SharedWebSocket = function SharedWebSocket(settings) {
         } catch (e) {
             resetConnection();
         }
-    };
+    }
 
     resetConnection();
 
@@ -230,7 +224,7 @@ var SharedWebSocket = function SharedWebSocket(settings) {
     // the same API as WebSocket but have a setter function called when
     // the attribute is set.
     Object.defineProperty(this, "onmessage", {
-        set: function(newCallback) {
+        set(newCallback) {
             if (typeof newCallback === "function") {
                 onmessageCallback = function(data) {
                     websocket.unmarshalJoynrMessage(data, newCallback);
@@ -240,7 +234,7 @@ var SharedWebSocket = function SharedWebSocket(settings) {
                 throw new Error("onmessage callback must be a function, but instead was of type " + typeof newCallback);
             }
         },
-        get: function() {
+        get() {
             return onmessageCallback;
         },
         enumerable: false,

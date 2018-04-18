@@ -1,5 +1,3 @@
-/*jslint es5: true, nomen: true, node: true */
-
 /*
  * #%L
  * %%
@@ -18,7 +16,6 @@
  * limitations under the License.
  * #L%
  */
-var Typing = require("../../util/Typing");
 
 /**
  * @name BrowserMessagingStub

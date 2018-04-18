@@ -1,5 +1,3 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
@@ -19,13 +17,13 @@
  * #L%
  */
 require("../../node-unit-test-helper");
-var SubscriptionQos = require("../../../classes/joynr/proxy/SubscriptionQos");
-var PeriodicSubscriptionQos = require("../../../classes/joynr/proxy/PeriodicSubscriptionQos");
-var OnChangeSubscriptionQos = require("../../../classes/joynr/proxy/OnChangeSubscriptionQos");
-var OnChangeWithKeepAliveSubscriptionQos = require("../../../classes/joynr/proxy/OnChangeWithKeepAliveSubscriptionQos");
-var Date = require("../../../test-classes/global/Date");
-describe("libjoynr-js.joynr.proxy.SubscriptionQos", function() {
-    var qosSettings = {
+const SubscriptionQos = require("../../../../main/js/joynr/proxy/SubscriptionQos");
+const PeriodicSubscriptionQos = require("../../../../main/js/joynr/proxy/PeriodicSubscriptionQos");
+const OnChangeSubscriptionQos = require("../../../../main/js/joynr/proxy/OnChangeSubscriptionQos");
+const OnChangeWithKeepAliveSubscriptionQos = require("../../../../main/js/joynr/proxy/OnChangeWithKeepAliveSubscriptionQos");
+const Date = require("../../../../test/js/global/Date");
+describe("libjoynr-js.joynr.proxy.SubscriptionQos", () => {
+    const qosSettings = {
         minIntervalMs: 50,
         maxIntervalMs: 51,
         expiryDateMs: 4,
@@ -33,13 +31,13 @@ describe("libjoynr-js.joynr.proxy.SubscriptionQos", function() {
         publicationTtlMs: 100
     };
 
-    it("is instantiable", function(done) {
+    it("is instantiable", done => {
         expect(new OnChangeWithKeepAliveSubscriptionQos(qosSettings)).toBeDefined();
         done();
     });
 
-    it("is of correct type", function(done) {
-        var subscriptionQos = new OnChangeWithKeepAliveSubscriptionQos(qosSettings);
+    it("is of correct type", done => {
+        const subscriptionQos = new OnChangeWithKeepAliveSubscriptionQos(qosSettings);
         expect(subscriptionQos).toBeDefined();
         expect(subscriptionQos).not.toBeNull();
         expect(typeof subscriptionQos === "object").toBeTruthy();
@@ -55,28 +53,28 @@ describe("libjoynr-js.joynr.proxy.SubscriptionQos", function() {
         alertAfterIntervalMs,
         publicationTtlMs
     ) {
-        var returnValue;
+        let returnValue;
         if (onChange) {
             returnValue = new OnChangeWithKeepAliveSubscriptionQos({
-                minIntervalMs: minIntervalMs,
+                minIntervalMs,
                 maxIntervalMs: periodMs,
-                expiryDateMs: expiryDateMs,
-                alertAfterIntervalMs: alertAfterIntervalMs,
-                publicationTtlMs: publicationTtlMs
+                expiryDateMs,
+                alertAfterIntervalMs,
+                publicationTtlMs
             });
         } else {
             returnValue = new PeriodicSubscriptionQos({
-                periodMs: periodMs,
-                expiryDateMs: expiryDateMs,
-                alertAfterIntervalMs: alertAfterIntervalMs,
-                publicationTtlMs: publicationTtlMs
+                periodMs,
+                expiryDateMs,
+                alertAfterIntervalMs,
+                publicationTtlMs
             });
         }
         return returnValue;
     }
 
     function testValues(minIntervalMs, periodMs, onChange, expiryDateMs, alertAfterIntervalMs, publicationTtlMs) {
-        var subscriptionQos = createSubscriptionQos(
+        const subscriptionQos = createSubscriptionQos(
             minIntervalMs,
             periodMs,
             onChange,
@@ -84,7 +82,7 @@ describe("libjoynr-js.joynr.proxy.SubscriptionQos", function() {
             alertAfterIntervalMs,
             publicationTtlMs
         );
-        var expectedMaxIntervalMs = periodMs;
+        let expectedMaxIntervalMs = periodMs;
         if (minIntervalMs < OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS) {
             minIntervalMs = OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS;
         }
@@ -102,7 +100,7 @@ describe("libjoynr-js.joynr.proxy.SubscriptionQos", function() {
             expectedMaxIntervalMs = minIntervalMs;
         }
         if (onChange) {
-            var expectedMinIntervalMs = minIntervalMs;
+            const expectedMinIntervalMs = minIntervalMs;
 
             expect(subscriptionQos.minIntervalMs).toBe(expectedMinIntervalMs);
 
@@ -110,7 +108,7 @@ describe("libjoynr-js.joynr.proxy.SubscriptionQos", function() {
         } else {
             expect(subscriptionQos.periodMs).toBe(expectedMaxIntervalMs);
         }
-        var expectedPublicationTtlMs = publicationTtlMs;
+        let expectedPublicationTtlMs = publicationTtlMs;
         if (expectedPublicationTtlMs < SubscriptionQos.MIN_PUBLICATION_TTL_MS) {
             expectedPublicationTtlMs = SubscriptionQos.MIN_PUBLICATION_TTL_MS;
         }
@@ -124,7 +122,7 @@ describe("libjoynr-js.joynr.proxy.SubscriptionQos", function() {
         }
         expect(subscriptionQos.expiryDateMs).toBe(expiryDateMs);
 
-        var expectedAlertAfterIntervalMs = alertAfterIntervalMs;
+        let expectedAlertAfterIntervalMs = alertAfterIntervalMs;
         if (expectedAlertAfterIntervalMs > OnChangeWithKeepAliveSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS) {
             expectedAlertAfterIntervalMs = OnChangeWithKeepAliveSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS;
         }
@@ -138,21 +136,21 @@ describe("libjoynr-js.joynr.proxy.SubscriptionQos", function() {
         return subscriptionQos;
     }
 
-    it("constructs with correct member values", function(done) {
+    it("constructs with correct member values", done => {
         //wrong publicationTtlMs
-        expect(function() {
+        expect(() => {
             createSubscriptionQos(1, 2, false, 4, 5, -6);
         }).toThrow();
         //wrong periodMs
-        expect(function() {
+        expect(() => {
             createSubscriptionQos(1, 2, false, 4, 5, 100);
         }).toThrow();
         //wrong periodMs (exceeds MIN_PERIOD_MS)
-        expect(function() {
+        expect(() => {
             createSubscriptionQos(1, PeriodicSubscriptionQos.MIN_PERIOD_MS - 1, false, 4, 5, 100);
         }).toThrow();
         //wrong periodMs (exceeds MAX_PERIOD_MS)
-        expect(function() {
+        expect(() => {
             createSubscriptionQos(1, PeriodicSubscriptionQos.MAX_PERIOD_MS + 1, false, 4, 5, 100);
         }).toThrow();
         //wrong alertAfterIntervalMs (shall be higher then the periodMs)
@@ -209,19 +207,19 @@ describe("libjoynr-js.joynr.proxy.SubscriptionQos", function() {
         testValues(60, 62, true, 10, 100, 200);
 
         //wrong publicationTtlMs
-        expect(function() {
+        expect(() => {
             testValues(0, 0, false, 0, 0, 0);
         }).toThrow();
         //wrong periodMs
-        expect(function() {
+        expect(() => {
             testValues(0, 0, false, 0, 0, 100);
         }).toThrow();
         testValues(0, 50, false, 0, 0, 100);
         done();
     });
 
-    it("constructs OnChangeWithKeepAliveSubscriptionQos with correct default values", function(done) {
-        var fixture = new OnChangeWithKeepAliveSubscriptionQos();
+    it("constructs OnChangeWithKeepAliveSubscriptionQos with correct default values", done => {
+        const fixture = new OnChangeWithKeepAliveSubscriptionQos();
         expect(fixture.minIntervalMs).toEqual(OnChangeSubscriptionQos.DEFAULT_MIN_INTERVAL_MS);
         expect(fixture.maxIntervalMs).toEqual(OnChangeWithKeepAliveSubscriptionQos.DEFAULT_MAX_INTERVAL_MS);
         expect(fixture.expiryDateMs).toEqual(SubscriptionQos.NO_EXPIRY_DATE);
@@ -232,8 +230,8 @@ describe("libjoynr-js.joynr.proxy.SubscriptionQos", function() {
         done();
     });
 
-    it("constructs PeriodicSubscriptionQos with correct default values", function(done) {
-        var fixture = new PeriodicSubscriptionQos();
+    it("constructs PeriodicSubscriptionQos with correct default values", done => {
+        const fixture = new PeriodicSubscriptionQos();
         expect(fixture.periodMs).toEqual(PeriodicSubscriptionQos.DEFAULT_PERIOD_MS);
         expect(fixture.expiryDateMs).toEqual(SubscriptionQos.NO_EXPIRY_DATE);
         expect(fixture.alertAfterIntervalMs).toEqual(
@@ -243,8 +241,8 @@ describe("libjoynr-js.joynr.proxy.SubscriptionQos", function() {
         done();
     });
 
-    it("SubscriptionQos.clearExpiryDate clears the expiry date", function(done) {
-        var fixture = new OnChangeWithKeepAliveSubscriptionQos({
+    it("SubscriptionQos.clearExpiryDate clears the expiry date", done => {
+        const fixture = new OnChangeWithKeepAliveSubscriptionQos({
             expiryDateMs: 1234
         });
 
@@ -254,10 +252,10 @@ describe("libjoynr-js.joynr.proxy.SubscriptionQos", function() {
         done();
     });
 
-    it("PeriodicSubscriptionQos.clearAlertAfterInterval clears the alert after interval", function(done) {
-        var alertAfterIntervalMs = PeriodicSubscriptionQos.DEFAULT_PERIOD_MS + 1;
-        var fixture = new PeriodicSubscriptionQos({
-            alertAfterIntervalMs: alertAfterIntervalMs
+    it("PeriodicSubscriptionQos.clearAlertAfterInterval clears the alert after interval", done => {
+        const alertAfterIntervalMs = PeriodicSubscriptionQos.DEFAULT_PERIOD_MS + 1;
+        const fixture = new PeriodicSubscriptionQos({
+            alertAfterIntervalMs
         });
 
         expect(fixture.alertAfterIntervalMs).toBe(alertAfterIntervalMs);
@@ -266,10 +264,10 @@ describe("libjoynr-js.joynr.proxy.SubscriptionQos", function() {
         done();
     });
 
-    it("OnChangeWithKeepAliveSubscriptionQos.clearAlertAfterInterval clears the alert after interval", function(done) {
-        var alertAfterIntervalMs = OnChangeWithKeepAliveSubscriptionQos.DEFAULT_MAX_INTERVAL_MS + 1;
-        var fixture = new OnChangeWithKeepAliveSubscriptionQos({
-            alertAfterIntervalMs: alertAfterIntervalMs
+    it("OnChangeWithKeepAliveSubscriptionQos.clearAlertAfterInterval clears the alert after interval", done => {
+        const alertAfterIntervalMs = OnChangeWithKeepAliveSubscriptionQos.DEFAULT_MAX_INTERVAL_MS + 1;
+        const fixture = new OnChangeWithKeepAliveSubscriptionQos({
+            alertAfterIntervalMs
         });
 
         expect(fixture.alertAfterIntervalMs).toBe(alertAfterIntervalMs);
@@ -278,54 +276,54 @@ describe("libjoynr-js.joynr.proxy.SubscriptionQos", function() {
         done();
     });
 
-    it("subscription qos accepts validity instead of expiry date as constructor member", function(done) {
-        var fakeTime = 374747473;
-        var validityMs = 23232;
-        spyOn(Date, "now").and.callFake(function() {
+    it("subscription qos accepts validity instead of expiry date as constructor member", done => {
+        const fakeTime = 374747473;
+        const validityMs = 23232;
+        spyOn(Date, "now").and.callFake(() => {
             return fakeTime;
         });
 
-        var fixture = new OnChangeWithKeepAliveSubscriptionQos({
-            validityMs: validityMs
+        const fixture = new OnChangeWithKeepAliveSubscriptionQos({
+            validityMs
         });
         expect(fixture.validityMs).toBe(undefined);
         expect(fixture.expiryDateMs).toBe(fakeTime + validityMs);
         done();
     });
 
-    it("throws on incorrectly typed values", function(done) {
+    it("throws on incorrectly typed values", done => {
         // all arguments
-        expect(function() {
+        expect(() => {
             createSubscriptionQos(1, 50, false, 4, 80, 100);
         }).not.toThrow();
 
         // no arguments
-        expect(function() {
+        expect(() => {
             createSubscriptionQos(undefined, undefined, undefined, undefined, undefined, undefined);
         }).not.toThrow();
 
         // arguments 1 wrongly types
-        expect(function() {
+        expect(() => {
             createSubscriptionQos({}, 50, true, 4, 80, 100);
         }).toThrow();
 
         // arguments 2 wrongly types
-        expect(function() {
+        expect(() => {
             createSubscriptionQos(1, {}, false, 4, 80, 100);
         }).toThrow();
 
         // arguments 4 wrongly types
-        expect(function() {
+        expect(() => {
             createSubscriptionQos(1, 50, false, {}, 80, 100);
         }).toThrow();
 
         // arguments 5 wrongly types
-        expect(function() {
+        expect(() => {
             createSubscriptionQos(1, 50, false, 4, {}, 100);
         }).toThrow();
 
         // arguments 6 wrongly types
-        expect(function() {
+        expect(() => {
             createSubscriptionQos(1, 50, false, 4, 80, {});
         }).toThrow();
         done();

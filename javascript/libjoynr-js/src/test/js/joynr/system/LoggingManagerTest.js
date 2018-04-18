@@ -1,5 +1,3 @@
-/*jslint es5: true */
-
 /*
  * #%L
  * %%
@@ -19,11 +17,11 @@
  * #L%
  */
 require("../../node-unit-test-helper");
-var LoggingManager = require("../../../classes/joynr/system/LoggingManager");
-var JoynrLogger = require("../../../classes/joynr/system/JoynrLogger");
+const LoggingManager = require("../../../../main/js/joynr/system/LoggingManager");
+const JoynrLogger = require("../../../../main/js/joynr/system/JoynrLogger");
 
-describe("libjoynr-js.joynr.util.LoggingManager", function() {
-    beforeEach(function() {
+describe("libjoynr-js.joynr.util.LoggingManager", () => {
+    beforeEach(() => {
         spyOn(JoynrLogger, "setLogLevel").and.callThrough();
         spyOn(JoynrLogger, "setFormatting").and.callThrough();
         spyOn(JoynrLogger, "setOutput").and.callThrough();
@@ -35,7 +33,7 @@ describe("libjoynr-js.joynr.util.LoggingManager", function() {
         expect(JoynrLogger.setOutput).not.toHaveBeenCalled();
     }
 
-    it("will do nothing when the configuration is missing", function() {
+    it("will do nothing when the configuration is missing", () => {
         LoggingManager.configure({});
         expectNoCalls();
 
@@ -64,26 +62,26 @@ describe("libjoynr-js.joynr.util.LoggingManager", function() {
         expectNoCalls();
     });
 
-    it("sets the loglevel of JoynrLogger when loglevel of the root logger is set", function() {
+    it("sets the loglevel of JoynrLogger when loglevel of the root logger is set", () => {
         LoggingManager.configure({ configuration: { loggers: { root: { level: JoynrLogger.LogLevel.DEBUG } } } });
         expect(JoynrLogger.setLogLevel).toHaveBeenCalledWith(JoynrLogger.LogLevel.DEBUG);
     });
 
-    it("sets the formatting of JoynrLogger when a patternLayout is set", function() {
-        var pattern = "some pattern %m";
+    it("sets the formatting of JoynrLogger when a patternLayout is set", () => {
+        const pattern = "some pattern %m";
         LoggingManager.configure({
-            configuration: { appenders: { appender: [{ PatternLayout: { pattern: pattern } }] } }
+            configuration: { appenders: { appender: [{ PatternLayout: { pattern } }] } }
         });
         expect(JoynrLogger.setFormatting).toHaveBeenCalledWith(pattern);
     });
 
-    it("won't set the formatting of JoynrLogger when the patternLayout is %m", function() {
-        var pattern = "%m";
-        LoggingManager.configure({ configuration: { appenders: [{ PatternLayout: { pattern: pattern } }] } });
+    it("won't set the formatting of JoynrLogger when the patternLayout is %m", () => {
+        const pattern = "%m";
+        LoggingManager.configure({ configuration: { appenders: [{ PatternLayout: { pattern } }] } });
         expect(JoynrLogger.setFormatting).not.toHaveBeenCalled();
     });
 
-    it("sets the output of JoynrLogger when an appenderClass is registered", function() {
+    it("sets the output of JoynrLogger when an appenderClass is registered", () => {
         function SomeObject() {}
         SomeObject.prototype.append = function() {};
         LoggingManager.configure({ appenderClasses: { someName: SomeObject } });

@@ -1,4 +1,3 @@
-/*jslint es5: true, node: true */
 /*
  * #%L
  * %%
@@ -18,10 +17,10 @@
  * #L%
  */
 
-var ComplexRadioStation = require("joynr/datatypes/exampleTypes/ComplexRadioStation");
-var Country = require("joynr/datatypes/exampleTypes/Country");
+const ComplexRadioStation = require("../../generated/joynr/datatypes/exampleTypes/ComplexRadioStation");
+const Country = require("../../generated/joynr/datatypes/exampleTypes/Country");
 
-var TestEnd2EndDatatypesTestData = [
+const TestEnd2EndDatatypesTestData = [
     {
         attribute: "booleanAttribute",
         jsRuntimeType: "Boolean",

@@ -1,5 +1,3 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
@@ -19,18 +17,18 @@
  * #L%
  */
 require("../../node-unit-test-helper");
-var LongTimer = require("../../../classes/joynr/util/LongTimer");
-var Typing = require("../../../classes/joynr/util/Typing");
+const LongTimer = require("../../../../main/js/joynr/util/LongTimer");
+const Typing = require("../../../../main/js/joynr/util/Typing");
 
-var maxPow = 35; // make sure this is at lease 31 to test cases with long timeout (> Math.pow(2, 31)-1)
-var concurrentTimeouts = 10;
-var testIntervals = 10;
+const maxPow = 35; // make sure this is at lease 31 to test cases with long timeout (> Math.pow(2, 31)-1)
+const concurrentTimeouts = 10;
+const testIntervals = 10;
 
-describe("libjoynr-js.joynr.LongTimer.Timeout", function() {
+describe("libjoynr-js.joynr.LongTimer.Timeout", () => {
     function testCallTimeout(timeout) {
         jasmine.clock().uninstall();
         jasmine.clock().install();
-        var timeoutSpy = jasmine.createSpy("timeoutSpy");
+        const timeoutSpy = jasmine.createSpy("timeoutSpy");
         LongTimer.setTimeout(timeoutSpy, timeout);
         jasmine.clock().tick(timeout - 1);
         expect(timeoutSpy).not.toHaveBeenCalled();
@@ -42,8 +40,8 @@ describe("libjoynr-js.joynr.LongTimer.Timeout", function() {
     function testCancelTimeout(timeout) {
         jasmine.clock().uninstall();
         jasmine.clock().install();
-        var timeoutSpy = jasmine.createSpy("timeoutSpy");
-        var timeoutId = LongTimer.setTimeout(timeoutSpy, timeout);
+        const timeoutSpy = jasmine.createSpy("timeoutSpy");
+        const timeoutId = LongTimer.setTimeout(timeoutSpy, timeout);
         jasmine.clock().tick(timeout - 1);
         expect(timeoutSpy).not.toHaveBeenCalled();
         LongTimer.clearTimeout(timeoutId);
@@ -51,35 +49,35 @@ describe("libjoynr-js.joynr.LongTimer.Timeout", function() {
         expect(timeoutSpy).not.toHaveBeenCalled();
     }
 
-    beforeEach(function(done) {
+    beforeEach(done => {
         jasmine.clock().install();
         done();
     });
 
-    afterEach(function(done) {
+    afterEach(done => {
         jasmine.clock().uninstall();
         done();
     });
 
-    it("provides a timeoutId", function(done) {
-        var timeoutId = LongTimer.setTimeout(function() {}, 0);
+    it("provides a timeoutId", done => {
+        const timeoutId = LongTimer.setTimeout(() => {}, 0);
         expect(timeoutId).toBeDefined();
         expect(Typing.getObjectType(timeoutId)).toEqual("Number");
         done();
     });
 
-    it("calls timeout function at correct time", function(done) {
-        var i;
+    it("calls timeout function at correct time", done => {
+        let i;
         for (i = 0; i < maxPow; ++i) {
             testCallTimeout(Math.pow(2, i));
         }
         done();
     });
 
-    it("calls concurrent timeouts correctly", function(done) {
-        var i, j, spy;
+    it("calls concurrent timeouts correctly", done => {
+        let i, j, spy;
 
-        var spyArray = [];
+        const spyArray = [];
         for (i = 1; i <= concurrentTimeouts; ++i) {
             spyArray.push("timeout" + i);
         }
@@ -94,7 +92,7 @@ describe("libjoynr-js.joynr.LongTimer.Timeout", function() {
         for (j = 0; j <= concurrentTimeouts; ++j) {
             // check if spys have been called correctly
             for (i = 1; i <= concurrentTimeouts; ++i) {
-                var e = expect(spy["timeout" + i]);
+                let e = expect(spy["timeout" + i]);
                 if (i > j) {
                     e = e.not;
                 }
@@ -107,19 +105,19 @@ describe("libjoynr-js.joynr.LongTimer.Timeout", function() {
         done();
     });
 
-    it("cancels timeout correctly", function(done) {
-        var i;
+    it("cancels timeout correctly", done => {
+        let i;
         for (i = 0; i < maxPow; ++i) {
             testCancelTimeout(Math.pow(2, i));
         }
         done();
     });
 
-    it("calls target function with provided arguments", function(done) {
-        var timeoutSpy = jasmine.createSpy("timeoutSpy");
-        var arg1 = "arg1";
-        var arg2 = "arg2";
-        var timeout = 1000;
+    it("calls target function with provided arguments", done => {
+        const timeoutSpy = jasmine.createSpy("timeoutSpy");
+        const arg1 = "arg1";
+        const arg2 = "arg2";
+        const timeout = 1000;
         LongTimer.setTimeout(timeoutSpy, timeout, arg1, arg2);
         jasmine.clock().tick(timeout - 1);
         expect(timeoutSpy).not.toHaveBeenCalled();
@@ -132,12 +130,12 @@ describe("libjoynr-js.joynr.LongTimer.Timeout", function() {
     });
 });
 
-describe("libjoynr-js.joynr.LongTimer.Interval", function() {
+describe("libjoynr-js.joynr.LongTimer.Interval", () => {
     function testCallInterval(interval) {
-        var i;
+        let i;
         jasmine.clock().uninstall();
         jasmine.clock().install();
-        var intervalSpy = jasmine.createSpy("intervalSpy");
+        const intervalSpy = jasmine.createSpy("intervalSpy");
         LongTimer.setInterval(intervalSpy, interval);
         expect(intervalSpy).not.toHaveBeenCalled();
         for (i = 0; i < testIntervals; ++i) {
@@ -150,11 +148,10 @@ describe("libjoynr-js.joynr.LongTimer.Interval", function() {
     }
 
     function testCancelInterval(interval) {
-        var i;
         jasmine.clock().uninstall();
         jasmine.clock().install();
-        var intervalSpy = jasmine.createSpy("intervalSpy");
-        var intervalId = LongTimer.setInterval(intervalSpy, interval);
+        const intervalSpy = jasmine.createSpy("intervalSpy");
+        const intervalId = LongTimer.setInterval(intervalSpy, interval);
 
         jasmine.clock().tick(interval);
 
@@ -167,35 +164,35 @@ describe("libjoynr-js.joynr.LongTimer.Interval", function() {
         expect(intervalSpy.calls.count()).toEqual(1);
     }
 
-    beforeEach(function(done) {
+    beforeEach(done => {
         jasmine.clock().install();
         done();
     });
 
-    afterEach(function(done) {
+    afterEach(done => {
         jasmine.clock().uninstall();
         done();
     });
 
-    it("provides an intervalId", function(done) {
-        var intervalId = LongTimer.setInterval(function() {}, 0);
+    it("provides an intervalId", done => {
+        const intervalId = LongTimer.setInterval(() => {}, 0);
         expect(intervalId).toBeDefined();
         expect(Typing.getObjectType(intervalId)).toEqual("Number");
         done();
     });
 
-    it("calls interval function at correct times", function(done) {
-        var i;
+    it("calls interval function at correct times", done => {
+        let i;
         for (i = 0; i < maxPow; ++i) {
             testCallInterval(Math.pow(2, i));
         }
         done();
     });
 
-    it("calls concurrent timeouts correctly", function(done) {
-        var i, j, spy;
+    it("calls concurrent timeouts correctly", done => {
+        let i, j, spy;
 
-        var spyArray = [];
+        const spyArray = [];
         for (i = 1; i <= concurrentTimeouts; ++i) {
             spyArray.push("timeout" + i);
         }
@@ -210,7 +207,7 @@ describe("libjoynr-js.joynr.LongTimer.Interval", function() {
         for (j = 0; j <= concurrentTimeouts; ++j) {
             // check if spys have been called correctly
             for (i = 1; i <= concurrentTimeouts; ++i) {
-                var e = expect(spy["timeout" + i]);
+                let e = expect(spy["timeout" + i]);
                 if (i > j) {
                     e = e.not;
                 }
@@ -223,8 +220,8 @@ describe("libjoynr-js.joynr.LongTimer.Interval", function() {
         done();
     });
 
-    it("cancells timeout correctly", function(done) {
-        var i;
+    it("cancells timeout correctly", done => {
+        let i;
         for (i = 0; i < maxPow; ++i) {
             testCancelInterval(Math.pow(2, i));
         }

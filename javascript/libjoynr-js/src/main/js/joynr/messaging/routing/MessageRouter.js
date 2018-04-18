@@ -1,5 +1,3 @@
-/*jslint es5: true, node: true, nomen: true */
-
 /*
  * #%L
  * %%
@@ -18,18 +16,18 @@
  * limitations under the License.
  * #L%
  */
-var Promise = require("../../../global/Promise");
-var MulticastWildcardRegexFactory = require("../util/MulticastWildcardRegexFactory");
-var DiagnosticTags = require("../../system/DiagnosticTags");
-var LoggingManager = require("../../system/LoggingManager");
-var InProcessAddress = require("../inprocess/InProcessAddress");
-var JoynrMessage = require("../JoynrMessage");
-var MessageReplyToAddressCalculator = require("../MessageReplyToAddressCalculator");
-var JoynrException = require("../../exceptions/JoynrException");
-var JoynrRuntimeException = require("../../exceptions/JoynrRuntimeException");
-var Typing = require("../../util/Typing");
-var Util = require("../../util/UtilInternal");
-var JSONSerializer = require("../../util/JSONSerializer");
+const Promise = require("../../../global/Promise");
+const MulticastWildcardRegexFactory = require("../util/MulticastWildcardRegexFactory");
+const DiagnosticTags = require("../../system/DiagnosticTags");
+const LoggingManager = require("../../system/LoggingManager");
+const InProcessAddress = require("../inprocess/InProcessAddress");
+const JoynrMessage = require("../JoynrMessage");
+const MessageReplyToAddressCalculator = require("../MessageReplyToAddressCalculator");
+const JoynrException = require("../../exceptions/JoynrException");
+const JoynrRuntimeException = require("../../exceptions/JoynrRuntimeException");
+const Typing = require("../../util/Typing");
+const UtilInternal = require("../../util/UtilInternal");
+const JSONSerializer = require("../../util/JSONSerializer");
 
 /**
  * Message Router receives a message and forwards it to the correct endpoint, as looked up in the {@link RoutingTable}
@@ -66,26 +64,26 @@ function MessageRouter(settings) {
     // TODO local providers registered (using dispatcher as local endpoint) by capabilitiesDirectory on register
     // TODO local replyCallers are registered (using dispatcher as local endpoint) when they are created
 
-    var that = this;
-    var multicastWildcardRegexFactory = new MulticastWildcardRegexFactory();
-    var log = LoggingManager.getLogger("joynr/messaging/routing/MessageRouter");
-    var listener, routingProxy, messagingStub;
-    var queuedAddNextHopCalls = [],
+    const that = this;
+    const multicastWildcardRegexFactory = new MulticastWildcardRegexFactory();
+    const log = LoggingManager.getLogger("joynr/messaging/routing/MessageRouter");
+    let routingProxy, messagingStub;
+    let queuedAddNextHopCalls = [],
         queuedRemoveNextHopCalls = [],
         queuedAddMulticastReceiverCalls = [],
         queuedRemoveMulticastReceiverCalls = [];
-    var routingTable = settings.initialRoutingTable || {};
-    var id = settings.joynrInstanceId;
-    var persistency = settings.persistency;
-    var incomingAddress = settings.incomingAddress;
-    var parentMessageRouterAddress = settings.parentMessageRouterAddress;
-    var typeRegistry = settings.typeRegistry;
-    var multicastAddressCalculator = settings.multicastAddressCalculator;
-    var messagingSkeletonFactory = settings.messagingSkeletonFactory;
-    var multicastReceiversRegistry = {};
-    var replyToAddress;
-    var messageReplyToAddressCalculator = new MessageReplyToAddressCalculator({});
-    var messagesWithoutReplyTo = [];
+    const routingTable = settings.initialRoutingTable || {};
+    const id = settings.joynrInstanceId;
+    const persistency = settings.persistency;
+    const incomingAddress = settings.incomingAddress;
+    const parentMessageRouterAddress = settings.parentMessageRouterAddress;
+    const typeRegistry = settings.typeRegistry;
+    const multicastAddressCalculator = settings.multicastAddressCalculator;
+    const messagingSkeletonFactory = settings.messagingSkeletonFactory;
+    const multicastReceiversRegistry = {};
+    let replyToAddress;
+    const messageReplyToAddressCalculator = new MessageReplyToAddressCalculator({});
+    const messagesWithoutReplyTo = [];
 
     // if (settings.routingTable === undefined) {
     // throw new Error("routing table is undefined");
@@ -100,16 +98,16 @@ function MessageRouter(settings) {
         throw new Error("messageQueue is undefined");
     }
 
-    var started = true;
+    let started = true;
 
-    var getAddressFromPersistency = function getAddressFromPersistency(participantId) {
-        var addressString;
+    let getAddressFromPersistency = function getAddressFromPersistency(participantId) {
+        let addressString;
         try {
             addressString = persistency.getItem(that.getStorageKey(participantId));
             if (addressString === undefined || addressString === null || addressString === "{}") {
                 persistency.removeItem(that.getStorageKey(participantId));
             } else {
-                var address = Typing.augmentTypes(JSON.parse(addressString), typeRegistry);
+                const address = Typing.augmentTypes(JSON.parse(addressString), typeRegistry);
                 routingTable[participantId] = address;
                 return address;
             }
@@ -119,7 +117,7 @@ function MessageRouter(settings) {
     };
 
     if (!persistency) {
-        getAddressFromPersistency = Util.emptyFunction;
+        getAddressFromPersistency = UtilInternal.emptyFunction;
     }
 
     function isReady() {
@@ -170,13 +168,13 @@ function MessageRouter(settings) {
 
         if (routingProxy !== undefined) {
             return routingProxy.removeNextHop({
-                participantId: participantId
+                participantId
             });
         }
         if (parentMessageRouterAddress !== undefined) {
-            var deferred = Util.createDeferred();
+            const deferred = UtilInternal.createDeferred();
             queuedRemoveNextHopCalls.push({
-                participantId: participantId,
+                participantId,
                 resolve: deferred.resolve,
                 reject: deferred.reject
             });
@@ -205,34 +203,34 @@ function MessageRouter(settings) {
     this.addNextHopToParentRoutingTable = function addNextHopToParentRoutingTable(participantId, isGloballyVisible) {
         if (Typing.getObjectType(incomingAddress) === "WebSocketClientAddress") {
             return routingProxy.addNextHop({
-                participantId: participantId,
+                participantId,
                 webSocketClientAddress: incomingAddress,
-                isGloballyVisible: isGloballyVisible
+                isGloballyVisible
             });
         }
         if (Typing.getObjectType(incomingAddress) === "BrowserAddress") {
             return routingProxy.addNextHop({
-                participantId: participantId,
+                participantId,
                 browserAddress: incomingAddress,
-                isGloballyVisible: isGloballyVisible
+                isGloballyVisible
             });
         }
         if (Typing.getObjectType(incomingAddress) === "WebSocketAddress") {
             return routingProxy.addNextHop({
-                participantId: participantId,
+                participantId,
                 webSocketAddress: incomingAddress,
-                isGloballyVisible: isGloballyVisible
+                isGloballyVisible
             });
         }
         if (Typing.getObjectType(incomingAddress) === "ChannelAddress") {
             return routingProxy.addNextHop({
-                participantId: participantId,
+                participantId,
                 channelAddress: incomingAddress,
-                isGloballyVisible: isGloballyVisible
+                isGloballyVisible
             });
         }
 
-        var errorMsg = "Invalid address type of incomingAddress: " + Typing.getObjectType(incomingAddress);
+        const errorMsg = "Invalid address type of incomingAddress: " + Typing.getObjectType(incomingAddress);
         log.fatal(errorMsg);
         return Promise.reject(new JoynrRuntimeException({ detailMessage: errorMsg }));
     };
@@ -253,14 +251,14 @@ function MessageRouter(settings) {
     function addRoutingProxyToParentRoutingTable() {
         if (routingProxy.proxyParticipantId !== undefined) {
             // isGloballyVisible is false because the routing provider is local
-            var isGloballyVisible = false;
+            const isGloballyVisible = false;
             return that
                 .addNextHopToParentRoutingTable(routingProxy.proxyParticipantId, isGloballyVisible)
                 .catch(handleAddNextHopToParentError);
         }
     }
     function processQueuedRoutingProxyCalls() {
-        var hopIndex, receiverIndex, queuedCall, length;
+        let hopIndex, receiverIndex, queuedCall, length;
 
         length = queuedAddNextHopCalls.length;
         for (hopIndex = 0; hopIndex < length; hopIndex++) {
@@ -328,7 +326,7 @@ function MessageRouter(settings) {
      * It tries to resolve the next hop from the persistency and parent router.
      */
     function resolveNextHopInternal(participantId) {
-        var address = getAddressFromPersistency(participantId);
+        const address = getAddressFromPersistency(participantId);
 
         function resolveNextHopOnSuccess(opArgs) {
             if (opArgs.resolved) {
@@ -345,7 +343,7 @@ function MessageRouter(settings) {
         if (address === undefined && routingProxy !== undefined) {
             return routingProxy
                 .resolveNextHop({
-                    participantId: participantId
+                    participantId
                 })
                 .then(resolveNextHopOnSuccess);
         }
@@ -369,7 +367,7 @@ function MessageRouter(settings) {
             return Promise.reject(new Error("message router is already shut down"));
         }
 
-        var address = routingTable[participantId];
+        const address = routingTable[participantId];
 
         if (address === undefined) {
             return resolveNextHopInternal(participantId);
@@ -380,7 +378,7 @@ function MessageRouter(settings) {
 
     function containsAddress(array, address) {
         //each address class provides an equals method, e.g. InProcessAddress
-        var j;
+        let j;
         if (array === undefined) {
             return false;
         }
@@ -400,7 +398,7 @@ function MessageRouter(settings) {
      * @return the address to send the message to. Will not be null, because if an address can't be determined an exception is thrown.
      */
     function getAddressesForMulticast(joynrMessage) {
-        var i,
+        let i,
             result = [],
             address;
         if (!joynrMessage.isReceivedFromGlobal) {
@@ -410,7 +408,7 @@ function MessageRouter(settings) {
             }
         }
 
-        var multicastIdPattern, receivers;
+        let multicastIdPattern, receivers;
         for (multicastIdPattern in multicastReceiversRegistry) {
             if (multicastReceiversRegistry.hasOwnProperty(multicastIdPattern)) {
                 if (joynrMessage.to.match(new RegExp(multicastIdPattern)) !== null) {
@@ -443,7 +441,7 @@ function MessageRouter(settings) {
      * Helper function to route a message once the address is known
      */
     function routeInternal(address, joynrMessage) {
-        var errorMsg;
+        let errorMsg;
         // Error: The participant is not registered yet.
         // remote provider participants are registered by capabilitiesDirectory on lookup
         // local providers are registered by capabilitiesDirectory on register
@@ -475,7 +473,7 @@ function MessageRouter(settings) {
             return;
         }
 
-        var type = joynrMessage.type;
+        const type = joynrMessage.type;
         if (
             type === JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST ||
             type === JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REQUEST ||
@@ -483,10 +481,10 @@ function MessageRouter(settings) {
             type === JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST
         ) {
             try {
-                var replyToAddress = joynrMessage.replyChannelId;
-                if (!Util.checkNullUndefined(replyToAddress)) {
+                const replyToAddress = joynrMessage.replyChannelId;
+                if (!UtilInternal.checkNullUndefined(replyToAddress)) {
                     // because the message is received via global transport, isGloballyVisible must be true
-                    var isGloballyVisible = true;
+                    const isGloballyVisible = true;
                     that.addNextHop(
                         joynrMessage.from,
                         Typing.augmentTypes(JSON.parse(replyToAddress), typeRegistry),
@@ -508,7 +506,7 @@ function MessageRouter(settings) {
     }
 
     function resolveNextHopAndRoute(participantId, joynrMessage) {
-        var address = getAddressFromPersistency(participantId);
+        const address = getAddressFromPersistency(participantId);
 
         function resolveNextHopOnSuccess(opArgs) {
             if (opArgs.resolved && parentMessageRouterAddress !== undefined) {
@@ -526,7 +524,7 @@ function MessageRouter(settings) {
             if (routingProxy !== undefined) {
                 return routingProxy
                     .resolveNextHop({
-                        participantId: participantId
+                        participantId
                     })
                     .then(resolveNextHopOnSuccess)
                     .catch(resolveNextHopOnError);
@@ -553,9 +551,9 @@ function MessageRouter(settings) {
      */
     this.route = function route(joynrMessage) {
         try {
-            var now = Date.now();
+            const now = Date.now();
             if (now > joynrMessage.expiryDate) {
-                var errorMsg = "Received expired message. Dropping the message. ID: " + joynrMessage.msgId;
+                const errorMsg = "Received expired message. Dropping the message. ID: " + joynrMessage.msgId;
                 log.warn(errorMsg + ", expiryDate: " + joynrMessage.expiryDate + ", now: " + now);
                 return Promise.resolve();
             }
@@ -574,8 +572,8 @@ function MessageRouter(settings) {
                 return Promise.all(getAddressesForMulticast(joynrMessage).map(forwardToRouteInternal, joynrMessage));
             }
 
-            var participantId = joynrMessage.to;
-            var address = routingTable[participantId];
+            const participantId = joynrMessage.to;
+            const address = routingTable[participantId];
             if (address !== undefined) {
                 return routeInternal(address, joynrMessage);
             }
@@ -607,8 +605,8 @@ function MessageRouter(settings) {
         }
         // store the address of the participantId persistently
         routingTable[participantId] = address;
-        var serializedAddress = JSONSerializer.stringify(address);
-        var promise;
+        const serializedAddress = JSONSerializer.stringify(address);
+        let promise;
         if (serializedAddress === undefined || serializedAddress === null || serializedAddress === "{}") {
             log.info(
                 "addNextHop: HOP address " +
@@ -625,10 +623,10 @@ function MessageRouter(settings) {
             // register remotely
             promise = that.addNextHopToParentRoutingTable(participantId, isGloballyVisible);
         } else if (parentMessageRouterAddress !== undefined) {
-            var deferred = Util.createDeferred();
+            const deferred = UtilInternal.createDeferred();
             queuedAddNextHopCalls.push({
-                participantId: participantId,
-                isGloballyVisible: isGloballyVisible,
+                participantId,
+                isGloballyVisible,
                 resolve: deferred.resolve,
                 reject: deferred.reject
             });
@@ -659,14 +657,14 @@ function MessageRouter(settings) {
     this.addMulticastReceiver = function addMulticastReceiver(parameters) {
         //1. handle call in local router
         //1.a store receiver in multicastReceiverRegistry
-        var multicastIdPattern = multicastWildcardRegexFactory.createIdPattern(parameters.multicastId);
-        var providerAddress = routingTable[parameters.providerParticipantId];
+        const multicastIdPattern = multicastWildcardRegexFactory.createIdPattern(parameters.multicastId);
+        const providerAddress = routingTable[parameters.providerParticipantId];
 
         if (multicastReceiversRegistry[multicastIdPattern] === undefined) {
             multicastReceiversRegistry[multicastIdPattern] = [];
 
             //1.b the first receiver for this multicastId -> inform MessagingSkeleton about receiver
-            var skeleton = messagingSkeletonFactory.getSkeleton(providerAddress);
+            const skeleton = messagingSkeletonFactory.getSkeleton(providerAddress);
             if (skeleton !== undefined && skeleton.registerMulticastSubscription !== undefined) {
                 skeleton.registerMulticastSubscription(parameters.multicastId);
             }
@@ -686,9 +684,9 @@ function MessageRouter(settings) {
             return routingProxy.addMulticastReceiver(parameters);
         }
 
-        var deferred = Util.createDeferred();
+        const deferred = UtilInternal.createDeferred();
         queuedAddMulticastReceiverCalls.push({
-            parameters: parameters,
+            parameters,
             resolve: deferred.resolve,
             reject: deferred.reject
         });
@@ -715,10 +713,10 @@ function MessageRouter(settings) {
     this.removeMulticastReceiver = function removeMulticastReceiver(parameters) {
         //1. handle call in local router
         //1.a remove receiver from multicastReceiverRegistry
-        var multicastIdPattern = multicastWildcardRegexFactory.createIdPattern(parameters.multicastId);
-        var providerAddress = routingTable[parameters.providerParticipantId];
+        const multicastIdPattern = multicastWildcardRegexFactory.createIdPattern(parameters.multicastId);
+        const providerAddress = routingTable[parameters.providerParticipantId];
         if (multicastReceiversRegistry[multicastIdPattern] !== undefined) {
-            var i,
+            let i,
                 receivers = multicastReceiversRegistry[multicastIdPattern];
             for (i = 0; i < receivers.length; i++) {
                 if (receivers[i] === parameters.subscriberParticipantId) {
@@ -730,7 +728,7 @@ function MessageRouter(settings) {
                 delete multicastReceiversRegistry[multicastIdPattern];
 
                 //1.b no receiver anymore for this multicastId -> inform MessagingSkeleton about removed receiver
-                var skeleton = messagingSkeletonFactory.getSkeleton(providerAddress);
+                const skeleton = messagingSkeletonFactory.getSkeleton(providerAddress);
                 if (skeleton !== undefined && skeleton.unregisterMulticastSubscription !== undefined) {
                     skeleton.unregisterMulticastSubscription(parameters.multicastId);
                 }
@@ -749,9 +747,9 @@ function MessageRouter(settings) {
             return routingProxy.removeMulticastReceiver(parameters);
         }
 
-        var deferred = Util.createDeferred();
+        const deferred = UtilInternal.createDeferred();
         queuedRemoveMulticastReceiverCalls.push({
-            parameters: parameters,
+            parameters,
             resolve: deferred.resolve,
             reject: deferred.reject
         });
@@ -767,22 +765,10 @@ function MessageRouter(settings) {
      * @returns void
      */
     this.participantRegistered = function participantRegistered(participantId) {
-        var i,
-            msgContainer,
-            messageQueue = settings.messageQueue.getAndRemoveMessages(participantId);
-
-        function handleError(error) {
-            log.error(
-                "queued message could not be sent to " +
-                    participantId +
-                    ", error: " +
-                    error +
-                    (error instanceof JoynrException ? " " + error.detailMessage : "")
-            );
-        }
+        let messageQueue = settings.messageQueue.getAndRemoveMessages(participantId);
 
         if (messageQueue !== undefined) {
-            i = messageQueue.length;
+            let i = messageQueue.length;
             while (i--) {
                 that.route(messageQueue[i]);
             }

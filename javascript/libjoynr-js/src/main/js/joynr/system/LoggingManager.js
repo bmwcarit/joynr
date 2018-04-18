@@ -1,5 +1,3 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
@@ -18,11 +16,11 @@
  * limitations under the License.
  * #L%
  */
-var ConsoleAppender = require("./ConsoleAppenderNode");
-var JoynrLogger = require("./JoynrLogger");
+const ConsoleAppender = require("./ConsoleAppenderNode");
+const JoynrLogger = require("./JoynrLogger");
 
-var logLevelChangedCallbacks = [];
-var LoggingManager = {};
+const logLevelChangedCallbacks = [];
+const LoggingManager = {};
 
 LoggingManager.reset = function reset() {
     JoynrLogger.setOutput(ConsoleAppender.prototype.append);
@@ -53,9 +51,9 @@ LoggingManager.configure = function configure(settings) {
             settings.configuration.loggers.root &&
             settings.configuration.loggers.root.level
         ) {
-            var level = settings.configuration.loggers.root.level;
+            const level = settings.configuration.loggers.root.level;
             JoynrLogger.setLogLevel(level);
-            logLevelChangedCallbacks.forEach(function(callback) {
+            logLevelChangedCallbacks.forEach(callback => {
                 callback(level);
             });
         }
@@ -66,14 +64,14 @@ LoggingManager.configure = function configure(settings) {
             settings.configuration.appenders.appender[0].PatternLayout &&
             settings.configuration.appenders.appender[0].PatternLayout.pattern
         ) {
-            var patternLayout = settings.configuration.appenders.appender[0].PatternLayout.pattern;
+            const patternLayout = settings.configuration.appenders.appender[0].PatternLayout.pattern;
             if (patternLayout !== "%m") {
                 JoynrLogger.setFormatting(patternLayout);
             }
         }
     }
     if (settings.appenderClasses && Object.keys(settings.appenderClasses).length > 0) {
-        var appenderClassKey = Object.keys(settings.appenderClasses)[0];
+        const appenderClassKey = Object.keys(settings.appenderClasses)[0];
         JoynrLogger.setOutput(settings.appenderClasses[appenderClassKey].prototype.append);
     }
 };

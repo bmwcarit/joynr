@@ -1,5 +1,4 @@
-/*jslint node: true, nomen: true */
-
+/*eslint global-require: "off"*/
 /*
  * #%L
  * %%
@@ -19,7 +18,7 @@
  * #L%
  */
 
-var joynr = require("../joynr");
+const joynr = require("../joynr");
 
 switch (joynr._selectedRuntime) {
     case "websocket.libjoynr":

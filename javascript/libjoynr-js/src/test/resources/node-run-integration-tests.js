@@ -17,33 +17,12 @@
  * #L%
  */
 
-// run Jasmine 2.x unit tests via node
-
-console.log("joynr Jasmine 2.x node unit tests");
-
+console.log("joynr Jasmine 2.x integration tests");
 var Jasmine = require("jasmine");
 var jasmine = new Jasmine();
-jasmine.loadConfigFile("spec/support/jasmine.json");
 
-console.log("Jasmine version: " + jasmine.version);
+jasmine.loadConfigFile(__dirname + "/spec/support/jasmine.json");
+var InProcessRuntimeTest = require("../js/joynr/start/InProcessRuntimeTest.js");
 
-// because the generated code uses require('joynr') without knowing the location, will work only
-// when joynr is a submodule and is placed inside node_modules folder. In order to emulate this
-// behavior the require function is adapted here in order to always return the correct joynr while
-// running tests.
-var mod = require('module');
-var joynr = require('../classes/joynr')
-var req = mod.prototype.require;
-mod.prototype.require = function (md) {
-    if (md === 'joynr') {
-        return joynr;
-    }
-    return req.apply(this, arguments);
-}
-console.log('require config setup');
-var InProcessRuntimeTest = require('../test-classes/joynr/start/InProcessRuntimeTest.js');
-(function () {
-    console.log("all tests modules loaded");
-    loadingFinished = true;
-    jasmine.execute();
-}(InProcessRuntimeTest));
+console.log("all tests modules loaded");
+jasmine.execute();

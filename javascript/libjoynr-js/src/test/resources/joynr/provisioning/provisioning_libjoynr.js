@@ -1,5 +1,3 @@
-/*global ttl: true */
-
 /*
  * #%L
  * %%

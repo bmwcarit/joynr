@@ -1,5 +1,3 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
@@ -18,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-var LoggingManager = require("../system/LoggingManager");
-var Promise = require("../../global/Promise");
+const Promise = require("../../global/Promise");
+const UtilInternal = require("../util/UtilInternal");
 
 /**
  * The <code>TypeRegistry</code> contains a mapping of type names (which are sent on the wire
@@ -34,10 +32,9 @@ var Promise = require("../../global/Promise");
  * @constructor
  */
 function TypeRegistry() {
-    var registry = {};
-    var enumRegistry = {};
-    var registryPromise = {};
-    var log = LoggingManager.getLogger("joynr.start.TypeRegistry");
+    const registry = {};
+    const enumRegistry = {};
+    const registryPromise = {};
 
     /**
      * Adds a typeName to constructor entry in the type registry.
@@ -57,8 +54,7 @@ function TypeRegistry() {
             enumRegistry[joynrTypeName] = typeConstructor;
         }
         registry[joynrTypeName] = typeConstructor;
-        if (registryPromise[joynrTypeName] && registryPromise[joynrTypeName].pending) {
-            registryPromise[joynrTypeName].pending = false;
+        if (registryPromise[joynrTypeName]) {
             registryPromise[joynrTypeName].resolve(typeConstructor);
         }
         return this;
@@ -106,24 +102,13 @@ function TypeRegistry() {
      * @returns {Promise} an A+ promise object
      */
     this.getTypeRegisteredPromise = function getTypeRegisteredPromise(joynrTypeName, timeout) {
-        if (!registryPromise[joynrTypeName]) {
-            registryPromise[joynrTypeName] = {
-                pending: true
-            };
-            registryPromise[joynrTypeName].promise = new Promise(function(resolve, reject) {
-                registryPromise[joynrTypeName].resolve = resolve;
-                registryPromise[joynrTypeName].reject = reject;
-            });
-            if (registry[joynrTypeName]) {
-                registryPromise[joynrTypeName].pending = false;
-                registryPromise[joynrTypeName].resolve(registry[joynrTypeName]);
-            }
+        if (registry[joynrTypeName]) {
+            return Promise.resolve();
         }
-        if (registryPromise[joynrTypeName].pending && timeout && timeout > 0) {
-            registryPromise[joynrTypeName].timeoutTimer = setTimeout(function() {
+        registryPromise[joynrTypeName] = UtilInternal.createDeferred();
+        if (timeout && timeout > 0) {
+            registryPromise[joynrTypeName].timeoutTimer = setTimeout(() => {
                 if (registryPromise[joynrTypeName].pending) {
-                    delete registryPromise[joynrTypeName].timeoutTimer;
-                    registryPromise[joynrTypeName].pending = false;
                     registryPromise[joynrTypeName].reject(
                         new Error(
                             "joynr/start/TypeRegistry: " +
@@ -144,7 +129,7 @@ function TypeRegistry() {
      * @name TypeRegistry#shutdown
      */
     this.shutdown = function shutdown() {
-        var typeName;
+        let typeName;
         for (typeName in registryPromise) {
             if (registryPromise.hasOwnProperty(typeName)) {
                 if (registryPromise[typeName].timeoutTimer !== undefined) {

@@ -1,5 +1,3 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
@@ -19,39 +17,21 @@
  * #L%
  */
 require("../../../node-unit-test-helper");
-var SubscriptionUtil = require("../../../../classes/joynr/dispatching/subscription/util/SubscriptionUtil");
-var SubscriptionInformation = require("../../../../classes/joynr/dispatching/types/SubscriptionInformation");
-var SubscriptionRequest = require("../../../../classes/joynr/dispatching/types/SubscriptionRequest");
-var SubscriptionStop = require("../../../../classes/joynr/dispatching/types/SubscriptionStop");
-var PeriodicSubscriptionQos = require("../../../../classes/joynr/proxy/PeriodicSubscriptionQos");
-var OnChangeSubscriptionQos = require("../../../../classes/joynr/proxy/OnChangeSubscriptionQos");
-var OnChangeWithKeepAliveSubscriptionQos = require("../../../../classes/joynr/proxy/OnChangeWithKeepAliveSubscriptionQos");
-var ProviderQos = require("../../../../classes/joynr/types/ProviderQos");
-var uuid = require("../../../../classes/lib/uuid-annotated");
-var LoggingManager = require("../../../../classes/joynr/system/LoggingManager");
+const SubscriptionUtil = require("../../../../../main/js/joynr/dispatching/subscription/util/SubscriptionUtil");
+const SubscriptionInformation = require("../../../../../main/js/joynr/dispatching/types/SubscriptionInformation");
+const SubscriptionRequest = require("../../../../../main/js/joynr/dispatching/types/SubscriptionRequest");
+const PeriodicSubscriptionQos = require("../../../../../main/js/joynr/proxy/PeriodicSubscriptionQos");
+const OnChangeSubscriptionQos = require("../../../../../main/js/joynr/proxy/OnChangeSubscriptionQos");
+const OnChangeWithKeepAliveSubscriptionQos = require("../../../../../main/js/joynr/proxy/OnChangeWithKeepAliveSubscriptionQos");
+const uuid = require("../../../../../main/js/lib/uuid-annotated");
 
-describe("libjoynr-js.joynr.dispatching.subscription.types.SubscriptionUtil", function() {
-    var proxyId;
-    var providerId;
-    var publicationManager;
-    var dispatcherSpy;
-    var provider;
-    var fakeTime;
-    var intervalSubscriptionRequest;
-    var onChangeSubscriptionRequest;
-    var mixedSubscriptionRequest;
-    var testAttributeName;
-    var value;
-    var minIntervalMs;
-    var maxIntervalMs;
-    var maxNrOfTimes;
-    var subscriptionLength;
-    var testAttribute;
-    var providerSettings;
-    var log = LoggingManager.getLogger("joynr.dispatching.subscription.TestSubscriptionUtil");
+describe("libjoynr-js.joynr.dispatching.subscription.types.SubscriptionUtil", () => {
+    let proxyId;
+    let providerId;
+    let testAttributeName;
 
     function createSubscriptionInformation(proxy, provider, periodMs, subscriptionLength, onChange, minIntervalMs) {
-        var qosSettings;
+        let qosSettings;
         if (onChange) {
             if (periodMs !== undefined) {
                 qosSettings = new OnChangeWithKeepAliveSubscriptionQos({
@@ -70,7 +50,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.types.SubscriptionUtil", fu
             }
         } else {
             qosSettings = new PeriodicSubscriptionQos({
-                periodMs: periodMs,
+                periodMs,
                 expiryDateMs: Date.now() + subscriptionLength,
                 alertAfterIntervalMs: 0,
                 publicationTtlMs: 1000
@@ -115,45 +95,45 @@ describe("libjoynr-js.joynr.dispatching.subscription.types.SubscriptionUtil", fu
     /**
      * Called before each test.
      */
-    beforeEach(function() {
+    beforeEach(() => {
         proxyId = "proxy" + uuid();
         providerId = "provider" + uuid();
         testAttributeName = "testAttribute";
     });
 
-    it("serialize single subscription shall work", function() {
-        var info = createSubscriptionInformation(proxyId, providerId, 200, 1000, true, 50);
+    it("serialize single subscription shall work", () => {
+        const info = createSubscriptionInformation(proxyId, providerId, 200, 1000, true, 50);
 
-        var subscriptions = {};
+        const subscriptions = {};
         subscriptions[info.subscriptionId] = info;
 
-        var serializedSubscriptions = SubscriptionUtil.serializeSubscriptions(subscriptions);
-        var expectedString = "[" + buildString(info) + "]";
+        const serializedSubscriptions = SubscriptionUtil.serializeSubscriptions(subscriptions);
+        const expectedString = "[" + buildString(info) + "]";
 
         expect(serializedSubscriptions).toBe(expectedString);
     });
 
-    it("serialize multiple subscription shall work", function() {
-        var info1 = createSubscriptionInformation(proxyId, providerId, 200, 1000, true, 50);
-        var info2 = createSubscriptionInformation(proxyId, providerId, 300, 1000, true, 60);
-        var info3 = createSubscriptionInformation(proxyId, providerId, 400, 1000, true, 70);
+    it("serialize multiple subscription shall work", () => {
+        const info1 = createSubscriptionInformation(proxyId, providerId, 200, 1000, true, 50);
+        const info2 = createSubscriptionInformation(proxyId, providerId, 300, 1000, true, 60);
+        const info3 = createSubscriptionInformation(proxyId, providerId, 400, 1000, true, 70);
 
-        var subscriptions = {};
+        const subscriptions = {};
         subscriptions[info1.subscriptionId] = info1;
         subscriptions[info2.subscriptionId] = info2;
         subscriptions[info3.subscriptionId] = info3;
 
-        var serializedSubscriptions = SubscriptionUtil.serializeSubscriptions(subscriptions);
-        var expectedString = "[" + buildString(info1) + "," + buildString(info2) + "," + buildString(info3) + "]";
+        const serializedSubscriptions = SubscriptionUtil.serializeSubscriptions(subscriptions);
+        const expectedString = "[" + buildString(info1) + "," + buildString(info2) + "," + buildString(info3) + "]";
 
         expect(serializedSubscriptions).toBe(expectedString);
     });
 
-    it("deserialize single subscription shall work", function() {
-        var info = createSubscriptionInformation(proxyId, providerId, 200, 1000, true, 50);
-        var serializedSubscription = "[" + buildString(info) + "]";
+    it("deserialize single subscription shall work", () => {
+        const info = createSubscriptionInformation(proxyId, providerId, 200, 1000, true, 50);
+        const serializedSubscription = "[" + buildString(info) + "]";
 
-        var subscriptions = SubscriptionUtil.deserializeSubscriptions(serializedSubscription);
+        const subscriptions = SubscriptionUtil.deserializeSubscriptions(serializedSubscription);
 
         expect(subscriptions[info.subscriptionId].subscriptionId).toBe(info.subscriptionId);
         expect(subscriptions[info.subscriptionId].subscribedToName).toBe(info.subscribedToName);
@@ -163,7 +143,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.types.SubscriptionUtil", fu
         expect(subscriptions[info.subscriptionId].qos.maxIntervalMs).toBe(info.qos.maxIntervalMs);
     });
 
-    it("createMulticastId", function() {
+    it("createMulticastId", () => {
         expect(SubscriptionUtil.createMulticastId("a", "b")).toEqual("a/b");
         expect(SubscriptionUtil.createMulticastId("a", "b", [])).toEqual("a/b");
         expect(SubscriptionUtil.createMulticastId("a", "b", ["c"])).toEqual("a/b/c");
@@ -172,12 +152,12 @@ describe("libjoynr-js.joynr.dispatching.subscription.types.SubscriptionUtil", fu
         expect(SubscriptionUtil.createMulticastId("a", "b", ["c", "d", "e", "f"])).toEqual("a/b/c/d/e/f");
     });
 
-    it("deserialize multiple subscriptions shall work", function() {
-        var info1 = createSubscriptionInformation(proxyId, providerId, 200, 1000, true, 50);
-        var info2 = createSubscriptionInformation(proxyId, providerId, 201, 1000, true, 77);
-        var serializedSubscription = "[" + buildString(info1) + "," + buildString(info2) + "]";
+    it("deserialize multiple subscriptions shall work", () => {
+        const info1 = createSubscriptionInformation(proxyId, providerId, 200, 1000, true, 50);
+        const info2 = createSubscriptionInformation(proxyId, providerId, 201, 1000, true, 77);
+        const serializedSubscription = "[" + buildString(info1) + "," + buildString(info2) + "]";
 
-        var subscriptions = SubscriptionUtil.deserializeSubscriptions(serializedSubscription);
+        const subscriptions = SubscriptionUtil.deserializeSubscriptions(serializedSubscription);
 
         expect(subscriptions[info1.subscriptionId].subscriptionId).toBe(info1.subscriptionId);
         expect(subscriptions[info1.subscriptionId].subscribedToName).toBe(info1.subscribedToName);
@@ -193,7 +173,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.types.SubscriptionUtil", fu
         expect(subscriptions[info2.subscriptionId].qos.minIntervalMs).toBe(info2.qos.minIntervalMs);
         expect(subscriptions[info2.subscriptionId].qos.maxIntervalMs).toBe(info2.qos.maxIntervalMs);
 
-        var subscriptionId;
+        let subscriptionId;
         for (subscriptionId in subscriptions) {
             if (subscriptions.hasOwnProperty(subscriptionId)) {
                 expect(subscriptionId === info1.subscriptionId || subscriptionId === info2.subscriptionId).toBe(true);
@@ -201,15 +181,15 @@ describe("libjoynr-js.joynr.dispatching.subscription.types.SubscriptionUtil", fu
         }
     });
 
-    it("deserialize and deserialize single subscription shall work", function() {
-        var origin = createSubscriptionInformation(proxyId, providerId, 200, 1000, true, 50);
+    it("deserialize and deserialize single subscription shall work", () => {
+        const origin = createSubscriptionInformation(proxyId, providerId, 200, 1000, true, 50);
 
-        var subscriptions = {};
+        const subscriptions = {};
         subscriptions[origin.subscriptionId] = origin;
 
-        var serializedSubscription = SubscriptionUtil.serializeSubscriptions(subscriptions);
+        const serializedSubscription = SubscriptionUtil.serializeSubscriptions(subscriptions);
 
-        var newSubscriptions = SubscriptionUtil.deserializeSubscriptions(serializedSubscription);
+        const newSubscriptions = SubscriptionUtil.deserializeSubscriptions(serializedSubscription);
 
         expect(newSubscriptions[origin.subscriptionId].subscriptionId).toBe(origin.subscriptionId);
         expect(newSubscriptions[origin.subscriptionId].subscribedToName).toBe(origin.subscribedToName);
@@ -219,17 +199,17 @@ describe("libjoynr-js.joynr.dispatching.subscription.types.SubscriptionUtil", fu
         expect(newSubscriptions[origin.subscriptionId].qos.maxIntervalMs).toBe(origin.qos.maxIntervalMs);
     });
 
-    it("deserialize and deserialize multiple subscriptions shall work", function() {
-        var origin1 = createSubscriptionInformation(proxyId, providerId, 200, 1000, true, 50);
-        var origin2 = createSubscriptionInformation(proxyId, providerId, 180, 660, true, 70);
+    it("deserialize and deserialize multiple subscriptions shall work", () => {
+        const origin1 = createSubscriptionInformation(proxyId, providerId, 200, 1000, true, 50);
+        const origin2 = createSubscriptionInformation(proxyId, providerId, 180, 660, true, 70);
 
-        var subscriptions = {};
+        const subscriptions = {};
         subscriptions[origin1.subscriptionId] = origin1;
         subscriptions[origin2.subscriptionId] = origin2;
 
-        var serializedSubscription = SubscriptionUtil.serializeSubscriptions(subscriptions);
+        const serializedSubscription = SubscriptionUtil.serializeSubscriptions(subscriptions);
 
-        var newSubscriptions = SubscriptionUtil.deserializeSubscriptions(serializedSubscription);
+        const newSubscriptions = SubscriptionUtil.deserializeSubscriptions(serializedSubscription);
 
         expect(newSubscriptions[origin1.subscriptionId].subscriptionId).toBe(origin1.subscriptionId);
         expect(newSubscriptions[origin1.subscriptionId].subscribedToName).toBe(origin1.subscribedToName);
@@ -245,86 +225,86 @@ describe("libjoynr-js.joynr.dispatching.subscription.types.SubscriptionUtil", fu
         expect(newSubscriptions[origin2.subscriptionId].qos.minIntervalMs).toBe(origin2.qos.minIntervalMs);
         expect(newSubscriptions[origin2.subscriptionId].qos.maxIntervalMs).toBe(origin2.qos.maxIntervalMs);
     });
-    describe("validatePartitions", function() {
-        it("does not throw with valid partitions", function() {
-            expect(function() {
+    describe("validatePartitions", () => {
+        it("does not throw with valid partitions", () => {
+            expect(() => {
                 SubscriptionUtil.validatePartitions(["a", "b", "0", "D", "Z"]);
             }).not.toThrow();
         });
-        it("throws with invalid partitions", function() {
-            expect(function() {
+        it("throws with invalid partitions", () => {
+            expect(() => {
                 SubscriptionUtil.validatePartitions([""]);
             }).toThrow();
-            expect(function() {
+            expect(() => {
                 SubscriptionUtil.validatePartitions(["_"]);
             }).toThrow();
-            expect(function() {
+            expect(() => {
                 SubscriptionUtil.validatePartitions(["./$"]);
             }).toThrow();
-            expect(function() {
+            expect(() => {
                 SubscriptionUtil.validatePartitions(["\uD83D"]);
             }).toThrow();
-            expect(function() {
+            expect(() => {
                 SubscriptionUtil.validatePartitions(["\uDE33"]);
             }).toThrow();
         });
-        it("supports the plus sign", function() {
-            expect(function() {
+        it("supports the plus sign", () => {
+            expect(() => {
                 SubscriptionUtil.validatePartitions(["a", "b", "+", "c"]);
             }).not.toThrow();
-            expect(function() {
+            expect(() => {
                 SubscriptionUtil.validatePartitions(["+"]);
             }).not.toThrow();
-            expect(function() {
+            expect(() => {
                 SubscriptionUtil.validatePartitions(["a", "+"]);
             }).not.toThrow();
         });
-        it("throws if plus sign is conjugated with characters in one partition", function() {
-            expect(function() {
+        it("throws if plus sign is conjugated with characters in one partition", () => {
+            expect(() => {
                 SubscriptionUtil.validatePartitions(["+xy"]);
             }).toThrow();
-            expect(function() {
+            expect(() => {
                 SubscriptionUtil.validatePartitions(["x+y"]);
             }).toThrow();
-            expect(function() {
+            expect(() => {
                 SubscriptionUtil.validatePartitions(["xy+"]);
             }).toThrow();
         });
-        it("throws if star is not the last partition", function() {
-            expect(function() {
+        it("throws if star is not the last partition", () => {
+            expect(() => {
                 SubscriptionUtil.validatePartitions(["*", "1"]);
             }).toThrow();
-            expect(function() {
+            expect(() => {
                 SubscriptionUtil.validatePartitions(["1", "*", "2"]);
             }).toThrow();
-            expect(function() {
+            expect(() => {
                 SubscriptionUtil.validatePartitions(["1", "2", "3", "*", "4", "5", "6"]);
             }).toThrow();
         });
-        it("throws if star is conjugated with characters in one partition", function() {
-            expect(function() {
+        it("throws if star is conjugated with characters in one partition", () => {
+            expect(() => {
                 SubscriptionUtil.validatePartitions(["*xy"]);
             }).toThrow();
-            expect(function() {
+            expect(() => {
                 SubscriptionUtil.validatePartitions(["x*y"]);
             }).toThrow();
-            expect(function() {
+            expect(() => {
                 SubscriptionUtil.validatePartitions(["xy*"]);
             }).toThrow();
         });
-        it("supports combinations of plus sign and star", function() {
-            expect(function() {
+        it("supports combinations of plus sign and star", () => {
+            expect(() => {
                 SubscriptionUtil.validatePartitions(["+", "+", "*"]);
             }).not.toThrow();
         });
-        it("does not throw if star is the last partition", function() {
-            expect(function() {
+        it("does not throw if star is the last partition", () => {
+            expect(() => {
                 SubscriptionUtil.validatePartitions(["*"]);
             }).not.toThrow();
-            expect(function() {
+            expect(() => {
                 SubscriptionUtil.validatePartitions(["1", "*"]);
             }).not.toThrow();
-            expect(function() {
+            expect(() => {
                 SubscriptionUtil.validatePartitions(["1", "2", "3", "4", "5", "6", "*"]);
             }).not.toThrow();
         });

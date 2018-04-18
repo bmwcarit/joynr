@@ -1,5 +1,3 @@
-/*jslint es5: true, nomen: true, node: true */
-
 /*
  * #%L
  * %%
@@ -18,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-var Typing = require("../util/Typing");
+const Typing = require("../util/Typing");
 
 /**
  * Private function. This function returns the hashCode of the given discovery entry, this should uniquely identify a
@@ -101,7 +99,7 @@ function CapabilitiesStore(initialCapabilities) {
  *            participantId - the participant ID uniquely identifying the discovery entry to be removed
  */
 CapabilitiesStore.prototype._removeDiscoveryEntryFromStore = function(participantId) {
-    var domainInterfaceKey,
+    let domainInterfaceKey,
         key,
         capabilities,
         capId,
@@ -147,7 +145,7 @@ CapabilitiesStore.prototype._removeDiscoveryEntryFromStore = function(participan
  *
  */
 CapabilitiesStore.prototype._addDiscoveryEntryToStore = function(discoveryEntry) {
-    var entryFound = false,
+    let entryFound = false,
         isAlreadyThere,
         discoveryEntries,
         entryId,
@@ -207,7 +205,7 @@ CapabilitiesStore.prototype._addDiscoveryEntryToStore = function(discoveryEntry)
  *
  */
 CapabilitiesStore.prototype.add = function add(settings) {
-    var i;
+    let i;
     if (settings.discoveryEntries !== undefined && Typing.getObjectType(settings.discoveryEntries) === "Array") {
         for (i = 0; i < settings.discoveryEntries.length; i++) {
             this._addDiscoveryEntryToStore(settings.discoveryEntries[i]);
@@ -232,7 +230,7 @@ CapabilitiesStore.prototype.add = function add(settings) {
  * @param {Number} maxAge - the maximum age of the discovery entry
  */
 CapabilitiesStore.prototype._checkAge = function checkAge(discoveryEntry, maxAge) {
-    var registrationTime = this._registeredCapabilitiesTime[hashCode(discoveryEntry)];
+    const registrationTime = this._registeredCapabilitiesTime[hashCode(discoveryEntry)];
     if (registrationTime === undefined || maxAge === undefined) {
         return true;
     }
@@ -262,7 +260,7 @@ CapabilitiesStore.prototype._qosMatches = function qosMatches(discoveryEntry, ca
  * @param {Number} cacheMaxAge - the maximum age of the discovery entries
  */
 CapabilitiesStore.prototype._filterEntries = function filterEntries(entries, cacheMaxAge) {
-    var i, returnValue, discoveryEntry;
+    let i, returnValue, discoveryEntry;
     returnValue = [];
     for (i = entries.length - 1; i >= 0; i--) {
         discoveryEntry = entries[i];
@@ -293,7 +291,7 @@ CapabilitiesStore.prototype._filterEntries = function filterEntries(entries, cac
  * @returns {Array} a list of matching discovery entries.
  */
 CapabilitiesStore.prototype.lookup = function lookup(settings) {
-    var i,
+    let i,
         key,
         returnValue = [],
         storedEntries;
@@ -334,7 +332,7 @@ CapabilitiesStore.prototype.lookup = function lookup(settings) {
  * @returns {CapabilitiesStore} returns this for a fluent interface
  */
 CapabilitiesStore.prototype.remove = function remove(settings) {
-    var i;
+    let i;
     if (settings.participantIds !== undefined && Typing.getObjectType(settings.participantIds) === "Array") {
         for (i = 0; i < settings.participantIds.length; i++) {
             this._removeDiscoveryEntryFromStore(settings.participantIds[i]);

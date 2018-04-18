@@ -1,5 +1,3 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
@@ -18,6 +16,6 @@
  * limitations under the License.
  * #L%
  */
-var uuid = require("../../lib/uuid-annotated");
+const uuid = require("../../lib/uuid-annotated");
 
 module.exports = uuid;

@@ -1,5 +1,3 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
@@ -18,10 +16,10 @@
  * limitations under the License.
  * #L%
  */
-var JoynrMessage = require("../JoynrMessage");
-var Typing = require("../../util/Typing");
-var LoggingManager = require("../../system/LoggingManager");
-var log = LoggingManager.getLogger("joynr.messaging.websocket.WebSocketMessagingSkeleton");
+const JoynrMessage = require("../JoynrMessage");
+const Typing = require("../../util/Typing");
+const LoggingManager = require("../../system/LoggingManager");
+const log = LoggingManager.getLogger("joynr.messaging.websocket.WebSocketMessagingSkeleton");
 
 /**
  * @constructor WebSocketMessagingSkeleton
@@ -30,13 +28,13 @@ var log = LoggingManager.getLogger("joynr.messaging.websocket.WebSocketMessaging
  * @param {SharedWebSocket}
  *            settings.sharedWebSocket
  */
-var WebSocketMessagingSkeleton = function WebSocketMessagingSkeleton(settings) {
+const WebSocketMessagingSkeleton = function WebSocketMessagingSkeleton(settings) {
     Typing.checkProperty(settings, "Object", "settings");
     Typing.checkProperty(settings.sharedWebSocket, "SharedWebSocket", "sharedWebSocket");
     Typing.checkProperty(settings.mainTransport, "Boolean", "settings.mainTransport");
 
-    var sharedWebSocket = settings.sharedWebSocket;
-    var listener;
+    const sharedWebSocket = settings.sharedWebSocket;
+    let listener;
 
     settings.sharedWebSocket.onmessage = function(joynrMessage) {
         log.debug("<<< INCOMING <<< message with ID " + joynrMessage.msgId);

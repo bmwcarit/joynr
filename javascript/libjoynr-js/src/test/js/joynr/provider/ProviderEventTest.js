@@ -1,5 +1,3 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
@@ -19,16 +17,13 @@
  * #L%
  */
 require("../../node-unit-test-helper");
-var ProviderEvent = require("../../../classes/joynr/provider/ProviderEvent");
-var ProviderQos = require("../../../classes/joynr/types/ProviderQos");
-var BroadcastFilterParameters = require("../../../classes/joynr/proxy/BroadcastFilterParameters");
+const ProviderEvent = require("../../../../main/js/joynr/provider/ProviderEvent");
+const BroadcastFilterParameters = require("../../../../main/js/joynr/proxy/BroadcastFilterParameters");
 
-var safetyTimeoutDelta = 100;
+describe("libjoynr-js.joynr.provider.ProviderEvent", () => {
+    let weakSignal;
 
-describe("libjoynr-js.joynr.provider.ProviderEvent", function() {
-    var weakSignal;
-
-    beforeEach(function() {
+    beforeEach(() => {
         weakSignal = new ProviderEvent({
             eventName: "weakSignal",
             outputParameterProperties: [
@@ -45,7 +40,7 @@ describe("libjoynr-js.joynr.provider.ProviderEvent", function() {
         });
     });
 
-    it("is of correct type", function(done) {
+    it("is of correct type", done => {
         expect(weakSignal).toBeDefined();
         expect(weakSignal).not.toBeNull();
         expect(typeof weakSignal === "object").toBeTruthy();
@@ -53,7 +48,7 @@ describe("libjoynr-js.joynr.provider.ProviderEvent", function() {
         done();
     });
 
-    it("has correct members", function(done) {
+    it("has correct members", done => {
         expect(weakSignal.createBroadcastOutputParameters).toBeDefined();
         expect(weakSignal.checkFilterParameters).toBeDefined();
         expect(weakSignal.fire).toBeDefined();
@@ -70,18 +65,13 @@ describe("libjoynr-js.joynr.provider.ProviderEvent", function() {
         };
     }
 
-    it("implements the observer concept correctly", function(done) {
-        var i,
-            spy1,
-            spy2,
-            attribute,
-            func1,
-            func2,
-            value = {
-                key: "value",
-                1: 2,
-                object: {}
-            };
+    it("implements the observer concept correctly", done => {
+        let spy1, spy2, func1, func2;
+        let value = {
+            key: "value",
+            1: 2,
+            object: {}
+        };
 
         spy1 = jasmine.createSpy("spy1");
         spy2 = jasmine.createSpy("spy2");
@@ -97,7 +87,7 @@ describe("libjoynr-js.joynr.provider.ProviderEvent", function() {
 
         weakSignal.fire(value);
 
-        var data = {
+        const data = {
             broadcastOutputParameters: value,
             filters: [],
             partitions: []
@@ -124,16 +114,12 @@ describe("libjoynr-js.joynr.provider.ProviderEvent", function() {
         done();
     });
 
-    function isPartOfList(list, data) {
-        return list.indexOf(data) !== -1;
-    }
-
     function buildObserver2(spy) {
         return function(data) {
-            var filters = data.filters;
-            var broadcastOutputParameters = data.broadcastOutputParameters;
-            var filterParameters = {};
-            var i;
+            const filters = data.filters;
+            const broadcastOutputParameters = data.broadcastOutputParameters;
+            const filterParameters = {};
+            let i;
 
             for (i = 0; i < filters.length; i++) {
                 filters[i](broadcastOutputParameters, filterParameters);
@@ -148,14 +134,13 @@ describe("libjoynr-js.joynr.provider.ProviderEvent", function() {
         };
     }
 
-    it("implements the broadcast filter list correctly", function(done) {
-        var i, spy1, spy2, attribute, observerFunc, filterFunc;
-        var value = {
+    it("implements the broadcast filter list correctly", done => {
+        let spy1, spy2, observerFunc, filterFunc;
+        const value = {
             key: "value",
             1: 2,
             object: {}
         };
-        var spy3;
 
         spy1 = jasmine.createSpy("spy1");
         spy2 = jasmine.createSpy("spy2");
@@ -169,12 +154,12 @@ describe("libjoynr-js.joynr.provider.ProviderEvent", function() {
         expect(spy1).not.toHaveBeenCalled();
         expect(spy2).not.toHaveBeenCalled();
 
-        var data = {
+        const data = {
             broadcastOutputParameters: value,
             filters: [filterFunc],
             partitions: []
         };
-        var filterParameters = {};
+        const filterParameters = {};
 
         weakSignal.fire(value);
 
@@ -183,19 +168,19 @@ describe("libjoynr-js.joynr.provider.ProviderEvent", function() {
         done();
     });
 
-    it("fire works", function(done) {
+    it("fire works", done => {
         expect(weakSignal.fire).toBeDefined();
         expect(typeof weakSignal.fire === "function").toBeTruthy();
-        expect(function() {
-            var boc = weakSignal.createBroadcastOutputParameters();
+        expect(() => {
+            const boc = weakSignal.createBroadcastOutputParameters();
             boc.setWeakSignalStation("Bayern 3");
             weakSignal.fire(boc);
         }).not.toThrow();
         done();
     });
 
-    it("checkFilterParameters works", function(done) {
-        var correctFilterParameters = new BroadcastFilterParameters({
+    it("checkFilterParameters works", done => {
+        const correctFilterParameters = new BroadcastFilterParameters({
             a: "String",
             b: "String",
             c: "String"
@@ -203,14 +188,14 @@ describe("libjoynr-js.joynr.provider.ProviderEvent", function() {
         correctFilterParameters.setA("a");
         correctFilterParameters.setB("b");
         correctFilterParameters.setC("c");
-        var missingOnefilterParameters = new BroadcastFilterParameters({
+        const missingOnefilterParameters = new BroadcastFilterParameters({
             a: "String",
             b: "String",
             c: "String"
         });
         missingOnefilterParameters.setA("a");
         missingOnefilterParameters.setB("b");
-        var missingTwofilterParameters = new BroadcastFilterParameters({
+        const missingTwofilterParameters = new BroadcastFilterParameters({
             a: "String",
             b: "String",
             c: "String"
@@ -229,11 +214,11 @@ describe("libjoynr-js.joynr.provider.ProviderEvent", function() {
         expect(weakSignal.checkFilterParameters(missingTwofilterParameters).caughtErrors.length).toBe(2);
         done();
     });
-    it("throws error if fire is invoked with invalid partitions", function() {
-        expect(function() {
+    it("throws error if fire is invoked with invalid partitions", () => {
+        expect(() => {
             weakSignal.fire(weakSignal.createBroadcastOutputParameters(), ["_"]);
         }).toThrow();
-        expect(function() {
+        expect(() => {
             weakSignal.fire(weakSignal.createBroadcastOutputParameters(), ["./$"]);
         }).toThrow();
     });

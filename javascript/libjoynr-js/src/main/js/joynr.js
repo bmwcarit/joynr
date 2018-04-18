@@ -1,5 +1,4 @@
-/*jslint es5: true, node: true, nomen: true */
-/*global process: true*/
+/*eslint global-require: "off"*/
 /*
  * #%L
  * %%
@@ -20,24 +19,10 @@
  */
 
 function populateJoynrApi(joynr, api) {
-    var key;
+    let key;
     for (key in api) {
         if (api.hasOwnProperty(key)) {
             joynr[key] = api[key];
-        }
-    }
-}
-
-function recursiveFreeze(object) {
-    var property;
-    var propertyKey = null;
-    Object.freeze(object); // First freeze the object.
-    for (propertyKey in object) {
-        if (object.hasOwnProperty(propertyKey)) {
-            property = object[propertyKey];
-            if (typeof property === "object" && !Object.isFrozen(property)) {
-                recursiveFreeze(property);
-            }
         }
     }
 }
@@ -74,15 +59,15 @@ function freeze(joynr, capabilitiesWritable) {
     });
 }
 
-var Promise = require("./global/Promise");
+const Promise = require("./global/Promise");
 
-var GenerationUtil = require("./joynr/util/GenerationUtil");
+const GenerationUtil = require("./joynr/util/GenerationUtil");
 
 /**
  * @name joynr
  * @class
  */
-var joynr = {
+let joynr = {
     loaded: false,
     /**
      * @name joynr#load
@@ -93,12 +78,12 @@ var joynr = {
      */
     load: function load(provisioning, capabilitiesWritable) {
         joynr.loaded = true;
-        var joynrapi = require("./libjoynr-deps");
-        var runtime;
+        const joynrapi = require("./libjoynr-deps");
+        let runtime;
         runtime = new joynrapi.Runtime(provisioning);
         return runtime
             .start()
-            .then(function() {
+            .then(() => {
                 populateJoynrApi(joynr, joynrapi);
                 //remove Runtime, as it is not required for the end user
                 delete joynr.Runtime;
@@ -111,7 +96,7 @@ var joynr = {
                 // had already been invoked manually before reaching this
                 // point.
                 if (typeof process === "object" && typeof process.on === "function") {
-                    process.on("exit", function() {
+                    process.on("exit", () => {
                         try {
                             joynr.shutdown();
                         } catch (error) {
@@ -121,7 +106,7 @@ var joynr = {
                 }
                 return joynr;
             })
-            .catch(function(error) {
+            .catch(error => {
                 return Promise.reject(error);
             });
     },
@@ -140,17 +125,16 @@ var joynr = {
      *            isEnum - optional flag if the added type is an enumeration type
      */
     addType: function registerType(name, type, isEnum) {
-        var TypeRegistrySingleton = require("./joynr/types/TypeRegistrySingleton");
+        const TypeRegistrySingleton = require("./joynr/types/TypeRegistrySingleton");
         TypeRegistrySingleton.getInstance().addType(name, type, isEnum);
     },
     JoynrObject: function JoynrObject() {},
-    util: { GenerationUtil: GenerationUtil }
+    util: { GenerationUtil }
 };
 
 if (typeof window === "object") {
     // export namespace fragment or module read-only to the parent namespace
     Object.defineProperty(window, "joynr", {
-        readable: true,
         enumerable: true,
         configurable: false,
         writable: false,
@@ -160,7 +144,7 @@ if (typeof window === "object") {
 
 joynr.selectRuntime = function selectRuntime(runtime) {
     if (joynr.loaded) {
-        throw new Error("joynr.selectRuntime: this method must " + "be invoked before calling joynr.load()");
+        throw new Error("joynr.selectRuntime: this method must be invoked before calling joynr.load()");
     }
     joynr._selectedRuntime = runtime;
 };

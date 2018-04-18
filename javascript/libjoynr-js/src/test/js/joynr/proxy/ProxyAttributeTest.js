@@ -1,5 +1,3 @@
-/*jslint es5: true, node: true, nomen: true */
-/*global fail: true */
 /*
  * #%L
  * %%
@@ -19,40 +17,35 @@
  * #L%
  */
 require("../../node-unit-test-helper");
-var ProxyAttribute = require("../../../classes/joynr/proxy/ProxyAttribute");
-var DiscoveryQos = require("../../../classes/joynr/proxy/DiscoveryQos");
-var MessagingQos = require("../../../classes/joynr/messaging/MessagingQos");
-var OnChangeWithKeepAliveSubscriptionQos = require("../../../classes/joynr/proxy/OnChangeWithKeepAliveSubscriptionQos");
-var RequestReplyManager = require("../../../classes/joynr/dispatching/RequestReplyManager");
-var Request = require("../../../classes/joynr/dispatching/types/Request");
-var TestEnum = require("../../../test-classes/joynr/tests/testTypes/TestEnum");
-var ComplexTestType = require("../../../test-classes/joynr/tests/testTypes/ComplexTestType");
-var TypeRegistrySingleton = require("../../../classes/joynr/types/TypeRegistrySingleton");
-var Promise = require("../../../classes/global/Promise");
-var DiscoveryEntryWithMetaInfo = require("../../../classes/joynr/types/DiscoveryEntryWithMetaInfo");
-var Version = require("../../../classes/joynr/types/Version");
-var ProviderQos = require("../../../classes/joynr/types/ProviderQos");
+const ProxyAttribute = require("../../../../main/js/joynr/proxy/ProxyAttribute");
+const MessagingQos = require("../../../../main/js/joynr/messaging/MessagingQos");
+const OnChangeWithKeepAliveSubscriptionQos = require("../../../../main/js/joynr/proxy/OnChangeWithKeepAliveSubscriptionQos");
+const Request = require("../../../../main/js/joynr/dispatching/types/Request");
+const TestEnum = require("../../../generated/joynr/tests/testTypes/TestEnum");
+const TypeRegistrySingleton = require("../../../../main/js/joynr/types/TypeRegistrySingleton");
+const Promise = require("../../../../main/js/global/Promise");
+const DiscoveryEntryWithMetaInfo = require("../../../../main/js/generated/joynr/types/DiscoveryEntryWithMetaInfo");
+const Version = require("../../../../main/js/generated/joynr/types/Version");
+const ProviderQos = require("../../../../main/js/generated/joynr/types/ProviderQos");
 
-var asyncTimeout = 5000;
-
-describe("libjoynr-js.joynr.proxy.ProxyAttribute", function() {
-    var settings;
-    var isOn;
-    var isOnNotifyReadOnly;
-    var isOnNotifyWriteOnly;
-    var isOnNotify;
-    var isOnReadWrite;
-    var isOnReadOnly;
-    var isOnWriteOnly;
-    var subscriptionQos;
-    var messagingQos;
-    var requestReplyManagerSpy;
-    var subscriptionId;
-    var subscriptionManagerSpy;
-    var proxyParticipantId;
-    var providerParticipantId;
-    var providerDiscoveryEntry;
-    var isOnType;
+describe("libjoynr-js.joynr.proxy.ProxyAttribute", () => {
+    let settings;
+    let isOn;
+    let isOnNotifyReadOnly;
+    let isOnNotifyWriteOnly;
+    let isOnNotify;
+    let isOnReadWrite;
+    let isOnReadOnly;
+    let isOnWriteOnly;
+    let subscriptionQos;
+    let messagingQos;
+    let requestReplyManagerSpy;
+    let subscriptionId;
+    let subscriptionManagerSpy;
+    let proxyParticipantId;
+    let providerParticipantId;
+    let providerDiscoveryEntry;
+    let isOnType;
 
     function RadioStation(name, station, source) {
         if (!(this instanceof RadioStation)) {
@@ -73,16 +66,16 @@ describe("libjoynr-js.joynr.proxy.ProxyAttribute", function() {
         });
     }
 
-    beforeEach(function(done) {
+    beforeEach(done => {
         subscriptionQos = new OnChangeWithKeepAliveSubscriptionQos();
         messagingQos = new MessagingQos();
 
         requestReplyManagerSpy = jasmine.createSpyObj("requestReplyManager", ["sendRequest"]);
-        requestReplyManagerSpy.sendRequest.and.callFake(function(settings, callbackSettings) {
-            var response = { result: { resultKey: "resultValue" } };
+        requestReplyManagerSpy.sendRequest.and.callFake((settings, callbackSettings) => {
+            const response = { result: { resultKey: "resultValue" } };
 
             return Promise.resolve({
-                response: response,
+                response,
                 settings: callbackSettings
             });
         });
@@ -118,9 +111,9 @@ describe("libjoynr-js.joynr.proxy.ProxyAttribute", function() {
             publicKeyId: "publicKeyId",
             isLocal: true
         });
-        var proxy = {
-            proxyParticipantId: proxyParticipantId,
-            providerDiscoveryEntry: providerDiscoveryEntry
+        const proxy = {
+            proxyParticipantId,
+            providerDiscoveryEntry
         };
 
         isOnType = "Boolean";
@@ -134,21 +127,21 @@ describe("libjoynr-js.joynr.proxy.ProxyAttribute", function() {
 
         TypeRegistrySingleton.getInstance()
             .getTypeRegisteredPromise("joynr.tests.testTypes.TestEnum", 1000)
-            .then(function() {
+            .then(() => {
                 done();
                 return null;
             })
             .catch(fail);
     });
 
-    it("got initialized", function(done) {
+    it("got initialized", done => {
         expect(isOn).toBeDefined();
         expect(isOn).not.toBeNull();
         expect(typeof isOn === "object").toBeTruthy();
         done();
     });
 
-    it("has correct members (ProxyAttribute with NOTIFYREADWRITE)", function(done) {
+    it("has correct members (ProxyAttribute with NOTIFYREADWRITE)", done => {
         expect(isOn.get).toBeDefined();
         expect(isOn.set).toBeDefined();
         expect(isOn.subscribe).toBeDefined();
@@ -156,7 +149,7 @@ describe("libjoynr-js.joynr.proxy.ProxyAttribute", function() {
         done();
     });
 
-    it("has correct members (ProxyAttribute with NOTIFYREADONLY)", function(done) {
+    it("has correct members (ProxyAttribute with NOTIFYREADONLY)", done => {
         expect(isOnNotifyReadOnly.get).toBeDefined();
         expect(isOnNotifyReadOnly.set).toBeUndefined();
         expect(isOnNotifyReadOnly.subscribe).toBeDefined();
@@ -164,7 +157,7 @@ describe("libjoynr-js.joynr.proxy.ProxyAttribute", function() {
         done();
     });
 
-    it("has correct members (ProxyAttribute with NOTIFYWRITEONLY)", function(done) {
+    it("has correct members (ProxyAttribute with NOTIFYWRITEONLY)", done => {
         expect(isOnNotifyWriteOnly.get).toBeUndefined();
         expect(isOnNotifyWriteOnly.set).toBeDefined();
         expect(isOnNotifyWriteOnly.subscribe).toBeDefined();
@@ -172,7 +165,7 @@ describe("libjoynr-js.joynr.proxy.ProxyAttribute", function() {
         done();
     });
 
-    it("has correct members (ProxyAttribute with NOTIFY)", function(done) {
+    it("has correct members (ProxyAttribute with NOTIFY)", done => {
         expect(isOnNotify.get).toBeUndefined();
         expect(isOnNotify.set).toBeUndefined();
         expect(isOnNotify.subscribe).toBeDefined();
@@ -180,7 +173,7 @@ describe("libjoynr-js.joynr.proxy.ProxyAttribute", function() {
         done();
     });
 
-    it("has correct members (ProxyAttribute with READWRITE)", function(done) {
+    it("has correct members (ProxyAttribute with READWRITE)", done => {
         expect(isOnReadWrite.get).toBeDefined();
         expect(isOnReadWrite.set).toBeDefined();
         expect(isOnReadWrite.subscribe).toBeUndefined();
@@ -188,7 +181,7 @@ describe("libjoynr-js.joynr.proxy.ProxyAttribute", function() {
         done();
     });
 
-    it("has correct members (ProxyAttribute with READONLY)", function(done) {
+    it("has correct members (ProxyAttribute with READONLY)", done => {
         expect(isOnReadOnly.get).toBeDefined();
         expect(isOnReadOnly.set).toBeUndefined();
         expect(isOnReadOnly.subscribe).toBeUndefined();
@@ -196,7 +189,7 @@ describe("libjoynr-js.joynr.proxy.ProxyAttribute", function() {
         done();
     });
 
-    it("has correct members (ProxyAttribute with WRITEONLY)", function(done) {
+    it("has correct members (ProxyAttribute with WRITEONLY)", done => {
         expect(isOnWriteOnly.get).toBeUndefined();
         expect(isOnWriteOnly.set).toBeDefined();
         expect(isOnWriteOnly.subscribe).toBeUndefined();
@@ -204,21 +197,21 @@ describe("libjoynr-js.joynr.proxy.ProxyAttribute", function() {
         done();
     });
 
-    it("get calls through to RequestReplyManager", function(done) {
-        var requestReplyId;
+    it("get calls through to RequestReplyManager", done => {
+        let requestReplyId;
         isOn
             .get()
-            .then(function() {
+            .then(() => {
                 expect(requestReplyManagerSpy.sendRequest).toHaveBeenCalled();
                 requestReplyId = requestReplyManagerSpy.sendRequest.calls.argsFor(0)[0].request.requestReplyId;
                 expect(requestReplyManagerSpy.sendRequest).toHaveBeenCalledWith(
                     {
                         toDiscoveryEntry: providerDiscoveryEntry,
                         from: proxyParticipantId,
-                        messagingQos: messagingQos,
+                        messagingQos,
                         request: new Request({
                             methodName: "getIsOn",
-                            requestReplyId: requestReplyId
+                            requestReplyId
                         })
                     },
                     isOnType
@@ -226,33 +219,33 @@ describe("libjoynr-js.joynr.proxy.ProxyAttribute", function() {
                 done();
                 return null;
             })
-            .catch(function() {
+            .catch(() => {
                 fail("get call unexpectedly failed.");
                 return null;
             });
     });
 
-    it("get notifies", function(done) {
+    it("get notifies", done => {
         expect(isOn.get).toBeDefined();
         expect(typeof isOn.get === "function").toBeTruthy();
 
         isOn
             .get()
-            .then(function() {
+            .then(() => {
                 done();
                 return null;
             })
-            .catch(function() {
+            .catch(() => {
                 fail("get notifies rejected unexpectedly");
                 return null;
             });
     });
 
-    it("get returns correct joynr objects", function(done) {
-        var fixture = new ProxyAttribute(
+    it("get returns correct joynr objects", done => {
+        const fixture = new ProxyAttribute(
             {
                 proxyParticipantId: "proxy",
-                providerDiscoveryEntry: providerDiscoveryEntry
+                providerDiscoveryEntry
             },
             settings,
             "attributeOfTypeTestEnum",
@@ -263,7 +256,7 @@ describe("libjoynr-js.joynr.proxy.ProxyAttribute", function() {
         expect(fixture.get).toBeDefined();
         expect(typeof fixture.get === "function").toBeTruthy();
 
-        requestReplyManagerSpy.sendRequest.and.callFake(function(settings, callbackSettings) {
+        requestReplyManagerSpy.sendRequest.and.callFake((settings, callbackSettings) => {
             return Promise.resolve({
                 response: ["ZERO"],
                 settings: callbackSettings
@@ -272,25 +265,25 @@ describe("libjoynr-js.joynr.proxy.ProxyAttribute", function() {
 
         fixture
             .get()
-            .then(function(data) {
+            .then(data => {
                 expect(data).toEqual(TestEnum.ZERO);
                 done();
                 return null;
             })
-            .catch(function() {
+            .catch(() => {
                 return null;
             });
     });
 
-    it("expect correct error reporting after attribute set with invalid value", function(done) {
+    it("expect correct error reporting after attribute set with invalid value", done => {
         TypeRegistrySingleton.getInstance()
             .getTypeRegisteredPromise("joynr.tests.testTypes.ComplexTestType", 1000)
-            .then(function() {
+            .then(() => {
                 return null;
             })
             .catch(fail)
-            .then(function() {
-                var enumAttribute = new ProxyAttribute(
+            .then(() => {
+                const enumAttribute = new ProxyAttribute(
                     {
                         proxyParticipantId: "proxy",
                         providerParticipantId: "provider"
@@ -307,11 +300,11 @@ describe("libjoynr-js.joynr.proxy.ProxyAttribute", function() {
                     }
                 });
             })
-            .then(function() {
+            .then(() => {
                 fail("unexpected resolve from setter with invalid value");
                 return null;
             })
-            .catch(function(error) {
+            .catch(error => {
                 expect(error.message).toEqual(
                     "error setting attribute: enumAttribute: Error: members.a is not of type Number. Actual type is String"
                 );
@@ -320,23 +313,23 @@ describe("libjoynr-js.joynr.proxy.ProxyAttribute", function() {
             });
     });
 
-    it("set calls through to RequestReplyManager", function(done) {
-        var requestReplyId;
+    it("set calls through to RequestReplyManager", done => {
+        let requestReplyId;
         isOn
             .set({
                 value: true
             })
-            .then(function() {
+            .then(() => {
                 expect(requestReplyManagerSpy.sendRequest).toHaveBeenCalled();
                 requestReplyId = requestReplyManagerSpy.sendRequest.calls.argsFor(0)[0].request.requestReplyId;
                 expect(requestReplyManagerSpy.sendRequest).toHaveBeenCalledWith(
                     {
                         toDiscoveryEntry: providerDiscoveryEntry,
                         from: proxyParticipantId,
-                        messagingQos: messagingQos,
+                        messagingQos,
                         request: new Request({
                             methodName: "setIsOn",
-                            requestReplyId: requestReplyId,
+                            requestReplyId,
                             paramDatatypes: ["Boolean"],
                             params: [true]
                         })
@@ -346,18 +339,18 @@ describe("libjoynr-js.joynr.proxy.ProxyAttribute", function() {
                 done();
                 return null;
             })
-            .catch(function() {
+            .catch(() => {
                 fail("got unexpected reject from setter");
                 return null;
             });
     });
 
-    it("subscribe calls through to SubscriptionManager", function(done) {
-        var spy = jasmine.createSpyObj("spy", ["onReceive", "onError", "onSubscribed"]);
+    it("subscribe calls through to SubscriptionManager", done => {
+        const spy = jasmine.createSpyObj("spy", ["onReceive", "onError", "onSubscribed"]);
 
         isOn.subscribe({
-            messagingQos: messagingQos,
-            subscriptionQos: subscriptionQos,
+            messagingQos,
+            subscriptionQos,
             onReceive: spy.onReceive,
             onError: spy.onError,
             onSubscribed: spy.onSubscribed
@@ -366,7 +359,7 @@ describe("libjoynr-js.joynr.proxy.ProxyAttribute", function() {
         expect(subscriptionManagerSpy.registerSubscription).toHaveBeenCalled();
         expect(subscriptionManagerSpy.registerSubscription).toHaveBeenCalledWith({
             proxyId: proxyParticipantId,
-            providerDiscoveryEntry: providerDiscoveryEntry,
+            providerDiscoveryEntry,
             attributeName: "isOn",
             attributeType: "Boolean",
             qos: subscriptionQos,
@@ -378,41 +371,39 @@ describe("libjoynr-js.joynr.proxy.ProxyAttribute", function() {
         done();
     });
 
-    it("subscribe notifies", function(done) {
+    it("subscribe notifies", done => {
         expect(isOn.subscribe).toBeDefined();
         expect(typeof isOn.subscribe === "function").toBeTruthy();
 
         isOn
             .subscribe({
-                subscriptionQos: subscriptionQos,
-                onReceive: function(value) {},
-                onError: function(value) {}
+                subscriptionQos,
+                onReceive() {},
+                onError() {}
             })
-            .then(function() {
+            .then(() => {
                 done();
                 return null;
             })
-            .catch(function() {
+            .catch(() => {
                 fail("got reject from subscribe operation");
                 return null;
             });
     });
 
-    it("subscribe provides a subscriptionId", function(done) {
-        var spy = jasmine.createSpyObj("spy", ["onFulfilled", "onRejected"]);
-
+    it("subscribe provides a subscriptionId", done => {
         isOn
             .subscribe({
-                subscriptionQos: subscriptionQos,
-                onReceive: function(value) {},
-                onError: function(value) {}
+                subscriptionQos,
+                onReceive() {},
+                onError() {}
             })
-            .then(function(id) {
+            .then(id => {
                 expect(id).toEqual(subscriptionId);
                 done();
                 return null;
             })
-            .catch(function() {
+            .catch(() => {
                 return null;
             });
     });
@@ -432,55 +423,53 @@ describe("libjoynr-js.joynr.proxy.ProxyAttribute", function() {
     // undefined", asyncTimeout);
     // });
 
-    it("unsubscribe calls through to SubscriptionManager", function(done) {
+    it("unsubscribe calls through to SubscriptionManager", done => {
         isOn
             .unsubscribe({
-                subscriptionId: subscriptionId
+                subscriptionId
             })
-            .then(function() {
+            .then(() => {
                 expect(subscriptionManagerSpy.unregisterSubscription).toHaveBeenCalled();
                 expect(subscriptionManagerSpy.unregisterSubscription).toHaveBeenCalledWith({
                     messagingQos: new MessagingQos(),
-                    subscriptionId: subscriptionId
+                    subscriptionId
                 });
                 done();
                 return null;
             })
-            .catch(function() {
+            .catch(() => {
                 return null;
             });
     });
 
-    it("unsubscribe notifies", function(done) {
+    it("unsubscribe notifies", done => {
         expect(isOn.unsubscribe).toBeDefined();
         expect(typeof isOn.unsubscribe === "function").toBeTruthy();
 
         isOn
             .subscribe({
-                subscriptionQos: subscriptionQos,
-                onReceive: function(value) {},
-                onError: function(value) {}
+                subscriptionQos,
+                onReceive() {},
+                onError() {}
             })
-            .then(function(subscriptionId) {
+            .then(subscriptionId => {
                 return isOn.unsubscribe({
-                    subscriptionId: subscriptionId
+                    subscriptionId
                 });
             })
-            .then(function() {
+            .then(() => {
                 done();
                 return null;
             })
-            .catch(function() {
+            .catch(() => {
                 fail("subscribe or unsubscribe unexpectedly failed");
                 return null;
             });
     });
 
-    it("throws if caller sets a generic object without a declared _typeName attribute with the name of a registrered type", function(
-        done
-    ) {
-        var proxy = {};
-        var radioStationProxyAttributeWrite = new ProxyAttribute(
+    it("throws if caller sets a generic object without a declared _typeName attribute with the name of a registrered type", done => {
+        const proxy = {};
+        const radioStationProxyAttributeWrite = new ProxyAttribute(
             proxy,
             settings,
             "radioStationProxyAttributeWrite",
@@ -488,7 +477,7 @@ describe("libjoynr-js.joynr.proxy.ProxyAttribute", function() {
             "WRITE"
         );
 
-        expect(function() {
+        expect(() => {
             radioStationProxyAttributeWrite.set({
                 value: {
                     name: "radiostationname",

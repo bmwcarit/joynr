@@ -1,5 +1,3 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
@@ -18,12 +16,11 @@
  * limitations under the License.
  * #L%
  */
-var TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
-var Typing = require("../util/Typing");
-var Util = require("../util/UtilInternal");
-var JoynrException = require("./JoynrException");
-var LoggingManager = require("../system/LoggingManager");
-var defaultSettings;
+const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
+const Typing = require("../util/Typing");
+const UtilInternal = require("../util/UtilInternal");
+const JoynrException = require("./JoynrException");
+let defaultSettings;
 
 /**
  * @classdesc
@@ -51,17 +48,16 @@ function JoynrRuntimeException(settings) {
         return new JoynrRuntimeException(settings);
     }
 
-    var log = LoggingManager.getLogger("joynr.exceptions.JoynrRuntimeException");
-    var exception = new JoynrException(settings);
+    const exception = new JoynrException(settings);
 
     /**
      * Used for serialization.
      * @name JoynrRuntimeException#_typeName
      * @type String
      */
-    Util.objectDefineProperty(this, "_typeName", "joynr.exceptions.JoynrRuntimeException");
+    UtilInternal.objectDefineProperty(this, "_typeName", "joynr.exceptions.JoynrRuntimeException");
     Typing.checkPropertyIfDefined(settings, "Object", "settings");
-    Util.extend(this, defaultSettings, settings, exception);
+    UtilInternal.extend(this, defaultSettings, settings, exception);
 }
 
 defaultSettings = {};
