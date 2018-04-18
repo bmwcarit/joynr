@@ -970,7 +970,14 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", funct
             .then(subscriptionManager.shutdown)
             .then(function() {
                 expect(dispatcherSpy.sendSubscriptionStop).toHaveBeenCalled();
-                expect(dispatcherSpy.sendMulticastSubscriptionStop).toHaveBeenCalled();
+                expect(dispatcherSpy.sendSubscriptionStop.calls.count()).toEqual(1);
+                expect(dispatcherSpy.sendSubscriptionStop.calls.argsFor(0)[0].messagingQos).toEqual(
+                    new MessagingQos({ ttl: clearSubscriptionsTimeoutMs })
+                );
+                expect(dispatcherSpy.sendMulticastSubscriptionStop.calls.argsFor(0)[0].messagingQos).toEqual(
+                    new MessagingQos({ ttl: clearSubscriptionsTimeoutMs })
+                );
+                expect(dispatcherSpy.sendMulticastSubscriptionStop.calls.count()).toEqual(1);
                 done();
             })
             .catch(fail);

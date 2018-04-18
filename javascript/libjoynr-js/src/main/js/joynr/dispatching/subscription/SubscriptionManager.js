@@ -692,7 +692,10 @@ function SubscriptionManager(dispatcher) {
         var activeSubscriptionId;
         for (activeSubscriptionId in subscriptionInfos) {
             if (Object.prototype.hasOwnProperty.call(subscriptionInfos, activeSubscriptionId)) {
-                var promise = this.unregisterSubscription({ subscriptionId: activeSubscriptionId });
+                var promise = this.unregisterSubscription({
+                    subscriptionId: activeSubscriptionId,
+                    messagingQos: new MessagingQos({ ttl: clearSubscriptionsTimeoutMs })
+                });
                 cleanUpPromises.push(promise);
             }
         }
