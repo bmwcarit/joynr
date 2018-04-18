@@ -360,8 +360,8 @@ function End2EndAbstractTest(provisioningSuffix, buildDataProxy) {
                 done();
                 return null;
             })
-            .catch(function() {
-                throw new Error("shutdown Child and Libjoynr failed");
+            .catch(function(e) {
+                throw new Error("shutdown Child and Libjoynr failed: " + e);
             });
     };
 }

@@ -314,54 +314,20 @@ describe("libjoynr-js.integration.end2end.rpc", function() {
             .catch(fail);
     });
 
-    function setAndTestAttributeTester(attributeName) {
-        var lastRecursionIndex = -1,
-            recursions = 5,
-            onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
+    function setAndTestAttributeTester(attributeName, done) {
+        var recursions = 5;
 
-        setAndTestAttribute(attributeName, recursions - 1)
-            .then(onFulfilledSpy)
-            .catch(function(error) {
-                return IntegrationUtils.outputPromiseError(
-                    new Error(
-                        "End2EndRPCTest.setAndTestAttributeTester. Error while calling setAndTest: " + error.message
-                    )
-                );
-            });
-
-        return waitsFor(
-            function() {
-                return onFulfilledSpy.calls.count() > 0;
-            },
-            "get/set test to finish",
-            2 * provisioning.ttl * recursions
-        ).then(function() {
-            // each
-            // repetition
-            // consists
-            // of a
-            // get
-            // and
-            // set
-            // => 2
-            // ttls per repetition
-
-            // additional sanity check whether recursion level
-            // really went down
-            // to 0
-            expect(onFulfilledSpy).toHaveBeenCalled();
-            expect(onFulfilledSpy).toHaveBeenCalledWith(0);
-        });
+        return setAndTestAttribute(attributeName, recursions - 1)
+            .then(function(value) {
+                expect(value).toEqual(0);
+                done();
+            })
+            .catch(fail);
     }
 
     // when provider is working this should also work
     it("checks whether the provider stores the attribute value", function(done) {
-        setAndTestAttributeTester("isOn")
-            .then(function() {
-                done();
-                return null;
-            })
-            .catch(fail);
+        setAndTestAttributeTester("isOn", done);
     });
 
     it("can call an operation successfully (Provider sync, String parameter)", function(done) {
