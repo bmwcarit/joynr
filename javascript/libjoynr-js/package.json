@@ -41,8 +41,9 @@
     "test": "npm run test:unit && npm run test:sit && npm run karma",
     "test:unit": "cd src/test/resources && node node-run-unit-tests.js && cd -",
     "test:sit": "cd src/test/resources && node node-run-system-integration-tests.js && cd -",
-    "build:fast": "cd src/main/js && npm i && cd ../../.. && npm i && npm run sig && npm run format && npm run lint && npm run fixRequire && npm run test",
+    "build:fast": "npm run build:skip && npm run test",
     "build": "npm run clean && npm run build:fast",
+    "build:skip": "cd src/main/js && npm i && cd ../../.. && npm i && npm run sig && npm run format && npm run lint && npm run fixRequire",
     "fixRequire": "echo 'module.exports = require(\"..\");' > src/main/js/node_modules/joynr.js"
   },
   "repository": {
