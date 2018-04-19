@@ -15,4 +15,5 @@ runtimes/include/joynr/JoynrRuntimeExport.h
 /.project
 /.settings
 tests/gen/
+tests/gen-with-version/
 /docs

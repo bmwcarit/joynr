@@ -69,6 +69,12 @@ public abstract class AbstractJoynGeneratorMojo extends AbstractMojo {
     protected String generationId;
 
     /**
+     * Properties where the version shall be included in (package, name, none)
+     * @parameter expression="${joynr.generator.addVersionTo}"
+     */
+    protected String addVersionTo;
+
+    /**
      * Properties path to the output directory.
      * @parameter expression="${joynr.generator.outputPath}"
      * @required
@@ -99,6 +105,7 @@ public abstract class AbstractJoynGeneratorMojo extends AbstractMojo {
         sb.append(rootGenerator);
         sb.append(generationLanguage);
         sb.append(generationId);
+        sb.append(addVersionTo);
         sb.append(outputPath);
         sb.append(getSupportedGoal());
         if (parameter != null) {
@@ -127,6 +134,7 @@ public abstract class AbstractJoynGeneratorMojo extends AbstractMojo {
         getLog().info("rootGenerator " + (rootGenerator == null ? "not specified" : rootGenerator));
         getLog().info("generationId " + (generationId == null ? "not specified" : generationId));
         getLog().info("outputPath " + (outputPath == null ? "not specified" : outputPath));
+        getLog().info("addVersionTo " + (addVersionTo == null ? "not specified" : addVersionTo));
         getLog().info("parameter " + (parameter == null ? "not specified" : ":"));
         if (parameter != null) {
             for (String key : parameter.keySet()) {
@@ -157,6 +165,7 @@ public abstract class AbstractJoynGeneratorMojo extends AbstractMojo {
         arguments.setGenerationLanguage(generationLanguage);
         arguments.setGenerationId(generationId);
         arguments.setOutputPath(outputPath);
+        arguments.setAddVersionTo(addVersionTo);
         arguments.setParameter(parameter);
         if (parameter == null) {
             parameter = new HashMap<String, String>();

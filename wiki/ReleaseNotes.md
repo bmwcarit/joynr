@@ -8,7 +8,8 @@ the versioning scheme [here](JoynrVersioning.md).
 None.
 
 ## Other changes
-None.
+* **[Generator]** Introduced a new flag `addVersionTo` to append version information at filesystem level
+  (package or interface). See [Generator Documentation](generator.md) for additional information.
 
 ## Configuration property changes
 * **[Java]** Introduced `PROPERTY_MESSAGING_COMPRESS_REPLIES` for compressing all outgoing replies by

@@ -25,7 +25,7 @@ let TestEnd2EndDatatypesTestData = require("./TestEnd2EndDatatypesTestData"),
     waitsFor = require("../global/WaitsFor");
 describe("libjoynr-js.integration.end2end.datatypes", () => {
     let datatypesProxy;
-    const abstractTest = new End2EndAbstractTest("End2EndDatatypesTest", true);
+    const abstractTest = new End2EndAbstractTest("End2EndDatatypesTest", "TestEnd2EndDatatypesProviderProcess");
 
     beforeEach(done => {
         abstractTest.beforeEach().then(settings => {

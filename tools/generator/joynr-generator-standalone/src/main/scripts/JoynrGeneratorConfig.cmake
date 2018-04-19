@@ -11,7 +11,8 @@
 #                  [TEMPLATES_ENCODING encoding]
 #                  [GENERATION_ID id]
 #                  [OUTPUT_HEADER_PATH dir]
-#                  [INCLUDE_PREFIX prefix])
+#                  [INCLUDE_PREFIX prefix]
+#                  [ADD_VERSION_TO name|package|none])
 
 include(CMakeParseArguments)
 
@@ -40,6 +41,7 @@ function(JoynrGenerator)
         GENERATION_ID
         OUTPUT_HEADER_PATH
         INCLUDE_PREFIX
+        ADD_VERSION_TO
     )
     cmake_parse_arguments(joynrGenerator "" "${singleValueArgs}" "" ${ARGN})
 
@@ -91,6 +93,10 @@ function(JoynrGenerator)
 
     if(joynrGenerator_INCLUDE_PREFIX)
         list(APPEND joynrGeneratorCmd "-includePrefix" "${joynrGenerator_INCLUDE_PREFIX}")
+    endif()
+
+    if(joynrGenerator_ADD_VERSION_TO)
+        list(APPEND joynrGeneratorCmd "-addVersionTo" "${joynrGenerator_ADD_VERSION_TO}")
     endif()
 
     execute_process(

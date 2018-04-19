@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2017 BMW Car IT GmbH
+ * Copyright (C) 2018 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,27 +16,26 @@
  * limitations under the License.
  * #L%
  */
-package io.joynr.provider;
+package tests
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+// this interface is used to build a provider and a proxy trying to use different versions of the same interface
+interface MultipleVersionsInterface {
+        version { major 1 minor 0 }
 
-/**
- *
- * @author christoph.ainhauser
- */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-@Inherited
-public @interface JoynrInterface {
-
-    Class<?> provides();
-
-    Class<?> provider();
-
-    String name();
-
+        method getTrue {
+                out {
+                        Boolean result
+                }
+        }
 }
+
+interface MultipleVersionsInterface {
+        version { major 2 minor 0 }
+
+        method getTrue {
+                out {
+                        Boolean result
+                }
+        }
+}
+

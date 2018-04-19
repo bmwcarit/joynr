@@ -61,6 +61,8 @@ public class InvocationArguments {
 
     private boolean clean = false;
 
+    private String addVersionTo = "none";
+
     public InvocationArguments() {
         // allows setting args programmatically
     }
@@ -109,6 +111,11 @@ public class InvocationArguments {
         usageString.append("       -templatesDir <folder name of templates directory>\n");
         usageString.append("       -templatesEncoding <encoding of templates>\n");
         usageString.append("       -generationId <name of what is being generated>\n");
+        usageString.append("       " + dumpVersionDefinition() + "\n");
+        usageString.append("         package: interface major versions (if existing) are added as an additional package \"v<version>\"\n");
+        usageString.append("         name: interface major versions (if existing) are appended to the interface name\n");
+        usageString.append("         none: interface versions don't affect the generated interface or package name\n");
+        usageString.append("         default: none\n");
         usageString.append("      Optional, C++ only: \n");
         usageString.append("       -outputHeaderPath <path to directory containing header files>\n");
         usageString.append("       -includePrefix <prefix to use in include statements>\n");
@@ -132,6 +139,10 @@ public class InvocationArguments {
         return "-rootGenerator <full name of template root>";
     }
 
+    private static String dumpVersionDefinition() {
+        return "-addVersionTo <package, name, none>";
+    }
+
     private static String dumpGenerationLanguageDefinition() {
         return "-generationLanguage <" + getLanguages("|") + ">";
     }
@@ -145,6 +156,9 @@ public class InvocationArguments {
                 i++;
             } else if (args[i].equalsIgnoreCase("-generate")) {
                 setGenerate(args[i + 1].equalsIgnoreCase("true"));
+                i++;
+            } else if (args[i].equalsIgnoreCase("-addVersionTo")) {
+                setAddVersionTo(args[i + 1]);
                 i++;
             } else if (args[i].equalsIgnoreCase("-generationId")) {
                 setGenerationId(args[i + 1].replace("\"", ""));
@@ -182,6 +196,10 @@ public class InvocationArguments {
         this.generate = generate;
     }
 
+    public void setAddVersionTo(String addVersionTo) {
+        this.addVersionTo = addVersionTo;
+    }
+
     private void setParameterElement(String key, String value) {
         if (parameter == null) {
             parameter = new HashMap<>();
@@ -197,6 +215,14 @@ public class InvocationArguments {
 
     public boolean clean() {
         return clean;
+    }
+
+    public boolean addVersionToPackage() {
+        return "package".equalsIgnoreCase(addVersionTo);
+    }
+
+    public boolean addVersionToInterfaceName() {
+        return "name".equalsIgnoreCase(addVersionTo);
     }
 
     public void checkArguments() {
@@ -222,6 +248,12 @@ public class InvocationArguments {
         if (rootGenerator == null) {
             errorMessages.append("- Root generator could not be found. Please invoke the generator with the following argument: "
                     + dumpRootGeneratorDefinition() + " OR " + dumpGenerationLanguageDefinition());
+            errorMessages.append(newLine);
+        }
+        if (addVersionTo != null
+                && !(addVersionTo.equalsIgnoreCase("package") || addVersionTo.equalsIgnoreCase("name") || addVersionTo.equalsIgnoreCase("none"))) {
+            errorMessages.append("- Version inclusion specifier was invalid. Please invoke the generator with the following argument: "
+                    + dumpVersionDefinition());
             errorMessages.append(newLine);
         }
 

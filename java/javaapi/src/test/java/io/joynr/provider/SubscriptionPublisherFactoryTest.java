@@ -22,7 +22,10 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+
+import joynr.test.NonInstantiable;
 import joynr.tests.DefaulttestProvider;
+import joynr.tests.test;
 import joynr.tests.testProvider;
 import joynr.tests.testSubscriptionPublisherImpl;
 
@@ -55,10 +58,11 @@ public class SubscriptionPublisherFactoryTest {
         subscriptionPublisherFactory.create(providerSpy);
     }
 
-    @JoynrInterface(name = "test/WithoutSubscriptionPublisher", provides = testProvider.class)
+    @JoynrInterface(name = "test/WithoutSubscriptionPublisher", provider = testProvider.class,
+                    provides = testProvider.class)
     private static interface testProviderWithoutSubscriptionPublisher {
         /*
-         *  In this case, no matching SubscriptionPublisherImpl exists
+         *  In this case, no matching SubscriptionPublisherImpl exists since the provided class is incorrect
          */
     }
 
@@ -68,10 +72,10 @@ public class SubscriptionPublisherFactoryTest {
         subscriptionPublisherFactory.create(providerSpy);
     }
 
-    @JoynrInterface(name = "test/NonInstantiable", provides = testProvider.class)
+    @JoynrInterface(name = "test/NonInstantiable", provider = testProvider.class, provides = NonInstantiable.class)
     private static interface testProviderWithNonInstantiableSubscriptionPublisher {
         /*
-         *  In this case, a matching SubscriptionPublisherImpl exists {@link joynr/test/NonInstantiableSubscriptionImpl.class}.
+         *  In this case, a matching SubscriptionPublisherImpl exists {@link joynr.test.NonInstantiableSubscriptionProviderImpl}.
          *  However, the subscription publisher cannot be instantiated, as it has no nullable constructor.
          */
 

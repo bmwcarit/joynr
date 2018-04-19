@@ -31,9 +31,24 @@ import org.franca.core.franca.FModelElement
 import org.franca.core.franca.FType
 import org.franca.core.franca.FTypeRef
 import org.franca.core.franca.FTypedElement
+import javax.inject.Inject
+import javax.inject.Named
 
 @Singleton
 class NamingUtil {
+
+	public static final String JOYNR_GENERATOR_INTERFACENAMEWITHVERSION  = "JOYNR_GENERATOR_INTERFACENAMEWITHVERSION";
+
+	@Inject
+	@Named(JOYNR_GENERATOR_INTERFACENAMEWITHVERSION)
+	public boolean interfaceNameWithVersion;
+
+	def versionSuffix(FInterface iFace) {
+		if (iFace.version !== null && interfaceNameWithVersion)
+			iFace.version.major
+		else
+			''
+	}
 
 	def joynrName(FTypedElement element){
 		element.name
@@ -64,7 +79,7 @@ class NamingUtil {
 	}
 
 	def joynrName(FInterface iFace){
-		iFace.name
+		iFace.name + iFace.versionSuffix
 	}
 
 	def joynrName(FMethod method) {

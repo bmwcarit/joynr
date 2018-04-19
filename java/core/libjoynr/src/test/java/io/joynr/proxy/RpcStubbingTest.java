@@ -123,7 +123,7 @@ public class RpcStubbingTest {
         public void noParamsNoReturnValue();
     }
 
-    @JoynrInterface(provides = TestProvider.class, name = TestProvider.INTERFACE_NAME)
+    @JoynrInterface(provider = TestProvider.class, provides = TestProvider.class, name = TestProvider.INTERFACE_NAME)
     public static interface TestProvider extends JoynrProvider {
         public static final String INTERFACE_NAME = "rpcstubbing/test";
 

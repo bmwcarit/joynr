@@ -21,6 +21,7 @@ package io.joynr.generator;
 import static io.joynr.generator.util.FileSystemAccessUtil.createFileSystemAccess;
 import io.joynr.generator.loading.ModelLoader;
 import io.joynr.generator.templates.util.JoynrGeneratorExtensions;
+import io.joynr.generator.templates.util.NamingUtil;
 import io.joynr.generator.util.InvocationArguments;
 
 import java.util.logging.Level;
@@ -69,6 +70,10 @@ public class Executor {
                                    .toInstance(arguments.generate());
                 bind(Boolean.class).annotatedWith(Names.named(JoynrGeneratorExtensions.JOYNR_GENERATOR_CLEAN))
                                    .toInstance(arguments.clean());
+                bind(Boolean.class).annotatedWith(Names.named(JoynrGeneratorExtensions.JOYNR_GENERATOR_PACKAGEWITHVERSION))
+                                   .toInstance(arguments.addVersionToPackage());
+                bind(Boolean.class).annotatedWith(Names.named(NamingUtil.JOYNR_GENERATOR_INTERFACENAMEWITHVERSION))
+                                   .toInstance(arguments.addVersionToInterfaceName());
             }
         });
         this.outputFileSystem = injector.getInstance(IFileSystemAccess.class);

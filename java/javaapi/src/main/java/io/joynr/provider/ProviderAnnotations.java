@@ -37,6 +37,10 @@ public class ProviderAnnotations {
         return getAnnotation(provider.getClass(), JoynrInterface.class).provides();
     }
 
+    public static Class<?> getProviderInterface(Object provider) {
+        return getAnnotation(provider.getClass(), JoynrInterface.class).provider();
+    }
+
     public static int getMajorVersion(Object provider) {
         return getAnnotation(provider.getClass(), JoynrVersion.class).major();
     }

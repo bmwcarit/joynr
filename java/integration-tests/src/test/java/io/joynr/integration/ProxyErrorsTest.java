@@ -78,7 +78,8 @@ public class ProxyErrorsTest {
         public static String INTERFACE_NAME = "tests/test";
     }
 
-    @JoynrInterface(provides = TestProviderWrongVersion.class, name = "tests/test")
+    @JoynrInterface(provider = TestProviderWrongVersion.class, provides = TestProviderWrongVersion.class,
+                    name = "tests/test")
     @JoynrVersion(major = 1, minor = 0)
     interface TestProviderWrongVersion extends testProvider {
     }

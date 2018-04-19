@@ -20,13 +20,14 @@
 const Promise = require("../../../main/js/global/Promise");
 let RadioProxy = require("../../generated/joynr/vehicle/RadioProxy"),
     DatatypesProxy = require("../../generated/joynr/datatypes/DatatypesProxy"),
+    MultipleVersionsInterfaceProxy = require("../../generated/joynr/tests/MultipleVersionsInterfaceProxy"),
     IntegrationUtils = require("./IntegrationUtils"),
     provisioning = require("../../resources/joynr/provisioning/provisioning_cc"),
     waitsFor = require("../global/WaitsFor");
 const joynr = require("joynr");
 
-function End2EndAbstractTest(provisioningSuffix, buildDataProxy) {
-    let radioProxy, dataProxy, loadedJoynr;
+function End2EndAbstractTest(provisioningSuffix, providerChildProcessName, processSpecialization) {
+    let radioProxy, dataProxy, multipleVersionsInterfaceProxy, loadedJoynr;
     let childId;
     let testIdentifier = 0;
 
@@ -42,45 +43,59 @@ function End2EndAbstractTest(provisioningSuffix, buildDataProxy) {
             .then(newJoynr => {
                 loadedJoynr = newJoynr;
                 IntegrationUtils.initialize(loadedJoynr);
-                const providerChildProcessName = buildDataProxy
-                    ? "TestEnd2EndDatatypesProviderProcess"
-                    : "TestEnd2EndCommProviderProcess";
                 return IntegrationUtils.initializeChildProcess(
                     providerChildProcessName,
                     provisioningSuffixForTest,
-                    domain
+                    domain,
+                    processSpecialization
                 );
             })
             .then(newChildId => {
                 childId = newChildId;
-                if (buildDataProxy) {
-                    return IntegrationUtils.buildProxy(DatatypesProxy, domain).then(newDataProxy => {
-                        dataProxy = newDataProxy;
-                    });
+                switch (providerChildProcessName) {
+                    case "TestEnd2EndDatatypesProviderProcess":
+                        return IntegrationUtils.buildProxy(DatatypesProxy, domain).then(newDataProxy => {
+                            dataProxy = newDataProxy;
+                        });
+                    case "TestEnd2EndCommProviderProcess":
+                        // Prevent freezing of object through proxy build
+                        // since we need to add faked attribute below
+                        spyOn(Object, "freeze").and.callFake(obj => {
+                            return obj;
+                        });
+                        return IntegrationUtils.buildProxy(RadioProxy, domain).then(newRadioProxy => {
+                            radioProxy = newRadioProxy;
+
+                            // Add an attribute that does not exist on provider side
+                            // for special subscription test
+                            radioProxy.nonExistingAttributeOnProviderSide = new radioProxy.settings.proxyElementTypes.ProxyAttribute(
+                                radioProxy,
+                                radioProxy.settings,
+                                "nonExistingAttributeOnProviderSide",
+                                "Integer",
+                                "NOTIFYREADWRITE"
+                            );
+
+                            // restore freeze behavior
+                            Object.freeze.and.callThrough();
+                            radioProxy = Object.freeze(radioProxy);
+                        });
+                    case "TestMultipleVersionsInterfaceProcess": {
+                        const discoveryQos = new joynr.proxy.DiscoveryQos({
+                            discoveryTimeoutMs: 1000
+                        });
+                        return joynr.proxyBuilder
+                            .build(MultipleVersionsInterfaceProxy, {
+                                domain,
+                                discoveryQos
+                            })
+                            .then(newProxy => {
+                                multipleVersionsInterfaceProxy = newProxy;
+                            });
+                    }
+                    default:
+                        throw new Error("Please specify the process to invoke!");
                 }
-
-                // Prevent freezing of object through proxy build
-                // since we need to add faked attribute below
-                spyOn(Object, "freeze").and.callFake(obj => {
-                    return obj;
-                });
-                return IntegrationUtils.buildProxy(RadioProxy, domain).then(newRadioProxy => {
-                    radioProxy = newRadioProxy;
-
-                    // Add an attribute that does not exist on provider side
-                    // for special subscription test
-                    radioProxy.nonExistingAttributeOnProviderSide = new radioProxy.settings.proxyElementTypes.ProxyAttribute(
-                        radioProxy,
-                        radioProxy.settings,
-                        "nonExistingAttributeOnProviderSide",
-                        "Integer",
-                        "NOTIFYREADWRITE"
-                    );
-
-                    // restore freeze behavior
-                    Object.freeze.and.callThrough();
-                    radioProxy = Object.freeze(radioProxy);
-                });
             })
             .then(() => {
                 return IntegrationUtils.startChildProcess(childId);
@@ -89,7 +104,8 @@ function End2EndAbstractTest(provisioningSuffix, buildDataProxy) {
                 return Promise.resolve({
                     joynr: loadedJoynr,
                     radioProxy,
-                    dataProxy
+                    dataProxy,
+                    multipleVersionsInterfaceProxy
                 });
             });
     };

@@ -25,9 +25,9 @@ public class SubscriptionPublisherFactory {
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public AbstractSubscriptionPublisher create(final Object provider) {
-        String interfaceName = ProviderAnnotations.getInterfaceName(provider);
-        String subscriptionPublisherClassName = "joynr." + interfaceName.replace("/", ".")
-                + SubscriptionPublisher.class.getSimpleName();
+        String interfaceClassName = ProviderAnnotations.getProvidedInterface(provider).getName();
+
+        String subscriptionPublisherClassName = interfaceClassName + SubscriptionPublisher.class.getSimpleName();
         String subcriptionPublisherImplClassName = subscriptionPublisherClassName + "Impl";
         try {
 
@@ -45,16 +45,16 @@ public class SubscriptionPublisherFactory {
 
             return subscriptionPublisherImpl;
         } catch (ClassNotFoundException e) {
-            throw new IllegalArgumentException("For given provider of joynr interface \"" + interfaceName
+            throw new IllegalArgumentException("For given provider of joynr interface \"" + interfaceClassName
                     + "\", expected subscription publisher class of type \"" + subcriptionPublisherImplClassName
                     + "\" could not be found by the classloader." + " Please ensure the class can be loaded.");
         } catch (InstantiationException e) {
-            throw new IllegalArgumentException("For given provider of joynr interface \"" + interfaceName
+            throw new IllegalArgumentException("For given provider of joynr interface \"" + interfaceClassName
                     + "\", expected subscription publisher class of type \"" + subcriptionPublisherImplClassName
                     + "\" could not be instantiated due to the following error: " + e.getMessage());
 
         } catch (IllegalAccessException e) {
-            throw new IllegalArgumentException("For given provider of joynr interface \"" + interfaceName
+            throw new IllegalArgumentException("For given provider of joynr interface \"" + interfaceClassName
                     + "\", expected subscription publisher class of type \"" + subcriptionPublisherImplClassName
                     + "\" could not be accessed due to the following error: " + e.getMessage());
         }
