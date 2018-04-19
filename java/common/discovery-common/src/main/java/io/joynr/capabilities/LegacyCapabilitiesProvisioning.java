@@ -154,10 +154,11 @@ public class LegacyCapabilitiesProvisioning {
             Address address;
             if (localChannelId.equals(channelId)) {
                 address = new InProcessAddress();
-            } else if (urlForAddress.startsWith("tcp") || urlForAddress.startsWith("mqtt")) {
-                address = new MqttAddress(urlForAddress, channelId);
-            } else {
+            } else if (urlForAddress.startsWith("http") || urlForAddress.startsWith("https")) {
                 address = new ChannelAddress(urlForAddress, channelId);
+            } else {
+                // allows anything else, typically used with mqtt:// or tcp:// or ssl://
+                address = new MqttAddress(urlForAddress, channelId);
             }
             DiscoveryEntry discoveryEntry = CapabilityUtils.newGlobalDiscoveryEntry(new Version(0, 1),
                                                                                     domain,
