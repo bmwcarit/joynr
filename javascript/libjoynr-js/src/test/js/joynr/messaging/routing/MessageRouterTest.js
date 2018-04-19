@@ -172,10 +172,8 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
     });
 
     it("resolves a previously persisted channel address", done => {
-        let participantId = "participantId",
-            channelAddress;
-
-        channelAddress = new ChannelAddress({
+        const participantId = "participantId";
+        const channelAddress = new ChannelAddress({
             messagingEndpointUrl: "http://testurl.com",
             channelId: "channelId"
         });
@@ -196,10 +194,8 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
     });
 
     it("resolves a previously persisted browser address", done => {
-        let participantId = "participantId",
-            browserAddress;
-
-        browserAddress = new BrowserAddress({
+        const participantId = "participantId";
+        const browserAddress = new BrowserAddress({
             windowId: "windowId"
         });
         persistencySpy.setItem(messageRouter.getStorageKey(participantId), JSON.stringify(browserAddress));

@@ -154,9 +154,9 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
     });
 
     it("will set the default discoveryQos settings correctly", () => {
-        let discoveryRetryDelayMs = 100,
-            discoveryTimeoutMs = 200,
-            discoveryExpiryIntervalMs = 100;
+        const discoveryRetryDelayMs = 100;
+        const discoveryTimeoutMs = 200;
+        const discoveryExpiryIntervalMs = 100;
         const discoveryQos = {
             discoveryRetryDelayMs,
             discoveryTimeoutMs,

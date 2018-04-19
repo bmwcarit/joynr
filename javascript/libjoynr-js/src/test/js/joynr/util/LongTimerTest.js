@@ -75,13 +75,13 @@ describe("libjoynr-js.joynr.LongTimer.Timeout", () => {
     });
 
     it("calls concurrent timeouts correctly", done => {
-        let i, j, spy;
+        let i, j;
 
         const spyArray = [];
         for (i = 1; i <= concurrentTimeouts; ++i) {
             spyArray.push("timeout" + i);
         }
-        spy = jasmine.createSpyObj("spy", spyArray);
+        const spy = jasmine.createSpyObj("spy", spyArray);
 
         // register spy[i] at i ms and check that no spy has been called
         for (i = 1; i <= concurrentTimeouts; ++i) {
@@ -190,13 +190,13 @@ describe("libjoynr-js.joynr.LongTimer.Interval", () => {
     });
 
     it("calls concurrent timeouts correctly", done => {
-        let i, j, spy;
+        let i, j;
 
         const spyArray = [];
         for (i = 1; i <= concurrentTimeouts; ++i) {
             spyArray.push("timeout" + i);
         }
-        spy = jasmine.createSpyObj("spy", spyArray);
+        const spy = jasmine.createSpyObj("spy", spyArray);
 
         // register spy[i] at i ms and check that no spy has been called
         for (i = 1; i <= concurrentTimeouts; ++i) {

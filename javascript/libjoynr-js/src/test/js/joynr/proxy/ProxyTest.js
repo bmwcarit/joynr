@@ -81,9 +81,8 @@ describe("libjoynr-js.joynr.proxy.Proxy", () => {
     });
 
     it("RadioProxy.getUsedDatatype can be used to synchronize to the successful registration of all used datatypes", done => {
-        let datatypePromises;
         expect(RadioProxy.getUsedDatatypes).toBeDefined();
-        datatypePromises = RadioProxy.getUsedDatatypes().map(datatype => {
+        const datatypePromises = RadioProxy.getUsedDatatypes().map(datatype => {
             return typeRegistry.getTypeRegisteredPromise(datatype, 1000);
         });
         Promise.all(datatypePromises)

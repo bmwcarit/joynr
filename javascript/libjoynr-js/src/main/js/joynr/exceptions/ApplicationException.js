@@ -20,7 +20,9 @@ const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton")
 const Typing = require("../util/Typing");
 const UtilInternal = require("../util/UtilInternal");
 const JoynrException = require("./JoynrException");
-let defaultSettings;
+const defaultSettings = {
+    detailMessage: "This is an application exception."
+};
 
 /**
  * @classdesc
@@ -67,10 +69,6 @@ function ApplicationException(settings) {
 
     UtilInternal.extend(this, defaultSettings, settings, exception);
 }
-
-defaultSettings = {
-    detailMessage: "This is an application exception."
-};
 
 TypeRegistrySingleton.getInstance().addType("joynr.exceptions.ApplicationException", ApplicationException);
 

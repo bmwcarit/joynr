@@ -246,8 +246,8 @@ function ProxyAttribute(parent, settings, attributeName, attributeType, attribut
 }
 
 function sendRequestOnSuccess(settings) {
-    let response = settings.response,
-        attributeType = settings.settings;
+    const response = settings.response;
+    const attributeType = settings.settings;
     return Typing.augmentTypes(response[0], typeRegistry, attributeType);
 }
 

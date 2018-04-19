@@ -33,8 +33,8 @@ function WebWorkerMessagingAppender() {}
  * @function
  */
 WebWorkerMessagingAppender.prototype.append = function(loggingEvent) {
-    let formattedMessage = loggingEvent.getCombinedMessages(),
-        appender = this;
+    let formattedMessage = loggingEvent.getCombinedMessages();
+    const appender = this;
 
     const getFormattedMessage = function() {
         try {

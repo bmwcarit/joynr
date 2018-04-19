@@ -561,7 +561,6 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", () => {
     });
 
     it("enriches requests with custom headers", done => {
-        let sentMessage;
         const request = new Request({
             methodName: "methodName"
         });
@@ -576,13 +575,12 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", () => {
             request
         });
         expect(clusterControllerMessagingStub.transmit).toHaveBeenCalled();
-        sentMessage = clusterControllerMessagingStub.transmit.calls.mostRecent().args[0];
+        const sentMessage = clusterControllerMessagingStub.transmit.calls.mostRecent().args[0];
         expect(sentMessage.getCustomHeaders()[headerKey]).toEqual(headerValue);
         done();
     });
 
     it("enriches requests with effort header", done => {
-        let sentMessage;
         const request = new Request({
             methodName: "methodName"
         });
@@ -595,13 +593,12 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", () => {
             request
         });
         expect(clusterControllerMessagingStub.transmit).toHaveBeenCalled();
-        sentMessage = clusterControllerMessagingStub.transmit.calls.mostRecent().args[0];
+        const sentMessage = clusterControllerMessagingStub.transmit.calls.mostRecent().args[0];
         expect(sentMessage.effort).toEqual(MessagingQosEffort.BEST_EFFORT.value);
         done();
     });
 
     it("enriches one way requests with custom headers", done => {
-        let sentMessage;
         const request = new OneWayRequest({
             methodName: "methodName"
         });
@@ -616,13 +613,13 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", () => {
             request
         });
         expect(clusterControllerMessagingStub.transmit).toHaveBeenCalled();
-        sentMessage = clusterControllerMessagingStub.transmit.calls.mostRecent().args[0];
+        const sentMessage = clusterControllerMessagingStub.transmit.calls.mostRecent().args[0];
         expect(sentMessage.getCustomHeaders()[headerKey]).toEqual(headerValue);
         done();
     });
 
     it("enriches replies with custom headers from request", done => {
-        let sentRequestMessage, sentReplyMessage;
+        let sentReplyMessage;
         const request = new Request({
             methodName: "methodName"
         });
@@ -637,7 +634,7 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", () => {
             request
         });
         expect(clusterControllerMessagingStub.transmit).toHaveBeenCalled();
-        sentRequestMessage = clusterControllerMessagingStub.transmit.calls.mostRecent().args[0];
+        const sentRequestMessage = clusterControllerMessagingStub.transmit.calls.mostRecent().args[0];
         const clusterControllerMessagingStubTransmitCallsCount = clusterControllerMessagingStub.transmit.calls.count();
         // get ready for an incoming request: when handleRequest is called, pass an empty reply back.
         requestReplyManager.handleRequest.and.callFake((to, request, cb, replySettings) => {

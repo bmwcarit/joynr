@@ -339,10 +339,9 @@ function initializeTest(provisioningSuffix, providedDomain) {
                     /* the dummy implementation transforms the incoming double values into
                      * strings.
                      */
-                    let stringArrayOut = [],
-                        element;
+                    const stringArrayOut = [];
                     if (opArgs.doubleArrayArg !== undefined) {
-                        for (element in opArgs.doubleArrayArg) {
+                        for (const element in opArgs.doubleArrayArg) {
                             if (opArgs.doubleArrayArg.hasOwnProperty(element)) {
                                 stringArrayOut.push(opArgs.doubleArrayArg[element].toString());
                             }
@@ -418,7 +417,7 @@ function initializeTest(provisioningSuffix, providedDomain) {
                             let i;
                             for (i = 0; i < opArgs.times; i++) {
                                 if (opArgs.hierarchicBroadcast && opArgs.partitions !== undefined) {
-                                    let hierarchicPartitions = [];
+                                    const hierarchicPartitions = [];
                                     broadcast.fire(outputParams, hierarchicPartitions);
                                     for (let j = 0; j < opArgs.partitions.length; j++) {
                                         hierarchicPartitions.push(opArgs.partitions[j]);

@@ -20,7 +20,7 @@ const Typing = require("../util/Typing");
 const UtilInternal = require("../util/UtilInternal");
 const SubscriptionQos = require("./SubscriptionQos");
 
-let defaultSettings;
+const defaultSettings = {};
 
 /**
  * @classdesc
@@ -74,7 +74,5 @@ function MulticastSubscriptionQos(settings) {
      */
     UtilInternal.extend(this, defaultSettings, settings, subscriptionQos);
 }
-
-defaultSettings = {};
 
 module.exports = MulticastSubscriptionQos;

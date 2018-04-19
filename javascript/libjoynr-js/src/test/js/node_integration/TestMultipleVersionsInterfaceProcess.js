@@ -22,16 +22,16 @@
 const ChildProcessUtils = require("./ChildProcessUtils");
 ChildProcessUtils.overrideRequirePaths();
 
-let joynr = require("joynr"),
-    Promise = require("../../../main/js/global/Promise"),
-    provisioning = require("../../resources/joynr/provisioning/provisioning_cc.js"),
-    MultipleVersionsInterfaceProviderNameVersion = require("../../generated/joynr/tests/MultipleVersionsInterface2Provider"),
-    MultipleVersionsInterfaceProviderPackageVersion1 = require("../../generated/joynr/tests/v1/MultipleVersionsInterfaceProvider"),
-    MultipleVersionsInterfaceProviderPackageVersion2 = require("../../generated/joynr/tests/v2/MultipleVersionsInterfaceProvider");
+const joynr = require("joynr");
+const Promise = require("../../../main/js/global/Promise");
+const provisioning = require("../../resources/joynr/provisioning/provisioning_cc.js");
+const MultipleVersionsInterfaceProviderNameVersion = require("../../generated/joynr/tests/MultipleVersionsInterface2Provider");
+const MultipleVersionsInterfaceProviderPackageVersion1 = require("../../generated/joynr/tests/v1/MultipleVersionsInterfaceProvider");
+const MultipleVersionsInterfaceProviderPackageVersion2 = require("../../generated/joynr/tests/v2/MultipleVersionsInterfaceProvider");
 
 let loadedJoynr, providerDomain, multipleVersionsInterfaceProvider, MultipleVersionsInterfaceProvider;
 
-let providerImplementation = {
+const providerImplementation = {
     getTrue: () => {
         return true;
     }

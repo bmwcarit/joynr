@@ -85,7 +85,6 @@ function InterTabLibjoynrRuntime(provisioning) {
     let messageRouter;
     let libjoynrMessagingSkeleton;
     let dispatcher;
-    let typeRegistry;
     let requestReplyManager;
     let subscriptionManager;
     let publicationManager;
@@ -105,7 +104,7 @@ function InterTabLibjoynrRuntime(provisioning) {
     let libjoynrInterTabAddress;
 
     // this is required at load time of libjoynr
-    typeRegistry = Object.freeze(TypeRegistrySingleton.getInstance());
+    const typeRegistry = Object.freeze(TypeRegistrySingleton.getInstance());
 
     /**
      * @name InterTabLibjoynrRuntime#typeRegistry

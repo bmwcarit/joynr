@@ -17,7 +17,7 @@
  * limitations under the License.
  * #L%
  */
-let libjoynrExports;
+
 // will receive the module names that should be exported
 // this instrumentation of the define method is there to...
 // ...leave the code block afterwards fully intact, so that static code analysis of require.js optimizer can still find all dependencies in
@@ -25,7 +25,7 @@ let libjoynrExports;
 // ...we can tap the dependency array with the full module names including the namespaces we need for exporting
 
 // place the require.js module name of all modules that are part of the external joynr API.
-libjoynrExports = [
+const libjoynrExports = [
     "./joynr/Runtime",
     "./joynr/buildSignature",
     "./joynr/messaging/MessagingQos",

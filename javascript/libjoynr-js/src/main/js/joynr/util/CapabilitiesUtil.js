@@ -63,10 +63,9 @@ CapabilitiesUtil.toDiscoveryEntry = function toDiscoveryEntry(capabilityInformat
  * @returns {Array} array of transformed objects of type DiscoveryEntry
  */
 CapabilitiesUtil.toDiscoveryEntries = function toDiscoveryEntries(capabilityInformations) {
-    let discoveryEntries = [],
-        i;
+    const discoveryEntries = [];
     if (capabilityInformations) {
-        for (i = 0; i < capabilityInformations.length; i++) {
+        for (let i = 0; i < capabilityInformations.length; i++) {
             discoveryEntries.push(CapabilitiesUtil.toDiscoveryEntry(capabilityInformations[i]));
         }
     }
@@ -144,10 +143,9 @@ CapabilitiesUtil.convertToDiscoveryEntryWithMetaInfoArray = function convertToDi
     isLocal,
     discoveryEntries
 ) {
-    let result = [],
-        i;
+    const result = [];
     if (discoveryEntries) {
-        for (i = 0; i < discoveryEntries.length; i++) {
+        for (let i = 0; i < discoveryEntries.length; i++) {
             result.push(CapabilitiesUtil.convertToDiscoveryEntryWithMetaInfo(isLocal, discoveryEntries[i]));
         }
     }

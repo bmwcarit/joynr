@@ -20,7 +20,7 @@ const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton")
 const Typing = require("../util/Typing");
 const UtilInternal = require("../util/UtilInternal");
 const JoynrRuntimeException = require("./JoynrRuntimeException");
-let defaultSettings;
+const defaultSettings = {};
 
 /**
  * @classdesc
@@ -63,8 +63,6 @@ function PublicationMissedException(settings) {
 
     UtilInternal.extend(this, defaultSettings, settings, runtimeException);
 }
-
-defaultSettings = {};
 
 TypeRegistrySingleton.getInstance().addType("joynr.exceptions.PublicationMissedException", PublicationMissedException);
 

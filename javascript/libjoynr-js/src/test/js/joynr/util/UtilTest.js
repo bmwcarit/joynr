@@ -35,32 +35,31 @@ describe("libjoynr-js.joynr.Util", () => {
 
 describe("libjoynr-js.joynr.UtilInternal.extend", () => {
     it("extends objects", () => {
-        let merged, message, subobject, object1, object2, object3;
-        merged = {};
+        const merged = {};
 
-        message = new JoynrMessage({
+        const message = new JoynrMessage({
             type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
         });
         message.payload = {
             payload1: 1,
             payload2: 2
         };
-        subobject = {
+        const subobject = {
             sublevel20: "sublevel20",
             sublevel21: "sublevel21"
         };
 
-        object1 = {
+        const object1 = {
             originalField: "originalField"
         };
-        object2 = {
+        const object2 = {
             message,
             number: 2.0,
             array: [1, 2, 3, 4, 5],
             string: "string",
             bool: true
         };
-        object3 = {
+        const object3 = {
             level11: "level11",
             level12: subobject
         };
@@ -78,10 +77,9 @@ describe("libjoynr-js.joynr.UtilInternal.extend", () => {
         expect(typeof merged.bool === "boolean").toBeTruthy();
     });
     it("deep extends objects", () => {
-        let merged, from;
-        merged = {};
+        const merged = {};
 
-        from = {
+        const from = {
             subobject: {
                 number: 2.0,
                 array: [0, 1, 2, 3, 4],
@@ -117,22 +115,19 @@ describe("libjoynr-js.joynr.UtilInternal.extend", () => {
 
 describe("libjoynr-js.joynr.UtilInternal.transform", () => {
     it("transform array", () => {
-        let origin, element, transformed, postFix;
-        postFix = "_transformed";
-        origin = [];
-        element = {
+        const postFix = "_transformed";
+        const origin = [];
+        const element = {
             a: "a"
         };
         origin.push(element);
 
         // now, let's transform
-        transformed = UtilInternal.transform(origin, (element, key) => {
-            let id,
-                member,
-                result = {};
-            for (id in element) {
+        const transformed = UtilInternal.transform(origin, (element, key) => {
+            const result = {};
+            for (const id in element) {
                 if (element.hasOwnProperty(id)) {
-                    member = element[id];
+                    const member = element[id];
                     result[id] = member + postFix;
                 }
             }

@@ -43,14 +43,14 @@ function RequestReplyManager(dispatcher, typeRegistry) {
     const log = LoggingManager.getLogger("joynr.dispatching.RequestReplyManager");
 
     const providers = {};
-    let replyCallers = new Map();
+    const replyCallers = new Map();
     let started = true;
 
     const CLEANUP_CYCLE_INTERVAL = 1000;
 
     const cleanupInterval = setInterval(() => {
         const currentTime = Date.now();
-        for (let [id, caller] of replyCallers) {
+        for (const [id, caller] of replyCallers) {
             if (caller.expiresAt <= currentTime) {
                 caller.reject(new Error('Request with id "' + id + '" failed: ttl expired'));
                 replyCallers.delete(id);
@@ -372,7 +372,7 @@ function RequestReplyManager(dispatcher, typeRegistry) {
      *            reply
      */
     this.handleReply = function handleReply(reply) {
-        let replyCaller = replyCallers.get(reply.requestReplyId);
+        const replyCaller = replyCallers.get(reply.requestReplyId);
 
         if (replyCaller === undefined) {
             log.error(
@@ -414,7 +414,7 @@ function RequestReplyManager(dispatcher, typeRegistry) {
         clearInterval(cleanupInterval);
 
         /*eslint-disable no-unused-vars*/
-        for (let [requestReplyId, replyCaller] of replyCallers) {
+        for (const [requestReplyId, replyCaller] of replyCallers) {
             if (replyCaller) {
                 replyCaller.reject(new Error("RequestReplyManager is already shut down"));
             }

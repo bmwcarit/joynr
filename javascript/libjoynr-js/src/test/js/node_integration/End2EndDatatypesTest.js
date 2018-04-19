@@ -18,11 +18,11 @@
  */
 
 const Promise = require("../../../main/js/global/Promise");
-let TestEnd2EndDatatypesTestData = require("./TestEnd2EndDatatypesTestData"),
-    IntegrationUtils = require("./IntegrationUtils"),
-    provisioning = require("../../resources/joynr/provisioning/provisioning_cc"),
-    End2EndAbstractTest = require("./End2EndAbstractTest"),
-    waitsFor = require("../global/WaitsFor");
+const TestEnd2EndDatatypesTestData = require("./TestEnd2EndDatatypesTestData");
+const IntegrationUtils = require("./IntegrationUtils");
+const provisioning = require("../../resources/joynr/provisioning/provisioning_cc");
+const End2EndAbstractTest = require("./End2EndAbstractTest");
+const waitsFor = require("../global/WaitsFor");
 describe("libjoynr-js.integration.end2end.datatypes", () => {
     let datatypesProxy;
     const abstractTest = new End2EndAbstractTest("End2EndDatatypesTest", "TestEnd2EndDatatypesProviderProcess");
@@ -41,8 +41,7 @@ describe("libjoynr-js.integration.end2end.datatypes", () => {
 
             function testAttrType(attributeName, attributeValue) {
                 return new Promise((resolve, reject) => {
-                    let attribute;
-                    attribute = datatypesProxy[attributeName];
+                    const attribute = datatypesProxy[attributeName];
                     attribute
                         .set({
                             value: attributeValue
@@ -94,8 +93,7 @@ describe("libjoynr-js.integration.end2end.datatypes", () => {
 
             function testGetJavascriptType(arg, expectedReturnValue, promiseChain) {
                 return promiseChain.then(() => {
-                    let onFulfilledSpy;
-                    onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
+                    const onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
                     datatypesProxy
                         .getJavascriptType({
                             arg
@@ -173,9 +171,7 @@ describe("libjoynr-js.integration.end2end.datatypes", () => {
             let i;
 
             function testMultipleArguments(opArgs) {
-                let onFulfilledSpy;
-
-                onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
+                const onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
                 datatypesProxy
                     .multipleArguments(opArgs)
                     .then(onFulfilledSpy)

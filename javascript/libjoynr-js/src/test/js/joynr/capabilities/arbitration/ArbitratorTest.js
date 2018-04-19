@@ -103,7 +103,6 @@ describe("libjoynr-js.joynr.capabilities.arbitration.Arbitrator", () => {
 
     beforeEach(() => {
         let i;
-        let providerQos;
         domain = "myDomain";
         interfaceName = "myInterface";
         discoveryQos = new DiscoveryQos({
@@ -146,7 +145,7 @@ describe("libjoynr-js.joynr.capabilities.arbitration.Arbitrator", () => {
         // prepare a number of similar discovery entries with different
         // provider versions
 
-        providerQos = new ProviderQos({
+        const providerQos = new ProviderQos({
             customParameters: [],
             priority: 123,
             scope: discoveryQos.discoveryScope === DiscoveryScope.LOCAL_ONLY ? true : false,
@@ -282,8 +281,6 @@ describe("libjoynr-js.joynr.capabilities.arbitration.Arbitrator", () => {
     });
 
     function returnCapabilitiesFromDiscovery(providerMustSupportOnChange, discoveryEntries, expected, done) {
-        let onFulfilledSpy, onRejectedSpy;
-
         // return discoveryEntries to check whether these are eventually
         // returned by the arbitrator
         capDiscoverySpy.lookup.and.returnValue(Promise.resolve(discoveryEntries));
@@ -293,8 +290,8 @@ describe("libjoynr-js.joynr.capabilities.arbitration.Arbitrator", () => {
         spyOn(discoveryQos, "arbitrationStrategy").and.callThrough();
 
         // call arbitrator
-        onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
-        onRejectedSpy = jasmine.createSpy("onRejectedSpy");
+        const onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
+        const onRejectedSpy = jasmine.createSpy("onRejectedSpy");
 
         arbitrator
             .startArbitration({
@@ -379,7 +376,6 @@ describe("libjoynr-js.joynr.capabilities.arbitration.Arbitrator", () => {
     });
 
     it("rejects with NoCompatibleProviderFoundException including a list of incompatible provider version of latest lookup", done => {
-        let onFulfilledSpy, onRejectedSpy;
         const expectedMinimumMinorVersion = 2;
         const firstLookupResult = [
             discoveryEntryWithMajor47AndMinor0,
@@ -408,8 +404,8 @@ describe("libjoynr-js.joynr.capabilities.arbitration.Arbitrator", () => {
         spyOn(discoveryQosWithShortTimers, "arbitrationStrategy").and.callThrough();
 
         // call arbitrator
-        onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
-        onRejectedSpy = jasmine.createSpy("onRejectedSpy");
+        const onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
+        const onRejectedSpy = jasmine.createSpy("onRejectedSpy");
 
         arbitrator
             .startArbitration({

@@ -348,7 +348,7 @@ describe("libjoynr-js.joynr.proxy.ProxyBuilder", () => {
     });
 
     it("adds a routing table entry for proxy and knows provider", done => {
-        let spy = jasmine.createSpyObj("spy", ["onFulfilled", "onRejected"]);
+        const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onRejected"]);
         let onFulfilledCalled = false;
 
         proxyBuilder

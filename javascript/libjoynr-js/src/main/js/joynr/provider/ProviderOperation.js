@@ -54,11 +54,9 @@ const typeRegistry = TypeRegistrySingleton.getInstance();
  *            containing a named argument map, e.g. &#123;nr: 1234,str: "asdf"&#125;
  */
 function getNamedArguments(unnamedArguments, argumentDatatypes, operationSignature) {
-    let i,
-        argument,
-        argumentName,
-        namedArguments = {},
-        inputParameter = operationSignature.inputParameter;
+    let argument, argumentName;
+    const namedArguments = {};
+    const inputParameter = operationSignature.inputParameter;
 
     // check if number of given argument types (argumentDatatypes.length) matches number
     // of parameters in op signature (keys.length)
@@ -67,7 +65,7 @@ function getNamedArguments(unnamedArguments, argumentDatatypes, operationSignatu
     }
 
     // cycle over all arguments
-    for (i = 0; i < inputParameter.length; ++i) {
+    for (let i = 0; i < inputParameter.length; ++i) {
         argument = inputParameter[i];
         argumentName = argument.name;
         // check if argument type matches parameter's type from operation signature

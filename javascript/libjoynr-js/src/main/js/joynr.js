@@ -67,7 +67,7 @@ const GenerationUtil = require("./joynr/util/GenerationUtil");
  * @name joynr
  * @class
  */
-let joynr = {
+const joynr = {
     loaded: false,
     /**
      * @name joynr#load
@@ -79,8 +79,7 @@ let joynr = {
     load: function load(provisioning, capabilitiesWritable) {
         joynr.loaded = true;
         const joynrapi = require("./libjoynr-deps");
-        let runtime;
-        runtime = new joynrapi.Runtime(provisioning);
+        const runtime = new joynrapi.Runtime(provisioning);
         return runtime
             .start()
             .then(() => {

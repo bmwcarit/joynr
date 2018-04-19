@@ -19,7 +19,7 @@
 const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
 const UtilInternal = require("../util/UtilInternal");
 const JoynrRuntimeException = require("./JoynrRuntimeException");
-let defaultSettings;
+const defaultSettings = {};
 
 /**
  * @classdesc
@@ -64,8 +64,6 @@ function DiscoveryException(settings) {
 
     UtilInternal.extend(this, defaultSettings, settings, joynrRuntimeException);
 }
-
-defaultSettings = {};
 
 TypeRegistrySingleton.getInstance().addType("joynr.exceptions.DiscoveryException", DiscoveryException);
 

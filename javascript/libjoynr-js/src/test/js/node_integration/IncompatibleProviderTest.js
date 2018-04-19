@@ -20,8 +20,8 @@
  * #L%
  */
 
-let End2EndAbstractTest = require("./End2EndAbstractTest"),
-    NoCompatibleProviderFoundException = require("joynr/exceptions/NoCompatibleProviderFoundException");
+const End2EndAbstractTest = require("./End2EndAbstractTest");
+const NoCompatibleProviderFoundException = require("joynr/exceptions/NoCompatibleProviderFoundException");
 
 const abstractTest = new End2EndAbstractTest(
     "IncompatibleProviderTest",

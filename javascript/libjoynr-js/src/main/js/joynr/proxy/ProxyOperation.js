@@ -106,12 +106,12 @@ function checkArguments(operationArguments) {
 }
 
 function operationFunctionOnSuccess(settings) {
-    let response = settings.response,
-        foundValidOperationSignature = settings.settings;
-    let responseKey, argumentValue;
+    const response = settings.response;
+    const foundValidOperationSignature = settings.settings;
+    let argumentValue;
     if (foundValidOperationSignature.outputParameter && foundValidOperationSignature.outputParameter.length > 0) {
         argumentValue = {};
-        for (responseKey in response) {
+        for (const responseKey in response) {
             if (response.hasOwnProperty(responseKey)) {
                 if (foundValidOperationSignature.outputParameter[responseKey] !== undefined) {
                     argumentValue[foundValidOperationSignature.outputParameter[responseKey].name] = Typing.augmentTypes(
@@ -170,8 +170,6 @@ function operationFunctionOnSuccess(settings) {
  *            in A+ promise style instead of using the function parameters
  */
 function operationFunction(operationArguments) {
-    let i;
-
     // ensure operationArguments variable holds a valid object and initialize promise object
     const argumentErrors = checkArguments(operationArguments);
     if (argumentErrors.length > 0) {
@@ -181,15 +179,14 @@ function operationFunction(operationArguments) {
     }
 
     try {
-        let foundValidOperationSignature,
-            checkResult,
-            caughtErrors = [];
+        let foundValidOperationSignature;
+        const caughtErrors = [];
 
         // cycle through multiple available operation signatures
-        for (i = 0; i < this.operationSignatures.length && foundValidOperationSignature === undefined; ++i) {
+        for (let i = 0; i < this.operationSignatures.length && foundValidOperationSignature === undefined; ++i) {
             // check if the parameters from the operation signature is valid for
             // the provided arguments
-            checkResult = checkSignatureMatch(this.operationSignatures[i], operationArguments || {});
+            const checkResult = checkSignatureMatch(this.operationSignatures[i], operationArguments || {});
             if (checkResult !== undefined) {
                 if (checkResult.errorMessage !== undefined) {
                     caughtErrors.push(checkResult.errorMessage);

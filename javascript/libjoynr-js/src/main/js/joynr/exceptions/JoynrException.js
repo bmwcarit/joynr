@@ -19,7 +19,7 @@
 const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
 const Typing = require("../util/Typing");
 const UtilInternal = require("../util/UtilInternal");
-let defaultSettings;
+const defaultSettings = {};
 
 /**
  * @classdesc
@@ -67,8 +67,6 @@ function JoynrException(settings) {
     }
     UtilInternal.extend(this, defaultSettings, settings);
 }
-
-defaultSettings = {};
 
 TypeRegistrySingleton.getInstance().addType("joynr.exceptions.JoynrException", JoynrException);
 

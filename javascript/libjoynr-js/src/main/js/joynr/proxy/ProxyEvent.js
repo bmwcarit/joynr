@@ -36,9 +36,7 @@ const SubscriptionUtil = require("../dispatching/subscription/util/SubscriptionU
  * @returns undefined if unnamedBroadcastValues does not match broadcastSignature
  */
 function getNamedParameters(unnamedBroadcastValues, broadcastParameter) {
-    let i,
-        parameter,
-        namedParameters = {};
+    const namedParameters = {};
 
     // check if number of given parameters matches number
     // of parameters in broadcast signature (keys.length)
@@ -47,8 +45,8 @@ function getNamedParameters(unnamedBroadcastValues, broadcastParameter) {
     }
 
     // cycle over all parameters
-    for (i = 0; i < unnamedBroadcastValues.length; ++i) {
-        parameter = broadcastParameter[i];
+    for (let i = 0; i < unnamedBroadcastValues.length; ++i) {
+        const parameter = broadcastParameter[i];
         namedParameters[parameter.name] = unnamedBroadcastValues[i];
     }
 

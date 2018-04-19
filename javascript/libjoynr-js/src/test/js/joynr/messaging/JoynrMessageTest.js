@@ -94,7 +94,6 @@ describe("libjoynr-js.joynr.messaging.JoynrMessage", () => {
     });
 
     it("allows getting custom headers", done => {
-        let retrievedCustomHeaders;
         const headerKey = "headerKey";
         const customHeaderKey = "custom-" + headerKey;
         const headerValue = "headerValue";
@@ -107,7 +106,7 @@ describe("libjoynr-js.joynr.messaging.JoynrMessage", () => {
         joynrMessage.setCustomHeaders(myCustomHeaders);
         joynrMessage.setHeader(headerKey, headerValue);
 
-        retrievedCustomHeaders = joynrMessage.getCustomHeaders();
+        const retrievedCustomHeaders = joynrMessage.getCustomHeaders();
 
         expect(retrievedCustomHeaders[headerKey]).toEqual(myCustomHeaders[headerKey]);
         expect(retrievedCustomHeaders[customHeaderKey]).not.toBeDefined();

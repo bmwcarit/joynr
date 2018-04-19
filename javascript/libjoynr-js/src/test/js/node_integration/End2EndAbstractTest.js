@@ -18,12 +18,12 @@
  */
 
 const Promise = require("../../../main/js/global/Promise");
-let RadioProxy = require("../../generated/joynr/vehicle/RadioProxy"),
-    DatatypesProxy = require("../../generated/joynr/datatypes/DatatypesProxy"),
-    MultipleVersionsInterfaceProxy = require("../../generated/joynr/tests/MultipleVersionsInterfaceProxy"),
-    IntegrationUtils = require("./IntegrationUtils"),
-    provisioning = require("../../resources/joynr/provisioning/provisioning_cc"),
-    waitsFor = require("../global/WaitsFor");
+const RadioProxy = require("../../generated/joynr/vehicle/RadioProxy");
+const DatatypesProxy = require("../../generated/joynr/datatypes/DatatypesProxy");
+const MultipleVersionsInterfaceProxy = require("../../generated/joynr/tests/MultipleVersionsInterfaceProxy");
+const IntegrationUtils = require("./IntegrationUtils");
+const provisioning = require("../../resources/joynr/provisioning/provisioning_cc");
+const waitsFor = require("../global/WaitsFor");
 const joynr = require("joynr");
 
 function End2EndAbstractTest(provisioningSuffix, providerChildProcessName, processSpecialization) {
@@ -317,7 +317,7 @@ function End2EndAbstractTest(provisioningSuffix, providerChildProcessName, proce
     };
 
     this.setupSubscriptionAndReturnSpy = function(subscribingEntity, subscriptionQos, partitions) {
-        let spy = jasmine.createSpyObj("spy", ["onFulfilled", "onReceive", "onError"]);
+        const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onReceive", "onError"]);
 
         radioProxy[subscribingEntity]
             .subscribe({

@@ -135,14 +135,13 @@ function CapabilityDiscovery(
                     interfaceName
                 })
                 .then(opArgs => {
-                    let i,
-                        messageRouterPromises = [],
-                        globalCapabilities = opArgs.result;
+                    const messageRouterPromises = [];
+                    const globalCapabilities = opArgs.result;
                     let globalAddress;
                     if (globalCapabilities === undefined) {
                         log.error("globalCapabilitiesDirectoryProxy.lookup() returns with missing result");
                     } else {
-                        for (i = globalCapabilities.length - 1; i >= 0; i--) {
+                        for (let i = globalCapabilities.length - 1; i >= 0; i--) {
                             const globalDiscoveryEntry = globalCapabilities[i];
                             if (globalDiscoveryEntry.address === globalAddressSerialized) {
                                 globalCapabilities.splice(i, 1);

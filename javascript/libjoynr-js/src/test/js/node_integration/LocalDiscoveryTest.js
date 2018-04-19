@@ -17,14 +17,14 @@
  * #L%
  */
 
-let joynr = require("joynr"),
-    RadioProxy = require("../../generated/joynr/vehicle/RadioProxy"),
-    TestWithVersionProvider = require("../../generated/joynr/tests/TestWithVersionProvider"),
-    TestWithVersionProxy = require("../../generated/joynr/tests/TestWithVersionProxy"),
-    IntegrationUtils = require("./IntegrationUtils"),
-    provisioning = require("../../resources/joynr/provisioning/provisioning_cc"),
-    DiscoveryQos = require("../../../../src/main/js/joynr/proxy/DiscoveryQos"),
-    JoynrException = require("../../../main/js/joynr/exceptions/JoynrException");
+let joynr = require("joynr");
+const RadioProxy = require("../../generated/joynr/vehicle/RadioProxy");
+const TestWithVersionProvider = require("../../generated/joynr/tests/TestWithVersionProvider");
+const TestWithVersionProxy = require("../../generated/joynr/tests/TestWithVersionProxy");
+const IntegrationUtils = require("./IntegrationUtils");
+const provisioning = require("../../resources/joynr/provisioning/provisioning_cc");
+const DiscoveryQos = require("../../../../src/main/js/joynr/proxy/DiscoveryQos");
+const JoynrException = require("../../../main/js/joynr/exceptions/JoynrException");
 
 describe("libjoynr-js.integration.localDiscoveryTest", () => {
     let provisioningSuffix;

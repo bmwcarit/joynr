@@ -295,29 +295,25 @@ describe("libjoynr-js.joynr.Typing.augmentType", () => {
     });
 
     xit("performance measurement of augmenting struct types", () => {
-        let i,
-            rawInput,
-            timeStart,
-            delta,
-            times = 5000,
-            typeRegistry = TypeRegistrySingleton.getInstance();
+        const times = 5000;
+        const typeRegistry = TypeRegistrySingleton.getInstance();
         typeRegistry.addType("joynr.datatypes.exampleTypes.ComplexStruct", ComplexStruct);
-        rawInput = {
+        const rawInput = {
             _typeName: "joynr.datatypes.exampleTypes.ComplexStruct",
             num32: "123456",
             num64: "123456789",
             str: "looooooooooooooooooooooooooooooooooooooongStriiiiiiiiiiiiiiiiiiiiiiiing",
             data: []
         };
-        for (i = 0; i < 1000; i++) {
+        for (let i = 0; i < 1000; i++) {
             rawInput.data.push("0");
         }
 
-        timeStart = Date.now();
-        for (i = 0; i < times; i++) {
+        const timeStart = Date.now();
+        for (let i = 0; i < times; i++) {
             Typing.augmentTypes(rawInput, typeRegistry);
         }
-        delta = Date.now() - timeStart;
+        const delta = Date.now() - timeStart;
         log.info('Time took for augmenting struct type "ComplexStruct"' + times + " times: " + delta + "ms");
     });
 
@@ -337,9 +333,8 @@ describe("libjoynr-js.joynr.Typing.augmentType", () => {
     });
 
     it("augmentTypes is able to deal with enums as input", done => {
-        let fixture, expected;
-        fixture = "ZERO";
-        expected = TestEnum.ZERO;
+        const fixture = "ZERO";
+        const expected = TestEnum.ZERO;
         expect(Typing.augmentTypes(fixture, TypeRegistrySingleton.getInstance())).toBe(fixture);
         expect(
             Typing.augmentTypes(fixture, TypeRegistrySingleton.getInstance(), "joynr.tests.testTypes.TestEnum")
@@ -348,16 +343,13 @@ describe("libjoynr-js.joynr.Typing.augmentType", () => {
     });
 
     it("augmentTypes is able to deal with error enums as input", () => {
-        let fixture,
-            expected,
-            result,
-            typeRegistry = TypeRegistrySingleton.getInstance();
-        fixture = {
+        const typeRegistry = TypeRegistrySingleton.getInstance();
+        const fixture = {
             _typeName: "joynr.tests.testTypes.TestEnum",
             name: "ZERO"
         };
-        expected = TestEnum.ZERO;
-        result = Typing.augmentTypes(fixture, typeRegistry);
+        const expected = TestEnum.ZERO;
+        const result = Typing.augmentTypes(fixture, typeRegistry);
         expect(result.name).toBeDefined();
         expect(result.name).toBe(expected.name);
         expect(result.value).toBeDefined();
@@ -366,14 +358,13 @@ describe("libjoynr-js.joynr.Typing.augmentType", () => {
     });
 
     it("augmentTypes is able to deal with structs containing enum members", done => {
-        let fixture, expected;
-        fixture = {
+        const fixture = {
             _typeName: "joynr.datatypes.exampleTypes.ComplexRadioStation",
             name: "name",
             station: "station",
             source: "AUSTRIA"
         };
-        expected = new ComplexRadioStation({
+        const expected = new ComplexRadioStation({
             name: fixture.name,
             station: fixture.station,
             source: Country.AUSTRIA
@@ -383,21 +374,20 @@ describe("libjoynr-js.joynr.Typing.augmentType", () => {
     });
 
     it("augmentTypes is able to deal with complex structs containing enum array and other structs as members", done => {
-        let fixture, providerQos, providerVersion, expected;
-        providerQos = {
+        const providerQos = {
             _typeName: "joynr.types.ProviderQos",
             customParameters: [],
             priority: 234,
             scope: "GLOBAL",
             supportsOnChangeSubscriptions: false
         };
-        providerVersion = {
+        const providerVersion = {
             _typeName: "joynr.types.Version",
             majorVersion: 1,
             minorVersion: 2
         };
 
-        fixture = {
+        const fixture = {
             _typeName: "joynr.types.DiscoveryEntry",
             domain: "domain",
             interfaceName: "interfaceName",
@@ -409,7 +399,7 @@ describe("libjoynr-js.joynr.Typing.augmentType", () => {
             expiryDateMs: 1234
         };
 
-        expected = new DiscoveryEntry({
+        const expected = new DiscoveryEntry({
             domain: fixture.domain,
             interfaceName: fixture.interfaceName,
             participantId: fixture.participantId,
@@ -468,9 +458,8 @@ describe("libjoynr-js.joynr.Typing.augmentTypeName", () => {
     });
 
     it("isEnumType accepts enum types", done => {
-        let fixture = TestEnum.ZERO,
-            radioStation;
-        radioStation = new RadioStation({
+        const fixture = TestEnum.ZERO;
+        const radioStation = new RadioStation({
             name: "name",
             trafficService: false,
             country: {}

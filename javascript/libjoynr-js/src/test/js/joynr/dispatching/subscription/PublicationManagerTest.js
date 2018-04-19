@@ -63,8 +63,8 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", () => 
         onChange,
         minIntervalMs
     ) {
-        let qosSettings, expiryDateMs, request;
-        expiryDateMs =
+        let qosSettings, request;
+        const expiryDateMs =
             subscriptionLength === SubscriptionQos.NO_EXPIRY_DATE
                 ? SubscriptionQos.NO_EXPIRY_DATE
                 : Date.now() + subscriptionLength;
@@ -1215,11 +1215,10 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", () => 
         });
 
         it("creates a periodic subscription without expiryDate and expects periodic publications", done => {
-            let periodMs = 400,
-                n = 10,
-                subscriptionRequestWithoutExpiryDate;
+            const periodMs = 400;
+            const n = 10;
 
-            subscriptionRequestWithoutExpiryDate = createSubscriptionRequest(
+            const subscriptionRequestWithoutExpiryDate = createSubscriptionRequest(
                 true,
                 testAttributeName,
                 periodMs,

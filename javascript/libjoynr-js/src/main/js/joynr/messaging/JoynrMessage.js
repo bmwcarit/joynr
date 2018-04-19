@@ -198,15 +198,13 @@ Object.defineProperty(JoynrMessage.prototype, "getCustomHeaders", {
     configurable: false,
     writable: false,
     value() {
-        let headerKey,
-            trimmedKey,
-            customHeaders = {};
-        for (headerKey in this.headers) {
+        const customHeaders = {};
+        for (const headerKey in this.headers) {
             if (
                 this.headers.hasOwnProperty(headerKey) &&
                 headerKey.substr(0, MESSAGE_CUSTOM_HEADER_PREFIX.length) === MESSAGE_CUSTOM_HEADER_PREFIX
             ) {
-                trimmedKey = headerKey.substr(MESSAGE_CUSTOM_HEADER_PREFIX.length);
+                const trimmedKey = headerKey.substr(MESSAGE_CUSTOM_HEADER_PREFIX.length);
 
                 customHeaders[trimmedKey] = this.headers[headerKey];
             }

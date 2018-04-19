@@ -245,17 +245,12 @@ describe("libjoynr-js.joynr.provider.ProviderAttribute", () => {
     }
 
     it("implements the observer concept correctly", done => {
-        let i,
-            spy1,
-            spy2,
-            attribute,
-            func1,
-            func2,
-            value = {
-                key: "value",
-                1: 2,
-                object: {}
-            };
+        let i, spy1, spy2, attribute, func1, func2;
+        const value = {
+            key: "value",
+            1: 2,
+            object: {}
+        };
 
         for (i = 0; i < allNotifyAttributes.length; ++i) {
             attribute = allNotifyAttributes[i];
@@ -297,12 +292,11 @@ describe("libjoynr-js.joynr.provider.ProviderAttribute", () => {
     });
 
     function setNewValueCallsValueChangedObserver(attribute, promiseChain) {
-        let spy1, spy2, func1, func2, value;
-        spy1 = jasmine.createSpy("spy1");
-        spy2 = jasmine.createSpy("spy2");
+        const spy1 = jasmine.createSpy("spy1");
+        const spy2 = jasmine.createSpy("spy2");
 
-        func1 = buildObserver(spy1);
-        func2 = buildObserver(spy2);
+        const func1 = buildObserver(spy1);
+        const func2 = buildObserver(spy2);
 
         attribute.registerObserver(func1);
         attribute.registerObserver(func2);
@@ -310,7 +304,7 @@ describe("libjoynr-js.joynr.provider.ProviderAttribute", () => {
         expect(spy1).not.toHaveBeenCalled();
         expect(spy2).not.toHaveBeenCalled();
 
-        value = new ComplexRadioStation({
+        let value = new ComplexRadioStation({
             name: "nameValue",
             station: "stationValue",
             source: Country.GERMANY
@@ -378,12 +372,11 @@ describe("libjoynr-js.joynr.provider.ProviderAttribute", () => {
     });
 
     function setSameValueDoesNotCallValueChangedObserver(attribute, promiseChain) {
-        let spy1, spy2, func1, func2, value;
-        spy1 = jasmine.createSpy("spy1");
-        spy2 = jasmine.createSpy("spy2");
+        const spy1 = jasmine.createSpy("spy1");
+        const spy2 = jasmine.createSpy("spy2");
 
-        func1 = buildObserver(spy1);
-        func2 = buildObserver(spy2);
+        const func1 = buildObserver(spy1);
+        const func2 = buildObserver(spy2);
 
         attribute.registerObserver(func1);
         attribute.registerObserver(func2);
@@ -391,7 +384,7 @@ describe("libjoynr-js.joynr.provider.ProviderAttribute", () => {
         expect(spy1).not.toHaveBeenCalled();
         expect(spy2).not.toHaveBeenCalled();
 
-        value = new ComplexRadioStation({
+        const value = new ComplexRadioStation({
             name: "nameValue",
             station: "stationValue",
             source: Country.GERMANY

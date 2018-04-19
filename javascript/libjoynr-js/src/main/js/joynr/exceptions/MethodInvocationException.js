@@ -20,7 +20,7 @@ const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton")
 const Typing = require("../util/Typing");
 const UtilInternal = require("../util/UtilInternal");
 const JoynrRuntimeException = require("./JoynrRuntimeException");
-let defaultSettings;
+const defaultSettings = {};
 
 /**
  * @classdesc
@@ -72,8 +72,6 @@ function MethodInvocationException(settings) {
 
     UtilInternal.extend(this, defaultSettings, settings, runtimeException);
 }
-
-defaultSettings = {};
 
 TypeRegistrySingleton.getInstance().addType("joynr.exceptions.MethodInvocationException", MethodInvocationException);
 

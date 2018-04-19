@@ -85,7 +85,6 @@ function WebSocketLibjoynrRuntime(provisioning) {
     let messageRouter;
     let libjoynrMessagingSkeleton;
     let dispatcher;
-    let typeRegistry;
     let requestReplyManager;
     let subscriptionManager;
     let publicationManager;
@@ -96,7 +95,6 @@ function WebSocketLibjoynrRuntime(provisioning) {
     let capabilitiesRegistrar;
     let discovery;
     let messageQueueSettings;
-    let ccAddress;
     let sharedWebSocket;
     let webSocketMessagingSkeleton;
     let messageRouterSkeleton;
@@ -108,7 +106,7 @@ function WebSocketLibjoynrRuntime(provisioning) {
     let bufferedOwnerId;
 
     // this is required at load time of libjoynr
-    typeRegistry = Object.freeze(TypeRegistrySingleton.getInstance());
+    const typeRegistry = Object.freeze(TypeRegistrySingleton.getInstance());
 
     /**
      * @name WebSocketLibjoynrRuntime#typeRegistry
@@ -180,7 +178,7 @@ function WebSocketLibjoynrRuntime(provisioning) {
         throw new Error("ccAddress not set in provisioning.ccAddress");
     }
 
-    ccAddress = new WebSocketAddress({
+    const ccAddress = new WebSocketAddress({
         protocol: provisioning.ccAddress.protocol || defaultWebSocketSettings.protocol,
         host: provisioning.ccAddress.host,
         port: provisioning.ccAddress.port,
@@ -241,8 +239,6 @@ function WebSocketLibjoynrRuntime(provisioning) {
      *             if libjoynr is not in SHUTDOWN state
      */
     this.start = function start() {
-        let i, routingProxyPromise, discoveryProxyPromise;
-
         if (joynrState !== JoynrStates.SHUTDOWN) {
             throw new Error("Cannot start libjoynr because it's currently \"" + joynrState + '"');
         }
@@ -285,7 +281,7 @@ function WebSocketLibjoynrRuntime(provisioning) {
         untypedCapabilities = untypedCapabilities.concat(defaultCapabilities);
 
         typedCapabilities = [];
-        for (i = 0; i < untypedCapabilities.length; i++) {
+        for (let i = 0; i < untypedCapabilities.length; i++) {
             const capability = new DiscoveryEntryWithMetaInfo(untypedCapabilities[i]);
             initialRoutingTable[capability.participantId] = ccAddress;
             typedCapabilities.push(capability);
@@ -450,7 +446,7 @@ function WebSocketLibjoynrRuntime(provisioning) {
             return messageRouter.setRoutingProxy(newRoutingProxy);
         }
 
-        discoveryProxyPromise = proxyBuilder
+        const discoveryProxyPromise = proxyBuilder
             .build(DiscoveryProxy, {
                 domain: "io.joynr",
                 messagingQos: internalMessagingQos,
@@ -462,7 +458,7 @@ function WebSocketLibjoynrRuntime(provisioning) {
             .then(buildDiscoveryProxyOnSuccess)
             .catch(buildDiscoveryProxyOnError);
 
-        routingProxyPromise = proxyBuilder
+        const routingProxyPromise = proxyBuilder
             .build(RoutingProxy, {
                 domain: "io.joynr",
                 messagingQos: internalMessagingQos,

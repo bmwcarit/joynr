@@ -387,8 +387,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
                     "already shut down"
             );
         }
-        let subscriptionId,
-            subscriptions = getSubscriptionsForProviderAttribute(providerId, attributeName);
+        const subscriptions = getSubscriptionsForProviderAttribute(providerId, attributeName);
         if (!subscriptions) {
             log.error(
                 "ProviderAttribute " +
@@ -402,7 +401,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
             return;
         }
 
-        for (subscriptionId in subscriptions) {
+        for (const subscriptionId in subscriptions) {
             if (subscriptions.hasOwnProperty(subscriptionId)) {
                 const subscriptionInfo = subscriptions[subscriptionId];
                 prepareAttributePublication(subscriptionInfo, value);
@@ -500,8 +499,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         }
         let publish;
         let i;
-        let subscriptionId,
-            subscriptions = getSubscriptionsForProviderEvent(providerId, eventName);
+        const subscriptions = getSubscriptionsForProviderEvent(providerId, eventName);
         const filters = data.filters;
         if (!subscriptions) {
             log.error("ProviderEvent " + eventName + " for providerId " + providerId + " is not registered");
@@ -510,7 +508,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
             return;
         }
 
-        for (subscriptionId in subscriptions) {
+        for (const subscriptionId in subscriptions) {
             if (subscriptions.hasOwnProperty(subscriptionId)) {
                 const subscriptionInfo = subscriptions[subscriptionId];
                 // if any filters present, check them
@@ -566,12 +564,11 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
     // End of broadcast specific implementation
 
     function addRequestToMulticastSubscriptions(multicastId, subscriptionId) {
-        let i, subscriptions;
         if (multicastSubscriptions[multicastId] === undefined) {
             multicastSubscriptions[multicastId] = [];
         }
-        subscriptions = multicastSubscriptions[multicastId];
-        for (i = 0; i < subscriptions.length; i++) {
+        const subscriptions = multicastSubscriptions[multicastId];
+        for (let i = 0; i < subscriptions.length; i++) {
             if (subscriptions[i] === subscriptionId) {
                 return;
             }
@@ -747,13 +744,11 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
      *            attributeName
      */
     function removePublicationAttribute(providerId, attributeName, attribute) {
-        let subscriptions,
-            subscription,
-            key = getProviderIdAttributeKey(providerId, attributeName);
+        const key = getProviderIdAttributeKey(providerId, attributeName);
+        const subscriptions = getSubscriptionsForProviderAttribute(providerId, attributeName);
 
-        subscriptions = getSubscriptionsForProviderAttribute(providerId, attributeName);
         if (subscriptions !== undefined) {
-            for (subscription in subscriptions) {
+            for (const subscription in subscriptions) {
                 if (subscriptions.hasOwnProperty(subscription)) {
                     that.handleSubscriptionStop(
                         new SubscriptionStop({
@@ -780,13 +775,11 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
      *            eventName
      */
     function removePublicationEvent(providerId, eventName, event) {
-        let subscriptions,
-            subscription,
-            key = getProviderIdEventKey(providerId, eventName);
+        const key = getProviderIdEventKey(providerId, eventName);
 
-        subscriptions = getSubscriptionsForProviderEvent(providerId, eventName);
+        const subscriptions = getSubscriptionsForProviderEvent(providerId, eventName);
         if (subscriptions !== undefined) {
-            for (subscription in subscriptions) {
+            for (const subscription in subscriptions) {
                 if (subscriptions.hasOwnProperty(subscription)) {
                     that.handleSubscriptionStop(
                         new SubscriptionStop({
@@ -1446,7 +1439,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
      *            provider
      */
     this.addPublicationProvider = function addPublicationProvider(participantId, provider) {
-        let propertyName, pendingSubscriptions, pendingSubscription, subscriptionObject;
+        let pendingSubscription, subscriptionObject;
         if (!isReady()) {
             throw new Error("PublicationManager is already shut down");
         }
@@ -1455,7 +1448,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         participantIdToProvider[participantId] = provider;
 
         // cycles over all provider members
-        for (propertyName in provider) {
+        for (const propertyName in provider) {
             if (provider.hasOwnProperty(propertyName)) {
                 // checks whether the member is a notifiable provider attribute
                 // and adds it if this is the case
@@ -1471,7 +1464,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
             }
         }
 
-        pendingSubscriptions = queuedProviderParticipantIdToSubscriptionRequestsMapping[participantId];
+        const pendingSubscriptions = queuedProviderParticipantIdToSubscriptionRequestsMapping[participantId];
         if (pendingSubscriptions !== undefined) {
             for (pendingSubscription in pendingSubscriptions) {
                 if (pendingSubscriptions.hasOwnProperty(pendingSubscription)) {
@@ -1522,14 +1515,13 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
 
         const subscriptions = persistency.getItem(subscriptionPersistenceKey);
         if (subscriptions && JSON && JSON.parse) {
-            let subscriptionIds = SubscriptionUtil.deserializeSubscriptionIds(subscriptions),
-                subscriptionId;
-            for (subscriptionId in subscriptionIds) {
+            const subscriptionIds = SubscriptionUtil.deserializeSubscriptionIds(subscriptions);
+            for (const subscriptionId in subscriptionIds) {
                 if (subscriptionIds.hasOwnProperty(subscriptionId)) {
-                    let item = persistency.getItem(subscriptionIds[subscriptionId]);
+                    const item = persistency.getItem(subscriptionIds[subscriptionId]);
                     if (item !== null && item !== undefined) {
                         try {
-                            let subscriptionInfo = JSON.parse(item);
+                            const subscriptionInfo = JSON.parse(item);
                             if (
                                 subscriptionInfo.subscriptionType ===
                                 SubscriptionInformation.SUBSCRIPTION_TYPE_ATTRIBUTE

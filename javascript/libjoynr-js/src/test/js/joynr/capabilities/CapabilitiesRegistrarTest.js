@@ -277,8 +277,6 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", () => {
     });
 
     it("registers capability at capabilities stub", done => {
-        let actualDiscoveryEntry;
-        let upperBound;
         const lowerBound = Date.now();
         capabilitiesRegistrar
             .registerProvider(domain, provider, providerQos)
@@ -288,9 +286,9 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", () => {
             .catch(() => {
                 return null;
             });
-        upperBound = Date.now();
+        const upperBound = Date.now();
         expect(discoveryStubSpy.add).toHaveBeenCalled();
-        actualDiscoveryEntry = discoveryStubSpy.add.calls.argsFor(0)[0];
+        const actualDiscoveryEntry = discoveryStubSpy.add.calls.argsFor(0)[0];
         expect(actualDiscoveryEntry.domain).toEqual(domain);
         expect(actualDiscoveryEntry.interfaceName).toEqual(provider.interfaceName);
         expect(actualDiscoveryEntry.participantId).toEqual(participantId);

@@ -28,7 +28,7 @@ const UtilInternal = {};
 
 function extend(to, from, deep) {
     if (from) {
-        for (let key in from) {
+        for (const key in from) {
             if (from.hasOwnProperty(key)) {
                 if (deep && typeof from[key] === "object") {
                     if (Array.isArray(from[key]) && !Array.isArray(to[key])) {
@@ -51,11 +51,10 @@ function extend(to, from, deep) {
  * @function UtilInternal#extend
  */
 UtilInternal.extend = function(out) {
-    let i, args;
     // calling using prototype because slice is not available on
     // special arguments array
-    args = Array.prototype.slice.call(arguments, 1);
-    for (i = 0; i < args.length; i++) {
+    const args = Array.prototype.slice.call(arguments, 1);
+    for (let i = 0; i < args.length; i++) {
         extend(out, args[i], false);
     }
     return out;
@@ -83,11 +82,10 @@ UtilInternal.forward = function forward(receiver, provider) {
  * @function UtilInternal#extendDeep
  */
 UtilInternal.extendDeep = function(out) {
-    let i, args;
     // calling using prototype because slice is not available on
     // special arguments array
-    args = Array.prototype.slice.call(arguments, 1);
-    for (i = 0; i < args.length; i++) {
+    const args = Array.prototype.slice.call(arguments, 1);
+    for (let i = 0; i < args.length; i++) {
         extend(out, args[i], true);
     }
     return out;
@@ -98,11 +96,9 @@ UtilInternal.extendDeep = function(out) {
  * @function UtilInternal#transform
  */
 UtilInternal.transform = function transform(from, transformFunction) {
-    let i,
-        value,
-        transformedArray = [];
-    for (i = 0; i < from.length; i++) {
-        value = from[i];
+    const transformedArray = [];
+    for (let i = 0; i < from.length; i++) {
+        const value = from[i];
         transformedArray.push(transformFunction(value, i));
     }
     return transformedArray;

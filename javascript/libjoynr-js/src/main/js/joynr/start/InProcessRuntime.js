@@ -88,7 +88,6 @@ function InProcessRuntime(provisioning) {
     let clusterControllerMessagingSkeleton;
     let mqttMessagingSkeleton;
     let clusterControllerMessagingStub, dispatcher;
-    let typeRegistry;
     let requestReplyManager;
     let subscriptionManager;
     let publicationManager;
@@ -107,7 +106,7 @@ function InProcessRuntime(provisioning) {
     let freshnessIntervalId;
 
     // this is required at load time of libjoynr
-    typeRegistry = Object.freeze(TypeRegistrySingleton.getInstance());
+    const typeRegistry = Object.freeze(TypeRegistrySingleton.getInstance());
 
     /**
      * @name InProcessRuntime#typeRegistry

@@ -104,10 +104,9 @@ CapabilitiesStore.prototype._removeDiscoveryEntryFromStore = function(participan
         capabilities,
         capId,
         cap,
-        capFound = false,
-        discoveryEntry;
+        capFound = false;
 
-    discoveryEntry = this._discoveryEntryStoreByParticipantId[participantId];
+    const discoveryEntry = this._discoveryEntryStoreByParticipantId[participantId];
 
     // unregister by participant id
     this._discoveryEntryStoreByParticipantId[participantId] = undefined;
@@ -146,15 +145,12 @@ CapabilitiesStore.prototype._removeDiscoveryEntryFromStore = function(participan
  */
 CapabilitiesStore.prototype._addDiscoveryEntryToStore = function(discoveryEntry) {
     let entryFound = false,
-        isAlreadyThere,
-        discoveryEntries,
         entryId,
-        entry,
-        domainInterfaceKey,
-        discoveryEntryKey = hashCode(discoveryEntry);
+        entry;
+    const discoveryEntryKey = hashCode(discoveryEntry);
 
     // master store, storing key to actual discovery entry object
-    isAlreadyThere = this._discoveryEntryStore[discoveryEntryKey];
+    const isAlreadyThere = this._discoveryEntryStore[discoveryEntryKey];
     if (isAlreadyThere !== undefined) {
         this._removeDiscoveryEntryFromStore(isAlreadyThere);
     }
@@ -165,12 +161,12 @@ CapabilitiesStore.prototype._addDiscoveryEntryToStore = function(discoveryEntry)
     this._discoveryEntryStoreByParticipantId[discoveryEntry.participantId] = discoveryEntry;
 
     // by domain interface and provider qos
-    domainInterfaceKey = getDomainInterfaceNameKey(discoveryEntry.domain, discoveryEntry.interfaceName);
+    const domainInterfaceKey = getDomainInterfaceNameKey(discoveryEntry.domain, discoveryEntry.interfaceName);
     if (this._discoveryEntryStoreByDomainInterfaceName[domainInterfaceKey] === undefined) {
         this._discoveryEntryStoreByDomainInterfaceName[domainInterfaceKey] = [];
     }
 
-    discoveryEntries = this._discoveryEntryStoreByDomainInterfaceName[domainInterfaceKey];
+    const discoveryEntries = this._discoveryEntryStoreByDomainInterfaceName[domainInterfaceKey];
 
     for (entryId in discoveryEntries) {
         if (discoveryEntries.hasOwnProperty(entryId) && !entryFound) {
@@ -260,10 +256,9 @@ CapabilitiesStore.prototype._qosMatches = function qosMatches(discoveryEntry, ca
  * @param {Number} cacheMaxAge - the maximum age of the discovery entries
  */
 CapabilitiesStore.prototype._filterEntries = function filterEntries(entries, cacheMaxAge) {
-    let i, returnValue, discoveryEntry;
-    returnValue = [];
-    for (i = entries.length - 1; i >= 0; i--) {
-        discoveryEntry = entries[i];
+    const returnValue = [];
+    for (let i = entries.length - 1; i >= 0; i--) {
+        const discoveryEntry = entries[i];
         if (this._qosMatches(discoveryEntry, cacheMaxAge)) {
             returnValue.push(discoveryEntry);
         }

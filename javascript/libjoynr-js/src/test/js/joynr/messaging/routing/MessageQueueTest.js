@@ -31,15 +31,15 @@ function increaseFakeTime(time_ms) {
 }
 
 describe("libjoynr-js.joynr.messaging.routing.MessageQueue", () => {
-    let messageQueue, joynrMessage, joynrMessage2, receiverParticipantId;
-    receiverParticipantId = "TestMessageQueue_participantId_" + Date.now();
-    joynrMessage = new JoynrMessage({
+    let messageQueue;
+    const receiverParticipantId = "TestMessageQueue_participantId_" + Date.now();
+    const joynrMessage = new JoynrMessage({
         type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
         payload: "hello"
     });
     joynrMessage.to = receiverParticipantId;
     joynrMessage.from = "senderParticipantId";
-    joynrMessage2 = new JoynrMessage({
+    const joynrMessage2 = new JoynrMessage({
         type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
         payload: "hello2"
     });
@@ -65,14 +65,13 @@ describe("libjoynr-js.joynr.messaging.routing.MessageQueue", () => {
     });
 
     it("test message queue limit", done => {
-        let newJoynrMessage,
-            i = 0,
-            payload = "hello",
-            oldQueueSize,
-            maxIterations = Math.floor(
-                messageQueue.maxQueueSizeInKBytes * 1024 / UtilInternal.getLengthInBytes(payload)
-            );
-        newJoynrMessage = new JoynrMessage({
+        let i = 0;
+        const payload = "hello";
+        let oldQueueSize;
+        const maxIterations = Math.floor(
+            messageQueue.maxQueueSizeInKBytes * 1024 / UtilInternal.getLengthInBytes(payload)
+        );
+        const newJoynrMessage = new JoynrMessage({
             type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
             payload
         });
@@ -121,11 +120,10 @@ describe("libjoynr-js.joynr.messaging.routing.MessageQueue", () => {
     });
 
     it("put Message adds new queued message, dropped after getAndRemoveMessage call", done => {
-        let queuedMessages;
         joynrMessage.expiryDate = Date.now() + 1000;
         messageQueue.putMessage(joynrMessage);
 
-        queuedMessages = messageQueue.getAndRemoveMessages(receiverParticipantId);
+        const queuedMessages = messageQueue.getAndRemoveMessages(receiverParticipantId);
 
         expect(queuedMessages.length).toEqual(1);
         expect(queuedMessages[0]).toEqual(joynrMessage);
@@ -135,13 +133,12 @@ describe("libjoynr-js.joynr.messaging.routing.MessageQueue", () => {
     });
 
     it("put Message adds multiple queued messages, dropped after getAndRemoveMessage call", done => {
-        let queuedMessages;
         joynrMessage.expiryDate = Date.now() + 1000;
         joynrMessage2.expiryDate = Date.now() + 1000;
         messageQueue.putMessage(joynrMessage);
         messageQueue.putMessage(joynrMessage2);
 
-        queuedMessages = messageQueue.getAndRemoveMessages(receiverParticipantId);
+        const queuedMessages = messageQueue.getAndRemoveMessages(receiverParticipantId);
 
         expect(queuedMessages.length).toEqual(2);
         expect(queuedMessages[0]).toEqual(joynrMessage);
@@ -152,7 +149,6 @@ describe("libjoynr-js.joynr.messaging.routing.MessageQueue", () => {
     });
 
     it("put Message adds new queued message, dropped after timeout", done => {
-        let queuedMessages;
         joynrMessage.expiryDate = Date.now() + 1000;
         const initialQueueSize = messageQueue.currentQueueSize;
         messageQueue.putMessage(joynrMessage);
@@ -160,14 +156,13 @@ describe("libjoynr-js.joynr.messaging.routing.MessageQueue", () => {
 
         increaseFakeTime(1000 + 1);
 
-        queuedMessages = messageQueue.getAndRemoveMessages(receiverParticipantId);
+        const queuedMessages = messageQueue.getAndRemoveMessages(receiverParticipantId);
         expect(messageQueue.currentQueueSize).toEqual(initialQueueSize);
         expect(queuedMessages.length).toEqual(0);
         done();
     });
 
     it("put Message adds multiple queued messages, dropped first one after timeout", done => {
-        let queuedMessages;
         joynrMessage.expiryDate = Date.now() + 1000;
         joynrMessage2.expiryDate = Date.now() + 2000;
         messageQueue.putMessage(joynrMessage);
@@ -175,7 +170,7 @@ describe("libjoynr-js.joynr.messaging.routing.MessageQueue", () => {
 
         increaseFakeTime(1000 + 1);
 
-        queuedMessages = messageQueue.getAndRemoveMessages(receiverParticipantId);
+        const queuedMessages = messageQueue.getAndRemoveMessages(receiverParticipantId);
 
         expect(queuedMessages.length).toEqual(1);
         expect(queuedMessages[0]).toEqual(joynrMessage2);

@@ -33,11 +33,11 @@ const CapabilitiesUtil = require("../../../../../main/js/joynr/util/Capabilities
 
 let domain, interfaceName, discoveryQos;
 let discoveryEntries, discoveryEntriesReturned, globalDiscoveryEntries, globalDiscoveryEntriesReturned;
-let capabilityDiscovery, messageRouterSpy, proxyBuilderSpy, address, localCapStoreSpy;
+let capabilityDiscovery, proxyBuilderSpy, address, localCapStoreSpy;
 let globalCapCacheSpy, globalCapDirSpy;
 let startDateMs;
 
-messageRouterSpy = jasmine.createSpyObj("routingTable", ["addNextHop", "resolveNextHop"]);
+const messageRouterSpy = jasmine.createSpyObj("routingTable", ["addNextHop", "resolveNextHop"]);
 
 messageRouterSpy.addNextHop.and.returnValue(Promise.resolve());
 messageRouterSpy.resolveNextHop.and.returnValue(Promise.resolve());

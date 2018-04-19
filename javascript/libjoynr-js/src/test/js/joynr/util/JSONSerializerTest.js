@@ -22,10 +22,9 @@ const TestEnum = require("../../../generated/joynr/tests/testTypes/TestEnum");
 
 describe("libjoynr-js.joynr.JSONSerializer.ensureCorrectSerialization", () => {
     it("Test enum serialization", () => {
-        let fixture = TestEnum.ZERO,
-            actual;
+        const fixture = TestEnum.ZERO;
 
-        actual = JSONSerializer.stringify(fixture);
+        const actual = JSONSerializer.stringify(fixture);
 
         expect(actual).toBe('"' + fixture.name + '"');
     });

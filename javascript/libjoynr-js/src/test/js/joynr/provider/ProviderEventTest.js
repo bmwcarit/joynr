@@ -66,18 +66,17 @@ describe("libjoynr-js.joynr.provider.ProviderEvent", () => {
     }
 
     it("implements the observer concept correctly", done => {
-        let spy1, spy2, func1, func2;
-        let value = {
+        const value = {
             key: "value",
             1: 2,
             object: {}
         };
 
-        spy1 = jasmine.createSpy("spy1");
-        spy2 = jasmine.createSpy("spy2");
+        const spy1 = jasmine.createSpy("spy1");
+        const spy2 = jasmine.createSpy("spy2");
 
-        func1 = buildObserver(spy1);
-        func2 = buildObserver(spy2);
+        const func1 = buildObserver(spy1);
+        const func2 = buildObserver(spy2);
 
         weakSignal.registerObserver(func1);
         weakSignal.registerObserver(func2);
@@ -135,18 +134,17 @@ describe("libjoynr-js.joynr.provider.ProviderEvent", () => {
     }
 
     it("implements the broadcast filter list correctly", done => {
-        let spy1, spy2, observerFunc, filterFunc;
         const value = {
             key: "value",
             1: 2,
             object: {}
         };
 
-        spy1 = jasmine.createSpy("spy1");
-        spy2 = jasmine.createSpy("spy2");
+        const spy1 = jasmine.createSpy("spy1");
+        const spy2 = jasmine.createSpy("spy2");
 
-        observerFunc = buildObserver2(spy1);
-        filterFunc = buildObserver3(spy2);
+        const observerFunc = buildObserver2(spy1);
+        const filterFunc = buildObserver3(spy2);
 
         weakSignal.addBroadcastFilter(filterFunc);
         weakSignal.registerObserver(observerFunc);

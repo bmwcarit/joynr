@@ -27,9 +27,8 @@ const SubscriptionUtil = {};
  * @returns {String} serialized subscriptions
  */
 SubscriptionUtil.serializeSubscriptions = function(subscriptions) {
-    let result = [],
-        subscriptionId;
-    for (subscriptionId in subscriptions) {
+    const result = [];
+    for (const subscriptionId in subscriptions) {
         if (subscriptions.hasOwnProperty(subscriptionId)) {
             result[result.length] = subscriptions[subscriptionId];
         }
@@ -45,9 +44,9 @@ SubscriptionUtil.serializeSubscriptions = function(subscriptions) {
  * @returns {String} serialized subscriptionIds
  */
 SubscriptionUtil.serializeSubscriptionIds = function(subscriptions) {
-    let result = [],
-        subscriptionId;
-    for (subscriptionId in subscriptions) {
+    const result = [];
+
+    for (const subscriptionId in subscriptions) {
         if (subscriptions.hasOwnProperty(subscriptionId)) {
             result[result.length] = subscriptionId;
         }
@@ -63,9 +62,8 @@ SubscriptionUtil.serializeSubscriptionIds = function(subscriptions) {
  *     as Map.&lt;String, SubscriptionInformation>
  */
 SubscriptionUtil.deserializeSubscriptions = function(subscriptions) {
-    let array,
-        result = {},
-        subscription;
+    let array;
+    const result = {};
     if (JSON && JSON.parse) {
         try {
             array = JSON.parse(subscriptions);
@@ -74,7 +72,7 @@ SubscriptionUtil.deserializeSubscriptions = function(subscriptions) {
         }
     }
 
-    for (subscription in array) {
+    for (const subscription in array) {
         if (array.hasOwnProperty(subscription)) {
             const object = array[subscription];
             result[object.subscriptionId] = object;
@@ -110,10 +108,9 @@ SubscriptionUtil.deserializeSubscriptionIds = function(subscriptions) {
  *                   the expected filter parameters
  */
 SubscriptionUtil.checkFilterParameters = function(expectedFilterParameters, actualFilterParameters, broadcastName) {
-    let i,
-        result = {
-            caughtErrors: []
-        };
+    const result = {
+        caughtErrors: []
+    };
     if (
         actualFilterParameters === undefined ||
         actualFilterParameters === null ||
@@ -123,7 +120,7 @@ SubscriptionUtil.checkFilterParameters = function(expectedFilterParameters, actu
     }
     const targetKeys = Object.keys(expectedFilterParameters);
     const sourceKeys = Object.keys(actualFilterParameters);
-    for (i = 0; i < targetKeys.length; i++) {
+    for (let i = 0; i < targetKeys.length; i++) {
         if (sourceKeys.indexOf(targetKeys[i]) === -1) {
             result.caughtErrors.push(
                 "Filter parameter " + targetKeys[i] + ' for broadcast "' + broadcastName + '" is not provided'

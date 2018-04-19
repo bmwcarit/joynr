@@ -55,11 +55,9 @@ function sendQueuedUnsubscriptions(client, queuedUnsubscriptions) {
 
 function sendQueuedSubscriptions(client, queuedSubscriptions, qosLevel) {
     const deferred = UtilInternal.createDeferred();
-    let i,
-        topic,
-        subscribeObject = {};
-    for (i = 0; i < queuedSubscriptions.length; i++) {
-        topic = queuedSubscriptions[i];
+    const subscribeObject = {};
+    for (let i = 0; i < queuedSubscriptions.length; i++) {
+        const topic = queuedSubscriptions[i];
         subscribeObject[topic] = qosLevel;
     }
     client.subscribe(subscribeObject, undefined, (err, granted) => {

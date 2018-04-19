@@ -44,16 +44,14 @@ function checkSupportsOnChangeSubscriptions(discoveryEntry, providerMustSupportO
 
 function discoverStaticCapabilities(capabilities, domains, interfaceName, discoveryQos, proxyVersion, deferred) {
     try {
-        let i,
-            capability,
-            arbitratedCaps = [];
+        const arbitratedCaps = [];
 
         deferred.pending = false;
         if (capabilities === undefined) {
             deferred.reject(new Error("Exception while arbitrating: static capabilities are missing"));
         } else {
-            for (i = 0; i < capabilities.length; ++i) {
-                capability = capabilities[i];
+            for (let i = 0; i < capabilities.length; ++i) {
+                const capability = capabilities[i];
                 if (
                     domains.indexOf(capability.domain) !== -1 &&
                     interfaceName === capability.interfaceName &&

@@ -143,11 +143,10 @@ function SubscriptionManager(dispatcher) {
     }
 
     function calculateTtl(subscriptionQos) {
-        let ttl;
         if (subscriptionQos.expiryDateMs === SubscriptionQos.NO_EXPIRY_DATE) {
             return defaultMessagingSettings.MAX_MESSAGING_TTL_MS;
         }
-        ttl = subscriptionQos.expiryDateMs - Date.now();
+        const ttl = subscriptionQos.expiryDateMs - Date.now();
         if (ttl > defaultMessagingSettings.MAX_MESSAGING_TTL_MS) {
             return defaultMessagingSettings.MAX_MESSAGING_TTL_MS;
         }
@@ -343,13 +342,12 @@ function SubscriptionManager(dispatcher) {
     };
 
     function addRequestToMulticastSubscribers(multicastId, subscriptionId) {
-        let i, subscribers;
         const multicastIdPattern = multicastWildcardRegexFactory.createIdPattern(multicastId);
         if (multicastSubscribers[multicastIdPattern] === undefined) {
             multicastSubscribers[multicastIdPattern] = [];
         }
-        subscribers = multicastSubscribers[multicastIdPattern];
-        for (i = 0; i < subscribers.length; i++) {
+        const subscribers = multicastSubscribers[multicastIdPattern];
+        for (let i = 0; i < subscribers.length; i++) {
             if (subscribers[i] === subscriptionId) {
                 return;
             }
@@ -418,8 +416,6 @@ function SubscriptionManager(dispatcher) {
      *          upon failure
      */
     this.registerBroadcastSubscription = function(parameters) {
-        let messagingQos;
-
         if (!isReady()) {
             return Promise.reject(new Error("SubscriptionManager is already shut down"));
         }
@@ -427,7 +423,7 @@ function SubscriptionManager(dispatcher) {
         const deferred = UtilInternal.createDeferred();
         const subscriptionRequest = createBroadcastSubscriptionRequest(parameters);
 
-        messagingQos = new MessagingQos({
+        const messagingQos = new MessagingQos({
             ttl: calculateTtl(subscriptionRequest.qos)
         });
 

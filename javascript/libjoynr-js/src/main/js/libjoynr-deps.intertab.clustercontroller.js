@@ -17,7 +17,7 @@
  * limitations under the License.
  * #L%
  */
-let libjoynrClusterControllerExports;
+
 // will receive the module names that should be exported
 // this instrumentation of the define method is there to...
 // ...leave the code block afterwards fully intact, so that static code analysis of require.js
@@ -25,7 +25,7 @@ let libjoynrClusterControllerExports;
 // ...we can tap the dependency array with the full module names including the namespaces we need
 // for exporting
 
-libjoynrClusterControllerExports = [
+const libjoynrClusterControllerExports = [
     "./joynr/Runtime",
     "./joynr/buildSignature",
     "./joynr/messaging/MessagingQos",

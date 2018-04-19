@@ -83,23 +83,19 @@ ArbitrationStrategyCollection.HighestPriority = function(capabilities) {
  * @returns {Array} an array of capabilities sorted by the highest priority
  */
 ArbitrationStrategyCollection.Keyword = function(keyword, capabilities) {
-    let capId,
-        qosId,
-        qosParam,
-        cap,
-        keywordCaps = [];
+    const keywordCaps = [];
 
     if (!Array.isArray(capabilities)) {
         throw new Error("provided argument capabilities is not of type Array");
     }
 
-    for (capId in capabilities) {
+    for (const capId in capabilities) {
         if (capabilities.hasOwnProperty(capId)) {
-            cap = capabilities[capId];
+            const cap = capabilities[capId];
             if (cap.qos.customParameters && Array.isArray(cap.qos.customParameters)) {
-                for (qosId in cap.qos.customParameters) {
+                for (const qosId in cap.qos.customParameters) {
                     if (cap.qos.customParameters.hasOwnProperty(qosId)) {
-                        qosParam = cap.qos.customParameters[qosId];
+                        const qosParam = cap.qos.customParameters[qosId];
                         if (qosParam && qosParam.value && qosParam.value === keyword) {
                             keywordCaps.push(cap);
                         }

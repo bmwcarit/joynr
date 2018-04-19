@@ -398,9 +398,8 @@ function MessageRouter(settings) {
      * @return the address to send the message to. Will not be null, because if an address can't be determined an exception is thrown.
      */
     function getAddressesForMulticast(joynrMessage) {
-        let i,
-            result = [],
-            address;
+        const result = [];
+        let address;
         if (!joynrMessage.isReceivedFromGlobal) {
             address = multicastAddressCalculator.calculate(joynrMessage);
             if (address !== undefined) {
@@ -414,7 +413,7 @@ function MessageRouter(settings) {
                 if (joynrMessage.to.match(new RegExp(multicastIdPattern)) !== null) {
                     receivers = multicastReceiversRegistry[multicastIdPattern];
                     if (receivers !== undefined) {
-                        for (i = 0; i < receivers.length; i++) {
+                        for (let i = 0; i < receivers.length; i++) {
                             address = routingTable[receivers[i]];
                             if (address !== undefined && !containsAddress(result, address)) {
                                 result.push(address);
@@ -716,9 +715,8 @@ function MessageRouter(settings) {
         const multicastIdPattern = multicastWildcardRegexFactory.createIdPattern(parameters.multicastId);
         const providerAddress = routingTable[parameters.providerParticipantId];
         if (multicastReceiversRegistry[multicastIdPattern] !== undefined) {
-            let i,
-                receivers = multicastReceiversRegistry[multicastIdPattern];
-            for (i = 0; i < receivers.length; i++) {
+            const receivers = multicastReceiversRegistry[multicastIdPattern];
+            for (let i = 0; i < receivers.length; i++) {
                 if (receivers[i] === parameters.subscriberParticipantId) {
                     receivers.splice(i, 1);
                     break;
@@ -765,7 +763,7 @@ function MessageRouter(settings) {
      * @returns void
      */
     this.participantRegistered = function participantRegistered(participantId) {
-        let messageQueue = settings.messageQueue.getAndRemoveMessages(participantId);
+        const messageQueue = settings.messageQueue.getAndRemoveMessages(participantId);
 
         if (messageQueue !== undefined) {
             let i = messageQueue.length;

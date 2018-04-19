@@ -26,7 +26,7 @@ function waitsFor(checker, message, delayMs, checkIntervalMs) {
     return new Promise((resolve, reject) => {
         delayMs = delayMs || 5000;
         checkIntervalMs = checkIntervalMs || 10;
-        let intervalId = originalSetInterval(() => {
+        const intervalId = originalSetInterval(() => {
             if (checker() === true) {
                 originalClearInterval(intervalId);
                 resolve();

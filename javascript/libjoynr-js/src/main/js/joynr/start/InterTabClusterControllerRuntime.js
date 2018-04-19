@@ -99,7 +99,6 @@ function InterTabClusterControllerRuntime(provisioning) {
     let mqttMessagingSkeleton;
     let clusterControllerMessagingStub;
     let dispatcher;
-    let typeRegistry;
     let requestReplyManager;
     let subscriptionManager;
     let publicationManager;
@@ -123,7 +122,7 @@ function InterTabClusterControllerRuntime(provisioning) {
     let freshnessIntervalId;
 
     // this is required at load time of libjoynr
-    typeRegistry = Object.freeze(TypeRegistrySingleton.getInstance());
+    const typeRegistry = Object.freeze(TypeRegistrySingleton.getInstance());
 
     /**
      * @name InterTabClusterControllerRuntime#typeRegistry

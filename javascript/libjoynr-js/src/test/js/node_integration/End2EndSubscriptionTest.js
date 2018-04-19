@@ -19,15 +19,15 @@
  */
 
 const Promise = require("../../../main/js/global/Promise");
-let joynr = require("joynr"),
-    RadioStation = require("../../generated/joynr/vehicle/radiotypes/RadioStation"),
-    Country = require("../../generated/joynr/datatypes/exampleTypes/Country"),
-    ComplexTestType = require("../../generated/joynr/tests/testTypes/ComplexTestType"),
-    SubscriptionException = require("../../../main/js/joynr/exceptions/SubscriptionException"),
-    IntegrationUtils = require("./IntegrationUtils"),
-    End2EndAbstractTest = require("./End2EndAbstractTest"),
-    provisioning = require("../../resources/joynr/provisioning/provisioning_cc"),
-    waitsFor = require("../global/WaitsFor");
+const joynr = require("joynr");
+const RadioStation = require("../../generated/joynr/vehicle/radiotypes/RadioStation");
+const Country = require("../../generated/joynr/datatypes/exampleTypes/Country");
+const ComplexTestType = require("../../generated/joynr/tests/testTypes/ComplexTestType");
+const SubscriptionException = require("../../../main/js/joynr/exceptions/SubscriptionException");
+const IntegrationUtils = require("./IntegrationUtils");
+const End2EndAbstractTest = require("./End2EndAbstractTest");
+const provisioning = require("../../resources/joynr/provisioning/provisioning_cc");
+const waitsFor = require("../global/WaitsFor");
 
 describe("libjoynr-js.integration.end2end.subscription", () => {
     const subscriptionLength = 2000;
@@ -124,9 +124,9 @@ describe("libjoynr-js.integration.end2end.subscription", () => {
     }
 
     function checkUnsubscribe(timeout, subscriptionQos) {
-        let spy, subscriptionId;
+        let subscriptionId;
 
-        spy = jasmine.createSpyObj("spy", ["onFulfilled", "onReceive", "onError"]);
+        const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onReceive", "onError"]);
         radioProxy.numberOfStations
             .subscribe({
                 subscriptionQos,
@@ -335,9 +335,8 @@ describe("libjoynr-js.integration.end2end.subscription", () => {
                     return testByteBufferAttribute([2, 2, 2, 2]);
                 })
                 .then(() => {
-                    let i,
-                        byteBuffer10k = [];
-                    for (i = 0; i < 10000; i++) {
+                    const byteBuffer10k = [];
+                    for (let i = 0; i < 10000; i++) {
                         byteBuffer10k.push(i % 256);
                     }
                     return testByteBufferAttribute(byteBuffer10k);
@@ -912,9 +911,7 @@ describe("libjoynr-js.integration.end2end.subscription", () => {
     });
 
     it("can start a subscription and provides a subscription id", done => {
-        let spy;
-
-        spy = jasmine.createSpyObj("spy", ["onFulfilled", "onReceive", "onError"]);
+        const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onReceive", "onError"]);
         radioProxy.numberOfStations
             .subscribe({
                 subscriptionQos: subscriptionQosOnChange,
@@ -982,9 +979,7 @@ describe("libjoynr-js.integration.end2end.subscription", () => {
     });
 
     it("initially publishes a value on subscription", done => {
-        let spy;
-
-        spy = jasmine.createSpyObj("spy", ["onFulfilled", "onReceive", "onError"]);
+        const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onReceive", "onError"]);
         radioProxy.numberOfStations
             .subscribe({
                 subscriptionQos: subscriptionQosOnChange,
@@ -1027,9 +1022,7 @@ describe("libjoynr-js.integration.end2end.subscription", () => {
 
     const nrPubs = 3;
     it("publishes correct values with onChange " + nrPubs + " times", done => {
-        let spy;
-
-        spy = jasmine.createSpyObj("spy", ["onFulfilled", "onReceive", "onError"]);
+        const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onReceive", "onError"]);
         radioProxy.numberOfStations
             .subscribe({
                 subscriptionQos: subscriptionQosOnChange,
@@ -1106,8 +1099,6 @@ describe("libjoynr-js.integration.end2end.subscription", () => {
     });
 
     it("publishes correct values with a mixed subscription", done => {
-        let spy;
-
         // provider will fire an interval publication 1s after
         // initialization with the response "interval"
         // after another 0.5 ms it will fire an onChange publication
@@ -1117,7 +1108,7 @@ describe("libjoynr-js.integration.end2end.subscription", () => {
         // blocked by the
         // PublicationManager on the Provider side
 
-        spy = jasmine.createSpyObj("spy", ["onFulfilled", "onReceive", "onError"]);
+        const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onReceive", "onError"]);
         subscriptionQosMixed.expiryDateMs = subscriptionLength + Date.now();
         radioProxy.mixedSubscriptions
             .subscribe({
@@ -1199,7 +1190,7 @@ describe("libjoynr-js.integration.end2end.subscription", () => {
     it(
         "terminates correctly according to the endDate ",
         done => {
-            let spy, timeout;
+            let timeout;
 
             // provider will fire an interval publication 1s
             // after
@@ -1214,7 +1205,7 @@ describe("libjoynr-js.integration.end2end.subscription", () => {
             // blocked by the
             // PublicationManager on the Provider side
 
-            spy = jasmine.createSpyObj("spy", ["onFulfilled", "onReceive", "onError"]);
+            const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onReceive", "onError"]);
             subscriptionQosMixed.expiryDateMs = subscriptionQosMixed.maxIntervalMs * 1.5 + Date.now();
             radioProxy.isOn
                 .subscribe({

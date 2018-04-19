@@ -26,12 +26,12 @@ const path = require("path");
 
 const IntegrationUtils = {};
 let currentlyRunningChildCC;
-let childReady = {},
-    childStarted = {},
-    childFinished = {},
-    child = {},
-    processId = 0,
-    queuedLogs = {};
+const childReady = {};
+const childStarted = {};
+const childFinished = {};
+const child = {};
+let processId = 0;
+const queuedLogs = {};
 let joynr;
 
 IntegrationUtils.log = function log(msg, id) {
@@ -188,8 +188,7 @@ IntegrationUtils.shutdownLibjoynr = function() {
 };
 
 IntegrationUtils.waitALittle = function waitALittle(time) {
-    let start;
-    start = Date.now();
+    const start = Date.now();
 
     // wait for childProcess to be shut down
     return waitsFor(

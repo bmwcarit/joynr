@@ -75,9 +75,8 @@ describe("libjoynr-js.joynr.messaging.webmessaging.WebSocketMessagingStubFactory
     });
 
     it("reuses existing websocket messaging stub", () => {
-        let webSocketMessagingStub1, webSocketMessagingStub2;
-        webSocketMessagingStub1 = webSocketMessagingStubFactory.build(ccAddress);
-        webSocketMessagingStub2 = webSocketMessagingStubFactory.build(ccAddress);
+        const webSocketMessagingStub1 = webSocketMessagingStubFactory.build(ccAddress);
+        const webSocketMessagingStub2 = webSocketMessagingStubFactory.build(ccAddress);
         expect(webSocketMessagingStub1).toBe(webSocketMessagingStub2);
     });
 });

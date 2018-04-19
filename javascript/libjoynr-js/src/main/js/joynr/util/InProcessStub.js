@@ -74,11 +74,10 @@ InProcessStub.prototype.setSkeleton = function(inProcessSkeleton) {
     }
 
     // get proxy object from skeleton
-    let key,
-        proxyObject = inProcessSkeleton.getProxyObject();
+    const proxyObject = inProcessSkeleton.getProxyObject();
 
     // cycle over all members in the proxy object
-    for (key in proxyObject) {
+    for (const key in proxyObject) {
         if (proxyObject.hasOwnProperty(key)) {
             // get the member of the proxy object
             const proxyObjectMember = proxyObject[key];

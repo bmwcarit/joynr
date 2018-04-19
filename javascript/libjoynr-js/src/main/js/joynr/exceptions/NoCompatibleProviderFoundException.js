@@ -19,7 +19,7 @@
 const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
 const UtilInternal = require("../util/UtilInternal");
 const DiscoveryException = require("./DiscoveryException");
-let defaultSettings;
+const defaultSettings = {};
 
 /**
  * @classdesc
@@ -85,8 +85,6 @@ function NoCompatibleProviderFoundException(settings) {
 
     UtilInternal.extend(this, defaultSettings, settings, discoveryException);
 }
-
-defaultSettings = {};
 
 TypeRegistrySingleton.getInstance().addType(
     "joynr.exceptions.NoCompatibleProviderFoundException",
