@@ -19,9 +19,12 @@
 package io.joynr.performance;
 
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 
 import io.joynr.jeeintegration.api.ProviderDomain;
 import io.joynr.jeeintegration.api.ServiceProvider;
+import io.joynr.jeeintegration.api.SubscriptionPublisher;
+import joynr.tests.performance.EchoSubscriptionPublisher;
 import joynr.tests.performance.EchoSync;
 import joynr.tests.performance.Types.ComplexStruct;
 
@@ -29,6 +32,10 @@ import joynr.tests.performance.Types.ComplexStruct;
 @ServiceProvider(serviceInterface = EchoSync.class)
 @ProviderDomain("performance_test_domain")
 public class JeeEchoProviderBean implements EchoSync {
+
+    @Inject
+    public JeeEchoProviderBean(@SubscriptionPublisher EchoSubscriptionPublisher echoSubscriptionPublisher) {
+    }
 
     @Override
     public String echoString(String data) {
