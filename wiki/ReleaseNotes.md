@@ -5,7 +5,9 @@ the versioning scheme [here](JoynrVersioning.md).
 # joynr 1.2.0
 
 ## API relevant changes
-None.
+* **[Java]** Renamed property keys defining key- and truststore paths and passwords
+used for secure MQTT connections.
+See [Java Configuration Reference](JavaSettings.md)for more details.
 
 ## Other changes
 * **[Generator]** Introduced a new flag `addVersionTo` to append version information at filesystem level
