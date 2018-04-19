@@ -29,6 +29,5 @@ set -e
 (
   echo "building node system-integration-test"
   cd tests/system-integration-test/sit-node-app
-  npm run-script preinstall
   npm install
 )
