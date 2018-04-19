@@ -56,6 +56,7 @@ function TypeRegistry() {
         registry[joynrTypeName] = typeConstructor;
         if (registryPromise[joynrTypeName]) {
             registryPromise[joynrTypeName].resolve(typeConstructor);
+            clearTimeout(registryPromise[joynrTypeName].timeoutTimer);
         }
         return this;
     };
@@ -108,15 +109,11 @@ function TypeRegistry() {
         registryPromise[joynrTypeName] = UtilInternal.createDeferred();
         if (timeout && timeout > 0) {
             registryPromise[joynrTypeName].timeoutTimer = setTimeout(() => {
-                if (registryPromise[joynrTypeName].pending) {
-                    registryPromise[joynrTypeName].reject(
-                        new Error(
-                            "joynr/start/TypeRegistry: " +
-                                joynrTypeName +
-                                " is not registered in the joynr type registry"
-                        )
-                    );
-                }
+                registryPromise[joynrTypeName].reject(
+                    new Error(
+                        "joynr/start/TypeRegistry: " + joynrTypeName + " is not registered in the joynr type registry"
+                    )
+                );
             }, timeout);
         }
         return registryPromise[joynrTypeName].promise;
