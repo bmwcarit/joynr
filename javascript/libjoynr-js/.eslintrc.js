@@ -66,7 +66,7 @@ module.exports = {
         "no-var": "error",
         "object-shorthand": "error",
         "prefer-arrow-callback": "error",
-        "prefer-const": "off",
+        "prefer-const": "error",
         "prefer-destructuring": "off",
         "prefer-spread": "error"
     },
