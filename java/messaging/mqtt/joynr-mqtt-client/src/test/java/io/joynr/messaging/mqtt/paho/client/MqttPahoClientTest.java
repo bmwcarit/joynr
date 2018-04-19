@@ -40,7 +40,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
-import org.eclipse.paho.client.mqttv3.internal.security.SSLSocketFactoryFactory;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -250,10 +249,10 @@ public class MqttPahoClientTest {
 
         final String keyStorePath = getResourcePath("clientkeystore.jks");
         final String trustStorePath = getResourcePath("catruststore.jks");
-        properties.put(SSLSocketFactoryFactory.SYSKEYSTORE, keyStorePath);
-        properties.put(SSLSocketFactoryFactory.SYSTRUSTSTORE, trustStorePath);
-        properties.put(SSLSocketFactoryFactory.SYSKEYSTOREPWD, KEYSTORE_PASSWORD);
-        properties.put(SSLSocketFactoryFactory.SYSTRUSTSTOREPWD, KEYSTORE_PASSWORD);
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_KEYSTORE_PATH, keyStorePath);
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_TRUSTSTORE_PATH, trustStorePath);
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_KEYSTORE_PWD, KEYSTORE_PASSWORD);
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_TRUSTSTORE_PWD, KEYSTORE_PASSWORD);
 
         createJoynrMqttClient(isSecureConnection);
 
@@ -280,17 +279,17 @@ public class MqttPahoClientTest {
 
         final String keyStorePath = getResourcePath("clientkeystore.jks");
         final String trustStorePath = getResourcePath("catruststore.jks");
-        properties.put(SSLSocketFactoryFactory.SYSKEYSTORE, keyStorePath);
-        properties.put(SSLSocketFactoryFactory.SYSTRUSTSTORE, trustStorePath);
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_KEYSTORE_PATH, keyStorePath);
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_TRUSTSTORE_PATH, trustStorePath);
 
         // test missing keystore password
-        properties.remove(SSLSocketFactoryFactory.SYSKEYSTOREPWD);
-        properties.put(SSLSocketFactoryFactory.SYSTRUSTSTOREPWD, KEYSTORE_PASSWORD);
+        properties.remove(MqttModule.PROPERTY_KEY_MQTT_KEYSTORE_PWD);
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_TRUSTSTORE_PWD, KEYSTORE_PASSWORD);
 
         testCreateMqttClientFailsWithJoynrIllegalArgumentException();
 
         // test wrong keystore password
-        properties.put(SSLSocketFactoryFactory.SYSKEYSTOREPWD, wrongPassword);
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_KEYSTORE_PWD, wrongPassword);
         testCreateMqttClientFailsWithJoynrIllegalArgumentException();
     }
 
@@ -300,17 +299,17 @@ public class MqttPahoClientTest {
 
         final String keyStorePath = getResourcePath("clientkeystore.jks");
         final String trustStorePath = getResourcePath("catruststore.jks");
-        properties.put(SSLSocketFactoryFactory.SYSKEYSTORE, keyStorePath);
-        properties.put(SSLSocketFactoryFactory.SYSTRUSTSTORE, trustStorePath);
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_KEYSTORE_PATH, keyStorePath);
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_TRUSTSTORE_PATH, trustStorePath);
 
         // test missing truststore password
-        properties.put(SSLSocketFactoryFactory.SYSKEYSTOREPWD, KEYSTORE_PASSWORD);
-        properties.remove(SSLSocketFactoryFactory.SYSTRUSTSTOREPWD);
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_KEYSTORE_PWD, KEYSTORE_PASSWORD);
+        properties.remove(MqttModule.PROPERTY_KEY_MQTT_TRUSTSTORE_PWD);
 
         testCreateMqttClientFailsWithJoynrIllegalArgumentException();
 
         // test wrong truststore password
-        properties.put(SSLSocketFactoryFactory.SYSTRUSTSTOREPWD, wrongPassword);
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_TRUSTSTORE_PWD, wrongPassword);
         testCreateMqttClientFailsWithJoynrIllegalArgumentException();
     }
 
@@ -319,17 +318,17 @@ public class MqttPahoClientTest {
         final String wrongKeyStorePath = getResourcePath("clientkeystore.jks") + "42";
 
         final String trustStorePath = getResourcePath("catruststore.jks");
-        properties.put(SSLSocketFactoryFactory.SYSTRUSTSTORE, trustStorePath);
-        properties.put(SSLSocketFactoryFactory.SYSKEYSTOREPWD, KEYSTORE_PASSWORD);
-        properties.put(SSLSocketFactoryFactory.SYSTRUSTSTOREPWD, KEYSTORE_PASSWORD);
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_TRUSTSTORE_PATH, trustStorePath);
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_KEYSTORE_PWD, KEYSTORE_PASSWORD);
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_TRUSTSTORE_PWD, KEYSTORE_PASSWORD);
 
         // test missing keystore path
-        properties.remove(SSLSocketFactoryFactory.SYSKEYSTORE);
+        properties.remove(MqttModule.PROPERTY_KEY_MQTT_KEYSTORE_PATH);
 
         testCreateMqttClientFailsWithJoynrIllegalArgumentException();
 
         // test wrong keystore path
-        properties.put(SSLSocketFactoryFactory.SYSKEYSTORE, wrongKeyStorePath);
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_KEYSTORE_PATH, wrongKeyStorePath);
         testCreateMqttClientFailsWithJoynrIllegalArgumentException();
     }
 
@@ -338,17 +337,17 @@ public class MqttPahoClientTest {
         final String wrongTrustStorePath = getResourcePath("catruststore.jks") + "42";
 
         final String keyStorePath = getResourcePath("clientkeystore.jks");
-        properties.put(SSLSocketFactoryFactory.SYSKEYSTORE, keyStorePath);
-        properties.put(SSLSocketFactoryFactory.SYSKEYSTOREPWD, KEYSTORE_PASSWORD);
-        properties.put(SSLSocketFactoryFactory.SYSTRUSTSTOREPWD, KEYSTORE_PASSWORD);
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_KEYSTORE_PATH, keyStorePath);
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_KEYSTORE_PWD, KEYSTORE_PASSWORD);
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_TRUSTSTORE_PWD, KEYSTORE_PASSWORD);
 
         // test missing truststore path
-        properties.remove(SSLSocketFactoryFactory.SYSTRUSTSTORE);
+        properties.remove(MqttModule.PROPERTY_KEY_MQTT_TRUSTSTORE_PATH);
 
         testCreateMqttClientFailsWithJoynrIllegalArgumentException();
 
         // test wrong truststore path
-        properties.put(SSLSocketFactoryFactory.SYSTRUSTSTORE, wrongTrustStorePath);
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_TRUSTSTORE_PATH, wrongTrustStorePath);
         testCreateMqttClientFailsWithJoynrIllegalArgumentException();
     }
 
