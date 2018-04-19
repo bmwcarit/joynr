@@ -54,6 +54,7 @@ import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
 import joynr.test.JoynrTestLoggingRule;
+import joynr.tests.test;
 import joynr.tests.testAsync;
 import joynr.tests.testBroadcastInterface;
 import joynr.tests.testProvider;
@@ -78,8 +79,7 @@ public class ProxyErrorsTest {
         public static String INTERFACE_NAME = "tests/test";
     }
 
-    @JoynrInterface(provider = TestProviderWrongVersion.class, provides = TestProviderWrongVersion.class,
-                    name = "tests/test")
+    @JoynrInterface(provider = TestProviderWrongVersion.class, provides = test.class, name = "tests/test")
     @JoynrVersion(major = 1, minor = 0)
     interface TestProviderWrongVersion extends testProvider {
     }
