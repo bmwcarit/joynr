@@ -68,10 +68,7 @@ function MessageQueue(settings) {
 }
 
 MessageQueue.DEFAULT_MAX_QUEUE_SIZE_IN_KBYTES = 10000;
-
-defaultSettings = {
-    maxQueueSizeInKBytes: MessageQueue.DEFAULT_MAX_QUEUE_SIZE_IN_KBYTES
-};
+MessageQueue.prototype.maxQueueSizeInKBytes = MessageQueue.DEFAULT_MAX_QUEUE_SIZE_IN_KBYTES;
 
 /**
  * @name MessageQueue#putMessage

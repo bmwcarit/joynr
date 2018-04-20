@@ -102,7 +102,9 @@ function WebSocketLibjoynrRuntime(provisioning) {
     let persistency;
     let localAddress;
     const keychain = provisioning.keychain;
+    /*eslint-disable prefer-const*/
     let internalShutdown;
+    /*eslint-enable prefer-const*/
     let bufferedOwnerId;
 
     // this is required at load time of libjoynr
