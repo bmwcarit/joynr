@@ -21,7 +21,9 @@ const UtilInternal = require("../util/UtilInternal");
 const SubscriptionQos = require("./SubscriptionQos");
 const LoggingManager = require("../system/LoggingManager");
 
+/*eslint-disable prefer-const*/
 let defaultSettings;
+/*eslint-enable prefer-const*/
 
 /**
  * @classdesc
