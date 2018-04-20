@@ -55,11 +55,14 @@ public class CapabilitiesDirectoryTest {
     String interface1 = "interface1";
     String interface2 = "interface2";
     String interface3 = "Interface3";
+    String interface4 = "Interface4";
 
     ProviderQos providerQos = new ProviderQos(CUSTOM_PARAMETERS, 1L, ProviderScope.GLOBAL, true);
     GlobalDiscoveryEntry discoveryEntry1;
     GlobalDiscoveryEntry discoveryEntry2;
     GlobalDiscoveryEntry discoveryEntry3;
+    GlobalDiscoveryEntry discoveryEntry4;
+    GlobalDiscoveryEntry discoveryEntry4FromAnotherNodeInCluster;
     String postFix = "" + System.currentTimeMillis();
 
     @BeforeClass
@@ -73,7 +76,9 @@ public class CapabilitiesDirectoryTest {
         String participantId1 = "testParticipantId1_" + UUID.randomUUID().toString();
         String participantId2 = "testParticipantId2_" + UUID.randomUUID().toString();
         String participantId3 = "testParticipantId3_" + UUID.randomUUID().toString();
+        String participantId4 = "testParticipantId4_" + UUID.randomUUID().toString();
         String publicKeyId = "publicKeyId";
+        String publicKeyIdFromAnotherNodeInCluster = "publicKeyIdAnotherNode";
 
         long lastSeenDateMs = System.currentTimeMillis();
         long expiryDateMs = System.currentTimeMillis() + ONE_DAY_IN_MS;
@@ -104,6 +109,24 @@ public class CapabilitiesDirectoryTest {
                                                    expiryDateMs,
                                                    publicKeyId,
                                                    channelAddresSerialized);
+        discoveryEntry4 = new GlobalDiscoveryEntry(new Version(47, 11),
+                                                   domain,
+                                                   interface4,
+                                                   participantId4,
+                                                   providerQos,
+                                                   lastSeenDateMs,
+                                                   expiryDateMs,
+                                                   publicKeyId,
+                                                   channelAddresSerialized);
+        discoveryEntry4FromAnotherNodeInCluster = new GlobalDiscoveryEntry(new Version(47, 11),
+                                                                           domain,
+                                                                           interface4,
+                                                                           participantId4,
+                                                                           providerQos,
+                                                                           lastSeenDateMs + 5000,
+                                                                           expiryDateMs + 5000,
+                                                                           publicKeyIdFromAnotherNodeInCluster,
+                                                                           channelAddresSerialized);
 
     }
 
@@ -145,6 +168,18 @@ public class CapabilitiesDirectoryTest {
         assertDiscoveryEntriesEqual(new GlobalDiscoveryEntry[]{ discoveryEntry1 },
                                     (GlobalDiscoveryEntry[]) lookupCapInfo1.getValues()[0]);
 
+    }
+
+    @Test
+    public void registerSameProviderMultipleTimesFromClusteredApplication() throws InterruptedException {
+        capabilitiesDirectory.add(discoveryEntry4);
+        capabilitiesDirectory.add(discoveryEntry4FromAnotherNodeInCluster);
+
+        PromiseKeeper lookupCapInfo4 = new PromiseKeeper();
+        capabilitiesDirectory.lookup(new String[]{ domain }, interface4).then(lookupCapInfo4);
+        lookupCapInfo4.waitForSettlement();
+        assertDiscoveryEntriesEqual(new GlobalDiscoveryEntry[]{ discoveryEntry4FromAnotherNodeInCluster },
+                                    (GlobalDiscoveryEntry[]) lookupCapInfo4.getValues()[0]);
     }
 
     private void assertDiscoveryEntriesEqual(GlobalDiscoveryEntry[] expectedDiscoveryEntries,
