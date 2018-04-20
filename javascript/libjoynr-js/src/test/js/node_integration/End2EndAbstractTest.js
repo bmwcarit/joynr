@@ -24,7 +24,7 @@ const MultipleVersionsInterfaceProxy = require("../../generated/joynr/tests/Mult
 const IntegrationUtils = require("./IntegrationUtils");
 const provisioning = require("../../resources/joynr/provisioning/provisioning_cc");
 const waitsFor = require("../global/WaitsFor");
-const joynr = require("joynr");
+let joynr = require("joynr");
 
 function End2EndAbstractTest(provisioningSuffix, providerChildProcessName, processSpecialization) {
     let radioProxy, dataProxy, multipleVersionsInterfaceProxy, loadedJoynr;
@@ -369,8 +369,11 @@ function End2EndAbstractTest(provisioningSuffix, providerChildProcessName, proce
                 return IntegrationUtils.shutdownLibjoynr();
             })
             .then(() => {
+                delete require.cache;
+                /*eslint-disable */
+                joynr = require("joynr");
+                /*eslint-enable */
                 done();
-                return null;
             })
             .catch(e => {
                 throw new Error("shutdown Child and Libjoynr failed: " + e);
