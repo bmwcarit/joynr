@@ -21,6 +21,7 @@ const SubscriptionQos = require("../../../../main/js/joynr/proxy/SubscriptionQos
 const PeriodicSubscriptionQos = require("../../../../main/js/joynr/proxy/PeriodicSubscriptionQos");
 const OnChangeSubscriptionQos = require("../../../../main/js/joynr/proxy/OnChangeSubscriptionQos");
 const OnChangeWithKeepAliveSubscriptionQos = require("../../../../main/js/joynr/proxy/OnChangeWithKeepAliveSubscriptionQos");
+const MulticastSubscriptionQos = require("../../../../main/js/joynr/proxy/MulticastSubscriptionQos");
 const Date = require("../../../../test/js/global/Date");
 describe("libjoynr-js.joynr.proxy.SubscriptionQos", () => {
     const qosSettings = {
@@ -288,6 +289,23 @@ describe("libjoynr-js.joynr.proxy.SubscriptionQos", () => {
         });
         expect(fixture.validityMs).toBe(undefined);
         expect(fixture.expiryDateMs).toBe(fakeTime + validityMs);
+        done();
+    });
+
+    it("constructs MulticastSubscriptionQos with correct default values", done => {
+        const fixture = new MulticastSubscriptionQos();
+        expect(fixture.expiryDateMs).toEqual(SubscriptionQos.NO_EXPIRY_DATE);
+        expect(fixture.publicationTtlMs).toEqual(SubscriptionQos.DEFAULT_PUBLICATION_TTL_MS);
+        done();
+    });
+
+    it("constructs MulticastSubscriptionQos with correct settings", done => {
+        const settings = { expiryDateMs: 1234, publicationTtlMs: 5678 };
+
+        const fixture = new MulticastSubscriptionQos(settings);
+        expect(fixture.expiryDateMs).toEqual(settings.expiryDateMs);
+        expect(fixture.publicationTtlMs).toEqual(settings.publicationTtlMs);
+        expect(fixture._typeName).toEqual("joynr.MulticastSubscriptionQos");
         done();
     });
 
