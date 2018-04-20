@@ -157,6 +157,9 @@ public class CapabilitiesDirectoryTest {
             assertEquals(expectedGlobalDiscoveryEntry.getAddress(), passedDiscoveryEntry.getAddress());
             assertEquals(expectedGlobalDiscoveryEntry.getParticipantId(), passedDiscoveryEntry.getParticipantId());
             assertEquals(expectedGlobalDiscoveryEntry.getQos(), passedDiscoveryEntry.getQos());
+            assertEquals(expectedGlobalDiscoveryEntry.getLastSeenDateMs(), passedDiscoveryEntry.getLastSeenDateMs());
+            assertEquals(expectedGlobalDiscoveryEntry.getExpiryDateMs(), passedDiscoveryEntry.getExpiryDateMs());
+            assertEquals(expectedGlobalDiscoveryEntry.getPublicKeyId(), passedDiscoveryEntry.getPublicKeyId());
             i++;
         }
     }
