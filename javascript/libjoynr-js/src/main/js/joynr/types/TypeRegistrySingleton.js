@@ -1,5 +1,3 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
@@ -18,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-var TypeRegistry = require("../start/TypeRegistry");
-var instance;
+const TypeRegistry = require("../start/TypeRegistry");
+let instance;
 
 /**
  * A singleton Implementation for the Type Registry.

@@ -219,7 +219,7 @@ class ProviderGenerator extends InterfaceJsTemplate {
 
 			Object.defineProperty(this, 'checkImplementation', { value: checkImpl});
 
-			this.interfaceName = "«getFQN(francaIntf)»";
+			this.interfaceName = "«francaIntf.fullyQualifiedName»";
 
 			return Object.freeze(this);
 		};

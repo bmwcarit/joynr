@@ -1,4 +1,4 @@
-/*jslint es5: true, nomen: true, node: true */
+/*eslint global-require: "off"*/
 /*
  * #%L
  * %%
@@ -17,15 +17,15 @@
  * limitations under the License.
  * #L%
  */
-var JSONSerializer = require("../util/JSONSerializer");
-var JoynrMessage = require("./JoynrMessage");
-var LoggingManager = require("../system/LoggingManager");
-var log = LoggingManager.getLogger("joynr.messaging.MessageSerializer");
+const JSONSerializer = require("../util/JSONSerializer");
+const JoynrMessage = require("./JoynrMessage");
+const LoggingManager = require("../system/LoggingManager");
+const log = LoggingManager.getLogger("joynr.messaging.MessageSerializer");
 
-var MessageSerializer = {};
+const MessageSerializer = {};
 
 function useSmrf() {
-    var smrf = require("../../global/SmrfNode");
+    const smrf = require("../../global/SmrfNode");
 
     function serializeSmrfMessage(smrfMsg) {
         try {
@@ -53,11 +53,11 @@ function useSmrf() {
         if (typeof data !== "object") {
             log.error("MessageSerializer received unsupported message.");
         } else {
-            var smrfMsg = deserializeSmrfMessage(data);
-            var expiryDate = smrfMsg.isTtlAbsolute === true ? smrfMsg.ttlMs : smrfMsg.ttlMs + Date.now();
+            const smrfMsg = deserializeSmrfMessage(data);
+            const expiryDate = smrfMsg.isTtlAbsolute === true ? smrfMsg.ttlMs : smrfMsg.ttlMs + Date.now();
 
             // smrfMsg has two attributes we need to throw away -> create new Object
-            var messageWithoutRest = {
+            const messageWithoutRest = {
                 headers: smrfMsg.headers,
                 sender: smrfMsg.sender,
                 recipient: smrfMsg.recipient,

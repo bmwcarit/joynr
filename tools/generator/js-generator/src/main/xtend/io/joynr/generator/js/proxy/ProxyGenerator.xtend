@@ -211,7 +211,7 @@ class ProxyGenerator extends InterfaceJsTemplate {
 	«ENDFOR»
 
 			Object.defineProperty(this, "interfaceName", {
-				value: "«getFQN(francaIntf)»"
+				value: "«francaIntf.fullyQualifiedName»"
 			});
 		};
 

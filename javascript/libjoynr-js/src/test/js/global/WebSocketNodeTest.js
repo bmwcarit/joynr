@@ -1,6 +1,5 @@
-/*jslint es5: true, node: true, newcap: true */
-/*global Buffer: true, requirejs: true , req: true*/
-
+/*eslint no-unused-vars: "off"*/
+/*global req*/
 /*
  * #%L
  * %%
@@ -20,10 +19,10 @@
  * #L%
  */
 
-var mod = require("module");
+const mod = require("module");
 
-var wscppSpy = jasmine.createSpy("wscppSyp");
-var overriddenRequire = mod.prototype.require;
+const wscppSpy = jasmine.createSpy("wscppSyp");
+const overriddenRequire = mod.prototype.require;
 mod.prototype.require = function(md) {
     if (md.endsWith("wscpp")) {
         return wscppSpy;
@@ -33,23 +32,20 @@ mod.prototype.require = function(md) {
 };
 
 // req path starting at: node-run-unit-tests
-var WebsocketNode = req("../classes/global/WebSocketNode");
+const WebsocketNode = req("../../main/js/global/WebSocketNode");
 
-describe("websocket node", function() {
-    var websocketNode;
-    var remoteUrl = "url";
-    var keychain = {
-        ownerId: "ownerId"
-    };
-    var keychainWithCerts = {
+describe("websocket node", () => {
+    let websocketNode;
+    const remoteUrl = "url";
+    const keychainWithCerts = {
         tlsCert: "tlsCert",
         tlsKey: "tlsKey",
         tlsCa: "tlsCa",
         ownerId: "ownerID"
     };
 
-    it("calls the wscpp constructor with certs for unencrypted Tls communication", function() {
-        var useUnencryptedTls = true;
+    it("calls the wscpp constructor with certs for unencrypted Tls communication", () => {
+        const useUnencryptedTls = true;
         websocketNode = new WebsocketNode(remoteUrl, keychainWithCerts, useUnencryptedTls);
 
         expect(wscppSpy).toHaveBeenCalledWith(remoteUrl, {
@@ -57,12 +53,12 @@ describe("websocket node", function() {
             key: keychainWithCerts.tlsKey,
             ca: keychainWithCerts.tlsCa,
             rejectUnauthorized: true,
-            useUnencryptedTls: useUnencryptedTls
+            useUnencryptedTls
         });
     });
 
-    it("calls the wscpp constructor with certs  for encrypted Tls communication", function() {
-        var useUnencryptedTls = false;
+    it("calls the wscpp constructor with certs  for encrypted Tls communication", () => {
+        const useUnencryptedTls = false;
         websocketNode = new WebsocketNode(remoteUrl, keychainWithCerts, useUnencryptedTls);
 
         expect(wscppSpy).toHaveBeenCalledWith(remoteUrl, {
@@ -70,7 +66,7 @@ describe("websocket node", function() {
             key: keychainWithCerts.tlsKey,
             ca: keychainWithCerts.tlsCa,
             rejectUnauthorized: true,
-            useUnencryptedTls: useUnencryptedTls
+            useUnencryptedTls
         });
     });
 });

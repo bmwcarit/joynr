@@ -1,5 +1,4 @@
-/*jslint node: true */
-
+/*eslint no-unused-vars: "off"*/
 /*
  * #%L
  * %%
@@ -18,8 +17,8 @@
  * limitations under the License.
  * #L%
  */
-var noop = function() {};
-var trace, debug, info, warn, error, fatal;
+const noop = function() {};
+let trace, debug, info, warn, error, fatal;
 
 function JoynrLogger(name) {
     this.name = name;
@@ -128,7 +127,7 @@ function logWithoutFormatting(message, level) {
 }
 
 function logWithFormatting(message, level) {
-    var formattedMessage = this.format(message, level);
+    const formattedMessage = this.format(message, level);
     this.output({ level: { name: level }, messages: [formattedMessage] });
 }
 
@@ -145,7 +144,7 @@ function curryAddString(string) {
 }
 
 function addDate(output, settings) {
-    var date = new Date();
+    const date = new Date();
     return output + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds() + "," + date.getMilliseconds();
 }
 
@@ -163,12 +162,12 @@ function addMessage(output, settings) {
 
 function createFormattingFunctionFromSteps(steps) {
     return function(message, level) {
-        var i,
+        let i,
             output = "";
-        var length = steps.length;
-        var settings = {
-            message: message,
-            level: level,
+        const length = steps.length;
+        const settings = {
+            message,
+            level,
             name: this.name
         };
         for (i = 0; i < length; i++) {
@@ -179,7 +178,7 @@ function createFormattingFunctionFromSteps(steps) {
 }
 
 JoynrLogger.setFormatting = function(pattern) {
-    var steps = [];
+    const steps = [];
     // pattern : "[%d{HH:mm:ss,SSS}][%c][%p] %m{2}"
 
     function checkRest(restString) {
@@ -188,18 +187,18 @@ JoynrLogger.setFormatting = function(pattern) {
         }
     }
 
-    var regexPattern = new RegExp("{[^}]*}", "g");
+    const regexPattern = new RegExp("{[^}]*}", "g");
     // too complicated patterns are not supported
-    var patternWithoutArguments = pattern.replace(regexPattern, "");
+    const patternWithoutArguments = pattern.replace(regexPattern, "");
 
-    var splitString = patternWithoutArguments.split("%");
-    var firstElement = splitString.shift();
+    const splitString = patternWithoutArguments.split("%");
+    const firstElement = splitString.shift();
     if (firstElement !== "") {
         steps.push(curryAddString(firstElement));
     }
     while (splitString.length) {
-        var subString = splitString.shift();
-        var command = subString.charAt(0);
+        let subString = splitString.shift();
+        const command = subString.charAt(0);
         subString = subString.slice(1);
         switch (command) {
             case "d":

@@ -1,5 +1,3 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
@@ -19,23 +17,23 @@
  * #L%
  */
 require("../../../node-unit-test-helper");
-var WebMessagingAddress = require("../../../../classes/joynr/messaging/webmessaging/WebMessagingAddress");
+const WebMessagingAddress = require("../../../../../main/js/joynr/messaging/webmessaging/WebMessagingAddress");
 
-describe("libjoynr-js.joynr.messaging.webmessaging.WebMessagingAddress", function() {
-    var window, origin, webMessagingAddress;
+describe("libjoynr-js.joynr.messaging.webmessaging.WebMessagingAddress", () => {
+    let window, origin, webMessagingAddress;
 
-    beforeEach(function() {
+    beforeEach(() => {
         window = {
             key: "window"
         };
         origin = "origin";
         webMessagingAddress = new WebMessagingAddress({
-            window: window,
-            origin: origin
+            window,
+            origin
         });
     });
 
-    it("is instantiable and of correct type", function() {
+    it("is instantiable and of correct type", () => {
         expect(WebMessagingAddress).toBeDefined();
         expect(typeof WebMessagingAddress === "function").toBeTruthy();
         expect(webMessagingAddress).toBeDefined();
@@ -46,63 +44,63 @@ describe("libjoynr-js.joynr.messaging.webmessaging.WebMessagingAddress", functio
         expect(typeof webMessagingAddress.getOrigin === "function").toBeTruthy();
     });
 
-    it("throws on missing or wrongly typed arguments in transmit", function() {
-        expect(function() {
+    it("throws on missing or wrongly typed arguments in transmit", () => {
+        expect(() => {
             webMessagingAddress = new WebMessagingAddress({
                 // correct arguments
-                window: window,
-                origin: origin
+                window,
+                origin
             });
         }).not.toThrow();
 
-        expect(function() {
+        expect(() => {
             webMessagingAddress = new WebMessagingAddress({
                 // window is of wrong type
                 window: "",
-                origin: origin
+                origin
             });
         }).toThrow();
 
-        expect(function() {
+        expect(() => {
             webMessagingAddress = new WebMessagingAddress({
                 // origin is of wrong type
-                window: window,
+                window,
                 origin: {}
             });
         }).toThrow();
 
-        expect(function() {
+        expect(() => {
             webMessagingAddress = new WebMessagingAddress({
                 // missing window argument
-                origin: origin
+                origin
             });
         }).toThrow();
 
-        expect(function() {
+        expect(() => {
             webMessagingAddress = new WebMessagingAddress({
                 // missing origin argument
-                window: window
+                window
             });
         }).toThrow();
 
-        expect(function() {
+        expect(() => {
             webMessagingAddress = new WebMessagingAddress({});
         }).toThrow(); // all arguments are missing
 
-        expect(function() {
+        expect(() => {
             webMessagingAddress = new WebMessagingAddress("");
         }).toThrow(); // settings is of wrong type
 
-        expect(function() {
+        expect(() => {
             webMessagingAddress = new WebMessagingAddress();
         }).toThrow(); // settings is undefined
     });
 
-    it("retrieves window correctly", function() {
+    it("retrieves window correctly", () => {
         expect(webMessagingAddress.getWindow()).toEqual(window);
     });
 
-    it("retrieves origin correctly", function() {
+    it("retrieves origin correctly", () => {
         expect(webMessagingAddress.getOrigin()).toEqual(origin);
     });
 });

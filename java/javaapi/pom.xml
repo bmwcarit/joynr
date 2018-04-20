@@ -26,7 +26,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>java</artifactId>
-		<version>1.1.2</version>
+		<version>1.2.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -130,6 +130,45 @@
 							<model>${basedir}/../../basemodel/src/test/franca</model>
 							<generationLanguage>java</generationLanguage>
 							<outputPath>${basedir}/src/test/generated</outputPath>
+						</configuration>
+					</execution>
+					<execution>
+						<id>testSourcesWithPackageVersion</id>
+						<phase>generate-test-sources</phase>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<configuration>
+							<model>${basedir}/../../basemodel/src/test/franca-with-version</model>
+							<generationLanguage>java</generationLanguage>
+							<outputPath>${basedir}/src/test/generated</outputPath>
+							<addVersionTo>package</addVersionTo>
+						</configuration>
+					</execution>
+					<execution>
+						<id>testSourcesWithNameVersion</id>
+						<phase>generate-test-sources</phase>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<configuration>
+							<model>${basedir}/../../basemodel/src/test/franca-with-version</model>
+							<generationLanguage>java</generationLanguage>
+							<outputPath>${basedir}/src/test/generated</outputPath>
+							<addVersionTo>name</addVersionTo>
+						</configuration>
+					</execution>
+					<execution>
+						<id>testSourcesWithNoneVersion</id>
+						<phase>generate-test-sources</phase>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<configuration>
+							<model>${basedir}/../../basemodel/src/test/franca-with-version</model>
+							<generationLanguage>java</generationLanguage>
+							<outputPath>${basedir}/src/test/generated</outputPath>
+							<addVersionTo>none</addVersionTo>
 						</configuration>
 					</execution>
 					<execution>

@@ -14,7 +14,9 @@
 	* [JEE Developer Guide](wiki/jee.md) -- Developing JEE applications with joynr
 	* [Java Configuration Reference](wiki/JavaSettings.md) -- a reference of the available
 	  configuration options for Java and JEE joynr applications
-* [C++ Developer Guide](wiki/cplusplus.md) -- Developing C++ applications with joynr
+* C++
+	* [C++ Developer Guide](wiki/cplusplus.md) -- Developing C++ applications with joynr
+	* [C++ cluster-controller Settings](wiki/ClusterControllerSettings.md) -- C++ cluster-controller settings
 * [JavaScript Developer Guide](wiki/javascript.md) -- Developing JavaScript applications with joynr
 * [JavaScript Tutorial](wiki/JavaScriptTutorial.md) -- Make your first joynr JavaScript application
 * [Radio App Tutorial](wiki/Tutorial.md) -- Make your first joynr app: define a communication

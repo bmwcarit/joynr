@@ -10,11 +10,10 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>joynr</artifactId>
-		<version>1.1.2</version>
+		<version>1.2.0</version>
 	</parent>
 
 	<modules>
-		<module>js-dependencies</module>
 		<module>inter-tab</module>
 		<module>libjoynr-js</module>
 	</modules>

@@ -1,6 +1,3 @@
-/*jslint es5: true */
-/*global Promise: true, WorkerUtils: true, importScripts: true, joynr: true, DatatypesProvider: true, providerParticipantIdDatatypes, domain: true, TestEnd2EndDatatypesTestData: true, interfaceNameDatatypes: true, providerParticipantIdDatatypes: true, providerChannelIdDatatypes: true, globalCapDirCapability: true, channelUrlDirCapability: true */
-
 /*
  * #%L
  * %%

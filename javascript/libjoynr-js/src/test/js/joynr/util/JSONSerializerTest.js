@@ -1,4 +1,3 @@
-/*jslint es5: true, node: true, nomen: true */
 /*
  * #%L
  * %%
@@ -18,15 +17,14 @@
  * #L%
  */
 require("../../node-unit-test-helper");
-var JSONSerializer = require("../../../classes/joynr/util/JSONSerializer");
-var TestEnum = require("../../../test-classes/joynr/tests/testTypes/TestEnum");
+const JSONSerializer = require("../../../../main/js/joynr/util/JSONSerializer");
+const TestEnum = require("../../../generated/joynr/tests/testTypes/TestEnum");
 
-describe("libjoynr-js.joynr.JSONSerializer.ensureCorrectSerialization", function() {
-    it("Test enum serialization", function() {
-        var fixture = TestEnum.ZERO,
-            actual;
+describe("libjoynr-js.joynr.JSONSerializer.ensureCorrectSerialization", () => {
+    it("Test enum serialization", () => {
+        const fixture = TestEnum.ZERO;
 
-        actual = JSONSerializer.stringify(fixture);
+        const actual = JSONSerializer.stringify(fixture);
 
         expect(actual).toBe('"' + fixture.name + '"');
     });

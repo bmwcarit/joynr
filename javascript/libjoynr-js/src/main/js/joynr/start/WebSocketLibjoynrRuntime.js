@@ -1,5 +1,3 @@
-/*jslint es5: true, node: true */
-
 /*
  * #%L
  * %%
@@ -18,56 +16,50 @@
  * limitations under the License.
  * #L%
  */
-var Promise = require("../../global/Promise");
-var WebSocket = require("../../global/WebSocketNode");
-var Arbitrator = require("../capabilities/arbitration/Arbitrator");
-var ProviderBuilder = require("../provider/ProviderBuilder");
-var ProxyBuilder = require("../proxy/ProxyBuilder");
-var CapabilitiesRegistrar = require("../capabilities/CapabilitiesRegistrar");
-var ParticipantIdStorage = require("../capabilities/ParticipantIdStorage");
-var RequestReplyManager = require("../dispatching/RequestReplyManager");
-var PublicationManager = require("../dispatching/subscription/PublicationManager");
-var SubscriptionManager = require("../dispatching/subscription/SubscriptionManager");
-var Dispatcher = require("../dispatching/Dispatcher");
-var JoynrException = require("../exceptions/JoynrException");
-var PlatformSecurityManager = require("../security/PlatformSecurityManagerNode");
-var SharedWebSocket = require("../messaging/websocket/SharedWebSocket");
-var WebSocketMessagingSkeleton = require("../messaging/websocket/WebSocketMessagingSkeleton");
-var WebSocketMessagingStubFactory = require("../messaging/websocket/WebSocketMessagingStubFactory");
-var WebSocketMulticastAddressCalculator = require("../messaging/websocket/WebSocketMulticastAddressCalculator");
-var MessagingSkeletonFactory = require("../messaging/MessagingSkeletonFactory");
-var MessagingStubFactory = require("../messaging/MessagingStubFactory");
-var MessageRouter = require("../messaging/routing/MessageRouter");
-var MessageQueue = require("../messaging/routing/MessageQueue");
-var WebSocketAddress = require("../system/RoutingTypes/WebSocketAddress");
-var WebSocketClientAddress = require("../system/RoutingTypes/WebSocketClientAddress");
-var InProcessMessagingStubFactory = require("../messaging/inprocess/InProcessMessagingStubFactory");
-var InProcessMessagingSkeleton = require("../messaging/inprocess/InProcessMessagingSkeleton");
-var InProcessMessagingStub = require("../messaging/inprocess/InProcessMessagingStub");
-var InProcessAddress = require("../messaging/inprocess/InProcessAddress");
-var InProcessStub = require("../util/InProcessStub");
-var InProcessSkeleton = require("../util/InProcessSkeleton");
-var MessagingQos = require("../messaging/MessagingQos");
-var DiscoveryQos = require("../proxy/DiscoveryQos");
-var DiscoveryProxy = require("../system/DiscoveryProxy");
-var RoutingProxy = require("../system/RoutingProxy");
-var TypeRegistrySingleton = require("../types/TypeRegistrySingleton");
-var DiscoveryScope = require("../types/DiscoveryScope");
-var DiscoveryEntry = require("../types/DiscoveryEntry");
-var DiscoveryEntryWithMetaInfo = require("../types/DiscoveryEntryWithMetaInfo");
-var Util = require("../util/UtilInternal");
-var CapabilitiesUtil = require("../util/CapabilitiesUtil");
-var Typing = require("../util/Typing");
-var WebWorkerMessagingAppender = require("../system/WebWorkerMessagingAppender");
-var uuid = require("../../lib/uuid-annotated");
-var loggingManager = require("../system/LoggingManager");
-var defaultSettings = require("./settings/defaultSettings");
-var defaultWebSocketSettings = require("./settings/defaultWebSocketSettings");
-var defaultLibjoynrSettings = require("./settings/defaultLibjoynrSettings");
-var LocalStorage = require("../../global/LocalStorageNode");
-var MemoryStorage = require("../../global/MemoryStorage");
-var JoynrMessage = require("../../joynr/messaging/JoynrMessage");
-var JoynrStates = {
+const Promise = require("../../global/Promise");
+const Arbitrator = require("../capabilities/arbitration/Arbitrator");
+const ProviderBuilder = require("../provider/ProviderBuilder");
+const ProxyBuilder = require("../proxy/ProxyBuilder");
+const CapabilitiesRegistrar = require("../capabilities/CapabilitiesRegistrar");
+const ParticipantIdStorage = require("../capabilities/ParticipantIdStorage");
+const RequestReplyManager = require("../dispatching/RequestReplyManager");
+const PublicationManager = require("../dispatching/subscription/PublicationManager");
+const SubscriptionManager = require("../dispatching/subscription/SubscriptionManager");
+const Dispatcher = require("../dispatching/Dispatcher");
+const JoynrException = require("../exceptions/JoynrException");
+const PlatformSecurityManager = require("../security/PlatformSecurityManagerNode");
+const SharedWebSocket = require("../messaging/websocket/SharedWebSocket");
+const WebSocketMessagingSkeleton = require("../messaging/websocket/WebSocketMessagingSkeleton");
+const WebSocketMessagingStubFactory = require("../messaging/websocket/WebSocketMessagingStubFactory");
+const WebSocketMulticastAddressCalculator = require("../messaging/websocket/WebSocketMulticastAddressCalculator");
+const MessagingSkeletonFactory = require("../messaging/MessagingSkeletonFactory");
+const MessagingStubFactory = require("../messaging/MessagingStubFactory");
+const MessageRouter = require("../messaging/routing/MessageRouter");
+const MessageQueue = require("../messaging/routing/MessageQueue");
+const WebSocketAddress = require("../../generated/joynr/system/RoutingTypes/WebSocketAddress");
+const WebSocketClientAddress = require("../../generated/joynr/system/RoutingTypes/WebSocketClientAddress");
+const InProcessMessagingStubFactory = require("../messaging/inprocess/InProcessMessagingStubFactory");
+const InProcessMessagingSkeleton = require("../messaging/inprocess/InProcessMessagingSkeleton");
+const InProcessMessagingStub = require("../messaging/inprocess/InProcessMessagingStub");
+const InProcessAddress = require("../messaging/inprocess/InProcessAddress");
+const InProcessStub = require("../util/InProcessStub");
+const InProcessSkeleton = require("../util/InProcessSkeleton");
+const MessagingQos = require("../messaging/MessagingQos");
+const DiscoveryQos = require("../proxy/DiscoveryQos");
+const DiscoveryProxy = require("../../generated/joynr/system/DiscoveryProxy");
+const RoutingProxy = require("../../generated/joynr/system/RoutingProxy");
+const TypeRegistrySingleton = require("../types/TypeRegistrySingleton");
+const DiscoveryScope = require("../../generated/joynr/types/DiscoveryScope");
+const DiscoveryEntryWithMetaInfo = require("../../generated/joynr/types/DiscoveryEntryWithMetaInfo");
+const UtilInternal = require("../util/UtilInternal");
+const uuid = require("uuid/v4");
+const loggingManager = require("../system/LoggingManager");
+const defaultWebSocketSettings = require("./settings/defaultWebSocketSettings");
+const defaultLibjoynrSettings = require("./settings/defaultLibjoynrSettings");
+const LocalStorage = require("../../global/LocalStorageNode");
+const MemoryStorage = require("../../global/MemoryStorage");
+const JoynrMessage = require("../../joynr/messaging/JoynrMessage");
+const JoynrStates = {
     SHUTDOWN: "shut down",
     STARTING: "starting",
     STARTED: "started",
@@ -84,47 +76,46 @@ var JoynrStates = {
  * @param {Object} provisioning
  */
 function WebSocketLibjoynrRuntime(provisioning) {
-    var log;
-    var initialRoutingTable;
-    var untypedCapabilities;
-    var typedCapabilities;
-    var messagingSkeletonFactory;
-    var messagingStubFactory;
-    var messageRouter;
-    var libjoynrMessagingSkeleton;
-    var dispatcher;
-    var typeRegistry;
-    var requestReplyManager;
-    var subscriptionManager;
-    var publicationManager;
-    var participantIdStorage;
-    var arbitrator;
-    var providerBuilder;
-    var proxyBuilder;
-    var capabilitiesRegistrar;
-    var discovery;
-    var messageQueueSettings;
-    var ccAddress;
-    var sharedWebSocket;
-    var webSocketMessagingSkeleton;
-    var messageRouterSkeleton;
-    var messageRouterStub;
-    var persistency;
-    var localAddress;
-    var TWO_DAYS_IN_MS = 172800000;
-    var keychain = provisioning.keychain;
-    var internalShutdown;
-    var bufferedOwnerId;
+    let log;
+    let initialRoutingTable;
+    let untypedCapabilities;
+    let typedCapabilities;
+    let messagingSkeletonFactory;
+    let messagingStubFactory;
+    let messageRouter;
+    let libjoynrMessagingSkeleton;
+    let dispatcher;
+    let requestReplyManager;
+    let subscriptionManager;
+    let publicationManager;
+    let participantIdStorage;
+    let arbitrator;
+    let providerBuilder;
+    let proxyBuilder;
+    let capabilitiesRegistrar;
+    let discovery;
+    let messageQueueSettings;
+    let sharedWebSocket;
+    let webSocketMessagingSkeleton;
+    let messageRouterSkeleton;
+    let messageRouterStub;
+    let persistency;
+    let localAddress;
+    const keychain = provisioning.keychain;
+    /*eslint-disable prefer-const*/
+    let internalShutdown;
+    /*eslint-enable prefer-const*/
+    let bufferedOwnerId;
 
     // this is required at load time of libjoynr
-    typeRegistry = Object.freeze(TypeRegistrySingleton.getInstance());
+    const typeRegistry = Object.freeze(TypeRegistrySingleton.getInstance());
 
     /**
      * @name WebSocketLibjoynrRuntime#typeRegistry
      * @type TypeRegistry
      */
     Object.defineProperty(this, "typeRegistry", {
-        get: function() {
+        get() {
             return typeRegistry;
         },
         enumerable: true
@@ -135,7 +126,7 @@ function WebSocketLibjoynrRuntime(provisioning) {
      * @type CapabilitiesRegistrar
      */
     Object.defineProperty(this, "registration", {
-        get: function() {
+        get() {
             return capabilitiesRegistrar;
         },
         enumerable: true
@@ -146,7 +137,7 @@ function WebSocketLibjoynrRuntime(provisioning) {
      * @type ProviderBuilder
      */
     Object.defineProperty(this, "providerBuilder", {
-        get: function() {
+        get() {
             return providerBuilder;
         },
         enumerable: true
@@ -157,7 +148,7 @@ function WebSocketLibjoynrRuntime(provisioning) {
      * @type ProxyBuilder
      */
     Object.defineProperty(this, "proxyBuilder", {
-        get: function() {
+        get() {
             return proxyBuilder;
         },
         enumerable: true
@@ -168,7 +159,7 @@ function WebSocketLibjoynrRuntime(provisioning) {
      * @type ParticipantIdStorage
      */
     Object.defineProperty(this, "participantIdStorage", {
-        get: function() {
+        get() {
             return participantIdStorage;
         },
         enumerable: true
@@ -179,45 +170,33 @@ function WebSocketLibjoynrRuntime(provisioning) {
      * @type LoggingManager
      */
     Object.defineProperty(this, "logging", {
-        get: function() {
+        get() {
             return loggingManager;
         },
         enumerable: true
     });
 
-    var relativeTtl;
-
-    if (provisioning.logging && provisioning.logging.ttl) {
-        relativeTtl = provisioning.logging.ttl;
-    } else {
-        relativeTtl = TWO_DAYS_IN_MS;
-    }
-
-    var loggingMessagingQos = new MessagingQos({
-        ttl: relativeTtl
-    });
-
-    if (Util.checkNullUndefined(provisioning.ccAddress)) {
+    if (UtilInternal.checkNullUndefined(provisioning.ccAddress)) {
         throw new Error("ccAddress not set in provisioning.ccAddress");
     }
 
-    ccAddress = new WebSocketAddress({
+    const ccAddress = new WebSocketAddress({
         protocol: provisioning.ccAddress.protocol || defaultWebSocketSettings.protocol,
         host: provisioning.ccAddress.host,
         port: provisioning.ccAddress.port,
         path: provisioning.ccAddress.path || defaultWebSocketSettings.path
     });
 
-    var joynrState = JoynrStates.SHUTDOWN;
+    let joynrState = JoynrStates.SHUTDOWN;
 
     if (provisioning.capabilities && provisioning.capabilities.discoveryQos) {
-        var discoveryQos = provisioning.capabilities.discoveryQos;
+        const discoveryQos = provisioning.capabilities.discoveryQos;
 
         if (discoveryQos.discoveryExpiryIntervalMs) {
             CapabilitiesRegistrar.setDefaultExpiryIntervalMs(discoveryQos.discoveryExpiryIntervalMs);
         }
 
-        var discoveryQosSettings = {};
+        const discoveryQosSettings = {};
 
         if (discoveryQos.discoveryRetryDelayMs) {
             discoveryQosSettings.discoveryRetryDelayMs = discoveryQos.discoveryRetryDelayMs;
@@ -234,16 +213,16 @@ function WebSocketLibjoynrRuntime(provisioning) {
     }
 
     if (keychain) {
-        if (Util.checkNullUndefined(keychain.tlsCert)) {
+        if (UtilInternal.checkNullUndefined(keychain.tlsCert)) {
             throw new Error("tlsCert not set in keychain.tlsCert");
         }
-        if (Util.checkNullUndefined(keychain.tlsKey)) {
+        if (UtilInternal.checkNullUndefined(keychain.tlsKey)) {
             throw new Error("tlsKey not set in keychain.tlsKey");
         }
-        if (Util.checkNullUndefined(keychain.tlsCa)) {
+        if (UtilInternal.checkNullUndefined(keychain.tlsCa)) {
             throw new Error("tlsCa not set in keychain.tlsCa");
         }
-        if (Util.checkNullUndefined(keychain.ownerId)) {
+        if (UtilInternal.checkNullUndefined(keychain.ownerId)) {
             throw new Error("ownerId not set in keychain.ownerId");
         }
 
@@ -262,8 +241,6 @@ function WebSocketLibjoynrRuntime(provisioning) {
      *             if libjoynr is not in SHUTDOWN state
      */
     this.start = function start() {
-        var i, j, routingProxyPromise, discoveryProxyPromise;
-
         if (joynrState !== JoynrStates.SHUTDOWN) {
             throw new Error("Cannot start libjoynr because it's currently \"" + joynrState + '"');
         }
@@ -279,7 +256,7 @@ function WebSocketLibjoynrRuntime(provisioning) {
 
         log = loggingManager.getLogger("joynr.start.WebSocketLibjoynrRuntime");
 
-        var persistencyProvisioning = Util.extend(
+        const persistencyProvisioning = UtilInternal.extend(
             {},
             defaultLibjoynrSettings.persistencySettings,
             provisioning.persistency
@@ -295,19 +272,19 @@ function WebSocketLibjoynrRuntime(provisioning) {
                 location: persistencyProvisioning.location
             });
         }
-        var routingTablePersistency = persistencyProvisioning.routingTable ? persistency : undefined;
-        var capabilitiesPersistency = persistencyProvisioning.capabilities ? persistency : new MemoryStorage();
-        var publicationsPersistency = persistencyProvisioning.publications ? persistency : undefined;
+        const routingTablePersistency = persistencyProvisioning.routingTable ? persistency : undefined;
+        const capabilitiesPersistency = persistencyProvisioning.capabilities ? persistency : new MemoryStorage();
+        const publicationsPersistency = persistencyProvisioning.publications ? persistency : undefined;
 
         initialRoutingTable = {};
         untypedCapabilities = provisioning.capabilities || [];
-        var defaultCapabilities = defaultLibjoynrSettings.capabilities || [];
+        const defaultCapabilities = defaultLibjoynrSettings.capabilities || [];
 
         untypedCapabilities = untypedCapabilities.concat(defaultCapabilities);
 
         typedCapabilities = [];
-        for (i = 0; i < untypedCapabilities.length; i++) {
-            var capability = new DiscoveryEntryWithMetaInfo(untypedCapabilities[i]);
+        for (let i = 0; i < untypedCapabilities.length; i++) {
+            const capability = new DiscoveryEntryWithMetaInfo(untypedCapabilities[i]);
             initialRoutingTable[capability.participantId] = ccAddress;
             typedCapabilities.push(capability);
         }
@@ -323,38 +300,36 @@ function WebSocketLibjoynrRuntime(provisioning) {
 
         sharedWebSocket = new SharedWebSocket({
             remoteAddress: ccAddress,
-            localAddress: localAddress,
+            localAddress,
             provisioning: provisioning.websocket || {},
-            keychain: keychain
+            keychain
         });
 
         webSocketMessagingSkeleton = new WebSocketMessagingSkeleton({
-            sharedWebSocket: sharedWebSocket,
+            sharedWebSocket,
             mainTransport: true
         });
 
         messagingSkeletonFactory = new MessagingSkeletonFactory();
 
-        var messagingStubFactories = {};
-        /*jslint nomen: true */
+        const messagingStubFactories = {};
         messagingStubFactories[InProcessAddress._typeName] = new InProcessMessagingStubFactory();
         messagingStubFactories[WebSocketAddress._typeName] = new WebSocketMessagingStubFactory({
             address: ccAddress,
-            sharedWebSocket: sharedWebSocket
+            sharedWebSocket
         });
-        /*jslint nomen: false */
 
         messagingStubFactory = new MessagingStubFactory({
-            messagingStubFactories: messagingStubFactories
+            messagingStubFactories
         });
 
         messageRouter = new MessageRouter({
-            initialRoutingTable: initialRoutingTable,
+            initialRoutingTable,
             persistency: routingTablePersistency,
-            typeRegistry: typeRegistry,
+            typeRegistry,
             joynrInstanceId: uuid(),
-            messagingSkeletonFactory: messagingSkeletonFactory,
-            messagingStubFactory: messagingStubFactory,
+            messagingSkeletonFactory,
+            messagingStubFactory,
             messageQueue: new MessageQueue(messageQueueSettings),
             multicastAddressCalculator: new WebSocketMulticastAddressCalculator({
                 globalAddress: ccAddress
@@ -371,18 +346,16 @@ function WebSocketLibjoynrRuntime(provisioning) {
 
         // clustercontroller messaging handled by the messageRouter
         messageRouterSkeleton.registerListener(messageRouter.route);
-        var ttlUpLiftMs =
+        const ttlUpLiftMs =
             provisioning.messaging && provisioning.messaging.TTL_UPLIFT ? provisioning.messaging.TTL_UPLIFT : undefined;
         dispatcher = new Dispatcher(messageRouterStub, new PlatformSecurityManager(), ttlUpLiftMs);
 
         libjoynrMessagingSkeleton = new InProcessMessagingSkeleton();
         libjoynrMessagingSkeleton.registerListener(dispatcher.receive);
 
-        var messagingSkeletons = {};
-        /*jslint nomen: true */
+        const messagingSkeletons = {};
         messagingSkeletons[InProcessAddress._typeName] = libjoynrMessagingSkeleton;
         messagingSkeletons[WebSocketAddress._typeName] = webSocketMessagingSkeleton;
-        /*jslint nomen: false */
         messagingSkeletonFactory.setSkeletons(messagingSkeletons);
 
         requestReplyManager = new RequestReplyManager(dispatcher, typeRegistry);
@@ -400,11 +373,11 @@ function WebSocketLibjoynrRuntime(provisioning) {
         capabilitiesRegistrar = Object.freeze(
             new CapabilitiesRegistrar({
                 discoveryStub: discovery,
-                messageRouter: messageRouter,
-                requestReplyManager: requestReplyManager,
-                publicationManager: publicationManager,
+                messageRouter,
+                requestReplyManager,
+                publicationManager,
                 libjoynrMessagingAddress: new InProcessAddress(libjoynrMessagingSkeleton),
-                participantIdStorage: participantIdStorage
+                participantIdStorage
             })
         );
 
@@ -415,20 +388,20 @@ function WebSocketLibjoynrRuntime(provisioning) {
         proxyBuilder = Object.freeze(
             new ProxyBuilder(
                 {
-                    arbitrator: arbitrator,
-                    typeRegistry: typeRegistry,
-                    requestReplyManager: requestReplyManager,
-                    subscriptionManager: subscriptionManager,
-                    publicationManager: publicationManager
+                    arbitrator,
+                    typeRegistry,
+                    requestReplyManager,
+                    subscriptionManager,
+                    publicationManager
                 },
                 {
-                    messageRouter: messageRouter,
+                    messageRouter,
                     libjoynrMessagingAddress: new InProcessAddress(libjoynrMessagingSkeleton)
                 }
             )
         );
 
-        var internalMessagingQos = new MessagingQos(provisioning.internalMessagingQos);
+        const internalMessagingQos = new MessagingQos(provisioning.internalMessagingQos);
 
         function buildDiscoveryProxyOnSuccess(newDiscoveryProxy) {
             discovery.setSkeleton(
@@ -436,22 +409,22 @@ function WebSocketLibjoynrRuntime(provisioning) {
                     lookup: function lookup(domains, interfaceName, discoveryQos) {
                         return newDiscoveryProxy
                             .lookup({
-                                domains: domains,
-                                interfaceName: interfaceName,
-                                discoveryQos: discoveryQos
+                                domains,
+                                interfaceName,
+                                discoveryQos
                             })
-                            .then(function(opArgs) {
+                            .then(opArgs => {
                                 return opArgs.result;
                             });
                     },
                     add: function add(discoveryEntry) {
                         return newDiscoveryProxy.add({
-                            discoveryEntry: discoveryEntry
+                            discoveryEntry
                         });
                     },
                     remove: function remove(participantId) {
                         return newDiscoveryProxy.remove({
-                            participantId: participantId
+                            participantId
                         });
                     }
                 })
@@ -475,7 +448,7 @@ function WebSocketLibjoynrRuntime(provisioning) {
             return messageRouter.setRoutingProxy(newRoutingProxy);
         }
 
-        discoveryProxyPromise = proxyBuilder
+        const discoveryProxyPromise = proxyBuilder
             .build(DiscoveryProxy, {
                 domain: "io.joynr",
                 messagingQos: internalMessagingQos,
@@ -487,7 +460,7 @@ function WebSocketLibjoynrRuntime(provisioning) {
             .then(buildDiscoveryProxyOnSuccess)
             .catch(buildDiscoveryProxyOnError);
 
-        routingProxyPromise = proxyBuilder
+        const routingProxyPromise = proxyBuilder
             .build(RoutingProxy, {
                 domain: "io.joynr",
                 messagingQos: internalMessagingQos,
@@ -536,7 +509,7 @@ function WebSocketLibjoynrRuntime(provisioning) {
 
         settings = settings || {};
 
-        var shutdownSettings = Util.extend(
+        const shutdownSettings = UtilInternal.extend(
             {},
             defaultLibjoynrSettings.shutdownSettings,
             provisioning.shutdownSettings,

@@ -27,7 +27,7 @@ import org.junit.Test;
 
 public class ParticipantIdKeyUtilTest {
 
-    @JoynrInterface(name = "interfaceName", provides = SyncInterface.class)
+    @JoynrInterface(name = "interfaceName", provides = SyncInterface.class, provider = AnnotatedInterface.class)
     private static interface AnnotatedInterface {
     }
 

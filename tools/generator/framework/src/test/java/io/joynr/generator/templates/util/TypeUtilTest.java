@@ -28,7 +28,9 @@ import org.franca.core.franca.FTypeRef;
 import org.franca.core.franca.FrancaFactory;
 import org.junit.Test;
 
+import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
+import com.google.inject.name.Names;
 
 public class TypeUtilTest {
 
@@ -43,7 +45,14 @@ public class TypeUtilTest {
         typeRef.setDerived(structType);
         field.setType(typeRef);
         structType.getElements().add(field);
-        TypeUtil typeUtil = Guice.createInjector().getInstance(TypeUtil.class);
+        TypeUtil typeUtil = Guice.createInjector(new AbstractModule() {
+
+            @Override
+            protected void configure() {
+                bind(Boolean.class).annotatedWith(Names.named(NamingUtil.JOYNR_GENERATOR_INTERFACENAMEWITHVERSION))
+                                   .toInstance(false);
+            }
+        }).getInstance(TypeUtil.class);
         FCompoundType result = typeUtil.getCompoundType(structType);
         assertEquals(structType, result);
     }

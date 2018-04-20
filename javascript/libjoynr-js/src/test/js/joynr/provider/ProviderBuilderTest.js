@@ -1,5 +1,3 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
@@ -19,55 +17,55 @@
  * #L%
  */
 require("../../node-unit-test-helper");
-var RadioProvider = require("../../../test-classes/joynr/vehicle/RadioProvider");
-var ProviderBuilder = require("../../../classes/joynr/provider/ProviderBuilder");
-var ProviderOperation = require("../../../classes/joynr/provider/ProviderOperation");
+const RadioProvider = require("../../../generated/joynr/vehicle/RadioProvider");
+const ProviderBuilder = require("../../../../main/js/joynr/provider/ProviderBuilder");
+const ProviderOperation = require("../../../../main/js/joynr/provider/ProviderOperation");
 
-describe("libjoynr-js.joynr.provider.ProviderBuilder", function() {
-    var providerBuilder = null;
-    var implementation = null;
+describe("libjoynr-js.joynr.provider.ProviderBuilder", () => {
+    let providerBuilder = null;
+    let implementation = null;
 
-    beforeEach(function() {
+    beforeEach(() => {
         providerBuilder = new ProviderBuilder();
         implementation = {
             isOn: {
                 value: false,
-                get: function() {
+                get() {
                     return this.value;
                 },
-                set: function(newValue) {
+                set(newValue) {
                     this.value = newValue;
                 }
             },
             numberOfStations: {
                 value: 0,
-                get: function() {
+                get() {
                     return this.value;
                 },
-                set: function(newValue) {
+                set(newValue) {
                     this.value = newValue;
                 }
             },
             mixedSubscriptions: {
                 value: "testvalue",
-                get: function() {
+                get() {
                     return this.value;
                 },
-                set: function(newValue) {
+                set(newValue) {
                     this.value = newValue;
                 }
             },
             attrProvidedImpl: {
                 value: "testValue2",
-                get: function() {
+                get() {
                     return this.value;
                 },
-                set: function(newValue) {
+                set(newValue) {
                     this.value = newValue;
                 }
             },
             attributeTestingProviderInterface: {
-                get: function() {
+                get() {
                     return undefined;
                 }
             },
@@ -77,13 +75,13 @@ describe("libjoynr-js.joynr.provider.ProviderBuilder", function() {
         };
     });
 
-    it("is defined and of correct type", function() {
+    it("is defined and of correct type", () => {
         expect(providerBuilder).toBeDefined();
         expect(typeof providerBuilder.build === "function").toBe(true);
     });
 
-    it("returns a provider of the given type", function() {
-        var radioProvider = providerBuilder.build(RadioProvider, implementation);
+    it("returns a provider of the given type", () => {
+        const radioProvider = providerBuilder.build(RadioProvider, implementation);
         expect(radioProvider).toBeDefined();
         expect(radioProvider).not.toBeNull();
         expect(radioProvider instanceof RadioProvider).toBeTruthy();

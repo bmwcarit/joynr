@@ -1,5 +1,3 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
@@ -22,9 +20,9 @@
 /**
  * @exports DiagnosticTags
  */
-var Util = require("../util/UtilInternal");
-var loggingManager = require("./LoggingManager");
-var DiagnosticTags = {};
+const UtilInternal = require("../util/UtilInternal");
+const loggingManager = require("./LoggingManager");
+const DiagnosticTags = {};
 
 /**
  * @param {JoynrMessage}
@@ -59,7 +57,7 @@ DiagnosticTags.forChannel = function forChannel(channelInfo) {
     };
 };
 
-var forRequestHelper = function forRequestHelper(tagsForRequest, requestInfo) {
+let forRequestHelper = function forRequestHelper(tagsForRequest, requestInfo) {
     if (requestInfo.request.params) {
         tagsForRequest.params = JSON.stringify(requestInfo.request.params);
     }
@@ -69,7 +67,7 @@ var forRequestHelper = function forRequestHelper(tagsForRequest, requestInfo) {
  * @param {Object} requestInfo
  */
 DiagnosticTags.forRequest = function forRequest(requestInfo) {
-    var tagsForRequest = {
+    const tagsForRequest = {
         diagnosticTag: "Request",
         requestReplyId: requestInfo.request.requestReplyId,
         to: requestInfo.to,
@@ -79,7 +77,7 @@ DiagnosticTags.forRequest = function forRequest(requestInfo) {
     return tagsForRequest;
 };
 
-var forOneWayRequestHelper = function(tagsForOneWayRequest, requestInfo) {
+let forOneWayRequestHelper = function(tagsForOneWayRequest, requestInfo) {
     if (requestInfo.request.params) {
         tagsForOneWayRequest.params = JSON.stringify(requestInfo.request.params);
     }
@@ -89,7 +87,7 @@ var forOneWayRequestHelper = function(tagsForOneWayRequest, requestInfo) {
  * @param {Object} requestInfo
  */
 DiagnosticTags.forOneWayRequest = function forOneWayRequest(requestInfo) {
-    var tagsForOneWayRequest = {
+    const tagsForOneWayRequest = {
         diagnosticTag: "OneWayRequest",
         to: requestInfo.to,
         from: requestInfo.from
@@ -98,7 +96,7 @@ DiagnosticTags.forOneWayRequest = function forOneWayRequest(requestInfo) {
     return tagsForOneWayRequest;
 };
 
-var forReplyHelper = function(tagsForReply, replyInfo) {
+let forReplyHelper = function(tagsForReply, replyInfo) {
     if (replyInfo.reply.error) {
         tagsForReply.error = JSON.stringify(replyInfo.reply.error);
     } else {
@@ -110,7 +108,7 @@ var forReplyHelper = function(tagsForReply, replyInfo) {
  * @param {Object} replyInfo
  */
 DiagnosticTags.forReply = function forReply(replyInfo) {
-    var tagsForReply = {
+    const tagsForReply = {
         diagnosticTag: "Reply",
         requestReplyId: replyInfo.reply.requestReplyId,
         to: replyInfo.to,
@@ -184,7 +182,7 @@ DiagnosticTags.forSubscriptionStop = function forSubscriptionStop(subscriptionSt
     };
 };
 
-var forPublicationHelper = function(tagsForPublication, publicationInfo) {
+let forPublicationHelper = function(tagsForPublication, publicationInfo) {
     tagsForPublication.response = JSON.stringify(publicationInfo.publication.response);
 };
 
@@ -192,7 +190,7 @@ var forPublicationHelper = function(tagsForPublication, publicationInfo) {
  * @param {Object} publicationInfo
  */
 DiagnosticTags.forPublication = function forPublication(publicationInfo) {
-    var tagsForPublication = {
+    const tagsForPublication = {
         diagnosticTag: "Publication",
         subscriptionId: publicationInfo.publication.subscriptionId,
         to: publicationInfo.to,
@@ -202,7 +200,7 @@ DiagnosticTags.forPublication = function forPublication(publicationInfo) {
     return tagsForPublication;
 };
 
-var forMulticastPublicationHelper = function(tagsForMulticastPublication, publicationInfo) {
+let forMulticastPublicationHelper = function(tagsForMulticastPublication, publicationInfo) {
     tagsForMulticastPublication.response = JSON.stringify(publicationInfo.publication.response);
 };
 
@@ -210,7 +208,7 @@ var forMulticastPublicationHelper = function(tagsForMulticastPublication, public
  * @param {Object} publicationInfo - multicast publication info
  */
 DiagnosticTags.forMulticastPublication = function forMulticastPublication(publicationInfo) {
-    var tagsForMulticastPublication = {
+    const tagsForMulticastPublication = {
         diagnosticTag: "MulticastPublication",
         multicastId: publicationInfo.publication.multicastId,
         from: publicationInfo.from
@@ -221,11 +219,11 @@ DiagnosticTags.forMulticastPublication = function forMulticastPublication(public
 
 function logLevelChangedCb(level) {
     if (level !== loggingManager.LogLevel.DEBUG && level !== loggingManager.LogLevel.TRACE) {
-        forRequestHelper = Util.emptyFunction;
-        forOneWayRequestHelper = Util.emptyFunction;
-        forReplyHelper = Util.emptyFunction;
-        forPublicationHelper = Util.emptyFunction;
-        forMulticastPublicationHelper = Util.emptyFunction;
+        forRequestHelper = UtilInternal.emptyFunction;
+        forOneWayRequestHelper = UtilInternal.emptyFunction;
+        forReplyHelper = UtilInternal.emptyFunction;
+        forPublicationHelper = UtilInternal.emptyFunction;
+        forMulticastPublicationHelper = UtilInternal.emptyFunction;
     }
 }
 

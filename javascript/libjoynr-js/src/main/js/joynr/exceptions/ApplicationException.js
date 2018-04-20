@@ -1,5 +1,3 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
@@ -18,12 +16,13 @@
  * limitations under the License.
  * #L%
  */
-var TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
-var Typing = require("../util/Typing");
-var Util = require("../util/UtilInternal");
-var JoynrException = require("./JoynrException");
-var LoggingManager = require("../system/LoggingManager");
-var defaultSettings;
+const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
+const Typing = require("../util/Typing");
+const UtilInternal = require("../util/UtilInternal");
+const JoynrException = require("./JoynrException");
+const defaultSettings = {
+    detailMessage: "This is an application exception."
+};
 
 /**
  * @classdesc
@@ -54,27 +53,22 @@ function ApplicationException(settings) {
         return new ApplicationException(settings);
     }
 
-    var log = LoggingManager.getLogger("joynr.exceptions.ApplicationException");
-    var exception = new JoynrException(settings);
+    const exception = new JoynrException(settings);
 
     /**
      * Used for serialization.
      * @name ApplicationException#_typeName
      * @type String
      */
-    Util.objectDefineProperty(this, "_typeName", "joynr.exceptions.ApplicationException");
+    UtilInternal.objectDefineProperty(this, "_typeName", "joynr.exceptions.ApplicationException");
     Typing.checkPropertyIfDefined(settings, "Object", "settings");
     if (settings && settings.error) {
         Typing.checkProperty(settings.error.name, "String", "settings.error.name");
         Typing.checkProperty(settings.error.value, ["String", "Number"], "settings.error.value");
     }
 
-    Util.extend(this, defaultSettings, settings, exception);
+    UtilInternal.extend(this, defaultSettings, settings, exception);
 }
-
-defaultSettings = {
-    detailMessage: "This is an application exception."
-};
 
 TypeRegistrySingleton.getInstance().addType("joynr.exceptions.ApplicationException", ApplicationException);
 

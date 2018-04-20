@@ -329,6 +329,13 @@ Longpolling is not supported in Jee.
 * **User property**: `joynr.messaging.primaryglobaltransport`
 * **Default value**: NOT SET
 
+### `PROPERTY_MESSAGING_COMPRESS_REPLIES`
+compress all outgoing replies by default, even if the request was not compressed.
+If the property set to be false then replies are only compressed if the corresponding request is set to be compressed.
+* **Type**: boolean
+* **User property**: `joynr.messaging.compressreplies`
+* **Default value**: false
+
 ### `MQTT_TOPIC_PREFIX_REPLYTO`
 Set the mqtt prefix to be prepended to replyTo topics when using shared subscriptions.
 If shared subscriptions are disabled, the unicast prefix is used, i.e. the replyTo address
@@ -441,7 +448,7 @@ This is used to authenticate the client at the server (mqtt broker) side, if ena
 
 * **REQUIRED if using the ssl connection with client authentication enabled**
 * **Type**: String
-* **User property**: `javax.net.ssl.keyStore`
+* **User property**: `joynr.messaging.mqtt.ssl.keyStore`
 * **Default value**: ""
 
 ### `PROPERTY_KEY_MQTT_TRUSTSTORE_PATH`
@@ -451,7 +458,7 @@ This certificate will be used by the client to verify the MQTT brokers' certific
 
 * **REQUIRED if using ssl connection**
 * **Type**: String
-* **User property**: `javax.net.ssl.truststore`
+* **User property**: `joynr.messaging.mqtt.ssl.truststore`
 * **Default value**: ""
 
 ### `PROPERTY_KEY_MQTT_KEYSTORE_PWD`
@@ -459,7 +466,7 @@ Sets the keystore's password
 
 * **REQUIRED if using client authentication**
 * **Type**: String
-* **User property**: `javax.net.ssl.keyStorePassword`
+* **User property**: `joynr.messaging.mqtt.ssl.keyStorePassword`
 * **Default value**: ""
 
 ### `PROPERTY_KEY_MQTT_TRUSTSTORE_PWD`
@@ -467,7 +474,7 @@ Sets the truststore's password
 
 * **REQUIRED if using ssl connection**
 * **Type**: String
-* **User property**: `javax.net.ssl.trustStorePassword`
+* **User property**: `joynr.messaging.mqtt.ssl.trustStorePassword`
 * **Default value**: ""
 
 ### `PROPERTY_KEY_MQTT_RECONNECT_SLEEP_MS`

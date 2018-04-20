@@ -1,5 +1,3 @@
-/*jslint es5: true, nomen: true, node: true */
-
 /*
  * #%L
  * %%
@@ -23,14 +21,14 @@
  * The <code>MessageQueue</code> is a joynr internal data structure. The Message Queue caches incoming messages, which cannot be shipped
  * to the correct participant. Once a participant with the matching participantId is registered, the incoming message is forwarded to him
  */
-var LoggingManager = require("../../system/LoggingManager");
-var DiagnosticTags = require("../../system/DiagnosticTags");
-var Util = require("../../util/UtilInternal");
-var ParticipantQueue = require("./ParticipantQueue");
+const LoggingManager = require("../../system/LoggingManager");
+const DiagnosticTags = require("../../system/DiagnosticTags");
+const UtilInternal = require("../../util/UtilInternal");
+const ParticipantQueue = require("./ParticipantQueue");
 
-var log = LoggingManager.getLogger("joynr/messaging/routing/MessageQueue");
-var defaultSettings;
-var CHECK_TTL_ON_QUEUED_MESSAGES_INTERVAL_MS = 10000; // a very loose interval because of a second check on return
+const log = LoggingManager.getLogger("joynr/messaging/routing/MessageQueue");
+let defaultSettings;
+const CHECK_TTL_ON_QUEUED_MESSAGES_INTERVAL_MS = 10000; // a very loose interval because of a second check on return
 /**
  * MessageQueue caches incoming messages, and cached messages can be retrieved in case the destination participant becomes visible
  *
@@ -47,18 +45,18 @@ var CHECK_TTL_ON_QUEUED_MESSAGES_INTERVAL_MS = 10000; // a very loose interval b
  */
 function MessageQueue(settings) {
     this._participantQueues = {};
-    Util.extend(this, defaultSettings, settings);
+    UtilInternal.extend(this, defaultSettings, settings);
     this.currentQueueSize = 0;
 
-    var that = this;
-    this.cleanupInterval = setInterval(function() {
+    const that = this;
+    this.cleanupInterval = setInterval(() => {
         // TODO: we could call this way more lazy -> make an if and only call this if this.currentQueueSize > 100
-        var newSize = 0;
-        var id;
+        let newSize = 0;
+        let id;
         for (id in that._participantQueues) {
             if (that._participantQueues.hasOwnProperty(id)) {
                 that._participantQueues[id].filterExpiredMessages();
-                var size = that._participantQueues[id].getSize();
+                const size = that._participantQueues[id].getSize();
                 newSize += size;
                 if (size === 0) {
                     delete that._participantQueues[id];
@@ -70,10 +68,7 @@ function MessageQueue(settings) {
 }
 
 MessageQueue.DEFAULT_MAX_QUEUE_SIZE_IN_KBYTES = 10000;
-
-defaultSettings = {
-    maxQueueSizeInKBytes: MessageQueue.DEFAULT_MAX_QUEUE_SIZE_IN_KBYTES
-};
+MessageQueue.prototype.maxQueueSizeInKBytes = MessageQueue.DEFAULT_MAX_QUEUE_SIZE_IN_KBYTES;
 
 /**
  * @name MessageQueue#putMessage
@@ -85,7 +80,7 @@ defaultSettings = {
 MessageQueue.prototype.putMessage = function putMessage(message) {
     // drop message if maximum queue size has been reached
     if (message.payload !== undefined) {
-        var messageSize = Util.getLengthInBytes(message.payload);
+        const messageSize = UtilInternal.getLengthInBytes(message.payload);
         if (this.currentQueueSize + messageSize <= this.maxQueueSizeInKBytes * 1024) {
             this.currentQueueSize = this.currentQueueSize + messageSize;
             if (this._participantQueues[message.to] === undefined) {
@@ -111,9 +106,9 @@ MessageQueue.prototype.putMessage = function putMessage(message) {
  *            participantId
  */
 MessageQueue.prototype.getAndRemoveMessages = function getAndRemoveMessages(participantId) {
-    var result = [];
+    let result = [];
     if (this._participantQueues[participantId] !== undefined) {
-        var participantQueue = this._participantQueues[participantId];
+        const participantQueue = this._participantQueues[participantId];
         this.currentQueueSize -= participantQueue.getSize();
         participantQueue.filterExpiredMessages();
         result = participantQueue.getMessages();

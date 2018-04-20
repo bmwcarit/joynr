@@ -281,7 +281,7 @@ function startJavaPerformanceTestProvider {
 function startJavaJeePerformanceTestProvider {
     echo '### Starting java JEE performance test provider (in process cc) ###'
 
-    asadmin deploy --force=true $PERFORMANCETESTS_SOURCE_DIR/../performance-test-jee/target/performance-test-jee-provider.war
+    asadmin deploy --force=true $PERFORMANCETESTS_SOURCE_DIR/../performance-test-jee/performance-test-jee-provider/target/performance-test-jee-provider.war
     PROVIDER_JEE_APP_NAME="performance-test-jee-provider"
 
     echo "Performance test provider started"

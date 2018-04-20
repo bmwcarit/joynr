@@ -1,4 +1,3 @@
-/*jslint nomen: true, node:true */
 /*
  * #%L
  * %%
@@ -17,17 +16,17 @@
  * limitations under the License.
  * #L%
  */
-var ProviderScope = require("../../../joynr/types/ProviderScope");
-var Util = require("../../util/UtilInternal");
-var defaultClusterControllerSettings = function(settings) {
-    var defaultSettings = {};
+const ProviderScope = require("../../../generated/joynr/types/ProviderScope");
+const UtilInternal = require("../../util/UtilInternal");
+const defaultClusterControllerSettings = function(settings) {
+    const defaultSettings = {};
     defaultSettings.discoveryChannel = "discoverydirectory_channelid";
 
     defaultSettings.getDefaultDiscoveryChannelUrl = function() {
         return settings.bounceProxyBaseUrl + "/discovery/channels/" + defaultSettings.discoveryChannel + "/";
     };
 
-    var globalCapDirCapability = {
+    const globalCapDirCapability = {
         providerVersion: {
             majorVersion: 0,
             minorVersion: 1
@@ -42,7 +41,7 @@ var defaultClusterControllerSettings = function(settings) {
             supportsOnChangeSubscriptions: true
         },
         lastSeenDateMs: Date.now(),
-        expiryDateMs: Util.getMaxLongValue(),
+        expiryDateMs: UtilInternal.getMaxLongValue(),
         publicKeyId: "",
         address: JSON.stringify({
             _typeName: "joynr.system.RoutingTypes.MqttAddress",

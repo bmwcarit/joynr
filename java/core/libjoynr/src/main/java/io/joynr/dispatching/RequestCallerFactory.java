@@ -29,7 +29,7 @@ import io.joynr.provider.ProviderAnnotations;
 public class RequestCallerFactory {
     public RequestCaller create(final Object provider) {
         Object proxy = Proxy.newProxyInstance(provider.getClass().getClassLoader(),
-                                              new Class<?>[]{ ProviderAnnotations.getProvidedInterface(provider),
+                                              new Class<?>[]{ ProviderAnnotations.getProviderInterface(provider),
                                                       JoynrProvider.class },
                                               new InvocationHandler() {
 

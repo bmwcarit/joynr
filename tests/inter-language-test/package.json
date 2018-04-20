@@ -1,20 +1,20 @@
 {
   "name": "inter-language-test",
-  "version": "1.1.2",
+  "version": "1.2.0",
   "license": "Apache-2.0",
   "description": "Inter-Language Tests",
   "main": "src/main/js/consumer.js",
   "private": true,
   "dependencies": {
-      "bluebird" : "3.3.5",
-      "joynr" : ">=1.1.2"
+    "bluebird": "3.3.5",
+    "joynr": "file:../../javascript/libjoynr-js/src/main/js",
+    "test-base": "file:../test-base/target/classes"
   },
   "config": {
     "domain": "joynr-inter-language-test-domain"
   },
   "scripts": {
-    "preinstall": "npm install ../../javascript/libjoynr-js/target/node-classes ../test-base/target/classes",
-    "startprovider" : "node src/main/js/provider.js $npm_package_config_domain",
-    "startjasmine" : "jasmine-node --verbose --junitreport --config domain $npm_package_config_domain src/main/js/consumer.spec.js"
+    "startprovider": "node src/main/js/provider.js $npm_package_config_domain",
+    "startjasmine": "jasmine-node --verbose --junitreport --config domain $npm_package_config_domain src/main/js/consumer.spec.js"
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "performance-test",
-  "version": "1.1.2",
+  "version": "1.2.0",
   "license": "Apache-2.0",
   "description": "Performance tests",
   "main": "src/main/js/consumer.js",
@@ -12,7 +12,7 @@
     "bluebird": "3.3.5",
     "exit-hook": "^1.1.1",
     "heapdump": "^0.3.9",
-    "joynr": "file:../../javascript/libjoynr-js/target/node-classes",
+    "joynr": "file:../../javascript/libjoynr-js/src/main/js",
     "mqtt": "2.0.1",
     "test-base": "file:../test-base/target/classes"
   },

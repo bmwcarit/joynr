@@ -1,4 +1,3 @@
-/*jslint es5: true, node: true */
 /*
  * #%L
  * %%
@@ -17,59 +16,55 @@
  * limitations under the License.
  * #L%
  */
-var Promise = require("../../global/Promise");
-var Arbitrator = require("../capabilities/arbitration/Arbitrator");
-var ProviderBuilder = require("../provider/ProviderBuilder");
-var ProxyBuilder = require("../proxy/ProxyBuilder");
-var CapabilitiesRegistrar = require("../capabilities/CapabilitiesRegistrar");
-var ParticipantIdStorage = require("../capabilities/ParticipantIdStorage");
-var RequestReplyManager = require("../dispatching/RequestReplyManager");
-var PublicationManager = require("../dispatching/subscription/PublicationManager");
-var SubscriptionManager = require("../dispatching/subscription/SubscriptionManager");
-var Dispatcher = require("../dispatching/Dispatcher");
-var JoynrException = require("../exceptions/JoynrException");
-var PlatformSecurityManager = require("../security/PlatformSecurityManagerNode");
-var WebMessagingStub = require("../messaging/webmessaging/WebMessagingStub");
-var WebMessagingSkeleton = require("../messaging/webmessaging/WebMessagingSkeleton");
-var BrowserMessagingStubFactory = require("../messaging/browser/BrowserMessagingStubFactory");
-var BrowserMessagingSkeleton = require("../messaging/browser/BrowserMessagingSkeleton");
-var BrowserMulticastAddressCalculator = require("../messaging/browser/BrowserMulticastAddressCalculator");
-var MessagingSkeletonFactory = require("../messaging/MessagingSkeletonFactory");
-var MessagingStubFactory = require("../messaging/MessagingStubFactory");
-var MessageRouter = require("../messaging/routing/MessageRouter");
-var MessageQueue = require("../messaging/routing/MessageQueue");
-var BrowserAddress = require("../system/RoutingTypes/BrowserAddress");
-var InProcessMessagingStubFactory = require("../messaging/inprocess/InProcessMessagingStubFactory");
-var InProcessMessagingSkeleton = require("../messaging/inprocess/InProcessMessagingSkeleton");
-var InProcessMessagingStub = require("../messaging/inprocess/InProcessMessagingStub");
-var InProcessAddress = require("../messaging/inprocess/InProcessAddress");
-var InProcessStub = require("../util/InProcessStub");
-var InProcessSkeleton = require("../util/InProcessSkeleton");
-var MessagingQos = require("../messaging/MessagingQos");
-var DiscoveryQos = require("../proxy/DiscoveryQos");
-var DiscoveryProxy = require("../system/DiscoveryProxy");
-var RoutingProxy = require("../system/RoutingProxy");
-var TypeRegistrySingleton = require("../types/TypeRegistrySingleton");
-var DiscoveryScope = require("../types/DiscoveryScope");
-var DiscoveryEntryWithMetaInfo = require("../types/DiscoveryEntryWithMetaInfo");
-var Util = require("../util/UtilInternal");
-var CapabilitiesUtil = require("../util/CapabilitiesUtil");
-var WebWorkerMessagingAppender = require("../system/WebWorkerMessagingAppender");
-var uuid = require("../../lib/uuid-annotated");
-var loggingManager = require("../system/LoggingManager");
-var defaultSettings = require("./settings/defaultSettings");
-var defaultInterTabSettings = require("./settings/defaultInterTabSettings");
-var defaultLibjoynrSettings = require("./settings/defaultLibjoynrSettings");
-var LocalStorage = require("../../global/LocalStorageNode");
-var JoynrStates = {
+const Promise = require("../../global/Promise");
+const Arbitrator = require("../capabilities/arbitration/Arbitrator");
+const ProviderBuilder = require("../provider/ProviderBuilder");
+const ProxyBuilder = require("../proxy/ProxyBuilder");
+const CapabilitiesRegistrar = require("../capabilities/CapabilitiesRegistrar");
+const ParticipantIdStorage = require("../capabilities/ParticipantIdStorage");
+const RequestReplyManager = require("../dispatching/RequestReplyManager");
+const PublicationManager = require("../dispatching/subscription/PublicationManager");
+const SubscriptionManager = require("../dispatching/subscription/SubscriptionManager");
+const Dispatcher = require("../dispatching/Dispatcher");
+const JoynrException = require("../exceptions/JoynrException");
+const PlatformSecurityManager = require("../security/PlatformSecurityManagerNode");
+const WebMessagingStub = require("../messaging/webmessaging/WebMessagingStub");
+const WebMessagingSkeleton = require("../messaging/webmessaging/WebMessagingSkeleton");
+const BrowserMessagingStubFactory = require("../messaging/browser/BrowserMessagingStubFactory");
+const BrowserMessagingSkeleton = require("../messaging/browser/BrowserMessagingSkeleton");
+const BrowserMulticastAddressCalculator = require("../messaging/browser/BrowserMulticastAddressCalculator");
+const MessagingSkeletonFactory = require("../messaging/MessagingSkeletonFactory");
+const MessagingStubFactory = require("../messaging/MessagingStubFactory");
+const MessageRouter = require("../messaging/routing/MessageRouter");
+const MessageQueue = require("../messaging/routing/MessageQueue");
+const BrowserAddress = require("../../generated/joynr/system/RoutingTypes/BrowserAddress");
+const InProcessMessagingStubFactory = require("../messaging/inprocess/InProcessMessagingStubFactory");
+const InProcessMessagingSkeleton = require("../messaging/inprocess/InProcessMessagingSkeleton");
+const InProcessMessagingStub = require("../messaging/inprocess/InProcessMessagingStub");
+const InProcessAddress = require("../messaging/inprocess/InProcessAddress");
+const InProcessStub = require("../util/InProcessStub");
+const InProcessSkeleton = require("../util/InProcessSkeleton");
+const MessagingQos = require("../messaging/MessagingQos");
+const DiscoveryQos = require("../proxy/DiscoveryQos");
+const DiscoveryProxy = require("../../generated/joynr/system/DiscoveryProxy");
+const RoutingProxy = require("../../generated/joynr/system/RoutingProxy");
+const TypeRegistrySingleton = require("../types/TypeRegistrySingleton");
+const DiscoveryScope = require("../../generated/joynr/types/DiscoveryScope");
+const DiscoveryEntryWithMetaInfo = require("../../generated/joynr/types/DiscoveryEntryWithMetaInfo");
+const UtilInternal = require("../util/UtilInternal");
+const uuid = require("uuid/v4");
+const loggingManager = require("../system/LoggingManager");
+const defaultInterTabSettings = require("./settings/defaultInterTabSettings");
+const defaultLibjoynrSettings = require("./settings/defaultLibjoynrSettings");
+const LocalStorage = require("../../global/LocalStorageNode");
+const JoynrStates = {
     SHUTDOWN: "shut down",
     STARTING: "starting",
     STARTED: "started",
     SHUTTINGDOWN: "shutting down"
 };
 
-var TWO_DAYS_IN_MS = 172800000;
-var CC_WINDOWID = "ClusterController";
+const CC_WINDOWID = "ClusterController";
 
 /**
  * The InterTabLibjoynrRuntime is the version of the libjoynr-js runtime that
@@ -81,43 +76,42 @@ var CC_WINDOWID = "ClusterController";
  * @param provisioning
  */
 function InterTabLibjoynrRuntime(provisioning) {
-    var ccAddress;
-    var initialRoutingTable;
-    var untypedCapabilities;
-    var typedCapabilities;
-    var messagingSkeletonFactory;
-    var messagingStubFactory;
-    var messageRouter;
-    var libjoynrMessagingSkeleton;
-    var dispatcher;
-    var typeRegistry;
-    var requestReplyManager;
-    var subscriptionManager;
-    var publicationManager;
-    var participantIdStorage;
-    var arbitrator;
-    var providerBuilder;
-    var proxyBuilder;
-    var capabilitiesRegistrar;
-    var discovery;
-    var messageQueueSettings;
-    var webMessagingStub;
-    var webMessagingSkeleton;
-    var browserMessagingSkeleton;
-    var messageRouterSkeleton;
-    var messageRouterStub;
-    var persistency;
-    var libjoynrInterTabAddress;
+    let ccAddress;
+    let initialRoutingTable;
+    let untypedCapabilities;
+    let typedCapabilities;
+    let messagingSkeletonFactory;
+    let messagingStubFactory;
+    let messageRouter;
+    let libjoynrMessagingSkeleton;
+    let dispatcher;
+    let requestReplyManager;
+    let subscriptionManager;
+    let publicationManager;
+    let participantIdStorage;
+    let arbitrator;
+    let providerBuilder;
+    let proxyBuilder;
+    let capabilitiesRegistrar;
+    let discovery;
+    let messageQueueSettings;
+    let webMessagingStub;
+    let webMessagingSkeleton;
+    let browserMessagingSkeleton;
+    let messageRouterSkeleton;
+    let messageRouterStub;
+    let persistency;
+    let libjoynrInterTabAddress;
 
     // this is required at load time of libjoynr
-    typeRegistry = Object.freeze(TypeRegistrySingleton.getInstance());
+    const typeRegistry = Object.freeze(TypeRegistrySingleton.getInstance());
 
     /**
      * @name InterTabLibjoynrRuntime#typeRegistry
      * @type TypeRegistry
      */
     Object.defineProperty(this, "typeRegistry", {
-        get: function() {
+        get() {
             return typeRegistry;
         },
         enumerable: true
@@ -128,7 +122,7 @@ function InterTabLibjoynrRuntime(provisioning) {
      * @type CapabilitiesRegistrar
      */
     Object.defineProperty(this, "registration", {
-        get: function() {
+        get() {
             return capabilitiesRegistrar;
         },
         enumerable: true
@@ -139,7 +133,7 @@ function InterTabLibjoynrRuntime(provisioning) {
      * @type ProviderBuilder
      */
     Object.defineProperty(this, "providerBuilder", {
-        get: function() {
+        get() {
             return providerBuilder;
         },
         enumerable: true
@@ -150,7 +144,7 @@ function InterTabLibjoynrRuntime(provisioning) {
      * @type ProxyBuilder
      */
     Object.defineProperty(this, "proxyBuilder", {
-        get: function() {
+        get() {
             return proxyBuilder;
         },
         enumerable: true
@@ -161,7 +155,7 @@ function InterTabLibjoynrRuntime(provisioning) {
      * @type ParticipantIdStorage
      */
     Object.defineProperty(this, "participantIdStorage", {
-        get: function() {
+        get() {
             return participantIdStorage;
         },
         enumerable: true
@@ -172,34 +166,24 @@ function InterTabLibjoynrRuntime(provisioning) {
      * @type LoggingManager
      */
     Object.defineProperty(this, "logging", {
-        get: function() {
+        get() {
             return loggingManager;
         },
         enumerable: true
     });
 
-    var log, relativeTtl;
+    let log;
 
-    if (provisioning.logging && provisioning.logging.ttl) {
-        relativeTtl = provisioning.logging.ttl;
-    } else {
-        relativeTtl = TWO_DAYS_IN_MS;
-    }
-
-    var loggingMessagingQos = new MessagingQos({
-        ttl: relativeTtl
-    });
-
-    var joynrState = JoynrStates.SHUTDOWN;
+    let joynrState = JoynrStates.SHUTDOWN;
 
     if (provisioning.capabilities && provisioning.capabilities.discoveryQos) {
-        var discoveryQos = provisioning.capabilities.discoveryQos;
+        const discoveryQos = provisioning.capabilities.discoveryQos;
 
         if (discoveryQos.discoveryExpiryIntervalMs) {
             CapabilitiesRegistrar.setDefaultExpiryIntervalMs(discoveryQos.discoveryExpiryIntervalMs);
         }
 
-        var discoveryQosSettings = {};
+        const discoveryQosSettings = {};
 
         if (discoveryQos.discoveryRetryDelayMs) {
             discoveryQosSettings.discoveryRetryDelayMs = discoveryQos.discoveryRetryDelayMs;
@@ -222,7 +206,7 @@ function InterTabLibjoynrRuntime(provisioning) {
      *             if libjoynr is not in SHUTDOWN state
      */
     this.start = function start() {
-        var i, j;
+        let i;
         ccAddress = new BrowserAddress({
             windowId: CC_WINDOWID
         });
@@ -242,13 +226,13 @@ function InterTabLibjoynrRuntime(provisioning) {
 
         log = loggingManager.getLogger("joynr.start.InterTabLibjoynrRuntime");
 
-        var persistencyProvisioning = provisioning.persistency || {};
+        const persistencyProvisioning = provisioning.persistency || {};
         persistency = new LocalStorage({
             clearPersistency: persistencyProvisioning.clearPersistency,
             location: persistencyProvisioning.location
         });
 
-        if (Util.checkNullUndefined(provisioning.parentWindow)) {
+        if (UtilInternal.checkNullUndefined(provisioning.parentWindow)) {
             log.debug(
                 'provisioning.parentWindow not set. Use default setting "' +
                     defaultInterTabSettings.parentWindow +
@@ -256,7 +240,7 @@ function InterTabLibjoynrRuntime(provisioning) {
             );
         }
 
-        if (Util.checkNullUndefined(provisioning.windowId)) {
+        if (UtilInternal.checkNullUndefined(provisioning.windowId)) {
             throw new Error("windowId not set in provisioning.windowId");
         }
 
@@ -265,13 +249,13 @@ function InterTabLibjoynrRuntime(provisioning) {
         });
         initialRoutingTable = {};
         untypedCapabilities = provisioning.capabilities || [];
-        var defaultCapabilities = defaultLibjoynrSettings.capabilities || [];
+        const defaultCapabilities = defaultLibjoynrSettings.capabilities || [];
 
         untypedCapabilities = untypedCapabilities.concat(defaultCapabilities);
 
         typedCapabilities = [];
         for (i = 0; i < untypedCapabilities.length; i++) {
-            var capability = new DiscoveryEntryWithMetaInfo(untypedCapabilities[i]);
+            const capability = new DiscoveryEntryWithMetaInfo(untypedCapabilities[i]);
             initialRoutingTable[capability.participantId] = ccAddress;
             typedCapabilities.push(capability);
         }
@@ -293,29 +277,27 @@ function InterTabLibjoynrRuntime(provisioning) {
         });
 
         browserMessagingSkeleton = new BrowserMessagingSkeleton({
-            webMessagingSkeleton: webMessagingSkeleton
+            webMessagingSkeleton
         });
 
         messagingSkeletonFactory = new MessagingSkeletonFactory();
 
-        var messagingStubFactories = {};
-        /*jslint nomen: true */
+        const messagingStubFactories = {};
         messagingStubFactories[InProcessAddress._typeName] = new InProcessMessagingStubFactory();
         messagingStubFactories[BrowserAddress._typeName] = new BrowserMessagingStubFactory({
-            webMessagingStub: webMessagingStub
+            webMessagingStub
         });
-        /*jslint nomen: false */
         messagingStubFactory = new MessagingStubFactory({
-            messagingStubFactories: messagingStubFactories
+            messagingStubFactories
         });
 
         messageRouter = new MessageRouter({
-            initialRoutingTable: initialRoutingTable,
-            persistency: persistency,
-            typeRegistry: typeRegistry,
+            initialRoutingTable,
+            persistency,
+            typeRegistry,
             joynrInstanceId: provisioning.windowId,
-            messagingSkeletonFactory: messagingSkeletonFactory,
-            messagingStubFactory: messagingStubFactory,
+            messagingSkeletonFactory,
+            messagingStubFactory,
             messageQueue: new MessageQueue(messageQueueSettings),
             parentMessageRouterAddress: ccAddress,
             multicastAddressCalculator: new BrowserMulticastAddressCalculator({
@@ -331,18 +313,16 @@ function InterTabLibjoynrRuntime(provisioning) {
 
         // clustercontroller messaging handled by the messageRouter
         messageRouterSkeleton.registerListener(messageRouter.route);
-        var ttlUpLiftMs =
+        const ttlUpLiftMs =
             provisioning.messaging && provisioning.messaging.TTL_UPLIFT ? provisioning.messaging.TTL_UPLIFT : undefined;
         dispatcher = new Dispatcher(messageRouterStub, new PlatformSecurityManager(), ttlUpLiftMs);
 
         libjoynrMessagingSkeleton = new InProcessMessagingSkeleton();
         libjoynrMessagingSkeleton.registerListener(dispatcher.receive);
 
-        var messagingSkeletons = {};
-        /*jslint nomen: true */
+        const messagingSkeletons = {};
         messagingSkeletons[InProcessAddress._typeName] = libjoynrMessagingSkeleton;
         messagingSkeletons[BrowserAddress._typeName] = browserMessagingSkeleton;
-        /*jslint nomen: false */
         messagingSkeletonFactory.setSkeletons(messagingSkeletons);
 
         requestReplyManager = new RequestReplyManager(dispatcher, typeRegistry);
@@ -360,11 +340,11 @@ function InterTabLibjoynrRuntime(provisioning) {
         capabilitiesRegistrar = Object.freeze(
             new CapabilitiesRegistrar({
                 discoveryStub: discovery,
-                messageRouter: messageRouter,
-                requestReplyManager: requestReplyManager,
-                publicationManager: publicationManager,
+                messageRouter,
+                requestReplyManager,
+                publicationManager,
                 libjoynrMessagingAddress: new InProcessAddress(libjoynrMessagingSkeleton),
-                participantIdStorage: participantIdStorage
+                participantIdStorage
             })
         );
 
@@ -375,72 +355,72 @@ function InterTabLibjoynrRuntime(provisioning) {
         proxyBuilder = Object.freeze(
             new ProxyBuilder(
                 {
-                    arbitrator: arbitrator,
-                    typeRegistry: typeRegistry,
-                    requestReplyManager: requestReplyManager,
-                    subscriptionManager: subscriptionManager,
-                    publicationManager: publicationManager
+                    arbitrator,
+                    typeRegistry,
+                    requestReplyManager,
+                    subscriptionManager,
+                    publicationManager
                 },
                 {
-                    messageRouter: messageRouter,
+                    messageRouter,
                     libjoynrMessagingAddress: new InProcessAddress(libjoynrMessagingSkeleton)
                 }
             )
         );
 
-        var getDiscoveryProxy = function getDiscoveryProxy(ttl) {
+        const getDiscoveryProxy = function getDiscoveryProxy(ttl) {
             return proxyBuilder
                 .build(DiscoveryProxy, {
                     domain: "io.joynr",
                     messagingQos: {
-                        ttl: ttl
+                        ttl
                     },
                     discoveryQos: new DiscoveryQos({
                         discoveryScope: DiscoveryScope.LOCAL_ONLY
                     }),
                     staticArbitration: true
                 })
-                .catch(function(error) {
+                .catch(error => {
                     throw new Error("Failed to create discovery proxy: " + error);
                 });
         };
 
-        var TTL_30DAYS_IN_MS = 30 * 24 * 60 * 60 * 1000;
+        const TTL_30DAYS_IN_MS = 30 * 24 * 60 * 60 * 1000;
         discovery.setSkeleton(
             new InProcessSkeleton({
                 lookup: function lookup(domains, interfaceName, discoveryQos) {
-                    return getDiscoveryProxy(discoveryQos.discoveryTimeoutMs).then(function(newDiscoveryProxy) {
+                    return getDiscoveryProxy(discoveryQos.discoveryTimeoutMs).then(newDiscoveryProxy => {
                         return newDiscoveryProxy
                             .lookup({
-                                domains: domains,
-                                interfaceName: interfaceName,
-                                discoveryQos: discoveryQos
+                                domains,
+                                interfaceName,
+                                discoveryQos
                             })
-                            .then(function(opArgs) {
+                            .then(opArgs => {
                                 return opArgs.result;
                             });
                     });
                 },
                 add: function add(discoveryEntry) {
-                    return getDiscoveryProxy(TTL_30DAYS_IN_MS).then(function(newDiscoveryProxy) {
+                    return getDiscoveryProxy(TTL_30DAYS_IN_MS).then(newDiscoveryProxy => {
                         return newDiscoveryProxy.add({
-                            discoveryEntry: discoveryEntry
+                            discoveryEntry
                         });
                     });
                 },
                 remove: function remove(participantId) {
-                    return getDiscoveryProxy(TTL_30DAYS_IN_MS).then(function(newDiscoveryProxy) {
+                    return getDiscoveryProxy(TTL_30DAYS_IN_MS).then(newDiscoveryProxy => {
                         return newDiscoveryProxy.remove({
-                            participantId: participantId
+                            participantId
                         });
                     });
                 }
             })
         );
 
-        var internalMessagingQos = new MessagingQos(provisioning.internalMessagingQos);
+        const internalMessagingQos = new MessagingQos(provisioning.internalMessagingQos);
 
-        var routingProxyPromise = proxyBuilder
+        const routingProxyPromise = proxyBuilder
             .build(RoutingProxy, {
                 domain: "io.joynr",
                 messagingQos: internalMessagingQos,
@@ -449,27 +429,27 @@ function InterTabLibjoynrRuntime(provisioning) {
                 }),
                 staticArbitration: true
             })
-            .catch(function(error) {
+            .catch(error => {
                 throw new Error(
                     "Failed to create routing proxy: " +
                         error +
                         (error instanceof JoynrException ? " " + error.detailMessage : "")
                 );
             })
-            .then(function(newRoutingProxy) {
+            .then(newRoutingProxy => {
                 messageRouter.setRoutingProxy(newRoutingProxy);
                 return newRoutingProxy;
             });
 
         // when everything's ready we can trigger the app
         return routingProxyPromise
-            .then(function() {
+            .then(() => {
                 joynrState = JoynrStates.STARTED;
                 publicationManager.restore();
                 log.debug("libjoynr initialized");
                 return;
             })
-            .catch(function(error) {
+            .catch(error => {
                 log.error("error starting up joynr: " + error);
                 throw error;
             });
@@ -489,10 +469,10 @@ function InterTabLibjoynrRuntime(provisioning) {
         }
         joynrState = JoynrStates.SHUTTINGDOWN;
 
-        var shutdownProvisioning = provisioning.shutdownSettings || {};
+        const shutdownProvisioning = provisioning.shutdownSettings || {};
         settings = settings || {};
         if (settings.clearSubscriptionsEnabled || shutdownProvisioning.clearSubscriptionsEnabled) {
-            var clearSubscriptionTimeoutMs =
+            const clearSubscriptionTimeoutMs =
                 settings.clearSubscriptionsTimeoutMs || shutdownProvisioning.clearSubscriptionsTimeoutMs || 1000;
             subscriptionManager.terminateSubscriptions(clearSubscriptionTimeoutMs);
         }
@@ -533,10 +513,9 @@ function InterTabLibjoynrRuntime(provisioning) {
             typeRegistry.shutdown();
         }
 
-        return Promise.all([] /* TODO: insert promises here */).then(function() {
+        return Promise.all([] /* TODO: insert promises here */).then(() => {
             joynrState = JoynrStates.SHUTDOWN;
             log.debug("joynr shut down");
-            return;
         });
     };
 

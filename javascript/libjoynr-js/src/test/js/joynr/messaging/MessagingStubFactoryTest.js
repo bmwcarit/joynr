@@ -1,4 +1,3 @@
-/*jslint nomen: true, node: true */
 /*
  * #%L
  * %%
@@ -18,11 +17,11 @@
  * #L%
  */
 require("../../node-unit-test-helper");
-var MessagingStubFactory = require("../../../classes/joynr/messaging/MessagingStubFactory");
+const MessagingStubFactory = require("../../../../main/js/joynr/messaging/MessagingStubFactory");
 
-describe("libjoynr-js.joynr.messaging.MessagingStubFactory", function() {
-    var messagingStub1, messagingStub2, factory1, factory2;
-    var messagingStubFactory, address1, address2, address3;
+describe("libjoynr-js.joynr.messaging.MessagingStubFactory", () => {
+    let messagingStub1, messagingStub2, factory1, factory2;
+    let messagingStubFactory, address1, address2, address3;
 
     function Address1() {
         this._typeName = "Address1";
@@ -31,7 +30,7 @@ describe("libjoynr-js.joynr.messaging.MessagingStubFactory", function() {
         this._typeName = "Address2";
     }
 
-    beforeEach(function(done) {
+    beforeEach(done => {
         messagingStub1 = {
             key: "messagingStub1"
         };
@@ -58,7 +57,7 @@ describe("libjoynr-js.joynr.messaging.MessagingStubFactory", function() {
         done();
     });
 
-    it("is instantiable and has all members", function(done) {
+    it("is instantiable and has all members", done => {
         expect(MessagingStubFactory).toBeDefined();
         expect(typeof MessagingStubFactory === "function").toBeTruthy();
         expect(messagingStubFactory).toBeDefined();
@@ -68,19 +67,19 @@ describe("libjoynr-js.joynr.messaging.MessagingStubFactory", function() {
         done();
     });
 
-    it("it does not call any factory on creation", function(done) {
+    it("it does not call any factory on creation", done => {
         expect(factory1.build).not.toHaveBeenCalled();
         expect(factory2.build).not.toHaveBeenCalled();
         done();
     });
 
-    it("it resolves addresses correctly", function(done) {
+    it("it resolves addresses correctly", done => {
         expect(messagingStubFactory.createMessagingStub(address1)).toEqual(messagingStub1);
         expect(messagingStubFactory.createMessagingStub(address2)).toEqual(messagingStub2);
         done();
     });
 
-    it("it calls the build method of the factories", function(done) {
+    it("it calls the build method of the factories", done => {
         messagingStubFactory.createMessagingStub(address1);
         expect(factory1.build).toHaveBeenCalledWith(address1);
         expect(factory2.build).not.toHaveBeenCalled();
@@ -90,8 +89,8 @@ describe("libjoynr-js.joynr.messaging.MessagingStubFactory", function() {
         done();
     });
 
-    it("it throws on none-existing address", function(done) {
-        expect(function() {
+    it("it throws on none-existing address", done => {
+        expect(() => {
             messagingStubFactory.createMessagingStub(address3);
         }).toThrow();
         done();

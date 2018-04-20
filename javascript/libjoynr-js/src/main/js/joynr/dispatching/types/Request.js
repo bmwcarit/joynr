@@ -1,5 +1,3 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
@@ -18,17 +16,11 @@
  * limitations under the License.
  * #L%
  */
-var Util = require("../../util/UtilInternal");
-var Typing = require("../../util/Typing");
-var uuid = require("../../../lib/uuid-annotated");
+const Util = require("../../util/Util");
+const uuid = require("uuid/v4");
 
-var defaultSettings = {
-    paramDatatypes: [],
-    params: []
-};
-
-var rrBase = uuid();
-var rrIndex = 0;
+const rrBase = uuid();
+let rrIndex = 0;
 
 /**
  * @name Request
@@ -50,7 +42,7 @@ var rrIndex = 0;
  *            settings.params.array
  */
 function Request(settings) {
-    var i;
+    let i;
     settings.requestReplyId = settings.requestReplyId || rrBase + "_" + rrIndex++;
 
     if (settings.params) {
@@ -68,9 +60,7 @@ function Request(settings) {
      * @name Request#_typeName
      * @type String
      */
-    /*jslint nomen: true*/
     settings._typeName = "joynr.Request";
-    /*jslint nomen: false */
 
     return settings;
 }

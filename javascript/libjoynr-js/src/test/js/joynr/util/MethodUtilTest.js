@@ -1,5 +1,3 @@
-/*jslint es5: true, node: true, nomen: true */
-/*global fail: true */
 /*
  * #%L
  * %%
@@ -19,60 +17,54 @@
  * #L%
  */
 require("../../node-unit-test-helper");
-var MethodUtil = require("../../../classes/joynr/util/MethodUtil");
+const MethodUtil = require("../../../../main/js/joynr/util/MethodUtil");
 
-describe("libjoynr-js.joynr.MethodUtil", function() {
-    it("transformParameterMapToArray throws for null values", function() {
-        var operationArguments, parameters;
-        operationArguments = { bool: null };
-        parameters = [{ name: "bool", type: "Boolean", javascriptType: "boolean" }];
-        expect(function() {
+describe("libjoynr-js.joynr.MethodUtil", () => {
+    it("transformParameterMapToArray throws for null values", () => {
+        const operationArguments = { bool: null };
+        const parameters = [{ name: "bool", type: "Boolean", javascriptType: "boolean" }];
+        expect(() => {
             MethodUtil.transformParameterMapToArray(operationArguments, parameters);
         }).toThrow();
     });
 
-    it("transformParameterMapToArray throws for undefined values", function() {
-        var operationArguments, parameters;
-        operationArguments = { bool: undefined };
-        parameters = [{ name: "bool", type: "Boolean", javascriptType: "boolean" }];
-        expect(function() {
+    it("transformParameterMapToArray throws for undefined values", () => {
+        const operationArguments = { bool: undefined };
+        const parameters = [{ name: "bool", type: "Boolean", javascriptType: "boolean" }];
+        expect(() => {
             MethodUtil.transformParameterMapToArray(operationArguments, parameters);
         }).toThrow();
     });
 
-    it("transformParameterMapToArray throws if signature does not match number of arguments", function() {
-        var operationArguments, parameters;
-        operationArguments = {};
-        parameters = [{ name: "bool", type: "Boolean", javascriptType: "boolean" }];
-        expect(function() {
+    it("transformParameterMapToArray throws if signature does not match number of arguments", () => {
+        const operationArguments = {};
+        const parameters = [{ name: "bool", type: "Boolean", javascriptType: "boolean" }];
+        expect(() => {
             MethodUtil.transformParameterMapToArray(operationArguments, parameters);
         }).toThrow();
     });
 
-    it("transformParameterMapToArray throws if signature does not match arguments (name mismatch)", function() {
-        var operationArguments, parameters;
-        operationArguments = { int: true };
-        parameters = [{ name: "bool", type: "Boolean", javascriptType: "boolean" }];
-        expect(function() {
+    it("transformParameterMapToArray throws if signature does not match arguments (name mismatch)", () => {
+        const operationArguments = { int: true };
+        const parameters = [{ name: "bool", type: "Boolean", javascriptType: "boolean" }];
+        expect(() => {
             MethodUtil.transformParameterMapToArray(operationArguments, parameters);
         }).toThrow();
     });
 
-    it("transformParameterMapToArray throws if signature does not match arguments (type mismatch)", function() {
-        var operationArguments, parameters;
-        operationArguments = { bool: 2 };
-        parameters = [{ name: "bool", type: "Boolean", javascriptType: "boolean" }];
-        expect(function() {
+    it("transformParameterMapToArray throws if signature does not match arguments (type mismatch)", () => {
+        const operationArguments = { bool: 2 };
+        const parameters = [{ name: "bool", type: "Boolean", javascriptType: "boolean" }];
+        expect(() => {
             MethodUtil.transformParameterMapToArray(operationArguments, parameters);
         }).toThrow();
     });
 
-    it("transformParameterMapToArray can convert map to array", function() {
-        var expectedObject, operationArguments, parameters;
-        expectedObject = { paramDatatypes: ["Boolean"], params: [true] };
-        operationArguments = { bool: true };
-        parameters = [{ name: "bool", type: "Boolean", javascriptType: "boolean" }];
-        var result = MethodUtil.transformParameterMapToArray(operationArguments, parameters);
+    it("transformParameterMapToArray can convert map to array", () => {
+        const expectedObject = { paramDatatypes: ["Boolean"], params: [true] };
+        const operationArguments = { bool: true };
+        const parameters = [{ name: "bool", type: "Boolean", javascriptType: "boolean" }];
+        const result = MethodUtil.transformParameterMapToArray(operationArguments, parameters);
         expect(result).toEqual(expectedObject);
     });
 });

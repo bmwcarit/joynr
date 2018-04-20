@@ -18,7 +18,6 @@ under the License.
 This project has dependencies to:
   Hamcrest Core under New BSD License
   io.joynr.examples:radio-js under The Apache Software License, Version 2.0
-  io.joynr.javascript:js-dependencies under The Apache Software License, Version 2.0
   io.joynr.javascript:libjoynr-js under The Apache Software License, Version 2.0
   JUnit under Eclipse Public License 1.0
 

@@ -1,4 +1,3 @@
-/*jslint node: true */
 /*
  * #%L
  * %%
@@ -17,20 +16,18 @@
  * limitations under the License.
  * #L%
  */
-var Promise = require("../../global/Promise");
-var Util = require("../util/UtilInternal");
-var Request = require("../dispatching/types/Request");
-var MessagingQos = require("../messaging/MessagingQos");
-var Typing = require("../util/Typing");
-var TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
+const Promise = require("../../global/Promise");
+const UtilInternal = require("../util/UtilInternal");
+const Request = require("../dispatching/types/Request");
+const MessagingQos = require("../messaging/MessagingQos");
+const Typing = require("../util/Typing");
+const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
 
-var typeRegistry = TypeRegistrySingleton.getInstance();
+const typeRegistry = TypeRegistrySingleton.getInstance();
 
 function checkArgument(value) {
-    if (!Util.checkNullUndefined(value)) {
-        /*jslint nomen: true*/
-        var Constructor = typeRegistry.getConstructor(value._typeName);
-        /*jslint nomen: false*/
+    if (!UtilInternal.checkNullUndefined(value)) {
+        const Constructor = typeRegistry.getConstructor(value._typeName);
 
         try {
             if (Constructor && Constructor.checkMembers) {
@@ -43,7 +40,7 @@ function checkArgument(value) {
 }
 
 // prettier-ignore
-var asRead = (function() {
+const asRead = (function() {
 
     function curryGet(context) {
         /**
@@ -60,8 +57,8 @@ var asRead = (function() {
             // ensure settings variable holds a valid object and initialize
             // deferred object
             settings = settings || {};
-            var request = new Request({
-                methodName: "get" + Util.firstUpper(context.attributeName)
+            const request = new Request({
+                methodName: "get" + UtilInternal.firstUpper(context.attributeName)
             });
             return context.executeRequest(request, settings);
         };
@@ -73,7 +70,7 @@ var asRead = (function() {
 }());
 
 // prettier-ignore
-var asWrite = (function() {
+const asWrite = (function() {
     /**
      * Setter for attribute
      *
@@ -90,15 +87,15 @@ var asWrite = (function() {
         // ensure settings variable holds a valid object and initialize deferred
         // object
         settings = settings || {};
-        var error = checkArgument(settings.value);
+        const error = checkArgument(settings.value);
         if (error) {
             return Promise.reject(
                 new Error("error setting attribute: " + this.attributeName + ": " + error.toString())
             );
         }
 
-        var request = new Request({
-            methodName: "set" + Util.firstUpper(this.attributeName),
+        const request = new Request({
+            methodName: "set" + UtilInternal.firstUpper(this.attributeName),
             paramDatatypes: [this.attributeType],
             params: [settings.value]
         });
@@ -111,7 +108,7 @@ var asWrite = (function() {
 }());
 
 // prettier-ignore
-var asNotify = (function() {
+const asNotify = (function() {
     /**
      * Subscription to isOn attribute
      *
@@ -172,13 +169,13 @@ var asNotify = (function() {
     function unsubscribe(requestSettings) {
         // passed in (right-most) messagingQos have precedence; undefined values are
         // ignored
-        var messagingQos = new MessagingQos(
-            Util.extend({}, this.parent.messagingQos, this.settings.messagingQos, requestSettings.messagingQos)
+        const messagingQos = new MessagingQos(
+            UtilInternal.extend({}, this.parent.messagingQos, this.settings.messagingQos, requestSettings.messagingQos)
         );
 
         // return promise to caller
         return this.settings.dependencies.subscriptionManager.unregisterSubscription({
-            messagingQos: messagingQos,
+            messagingQos,
             subscriptionId: requestSettings.subscriptionId
         });
     }
@@ -249,8 +246,8 @@ function ProxyAttribute(parent, settings, attributeName, attributeType, attribut
 }
 
 function sendRequestOnSuccess(settings) {
-    var response = settings.response,
-        attributeType = settings.settings;
+    const response = settings.response;
+    const attributeType = settings.settings;
     return Typing.augmentTypes(response[0], typeRegistry, attributeType);
 }
 
@@ -270,7 +267,7 @@ function sendRequestOnSuccess(settings) {
 ProxyAttribute.prototype.executeRequest = function(request, requestSettings) {
     // passed in (right-most) messagingQos have precedence; undefined values are
     // ignored
-    var messagingQos = Util.extend(
+    const messagingQos = UtilInternal.extend(
         new MessagingQos(),
         this.parent.messagingQos,
         this.settings.messagingQos,
@@ -283,8 +280,8 @@ ProxyAttribute.prototype.executeRequest = function(request, requestSettings) {
             {
                 toDiscoveryEntry: this.parent.providerDiscoveryEntry,
                 from: this.parent.proxyParticipantId,
-                messagingQos: messagingQos,
-                request: request
+                messagingQos,
+                request
             },
             this.attributeType
         )

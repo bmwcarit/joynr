@@ -65,7 +65,7 @@ asadmin deploy <RADIO_HOME>/target/discovery-jee.war
 asadmin deploy <RADIO_HOME>/target/accesscontrol-jee.war
 ```
 
-See [JEE Developer Guide](wiki/jee.md) or [Radio App Tutorial](wiki/Tutorial.md) for the
+See [JEE Developer Guide](jee.md) or [Radio App Tutorial](Tutorial.md) for the
 configuration of Payara.
 
 ### Deploy provider and consumer on a Jetty server

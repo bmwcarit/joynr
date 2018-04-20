@@ -25,7 +25,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>joynr</artifactId>
-		<version>1.1.2</version>
+		<version>1.2.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<profiles>
@@ -53,8 +53,11 @@
             <testResource>
                 <directory>src/test/franca</directory>
             </testResource>
+            <testResource>
+                <directory>src/test/franca-with-version</directory>
+            </testResource>
         </testResources>
-		
+
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

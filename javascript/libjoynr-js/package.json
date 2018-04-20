@@ -1,14 +1,14 @@
 {
-  "name": "joynr",
-  "version": "1.1.2",
+  "name": "joynr-build",
+  "version": "1.2.0",
   "description": "Web-based communication framework for applications wanting to interact with other applications, no matter whether they're deployed on consumer devices, vehicles, or backend infrastructure",
   "license": "Apache-2.0",
   "homepage": "http://joynr.io",
   "bugs": "https://github.com/bmwcarit/joynr/issues",
-  "main": "joynr.js",
   "devDependencies": {
     "browserify": "16.1.0",
     "exit-hook": "1.1.1",
+    "eslint": "4.15.0",
     "jasmine": "2.4.1",
     "jasmine-core": "2.4.1",
     "jasmine-node": ">=2.0.0",
@@ -18,28 +18,33 @@
     "karma-coverage": "0.5.3",
     "karma-jasmine": "1.1.1",
     "karma-junit-reporter": "0.3.8",
-    "karma-phantomjs-launcher": "1.0.0",
     "karma-spec-reporter": "0.0.23",
     "karma-verbose-reporter": "0.0.3",
-    "phantomjs-prebuilt": "2.1.12",
-    "prettier": "1.8.2"
+    "prettier": "1.8.2",
+    "joynr": "file:./src/main/js"
   },
-  "dependencies": {
-    "node-persist": "2.1.0",
-    "atmosphere.js": "2.3.2",
-    "xmlhttprequest": "1.8.0",
-    "ws": "1.0.1",
-    "mqtt": "2.15.0",
-    "bluebird": "3.3.5",
-    "smrf-native": "0.2.2",
-    "wscpp": "1.0.0"
+  "config": {
+    "glob": "src/{{main/js/global,main/js/joynr,test/js/!(integration)}/**/*.js,main/js/*.js,test/js/*.js}"
   },
   "engines": {
     "node": ">=0.10.40",
     "npm": ">=1.3.5"
   },
   "scripts": {
-    "fixRequire": "echo 'module.exports = require(\"..\");' > node_modules/joynr.js"
+    "sig": "cd scripts && node createBuildSignature && cd -",
+    "clean": "rm -rf node_modules package-lock.json src/test/resources/localStorageTestResults src/test/resources/jstd-test-results src/main/js/node_modules",
+    "format": "node_modules/.bin/prettier --write --config scripts/prettier.config.json $npm_package_config_glob",
+    "lint": "node_modules/.bin/eslint $npm_package_config_glob",
+    "lint:less": "node_modules/.bin/eslint $npm_package_config_glob --color | less -R",
+    "lint:fix": "node_modules/.bin/eslint $npm_package_config_glob --fix",
+    "karma": "node_modules/.bin/karma start src/test/karma/karma.integration.conf.js --single-run",
+    "test": "npm run test:unit && npm run test:sit && npm run karma",
+    "test:unit": "cd src/test/resources && node node-run-unit-tests.js && cd -",
+    "test:sit": "cd src/test/resources && node node-run-system-integration-tests.js && cd -",
+    "build:fast": "npm run build:skip && npm run test",
+    "build": "npm run clean && npm run build:fast",
+    "build:skip": "cd src/main/js && npm i && cd ../../.. && npm i && npm run sig && npm run format && npm run lint && npm run fixRequire",
+    "fixRequire": "echo 'module.exports = require(\"..\");' > src/main/js/node_modules/joynr.js"
   },
   "repository": {
     "type": "git",

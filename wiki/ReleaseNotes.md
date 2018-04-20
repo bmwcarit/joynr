@@ -2,6 +2,21 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.2.0
+
+## API relevant changes
+* **[Java]** Renamed property keys defining key- and truststore paths and passwords
+used for secure MQTT connections.
+See [Java Configuration Reference](JavaSettings.md)for more details.
+
+## Other changes
+* **[Generator]** Introduced a new flag `addVersionTo` to append version information at filesystem level
+  (package or interface). See [Generator Documentation](generator.md) for additional information.
+
+## Configuration property changes
+* **[Java]** Introduced `PROPERTY_MESSAGING_COMPRESS_REPLIES` for compressing all outgoing replies by
+  default. See [Java Configuration Reference](JavaSettings.md)for more details.
+
 # joynr 1.1.2
 
 ## API relevant changes

@@ -195,9 +195,10 @@ This project has dependencies to:
   io.joynr.java:messaging under The Apache Software License, Version 2.0
   io.joynr.javascript.inter-tab:inter-tab-comm under The Apache Software License, Version 2.0
   io.joynr.javascript:inter-tab under The Apache Software License, Version 2.0
-  io.joynr.javascript:js-dependencies under The Apache Software License, Version 2.0
   io.joynr.javascript:libjoynr-js under The Apache Software License, Version 2.0
   io.joynr.mqtt:mqtt-client under Eclipse Public License - Version 1.0
+  io.joynr.performance.performance-test-jee:performance-test-jee-api under The Apache Software License, Version 2.0
+  io.joynr.performance.performance-test-jee:performance-test-jee-provider under The Apache Software License, Version 2.0
   io.joynr.performance:performance-test-jee under The Apache Software License, Version 2.0
   io.joynr.smrf.java:smrf under The Apache Software License, Version 2.0
   io.joynr.smrf.java:smrf-api under The Apache Software License, Version 2.0

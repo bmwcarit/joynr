@@ -23,6 +23,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import io.joynr.generator.loading.ModelLoader;
 import io.joynr.generator.templates.util.JoynrGeneratorExtensions;
+import io.joynr.generator.templates.util.NamingUtil;
 import io.joynr.generator.util.JoynrJavaGeneratorExtensions;
 
 import java.util.Iterator;
@@ -57,6 +58,10 @@ public class JoynrJavaGeneratorExtensionsTest {
                 bind(Boolean.class).annotatedWith(Names.named(JoynrGeneratorExtensions.JOYNR_GENERATOR_GENERATE))
                                    .toInstance(true);
                 bind(Boolean.class).annotatedWith(Names.named(JoynrGeneratorExtensions.JOYNR_GENERATOR_CLEAN))
+                                   .toInstance(false);
+                bind(Boolean.class).annotatedWith(Names.named(JoynrGeneratorExtensions.JOYNR_GENERATOR_PACKAGEWITHVERSION))
+                                   .toInstance(false);
+                bind(Boolean.class).annotatedWith(Names.named(NamingUtil.JOYNR_GENERATOR_INTERFACENAMEWITHVERSION))
                                    .toInstance(false);
             }
         });

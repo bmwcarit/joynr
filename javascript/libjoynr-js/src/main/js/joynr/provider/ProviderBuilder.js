@@ -1,5 +1,3 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
@@ -18,20 +16,20 @@
  * limitations under the License.
  * #L%
  */
-var ProviderAttribute = require("./ProviderAttribute");
-var ProviderOperation = require("./ProviderOperation");
-var ProviderEvent = require("./ProviderEvent");
+const ProviderAttribute = require("./ProviderAttribute");
+const ProviderOperation = require("./ProviderOperation");
+const ProviderEvent = require("./ProviderEvent");
 
-var dependencies = {
-    ProviderAttribute: ProviderAttribute,
-    ProviderOperation: ProviderOperation,
-    ProviderEvent: ProviderEvent
+const dependencies = {
+    ProviderAttribute,
+    ProviderOperation,
+    ProviderEvent
 };
 /**
  * @name ProviderBuilder
  * @constructor
  */
-var ProviderBuilder = function ProviderBuilder() {
+const ProviderBuilder = function ProviderBuilder() {
     /**
      * @name ProviderBuilder#build
      * @function

@@ -1,5 +1,3 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
@@ -18,11 +16,10 @@
  * limitations under the License.
  * #L%
  */
-var TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
-var Util = require("../util/UtilInternal");
-var JoynrRuntimeException = require("./JoynrRuntimeException");
-var LoggingManager = require("../system/LoggingManager");
-var defaultSettings;
+const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
+const UtilInternal = require("../util/UtilInternal");
+const JoynrRuntimeException = require("./JoynrRuntimeException");
+const defaultSettings = {};
 
 /**
  * @classdesc
@@ -49,15 +46,14 @@ function DiscoveryException(settings) {
         return new DiscoveryException(settings);
     }
 
-    var log = LoggingManager.getLogger("joynr.exceptions.DiscoveryException");
-    var joynrRuntimeException = new JoynrRuntimeException(settings);
+    const joynrRuntimeException = new JoynrRuntimeException(settings);
 
     /**
      * Used for serialization.
      * @name DiscoveryException#_typeName
      * @type String
      */
-    Util.objectDefineProperty(this, "_typeName", "joynr.exceptions.DiscoveryException");
+    UtilInternal.objectDefineProperty(this, "_typeName", "joynr.exceptions.DiscoveryException");
 
     /**
      * See [constructor description]{@link DiscoveryException}.
@@ -66,10 +62,8 @@ function DiscoveryException(settings) {
      */
     this.detailMessage = undefined;
 
-    Util.extend(this, defaultSettings, settings, joynrRuntimeException);
+    UtilInternal.extend(this, defaultSettings, settings, joynrRuntimeException);
 }
-
-defaultSettings = {};
 
 TypeRegistrySingleton.getInstance().addType("joynr.exceptions.DiscoveryException", DiscoveryException);
 

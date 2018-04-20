@@ -1,5 +1,3 @@
-/*jslint es5: true, node: true */
-
 /*
  * #%L
  * %%
@@ -18,13 +16,12 @@
  * limitations under the License.
  * #L%
  */
-var Typing = require("./Typing");
-var Util = require("./UtilInternal");
+const UtilInternal = require("./UtilInternal");
 
 /**
  * @exports MethodUtil
  */
-var MethodUtil = {};
+const MethodUtil = {};
 
 /**
  * @param {Object[]} operationArguments Arguments coming from the proxy or provider
@@ -32,34 +29,28 @@ var MethodUtil = {};
  * @returns {Object} Object in the form of { paramDatatypes: [Array of types], params: [Array of values] };
  */
 MethodUtil.transformParameterMapToArray = function transformParameterMapToArray(operationArguments, parameters) {
-    var argument,
-        objectType,
-        argumentId,
-        argumentValue,
-        params = [],
-        paramDatatypes = [];
+    const params = [];
+    const paramDatatypes = [];
 
     // check if number of parameters in signature matches number of arguments
     if (Object.keys(parameters).length !== Object.keys(operationArguments).length) {
         throw new Error("signature does not match: wrong number of arguments");
     }
 
-    for (argumentId = 0; argumentId < parameters.length; argumentId++) {
+    for (let argumentId = 0; argumentId < parameters.length; argumentId++) {
         // check if there's a parameters with the given name
-        argument = parameters[argumentId];
+        const argument = parameters[argumentId];
         // retrieve the argument value
-        argumentValue = operationArguments[argument.name];
+        const argumentValue = operationArguments[argument.name];
         // if argument value is not given by the application
-        if (Util.checkNullUndefined(argumentValue)) {
+        if (UtilInternal.checkNullUndefined(argumentValue)) {
             throw new Error(
                 'Cannot call operation with nullable value "' + argumentValue + '" of argument "' + argument.name + '"'
             );
         }
         // check if the parameter type matches the type of the argument value
         // allow dangling _ in variable once
-        /*jslint nomen: true */
-        objectType = Array.isArray(argumentValue) ? "Array" : argumentValue._typeName || typeof argumentValue;
-        /*jslint nomen: false */
+        const objectType = Array.isArray(argumentValue) ? "Array" : argumentValue._typeName || typeof argumentValue;
         if (argument.javascriptType !== objectType) {
             // signature does not match
             throw new Error(
@@ -77,8 +68,8 @@ MethodUtil.transformParameterMapToArray = function transformParameterMapToArray(
         params.push(argumentValue);
     }
     return {
-        paramDatatypes: paramDatatypes,
-        params: params
+        paramDatatypes,
+        params
     };
 };
 

@@ -1,5 +1,3 @@
-/*jslint es5: true, node: true */
-
 /*
  * #%L
  * %%
@@ -18,16 +16,16 @@
  * limitations under the License.
  * #L%
  */
-var DiscoveryEntry = require("../../joynr/types/DiscoveryEntry");
-var GlobalDiscoveryEntry = require("../../joynr/types/GlobalDiscoveryEntry");
-var DiscoveryEntryWithMetaInfo = require("../../joynr/types/DiscoveryEntryWithMetaInfo");
+const DiscoveryEntry = require("../../generated/joynr/types/DiscoveryEntry");
+const GlobalDiscoveryEntry = require("../../generated/joynr/types/GlobalDiscoveryEntry");
+const DiscoveryEntryWithMetaInfo = require("../../generated/joynr/types/DiscoveryEntryWithMetaInfo");
 
 /**
  * @name CapabilitiesUtil
  * @class
  * @classdesc provides utility functions for dealing with capabilities
  */
-var CapabilitiesUtil = {};
+const CapabilitiesUtil = {};
 
 /**
  * This method transforms a capabilityInformation into an object of type "DiscoveryEntry"
@@ -65,10 +63,9 @@ CapabilitiesUtil.toDiscoveryEntry = function toDiscoveryEntry(capabilityInformat
  * @returns {Array} array of transformed objects of type DiscoveryEntry
  */
 CapabilitiesUtil.toDiscoveryEntries = function toDiscoveryEntries(capabilityInformations) {
-    var discoveryEntries = [],
-        i;
+    const discoveryEntries = [];
     if (capabilityInformations) {
-        for (i = 0; i < capabilityInformations.length; i++) {
+        for (let i = 0; i < capabilityInformations.length; i++) {
             discoveryEntries.push(CapabilitiesUtil.toDiscoveryEntry(capabilityInformations[i]));
         }
     }
@@ -146,10 +143,9 @@ CapabilitiesUtil.convertToDiscoveryEntryWithMetaInfoArray = function convertToDi
     isLocal,
     discoveryEntries
 ) {
-    var result = [],
-        i;
+    const result = [];
     if (discoveryEntries) {
-        for (i = 0; i < discoveryEntries.length; i++) {
+        for (let i = 0; i < discoveryEntries.length; i++) {
             result.push(CapabilitiesUtil.convertToDiscoveryEntryWithMetaInfo(isLocal, discoveryEntries[i]));
         }
     }

@@ -1,5 +1,3 @@
-/*jslint es5: true, nomen: true, node: true */
-
 /*
  * #%L
  * %%
@@ -18,12 +16,12 @@
  * limitations under the License.
  * #L%
  */
-var Promise = require("../../../global/Promise");
-var DiscoveryQos = require("../../../joynr/types/DiscoveryQos");
-var Util = require("../../util/UtilInternal");
-var DiscoveryException = require("../../exceptions/DiscoveryException");
-var NoCompatibleProviderFoundException = require("../../exceptions/NoCompatibleProviderFoundException");
-var LongTimer = require("../../util/LongTimer");
+const Promise = require("../../../global/Promise");
+const DiscoveryQos = require("../../../generated/joynr/types/DiscoveryQos");
+const UtilInternal = require("../../util/UtilInternal");
+const DiscoveryException = require("../../exceptions/DiscoveryException");
+const NoCompatibleProviderFoundException = require("../../exceptions/NoCompatibleProviderFoundException");
+const LongTimer = require("../../util/LongTimer");
 
 /**
  * checks if the provided discoveryEntry supports onChange subscriptions if required
@@ -46,16 +44,14 @@ function checkSupportsOnChangeSubscriptions(discoveryEntry, providerMustSupportO
 
 function discoverStaticCapabilities(capabilities, domains, interfaceName, discoveryQos, proxyVersion, deferred) {
     try {
-        var i,
-            capability,
-            arbitratedCaps = [];
+        const arbitratedCaps = [];
 
         deferred.pending = false;
         if (capabilities === undefined) {
             deferred.reject(new Error("Exception while arbitrating: static capabilities are missing"));
         } else {
-            for (i = 0; i < capabilities.length; ++i) {
-                capability = capabilities[i];
+            for (let i = 0; i < capabilities.length; ++i) {
+                const capability = capabilities[i];
                 if (
                     domains.indexOf(capability.domain) !== -1 &&
                     interfaceName === capability.interfaceName &&
@@ -117,17 +113,17 @@ function discoverCapabilities(
 
     function capabilitiesDiscovered(discoveredCaps) {
         // filter caps according to chosen arbitration strategy
-        var arbitratedCaps = applicationDiscoveryQos.arbitrationStrategy(discoveredCaps);
-        var versionCompatibleArbitratedCaps = [];
-        var i;
+        const arbitratedCaps = applicationDiscoveryQos.arbitrationStrategy(discoveredCaps);
+        const versionCompatibleArbitratedCaps = [];
+        let i;
         // if deferred is still pending => discoveryTimeoutMs is not expired yet
         if (deferred.pending) {
             // if there are caps found
             deferred.incompatibleVersionsFound = [];
-            var providerVersion;
+            let providerVersion;
 
-            var addtoListIfNotExisting = function(list, providerVersion) {
-                var j;
+            const addtoListIfNotExisting = function(list, providerVersion) {
+                let j;
                 for (j = 0; j < list.length; ++j) {
                     if (
                         list[j].majorVersion === providerVersion.majorVersion &&
@@ -226,17 +222,17 @@ function Arbitrator(capabilityDiscoveryStub, staticCapabilities) {
  * @returns {Object} a A+ Promise object, that will provide asynchronously an array of arbitrated capabilities
  */
 Arbitrator.prototype.startArbitration = function startArbitration(settings) {
-    var that = this;
+    const that = this;
 
     if (!that._started) {
         return Promise.reject(new Error("Arbitrator is already shut down"));
     }
 
-    var startArbitrationDeferred = Util.createDeferred();
-    settings = Util.extendDeep({}, settings);
+    const startArbitrationDeferred = UtilInternal.createDeferred();
+    settings = UtilInternal.extendDeep({}, settings);
 
     this._arbitrationId++;
-    var deferred = {
+    const deferred = {
         id: this._arbitrationId,
         resolve: startArbitrationDeferred.resolve,
         reject: startArbitrationDeferred.reject,
@@ -249,7 +245,7 @@ Arbitrator.prototype.startArbitration = function startArbitration(settings) {
         delete that._pendingArbitrations[deferred.id];
 
         if (deferred.incompatibleVersionsFound.length > 0) {
-            var message =
+            const message =
                 'no compatible provider found within discovery timeout for domains "' +
                 JSON.stringify(settings.domains) +
                 '", interface "' +
@@ -296,12 +292,12 @@ Arbitrator.prototype.startArbitration = function startArbitration(settings) {
             discoveryCapabilitiesTimeOutHandler.bind(this),
             settings.discoveryQos.discoveryTimeoutMs
         );
-        var resolveWrapper = function(args) {
+        const resolveWrapper = function(args) {
             LongTimer.clearTimeout(deferred.discoveryTimeoutMsId);
             delete that._pendingArbitrations[deferred.id];
             startArbitrationDeferred.resolve(args);
         };
-        var rejectWrapper = function(args) {
+        const rejectWrapper = function(args) {
             LongTimer.clearTimeout(deferred.discoveryTimeoutMsId);
             delete that._pendingArbitrations[deferred.id];
             startArbitrationDeferred.reject(args);
@@ -328,10 +324,10 @@ Arbitrator.prototype.startArbitration = function startArbitration(settings) {
  * @name Arbitrator#shutdown
  */
 Arbitrator.prototype.shutdown = function shutdown() {
-    var id;
+    let id;
     for (id in this._pendingArbitrations) {
         if (this._pendingArbitrations.hasOwnProperty(id)) {
-            var pendingArbitration = this._pendingArbitrations[id];
+            const pendingArbitration = this._pendingArbitrations[id];
             if (pendingArbitration.discoveryTimeoutMsId !== undefined) {
                 LongTimer.clearTimeout(pendingArbitration.discoveryTimeoutMsId);
             }

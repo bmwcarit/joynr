@@ -1,5 +1,3 @@
-/*jslint es5: true, node: true */
-
 /*
  * #%L
  * %%
@@ -18,18 +16,15 @@
  * limitations under the License.
  * #L%
  */
-var Promise = require("../../global/Promise");
-var Reply = require("./types/Reply");
-var MessagingQos = require("../messaging/MessagingQos");
-var InProcessAddress = require("../messaging/inprocess/InProcessAddress");
-var Typing = require("../util/Typing");
-var Util = require("../util/UtilInternal");
-var JSONSerializer = require("../util/JSONSerializer");
-var LongTimer = require("../util/LongTimer");
-var MethodInvocationException = require("../exceptions/MethodInvocationException");
-var ProviderRuntimeException = require("../exceptions/ProviderRuntimeException");
-var Version = require("../../joynr/types/Version");
-var LoggingManager = require("../system/LoggingManager");
+const Promise = require("../../global/Promise");
+const Reply = require("./types/Reply");
+const Typing = require("../util/Typing");
+const UtilInternal = require("../util/UtilInternal");
+const JSONSerializer = require("../util/JSONSerializer");
+const MethodInvocationException = require("../exceptions/MethodInvocationException");
+const ProviderRuntimeException = require("../exceptions/ProviderRuntimeException");
+const Version = require("../../generated/joynr/types/Version");
+const LoggingManager = require("../system/LoggingManager");
 /**
  * The RequestReplyManager is responsible maintaining a list of providers that wish to
  * receive incoming requests, and also a list of requestReplyIds which is used to match
@@ -45,24 +40,20 @@ var LoggingManager = require("../system/LoggingManager");
  *            together with their constructor.
  */
 function RequestReplyManager(dispatcher, typeRegistry) {
-    var log = LoggingManager.getLogger("joynr.dispatching.RequestReplyManager");
+    const log = LoggingManager.getLogger("joynr.dispatching.RequestReplyManager");
 
-    var providers = {};
-    var replyCallers = {};
-    var started = true;
+    const providers = {};
+    const replyCallers = new Map();
+    let started = true;
 
-    var CLEANUP_CYCLE_INTERVAL = 1000;
+    const CLEANUP_CYCLE_INTERVAL = 1000;
 
-    var cleanupInterval = setInterval(function() {
-        var currentTime = Date.now();
-        var id;
-        for (id in replyCallers) {
-            if (replyCallers.hasOwnProperty(id)) {
-                var caller = replyCallers[id];
-                if (caller.expiresAt <= currentTime) {
-                    caller.reject(new Error('Request with id "' + id + '" failed: ttl expired'));
-                    delete replyCallers[id];
-                }
+    const cleanupInterval = setInterval(() => {
+        const currentTime = Date.now();
+        for (const [id, caller] of replyCallers) {
+            if (caller.expiresAt <= currentTime) {
+                caller.reject(new Error('Request with id "' + id + '" failed: ttl expired'));
+                replyCallers.delete(id);
             }
         }
     }, CLEANUP_CYCLE_INTERVAL);
@@ -94,13 +85,13 @@ function RequestReplyManager(dispatcher, typeRegistry) {
     this.sendRequest = function sendRequest(settings, callbackSettings) {
         checkIfReady();
 
-        var deferred = Util.createDeferred();
+        const deferred = UtilInternal.createDeferred();
         this.addReplyCaller(
             settings.request.requestReplyId,
             {
                 resolve: deferred.resolve,
                 reject: deferred.reject,
-                callbackSettings: callbackSettings
+                callbackSettings
             },
             settings.messagingQos.ttl
         );
@@ -169,7 +160,7 @@ function RequestReplyManager(dispatcher, typeRegistry) {
     this.addReplyCaller = function addReplyCaller(requestReplyId, replyCaller, ttl_ms) {
         checkIfReady();
         replyCaller.expiresAt = Date.now() + ttl_ms;
-        replyCallers[requestReplyId] = replyCaller;
+        replyCallers.set(requestReplyId, replyCaller);
     };
 
     /**
@@ -202,10 +193,10 @@ function RequestReplyManager(dispatcher, typeRegistry) {
      * @returns {*}
      */
     this.handleRequest = function handleRequest(providerParticipantId, request, handleReplyCallback, replySettings) {
-        var exception;
+        let exception;
 
         function createReplyFromError(exception) {
-            var reply = new Reply({
+            const reply = new Reply({
                 error: exception,
                 requestReplyId: request.requestReplyId
             });
@@ -213,8 +204,8 @@ function RequestReplyManager(dispatcher, typeRegistry) {
         }
 
         function createReplyFromSuccess(response) {
-            var reply = new Reply({
-                response: response,
+            const reply = new Reply({
+                response,
                 requestReplyId: request.requestReplyId
             });
             return handleReplyCallback(replySettings, reply);
@@ -233,7 +224,7 @@ function RequestReplyManager(dispatcher, typeRegistry) {
             });
             return Promise.resolve(createReplyFromError(exception));
         }
-        var provider = providers[providerParticipantId];
+        const provider = providers[providerParticipantId];
         if (!provider) {
             // TODO error handling request
             // TODO what if no provider is found in the mean time?
@@ -249,7 +240,7 @@ function RequestReplyManager(dispatcher, typeRegistry) {
         }
 
         // if there's an operation available to call
-        var result;
+        let result;
         if (provider[request.methodName] && provider[request.methodName].callOperation) {
             // may throw an immediate exception when callOperation checks the
             // arguments, in this case exception must be caught.
@@ -263,11 +254,11 @@ function RequestReplyManager(dispatcher, typeRegistry) {
             }
             // otherwise, check whether request is an attribute get, set or an operation
         } else {
-            var match = request.methodName.match(/([gs]et)?(\w+)/);
-            var getSet = match[1];
+            const match = request.methodName.match(/([gs]et)?(\w+)/);
+            const getSet = match[1];
             if (getSet) {
-                var attributeName = match[2];
-                var attributeObject = provider[attributeName] || provider[Util.firstLower(attributeName)];
+                const attributeName = match[2];
+                const attributeObject = provider[attributeName] || provider[UtilInternal.firstLower(attributeName)];
                 // if the attribute exists in the provider
                 if (attributeObject && !attributeObject.callOperation) {
                     try {
@@ -325,7 +316,7 @@ function RequestReplyManager(dispatcher, typeRegistry) {
          * and call then the callbackDispatcher
          */
 
-        if (!exception && Util.isPromise(result)) {
+        if (!exception && UtilInternal.isPromise(result)) {
             return result.then(createReplyFromSuccess).catch(createReplyFromError);
         }
         if (exception) {
@@ -345,7 +336,7 @@ function RequestReplyManager(dispatcher, typeRegistry) {
      */
     this.handleOneWayRequest = function handleOneWayRequest(providerParticipantId, request) {
         checkIfReady();
-        var provider = providers[providerParticipantId];
+        const provider = providers[providerParticipantId];
         if (!provider) {
             throw new MethodInvocationException({
                 detailMessage:
@@ -381,7 +372,7 @@ function RequestReplyManager(dispatcher, typeRegistry) {
      *            reply
      */
     this.handleReply = function handleReply(reply) {
-        var replyCaller = replyCallers[reply.requestReplyId];
+        const replyCaller = replyCallers.get(reply.requestReplyId);
 
         if (replyCaller === undefined) {
             log.error(
@@ -402,7 +393,7 @@ function RequestReplyManager(dispatcher, typeRegistry) {
                 replyCaller.resolve({ response: reply.response, settings: replyCaller.callbackSettings });
             }
 
-            delete replyCallers[reply.requestReplyId];
+            replyCallers.delete(reply.requestReplyId);
         } catch (e) {
             log.error(
                 "exception thrown during handling reply " +
@@ -422,16 +413,14 @@ function RequestReplyManager(dispatcher, typeRegistry) {
     this.shutdown = function shutdown() {
         clearInterval(cleanupInterval);
 
-        var requestReplyId;
-        for (requestReplyId in replyCallers) {
-            if (replyCallers.hasOwnProperty(requestReplyId)) {
-                var replyCaller = replyCallers[requestReplyId];
-                if (replyCaller) {
-                    replyCaller.reject(new Error("RequestReplyManager is already shut down"));
-                }
+        /*eslint-disable no-unused-vars*/
+        for (const [requestReplyId, replyCaller] of replyCallers) {
+            if (replyCaller) {
+                replyCaller.reject(new Error("RequestReplyManager is already shut down"));
             }
         }
-        replyCallers = {};
+        /*eslint-enable no-unused-vars*/
+        replyCallers.clear();
         started = false;
     };
 }

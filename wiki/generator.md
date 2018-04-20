@@ -27,6 +27,11 @@ have to be provided in the Maven configuration:
                 <!-- specify the output directory -->
                 <outputPath><PATH_TO_OUTPUT_DIRECTORY></outputPath>
                 <!-- optional parameters -->
+                <!-- specify how the major version shall affect the generated interface name and package:
+                       package: interface major versions (if existing) are added as an additional package
+                       name: interface major versions (if existing) are appended to the interface name
+                       none (default): interface versions don't affect the generated interface or package name-->
+                <addVersionTo>name/package/none</addVersionTo>
                 <parameter>
                     <!-- for Jee code generation use generation language "java"
                          and set the following parameter
@@ -148,6 +153,11 @@ to *gen*.
       -templatesDir <folder name of templates directory>
       -templatesEncoding <encoding of templates>
       -generationId <name of what is being generated>
+      -addVersionTo <name, package, none>
+        package: interface major versions (if existing) are added as an additional package
+        name: interface major versions (if existing) are appended to the interface name
+        none: interface versions don't affect the generated interface or package name
+        default: none
     Optional, C++ only:
       -outputHeaderPath <path to directory containing header files>
       -includePrefix <prefix to use in include statements>

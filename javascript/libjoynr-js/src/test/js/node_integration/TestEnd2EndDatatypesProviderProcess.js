@@ -1,4 +1,3 @@
-/*jslint es5: true, node: true */
 /* domain: true, interfaceNameDatatypes: true, globalCapDirCapability: true, channelUrlDirCapability: true */
 
 /*
@@ -20,34 +19,33 @@
  * #L%
  */
 
-var ChildProcessUtils = require("./ChildProcessUtils");
+const ChildProcessUtils = require("./ChildProcessUtils");
 ChildProcessUtils.overrideRequirePaths();
 
-var Promise = require("../../classes/global/Promise");
+const Promise = require("../../../main/js/global/Promise");
 // anything that you load here is served through the jsTestDriverServer, if you add an entry you
 // have to make it available through the jsTestDriverIntegrationTests.conf
-var ChildProcessUtils = require("./ChildProcessUtils");
-var joynr = require("joynr");
-var provisioning = require("../joynr/provisioning/provisioning_cc.js");
+const joynr = require("joynr");
+const provisioning = require("../../resources/joynr/provisioning/provisioning_cc.js");
 
-var DatatypesProvider = require("joynr/datatypes/DatatypesProvider.js");
-var TestEnd2EndDatatypesTestData = require("./TestEnd2EndDatatypesTestData");
+const DatatypesProvider = require("../../generated/joynr/datatypes/DatatypesProvider.js");
+const TestEnd2EndDatatypesTestData = require("./TestEnd2EndDatatypesTestData");
 
-var providerDomain;
+let providerDomain;
 
 // attribute values for provider
-var currentAttributeValue;
+let currentAttributeValue;
 
-var datatypesProvider;
+let datatypesProvider;
 
-var providerQos;
+let providerQos;
 
 function getObjectType(obj) {
     if (obj === null || obj === undefined) {
         throw new Error("cannot determine the type of an undefined object");
     }
-    var funcNameRegex = /function ([$\w]+)\(/;
-    var results = funcNameRegex.exec(obj.constructor.toString());
+    const funcNameRegex = /function ([$\w]+)\(/;
+    const results = funcNameRegex.exec(obj.constructor.toString());
     return results && results.length > 1 ? results[1] : "";
 }
 
@@ -92,7 +90,7 @@ function initializeTest(provisioningSuffix, providedDomain) {
     joynr.selectRuntime("inprocess");
     return joynr
         .load(provisioning)
-        .then(function(newJoynr) {
+        .then(newJoynr => {
             providerQos = new joynr.types.ProviderQos({
                 customParameters: [],
                 priority: Date.now(),
@@ -103,40 +101,38 @@ function initializeTest(provisioningSuffix, providedDomain) {
             // build the provider
             datatypesProvider = joynr.providerBuilder.build(DatatypesProvider, {});
 
-            var i;
+            let i;
             // there are so many attributes for testing different datatypes => register them
             // all by cycling over their names in the attribute
             for (i = 0; i < TestEnd2EndDatatypesTestData.length; ++i) {
-                var attribute = datatypesProvider[TestEnd2EndDatatypesTestData[i].attribute];
+                const attribute = datatypesProvider[TestEnd2EndDatatypesTestData[i].attribute];
                 attribute.registerGetter(getter);
                 attribute.registerSetter(setter);
             }
 
             // registering operation functions
-            datatypesProvider.getJavascriptType.registerOperation(function(opArgs) {
+            datatypesProvider.getJavascriptType.registerOperation(opArgs => {
                 return {
                     javascriptType: getObjectType(opArgs.arg)
                 };
             });
-            datatypesProvider.getArgumentBack.registerOperation(function(opArgs) {
+            datatypesProvider.getArgumentBack.registerOperation(opArgs => {
                 return {
                     returnValue: opArgs.arg
                 };
             });
-            datatypesProvider.multipleArguments.registerOperation(function(opArgs) {
+            datatypesProvider.multipleArguments.registerOperation(opArgs => {
                 return {
                     serialized: JSON.stringify(opArgs)
                 };
             });
 
             // register provider at the given domain
-            return newJoynr.registration
-                .registerProvider(providerDomain, datatypesProvider, providerQos)
-                .then(function() {
-                    return Promise.resolve(newJoynr);
-                });
+            return newJoynr.registration.registerProvider(providerDomain, datatypesProvider, providerQos).then(() => {
+                return Promise.resolve(newJoynr);
+            });
         })
-        .catch(function(error) {
+        .catch(error => {
             throw error;
         });
 }

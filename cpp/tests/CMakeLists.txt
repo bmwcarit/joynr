@@ -103,6 +103,24 @@ if(${GENERATE_SOURCES})
         MODELPATH "${CMAKE_CURRENT_SOURCE_DIR}/../../basemodel/src/test/franca"
         GENERATION_LANGUAGE "cpp"
     )
+    JoynrGenerator(
+        OUTPUTPATH "${CMAKE_CURRENT_SOURCE_DIR}/gen-with-version"
+        MODELPATH "${CMAKE_CURRENT_SOURCE_DIR}/../../basemodel/src/test/franca-with-version"
+        GENERATION_LANGUAGE "cpp"
+        ADD_VERSION_TO none
+    )
+    JoynrGenerator(
+        OUTPUTPATH "${CMAKE_CURRENT_SOURCE_DIR}/gen-with-version"
+        MODELPATH "${CMAKE_CURRENT_SOURCE_DIR}/../../basemodel/src/test/franca-with-version"
+        GENERATION_LANGUAGE "cpp"
+        ADD_VERSION_TO name
+    )
+    JoynrGenerator(
+        OUTPUTPATH "${CMAKE_CURRENT_SOURCE_DIR}/gen-with-version"
+        MODELPATH "${CMAKE_CURRENT_SOURCE_DIR}/../../basemodel/src/test/franca-with-version"
+        GENERATION_LANGUAGE "cpp"
+        ADD_VERSION_TO package
+    )
 endif(${GENERATE_SOURCES})
 
 get_target_property(joynrwsruntime_PUBLIC_INCLUDE_DIRECTORY JoynrWsRuntime PUBLIC_INCLUDE_DIRECTORY)
@@ -114,6 +132,7 @@ set(
     ${CMAKE_CURRENT_SOURCE_DIR}
     "${CMAKE_CURRENT_SOURCE_DIR}/.."
     "${CMAKE_CURRENT_SOURCE_DIR}/gen/include"
+    "${CMAKE_CURRENT_SOURCE_DIR}/gen-with-version/include"
     ${joynrwsruntime_PUBLIC_INCLUDE_DIRECTORY}
     ${JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY}
     ${JoynrClusterControllerRuntime_PUBLIC_INCLUDE_DIRECTORY}
@@ -127,13 +146,13 @@ set(
 file(
     GLOB_RECURSE JoynrTest_GENSOURCES
     RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-    "gen/*.cpp"
+    "gen*/*.cpp"
 )
 
 file(
     GLOB_RECURSE JoynrTest_GENHEADERS
     RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-    "gen/*.h"
+    "gen*/*.h"
 )
 
 add_library(TestGenerated SHARED

@@ -1,5 +1,3 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
@@ -18,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-var Util = require("../../util/UtilInternal");
-var Typing = require("../../util/Typing");
+const Util = require("../../util/Util");
+const Typing = require("../../util/Typing");
 
 /**
  * @name MulticastPublication

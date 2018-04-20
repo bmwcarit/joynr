@@ -1,5 +1,3 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
@@ -27,8 +25,8 @@
  * @param {SharedWebSocket}
  *            settings.sharedWebSocket to which messages are sent on the clustercontroller.
  */
-var WebSocketMessagingStub = function WebSocketMessagingStub(settings) {
-    var sharedWebSocket = settings.sharedWebSocket;
+const WebSocketMessagingStub = function WebSocketMessagingStub(settings) {
+    const sharedWebSocket = settings.sharedWebSocket;
 
     /**
      * @name WebSocketMessagingStub#transmit

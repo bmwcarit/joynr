@@ -1,5 +1,3 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
@@ -18,12 +16,14 @@
  * limitations under the License.
  * #L%
  */
-var Typing = require("../util/Typing");
-var Util = require("../util/UtilInternal");
-var OnChangeSubscriptionQos = require("./OnChangeSubscriptionQos");
-var LoggingManager = require("../system/LoggingManager");
+const Typing = require("../util/Typing");
+const UtilInternal = require("../util/UtilInternal");
+const OnChangeSubscriptionQos = require("./OnChangeSubscriptionQos");
+const LoggingManager = require("../system/LoggingManager");
 
-var defaultSettings;
+/*eslint-disable prefer-const*/
+let defaultSettings;
+/*eslint-enable prefer-const*/
 
 /**
  * @classdesc
@@ -105,15 +105,15 @@ function OnChangeWithKeepAliveSubscriptionQos(settings) {
         return new OnChangeWithKeepAliveSubscriptionQos(settings);
     }
 
-    var onChangeSubscriptionQos = new OnChangeSubscriptionQos(settings);
-    var log = LoggingManager.getLogger("joynr.proxy.OnChangeWithKeepAliveSubscriptionQos");
+    const onChangeSubscriptionQos = new OnChangeSubscriptionQos(settings);
+    const log = LoggingManager.getLogger("joynr.proxy.OnChangeWithKeepAliveSubscriptionQos");
 
     /**
      * Used for serialization.
      * @name OnChangeWithKeepAliveSubscriptionQos#_typeName
      * @type String
      */
-    Util.objectDefineProperty(this, "_typeName", "joynr.OnChangeWithKeepAliveSubscriptionQos");
+    UtilInternal.objectDefineProperty(this, "_typeName", "joynr.OnChangeWithKeepAliveSubscriptionQos");
     Typing.checkPropertyIfDefined(settings, "Object", "settings");
     if (settings && !(settings instanceof OnChangeWithKeepAliveSubscriptionQos)) {
         Typing.checkPropertyIfDefined(settings.maxIntervalMs, "Number", "settings.maxIntervalMs");
@@ -145,7 +145,7 @@ function OnChangeWithKeepAliveSubscriptionQos(settings) {
      * @name OnChangeWithKeepAliveSubscriptionQos#publicationTtlMs
      * @type Number
      */
-    Util.extend(this, defaultSettings, settings, onChangeSubscriptionQos);
+    UtilInternal.extend(this, defaultSettings, settings, onChangeSubscriptionQos);
 
     if (this.maxIntervalMs < OnChangeWithKeepAliveSubscriptionQos.MIN_MAX_INTERVAL_MS) {
         log.warn(

@@ -497,12 +497,12 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                 final long expiryDateMs = Long.MAX_VALUE;
                 final boolean allowUpdate = true; // Always trust the discovery directory.
 
-                messageRouter.addNextHop(ce.getParticipantId(),
-                                         address,
-                                         isGloballyVisible,
-                                         expiryDateMs,
-                                         isSticky,
-                                         allowUpdate);
+                messageRouter.addToRoutingTable(ce.getParticipantId(),
+                                                address,
+                                                isGloballyVisible,
+                                                expiryDateMs,
+                                                isSticky,
+                                                allowUpdate);
             }
         }
     }

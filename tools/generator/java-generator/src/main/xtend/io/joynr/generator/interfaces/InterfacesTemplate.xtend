@@ -61,7 +61,7 @@ import java.util.List;
 import java.util.TreeSet;
 @SuppressWarnings("unused")
 public interface «className» {
-	public static String INTERFACE_NAME = "«getPackagePathWithoutJoynrPrefix(francaIntf, "/")»/«interfaceName»";
+	public static String INTERFACE_NAME = "«francaIntf.fullyQualifiedName»";
 
 	«FOR method: getMethods(francaIntf)»
 		«var enumType = method.errors»

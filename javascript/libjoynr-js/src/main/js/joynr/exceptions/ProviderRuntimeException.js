@@ -1,5 +1,3 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
@@ -18,11 +16,10 @@
  * limitations under the License.
  * #L%
  */
-var TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
-var Util = require("../util/UtilInternal");
-var JoynrRuntimeException = require("./JoynrRuntimeException");
-var LoggingManager = require("../system/LoggingManager");
-var defaultSettings;
+const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
+const UtilInternal = require("../util/UtilInternal");
+const JoynrRuntimeException = require("./JoynrRuntimeException");
+const defaultSettings = {};
 
 /**
  * @classdesc
@@ -50,20 +47,17 @@ function ProviderRuntimeException(settings) {
         return new ProviderRuntimeException(settings);
     }
 
-    var log = LoggingManager.getLogger("joynr.exceptions.ProviderRuntimeException");
-    var runtimeException = new JoynrRuntimeException(settings);
+    const runtimeException = new JoynrRuntimeException(settings);
 
     /**
      * Used for serialization.
      * @name ProviderRuntimeException#_typeName
      * @type String
      */
-    Util.objectDefineProperty(this, "_typeName", "joynr.exceptions.ProviderRuntimeException");
+    UtilInternal.objectDefineProperty(this, "_typeName", "joynr.exceptions.ProviderRuntimeException");
 
-    Util.extend(this, defaultSettings, settings, runtimeException);
+    UtilInternal.extend(this, defaultSettings, settings, runtimeException);
 }
-
-defaultSettings = {};
 
 TypeRegistrySingleton.getInstance().addType("joynr.exceptions.ProviderRuntimeException", ProviderRuntimeException);
 

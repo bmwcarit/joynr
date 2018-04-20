@@ -20,6 +20,7 @@ package io.joynr.generator.js.communicationmodel;
 
 import io.joynr.generator.js.util.JsTemplateFactory;
 import io.joynr.generator.templates.util.JoynrGeneratorExtensions;
+import io.joynr.generator.templates.util.NamingUtil;
 
 import org.franca.core.franca.FField;
 import org.franca.core.franca.FModel;
@@ -61,8 +62,13 @@ public class CompoundTypeGeneratorTest {
                                    .toInstance(true);
                 bind(Boolean.class).annotatedWith(Names.named(JoynrGeneratorExtensions.JOYNR_GENERATOR_CLEAN))
                                    .toInstance(false);
+                bind(Boolean.class).annotatedWith(Names.named(JoynrGeneratorExtensions.JOYNR_GENERATOR_PACKAGEWITHVERSION))
+                                   .toInstance(false);
+                bind(Boolean.class).annotatedWith(Names.named(NamingUtil.JOYNR_GENERATOR_INTERFACENAMEWITHVERSION))
+                                   .toInstance(false);
             }
-        }).getInstance(JsTemplateFactory.class);
+        })
+                                                 .getInstance(JsTemplateFactory.class);
         CompoundTypeGenerator generator = templateFactory.createCompoundTypeGenerator(structType);
         generator.generate();
     }

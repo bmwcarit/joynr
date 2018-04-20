@@ -1,13 +1,13 @@
 {
   "name": "robustness-test",
-  "version": "1.1.2",
+  "version": "1.2.0",
   "license": "Apache-2.0",
   "description": "Robustness Tests",
   "main": "src/main/js/consumer.js",
   "private": true,
   "dependencies": {
-      "bluebird" : "3.3.5",
-      "joynr" : ">=1.1.2"
+    "bluebird": "3.3.5",
+    "joynr": "file:../../javascript/libjoynr-js/src/main/js"
   },
   "config": {
     "domain": "joynr-robustness-test-domain",
@@ -15,8 +15,7 @@
     "cmdPath": "placeholder"
   },
   "scripts": {
-    "preinstall": "npm install ../../javascript/libjoynr-js/target/node-classes",
-    "startprovider" : "node src/main/js/provider.js $npm_package_config_domain",
-    "startjasmine" : "jasmine-node --verbose --junitreport --config domain $npm_package_config_domain --config testcase $npm_package_config_testcase --config cmdPath $npm_package_config_cmdPath src/main/js/consumer.spec.js"
+    "startprovider": "node src/main/js/provider.js $npm_package_config_domain",
+    "startjasmine": "jasmine-node --verbose --junitreport --config domain $npm_package_config_domain --config testcase $npm_package_config_testcase --config cmdPath $npm_package_config_cmdPath src/main/js/consumer.spec.js"
   }
 }

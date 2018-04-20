@@ -1,5 +1,3 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
@@ -18,11 +16,10 @@
  * limitations under the License.
  * #L%
  */
-var TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
-var Util = require("../util/UtilInternal");
-var DiscoveryException = require("./DiscoveryException");
-var LoggingManager = require("../system/LoggingManager");
-var defaultSettings;
+const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
+const UtilInternal = require("../util/UtilInternal");
+const DiscoveryException = require("./DiscoveryException");
+const defaultSettings = {};
 
 /**
  * @classdesc
@@ -56,15 +53,14 @@ function NoCompatibleProviderFoundException(settings) {
         return new NoCompatibleProviderFoundException(settings);
     }
 
-    var log = LoggingManager.getLogger("joynr.exceptions.NoCompatibleProviderFoundException");
-    var discoveryException = new DiscoveryException(settings);
+    const discoveryException = new DiscoveryException(settings);
 
     /**
      * Used for serialization.
      * @name NoCompatibleProviderFoundException#_typeName
      * @type String
      */
-    Util.objectDefineProperty(this, "_typeName", "joynr.exceptions.NoCompatibleProviderFoundException");
+    UtilInternal.objectDefineProperty(this, "_typeName", "joynr.exceptions.NoCompatibleProviderFoundException");
 
     /**
      * See [constructor description]{@link NoCompatibleProviderFoundException}.
@@ -87,10 +83,8 @@ function NoCompatibleProviderFoundException(settings) {
      */
     this.interfaceName = undefined;
 
-    Util.extend(this, defaultSettings, settings, discoveryException);
+    UtilInternal.extend(this, defaultSettings, settings, discoveryException);
 }
-
-defaultSettings = {};
 
 TypeRegistrySingleton.getInstance().addType(
     "joynr.exceptions.NoCompatibleProviderFoundException",

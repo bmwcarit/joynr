@@ -1,5 +1,3 @@
-/*jslint es5: true, nomen: true, node: true */
-
 /*
  * #%L
  * %%
@@ -18,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-var Typing = require("../../util/Typing");
-var MqttMessagingStub = require("./MqttMessagingStub");
+const Typing = require("../../util/Typing");
+const MqttMessagingStub = require("./MqttMessagingStub");
 
 /**
  * @constructor
@@ -29,7 +27,7 @@ var MqttMessagingStub = require("./MqttMessagingStub");
  * @param {SharedMqttClient}
  *            settings.client the mqtt client
  */
-var MqttMessagingStubFactory = function MqttMessagingStubFactory(settings) {
+const MqttMessagingStubFactory = function MqttMessagingStubFactory(settings) {
     Typing.checkProperty(settings, "Object", "settings");
     Typing.checkProperty(settings.client, "SharedMqttClient", "client");
     this._settings = settings;
@@ -43,7 +41,7 @@ MqttMessagingStubFactory.prototype.build = function build(address) {
     Typing.checkProperty(address, "MqttAddress", "address");
 
     return new MqttMessagingStub({
-        address: address,
+        address,
         client: this._settings.client
     });
 };

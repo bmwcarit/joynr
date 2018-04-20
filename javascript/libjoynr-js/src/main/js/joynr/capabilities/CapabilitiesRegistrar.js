@@ -1,5 +1,3 @@
-/*jslint es5: true, nomen: true, node: true */
-
 /*
  * #%L
  * %%
@@ -18,15 +16,13 @@
  * limitations under the License.
  * #L%
  */
-var Promise = require("../../global/Promise");
-var Util = require("../util/UtilInternal");
-var DiscoveryEntry = require("../../joynr/types/DiscoveryEntry");
-var ProviderScope = require("../../joynr/types/ProviderScope");
-var ParticipantIdStorage = require("./ParticipantIdStorage");
-var Version = require("../../joynr/types/Version");
-var defaultExpiryIntervalMs = 6 * 7 * 24 * 60 * 60 * 1000; // 6 Weeks
-var loggingManager = require("../system/LoggingManager");
-var log = loggingManager.getLogger("joynr.capabilities.CapabilitiesRegistrar");
+const Promise = require("../../global/Promise");
+const DiscoveryEntry = require("../../generated/joynr/types/DiscoveryEntry");
+const ProviderScope = require("../../generated/joynr/types/ProviderScope");
+const Version = require("../../generated/joynr/types/Version");
+let defaultExpiryIntervalMs = 6 * 7 * 24 * 60 * 60 * 1000; // 6 Weeks
+const loggingManager = require("../system/LoggingManager");
+const log = loggingManager.getLogger("joynr.capabilities.CapabilitiesRegistrar");
 
 /**
  * The Capabilities Registrar
@@ -59,23 +55,6 @@ function CapabilitiesRegistrar(dependencies) {
     this._requestReplyManager = dependencies.requestReplyManager;
     this._publicationManager = dependencies.publicationManager;
     this._started = true;
-}
-
-/**
- * @param provider
- *            to scan for a ProviderOperation
- * @returns {Boolean} true if provider contains a ProviderOperation
- */
-function hasOperation(provider) {
-    var property;
-    for (property in provider) {
-        if (provider.hasOwnProperty(property)) {
-            if (provider[property].constructor.name === "ProviderOperation") {
-                return true;
-            }
-        }
-    }
-    return false;
 }
 
 /*
@@ -161,7 +140,7 @@ CapabilitiesRegistrar.prototype.registerProvider = function registerProvider(
 ) {
     this._checkIfReady();
 
-    var missingImplementations = provider.checkImplementation();
+    const missingImplementations = provider.checkImplementation();
 
     if (missingImplementations.length > 0) {
         throw new Error(
@@ -182,8 +161,8 @@ CapabilitiesRegistrar.prototype.registerProvider = function registerProvider(
     this._requestReplyManager.addRequestCaller(participantId, provider);
 
     // register routing address at routingTable
-    var isGloballyVisible = providerQos.scope === ProviderScope.GLOBAL;
-    var messageRouterPromise = this._messageRouter.addNextHop(
+    const isGloballyVisible = providerQos.scope === ProviderScope.GLOBAL;
+    const messageRouterPromise = this._messageRouter.addNextHop(
         participantId,
         this._libjoynrMessagingAddress,
         isGloballyVisible
@@ -193,17 +172,17 @@ CapabilitiesRegistrar.prototype.registerProvider = function registerProvider(
     this._publicationManager.addPublicationProvider(participantId, provider);
 
     // TODO: Must be later provided by the user or retrieved from somewhere
-    var defaultPublicKeyId = "";
+    const defaultPublicKeyId = "";
 
-    var discoveryStubPromise = this._discoveryStub.add(
+    const discoveryStubPromise = this._discoveryStub.add(
         new DiscoveryEntry({
             providerVersion: new Version({
                 majorVersion: provider.constructor.MAJOR_VERSION,
                 minorVersion: provider.constructor.MINOR_VERSION
             }),
-            domain: domain,
+            domain,
             interfaceName: provider.interfaceName,
-            participantId: participantId,
+            participantId,
             qos: providerQos,
             publicKeyId: defaultPublicKeyId,
             expiryDateMs: expiryDateMs || Date.now() + defaultExpiryIntervalMs,
@@ -242,21 +221,21 @@ CapabilitiesRegistrar.prototype.registerProvider = function registerProvider(
 CapabilitiesRegistrar.prototype.unregisterProvider = function unregisterProvider(domain, provider) {
     this._checkIfReady();
     // retrieve participantId
-    var participantId = this._participantIdStorage.getParticipantId(domain, provider);
+    const participantId = this._participantIdStorage.getParticipantId(domain, provider);
 
-    var discoveryStubPromise = this._discoveryStub.remove(participantId);
+    const discoveryStubPromise = this._discoveryStub.remove(participantId);
 
     // if provider has at least one attribute, remove it as publication
     // provider
     this._publicationManager.removePublicationProvider(participantId, provider);
 
     // unregister routing address at routingTable
-    var messageRouterPromise = this._messageRouter.removeNextHop(participantId);
+    const messageRouterPromise = this._messageRouter.removeNextHop(participantId);
 
     // unregister provider at RequestReplyManager
     this._requestReplyManager.removeRequestCaller(participantId);
 
-    return Promise.all([discoveryStubPromise, messageRouterPromise]).then(function() {
+    return Promise.all([discoveryStubPromise, messageRouterPromise]).then(() => {
         log.info(
             "Provider unregistered: participantId: " +
                 participantId +

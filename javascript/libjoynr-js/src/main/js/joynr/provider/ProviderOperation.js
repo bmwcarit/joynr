@@ -1,4 +1,3 @@
-/*jslint es5: true, nomen: true, node: true */
 /*
  * #%L
  * %%
@@ -17,15 +16,14 @@
  * limitations under the License.
  * #L%
  */
-var Typing = require("../util/Typing");
-var MethodUtil = require("../util/MethodUtil");
-var TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
-var ApplicationException = require("../exceptions/ApplicationException");
-var ProviderRuntimeException = require("../exceptions/ProviderRuntimeException");
-var Util = require("../util/UtilInternal");
-var Promise = require("../../global/Promise");
+const Typing = require("../util/Typing");
+const MethodUtil = require("../util/MethodUtil");
+const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
+const ApplicationException = require("../exceptions/ApplicationException");
+const ProviderRuntimeException = require("../exceptions/ProviderRuntimeException");
+const Promise = require("../../global/Promise");
 
-var typeRegistry = TypeRegistrySingleton.getInstance();
+const typeRegistry = TypeRegistrySingleton.getInstance();
 /**
  * Checks if the given argumentDatatypes and arguments match the given operationSignature
  *
@@ -56,11 +54,9 @@ var typeRegistry = TypeRegistrySingleton.getInstance();
  *            containing a named argument map, e.g. &#123;nr: 1234,str: "asdf"&#125;
  */
 function getNamedArguments(unnamedArguments, argumentDatatypes, operationSignature) {
-    var i,
-        argument,
-        argumentName,
-        namedArguments = {},
-        inputParameter = operationSignature.inputParameter;
+    let argument, argumentName;
+    const namedArguments = {};
+    const inputParameter = operationSignature.inputParameter;
 
     // check if number of given argument types (argumentDatatypes.length) matches number
     // of parameters in op signature (keys.length)
@@ -69,7 +65,7 @@ function getNamedArguments(unnamedArguments, argumentDatatypes, operationSignatu
     }
 
     // cycle over all arguments
-    for (i = 0; i < inputParameter.length; ++i) {
+    for (let i = 0; i < inputParameter.length; ++i) {
         argument = inputParameter[i];
         argumentName = argument.name;
         // check if argument type matches parameter's type from operation signature
@@ -147,7 +143,7 @@ ProviderOperation.prototype.registerOperation = function registerOperation(opera
 };
 
 function privateOperationOnError(exceptionOrErrorEnumValue) {
-    var exception;
+    let exception;
     if (exceptionOrErrorEnumValue instanceof ProviderRuntimeException) {
         exception = exceptionOrErrorEnumValue;
     } else if (Typing.isComplexJoynrObject(exceptionOrErrorEnumValue)) {
@@ -186,11 +182,8 @@ function privateOperationOnError(exceptionOrErrorEnumValue) {
  * @returns {?} the return type of the called operation function
  */
 ProviderOperation.prototype.callOperation = function callOperation(operationArguments, operationArgumentTypes) {
-    var i, j;
-    var argument, namedArguments, signature;
-    var result;
-    var errorEnumType;
-    var exception;
+    let i, j;
+    let argument, namedArguments, signature;
 
     // cycle through multiple available operation signatures
     for (i = 0; i < this._operationSignatures.length && namedArguments === undefined; ++i) {
@@ -205,9 +198,6 @@ ProviderOperation.prototype.callOperation = function callOperation(operationArgu
     }
 
     if (namedArguments) {
-        if (signature.error && signature.error.type) {
-            errorEnumType = signature.error.type;
-        }
         // augment types
         for (j = 0; j < signature.inputParameter.length; ++j) {
             argument = signature.inputParameter[j];

@@ -1,5 +1,3 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
@@ -24,7 +22,7 @@
  * be expended on ensuring delivery of a message. See the individual
  * members for a description of what each one means.
  */
-var MessagingQosEffort = {};
+const MessagingQosEffort = {};
 
 /**
  * Normal effort means that the messaging system will guarantee delivery of the message, including temporarily

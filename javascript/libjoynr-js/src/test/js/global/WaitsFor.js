@@ -1,5 +1,3 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
@@ -21,15 +19,14 @@
 /**
  * waitsFor helper function for jasmine 2.x
  */
-var Promise = require("../../classes/global/Promise");
-var originalSetInterval = setInterval;
-var originalClearInterval = clearInterval;
-var originalSetTimeout = setTimeout;
+const Promise = require("../../../main/js/global/Promise");
+const originalSetInterval = setInterval;
+const originalClearInterval = clearInterval;
 function waitsFor(checker, message, delayMs, checkIntervalMs) {
-    return new Promise(function(resolve, reject) {
+    return new Promise((resolve, reject) => {
         delayMs = delayMs || 5000;
         checkIntervalMs = checkIntervalMs || 10;
-        var intervalId = originalSetInterval(function() {
+        const intervalId = originalSetInterval(() => {
             if (checker() === true) {
                 originalClearInterval(intervalId);
                 resolve();

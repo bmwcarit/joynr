@@ -1,5 +1,3 @@
-/*jslint es5: true, node: true, nomen: true */
-
 /*
  * #%L
  * %%
@@ -19,44 +17,43 @@
  * #L%
  */
 
-var ChildProcessUtils = require("./ChildProcessUtils");
+const ChildProcessUtils = require("./ChildProcessUtils");
 ChildProcessUtils.overrideRequirePaths();
 
-var Promise = require("../../classes/global/Promise");
-var joynr = require("joynr.js");
+const Promise = require("../../../main/js/global/Promise");
+const joynr = require("joynr");
 
-var provisioning = require("../joynr/provisioning/provisioning_cc.js");
-var RadioProvider = require("joynr/vehicle/RadioProvider.js");
-var RadioStation = require("joynr/vehicle/radiotypes/RadioStation.js");
-var Country = require("joynr/datatypes/exampleTypes/Country.js");
-var ErrorList = require("joynr/vehicle/radiotypes/ErrorList.js");
+const provisioning = require("../../resources/joynr/provisioning/provisioning_cc.js");
+const RadioProvider = require("../../generated/joynr/vehicle/RadioProvider.js");
+const RadioStation = require("../../generated/joynr/vehicle/radiotypes/RadioStation.js");
+const Country = require("../../generated/joynr/datatypes/exampleTypes/Country.js");
+const ErrorList = require("../../generated/joynr/vehicle/radiotypes/ErrorList.js");
 
 // attribute value for provider
-var isOn = true;
-var startWithCapitalLetterValue = true;
-var enumAttribute = Country.GERMANY;
-var enumArrayAttribute = [Country.GERMANY];
-var attrProvidedImpl;
-var numberOfStations = -1;
-var mixedSubscriptions = null;
-var byteBufferAttribute = null;
-var stringMapAttribute = null;
-var complexStructMapAttribute = null;
-var typeDefForStruct = null;
-var typeDefForPrimitive = null;
-var mixedSubscriptionsValue = "interval";
-var providerDomain;
-var libjoynrAsync;
+let isOn = true;
+let startWithCapitalLetterValue = true;
+let enumAttribute = Country.GERMANY;
+let enumArrayAttribute = [Country.GERMANY];
+let attrProvidedImpl;
+let numberOfStations = -1;
+let byteBufferAttribute = null;
+let stringMapAttribute = null;
+let complexStructMapAttribute = null;
+let typeDefForStruct = null;
+let typeDefForPrimitive = null;
+let mixedSubscriptionsValue = "interval";
+let providerDomain;
+let libjoynrAsync;
 
 // this delay tries to correct the initialization delay between the web worker and the test driver
-var valueChangedInterval = 500;
-var mixedSubscriptionDelay = 1500;
+const valueChangedInterval = 500;
+const mixedSubscriptionDelay = 1500;
 
-var radioProvider;
-var providerQos;
+let radioProvider;
+let providerQos;
 
 function initializeTest(provisioningSuffix, providedDomain) {
-    return new Promise(function(resolve, reject) {
+    return new Promise((resolve, reject) => {
         // set joynr provisioning
         providerDomain = providedDomain;
         provisioning.persistency = "localStorage";
@@ -90,7 +87,7 @@ function initializeTest(provisioningSuffix, providedDomain) {
         joynr.selectRuntime("inprocess");
         joynr
             .load(provisioning)
-            .then(function(asynclib) {
+            .then(asynclib => {
                 libjoynrAsync = asynclib;
                 providerQos = new libjoynrAsync.types.ProviderQos({
                     customParameters: [],
@@ -103,42 +100,40 @@ function initializeTest(provisioningSuffix, providedDomain) {
                 radioProvider = joynr.providerBuilder.build(RadioProvider);
 
                 // register attribute functions
-                radioProvider.numberOfStations.registerGetter(function() {
+                radioProvider.numberOfStations.registerGetter(() => {
                     return numberOfStations;
                 });
 
-                radioProvider.numberOfStations.registerSetter(function(value) {
+                radioProvider.numberOfStations.registerSetter(value => {
                     numberOfStations = value;
                 });
 
-                radioProvider.attrProvidedImpl.registerGetter(function() {
+                radioProvider.attrProvidedImpl.registerGetter(() => {
                     return attrProvidedImpl;
                 });
 
-                radioProvider.attrProvidedImpl.registerSetter(function(value) {
+                radioProvider.attrProvidedImpl.registerSetter(value => {
                     attrProvidedImpl = value;
                 });
 
-                radioProvider.mixedSubscriptions.registerGetter(function() {
+                radioProvider.mixedSubscriptions.registerGetter(() => {
                     return mixedSubscriptionsValue;
                 });
 
-                radioProvider.mixedSubscriptions.registerSetter(function(value) {
-                    mixedSubscriptions = value;
-                });
+                radioProvider.mixedSubscriptions.registerSetter(() => {});
 
-                radioProvider.attributeTestingProviderInterface.registerGetter(function() {
+                radioProvider.attributeTestingProviderInterface.registerGetter(() => {
                     return undefined;
                 });
 
-                radioProvider.failingSyncAttribute.registerGetter(function() {
+                radioProvider.failingSyncAttribute.registerGetter(() => {
                     throw new joynr.exceptions.ProviderRuntimeException({
                         detailMessage: "failure in failingSyncAttribute getter"
                     });
                 });
 
-                radioProvider.failingAsyncAttribute.registerGetter(function() {
-                    return new Promise(function(resolve, reject) {
+                radioProvider.failingAsyncAttribute.registerGetter(() => {
+                    return new Promise((resolve, reject) => {
                         reject(
                             new joynr.exceptions.ProviderRuntimeException({
                                 detailMessage: "failure in failingAsyncAttribute getter"
@@ -147,80 +142,80 @@ function initializeTest(provisioningSuffix, providedDomain) {
                     });
                 });
 
-                radioProvider.StartWithCapitalLetter.registerGetter(function() {
+                radioProvider.StartWithCapitalLetter.registerGetter(() => {
                     return startWithCapitalLetterValue;
                 });
-                radioProvider.StartWithCapitalLetter.registerSetter(function(value) {
+                radioProvider.StartWithCapitalLetter.registerSetter(value => {
                     startWithCapitalLetterValue = value;
                 });
 
-                radioProvider.isOn.registerGetter(function() {
+                radioProvider.isOn.registerGetter(() => {
                     return isOn;
                 });
-                radioProvider.isOn.registerSetter(function(value) {
+                radioProvider.isOn.registerSetter(value => {
                     isOn = value;
                 });
 
-                radioProvider.enumAttribute.registerGetter(function() {
+                radioProvider.enumAttribute.registerGetter(() => {
                     return enumAttribute;
                 });
 
-                radioProvider.enumAttribute.registerSetter(function(value) {
+                radioProvider.enumAttribute.registerSetter(value => {
                     enumAttribute = value;
                 });
 
-                radioProvider.enumArrayAttribute.registerGetter(function() {
+                radioProvider.enumArrayAttribute.registerGetter(() => {
                     return enumArrayAttribute;
                 });
 
-                radioProvider.enumArrayAttribute.registerSetter(function(value) {
+                radioProvider.enumArrayAttribute.registerSetter(value => {
                     enumArrayAttribute = value;
                 });
 
-                radioProvider.byteBufferAttribute.registerSetter(function(value) {
+                radioProvider.byteBufferAttribute.registerSetter(value => {
                     byteBufferAttribute = value;
                 });
 
-                radioProvider.byteBufferAttribute.registerGetter(function(value) {
+                radioProvider.byteBufferAttribute.registerGetter(() => {
                     return byteBufferAttribute;
                 });
 
-                radioProvider.typeDefForStruct.registerSetter(function(value) {
+                radioProvider.typeDefForStruct.registerSetter(value => {
                     typeDefForStruct = value;
                 });
 
-                radioProvider.typeDefForStruct.registerGetter(function(value) {
+                radioProvider.typeDefForStruct.registerGetter(() => {
                     return typeDefForStruct;
                 });
 
-                radioProvider.typeDefForPrimitive.registerSetter(function(value) {
+                radioProvider.typeDefForPrimitive.registerSetter(value => {
                     typeDefForPrimitive = value;
                 });
 
-                radioProvider.typeDefForPrimitive.registerGetter(function(value) {
+                radioProvider.typeDefForPrimitive.registerGetter(() => {
                     return typeDefForPrimitive;
                 });
 
-                radioProvider.stringMapAttribute.registerSetter(function(value) {
+                radioProvider.stringMapAttribute.registerSetter(value => {
                     stringMapAttribute = value;
                 });
 
-                radioProvider.stringMapAttribute.registerGetter(function() {
+                radioProvider.stringMapAttribute.registerGetter(() => {
                     return stringMapAttribute;
                 });
 
-                radioProvider.complexStructMapAttribute.registerGetter(function() {
+                radioProvider.complexStructMapAttribute.registerGetter(() => {
                     return complexStructMapAttribute;
                 });
 
-                radioProvider.complexStructMapAttribute.registerSetter(function(value) {
+                radioProvider.complexStructMapAttribute.registerSetter(value => {
                     complexStructMapAttribute = value;
                 });
 
                 // register operation functions
-                radioProvider.addFavoriteStation.registerOperation(function(opArgs) {
+                radioProvider.addFavoriteStation.registerOperation(opArgs => {
                     // retrieve radioStation name for both overloaded version
-                    var name = opArgs.radioStation.name || opArgs.radioStation;
+                    const name = opArgs.radioStation.name || opArgs.radioStation;
 
                     // If name contains the string "async" it will work asynchronously
                     // returning a Promise, otherwise synchronously (return/throw directly).
@@ -232,7 +227,7 @@ function initializeTest(provisioningSuffix, providedDomain) {
                     // depending on whether radiostation name contains the string "true"
                     if (name.match(/async/)) {
                         // async
-                        return new Promise(function(resolve, reject) {
+                        return new Promise((resolve, reject) => {
                             if (name.match(/error/)) {
                                 if (name.match(/ApplicationException/)) {
                                     reject(ErrorList.EXAMPLE_ERROR_1);
@@ -265,15 +260,15 @@ function initializeTest(provisioningSuffix, providedDomain) {
                     };
                 });
 
-                var isCountryEnum = function(parameter) {
+                const isCountryEnum = function(parameter) {
                     return (
                         typeof parameter === "object" &&
                         Object.getPrototypeOf(parameter) instanceof joynr.JoynrObject &&
                         parameter._typeName === Country.GERMANY._typeName
                     );
                 };
-                var checkEnumInputs = function(opArgs) {
-                    var enumElement;
+                const checkEnumInputs = function(opArgs) {
+                    let enumElement;
                     if (!isCountryEnum(opArgs.enumInput)) {
                         throw new Error(
                             "Argument enumInput with value " +
@@ -296,12 +291,12 @@ function initializeTest(provisioningSuffix, providedDomain) {
                     }
                 };
                 // register operation function "operationWithEnumsAsInputAndOutput"
-                radioProvider.operationWithEnumsAsInputAndOutput.registerOperation(function(opArgs) {
+                radioProvider.operationWithEnumsAsInputAndOutput.registerOperation(opArgs => {
                     /* the dummy implemetnation returns the first element of the enumArrayInput.
                      * If the input array is empty, it returns the enumInput
                      */
                     checkEnumInputs(opArgs);
-                    var returnValue = opArgs.enumInput;
+                    let returnValue = opArgs.enumInput;
                     if (opArgs.enumArrayInput.length !== 0) {
                         returnValue = opArgs.enumArrayInput[0];
                     }
@@ -311,8 +306,8 @@ function initializeTest(provisioningSuffix, providedDomain) {
                 });
 
                 // register operation function "operationWithMultipleOutputParameters"
-                radioProvider.operationWithMultipleOutputParameters.registerOperation(function(opArgs) {
-                    var returnValue = {
+                radioProvider.operationWithMultipleOutputParameters.registerOperation(opArgs => {
+                    const returnValue = {
                         enumArrayOutput: opArgs.enumArrayInput,
                         enumOutput: opArgs.enumInput,
                         stringOutput: opArgs.stringInput,
@@ -321,18 +316,16 @@ function initializeTest(provisioningSuffix, providedDomain) {
                     if (opArgs.syncTest) {
                         return returnValue;
                     }
-                    return new Promise(function(resolve, reject) {
-                        resolve(returnValue);
-                    });
+                    return Promise.resolve(returnValue);
                 });
 
                 // register operation function "operationWithEnumsAsInputAndEnumArrayAsOutput"
-                radioProvider.operationWithEnumsAsInputAndEnumArrayAsOutput.registerOperation(function(opArgs) {
+                radioProvider.operationWithEnumsAsInputAndEnumArrayAsOutput.registerOperation(opArgs => {
                     /* the dummy implementation returns the enumArrayInput.
                      * If the enumInput is not empty, it add this entry to the return value as well
                      */
                     checkEnumInputs(opArgs);
-                    var returnValue = opArgs.enumArrayInput;
+                    const returnValue = opArgs.enumArrayInput;
                     if (opArgs.enumInput !== undefined) {
                         returnValue.push(opArgs.enumInput);
                     }
@@ -342,26 +335,25 @@ function initializeTest(provisioningSuffix, providedDomain) {
                 });
 
                 // register operation function "methodWithSingleArrayParameters"
-                radioProvider.methodWithSingleArrayParameters.registerOperation(function(opArgs) {
+                radioProvider.methodWithSingleArrayParameters.registerOperation(opArgs => {
                     /* the dummy implementation transforms the incoming double values into
                      * strings.
                      */
-                    var stringArrayOut = [],
-                        element;
+                    const stringArrayOut = [];
                     if (opArgs.doubleArrayArg !== undefined) {
-                        for (element in opArgs.doubleArrayArg) {
+                        for (const element in opArgs.doubleArrayArg) {
                             if (opArgs.doubleArrayArg.hasOwnProperty(element)) {
                                 stringArrayOut.push(opArgs.doubleArrayArg[element].toString());
                             }
                         }
                     }
                     return {
-                        stringArrayOut: stringArrayOut
+                        stringArrayOut
                     };
                 });
 
                 // register operation function "methodWithByteBuffer"
-                radioProvider.methodWithByteBuffer.registerOperation(function(opArgs) {
+                radioProvider.methodWithByteBuffer.registerOperation(opArgs => {
                     /* the dummy implementation returns the incoming byteBuffer
                      */
 
@@ -371,7 +363,7 @@ function initializeTest(provisioningSuffix, providedDomain) {
                 });
 
                 // register operation function "methodWithTypeDef"
-                radioProvider.methodWithTypeDef.registerOperation(function(opArgs) {
+                radioProvider.methodWithTypeDef.registerOperation(opArgs => {
                     /* the dummy implementation returns the incoming data
                      */
 
@@ -381,18 +373,18 @@ function initializeTest(provisioningSuffix, providedDomain) {
                     };
                 });
 
-                radioProvider.methodWithComplexMap.registerOperation(function(opArgs) {
+                radioProvider.methodWithComplexMap.registerOperation(() => {
                     return;
                 });
 
-                radioProvider.methodProvidedImpl.registerOperation(function(opArgs) {
+                radioProvider.methodProvidedImpl.registerOperation(opArgs => {
                     return {
                         returnValue: opArgs.arg
                     };
                 });
 
                 function triggerBroadcastsInternal(opArgs) {
-                    var outputParams, broadcast;
+                    let outputParams, broadcast;
                     if (opArgs.broadcastName === "broadcastWithEnum") {
                         //broadcastWithEnum
                         broadcast = radioProvider.broadcastWithEnum;
@@ -421,14 +413,13 @@ function initializeTest(provisioningSuffix, providedDomain) {
                         outputParams.setTypeDefPrimitiveOutput(123456);
                     }
                     setTimeout(
-                        function(opArgs, broadcast, outputParams) {
-                            var i;
+                        (opArgs, broadcast, outputParams) => {
+                            let i;
                             for (i = 0; i < opArgs.times; i++) {
                                 if (opArgs.hierarchicBroadcast && opArgs.partitions !== undefined) {
-                                    var j,
-                                        hierarchicPartitions = [];
+                                    const hierarchicPartitions = [];
                                     broadcast.fire(outputParams, hierarchicPartitions);
-                                    for (j = 0; j < opArgs.partitions.length; j++) {
+                                    for (let j = 0; j < opArgs.partitions.length; j++) {
                                         hierarchicPartitions.push(opArgs.partitions[j]);
                                         broadcast.fire(outputParams, hierarchicPartitions);
                                     }
@@ -447,16 +438,16 @@ function initializeTest(provisioningSuffix, providedDomain) {
                 radioProvider.triggerBroadcasts.registerOperation(triggerBroadcastsInternal);
                 radioProvider.triggerBroadcastsWithPartitions.registerOperation(triggerBroadcastsInternal);
 
-                radioProvider.methodFireAndForgetWithoutParams.registerOperation(function(opArgs) {
-                    var broadcast = radioProvider.fireAndForgetCallArrived;
-                    var outputParams = broadcast.createBroadcastOutputParameters();
+                radioProvider.methodFireAndForgetWithoutParams.registerOperation(() => {
+                    const broadcast = radioProvider.fireAndForgetCallArrived;
+                    const outputParams = broadcast.createBroadcastOutputParameters();
                     outputParams.setMethodName("methodFireAndForgetWithoutParams");
                     broadcast.fire(outputParams);
                 });
 
-                radioProvider.methodFireAndForget.registerOperation(function(opArgs) {
-                    var broadcast = radioProvider.fireAndForgetCallArrived;
-                    var outputParams = broadcast.createBroadcastOutputParameters();
+                radioProvider.methodFireAndForget.registerOperation(() => {
+                    const broadcast = radioProvider.fireAndForgetCallArrived;
+                    const outputParams = broadcast.createBroadcastOutputParameters();
                     outputParams.setMethodName("methodFireAndForget");
                     broadcast.fire(outputParams);
                 });
@@ -465,40 +456,38 @@ function initializeTest(provisioningSuffix, providedDomain) {
                 // register provider at the given providerDomain
                 libjoynrAsync.registration
                     .registerProvider(providerDomain, radioProvider, providerQos)
-                    .then(function() {
+                    .then(() => {
                         // signal test driver that we are ready
                         resolve(libjoynrAsync);
                     })
-                    .catch(function(error) {
+                    .catch(error => {
                         reject(error);
                         throw new Error("error registering provider: " + error);
                     });
 
                 return libjoynrAsync;
             })
-            .catch(function(error) {
+            .catch(error => {
                 throw error;
             });
     });
 }
 
 function startTest() {
-    return new Promise(function(resolve, reject) {
-        // change attribute value of numberOfStations periodically
-        libjoynrAsync.util.LongTimer.setInterval(function() {
-            radioProvider.numberOfStations.valueChanged(++numberOfStations);
-        }, valueChangedInterval);
+    // change attribute value of numberOfStations periodically
+    libjoynrAsync.util.LongTimer.setInterval(() => {
+        radioProvider.numberOfStations.valueChanged(++numberOfStations);
+    }, valueChangedInterval);
 
-        libjoynrAsync.util.LongTimer.setTimeout(function() {
-            mixedSubscriptionsValue = "valueChanged1";
+    libjoynrAsync.util.LongTimer.setTimeout(() => {
+        mixedSubscriptionsValue = "valueChanged1";
+        radioProvider.mixedSubscriptions.valueChanged(mixedSubscriptionsValue);
+        libjoynrAsync.util.LongTimer.setTimeout(() => {
+            mixedSubscriptionsValue = "valueChanged2";
             radioProvider.mixedSubscriptions.valueChanged(mixedSubscriptionsValue);
-            libjoynrAsync.util.LongTimer.setTimeout(function() {
-                mixedSubscriptionsValue = "valueChanged2";
-                radioProvider.mixedSubscriptions.valueChanged(mixedSubscriptionsValue);
-            }, 10);
-        }, mixedSubscriptionDelay);
-        resolve(libjoynrAsync.participantIdStorage.getParticipantId(providerDomain, radioProvider));
-    });
+        }, 10);
+    }, mixedSubscriptionDelay);
+    return Promise.resolve(libjoynrAsync.participantIdStorage.getParticipantId(providerDomain, radioProvider));
 }
 function terminateTest() {
     return libjoynrAsync.registration.unregisterProvider(providerDomain, radioProvider);

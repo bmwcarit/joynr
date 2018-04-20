@@ -89,7 +89,7 @@ public class CapabilitiesRegistrarTest {
     private String publicKeyId = "";
     private ProviderQos providerQos = new ProviderQos();
 
-    @JoynrInterface(provides = TestProvider.class, name = TestProvider.INTERFACE_NAME)
+    @JoynrInterface(provider = TestProvider.class, provides = TestProvider.class, name = TestProvider.INTERFACE_NAME)
     @JoynrVersion(major = 1337, minor = 42)
     interface TestProvider extends JoynrProvider {
         public static String INTERFACE_NAME = "interfaceName";

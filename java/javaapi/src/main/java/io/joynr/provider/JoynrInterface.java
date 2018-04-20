@@ -35,6 +35,8 @@ public @interface JoynrInterface {
 
     Class<?> provides();
 
+    Class<?> provider();
+
     String name();
 
 }
