@@ -57,15 +57,14 @@ public class CapabilitiesDirectoryTest {
     String interface3 = "Interface3";
 
     ProviderQos providerQos = new ProviderQos(CUSTOM_PARAMETERS, 1L, ProviderScope.GLOBAL, true);
-    GlobalDiscoveryEntry disoveryEntry1;
+    GlobalDiscoveryEntry discoveryEntry1;
     GlobalDiscoveryEntry discoveryEntry2;
-    GlobalDiscoveryEntry dicoveryEntry3;
+    GlobalDiscoveryEntry discoveryEntry3;
     String postFix = "" + System.currentTimeMillis();
 
     @BeforeClass
     public static void start() {
         capabilitiesDirectory = startCapabilitiesDirectory();
-
     }
 
     @Before
@@ -78,15 +77,15 @@ public class CapabilitiesDirectoryTest {
 
         long lastSeenDateMs = System.currentTimeMillis();
         long expiryDateMs = System.currentTimeMillis() + ONE_DAY_IN_MS;
-        disoveryEntry1 = new GlobalDiscoveryEntry(new Version(47, 11),
-                                                  domain,
-                                                  interface1,
-                                                  participantId1,
-                                                  providerQos,
-                                                  lastSeenDateMs,
-                                                  expiryDateMs,
-                                                  publicKeyId,
-                                                  channelAddresSerialized);
+        discoveryEntry1 = new GlobalDiscoveryEntry(new Version(47, 11),
+                                                   domain,
+                                                   interface1,
+                                                   participantId1,
+                                                   providerQos,
+                                                   lastSeenDateMs,
+                                                   expiryDateMs,
+                                                   publicKeyId,
+                                                   channelAddresSerialized);
         discoveryEntry2 = new GlobalDiscoveryEntry(new Version(47, 11),
                                                    domain,
                                                    interface2,
@@ -96,15 +95,15 @@ public class CapabilitiesDirectoryTest {
                                                    expiryDateMs,
                                                    publicKeyId,
                                                    channelAddresSerialized);
-        dicoveryEntry3 = new GlobalDiscoveryEntry(new Version(47, 11),
-                                                  domain,
-                                                  interface3,
-                                                  participantId3,
-                                                  providerQos,
-                                                  lastSeenDateMs,
-                                                  expiryDateMs,
-                                                  publicKeyId,
-                                                  channelAddresSerialized);
+        discoveryEntry3 = new GlobalDiscoveryEntry(new Version(47, 11),
+                                                   domain,
+                                                   interface3,
+                                                   participantId3,
+                                                   providerQos,
+                                                   lastSeenDateMs,
+                                                   expiryDateMs,
+                                                   publicKeyId,
+                                                   channelAddresSerialized);
 
     }
 
@@ -121,7 +120,7 @@ public class CapabilitiesDirectoryTest {
     @Test
     public void registerMultipleCapabilitiesAsArray() throws InterruptedException {
 
-        GlobalDiscoveryEntry[] interfaces2And3 = { discoveryEntry2, dicoveryEntry3 };
+        GlobalDiscoveryEntry[] interfaces2And3 = { discoveryEntry2, discoveryEntry3 };
         capabilitiesDirectory.add(interfaces2And3);
 
         PromiseKeeper lookupCapInfo2 = new PromiseKeeper();
@@ -133,17 +132,17 @@ public class CapabilitiesDirectoryTest {
         capabilitiesDirectory.lookup(new String[]{ domain }, interface3).then(lookupCapInfo3);
 
         GlobalDiscoveryEntry[] passedDiscoveryEntries = (GlobalDiscoveryEntry[]) lookupCapInfo3.getValues()[0];
-        assertDiscoveryEntriesEqual(new GlobalDiscoveryEntry[]{ dicoveryEntry3 }, passedDiscoveryEntries);
+        assertDiscoveryEntriesEqual(new GlobalDiscoveryEntry[]{ discoveryEntry3 }, passedDiscoveryEntries);
     }
 
     @Test
     public void registerProviderAndRequestChannels() throws Exception {
-        capabilitiesDirectory.add(disoveryEntry1);
+        capabilitiesDirectory.add(discoveryEntry1);
 
         PromiseKeeper lookupCapInfo1 = new PromiseKeeper();
         capabilitiesDirectory.lookup(new String[]{ domain }, interface1).then(lookupCapInfo1);
         lookupCapInfo1.waitForSettlement();
-        assertDiscoveryEntriesEqual(new GlobalDiscoveryEntry[]{ disoveryEntry1 },
+        assertDiscoveryEntriesEqual(new GlobalDiscoveryEntry[]{ discoveryEntry1 },
                                     (GlobalDiscoveryEntry[]) lookupCapInfo1.getValues()[0]);
 
     }
