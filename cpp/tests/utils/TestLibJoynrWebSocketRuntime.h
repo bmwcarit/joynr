@@ -48,17 +48,17 @@ public:
 
     bool connect(std::chrono::milliseconds timeoutMs)
     {
-        Semaphore semaphore;
+        auto semaphore = std::make_shared<Semaphore>();
 
-        LibJoynrWebSocketRuntime::connect([&semaphore]()
+        LibJoynrWebSocketRuntime::connect([semaphore]()
         {
-            semaphore.notify();
+            semaphore->notify();
         }, [](const exceptions::JoynrRuntimeException& error)
         {
             FAIL() << "LibJoynrWebSocketRuntime::connect failed: " << error.getMessage();
         });
 
-        return semaphore.waitFor(timeoutMs);
+        return semaphore->waitFor(timeoutMs);
     }
 };
 
