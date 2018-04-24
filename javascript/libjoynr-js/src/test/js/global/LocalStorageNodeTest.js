@@ -16,8 +16,10 @@
  * limitations under the License.
  * #L%
  */
+require("../node-unit-test-helper");
 const LocalStorage = require("../../../main/js/global/LocalStorageNode");
 const fs = require("fs");
+const path = require("path");
 
 describe("local storage", () => {
     let storage;
@@ -25,93 +27,130 @@ describe("local storage", () => {
         hi: "bla"
     };
     let testNum = 0;
+    const testDirectory = "localStorageTestResults";
+    const basePath = path.join(process.cwd(), testDirectory);
     let location;
+    let locationPath;
     const key = "key";
     const corruptData = "corrupted Data";
+    const clearResults = true;
+
+    beforeAll(() => {
+        if (!fs.existsSync(basePath)) {
+            fs.mkdirSync(basePath);
+        }
+    });
+
+    afterAll(() => {
+        if (clearResults) {
+            fs.rmdirSync(basePath);
+        }
+    });
+
+    beforeEach(() => {
+        testNum++;
+        location = testDirectory + "/LocalStorage-" + testNum;
+        locationPath = path.join(process.cwd(), location);
+    });
 
     afterEach(() => {
-        fs.readdirSync(location).forEach(file => {
-            const filePath = location + "/" + file;
-            fs.unlinkSync(filePath);
-        });
-        fs.rmdirSync(location);
+        if (clearResults) {
+            fs.readdirSync(locationPath).forEach(file => {
+                const filePath = locationPath + "/" + file;
+                fs.unlinkSync(filePath);
+            });
+            fs.rmdirSync(locationPath);
+        }
     });
 
-    beforeEach(done => {
-        testNum++;
-        location = "localStorageTestResults/LocalStorage-" + testNum;
-        storage = new LocalStorage({
-            clearPersistency: false,
-            location
-        });
-        done();
+    it("without clean directory", () => {
+        fs.mkdirSync(locationPath);
+        const subDirectoryName = "SubdirectoryName";
+        const subDirectoryLocation = path.join(locationPath, subDirectoryName);
+        fs.mkdirSync(subDirectoryLocation);
+        expect(() => {
+            storage = new LocalStorage({
+                clearPersistency: false,
+                location
+            });
+        }).not.toThrow();
+        fs.rmdirSync(subDirectoryLocation);
     });
 
-    it("can set and load item", () => {
-        storage.setItem(key, JSON.stringify(item));
-        const result = JSON.parse(storage.getItem(key));
-        expect(result).toEqual(item);
-    });
-
-    it("can set and load long items", () => {
-        const longString = new Array(200).join("a");
-
-        storage.setItem(longString, JSON.stringify(item));
-        const result = JSON.parse(storage.getItem(longString));
-        expect(result).toEqual(item);
-    });
-
-    it("can remove items", () => {
-        storage.setItem(key, JSON.stringify(item));
-        storage.removeItem(key);
-        const result = storage.getItem(key);
-        expect(result).toEqual(null);
-    });
-
-    it("can clear items", () => {
-        storage.setItem(key, JSON.stringify(item));
-        storage.clear();
-        const result = storage.getItem(key);
-        expect(result).toEqual(null);
-    });
-
-    it("ignores corrupt files", () => {
-        storage.setItem(key, JSON.stringify(item));
-        const filename = fs.readdirSync(location)[0];
-        fs.writeFileSync(location + "/" + filename, corruptData);
-
-        storage = new LocalStorage({
-            clearPersistency: false,
-            location
-        });
-        expect(storage.getItem(key)).toBe(null);
-    });
-
-    it("overwrites corrupt files", () => {
-        storage.setItem(key, JSON.stringify(item));
-        const filename = fs.readdirSync(location)[0];
-        fs.writeFileSync(location + "/" + filename, corruptData);
-
-        storage = new LocalStorage({
-            clearPersistency: false,
-            location
+    describe("with clean directory", () => {
+        beforeEach(() => {
+            storage = new LocalStorage({
+                clearPersistency: false,
+                location
+            });
         });
 
-        storage.setItem(key, JSON.stringify(item));
-        const files = fs.readdirSync(location);
-        expect(files.length).toBe(1);
-    });
-
-    it("ignores other files", () => {
-        storage.setItem(key, JSON.stringify(item));
-        fs.writeFileSync(location + "/otherFile", "other Data");
-
-        storage = new LocalStorage({
-            clearPersistency: false,
-            location
+        it("can set and load item", () => {
+            storage.setItem(key, JSON.stringify(item));
+            const result = JSON.parse(storage.getItem(key));
+            expect(result).toEqual(item);
         });
 
-        const files = fs.readdirSync(location);
-        expect(files.length).toBe(2);
+        it("can set and load long items", () => {
+            const longString = new Array(200).join("a");
+
+            storage.setItem(longString, JSON.stringify(item));
+            const result = JSON.parse(storage.getItem(longString));
+            expect(result).toEqual(item);
+        });
+
+        it("can remove items", () => {
+            storage.setItem(key, JSON.stringify(item));
+            storage.removeItem(key);
+            const result = storage.getItem(key);
+            expect(result).toEqual(null);
+        });
+
+        it("can clear items", () => {
+            storage.setItem(key, JSON.stringify(item));
+            storage.clear();
+            const result = storage.getItem(key);
+            expect(result).toEqual(null);
+        });
+
+        it("ignores corrupt files", () => {
+            storage.setItem(key, JSON.stringify(item));
+            const filename = fs.readdirSync(location)[0];
+            fs.writeFileSync(location + "/" + filename, corruptData);
+
+            storage = new LocalStorage({
+                clearPersistency: false,
+                location
+            });
+            expect(storage.getItem(key)).toBe(null);
+        });
+
+        it("overwrites corrupt files", () => {
+            storage.setItem(key, JSON.stringify(item));
+            const filename = fs.readdirSync(location)[0];
+            fs.writeFileSync(location + "/" + filename, corruptData);
+
+            storage = new LocalStorage({
+                clearPersistency: false,
+                location
+            });
+
+            storage.setItem(key, JSON.stringify(item));
+            const files = fs.readdirSync(location);
+            expect(files.length).toBe(1);
+        });
+
+        it("ignores other files", () => {
+            storage.setItem(key, JSON.stringify(item));
+            fs.writeFileSync(location + "/otherFile", "other Data");
+
+            storage = new LocalStorage({
+                clearPersistency: false,
+                location
+            });
+
+            const files = fs.readdirSync(location);
+            expect(files.length).toBe(2);
+        });
     });
 });
