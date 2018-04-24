@@ -267,10 +267,14 @@ function WebSocketLibjoynrRuntime(provisioning) {
             persistencyProvisioning.capabilities ||
             persistencyProvisioning.publications
         ) {
-            persistency = new LocalStorage({
-                clearPersistency: persistencyProvisioning.clearPersistency,
-                location: persistencyProvisioning.location
-            });
+            try {
+                persistency = new LocalStorage({
+                    clearPersistency: persistencyProvisioning.clearPersistency,
+                    location: persistencyProvisioning.location
+                });
+            } catch (e) {
+                return Promise.reject(e);
+            }
         }
         const routingTablePersistency = persistencyProvisioning.routingTable ? persistency : undefined;
         const capabilitiesPersistency = persistencyProvisioning.capabilities ? persistency : new MemoryStorage();
