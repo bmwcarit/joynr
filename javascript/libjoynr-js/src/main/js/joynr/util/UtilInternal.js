@@ -263,7 +263,9 @@ function timeoutToPromise(time) {
 UtilInternal.timeoutPromise = function(promise, timeoutMs) {
     const deferred = UtilInternal.createDeferred();
     promise.then(deferred.resolve).catch(deferred.reject);
+    /*eslint-disable promise/catch-or-return */
     timeoutToPromise(timeoutMs).then(deferred.reject);
+    /*eslint-enable promise/catch-or-return */
     return deferred.promise;
 };
 
@@ -274,7 +276,9 @@ function defer(resolve, reject) {
 
 UtilInternal.createDeferred = function() {
     const deferred = {};
+    /*eslint-disable promise/avoid-new */
     deferred.promise = new Promise(defer.bind(deferred));
+    /*eslint-enable promise/avoid-new */
     return deferred;
 };
 

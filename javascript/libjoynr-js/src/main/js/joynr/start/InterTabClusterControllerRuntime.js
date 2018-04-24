@@ -1,3 +1,4 @@
+/*eslint promise/catch-or-return: "off"*/
 /*
  * #%L
  * %%
