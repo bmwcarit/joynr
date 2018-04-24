@@ -21,6 +21,9 @@
  * @returns constructor for a localStorage object
  */
 
+const path = require("path");
+const fs = require("fs");
+
 if (global.window !== undefined) {
     module.exports = require("./LocalStorage");
 } else {
@@ -43,17 +46,33 @@ if (global.window !== undefined) {
         //the local storage wrapper uses the optionally given location
         const location = settings.location || "./localStorageStorage";
 
-        this._myStorage = storage.create({
-            dir: location,
-            ttl: false,
-            forgiveParseErrors: true
-        });
+        try {
+            this._myStorage = storage.create({
+                dir: location,
+                ttl: false,
+                forgiveParseErrors: true
+            });
 
-        this._myStorage.initSync();
+            this._myStorage.initSync();
 
-        Typing.checkPropertyIfDefined(settings.clearPersistency, "Boolean", "settings.clearPersistency");
-        if (settings.clearPersistency) {
-            this._myStorage.clearSync();
+            Typing.checkPropertyIfDefined(settings.clearPersistency, "Boolean", "settings.clearPersistency");
+            if (settings.clearPersistency) {
+                this._myStorage.clearSync();
+            }
+        } catch (error) {
+            if (error.message.includes("EISDIR: illegal operation on a directory, read")) {
+                const locationPath = path.isAbsolute(location) ? location : path.join(process.cwd(), location);
+                const files = fs.readdirSync(locationPath);
+                const subDirectories = files.filter(file => {
+                    const filePath = path.join(locationPath, file);
+                    return fs.lstatSync(filePath).isDirectory();
+                });
+                throw new Error(
+                    "joynr configuration error: Persistency subdirectory must not include other subdirectories. Directories found: " +
+                        JSON.stringify(subDirectories)
+                );
+            }
+            throw error;
         }
     };
     LocalStorageWrapper.prototype.setItem = function(key, value) {

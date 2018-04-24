@@ -73,7 +73,12 @@ describe("local storage", () => {
                 clearPersistency: false,
                 location
             });
-        }).not.toThrow();
+        }).toThrow(
+            new Error(
+                "joynr configuration error: Persistency subdirectory must not include other subdirectories. Directories found: " +
+                    JSON.stringify([subDirectoryName])
+            )
+        );
         fs.rmdirSync(subDirectoryLocation);
     });
 
