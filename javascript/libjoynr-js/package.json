@@ -7,12 +7,14 @@
   "bugs": "https://github.com/bmwcarit/joynr/issues",
   "devDependencies": {
     "browserify": "16.1.0",
-    "exit-hook": "1.1.1",
     "eslint": "4.15.0",
+    "eslint-plugin-promise": "^3.5.0",
+    "exit-hook": "1.1.1",
     "jasmine": "2.4.1",
     "jasmine-core": "2.4.1",
     "jasmine-node": ">=2.0.0",
     "jasmine-reporters": "2.1.1",
+    "joynr": "file:./src/main/js",
     "karma": "2.0.0",
     "karma-chrome-launcher": "2.2.0",
     "karma-coverage": "0.5.3",
@@ -20,8 +22,7 @@
     "karma-junit-reporter": "0.3.8",
     "karma-spec-reporter": "0.0.23",
     "karma-verbose-reporter": "0.0.3",
-    "prettier": "1.8.2",
-    "joynr": "file:./src/main/js"
+    "prettier": "1.8.2"
   },
   "config": {
     "glob": "src/{{main/js/global,main/js/joynr,test/js/!(integration)}/**/*.js,main/js/*.js,test/js/*.js}"
