@@ -161,4 +161,27 @@ describe("libjoynr-js.joynr.GenerationUtil", function() {
             expect(testObject.getMemberType("memberName")).toEqual(memberName);
         });
     });
+
+    describe(".addMapUtility", function() {
+        it("adds non enumerable put get and remove methods to the testObjects prototype", function() {
+            function TestMap() {}
+            Util.addMapUtility(TestMap);
+            expect(TestMap.prototype.put).toEqual(jasmine.any(Function));
+            expect(TestMap.prototype.get).toEqual(jasmine.any(Function));
+            expect(TestMap.prototype.remove).toEqual(jasmine.any(Function));
+
+            var testMap = new TestMap();
+            var item1 = "item1";
+            var item2 = "item2";
+            var item3 = "item3";
+            testMap.item1 = item1;
+            testMap.item2 = item2;
+            testMap.item3 = item3;
+
+            expect(Object.keys(testMap)).toEqual([item1, item2, item3]);
+            for (var key in testMap) {
+                expect(typeof key).toBe("string");
+            }
+        });
+    });
 });

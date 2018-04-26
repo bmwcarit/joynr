@@ -141,18 +141,28 @@ GenerationUtil.addMemberTypeGetter = function(joynrObject) {
     });
 };
 
+function put(key, value) {
+    this[key] = value;
+}
+
+function get(key) {
+    return this[key];
+}
+
+function remove(key) {
+    delete this[key];
+}
+
 GenerationUtil.addMapUtility = function(joynrObject, propertyTypeName) {
-    joynrObject.prototype.put = function(key, value) {
-        this[key] = value;
-    };
-
-    joynrObject.prototype.get = function(key) {
-        return this[key];
-    };
-
-    joynrObject.prototype.remove = function(key) {
-        delete this[key];
-    };
+    Object.defineProperty(joynrObject.prototype, "put", {
+        value: put
+    });
+    Object.defineProperty(joynrObject.prototype, "get", {
+        value: get
+    });
+    Object.defineProperty(joynrObject.prototype, "remove", {
+        value: remove
+    });
 
     Object.defineProperty(joynrObject, "checkMembers", {
         value: function checkMembers(instance, check) {
