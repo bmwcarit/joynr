@@ -9,6 +9,7 @@ None.
 
 ## Other changes
 * **[JS]** backport from fixes of 1.2.0
+* **[JS]** the functions put, get and remove of joynrMaps are no longer enumerable
 
 # joynr 1.1.2
 
