@@ -370,6 +370,8 @@ function End2EndAbstractTest(provisioningSuffix, providerChildProcessName, proce
             })
             .then(() => {
                 delete require.cache;
+                // remove old joynr exit handler
+                process.removeAllListeners("exit");
                 /*eslint-disable */
                 joynr = require("joynr");
                 /*eslint-enable */

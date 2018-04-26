@@ -179,12 +179,13 @@ IntegrationUtils.shutdownChildProcess = function(childId) {
 };
 
 IntegrationUtils.shutdownLibjoynr = function() {
-    const promise = joynr.shutdown();
-
-    promise.catch(error => {
-        IntegrationUtils.outputPromiseError(error);
-    });
-    return promise;
+    try {
+        return joynr.shutdown().catch(error => {
+            IntegrationUtils.outputPromiseError(error);
+        });
+    } catch (error) {
+        return Promise.resolve();
+    }
 };
 
 IntegrationUtils.waitALittle = function waitALittle(time) {
