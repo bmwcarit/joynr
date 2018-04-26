@@ -362,18 +362,6 @@
 				</executions>
 			</plugin>
 
-			<!-- jslint-ing src/main/js -->
-			<plugin>
-				<groupId>com.googlecode.jslint4java</groupId>
-				<artifactId>jslint4java-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>lint-project</id>
-						<phase>process-sources</phase>
-					</execution>
-				</executions>
-			</plugin>
-
 			<!-- Copy over dependencies to lib -->
 			<plugin>
 				<artifactId>maven-resources-plugin</artifactId>
