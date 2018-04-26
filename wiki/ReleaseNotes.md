@@ -2,6 +2,14 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.1.3
+
+## API relevant changes
+None.
+
+## Other changes
+* **[JS]** backport from fixes of 1.2.0
+
 # joynr 1.1.2
 
 ## API relevant changes
