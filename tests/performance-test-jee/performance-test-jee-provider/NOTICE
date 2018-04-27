@@ -64,4 +64,5 @@ This project has dependencies to:
   Logging under The Apache Software License, Version 2.0
   Reflections under WTFPL or The New BSD License
   SLF4J API Module under MIT License
+  SLF4J JDK14 Binding under MIT License
 
