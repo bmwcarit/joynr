@@ -1087,14 +1087,40 @@ void LocalCapabilitiesDirectory::checkExpiredDiscoveryEntries(
                            "Following local discovery entries expired: {}, #localCapabilities: {}",
                            joinToString(removedLocalCapabilities),
                            localCapabilities.size());
-        }
 
+            for (const auto& capability : removedLocalCapabilities) {
+                if (auto messageRouterSharedPtr = messageRouter.lock()) {
+                    JOYNR_LOG_INFO(logger(),
+                                   "removeNextHop for {} because localCapability has been expired",
+                                   capability.getParticipantId());
+                    messageRouterSharedPtr->removeNextHop(capability.getParticipantId());
+                } else {
+                    JOYNR_LOG_FATAL(logger(),
+                                    "could not removeNextHop for {} because messageRouter is "
+                                    "not available",
+                                    capability.getParticipantId());
+                }
+            }
+        }
         if (!removedGlobalCapabilities.empty()) {
             JOYNR_LOG_INFO(
                     logger(),
                     "Following global discovery entries expired: {}, #globalCapabilities: {}",
                     joinToString(removedGlobalCapabilities),
                     globalCapabilities.size());
+            for (const auto& capability : removedGlobalCapabilities) {
+                if (auto messageRouterSharedPtr = messageRouter.lock()) {
+                    JOYNR_LOG_INFO(logger(),
+                                   "removeNextHop for {} because globalCapability has been expired",
+                                   capability.getParticipantId());
+                    messageRouterSharedPtr->removeNextHop(capability.getParticipantId());
+                } else {
+                    JOYNR_LOG_FATAL(logger(),
+                                    "could not removeNextHop for {} because messageRouter is "
+                                    "not available",
+                                    capability.getParticipantId());
+                }
+            }
         }
 
         if (!removedLocalCapabilities.empty() || !removedGlobalCapabilities.empty()) {
