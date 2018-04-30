@@ -18,19 +18,10 @@
  */
 package io.joynr.capabilities.directory;
 
-import static org.junit.Assert.assertEquals;
-import io.joynr.provider.PromiseKeeper;
+import static org.junit.Assert.assertArrayEquals;
 
 import java.util.Properties;
 import java.util.UUID;
-
-import joynr.system.RoutingTypes.Address;
-import joynr.system.RoutingTypes.ChannelAddress;
-import joynr.types.GlobalDiscoveryEntry;
-import joynr.types.CustomParameter;
-import joynr.types.ProviderQos;
-import joynr.types.ProviderScope;
-import joynr.types.Version;
 
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -38,6 +29,15 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import io.joynr.provider.PromiseKeeper;
+import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.ChannelAddress;
+import joynr.types.CustomParameter;
+import joynr.types.GlobalDiscoveryEntry;
+import joynr.types.ProviderQos;
+import joynr.types.ProviderScope;
+import joynr.types.Version;
 
 public class CapabilitiesDirectoryTest {
 
@@ -148,14 +148,14 @@ public class CapabilitiesDirectoryTest {
 
         PromiseKeeper lookupCapInfo2 = new PromiseKeeper();
         capabilitiesDirectory.lookup(new String[]{ domain }, interface2).then(lookupCapInfo2);
-        assertDiscoveryEntriesEqual(new GlobalDiscoveryEntry[]{ discoveryEntry2 },
-                                    (GlobalDiscoveryEntry[]) lookupCapInfo2.getValues()[0]);
+        assertArrayEquals(new GlobalDiscoveryEntry[]{ discoveryEntry2 },
+                          (GlobalDiscoveryEntry[]) lookupCapInfo2.getValues()[0]);
 
         PromiseKeeper lookupCapInfo3 = new PromiseKeeper();
         capabilitiesDirectory.lookup(new String[]{ domain }, interface3).then(lookupCapInfo3);
 
         GlobalDiscoveryEntry[] passedDiscoveryEntries = (GlobalDiscoveryEntry[]) lookupCapInfo3.getValues()[0];
-        assertDiscoveryEntriesEqual(new GlobalDiscoveryEntry[]{ discoveryEntry3 }, passedDiscoveryEntries);
+        assertArrayEquals(new GlobalDiscoveryEntry[]{ discoveryEntry3 }, passedDiscoveryEntries);
     }
 
     @Test
@@ -165,8 +165,8 @@ public class CapabilitiesDirectoryTest {
         PromiseKeeper lookupCapInfo1 = new PromiseKeeper();
         capabilitiesDirectory.lookup(new String[]{ domain }, interface1).then(lookupCapInfo1);
         lookupCapInfo1.waitForSettlement();
-        assertDiscoveryEntriesEqual(new GlobalDiscoveryEntry[]{ discoveryEntry1 },
-                                    (GlobalDiscoveryEntry[]) lookupCapInfo1.getValues()[0]);
+        assertArrayEquals(new GlobalDiscoveryEntry[]{ discoveryEntry1 },
+                          (GlobalDiscoveryEntry[]) lookupCapInfo1.getValues()[0]);
 
     }
 
@@ -178,24 +178,7 @@ public class CapabilitiesDirectoryTest {
         PromiseKeeper lookupCapInfo4 = new PromiseKeeper();
         capabilitiesDirectory.lookup(new String[]{ domain }, interface4).then(lookupCapInfo4);
         lookupCapInfo4.waitForSettlement();
-        assertDiscoveryEntriesEqual(new GlobalDiscoveryEntry[]{ discoveryEntry4FromAnotherNodeInCluster },
-                                    (GlobalDiscoveryEntry[]) lookupCapInfo4.getValues()[0]);
-    }
-
-    private void assertDiscoveryEntriesEqual(GlobalDiscoveryEntry[] expectedDiscoveryEntries,
-                                             GlobalDiscoveryEntry[] passedDiscoveryEntries) {
-        int i = 0;
-        for (GlobalDiscoveryEntry expectedGlobalDiscoveryEntry : expectedDiscoveryEntries) {
-            GlobalDiscoveryEntry passedDiscoveryEntry = passedDiscoveryEntries[i];
-            assertEquals(expectedGlobalDiscoveryEntry.getDomain(), passedDiscoveryEntry.getDomain());
-            assertEquals(expectedGlobalDiscoveryEntry.getInterfaceName(), passedDiscoveryEntry.getInterfaceName());
-            assertEquals(expectedGlobalDiscoveryEntry.getAddress(), passedDiscoveryEntry.getAddress());
-            assertEquals(expectedGlobalDiscoveryEntry.getParticipantId(), passedDiscoveryEntry.getParticipantId());
-            assertEquals(expectedGlobalDiscoveryEntry.getQos(), passedDiscoveryEntry.getQos());
-            assertEquals(expectedGlobalDiscoveryEntry.getLastSeenDateMs(), passedDiscoveryEntry.getLastSeenDateMs());
-            assertEquals(expectedGlobalDiscoveryEntry.getExpiryDateMs(), passedDiscoveryEntry.getExpiryDateMs());
-            assertEquals(expectedGlobalDiscoveryEntry.getPublicKeyId(), passedDiscoveryEntry.getPublicKeyId());
-            i++;
-        }
+        assertArrayEquals(new GlobalDiscoveryEntry[]{ discoveryEntry4FromAnotherNodeInCluster },
+                          (GlobalDiscoveryEntry[]) lookupCapInfo4.getValues()[0]);
     }
 }
