@@ -374,6 +374,7 @@
 						-->
 						<exclude>jsdoc3.conf.json</exclude>
 						<exclude>package.json</exclude>
+						<exclude>src/main/browserify/package.json</exclude>
 						<exclude>src/main/js/package.json</exclude>
 						<exclude>src/main/js/lib/JsonParser.js</exclude>
 						<exclude>src/test/resources/node/shutdown/package.json</exclude>
