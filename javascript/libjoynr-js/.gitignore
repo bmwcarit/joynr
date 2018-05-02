@@ -2,6 +2,7 @@ userdirectorydb
 .classpath
 .project
 .settings/
+.nyc_output/
 src/main/js/generated*
 src/test/generated*
 src/main/js/joynr/buildSignature.js
