@@ -164,9 +164,11 @@ void LibJoynrRuntime::init(
     dispatcherMessagingSkeleton = std::make_shared<InProcessMessagingSkeleton>(joynrDispatcher);
     dispatcherAddress = std::make_shared<InProcessMessagingAddress>(dispatcherMessagingSkeleton);
 
-    publicationManager = std::make_shared<PublicationManager>(singleThreadIOService->getIOService(),
-                                                              messageSender,
-                                                              messagingSettings.getTtlUpliftMs());
+    publicationManager = std::make_shared<PublicationManager>(
+            singleThreadIOService->getIOService(),
+            messageSender,
+            libjoynrSettings->isSubscriptionPersistencyEnabled(),
+            messagingSettings.getTtlUpliftMs());
     publicationManager->loadSavedAttributeSubscriptionRequestsMap(
             libjoynrSettings->getSubscriptionRequestPersistenceFilename());
     publicationManager->loadSavedBroadcastSubscriptionRequestsMap(
