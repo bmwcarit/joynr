@@ -31,7 +31,7 @@ var ExtendedInterfaceEnumerationInTypeCollection = require("../generated-javascr
 var ExtendedTypeCollectionEnumerationInTypeCollection = require("../generated-javascript/joynr/interlanguagetest/namedTypeCollection2/ExtendedTypeCollectionEnumerationInTypeCollection.js");
 var Enumeration = require("../generated-javascript/joynr/interlanguagetest/Enumeration.js");
 var MethodWithAnonymousErrorEnumErrorEnum = require("../generated-javascript/joynr/interlanguagetest/TestInterface/MethodWithAnonymousErrorEnumErrorEnum.js");
-var ExtendedErrorEnumTc = require("../generated-javascript/joynr/interlanguagetest/namedTypeCollection2/ExtendedErrorEnumTc.js")
+var ExtendedErrorEnumTc = require("../generated-javascript/joynr/interlanguagetest/namedTypeCollection2/ExtendedErrorEnumTc.js");
 var MethodWithExtendedErrorEnumErrorEnum = require("../generated-javascript/joynr/interlanguagetest/TestInterface/MethodWithExtendedErrorEnumErrorEnum.js");
 var MapStringString = require("../generated-javascript/joynr/interlanguagetest/namedTypeCollection2/MapStringString.js");
 
@@ -133,9 +133,9 @@ describe("Consumer test", function() {
                 var doneSpy = jasmine.createSpy("done");
                 runs(function() {
                     initialized = false;
-                    joynr.shutdown().then(function () {
-                        delete require.cache[require.resolve('joynr')];
-                        joynr = require('joynr');
+                    joynr.shutdown().then(function() {
+                        delete require.cache;
+                        joynr = require("joynr");
                         doneSpy();
                     });
                 });

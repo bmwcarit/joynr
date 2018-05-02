@@ -17,7 +17,21 @@
  * #L%
  */
 
-var joynr = require("joynr");
+var useBrowserify = process.env.browserify;
+var joynr = useBrowserify === "true"? require("joynr-bundle") : require("joynr");
+
+// generated joynr Types call require("joynr") to register themselves in the type registry
+// make sure that they use the bundled joynr if necessary
+const mod = require("module");
+let req = mod.prototype.require;
+
+mod.prototype.require = function(md) {
+  if (md === "joynr") {
+    return joynr;
+  }
+  return req.call(this, md);
+};
+
 var log = require("test-base").logging.log;
 
 // imports

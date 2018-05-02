@@ -8,6 +8,7 @@
   "dependencies": {
     "bluebird": "3.3.5",
     "joynr": "file:../../javascript/libjoynr-js/src/main/js",
+    "joynr-bundle": "file:../../javascript/libjoynr-js/src/main/browserify",
     "test-base": "file:../test-base/target/classes"
   },
   "config": {
@@ -15,6 +16,7 @@
   },
   "scripts": {
     "startprovider": "node src/main/js/provider.js $npm_package_config_domain",
-    "startjasmine": "jasmine-node --verbose --junitreport --config domain $npm_package_config_domain src/main/js/consumer.spec.js"
+    "startjasmine": "jasmine-node --verbose --junitreport --config domain $npm_package_config_domain src/main/js/consumer.spec.js",
+    "startjasminebundle": "jasmine-node --verbose --junitreport --config domain $npm_package_config_domain --config browserify true src/main/js/consumer.spec.js"
   }
 }
