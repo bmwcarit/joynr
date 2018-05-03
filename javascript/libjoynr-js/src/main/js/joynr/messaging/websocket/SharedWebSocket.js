@@ -38,63 +38,6 @@ function webSocketAddressToUrl(address) {
 }
 
 /**
- * @param {WebSocket}
- *            websocket to use for the initialization
- * @param {String}
- *            localAddress address used by the cluster controller to contact this
- *            libjoynr
- */
-function initializeConnection(websocket, localAddress) {
-    websocket.send(websocket.encodeString(JSON.stringify(localAddress)), { binary: true });
-}
-
-/**
- * @param {WebSocket}
- *            websocket to use for sending messages
- * @param {Array}
- *            queuedMessages
- */
-function sendQueuedMessages(websocket, queuedMessages) {
-    let queued;
-    while (queuedMessages.length) {
-        queued = queuedMessages.shift();
-        try {
-            websocket.send(queued, { binary: true });
-            // Error is thrown if the socket is no longer open
-        } catch (e) {
-            // so add the message back to the front of the queue
-            queuedMessages.unshift(queued);
-            throw e;
-        }
-    }
-}
-
-function sendMessage(websocket, joynrMessage, queuedMessages) {
-    let marshaledMessage;
-    try {
-        marshaledMessage = websocket.marshalJoynrMessage(joynrMessage);
-    } catch (e) {
-        log.error("could not marshal joynrMessage: " + joynrMessage.msgId + " " + e);
-        return Promise.resolve();
-    }
-
-    if (websocket.readyState === WebSocket.OPEN) {
-        try {
-            websocket.send(marshaledMessage, { binary: true });
-            // Error is thrown if the socket is no longer open, so requeue to the front
-        } catch (e) {
-            // add the message back to the front of the queue
-            queuedMessages.unshift(joynrMessage);
-            log.error("could not send joynrMessage: " + joynrMessage.msgId + " requeuing message. Error: " + e);
-        }
-    } else {
-        // push new messages onto the back of the queue
-        queuedMessages.push(marshaledMessage);
-    }
-    return Promise.resolve();
-}
-
-/**
  * @name SharedWebSocket
  * @constructor
  * @param {Object}
@@ -124,6 +67,63 @@ const SharedWebSocket = function SharedWebSocket(settings) {
     const queuedMessages = [];
     let closed = false;
     let reconnectTimer;
+
+    /**
+     * @param {WebSocket}
+     *            websocket to use for the initialization
+     * @param {String}
+     *            localAddress address used by the cluster controller to contact this
+     *            libjoynr
+     */
+    function initializeConnection() {
+        websocket.send(websocket.encodeString(JSON.stringify(localAddress)), { binary: true });
+    }
+
+    function sendMessage(joynrMessage) {
+        let marshaledMessage;
+        try {
+            marshaledMessage = websocket.marshalJoynrMessage(joynrMessage);
+        } catch (e) {
+            log.error("could not marshal joynrMessage: " + joynrMessage.msgId + " " + e);
+            return Promise.resolve();
+        }
+
+        if (websocket.readyState === WebSocket.OPEN) {
+            try {
+                websocket.send(marshaledMessage, { binary: true });
+                // Error is thrown if the socket is no longer open, so requeue to the front
+            } catch (e) {
+                // add the message back to the front of the queue
+                queuedMessages.unshift(joynrMessage);
+                log.error("could not send joynrMessage: " + joynrMessage.msgId + " requeuing message. Error: " + e);
+            }
+        } else {
+            // push new messages onto the back of the queue
+            queuedMessages.push(marshaledMessage);
+        }
+        return Promise.resolve();
+    }
+
+    /**
+     * @param {WebSocket}
+     *            websocket to use for sending messages
+     * @param {Array}
+     *            queuedMessages
+     */
+    function sendQueuedMessages() {
+        let queued;
+        while (queuedMessages.length) {
+            queued = queuedMessages.shift();
+            try {
+                websocket.send(queued, { binary: true });
+                // Error is thrown if the socket is no longer open
+            } catch (e) {
+                // so add the message back to the front of the queue
+                queuedMessages.unshift(queued);
+                throw e;
+            }
+        }
+    }
 
     function resetConnection() {
         reconnectTimer = undefined;
@@ -192,8 +192,8 @@ const SharedWebSocket = function SharedWebSocket(settings) {
     function onOpen() {
         try {
             log.debug("connection opened.");
-            initializeConnection(websocket, localAddress);
-            sendQueuedMessages(websocket, queuedMessages);
+            initializeConnection();
+            sendQueuedMessages();
         } catch (e) {
             resetConnection();
         }
@@ -209,7 +209,7 @@ const SharedWebSocket = function SharedWebSocket(settings) {
      */
     this.send = function send(joynrMessage) {
         log.debug(">>> OUTGOING >>> message with ID " + joynrMessage.msgId);
-        return sendMessage(websocket, joynrMessage, queuedMessages);
+        return sendMessage(joynrMessage);
     };
 
     /**
