@@ -59,7 +59,7 @@ function sendQueuedMessages(websocket, queuedMessages) {
     while (queuedMessages.length) {
         queued = queuedMessages.shift();
         try {
-            websocket.send(websocket.marshalJoynrMessage(queued), { binary: true });
+            websocket.send(queued, { binary: true });
             // Error is thrown if the socket is no longer open
         } catch (e) {
             // so add the message back to the front of the queue
@@ -70,9 +70,17 @@ function sendQueuedMessages(websocket, queuedMessages) {
 }
 
 function sendMessage(websocket, joynrMessage, queuedMessages) {
+    let marshaledMessage;
+    try {
+        marshaledMessage = websocket.marshalJoynrMessage(joynrMessage);
+    } catch (e) {
+        log.error("could not marshal joynrMessage: " + joynrMessage.msgId + " " + e);
+        return Promise.resolve();
+    }
+
     if (websocket.readyState === WebSocket.OPEN) {
         try {
-            websocket.send(websocket.marshalJoynrMessage(joynrMessage), { binary: true });
+            websocket.send(marshaledMessage, { binary: true });
             // Error is thrown if the socket is no longer open, so requeue to the front
         } catch (e) {
             // add the message back to the front of the queue
@@ -81,7 +89,7 @@ function sendMessage(websocket, joynrMessage, queuedMessages) {
         }
     } else {
         // push new messages onto the back of the queue
-        queuedMessages.push(joynrMessage);
+        queuedMessages.push(marshaledMessage);
     }
     return Promise.resolve();
 }
