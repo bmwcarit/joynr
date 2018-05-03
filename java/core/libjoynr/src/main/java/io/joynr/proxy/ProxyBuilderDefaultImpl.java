@@ -174,7 +174,7 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
 
             @Override
             public void onProxyCreationError(JoynrRuntimeException error) {
-                logger.error("error creating proxy: interface: {} domains: {}, error", new Object[]{ interfaceName,
+                logger.error("error creating proxy: interface: {} domains: {}, error: {}", new Object[]{ interfaceName,
                         domains, error.getMessage() });
             }
         });
