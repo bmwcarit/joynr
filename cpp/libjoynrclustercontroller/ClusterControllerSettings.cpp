@@ -966,6 +966,11 @@ void ClusterControllerSettings::printSettings() const
                     SETTING_GLOBAL_CAPABILITIES_DIRECTORY_COMPRESSED_MESSAGES_ENABLED(),
                     isGlobalCapabilitiesDirectoryCompressedMessagesEnabled());
 
+    JOYNR_LOG_DEBUG(logger(),
+                    "SETTING: {} = {})",
+                    SETTING_PURGE_EXPIRED_DISCOVERY_ENTRIES_INTERVAL_MS(),
+                    getPurgeExpiredDiscoveryEntriesIntervalMs());
+
     if (settings.get<bool>(SETTING_ACCESS_CONTROL_ENABLE())) {
         JOYNR_LOG_DEBUG(logger(),
                         "SETTING: {} = {})",

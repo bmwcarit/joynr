@@ -878,6 +878,10 @@ void MessagingSettings::printSettings() const
     JOYNR_LOG_DEBUG(logger(), "SETTING: {} = {})", SETTING_TTL_UPLIFT_MS(), getTtlUpliftMs());
     JOYNR_LOG_DEBUG(logger(),
                     "SETTING: {} = {})",
+                    SETTING_DISCOVERY_ENTRY_EXPIRY_INTERVAL_MS(),
+                    settings.get<std::int64_t>(SETTING_DISCOVERY_ENTRY_EXPIRY_INTERVAL_MS()));
+    JOYNR_LOG_DEBUG(logger(),
+                    "SETTING: {} = {})",
                     SETTING_ROUTING_TABLE_GRACE_PERIOD_MS(),
                     settings.get<std::int64_t>(SETTING_ROUTING_TABLE_GRACE_PERIOD_MS()));
     JOYNR_LOG_DEBUG(logger(),
