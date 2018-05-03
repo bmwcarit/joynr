@@ -235,7 +235,11 @@ const SharedWebSocket = function SharedWebSocket(settings) {
         set(newCallback) {
             if (typeof newCallback === "function") {
                 onmessageCallback = function(data) {
-                    websocket.unmarshalJoynrMessage(data, newCallback);
+                    try {
+                        websocket.unmarshalJoynrMessage(data, newCallback);
+                    } catch (e) {
+                        log.error("could not unmarshal joynrMessage: " + e);
+                    }
                 };
                 websocket.onmessage = onmessageCallback;
             } else {
