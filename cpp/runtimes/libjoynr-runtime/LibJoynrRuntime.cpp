@@ -249,9 +249,11 @@ void LibJoynrRuntime::init(
         try {
             globalAddressFuture->get(routingProxyTtl, globalAddress);
         } catch (const exceptions::JoynrRuntimeException& error) {
-            exceptions::JoynrRuntimeException wrappedError(
+            const std::string errorMessage =
                     "Failed to retrieve global address from cluster controller: " +
-                    error.getMessage());
+                    error.getMessage();
+            JOYNR_LOG_FATAL(logger(), errorMessage);
+            exceptions::JoynrRuntimeException wrappedError(errorMessage);
             if (onError) {
                 onError(wrappedError);
             }
