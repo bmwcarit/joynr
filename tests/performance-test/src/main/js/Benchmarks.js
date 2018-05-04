@@ -19,20 +19,20 @@
  * #L%
  */
 
-var ComplexStruct = require("../generated-javascript/joynr/tests/performance/Types/ComplexStruct.js");
-var PerformanceUtilities = require("./performanceutilities.js");
-var options = PerformanceUtilities.getCommandLineOptionsOrDefaults();
+const ComplexStruct = require("../generated-javascript/joynr/tests/performance/Types/ComplexStruct.js");
+const PerformanceUtilities = require("./performanceutilities.js");
+const options = PerformanceUtilities.getCommandLineOptionsOrDefaults();
 
 function Benchmarks(proxy, loadedJoynr) {
     return {
         echoString: {
-            generateData: function(i) {
+            generateData(i) {
                 return {
                     data: PerformanceUtilities.createString(options.stringLength - 2, "x") + "-" + i
                 };
             },
-            testProcedure: function(args) {
-                return proxy.echoString(args).then(function(returnValues) {
+            testProcedure(args) {
+                return proxy.echoString(args).then(returnValues => {
                     if (args.data !== returnValues.responseData) {
                         throw new Error(
                             "Echo " +
@@ -47,18 +47,18 @@ function Benchmarks(proxy, loadedJoynr) {
         },
 
         attributeString: {
-            generateData: function(i) {
+            generateData(i) {
                 return {
                     data: PerformanceUtilities.createString(options.stringLength - 2, "x") + "-" + i
                 };
             },
-            testProcedure: function(args) {
+            testProcedure(args) {
                 return proxy.simpleAttribute.set(args);
             }
         },
 
         echoComplexStruct: {
-            generateData: function(i) {
+            generateData(i) {
                 return {
                     data: new ComplexStruct({
                         num32: PerformanceUtilities.createRandomNumber(100000),
@@ -68,8 +68,8 @@ function Benchmarks(proxy, loadedJoynr) {
                     })
                 };
             },
-            testProcedure: function(args) {
-                return proxy.echoComplexStruct(args).then(function(returnValues) {
+            testProcedure(args) {
+                return proxy.echoComplexStruct(args).then(returnValues => {
                     if (
                         args.data.num32 !== returnValues.responseData.num32 ||
                         args.data.num64 !== returnValues.responseData.num64 ||
@@ -88,18 +88,18 @@ function Benchmarks(proxy, loadedJoynr) {
             }
         },
         echoByteArray: {
-            generateData: function(i) {
-                var byteArraySize = options.byteArrayLength;
-                var args = {
+            generateData(i) {
+                const byteArraySize = options.byteArrayLength;
+                const args = {
                     data: PerformanceUtilities.createByteArray(byteArraySize, 1)
                 };
-                var firstElement = i % 128;
+                const firstElement = i % 128;
                 args.data[0] = firstElement;
                 return args;
             },
-            testProcedure: function(args) {
-                return proxy.echoByteArray(args).then(function(returnValues, i) {
-                    var firstElement = args.data[0];
+            testProcedure(args) {
+                return proxy.echoByteArray(args).then((returnValues, i) => {
+                    const firstElement = args.data[0];
                     if (
                         args.data.length !== returnValues.responseData.length ||
                         firstElement !== returnValues.responseData[0]
@@ -117,22 +117,22 @@ function Benchmarks(proxy, loadedJoynr) {
             }
         },
         registerPlentyOfConsumers: {
-            generateData: function(i) {
-                var data = {
+            generateData(i) {
+                const data = {
                     data: PerformanceUtilities.createString(options.stringLength - 2, "x") + "-" + i
                 };
-                var number = i;
+                const number = i;
                 return { data, number };
             },
-            testProcedure: function(args) {
-                var messagingQos = new loadedJoynr.messaging.MessagingQos({
+            testProcedure(args) {
+                const messagingQos = new loadedJoynr.messaging.MessagingQos({
                     ttl: 3600000
                 });
-                var EchoProxy = require("../generated-javascript/joynr/tests/performance/EchoProxy.js");
+                const EchoProxy = require("../generated-javascript/joynr/tests/performance/EchoProxy.js");
                 return loadedJoynr.proxyBuilder
                     .build(EchoProxy, {
                         domain: options.domain,
-                        messagingQos: messagingQos
+                        messagingQos
                     })
                     .then(proxy => proxy.simpleAttribute.set(args.data));
             }

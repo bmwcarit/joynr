@@ -19,101 +19,101 @@
  * #L%
  */
 
-var PerformanceUtilities = require("./performanceutilities");
-var heapdump = require("heapdump");
+const PerformanceUtilities = require("./performanceutilities");
+const heapdump = require("heapdump");
 
-var options = PerformanceUtilities.getCommandLineOptionsOrDefaults();
+const options = PerformanceUtilities.getCommandLineOptionsOrDefaults();
 PerformanceUtilities.overrideRequire();
 
-var EchoProvider = require("../generated-javascript/joynr/tests/performance/EchoProvider.js");
-var EchoProviderImpl = require("./EchoProviderImpl.js");
+const EchoProvider = require("../generated-javascript/joynr/tests/performance/EchoProvider.js");
+const EchoProviderImpl = require("./EchoProviderImpl.js");
 
-var domain = options.domain;
+const domain = options.domain;
 
-var joynr = require("joynr");
+let joynr = require("joynr");
 joynr.selectRuntime("websocket.libjoynr");
 
-var testbase = require("test-base");
-var provisioning = PerformanceUtilities.getProvisioning(true);
-var log = testbase.logging.log;
-let error = testbase.logging.error;
+const testbase = require("test-base");
+const provisioning = PerformanceUtilities.getProvisioning(true);
+const log = testbase.logging.log;
+const error = testbase.logging.error;
 log("domain: " + domain);
 
 joynr
     .load(provisioning)
-    .then(function(loadedJoynr) {
+    .then(loadedJoynr => {
         log("joynr started");
         joynr = loadedJoynr;
 
-        var providerQos = new joynr.types.ProviderQos({
+        const providerQos = new joynr.types.ProviderQos({
             customParameters: [],
             priority: Date.now(),
             scope: joynr.types.ProviderScope.GLOBAL,
             supportsOnChangeSubscriptions: true
         });
 
-        var echoProvider = joynr.providerBuilder.build(EchoProvider, EchoProviderImpl.implementation);
+        const echoProvider = joynr.providerBuilder.build(EchoProvider, EchoProviderImpl.implementation);
 
         joynr.registration
             .registerProvider(domain, echoProvider, providerQos)
-            .then(function() {
+            .then(() => {
                 log("provider registered successfully");
                 process.send({
                     msg: "initialized"
                 });
             })
-            .catch(function(error) {
+            .catch(error => {
                 log("error registering provider: " + error.toString());
             });
 
         return loadedJoynr;
     })
-    .catch(function(error) {
+    .catch(error => {
         throw error;
     });
 
 function fireBroadcasts(numberOfBroadCasts) {
-    var implementation = EchoProviderImpl.implementation;
+    const implementation = EchoProviderImpl.implementation;
 
     for (let i = 0; i < numberOfBroadCasts; i++) {
-        var stringOut = "boom" + i;
-        var outputParameters = implementation.broadcastWithSinglePrimitiveParameter.createBroadcastOutputParameters();
+        const stringOut = "boom" + i;
+        const outputParameters = implementation.broadcastWithSinglePrimitiveParameter.createBroadcastOutputParameters();
         outputParameters.setStringOut(stringOut);
         implementation.broadcastWithSinglePrimitiveParameter.fire(outputParameters);
     }
 }
 
-var cpuUsage;
-var memoryIntervalId;
-var measureMemory = options.measureMemory == "true";
-var totalMemory = 0;
-var totalMemoryMeasurements = 0;
-var handler = function(msg) {
+let cpuUsage;
+let memoryIntervalId;
+const measureMemory = options.measureMemory == "true";
+let totalMemory = 0;
+let totalMemoryMeasurements = 0;
+const handler = function(msg) {
     if (msg.msg === "terminate") {
         joynr.shutdown();
     } else if (msg.msg === "startMeasurement") {
         if (measureMemory) {
-            memoryIntervalId = setInterval(function() {
-                var memoryUsage = process.memoryUsage();
+            memoryIntervalId = setInterval(() => {
+                const memoryUsage = process.memoryUsage();
                 totalMemory += memoryUsage.rss;
                 totalMemoryMeasurements++;
             }, 500);
         }
         cpuUsage = process.cpuUsage();
     } else if (msg.msg === "stopMeasurement") {
-        var diff = process.cpuUsage(cpuUsage);
+        const diff = process.cpuUsage(cpuUsage);
         if (measureMemory) {
             diff.averageMemory = totalMemory / totalMemoryMeasurements;
             clearInterval(memoryIntervalId);
         }
         process.send({ msg: "gotMeasurement", data: diff });
     } else if (msg.msg === "takeHeapSnapShot") {
-        var fileName = msg.name;
-        heapdump.writeSnapshot(fileName, function(err, filename) {
+        const fileName = msg.name;
+        heapdump.writeSnapshot(fileName, (err, filename) => {
             error("dump written to: " + filename);
         });
     } else if (msg.msg === "fireBroadCast") {
-        let numberOfBroadCasts = msg.amount;
+        const numberOfBroadCasts = msg.amount;
         fireBroadcasts(numberOfBroadCasts);
     }
 };

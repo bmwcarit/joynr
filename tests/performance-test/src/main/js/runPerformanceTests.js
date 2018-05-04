@@ -19,19 +19,19 @@
  * #L%
  */
 
-var PerformanceUtilities = require("./performanceutilities");
+const PerformanceUtilities = require("./performanceutilities");
 PerformanceUtilities.overrideRequire();
-var ProcessManager = require("./ProcessManager");
+const ProcessManager = require("./ProcessManager");
 
-var testRunner = require("./testRunner.js");
+const testRunner = require("./testRunner.js");
 
 ProcessManager.initializeChildProcesses()
     .then(() => testRunner.executeBenchmarks())
-    .then(function() {
+    .then(() => {
         console.log("SUCCEEDED");
         process.exit(0);
     })
-    .catch(function(error) {
+    .catch(error => {
         console.log("Error while performing test: " + error);
         throw error;
     });

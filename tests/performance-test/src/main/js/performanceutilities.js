@@ -19,15 +19,15 @@
  * #L%
  */
 
-var PerformanceUtilities = {};
+const PerformanceUtilities = {};
 
-var configName = process.env.configName || "config";
-var config = require("./config/" + configName);
+const configName = process.env.configName || "config";
+const config = require("./config/" + configName);
 
 PerformanceUtilities.createByteArray = function(size, defaultValue) {
-    var result = [];
+    const result = [];
 
-    for (var i = 0; i < size; i++) {
+    for (let i = 0; i < size; i++) {
         result.push(defaultValue);
     }
 
@@ -56,7 +56,7 @@ PerformanceUtilities.forceGC = function() {
  * available, a default value will be used.
  */
 PerformanceUtilities.getCommandLineOptionsOrDefaults = function() {
-    var domain,
+    let domain,
         stringLength,
         byteArrayLength,
         timeout,
@@ -68,9 +68,9 @@ PerformanceUtilities.getCommandLineOptionsOrDefaults = function() {
         heapSnapShot,
         testType;
 
-    var environment = process.env;
+    const environment = process.env;
 
-    var global = config.global;
+    const global = config.global;
     testRuns = global.testRuns || 100;
     domain = global.domain || "performance_test_domain";
     stringLength = global.stringLength || 10;
@@ -89,15 +89,15 @@ PerformanceUtilities.getCommandLineOptionsOrDefaults = function() {
     }
 
     return {
-        stringLength: stringLength,
-        byteArrayLength: byteArrayLength,
-        testRuns: testRuns,
-        timeout: timeout,
-        domain: domain,
-        cchost: cchost,
-        ccport: ccport,
-        skipByteArraySizeTimesK: skipByteArraySizeTimesK,
-        measureMemory: measureMemory,
+        stringLength,
+        byteArrayLength,
+        testRuns,
+        timeout,
+        domain,
+        cchost,
+        ccport,
+        skipByteArraySizeTimesK,
+        measureMemory,
         heapSnapShot,
         testType
     };
@@ -108,7 +108,7 @@ PerformanceUtilities.getRandomInt = function getRandomInt(min, max) {
 };
 
 PerformanceUtilities.overrideRequire = function() {
-    var LocalStorageMock = function() {
+    const LocalStorageMock = function() {
         this.map = {};
     };
 
@@ -128,8 +128,8 @@ PerformanceUtilities.overrideRequire = function() {
         this.map = {};
     };
 
-    var mod = require("module");
-    var req = mod.prototype.require;
+    const mod = require("module");
+    const req = mod.prototype.require;
     mod.prototype.require = function(md) {
         // mock localStorage
         if (md.endsWith("LocalStorageNode")) {
@@ -141,8 +141,8 @@ PerformanceUtilities.overrideRequire = function() {
 };
 
 PerformanceUtilities.createPromise = function createPromise() {
-    var map = {};
-    map.promise = new Promise(function(resolve, reject) {
+    const map = {};
+    map.promise = new Promise((resolve, reject) => {
         map.resolve = resolve;
         map.reject = reject;
     });
@@ -150,22 +150,22 @@ PerformanceUtilities.createPromise = function createPromise() {
 };
 
 PerformanceUtilities.findBenchmarks = function() {
-    var benchmarks = config.benchmarks.filter(item => item.enabled === "true");
+    const benchmarks = config.benchmarks.filter(item => item.enabled === "true");
 
     return benchmarks;
 };
 
 PerformanceUtilities.getProvisioning = function(isProvider) {
-    let useFSLogger = config.logging && config.logging.output === "fs";
+    const useFSLogger = config.logging && config.logging.output === "fs";
 
     if (useFSLogger) {
         let loggingPath = isProvider ? "provider" : "proxy";
         loggingPath += process.pid;
-        let level = config.logging.level || "info";
+        const level = config.logging.level || "info";
         return require("./config/provisioningFsLogger")(loggingPath, level);
     }
 
-    var provisioning = require("test-base").provisioning_common;
+    const provisioning = require("test-base").provisioning_common;
     provisioning.logging.configuration.loggers.root.level = "error";
     return provisioning;
 };
