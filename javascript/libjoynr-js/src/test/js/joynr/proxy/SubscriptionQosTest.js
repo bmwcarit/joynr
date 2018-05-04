@@ -22,6 +22,7 @@ const PeriodicSubscriptionQos = require("../../../../main/js/joynr/proxy/Periodi
 const OnChangeSubscriptionQos = require("../../../../main/js/joynr/proxy/OnChangeSubscriptionQos");
 const OnChangeWithKeepAliveSubscriptionQos = require("../../../../main/js/joynr/proxy/OnChangeWithKeepAliveSubscriptionQos");
 const MulticastSubscriptionQos = require("../../../../main/js/joynr/proxy/MulticastSubscriptionQos");
+const UtilInternal = require("../../../../main/js/joynr/util/UtilInternal");
 const Date = require("../../../../test/js/global/Date");
 describe("libjoynr-js.joynr.proxy.SubscriptionQos", () => {
     const qosSettings = {
@@ -46,176 +47,366 @@ describe("libjoynr-js.joynr.proxy.SubscriptionQos", () => {
         done();
     });
 
-    function createSubscriptionQos(
+    function createPeriodicSubscriptionQos(periodMs, expiryDateMs, alertAfterIntervalMs, publicationTtlMs) {
+        return new PeriodicSubscriptionQos({
+            periodMs,
+            expiryDateMs,
+            alertAfterIntervalMs,
+            publicationTtlMs
+        });
+    }
+
+    function createOnChangeWithKeepAliveSubscriptionQos(
         minIntervalMs,
-        periodMs,
-        onChange,
+        maxIntervalMs,
         expiryDateMs,
         alertAfterIntervalMs,
         publicationTtlMs
     ) {
-        let returnValue;
-        if (onChange) {
-            returnValue = new OnChangeWithKeepAliveSubscriptionQos({
-                minIntervalMs,
-                maxIntervalMs: periodMs,
-                expiryDateMs,
-                alertAfterIntervalMs,
-                publicationTtlMs
-            });
-        } else {
-            returnValue = new PeriodicSubscriptionQos({
-                periodMs,
-                expiryDateMs,
-                alertAfterIntervalMs,
-                publicationTtlMs
-            });
-        }
-        return returnValue;
-    }
-
-    function testValues(minIntervalMs, periodMs, onChange, expiryDateMs, alertAfterIntervalMs, publicationTtlMs) {
-        const subscriptionQos = createSubscriptionQos(
+        return new OnChangeWithKeepAliveSubscriptionQos({
             minIntervalMs,
-            periodMs,
-            onChange,
+            maxIntervalMs,
             expiryDateMs,
             alertAfterIntervalMs,
             publicationTtlMs
-        );
-        let expectedMaxIntervalMs = periodMs;
-        if (minIntervalMs < OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS) {
-            minIntervalMs = OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS;
-        }
-        if (minIntervalMs > OnChangeSubscriptionQos.MAX_MIN_INTERVAL_MS) {
-            minIntervalMs = OnChangeSubscriptionQos.MAX_MIN_INTERVAL_MS;
-        }
-
-        if (expectedMaxIntervalMs < OnChangeWithKeepAliveSubscriptionQos.MIN_MAX_INTERVAL_MS) {
-            expectedMaxIntervalMs = OnChangeWithKeepAliveSubscriptionQos.MIN_MAX_INTERVAL_MS;
-        }
-        if (expectedMaxIntervalMs > OnChangeWithKeepAliveSubscriptionQos.MAX_MAX_INTERVAL_MS) {
-            expectedMaxIntervalMs = OnChangeWithKeepAliveSubscriptionQos.MAX_MAX_INTERVAL_MS;
-        }
-        if (expectedMaxIntervalMs < minIntervalMs) {
-            expectedMaxIntervalMs = minIntervalMs;
-        }
-        if (onChange) {
-            const expectedMinIntervalMs = minIntervalMs;
-
-            expect(subscriptionQos.minIntervalMs).toBe(expectedMinIntervalMs);
-
-            expect(subscriptionQos.maxIntervalMs).toBe(expectedMaxIntervalMs);
-        } else {
-            expect(subscriptionQos.periodMs).toBe(expectedMaxIntervalMs);
-        }
-        let expectedPublicationTtlMs = publicationTtlMs;
-        if (expectedPublicationTtlMs < SubscriptionQos.MIN_PUBLICATION_TTL_MS) {
-            expectedPublicationTtlMs = SubscriptionQos.MIN_PUBLICATION_TTL_MS;
-        }
-        if (expectedPublicationTtlMs > SubscriptionQos.MAX_PUBLICATION_TTL_MS) {
-            expectedPublicationTtlMs = SubscriptionQos.MAX_PUBLICATION_TTL_MS;
-        }
-        expect(subscriptionQos.publicationTtlMs).toBe(expectedPublicationTtlMs);
-
-        if (expiryDateMs < SubscriptionQos.MIN_EXPIRY_MS) {
-            expiryDateMs = SubscriptionQos.MIN_EXPIRY_MS;
-        }
-        expect(subscriptionQos.expiryDateMs).toBe(expiryDateMs);
-
-        let expectedAlertAfterIntervalMs = alertAfterIntervalMs;
-        if (expectedAlertAfterIntervalMs > OnChangeWithKeepAliveSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS) {
-            expectedAlertAfterIntervalMs = OnChangeWithKeepAliveSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS;
-        }
-        if (
-            expectedAlertAfterIntervalMs !== OnChangeWithKeepAliveSubscriptionQos.NO_ALERT_AFTER_INTERVAL &&
-            expectedAlertAfterIntervalMs < expectedMaxIntervalMs
-        ) {
-            expectedAlertAfterIntervalMs = expectedMaxIntervalMs;
-        }
-        expect(subscriptionQos.alertAfterIntervalMs).toBe(expectedAlertAfterIntervalMs);
-        return subscriptionQos;
+        });
     }
 
-    it("constructs with correct member values", done => {
-        //wrong publicationTtlMs
+    function createOnChangeWithKeepAliveOutput(
+        minIntervalMs,
+        maxIntervalMs,
+        expiryDateMs,
+        alertAfterIntervalMs,
+        publicationTtlMs
+    ) {
+        return {
+            minIntervalMs,
+            maxIntervalMs,
+            expiryDateMs,
+            alertAfterIntervalMs,
+            publicationTtlMs
+        };
+    }
+
+    function createPeriodicOutput(periodMs, expiryDateMs, alertAfterIntervalMs, publicationTtlMs) {
+        return {
+            periodMs,
+            expiryDateMs,
+            alertAfterIntervalMs,
+            publicationTtlMs
+        };
+    }
+
+    function compareSubscriptionQos(output, expectedOutput, onChange) {
+        expect(output.expiryDateMs).toEqual(expectedOutput.expiryDateMs);
+        expect(output.alertAfterIntervalMs).toEqual(expectedOutput.alertAfterIntervalMs);
+        expect(output.publicationTtlMs).toEqual(expectedOutput.publicationTtlMs);
+
+        //Do we have an OnChangeWithKeepAliveSubscriptionQos object? => fields min- and maxIntervalMs should exist
+        if (onChange) {
+            expect(output.minIntervalMs).toEqual(expectedOutput.minIntervalMs);
+            expect(output.maxIntervalMs).toEqual(expectedOutput.maxIntervalMs);
+            expect(output._typeName).toEqual("joynr.OnChangeWithKeepAliveSubscriptionQos");
+        } else {
+            //PeriodicSubscriptionQos? => field periodMs should exist
+            expect(output.periodMs).toEqual(expectedOutput.periodMs);
+            expect(output._typeName).toEqual("joynr.PeriodicSubscriptionQos");
+        }
+    }
+
+    it("constructs PeriodicSubscriptionQos (including SubscriptionQos) with correct member values", done => {
+        //all values regular (lower limits)
+        {
+            const output = createPeriodicSubscriptionQos(
+                PeriodicSubscriptionQos.MIN_PERIOD_MS,
+                SubscriptionQos.MIN_EXPIRY_MS,
+                PeriodicSubscriptionQos.MIN_PERIOD_MS,
+                SubscriptionQos.MIN_PUBLICATION_TTL_MS
+            );
+            const expectedOutput = createPeriodicOutput(
+                PeriodicSubscriptionQos.MIN_PERIOD_MS,
+                SubscriptionQos.MIN_EXPIRY_MS,
+                PeriodicSubscriptionQos.MIN_PERIOD_MS,
+                SubscriptionQos.MIN_PUBLICATION_TTL_MS
+            );
+            compareSubscriptionQos(output, expectedOutput, false);
+        }
+        //all values regular (upper limits)
+        {
+            const output = createPeriodicSubscriptionQos(
+                PeriodicSubscriptionQos.MAX_PERIOD_MS,
+                UtilInternal.getMaxLongValue(),
+                PeriodicSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS,
+                SubscriptionQos.MAX_PUBLICATION_TTL_MS
+            );
+            const expectedOutput = createPeriodicOutput(
+                PeriodicSubscriptionQos.MAX_PERIOD_MS,
+                UtilInternal.getMaxLongValue(),
+                PeriodicSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS,
+                SubscriptionQos.MAX_PUBLICATION_TTL_MS
+            );
+            compareSubscriptionQos(output, expectedOutput, false);
+        }
+        //publicationTtlMs < SubscriptionQos.MIN_PUBLICATION_TTL_MS
+        {
+            const output = createPeriodicSubscriptionQos(1000, 1000, 1000, SubscriptionQos.MIN_PUBLICATION_TTL_MS - 1);
+            const expectedOutput = createPeriodicOutput(1000, 1000, 1000, SubscriptionQos.MIN_PUBLICATION_TTL_MS);
+            compareSubscriptionQos(output, expectedOutput, false);
+        }
+        //publicationTtlMs > SubscriptionQos.MAX_PUBLICATION_TTL_MS
+        {
+            const output = createPeriodicSubscriptionQos(1000, 1000, 1000, SubscriptionQos.MAX_PUBLICATION_TTL_MS + 1);
+            const expectedOutput = createPeriodicOutput(1000, 1000, 1000, SubscriptionQos.MAX_PUBLICATION_TTL_MS);
+            compareSubscriptionQos(output, expectedOutput, false);
+        }
+        //expiryDateMs < SubscriptionQos.MIN_EXPIRY_MS
+        {
+            const output = createPeriodicSubscriptionQos(1000, SubscriptionQos.MIN_EXPIRY_MS - 1, 1000, 1000);
+            const expectedOutput = createPeriodicOutput(1000, SubscriptionQos.MIN_EXPIRY_MS, 1000, 1000);
+            compareSubscriptionQos(output, expectedOutput, false);
+        }
+        //periodMs < PeriodicSubscriptionQos.MIN_PERIOD_MS
         expect(() => {
-            createSubscriptionQos(1, 2, false, 4, 5, -6);
+            createPeriodicSubscriptionQos(PeriodicSubscriptionQos.MIN_PERIOD_MS - 1, 1000, 1000, 1000);
         }).toThrow();
-        //wrong periodMs
+
+        //periodMs > PeriodicSubscriptionQos.MAX_PERIOD_MS
         expect(() => {
-            createSubscriptionQos(1, 2, false, 4, 5, 100);
+            createPeriodicSubscriptionQos(PeriodicSubscriptionQos.MAX_PERIOD_MS + 1, 1000, 1000, 1000);
         }).toThrow();
-        //wrong periodMs (exceeds MIN_PERIOD_MS)
-        expect(() => {
-            createSubscriptionQos(1, PeriodicSubscriptionQos.MIN_PERIOD_MS - 1, false, 4, 5, 100);
-        }).toThrow();
-        //wrong periodMs (exceeds MAX_PERIOD_MS)
-        expect(() => {
-            createSubscriptionQos(1, PeriodicSubscriptionQos.MAX_PERIOD_MS + 1, false, 4, 5, 100);
-        }).toThrow();
-        //wrong alertAfterIntervalMs (shall be higher then the periodMs)
-        expect(createSubscriptionQos(1, 50, false, 4, 5, 100).alertAfterIntervalMs).toEqual(50);
-        //wrong alertAfterIntervalMs (exceed MAX_ALERT_AFTER_INTERVAL_MS)
-        expect(
-            createSubscriptionQos(
-                1,
-                50,
-                false,
-                4,
+
+        //alertAfterIntervalMs !== PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL && alertAfterIntervalMs < periodMs
+        {
+            const output = createPeriodicSubscriptionQos(1000, 2000, 999, 3000);
+            const expectedOutput = createPeriodicOutput(1000, 2000, 1000, 3000);
+            compareSubscriptionQos(output, expectedOutput, false);
+        }
+        //alertAfterIntervalMs === PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL && alertAfterIntervalMs < periodMs
+        {
+            const output = createPeriodicSubscriptionQos(
+                PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL + 50,
+                2000,
+                PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL,
+                3000
+            );
+            const expectedOutput = createPeriodicOutput(
+                PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL + 50,
+                2000,
+                PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL,
+                3000
+            );
+            compareSubscriptionQos(output, expectedOutput, false);
+        }
+        //alertAfterIntervalMs > PeriodicSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS
+        {
+            const output = createPeriodicSubscriptionQos(
+                1000,
+                2000,
+                PeriodicSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS + 1,
+                3000
+            );
+            const expectedOutput = createPeriodicOutput(
+                1000,
+                2000,
+                PeriodicSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS,
+                3000
+            );
+            compareSubscriptionQos(output, expectedOutput, false);
+        }
+        done();
+    });
+
+    it("constructs OnChangeWithKeepAliveSubscriptionQos (including OnChangeSubscriptionQos) with correct member values", done => {
+        //all values regular (lower limits)
+        {
+            const output = createOnChangeWithKeepAliveSubscriptionQos(
+                OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS,
+                OnChangeWithKeepAliveSubscriptionQos.MIN_MAX_INTERVAL_MS,
+                SubscriptionQos.MIN_EXPIRY_MS,
+                OnChangeWithKeepAliveSubscriptionQos.MIN_MAX_INTERVAL_MS,
+                SubscriptionQos.MIN_PUBLICATION_TTL_MS
+            );
+            const expectedOutput = createOnChangeWithKeepAliveOutput(
+                OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS,
+                OnChangeWithKeepAliveSubscriptionQos.MIN_MAX_INTERVAL_MS,
+                SubscriptionQos.MIN_EXPIRY_MS,
+                OnChangeWithKeepAliveSubscriptionQos.MIN_MAX_INTERVAL_MS,
+                SubscriptionQos.MIN_PUBLICATION_TTL_MS
+            );
+            compareSubscriptionQos(output, expectedOutput, true);
+        }
+        //all values regular (upper limits)
+        {
+            const output = createOnChangeWithKeepAliveSubscriptionQos(
+                OnChangeSubscriptionQos.MAX_MIN_INTERVAL_MS,
+                OnChangeWithKeepAliveSubscriptionQos.MAX_MAX_INTERVAL_MS,
+                UtilInternal.getMaxLongValue(),
+                OnChangeWithKeepAliveSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS,
+                SubscriptionQos.MAX_PUBLICATION_TTL_MS
+            );
+            const expectedOutput = createOnChangeWithKeepAliveOutput(
+                OnChangeSubscriptionQos.MAX_MIN_INTERVAL_MS,
+                OnChangeWithKeepAliveSubscriptionQos.MAX_MAX_INTERVAL_MS,
+                UtilInternal.getMaxLongValue(),
+                OnChangeWithKeepAliveSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS,
+                SubscriptionQos.MAX_PUBLICATION_TTL_MS
+            );
+            compareSubscriptionQos(output, expectedOutput, true);
+        }
+        //minIntervalMs < OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS
+        {
+            const output = createOnChangeWithKeepAliveSubscriptionQos(
+                OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS - 1,
+                4321,
+                4321,
+                4321,
+                4321
+            );
+            const expectedOutput = createOnChangeWithKeepAliveOutput(
+                OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS,
+                4321,
+                4321,
+                4321,
+                4321
+            );
+            compareSubscriptionQos(output, expectedOutput, true);
+        }
+        //minIntervalMs > OnChangeSubscriptionQos.MAX_MIN_INTERVAL_MS
+        {
+            const output = createOnChangeWithKeepAliveSubscriptionQos(
+                OnChangeSubscriptionQos.MAX_MIN_INTERVAL_MS + 1,
+                OnChangeSubscriptionQos.MAX_MIN_INTERVAL_MS,
+                1234,
+                OnChangeSubscriptionQos.MAX_MIN_INTERVAL_MS,
+                1234
+            );
+            const expectedOutput = createOnChangeWithKeepAliveOutput(
+                OnChangeSubscriptionQos.MAX_MIN_INTERVAL_MS,
+                OnChangeSubscriptionQos.MAX_MIN_INTERVAL_MS,
+                1234,
+                OnChangeSubscriptionQos.MAX_MIN_INTERVAL_MS,
+                1234
+            );
+            compareSubscriptionQos(output, expectedOutput, true);
+        }
+        //maxIntervalMs < OnChangeWithKeepAliveSubscriptionQos.MIN_MAX_INTERVAL_MS
+        {
+            const output = createOnChangeWithKeepAliveSubscriptionQos(
+                12,
+                OnChangeWithKeepAliveSubscriptionQos.MIN_MAX_INTERVAL_MS - 1,
+                234,
+                345,
+                456
+            );
+            const expectedOutput = createOnChangeWithKeepAliveOutput(
+                12,
+                OnChangeWithKeepAliveSubscriptionQos.MIN_MAX_INTERVAL_MS,
+                234,
+                345,
+                456
+            );
+            compareSubscriptionQos(output, expectedOutput, true);
+        }
+        //maxIntervalMs > OnChangeWithKeepAliveSubscriptionQos.MAX_MAX_INTERVAL_MS
+        {
+            const output = createOnChangeWithKeepAliveSubscriptionQos(
+                1000,
+                OnChangeWithKeepAliveSubscriptionQos.MAX_MAX_INTERVAL_MS + 1,
+                1000,
+                OnChangeWithKeepAliveSubscriptionQos.MAX_MAX_INTERVAL_MS,
+                1000
+            );
+            const expectedOutput = createOnChangeWithKeepAliveOutput(
+                1000,
+                OnChangeWithKeepAliveSubscriptionQos.MAX_MAX_INTERVAL_MS,
+                1000,
+                OnChangeWithKeepAliveSubscriptionQos.MAX_MAX_INTERVAL_MS,
+                1000
+            );
+            compareSubscriptionQos(output, expectedOutput, true);
+        }
+        //maxIntervalMs < minIntervalMs
+        {
+            const output = createOnChangeWithKeepAliveSubscriptionQos(1000, 100, 2000, 3000, 4000);
+            const expectedOutput = createOnChangeWithKeepAliveOutput(1000, 1000, 2000, 3000, 4000);
+            compareSubscriptionQos(output, expectedOutput, true);
+        }
+        //alertAfterIntervalMs !== OnChangeWithKeepAliveSubscriptionQos.NO_ALERT_AFTER_INTERVAL && alertAfterIntervalMs < maxIntervalMs
+        {
+            const output = createOnChangeWithKeepAliveSubscriptionQos(1000, 4000, 3000, 2000, 5000);
+            const expectedOutput = createOnChangeWithKeepAliveOutput(1000, 4000, 3000, 4000, 5000);
+            compareSubscriptionQos(output, expectedOutput, true);
+        }
+        //alertAfterIntervalMs === OnChangeWithKeepAliveSubscriptionQos.NO_ALERT_AFTER_INTERVAL && alertAfterIntervalMs < maxIntervalMs
+        {
+            const output = createOnChangeWithKeepAliveSubscriptionQos(
+                PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL + 50,
+                4000,
+                3000,
+                OnChangeWithKeepAliveSubscriptionQos.NO_ALERT_AFTER_INTERVAL,
+                5000
+            );
+            const expectedOutput = createOnChangeWithKeepAliveOutput(
+                PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL + 50,
+                4000,
+                3000,
+                OnChangeWithKeepAliveSubscriptionQos.NO_ALERT_AFTER_INTERVAL,
+                5000
+            );
+            compareSubscriptionQos(output, expectedOutput, true);
+        }
+        //alertAfterIntervalMs > OnChangeWithKeepAliveSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS
+        {
+            const output = createOnChangeWithKeepAliveSubscriptionQos(
+                1000,
+                1000,
+                1000,
                 OnChangeWithKeepAliveSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS + 1,
-                100
-            ).alertAfterIntervalMs
-        ).toEqual(OnChangeWithKeepAliveSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS);
-        testValues(1, 50, false, 4, 51, 100);
+                1000
+            );
+            const expectedOutput = createOnChangeWithKeepAliveOutput(
+                1000,
+                1000,
+                1000,
+                OnChangeWithKeepAliveSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS,
+                1000
+            );
+            compareSubscriptionQos(output, expectedOutput, true);
+        }
+        done();
+    });
 
-        //wrong publicationTtlMs
-        expect(testValues(-1, -2, true, -4, -5, -6).publicationTtlMs).toEqual(SubscriptionQos.MIN_PUBLICATION_TTL_MS);
-        //wrong publicationTtlMs
-        expect(testValues(60, 62, true, 10, 100, SubscriptionQos.MAX_PUBLICATION_TTL_MS + 1).publicationTtlMs).toEqual(
-            SubscriptionQos.MAX_PUBLICATION_TTL_MS
-        );
-        //wrong minIntervalMs
-        expect(testValues(-1, -2, true, -4, -5, 200).minIntervalMs).toEqual(
-            OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS
-        );
-        //wrong minIntervalMs (exceeds MAX_MIN_INTERVAL_MS)
-        expect(
-            testValues(OnChangeSubscriptionQos.MAX_MIN_INTERVAL_MS + 1, 62, true, 10, 100, 200).minIntervalMs
-        ).toEqual(OnChangeSubscriptionQos.MAX_MIN_INTERVAL_MS);
-
-        //wrong maxIntervalMs (shall be higher than minIntervalMs)
-        expect(testValues(60, -2, true, -4, -5, 200).maxIntervalMs).toEqual(60);
-        //wrong maxIntervalMs (below OnChangeWithKeepAliveSubscriptionQos.MIN_MAX_INTERVAL_MS)
-        expect(
-            testValues(10, OnChangeWithKeepAliveSubscriptionQos.MIN_MAX_INTERVAL_MS - 1, true, -4, -5, 200)
-                .maxIntervalMs
-        ).toEqual(OnChangeWithKeepAliveSubscriptionQos.MIN_MAX_INTERVAL_MS);
-        //wrong maxIntervalMs (exceeds OnChangeWithKeepAliveSubscriptionQos.MAX_MAX_INTERVAL_MS)
-        expect(
-            testValues(10, OnChangeWithKeepAliveSubscriptionQos.MAX_MAX_INTERVAL_MS + 1, true, -4, -5, 200)
-                .maxIntervalMs
-        ).toEqual(OnChangeWithKeepAliveSubscriptionQos.MAX_MAX_INTERVAL_MS);
-        //wrong alertAfterIntervalMs (shall be higher than maxIntervalMs)
-        expect(testValues(60, 62, true, -4, -5, 200).alertAfterIntervalMs).toEqual(62);
-        //wrong alertAfterIntervalMs (exceeds MAX_ALERT_AFTER_INTERVAL_MS)
-        expect(
-            testValues(60, 62, true, -4, PeriodicSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS + 1, 200)
-                .alertAfterIntervalMs
-        ).toEqual(PeriodicSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS);
-        //wrong expiryDateMs
-        expect(testValues(60, -2, true, -4, 100, 200).expiryDateMs).toEqual(SubscriptionQos.MIN_EXPIRY_MS);
-        testValues(60, 62, true, 10, 100, 200);
-
-        //wrong publicationTtlMs
-        expect(() => {
-            testValues(0, 0, false, 0, 0, 0);
-        }).toThrow();
-        //wrong periodMs
-        expect(() => {
-            testValues(0, 0, false, 0, 0, 100);
-        }).toThrow();
-        testValues(0, 50, false, 0, 0, 100);
+    it("constructs MulticastSubscriptionQos with correct member values", done => {
+        //all values regular (lower limits)
+        {
+            const output = new MulticastSubscriptionQos({
+                expiryDateMs: SubscriptionQos.MIN_EXPIRY_MS,
+                publicationTtlMs: SubscriptionQos.MIN_PUBLICATION_TTL_MS
+            });
+            expect(output.expiryDateMs).toEqual(SubscriptionQos.MIN_EXPIRY_MS);
+            expect(output.publicationTtlMs).toEqual(SubscriptionQos.MIN_PUBLICATION_TTL_MS);
+            expect(output._typeName).toEqual("joynr.MulticastSubscriptionQos");
+        }
+        //all values regular (random values)
+        {
+            const output = new MulticastSubscriptionQos({
+                expiryDateMs: 1234,
+                publicationTtlMs: 5678
+            });
+            expect(output.expiryDateMs).toEqual(1234);
+            expect(output.publicationTtlMs).toEqual(5678);
+            expect(output._typeName).toEqual("joynr.MulticastSubscriptionQos");
+        }
+        //all values regular (upper limits)
+        {
+            const output = new MulticastSubscriptionQos({
+                expiryDateMs: UtilInternal.getMaxLongValue(),
+                publicationTtlMs: SubscriptionQos.MAX_PUBLICATION_TTL_MS
+            });
+            expect(output.expiryDateMs).toEqual(UtilInternal.getMaxLongValue());
+            expect(output.publicationTtlMs).toEqual(SubscriptionQos.MAX_PUBLICATION_TTL_MS);
+            expect(output._typeName).toEqual("joynr.MulticastSubscriptionQos");
+        }
         done();
     });
 
@@ -299,50 +490,70 @@ describe("libjoynr-js.joynr.proxy.SubscriptionQos", () => {
         done();
     });
 
-    it("constructs MulticastSubscriptionQos with correct settings", done => {
-        const settings = { expiryDateMs: 1234, publicationTtlMs: 5678 };
-
-        const fixture = new MulticastSubscriptionQos(settings);
-        expect(fixture.expiryDateMs).toEqual(settings.expiryDateMs);
-        expect(fixture.publicationTtlMs).toEqual(settings.publicationTtlMs);
-        expect(fixture._typeName).toEqual("joynr.MulticastSubscriptionQos");
-        done();
-    });
-
     it("throws on incorrectly typed values", done => {
-        // all arguments
+        // all arguments ok in PeriodicSubscriptionQos
         expect(() => {
-            createSubscriptionQos(1, 50, false, 4, 80, 100);
+            createPeriodicSubscriptionQos(50, 4, 80, 100);
         }).not.toThrow();
 
-        // no arguments
+        // all arguments ok in OnChangeWithKeepAliveSubscriptionQos
         expect(() => {
-            createSubscriptionQos(undefined, undefined, undefined, undefined, undefined, undefined);
+            createOnChangeWithKeepAliveSubscriptionQos(1, 50, 4, 80, 100);
         }).not.toThrow();
 
-        // arguments 1 wrongly types
+        // no arguments defined in PeriodicSubscriptionQos
         expect(() => {
-            createSubscriptionQos({}, 50, true, 4, 80, 100);
+            createPeriodicSubscriptionQos(undefined, undefined, undefined, undefined);
+        }).not.toThrow();
+
+        // no arguments defined in OnChangeWithKeepAliveSubscriptionQos
+        expect(() => {
+            createOnChangeWithKeepAliveSubscriptionQos(undefined, undefined, undefined, undefined, undefined);
+        }).not.toThrow();
+
+        // argument minIntervalMs wrongly typed in OnChangeWithKeepAliveSubscriptionQos
+        expect(() => {
+            createOnChangeWithKeepAliveSubscriptionQos({}, 50, 4, 80, 100);
         }).toThrow();
 
-        // arguments 2 wrongly types
+        // argument maxIntervalMs wrongly typed in OnChangeWithKeepAliveSubscriptionQos
         expect(() => {
-            createSubscriptionQos(1, {}, false, 4, 80, 100);
+            createOnChangeWithKeepAliveSubscriptionQos(1, {}, 4, 80, 100);
         }).toThrow();
 
-        // arguments 4 wrongly types
+        // argument expiryDateMs wrongly typed in OnChangeWithKeepAliveSubscriptionQos
         expect(() => {
-            createSubscriptionQos(1, 50, false, {}, 80, 100);
+            createOnChangeWithKeepAliveSubscriptionQos(1, 50, {}, 80, 100);
         }).toThrow();
 
-        // arguments 5 wrongly types
+        // argument alertAfterIntervalMs wrongly typed in OnChangeWithKeepAliveSubscriptionQos
         expect(() => {
-            createSubscriptionQos(1, 50, false, 4, {}, 100);
+            createOnChangeWithKeepAliveSubscriptionQos(1, 50, 4, {}, 100);
         }).toThrow();
 
-        // arguments 6 wrongly types
+        // argument publicationTtlMs wrongly typed in OnChangeWithKeepAliveSubscriptionQos
         expect(() => {
-            createSubscriptionQos(1, 50, false, 4, 80, {});
+            createOnChangeWithKeepAliveSubscriptionQos(1, 50, 4, 80, {});
+        }).toThrow();
+
+        // argument periodMs wrongly typed in PeriodicSubscriptionQos
+        expect(() => {
+            createPeriodicSubscriptionQos({}, 4, 80, 100);
+        }).toThrow();
+
+        // argument expiryDateMs wrongly typed in PeriodicSubscriptionQos
+        expect(() => {
+            createPeriodicSubscriptionQos(50, {}, 80, 100);
+        }).toThrow();
+
+        // argument alertAfterIntervalMs wrongly typed in PeriodicSubscriptionQos
+        expect(() => {
+            createPeriodicSubscriptionQos(50, 4, {}, 100);
+        }).toThrow();
+
+        // argument publicationTtlMs wrongly typed in PeriodicSubscriptionQos
+        expect(() => {
+            createPeriodicSubscriptionQos(50, 4, 80, {});
         }).toThrow();
         done();
     });
