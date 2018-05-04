@@ -20,6 +20,10 @@ log "running mqtt-cc-robustness-test"
 cd /data/src/tests/robustness-test
 ./run-mqtt-cc-robustness-tests.sh -b /data/build/tests -s /data/src
 
+log "running robustness-test"
+
+./run-robustness-tests.sh -b /data/build/tests -s /data/src
+
 END=$(date +%s)
 DIFF=$(( $END - $START ))
 log "C++ robustness tests time: $DIFF seconds"
