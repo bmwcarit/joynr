@@ -18,6 +18,7 @@
  */
 
 
+#include <chrono>
 #include <csignal>
 #include <memory>
 
@@ -39,23 +40,33 @@ public:
         PosixSignalHandler::setHandleAndRegisterForSignals(mockSignalHandler);
     };
 
+    ~PosixSignalHandlerTest() {
+        PosixSignalHandler::stopSignalHandling();
+    }
+
     std::shared_ptr<MockClusterControllerSignalHandler> mockSignalHandler;
 };
 
 TEST_F(PosixSignalHandlerTest, shutdownClusterController)
 {
     EXPECT_CALL(*mockSignalHandler, shutdownClusterController()).Times(1);
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
     raise(SIGTERM);
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
 }
 
 TEST_F(PosixSignalHandlerTest, startExternalCommunication)
 {
     EXPECT_CALL(*mockSignalHandler, startExternalCommunication()).Times(1);
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
     raise(SIGUSR1);
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
 }
 
 TEST_F(PosixSignalHandlerTest, stopExternalCommunication)
 {
     EXPECT_CALL(*mockSignalHandler, stopExternalCommunication()).Times(1);
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
     raise(SIGUSR2);
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
 }

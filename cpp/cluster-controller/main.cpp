@@ -92,10 +92,14 @@ int main(int argc, char* argv[])
         return 1;
     }
 
+    // the following call creates a background thread for signal handling
     joynr::PosixSignalHandler::setHandleAndRegisterForSignals(clusterControllerRuntime);
 
     // run the cluster controller forever
     clusterControllerRuntime->runForever();
+
+    // join the signal handling background thread before terminating
+    joynr::PosixSignalHandler::stopSignalHandling();
 
     return 0;
 }
