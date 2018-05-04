@@ -19,10 +19,7 @@
 const Promise = require("../../global/Promise");
 const UtilInternal = require("../util/UtilInternal");
 const Typing = require("../util/Typing");
-const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
 const ProviderRuntimeException = require("../exceptions/ProviderRuntimeException");
-
-const typeRegistry = TypeRegistrySingleton.getInstance();
 
 // prettier-ignore
 const asNotify = (function() {
@@ -123,7 +120,7 @@ const asWrite = (function() {
             throw new Error("no setter function registered for provider attribute");
         }
 
-        const setterParams = Typing.augmentTypes(value, typeRegistry, that.attributeType);
+        const setterParams = Typing.augmentTypes(value, that.attributeType);
         return Promise.resolve(this.privateGetterFunc())
             .then(
                 (getterValue) => {

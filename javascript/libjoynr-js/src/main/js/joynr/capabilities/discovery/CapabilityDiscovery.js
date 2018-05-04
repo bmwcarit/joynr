@@ -26,7 +26,6 @@ const DiscoveryQos = require("../../proxy/DiscoveryQos");
 const DiscoveryScope = require("../../../generated/joynr/types/DiscoveryScope");
 const ProviderScope = require("../../../generated/joynr/types/ProviderScope");
 const GlobalCapabilitiesDirectoryProxy = require("../../../generated/joynr/infrastructure/GlobalCapabilitiesDirectoryProxy");
-const TypeRegistrySingleton = require("../../../joynr/types/TypeRegistrySingleton");
 const Typing = require("../../util/Typing");
 const LoggingManager = require("../../system/LoggingManager");
 const UtilInternal = require("../../util/UtilInternal");
@@ -64,7 +63,6 @@ function CapabilityDiscovery(
     /*eslint-disable no-unused-vars*/
     let globalAddress, globalAddressSerialized;
     /*eslint-enable no-unused-vars*/
-    const typeRegistry = TypeRegistrySingleton.getInstance();
     let queuedGlobalDiscoveryEntries = [];
     let queuedGlobalLookups = [];
 
@@ -148,10 +146,7 @@ function CapabilityDiscovery(
                             globalCapabilities.splice(i, 1);
                         } else {
                             try {
-                                globalAddress = Typing.augmentTypes(
-                                    JSON.parse(globalDiscoveryEntry.address),
-                                    typeRegistry
-                                );
+                                globalAddress = Typing.augmentTypes(JSON.parse(globalDiscoveryEntry.address));
                             } catch (e) {
                                 log.error(
                                     "unable to use global discoveryEntry with unknown address type: " +

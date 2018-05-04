@@ -19,6 +19,8 @@
 const joynr = require("joynr");
 const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
 
+const typeRegistry = TypeRegistrySingleton.getInstance();
+
 /**
  * @name Typing
  * @class
@@ -105,7 +107,7 @@ Typing.getObjectType = function(obj) {
  *             if in any of the objects contains a member of type "Function" or the type of the
  *             untyped object is not (Boolean|Number|String|Array|Object)
  */
-Typing.augmentTypes = function(untyped, typeRegistry, typeHint) {
+Typing.augmentTypes = function(untyped, typeHint) {
     let i, typedObj;
 
     // return nullable values immediately
@@ -135,7 +137,7 @@ Typing.augmentTypes = function(untyped, typeRegistry, typeHint) {
                 typeHint !== undefined && typeHint.length > 2 && typeHint.substr(typeHint.length - 2, 2) === "[]"
                     ? typeHint.substring(0, typeHint.length - 2)
                     : typeHint;
-            typedObj.push(Typing.augmentTypes(untyped[i], typeRegistry, filteredTypeHint));
+            typedObj.push(Typing.augmentTypes(untyped[i], filteredTypeHint));
         }
     } else if (typeHint !== undefined && typeRegistry.isEnumType(typeHint)) {
         //check if provisioned type name is given. In this case, check for special considerations
@@ -159,9 +161,9 @@ Typing.augmentTypes = function(untyped, typeRegistry, typeHint) {
                 for (i in untyped) {
                     if (untyped.hasOwnProperty(i)) {
                         if (Constructor.getMemberType !== undefined) {
-                            typedObj[i] = Typing.augmentTypes(untyped[i], typeRegistry, Constructor.getMemberType(i));
+                            typedObj[i] = Typing.augmentTypes(untyped[i], Constructor.getMemberType(i));
                         } else {
-                            typedObj[i] = Typing.augmentTypes(untyped[i], typeRegistry);
+                            typedObj[i] = Typing.augmentTypes(untyped[i]);
                         }
                     }
                 }

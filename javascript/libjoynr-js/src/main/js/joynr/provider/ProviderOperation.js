@@ -18,12 +18,10 @@
  */
 const Typing = require("../util/Typing");
 const MethodUtil = require("../util/MethodUtil");
-const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
 const ApplicationException = require("../exceptions/ApplicationException");
 const ProviderRuntimeException = require("../exceptions/ProviderRuntimeException");
 const Promise = require("../../global/Promise");
 
-const typeRegistry = TypeRegistrySingleton.getInstance();
 /**
  * Checks if the given argumentDatatypes and arguments match the given operationSignature
  *
@@ -201,11 +199,7 @@ ProviderOperation.prototype.callOperation = function callOperation(operationArgu
         // augment types
         for (j = 0; j < signature.inputParameter.length; ++j) {
             argument = signature.inputParameter[j];
-            namedArguments[argument.name] = Typing.augmentTypes(
-                namedArguments[argument.name],
-                typeRegistry,
-                argument.type
-            );
+            namedArguments[argument.name] = Typing.augmentTypes(namedArguments[argument.name], argument.type);
         }
 
         // By starting a promise chain, privateOperationFunc will be converted into a promise as well

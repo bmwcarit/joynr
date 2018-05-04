@@ -41,7 +41,7 @@ Util.ensureTypedValues = function(value, typeRegistry) {
                 value[i] = Util.ensureTypedValues(value[i]);
             }
         } else if (typeof value === "object" && !Typing.isComplexJoynrObject(value)) {
-            value = Typing.augmentTypes(value, typeRegistry);
+            value = Typing.augmentTypes(value);
             const Constructor = typeRegistry.getConstructor(value._typeName);
             if (Constructor.checkMembers) {
                 Constructor.checkMembers(value, Typing.checkPropertyIfDefined);

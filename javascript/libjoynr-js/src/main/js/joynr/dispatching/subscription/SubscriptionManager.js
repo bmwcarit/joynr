@@ -32,7 +32,6 @@ const LoggingManager = require("../../system/LoggingManager");
 const uuid = require("uuid/v4");
 const UtilInternal = require("../../util/UtilInternal");
 const Typing = require("../../util/Typing");
-const TypeRegistrySingleton = require("../../../joynr/types/TypeRegistrySingleton");
 const PublicationMissedException = require("../../exceptions/PublicationMissedException");
 const JSONSerializer = require("../../util/JSONSerializer");
 /**
@@ -44,7 +43,6 @@ const JSONSerializer = require("../../util/JSONSerializer");
 function SubscriptionManager(dispatcher) {
     const multicastWildcardRegexFactory = new MulticastWildcardRegexFactory();
     const log = LoggingManager.getLogger("joynr.dispatching.subscription.SubscriptionManager");
-    const typeRegistry = TypeRegistrySingleton.getInstance();
     if (!(this instanceof SubscriptionManager)) {
         // in case someone calls constructor without new keyword (e.g. var c =
         // Constructor({..}))
@@ -157,7 +155,7 @@ function SubscriptionManager(dispatcher) {
         let onReceiveWrapper;
         if (settings.attributeType !== undefined) {
             onReceiveWrapper = function(response) {
-                settings.onReceive(Typing.augmentTypes(response[0], typeRegistry, settings.attributeType));
+                settings.onReceive(Typing.augmentTypes(response[0], settings.attributeType));
             };
         } else {
             onReceiveWrapper = function(response) {
@@ -166,7 +164,6 @@ function SubscriptionManager(dispatcher) {
                     if (response.hasOwnProperty(responseKey)) {
                         response[responseKey] = Typing.augmentTypes(
                             response[responseKey],
-                            typeRegistry,
                             settings.broadcastParameter[responseKey].type
                         );
                     }
@@ -476,7 +473,7 @@ function SubscriptionManager(dispatcher) {
         try {
             if (subscriptionReply.error) {
                 if (!(subscriptionReply.error instanceof Error)) {
-                    subscriptionReply.error = Typing.augmentTypes(subscriptionReply.error, typeRegistry);
+                    subscriptionReply.error = Typing.augmentTypes(subscriptionReply.error);
                 }
                 if (subscriptionReplyCaller !== undefined) {
                     subscriptionReplyCaller.reject(subscriptionReply.error);

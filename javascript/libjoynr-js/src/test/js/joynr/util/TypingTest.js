@@ -18,7 +18,6 @@
  */
 require("../../node-unit-test-helper");
 const Typing = require("../../../../main/js/joynr/util/Typing");
-const TypeRegistry = require("../../../../main/js/joynr/start/TypeRegistry");
 const LoggingManager = require("../../../../main/js/joynr/system/LoggingManager");
 const TypeRegistrySingleton = require("../../../../main/js/joynr/types/TypeRegistrySingleton");
 const DiscoveryEntry = require("../../../../main/js/generated/joynr/types/DiscoveryEntry");
@@ -277,14 +276,14 @@ describe("libjoynr-js.joynr.Typing.augmentType", () => {
         }
     ];
 
-    const typeRegistry = new TypeRegistry();
-    typeRegistry.addType("MyTypeName", MyType);
-    typeRegistry.addType("MySecondTypeName", MySecondType);
-
     it("types all objects correctly", done => {
+        const typeRegistry = new TypeRegistrySingleton.getInstance();
+        typeRegistry.addType("MyTypeName", MyType);
+        typeRegistry.addType("MySecondTypeName", MySecondType);
+
         let i, typed;
         for (i = 0; i < tests.length; ++i) {
-            typed = Typing.augmentTypes(tests[i].untyped, typeRegistry);
+            typed = Typing.augmentTypes(tests[i].untyped);
             expect(typed).toEqual(tests[i].typed);
             if (tests[i].untyped) {
                 // filter out undefined and null
@@ -311,7 +310,7 @@ describe("libjoynr-js.joynr.Typing.augmentType", () => {
 
         const timeStart = Date.now();
         for (let i = 0; i < times; i++) {
-            Typing.augmentTypes(rawInput, typeRegistry);
+            Typing.augmentTypes(rawInput);
         }
         const delta = Date.now() - timeStart;
         log.info('Time took for augmenting struct type "ComplexStruct"' + times + " times: " + delta + "ms");
@@ -319,15 +318,15 @@ describe("libjoynr-js.joynr.Typing.augmentType", () => {
 
     it("throws when giving a function or an object with a custom type", done => {
         expect(() => {
-            Typing.augmentTypes(() => {}, typeRegistry);
+            Typing.augmentTypes(() => {});
         }).toThrow();
 
         expect(() => {
-            Typing.augmentTypes(new MyType(), typeRegistry);
+            Typing.augmentTypes(new MyType());
         }).toThrow();
 
         expect(() => {
-            Typing.augmentTypes(new MySecondType(), typeRegistry);
+            Typing.augmentTypes(new MySecondType());
         }).toThrow();
         done();
     });
@@ -335,21 +334,18 @@ describe("libjoynr-js.joynr.Typing.augmentType", () => {
     it("augmentTypes is able to deal with enums as input", done => {
         const fixture = "ZERO";
         const expected = TestEnum.ZERO;
-        expect(Typing.augmentTypes(fixture, TypeRegistrySingleton.getInstance())).toBe(fixture);
-        expect(
-            Typing.augmentTypes(fixture, TypeRegistrySingleton.getInstance(), "joynr.tests.testTypes.TestEnum")
-        ).toBe(expected);
+        expect(Typing.augmentTypes(fixture)).toBe(fixture);
+        expect(Typing.augmentTypes(fixture, "joynr.tests.testTypes.TestEnum")).toBe(expected);
         done();
     });
 
     it("augmentTypes is able to deal with error enums as input", () => {
-        const typeRegistry = TypeRegistrySingleton.getInstance();
         const fixture = {
             _typeName: "joynr.tests.testTypes.TestEnum",
             name: "ZERO"
         };
         const expected = TestEnum.ZERO;
-        const result = Typing.augmentTypes(fixture, typeRegistry);
+        const result = Typing.augmentTypes(fixture);
         expect(result.name).toBeDefined();
         expect(result.name).toBe(expected.name);
         expect(result.value).toBeDefined();
@@ -369,7 +365,7 @@ describe("libjoynr-js.joynr.Typing.augmentType", () => {
             station: fixture.station,
             source: Country.AUSTRIA
         });
-        expect(Typing.augmentTypes(fixture, TypeRegistrySingleton.getInstance())).toEqual(expected);
+        expect(Typing.augmentTypes(fixture)).toEqual(expected);
         done();
     });
 
@@ -417,7 +413,7 @@ describe("libjoynr-js.joynr.Typing.augmentType", () => {
             expiryDateMs: 1234,
             publicKeyId: "publicKeyId"
         });
-        expect(Typing.augmentTypes(fixture, TypeRegistrySingleton.getInstance())).toEqual(expected);
+        expect(Typing.augmentTypes(fixture)).toEqual(expected);
         done();
     });
 });
