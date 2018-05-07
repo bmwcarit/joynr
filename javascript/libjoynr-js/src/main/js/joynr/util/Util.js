@@ -18,6 +18,7 @@
  */
 const Typing = require("./Typing");
 const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
+const typeRegistry = TypeRegistrySingleton.getInstance();
 
 /**
  * @name Util
@@ -30,10 +31,8 @@ const Util = {};
  * @param {Object} value
  * @param {Object} typeRegistry
  */
-Util.ensureTypedValues = function(value, typeRegistry) {
+Util.ensureTypedValues = function(value) {
     let i;
-
-    typeRegistry = typeRegistry || TypeRegistrySingleton.getInstance();
 
     if (value !== undefined && value !== null) {
         if (Array.isArray(value)) {
