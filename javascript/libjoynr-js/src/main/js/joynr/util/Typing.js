@@ -132,12 +132,14 @@ Typing.augmentTypes = function(untyped, typeHint) {
     // try to type each single element of an array
     if (type === "Array") {
         typedObj = [];
-        for (i = 0; i < untyped.length; ++i) {
+        if (untyped.length > 0) {
             const filteredTypeHint =
                 typeHint !== undefined && typeHint.length > 2 && typeHint.substr(typeHint.length - 2, 2) === "[]"
                     ? typeHint.substring(0, typeHint.length - 2)
                     : typeHint;
-            typedObj.push(Typing.augmentTypes(untyped[i], filteredTypeHint));
+            for (i = 0; i < untyped.length; ++i) {
+                typedObj.push(Typing.augmentTypes(untyped[i], filteredTypeHint));
+            }
         }
     } else if (typeHint !== undefined && typeRegistry.isEnumType(typeHint)) {
         //check if provisioned type name is given. In this case, check for special considerations
