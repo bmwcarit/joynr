@@ -121,7 +121,7 @@ Typing.augmentTypes = function(untyped, typeHint) {
     }
 
     // retrieve the javascript runtime type info
-    const type = Typing.getObjectType(untyped);
+    const type = untyped.constructor.name;
 
     // what should we do with a function?
     if (type === "Function") {
@@ -130,7 +130,7 @@ Typing.augmentTypes = function(untyped, typeHint) {
     }
 
     // try to type each single element of an array
-    if (type === "Array") {
+    if (Array.isArray(untyped)) {
         typedObj = [];
         if (untyped.length > 0) {
             const filteredTypeHint =
