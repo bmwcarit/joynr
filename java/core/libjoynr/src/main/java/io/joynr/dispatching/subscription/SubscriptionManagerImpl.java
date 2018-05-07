@@ -52,6 +52,8 @@ import io.joynr.pubsub.HeartbeatSubscriptionInformation;
 import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
+import io.joynr.runtime.ShutdownListener;
+import io.joynr.runtime.ShutdownNotifier;
 import joynr.BroadcastSubscriptionRequest;
 import joynr.MulticastSubscriptionRequest;
 import joynr.SubscriptionReply;
@@ -63,7 +65,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Singleton
-public class SubscriptionManagerImpl implements SubscriptionManager {
+public class SubscriptionManagerImpl implements SubscriptionManager, ShutdownListener {
 
     private ConcurrentMap<String, AttributeSubscriptionListener<?>> subscriptionListenerDirectory;
     private ConcurrentMap<String, BroadcastSubscriptionListener> broadcastSubscriptionListenerDirectory;
@@ -87,7 +89,8 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
     @Inject
     public SubscriptionManagerImpl(@Named(JOYNR_SCHEDULER_CLEANUP) ScheduledExecutorService cleanupScheduler,
                                    Dispatcher dispatcher,
-                                   MulticastWildcardRegexFactory multicastWildcardRegexFactory) {
+                                   MulticastWildcardRegexFactory multicastWildcardRegexFactory,
+                                   ShutdownNotifier shutdownNotifier) {
         this.cleanupScheduler = cleanupScheduler;
         this.dispatcher = dispatcher;
         this.subscriptionListenerDirectory = Maps.newConcurrentMap();
@@ -101,6 +104,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
         this.multicastBroadcastTypes = Maps.newConcurrentMap();
         this.subscriptionFutureMap = Maps.newConcurrentMap();
         this.multicastWildcardRegexFactory = multicastWildcardRegexFactory;
+        shutdownNotifier.registerForShutdown(this);
     }
 
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
@@ -509,6 +513,16 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
             parameterTypes.add(broadcastValues[i].getClass());
         }
         return parameterTypes.toArray(new Class<?>[parameterTypes.size()]);
+    }
+
+    @Override
+    public void shutdown() {
+        for (ScheduledFuture<?> future : subscriptionEndFutures.values()) {
+            if (future != null) {
+                future.cancel(false);
+            }
+        }
+        subscriptionEndFutures.clear();
     }
 
     class SubscriptionEndRunnable implements Runnable {
