@@ -34,15 +34,16 @@ function useWebSocketNode() {
     }
 
     function WebSocketNodeWrapper(remoteUrl, keychain, useUnencryptedTls) {
-        const clientOptions = keychain
-            ? {
-                  cert: keychain.tlsCert,
-                  key: keychain.tlsKey,
-                  ca: keychain.tlsCa,
-                  rejectUnauthorized: true,
-                  useUnencryptedTls
-              }
-            : undefined;
+        const clientOptions = {};
+        if (keychain) {
+            clientOptions.cert = keychain.tlsCert;
+            clientOptions.key = keychain.tlsKey;
+            clientOptions.ca = keychain.tlsCa;
+            clientOptions.rejectUnauthorized = true;
+        }
+        if (useUnencryptedTls) {
+            clientOptions.ciphers = "eNULL";
+        }
 
         const webSocketObj = new ws(remoteUrl, clientOptions);
 

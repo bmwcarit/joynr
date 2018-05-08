@@ -53,7 +53,7 @@ describe("websocket node", () => {
             key: keychainWithCerts.tlsKey,
             ca: keychainWithCerts.tlsCa,
             rejectUnauthorized: true,
-            useUnencryptedTls
+            ciphers: "eNULL"
         });
     });
 
@@ -65,8 +65,7 @@ describe("websocket node", () => {
             cert: keychainWithCerts.tlsCert,
             key: keychainWithCerts.tlsKey,
             ca: keychainWithCerts.tlsCa,
-            rejectUnauthorized: true,
-            useUnencryptedTls
+            rejectUnauthorized: true
         });
     });
 });
