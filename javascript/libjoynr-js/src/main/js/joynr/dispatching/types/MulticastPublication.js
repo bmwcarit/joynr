@@ -16,8 +16,6 @@
  * limitations under the License.
  * #L%
  */
-const Util = require("../../util/Util");
-const Typing = require("../../util/Typing");
 
 /**
  * @name MulticastPublication
@@ -31,35 +29,14 @@ const Typing = require("../../util/Typing");
  *            settings.error The exception object in case of publication failure
  */
 function MulticastPublication(settings) {
-    if (settings.response) {
-        settings.response = Util.ensureTypedValues(settings.response);
-    }
-
-    /**
-     * @name MulticastPublication#multicastId
-     * @type String
-     */
-    this.multicastId = settings.multicastId;
-    /**
-     * @name MulticastPublication#response
-     * @type Object
-     */
-    this.response = settings.response;
-    /**
-     * @name MulticastPublication#error
-     * @type Object
-     */
-    this.error = settings.error;
-
     /**
      * The joynr type name
      *
      * @name MulticastPublication#_typeName
      * @type String
      */
-    Typing.augmentTypeName(this, "joynr");
-
-    return Object.freeze(this);
+    settings._typeName = "joynr.MulticastPublication";
+    return settings;
 }
 
 module.exports = MulticastPublication;

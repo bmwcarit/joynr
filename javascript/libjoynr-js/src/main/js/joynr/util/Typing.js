@@ -178,6 +178,10 @@ Typing.augmentTypes = function(untyped, typeHint) {
                         }
                     }
                 }
+
+                if (Constructor.checkMembers) {
+                    Constructor.checkMembers(typedObj, Typing.checkProperty);
+                }
             }
         } else {
             throw new Error(

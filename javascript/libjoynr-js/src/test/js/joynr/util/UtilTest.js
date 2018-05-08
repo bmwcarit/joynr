@@ -204,7 +204,6 @@ describe("libjoynr-js.joynr.Util.ensureTypedValues", () => {
         };
 
         returnValue = Util.ensureTypedValues(untypedValue);
-        expect(returnValue instanceof RadioStation).toBe(true);
         expect(returnValue.name === untypedValue.name).toBe(true);
     });
 
@@ -222,8 +221,6 @@ describe("libjoynr-js.joynr.Util.ensureTypedValues", () => {
         ];
 
         returnValue = Util.ensureTypedValues(untypedArray);
-        expect(returnValue[0] instanceof RadioStation).toBe(true);
-        expect(returnValue[1] instanceof RadioStation).toBe(true);
         expect(returnValue[0].name === untypedArray[0].name).toBe(true);
         expect(returnValue[1].name === untypedArray[1].name).toBe(true);
     });

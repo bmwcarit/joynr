@@ -18,7 +18,6 @@
  */
 require("../../../node-unit-test-helper");
 const Reply = require("../../../../../main/js/joynr/dispatching/types/Reply");
-const RadioStation = require("../../../../generated/joynr/vehicle/radiotypes/RadioStation");
 
 describe("libjoynr-js.joynr.dispatching.types.Reply", () => {
     it("is instantiable", () => {
@@ -28,22 +27,7 @@ describe("libjoynr-js.joynr.dispatching.types.Reply", () => {
             response
         });
         expect(reply).toBeDefined();
-        expect(reply instanceof Reply).toBeTruthy();
         expect(reply._typeName).toEqual("joynr.Reply");
         expect(reply.response).toEqual(response);
-    });
-
-    it("converts an untyped param to typed", () => {
-        const outParameter = {
-            _typeName: "joynr.vehicle.radiotypes.RadioStation",
-            name: "myRadioStation"
-        };
-        const reply = new Reply({
-            requestReplyId: "id",
-            response: [outParameter]
-        });
-        expect(reply).toBeDefined();
-        expect(reply instanceof Reply).toBeTruthy();
-        expect(reply.response[0] instanceof RadioStation).toBeTruthy();
     });
 });

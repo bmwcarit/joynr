@@ -136,6 +136,11 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", () => {
     const tripleJ = new RadioStation("TripleJ", "107.7", "AUSTRALIA");
     const fm4 = new RadioStation("FM4", "104.0", "AUSTRIA");
     const complex = new ComplexTypeWithComplexAndSimpleProperties(tripleJ, true, "hello");
+
+    Object.setPrototypeOf(complex, Object);
+    Object.setPrototypeOf(fm4, Object);
+    Object.setPrototypeOf(tripleJ, Object);
+
     const testData = [
         {
             paramDatatype: ["Boolean"],
@@ -388,7 +393,6 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", () => {
                 const result = replyCallerSpy.resolve.calls.argsFor(0)[0];
                 for (i = 0; i < params.length; i++) {
                     expect(result.response[i]).toEqual(params[i]);
-                    expect(Typing.getObjectType(result.response[i])).toEqual(Typing.getObjectType(params[i]));
                 }
             })
             .catch(error => {
