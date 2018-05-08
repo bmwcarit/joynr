@@ -20,6 +20,7 @@ require("../node-unit-test-helper");
 const LocalStorage = require("../../../main/js/global/LocalStorageNode");
 const fs = require("fs");
 const path = require("path");
+const child_process = require("child_process");
 
 describe("local storage", () => {
     let storage;
@@ -43,7 +44,7 @@ describe("local storage", () => {
 
     afterAll(() => {
         if (clearResults) {
-            fs.rmdirSync(basePath);
+            child_process.execSync("rm -rf " + basePath);
         }
     });
 
@@ -51,16 +52,6 @@ describe("local storage", () => {
         testNum++;
         location = testDirectory + "/LocalStorage-" + testNum;
         locationPath = path.join(process.cwd(), location);
-    });
-
-    afterEach(() => {
-        if (clearResults) {
-            fs.readdirSync(locationPath).forEach(file => {
-                const filePath = locationPath + "/" + file;
-                fs.unlinkSync(filePath);
-            });
-            fs.rmdirSync(locationPath);
-        }
     });
 
     it("without clean directory", () => {
