@@ -383,7 +383,7 @@
 		<timestamp>${maven.build.timestamp}</timestamp>
 		<maven.build.timestamp.format>yyyyMMdd-HHmmss</maven.build.timestamp.format>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<licenseConfigurationVersion>1.0.11</licenseConfigurationVersion>
+		<licenseConfigurationVersion>1.0.12</licenseConfigurationVersion>
 		<!--
 			Those versions should not be used outside of the superpom. All dependencies
 			that need those version numbers should be defined in the dependencyManagement
@@ -400,9 +400,9 @@
 		<android.platform.level>21</android.platform.level>
 		<javassist.version>3.22.0-GA</javassist.version>
 		<skipTests>true</skipTests>
-		<franca.version>0.10.0</franca.version>
-		<xtend.version>2.8.4</xtend.version>
-		<xtext.version>2.8.4</xtext.version>
+		<franca.version>0.13.0</franca.version>
+		<xtend.version>2.11.0</xtend.version>
+		<xtext.version>2.11.0</xtext.version>
 		<maven.compiler.source>1.7</maven.compiler.source>
 		<maven.compiler.target>1.7</maven.compiler.target>
 		<slf4j.version>1.7.25</slf4j.version>

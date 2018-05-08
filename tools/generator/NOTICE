@@ -17,7 +17,6 @@ under the License.
 
 This project has dependencies to:
   "Java Concurrency in Practice" book annotations under Creative Commons Attribution License
-  3rd Party Dependencies - Library under Eclipse Public License - v 1.0
   Animal Sniffer Annotations under MIT license
   Antlr 3 Runtime under BSD License
   AOP alliance under Public Domain
@@ -28,12 +27,22 @@ This project has dependencies to:
   ASM Tree under BSD
   Backport of JSR 166 under Public Domain
   Checker Qual under GNU General Public License, version 2 (GPL2), with the classpath exception or The MIT License
-  Common Eclipse Runtime under Eclipse Public License - v 1.0
-  Common Types Runtime Library under Eclipse Public License - v 1.0
-  Eclipse Xbase Runtime Library under Eclipse Public License - v 1.0
-  Eclipse Xtend Macro Library under Eclipse Public License - v 1.0
-  Eclipse Xtend Runtime Library under Eclipse Public License - v 1.0
+  Commands under Eclipse Public License
+  Common Eclipse Runtime under Eclipse Public License
+  Common Types Runtime Library under Eclipse Public License, Version 1.0
+  Core File Systems under Eclipse Public License
+  Core Resource Management under Eclipse Public License
+  Core Runtime under Eclipse Public License
+  Eclipse Content Mechanism under Eclipse Public License
+  Eclipse Jobs Mechanism under Eclipse Public License
+  Eclipse Preferences Mechanism under Eclipse Public License
+  Eclipse Xbase Runtime Library under Eclipse Public License, Version 1.0
+  Eclipse Xtend Active Annotations Library under Eclipse Public License, Version 1.0
+  Eclipse Xtend Runtime Library under Eclipse Public License, Version 1.0
+  Equinox Application Container under Eclipse Public License
   error-prone annotations under Apache 2.0
+  Expression Language under Eclipse Public License
+  Extension Registry Support under Eclipse Public License
   FindBugs-Annotations under GNU Lesser Public License
   FindBugs-jsr305 under The Apache Software License, Version 2.0
   Google Guice - Core Library under The Apache Software License, Version 2.0
@@ -51,6 +60,8 @@ This project has dependencies to:
   io.joynr.tools:generator under The Apache Software License, Version 2.0
   io.joynr:basemodel under The Apache Software License, Version 2.0
   J2ObjC Annotations under The Apache Software License, Version 2.0
+  Java Compiler Apt under Eclipse Public License
+  Java Development Tools Core under Eclipse Public License
   Javassist under MPL 1.1 or LGPL 2.1 or Apache License 2.0
   javax.inject under The Apache Software License, Version 2.0
   JUnit under Eclipse Public License 1.0
@@ -67,22 +78,22 @@ This project has dependencies to:
   Maven Wagon API under The Apache Software License, Version 2.0
   Mockito under The MIT License
   Objenesis under MIT License
-  org.eclipse.emf.codegen under The Eclipse Public License Version 1.0
   org.eclipse.emf.common under The Eclipse Public License Version 1.0
   org.eclipse.emf.ecore under The Eclipse Public License Version 1.0
   org.eclipse.emf.ecore.xmi under The Eclipse Public License Version 1.0
   org.franca.core under Eclipse Public License - v 1.0
   org.franca.core.dsl under Eclipse Public License - v 1.0
   org.franca.deploymodel.dsl under Eclipse Public License - v 1.0
+  OSGi System Bundle under Eclipse Public License
   Plexus :: Default Container under The Apache Software License, Version 2.0
   Plexus Classworlds under The Apache Software License, Version 2.0
   Plexus Common Utilities under The Apache Software License, Version 2.0
   Plexus Interpolation API under The Apache Software License, Version 2.0
   Reflections under WTFPL or The New BSD License
   SLF4J API Module under MIT License
-  Tycho org.eclipse.jdt.core dependency (Incubation) under Eclipse Public License
-  Xbase Runtime Library under Eclipse Public License - v 1.0
-  Xtend Core Library under Eclipse Public License - v 1.0
-  Xtext Runtime Library under Eclipse Public License - v 1.0
-  Xtext Util under Eclipse Public License - v 1.0
+  Text under Eclipse Public License
+  Xbase Runtime Library under Eclipse Public License, Version 1.0
+  Xtend Core Library under Eclipse Public License, Version 1.0
+  Xtext Runtime Bundle under Eclipse Public License, Version 1.0
+  Xtext Utilities under Eclipse Public License, Version 1.0
 

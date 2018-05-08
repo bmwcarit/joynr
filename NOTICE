@@ -17,7 +17,6 @@ under the License.
 
 This project has dependencies to:
   "Java Concurrency in Practice" book annotations under Creative Commons Attribution License
-  3rd Party Dependencies - Library under Eclipse Public License - v 1.0
   Accessibility Test Framework under Apache License, Version 2.0
   Aether API under Eclipse Public License, Version 1.0
   Aether Connector Basic under Eclipse Public License, Version 1.0
@@ -92,29 +91,39 @@ This project has dependencies to:
   clustercontroller-inprocess-runtime under The Apache Software License, Version 2.0
   clustercontroller-standalone under The Apache Software License, Version 2.0
   clustercontroller-websocket-runtime under The Apache Software License, Version 2.0
+  Commands under Eclipse Public License
   Common Annotations 1.1 API under lgpl
-  Common Eclipse Runtime under Eclipse Public License - v 1.0
-  Common Types Runtime Library under Eclipse Public License - v 1.0
+  Common Eclipse Runtime under Eclipse Public License
+  Common Types Runtime Library under Eclipse Public License, Version 1.0
   Commons Codec under The Apache Software License, Version 2.0
   Commons Collections under The Apache Software License, Version 2.0
   Commons IO under The Apache Software License, Version 2.0
   Commons Lang under The Apache Software License, Version 2.0
   Commons Pool under The Apache Software License, Version 2.0
   Connector Architecture 1.5 API under lgpl
+  Core File Systems under Eclipse Public License
   Core Hibernate O/RM functionality under GNU Lesser General Public License
+  Core Resource Management under Eclipse Public License
+  Core Runtime under Eclipse Public License
   CSS Parser under GNU Lesser General Public License
   Data Mapper for Jackson under The Apache Software License, Version 2.0
   Default Plexus Container under Apache License, Version 2.0
   dom4j under BSD License
-  Eclipse Xbase Runtime Library under Eclipse Public License - v 1.0
-  Eclipse Xtend Macro Library under Eclipse Public License - v 1.0
-  Eclipse Xtend Runtime Library under Eclipse Public License - v 1.0
+  Eclipse Content Mechanism under Eclipse Public License
+  Eclipse Jobs Mechanism under Eclipse Public License
+  Eclipse Preferences Mechanism under Eclipse Public License
+  Eclipse Xbase Runtime Library under Eclipse Public License, Version 1.0
+  Eclipse Xtend Active Annotations Library under Eclipse Public License, Version 1.0
+  Eclipse Xtend Runtime Library under Eclipse Public License, Version 1.0
   ehcache under The Apache Software License, Version 2.0
   EJB 3.1 API under lgpl
   Embedded GlassFish All-In-One under CDDL + GPLv2 with classpath exception
   Embedded Payara All-In-One under CDDL + GPLv2 with classpath exception
+  Equinox Application Container under Eclipse Public License
   error-prone annotations under Apache 2.0
+  Expression Language under Eclipse Public License
   Expression Language 2.2 API under lgpl
+  Extension Registry Support under Eclipse Public License
   FindBugs-Annotations under GNU Lesser Public License
   FindBugs-jsr305 under The Apache Software License, Version 2.0
   flatbuffers-java under Apache License V2.0
@@ -252,6 +261,8 @@ This project has dependencies to:
   Java API for XML Web Services 2.2 under lgpl
   Java API for XML-Based RPC (JAX-RPC) 1.1 under lgpl
   Java Architecture for XML Binding 2.2 under lgpl
+  Java Compiler Apt under Eclipse Public License
+  Java Development Tools Core under Eclipse Public License
   Java Persistence API, Version 2.1 under Eclipse Public License (EPL), Version 1.0 or Eclipse Distribution License (EDL), Version 1.0
   Java Servlet 3.0 API under lgpl
   Java Servlet API under CDDL + GPLv2 with classpath exception
@@ -341,7 +352,6 @@ This project has dependencies to:
   OpenJPA Persistence JDBC under Apache Software License 2.0
   OpenJPA Utilities Library under Apache Software License 2.0
   org.apache.tools.ant under Apache License, Version 2.0
-  org.eclipse.emf.codegen under The Eclipse Public License Version 1.0
   org.eclipse.emf.common under The Eclipse Public License Version 1.0
   org.eclipse.emf.ecore under The Eclipse Public License Version 1.0
   org.eclipse.emf.ecore.xmi under The Eclipse Public License Version 1.0
@@ -349,6 +359,7 @@ This project has dependencies to:
   org.franca.core.dsl under Eclipse Public License - v 1.0
   org.franca.deploymodel.dsl under Eclipse Public License - v 1.0
   OSGi resource locator bundle - used by various API providers that rely on META-INF/services mechanism to locate providers. under CDDL + GPLv2 with classpath exception
+  OSGi System Bundle under Eclipse Public License
   Plexus :: Component Annotations under The Apache Software License, Version 2.0
   Plexus :: Default Container under The Apache Software License, Version 2.0
   Plexus Cipher: encryption/decryption Component under Apache Public License 2.0
@@ -386,17 +397,17 @@ This project has dependencies to:
   sqlite4java under The Apache Software License, Version 2.0
   StAX API under The Apache Software License, Version 2.0
   TagSoup under Apache License 2.0
+  Text under Eclipse Public License
   Transaction 1.1 API under lgpl
-  Tycho org.eclipse.jdt.core dependency (Incubation) under Eclipse Public License
   vtd-xml under GNU GENERAL PUBLIC LICENSE Version 2, June 1991
   Xalan Java under The Apache Software License, Version 2.0
   Xalan Java Serializer under The Apache Software License, Version 2.0
-  Xbase Runtime Library under Eclipse Public License - v 1.0
+  Xbase Runtime Library under Eclipse Public License, Version 1.0
   Xerces2-j under The Apache Software License, Version 2.0
   xercesMinimal under Apache License, Version 2.0
   XML Commons External Components XML APIs under The Apache Software License, Version 2.0 or The SAX License or The W3C License
   xml-path under Apache 2.0
-  Xtend Core Library under Eclipse Public License - v 1.0
-  Xtext Runtime Library under Eclipse Public License - v 1.0
-  Xtext Util under Eclipse Public License - v 1.0
+  Xtend Core Library under Eclipse Public License, Version 1.0
+  Xtext Runtime Bundle under Eclipse Public License, Version 1.0
+  Xtext Utilities under Eclipse Public License, Version 1.0
 
