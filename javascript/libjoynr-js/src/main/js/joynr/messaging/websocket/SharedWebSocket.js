@@ -145,9 +145,10 @@ const SharedWebSocket = function SharedWebSocket(settings) {
         }
         log.error(
             "error in websocket: " +
-                event.code +
+                (event.code !== undefined ? " code: " + event.code : "") +
                 (event.reason !== undefined ? " reason: " + event.reason : "") +
-                ". Resetting connection."
+                (event.message !== undefined ? " message: " + event.message : "") +
+                ". Resetting connection"
         );
         if (reconnectTimer !== undefined) {
             LongTimer.clearTimeout(reconnectTimer);
