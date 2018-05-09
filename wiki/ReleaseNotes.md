@@ -4,9 +4,16 @@ the versioning scheme [here](JoynrVersioning.md).
 
 # joynr 1.3.0
 
+## API relevant changes
+None.
+
 ## Configuration property changes
 * **[Java]** Introduced `PROPERTY_KEY_MQTT_KEYSTORE_TYPE` and `PROPERTY_KEY_MQTT_TRUSTSTORE_TYPE` for
 specifying the keystore/truststore type. See [Java Configuration Reference](JavaSettings.md)for more details.
+
+## Other changes
+* **[JS]** Removed the dependency to wscpp. Joynr uses the ws npm module for websocket
+  communication instead.
 
 # joynr 1.2.0
 
