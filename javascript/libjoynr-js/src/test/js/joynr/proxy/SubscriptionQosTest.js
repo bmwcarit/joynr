@@ -72,352 +72,316 @@ describe("libjoynr-js.joynr.proxy.SubscriptionQos", () => {
         });
     }
 
-    function createOnChangeWithKeepAliveOutput(
-        minIntervalMs,
-        maxIntervalMs,
-        expiryDateMs,
-        alertAfterIntervalMs,
-        publicationTtlMs
-    ) {
-        return {
-            minIntervalMs,
-            maxIntervalMs,
-            expiryDateMs,
-            alertAfterIntervalMs,
-            publicationTtlMs
-        };
-    }
-
-    function createPeriodicOutput(periodMs, expiryDateMs, alertAfterIntervalMs, publicationTtlMs) {
-        return {
-            periodMs,
-            expiryDateMs,
-            alertAfterIntervalMs,
-            publicationTtlMs
-        };
-    }
-
-    function compareSubscriptionQos(output, expectedOutput, onChange) {
-        expect(output.expiryDateMs).toEqual(expectedOutput.expiryDateMs);
-        expect(output.alertAfterIntervalMs).toEqual(expectedOutput.alertAfterIntervalMs);
-        expect(output.publicationTtlMs).toEqual(expectedOutput.publicationTtlMs);
-
-        //Do we have an OnChangeWithKeepAliveSubscriptionQos object? => fields min- and maxIntervalMs should exist
-        if (onChange) {
-            expect(output.minIntervalMs).toEqual(expectedOutput.minIntervalMs);
-            expect(output.maxIntervalMs).toEqual(expectedOutput.maxIntervalMs);
-            expect(output._typeName).toEqual("joynr.OnChangeWithKeepAliveSubscriptionQos");
-        } else {
-            //PeriodicSubscriptionQos? => field periodMs should exist
-            expect(output.periodMs).toEqual(expectedOutput.periodMs);
-            expect(output._typeName).toEqual("joynr.PeriodicSubscriptionQos");
+    // compare existing member values of subscriptionQos to the corresponding ones in expectedOutput
+    function compareSubscriptionQosSettings(subscriptionQos, expectedOutput, specification) {
+        // fields expiryDateMs and publicationTtlMs should exist in any case
+        expect(subscriptionQos.expiryDateMs).toEqual(expectedOutput.expiryDateMs);
+        expect(subscriptionQos.publicationTtlMs).toEqual(expectedOutput.publicationTtlMs);
+        switch (specification) {
+            case "PeriodicSubscriptionQos":
+                // Do we have a PeriodicSubscriptionQos object? => fields periodMs and alertAfterIntervalMs should exist
+                expect(subscriptionQos.periodMs).toEqual(expectedOutput.periodMs);
+                expect(subscriptionQos.alertAfterIntervalMs).toEqual(expectedOutput.periodicAlertAfterIntervalMs);
+                break;
+            case "OnChangeWithKeepAliveSubscriptionQos":
+                // Do we have an OnChangeWithKeepAliveSubscriptionQos object? => fields min- and maxIntervalMs and alertAfterIntervalMs should exist
+                expect(subscriptionQos.maxIntervalMs).toEqual(expectedOutput.maxIntervalMs);
+                expect(subscriptionQos.alertAfterIntervalMs).toEqual(expectedOutput.onChangeAlertAfterIntervalMs);
+            // fall through
+            case "OnChangeSubscriptionQos":
+                // Do we have an OnChangeSubscriptionQos object? => field minIntervalMs should exist
+                expect(subscriptionQos.minIntervalMs).toEqual(expectedOutput.minIntervalMs);
+                break;
+            default:
+                // no further fields to check
+                break;
         }
     }
 
-    it("constructs PeriodicSubscriptionQos (including SubscriptionQos) with correct member values", done => {
-        //all values regular (lower limits)
+    // for each input: Call constructors of SubscriptionQos and every subclass and check output
+    function checkSettingsInSubscriptionQosAndChildren(input, expectedOutput) {
         {
-            const output = createPeriodicSubscriptionQos(
-                PeriodicSubscriptionQos.MIN_PERIOD_MS,
-                SubscriptionQos.MIN_EXPIRY_MS,
-                PeriodicSubscriptionQos.MIN_PERIOD_MS,
-                SubscriptionQos.MIN_PUBLICATION_TTL_MS
+            // check if SubscriptionQos is constructed with correct member values
+            const subscriptionQos = new SubscriptionQos({
+                expiryDateMs: input.expiryDateMs,
+                publicationTtlMs: input.publicationTtlMs
+            });
+            compareSubscriptionQosSettings(subscriptionQos, expectedOutput);
+        }
+        {
+            // check if MulticastSubscriptionQos is constructed with correct member values
+            const subscriptionQos = new MulticastSubscriptionQos({
+                expiryDateMs: input.expiryDateMs,
+                publicationTtlMs: input.publicationTtlMs
+            });
+            compareSubscriptionQosSettings(subscriptionQos, expectedOutput);
+        }
+        {
+            // check if PeriodicSubscriptionQos is constructed with correct member values
+            const subscriptionQos = new createPeriodicSubscriptionQos(
+                input.periodMs,
+                input.expiryDateMs,
+                input.periodicAlertAfterIntervalMs,
+                input.publicationTtlMs
             );
-            const expectedOutput = createPeriodicOutput(
-                PeriodicSubscriptionQos.MIN_PERIOD_MS,
-                SubscriptionQos.MIN_EXPIRY_MS,
-                PeriodicSubscriptionQos.MIN_PERIOD_MS,
-                SubscriptionQos.MIN_PUBLICATION_TTL_MS
+            compareSubscriptionQosSettings(subscriptionQos, expectedOutput, "PeriodicSubscriptionQos");
+        }
+        {
+            // check if OnChangeSubscriptionQos is constructed with correct member values
+            const subscriptionQos = new OnChangeSubscriptionQos({
+                expiryDateMs: input.expiryDateMs,
+                publicationTtlMs: input.publicationTtlMs,
+                minIntervalMs: input.minIntervalMs
+            });
+            compareSubscriptionQosSettings(subscriptionQos, expectedOutput, "OnChangeSubscriptionQos");
+        }
+        {
+            // check if OnChangeWithKeepAliveSubscriptionQos is constructed with correct member values
+            const subscriptionQos = new createOnChangeWithKeepAliveSubscriptionQos(
+                input.minIntervalMs,
+                input.maxIntervalMs,
+                input.expiryDateMs,
+                input.onChangeAlertAfterIntervalMs,
+                input.publicationTtlMs
             );
-            compareSubscriptionQos(output, expectedOutput, false);
+            compareSubscriptionQosSettings(subscriptionQos, expectedOutput, "OnChangeWithKeepAliveSubscriptionQos");
         }
-        //all values regular (upper limits)
-        {
-            const output = createPeriodicSubscriptionQos(
-                PeriodicSubscriptionQos.MAX_PERIOD_MS,
-                UtilInternal.getMaxLongValue(),
-                PeriodicSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS,
-                SubscriptionQos.MAX_PUBLICATION_TTL_MS
-            );
-            const expectedOutput = createPeriodicOutput(
-                PeriodicSubscriptionQos.MAX_PERIOD_MS,
-                UtilInternal.getMaxLongValue(),
-                PeriodicSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS,
-                SubscriptionQos.MAX_PUBLICATION_TTL_MS
-            );
-            compareSubscriptionQos(output, expectedOutput, false);
-        }
-        //publicationTtlMs < SubscriptionQos.MIN_PUBLICATION_TTL_MS
-        {
-            const output = createPeriodicSubscriptionQos(1000, 1000, 1000, SubscriptionQos.MIN_PUBLICATION_TTL_MS - 1);
-            const expectedOutput = createPeriodicOutput(1000, 1000, 1000, SubscriptionQos.MIN_PUBLICATION_TTL_MS);
-            compareSubscriptionQos(output, expectedOutput, false);
-        }
-        //publicationTtlMs > SubscriptionQos.MAX_PUBLICATION_TTL_MS
-        {
-            const output = createPeriodicSubscriptionQos(1000, 1000, 1000, SubscriptionQos.MAX_PUBLICATION_TTL_MS + 1);
-            const expectedOutput = createPeriodicOutput(1000, 1000, 1000, SubscriptionQos.MAX_PUBLICATION_TTL_MS);
-            compareSubscriptionQos(output, expectedOutput, false);
-        }
-        //expiryDateMs < SubscriptionQos.MIN_EXPIRY_MS
-        {
-            const output = createPeriodicSubscriptionQos(1000, SubscriptionQos.MIN_EXPIRY_MS - 1, 1000, 1000);
-            const expectedOutput = createPeriodicOutput(1000, SubscriptionQos.MIN_EXPIRY_MS, 1000, 1000);
-            compareSubscriptionQos(output, expectedOutput, false);
-        }
-        //periodMs < PeriodicSubscriptionQos.MIN_PERIOD_MS
-        expect(() => {
-            createPeriodicSubscriptionQos(PeriodicSubscriptionQos.MIN_PERIOD_MS - 1, 1000, 1000, 1000);
-        }).toThrow();
+    }
 
-        //periodMs > PeriodicSubscriptionQos.MAX_PERIOD_MS
-        expect(() => {
-            createPeriodicSubscriptionQos(PeriodicSubscriptionQos.MAX_PERIOD_MS + 1, 1000, 1000, 1000);
-        }).toThrow();
+    const defaultTestSettings = {
+        expiryDateMs: 4,
+        publicationTtlMs: 150,
+        periodMs: 55,
+        periodicAlertAfterIntervalMs: 80,
+        minIntervalMs: 5,
+        maxIntervalMs: 60,
+        onChangeAlertAfterIntervalMs: 1000
+    };
 
-        //alertAfterIntervalMs !== PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL && alertAfterIntervalMs < periodMs
-        {
-            const output = createPeriodicSubscriptionQos(1000, 2000, 999, 3000);
-            const expectedOutput = createPeriodicOutput(1000, 2000, 1000, 3000);
-            compareSubscriptionQos(output, expectedOutput, false);
+    // add non-existing keys in settings
+    function addDefaultKeys(settings) {
+        if (settings.expiryDateMs === undefined) {
+            settings.expiryDateMs = defaultTestSettings.expiryDateMs;
         }
-        //alertAfterIntervalMs === PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL && alertAfterIntervalMs < periodMs
-        {
-            const output = createPeriodicSubscriptionQos(
-                PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL + 50,
-                2000,
-                PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL,
-                3000
-            );
-            const expectedOutput = createPeriodicOutput(
-                PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL + 50,
-                2000,
-                PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL,
-                3000
-            );
-            compareSubscriptionQos(output, expectedOutput, false);
+        if (settings.publicationTtlMs === undefined) {
+            settings.publicationTtlMs = defaultTestSettings.publicationTtlMs;
         }
-        //alertAfterIntervalMs > PeriodicSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS
-        {
-            const output = createPeriodicSubscriptionQos(
-                1000,
-                2000,
-                PeriodicSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS + 1,
-                3000
-            );
-            const expectedOutput = createPeriodicOutput(
-                1000,
-                2000,
-                PeriodicSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS,
-                3000
-            );
-            compareSubscriptionQos(output, expectedOutput, false);
+        if (settings.periodMs === undefined) {
+            settings.periodMs = defaultTestSettings.periodMs;
         }
-        done();
-    });
+        if (settings.periodicAlertAfterIntervalMs === undefined) {
+            settings.periodicAlertAfterIntervalMs = defaultTestSettings.periodicAlertAfterIntervalMs;
+        }
+        if (settings.minIntervalMs === undefined) {
+            settings.minIntervalMs = defaultTestSettings.minIntervalMs;
+        }
+        if (settings.maxIntervalMs === undefined) {
+            settings.maxIntervalMs = defaultTestSettings.maxIntervalMs;
+        }
+        if (settings.onChangeAlertAfterIntervalMs === undefined) {
+            settings.onChangeAlertAfterIntervalMs = defaultTestSettings.onChangeAlertAfterIntervalMs;
+        }
+        return settings;
+    }
 
-    it("constructs OnChangeWithKeepAliveSubscriptionQos (including OnChangeSubscriptionQos) with correct member values", done => {
-        //all values regular (lower limits)
+    it("constructs SubscriptionQos (and subclasses) with correct member values", done => {
+        // all values regular (lower limits)
         {
-            const output = createOnChangeWithKeepAliveSubscriptionQos(
-                OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS,
-                OnChangeWithKeepAliveSubscriptionQos.MIN_MAX_INTERVAL_MS,
-                SubscriptionQos.MIN_EXPIRY_MS,
-                OnChangeWithKeepAliveSubscriptionQos.MIN_MAX_INTERVAL_MS,
-                SubscriptionQos.MIN_PUBLICATION_TTL_MS
-            );
-            const expectedOutput = createOnChangeWithKeepAliveOutput(
-                OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS,
-                OnChangeWithKeepAliveSubscriptionQos.MIN_MAX_INTERVAL_MS,
-                SubscriptionQos.MIN_EXPIRY_MS,
-                OnChangeWithKeepAliveSubscriptionQos.MIN_MAX_INTERVAL_MS,
-                SubscriptionQos.MIN_PUBLICATION_TTL_MS
-            );
-            compareSubscriptionQos(output, expectedOutput, true);
-        }
-        //all values regular (upper limits)
-        {
-            const output = createOnChangeWithKeepAliveSubscriptionQos(
-                OnChangeSubscriptionQos.MAX_MIN_INTERVAL_MS,
-                OnChangeWithKeepAliveSubscriptionQos.MAX_MAX_INTERVAL_MS,
-                UtilInternal.getMaxLongValue(),
-                OnChangeWithKeepAliveSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS,
-                SubscriptionQos.MAX_PUBLICATION_TTL_MS
-            );
-            const expectedOutput = createOnChangeWithKeepAliveOutput(
-                OnChangeSubscriptionQos.MAX_MIN_INTERVAL_MS,
-                OnChangeWithKeepAliveSubscriptionQos.MAX_MAX_INTERVAL_MS,
-                UtilInternal.getMaxLongValue(),
-                OnChangeWithKeepAliveSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS,
-                SubscriptionQos.MAX_PUBLICATION_TTL_MS
-            );
-            compareSubscriptionQos(output, expectedOutput, true);
-        }
-        //minIntervalMs < OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS
-        {
-            const output = createOnChangeWithKeepAliveSubscriptionQos(
-                OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS - 1,
-                4321,
-                4321,
-                4321,
-                4321
-            );
-            const expectedOutput = createOnChangeWithKeepAliveOutput(
-                OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS,
-                4321,
-                4321,
-                4321,
-                4321
-            );
-            compareSubscriptionQos(output, expectedOutput, true);
-        }
-        //minIntervalMs > OnChangeSubscriptionQos.MAX_MIN_INTERVAL_MS
-        {
-            const output = createOnChangeWithKeepAliveSubscriptionQos(
-                OnChangeSubscriptionQos.MAX_MIN_INTERVAL_MS + 1,
-                OnChangeSubscriptionQos.MAX_MIN_INTERVAL_MS,
-                1234,
-                OnChangeSubscriptionQos.MAX_MIN_INTERVAL_MS,
-                1234
-            );
-            const expectedOutput = createOnChangeWithKeepAliveOutput(
-                OnChangeSubscriptionQos.MAX_MIN_INTERVAL_MS,
-                OnChangeSubscriptionQos.MAX_MIN_INTERVAL_MS,
-                1234,
-                OnChangeSubscriptionQos.MAX_MIN_INTERVAL_MS,
-                1234
-            );
-            compareSubscriptionQos(output, expectedOutput, true);
-        }
-        //maxIntervalMs < OnChangeWithKeepAliveSubscriptionQos.MIN_MAX_INTERVAL_MS
-        {
-            const output = createOnChangeWithKeepAliveSubscriptionQos(
-                12,
-                OnChangeWithKeepAliveSubscriptionQos.MIN_MAX_INTERVAL_MS - 1,
-                234,
-                345,
-                456
-            );
-            const expectedOutput = createOnChangeWithKeepAliveOutput(
-                12,
-                OnChangeWithKeepAliveSubscriptionQos.MIN_MAX_INTERVAL_MS,
-                234,
-                345,
-                456
-            );
-            compareSubscriptionQos(output, expectedOutput, true);
-        }
-        //maxIntervalMs > OnChangeWithKeepAliveSubscriptionQos.MAX_MAX_INTERVAL_MS
-        {
-            const output = createOnChangeWithKeepAliveSubscriptionQos(
-                1000,
-                OnChangeWithKeepAliveSubscriptionQos.MAX_MAX_INTERVAL_MS + 1,
-                1000,
-                OnChangeWithKeepAliveSubscriptionQos.MAX_MAX_INTERVAL_MS,
-                1000
-            );
-            const expectedOutput = createOnChangeWithKeepAliveOutput(
-                1000,
-                OnChangeWithKeepAliveSubscriptionQos.MAX_MAX_INTERVAL_MS,
-                1000,
-                OnChangeWithKeepAliveSubscriptionQos.MAX_MAX_INTERVAL_MS,
-                1000
-            );
-            compareSubscriptionQos(output, expectedOutput, true);
-        }
-        //maxIntervalMs < minIntervalMs
-        {
-            const output = createOnChangeWithKeepAliveSubscriptionQos(1000, 100, 2000, 3000, 4000);
-            const expectedOutput = createOnChangeWithKeepAliveOutput(1000, 1000, 2000, 3000, 4000);
-            compareSubscriptionQos(output, expectedOutput, true);
-        }
-        //alertAfterIntervalMs !== OnChangeWithKeepAliveSubscriptionQos.NO_ALERT_AFTER_INTERVAL && alertAfterIntervalMs < maxIntervalMs
-        {
-            const output = createOnChangeWithKeepAliveSubscriptionQos(1000, 4000, 3000, 2000, 5000);
-            const expectedOutput = createOnChangeWithKeepAliveOutput(1000, 4000, 3000, 4000, 5000);
-            compareSubscriptionQos(output, expectedOutput, true);
-        }
-        //alertAfterIntervalMs === OnChangeWithKeepAliveSubscriptionQos.NO_ALERT_AFTER_INTERVAL && alertAfterIntervalMs < maxIntervalMs
-        {
-            const output = createOnChangeWithKeepAliveSubscriptionQos(
-                PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL + 50,
-                4000,
-                3000,
-                OnChangeWithKeepAliveSubscriptionQos.NO_ALERT_AFTER_INTERVAL,
-                5000
-            );
-            const expectedOutput = createOnChangeWithKeepAliveOutput(
-                PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL + 50,
-                4000,
-                3000,
-                OnChangeWithKeepAliveSubscriptionQos.NO_ALERT_AFTER_INTERVAL,
-                5000
-            );
-            compareSubscriptionQos(output, expectedOutput, true);
-        }
-        //alertAfterIntervalMs > OnChangeWithKeepAliveSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS
-        {
-            const output = createOnChangeWithKeepAliveSubscriptionQos(
-                1000,
-                1000,
-                1000,
-                OnChangeWithKeepAliveSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS + 1,
-                1000
-            );
-            const expectedOutput = createOnChangeWithKeepAliveOutput(
-                1000,
-                1000,
-                1000,
-                OnChangeWithKeepAliveSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS,
-                1000
-            );
-            compareSubscriptionQos(output, expectedOutput, true);
-        }
-        done();
-    });
-
-    it("constructs MulticastSubscriptionQos with correct member values", done => {
-        //all values regular (lower limits)
-        {
-            const output = new MulticastSubscriptionQos({
+            const input = {
                 expiryDateMs: SubscriptionQos.MIN_EXPIRY_MS,
-                publicationTtlMs: SubscriptionQos.MIN_PUBLICATION_TTL_MS
-            });
-            expect(output.expiryDateMs).toEqual(SubscriptionQos.MIN_EXPIRY_MS);
-            expect(output.publicationTtlMs).toEqual(SubscriptionQos.MIN_PUBLICATION_TTL_MS);
-            expect(output._typeName).toEqual("joynr.MulticastSubscriptionQos");
+                publicationTtlMs: SubscriptionQos.MIN_PUBLICATION_TTL_MS,
+                periodMs: PeriodicSubscriptionQos.MIN_PERIOD_MS,
+                periodicAlertAfterIntervalMs: PeriodicSubscriptionQos.MIN_PERIOD_MS,
+                minIntervalMs: OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS,
+                maxIntervalMs: OnChangeWithKeepAliveSubscriptionQos.MIN_MAX_INTERVAL_MS,
+                onChangeAlertAfterIntervalMs: OnChangeWithKeepAliveSubscriptionQos.MIN_MAX_INTERVAL_MS
+            };
+            const expectedOutput = {
+                expiryDateMs: SubscriptionQos.MIN_EXPIRY_MS,
+                publicationTtlMs: SubscriptionQos.MIN_PUBLICATION_TTL_MS,
+                periodMs: PeriodicSubscriptionQos.MIN_PERIOD_MS,
+                periodicAlertAfterIntervalMs: PeriodicSubscriptionQos.MIN_PERIOD_MS,
+                minIntervalMs: OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS,
+                maxIntervalMs: OnChangeWithKeepAliveSubscriptionQos.MIN_MAX_INTERVAL_MS,
+                onChangeAlertAfterIntervalMs: OnChangeWithKeepAliveSubscriptionQos.MIN_MAX_INTERVAL_MS
+            };
+            checkSettingsInSubscriptionQosAndChildren(input, expectedOutput);
         }
-        //all values regular (random values)
+        // all values regular (random values)
         {
-            const output = new MulticastSubscriptionQos({
-                expiryDateMs: 1234,
-                publicationTtlMs: 5678
-            });
-            expect(output.expiryDateMs).toEqual(1234);
-            expect(output.publicationTtlMs).toEqual(5678);
-            expect(output._typeName).toEqual("joynr.MulticastSubscriptionQos");
+            const input = addDefaultKeys({});
+            const expectedOutput = addDefaultKeys({});
+            checkSettingsInSubscriptionQosAndChildren(input, expectedOutput);
         }
-        //all values regular (upper limits)
+        // all values regular (upper limits)
         {
-            const output = new MulticastSubscriptionQos({
+            const input = {
                 expiryDateMs: UtilInternal.getMaxLongValue(),
-                publicationTtlMs: SubscriptionQos.MAX_PUBLICATION_TTL_MS
+                publicationTtlMs: SubscriptionQos.MAX_PUBLICATION_TTL_MS,
+                periodMs: PeriodicSubscriptionQos.MAX_PERIOD_MS,
+                periodicAlertAfterIntervalMs: PeriodicSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS,
+                minIntervalMs: OnChangeSubscriptionQos.MAX_MIN_INTERVAL_MS,
+                maxIntervalMs: OnChangeWithKeepAliveSubscriptionQos.MAX_MAX_INTERVAL_MS,
+                onChangeAlertAfterIntervalMs: OnChangeWithKeepAliveSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS
+            };
+            const expectedOutput = {
+                expiryDateMs: UtilInternal.getMaxLongValue(),
+                publicationTtlMs: SubscriptionQos.MAX_PUBLICATION_TTL_MS,
+                periodMs: PeriodicSubscriptionQos.MAX_PERIOD_MS,
+                periodicAlertAfterIntervalMs: PeriodicSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS,
+                minIntervalMs: OnChangeSubscriptionQos.MAX_MIN_INTERVAL_MS,
+                maxIntervalMs: OnChangeWithKeepAliveSubscriptionQos.MAX_MAX_INTERVAL_MS,
+                onChangeAlertAfterIntervalMs: OnChangeWithKeepAliveSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS
+            };
+            checkSettingsInSubscriptionQosAndChildren(input, expectedOutput);
+        }
+        // publicationTtlMs < SubscriptionQos.MIN_PUBLICATION_TTL_MS
+        {
+            const input = addDefaultKeys({ publicationTtlMs: SubscriptionQos.MIN_PUBLICATION_TTL_MS - 1 });
+            const expectedOutput = addDefaultKeys({ publicationTtlMs: SubscriptionQos.MIN_PUBLICATION_TTL_MS });
+            checkSettingsInSubscriptionQosAndChildren(input, expectedOutput);
+        }
+        // publicationTtlMs > SubscriptionQos.MAX_PUBLICATION_TTL_MS
+        {
+            const input = addDefaultKeys({ publicationTtlMs: SubscriptionQos.MAX_PUBLICATION_TTL_MS + 1 });
+            const expectedOutput = addDefaultKeys({ publicationTtlMs: SubscriptionQos.MAX_PUBLICATION_TTL_MS });
+            checkSettingsInSubscriptionQosAndChildren(input, expectedOutput);
+        }
+        // expiryDateMs < SubscriptionQos.MIN_EXPIRY_MS
+        {
+            const input = addDefaultKeys({ expiryDateMs: SubscriptionQos.MIN_EXPIRY_MS - 1 });
+            const expectedOutput = addDefaultKeys({ expiryDateMs: SubscriptionQos.MIN_EXPIRY_MS });
+            checkSettingsInSubscriptionQosAndChildren(input, expectedOutput);
+        }
+        // periodMs < PeriodicSubscriptionQos.MIN_PERIOD_MS
+        expect(() => {
+            PeriodicSubscriptionQos(addDefaultKeys({ periodMs: PeriodicSubscriptionQos.MIN_PERIOD_MS - 1 }));
+        }).toThrow();
+
+        // periodMs > PeriodicSubscriptionQos.MAX_PERIOD_MS
+        expect(() => {
+            PeriodicSubscriptionQos(addDefaultKeys({ periodMs: PeriodicSubscriptionQos.MAX_PERIOD_MS + 1 }));
+        }).toThrow();
+
+        // PeriodicSubscriptionQos.alertAfterIntervalMs !== PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL && PeriodicSubscriptionQos.alertAfterIntervalMs < periodMs
+        {
+            const input = addDefaultKeys({ periodicAlertAfterIntervalMs: 2999, periodMs: 3000 });
+            const expectedOutput = addDefaultKeys({ periodicAlertAfterIntervalMs: 3000, periodMs: 3000 });
+            checkSettingsInSubscriptionQosAndChildren(input, expectedOutput);
+        }
+        // PeriodicSubscriptionQos.alertAfterIntervalMs === PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL && PeriodicSubscriptionQos.alertAfterIntervalMs < periodMs
+        {
+            const input = addDefaultKeys({
+                periodicAlertAfterIntervalMs: PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL,
+                periodMs: PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL + 50
             });
-            expect(output.expiryDateMs).toEqual(UtilInternal.getMaxLongValue());
-            expect(output.publicationTtlMs).toEqual(SubscriptionQos.MAX_PUBLICATION_TTL_MS);
-            expect(output._typeName).toEqual("joynr.MulticastSubscriptionQos");
+            const expectedOutput = addDefaultKeys({
+                periodicAlertAfterIntervalMs: PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL,
+                periodMs: PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL + 50
+            });
+            checkSettingsInSubscriptionQosAndChildren(input, expectedOutput);
+        }
+        // PeriodicSubscriptionQos.alertAfterIntervalMs > PeriodicSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS
+        {
+            const input = addDefaultKeys({
+                periodicAlertAfterIntervalMs: PeriodicSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS + 1
+            });
+            const expectedOutput = addDefaultKeys({
+                periodicAlertAfterIntervalMs: PeriodicSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS
+            });
+            checkSettingsInSubscriptionQosAndChildren(input, expectedOutput);
+        }
+        // minIntervalMs < OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS
+        {
+            const input = addDefaultKeys({ minIntervalMs: OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS - 1 });
+            const expectedOutput = addDefaultKeys({ minIntervalMs: OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS });
+            checkSettingsInSubscriptionQosAndChildren(input, expectedOutput);
+        }
+        // minIntervalMs > OnChangeSubscriptionQos.MAX_MIN_INTERVAL_MS
+        {
+            const input = addDefaultKeys({
+                minIntervalMs: OnChangeSubscriptionQos.MAX_MIN_INTERVAL_MS + 1,
+                maxIntervalMs: OnChangeSubscriptionQos.MAX_MIN_INTERVAL_MS,
+                onChangeAlertAfterIntervalMs: OnChangeSubscriptionQos.MAX_MIN_INTERVAL_MS
+            });
+            const expectedOutput = addDefaultKeys({
+                minIntervalMs: OnChangeSubscriptionQos.MAX_MIN_INTERVAL_MS,
+                maxIntervalMs: OnChangeSubscriptionQos.MAX_MIN_INTERVAL_MS,
+                onChangeAlertAfterIntervalMs: OnChangeSubscriptionQos.MAX_MIN_INTERVAL_MS
+            });
+            checkSettingsInSubscriptionQosAndChildren(input, expectedOutput);
+        }
+        // maxIntervalMs < OnChangeWithKeepAliveSubscriptionQos.MIN_MAX_INTERVAL_MS
+        {
+            const input = addDefaultKeys({
+                maxIntervalMs: OnChangeWithKeepAliveSubscriptionQos.MIN_MAX_INTERVAL_MS - 1
+            });
+            const expectedOutput = addDefaultKeys({
+                maxIntervalMs: OnChangeWithKeepAliveSubscriptionQos.MIN_MAX_INTERVAL_MS
+            });
+            checkSettingsInSubscriptionQosAndChildren(input, expectedOutput);
+        }
+        // maxIntervalMs > OnChangeWithKeepAliveSubscriptionQos.MAX_MAX_INTERVAL_MS
+        {
+            const input = addDefaultKeys({
+                maxIntervalMs: OnChangeWithKeepAliveSubscriptionQos.MAX_MAX_INTERVAL_MS + 1,
+                onChangeAlertAfterIntervalMs: OnChangeWithKeepAliveSubscriptionQos.MAX_MAX_INTERVAL_MS
+            });
+            const expectedOutput = addDefaultKeys({
+                maxIntervalMs: OnChangeWithKeepAliveSubscriptionQos.MAX_MAX_INTERVAL_MS,
+                onChangeAlertAfterIntervalMs: OnChangeWithKeepAliveSubscriptionQos.MAX_MAX_INTERVAL_MS
+            });
+            checkSettingsInSubscriptionQosAndChildren(input, expectedOutput);
+        }
+        // maxIntervalMs < minIntervalMs
+        {
+            const input = addDefaultKeys({ maxIntervalMs: 200, minIntervalMs: 500 });
+            const expectedOutput = addDefaultKeys({ maxIntervalMs: 500, minIntervalMs: 500 });
+            checkSettingsInSubscriptionQosAndChildren(input, expectedOutput);
+        }
+        // OnChangeWithKeepAliveSubscriptionQos.alertAfterIntervalMs !== OnChangeWithKeepAliveSubscriptionQos.NO_ALERT_AFTER_INTERVAL
+        // && OnChangeWithKeepAliveSubscriptionQos.alertAfterIntervalMs < maxIntervalMs
+        {
+            const input = addDefaultKeys({ maxIntervalMs: 4000, onChangeAlertAfterIntervalMs: 2000 });
+            const expectedOutput = addDefaultKeys({ maxIntervalMs: 4000, onChangeAlertAfterIntervalMs: 4000 });
+            checkSettingsInSubscriptionQosAndChildren(input, expectedOutput);
+        }
+        // OnChangeWithKeepAliveSubscriptionQos.alertAfterIntervalMs === OnChangeWithKeepAliveSubscriptionQos.NO_ALERT_AFTER_INTERVAL
+        // && OnChangeWithKeepAliveSubscriptionQos.alertAfterIntervalMs < maxIntervalMs
+        {
+            const input = addDefaultKeys({
+                maxIntervalMs: OnChangeWithKeepAliveSubscriptionQos.NO_ALERT_AFTER_INTERVAL + 100,
+                onChangeAlertAfterIntervalMs: OnChangeWithKeepAliveSubscriptionQos.NO_ALERT_AFTER_INTERVAL
+            });
+            const expectedOutput = addDefaultKeys({
+                maxIntervalMs: OnChangeWithKeepAliveSubscriptionQos.NO_ALERT_AFTER_INTERVAL + 100,
+                onChangeAlertAfterIntervalMs: OnChangeWithKeepAliveSubscriptionQos.NO_ALERT_AFTER_INTERVAL
+            });
+            checkSettingsInSubscriptionQosAndChildren(input, expectedOutput);
+        }
+        // OnChangeWithKeepAliveSubscriptionQos.alertAfterIntervalMs > OnChangeWithKeepAliveSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS
+        {
+            const input = addDefaultKeys({
+                onChangeAlertAfterIntervalMs: OnChangeWithKeepAliveSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS + 1
+            });
+            const expectedOutput = addDefaultKeys({
+                onChangeAlertAfterIntervalMs: OnChangeWithKeepAliveSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS
+            });
+            checkSettingsInSubscriptionQosAndChildren(input, expectedOutput);
         }
         done();
     });
 
-    it("constructs OnChangeWithKeepAliveSubscriptionQos with correct default values", done => {
-        const fixture = new OnChangeWithKeepAliveSubscriptionQos();
-        expect(fixture.minIntervalMs).toEqual(OnChangeSubscriptionQos.DEFAULT_MIN_INTERVAL_MS);
-        expect(fixture.maxIntervalMs).toEqual(OnChangeWithKeepAliveSubscriptionQos.DEFAULT_MAX_INTERVAL_MS);
+    it("constructs SubscriptionQos with correct default values", done => {
+        const fixture = new SubscriptionQos();
         expect(fixture.expiryDateMs).toEqual(SubscriptionQos.NO_EXPIRY_DATE);
-        expect(fixture.alertAfterIntervalMs).toEqual(
-            OnChangeWithKeepAliveSubscriptionQos.DEFAULT_ALERT_AFTER_INTERVAL_MS
-        );
+        expect(fixture.publicationTtlMs).toEqual(SubscriptionQos.DEFAULT_PUBLICATION_TTL_MS);
+        done();
+    });
+
+    it("constructs MulticastSubscriptionQos with correct default values", done => {
+        const fixture = new MulticastSubscriptionQos();
+        expect(fixture.expiryDateMs).toEqual(SubscriptionQos.NO_EXPIRY_DATE);
         expect(fixture.publicationTtlMs).toEqual(SubscriptionQos.DEFAULT_PUBLICATION_TTL_MS);
         done();
     });
@@ -425,6 +389,24 @@ describe("libjoynr-js.joynr.proxy.SubscriptionQos", () => {
     it("constructs PeriodicSubscriptionQos with correct default values", done => {
         const fixture = new PeriodicSubscriptionQos();
         expect(fixture.periodMs).toEqual(PeriodicSubscriptionQos.DEFAULT_PERIOD_MS);
+        expect(fixture.expiryDateMs).toEqual(SubscriptionQos.NO_EXPIRY_DATE);
+        expect(fixture.alertAfterIntervalMs).toEqual(PeriodicSubscriptionQos.DEFAULT_ALERT_AFTER_INTERVAL_MS);
+        expect(fixture.publicationTtlMs).toEqual(SubscriptionQos.DEFAULT_PUBLICATION_TTL_MS);
+        done();
+    });
+
+    it("constructs OnChangeSubscriptionQos with correct default values", done => {
+        const fixture = new OnChangeSubscriptionQos();
+        expect(fixture.expiryDateMs).toEqual(SubscriptionQos.NO_EXPIRY_DATE);
+        expect(fixture.publicationTtlMs).toEqual(SubscriptionQos.DEFAULT_PUBLICATION_TTL_MS);
+        expect(fixture.minIntervalMs).toEqual(OnChangeSubscriptionQos.DEFAULT_MIN_INTERVAL_MS);
+        done();
+    });
+
+    it("constructs OnChangeWithKeepAliveSubscriptionQos with correct default values", done => {
+        const fixture = new OnChangeWithKeepAliveSubscriptionQos();
+        expect(fixture.minIntervalMs).toEqual(OnChangeSubscriptionQos.DEFAULT_MIN_INTERVAL_MS);
+        expect(fixture.maxIntervalMs).toEqual(OnChangeWithKeepAliveSubscriptionQos.DEFAULT_MAX_INTERVAL_MS);
         expect(fixture.expiryDateMs).toEqual(SubscriptionQos.NO_EXPIRY_DATE);
         expect(fixture.alertAfterIntervalMs).toEqual(
             OnChangeWithKeepAliveSubscriptionQos.DEFAULT_ALERT_AFTER_INTERVAL_MS
@@ -483,78 +465,122 @@ describe("libjoynr-js.joynr.proxy.SubscriptionQos", () => {
         done();
     });
 
-    it("constructs MulticastSubscriptionQos with correct default values", done => {
-        const fixture = new MulticastSubscriptionQos();
-        expect(fixture.expiryDateMs).toEqual(SubscriptionQos.NO_EXPIRY_DATE);
-        expect(fixture.publicationTtlMs).toEqual(SubscriptionQos.DEFAULT_PUBLICATION_TTL_MS);
-        done();
-    });
+    // Checks if all SubscriptionQos and subclasses that have the specified field
+    // throw an exception if their constructor is called with the specified values.
+    // If no field is specified, no exception should be thrown.
+    function allConcernedThrowOnIncorrectType(
+        expiryDateMs,
+        publicationTtlMs,
+        periodMs,
+        alertAfterIntervalMs,
+        minIntervalMs,
+        maxIntervalMs,
+        specification
+    ) {
+        switch (specification) {
+            case "expiryDateMs":
+            // all SubscriptionQos have the fields expiryDateMs and publicationTtlMs and thus should throw an exception
+            // fall through
+            case "publicationTtlMs":
+                expect(() => {
+                    SubscriptionQos({ expiryDateMs, publicationTtlMs });
+                }).toThrow();
+                expect(() => {
+                    MulticastSubscriptionQos({ expiryDateMs, publicationTtlMs });
+                }).toThrow();
+                expect(() => {
+                    OnChangeSubscriptionQos({ expiryDateMs, publicationTtlMs, minIntervalMs });
+                }).toThrow();
+            // fall through
+            case "alertAfterIntervalMs":
+                // only PeriodicSubscriptionQos and OnChangeWithKeepAliveSubscriptionQos have the field alertAfterIntervalMs
+                expect(() => {
+                    OnChangeWithKeepAliveSubscriptionQos({
+                        expiryDateMs,
+                        publicationTtlMs,
+                        alertAfterIntervalMs,
+                        minIntervalMs,
+                        maxIntervalMs
+                    });
+                }).toThrow();
+            // fall through
+            case "periodMs":
+                // only PeriodicSubscriptionQos has the field periodMs
+                expect(() => {
+                    PeriodicSubscriptionQos({ expiryDateMs, publicationTtlMs, alertAfterIntervalMs, periodMs });
+                }).toThrow();
+                break;
+            case "minIntervalMs":
+                // only OnChangeSubscriptionQos and OnChangeWithKeepAliveSubscriptionQos should
+                // throw an exception with uncorrectly typed field minIntervalMs
+                expect(() => {
+                    OnChangeSubscriptionQos({ expiryDateMs, publicationTtlMs, minIntervalMs });
+                }).toThrow();
+            // fall through
+            case "maxIntervalMs":
+                // only OnChangeWithKeepAliveSubscriptionQos should throw an exception with uncorrectly typed field maxIntervalMs
+                expect(() => {
+                    OnChangeWithKeepAliveSubscriptionQos({
+                        expiryDateMs,
+                        publicationTtlMs,
+                        alertAfterIntervalMs,
+                        minIntervalMs,
+                        maxIntervalMs
+                    });
+                }).toThrow();
+                break;
+            default:
+                // no constructor call should throw an exception
+                expect(() => {
+                    SubscriptionQos({ expiryDateMs, publicationTtlMs });
+                }).not.toThrow();
+                expect(() => {
+                    MulticastSubscriptionQos({ expiryDateMs, publicationTtlMs });
+                }).not.toThrow();
+                expect(() => {
+                    PeriodicSubscriptionQos({ expiryDateMs, publicationTtlMs, alertAfterIntervalMs, periodMs });
+                }).not.toThrow();
+                expect(() => {
+                    OnChangeSubscriptionQos({ expiryDateMs, publicationTtlMs, minIntervalMs });
+                }).not.toThrow();
+                expect(() => {
+                    OnChangeWithKeepAliveSubscriptionQos({
+                        expiryDateMs,
+                        publicationTtlMs,
+                        alertAfterIntervalMs,
+                        minIntervalMs,
+                        maxIntervalMs
+                    });
+                }).not.toThrow();
+                break;
+        }
+    }
 
     it("throws on incorrectly typed values", done => {
-        // all arguments ok in PeriodicSubscriptionQos
-        expect(() => {
-            createPeriodicSubscriptionQos(50, 4, 80, 100);
-        }).not.toThrow();
+        // all arguments typed ok
+        allConcernedThrowOnIncorrectType(4, 100, 50, 80, 1, 50);
 
-        // all arguments ok in OnChangeWithKeepAliveSubscriptionQos
-        expect(() => {
-            createOnChangeWithKeepAliveSubscriptionQos(1, 50, 4, 80, 100);
-        }).not.toThrow();
+        // no arguments defined
+        allConcernedThrowOnIncorrectType(undefined, undefined, undefined, undefined, undefined, undefined);
 
-        // no arguments defined in PeriodicSubscriptionQos
-        expect(() => {
-            createPeriodicSubscriptionQos(undefined, undefined, undefined, undefined);
-        }).not.toThrow();
+        // argument expiryDateMs wrongly typed
+        allConcernedThrowOnIncorrectType({}, 100, 50, 80, 1, 50, "expiryDateMs");
 
-        // no arguments defined in OnChangeWithKeepAliveSubscriptionQos
-        expect(() => {
-            createOnChangeWithKeepAliveSubscriptionQos(undefined, undefined, undefined, undefined, undefined);
-        }).not.toThrow();
+        // argument publicationTtlMs wrongly typed
+        allConcernedThrowOnIncorrectType(4, {}, 50, 80, 1, 50, "publicationTtlMs");
 
-        // argument minIntervalMs wrongly typed in OnChangeWithKeepAliveSubscriptionQos
-        expect(() => {
-            createOnChangeWithKeepAliveSubscriptionQos({}, 50, 4, 80, 100);
-        }).toThrow();
+        // argument periodMs wrongly typed
+        allConcernedThrowOnIncorrectType(4, 100, {}, 80, 1, 50, "periodMs");
 
-        // argument maxIntervalMs wrongly typed in OnChangeWithKeepAliveSubscriptionQos
-        expect(() => {
-            createOnChangeWithKeepAliveSubscriptionQos(1, {}, 4, 80, 100);
-        }).toThrow();
+        // argument alertAfterIntervalMs wrongly typed
+        allConcernedThrowOnIncorrectType(4, 100, 50, {}, 1, 50, "alertAfterIntervalMs");
 
-        // argument expiryDateMs wrongly typed in OnChangeWithKeepAliveSubscriptionQos
-        expect(() => {
-            createOnChangeWithKeepAliveSubscriptionQos(1, 50, {}, 80, 100);
-        }).toThrow();
+        // argument minIntervalMs wrongly typed
+        allConcernedThrowOnIncorrectType(4, 100, 50, 80, {}, 50, "minIntervalMs");
 
-        // argument alertAfterIntervalMs wrongly typed in OnChangeWithKeepAliveSubscriptionQos
-        expect(() => {
-            createOnChangeWithKeepAliveSubscriptionQos(1, 50, 4, {}, 100);
-        }).toThrow();
+        // argument maxIntervalMs wrongly typed
+        allConcernedThrowOnIncorrectType(4, 100, 50, 80, 1, {}, "maxIntervalMs");
 
-        // argument publicationTtlMs wrongly typed in OnChangeWithKeepAliveSubscriptionQos
-        expect(() => {
-            createOnChangeWithKeepAliveSubscriptionQos(1, 50, 4, 80, {});
-        }).toThrow();
-
-        // argument periodMs wrongly typed in PeriodicSubscriptionQos
-        expect(() => {
-            createPeriodicSubscriptionQos({}, 4, 80, 100);
-        }).toThrow();
-
-        // argument expiryDateMs wrongly typed in PeriodicSubscriptionQos
-        expect(() => {
-            createPeriodicSubscriptionQos(50, {}, 80, 100);
-        }).toThrow();
-
-        // argument alertAfterIntervalMs wrongly typed in PeriodicSubscriptionQos
-        expect(() => {
-            createPeriodicSubscriptionQos(50, 4, {}, 100);
-        }).toThrow();
-
-        // argument publicationTtlMs wrongly typed in PeriodicSubscriptionQos
-        expect(() => {
-            createPeriodicSubscriptionQos(50, 4, 80, {});
-        }).toThrow();
         done();
     });
 });
