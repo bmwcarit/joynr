@@ -247,11 +247,26 @@ public class MqttPahoClientTest {
     }
 
     @Test
-    public void mqttClientTestWithDisabledMessageSizeCheckWithTls() throws Exception {
+    public void mqttClientTestWithDisabledMessageSizeCheckWithTlsAndDefaultJksStore() throws Exception {
         final String keyStorePath = getResourcePath("clientkeystore.jks");
         final String trustStorePath = getResourcePath("catruststore.jks");
         properties.put(MqttModule.PROPERTY_KEY_MQTT_KEYSTORE_PATH, keyStorePath);
         properties.put(MqttModule.PROPERTY_KEY_MQTT_TRUSTSTORE_PATH, trustStorePath);
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_KEYSTORE_PWD, KEYSTORE_PASSWORD);
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_TRUSTSTORE_PWD, KEYSTORE_PASSWORD);
+
+        final boolean isSecureConnection = true;
+        mqttClientTestWithDisabledMessageSizeCheck(isSecureConnection);
+    }
+
+    @Test
+    public void mqttClientTestWithDisabledMessageSizeCheckWithTlsAndP12Store() throws Exception {
+        final String keyStorePath = getResourcePath("clientkeystore.p12");
+        final String trustStorePath = getResourcePath("catruststore.p12");
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_KEYSTORE_PATH, keyStorePath);
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_TRUSTSTORE_PATH, trustStorePath);
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_KEYSTORE_TYPE, "PKCS12");
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_TRUSTSTORE_TYPE, "PKCS12");
         properties.put(MqttModule.PROPERTY_KEY_MQTT_KEYSTORE_PWD, KEYSTORE_PASSWORD);
         properties.put(MqttModule.PROPERTY_KEY_MQTT_TRUSTSTORE_PWD, KEYSTORE_PASSWORD);
 
@@ -441,6 +456,8 @@ public class MqttPahoClientTest {
                                              maxMsgsInflight,
                                              maxMsgSizeBytes,
                                              cleanSession,
+                                             "",
+                                             "",
                                              "",
                                              "",
                                              "",
