@@ -62,6 +62,8 @@ public class MqttModule extends AbstractModule {
     public static final String PROPERTY_KEY_MQTT_MAX_MESSAGE_SIZE_BYTES = "joynr.messaging.mqtt.maxmqttmessagesizebytes";
     public static final String PROPERTY_KEY_MQTT_KEYSTORE_PATH = "joynr.messaging.mqtt.ssl.keystore";
     public static final String PROPERTY_KEY_MQTT_TRUSTSTORE_PATH = "joynr.messaging.mqtt.ssl.truststore";
+    public static final String PROPERTY_KEY_MQTT_KEYSTORE_TYPE = "joynr.messaging.mqtt.ssl.keystoretype";
+    public static final String PROPERTY_KEY_MQTT_TRUSTSTORE_TYPE = "joynr.messaging.mqtt.ssl.truststoretype";
     public static final String PROPERTY_KEY_MQTT_KEYSTORE_PWD = "joynr.messaging.mqtt.ssl.keystorepassword";
     public static final String PROPERTY_KEY_MQTT_TRUSTSTORE_PWD = "joynr.messaging.mqtt.ssl.truststorepassword";
 
