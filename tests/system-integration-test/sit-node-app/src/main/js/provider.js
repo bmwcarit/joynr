@@ -21,6 +21,8 @@
 
 let joynr = require("joynr");
 const testbase = require("test-base");
+const SystemIntegrationTestProvider = require("../generated-sources/joynr/test/SystemIntegrationTestProvider.js");
+const SystemIntegrationTestProviderImpl = require("./SystemIntegrationTestProviderImpl.js");
 const fs = require("fs");
 const log = testbase.logging.log;
 const provisioning = testbase.provisioning_common;
@@ -80,18 +82,14 @@ joynr.load(testbase.provisioning_common).then((loadedJoynr) => {
         supportsOnChangeSubscriptions : true
     });
 
-    const SystemIntegrationTestProvider = require("../generated-sources/joynr/test/SystemIntegrationTestProvider.js");
-    const SystemIntegrationTestProviderImpl = require("./SystemIntegrationTestProviderImpl.js");
+
     const systemIntegrationTestProvider = joynr.providerBuilder.build(
             SystemIntegrationTestProvider,
             SystemIntegrationTestProviderImpl.implementation);
 
-    joynr.registration.registerProvider(domain, systemIntegrationTestProvider, providerQos).then(() => {
-        log("provider registered successfully");
-    }).catch((error) => {
-        log("error registering provider: " + error.toString());
-    });
-    return loadedJoynr;
+    return joynr.registration.registerProvider(domain, systemIntegrationTestProvider, providerQos);
+}).then(() => {
+  log("provider registered successfully");
 }).catch((error) => {
-    throw error;
+  log("error registering provider: " + error.toString());
 });

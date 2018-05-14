@@ -19,13 +19,10 @@
  * #L%
  */
 
-const Promise = require("bluebird").Promise;
 let joynr = require("joynr");
 const testbase = require("test-base");
 const fs = require("fs");
 const provisioning = testbase.provisioning_common;
-const prettyLog = testbase.logging.prettyLog;
-const error = testbase.logging.error;
 const log = testbase.logging.log;
 
 if (process.env.domain === undefined) {
@@ -75,8 +72,6 @@ if (process.env.tlsCertPath || process.env.tlsKeyPath || process.env.tlsCertPath
 
 const SystemIntegrationTestProxy = require("../generated-sources/joynr/test/SystemIntegrationTestProxy.js");
 
-const timeout = 600000;
-
 const runTest = function(systemIntegrationTestProxy) {
     const addends = {
         addendA : 123,
@@ -107,15 +102,15 @@ joynr.load(provisioning).then((loadedJoynr) => {
         domain,
         messagingQos,
         discoveryQos
-    }).then((systemIntegrationTestProxy) => {
-        return runTest(systemIntegrationTestProxy).then(() => {
-            log("SIT RESULT success: node consumer -> " + domain);
-            process.exit(0);
-        });
-    }).catch((error) => {
-        log("SIT RESULT error: node consumer -> " + domain + " error: " + JSON.stringify(error));
-        process.exit(1);
     });
+}).then((systemIntegrationTestProxy) => {
+  return runTest(systemIntegrationTestProxy);
+}).then(() => {
+  log("SIT RESULT success: node consumer -> " + domain);
+  process.exit(0);
+}).catch((error) => {
+  log("SIT RESULT error: node consumer -> " + domain + " error: " + JSON.stringify(error));
+  process.exit(1);
 }).catch((error) => {
     throw error;
 });

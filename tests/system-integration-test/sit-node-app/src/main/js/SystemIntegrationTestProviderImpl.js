@@ -26,15 +26,13 @@ const prettyLog = require("test-base").logging.prettyLog;
 exports.implementation = {
     add(opArgs) {
         prettyLog("SystemIntegrationTestProvider.add(" + JSON.stringify(opArgs) + ") called");
-        return new Promise(((resolve, reject) => {
+        return Promise.resolve().then(() => {
             if (opArgs.addendA === undefined || opArgs.addendB === undefined) {
-                reject(new joynr.exceptions.ProviderRuntimeException(
-                        {detailMessage: "add: invalid argument data"}));
+                throw new joynr.exceptions.ProviderRuntimeException(
+                        {detailMessage: "add: invalid argument data"});
             } else {
-                resolve({result: opArgs.addendA + opArgs.addendB});
+                return {result: opArgs.addendA + opArgs.addendB};
             }
-        }));
+        });
     }
 };
-
-self = exports.implementation;
