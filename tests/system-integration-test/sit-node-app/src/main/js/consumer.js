@@ -19,6 +19,11 @@
  * #L%
  */
 
+process.on('uncaughtException', (e) =>{
+   log("SIT RESULT error: received uncaught Exception" + e);
+   process.exit(1);
+});
+
 let joynr = require("joynr");
 const testbase = require("test-base");
 const fs = require("fs");
