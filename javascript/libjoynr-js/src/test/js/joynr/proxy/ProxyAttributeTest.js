@@ -467,7 +467,7 @@ describe("libjoynr-js.joynr.proxy.ProxyAttribute", () => {
             });
     });
 
-    it("throws if caller sets a generic object without a declared _typeName attribute with the name of a registrered type", done => {
+    it("rejects if caller sets a generic object without a declared _typeName attribute with the name of a registrered type", done => {
         const proxy = {};
         const radioStationProxyAttributeWrite = new ProxyAttribute(
             proxy,
@@ -477,14 +477,14 @@ describe("libjoynr-js.joynr.proxy.ProxyAttribute", () => {
             "WRITE"
         );
 
-        expect(() => {
-            radioStationProxyAttributeWrite.set({
+        radioStationProxyAttributeWrite
+            .set({
                 value: {
                     name: "radiostationname",
                     station: "station"
                 }
-            });
-        }).toThrow();
-        done();
+            })
+            .then(fail)
+            .catch(done);
     });
 }); /*jslint nomen: false */
