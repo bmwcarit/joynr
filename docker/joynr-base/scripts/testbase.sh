@@ -79,6 +79,10 @@ folder_prechecks () {
 
 }
 
+kill_and_wait () {
+    kill $1 2> /dev/null && wait $1 2> /dev/null
+}
+
 start_payara () {
 
     cd $JOYNR_SOURCE_DIR/java
@@ -119,9 +123,7 @@ stop_mosquitto () {
     if [ -n "$MOSQUITTO_PID" ]
     then
         log "stopping mosquitto with PID $MOSQUITTO_PID"
-        kill -9 $MOSQUITTO_PID
-        wait $MOSQUITTO_PID
-        MOSQUITTO_PID=""
+        kill_and_wait $MOSQUITTO_PID
     fi
     log "Mosquitto stopped"
 }
@@ -138,26 +140,16 @@ stop_cluster_controller () {
         return
     fi
     echo "Found cluster-controller with pid $PID, about to kill it"
-    kill -9 $PID
-    while (test -d /proc/$PID)
-    do
-        echo "PID $PID still alive. Waiting ..."
-        sleep 1
-    done
-    echo "PID $PID exited."
+    kill_and_wait $PID
+    echo "cluster-controller $PID exited."
 }
 
 stop_providers() {
     for PID in $PIDS
     do
         echo "Found provider with pid $PID, about to kill it"
-        kill -9 $PID
-        while (test -d /proc/$PID)
-        do
-            echo "PID $PID still alive. Waiting ..."
-            sleep 1
-        done
-        echo "PID $PID exited."
+        kill_and_wait $PID
+        echo "provider $PID exited."
     done
 }
 
