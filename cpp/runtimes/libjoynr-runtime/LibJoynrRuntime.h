@@ -57,10 +57,8 @@ protected:
     std::shared_ptr<IMessageRouter> getMessageRouter() final;
 
     std::shared_ptr<SubscriptionManager> subscriptionManager;
-    std::shared_ptr<InProcessPublicationSender> inProcessPublicationSender;
     std::shared_ptr<IMessageSender> messageSender;
     std::shared_ptr<IDispatcher> joynrDispatcher;
-    std::shared_ptr<IDispatcher> inProcessDispatcher;
 
     // take ownership, so a pointer is used
     std::unique_ptr<Settings> settings;

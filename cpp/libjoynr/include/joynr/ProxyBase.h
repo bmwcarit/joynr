@@ -30,7 +30,7 @@
 namespace joynr
 {
 
-class ConnectorFactory;
+class JoynrMessagingConnectorFactory;
 class JoynrRuntimeImpl;
 
 class JOYNR_EXPORT ProxyBase : public std::enable_shared_from_this<ProxyBase>
@@ -38,7 +38,7 @@ class JOYNR_EXPORT ProxyBase : public std::enable_shared_from_this<ProxyBase>
 
 public:
     ProxyBase(std::weak_ptr<JoynrRuntimeImpl> runtime,
-              ConnectorFactory* connectorFactory,
+              JoynrMessagingConnectorFactory* connectorFactory,
               const std::string& domain,
               const MessagingQos& qosSettings);
     virtual ~ProxyBase() = default;
@@ -58,11 +58,10 @@ protected:
      *  It is called as soon as the arbitration result is available.
      */
     virtual void handleArbitrationFinished(
-            const types::DiscoveryEntryWithMetaInfo& providerDiscoveryEntry,
-            bool useInProcessConnector);
+            const types::DiscoveryEntryWithMetaInfo& providerDiscoveryEntry);
 
     std::weak_ptr<JoynrRuntimeImpl> runtime;
-    ConnectorFactory* connectorFactory;
+    JoynrMessagingConnectorFactory* connectorFactory;
     std::string domain;
     MessagingQos qosSettings;
     std::string proxyParticipantId;

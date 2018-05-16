@@ -23,7 +23,7 @@
 #include <memory>
 #include <string>
 
-#include "joynr/ConnectorFactory.h"
+#include "joynr/JoynrMessagingConnectorFactory.h"
 #include "joynr/JoynrExport.h"
 #include "joynr/PrivateCopyAssign.h"
 
@@ -36,7 +36,7 @@ class JoynrRuntimeImpl;
 class JOYNR_EXPORT ProxyFactory
 {
 public:
-    ProxyFactory(std::unique_ptr<ConnectorFactory> connectorFactory);
+    ProxyFactory(std::unique_ptr<JoynrMessagingConnectorFactory> connectorFactory);
 
     // Create a proxy of type T
     template <class T>
@@ -50,7 +50,7 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(ProxyFactory);
-    std::unique_ptr<ConnectorFactory> connectorFactory;
+    std::unique_ptr<JoynrMessagingConnectorFactory> connectorFactory;
 };
 
 } // namespace joynr

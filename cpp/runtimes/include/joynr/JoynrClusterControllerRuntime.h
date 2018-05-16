@@ -47,11 +47,8 @@ class ILocalChannelUrlDirectory;
 class ITransportMessageReceiver;
 class ITransportMessageSender;
 class SubscriptionManager;
-class ConnectorFactory;
-class InProcessConnectorFactory;
 class JoynrMessagingConnectorFactory;
 class IDispatcher;
-class InProcessPublicationSender;
 class InProcessMessagingSkeleton;
 class HttpMessagingSkeleton;
 class IMqttMessagingSkeleton;
@@ -136,7 +133,6 @@ protected:
     std::shared_ptr<IMessageRouter> getMessageRouter() final;
 
     std::shared_ptr<IDispatcher> joynrDispatcher;
-    std::shared_ptr<IDispatcher> inProcessDispatcher;
 
     std::shared_ptr<SubscriptionManager> subscriptionManager;
     std::shared_ptr<IMessageSender> messageSender;
@@ -156,7 +152,6 @@ protected:
     std::shared_ptr<IMqttMessagingSkeleton> mqttMessagingSkeleton;
 
     std::vector<std::shared_ptr<IDispatcher>> dispatcherList;
-    std::shared_ptr<InProcessPublicationSender> inProcessPublicationSender;
 
     std::unique_ptr<Settings> settings;
     LibjoynrSettings libjoynrSettings;

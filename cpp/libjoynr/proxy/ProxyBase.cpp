@@ -25,7 +25,7 @@ namespace joynr
 {
 
 ProxyBase::ProxyBase(std::weak_ptr<JoynrRuntimeImpl> runtime,
-                     ConnectorFactory* connectorFactory,
+                     JoynrMessagingConnectorFactory* connectorFactory,
                      const std::string& domain,
                      const MessagingQos& qosSettings)
         : runtime(std::move(runtime)),
@@ -39,10 +39,8 @@ ProxyBase::ProxyBase(std::weak_ptr<JoynrRuntimeImpl> runtime,
 }
 
 void ProxyBase::handleArbitrationFinished(
-        const types::DiscoveryEntryWithMetaInfo& providerDiscoveryEntry,
-        bool useInProcessConnector)
+        const types::DiscoveryEntryWithMetaInfo& providerDiscoveryEntry)
 {
-    std::ignore = useInProcessConnector;
     this->providerDiscoveryEntry = providerDiscoveryEntry;
 }
 
