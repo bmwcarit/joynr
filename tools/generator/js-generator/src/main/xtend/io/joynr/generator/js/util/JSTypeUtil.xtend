@@ -164,10 +164,7 @@ class JSTypeUtil extends AbstractTypeUtil {
 		if (type.isCompound || type.isMap) {
 			return "[\"Object\", \"" + type.derived.joynrName + "\"]"
 		}
-		/* TODO in the final version, enumerations must always be represented as object.
-		 * Thus, String must be removed here once enums are fully supported
-		 */
-		return  "[\"String\", \"Object\", \"" + type.derived.joynrName + "\"]"
+		return  "[\"Object\", \"" + type.derived.joynrName + "\"]"
 	}
 
 	def String getJsdocTypeName (FTypedElement typedElement) {
