@@ -28,7 +28,11 @@ let joynr = require("joynr");
 const testbase = require("test-base");
 const fs = require("fs");
 const provisioning = testbase.provisioning_common;
-const log = testbase.logging.log;
+const prefix = process.env.ccprotocol === "wss" ? "nodeTlsConsumer: ": "nodeConsumer: ";
+
+function log (message) {
+  testbase.logging.log(prefix + message);
+}
 
 if (process.env.domain === undefined) {
     log("please pass a domain as argument");
@@ -94,6 +98,7 @@ const runTest = function(systemIntegrationTestProxy) {
 };
 
 joynr.load(provisioning).then((loadedJoynr) => {
+    log("joynr.load successfully")
     joynr = loadedJoynr;
     const messagingQos = new joynr.messaging.MessagingQos({
         ttl : 60000
