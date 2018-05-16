@@ -31,21 +31,16 @@ Typing.checkProperty = function(obj, type, description) {
     if (obj === undefined) {
         throw new Error(description + " is undefined");
     }
-    if (typeof type === "string" && Typing.getObjectType(obj) !== type) {
-        throw new Error(description + " is not of type " + type + ". Actual type is " + Typing.getObjectType(obj));
+    const objectType = Typing.getObjectType(obj);
+    if (typeof type === "string" && objectType !== type) {
+        throw new Error(description + " is not of type " + type + ". Actual type is " + objectType);
     }
-    if (Array.isArray(type) && !Typing.getObjectType(obj).match("^" + type.join("$|^") + "$")) {
-        throw new Error(
-            description + " is not of a type from " + type + ". Actual type is " + Typing.getObjectType(obj)
-        );
+    if (Array.isArray(type) && !objectType.match("^" + type.join("$|^") + "$")) {
+        throw new Error(description + " is not of a type from " + type + ". Actual type is " + objectType);
     }
     if (typeof type === "function" && !(obj instanceof type)) {
         throw new Error(
-            description +
-                " is not of type " +
-                Typing.getObjectType(type) +
-                ". Actual type is " +
-                Typing.getObjectType(obj)
+            description + " is not of type " + Typing.getObjectType(type) + ". Actual type is " + objectType
         );
     }
 };
