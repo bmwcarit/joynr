@@ -45,6 +45,19 @@ Typing.checkProperty = function(obj, type, description) {
     }
 };
 
+Typing.checkPropertyAllowObject = function(obj, type, description) {
+    const objectType = Typing.getObjectType(obj);
+    if (typeof type === "string" && objectType !== type) {
+        if (obj._typeName) {
+            if (typeRegistry.getConstructor(obj._typeName).name === type) {
+                return;
+            }
+            throw new Error(description + " is not of type " + type + " or Object. Actual type is " + objectType);
+        }
+        throw new Error(description + " is not of type " + type + ". Actual type is " + objectType);
+    }
+};
+
 /**
  * Checks if the variable is of specified type
  * @function Typing#checkPropertyIfDefined

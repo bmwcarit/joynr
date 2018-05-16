@@ -161,10 +161,7 @@ class JSTypeUtil extends AbstractTypeUtil {
 			}
 			return "\"Number\""
 		}
-		if (type.isCompound || type.isMap) {
-			return "[\"Object\", \"" + type.derived.joynrName + "\"]"
-		}
-		return  "[\"Object\", \"" + type.derived.joynrName + "\"]"
+		return  "\"" + type.derived.joynrName + "\""
 	}
 
 	def String getJsdocTypeName (FTypedElement typedElement) {
