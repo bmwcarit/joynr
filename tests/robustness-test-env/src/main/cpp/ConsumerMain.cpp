@@ -72,14 +72,21 @@ int main(int argc, char** argv)
     // process the command arguments
     po::options_description param("Command parameters");
     param.add_options()("help", "Usage message")(
-            "domain,d", po::value<std::string>(&input.providerDomain)->required(), "consumer registers to this domain")(
+            "domain,d",
+            po::value<std::string>(&input.providerDomain)->required(),
+            "consumer registers to this domain")(
             "runtime,r", po::value<int>(&input.numOfRuntimes)->required(), "number of runtimes")(
-            "proxbuild,b", po::value<int>(&input.numOfProxyBuilders)->required(), "number of proxy builders")(
+            "proxbuild,b",
+            po::value<int>(&input.numOfProxyBuilders)->required(),
+            "number of proxy builders")(
             "proxies,p", po::value<int>(&input.numOfProxies)->required(), "number of proxies")(
             "testcase,c", po::value<unsigned int>(&testCase)->required(), "test case")(
             "testcycles", po::value<int>(&numOfTestCycles), "number of test cycles")(
-            "tdelay", po::value<int>(&input.threadDelayMS), "time delay between thread calls in ms")(
-            "testcycletime", po::value<int>(&testCycleTime), "duration of each test cycle in seconds");
+            "tdelay",
+            po::value<int>(&input.threadDelayMS),
+            "time delay between thread calls in ms")("testcycletime",
+                                                     po::value<int>(&testCycleTime),
+                                                     "duration of each test cycle in seconds");
 
     po::variables_map args;
 

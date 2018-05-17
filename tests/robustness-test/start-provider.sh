@@ -1,31 +1,15 @@
 #!/bin/bash
 
-JOYNR_SOURCE_DIR=""
-ROBUSTNESS_BUILD_DIR=""
-ROBUSTNESS_RESULTS_DIR=""
-
-if [ -z "$JOYNR_SOURCE_DIR" ]
+if [ -f /data/src/docker/joynr-base/scripts/testbase.sh ]
 then
-    # assume this script is started inside a git repo subdirectory,
-    JOYNR_SOURCE_DIR=`git rev-parse --show-toplevel`
+    source /data/src/docker/joynr-base/scripts/testbase.sh
+else
+    echo "testbase.sh script not found in /data/src/docker/joynr-base/scripts/ - aborting"
+    exit 1
 fi
 
-if [ -z "$ROBUSTNESS_BUILD_DIR" ]
-then
-    ROBUSTNESS_BUILD_DIR=$JOYNR_SOURCE_DIR/tests/robustness-test/build
-fi
-
-# if CI environment, source global settings
-if [ -f /data/scripts/global.sh ]
-then
-    source /data/scripts/global.sh
-fi
-
-if [ -z "$ROBUSTNESS_RESULTS_DIR" ]
-then
-    ROBUSTNESS_RESULTS_DIR=$JOYNR_SOURCE_DIR/tests/robustness-test/robustness-results-$(date "+%Y-%m-%d-%H:%M:%S")
-fi
-mkdir -p $ROBUSTNESS_RESULTS_DIR
+parse_arguments $@
+folder_prechecks
 
 function start_java_provider {
     echo '####################################################'
@@ -33,7 +17,7 @@ function start_java_provider {
     echo '####################################################'
     cd $JOYNR_SOURCE_DIR/tests/robustness-test
     # leave any persistence files instact, since this is a restart
-    mvn $SPECIAL_MAVEN_OPTIONS exec:java -Dexec.mainClass="io.joynr.test.robustness.RobustnessProviderApplication" -Dexec.args="$DOMAIN mqtt" > $ROBUSTNESS_RESULTS_DIR/provider_java.log 2>&1 &
+    mvn $SPECIAL_MAVEN_OPTIONS exec:java -Dexec.mainClass="io.joynr.test.robustness.RobustnessProviderApplication" -Dexec.args="$DOMAIN mqtt" > $TEST_RESULTS_DIR/provider_java_$TIMESTAMP.log 2>&1 &
     PROVIDER_PID=$!
     echo "Started Java provider with PID $PROVIDER_PID"
     # Allow some time for startup
@@ -44,14 +28,14 @@ function start_cpp_provider {
     echo '####################################################'
     echo '# starting C++ provider'
     echo '####################################################'
-    PROVIDER_DIR=$ROBUSTNESS_BUILD_DIR/provider_bin
+    PROVIDER_DIR=$TEST_BUILD_DIR/provider_bin
     # leave any persistence files instact, since this is a restart
     cd $PROVIDER_DIR
-    ./robustness-tests-provider-ws $DOMAIN > $ROBUSTNESS_RESULTS_DIR/provider_cpp.log 2>&1 &
+    ./robustness-tests-provider-ws $DOMAIN > $TEST_RESULTS_DIR/provider_cpp_$TIMESTAMP.log 2>&1 &
     PROVIDER_PID=$!
     echo "Started C++ provider with PID $PROVIDER_PID in directory $PROVIDER_DIR"
     # Allow some time for startup
-    sleep 10
+    sleep 5
 }
 
 function start_javascript_provider {
@@ -59,7 +43,7 @@ function start_javascript_provider {
     echo '# starting Javascript provider'
     echo '####################################################'
     cd $JOYNR_SOURCE_DIR/tests/robustness-test
-    nohup npm run-script startprovider --robustnessTest:domain=$DOMAIN > $ROBUSTNESS_RESULTS_DIR/provider_javascript.log 2>&1 &
+    nohup npm run-script startprovider --robustnessTest:domain=$DOMAIN > $TEST_RESULTS_DIR/provider_javascript_$TIMESTAMP.log 2>&1 &
     PROVIDER_PID=$!
     echo "Started Javascript provider with PID $PROVIDER_PID"
     # Allow some time for startup
@@ -73,6 +57,7 @@ then
     exit 1
 fi
 DOMAIN=$2
+TIMESTAMP=$(date "+%Y-%m-%d-%H:%M:%S")
 
 if [ "$1" == "cpp" ]
 then

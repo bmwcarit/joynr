@@ -69,7 +69,8 @@ private:
 };
 
 // Container for multiple runtime/proxybuilders/proxies
-struct proxyContainer {
+struct proxyContainer
+{
 
     // proxy
     Wrap<joynr::tests::robustness::TestInterfaceProxy> proxy;
@@ -92,13 +93,15 @@ struct proxyContainer {
     std::string filterParamValue2 = "FilterForSelectiveBroadcast2";
 };
 
-struct proxyBuilderContainer {
+struct proxyBuilderContainer
+{
 
     Wrap<joynr::ProxyBuilder<joynr::tests::robustness::TestInterfaceProxy>> proxyBuilder;
     std::vector<proxyContainer> proxyContainerList;
 };
 
-struct runTimeContainer {
+struct runTimeContainer
+{
 
     Wrap<joynr::JoynrRuntime> runtime;
     std::vector<proxyBuilderContainer> proxyBuilderContainerList;
@@ -111,7 +114,8 @@ enum testCaseType {
     TEST_3,
 };
 
-struct ConsumerTestParameters {
+struct ConsumerTestParameters
+{
 
     std::string pathToLibJoynrSettings;
     std::string pathToMessagingSettings;
