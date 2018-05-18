@@ -702,6 +702,17 @@ void LocalCapabilitiesDirectory::add(
             "Provider does not have permissions to register domain/interface."));
 }
 
+// inherited method from joynr::system::DiscoveryProvider
+void LocalCapabilitiesDirectory::add(
+        const types::DiscoveryEntry& discoveryEntry,
+        const bool& awaitGlobalRegistration,
+        std::function<void()> onSuccess,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+{
+    std::ignore = awaitGlobalRegistration;
+    return add(discoveryEntry, std::move(onSuccess), std::move(onError));
+}
+
 bool LocalCapabilitiesDirectory::hasProviderPermission(const types::DiscoveryEntry& discoveryEntry)
 {
     if (!clusterControllerSettings.enableAccessController()) {

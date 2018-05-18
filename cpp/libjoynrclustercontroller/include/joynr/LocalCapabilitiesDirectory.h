@@ -139,6 +139,12 @@ public:
              std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
             override;
     // inherited method from joynr::system::DiscoveryProvider
+    void add(const joynr::types::DiscoveryEntry& discoveryEntry,
+             const bool& awaitGlobalRegistration,
+             std::function<void()> onSuccess,
+             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+            override;
+    // inherited method from joynr::system::DiscoveryProvider
     void lookup(
             const std::vector<std::string>& domains,
             const std::string& interfaceName,

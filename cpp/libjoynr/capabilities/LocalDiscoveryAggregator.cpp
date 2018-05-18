@@ -56,6 +56,21 @@ std::shared_ptr<joynr::Future<void>> LocalDiscoveryAggregator::addAsync(
                                     std::move(messagingQos));
 }
 
+std::shared_ptr<joynr::Future<void>> LocalDiscoveryAggregator::addAsync(
+        const types::DiscoveryEntry& discoveryEntry,
+        const bool& awaitGlobalRegistration,
+        std::function<void()> onSuccess,
+        std::function<void(const exceptions::JoynrRuntimeException&)> onRuntimeError,
+        boost::optional<joynr::MessagingQos> messagingQos) noexcept
+{
+    assert(discoveryProxy);
+    return discoveryProxy->addAsync(discoveryEntry,
+                                    awaitGlobalRegistration,
+                                    std::move(onSuccess),
+                                    std::move(onRuntimeError),
+                                    std::move(messagingQos));
+}
+
 std::shared_ptr<joynr::Future<std::vector<types::DiscoveryEntryWithMetaInfo>>>
 LocalDiscoveryAggregator::lookupAsync(
         const std::vector<std::string>& domains,

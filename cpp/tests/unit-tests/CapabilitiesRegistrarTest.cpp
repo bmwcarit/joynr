@@ -141,10 +141,11 @@ TEST_F(CapabilitiesRegistrarTest, add){
                     ),
                     _,
                     _,
+                    _,
                     _
                 )
     ).WillOnce(
-                DoAll(InvokeArgument<1>(),
+                DoAll(InvokeArgument<2>(),
                       Return(mockFuture)
                       )
                 );
@@ -180,10 +181,11 @@ TEST_F(CapabilitiesRegistrarTest, checkVisibilityOfGlobalAndLocalProviders){
                     _,
                     _,
                     _,
+                    _,
                     _
                 )
     ).Times(2).WillRepeatedly(
-                DoAll(InvokeArgument<1>(),
+                DoAll(InvokeArgument<2>(),
                       Return(mockFuture)
                       )
                 );
@@ -310,10 +312,11 @@ TEST_F(CapabilitiesRegistrarTest, registerMultipleDispatchersAndRegisterCapabili
                     ),
                     _,
                     _,
+                    _,
                     _
                 )
     ).Times(1).WillOnce(
-                DoAll(InvokeArgument<1>(),
+                DoAll(InvokeArgument<2>(),
                       Return(mockFuture)
                       )
                 );
@@ -371,10 +374,11 @@ TEST_F(CapabilitiesRegistrarTest, removeDispatcher){
                     ),
                     _,
                     _,
+                    _,
                     _
                 )
     ).Times(1).WillOnce(
-                DoAll(InvokeArgument<1>(),
+                DoAll(InvokeArgument<2>(),
                       Return(mockFuture)
                       )
                 );

@@ -40,6 +40,18 @@ interface Discovery {
 		}
 	}
 
+	<** @description: Adds a provider to the joynr discovery. **>
+	method add {
+		in {
+			<** @description: the new DiscoveryEntry to be added **>
+			DiscoveryEntry discoveryEntry
+			<** @description: if true, the response will be delayed either until
+				global registration succeeded or failed
+			**>
+			Boolean awaitGlobalRegistration
+		}
+	}
+
 	<**
 		@description: Looks up a providers in the joynr discovery that match
 			the requested QoS.

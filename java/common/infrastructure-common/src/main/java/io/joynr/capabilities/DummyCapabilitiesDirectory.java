@@ -64,6 +64,12 @@ public class DummyCapabilitiesDirectory extends AbstractLocalCapabilitiesDirecto
     }
 
     @Override
+    public Promise<DeferredVoid> add(DiscoveryEntry discoveryEntry, Boolean awaitGlobalRegistration) {
+        // awaitGlobalRegistration is currently ignored in Java
+        return add(discoveryEntry);
+    }
+
+    @Override
     public Promise<Lookup1Deferred> lookup(String[] domains, String interfaceName, joynr.types.DiscoveryQos discoveryQos) {
         final Lookup1Deferred deferred = new Lookup1Deferred();
         CapabilitiesCallback callback = new CapabilitiesCallback() {

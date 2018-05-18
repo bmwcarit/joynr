@@ -80,6 +80,18 @@ public:
         return resolve(onSuccess);
     }
 
+    std::shared_ptr<joynr::Future<void>> addAsync(
+            const joynr::types::DiscoveryEntry& discoveryEntry,
+            const bool& awaitGlobalRegistration,
+            std::function<void()> onSuccess = nullptr,
+            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
+                    onRuntimeError = nullptr,
+            boost::optional<MessagingQos> qos = boost::none) noexcept override
+    {
+        std::ignore = awaitGlobalRegistration;
+        return addAsync(discoveryEntry, onSuccess, onRuntimeError, qos);
+    }
+
     std::shared_ptr<joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>
     lookupAsync(
             const std::vector<std::string>& domains,
