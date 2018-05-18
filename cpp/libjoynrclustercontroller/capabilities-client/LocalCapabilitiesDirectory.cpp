@@ -154,7 +154,11 @@ LocalCapabilitiesDirectory::~LocalCapabilitiesDirectory()
     clear();
 }
 
-void LocalCapabilitiesDirectory::addInternal(const types::DiscoveryEntry& discoveryEntry)
+void LocalCapabilitiesDirectory::addInternal(
+        const types::DiscoveryEntry& discoveryEntry,
+        bool awaitGlobalRegistration,
+        std::function<void()> onSuccess,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     const bool isGloballyVisible = isGlobal(discoveryEntry);
 
@@ -172,18 +176,33 @@ void LocalCapabilitiesDirectory::addInternal(const types::DiscoveryEntry& discov
                       registeredGlobalCapabilities.end(),
                       globalDiscoveryEntry) == registeredGlobalCapabilities.end()) {
 
-            std::function<void(const exceptions::JoynrException&)> onError =
-                    [globalDiscoveryEntry](const exceptions::JoynrException& error) {
+            std::function<void(const exceptions::JoynrException&)> onErrorWrapper = [
+                thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this()),
+                globalDiscoveryEntry,
+                awaitGlobalRegistration,
+                onError
+            ](const exceptions::JoynrException& error)
+            {
                 JOYNR_LOG_ERROR(logger(),
                                 "Error occured during the execution of capabilitiesProxy->add for "
                                 "'{}'. Error: {}",
                                 globalDiscoveryEntry.toString(),
                                 error.getMessage());
+                if (awaitGlobalRegistration && onError) {
+                    if (auto thisSharedPtr = thisWeakPtr.lock()) {
+                        const bool removeGlobally = false;
+                        thisSharedPtr->remove(
+                                globalDiscoveryEntry.getParticipantId(), removeGlobally);
+                    }
+                    onError(exceptions::ProviderRuntimeException(error.getMessage()));
+                }
             };
 
-            std::function<void()> onSuccess = [
+            std::function<void()> onSuccessWrapper = [
                 thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this()),
-                globalDiscoveryEntry
+                globalDiscoveryEntry,
+                awaitGlobalRegistration,
+                onSuccess
             ]()
             {
                 if (auto thisSharedPtr = thisWeakPtr.lock()) {
@@ -194,11 +213,15 @@ void LocalCapabilitiesDirectory::addInternal(const types::DiscoveryEntry& discov
                                    globalDiscoveryEntry.toString(),
                                    thisSharedPtr->registeredGlobalCapabilities.size() + 1);
                     thisSharedPtr->registeredGlobalCapabilities.push_back(globalDiscoveryEntry);
+                    if (awaitGlobalRegistration && onSuccess) {
+                        onSuccess();
+                    }
                 }
             };
 
             // Add globally
-            capabilitiesClient->add(globalDiscoveryEntry, onSuccess, onError);
+            capabilitiesClient->add(
+                    globalDiscoveryEntry, std::move(onSuccessWrapper), std::move(onErrorWrapper));
         }
     }
 
@@ -207,6 +230,10 @@ void LocalCapabilitiesDirectory::addInternal(const types::DiscoveryEntry& discov
         std::lock_guard<std::mutex> lock(pendingLookupsLock);
         callPendingLookups(
                 InterfaceAddress(discoveryEntry.getDomain(), discoveryEntry.getInterfaceName()));
+    }
+
+    if (!isGloballyVisible || !awaitGlobalRegistration) {
+        onSuccess();
     }
 }
 
@@ -224,7 +251,7 @@ types::GlobalDiscoveryEntry LocalCapabilitiesDirectory::toGlobalDiscoveryEntry(
                                        localAddress);
 }
 
-void LocalCapabilitiesDirectory::remove(const std::string& participantId)
+void LocalCapabilitiesDirectory::remove(const std::string& participantId, bool removeGlobally)
 {
     {
         std::lock_guard<std::mutex> lock(cacheLock);
@@ -238,7 +265,7 @@ void LocalCapabilitiesDirectory::remove(const std::string& participantId)
         }
         const types::DiscoveryEntry& entry = *optionalEntry;
 
-        if (isGlobal(entry)) {
+        if (removeGlobally && isGlobal(entry)) {
             JOYNR_LOG_INFO(
                     logger(), "Removing globally registered participantId: {}", participantId);
             removeFromGloballyRegisteredCapabilities(entry);
@@ -693,13 +720,8 @@ void LocalCapabilitiesDirectory::add(
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    if (hasProviderPermission(discoveryEntry)) {
-        addInternal(discoveryEntry);
-        onSuccess();
-        return;
-    }
-    onError(joynr::exceptions::ProviderRuntimeException(
-            "Provider does not have permissions to register domain/interface."));
+    const bool awaitGlobalRegistration = false;
+    return add(discoveryEntry, awaitGlobalRegistration, std::move(onSuccess), std::move(onError));
 }
 
 // inherited method from joynr::system::DiscoveryProvider
@@ -709,8 +731,13 @@ void LocalCapabilitiesDirectory::add(
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    std::ignore = awaitGlobalRegistration;
-    return add(discoveryEntry, std::move(onSuccess), std::move(onError));
+    if (hasProviderPermission(discoveryEntry)) {
+        addInternal(
+                discoveryEntry, awaitGlobalRegistration, std::move(onSuccess), std::move(onError));
+        return;
+    }
+    onError(joynr::exceptions::ProviderRuntimeException(
+            "Provider does not have permissions to register domain/interface."));
 }
 
 bool LocalCapabilitiesDirectory::hasProviderPermission(const types::DiscoveryEntry& discoveryEntry)
