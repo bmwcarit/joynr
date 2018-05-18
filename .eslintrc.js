@@ -24,6 +24,9 @@ module.exports = {
         jasmine: true,
         browser: true
     },
+    parserOptions: {
+        ecmaVersion: 2017
+    },
     extends: ["plugin:promise/recommended", "eslint:recommended"],
     plugins: ["promise"],
     rules: {

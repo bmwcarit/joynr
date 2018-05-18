@@ -16,6 +16,8 @@ specifying the keystore/truststore type. See [Java Configuration Reference](Java
 ## Other changes
 * **[JS]** Removed the dependency to wscpp. Joynr uses the ws npm module for websocket
   communication instead.
+* **[JS]** The minimum required node version changes to 8.0.0. to allow the usage of
+  async await and util.promisify.
 
 * **[C++]** Added a CMake flag `USE_PLATFORM_MOCOCRW` to download mococrw at build time.
 

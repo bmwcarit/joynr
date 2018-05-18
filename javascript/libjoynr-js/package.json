@@ -10,9 +10,9 @@
     "eslint": "4.15.0",
     "eslint-plugin-promise": "^3.5.0",
     "exit-hook": "1.1.1",
-    "jasmine": "2.4.1",
-    "jasmine-core": "2.4.1",
-    "jasmine-node": ">=2.0.0",
+    "jasmine": "2.9.0",
+    "jasmine-core": "2.9.1",
+    "jasmine-node": "2.0.0",
     "jasmine-reporters": "2.1.1",
     "joynr": "file:./src/main/js",
     "karma": "2.0.0",
@@ -29,8 +29,7 @@
     "glob": "src/{{main/js/global,main/js/joynr,test/js/!(integration)}/**/*.js,main/js/*.js,test/js/*.js}"
   },
   "engines": {
-    "node": ">=0.10.40",
-    "npm": ">=1.3.5"
+    "node": ">=8.0.0"
   },
   "nyc": {
     "check-coverage": true,
