@@ -128,6 +128,14 @@ PerformanceUtilities.overrideRequire = function() {
         this.map = {};
     };
 
+    LocalStorageMock.prototype.init = function() {
+        return Promise.resolve();
+    };
+
+    LocalStorageMock.prototype.shutdown = function() {
+        return Promise.resolve();
+    };
+
     const mod = require("module");
     const req = mod.prototype.require;
     mod.prototype.require = function(md) {

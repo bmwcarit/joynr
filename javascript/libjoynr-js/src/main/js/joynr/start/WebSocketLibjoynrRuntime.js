@@ -262,20 +262,21 @@ function WebSocketLibjoynrRuntime(provisioning) {
             provisioning.persistency
         );
 
+        let persistencyPromise;
         if (
             persistencyProvisioning.routingTable ||
             persistencyProvisioning.capabilities ||
             persistencyProvisioning.publications
         ) {
-            try {
-                persistency = new LocalStorage({
-                    clearPersistency: persistencyProvisioning.clearPersistency,
-                    location: persistencyProvisioning.location
-                });
-            } catch (e) {
-                return Promise.reject(e);
-            }
+            persistency = new LocalStorage({
+                clearPersistency: persistencyProvisioning.clearPersistency,
+                location: persistencyProvisioning.location
+            });
+            persistencyPromise = persistency.init();
+        } else {
+            persistencyPromise = Promise.resolve();
         }
+
         const routingTablePersistency = persistencyProvisioning.routingTable ? persistency : undefined;
         const capabilitiesPersistency = persistencyProvisioning.capabilities ? persistency : new MemoryStorage();
         const publicationsPersistency = persistencyProvisioning.publications ? persistency : undefined;
@@ -491,7 +492,7 @@ function WebSocketLibjoynrRuntime(provisioning) {
         }
 
         // when everything's ready we can trigger the app
-        return Promise.all([discoveryProxyPromise, routingProxyPromise])
+        return Promise.all([discoveryProxyPromise, routingProxyPromise, persistencyPromise])
             .then(startOnSuccess)
             .catch(startOnFailure);
     };
@@ -559,9 +560,11 @@ function WebSocketLibjoynrRuntime(provisioning) {
             typeRegistry.shutdown();
         }
 
+        const persistencyPromise = persistency !== undefined ? persistency.shutdown() : Promise.resolve();
+
         joynrState = JoynrStates.SHUTDOWN;
         log.debug("joynr shut down");
-        return Promise.resolve();
+        return persistencyPromise;
     };
 
     this.shutdown = internalShutdown;

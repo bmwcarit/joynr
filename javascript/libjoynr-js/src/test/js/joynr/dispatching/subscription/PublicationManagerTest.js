@@ -287,19 +287,20 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", () => 
     describe("without localStorage", () => {
         sharedTests(() => {
             persistency = null;
+            return Promise.resolve();
         });
     });
 
     describe("with localStorage", () => {
         sharedTests(() => {
             persistency = new LocalStorage();
+            return persistency.init();
         });
     });
 
     function sharedTests(beforeTests) {
         beforeEach(done => {
-            beforeTests();
-            prepareTests(done);
+            beforeTests().then(() => prepareTests(done));
         });
 
         afterEach(done => {

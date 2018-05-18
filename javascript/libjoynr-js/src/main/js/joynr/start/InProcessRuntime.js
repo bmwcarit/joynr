@@ -227,6 +227,7 @@ function InProcessRuntime(provisioning) {
             clearPersistency: persistencyProvisioning.clearPersistency,
             location: persistencyProvisioning.location
         });
+        const persistencyPromise = persistency.init();
 
         if (UtilInternal.checkNullUndefined(provisioning.bounceProxyUrl)) {
             throw new Error("bounce proxy URL not set in provisioning.bounceProxyUrl");
@@ -422,7 +423,7 @@ function InProcessRuntime(provisioning) {
         joynrState = JoynrStates.STARTED;
         publicationManager.restore();
         log.debug("joynr initialized");
-        return Promise.resolve();
+        return persistencyPromise;
     };
 
     /**
@@ -504,9 +505,11 @@ function InProcessRuntime(provisioning) {
             typeRegistry.shutdown();
         }
 
+        const persistencyPromise = persistency !== undefined ? persistency.shutdown() : Promise.resolve();
+
         joynrState = JoynrStates.SHUTDOWN;
         log.debug("joynr shut down");
-        return Promise.resolve();
+        return persistencyPromise;
     };
 
     // make every instance immutable

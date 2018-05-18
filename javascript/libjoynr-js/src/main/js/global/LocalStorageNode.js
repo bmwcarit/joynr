@@ -21,14 +21,13 @@
  * @returns constructor for a localStorage object
  */
 
-const path = require("path");
-const fs = require("fs");
-
 if (global.window !== undefined) {
     module.exports = require("./LocalStorage");
 } else {
-    const Typing = require("../joynr/util/Typing");
-    const storage = require("node-persist");
+    const JoynrStorage = require("./JoynrPersist");
+    const LoggingManager = require("../joynr/system/LoggingManager");
+    const log = LoggingManager.getLogger("joynr.global.localStorageNode");
+
     /**
      * LocalStorage constructor (node wrapper for LocalStorage)
      * @constructor LocalStorageWrapper
@@ -44,52 +43,54 @@ if (global.window !== undefined) {
     const LocalStorageWrapper = function(settings) {
         settings = settings || {};
         //the local storage wrapper uses the optionally given location
-        const location = settings.location || "./localStorageStorage";
+        this._location = settings.location || "./localStorageStorage";
+        this._storage = new JoynrStorage({
+            dir: this._location
+        });
+        this._map = new Map();
+        this._promiseChain = Promise.resolve();
+        this._settings = settings;
+    };
 
-        try {
-            this._myStorage = storage.create({
-                dir: location,
-                ttl: false,
-                forgiveParseErrors: true
+    LocalStorageWrapper.prototype = {
+        setItem(key, value) {
+            this._map.set(key, value);
+            this._wrapFunction(this._storage.setItem.bind(this._storage), key, value);
+        },
+        getItem(key) {
+            return this._map.get(key);
+        },
+        removeItem(key) {
+            this._map.delete(key);
+            this._wrapFunction(this._storage.removeItem.bind(this._storage), key);
+        },
+        clear() {
+            this._map.clear();
+            this._wrapFunction(this._storage.clear.bind(this._storage));
+        },
+
+        async init() {
+            const storageData = await this._storage.init();
+
+            if (this._settings.clearPersistency) {
+                return await this._storage.clear();
+            }
+            for (let i = 0, length = storageData.length; i < length; i++) {
+                const storageObject = storageData[i];
+                if (storageObject && storageObject.key) {
+                    this._map.set(storageObject.key, storageObject.value);
+                }
+            }
+        },
+
+        async shutdown() {
+            await this._promiseChain;
+        },
+        _wrapFunction(cb, ...args) {
+            this._promiseChain = this._promiseChain.then(() => cb(...args)).catch(e => {
+                log.error(`failure executing ${cb} with args ${JSON.stringify(args)} error: ` + e);
             });
-
-            this._myStorage.initSync();
-
-            Typing.checkPropertyIfDefined(settings.clearPersistency, "Boolean", "settings.clearPersistency");
-            if (settings.clearPersistency) {
-                this._myStorage.clearSync();
-            }
-        } catch (error) {
-            if (error.message.includes("EISDIR: illegal operation on a directory, read")) {
-                const locationPath = path.isAbsolute(location) ? location : path.join(process.cwd(), location);
-                const files = fs.readdirSync(locationPath);
-                const subDirectories = files.filter(file => {
-                    const filePath = path.join(locationPath, file);
-                    return fs.lstatSync(filePath).isDirectory();
-                });
-                throw new Error(
-                    "joynr configuration error: Persistency subdirectory must not include other subdirectories. Directories found: " +
-                        JSON.stringify(subDirectories)
-                );
-            }
-            throw error;
         }
-    };
-    LocalStorageWrapper.prototype.setItem = function(key, value) {
-        return this._myStorage.setItemSync(key, value);
-    };
-    LocalStorageWrapper.prototype.getItem = function(key) {
-        const item = this._myStorage.getItemSync(key);
-        if (item === undefined) {
-            return null;
-        }
-        return item;
-    };
-    LocalStorageWrapper.prototype.removeItem = function(key) {
-        return this._myStorage.removeItemSync(key);
-    };
-    LocalStorageWrapper.prototype.clear = function() {
-        return this._myStorage.clearSync();
     };
 
     module.exports = LocalStorageWrapper;
