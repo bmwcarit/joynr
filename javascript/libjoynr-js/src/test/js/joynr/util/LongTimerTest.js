@@ -62,7 +62,8 @@ describe("libjoynr-js.joynr.LongTimer.Timeout", () => {
     it("provides a timeoutId", done => {
         const timeoutId = LongTimer.setTimeout(() => {}, 0);
         expect(timeoutId).toBeDefined();
-        expect(Typing.getObjectType(timeoutId)).toEqual("Number");
+        expect(Typing.getObjectType(timeoutId)).toEqual("FakeTimeout");
+        LongTimer.clearTimeout(timeoutId);
         done();
     });
 
