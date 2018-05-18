@@ -82,12 +82,18 @@ public:
             const joynr::types::ProviderQos& providerQos,
             std::function<void()> onSuccess,
             std::function<void(const exceptions::JoynrRuntimeException&)> onError,
-            bool persist = true) noexcept
+            bool persist = true,
+            bool awaitGlobalRegistration = false) noexcept
     {
         assert(capabilitiesRegistrar);
         assert(!domain.empty());
-        return capabilitiesRegistrar->addAsync(
-                domain, provider, providerQos, std::move(onSuccess), std::move(onError), persist);
+        return capabilitiesRegistrar->addAsync(domain,
+                                               provider,
+                                               providerQos,
+                                               std::move(onSuccess),
+                                               std::move(onError),
+                                               persist,
+                                               awaitGlobalRegistration);
     }
 
     /**
@@ -107,7 +113,8 @@ public:
     std::string registerProvider(const std::string& domain,
                                  std::shared_ptr<TIntfProvider> provider,
                                  const joynr::types::ProviderQos& providerQos,
-                                 bool persist = true)
+                                 bool persist = true,
+                                 bool awaitGlobalRegistration = false)
     {
         Future<void> future;
         auto onSuccess = [&future]() { future.onSuccess(); };
@@ -115,8 +122,13 @@ public:
             future.onError(std::make_shared<exceptions::JoynrRuntimeException>(exception));
         };
 
-        std::string participiantId = registerProviderAsync(
-                domain, provider, providerQos, std::move(onSuccess), std::move(onError), persist);
+        std::string participiantId = registerProviderAsync(domain,
+                                                           provider,
+                                                           providerQos,
+                                                           std::move(onSuccess),
+                                                           std::move(onError),
+                                                           persist,
+                                                           awaitGlobalRegistration);
         future.get();
         return participiantId;
     }

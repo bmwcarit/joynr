@@ -67,7 +67,8 @@ public:
             const types::ProviderQos& providerQos,
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError,
-            bool persist = true) noexcept
+            bool persist = true,
+            bool awaitGlobalRegistration = false) noexcept
     {
         const std::string interfaceName = T::INTERFACE_NAME();
         const std::string participantId =
@@ -103,6 +104,7 @@ public:
             participantId,
             discoveryProxy = util::as_weak_ptr(discoveryProxy),
             entry = std::move(entry),
+            awaitGlobalRegistration,
             onSuccess = std::move(onSuccess),
             onError,
             persist
@@ -138,6 +140,7 @@ public:
             if (auto discoveryProxyPtr = discoveryProxy.lock()) {
 
                 discoveryProxyPtr->addAsync(entry,
+                                            awaitGlobalRegistration,
                                             [domain, interfaceName, participantId, onSuccess]() {
                                                 JOYNR_LOG_INFO(logger(),
                                                                "Registered Provider: "
