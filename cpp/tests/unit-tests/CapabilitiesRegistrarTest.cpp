@@ -54,15 +54,15 @@ public:
     CapabilitiesRegistrarTest() :
             mockDispatcher(),
             dispatcherAddress(),
-            mockParticipantIdStorage(new MockParticipantIdStorage()),
+            mockParticipantIdStorage(std::make_shared<MockParticipantIdStorage>()),
             mockDiscovery(std::make_shared<MockDiscovery>()),
             capabilitiesRegistrar(nullptr),
-            mockProvider(new MockProvider()),
+            mockProvider(std::make_shared<MockProvider>()),
             domain("testDomain"),
             expectedParticipantId("testParticipantId"),
             enablePersistency(true),
             singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
-            mockMessageRouter(new MockMessageRouter(singleThreadedIOService->getIOService())),
+            mockMessageRouter(std::make_shared< MockMessageRouter>(singleThreadedIOService->getIOService())),
             expectedProviderVersion(mockProvider->MAJOR_VERSION, mockProvider->MINOR_VERSION),
             mockMessageSender(std::make_shared<MockMessageSender>()),
             pubManager(std::make_shared<PublicationManager>(singleThreadedIOService->getIOService(), mockMessageSender, enablePersistency))
