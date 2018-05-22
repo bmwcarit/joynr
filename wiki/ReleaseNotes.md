@@ -5,7 +5,9 @@ the versioning scheme [here](JoynrVersioning.md).
 # joynr 1.3.0
 
 ## API relevant changes
-None.
+* **[C++]** Registration of global providers can be made waiting until registration has been
+  propagated to GlobalCapabilitiesDirectory by passing an optional bool flag `awaitGlobalRegistration`
+  to `registerProvider` and `registerProviderAsync`.
 
 ## Configuration property changes
 * **[Java]** Introduced `PROPERTY_KEY_MQTT_KEYSTORE_TYPE` and `PROPERTY_KEY_MQTT_TRUSTSTORE_TYPE` for
