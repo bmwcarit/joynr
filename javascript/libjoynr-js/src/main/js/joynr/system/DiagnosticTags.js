@@ -59,7 +59,7 @@ DiagnosticTags.forChannel = function forChannel(channelInfo) {
 
 let forRequestHelper = function forRequestHelper(tagsForRequest, requestInfo) {
     if (requestInfo.request.params) {
-        tagsForRequest.params = JSON.stringify(requestInfo.request.params);
+        tagsForRequest.params = requestInfo.request.params;
     }
 };
 
@@ -79,7 +79,7 @@ DiagnosticTags.forRequest = function forRequest(requestInfo) {
 
 let forOneWayRequestHelper = function(tagsForOneWayRequest, requestInfo) {
     if (requestInfo.request.params) {
-        tagsForOneWayRequest.params = JSON.stringify(requestInfo.request.params);
+        tagsForOneWayRequest.params = requestInfo.request.params;
     }
 };
 
@@ -97,7 +97,7 @@ DiagnosticTags.forOneWayRequest = function forOneWayRequest(requestInfo) {
 };
 
 let forReplyHelper = function(tagsForReply, replyInfo) {
-    tagsForReply.response = JSON.stringify(replyInfo.reply.response);
+    tagsForReply.response = replyInfo.reply.response;
 };
 
 /**
@@ -111,7 +111,7 @@ DiagnosticTags.forReply = function forReply(replyInfo) {
         from: replyInfo.from
     };
     if (replyInfo.reply.error) {
-        tagsForReply.error = JSON.stringify(replyInfo.reply.error);
+        tagsForReply.error = replyInfo.reply.error;
     }
     forReplyHelper(tagsForReply, replyInfo);
     return tagsForReply;
@@ -187,7 +187,7 @@ DiagnosticTags.forSubscriptionStop = function forSubscriptionStop(subscriptionSt
 };
 
 let forPublicationHelper = function(tagsForPublication, publicationInfo) {
-    tagsForPublication.response = JSON.stringify(publicationInfo.publication.response);
+    tagsForPublication.response = publicationInfo.publication.response;
 };
 
 /**
@@ -202,13 +202,13 @@ DiagnosticTags.forPublication = function forPublication(publicationInfo) {
     };
     forPublicationHelper(tagsForPublication, publicationInfo);
     if (publicationInfo.error) {
-        tagsForPublication.error = JSON.stringify(publicationInfo.error);
+        tagsForPublication.error = publicationInfo.error;
     }
     return tagsForPublication;
 };
 
 let forMulticastPublicationHelper = function(tagsForMulticastPublication, publicationInfo) {
-    tagsForMulticastPublication.response = JSON.stringify(publicationInfo.publication.response);
+    tagsForMulticastPublication.response = publicationInfo.publication.response;
 };
 
 /**
@@ -222,7 +222,7 @@ DiagnosticTags.forMulticastPublication = function forMulticastPublication(public
     };
     forMulticastPublicationHelper(tagsForMulticastPublication, publicationInfo);
     if (publicationInfo.error) {
-        tagsForMulticastPublication.error = JSON.stringify(publicationInfo.error);
+        tagsForMulticastPublication.error = publicationInfo.error;
     }
     return tagsForMulticastPublication;
 };

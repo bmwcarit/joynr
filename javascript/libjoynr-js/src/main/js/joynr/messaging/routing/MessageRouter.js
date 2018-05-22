@@ -450,7 +450,7 @@ function MessageRouter(settings) {
             } catch (error) {
                 messagesWithoutReplyTo.push(joynrMessage);
                 errorMsg = "replyTo address could not be set: " + error + ". Queuing message.";
-                log.warn(errorMsg, JSON.stringify(DiagnosticTags.forJoynrMessage(joynrMessage)));
+                log.warn(errorMsg, DiagnosticTags.forJoynrMessage(joynrMessage));
                 return Promise.resolve();
             }
         }
@@ -458,7 +458,7 @@ function MessageRouter(settings) {
         messagingStub = settings.messagingStubFactory.createMessagingStub(address);
         if (messagingStub === undefined) {
             errorMsg = "No message receiver found for participantId: " + joynrMessage.to + " queuing message.";
-            log.info(errorMsg, JSON.stringify(DiagnosticTags.forJoynrMessage(joynrMessage)));
+            log.info(errorMsg, DiagnosticTags.forJoynrMessage(joynrMessage));
             // TODO queue message and retry later
             return Promise.resolve();
         }
