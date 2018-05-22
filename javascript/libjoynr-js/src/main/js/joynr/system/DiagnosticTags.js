@@ -97,11 +97,7 @@ DiagnosticTags.forOneWayRequest = function forOneWayRequest(requestInfo) {
 };
 
 let forReplyHelper = function(tagsForReply, replyInfo) {
-    if (replyInfo.reply.error) {
-        tagsForReply.error = JSON.stringify(replyInfo.reply.error);
-    } else {
-        tagsForReply.response = JSON.stringify(replyInfo.reply.response);
-    }
+    tagsForReply.response = JSON.stringify(replyInfo.reply.response);
 };
 
 /**
@@ -114,6 +110,9 @@ DiagnosticTags.forReply = function forReply(replyInfo) {
         to: replyInfo.to,
         from: replyInfo.from
     };
+    if (replyInfo.reply.error) {
+        tagsForReply.error = JSON.stringify(replyInfo.reply.error);
+    }
     forReplyHelper(tagsForReply, replyInfo);
     return tagsForReply;
 };
@@ -122,12 +121,17 @@ DiagnosticTags.forReply = function forReply(replyInfo) {
  * @param {Object} subscriptionReplyInfo
  */
 DiagnosticTags.forSubscriptionReply = function forSubscriptionReply(subscriptionReplyInfo) {
-    return {
+    const subscriptionReplyTag = {
         diagnosticTag: "SubscriptionReply",
         subscriptionId: subscriptionReplyInfo.subscriptionReply.subscriptionId,
         to: subscriptionReplyInfo.to,
         from: subscriptionReplyInfo.from
     };
+    if (subscriptionReplyInfo.subscriptionReply.error) {
+        subscriptionReplyTag.error = subscriptionReplyInfo.subscriptionReply.error;
+    }
+
+    return subscriptionReplyTag;
 };
 
 /**
@@ -197,6 +201,9 @@ DiagnosticTags.forPublication = function forPublication(publicationInfo) {
         from: publicationInfo.from
     };
     forPublicationHelper(tagsForPublication, publicationInfo);
+    if (publicationInfo.error) {
+        tagsForPublication.error = JSON.stringify(publicationInfo.error);
+    }
     return tagsForPublication;
 };
 
@@ -214,6 +221,9 @@ DiagnosticTags.forMulticastPublication = function forMulticastPublication(public
         from: publicationInfo.from
     };
     forMulticastPublicationHelper(tagsForMulticastPublication, publicationInfo);
+    if (publicationInfo.error) {
+        tagsForMulticastPublication.error = JSON.stringify(publicationInfo.error);
+    }
     return tagsForMulticastPublication;
 };
 
