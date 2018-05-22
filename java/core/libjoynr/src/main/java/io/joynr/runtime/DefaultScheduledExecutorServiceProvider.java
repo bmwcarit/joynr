@@ -51,7 +51,7 @@ public class DefaultScheduledExecutorServiceProvider implements Provider<Schedul
         scheduler.setKeepAliveTime(100, TimeUnit.SECONDS);
         scheduler.allowCoreThreadTimeOut(true);
 
-        shutdownNotifier.registerForShutdown(this);
+        shutdownNotifier.registerToBeShutdownAsLast(this);
     }
 
     @Override

@@ -113,20 +113,23 @@ public final class ArbitratorFactory {
                               discoveryEntryVersionFilter);
     }
 
-    public static void start() {
-        arbitratorRunnable = new ArbitratorRunnable();
-        scheduler.execute(arbitratorRunnable);
-        shutdownNotifier.registerForShutdown(new ShutdownListener() {
-            @Override
-            public void shutdown() {
-                ArbitratorFactory.shutdown();
-            }
-        });
+    public static synchronized void start() {
+        if (arbitratorRunnable == null) {
+            arbitratorRunnable = new ArbitratorRunnable();
+            scheduler.execute(arbitratorRunnable);
+            shutdownNotifier.registerForShutdown(new ShutdownListener() {
+                @Override
+                public void shutdown() {
+                    ArbitratorFactory.shutdown();
+                }
+            });
+        }
     }
 
-    public static void shutdown() {
+    public static synchronized void shutdown() {
         if (arbitratorRunnable != null) {
-            arbitratorRunnable.stopArbitratorRunnable();
+            arbitratorRunnable.stop();
+            arbitratorRunnable = null;
         }
     }
 
@@ -138,7 +141,7 @@ public final class ArbitratorFactory {
             stopped = false;
         }
 
-        void stopArbitratorRunnable() {
+        void stop() {
             stopped = true;
         }
 
