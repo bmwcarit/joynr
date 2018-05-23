@@ -89,7 +89,7 @@ public:
 	 */
 	«asyncClassName»(
 			std::weak_ptr<joynr::JoynrRuntimeImpl> runtime,
-			joynr::ConnectorFactory* connectorFactory,
+			joynr::JoynrMessagingConnectorFactory* connectorFactory,
 			const std::string& domain,
 			const joynr::MessagingQos& qosSettings
 	);
