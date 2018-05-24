@@ -313,7 +313,7 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", () => {
     });
 
     it("calls registered replyCaller when a reply arrives", done => {
-        const replyCallerSpy = jasmine.createSpyObj("promise", ["resolve", "reject"]);
+        const replyCallerSpy = jasmine.createSpyObj("promise", ["callback"]);
         replyCallerSpy.callbackSettings = {};
 
         const timeout = toleranceMs + ttl_ms;
@@ -323,18 +323,17 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", () => {
 
         waitsFor(
             () => {
-                return replyCallerSpy.resolve.calls.count() > 0 || replyCallerSpy.reject.calls.count() > 0;
+                return replyCallerSpy.callback.calls.count() > 0;
             },
             "reject or fulfill to be called",
             timeout
         )
             .then(() => {
-                expect(replyCallerSpy.resolve).toHaveBeenCalled();
-                expect(replyCallerSpy.resolve).toHaveBeenCalledWith({
+                expect(replyCallerSpy.callback).toHaveBeenCalled();
+                expect(replyCallerSpy.callback).toHaveBeenCalledWith(undefined, {
                     response: testResponse,
                     settings: replyCallerSpy.callbackSettings
                 });
-                expect(replyCallerSpy.reject).not.toHaveBeenCalled();
                 done();
                 return null;
             })
@@ -342,7 +341,7 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", () => {
     });
 
     it("calls registered replyCaller fail if no reply arrives in time", done => {
-        const replyCallerSpy = jasmine.createSpyObj("deferred", ["resolve", "reject"]);
+        const replyCallerSpy = jasmine.createSpyObj("deferred", ["callback"]);
 
         const timeout = toleranceMs + ttl_ms;
 
@@ -350,22 +349,20 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", () => {
 
         waitsFor(
             () => {
-                return replyCallerSpy.resolve.calls.count() > 0 || replyCallerSpy.reject.calls.count() > 0;
+                return replyCallerSpy.callback.calls.count() > 0;
             },
             "reject or fulfill to be called",
             timeout
         )
             .then(() => {
-                expect(replyCallerSpy.resolve).not.toHaveBeenCalled();
-                expect(replyCallerSpy.reject).toHaveBeenCalled();
+                expect(replyCallerSpy.callback).toHaveBeenCalledWith(jasmine.any(Error));
                 done();
-                return null;
             })
             .catch(fail);
     });
 
     function testHandleReplyWithExpectedType(params, promiseChain) {
-        const replyCallerSpy = jasmine.createSpyObj("deferred", ["resolve", "reject"]);
+        const replyCallerSpy = jasmine.createSpyObj("deferred", ["callback"]);
         return promiseChain
             .then(() => {
                 const reply = new Reply({
@@ -379,7 +376,7 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", () => {
 
                 return waitsFor(
                     () => {
-                        return replyCallerSpy.resolve.calls.count() > 0 || replyCallerSpy.reject.calls.count() > 0;
+                        return replyCallerSpy.callback.calls.count() > 0;
                     },
                     "reject or fulfill to be called",
                     ttl_ms * 2
@@ -387,10 +384,9 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", () => {
             })
             .then(() => {
                 let i;
-                expect(replyCallerSpy.resolve).toHaveBeenCalled();
-                expect(replyCallerSpy.reject).not.toHaveBeenCalled();
+                expect(replyCallerSpy.callback).toHaveBeenCalled();
 
-                const result = replyCallerSpy.resolve.calls.argsFor(0)[0];
+                const result = replyCallerSpy.callback.calls.argsFor(0)[1];
                 for (i = 0; i < params.length; i++) {
                     expect(result.response[i]).toEqual(params[i]);
                 }
@@ -767,7 +763,7 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", () => {
             .catch(fail);
     });
 
-    it(" throws exception when called while shut down", done => {
+    it("throws exception when called while shut down", done => {
         requestReplyManager.shutdown();
         expect(() => {
             requestReplyManager.removeRequestCaller("providerParticipantId");
@@ -791,21 +787,20 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", () => {
                 expect(() => {
                     requestReplyManager.sendOneWayRequest({});
                 }).toThrow();
-                expect(() => {
-                    requestReplyManager.sendRequest({});
-                }).toThrow();
-                done();
+                requestReplyManager
+                    .sendRequest({}, {})
+                    .then(fail)
+                    .catch(done);
             },
             replySettings
         );
     });
-    it(" rejects reply callers when shut down", done => {
-        const replyCallerSpy = jasmine.createSpyObj("promise", ["resolve", "reject"]);
+    it("rejects reply callers when shut down", done => {
+        const replyCallerSpy = jasmine.createSpyObj("promise", ["callback"]);
 
         requestReplyManager.addReplyCaller(requestReplyId, replyCallerSpy, ttl_ms);
-        expect(replyCallerSpy.reject).not.toHaveBeenCalled();
         requestReplyManager.shutdown();
-        expect(replyCallerSpy.reject).toHaveBeenCalled();
+        expect(replyCallerSpy.callback).toHaveBeenCalledWith(jasmine.any(Error));
         done();
     });
 

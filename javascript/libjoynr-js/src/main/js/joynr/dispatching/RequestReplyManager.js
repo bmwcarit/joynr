@@ -25,6 +25,7 @@ const MethodInvocationException = require("../exceptions/MethodInvocationExcepti
 const ProviderRuntimeException = require("../exceptions/ProviderRuntimeException");
 const Version = require("../../generated/joynr/types/Version");
 const LoggingManager = require("../system/LoggingManager");
+const util = require("util");
 /**
  * The RequestReplyManager is responsible maintaining a list of providers that wish to
  * receive incoming requests, and also a list of requestReplyIds which is used to match
@@ -49,7 +50,7 @@ function RequestReplyManager(dispatcher) {
         const currentTime = Date.now();
         for (const [id, caller] of replyCallers) {
             if (caller.expiresAt <= currentTime) {
-                caller.reject(new Error(`Request with id "${id}" failed: ttl expired`));
+                caller.callback(new Error(`Request with id "${id}" failed: ttl expired`));
                 replyCallers.delete(id);
             }
         }
@@ -59,6 +60,25 @@ function RequestReplyManager(dispatcher) {
         if (!started) {
             throw new Error("RequestReplyManager is already shut down");
         }
+    }
+
+    function sendRequestInternal(settings, callbackSettings, callback) {
+        try {
+            checkIfReady();
+        } catch (e) {
+            callback(e);
+        }
+
+        this.addReplyCaller(
+            settings.request.requestReplyId,
+            {
+                callback,
+                callbackSettings
+            },
+            settings.messagingQos.ttl
+        );
+
+        dispatcher.sendRequest(settings);
     }
 
     /**
@@ -79,25 +99,7 @@ function RequestReplyManager(dispatcher) {
      *          additional settings to handle the reply.
      * @returns {Promise} the Promise for the Request
      */
-    this.sendRequest = function sendRequest(settings, callbackSettings) {
-        checkIfReady();
-
-        const deferred = UtilInternal.createDeferred();
-        this.addReplyCaller(
-            settings.request.requestReplyId,
-            {
-                resolve: deferred.resolve,
-                reject: deferred.reject,
-                callbackSettings
-            },
-            settings.messagingQos.ttl
-        );
-        // resolve will be called upon successful response
-
-        dispatcher.sendRequest(settings);
-
-        return deferred.promise;
-    };
+    this.sendRequest = util.promisify(sendRequestInternal);
 
     /**
      * @name RequestReplyManager#sendOneWayRequest
@@ -374,12 +376,12 @@ function RequestReplyManager(dispatcher) {
         try {
             if (reply.error) {
                 if (reply.error instanceof Error) {
-                    replyCaller.reject(reply.error);
+                    replyCaller.callback(reply.error);
                 } else {
-                    replyCaller.reject(Typing.augmentTypes(reply.error));
+                    replyCaller.callback(Typing.augmentTypes(reply.error));
                 }
             } else {
-                replyCaller.resolve({ response: reply.response, settings: replyCaller.callbackSettings });
+                replyCaller.callback(undefined, { response: reply.response, settings: replyCaller.callbackSettings });
             }
 
             replyCallers.delete(reply.requestReplyId);
@@ -402,7 +404,7 @@ function RequestReplyManager(dispatcher) {
         /*eslint-disable no-unused-vars*/
         for (const [requestReplyId, replyCaller] of replyCallers) {
             if (replyCaller) {
-                replyCaller.reject(new Error("RequestReplyManager is already shut down"));
+                replyCaller.callback(new Error("RequestReplyManager is already shut down"));
             }
         }
         /*eslint-enable no-unused-vars*/
