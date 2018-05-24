@@ -66,7 +66,7 @@ function discoverStaticCapabilities(capabilities, domains, interfaceName, discov
         }
     } catch (e) {
         deferred.pending = false;
-        deferred.reject(new Error("Exception while arbitrating: " + e));
+        deferred.reject(new Error(`Exception while arbitrating: ${e}`));
     }
 }
 
@@ -245,14 +245,9 @@ Arbitrator.prototype.startArbitration = function startArbitration(settings) {
         delete that._pendingArbitrations[deferred.id];
 
         if (deferred.incompatibleVersionsFound.length > 0) {
-            const message =
-                'no compatible provider found within discovery timeout for domains "' +
-                JSON.stringify(settings.domains) +
-                '", interface "' +
-                settings.interfaceName +
-                '" with discoveryQos "' +
-                JSON.stringify(settings.discoveryQos) +
-                '"';
+            const message = `no compatible provider found within discovery timeout for domains "${JSON.stringify(
+                settings.domains
+            )}", interface "${settings.interfaceName}" with discoveryQos "${JSON.stringify(settings.discoveryQos)}"`;
             startArbitrationDeferred.reject(
                 new NoCompatibleProviderFoundException({
                     detailMessage: message,
@@ -263,15 +258,11 @@ Arbitrator.prototype.startArbitration = function startArbitration(settings) {
         } else {
             startArbitrationDeferred.reject(
                 new DiscoveryException({
-                    detailMessage:
-                        'no provider found within discovery timeout for domains "' +
-                        JSON.stringify(settings.domains) +
-                        '", interface "' +
-                        settings.interfaceName +
-                        '" with discoveryQos "' +
-                        JSON.stringify(settings.discoveryQos) +
-                        '"' +
-                        (deferred.errorMsg !== undefined ? ". Error: " + deferred.errorMsg : "")
+                    detailMessage: `no provider found within discovery timeout for domains "${JSON.stringify(
+                        settings.domains
+                    )}", interface "${settings.interfaceName}" with discoveryQos "${JSON.stringify(
+                        settings.discoveryQos
+                    )}"${deferred.errorMsg !== undefined ? `. Error: ${deferred.errorMsg}` : ""}`
                 })
             );
         }

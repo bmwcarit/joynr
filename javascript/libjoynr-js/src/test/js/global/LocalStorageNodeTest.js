@@ -44,13 +44,13 @@ describe("local storage", () => {
 
     afterAll(() => {
         if (clearResults) {
-            child_process.execSync("rm -rf " + basePath);
+            child_process.execSync(`rm -rf ${basePath}`);
         }
     });
 
     beforeEach(() => {
         testNum++;
-        location = testDirectory + "/LocalStorage-" + testNum;
+        location = `${testDirectory}/LocalStorage-${testNum}`;
         locationPath = path.join(process.cwd(), location);
     });
 
@@ -68,8 +68,9 @@ describe("local storage", () => {
             .then(fail)
             .catch(e => {
                 expect(e.message).toEqual(
-                    "joynr configuration error: Persistency subdirectory must not include other subdirectories. Directories found: " +
-                        JSON.stringify([subDirectoryName])
+                    `joynr configuration error: Persistency subdirectory must not include other subdirectories. Directories found: ${JSON.stringify(
+                        [subDirectoryName]
+                    )}`
                 );
                 done();
             });
@@ -120,7 +121,7 @@ describe("local storage", () => {
             storage.setItem(key, JSON.stringify(item));
             await storage.shutdown();
             const filename = fs.readdirSync(location)[0];
-            fs.writeFileSync(location + "/" + filename, corruptData);
+            fs.writeFileSync(`${location}/${filename}`, corruptData);
 
             storage = new LocalStorage({
                 clearPersistency: false,
@@ -134,7 +135,7 @@ describe("local storage", () => {
             storage.setItem(key, JSON.stringify(item));
             await storage.shutdown();
             const filename = fs.readdirSync(location)[0];
-            fs.writeFileSync(location + "/" + filename, corruptData);
+            fs.writeFileSync(`${location}/${filename}`, corruptData);
 
             storage = new LocalStorage({
                 clearPersistency: false,
@@ -151,7 +152,7 @@ describe("local storage", () => {
             storage.setItem(key, JSON.stringify(item));
             await storage.shutdown();
 
-            fs.writeFileSync(location + "/otherFile", "other Data");
+            fs.writeFileSync(`${location}/otherFile`, "other Data");
 
             storage = new LocalStorage({
                 clearPersistency: false,

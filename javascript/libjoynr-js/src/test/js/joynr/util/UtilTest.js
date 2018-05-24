@@ -134,7 +134,7 @@ describe("libjoynr-js.joynr.UtilInternal.transform", () => {
         });
 
         expect(transformed.length).toEqual(1);
-        expect(transformed[0].a).toEqual("a" + postFix);
+        expect(transformed[0].a).toEqual(`a${postFix}`);
     });
 });
 
@@ -149,7 +149,7 @@ describe("libjoynr-js.joynr.UtilInternal.firstLower", () => {
         expect(UtilInternal.firstLower("FsDfAsDf")).toEqual("fsDfAsDf");
         const rettyLongString =
             "RETTYLONGSTRINGprettylongstringPRETTYLONGSTRINGprettylongstringPRETTYLONGSTRINGprettylongstringPRETTYLONGSTRINGprettylongstringPRETTYLONGSTRINGprettylongstringPRETTYLONGSTRINGprettylongstringPRETTYLONGSTRING";
-        expect(UtilInternal.firstLower("P" + rettyLongString)).toEqual("p" + rettyLongString);
+        expect(UtilInternal.firstLower(`P${rettyLongString}`)).toEqual(`p${rettyLongString}`);
     });
 
     it("throws on nullable input", () => {
@@ -173,7 +173,7 @@ describe("libjoynr-js.joynr.UtilInternal.firstUpper", () => {
         expect(UtilInternal.firstUpper("fSdFaSdF")).toEqual("FSdFaSdF");
         const rettyLongString =
             "rettylongstringPRETTYLONGSTRINGprettylongstringPRETTYLONGSTRINGprettylongstringPRETTYLONGSTRINGprettylongstringPRETTYLONGSTRINGprettylongstringPRETTYLONGSTRINGprettylongstringPRETTYLONGSTRINGprettylongstring";
-        expect(UtilInternal.firstUpper("p" + rettyLongString)).toEqual("P" + rettyLongString);
+        expect(UtilInternal.firstUpper(`p${rettyLongString}`)).toEqual(`P${rettyLongString}`);
     });
 
     it("throws on nullable input", () => {

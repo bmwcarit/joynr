@@ -65,11 +65,9 @@ function MessagingQos(settings) {
      */
     if (settings.ttl > defaultMessagingSettings.MAX_MESSAGING_TTL_MS) {
         this.ttl = defaultMessagingSettings.MAX_MESSAGING_TTL_MS;
-        errorMsg =
-            "Error in MessageQos. Max allowed ttl: " +
-            defaultMessagingSettings.MAX_MESSAGING_TTL_MS +
-            ". Passed ttl: " +
-            settings.ttl;
+        errorMsg = `Error in MessageQos. Max allowed ttl: ${
+            defaultMessagingSettings.MAX_MESSAGING_TTL_MS
+        }. Passed ttl: ${settings.ttl}`;
         log.warn(errorMsg);
     } else {
         this.ttl = settings.ttl;

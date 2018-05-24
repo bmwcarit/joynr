@@ -144,7 +144,7 @@ CapabilitiesRegistrar.prototype.registerProvider = function registerProvider(
 
     if (missingImplementations.length > 0) {
         throw new Error(
-            "provider: " + domain + "/" + provider.interfaceName + " is missing: " + missingImplementations.toString()
+            `provider: ${domain}/${provider.interfaceName} is missing: ${missingImplementations.toString()}`
         );
     }
 
@@ -192,12 +192,9 @@ CapabilitiesRegistrar.prototype.registerProvider = function registerProvider(
 
     function registerProviderFinished() {
         log.info(
-            "Provider registered: participantId: " +
-                participantId +
-                ", domain: " +
-                domain +
-                ", interfaceName: " +
+            `Provider registered: participantId: ${participantId}, domain: ${domain}, interfaceName: ${
                 provider.interfaceName
+            }`
         );
         return participantId;
     }
@@ -237,12 +234,9 @@ CapabilitiesRegistrar.prototype.unregisterProvider = function unregisterProvider
 
     return Promise.all([discoveryStubPromise, messageRouterPromise]).then(() => {
         log.info(
-            "Provider unregistered: participantId: " +
-                participantId +
-                ", domain: " +
-                domain +
-                ", interfaceName: " +
+            `Provider unregistered: participantId: ${participantId}, domain: ${domain}, interfaceName: ${
                 provider.interfaceName
+            }`
         );
     });
 };

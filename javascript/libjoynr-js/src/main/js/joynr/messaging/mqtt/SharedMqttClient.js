@@ -123,7 +123,7 @@ const SharedMqttClient = function SharedMqttClient(settings) {
         set(newCallback) {
             this._onmessageCallback = newCallback;
             if (typeof newCallback !== "function") {
-                throw new Error("onmessage callback must be a function, but instead was of type " + typeof newCallback);
+                throw new Error(`onmessage callback must be a function, but instead was of type ${typeof newCallback}`);
             }
         },
         get() {

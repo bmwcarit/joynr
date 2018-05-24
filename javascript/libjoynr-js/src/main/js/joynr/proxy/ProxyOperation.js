@@ -115,7 +115,7 @@ function operationFunctionOnSuccess(settings) {
                     );
                 } else {
                     return Promise.reject(
-                        new Error("Unexpected response: " + JSONSerializer.stringify(response[responseKey]))
+                        new Error(`Unexpected response: ${JSONSerializer.stringify(response[responseKey])}`)
                     );
                 }
             }
@@ -167,7 +167,7 @@ function operationFunction(operationArguments) {
     try {
         operationArguments = checkArguments(operationArguments);
     } catch (e) {
-        return Promise.reject(new Error("error calling operation: " + this.operationName + ": " + e));
+        return Promise.reject(new Error(`error calling operation: ${this.operationName}: ${e}`));
     }
 
     try {
@@ -193,14 +193,11 @@ function operationFunction(operationArguments) {
         if (foundValidOperationSignature === undefined) {
             return Promise.reject(
                 new Error(
-                    "Could not find a valid operation signature in '" +
-                        JSON.stringify(this.operationSignatures) +
-                        "' for a call to operation '" +
-                        this.operationName +
-                        "' with the arguments: '" +
-                        JSON.stringify(operationArguments) +
-                        "'. The following errors occured during signature check: " +
-                        JSON.stringify(caughtErrors)
+                    `Could not find a valid operation signature in '${JSON.stringify(
+                        this.operationSignatures
+                    )}' for a call to operation '${this.operationName}' with the arguments: '${JSON.stringify(
+                        operationArguments
+                    )}'. The following errors occured during signature check: ${JSON.stringify(caughtErrors)}`
                 )
             );
         }
@@ -242,7 +239,7 @@ function operationFunction(operationArguments) {
                 .then(operationFunctionOnSuccess);
         }
     } catch (e) {
-        return Promise.reject(new Error("error calling operation: " + e.toString()));
+        return Promise.reject(new Error(`error calling operation: ${e.toString()}`));
     }
 }
 

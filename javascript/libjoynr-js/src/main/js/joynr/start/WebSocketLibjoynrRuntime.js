@@ -242,7 +242,7 @@ function WebSocketLibjoynrRuntime(provisioning) {
      */
     this.start = function start() {
         if (joynrState !== JoynrStates.SHUTDOWN) {
-            throw new Error("Cannot start libjoynr because it's currently \"" + joynrState + '"');
+            throw new Error(`Cannot start libjoynr because it's currently "${joynrState}"`);
         }
         joynrState = JoynrStates.STARTING;
 
@@ -437,14 +437,14 @@ function WebSocketLibjoynrRuntime(provisioning) {
         }
 
         function buildDiscoveryProxyOnError(error) {
-            throw new Error("Failed to create discovery proxy: " + error);
+            throw new Error(`Failed to create discovery proxy: ${error}`);
         }
 
         function buildRoutingProxyOnError(error) {
             throw new Error(
-                "Failed to create routing proxy: " +
-                    error +
-                    (error instanceof JoynrException ? " " + error.detailMessage : "")
+                `Failed to create routing proxy: ${error}${
+                    error instanceof JoynrException ? ` ${error.detailMessage}` : ""
+                }`
             );
         }
 
@@ -484,7 +484,7 @@ function WebSocketLibjoynrRuntime(provisioning) {
         }
 
         function startOnFailure(error) {
-            log.error("error starting up joynr: " + error);
+            log.error(`error starting up joynr: ${error}`);
 
             internalShutdown();
 
@@ -507,7 +507,7 @@ function WebSocketLibjoynrRuntime(provisioning) {
      */
     internalShutdown = function shutdown(settings) {
         if (joynrState !== JoynrStates.STARTED && joynrState !== JoynrStates.STARTING) {
-            throw new Error("Cannot shutdown libjoynr because it's currently \"" + joynrState + '"');
+            throw new Error(`Cannot shutdown libjoynr because it's currently "${joynrState}"`);
         }
         joynrState = JoynrStates.SHUTTINGDOWN;
 

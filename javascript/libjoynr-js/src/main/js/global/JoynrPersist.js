@@ -76,8 +76,9 @@ JoynrPersist.prototype = {
                     return fs.lstatSync(filePath).isDirectory();
                 });
                 throw new Error(
-                    "joynr configuration error: Persistency subdirectory must not include other subdirectories. Directories found: " +
-                        JSON.stringify(subDirectories)
+                    `joynr configuration error: Persistency subdirectory must not include other subdirectories. Directories found: ${JSON.stringify(
+                        subDirectories
+                    )}`
                 );
             } else {
                 throw e;

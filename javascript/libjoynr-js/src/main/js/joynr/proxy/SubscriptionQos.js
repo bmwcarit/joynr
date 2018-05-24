@@ -124,22 +124,24 @@ function SubscriptionQos(settings) {
     UtilInternal.extend(this, defaultSettings, settings);
     if (this.publicationTtlMs < SubscriptionQos.MIN_PUBLICATION_TTL_MS) {
         log.warn(
-            "publicationTtlMs < MIN_PUBLICATION_TTL_MS. Using MIN_PUBLICATION_TTL_MS: " +
+            `publicationTtlMs < MIN_PUBLICATION_TTL_MS. Using MIN_PUBLICATION_TTL_MS: ${
                 SubscriptionQos.MIN_PUBLICATION_TTL_MS
+            }`
         );
         this.publicationTtlMs = SubscriptionQos.MIN_PUBLICATION_TTL_MS;
     }
 
     if (this.publicationTtlMs > SubscriptionQos.MAX_PUBLICATION_TTL_MS) {
         log.warn(
-            "publicationTtlMs > MAX_PUBLICATION_TTL_MS. Using MAX_PUBLICATION_TTL_MS: " +
+            `publicationTtlMs > MAX_PUBLICATION_TTL_MS. Using MAX_PUBLICATION_TTL_MS: ${
                 SubscriptionQos.MAX_PUBLICATION_TTL_MS
+            }`
         );
         this.publicationTtlMs = SubscriptionQos.MAX_PUBLICATION_TTL_MS;
     }
 
     if (this.expiryDateMs < SubscriptionQos.MIN_EXPIRY_MS) {
-        log.warn("expiryDateMs < MIN_EXPIRY_MS. Using MIN_EXPIRY_MS: " + SubscriptionQos.MIN_EXPIRY_MS);
+        log.warn(`expiryDateMs < MIN_EXPIRY_MS. Using MIN_EXPIRY_MS: ${SubscriptionQos.MIN_EXPIRY_MS}`);
         this.expiryDateMs = SubscriptionQos.MIN_EXPIRY_MS;
     }
 

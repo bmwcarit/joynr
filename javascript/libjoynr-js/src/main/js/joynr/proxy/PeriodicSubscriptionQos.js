@@ -124,19 +124,17 @@ function PeriodicSubscriptionQos(settings) {
 
     if (this.periodMs < PeriodicSubscriptionQos.MIN_PERIOD_MS) {
         throw new Error(
-            "Wrong periodMs with value " +
-                this.periodMs +
-                ": it shall be higher than " +
+            `Wrong periodMs with value ${this.periodMs}: it shall be higher than ${
                 PeriodicSubscriptionQos.MIN_PERIOD_MS
+            }`
         );
     }
 
     if (this.periodMs > PeriodicSubscriptionQos.MAX_PERIOD_MS) {
         throw new Error(
-            "Wrong periodMs with value " +
-                this.periodMs +
-                ": it shall be lower than " +
+            `Wrong periodMs with value ${this.periodMs}: it shall be lower than ${
                 PeriodicSubscriptionQos.MAX_PERIOD_MS
+            }`
         );
     }
 
@@ -144,14 +142,15 @@ function PeriodicSubscriptionQos(settings) {
         this.alertAfterIntervalMs !== PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL &&
         this.alertAfterIntervalMs < this.periodMs
     ) {
-        log.warn("alertAfterIntervalMs < periodMs. Using periodMs: " + this.periodMs);
+        log.warn(`alertAfterIntervalMs < periodMs. Using periodMs: ${this.periodMs}`);
         this.alertAfterIntervalMs = this.periodMs;
     }
 
     if (this.alertAfterIntervalMs > PeriodicSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS) {
         log.warn(
-            "alertAfterIntervalMs > MAX_ALERT_AFTER_INTERVAL_MS. Using MAX_ALERT_AFTER_INTERVAL_MS: " +
+            `alertAfterIntervalMs > MAX_ALERT_AFTER_INTERVAL_MS. Using MAX_ALERT_AFTER_INTERVAL_MS: ${
                 PeriodicSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS
+            }`
         );
         this.alertAfterIntervalMs = PeriodicSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS;
     }

@@ -24,5 +24,5 @@ const location = global.location || {};
 const defaultSettings = {};
 defaultSettings.window = window;
 defaultSettings.parentWindow = window.opener || window.top;
-defaultSettings.parentOrigin = location.origin || window.location.protocol + "//" + window.location.host;
+defaultSettings.parentOrigin = location.origin || `${window.location.protocol}//${window.location.host}`;
 module.exports = defaultSettings;

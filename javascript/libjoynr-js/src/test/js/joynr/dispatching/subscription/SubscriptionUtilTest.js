@@ -62,7 +62,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.types.SubscriptionUtil", ()
             proxy,
             provider,
             new SubscriptionRequest({
-                subscriptionId: "subscriptionId" + uuid(),
+                subscriptionId: `subscriptionId${uuid()}`,
                 subscribedToName: testAttributeName,
                 qos: qosSettings
             })
@@ -70,34 +70,25 @@ describe("libjoynr-js.joynr.dispatching.subscription.types.SubscriptionUtil", ()
     }
 
     function buildString(info) {
-        return (
-            "{" +
-            '"subscriptionType":"' +
-            info.subscriptionType +
-            '","proxyParticipantId":"' +
-            info.proxyParticipantId +
-            '","providerParticipantId":"' +
-            info.providerParticipantId +
-            '","subscriptionId":"' +
-            info.subscriptionId +
-            '","subscribedToName":"' +
-            info.subscribedToName +
-            '","qos":{"_typeName":"joynr.OnChangeWithKeepAliveSubscriptionQos","alertAfterIntervalMs":0,"maxIntervalMs":' +
-            info.qos.maxIntervalMs +
-            ',"minIntervalMs":' +
-            info.qos.minIntervalMs +
-            ',"expiryDateMs":' +
-            info.qos.expiryDateMs +
-            ',"publicationTtlMs":1000},"lastPublication":0,"_typeName":"joynr.SubscriptionInformation"}'
-        );
+        return `${'{"subscriptionType":"'}${info.subscriptionType}","proxyParticipantId":"${
+            info.proxyParticipantId
+        }","providerParticipantId":"${info.providerParticipantId}","subscriptionId":"${
+            info.subscriptionId
+        }","subscribedToName":"${
+            info.subscribedToName
+        }","qos":{"_typeName":"joynr.OnChangeWithKeepAliveSubscriptionQos","alertAfterIntervalMs":0,"maxIntervalMs":${
+            info.qos.maxIntervalMs
+        },"minIntervalMs":${info.qos.minIntervalMs},"expiryDateMs":${
+            info.qos.expiryDateMs
+        },"publicationTtlMs":1000},"lastPublication":0,"_typeName":"joynr.SubscriptionInformation"}`;
     }
 
     /**
      * Called before each test.
      */
     beforeEach(() => {
-        proxyId = "proxy" + uuid();
-        providerId = "provider" + uuid();
+        proxyId = `proxy${uuid()}`;
+        providerId = `provider${uuid()}`;
         testAttributeName = "testAttribute";
     });
 
@@ -108,7 +99,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.types.SubscriptionUtil", ()
         subscriptions[info.subscriptionId] = info;
 
         const serializedSubscriptions = SubscriptionUtil.serializeSubscriptions(subscriptions);
-        const expectedString = "[" + buildString(info) + "]";
+        const expectedString = `[${buildString(info)}]`;
 
         expect(serializedSubscriptions).toBe(expectedString);
     });
@@ -124,14 +115,14 @@ describe("libjoynr-js.joynr.dispatching.subscription.types.SubscriptionUtil", ()
         subscriptions[info3.subscriptionId] = info3;
 
         const serializedSubscriptions = SubscriptionUtil.serializeSubscriptions(subscriptions);
-        const expectedString = "[" + buildString(info1) + "," + buildString(info2) + "," + buildString(info3) + "]";
+        const expectedString = `[${buildString(info1)},${buildString(info2)},${buildString(info3)}]`;
 
         expect(serializedSubscriptions).toBe(expectedString);
     });
 
     it("deserialize single subscription shall work", () => {
         const info = createSubscriptionInformation(proxyId, providerId, 200, 1000, true, 50);
-        const serializedSubscription = "[" + buildString(info) + "]";
+        const serializedSubscription = `[${buildString(info)}]`;
 
         const subscriptions = SubscriptionUtil.deserializeSubscriptions(serializedSubscription);
 
@@ -155,7 +146,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.types.SubscriptionUtil", ()
     it("deserialize multiple subscriptions shall work", () => {
         const info1 = createSubscriptionInformation(proxyId, providerId, 200, 1000, true, 50);
         const info2 = createSubscriptionInformation(proxyId, providerId, 201, 1000, true, 77);
-        const serializedSubscription = "[" + buildString(info1) + "," + buildString(info2) + "]";
+        const serializedSubscription = `[${buildString(info1)},${buildString(info2)}]`;
 
         const subscriptions = SubscriptionUtil.deserializeSubscriptions(serializedSubscription);
 

@@ -169,11 +169,7 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", () => {
 
         expect(() => {
             capabilitiesRegistrar.registerProvider(domain, provider, providerQos);
-        }).toThrow(
-            new Error(
-                "provider: " + domain + "/" + provider.interfaceName + " is missing: Operation:addFavoriteStation"
-            )
-        );
+        }).toThrow(new Error(`provider: ${domain}/${provider.interfaceName} is missing: Operation:addFavoriteStation`));
         done();
     });
 
@@ -309,7 +305,7 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", () => {
                 return null;
             })
             .catch(error => {
-                fail("unexpected error: " + error);
+                fail(`unexpected error: ${error}`);
                 return null;
             });
     });

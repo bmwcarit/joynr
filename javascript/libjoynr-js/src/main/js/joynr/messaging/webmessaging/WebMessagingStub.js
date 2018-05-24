@@ -50,7 +50,7 @@ WebMessagingStub.prototype.transmit = function transmit(message) {
              stack: "Error: An object could not be cloned.
              __proto__: DOMException
              */
-    log.debug('transmit message: "' + JSONSerializer.stringify(message) + '"');
+    log.debug(`transmit message: "${JSONSerializer.stringify(message)}"`);
     this._settings.window.postMessage(JSON.parse(JSONSerializer.stringify(message)), this._settings.origin);
 
     return Promise.resolve();

@@ -44,13 +44,13 @@ describe("global.JoynrPersist", () => {
 
     afterAll(() => {
         if (clearResults) {
-            child_process.execSync("rm -rf " + basePath);
+            child_process.execSync(`rm -rf ${basePath}`);
         }
     });
 
     beforeEach(() => {
         testNum++;
-        location = testDirectory + "/LocalStorage-" + testNum;
+        location = `${testDirectory}/LocalStorage-${testNum}`;
         locationPath = path.join(process.cwd(), location);
     });
 
@@ -71,8 +71,9 @@ describe("global.JoynrPersist", () => {
             await createJoynrPersist();
         } catch (e) {
             expect(e.message).toEqual(
-                "joynr configuration error: Persistency subdirectory must not include other subdirectories. Directories found: " +
-                    JSON.stringify([subDirectoryName])
+                `joynr configuration error: Persistency subdirectory must not include other subdirectories. Directories found: ${JSON.stringify(
+                    [subDirectoryName]
+                )}`
             );
             return;
         }
@@ -114,7 +115,7 @@ describe("global.JoynrPersist", () => {
             await persist.setItem(key, item);
 
             const filename = fs.readdirSync(location)[0];
-            fs.writeFileSync(location + "/" + filename, corruptData);
+            fs.writeFileSync(`${location}/${filename}`, corruptData);
 
             await createJoynrPersist();
             const result = await persist.getAllData(key);
@@ -125,7 +126,7 @@ describe("global.JoynrPersist", () => {
             await persist.setItem(key, item);
 
             const filename = fs.readdirSync(location)[0];
-            fs.writeFileSync(location + "/" + filename, corruptData);
+            fs.writeFileSync(`${location}/${filename}`, corruptData);
 
             await createJoynrPersist();
 
@@ -137,7 +138,7 @@ describe("global.JoynrPersist", () => {
         it("ignores other files", async () => {
             await persist.setItem(key, item);
 
-            fs.writeFileSync(location + "/otherFile", "other Data");
+            fs.writeFileSync(`${location}/otherFile`, "other Data");
 
             await createJoynrPersist();
             const files = fs.readdirSync(location);

@@ -49,7 +49,7 @@ function RequestReplyManager(dispatcher) {
         const currentTime = Date.now();
         for (const [id, caller] of replyCallers) {
             if (caller.expiresAt <= currentTime) {
-                caller.reject(new Error('Request with id "' + id + '" failed: ttl expired'));
+                caller.reject(new Error(`Request with id "${id}" failed: ttl expired`));
                 replyCallers.delete(id);
             }
         }
@@ -175,7 +175,7 @@ function RequestReplyManager(dispatcher) {
         try {
             delete providers[participantId];
         } catch (error) {
-            log.error("error removing provider with participantId: " + participantId + " error: " + error);
+            log.error(`error removing provider with participantId: ${participantId} error: ${error}`);
         }
     };
 
@@ -212,12 +212,9 @@ function RequestReplyManager(dispatcher) {
             checkIfReady();
         } catch (error) {
             exception = new MethodInvocationException({
-                detailMessage:
-                    "error handling request: " +
-                    JSONSerializer.stringify(request) +
-                    " for providerParticipantId " +
-                    providerParticipantId +
-                    ". Joynr runtime already shut down."
+                detailMessage: `error handling request: ${JSONSerializer.stringify(
+                    request
+                )} for providerParticipantId ${providerParticipantId}. Joynr runtime already shut down.`
             });
             return Promise.resolve(createReplyFromError(exception));
         }
@@ -227,11 +224,9 @@ function RequestReplyManager(dispatcher) {
             // TODO what if no provider is found in the mean time?
             // Do we need to add a task to handleRequest later?
             exception = new MethodInvocationException({
-                detailMessage:
-                    "error handling request: " +
-                    JSONSerializer.stringify(request) +
-                    " for providerParticipantId " +
-                    providerParticipantId
+                detailMessage: `error handling request: ${JSONSerializer.stringify(
+                    request
+                )} for providerParticipantId ${providerParticipantId}`
             });
             return Promise.resolve(createReplyFromError(exception));
         }
@@ -269,8 +264,7 @@ function RequestReplyManager(dispatcher) {
                             exception = internalGetterSetterException;
                         } else {
                             exception = new ProviderRuntimeException({
-                                detailMessage:
-                                    "getter/setter method of attribute " + attributeName + " reported an error"
+                                detailMessage: `getter/setter method of attribute ${attributeName} reported an error`
                             });
                         }
                     }
@@ -278,12 +272,9 @@ function RequestReplyManager(dispatcher) {
                     // if neither an operation nor an attribute exists in the
                     // provider => deliver MethodInvocationException
                     exception = new MethodInvocationException({
-                        detailMessage:
-                            'Could not find an operation "' +
-                            request.methodName +
-                            '" or an attribute "' +
-                            attributeName +
-                            '" in the provider',
+                        detailMessage: `Could not find an operation "${request.methodName}" or an attribute "${
+                            attributeName
+                        }" in the provider`,
                         providerVersion: new Version({
                             majorVersion: provider.constructor.MAJOR_VERSION,
                             minorVersion: provider.constructor.MINOR_VERSION
@@ -294,7 +285,7 @@ function RequestReplyManager(dispatcher) {
                 // if no operation was found and methodName didn't start with "get"
                 // or "set" => deliver MethodInvocationException
                 exception = new MethodInvocationException({
-                    detailMessage: 'Could not find an operation "' + request.methodName + '" in the provider',
+                    detailMessage: `Could not find an operation "${request.methodName}" in the provider`,
                     providerVersion: new Version({
                         majorVersion: provider.constructor.MAJOR_VERSION,
                         minorVersion: provider.constructor.MINOR_VERSION
@@ -336,11 +327,9 @@ function RequestReplyManager(dispatcher) {
         const provider = providers[providerParticipantId];
         if (!provider) {
             throw new MethodInvocationException({
-                detailMessage:
-                    "error handling one-way request: " +
-                    JSONSerializer.stringify(request) +
-                    " for providerParticipantId " +
-                    providerParticipantId
+                detailMessage: `error handling one-way request: ${JSONSerializer.stringify(
+                    request
+                )} for providerParticipantId ${providerParticipantId}`
             });
         }
 
@@ -352,7 +341,7 @@ function RequestReplyManager(dispatcher) {
             provider[request.methodName].callOperation(request.params, request.paramDatatypes);
         } else {
             throw new MethodInvocationException({
-                detailMessage: 'Could not find an operation "' + request.methodName + '" in the provider',
+                detailMessage: `Could not find an operation "${request.methodName}" in the provider`,
                 providerVersion: new Version({
                     majorVersion: provider.constructor.MAJOR_VERSION,
                     minorVersion: provider.constructor.MINOR_VERSION
@@ -373,8 +362,11 @@ function RequestReplyManager(dispatcher) {
 
         if (replyCaller === undefined) {
             log.error(
-                "error handling reply resolve, because replyCaller could not be found: " +
-                    JSONSerializer.stringify(reply, undefined, 4)
+                `error handling reply resolve, because replyCaller could not be found: ${JSONSerializer.stringify(
+                    reply,
+                    undefined,
+                    4
+                )}`
             );
             return;
         }
@@ -393,10 +385,7 @@ function RequestReplyManager(dispatcher) {
             replyCallers.delete(reply.requestReplyId);
         } catch (e) {
             log.error(
-                "exception thrown during handling reply " +
-                    JSONSerializer.stringify(reply, undefined, 4) +
-                    ":\n" +
-                    e.stack
+                `exception thrown during handling reply ${JSONSerializer.stringify(reply, undefined, 4)}:\n${e.stack}`
             );
         }
     };

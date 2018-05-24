@@ -88,7 +88,7 @@ if (global.window !== undefined) {
         },
         _wrapFunction(cb, ...args) {
             this._promiseChain = this._promiseChain.then(() => cb(...args)).catch(e => {
-                log.error(`failure executing ${cb} with args ${JSON.stringify(args)} error: ` + e);
+                log.error(`failure executing ${cb} with args ${JSON.stringify(args)} error: ${e}`);
             });
         }
     };

@@ -194,7 +194,7 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", () => {
         return promiseChain
             .then(() => {
                 const request = new Request({
-                    methodName: "get" + UtilInternal.firstUpper(attributeName),
+                    methodName: `get${UtilInternal.firstUpper(attributeName)}`,
                     paramDatatypes: [],
                     params: []
                 });
@@ -213,7 +213,7 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", () => {
             })
             .then(() => {
                 const request = new Request({
-                    methodName: "set" + UtilInternal.firstUpper(attributeName),
+                    methodName: `set${UtilInternal.firstUpper(attributeName)}`,
                     paramDatatypes: [],
                     // untype objects through serialization and deserialization
                     params: JSON.parse(JSONSerializer.stringify(params))
@@ -666,10 +666,9 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", () => {
                     replySettings,
                     new Reply({
                         error: new MethodInvocationException({
-                            detailMessage:
-                                'error handling request: {"paramDatatypes":["String"],"params":["myTestParameter"],"methodName":"testFunction","requestReplyId":"' +
-                                test.request.requestReplyId +
-                                '","_typeName":"joynr.Request"} for providerParticipantId nonExistentProviderId'
+                            detailMessage: `error handling request: {"paramDatatypes":["String"],"params":["myTestParameter"],"methodName":"testFunction","requestReplyId":"${
+                                test.request.requestReplyId
+                            }","_typeName":"joynr.Request"} for providerParticipantId nonExistentProviderId`
                         }),
                         requestReplyId: test.request.requestReplyId
                     })

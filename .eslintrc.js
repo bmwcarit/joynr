@@ -72,6 +72,7 @@ module.exports = {
         "prefer-arrow-callback": "error",
         "prefer-const": "error",
         "prefer-destructuring": "off",
+        "prefer-template": "error",
         "prefer-spread": "error",
         "promise/always-return": "off",
         "promise/no-return-wrap": "error",

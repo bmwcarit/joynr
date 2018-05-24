@@ -35,7 +35,7 @@ function JoynrMessage(settings) {
     this.payload = settings.payload;
     this.headers = {};
     this.type = settings.type;
-    this.msgId = settings.msgId || jmBase + "_" + jmIndex++;
+    this.msgId = settings.msgId || `${jmBase}_${jmIndex++}`;
     // TODO: check whether it makes sense to add more properties to the constructor
 }
 
@@ -45,7 +45,7 @@ JoynrMessage.setSigningCallback = function(callback) {
 
 JoynrMessage.parseMessage = function(settings) {
     settings.headers = settings.headers || {};
-    settings.headers.id = settings.headers.id || jmBase + "_" + jmIndex++;
+    settings.headers.id = settings.headers.id || `${jmBase}_${jmIndex++}`;
     Object.setPrototypeOf(settings, JoynrMessage.prototype);
     return settings;
 };

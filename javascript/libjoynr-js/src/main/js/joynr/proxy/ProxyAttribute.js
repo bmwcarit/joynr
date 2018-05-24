@@ -42,7 +42,7 @@ const asRead = (function() {
             // deferred object
             settings = settings || {};
             const request = new Request({
-                methodName: "get" + UtilInternal.firstUpper(context.attributeName)
+                methodName: `get${  UtilInternal.firstUpper(context.attributeName)}`
             });
             return context.executeRequest(request, settings);
         };
@@ -74,11 +74,11 @@ const asWrite = (function() {
         try {
             settings.value = Typing.augmentTypes(settings.value);
         } catch (e) {
-            return Promise.reject(new Error("error setting attribute: " + this.attributeName + ": " + e.toString()));
+            return Promise.reject(new Error(`error setting attribute: ${  this.attributeName  }: ${  e.toString()}`));
         }
 
         const request = new Request({
-            methodName: "set" + UtilInternal.firstUpper(this.attributeName),
+            methodName: `set${  UtilInternal.firstUpper(this.attributeName)}`,
             paramDatatypes: [this.attributeType],
             params: [settings.value]
         });

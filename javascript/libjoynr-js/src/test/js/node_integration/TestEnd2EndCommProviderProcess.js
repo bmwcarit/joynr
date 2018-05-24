@@ -57,7 +57,7 @@ function initializeTest(provisioningSuffix, providedDomain) {
         // set joynr provisioning
         providerDomain = providedDomain;
         provisioning.persistency = "localStorage";
-        provisioning.channelId = "End2EndCommTestParticipantId" + provisioningSuffix;
+        provisioning.channelId = `End2EndCommTestParticipantId${provisioningSuffix}`;
         provisioning.logging = {
             configuration: {
                 appenders: {
@@ -271,20 +271,18 @@ function initializeTest(provisioningSuffix, providedDomain) {
                     let enumElement;
                     if (!isCountryEnum(opArgs.enumInput)) {
                         throw new Error(
-                            "Argument enumInput with value " +
-                                opArgs.enumInput +
-                                " is not correctly typed " +
+                            `Argument enumInput with value ${opArgs.enumInput} is not correctly typed ${
                                 Country.GERMANY._typeName
+                            }`
                         );
                     }
                     for (enumElement in opArgs.enumArrayInput) {
                         if (opArgs.enumArrayInput.hasOwnProperty(enumElement)) {
                             if (!isCountryEnum(opArgs.enumArrayInput[enumElement])) {
                                 throw new Error(
-                                    "Argument enumInput with value " +
-                                        opArgs.enumArrayInput[enumElement] +
-                                        " is not correctly typed " +
-                                        Country.GERMANY._typeName
+                                    `Argument enumInput with value ${
+                                        opArgs.enumArrayInput[enumElement]
+                                    } is not correctly typed ${Country.GERMANY._typeName}`
                                 );
                             }
                         }
@@ -462,7 +460,7 @@ function initializeTest(provisioningSuffix, providedDomain) {
                     })
                     .catch(error => {
                         reject(error);
-                        throw new Error("error registering provider: " + error);
+                        throw new Error(`error registering provider: ${error}`);
                     });
 
                 return libjoynrAsync;

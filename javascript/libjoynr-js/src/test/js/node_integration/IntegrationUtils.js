@@ -108,13 +108,13 @@ IntegrationUtils.initializeChildProcess = function(childName, provisioningSuffix
 
     // always use a different debugging port to avoid reusing a port if there are shutdown issues.
     const processConfig = isDebugging
-        ? { execArgv: ["--inspect-brk=" + IntegrationUtils.getRandomInt(1024, 49151)] }
+        ? { execArgv: [`--inspect-brk=${IntegrationUtils.getRandomInt(1024, 49151)}`] }
         : {};
 
-    const forked = child_process.fork(path.join(__dirname, childName + ".js"), [], processConfig);
+    const forked = child_process.fork(path.join(__dirname, `${childName}.js`), [], processConfig);
     forked.on("message", msg => {
         // Handle messages from child process
-        console.log("received message: " + JSON.stringify(msg));
+        console.log(`received message: ${JSON.stringify(msg)}`);
         if (msg.type === "ready") {
             childReady[newChildId].resolve(newChildId);
         } else if (msg.type === "started") {
@@ -201,7 +201,7 @@ IntegrationUtils.waitALittle = function waitALittle(time) {
         () => {
             return Date.now() - start > time;
         },
-        time + " ms to elapse",
+        `${time} ms to elapse`,
         time
     );
 };

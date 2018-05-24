@@ -81,7 +81,7 @@ ChildProcessUtils.overrideRequirePaths = function() {
         // mock localStorage
         if (md.endsWith("LocalStorageNode")) {
             const appDir = path.dirname(require.main.filename);
-            return req.call(this, appDir + "/LocalStorageMock.js");
+            return req.call(this, `${appDir}/LocalStorageMock.js`);
         }
 
         return req.apply(this, arguments);

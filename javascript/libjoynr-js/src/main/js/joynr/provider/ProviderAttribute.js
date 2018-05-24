@@ -170,7 +170,7 @@ const asRead = (function() {
                 throw error;
             }
             throw new ProviderRuntimeException({
-                detailMessage: "getter method for attribute " + context.attributeName + " reported an error"
+                detailMessage: `getter method for attribute ${  context.attributeName  } reported an error`
             });
         };
     }
@@ -192,7 +192,7 @@ const asRead = (function() {
     function get() {
         try{
             if (!this.privateGetterFunc) {
-                return Promise.reject(new Error("no getter function registered for provider attribute: " + this.attributeName));
+                return Promise.reject(new Error(`no getter function registered for provider attribute: ${  this.attributeName}`));
             }
             return Promise.resolve(this.privateGetterFunc()).then(toArray).catch(this._createError);
 

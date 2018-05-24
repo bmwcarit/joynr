@@ -1,4 +1,4 @@
-/*eslint no-use-before-define: "off"*/
+/*eslint no-use-before-define: "off", no-useless-concat: "off"*/
 /*
  * #%L
  * %%
@@ -73,7 +73,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
 
     const multicastSubscriptions = {};
 
-    const subscriptionPersistenceKey = PublicationManager.SUBSCRIPTIONS_STORAGE_PREFIX + "_" + joynrInstanceId;
+    const subscriptionPersistenceKey = `${PublicationManager.SUBSCRIPTIONS_STORAGE_PREFIX}_${joynrInstanceId}`;
 
     let started = true;
 
@@ -153,12 +153,9 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
      */
     function sendPublication(subscriptionInfo, value, exception) {
         log.debug(
-            "send Publication for subscriptionId " +
-                subscriptionInfo.subscriptionId +
-                " and attribute/event " +
-                subscriptionInfo.subscribedToName +
-                ": " +
-                value
+            `send Publication for subscriptionId ${subscriptionInfo.subscriptionId} and attribute/event ${
+                subscriptionInfo.subscribedToName
+            }: ${value}`
         );
         subscriptionInfo.lastPublication = Date.now();
         let subscriptionPublication;
@@ -240,11 +237,11 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
             sendPublication(subscriptionInfo, value);
         } else {
             log.info(
-                "Two subsequent broadcasts of event " +
-                    subscriptionInfo.subscribedToName +
-                    " occured within minIntervalMs of subscription with id " +
-                    subscriptionInfo.subscriptionId +
-                    ". Event will not be sent to the subscribing client."
+                `Two subsequent broadcasts of event ${
+                    subscriptionInfo.subscribedToName
+                } occured within minIntervalMs of subscription with id ${
+                    subscriptionInfo.subscriptionId
+                }. Event will not be sent to the subscribing client.`
             );
         }
     }
@@ -295,7 +292,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
      * @private
      */
     function getProviderIdAttributeKey(providerId, attributeName) {
-        return providerId + "." + attributeName;
+        return `${providerId}.${attributeName}`;
     }
 
     /**
@@ -303,7 +300,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
      * @private
      */
     function getProviderIdEventKey(providerId, eventName) {
-        return providerId + "." + eventName;
+        return `${providerId}.${eventName}`;
     }
 
     /**
@@ -379,22 +376,15 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
     function publishAttributeValue(providerId, attributeName, attribute, value) {
         if (!isReady()) {
             throw new Error(
-                'attribute publication for providerId "' +
-                    providerId +
-                    " and attribute " +
-                    attributeName +
-                    " is not forwarded to subscribers, as the publication manager is " +
-                    "already shut down"
+                `attribute publication for providerId "${providerId} and attribute ${
+                    attributeName
+                } is not forwarded to subscribers, as the publication manager is already shut down`
             );
         }
         const subscriptions = getSubscriptionsForProviderAttribute(providerId, attributeName);
         if (!subscriptions) {
             log.error(
-                "ProviderAttribute " +
-                    attributeName +
-                    " for providerId " +
-                    providerId +
-                    " is not registered or notifiable"
+                `ProviderAttribute ${attributeName} for providerId ${providerId} is not registered or notifiable`
             );
             // TODO: proper error handling for empty subscription map =>
             // ProviderAttribute is not notifiable or not registered
@@ -484,12 +474,9 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         const value = data.broadcastOutputParameters;
         if (!isReady()) {
             throw new Error(
-                'event publication for providerId "' +
-                    providerId +
-                    " and eventName " +
-                    eventName +
-                    " is not forwarded to subscribers, as the publication manager is " +
-                    "already shut down"
+                `event publication for providerId "${providerId} and eventName ${
+                    eventName
+                } is not forwarded to subscribers, as the publication manager is ` + `already shut down`
             );
         }
         if (!event.selective) {
@@ -502,7 +489,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         const subscriptions = getSubscriptionsForProviderEvent(providerId, eventName);
         const filters = data.filters;
         if (!subscriptions) {
-            log.error("ProviderEvent " + eventName + " for providerId " + providerId + " is not registered");
+            log.error(`ProviderEvent ${eventName} for providerId ${providerId} is not registered`);
             // TODO: proper error handling for empty subscription map =>
             // ProviderEvent is not registered
             return;
@@ -609,7 +596,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         let subscriptionObject;
         if (subscriptionInfo === undefined) {
             if (silent !== true) {
-                log.warn("no subscription info found for subscriptionId " + subscriptionId);
+                log.warn(`no subscription info found for subscriptionId ${subscriptionId}`);
             }
             // TODO: proper handling for a non-existent subscription
 
@@ -643,7 +630,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         // make sure the provider exists for the given participantId
         const provider = participantIdToProvider[providerParticipantId];
         if (provider === undefined) {
-            log.error("no provider found for " + providerParticipantId);
+            log.error(`no provider found for ${providerParticipantId}`);
             // TODO: proper error handling for a non-existent provider
             return;
         }
@@ -658,11 +645,9 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
             const attributeSubscriptions = getSubscriptionsForProviderAttribute(providerParticipantId, attributeName);
             if (attributeSubscriptions === undefined) {
                 log.error(
-                    "ProviderAttribute " +
-                        attributeName +
-                        " for providerId " +
-                        providerParticipantId +
-                        " is not registered or notifiable"
+                    `ProviderAttribute ${attributeName} for providerId ${
+                        providerParticipantId
+                    } is not registered or notifiable`
                 );
                 // TODO: proper error handling for empty subscription map =>
                 // ProviderAttribute is not notifiable or not registered
@@ -682,11 +667,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
             const eventSubscriptions = getSubscriptionsForProviderEvent(providerParticipantId, eventName);
             if (eventSubscriptions === undefined) {
                 log.error(
-                    "ProviderEvent " +
-                        eventName +
-                        " for providerId " +
-                        providerParticipantId +
-                        " is not registered or notifiable"
+                    `ProviderEvent ${eventName} for providerId ${providerParticipantId} is not registered or notifiable`
                 );
                 // TODO: proper error handling for empty subscription map =>
                 return;
@@ -700,7 +681,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
 
         // make sure subscription exists
         if (subscription === undefined) {
-            log.error("no subscription found for subscriptionId " + subscriptionId);
+            log.error(`no subscription found for subscriptionId ${subscriptionId}`);
             // TODO: proper error handling when subscription does not exist
             return;
         }
@@ -897,16 +878,11 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
             // if endDate lies in the past => don't add the subscription
             if (timeToEndDate <= 0) {
                 exception = new SubscriptionException({
-                    detailMessage:
-                        "error handling subscription request: " +
-                        JSONSerializer.stringify(subscriptionRequest) +
-                        ". expiryDateMs " +
-                        subscriptionRequest.qos.expiryDateMs +
-                        " for ProviderAttribute " +
-                        attributeName +
-                        " for providerId " +
-                        providerParticipantId +
-                        " lies in the past",
+                    detailMessage: `error handling subscription request: ${JSONSerializer.stringify(
+                        subscriptionRequest
+                    )}. expiryDateMs ${subscriptionRequest.qos.expiryDateMs} for ProviderAttribute ${
+                        attributeName
+                    } for providerId ${providerParticipantId} lies in the past`,
                     subscriptionId
                 });
                 log.error(exception.detailMessage);
@@ -924,12 +900,9 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
 
         if (!isReady()) {
             exception = new SubscriptionException({
-                detailMessage:
-                    "error handling subscription request: " +
-                    JSONSerializer.stringify(subscriptionRequest) +
-                    " and provider ParticipantId " +
-                    providerParticipantId +
-                    ": joynr runtime already shut down",
+                detailMessage: `error handling subscription request: ${JSONSerializer.stringify(
+                    subscriptionRequest
+                )} and provider ParticipantId ${providerParticipantId}: joynr runtime already shut down`,
                 subscriptionId: subscriptionRequest.subscriptionId
             });
             log.debug(exception.detailMessage);
@@ -959,7 +932,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         // make sure the provider is registered
         if (provider === undefined) {
             log.info(
-                "Provider with participantId " + providerParticipantId + " not found. Queueing subscription request..."
+                `Provider with participantId ${providerParticipantId} not found. Queueing subscription request...`
             );
             queuedSubscriptionInfos[subscriptionId] = subscriptionInfo;
             let pendingSubscriptions = queuedProviderParticipantIdToSubscriptionRequestsMapping[providerParticipantId];
@@ -975,13 +948,9 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         const attribute = provider[attributeName];
         if (attribute === undefined) {
             exception = new SubscriptionException({
-                detailMessage:
-                    "error handling subscription request: " +
-                    JSONSerializer.stringify(subscriptionRequest) +
-                    ". Provider: " +
-                    providerParticipantId +
-                    " misses attribute " +
-                    attributeName,
+                detailMessage: `error handling subscription request: ${JSONSerializer.stringify(
+                    subscriptionRequest
+                )}. Provider: ${providerParticipantId} misses attribute ${attributeName}`,
                 subscriptionId
             });
             log.error(exception.detailMessage);
@@ -1000,14 +969,9 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         // (e.g.: ProviderAttributeNotify[Read][Write])
         if (!providerAttributeIsNotifiable(attribute)) {
             exception = new SubscriptionException({
-                detailMessage:
-                    "error handling subscription request: " +
-                    JSONSerializer.stringify(subscriptionRequest) +
-                    ". Provider: " +
-                    providerParticipantId +
-                    " attribute " +
-                    attributeName +
-                    " is not notifiable",
+                detailMessage: `error handling subscription request: ${JSONSerializer.stringify(
+                    subscriptionRequest
+                )}. Provider: ${providerParticipantId} attribute ${attributeName} is not notifiable`,
                 subscriptionId
             });
             log.error(exception.detailMessage);
@@ -1026,14 +990,11 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         const subscriptions = getSubscriptionsForProviderAttribute(providerParticipantId, attributeName);
         if (subscriptions === undefined) {
             exception = new SubscriptionException({
-                detailMessage:
-                    "error handling subscription request: " +
-                    JSONSerializer.stringify(subscriptionRequest) +
-                    ". ProviderAttribute " +
-                    attributeName +
-                    " for providerId " +
-                    providerParticipantId +
-                    " is not registered or notifiable",
+                detailMessage: `error handling subscription request: ${JSONSerializer.stringify(
+                    subscriptionRequest
+                )}. ProviderAttribute ${attributeName} for providerId ${
+                    providerParticipantId
+                } is not registered or notifiable`,
                 subscriptionId
             });
             log.error(exception.detailMessage);
@@ -1055,13 +1016,11 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         if (!isNaN(periodMs)) {
             if (periodMs < PeriodicSubscriptionQos.MIN_PERIOD_MS) {
                 exception = new SubscriptionException({
-                    detailMessage:
-                        "error handling subscription request: " +
-                        JSONSerializer.stringify(subscriptionRequest) +
-                        ". periodMs " +
-                        periodMs +
-                        " is smaller than PeriodicSubscriptionQos.MIN_PERIOD_MS " +
-                        PeriodicSubscriptionQos.MIN_PERIOD_MS,
+                    detailMessage: `error handling subscription request: ${JSONSerializer.stringify(
+                        subscriptionRequest
+                    )}. periodMs ${periodMs} is smaller than PeriodicSubscriptionQos.MIN_PERIOD_MS ${
+                        PeriodicSubscriptionQos.MIN_PERIOD_MS
+                    }`,
                     subscriptionId
                 });
                 log.error(exception.detailMessage);
@@ -1104,7 +1063,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         callbackDispatcherSettings,
         multicast
     ) {
-        const requestType = (multicast ? "multicast" : "broadcast") + " subscription request";
+        const requestType = `${multicast ? "multicast" : "broadcast"} subscription request`;
         let exception;
         let timeToEndDate = 0;
         const eventName = subscriptionRequest.subscribedToName;
@@ -1122,18 +1081,11 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
             // if endDate lies in the past => don't add the subscription
             if (timeToEndDate <= 0) {
                 exception = new SubscriptionException({
-                    detailMessage:
-                        "error handling " +
-                        requestType +
-                        ": " +
-                        JSONSerializer.stringify(subscriptionRequest) +
-                        ". expiryDateMs " +
-                        subscriptionRequest.qos.expiryDateMs +
-                        " for ProviderEvent " +
-                        eventName +
-                        " for providerId " +
-                        providerParticipantId +
-                        " lies in the past",
+                    detailMessage: `error handling ${requestType}: ${JSONSerializer.stringify(
+                        subscriptionRequest
+                    )}. expiryDateMs ${subscriptionRequest.qos.expiryDateMs} for ProviderEvent ${
+                        eventName
+                    } for providerId ${providerParticipantId} lies in the past`,
                     subscriptionId
                 });
                 log.error(exception.detailMessage);
@@ -1151,14 +1103,9 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
 
         if (!isReady()) {
             exception = new SubscriptionException({
-                detailMessage:
-                    "error handling " +
-                    requestType +
-                    ": " +
-                    JSONSerializer.stringify(subscriptionRequest) +
-                    " and provider ParticipantId " +
-                    providerParticipantId +
-                    ": joynr runtime already shut down",
+                detailMessage: `error handling ${requestType}: ${JSONSerializer.stringify(
+                    subscriptionRequest
+                )} and provider ParticipantId ${providerParticipantId}: joynr runtime already shut down`,
                 subscriptionId: subscriptionRequest.subscriptionId
             });
             log.debug(exception.detailMessage);
@@ -1190,9 +1137,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
 
         // make sure the provider is registered
         if (provider === undefined) {
-            log.warn(
-                "Provider with participantId " + providerParticipantId + " not found. Queueing " + requestType + "..."
-            );
+            log.warn(`Provider with participantId ${providerParticipantId} not found. Queueing ${requestType}...`);
             queuedSubscriptionInfos[subscriptionId] = subscriptionInfo;
             let pendingSubscriptions = queuedProviderParticipantIdToSubscriptionRequestsMapping[providerParticipantId];
             if (pendingSubscriptions === undefined) {
@@ -1207,15 +1152,9 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         const event = provider[eventName];
         if (event === undefined) {
             exception = new SubscriptionException({
-                detailMessage:
-                    "error handling " +
-                    requestType +
-                    ": " +
-                    JSONSerializer.stringify(subscriptionRequest) +
-                    ". Provider: " +
-                    providerParticipantId +
-                    " misses event " +
-                    eventName,
+                detailMessage: `error handling ${requestType}: ${JSONSerializer.stringify(
+                    subscriptionRequest
+                )}. Provider: ${providerParticipantId} misses event ${eventName}`,
                 subscriptionId
             });
             log.error(exception.detailMessage);
@@ -1234,16 +1173,9 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         const subscriptions = getSubscriptionsForProviderEvent(providerParticipantId, eventName);
         if (subscriptions === undefined) {
             exception = new SubscriptionException({
-                detailMessage:
-                    "error handling " +
-                    requestType +
-                    ": " +
-                    JSONSerializer.stringify(subscriptionRequest) +
-                    ". ProviderEvent " +
-                    eventName +
-                    " for providerId " +
-                    providerParticipantId +
-                    " is not registered",
+                detailMessage: `error handling ${requestType}: ${JSONSerializer.stringify(
+                    subscriptionRequest
+                )}. ProviderEvent ${eventName} for providerId ${providerParticipantId} is not registered`,
                 subscriptionId
             });
             log.error(exception.detailMessage);
@@ -1262,14 +1194,11 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
             const multicastId = subscriptionInfo.multicastId;
             if (event.selective) {
                 exception = new SubscriptionException({
-                    detailMessage:
-                        "error handling multicast subscription request: " +
-                        JSONSerializer.stringify(subscriptionRequest) +
-                        ". Provider: " +
-                        providerParticipantId +
-                        " event " +
-                        eventName +
-                        " is marked as selective, which is not allowed for multicasts",
+                    detailMessage: `error handling multicast subscription request: ${JSONSerializer.stringify(
+                        subscriptionRequest
+                    )}. Provider: ${providerParticipantId} event ${
+                        eventName
+                    } is marked as selective, which is not allowed for multicasts`,
                     subscriptionId
                 });
                 log.error(exception.detailMessage);
@@ -1288,13 +1217,9 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
             const checkResult = event.checkFilterParameters(subscriptionRequest.filterParameters);
             if (checkResult.caughtErrors.length !== 0) {
                 exception = new SubscriptionException({
-                    detailMessage:
-                        "The incoming subscription request does not contain the expected filter parameters to subscribe to broadcast " +
-                        eventName +
-                        " for providerId " +
-                        providerParticipantId +
-                        ": " +
-                        JSON.stringify(checkResult.caughtErrors),
+                    detailMessage: `The incoming subscription request does not contain the expected filter parameters to subscribe to broadcast ${
+                        eventName
+                    } for providerId ${providerParticipantId}: ${JSON.stringify(checkResult.caughtErrors)}`,
                     subscriptionId
                 });
                 log.error(exception.detailMessage);

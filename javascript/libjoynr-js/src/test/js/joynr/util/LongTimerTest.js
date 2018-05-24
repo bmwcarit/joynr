@@ -80,20 +80,20 @@ describe("libjoynr-js.joynr.LongTimer.Timeout", () => {
 
         const spyArray = [];
         for (i = 1; i <= concurrentTimeouts; ++i) {
-            spyArray.push("timeout" + i);
+            spyArray.push(`timeout${i}`);
         }
         const spy = jasmine.createSpyObj("spy", spyArray);
 
         // register spy[i] at i ms and check that no spy has been called
         for (i = 1; i <= concurrentTimeouts; ++i) {
-            LongTimer.setTimeout(spy["timeout" + i], i);
+            LongTimer.setTimeout(spy[`timeout${i}`], i);
         }
 
         // check that spies have been called correctly
         for (j = 0; j <= concurrentTimeouts; ++j) {
             // check if spys have been called correctly
             for (i = 1; i <= concurrentTimeouts; ++i) {
-                let e = expect(spy["timeout" + i]);
+                let e = expect(spy[`timeout${i}`]);
                 if (i > j) {
                     e = e.not;
                 }
@@ -195,20 +195,20 @@ describe("libjoynr-js.joynr.LongTimer.Interval", () => {
 
         const spyArray = [];
         for (i = 1; i <= concurrentTimeouts; ++i) {
-            spyArray.push("timeout" + i);
+            spyArray.push(`timeout${i}`);
         }
         const spy = jasmine.createSpyObj("spy", spyArray);
 
         // register spy[i] at i ms and check that no spy has been called
         for (i = 1; i <= concurrentTimeouts; ++i) {
-            LongTimer.setTimeout(spy["timeout" + i], i);
+            LongTimer.setTimeout(spy[`timeout${i}`], i);
         }
 
         // check that spies have been called correctly
         for (j = 0; j <= concurrentTimeouts; ++j) {
             // check if spys have been called correctly
             for (i = 1; i <= concurrentTimeouts; ++i) {
-                let e = expect(spy["timeout" + i]);
+                let e = expect(spy[`timeout${i}`]);
                 if (i > j) {
                     e = e.not;
                 }

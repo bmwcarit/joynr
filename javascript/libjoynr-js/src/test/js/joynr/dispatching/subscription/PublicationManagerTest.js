@@ -95,13 +95,13 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", () => 
 
         if (isAttribute) {
             request = new SubscriptionRequest({
-                subscriptionId: "subscriptionId" + uuid(),
+                subscriptionId: `subscriptionId${uuid()}`,
                 subscribedToName: subscribeToName,
                 qos: qosSettings
             });
         } else {
             request = new BroadcastSubscriptionRequest({
-                subscriptionId: "subscriptionId" + uuid(),
+                subscriptionId: `subscriptionId${uuid()}`,
                 subscribedToName: subscribeToName,
                 qos: qosSettings,
                 filterParameters: {}
@@ -125,7 +125,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", () => 
 
     function handleMulticastSubscriptionRequest() {
         const request = new MulticastSubscriptionRequest({
-            subscriptionId: "subscriptionId" + uuid(),
+            subscriptionId: `subscriptionId${uuid()}`,
             multicastId: SubscriptionUtil.createMulticastId(providerId, testNonSelectiveBroadcastName, []),
             subscribedToName: testNonSelectiveBroadcastName,
             qos: new OnChangeSubscriptionQos()
@@ -136,8 +136,8 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", () => 
 
     function prepareTests(done) {
         callbackDispatcher = jasmine.createSpy("callbackDispatcher");
-        proxyId = "proxy" + uuid();
-        providerId = "provider" + uuid();
+        proxyId = `proxy${uuid()}`;
+        providerId = `provider${uuid()}`;
         joynrInstanceId = uuid();
         fakeTime = 123456789;
         testAttributeName = "testAttribute";
@@ -443,7 +443,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", () => 
                         () => {
                             return dispatcherSpy.sendPublication.calls.count() === times;
                         },
-                        "dispatcherSpy.sendPublication " + times + " times",
+                        `dispatcherSpy.sendPublication ${times} times`,
                         asyncGetterCallDelay
                     ).then(() => {
                         expect(testAttribute.get.calls.count()).toEqual(times);
@@ -740,7 +740,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", () => 
             testAttribute.get.calls.reset();
             dispatcherSpy.sendPublication.calls.reset();
 
-            testAttribute.valueChanged(value + "someChange");
+            testAttribute.valueChanged(`${value}someChange`);
 
             increaseFakeTime(asyncGetterCallDelay);
 
@@ -1258,7 +1258,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", () => 
                             () => {
                                 return dispatcherSpy.sendPublication.calls.count() === 1 + i;
                             },
-                            "timeout " + i + " times dispatcherSpy.sendPublication call",
+                            `timeout ${i} times dispatcherSpy.sendPublication call`,
                             asyncGetterCallDelay
                         );
                     })
@@ -1739,7 +1739,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", () => 
 
         it("rejects attribute subscription if expiryDateMs lies in the past", done => {
             const request = new SubscriptionRequest({
-                subscriptionId: "subscriptionId" + uuid(),
+                subscriptionId: `subscriptionId${uuid()}`,
                 subscribedToName: testAttributeName,
                 qos: new OnChangeSubscriptionQos({
                     expiryDateMs: Date.now() - 10000
@@ -1772,7 +1772,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", () => 
 
         it("rejects attribute subscription if attribute does not exist", done => {
             const request = new SubscriptionRequest({
-                subscriptionId: "subscriptionId" + uuid(),
+                subscriptionId: `subscriptionId${uuid()}`,
                 subscribedToName: "nonExistingAttribute",
                 qos: new OnChangeSubscriptionQos()
             });
@@ -1803,7 +1803,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", () => 
 
         it("rejects attribute subscription if attribute is not notifiable", done => {
             const request = new SubscriptionRequest({
-                subscriptionId: "subscriptionId" + uuid(),
+                subscriptionId: `subscriptionId${uuid()}`,
                 subscribedToName: testAttributeNotNotifiableName,
                 qos: new OnChangeSubscriptionQos()
             });
@@ -1842,7 +1842,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", () => 
             qosSettings.periodMs = PeriodicSubscriptionQos.MIN_PERIOD_MS - 1;
 
             const request = new SubscriptionRequest({
-                subscriptionId: "subscriptionId" + uuid(),
+                subscriptionId: `subscriptionId${uuid()}`,
                 subscribedToName: testAttributeName,
                 qos: qosSettings
             });
@@ -1873,7 +1873,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", () => 
 
         it("rejects broadcast subscription if expiryDateMs lies in the past", done => {
             const request = new BroadcastSubscriptionRequest({
-                subscriptionId: "subscriptionId" + uuid(),
+                subscriptionId: `subscriptionId${uuid()}`,
                 subscribedToName: testBroadcastName,
                 qos: new OnChangeSubscriptionQos({
                     expiryDateMs: Date.now() - 10000
@@ -1907,7 +1907,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", () => 
 
         it("rejects broadcast subscription if filter parameters are wrong", done => {
             const request = new BroadcastSubscriptionRequest({
-                subscriptionId: "subscriptionId" + uuid(),
+                subscriptionId: `subscriptionId${uuid()}`,
                 subscribedToName: testBroadcastName,
                 qos: new OnChangeSubscriptionQos(),
                 filterParameters: {
@@ -2008,7 +2008,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", () => 
 
         it("rejects broadcast subscription if broadcast does not exist", done => {
             const request = new BroadcastSubscriptionRequest({
-                subscriptionId: "subscriptionId" + uuid(),
+                subscriptionId: `subscriptionId${uuid()}`,
                 subscribedToName: "nonExistingBroadcast",
                 qos: new OnChangeSubscriptionQos(),
                 filterParameters: {}

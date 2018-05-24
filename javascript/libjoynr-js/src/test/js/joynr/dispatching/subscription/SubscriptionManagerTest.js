@@ -246,7 +246,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", () =>
                 return null;
             })
             .catch(error => {
-                log.error("Error in sendSubscriptionRequest :" + error);
+                log.error(`Error in sendSubscriptionRequest :${error}`);
                 fail();
             });
 
@@ -270,7 +270,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", () =>
 
         dispatcherSpy.sendSubscriptionRequest.calls.reset();
         subscriptionManager.registerSubscription(subscriptionSettings).catch(error => {
-            expect("Error in sendSubscriptionRequest :" + error).toBeTruthy();
+            expect(`Error in sendSubscriptionRequest :${error}`).toBeTruthy();
         });
         increaseFakeTime(1);
 
@@ -285,7 +285,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", () =>
                 expect(dispatcherSpy.sendSubscriptionRequest.calls.argsFor(0)[0].messagingQos.ttl).toEqual(ttl);
                 subscriptionSettings.qos.expiryDateMs = SubscriptionQos.NO_EXPIRY_DATE;
                 subscriptionManager.registerSubscription(subscriptionSettings).catch(error => {
-                    expect("Error in sendSubscriptionRequest :" + error).toBeTruthy();
+                    expect(`Error in sendSubscriptionRequest :${error}`).toBeTruthy();
                 });
                 increaseFakeTime(1);
                 return waitsFor(
@@ -681,7 +681,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", () =>
                 return null;
             })
             .catch(error => {
-                log.error("Error in sendSubscriptionRequest :" + error);
+                log.error(`Error in sendSubscriptionRequest :${error}`);
                 fail();
             });
         increaseFakeTime(1);
@@ -728,7 +728,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", () =>
                 return null;
             })
             .catch(error => {
-                fail("caught error: " + error);
+                fail(`caught error: ${error}`);
             });
     });
 
@@ -852,7 +852,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", () =>
                 onSubscribed: publicationSubscribedSpy
             })
             .then(subscriptionId => {
-                fail("unexpected success: " + subscriptionId);
+                fail(`unexpected success: ${subscriptionId}`);
             })
             .catch(error => {
                 expect(error instanceof SubscriptionException);
@@ -897,7 +897,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", () =>
                 onSubscribed: publicationSubscribedSpy
             })
             .then(subscriptionId => {
-                fail("unexpected success: " + subscriptionId);
+                fail(`unexpected success: ${subscriptionId}`);
             })
             .catch(error => {
                 expect(error instanceof SubscriptionException);

@@ -37,7 +37,7 @@ const WebSocketMessagingSkeleton = function WebSocketMessagingSkeleton(settings)
     let listener;
 
     settings.sharedWebSocket.onmessage = function(joynrMessage) {
-        log.debug("<<< INCOMING <<< message with ID " + joynrMessage.msgId);
+        log.debug(`<<< INCOMING <<< message with ID ${joynrMessage.msgId}`);
         if (listener !== undefined) {
             if (joynrMessage.type === JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST && settings.mainTransport) {
                 joynrMessage.isReceivedFromGlobal = true;

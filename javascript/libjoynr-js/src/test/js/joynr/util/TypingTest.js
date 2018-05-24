@@ -313,7 +313,7 @@ describe("libjoynr-js.joynr.Typing.augmentType", () => {
             Typing.augmentTypes(rawInput);
         }
         const delta = Date.now() - timeStart;
-        log.info('Time took for augmenting struct type "ComplexStruct"' + times + " times: " + delta + "ms");
+        log.info(`Time took for augmenting struct type "ComplexStruct"${times} times: ${delta}ms`);
     });
 
     it("throws when giving a function or an object with a custom type", done => {
@@ -438,7 +438,7 @@ describe("libjoynr-js.joynr.Typing.augmentType", () => {
 
 function augmentTypeName(obj, expectedType, customMember) {
     const objWithTypeName = Typing.augmentTypeName(obj, "joynr", customMember);
-    expect(objWithTypeName[customMember || "_typeName"]).toEqual("joynr." + expectedType);
+    expect(objWithTypeName[customMember || "_typeName"]).toEqual(`joynr.${expectedType}`);
 }
 
 describe("libjoynr-js.joynr.Typing.augmentTypeName", () => {

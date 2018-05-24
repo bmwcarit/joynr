@@ -39,7 +39,7 @@ const MqttMessagingSkeleton = function MqttMessagingSkeleton(settings) {
         settings.messageRouter.route(message);
     };
 
-    settings.client.subscribe(settings.address.topic + "/#");
+    settings.client.subscribe(`${settings.address.topic}/#`);
 };
 
 MqttMessagingSkeleton.prototype._translateWildcard = function(multicastId) {

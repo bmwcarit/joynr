@@ -86,7 +86,7 @@ function SubscriptionManager(dispatcher) {
      */
     function subscriptionEnds(subscriptionId, delay_ms) {
         if (subscriptionInfos[subscriptionId] === undefined) {
-            log.warn('subscriptionEnds has been called with unresolved subscriptionId "' + subscriptionId + '"');
+            log.warn(`subscriptionEnds has been called with unresolved subscriptionId "${subscriptionId}"`);
             return true;
         }
         const expiryDateMs = subscriptionInfos[subscriptionId].qos.expiryDateMs;
@@ -281,32 +281,34 @@ function SubscriptionManager(dispatcher) {
         if (settings.attributeName === undefined) {
             return Promise.reject(
                 new Error(
-                    "Error: attributeName not provided in call to registerSubscription, settings = " +
-                        JSON.stringify(settings)
+                    `Error: attributeName not provided in call to registerSubscription, settings = ${JSON.stringify(
+                        settings
+                    )}`
                 )
             );
         }
         if (settings.attributeType === undefined) {
             return Promise.reject(
                 new Error(
-                    "Error: attributeType not provided in call to registerSubscription, settings = " +
-                        JSON.stringify(settings)
+                    `Error: attributeType not provided in call to registerSubscription, settings = ${JSON.stringify(
+                        settings
+                    )}`
                 )
             );
         }
 
         if (settings.onError === undefined) {
             log.warn(
-                'Warning: subscription for attribute "' +
-                    settings.attributeName +
-                    '" has been done without error callback function. You will not be informed about missed publications. Please specify the "onError" parameter while subscribing!'
+                `Warning: subscription for attribute "${
+                    settings.attributeName
+                }" has been done without error callback function. You will not be informed about missed publications. Please specify the "onError" parameter while subscribing!`
             );
         }
         if (settings.onReceive === undefined) {
             log.warn(
-                'Warning: subscription for attribute "' +
-                    settings.attributeName +
-                    '" has been done without receive callback function. You will not be informed about incoming publications. Please specify the "onReceive" parameter while subscribing!'
+                `Warning: subscription for attribute "${
+                    settings.attributeName
+                }" has been done without receive callback function. You will not be informed about incoming publications. Please specify the "onReceive" parameter while subscribing!`
             );
         }
         const subscriptionRequest = new SubscriptionRequest({
@@ -464,8 +466,11 @@ function SubscriptionManager(dispatcher) {
 
         if (subscriptionReplyCaller === undefined && subscriptionListener === undefined) {
             log.error(
-                "error handling subscription reply, because subscriptionReplyCaller and subscriptionListener could not be found: " +
-                    JSONSerializer.stringify(subscriptionReply, undefined, 4)
+                `error handling subscription reply, because subscriptionReplyCaller and subscriptionListener could not be found: ${JSONSerializer.stringify(
+                    subscriptionReply,
+                    undefined,
+                    4
+                )}`
             );
             return;
         }
@@ -493,10 +498,11 @@ function SubscriptionManager(dispatcher) {
             }
         } catch (e) {
             log.error(
-                "exception thrown during handling subscription reply " +
-                    JSONSerializer.stringify(subscriptionReply, undefined, 4) +
-                    ":\n" +
-                    e.stack
+                `exception thrown during handling subscription reply ${JSONSerializer.stringify(
+                    subscriptionReply,
+                    undefined,
+                    4
+                )}:\n${e.stack}`
             );
             delete subscriptionReplyCallers[subscriptionReply.subscriptionId];
         }
@@ -526,9 +532,9 @@ function SubscriptionManager(dispatcher) {
                                     subscriptionListener.onError(publication.error);
                                 } else {
                                     log.debug(
-                                        'subscriptionListener with Id "' +
-                                            subscribers[i] +
-                                            '" has no onError callback. Skipping error publication'
+                                        `subscriptionListener with Id "${
+                                            subscribers[i]
+                                        }" has no onError callback. Skipping error publication`
                                     );
                                 }
                             } else if (publication.response) {
@@ -536,9 +542,9 @@ function SubscriptionManager(dispatcher) {
                                     subscriptionListener.onReceive(publication.response);
                                 } else {
                                     log.debug(
-                                        'subscriptionListener with Id "' +
-                                            subscribers[i] +
-                                            '" has no onReceive callback. Skipping multicast publication'
+                                        `subscriptionListener with Id "${
+                                            subscribers[i]
+                                        }" has no onReceive callback. Skipping multicast publication`
                                     );
                                 }
                             }
@@ -549,10 +555,9 @@ function SubscriptionManager(dispatcher) {
         }
         if (!subscribersFound) {
             throw new Error(
-                "Publication cannot be handled, as no subscription with " +
-                    "multicastId " +
-                    publication.multicastId +
-                    " is known."
+                `${"Publication cannot be handled, as no subscription with multicastId "}${
+                    publication.multicastId
+                } is known.`
             );
         }
     };
@@ -566,10 +571,9 @@ function SubscriptionManager(dispatcher) {
     this.handlePublication = function handlePublication(publication) {
         if (subscriptionInfos[publication.subscriptionId] === undefined) {
             throw new Error(
-                "Publication cannot be handled, as no subscription with " +
-                    "subscriptionId " +
-                    publication.subscriptionId +
-                    " is known."
+                `${"Publication cannot be handled, as no subscription with subscriptionId "}${
+                    publication.subscriptionId
+                } is known.`
             );
         }
         setLastPublicationTime(publication.subscriptionId, Date.now());
@@ -579,9 +583,9 @@ function SubscriptionManager(dispatcher) {
                 subscriptionListener.onError(publication.error);
             } else {
                 log.debug(
-                    'subscriptionListener with Id "' +
-                        publication.subscriptionId +
-                        '" has no onError callback. Skipping error publication'
+                    `subscriptionListener with Id "${
+                        publication.subscriptionId
+                    }" has no onError callback. Skipping error publication`
                 );
             }
         } else if (publication.response) {
@@ -589,9 +593,9 @@ function SubscriptionManager(dispatcher) {
                 subscriptionListener.onReceive(publication.response);
             } else {
                 log.debug(
-                    'subscriptionListener with Id "' +
-                        publication.subscriptionId +
-                        '" has no onReceive callback. Skipping publication'
+                    `subscriptionListener with Id "${
+                        publication.subscriptionId
+                    }" has no onReceive callback. Skipping publication`
                 );
             }
         }
@@ -616,7 +620,7 @@ function SubscriptionManager(dispatcher) {
         const subscriptionInfo = subscriptionInfos[settings.subscriptionId];
         let errorMessage;
         if (subscriptionInfo === undefined) {
-            errorMessage = "Cannot find subscription with id: " + settings.subscriptionId;
+            errorMessage = `Cannot find subscription with id: ${settings.subscriptionId}`;
             log.error(errorMessage);
             return Promise.reject(new Error(errorMessage));
         }

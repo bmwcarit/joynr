@@ -110,7 +110,7 @@ function MessageRouter(settings) {
                 return address;
             }
         } catch (error) {
-            log.error("Failed to get address from persisted routing entries for participant " + participantId);
+            log.error(`Failed to get address from persisted routing entries for participant ${participantId}`);
         }
     };
 
@@ -143,7 +143,7 @@ function MessageRouter(settings) {
      * @returns {String} the storage key
      */
     this.getStorageKey = function getStorageKey(participantId) {
-        return id + "_" + participantId;
+        return `${id}_${participantId}`;
     };
 
     /**
@@ -184,9 +184,9 @@ function MessageRouter(settings) {
     // helper functions for setRoutingProxy
     function getReplyToAddressOnError(error) {
         throw new Error(
-            "Failed to get replyToAddress from parent router: " +
-                error +
-                (error instanceof JoynrException ? " " + error.detailMessage : "")
+            `Failed to get replyToAddress from parent router: ${error}${
+                error instanceof JoynrException ? ` ${error.detailMessage}` : ""
+            }`
         );
     }
 
@@ -228,7 +228,7 @@ function MessageRouter(settings) {
             });
         }
 
-        const errorMsg = "Invalid address type of incomingAddress: " + Typing.getObjectType(incomingAddress);
+        const errorMsg = `Invalid address type of incomingAddress: ${Typing.getObjectType(incomingAddress)}`;
         log.fatal(errorMsg);
         return Promise.reject(new JoynrRuntimeException({ detailMessage: errorMsg }));
     };
@@ -237,10 +237,9 @@ function MessageRouter(settings) {
         if (!isReady()) {
             //in this case, the error is expected, e.g. during shut down
             log.debug(
-                "Adding routingProxy.proxyParticipantId " +
-                    routingProxy.proxyParticipantId +
-                    "failed while the message router is not ready. Error: " +
-                    error.message
+                `Adding routingProxy.proxyParticipantId ${
+                    routingProxy.proxyParticipantId
+                }failed while the message router is not ready. Error: ${error.message}`
             );
             return;
         }
@@ -332,9 +331,9 @@ function MessageRouter(settings) {
                 return parentMessageRouterAddress;
             }
             throw new Error(
-                "nextHop cannot be resolved, as participant with id " +
-                    participantId +
-                    " is not reachable by parent routing table"
+                `nextHop cannot be resolved, as participant with id ${
+                    participantId
+                } is not reachable by parent routing table`
             );
         }
 
@@ -427,9 +426,9 @@ function MessageRouter(settings) {
     function routeInternalTransmitOnError(error) {
         //error while transmitting message
         log.debug(
-            "Error while transmitting message: " +
-                error +
-                (error instanceof JoynrException ? " " + error.detailMessage : "")
+            `Error while transmitting message: ${error}${
+                error instanceof JoynrException ? ` ${error.detailMessage}` : ""
+            }`
         );
         //TODO queue message and retry later
     }
@@ -449,7 +448,7 @@ function MessageRouter(settings) {
                 messageReplyToAddressCalculator.setReplyTo(joynrMessage);
             } catch (error) {
                 messagesWithoutReplyTo.push(joynrMessage);
-                errorMsg = "replyTo address could not be set: " + error + ". Queuing message.";
+                errorMsg = `replyTo address could not be set: ${error}. Queuing message.`;
                 log.warn(errorMsg, DiagnosticTags.forJoynrMessage(joynrMessage));
                 return Promise.resolve();
             }
@@ -457,7 +456,7 @@ function MessageRouter(settings) {
 
         messagingStub = settings.messagingStubFactory.createMessagingStub(address);
         if (messagingStub === undefined) {
-            errorMsg = "No message receiver found for participantId: " + joynrMessage.to + " queuing message.";
+            errorMsg = `No message receiver found for participantId: ${joynrMessage.to} queuing message.`;
             log.info(errorMsg, DiagnosticTags.forJoynrMessage(joynrMessage));
             // TODO queue message and retry later
             return Promise.resolve();
@@ -489,7 +488,7 @@ function MessageRouter(settings) {
                     );
                 }
             } catch (e) {
-                log.error("could not register global Routing Entry: " + e);
+                log.error(`could not register global Routing Entry: ${e}`);
             }
         }
     }
@@ -511,9 +510,9 @@ function MessageRouter(settings) {
                 return routeInternal(parentMessageRouterAddress, joynrMessage);
             }
             throw new Error(
-                "nextHop cannot be resolved, as participant with id " +
-                    participantId +
-                    " is not reachable by parent routing table"
+                `nextHop cannot be resolved, as participant with id ${
+                    participantId
+                } is not reachable by parent routing table`
             );
         }
 
@@ -527,7 +526,7 @@ function MessageRouter(settings) {
                     .catch(resolveNextHopOnError);
             }
             log.warn(
-                "No message receiver found for participantId: " + joynrMessage.to + ". Queuing message.",
+                `No message receiver found for participantId: ${joynrMessage.to}. Queuing message.`,
                 DiagnosticTags.forJoynrMessage(joynrMessage)
             );
             // message is queued until the participant is registered
@@ -550,18 +549,11 @@ function MessageRouter(settings) {
         try {
             const now = Date.now();
             if (now > joynrMessage.expiryDate) {
-                const errorMsg = "Received expired message. Dropping the message. ID: " + joynrMessage.msgId;
-                log.warn(errorMsg + ", expiryDate: " + joynrMessage.expiryDate + ", now: " + now);
+                const errorMsg = `Received expired message. Dropping the message. ID: ${joynrMessage.msgId}`;
+                log.warn(`${errorMsg}, expiryDate: ${joynrMessage.expiryDate}, now: ${now}`);
                 return Promise.resolve();
             }
-            log.debug(
-                "Route message. ID: " +
-                    joynrMessage.msgId +
-                    ", expiryDate: " +
-                    joynrMessage.expiryDate +
-                    ", now: " +
-                    now
-            );
+            log.debug(`Route message. ID: ${joynrMessage.msgId}, expiryDate: ${joynrMessage.expiryDate}, now: ${now}`);
 
             registerGlobalRoutingEntryIfRequired(joynrMessage);
 
@@ -577,7 +569,7 @@ function MessageRouter(settings) {
 
             return resolveNextHopAndRoute(participantId, joynrMessage);
         } catch (e) {
-            log.error("MessageRouter.route failed: " + e.message);
+            log.error(`MessageRouter.route failed: ${e.message}`);
         }
     };
 
@@ -606,10 +598,9 @@ function MessageRouter(settings) {
         let promise;
         if (serializedAddress === undefined || serializedAddress === null || serializedAddress === "{}") {
             log.info(
-                "addNextHop: HOP address " +
-                    serializedAddress +
-                    " will not be persisted for participant id: " +
+                `addNextHop: HOP address ${serializedAddress} will not be persisted for participant id: ${
                     participantId
+                }`
             );
         } else if (address._typeName !== InProcessAddress._typeName && persistency) {
             // only persist if it's not an InProcessAddress

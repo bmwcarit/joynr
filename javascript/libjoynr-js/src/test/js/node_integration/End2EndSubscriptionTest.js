@@ -73,7 +73,7 @@ describe("libjoynr-js.integration.end2end.subscription", () => {
             () => {
                 return spy.onReceive.calls.count() + spy.onError.calls.count() >= expectedPublications;
             },
-            expectedPublications + " publications to occur",
+            `${expectedPublications} publications to occur`,
             timeout
         )
             .then(() => {
@@ -91,12 +91,9 @@ describe("libjoynr-js.integration.end2end.subscription", () => {
             })
             .catch(error => {
                 throw new Error(
-                    "only " +
-                        spy.onReceive.calls.count() +
-                        " successful publications arrived from expected " +
-                        expectedPublications +
-                        ":" +
-                        error
+                    `only ${spy.onReceive.calls.count()} successful publications arrived from expected ${
+                        expectedPublications
+                    }:${error}`
                 );
             });
     }
@@ -139,7 +136,7 @@ describe("libjoynr-js.integration.end2end.subscription", () => {
             })
             .catch(error => {
                 return IntegrationUtils.outputPromiseError(
-                    new Error("End2EndSubscriptionTest.checkUnsubscribe. Error while subscribing: " + error.message)
+                    new Error(`End2EndSubscriptionTest.checkUnsubscribe. Error while subscribing: ${error.message}`)
                 );
             });
 
@@ -166,7 +163,7 @@ describe("libjoynr-js.integration.end2end.subscription", () => {
                     .catch(error => {
                         return IntegrationUtils.outputPromiseError(
                             new Error(
-                                "End2EndSubscriptionTest.checkUnsubscribe. Error while unsubscribing: " + error.message
+                                `End2EndSubscriptionTest.checkUnsubscribe. Error while unsubscribing: ${error.message}`
                             )
                         );
                     });
@@ -990,8 +987,9 @@ describe("libjoynr-js.integration.end2end.subscription", () => {
             .catch(error => {
                 return IntegrationUtils.outputPromiseError(
                     new Error(
-                        "End2EndSubscriptionTest.initially publishes a value on subscription. Subscribe to number of stations: " +
+                        `End2EndSubscriptionTest.initially publishes a value on subscription. Subscribe to number of stations: ${
                             error.message
+                        }`
                     )
                 );
             });
@@ -1021,7 +1019,7 @@ describe("libjoynr-js.integration.end2end.subscription", () => {
     });
 
     const nrPubs = 3;
-    it("publishes correct values with onChange " + nrPubs + " times", done => {
+    it(`publishes correct values with onChange ${nrPubs} times`, done => {
         const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onReceive", "onError"]);
         radioProxy.numberOfStations
             .subscribe({
@@ -1032,7 +1030,7 @@ describe("libjoynr-js.integration.end2end.subscription", () => {
             .then(spy.onFulfilled)
             .catch(error => {
                 return IntegrationUtils.outputPromiseError(
-                    new Error("publishes correct values with onChange. Subscribe to numberOfStations: " + error.message)
+                    new Error(`publishes correct values with onChange. Subscribe to numberOfStations: ${error.message}`)
                 );
             });
 

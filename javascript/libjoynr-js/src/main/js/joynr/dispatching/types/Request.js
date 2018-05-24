@@ -42,7 +42,7 @@ let rrIndex = 0;
  *            settings.params.array
  */
 function Request(settings) {
-    settings.requestReplyId = settings.requestReplyId || rrBase + "_" + rrIndex++;
+    settings.requestReplyId = settings.requestReplyId || `${rrBase}_${rrIndex++}`;
 
     if (!settings.paramDatatypes) {
         settings.paramDatatypes = [];

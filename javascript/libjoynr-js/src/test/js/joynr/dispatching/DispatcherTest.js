@@ -52,8 +52,8 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", () => {
         messageRouter,
         clusterControllerMessagingStub,
         securityManager;
-    const subscriptionId = "mySubscriptionId-" + uuid();
-    const multicastId = "multicastId-" + uuid();
+    const subscriptionId = `mySubscriptionId-${uuid()}`;
+    const multicastId = `multicastId-${uuid()}`;
     const requestReplyId = "requestReplyId";
     let loggerSpy;
 
@@ -221,7 +221,7 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", () => {
         expect(clusterControllerMessagingStub.transmit).toHaveBeenCalled();
         const sentMessage = clusterControllerMessagingStub.transmit.calls.mostRecent().args[0];
         expect(sentMessage.payload).toMatch(
-            '{"subscriptionId":"' + subscriptionId + '","_typeName":"joynr.SubscriptionReply"}'
+            `{"subscriptionId":"${subscriptionId}","_typeName":"joynr.SubscriptionReply"}`
         );
     });
 

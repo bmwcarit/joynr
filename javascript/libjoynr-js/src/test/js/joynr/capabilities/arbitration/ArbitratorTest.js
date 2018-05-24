@@ -623,7 +623,7 @@ describe("libjoynr-js.joynr.capabilities.arbitration.Arbitrator", () => {
                         () => {
                             return capDiscoverySpy.lookup.calls.count() === i;
                         },
-                        "lookup " + i,
+                        `lookup ${i}`,
                         1000
                     ).then(() => {
                         expect(capDiscoverySpy.lookup.calls.count()).toBe(i);
@@ -831,7 +831,7 @@ describe("libjoynr-js.joynr.capabilities.arbitration.Arbitrator", () => {
                 return null;
             })
             .catch(error => {
-                fail("an unexpected ArbitrationException was caught: " + error);
+                fail(`an unexpected ArbitrationException was caught: ${error}`);
                 return null;
             });
         // resolve/reject callbacks are called

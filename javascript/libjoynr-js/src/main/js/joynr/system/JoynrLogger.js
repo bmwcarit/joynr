@@ -38,7 +38,7 @@ function createLog(level) {
     return function(message, object) {
         if (object) {
             try {
-                message += " " + JSON.stringify(object);
+                message += ` ${JSON.stringify(object)}`;
             } catch (e) {}
         }
         this.log(message, level);
@@ -102,7 +102,7 @@ JoynrLogger.setLogLevel = function(level) {
         case JoynrLogger.LogLevel.OFF:
             break;
         default:
-            throw new Error("invalid log level " + level);
+            throw new Error(`invalid log level ${level}`);
     }
     JoynrLogger.prototype.level = level;
 };
@@ -145,7 +145,7 @@ function curryAddString(string) {
 
 function addDate(output, settings) {
     const date = new Date();
-    return output + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds() + "," + date.getMilliseconds();
+    return `${output + date.getHours()}:${date.getMinutes()}:${date.getSeconds()},${date.getMilliseconds()}`;
 }
 
 function addLoggerName(output, settings) {

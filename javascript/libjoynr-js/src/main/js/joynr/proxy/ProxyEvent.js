@@ -133,10 +133,9 @@ ProxyEvent.prototype.subscribe = function subscribe(subscribeParameters) {
             const errorMessage = JSON.stringify(checkResult.caughtErrors);
             return Promise.reject(
                 new Error(
-                    'SubscriptionRequest could not be processed, as the filterParameters "' +
-                        JSON.stringify(subscribeParameters.filterParameters) +
-                        '" are wrong: ' +
-                        errorMessage
+                    `SubscriptionRequest could not be processed, as the filterParameters "${JSON.stringify(
+                        subscribeParameters.filterParameters
+                    )}" are wrong: ${errorMessage}`
                 )
             );
         }

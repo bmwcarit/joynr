@@ -121,7 +121,7 @@ function CapabilityDiscovery(
                 })
             })
             .catch(error => {
-                throw new Error("Failed to create global capabilities directory proxy: " + error);
+                throw new Error(`Failed to create global capabilities directory proxy: ${error}`);
             });
     }
 
@@ -149,8 +149,9 @@ function CapabilityDiscovery(
                                 globalAddress = Typing.augmentTypes(JSON.parse(globalDiscoveryEntry.address));
                             } catch (e) {
                                 log.error(
-                                    "unable to use global discoveryEntry with unknown address type: " +
+                                    `unable to use global discoveryEntry with unknown address type: ${
                                         globalDiscoveryEntry.address
+                                    }`
                                 );
                                 continue;
                             }
@@ -221,7 +222,7 @@ function CapabilityDiscovery(
                 });
             })
             .catch(error => {
-                throw new Error('Error calling operation "add" of GlobalCapabilitiesDirectory because: ' + error);
+                throw new Error(`Error calling operation "add" of GlobalCapabilitiesDirectory because: ${error}`);
             });
     }
 
@@ -363,7 +364,7 @@ function CapabilityDiscovery(
                 }
                 return lookupGlobalCapabilities(domains, interfaceName, TTL_30DAYS_IN_MS, globalCapabilities);
             default:
-                log.error("unknown discoveryScope value: " + discoveryQos.discoveryScope.value);
+                log.error(`unknown discoveryScope value: ${discoveryQos.discoveryScope.value}`);
         }
     };
 
@@ -409,9 +410,7 @@ function CapabilityDiscovery(
                 promise = addGlobal(discoveryEntry);
             }
         } else {
-            promise = Promise.reject(
-                new Error('Encountered unknown ProviderQos scope "' + discoveryEntry.qos.scope + '"')
-            );
+            promise = Promise.reject(new Error(`Encountered unknown ProviderQos scope "${discoveryEntry.qos.scope}"`));
         }
         return promise;
     };
@@ -431,7 +430,7 @@ function CapabilityDiscovery(
                 return globalCapabilitiesDirectoryProxy.touch({ clusterControllerId });
             })
             .catch(error => {
-                throw new Error('Error calling operation "touch" of GlobalCapabilitiesDirectory because: ' + error);
+                throw new Error(`Error calling operation "touch" of GlobalCapabilitiesDirectory because: ${error}`);
             });
     };
 
@@ -454,7 +453,7 @@ function CapabilityDiscovery(
                 });
             })
             .catch(error => {
-                throw new Error('Error calling operation "remove" of GlobalCapabilitiesDirectory because: ' + error);
+                throw new Error(`Error calling operation "remove" of GlobalCapabilitiesDirectory because: ${error}`);
             });
     }
 
@@ -481,9 +480,9 @@ function CapabilityDiscovery(
         });
         if (discoveryEntries === undefined || discoveryEntries.length !== 1) {
             log.warn(
-                "remove(): no capability entry found in local capabilities store for participantId " +
-                    participantId +
-                    ". Trying to remove the capability from global directory"
+                `remove(): no capability entry found in local capabilities store for participantId ${
+                    participantId
+                }. Trying to remove the capability from global directory`
             );
             promise = removeParticipantIdFromGlobalCapabilitiesDirectory(participantId);
         } else if (discoveryEntries[0].qos.scope === ProviderScope.LOCAL || discoveryEntries.length < 1) {
@@ -492,7 +491,7 @@ function CapabilityDiscovery(
             promise = removeParticipantIdFromGlobalCapabilitiesDirectory(participantId);
         } else {
             promise = Promise.reject(
-                new Error('Encountered unknown ProviderQos scope "' + discoveryEntries[0].qos.scope + '"')
+                new Error(`Encountered unknown ProviderQos scope "${discoveryEntries[0].qos.scope}"`)
             );
         }
         return promise;

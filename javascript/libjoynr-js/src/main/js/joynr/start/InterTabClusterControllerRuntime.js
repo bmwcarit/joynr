@@ -227,7 +227,7 @@ function InterTabClusterControllerRuntime(provisioning) {
         let i;
 
         if (joynrState !== JoynrStates.SHUTDOWN) {
-            throw new Error("Cannot start libjoynr because it's currently \"" + joynrState + '"');
+            throw new Error(`Cannot start libjoynr because it's currently "${joynrState}"`);
         }
         joynrState = JoynrStates.STARTING;
 
@@ -255,15 +255,15 @@ function InterTabClusterControllerRuntime(provisioning) {
         }
         if (UtilInternal.checkNullUndefined(provisioning.parentWindow)) {
             log.debug(
-                'provisioning.parentWindow not set. Use default setting "' +
-                    defaultInterTabSettings.parentWindow +
-                    '" instead'
+                `provisioning.parentWindow not set. Use default setting "${
+                    defaultInterTabSettings.parentWindow
+                }" instead`
             );
         }
 
         initialRoutingTable = {};
 
-        channelId = provisioning.channelId || persistency.getItem("joynr.channels.channelId.1") || "chjs_" + uuid();
+        channelId = provisioning.channelId || persistency.getItem("joynr.channels.channelId.1") || `chjs_${uuid()}`;
         persistency.setItem("joynr.channels.channelId.1", channelId);
 
         clusterControllerSettings = defaultClusterControllerSettings({
@@ -281,7 +281,7 @@ function InterTabClusterControllerRuntime(provisioning) {
         for (i = 0; i < untypedCapabilities.length; i++) {
             const capability = new GlobalDiscoveryEntry(untypedCapabilities[i]);
             if (!capability.address) {
-                throw new Error("provisioned capability is missing address: " + JSON.stringify(capability));
+                throw new Error(`provisioned capability is missing address: ${JSON.stringify(capability)}`);
             }
             initialRoutingTable[capability.participantId] = Typing.augmentTypes(JSON.parse(capability.address));
             typedCapabilities.push(capability);
@@ -451,7 +451,7 @@ function InterTabClusterControllerRuntime(provisioning) {
         const period = provisioning.capabilitiesFreshnessUpdateIntervalMs || 3600000; // default: 1 hour
         freshnessIntervalId = LongTimer.setInterval(() => {
             capabilityDiscovery.touch(channelId, period).catch(error => {
-                log.error("error sending freshness update: " + error);
+                log.error(`error sending freshness update: ${error}`);
             });
             return null;
         }, period);
@@ -524,9 +524,8 @@ function InterTabClusterControllerRuntime(provisioning) {
                 }
                 return Promise.reject(
                     new Error(
-                        "RoutingProvider.addNextHop failed, because address " +
-                            "could not be found in the operation arguments " +
-                            JSON.stringify(opArgs)
+                        `${"RoutingProvider.addNextHop failed, because address " +
+                            "could not be found in the operation arguments "}${JSON.stringify(opArgs)}`
                     )
                 );
             },
@@ -564,7 +563,7 @@ function InterTabClusterControllerRuntime(provisioning) {
                 return;
             })
             .catch(error => {
-                log.error("error starting up joynr: " + error);
+                log.error(`error starting up joynr: ${error}`);
                 throw error;
             });
     };
@@ -579,7 +578,7 @@ function InterTabClusterControllerRuntime(provisioning) {
      */
     this.shutdown = function shutdown(settings) {
         if (joynrState !== JoynrStates.STARTED) {
-            throw new Error("Cannot shutdown libjoynr because it's currently \"" + joynrState + '"');
+            throw new Error(`Cannot shutdown libjoynr because it's currently "${joynrState}"`);
         }
         joynrState = JoynrStates.SHUTTINGDOWN;
 

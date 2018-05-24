@@ -95,7 +95,7 @@ const mod = require("module");
 const savedRequire = mod.prototype.require;
 mod.prototype.require = function(md) {
     const index = md.lastIndexOf("/") + 1;
-    const mock = md.substr(index) + "Mock";
+    const mock = `${md.substr(index)}Mock`;
 
     if (mocks[mock]) {
         return mocks[mock];
