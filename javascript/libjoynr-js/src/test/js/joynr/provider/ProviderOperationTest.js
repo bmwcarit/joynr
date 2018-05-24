@@ -113,24 +113,20 @@ describe("libjoynr-js.joynr.provider.ProviderOperation", () => {
         Promise.all(promises).then(done);
     });
 
-    function testCallProvidedOperation(testData) {
+    async function testCallProvidedOperation(testData) {
         const impl = jasmine.createSpy("implementation");
         const operation = new ProviderOperation(provider, impl, operationName, [testData.signature]);
 
         impl.and.returnValue(testData.returnValue);
-        return operation.callOperation(testData.params, testData.paramDatatypes).then(result => {
-            expect(impl).toHaveBeenCalledWith(testData.namedArguments);
-            return result;
-        });
+        await operation.callOperation(testData.params, testData.paramDatatypes);
+        expect(impl).toHaveBeenCalledWith(testData.namedArguments);
     }
 
-    it("calls provided implementation with the correct operation arguments", done => {
-        const promises = [];
+    it("calls provided implementation with the correct operation arguments", async () => {
         let i;
         for (i = 0; i < testDataOperation.length; ++i) {
-            promises.push(testCallProvidedOperation(testDataOperation[i]));
+            await testCallProvidedOperation(testDataOperation[i]);
         }
-        Promise.all(promises).then(done);
     });
 
     it("calls provided implementation with enum as operation argument", done => {
