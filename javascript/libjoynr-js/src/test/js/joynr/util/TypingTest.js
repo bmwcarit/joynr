@@ -369,6 +369,24 @@ describe("libjoynr-js.joynr.Typing.augmentType", () => {
         done();
     });
 
+    it("augmentTypes is able to deal with cached structs containing enum members", done => {
+        const fixture = {
+            _typeName: "joynr.datatypes.exampleTypes.ComplexRadioStation",
+            name: "name",
+            station: "station",
+            source: "AUSTRIA"
+        };
+        const expected = new ComplexRadioStation({
+            name: fixture.name,
+            station: fixture.station,
+            source: Country.AUSTRIA
+        });
+        const cachedFixture = JSON.parse(JSON.stringify(Typing.augmentTypes(fixture)));
+
+        expect(Typing.augmentTypes(cachedFixture)).toEqual(expected);
+        done();
+    });
+
     it("augmentTypes is able to deal with complex structs containing enum array and other structs as members", done => {
         const providerQos = {
             _typeName: "joynr.types.ProviderQos",
