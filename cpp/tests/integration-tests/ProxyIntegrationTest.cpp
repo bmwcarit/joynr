@@ -23,56 +23,29 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "joynr/ConnectorFactory.h"
-#include "joynr/InProcessConnectorFactory.h"
-#include "joynr/JoynrMessagingConnectorFactory.h"
-#include "joynr/PrivateCopyAssign.h"
 #include "joynr/vehicle/GpsProxy.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/Settings.h"
+#include "joynr/JoynrMessagingConnectorFactory.h"
 
-#include "tests/mock/MockInProcessConnectorFactory.h"
 #include "tests/mock/MockJoynrRuntime.h"
-#include "tests/mock/MockMessageSender.h"
 
 using ::testing::Return;
 
 using namespace ::testing;
 using namespace joynr;
 
-class ProxyIntegrationTest : public ::testing::Test {
-public:
-    ProxyIntegrationTest() :
-        mockInProcessConnectorFactory(std::make_shared<MockInProcessConnectorFactory>()),
-        connectorFactory(nullptr)
-    {
-        auto mockMessageSender = std::make_shared<MockMessageSender>();
-        auto joynrMessagingConnectorFactory = std::make_unique<JoynrMessagingConnectorFactory>(std::move(mockMessageSender), nullptr);
-        connectorFactory = new ConnectorFactory(mockInProcessConnectorFactory, std::move(joynrMessagingConnectorFactory));
-    }
-
-    ~ProxyIntegrationTest() override{
-        // manually deleting the connectorFactory (this will also trigger deletion of mockInProcessConnectorFactory)
-        // normally performed in the ProxyFactory
-        delete connectorFactory;
-    }
-
-protected:
-    std::shared_ptr<MockInProcessConnectorFactory> mockInProcessConnectorFactory;
-    ConnectorFactory* connectorFactory;
-
-private:
-    DISALLOW_COPY_AND_ASSIGN(ProxyIntegrationTest);
-};
-
-TEST_F(ProxyIntegrationTest, proxyInitialisation)
+TEST(ProxyIntegrationTest, proxyInitialisation)
 {
     const std::string domain = "cppProxyIntegrationTestDomain";
     MessagingQos messagingQos;
 
-    EXPECT_CALL(*mockInProcessConnectorFactory, canBeCreated(_)).WillRepeatedly(Return(false));
     auto settings = std::make_unique<Settings>();
     auto runtime = std::make_shared<MockJoynrRuntime>(std::move(settings));
-    auto proxy =  std::make_unique<vehicle::GpsProxy>(runtime, connectorFactory, domain, messagingQos);
+    auto joynrMessagingConnectorFactory =
+            std::make_unique<JoynrMessagingConnectorFactory>(nullptr, nullptr);
+    auto proxy = std::make_unique<vehicle::GpsProxy>(
+            runtime, std::move(joynrMessagingConnectorFactory), domain, messagingQos);
+
     ASSERT_TRUE(proxy != nullptr);
 }

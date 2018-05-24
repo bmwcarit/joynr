@@ -19,7 +19,6 @@
 #include "joynr/JoynrRuntimeImpl.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrMessagingConnectorFactory.h"
-#include "joynr/ConnectorFactory.h"
 #include "joynr/MulticastSubscriptionQos.h"
 #include "joynr/tests/testProxy.h"
 #include "joynr/tests/TestWithoutVersionProxy.h"
@@ -27,7 +26,6 @@
 #include "AbstractSyncAsyncTest.cpp"
 #include "joynr/Settings.h"
 
-#include "tests/mock/MockInProcessConnectorFactory.h"
 #include "tests/mock/MockJoynrRuntime.h"
 
 using ::testing::A;
@@ -53,20 +51,18 @@ class ProxyTest : public AbstractSyncAsyncTest {
 public:
 
     ProxyTest() :
-        mockConnectorFactory(),
-        mockInProcessConnectorFactory(std::make_shared<MockInProcessConnectorFactory>())
+        joynrMessagingConnectorFactory()
     {}
     void SetUp() override {
         AbstractSyncAsyncTest::SetUp();
-        auto joynrMessagingConnectorFactory = std::make_unique<JoynrMessagingConnectorFactory>(mockMessageSender, nullptr);
-        mockConnectorFactory = new ConnectorFactory(mockInProcessConnectorFactory, std::move(joynrMessagingConnectorFactory));
+        joynrMessagingConnectorFactory = std::make_unique<JoynrMessagingConnectorFactory>(mockMessageSender, nullptr);
         auto settings = std::make_unique<Settings>();
         runtime = std::make_shared<MockJoynrRuntime>(std::move(settings));
     }
 
     void TearDown() override {
         AbstractSyncAsyncTest::TearDown();
-        delete mockConnectorFactory;
+        joynrMessagingConnectorFactory.reset();
     }
 
     // sets the expectations on the call expected on the MessageSender from the connector
@@ -92,23 +88,20 @@ public:
     }
 
     std::shared_ptr<tests::Itest> createFixture() override {
-        EXPECT_CALL(*mockInProcessConnectorFactory, canBeCreated(_)).WillRepeatedly(Return(false));
         std::shared_ptr<tests::testProxy> proxy = std::make_shared<tests::testProxy>(
                     runtime,
-                    mockConnectorFactory,
+                    std::move(joynrMessagingConnectorFactory),
                     "myDomain",
                     MessagingQos());
-        const bool useInProcessCommunication = false;
         types::DiscoveryEntryWithMetaInfo discoveryEntry;
         discoveryEntry.setParticipantId(providerParticipantId);
         discoveryEntry.setIsLocal(true);
-        proxy->handleArbitrationFinished(discoveryEntry, useInProcessCommunication);
+        proxy->handleArbitrationFinished(discoveryEntry);
         return std::dynamic_pointer_cast<tests::Itest>(proxy);
     }
 
 protected:
-    ConnectorFactory* mockConnectorFactory;
-    std::shared_ptr<MockInProcessConnectorFactory> mockInProcessConnectorFactory;
+    std::unique_ptr<JoynrMessagingConnectorFactory> joynrMessagingConnectorFactory;
     std::shared_ptr<JoynrRuntimeImpl> runtime;
 private:
     DISALLOW_COPY_AND_ASSIGN(ProxyTest);
