@@ -125,6 +125,10 @@ Typing.augmentTypes = function(untyped, typeHint) {
 
     // return already typed objects immediately
     if (Typing.isComplexJoynrObject(untyped)) {
+        const Constructor = untyped.constructor;
+        if (Constructor.checkMembers) {
+            Constructor.checkMembers(untyped, Typing.checkPropertyAllowObject);
+        }
         return untyped;
     }
 

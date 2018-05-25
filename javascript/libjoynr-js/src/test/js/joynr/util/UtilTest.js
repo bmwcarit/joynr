@@ -200,7 +200,8 @@ describe("libjoynr-js.joynr.Util.ensureTypedValues", () => {
         let returnValue = null;
         const untypedValue = {
             name: "radioStationName",
-            _typeName: "joynr.vehicle.radiotypes.RadioStation"
+            _typeName: "joynr.vehicle.radiotypes.RadioStation",
+            byteBuffer: []
         };
 
         returnValue = Util.ensureTypedValues(untypedValue);
@@ -212,11 +213,13 @@ describe("libjoynr-js.joynr.Util.ensureTypedValues", () => {
         const untypedArray = [
             {
                 name: "radioStationName1",
-                _typeName: "joynr.vehicle.radiotypes.RadioStation"
+                _typeName: "joynr.vehicle.radiotypes.RadioStation",
+                byteBuffer: []
             },
             {
                 name: "radioStationName2",
-                _typeName: "joynr.vehicle.radiotypes.RadioStation"
+                _typeName: "joynr.vehicle.radiotypes.RadioStation",
+                byteBuffer: []
             }
         ];
 
