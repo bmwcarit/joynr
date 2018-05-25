@@ -18,6 +18,7 @@
  */
 const Promise = require("../../global/Promise");
 const LongTimer = require("./LongTimer");
+const util = require("util");
 
 /**
  * @name UtilInternal
@@ -254,20 +255,20 @@ UtilInternal.fire = function fire(callbacks, data) {
     }
 };
 
-function timeoutToPromise(time) {
-    const deferred = UtilInternal.createDeferred();
-    LongTimer.setTimeout(deferred.resolve, time);
-    return deferred.promise;
+function timeoutPromiseHelper(promise, timeoutMs, callback) {
+    const timeout = LongTimer.setTimeout(() => {
+        callback(new Error(`Promise timeout after ${timeoutMs} ms`));
+    }, timeoutMs);
+
+    promise
+        .then((...args) => {
+            LongTimer.clearTimeout(timeout);
+            callback(undefined, ...args);
+        })
+        .catch(callback);
 }
 
-UtilInternal.timeoutPromise = function(promise, timeoutMs) {
-    const deferred = UtilInternal.createDeferred();
-    promise.then(deferred.resolve).catch(deferred.reject);
-    /*eslint-disable promise/catch-or-return */
-    timeoutToPromise(timeoutMs).then(deferred.reject);
-    /*eslint-enable promise/catch-or-return */
-    return deferred.promise;
-};
+UtilInternal.timeoutPromise = util.promisify(timeoutPromiseHelper);
 
 function defer(resolve, reject) {
     this.resolve = resolve;

@@ -260,7 +260,6 @@ describe("libjoynr-js.joynr.UtilInternal.timeoutPromise", () => {
             .then(done)
             .catch(fail);
         jasmine.clock().tick(101);
-        jasmine.clock().tick(100);
     });
 
     it("timeouts after before the promise resolves", done => {
@@ -271,7 +270,6 @@ describe("libjoynr-js.joynr.UtilInternal.timeoutPromise", () => {
             .then(fail)
             .catch(done);
         jasmine.clock().tick(101);
-        jasmine.clock().tick(100);
     });
 });
 
