@@ -138,7 +138,8 @@ Typing.augmentTypes = function(untyped, typeHint) {
         }
     } else if (typeHint !== undefined && typeRegistry.isEnumType(typeHint)) {
         //check if provisioned type name is given. In this case, check for special considerations
-        typedObj = typeRegistry.getConstructor(typeHint)[untyped];
+        const Constructor = typeRegistry.getConstructor(typeHint);
+        typedObj = untyped.name ? Constructor[untyped.name] : Constructor[untyped];
     } else if (type === "Boolean" || type === "Number" || type === "String") {
         // leave integral data types untyped
         typedObj = untyped;
