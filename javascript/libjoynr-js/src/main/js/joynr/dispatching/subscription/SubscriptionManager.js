@@ -55,7 +55,7 @@ function SubscriptionManager(dispatcher) {
     const subscriptionListeners = {};
     // stores the object which is returned by setTimeout mapped to the subscriptionId
     let publicationCheckTimerIds = {};
-    let subscriptionReplyCallers = {};
+    const subscriptionReplyCallers = new Map();
     let started = true;
 
     const multicastSubscribers = {};
@@ -226,9 +226,7 @@ function SubscriptionManager(dispatcher) {
         if (subscriptionListeners[subscriptionId] !== undefined) {
             delete subscriptionListeners[subscriptionId];
         }
-        if (subscriptionReplyCallers[subscriptionId] !== undefined) {
-            delete subscriptionReplyCallers[subscriptionId];
-        }
+        subscriptionReplyCallers.delete(subscriptionId);
     }
 
     /**
@@ -323,10 +321,10 @@ function SubscriptionManager(dispatcher) {
 
         const deferred = UtilInternal.createDeferred();
 
-        subscriptionReplyCallers[subscriptionId] = {
+        subscriptionReplyCallers.set(subscriptionId, {
             resolve: deferred.resolve,
             reject: deferred.reject
-        };
+        });
 
         storeSubscriptionRequest(settings, subscriptionRequest);
 
@@ -426,10 +424,10 @@ function SubscriptionManager(dispatcher) {
             ttl: calculateTtl(subscriptionRequest.qos)
         });
 
-        subscriptionReplyCallers[subscriptionRequest.subscriptionId] = {
+        subscriptionReplyCallers.set(subscriptionRequest.subscriptionId, {
             resolve: deferred.resolve,
             reject: deferred.reject
-        };
+        });
 
         storeSubscriptionRequest(parameters, subscriptionRequest);
 
@@ -461,7 +459,7 @@ function SubscriptionManager(dispatcher) {
      *            {SubscriptionReply} incoming subscriptionReply
      */
     this.handleSubscriptionReply = function handleSubscriptionReply(subscriptionReply) {
-        const subscriptionReplyCaller = subscriptionReplyCallers[subscriptionReply.subscriptionId];
+        const subscriptionReplyCaller = subscriptionReplyCallers.get(subscriptionReply.subscriptionId);
         const subscriptionListener = subscriptionListeners[subscriptionReply.subscriptionId];
 
         if (subscriptionReplyCaller === undefined && subscriptionListener === undefined) {
@@ -494,7 +492,7 @@ function SubscriptionManager(dispatcher) {
                 if (subscriptionListener !== undefined && subscriptionListener.onSubscribed !== undefined) {
                     subscriptionListener.onSubscribed(subscriptionReply.subscriptionId);
                 }
-                delete subscriptionReplyCallers[subscriptionReply.subscriptionId];
+                subscriptionReplyCallers.delete(subscriptionReply.subscriptionId);
             }
         } catch (e) {
             log.error(
@@ -504,7 +502,7 @@ function SubscriptionManager(dispatcher) {
                     4
                 )}:\n${e.stack}`
             );
-            delete subscriptionReplyCallers[subscriptionReply.subscriptionId];
+            subscriptionReplyCallers.delete(subscriptionReply.subscriptionId);
         }
     };
 
@@ -665,7 +663,7 @@ function SubscriptionManager(dispatcher) {
         const hasSubscriptionInfos = Object.keys(subscriptionInfos).length > 0;
         const hasSubscriptionListeners = Object.keys(subscriptionListeners).length > 0;
         const hasPublicationCheckTimerIds = Object.keys(publicationCheckTimerIds).length > 0;
-        const hasSubscriptionReplyCallers = Object.keys(subscriptionReplyCallers).length > 0;
+        const hasSubscriptionReplyCallers = subscriptionReplyCallers.size > 0;
         return (
             hasSubscriptionInfos ||
             hasSubscriptionListeners ||
@@ -703,8 +701,7 @@ function SubscriptionManager(dispatcher) {
      * @function
      */
     this.shutdown = function shutdown() {
-        let subscriptionId;
-        for (subscriptionId in publicationCheckTimerIds) {
+        for (const subscriptionId in publicationCheckTimerIds) {
             if (publicationCheckTimerIds.hasOwnProperty(subscriptionId)) {
                 const timerId = publicationCheckTimerIds[subscriptionId];
                 if (timerId !== undefined) {
@@ -713,15 +710,12 @@ function SubscriptionManager(dispatcher) {
             }
         }
         publicationCheckTimerIds = {};
-        for (subscriptionId in subscriptionReplyCallers) {
-            if (subscriptionReplyCallers.hasOwnProperty(subscriptionId)) {
-                const subscriptionReplyCaller = subscriptionReplyCallers[subscriptionId];
-                if (subscriptionReplyCaller) {
-                    subscriptionReplyCaller.reject(new Error("Subscription Manager is already shut down"));
-                }
+        for (const subscriptionReplyCaller of subscriptionReplyCallers.values()) {
+            if (subscriptionReplyCaller) {
+                subscriptionReplyCaller.reject(new Error("Subscription Manager is already shut down"));
             }
         }
-        subscriptionReplyCallers = {};
+        subscriptionReplyCallers.clear();
         started = false;
     };
 }
