@@ -71,6 +71,11 @@ function fixMessageRouter() {
     spyOn(this, "setRoutingProxy").and.returnValue(Promise.resolve());
 }
 
+let SharedWebSocketEnableShutdownModeSpy;
+function createSharedWebSocketSpys() {
+    SharedWebSocketEnableShutdownModeSpy = spyOn(this, "enableShutdownMode");
+}
+
 let terminateSubscriptionsSpy;
 function fixSubScriptionManager() {
     terminateSubscriptionsSpy = spyOn(this, "terminateSubscriptions").and.returnValue(Promise.resolve());
@@ -86,7 +91,7 @@ mocks.ParticipantIdStorageMock = wrapClass(ParticipantIdStorage);
 mocks.PublicationManagerMock = wrapClass(PublicationManager);
 mocks.MessagingQosMock = wrapClass(MessagingQos);
 mocks.WebSocketMessagingSkeletonMock = wrapClass(WebSocketMessagingSkeleton);
-mocks.SharedWebSocketMock = wrapClass(SharedWebSocket);
+mocks.SharedWebSocketMock = wrapClass(SharedWebSocket, createSharedWebSocketSpys);
 mocks.WebSocketMessagingStubFactoryMock = wrapClass(WebSocketMessagingStubFactory);
 
 const mod = require("module");
@@ -319,5 +324,12 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
                 done();
             })
             .catch(fail);
+    });
+
+    it("calls enableShutdownMode of SharedWebsocket before when shut down", async () => {
+        runtime = new WebSocketLibjoynrRuntime();
+        await runtime.start(provisioning);
+        await runtime.shutdown();
+        expect(SharedWebSocketEnableShutdownModeSpy).toHaveBeenCalled();
     });
 });

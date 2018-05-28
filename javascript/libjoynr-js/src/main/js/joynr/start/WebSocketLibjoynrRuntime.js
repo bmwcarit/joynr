@@ -142,7 +142,7 @@ class WebSocketLibjoynrRuntime extends JoynrRuntime {
             id: uuid()
         });
 
-        const sharedWebSocket = new SharedWebSocket({
+        this._sharedWebSocket = new SharedWebSocket({
             remoteAddress: ccAddress,
             localAddress,
             provisioning: provisioning.websocket || {},
@@ -150,7 +150,7 @@ class WebSocketLibjoynrRuntime extends JoynrRuntime {
         });
 
         this._webSocketMessagingSkeleton = new WebSocketMessagingSkeleton({
-            sharedWebSocket,
+            sharedWebSocket: this._sharedWebSocket,
             mainTransport: true
         });
 
@@ -158,7 +158,7 @@ class WebSocketLibjoynrRuntime extends JoynrRuntime {
         messagingStubFactories[InProcessAddress._typeName] = new InProcessMessagingStubFactory();
         messagingStubFactories[WebSocketAddress._typeName] = new WebSocketMessagingStubFactory({
             address: ccAddress,
-            sharedWebSocket
+            sharedWebSocket: this._sharedWebSocket
         });
 
         const messagingStubFactory = new MessagingStubFactory({
@@ -275,6 +275,10 @@ class WebSocketLibjoynrRuntime extends JoynrRuntime {
      *             if libjoynr is not in the STARTED state
      */
     async shutdown(settings) {
+        if (this._sharedWebSocket) {
+            this._sharedWebSocket.enableShutdownMode();
+        }
+
         await super.shutdown(settings);
 
         if (this._webSocketMessagingSkeleton !== null) {

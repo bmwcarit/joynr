@@ -17,6 +17,8 @@
  * limitations under the License.
  * #L%
  */
+const util = require("util");
+
 const WebSocket = require("../../../global/WebSocketNode");
 const Typing = require("../../util/Typing");
 const LongTimer = require("../../util/LongTimer");
@@ -66,6 +68,7 @@ const SharedWebSocket = function SharedWebSocket(settings) {
     const queuedMessages = [];
     let closed = false;
     let reconnectTimer;
+    const sendConfig = { binary: true };
 
     /**
      * @param {WebSocket}
@@ -75,12 +78,21 @@ const SharedWebSocket = function SharedWebSocket(settings) {
      *            libjoynr
      */
     function initializeConnection() {
-        websocket.send(websocket.encodeString(JSON.stringify(localAddress)), {
-            binary: true
-        });
+        websocket.send(websocket.encodeString(JSON.stringify(localAddress)), sendConfig);
     }
 
-    function sendMessage(joynrMessage) {
+    /*
+       util.promisify creates the callback which will be called by ws once the message was sent.
+       When the callback is called with an error it will reject the promise, otherwise resolve it.
+       The arrow function is there to assure that websocket.send is called with websocket as its this context.
+     */
+    const webSocketSendAsync = util.promisify((...args) => websocket.send(...args));
+
+    this._sendInternal = async function(marshaledMessage) {
+        websocket.send(marshaledMessage, sendConfig);
+    };
+
+    this._sendMessage = async function(joynrMessage) {
         let marshaledMessage;
         try {
             marshaledMessage = websocket.marshalJoynrMessage(joynrMessage);
@@ -88,10 +100,9 @@ const SharedWebSocket = function SharedWebSocket(settings) {
             log.error(`could not marshal joynrMessage: ${joynrMessage.msgId} ${e}`);
             return Promise.resolve();
         }
-
         if (websocket.readyState === WebSocket.OPEN) {
             try {
-                websocket.send(marshaledMessage, { binary: true });
+                await this._sendInternal(marshaledMessage, sendConfig);
                 // Error is thrown if the socket is no longer open, so requeue to the front
             } catch (e) {
                 // add the message back to the front of the queue
@@ -102,8 +113,7 @@ const SharedWebSocket = function SharedWebSocket(settings) {
             // push new messages onto the back of the queue
             queuedMessages.push(marshaledMessage);
         }
-        return Promise.resolve();
-    }
+    };
 
     /**
      * @param {WebSocket}
@@ -205,7 +215,21 @@ const SharedWebSocket = function SharedWebSocket(settings) {
      */
     this.send = function send(joynrMessage) {
         log.debug(`>>> OUTGOING >>> message with ID ${joynrMessage.msgId}`);
-        return sendMessage(joynrMessage);
+        return this._sendMessage(joynrMessage);
+    };
+
+    /**
+     * Normally the SharedWebsocket.send api automatically resolves the Promise
+     * when it's called. But this doesn't mean that the data was actually
+     * written out. This method is a helper for a graceful shutdown which delays
+     * the resolving of the SharedWebSocket.send Promise till the data is
+     * written out, to make sure that unsubscribe messages are successfully sent.
+     *
+     * @name SharedWebSocket#enableShutdownMode
+     * @function
+     */
+    this.enableShutdownMode = function() {
+        this._sendInternal = webSocketSendAsync;
     };
 
     /**
