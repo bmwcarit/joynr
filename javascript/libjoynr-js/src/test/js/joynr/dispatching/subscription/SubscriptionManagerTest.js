@@ -210,6 +210,29 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", () =>
             .catch(fail);
     });
 
+    it("rejects broadcast subscription requests with ttl expired when no reply arrives", done => {
+        const ttl = 250;
+        const parameters = {
+            proxyId: "subscriber",
+            providerDiscoveryEntry,
+            broadcastName: "broadcastName",
+            subscriptionQos: new OnChangeSubscriptionQos({
+                expiryDateMs: Date.now() + ttl
+            })
+        };
+
+        dispatcherSpy.sendBroadcastSubscriptionRequest.and.returnValue(Promise.resolve());
+
+        subscriptionManager
+            .registerBroadcastSubscription(parameters)
+            .then(fail)
+            .catch(e => {
+                expect(e).toBeDefined();
+                done();
+            });
+        increaseFakeTime(ttl + 1);
+    });
+
     it("alerts on missed publication and stops", done => {
         const publicationReceivedSpy = jasmine.createSpy("publicationReceivedSpy");
         const publicationMissedSpy = jasmine.createSpy("publicationMissedSpy");
@@ -794,6 +817,30 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", () =>
             .catch(fail);
 
         increaseFakeTime(1);
+    });
+
+    it("rejects subscription requests with ttl expired when no reply arrives", done => {
+        const ttl = 250;
+        const parameters = {
+            proxyId: "subscriber",
+            providerDiscoveryEntry,
+            attributeName: "testAttribute",
+            attributeType: "String",
+            qos: new OnChangeSubscriptionQos({
+                expiryDateMs: Date.now() + ttl
+            })
+        };
+
+        dispatcherSpy.sendSubscriptionRequest.and.returnValue(Promise.resolve());
+
+        subscriptionManager
+            .registerSubscription(parameters)
+            .then(fail)
+            .catch(e => {
+                expect(e).toBeDefined();
+                done();
+            });
+        increaseFakeTime(ttl + 1);
     });
 
     it("registers broadcast subscription, resolves with subscriptionId and calls onSubscribed callback", done => {
