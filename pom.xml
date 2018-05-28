@@ -193,7 +193,8 @@
 			<!--
 				NOTE: if you change activation or the profile ID here, your also must
 				change it in the following child modules that extend this profile:
-				* io.joynr.java.messaging.bounceproxy:bounceproxy-ui
+				* io.joynr.java.messaging:messaging-common
+				* io.joynr.java.messaging:channel-service
 			-->
 			<id>carit-copyright</id>
 			<build>
