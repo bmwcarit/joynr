@@ -277,11 +277,20 @@ function SubscriptionManager(dispatcher) {
             qos: settings.qos
         });
 
-        const messagingQos = new MessagingQos({
-            ttl: calculateTtl(subscriptionRequest.qos)
-        });
+        const ttl = calculateTtl(subscriptionRequest.qos);
+        const messagingQos = new MessagingQos({ ttl });
 
-        subscriptionReplyCallers.set(subscriptionId, { cb });
+        const timeout = LongTimer.setTimeout(() => {
+            cleanupSubscription(subscriptionId);
+            cb(new Error(`SubscriptionRequest with id ${subscriptionId} failed: tll expired`));
+        }, ttl);
+
+        subscriptionReplyCallers.set(subscriptionId, {
+            cb: (...args) => {
+                LongTimer.clearTimeout(timeout);
+                cb(...args);
+            }
+        });
 
         storeSubscriptionRequest(settings, subscriptionRequest);
 
@@ -381,12 +390,22 @@ function SubscriptionManager(dispatcher) {
         }
 
         const subscriptionRequest = createBroadcastSubscriptionRequest(parameters);
+        const subscriptionId = subscriptionRequest.subscriptionId;
 
-        const messagingQos = new MessagingQos({
-            ttl: calculateTtl(subscriptionRequest.qos)
+        const ttl = calculateTtl(subscriptionRequest.qos);
+        const messagingQos = new MessagingQos({ ttl });
+
+        const timeout = LongTimer.setTimeout(() => {
+            cleanupSubscription(subscriptionId);
+            cb(new Error(`BroadcastSubscriptionRequest with id ${subscriptionId} failed: tll expired`));
+        }, ttl);
+
+        subscriptionReplyCallers.set(subscriptionId, {
+            cb: (...args) => {
+                LongTimer.clearTimeout(timeout);
+                cb(...args);
+            }
         });
-
-        subscriptionReplyCallers.set(subscriptionRequest.subscriptionId, { cb });
 
         storeSubscriptionRequest(parameters, subscriptionRequest);
 
@@ -705,7 +724,7 @@ function SubscriptionManager(dispatcher) {
         publicationCheckTimerIds = {};
         for (const subscriptionReplyCaller of subscriptionReplyCallers.values()) {
             if (subscriptionReplyCaller) {
-                subscriptionReplyCaller.reject(new Error("Subscription Manager is already shut down"));
+                subscriptionReplyCaller.cb(new Error("Subscription Manager is already shut down"));
             }
         }
         subscriptionReplyCallers.clear();
