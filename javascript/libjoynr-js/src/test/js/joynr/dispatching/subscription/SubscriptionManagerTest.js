@@ -943,7 +943,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", () =>
             });
     });
 
-    it(" it unsubscribes all Subscriptions when terminateSubscriptions is being called", function(done) {
+    it(" it unsubscribes all Subscriptions when terminateSubscriptions is being called", async () => {
         const subscriptionSettings = createDummySubscriptionRequest();
         const broadcastSettings = createDummyBroadcastSubscriptionRequest({
             broadcastName: "broadcastName",
@@ -951,23 +951,19 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", () =>
         });
         const clearSubscriptionsTimeoutMs = 1000;
 
-        subscriptionManager
-            .registerSubscription(subscriptionSettings)
-            .then(subscriptionManager.registerBroadcastSubscription.bind(this, broadcastSettings))
-            .then(subscriptionManager.terminateSubscriptions.bind(subscriptionManager, clearSubscriptionsTimeoutMs))
-            .then(subscriptionManager.shutdown)
-            .then(() => {
-                expect(dispatcherSpy.sendSubscriptionStop).toHaveBeenCalled();
-                expect(dispatcherSpy.sendSubscriptionStop.calls.count()).toEqual(1);
-                expect(dispatcherSpy.sendSubscriptionStop.calls.argsFor(0)[0].messagingQos).toEqual(
-                    new MessagingQos({ ttl: clearSubscriptionsTimeoutMs })
-                );
-                expect(dispatcherSpy.sendMulticastSubscriptionStop.calls.argsFor(0)[0].messagingQos).toEqual(
-                    new MessagingQos({ ttl: clearSubscriptionsTimeoutMs })
-                );
-                expect(dispatcherSpy.sendMulticastSubscriptionStop.calls.count()).toEqual(1);
-                done();
-            })
-            .catch(fail);
+        await subscriptionManager.registerSubscription(subscriptionSettings);
+        await subscriptionManager.registerBroadcastSubscription(broadcastSettings);
+        await subscriptionManager.terminateSubscriptions(clearSubscriptionsTimeoutMs);
+        subscriptionManager.shutdown();
+
+        expect(dispatcherSpy.sendSubscriptionStop).toHaveBeenCalled();
+        expect(dispatcherSpy.sendSubscriptionStop.calls.count()).toEqual(1);
+        expect(dispatcherSpy.sendSubscriptionStop.calls.argsFor(0)[0].messagingQos).toEqual(
+            new MessagingQos({ ttl: clearSubscriptionsTimeoutMs })
+        );
+        expect(dispatcherSpy.sendMulticastSubscriptionStop.calls.argsFor(0)[0].messagingQos).toEqual(
+            new MessagingQos({ ttl: clearSubscriptionsTimeoutMs })
+        );
+        expect(dispatcherSpy.sendMulticastSubscriptionStop.calls.count()).toEqual(1);
     });
 });
