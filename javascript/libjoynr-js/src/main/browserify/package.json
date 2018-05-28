@@ -6,6 +6,10 @@
   "homepage": "http://joynr.io",
   "bugs": "https://github.com/bmwcarit/joynr/issues",
   "main": "joynr.bundle.js",
+  "browser": {
+    "./global/LocalStorageNode.js": "./global/LocalStorage.js",
+    "./global/WebSocketNode.js": "./global/WebSocket.js"
+  },
   "devDependencies": {
     "browserify": "16.1.0",
     "uglifyify": "5.0.0"
