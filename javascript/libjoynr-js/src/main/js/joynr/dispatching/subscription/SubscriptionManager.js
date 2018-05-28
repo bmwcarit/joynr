@@ -34,6 +34,7 @@ const UtilInternal = require("../../util/UtilInternal");
 const Typing = require("../../util/Typing");
 const PublicationMissedException = require("../../exceptions/PublicationMissedException");
 const JSONSerializer = require("../../util/JSONSerializer");
+const util = require("util");
 /**
  * @name SubscriptionManager
  * @constructor
@@ -229,6 +230,69 @@ function SubscriptionManager(dispatcher) {
         subscriptionReplyCallers.delete(subscriptionId);
     }
 
+    function registerSubscriptionInternal(settings, cb) {
+        if (!isReady()) {
+            cb(new Error("SubscriptionManager is already shut down"));
+            return;
+        }
+        const subscriptionId = settings.subscriptionId || uuid();
+        // log.debug("Registering Subscription Id " + subscriptionId);
+
+        if (settings.attributeName === undefined) {
+            cb(
+                new Error(
+                    `Error: attributeName not provided in call to registerSubscription, settings = ${JSON.stringify(
+                        settings
+                    )}`
+                )
+            );
+        }
+        if (settings.attributeType === undefined) {
+            cb(
+                new Error(
+                    `Error: attributeType not provided in call to registerSubscription, settings = ${JSON.stringify(
+                        settings
+                    )}`
+                )
+            );
+        }
+
+        if (settings.onError === undefined) {
+            log.warn(
+                `Warning: subscription for attribute "${
+                    settings.attributeName
+                }" has been done without error callback function. You will not be informed about missed publications. Please specify the "onError" parameter while subscribing!`
+            );
+        }
+        if (settings.onReceive === undefined) {
+            log.warn(
+                `Warning: subscription for attribute "${
+                    settings.attributeName
+                }" has been done without receive callback function. You will not be informed about incoming publications. Please specify the "onReceive" parameter while subscribing!`
+            );
+        }
+        const subscriptionRequest = new SubscriptionRequest({
+            subscriptionId,
+            subscribedToName: settings.attributeName,
+            qos: settings.qos
+        });
+
+        const messagingQos = new MessagingQos({
+            ttl: calculateTtl(subscriptionRequest.qos)
+        });
+
+        subscriptionReplyCallers.set(subscriptionId, { cb });
+
+        storeSubscriptionRequest(settings, subscriptionRequest);
+
+        dispatcher.sendSubscriptionRequest({
+            from: settings.proxyId,
+            toDiscoveryEntry: settings.providerDiscoveryEntry,
+            messagingQos,
+            subscriptionRequest
+        });
+    }
+
     /**
      * This callback is called when a publication is received
      * @callback SubscriptionManager~onReceive
@@ -269,74 +333,7 @@ function SubscriptionManager(dispatcher) {
      * @returns an A promise object which provides the subscription token upon success and
      *          an error upon failure
      */
-    this.registerSubscription = function registerSubscription(settings) {
-        if (!isReady()) {
-            return Promise.reject(new Error("SubscriptionManager is already shut down"));
-        }
-        const subscriptionId = settings.subscriptionId || uuid();
-        // log.debug("Registering Subscription Id " + subscriptionId);
-
-        if (settings.attributeName === undefined) {
-            return Promise.reject(
-                new Error(
-                    `Error: attributeName not provided in call to registerSubscription, settings = ${JSON.stringify(
-                        settings
-                    )}`
-                )
-            );
-        }
-        if (settings.attributeType === undefined) {
-            return Promise.reject(
-                new Error(
-                    `Error: attributeType not provided in call to registerSubscription, settings = ${JSON.stringify(
-                        settings
-                    )}`
-                )
-            );
-        }
-
-        if (settings.onError === undefined) {
-            log.warn(
-                `Warning: subscription for attribute "${
-                    settings.attributeName
-                }" has been done without error callback function. You will not be informed about missed publications. Please specify the "onError" parameter while subscribing!`
-            );
-        }
-        if (settings.onReceive === undefined) {
-            log.warn(
-                `Warning: subscription for attribute "${
-                    settings.attributeName
-                }" has been done without receive callback function. You will not be informed about incoming publications. Please specify the "onReceive" parameter while subscribing!`
-            );
-        }
-        const subscriptionRequest = new SubscriptionRequest({
-            subscriptionId,
-            subscribedToName: settings.attributeName,
-            qos: settings.qos
-        });
-
-        const messagingQos = new MessagingQos({
-            ttl: calculateTtl(subscriptionRequest.qos)
-        });
-
-        const deferred = UtilInternal.createDeferred();
-
-        subscriptionReplyCallers.set(subscriptionId, {
-            resolve: deferred.resolve,
-            reject: deferred.reject
-        });
-
-        storeSubscriptionRequest(settings, subscriptionRequest);
-
-        dispatcher.sendSubscriptionRequest({
-            from: settings.proxyId,
-            toDiscoveryEntry: settings.providerDiscoveryEntry,
-            messagingQos,
-            subscriptionRequest
-        });
-
-        return deferred.promise;
-    };
+    this.registerSubscription = util.promisify(registerSubscriptionInternal);
 
     function addRequestToMulticastSubscribers(multicastId, subscriptionId) {
         const multicastIdPattern = multicastWildcardRegexFactory.createIdPattern(multicastId);
@@ -377,6 +374,40 @@ function SubscriptionManager(dispatcher) {
         return request;
     }
 
+    function registerBroadcastSubscriptionInternal(parameters, cb) {
+        if (!isReady()) {
+            cb(new Error("SubscriptionManager is already shut down"));
+            return;
+        }
+
+        const subscriptionRequest = createBroadcastSubscriptionRequest(parameters);
+
+        const messagingQos = new MessagingQos({
+            ttl: calculateTtl(subscriptionRequest.qos)
+        });
+
+        subscriptionReplyCallers.set(subscriptionRequest.subscriptionId, { cb });
+
+        storeSubscriptionRequest(parameters, subscriptionRequest);
+
+        function sendBroadcastSubscriptionRequestOnError(error) {
+            cleanupSubscription(subscriptionRequest.subscriptionId);
+            if (parameters.onError) {
+                parameters.onError(error);
+            }
+            cb(error);
+        }
+
+        dispatcher
+            .sendBroadcastSubscriptionRequest({
+                from: parameters.proxyId,
+                toDiscoveryEntry: parameters.providerDiscoveryEntry,
+                messagingQos,
+                subscriptionRequest
+            })
+            .catch(sendBroadcastSubscriptionRequestOnError);
+    }
+
     /**
      * @name SubscriptionManager#registerBroadcastSubscription
      * @function
@@ -412,45 +443,7 @@ function SubscriptionManager(dispatcher) {
      * @returns a promise object which provides the subscription token upon success and an error
      *          upon failure
      */
-    this.registerBroadcastSubscription = function(parameters) {
-        if (!isReady()) {
-            return Promise.reject(new Error("SubscriptionManager is already shut down"));
-        }
-
-        const deferred = UtilInternal.createDeferred();
-        const subscriptionRequest = createBroadcastSubscriptionRequest(parameters);
-
-        const messagingQos = new MessagingQos({
-            ttl: calculateTtl(subscriptionRequest.qos)
-        });
-
-        subscriptionReplyCallers.set(subscriptionRequest.subscriptionId, {
-            resolve: deferred.resolve,
-            reject: deferred.reject
-        });
-
-        storeSubscriptionRequest(parameters, subscriptionRequest);
-
-        function sendBroadcastSubscriptionRequestOnError(error) {
-            cleanupSubscription(subscriptionRequest.subscriptionId);
-            if (parameters.onError) {
-                parameters.onError(error);
-            }
-            deferred.reject(error);
-            return deferred.promise;
-        }
-
-        dispatcher
-            .sendBroadcastSubscriptionRequest({
-                from: parameters.proxyId,
-                toDiscoveryEntry: parameters.providerDiscoveryEntry,
-                messagingQos,
-                subscriptionRequest
-            })
-            .catch(sendBroadcastSubscriptionRequestOnError);
-
-        return deferred.promise;
-    };
+    this.registerBroadcastSubscription = util.promisify(registerBroadcastSubscriptionInternal);
 
     /**
      * @name SubscriptionManager#handleSubscriptionReply
@@ -479,7 +472,7 @@ function SubscriptionManager(dispatcher) {
                     subscriptionReply.error = Typing.augmentTypes(subscriptionReply.error);
                 }
                 if (subscriptionReplyCaller !== undefined) {
-                    subscriptionReplyCaller.reject(subscriptionReply.error);
+                    subscriptionReplyCaller.cb(subscriptionReply.error);
                 }
                 if (subscriptionListener !== undefined && subscriptionListener.onError !== undefined) {
                     subscriptionListener.onError(subscriptionReply.error);
@@ -487,7 +480,7 @@ function SubscriptionManager(dispatcher) {
                 cleanupSubscription(subscriptionReply.subscriptionId);
             } else {
                 if (subscriptionReplyCaller !== undefined) {
-                    subscriptionReplyCaller.resolve(subscriptionReply.subscriptionId);
+                    subscriptionReplyCaller.cb(undefined, subscriptionReply.subscriptionId);
                 }
                 if (subscriptionListener !== undefined && subscriptionListener.onSubscribed !== undefined) {
                     subscriptionListener.onSubscribed(subscriptionReply.subscriptionId);
