@@ -195,6 +195,7 @@
 				change it in the following child modules that extend this profile:
 				* io.joynr.java.messaging:messaging-common
 				* io.joynr.java.messaging:channel-service
+				* io.joynr.javascript:libjoynr-js
 			-->
 			<id>carit-copyright</id>
 			<build>
