@@ -23,6 +23,9 @@ let joynr = require("joynr");
 const testbase = require("test-base");
 const log = testbase.logging.log;
 const provisioning = testbase.provisioning_common;
+const TestInterfaceProvider = require("../generated-javascript/joynr/interlanguagetest/TestInterfaceProvider.js");
+const IltTestInterfaceProvider = require("./IltProvider.js");
+const IltStringBroadcastFilter = require("./IltStringBroadcastFilter.js");
 
 provisioning.logging.configuration = {
     appenders: {
@@ -68,27 +71,18 @@ joynr
             supportsOnChangeSubscriptions: true
         });
 
-        const TestInterfaceProvider = require("../generated-javascript/joynr/interlanguagetest/TestInterfaceProvider.js");
-        const IltTestInterfaceProvider = require("./IltProvider.js");
         const testInterfaceProvider = joynr.providerBuilder.build(
             TestInterfaceProvider,
             IltTestInterfaceProvider.implementation
         );
-        IltTestInterfaceProvider.setProvider(testInterfaceProvider);
 
-        const IltStringBroadcastFilter = require("./IltStringBroadcastFilter.js");
         testInterfaceProvider.broadcastWithFiltering.addBroadcastFilter(new IltStringBroadcastFilter());
 
-        joynr.registration
-            .registerProvider(domain, testInterfaceProvider, providerQos)
-            .then(() => {
-                log("provider registered successfully");
-            })
-            .catch(error => {
-                log(`error registering provider: ${error.toString()}`);
-            });
-        return loadedJoynr;
+        return joynr.registration.registerProvider(domain, testInterfaceProvider, providerQos);
+    })
+    .then(() => {
+        log("provider registered successfully");
     })
     .catch(error => {
-        throw error;
+        log(`error registering provider: ${error.toString()}`);
     });
