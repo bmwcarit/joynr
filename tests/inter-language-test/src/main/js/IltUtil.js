@@ -17,22 +17,22 @@
  * #L%
  */
 
-var useBrowserify = process.env.browserify;
-var joynr = useBrowserify === "true"? require("joynr-bundle") : require("joynr");
+const useBrowserify = process.env.browserify;
+const joynr = useBrowserify === "true" ? require("joynr-bundle") : require("joynr");
 
 // generated joynr Types call require("joynr") to register themselves in the type registry
 // make sure that they use the bundled joynr if necessary
 const mod = require("module");
-let req = mod.prototype.require;
+const req = mod.prototype.require;
 
 mod.prototype.require = function(md) {
-  if (md === "joynr") {
-    return joynr;
-  }
-  return req.call(this, md);
+    if (md === "joynr") {
+        return joynr;
+    }
+    return req.call(this, md);
 };
 
-var log = require("test-base").logging.log;
+const log = require("test-base").logging.log;
 
 // imports
 joynr.interlanguagetest = {};
@@ -64,23 +64,22 @@ joynr.interlanguagetest.namedTypeCollection1.BaseStruct = require("../generated-
 joynr.interlanguagetest.namedTypeCollection1.StructWithStringArray = require("../generated-javascript/joynr/interlanguagetest/namedTypeCollection1/StructWithStringArray.js");
 joynr.interlanguagetest.namedTypeCollection1.Enumeration = require("../generated-javascript/joynr/interlanguagetest/namedTypeCollection1/Enumeration.js").Enumeration;
 
-var useRestricted64BitRange = true;
-var useRestrictedUnsignedRange = true;
+const useRestricted64BitRange = true;
+const useRestrictedUnsignedRange = true;
 
 IltUtil = {};
 
-
 IltUtil.checkBoolean = function(booleanValue) {
-    log("IltUtil.checkBoolean called with " + booleanValue);
+    log(`IltUtil.checkBoolean called with ${booleanValue}`);
     expect(booleanValue).toBeTruthy();
-    if (booleanValue === true){
+    if (booleanValue === true) {
         log("IltUtil.checkBoolean returning true");
         return true;
     } else {
         log("IltUtil.checkBoolean returning false");
         return false;
     }
-}
+};
 
 // String Array
 
@@ -139,7 +138,7 @@ IltUtil.checkByteArray = function(byteArray) {
         return false;
     }
     return true;
-}
+};
 
 // uInt64Array
 
@@ -193,7 +192,11 @@ IltUtil.checkDoubleArray = function(doubleArray) {
         log("checkDoubleArray: invalid array length");
         return false;
     }
-    if (!IltUtil.cmpDouble(doubleArray[0], 1.1) || !IltUtil.cmpDouble(doubleArray[1], 2.2) || !IltUtil.cmpDouble(doubleArray[2], 3.3)) {
+    if (
+        !IltUtil.cmpDouble(doubleArray[0], 1.1) ||
+        !IltUtil.cmpDouble(doubleArray[1], 2.2) ||
+        !IltUtil.cmpDouble(doubleArray[2], 3.3)
+    ) {
         log("checkDoubleArray: invalid array content");
         return false;
     }
@@ -202,28 +205,50 @@ IltUtil.checkDoubleArray = function(doubleArray) {
 
 // ExtendedInterfaceEnumerationInTypeCollectionArray
 
-IltUtil.fillExtendedInterfaceEnumerationInTypeCollectionArray = function(extendedInterfaceEnumerationInTypeCollectionArray) {
-    extendedInterfaceEnumerationInTypeCollectionArray.push(joynr.interlanguagetest.namedTypeCollection2.ExtendedInterfaceEnumerationInTypeCollection.ENUM_2_VALUE_EXTENSION_FOR_INTERFACE);
-    extendedInterfaceEnumerationInTypeCollectionArray.push(joynr.interlanguagetest.namedTypeCollection2.ExtendedInterfaceEnumerationInTypeCollection.ENUM_I1_VALUE_3);
-    if (!IltUtil.checkExtendedInterfaceEnumerationInTypeCollectionArray(extendedInterfaceEnumerationInTypeCollectionArray)) {
-        throw new joynr.exceptions.JoynrRuntimeException("Internal error in fillExtendedInterfaceEnumerationInTypeCollectionArray");
+IltUtil.fillExtendedInterfaceEnumerationInTypeCollectionArray = function(
+    extendedInterfaceEnumerationInTypeCollectionArray
+) {
+    extendedInterfaceEnumerationInTypeCollectionArray.push(
+        joynr.interlanguagetest.namedTypeCollection2.ExtendedInterfaceEnumerationInTypeCollection
+            .ENUM_2_VALUE_EXTENSION_FOR_INTERFACE
+    );
+    extendedInterfaceEnumerationInTypeCollectionArray.push(
+        joynr.interlanguagetest.namedTypeCollection2.ExtendedInterfaceEnumerationInTypeCollection.ENUM_I1_VALUE_3
+    );
+    if (
+        !IltUtil.checkExtendedInterfaceEnumerationInTypeCollectionArray(
+            extendedInterfaceEnumerationInTypeCollectionArray
+        )
+    ) {
+        throw new joynr.exceptions.JoynrRuntimeException(
+            "Internal error in fillExtendedInterfaceEnumerationInTypeCollectionArray"
+        );
     }
     return extendedInterfaceEnumerationInTypeCollectionArray;
 };
 
 IltUtil.createExtendedInterfaceEnumerationInTypeCollectionArray = function() {
     extendedInterfaceEnumerationInTypeCollectionArray = [];
-    extendedInterfaceEnumerationInTypeCollectionArray = IltUtil.fillExtendedInterfaceEnumerationInTypeCollectionArray(extendedInterfaceEnumerationInTypeCollectionArray);
+    extendedInterfaceEnumerationInTypeCollectionArray = IltUtil.fillExtendedInterfaceEnumerationInTypeCollectionArray(
+        extendedInterfaceEnumerationInTypeCollectionArray
+    );
     return extendedInterfaceEnumerationInTypeCollectionArray;
 };
 
-IltUtil.checkExtendedInterfaceEnumerationInTypeCollectionArray = function(extendedInterfaceEnumerationInTypeCollectionArray) {
+IltUtil.checkExtendedInterfaceEnumerationInTypeCollectionArray = function(
+    extendedInterfaceEnumerationInTypeCollectionArray
+) {
     if (extendedInterfaceEnumerationInTypeCollectionArray.length != 2) {
         log("checkExtendedInterfaceEnumerationInTypeCollectionArray: invalid array length");
         return false;
     }
-    if (extendedInterfaceEnumerationInTypeCollectionArray[0] != joynr.interlanguagetest.namedTypeCollection2.ExtendedInterfaceEnumerationInTypeCollection.ENUM_2_VALUE_EXTENSION_FOR_INTERFACE ||
-        extendedInterfaceEnumerationInTypeCollectionArray[1] != joynr.interlanguagetest.namedTypeCollection2.ExtendedInterfaceEnumerationInTypeCollection.ENUM_I1_VALUE_3) {
+    if (
+        extendedInterfaceEnumerationInTypeCollectionArray[0] !=
+            joynr.interlanguagetest.namedTypeCollection2.ExtendedInterfaceEnumerationInTypeCollection
+                .ENUM_2_VALUE_EXTENSION_FOR_INTERFACE ||
+        extendedInterfaceEnumerationInTypeCollectionArray[1] !=
+            joynr.interlanguagetest.namedTypeCollection2.ExtendedInterfaceEnumerationInTypeCollection.ENUM_I1_VALUE_3
+    ) {
         log("checkExtendedInterfaceEnumerationInTypeCollectionArray: invalid array content");
         return false;
     }
@@ -233,8 +258,10 @@ IltUtil.checkExtendedInterfaceEnumerationInTypeCollectionArray = function(extend
 // ExtendedExtendedEnumerationArray
 
 IltUtil.fillExtendedExtendedEnumerationArray = function(extendedExtendedEnumerationArray) {
-    extendedExtendedEnumerationArray[0] = joynr.interlanguagetest.namedTypeCollection2.ExtendedExtendedEnumeration.ENUM_2_VALUE_EXTENSION_EXTENDED;
-    extendedExtendedEnumerationArray[1] = joynr.interlanguagetest.namedTypeCollection2.ExtendedExtendedEnumeration.ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION;
+    extendedExtendedEnumerationArray[0] =
+        joynr.interlanguagetest.namedTypeCollection2.ExtendedExtendedEnumeration.ENUM_2_VALUE_EXTENSION_EXTENDED;
+    extendedExtendedEnumerationArray[1] =
+        joynr.interlanguagetest.namedTypeCollection2.ExtendedExtendedEnumeration.ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION;
     if (!IltUtil.checkExtendedExtendedEnumerationArray(extendedExtendedEnumerationArray)) {
         throw new joynr.exceptions.JoynrRuntimeException("Internal error in fillExtendedExtendedEnumerationArray");
     }
@@ -252,8 +279,13 @@ IltUtil.checkExtendedExtendedEnumerationArray = function(extendedExtendedEnumera
         log("checkExtendedExtendedEnumerationArray: invalid array length");
         return false;
     }
-    if (extendedExtendedEnumerationArray[0] != joynr.interlanguagetest.namedTypeCollection2.ExtendedExtendedEnumeration.ENUM_2_VALUE_EXTENSION_EXTENDED ||
-        extendedExtendedEnumerationArray[1] != joynr.interlanguagetest.namedTypeCollection2.ExtendedExtendedEnumeration.ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION) {
+    if (
+        extendedExtendedEnumerationArray[0] !=
+            joynr.interlanguagetest.namedTypeCollection2.ExtendedExtendedEnumeration.ENUM_2_VALUE_EXTENSION_EXTENDED ||
+        extendedExtendedEnumerationArray[1] !=
+            joynr.interlanguagetest.namedTypeCollection2.ExtendedExtendedEnumeration
+                .ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION
+    ) {
         log("checkExtendedExtendedEnumerationArray: invalid array content");
         return false;
     }
@@ -280,7 +312,7 @@ IltUtil.createStructWithStringArray = function() {
 };
 
 IltUtil.checkStructWithStringArray = function(structWithStringArray) {
-    var stringArray = structWithStringArray.stringArrayElement;
+    const stringArray = structWithStringArray.stringArrayElement;
     if (!stringArray) {
         log("checkStructWithStringArray: array not set");
         return false;
@@ -289,8 +321,7 @@ IltUtil.checkStructWithStringArray = function(structWithStringArray) {
         log("checkStructWithStringArray: invalid array length");
         return false;
     }
-    if (stringArray[0] != "Hello" ||
-        stringArray[1] != "World") {
+    if (stringArray[0] != "Hello" || stringArray[1] != "World") {
         log("checkStructWithStringArray: invalid array content");
         return false;
     }
@@ -323,8 +354,10 @@ IltUtil.checkStructWithStringArrayArray = function(structWithStringArrayArray) {
         log("checkStructWithStringArrayArray: invalid array length");
         return false;
     }
-    if (!IltUtil.checkStructWithStringArray(structWithStringArrayArray[0]) ||
-        !IltUtil.checkStructWithStringArray(structWithStringArrayArray[1])) {
+    if (
+        !IltUtil.checkStructWithStringArray(structWithStringArrayArray[0]) ||
+        !IltUtil.checkStructWithStringArray(structWithStringArrayArray[1])
+    ) {
         log("checkStructWithStringArrayArray: invalid array content");
         return false;
     }
@@ -334,7 +367,7 @@ IltUtil.checkStructWithStringArrayArray = function(structWithStringArrayArray) {
 // BaseStructWithoutElements
 
 IltUtil.createBaseStructWithoutElements = function() {
-    var baseStructWithoutElements = new joynr.interlanguagetest.namedTypeCollection2.BaseStructWithoutElements();
+    const baseStructWithoutElements = new joynr.interlanguagetest.namedTypeCollection2.BaseStructWithoutElements();
     // nothing required, since this is an empty struct
     //
     // it was intended to be used for typecasts of some other struct
@@ -358,7 +391,7 @@ IltUtil.fillBaseStruct = function(baseStruct) {
 };
 
 IltUtil.createBaseStruct = function() {
-    var baseStruct = new joynr.interlanguagetest.namedTypeCollection2.BaseStruct();
+    let baseStruct = new joynr.interlanguagetest.namedTypeCollection2.BaseStruct();
     baseStruct = IltUtil.fillBaseStruct(baseStruct);
     return baseStruct;
 };
@@ -392,7 +425,7 @@ IltUtil.fillExtendedBaseStruct = function(extendedBaseStruct) {
 };
 
 IltUtil.createExtendedBaseStruct = function() {
-    var extendedBaseStruct = new joynr.interlanguagetest.namedTypeCollection2.ExtendedBaseStruct();
+    const extendedBaseStruct = new joynr.interlanguagetest.namedTypeCollection2.ExtendedBaseStruct();
     IltUtil.fillExtendedBaseStruct(extendedBaseStruct);
     return extendedBaseStruct;
 };
@@ -416,7 +449,8 @@ IltUtil.checkExtendedBaseStruct = function(extendedBaseStruct) {
 // ExtendedExtendedBaseStruct
 
 IltUtil.fillExtendedExtendedBaseStruct = function(extendedExtendedBaseStruct) {
-    extendedExtendedBaseStruct.enumWithoutDefinedValuesElement = joynr.interlanguagetest.EnumerationWithoutDefinedValues.ENUM_0_VALUE_1;
+    extendedExtendedBaseStruct.enumWithoutDefinedValuesElement =
+        joynr.interlanguagetest.EnumerationWithoutDefinedValues.ENUM_0_VALUE_1;
     // fill inherited stuff
     IltUtil.fillExtendedBaseStruct(extendedExtendedBaseStruct);
     if (!IltUtil.checkExtendedExtendedBaseStruct(extendedExtendedBaseStruct)) {
@@ -426,7 +460,7 @@ IltUtil.fillExtendedExtendedBaseStruct = function(extendedExtendedBaseStruct) {
 };
 
 IltUtil.createExtendedExtendedBaseStruct = function() {
-    var extendedExtendedBaseStruct = new joynr.interlanguagetest.namedTypeCollection2.ExtendedExtendedBaseStruct();
+    let extendedExtendedBaseStruct = new joynr.interlanguagetest.namedTypeCollection2.ExtendedExtendedBaseStruct();
     extendedExtendedBaseStruct = IltUtil.fillExtendedExtendedBaseStruct(extendedExtendedBaseStruct);
     return extendedExtendedBaseStruct;
 };
@@ -435,12 +469,17 @@ IltUtil.checkExtendedExtendedBaseStruct = function(extendedExtendedBaseStruct) {
     if (!extendedExtendedBaseStruct) {
         return false;
     }
-    if (extendedExtendedBaseStruct.enumWithoutDefinedValuesElement === null ||
-        extendedExtendedBaseStruct.enumWithoutDefinedValuesElement === undefined) {
+    if (
+        extendedExtendedBaseStruct.enumWithoutDefinedValuesElement === null ||
+        extendedExtendedBaseStruct.enumWithoutDefinedValuesElement === undefined
+    ) {
         log("checkExtendedExtendedBaseStruct: enumWithoutDefinedValuesElement not set");
         return false;
     }
-    if (extendedExtendedBaseStruct.enumWithoutDefinedValuesElement != joynr.interlanguagetest.EnumerationWithoutDefinedValues.ENUM_0_VALUE_1) {
+    if (
+        extendedExtendedBaseStruct.enumWithoutDefinedValuesElement !=
+        joynr.interlanguagetest.EnumerationWithoutDefinedValues.ENUM_0_VALUE_1
+    ) {
         log("checkExtendedExtendedBaseStruct: invalid content of enumWithoutDefinedValuesElement");
         return false;
     }
@@ -622,11 +661,9 @@ IltUtil.checkStructOfPrimitives = function(structOfPrimitives) {
             log("checkStructOfPrimitives: invalid content of uInt8MaxElement");
             return false;
         }
-    } else {
-        if (structOfPrimitives.uInt8MaxElement != 255) {
-            log("checkStructOfPrimitives: invalid content of uInt8MaxElement");
-            return false;
-        }
+    } else if (structOfPrimitives.uInt8MaxElement != 255) {
+        log("checkStructOfPrimitives: invalid content of uInt8MaxElement");
+        return false;
     }
     if (structOfPrimitives.uInt16MinElement != 0) {
         log("checkStructOfPrimitives: invalid content of uInt16MinElement");
@@ -637,11 +674,9 @@ IltUtil.checkStructOfPrimitives = function(structOfPrimitives) {
             log("checkStructOfPrimitives: invalid content of uInt16MaxElement");
             return false;
         }
-    } else {
-        if (structOfPrimitives.uInt16MaxElement != 65535) {
-            log("checkStructOfPrimitives: invalid content of uInt16MaxElement");
-            return false;
-        }
+    } else if (structOfPrimitives.uInt16MaxElement != 65535) {
+        log("checkStructOfPrimitives: invalid content of uInt16MaxElement");
+        return false;
     }
     if (structOfPrimitives.uInt32MinElement != 0) {
         log("checkStructOfPrimitives: invalid content of uInt32MinElement");
@@ -652,11 +687,9 @@ IltUtil.checkStructOfPrimitives = function(structOfPrimitives) {
             log("checkStructOfPrimitives: invalid content of uInt32MaxElement");
             return false;
         }
-    } else {
-        if (structOfPrimitives.uInt32MaxElement != 4294967295) {
-            log("checkStructOfPrimitives: invalid content of uInt32MaxElement");
-            return false;
-        }
+    } else if (structOfPrimitives.uInt32MaxElement != 4294967295) {
+        log("checkStructOfPrimitives: invalid content of uInt32MaxElement");
+        return false;
     }
     if (structOfPrimitives.uInt64MinElement != 0) {
         log("checkStructOfPrimitives: invalid content of uInt64MinElement");
@@ -866,7 +899,7 @@ IltUtil.checkStructOfPrimitives = function(structOfPrimitives) {
 };
 
 IltUtil.createStructOfPrimitives = function() {
-    var structOfPrimitives = new joynr.interlanguagetest.namedTypeCollection2.StructOfPrimitives();
+    let structOfPrimitives = new joynr.interlanguagetest.namedTypeCollection2.StructOfPrimitives();
     structOfPrimitives = IltUtil.fillStructOfPrimitives(structOfPrimitives);
     return structOfPrimitives;
 };
@@ -874,7 +907,8 @@ IltUtil.createStructOfPrimitives = function() {
 // ExtendedStructOfPrimitives
 
 IltUtil.fillExtendedStructOfPrimitives = function(extendedStructOfPrimitives) {
-    extendedStructOfPrimitives.extendedEnumElement = joynr.interlanguagetest.namedTypeCollection2.ExtendedTypeCollectionEnumerationInTypeCollection.ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION;
+    extendedStructOfPrimitives.extendedEnumElement =
+        joynr.interlanguagetest.namedTypeCollection2.ExtendedTypeCollectionEnumerationInTypeCollection.ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION;
     extendedStructOfPrimitives.extendedStructElement = IltUtil.createExtendedBaseStruct();
     IltUtil.fillStructOfPrimitives(extendedStructOfPrimitives);
     if (!IltUtil.checkExtendedStructOfPrimitives(extendedStructOfPrimitives)) {
@@ -884,7 +918,7 @@ IltUtil.fillExtendedStructOfPrimitives = function(extendedStructOfPrimitives) {
 };
 
 IltUtil.createExtendedStructOfPrimitives = function() {
-    var extendedStructOfPrimitives = new joynr.interlanguagetest.namedTypeCollection2.ExtendedStructOfPrimitives();
+    const extendedStructOfPrimitives = new joynr.interlanguagetest.namedTypeCollection2.ExtendedStructOfPrimitives();
     IltUtil.fillExtendedStructOfPrimitives(extendedStructOfPrimitives);
     return extendedStructOfPrimitives;
 };
@@ -894,7 +928,11 @@ IltUtil.checkExtendedStructOfPrimitives = function(extendedStructOfPrimitives) {
         log("checkExtendedStructOfPrimitives: extendedStructOfPrimitives not set");
         return false;
     }
-    if (extendedStructOfPrimitives.extendedEnumElement != joynr.interlanguagetest.namedTypeCollection2.ExtendedTypeCollectionEnumerationInTypeCollection.ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION) {
+    if (
+        extendedStructOfPrimitives.extendedEnumElement !=
+        joynr.interlanguagetest.namedTypeCollection2.ExtendedTypeCollectionEnumerationInTypeCollection
+            .ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION
+    ) {
         log("checkExtendedStructOfPrimitives: extendedEnumElement has invalid content");
         return false;
     }
@@ -924,7 +962,7 @@ IltUtil.cmpByteBuffers = function(a, b) {
     if (a.length != b.length) {
         return false;
     }
-    for (var i = 0; i < a.length; ++i) {
+    for (let i = 0; i < a.length; ++i) {
         if (a[i] != b[i]) {
             return false;
         }

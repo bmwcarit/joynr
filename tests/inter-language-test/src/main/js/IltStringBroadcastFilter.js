@@ -20,80 +20,118 @@
  */
 
 (function(undefined) {
-    var testbase = require("test-base");
-    var log = testbase.logging.log;
-    var prettyLog = testbase.logging.prettyLog;
-    var error = testbase.logging.error;
-    var IltUtil = require("./IltUtil.js");
-    var ExtendedTypeCollectionEnumerationInTypeCollection = require("../generated-javascript/joynr/interlanguagetest/namedTypeCollection2/ExtendedTypeCollectionEnumerationInTypeCollection.js");
+    const testbase = require("test-base");
+    const log = testbase.logging.log;
+    const prettyLog = testbase.logging.prettyLog;
+    const error = testbase.logging.error;
+    const IltUtil = require("./IltUtil.js");
+    const ExtendedTypeCollectionEnumerationInTypeCollection = require("../generated-javascript/joynr/interlanguagetest/namedTypeCollection2/ExtendedTypeCollectionEnumerationInTypeCollection.js");
     /**
      * @name IltStringBroadcastFilter
      * @constructor
      *
      * @classdesc
      */
-    var IltStringBroadcastFilter = function IltStringBroadcastFilter() {
+    const IltStringBroadcastFilter = function IltStringBroadcastFilter() {
         if (!(this instanceof IltStringBroadcastFilter)) {
             return new IltStringBroadcastFilter();
         }
 
-        Object.defineProperty(this, 'filter', {
+        Object.defineProperty(this, "filter", {
             enumerable: false,
             value: function filter(outputParameters, filterParameters) {
                 prettyLog("IltStringBroadcastFilter: invoked");
 
-                var stringOut = outputParameters.getStringOut();
-                var stringArrayOut = outputParameters.getStringArrayOut();
-                var enumerationOut = outputParameters.getEnumerationOut().name;
-                var structWithStringArrayOut = outputParameters.getStructWithStringArrayOut();
-                var structWithStringArrayArrayOut = outputParameters.getStructWithStringArrayArrayOut();
+                const stringOut = outputParameters.getStringOut();
+                const stringArrayOut = outputParameters.getStringArrayOut();
+                const enumerationOut = outputParameters.getEnumerationOut().name;
+                const structWithStringArrayOut = outputParameters.getStructWithStringArrayOut();
+                const structWithStringArrayArrayOut = outputParameters.getStructWithStringArrayArrayOut();
 
-                var stringOfInterest = filterParameters.stringOfInterest;
-                var stringArrayOfInterest = JSON.parse(filterParameters.stringArrayOfInterest);
-                var enumerationOfInterest = JSON.parse(filterParameters.enumerationOfInterest);
-                var structWithStringArrayOfInterest = JSON.parse(filterParameters.structWithStringArrayOfInterest);
-                var structWithStringArrayArrayOfInterest = JSON.parse(filterParameters.structWithStringArrayArrayOfInterest);
+                const stringOfInterest = filterParameters.stringOfInterest;
+                const stringArrayOfInterest = JSON.parse(filterParameters.stringArrayOfInterest);
+                const enumerationOfInterest = JSON.parse(filterParameters.enumerationOfInterest);
+                const structWithStringArrayOfInterest = JSON.parse(filterParameters.structWithStringArrayOfInterest);
+                const structWithStringArrayArrayOfInterest = JSON.parse(
+                    filterParameters.structWithStringArrayArrayOfInterest
+                );
 
                 // check output parameter contents
-                if (stringArrayOut === undefined || stringArrayOut === null || !IltUtil.checkStringArray(stringArrayOut)) {
+                if (
+                    stringArrayOut === undefined ||
+                    stringArrayOut === null ||
+                    !IltUtil.checkStringArray(stringArrayOut)
+                ) {
                     error("IltStringBroadcastFilter: invalid stringArrayOut value");
                     error("IltStringBroadcastFilter: FAILED");
                     return false;
                 }
-                if (enumerationOut === undefined || enumerationOut === null || enumerationOut != ExtendedTypeCollectionEnumerationInTypeCollection.ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION.name) {
+                if (
+                    enumerationOut === undefined ||
+                    enumerationOut === null ||
+                    enumerationOut !=
+                        ExtendedTypeCollectionEnumerationInTypeCollection.ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION.name
+                ) {
                     error("IltStringBroadcastFilter: invalid enumerationOut value");
                     error("IltStringBroadcastFilter: FAILED");
                     return false;
                 }
-                if (structWithStringArrayOut === undefined || structWithStringArrayOut == null || !IltUtil.checkStructWithStringArray(structWithStringArrayOut)) {
+                if (
+                    structWithStringArrayOut === undefined ||
+                    structWithStringArrayOut == null ||
+                    !IltUtil.checkStructWithStringArray(structWithStringArrayOut)
+                ) {
                     error("IltStringBroadcastFilter: invalid structWithStringArrayOut value");
                     error("IltStringBroadcastFilter: FAILED");
                     return false;
                 }
-                if (structWithStringArrayArrayOut === undefined || structWithStringArrayArrayOut === null || !IltUtil.checkStructWithStringArrayArray(structWithStringArrayArrayOut)) {
+                if (
+                    structWithStringArrayArrayOut === undefined ||
+                    structWithStringArrayArrayOut === null ||
+                    !IltUtil.checkStructWithStringArrayArray(structWithStringArrayArrayOut)
+                ) {
                     error("IltStringBroadcastFilter: invalid structWithStringArrayArrayOut value");
                     error("IltStringBroadcastFilter: FAILED");
                     return false;
                 }
 
                 // check filter parameter contents
-                if (stringArrayOfInterest === undefined || stringArrayOfInterest === null || !IltUtil.checkStringArray(stringArrayOfInterest)) {
+                if (
+                    stringArrayOfInterest === undefined ||
+                    stringArrayOfInterest === null ||
+                    !IltUtil.checkStringArray(stringArrayOfInterest)
+                ) {
                     error("IltStringBroadcastFilter: invalid stringArrayOfInterest filter parameter value");
                     error("IltStringBroadcastFilter: FAILED");
                     return false;
                 }
-                if (enumerationOfInterest === undefined || enumerationOfInterest === null || enumerationOfInterest != ExtendedTypeCollectionEnumerationInTypeCollection.ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION.name) {
+                if (
+                    enumerationOfInterest === undefined ||
+                    enumerationOfInterest === null ||
+                    enumerationOfInterest !=
+                        ExtendedTypeCollectionEnumerationInTypeCollection.ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION.name
+                ) {
                     error("IltStringBroadcastFilter: invalid enumerationOfInterest filter parameter value");
                     error("IltStringBroadcastFilter: FAILED");
                     return false;
                 }
-                if (structWithStringArrayOfInterest === undefined || structWithStringArrayOfInterest === null || !IltUtil.checkStructWithStringArray(structWithStringArrayOfInterest)) {
+                if (
+                    structWithStringArrayOfInterest === undefined ||
+                    structWithStringArrayOfInterest === null ||
+                    !IltUtil.checkStructWithStringArray(structWithStringArrayOfInterest)
+                ) {
                     error("IltStringBroadcastFilter: invalid structWithStringArrayOfInterest filter parameter value");
                     error("IltStringBroadcastFilter: FAILED");
                     return false;
                 }
-                if (structWithStringArrayArrayOfInterest === undefined || structWithStringArrayArrayOfInterest === null || !IltUtil.checkStructWithStringArrayArray(structWithStringArrayArrayOfInterest)) {
-                    error("IltStringBroadcastFilter: invalid structWithStringArrayArrayOfInterest filter parameter value");
+                if (
+                    structWithStringArrayArrayOfInterest === undefined ||
+                    structWithStringArrayArrayOfInterest === null ||
+                    !IltUtil.checkStructWithStringArrayArray(structWithStringArrayArrayOfInterest)
+                ) {
+                    error(
+                        "IltStringBroadcastFilter: invalid structWithStringArrayArrayOfInterest filter parameter value"
+                    );
                     error("IltStringBroadcastFilter: FAILED");
                     return false;
                 }
@@ -112,23 +150,23 @@
 
     // the following variable is just needed to bypass JSLint check
     // 'typeof' is the only way working without exceptions
-    var exportsCheck = typeof exports;
+    const exportsCheck = typeof exports;
     // AMD support
-    if (typeof define === 'function' && define.amd) {
-        define(["joynr"], function (joynr) {
+    if (typeof define === "function" && define.amd) {
+        define(["joynr"], joynr => {
             IltStringBroadcastFilter.prototype = new joynr.JoynrObject();
             IltStringBroadcastFilter.prototype.constructor = IltStringBroadcastFilter;
             joynr.addType("joynr.interlanguagetest.IltStringBroadcastFilter", IltStringBroadcastFilter);
             return IltStringBroadcastFilter;
         });
-    } else if (exportsCheck !== 'undefined') {
-        if ((module !== undefined) && module.exports) {
+    } else if (exportsCheck !== "undefined") {
+        if (module !== undefined && module.exports) {
             exports = module.exports = IltStringBroadcastFilter;
         } else {
             // support CommonJS module 1.1.1 spec (`exports` cannot be a function)
             exports.IltStringBroadcastFilter = IltStringBroadcastFilter;
         }
-        var joynr = require("joynr");
+        const joynr = require("joynr");
         IltStringBroadcastFilter.prototype = new joynr.JoynrObject();
         IltStringBroadcastFilter.prototype.constructor = IltStringBroadcastFilter;
 
@@ -139,4 +177,4 @@
         window.joynr.addType("joynr.interlanguagetest.IltStringBroadcastFilter", IltStringBroadcastFilter);
         window.IltStringBroadcastFilter = IltStringBroadcastFilter;
     }
-}());
+})();
