@@ -13,9 +13,13 @@
     "uuid": "3.2.1",
     "ws": "4.0.0"
   },
+  "devDependencies": {
+    "es6-promisify": "5.0.0"
+  },
   "browser": {
     "./global/LocalStorageNode.js": "./global/LocalStorage.js",
-    "./global/WebSocketNode.js": "./global/WebSocket.js"
+    "./global/WebSocketNode.js": "./global/WebSocket.js",
+    "util": "./global/UtilBrowser.js"
   },
   "engines": {
     "node": ">=8.0.0"
