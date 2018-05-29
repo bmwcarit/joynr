@@ -108,7 +108,7 @@ module.exports = function(config) {
         // outputDir is already located in 'target'
         junitReporter: {
             outputDir: "../target/test-results",
-            outputFile: "TestIntegration.xml",
+            outputFile: "Test-karma-Integration.xml",
             suite: "",
             useBrowserName: false,
             nameFormatter: undefined,
