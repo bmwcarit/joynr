@@ -536,9 +536,7 @@ function clean_up {
 }
 
 # prepare JavaScript
-npm run-script preinstall
-npm install
-npm install jasmine-node
+npm run build
 
 # run the checks
 #

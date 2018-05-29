@@ -11,12 +11,26 @@
     "joynr-bundle": "file:../../javascript/libjoynr-js/src/main/browserify",
     "test-base": "file:../test-base/target/classes"
   },
+  "devDependencies": {
+    "eslint": "4.15.0",
+    "eslint-plugin-promise": "3.5.0",
+    "jasmine-node": "1.14.5",
+    "prettier": "1.13.2"
+  },
   "config": {
-    "domain": "joynr-inter-language-test-domain"
+    "domain": "joynr-inter-language-test-domain",
+    "glob": "src/{{main/js}/**/*.js,main/js/*.js}"
   },
   "scripts": {
+    "clean": "rm -rf node_modules ../../javascript/libjoynr-js/src/main/browserify/node_modules",
+    "install:browserify": "(cd ../../javascript/libjoynr-js/src/main/browserify && npm i)",
     "startprovider": "node src/main/js/provider.js $npm_package_config_domain",
     "startjasmine": "jasmine-node --verbose --junitreport --config domain $npm_package_config_domain src/main/js/consumer.spec.js",
-    "startjasminebundle": "jasmine-node --verbose --junitreport --config domain $npm_package_config_domain --config browserify true src/main/js/consumer.spec.js"
+    "startjasminebundle": "jasmine-node --verbose --junitreport --config domain $npm_package_config_domain --config browserify true src/main/js/consumer.spec.js",
+    "build:fast": "npm run install:browserify && npm i && npm run format && npm run lint",
+    "build": "npm run clean && npm run build:fast",
+    "format": "node_modules/.bin/prettier --write --config ../../javascript/libjoynr-js/scripts/prettier.config.json $npm_package_config_glob",
+    "lint": "node_modules/.bin/eslint $npm_package_config_glob",
+    "lint:fix": "node_modules/.bin/eslint $npm_package_config_glob --fix"
   }
 }
