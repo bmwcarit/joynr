@@ -323,36 +323,6 @@
 					</additionalProjectnatures>
 				</configuration>
 			</plugin>
-
-			<plugin>
-				<groupId>com.phasebash.jsdoc</groupId>
-				<artifactId>jsdoc3-maven-plugin</artifactId>
-				<version>1.2.0</version>
-				<inherited>false</inherited>
-				<executions>
-					<execution>
-						<goals>
-							<goal>jsdoc3</goal>
-						</goals>
-						<phase>install</phase>
-					</execution>
-				</executions>
-				<configuration>
-					<directoryRoots>
-						<directoryRoot>src/main/js/joynr</directoryRoot>
-						<directoryRoot>src/main/js/global</directoryRoot>
-					</directoryRoots>
-					<sourceFiles>
-						<sourceFile>src/main/js/joynr.js</sourceFile>
-						<sourceFile>src/main/js/libjoynr-deps.js</sourceFile>
-						<sourceFile>src/main/js/libjoynr-deps.intertab.clustercontroller.js</sourceFile>
-					</sourceFiles>
-					<recursive>true</recursive>
-					<outputDirectory>${project.build.directory}/jsdoc</outputDirectory>
-					<includePrivate>false</includePrivate>
-					<configFile>jsdoc3.conf.json</configFile>
-				</configuration>
-			</plugin>
 			<!-- NOTE the license to be added to the source header files must be
 				specifically (redundantly) defined below -->
 			<!-- This is a shortcoming of the license-maven-plugin -->
