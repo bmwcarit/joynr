@@ -16,6 +16,7 @@
     "jasmine-reporters": "2.1.1",
     "joynr": "file:./src/main/js",
     "karma": "2.0.0",
+    "karma-browserify": "5.2.0",
     "karma-chrome-launcher": "2.2.0",
     "karma-coverage": "0.5.3",
     "karma-jasmine": "1.1.1",
@@ -23,7 +24,8 @@
     "karma-spec-reporter": "0.0.23",
     "karma-verbose-reporter": "0.0.3",
     "nyc": "11.7.1",
-    "prettier": "1.8.2"
+    "prettier": "1.8.2",
+    "watchify": "3.11.0"
   },
   "config": {
     "glob": "src/{{main/js/global,main/js/joynr,test/js/!(integration)}/**/*.js,main/js/*.js,test/js/*.js}"
