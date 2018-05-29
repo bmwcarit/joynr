@@ -199,8 +199,7 @@ describe("libjoynr-js.joynr.proxy.ProxyAttribute", () => {
 
     it("get calls through to RequestReplyManager", done => {
         let requestReplyId;
-        isOn
-            .get()
+        isOn.get()
             .then(() => {
                 expect(requestReplyManagerSpy.sendRequest).toHaveBeenCalled();
                 requestReplyId = requestReplyManagerSpy.sendRequest.calls.argsFor(0)[0].request.requestReplyId;
@@ -229,8 +228,7 @@ describe("libjoynr-js.joynr.proxy.ProxyAttribute", () => {
         expect(isOn.get).toBeDefined();
         expect(typeof isOn.get === "function").toBeTruthy();
 
-        isOn
-            .get()
+        isOn.get()
             .then(() => {
                 done();
                 return null;
@@ -315,10 +313,9 @@ describe("libjoynr-js.joynr.proxy.ProxyAttribute", () => {
 
     it("set calls through to RequestReplyManager", done => {
         let requestReplyId;
-        isOn
-            .set({
-                value: true
-            })
+        isOn.set({
+            value: true
+        })
             .then(() => {
                 expect(requestReplyManagerSpy.sendRequest).toHaveBeenCalled();
                 requestReplyId = requestReplyManagerSpy.sendRequest.calls.argsFor(0)[0].request.requestReplyId;
@@ -375,12 +372,11 @@ describe("libjoynr-js.joynr.proxy.ProxyAttribute", () => {
         expect(isOn.subscribe).toBeDefined();
         expect(typeof isOn.subscribe === "function").toBeTruthy();
 
-        isOn
-            .subscribe({
-                subscriptionQos,
-                onReceive() {},
-                onError() {}
-            })
+        isOn.subscribe({
+            subscriptionQos,
+            onReceive() {},
+            onError() {}
+        })
             .then(() => {
                 done();
                 return null;
@@ -392,12 +388,11 @@ describe("libjoynr-js.joynr.proxy.ProxyAttribute", () => {
     });
 
     it("subscribe provides a subscriptionId", done => {
-        isOn
-            .subscribe({
-                subscriptionQos,
-                onReceive() {},
-                onError() {}
-            })
+        isOn.subscribe({
+            subscriptionQos,
+            onReceive() {},
+            onError() {}
+        })
             .then(id => {
                 expect(id).toEqual(subscriptionId);
                 done();
@@ -424,10 +419,9 @@ describe("libjoynr-js.joynr.proxy.ProxyAttribute", () => {
     // });
 
     it("unsubscribe calls through to SubscriptionManager", done => {
-        isOn
-            .unsubscribe({
-                subscriptionId
-            })
+        isOn.unsubscribe({
+            subscriptionId
+        })
             .then(() => {
                 expect(subscriptionManagerSpy.unregisterSubscription).toHaveBeenCalled();
                 expect(subscriptionManagerSpy.unregisterSubscription).toHaveBeenCalledWith({
@@ -446,12 +440,11 @@ describe("libjoynr-js.joynr.proxy.ProxyAttribute", () => {
         expect(isOn.unsubscribe).toBeDefined();
         expect(typeof isOn.unsubscribe === "function").toBeTruthy();
 
-        isOn
-            .subscribe({
-                subscriptionQos,
-                onReceive() {},
-                onError() {}
-            })
+        isOn.subscribe({
+            subscriptionQos,
+            onReceive() {},
+            onError() {}
+        })
             .then(subscriptionId => {
                 return isOn.unsubscribe({
                     subscriptionId

@@ -376,9 +376,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
     function publishAttributeValue(providerId, attributeName, attribute, value) {
         if (!isReady()) {
             throw new Error(
-                `attribute publication for providerId "${providerId} and attribute ${
-                    attributeName
-                } is not forwarded to subscribers, as the publication manager is already shut down`
+                `attribute publication for providerId "${providerId} and attribute ${attributeName} is not forwarded to subscribers, as the publication manager is already shut down`
             );
         }
         const subscriptions = getSubscriptionsForProviderAttribute(providerId, attributeName);
@@ -474,9 +472,8 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         const value = data.broadcastOutputParameters;
         if (!isReady()) {
             throw new Error(
-                `event publication for providerId "${providerId} and eventName ${
-                    eventName
-                } is not forwarded to subscribers, as the publication manager is ` + `already shut down`
+                `event publication for providerId "${providerId} and eventName ${eventName} is not forwarded to subscribers, as the publication manager is ` +
+                    `already shut down`
             );
         }
         if (!event.selective) {
@@ -645,9 +642,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
             const attributeSubscriptions = getSubscriptionsForProviderAttribute(providerParticipantId, attributeName);
             if (attributeSubscriptions === undefined) {
                 log.error(
-                    `ProviderAttribute ${attributeName} for providerId ${
-                        providerParticipantId
-                    } is not registered or notifiable`
+                    `ProviderAttribute ${attributeName} for providerId ${providerParticipantId} is not registered or notifiable`
                 );
                 // TODO: proper error handling for empty subscription map =>
                 // ProviderAttribute is not notifiable or not registered
@@ -880,9 +875,9 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
                 exception = new SubscriptionException({
                     detailMessage: `error handling subscription request: ${JSONSerializer.stringify(
                         subscriptionRequest
-                    )}. expiryDateMs ${subscriptionRequest.qos.expiryDateMs} for ProviderAttribute ${
-                        attributeName
-                    } for providerId ${providerParticipantId} lies in the past`,
+                    )}. expiryDateMs ${
+                        subscriptionRequest.qos.expiryDateMs
+                    } for ProviderAttribute ${attributeName} for providerId ${providerParticipantId} lies in the past`,
                     subscriptionId
                 });
                 log.error(exception.detailMessage);
@@ -992,9 +987,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
             exception = new SubscriptionException({
                 detailMessage: `error handling subscription request: ${JSONSerializer.stringify(
                     subscriptionRequest
-                )}. ProviderAttribute ${attributeName} for providerId ${
-                    providerParticipantId
-                } is not registered or notifiable`,
+                )}. ProviderAttribute ${attributeName} for providerId ${providerParticipantId} is not registered or notifiable`,
                 subscriptionId
             });
             log.error(exception.detailMessage);
@@ -1083,9 +1076,9 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
                 exception = new SubscriptionException({
                     detailMessage: `error handling ${requestType}: ${JSONSerializer.stringify(
                         subscriptionRequest
-                    )}. expiryDateMs ${subscriptionRequest.qos.expiryDateMs} for ProviderEvent ${
-                        eventName
-                    } for providerId ${providerParticipantId} lies in the past`,
+                    )}. expiryDateMs ${
+                        subscriptionRequest.qos.expiryDateMs
+                    } for ProviderEvent ${eventName} for providerId ${providerParticipantId} lies in the past`,
                     subscriptionId
                 });
                 log.error(exception.detailMessage);
@@ -1196,9 +1189,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
                 exception = new SubscriptionException({
                     detailMessage: `error handling multicast subscription request: ${JSONSerializer.stringify(
                         subscriptionRequest
-                    )}. Provider: ${providerParticipantId} event ${
-                        eventName
-                    } is marked as selective, which is not allowed for multicasts`,
+                    )}. Provider: ${providerParticipantId} event ${eventName} is marked as selective, which is not allowed for multicasts`,
                     subscriptionId
                 });
                 log.error(exception.detailMessage);
@@ -1217,9 +1208,9 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
             const checkResult = event.checkFilterParameters(subscriptionRequest.filterParameters);
             if (checkResult.caughtErrors.length !== 0) {
                 exception = new SubscriptionException({
-                    detailMessage: `The incoming subscription request does not contain the expected filter parameters to subscribe to broadcast ${
-                        eventName
-                    } for providerId ${providerParticipantId}: ${JSON.stringify(checkResult.caughtErrors)}`,
+                    detailMessage: `The incoming subscription request does not contain the expected filter parameters to subscribe to broadcast ${eventName} for providerId ${providerParticipantId}: ${JSON.stringify(
+                        checkResult.caughtErrors
+                    )}`,
                     subscriptionId
                 });
                 log.error(exception.detailMessage);

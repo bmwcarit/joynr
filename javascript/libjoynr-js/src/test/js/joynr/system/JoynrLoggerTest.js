@@ -65,7 +65,10 @@ describe("libjoynr-js.joynr.system.JoynrLogger", () => {
 
     function logEventHelper(level) {
         loggerInstance[level](message);
-        expect(loggingSpy).toHaveBeenCalledWith({ level: { name: level }, messages: [message] });
+        expect(loggingSpy).toHaveBeenCalledWith({
+            level: { name: level },
+            messages: [message]
+        });
         loggingSpy.calls.reset();
     }
 
@@ -89,7 +92,10 @@ describe("libjoynr-js.joynr.system.JoynrLogger", () => {
         JoynrLogger.setFormatting("%d%c%p%m");
         loggerInstance.debug(message);
         const formattedMessage = `${getDateString() + loggerName}debug${message}`;
-        expect(loggingSpy).toHaveBeenCalledWith({ level: { name: "debug" }, messages: [formattedMessage] });
+        expect(loggingSpy).toHaveBeenCalledWith({
+            level: { name: "debug" },
+            messages: [formattedMessage]
+        });
     });
 
     it("works with complicated formatting", () => {
@@ -97,7 +103,10 @@ describe("libjoynr-js.joynr.system.JoynrLogger", () => {
         JoynrLogger.setFormatting("[%d{HH:mm:ss,SSS}][%c][%p] %m{2}");
         loggerInstance.debug(message);
         const formattedMessage = `[${getDateString()}][${loggerName}][debug] ${message}`;
-        expect(loggingSpy).toHaveBeenCalledWith({ level: { name: "debug" }, messages: [formattedMessage] });
+        expect(loggingSpy).toHaveBeenCalledWith({
+            level: { name: "debug" },
+            messages: [formattedMessage]
+        });
     });
 });
 

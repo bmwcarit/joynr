@@ -106,9 +106,7 @@ JoynrPersist.prototype = {
                                     throw e;
                                 }
                                 log.warn(
-                                    `corrupted files in JoynrPersist directory: unable to parse ${
-                                        filePath
-                                    }. Ignoring file. Error: ${e}`
+                                    `corrupted files in JoynrPersist directory: unable to parse ${filePath}. Ignoring file. Error: ${e}`
                                 );
                                 return null;
                             })

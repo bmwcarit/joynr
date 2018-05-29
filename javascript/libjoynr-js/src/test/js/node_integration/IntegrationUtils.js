@@ -108,7 +108,9 @@ IntegrationUtils.initializeChildProcess = function(childName, provisioningSuffix
 
     // always use a different debugging port to avoid reusing a port if there are shutdown issues.
     const processConfig = isDebugging
-        ? { execArgv: [`--inspect-brk=${IntegrationUtils.getRandomInt(1024, 49151)}`] }
+        ? {
+              execArgv: [`--inspect-brk=${IntegrationUtils.getRandomInt(1024, 49151)}`]
+          }
         : {};
 
     const forked = child_process.fork(path.join(__dirname, `${childName}.js`), [], processConfig);

@@ -69,7 +69,7 @@ describe("libjoynr-js.joynr.messaging.routing.MessageQueue", () => {
         const payload = "hello";
         let oldQueueSize;
         const maxIterations = Math.floor(
-            messageQueue.maxQueueSizeInKBytes * 1024 / UtilInternal.getLengthInBytes(payload)
+            (messageQueue.maxQueueSizeInKBytes * 1024) / UtilInternal.getLengthInBytes(payload)
         );
         const newJoynrMessage = new JoynrMessage({
             type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,

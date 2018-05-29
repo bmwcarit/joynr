@@ -261,8 +261,7 @@ function MessageRouter(settings) {
         for (hopIndex = 0; hopIndex < length; hopIndex++) {
             queuedCall = queuedAddNextHopCalls[hopIndex];
             if (queuedCall.participantId !== routingProxy.proxyParticipantId) {
-                that
-                    .addNextHopToParentRoutingTable(queuedCall.participantId, queuedCall.isGloballyVisible)
+                that.addNextHopToParentRoutingTable(queuedCall.participantId, queuedCall.isGloballyVisible)
                     .then(queuedCall.resolve)
                     .catch(queuedCall.reject);
             }
@@ -270,8 +269,7 @@ function MessageRouter(settings) {
         length = queuedRemoveNextHopCalls.length;
         for (hopIndex = 0; hopIndex < length; hopIndex++) {
             queuedCall = queuedRemoveNextHopCalls[hopIndex];
-            that
-                .removeNextHop(queuedCall.participantId)
+            that.removeNextHop(queuedCall.participantId)
                 .then(queuedCall.resolve)
                 .catch(queuedCall.reject);
         }
@@ -331,9 +329,7 @@ function MessageRouter(settings) {
                 return parentMessageRouterAddress;
             }
             throw new Error(
-                `nextHop cannot be resolved, as participant with id ${
-                    participantId
-                } is not reachable by parent routing table`
+                `nextHop cannot be resolved, as participant with id ${participantId} is not reachable by parent routing table`
             );
         }
 
@@ -510,9 +506,7 @@ function MessageRouter(settings) {
                 return routeInternal(parentMessageRouterAddress, joynrMessage);
             }
             throw new Error(
-                `nextHop cannot be resolved, as participant with id ${
-                    participantId
-                } is not reachable by parent routing table`
+                `nextHop cannot be resolved, as participant with id ${participantId} is not reachable by parent routing table`
             );
         }
 
@@ -598,9 +592,7 @@ function MessageRouter(settings) {
         let promise;
         if (serializedAddress === undefined || serializedAddress === null || serializedAddress === "{}") {
             log.info(
-                `addNextHop: HOP address ${serializedAddress} will not be persisted for participant id: ${
-                    participantId
-                }`
+                `addNextHop: HOP address ${serializedAddress} will not be persisted for participant id: ${participantId}`
             );
         } else if (address._typeName !== InProcessAddress._typeName && persistency) {
             // only persist if it's not an InProcessAddress

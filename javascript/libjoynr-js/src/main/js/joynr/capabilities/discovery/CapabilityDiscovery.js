@@ -480,9 +480,7 @@ function CapabilityDiscovery(
         });
         if (discoveryEntries === undefined || discoveryEntries.length !== 1) {
             log.warn(
-                `remove(): no capability entry found in local capabilities store for participantId ${
-                    participantId
-                }. Trying to remove the capability from global directory`
+                `remove(): no capability entry found in local capabilities store for participantId ${participantId}. Trying to remove the capability from global directory`
             );
             promise = removeParticipantIdFromGlobalCapabilitiesDirectory(participantId);
         } else if (discoveryEntries[0].qos.scope === ProviderScope.LOCAL || discoveryEntries.length < 1) {

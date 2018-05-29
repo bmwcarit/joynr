@@ -320,7 +320,9 @@ describe("libjoynr-js.joynr.capabilities.arbitration.Arbitrator", () => {
 
     function setSupportsOnChangeSubscriptionsToTrue(discoveryEntry) {
         discoveryEntry.qos = new ProviderQos(
-            UtilInternal.extend(discoveryEntry.qos, { supportsOnChangeSubscriptions: true })
+            UtilInternal.extend(discoveryEntry.qos, {
+                supportsOnChangeSubscriptions: true
+            })
         );
     }
 
@@ -412,7 +414,10 @@ describe("libjoynr-js.joynr.capabilities.arbitration.Arbitrator", () => {
                 domains: [domain],
                 interfaceName,
                 discoveryQos: discoveryQosWithShortTimers,
-                proxyVersion: new Version({ majorVersion: 49, minorVersion: expectedMinimumMinorVersion })
+                proxyVersion: new Version({
+                    majorVersion: 49,
+                    minorVersion: expectedMinimumMinorVersion
+                })
             })
             .then(onFulfilledSpy)
             .catch(onRejectedSpy);

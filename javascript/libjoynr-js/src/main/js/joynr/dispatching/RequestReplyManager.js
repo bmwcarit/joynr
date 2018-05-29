@@ -274,9 +274,9 @@ function RequestReplyManager(dispatcher) {
                     // if neither an operation nor an attribute exists in the
                     // provider => deliver MethodInvocationException
                     exception = new MethodInvocationException({
-                        detailMessage: `Could not find an operation "${request.methodName}" or an attribute "${
-                            attributeName
-                        }" in the provider`,
+                        detailMessage: `Could not find an operation "${
+                            request.methodName
+                        }" or an attribute "${attributeName}" in the provider`,
                         providerVersion: new Version({
                             majorVersion: provider.constructor.MAJOR_VERSION,
                             minorVersion: provider.constructor.MINOR_VERSION
@@ -381,7 +381,10 @@ function RequestReplyManager(dispatcher) {
                     replyCaller.callback(Typing.augmentTypes(reply.error));
                 }
             } else {
-                replyCaller.callback(undefined, { response: reply.response, settings: replyCaller.callbackSettings });
+                replyCaller.callback(undefined, {
+                    response: reply.response,
+                    settings: replyCaller.callbackSettings
+                });
             }
 
             replyCallers.delete(reply.requestReplyId);

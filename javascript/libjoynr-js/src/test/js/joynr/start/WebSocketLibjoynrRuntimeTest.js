@@ -186,7 +186,9 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
                 port: provisioning.ccAddress.port,
                 path: provisioning.ccAddress.path
             }),
-            localAddress: jasmine.objectContaining({ _typeName: "joynr.system.RoutingTypes.WebSocketClientAddress" }),
+            localAddress: jasmine.objectContaining({
+                _typeName: "joynr.system.RoutingTypes.WebSocketClientAddress"
+            }),
             provisioning: jasmine.any(Object),
             keychain: undefined
         });
@@ -251,7 +253,9 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
             .then(done)
             .catch(fail);
         expect(MessageQueue.prototype.constructor.calls.count()).toEqual(1);
-        expect(MessageQueue.prototype.constructor).toHaveBeenCalledWith({ maxQueueSizeInKBytes });
+        expect(MessageQueue.prototype.constructor).toHaveBeenCalledWith({
+            maxQueueSizeInKBytes
+        });
     });
 
     it("will call Dispatcher with the settings from the provisioning", done => {

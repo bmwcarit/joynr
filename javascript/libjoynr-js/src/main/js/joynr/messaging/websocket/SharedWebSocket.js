@@ -76,7 +76,9 @@ const SharedWebSocket = function SharedWebSocket(settings) {
      *            libjoynr
      */
     function initializeConnection() {
-        websocket.send(websocket.encodeString(JSON.stringify(localAddress)), { binary: true });
+        websocket.send(websocket.encodeString(JSON.stringify(localAddress)), {
+            binary: true
+        });
     }
 
     function sendMessage(joynrMessage) {

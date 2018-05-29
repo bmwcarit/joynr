@@ -91,9 +91,7 @@ describe("libjoynr-js.integration.end2end.subscription", () => {
             })
             .catch(error => {
                 throw new Error(
-                    `only ${spy.onReceive.calls.count()} successful publications arrived from expected ${
-                        expectedPublications
-                    }:${error}`
+                    `only ${spy.onReceive.calls.count()} successful publications arrived from expected ${expectedPublications}:${error}`
                 );
             });
     }

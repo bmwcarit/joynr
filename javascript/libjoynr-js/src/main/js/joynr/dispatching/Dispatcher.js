@@ -865,11 +865,11 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
 
             default:
                 log.error(
-                    `unknown JoynrMessage type : ${
-                        joynrMessage.type
-                    }. Discarding message: ${// TODO the js formatter is breaking this way, and jslint is
-                    // complaining.....
-                    JSONSerializer.stringify(joynrMessage)}`
+                    `unknown JoynrMessage type : ${joynrMessage.type}. Discarding message: ${
+                        // TODO the js formatter is breaking this way, and jslint is
+                        // complaining.....
+                        JSONSerializer.stringify(joynrMessage)
+                    }`
                 );
                 break;
         }

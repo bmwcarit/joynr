@@ -69,7 +69,9 @@ function sendQueuedSubscriptions(client, queuedSubscriptions, qosLevel, sendFini
 function sendMessage(client, topic, joynrMessage, sendQosLevel, queuedMessages) {
     const deferred = UtilInternal.createDeferred();
     try {
-        client.publish(topic, MessageSerializer.stringify(joynrMessage), { qos: sendQosLevel });
+        client.publish(topic, MessageSerializer.stringify(joynrMessage), {
+            qos: sendQosLevel
+        });
         deferred.resolve();
         // Error is thrown if the socket is no longer open, so requeue to the front
     } catch (e) {

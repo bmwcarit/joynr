@@ -295,7 +295,9 @@ describe("libjoynr-js.joynr.provider.ProviderOperation", () => {
         operationSpy.calls.reset();
         operationSpy.and.returnValue(42);
         operationSpy.and.callFake(() => {
-            throw new ProviderRuntimeException({ detailMessage: exampleDetailMessage });
+            throw new ProviderRuntimeException({
+                detailMessage: exampleDetailMessage
+            });
         });
 
         return myOperation
