@@ -25,9 +25,7 @@
 #include "joynr/CapabilitiesRegistrar.h"
 #include "joynr/Dispatcher.h"
 #include "joynr/IKeychain.h"
-#include "joynr/InProcessDispatcher.h"
 #include "joynr/InProcessMessagingAddress.h"
-#include "joynr/InProcessPublicationSender.h"
 #include "joynr/MessageSender.h"
 #include "joynr/MessageQueue.h"
 #include "joynr/MessagingStubFactory.h"
@@ -91,26 +89,15 @@ ShortCircuitRuntime::ShortCircuitRuntime(std::unique_ptr<Settings> settings,
             singleThreadedIOService.getIOService(), messageSender, enablePersistency);
     subscriptionManager = std::make_shared<SubscriptionManager>(
             singleThreadedIOService.getIOService(), messageRouter);
-    inProcessDispatcher =
-            std::make_shared<InProcessDispatcher>(singleThreadedIOService.getIOService());
 
-    inProcessPublicationSender = std::make_shared<InProcessPublicationSender>(subscriptionManager);
-    auto inProcessConnectorFactory = std::make_unique<InProcessConnectorFactory>(
-            subscriptionManager,
-            publicationManager,
-            inProcessPublicationSender,
-            std::dynamic_pointer_cast<IRequestCallerDirectory>(inProcessDispatcher));
     auto joynrMessagingConnectorFactory =
             std::make_unique<JoynrMessagingConnectorFactory>(messageSender, subscriptionManager);
-    auto connectorFactory = std::make_unique<ConnectorFactory>(
-            std::move(inProcessConnectorFactory), std::move(joynrMessagingConnectorFactory));
-    proxyFactory = std::make_unique<ProxyFactory>(std::move(connectorFactory));
+    proxyFactory = std::make_unique<ProxyFactory>(std::move(joynrMessagingConnectorFactory));
 
     std::string persistenceFilename = "dummy.txt";
     participantIdStorage = std::make_shared<ParticipantIdStorage>(persistenceFilename);
 
     std::vector<std::shared_ptr<IDispatcher>> dispatcherList;
-    dispatcherList.push_back(inProcessDispatcher);
     dispatcherList.push_back(joynrDispatcher);
 
     joynrDispatcher->registerPublicationManager(publicationManager);
