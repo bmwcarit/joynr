@@ -1,6 +1,4 @@
-/*jslint node: true */
-/*jslint es5: true, nomen: true */
-
+/*eslint global-require: "off"*/
 /*
  * #%L
  * %%
@@ -24,18 +22,11 @@ const IltUtil = require("./IltUtil.js");
 
 const testbase = require("test-base");
 const log = testbase.logging.log;
-const prettyLog = testbase.logging.prettyLog;
 
 const ExtendedEnumerationWithPartlyDefinedValues = require("../generated-javascript/joynr/interlanguagetest/namedTypeCollection2/ExtendedEnumerationWithPartlyDefinedValues.js");
-const ExtendedInterfaceEnumerationInTypeCollection = require("../generated-javascript/joynr/interlanguagetest/namedTypeCollection2/ExtendedInterfaceEnumerationInTypeCollection.js");
 const ExtendedTypeCollectionEnumerationInTypeCollection = require("../generated-javascript/joynr/interlanguagetest/namedTypeCollection2/ExtendedTypeCollectionEnumerationInTypeCollection.js");
 const Enumeration = require("../generated-javascript/joynr/interlanguagetest/Enumeration.js");
-const MethodWithAnonymousErrorEnumErrorEnum = require("../generated-javascript/joynr/interlanguagetest/TestInterface/MethodWithAnonymousErrorEnumErrorEnum.js");
-const ExtendedErrorEnumTc = require("../generated-javascript/joynr/interlanguagetest/namedTypeCollection2/ExtendedErrorEnumTc.js");
-const MethodWithExtendedErrorEnumErrorEnum = require("../generated-javascript/joynr/interlanguagetest/TestInterface/MethodWithExtendedErrorEnumErrorEnum.js");
 const MapStringString = require("../generated-javascript/joynr/interlanguagetest/namedTypeCollection2/MapStringString.js");
-
-const Promise = require("bluebird").Promise;
 
 jasmine.getEnv().addReporter(new testbase.TestReporter());
 
@@ -830,7 +821,7 @@ describe("Consumer test", () => {
                 spy.onPublicationError.reset();
 
                 log("callMethodFireAndForgetWithInputParameter CALL");
-                testInterfaceProxy.methodFireAndForgetWithoutParameter().catch(() => {
+                testInterfaceProxy.methodFireAndForgetWithoutParameter().catch(error => {
                     log(`callMethodFireAndForgetWithInputParameter CALL - FAILED: ${error}`);
                     expect(`callMethodFireAndForgetWithInputParameter CALL - FAILED: ${error}`).toBeFalsy();
                 });
@@ -2472,7 +2463,7 @@ describe("Consumer test", () => {
             });
         });
 
-        callSubscribeBroadcastWithSinglePrimitiveParameter = function(partitionsToUse) {
+        function callSubscribeBroadcastWithSinglePrimitiveParameter(partitionsToUse) {
             const spy = jasmine.createSpyObj("spy", [
                 "onFulfilled",
                 "onError",
@@ -2623,7 +2614,7 @@ describe("Consumer test", () => {
                 expect(spy.onFulfilled.callCount).toEqual(1);
                 expect(spy.onError.callCount).toEqual(0);
             });
-        };
+        }
 
         it("callSubscribeBroadcastWithSinglePrimitiveParameter_NoPartitions", () => {
             callSubscribeBroadcastWithSinglePrimitiveParameter([]);
@@ -2633,7 +2624,7 @@ describe("Consumer test", () => {
             callSubscribeBroadcastWithSinglePrimitiveParameter(["partition0", "partition1"]);
         });
 
-        callSubscribeBroadcastWithMultiplePrimitiveParameters = function(partitionsToUse) {
+        function callSubscribeBroadcastWithMultiplePrimitiveParameters(partitionsToUse) {
             const spy = jasmine.createSpyObj("spy", [
                 "onFulfilled",
                 "onError",
@@ -2769,7 +2760,7 @@ describe("Consumer test", () => {
                 expect(spy.onFulfilled.callCount).toEqual(1);
                 expect(spy.onError.callCount).toEqual(0);
             });
-        };
+        }
 
         it("callSubscribeBroadcastWithMultiplePrimitiveParameters_NoPartitions", () => {
             callSubscribeBroadcastWithMultiplePrimitiveParameters([]);
@@ -2779,7 +2770,7 @@ describe("Consumer test", () => {
             callSubscribeBroadcastWithMultiplePrimitiveParameters(["partition0", "partition1"]);
         });
 
-        callSubscribeBroadcastWithSingleArrayParameter = function(partitionsToUse) {
+        function callSubscribeBroadcastWithSingleArrayParameter(partitionsToUse) {
             const spy = jasmine.createSpyObj("spy", [
                 "onFulfilled",
                 "onError",
@@ -2913,7 +2904,7 @@ describe("Consumer test", () => {
                 expect(spy.onFulfilled.callCount).toEqual(1);
                 expect(spy.onError.callCount).toEqual(0);
             });
-        };
+        }
 
         it("callSubscribeBroadcastWithSingleArrayParameter_NoPartitions", () => {
             callSubscribeBroadcastWithSingleArrayParameter([]);
@@ -2923,7 +2914,7 @@ describe("Consumer test", () => {
             callSubscribeBroadcastWithSingleArrayParameter(["partition0", "partition1"]);
         });
 
-        callSubscribeBroadcastWithMultipleArrayParameters = function(partitionsToUse) {
+        function callSubscribeBroadcastWithMultipleArrayParameters(partitionsToUse) {
             const spy = jasmine.createSpyObj("spy", [
                 "onFulfilled",
                 "onError",
@@ -3060,7 +3051,7 @@ describe("Consumer test", () => {
                 expect(spy.onFulfilled.callCount).toEqual(1);
                 expect(spy.onError.callCount).toEqual(0);
             });
-        };
+        }
 
         it("callSubscribeBroadcastWithMultipleArrayParameters_NoPartitions", () => {
             callSubscribeBroadcastWithMultipleArrayParameters([]);
@@ -3072,7 +3063,7 @@ describe("Consumer test", () => {
 
         const byteBufferArg = [-128, 0, 127];
 
-        callSubscribeBroadcastWithSingleByteBufferParameter = function(byteBufferArg, partitionsToUse) {
+        function callSubscribeBroadcastWithSingleByteBufferParameter(byteBufferArg, partitionsToUse) {
             const spy = jasmine.createSpyObj("spy", [
                 "onPublication",
                 "onPublicationError",
@@ -3190,7 +3181,7 @@ describe("Consumer test", () => {
                 expect(spy.onSubscribedError.callCount).toEqual(0);
                 log("Successfully unsubscribed from broadcast");
             });
-        };
+        }
 
         it("callSubscribeBroadcastWithSingleByteBufferParameter_NoPartitions", () => {
             callSubscribeBroadcastWithSingleByteBufferParameter(byteBufferArg, []);
@@ -3203,7 +3194,7 @@ describe("Consumer test", () => {
         const byteBufferArg1 = [-5, 125];
         const byteBufferArg2 = [78, 0];
 
-        callSubscribeBroadcastWithMultipleByteBufferParameters = function(
+        function callSubscribeBroadcastWithMultipleByteBufferParameters(
             byteBufferArg1,
             byteBufferArg2,
             partitionsToUse
@@ -3330,7 +3321,7 @@ describe("Consumer test", () => {
                 expect(spy.onUnsubscribedError.callCount).toEqual(0);
                 log("Successfully unsubscribed from broadcast");
             });
-        };
+        }
 
         it("callSubscribeBroadcastWithMultipleByteBufferParameters_NoPartitions", () => {
             callSubscribeBroadcastWithMultipleByteBufferParameters(byteBufferArg1, byteBufferArg2, []);
@@ -3343,7 +3334,7 @@ describe("Consumer test", () => {
             ]);
         });
 
-        callSubscribeBroadcastWithSingleEnumerationParameter = function(partitionsToUse) {
+        function callSubscribeBroadcastWithSingleEnumerationParameter(partitionsToUse) {
             const spy = jasmine.createSpyObj("spy", [
                 "onFulfilled",
                 "onError",
@@ -3479,7 +3470,7 @@ describe("Consumer test", () => {
                 expect(spy.onFulfilled.callCount).toEqual(1);
                 expect(spy.onError.callCount).toEqual(0);
             });
-        };
+        }
 
         it("callSubscribeBroadcastWithSingleEnumerationParameter_NoPartitions", () => {
             callSubscribeBroadcastWithSingleEnumerationParameter([]);
@@ -3489,7 +3480,7 @@ describe("Consumer test", () => {
             callSubscribeBroadcastWithSingleEnumerationParameter(["partition0", "partition1"]);
         });
 
-        callSubscribeBroadcastWithMultipleEnumerationParameter = function(partitionsToUse) {
+        function callSubscribeBroadcastWithMultipleEnumerationParameter(partitionsToUse) {
             const spy = jasmine.createSpyObj("spy", [
                 "onFulfilled",
                 "onError",
@@ -3629,7 +3620,7 @@ describe("Consumer test", () => {
                 expect(spy.onFulfilled.callCount).toEqual(1);
                 expect(spy.onError.callCount).toEqual(0);
             });
-        };
+        }
 
         it("callSubscribeBroadcastWithMultipleEnumerationParameter_NoPartitions", () => {
             callSubscribeBroadcastWithMultipleEnumerationParameter([]);
@@ -3639,7 +3630,7 @@ describe("Consumer test", () => {
             callSubscribeBroadcastWithMultipleEnumerationParameter(["partition0", "partition1"]);
         });
 
-        callSubscribeBroadcastWithSingleStructParameter = function(partitionsToUse) {
+        function callSubscribeBroadcastWithSingleStructParameter(partitionsToUse) {
             const spy = jasmine.createSpyObj("spy", [
                 "onFulfilled",
                 "onError",
@@ -3778,7 +3769,7 @@ describe("Consumer test", () => {
                 expect(spy.onFulfilled.callCount).toEqual(1);
                 expect(spy.onError.callCount).toEqual(0);
             });
-        };
+        }
 
         it("callSubscribeBroadcastWithSingleStructParameter_NoPartitions", () => {
             callSubscribeBroadcastWithSingleStructParameter([]);
@@ -3788,7 +3779,7 @@ describe("Consumer test", () => {
             callSubscribeBroadcastWithSingleStructParameter(["partition0", "partition1"]);
         });
 
-        callSubscribeBroadcastWithMultipleStructParameter = function(partitionsToUse) {
+        function callSubscribeBroadcastWithMultipleStructParameter(partitionsToUse) {
             const spy = jasmine.createSpyObj("spy", [
                 "onFulfilled",
                 "onError",
@@ -3923,7 +3914,7 @@ describe("Consumer test", () => {
                 expect(spy.onFulfilled.callCount).toEqual(1);
                 expect(spy.onError.callCount).toEqual(0);
             });
-        };
+        }
 
         it("callSubscribeBroadcastWithMultipleStructParameter_NoPartitions", () => {
             callSubscribeBroadcastWithMultipleStructParameter([]);
