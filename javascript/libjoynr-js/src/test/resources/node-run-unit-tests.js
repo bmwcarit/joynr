@@ -20,6 +20,7 @@
  */
 
 // run Jasmine 2.x unit tests via node
+console.log("joynr Jasmine 2.x unit tests");
 
 require("../js/node-unit-test-helper");
 
