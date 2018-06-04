@@ -104,7 +104,12 @@ IntegrationUtils.initializeChildProcess = function(childName, provisioningSuffix
     childStarted[processId] = IntegrationUtils.createPromise();
     childFinished[processId] = IntegrationUtils.createPromise();
 
-    const processConfig = process.env.debugPort ? { execArgv: ["--inspect-brk=" + process.env.debugPort] } : {};
+    const isDebugging = process.execArgv.join().includes("--inspect");
+
+    // always use a different debugging port to avoid reusing a port if there are shutdown issues.
+    const processConfig = isDebugging
+        ? { execArgv: ["--inspect-brk=" + IntegrationUtils.getRandomInt(1024, 49151)] }
+        : {};
 
     const forked = child_process.fork(path.join(__dirname, childName + ".js"), [], processConfig);
     forked.on("message", msg => {
@@ -199,6 +204,10 @@ IntegrationUtils.waitALittle = function waitALittle(time) {
         time + " ms to elapse",
         time
     );
+};
+
+IntegrationUtils.getRandomInt = function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
 };
 
 module.exports = IntegrationUtils;

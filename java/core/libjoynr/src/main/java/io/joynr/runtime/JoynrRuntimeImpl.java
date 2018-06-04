@@ -18,13 +18,10 @@
  */
 package io.joynr.runtime;
 
-import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
-
 import java.util.HashSet;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ScheduledExecutorService;
 
 import org.reflections.Reflections;
 import org.slf4j.Logger;
@@ -72,10 +69,6 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
 
     @Inject
     ShutdownNotifier shutdownNotifier;
-
-    @Inject
-    @Named(JOYNR_SCHEDULER_CLEANUP)
-    ScheduledExecutorService cleanupScheduler;
 
     private final ProxyBuilderFactory proxyBuilderFactory;
 

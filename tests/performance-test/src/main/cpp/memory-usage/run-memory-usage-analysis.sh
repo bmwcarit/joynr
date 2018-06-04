@@ -2,7 +2,7 @@
 ###
 # #%L
 # %%
-# Copyright (C) 2017 BMW Car IT GmbH
+# Copyright (C) 2018 BMW Car IT GmbH
 # %%
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,10 +19,7 @@
 ###
 
 ### PREREQUISITE ###
-# The CPP memory usage tests (CPP_MEMORY_SYNC and CPP_MEMORY_ASYNC) assume that
-# heaptrack is installed
-# https://quickgit.kde.org/?p=heaptrack.git
-# https://github.com/KDE/heaptrack
+# The CPP memory usage tests (CPP_MEMORY_SYNC and CPP_MEMORY_ASYNC) assumes that valgrind is installed
 ####################
 
 # Shell script parameters
@@ -31,6 +28,7 @@ JOYNR_BUILD_DIR=""
 PERFORMANCETESTS_BUILD_DIR=""
 PERFORMANCETESTS_RESULTS_DIR=""
 TESTCASE=""
+VALGRIND_COMMAND_PARMS="--leak-check=full --show-leak-kinds=all"
 VALIDITY=7200000 # 7200000ms = 2h
 PERIOD=100 # 100ms
 
@@ -45,9 +43,7 @@ MQTT_BROKER_URI="tcp://localhost:1883"
 # Process IDs for processes which must be terminated later
 MOSQUITTO_PID=""
 CLUSTER_CONTROLLER_PID=""
-HEAPTRACK_CLUSTER_CONTROLLER_PID=""
 PROVIDER_PID=""
-HEAPTRACK_PROVIDER_PID=""
 MEMORY_USAGE_TEST_PID=""
 
 function startMosquitto {
@@ -70,14 +66,11 @@ function startCppClusterController {
     CC_STDERR=${PERFORMANCETESTS_RESULTS_DIR}/cc_${TESTCASE}_stderr.txt
 
     cd $PERFORMANCETESTS_RESULTS_DIR
-    heaptrack $JOYNR_BUILD_DIR/bin/cluster-controller 1>$CC_STDOUT 2>$CC_STDERR & HEAPTRACK_CLUSTER_CONTROLLER_PID=$!
+    valgrind $VALGRIND_COMMAND_PARMS $JOYNR_BUILD_DIR/bin/cluster-controller 1>$CC_STDOUT 2>$CC_STDERR &
+    CLUSTER_CONTROLLER_PID=$!
 
     # Wait long enough in order to allow the cluster controller finish its start procedure
     sleep 5
-
-    CLUSTER_CONTROLLER_PID=`ps -o pid,cmd | grep cluster-controller | grep -v heaptrack | cut -c1-7`
-
-    echo "Memory usage analysis cluster controller started"
 }
 
 function startCppPerformanceTestProvider {
@@ -87,14 +80,11 @@ function startCppPerformanceTestProvider {
     PROVIDER_STDERR=$PERFORMANCETESTS_RESULTS_DIR/provider_${TESTCASE}_stderr.txt
 
     cd $PERFORMANCETESTS_RESULTS_DIR
-    heaptrack $PERFORMANCETESTS_BUILD_DIR/bin/performance-provider-app -d $DOMAINNAME 1>$PROVIDER_STDOUT 2>$PROVIDER_STDERR & HEAPTRACK_PROVIDER_PID=$!
+    valgrind $VALGRIND_COMMAND_PARMS $PERFORMANCETESTS_BUILD_DIR/bin/performance-provider-app -d $DOMAINNAME 1>$PROVIDER_STDOUT 2>$PROVIDER_STDERR &
+    PROVIDER_PID=$!
 
     # Wait long enough in order to allow the provider to finish the registration procedure
     sleep 5
-
-    PROVIDER_PID=`ps -o pid,cmd | grep performance-provider-app | grep -v heaptrack | cut -c1-7`
-
-    echo "Memory usage analysis provider started"
 }
 
 function startMemoryUsageTest {
@@ -104,7 +94,8 @@ function startMemoryUsageTest {
     TEST_STDERR=$PERFORMANCETESTS_RESULTS_DIR/test_memory_${TESTCASE}_stderr.txt
 
     cd $PERFORMANCETESTS_RESULTS_DIR
-    heaptrack $PERFORMANCETESTS_BUILD_DIR/bin/memory-usage-consumer-app $DOMAINNAME $TESTCASE $VALIDITY $INPUTDATA_STRINGLENGTH 1>$TEST_STDOUT 2>$TEST_STDERR & MEMORY_USAGE_TEST_PID=$!
+    valgrind $VALGRIND_COMMAND_PARMS $PERFORMANCETESTS_BUILD_DIR/bin/memory-usage-consumer-app $DOMAINNAME $TESTCASE $VALIDITY $INPUTDATA_STRINGLENGTH 1>$TEST_STDOUT 2>$TEST_STDERR &
+    MEMORY_USAGE_TEST_PID=$!
     wait $MEMORY_USAGE_TEST_PID
 }
 
@@ -141,12 +132,6 @@ function echoUsage {
 This tool creates several files in the folder specified with -r. They are:
 <cc/provider/test_memory>_CPP_MEMORY_<SYNC/ASYNC>_<stderr/stdout>.txt: \
 The output of the cluster controller / provider / consumer.
-heaptrack.<cluster-controller/performance-provider-app/memory-usage-consumer-app>.*.gz: \
-Raw output of heaptrack.
-heaptrack.<cluster-controller/performance-provider-app/memory-usage-consumer-app>.*.output.txt: \
-Analysis of heaptrack_print.
-heaptrack.<cluster-controller/performance-provider-app/memory-usage-consumer-app>.*.th1freq100.massif: \
-The heaptrack output, converted with threshold 1%, frequency 100, to massif-visualizer format.
 mosquitto-<stdout/stderr>.txt: Output of the mosquitto broker. \
 If these files do not exist, make sure that mosquitto is installed, not running and can be executed manually. \
 "
@@ -215,14 +200,5 @@ echo "Test finished. Shutting down provider and cluster controller."
 stopAnyProvider
 stopCppClusterController
 stopMosquitto
-###
-# The heaptrack output can be visualized with massif-visualizer
-# (shipped together with heaptrack) after it has been converted
-# to valgrind-massif format with heaptrack_print -M
-###
-echo "Converting heaptrack output."
-cd $PERFORMANCETESTS_RESULTS_DIR
+
 rm -fr resources
-heaptrack_print heaptrack.cluster-controller.${HEAPTRACK_CLUSTER_CONTROLLER_PID}.gz --massif-threshold 1 --massif-detailed-freq 100 -M heaptrack.cluster-controller.${HEAPTRACK_CLUSTER_CONTROLLER_PID}.th1freq100.massif -l1 > heaptrack.cluster-controller.${HEAPTRACK_CLUSTER_CONTROLLER_PID}.output.txt
-heaptrack_print heaptrack.performance-provider-app.${HEAPTRACK_PROVIDER_PID}.gz --massif-threshold 1 --massif-detailed-freq 100 -M heaptrack.performance-provider-app.${HEAPTRACK_PROVIDER_PID}.th1freq100.massif -l1 > heaptrack.performance-provider-app.${HEAPTRACK_PROVIDER_PID}.output.txt
-heaptrack_print heaptrack.memory-usage-consumer-app.${MEMORY_USAGE_TEST_PID}.gz --massif-threshold 1 --massif-detailed-freq 100 -M heaptrack.memory-usage-consumer-app.${MEMORY_USAGE_TEST_PID}.th1freq100.massif -l1 > heaptrack.memory-usage-consumer-app.${MEMORY_USAGE_TEST_PID}.output.txt

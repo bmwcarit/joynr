@@ -101,6 +101,11 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
     }
 
     @Override
+    public Future<Void> add(Callback<Void> callback, DiscoveryEntry discoveryEntry, Boolean awaitGlobalRegistration) {
+        return getDefaultDiscoveryProxy().add(callback, discoveryEntry, awaitGlobalRegistration);
+    }
+
+    @Override
     public Future<DiscoveryEntryWithMetaInfo[]> lookup(final Callback<DiscoveryEntryWithMetaInfo[]> callback,
                                                        String[] domains,
                                                        String interfaceName,

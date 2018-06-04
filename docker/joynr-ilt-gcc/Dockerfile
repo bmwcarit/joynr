@@ -149,6 +149,22 @@ RUN export SMRF_VERSION=0.2.2 \
     && rm -rf smrf
 
 ###################################################
+# install MoCOCrW
+###################################################
+
+RUN export MoCOCrW_VERSION=master \
+    && cd /opt \
+    && git clone https://github.com/bmwcarit/MoCOCrW.git \
+    && cd MoCOCrW \
+    && git checkout $MoCOCrW_VERSION \
+    && mkdir build \
+    && cd build \
+    && cmake -DBUILD_TESTING=Off .. \
+    && make install -j"$(nproc)" \
+    && cd /opt \
+    && rm -rf MoCOCrW
+
+###################################################
 # install valgrind
 ###################################################
 

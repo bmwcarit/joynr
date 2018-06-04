@@ -221,8 +221,7 @@ void AbstractMessageRouter::registerGlobalRoutingEntryIfRequired(const Immutable
             // because the message is received via global transport (isGloballyVisible=true),
             // isGloballyVisible must be true
             const bool isGloballyVisible = true;
-            const TimePoint expiryDate =
-                    message.getExpiryDate() + messagingSettings.getRoutingTableGracePeriodMs();
+            const TimePoint expiryDate = TimePoint::max();
 
             const bool isSticky = false;
             addNextHop(message.getSender(),

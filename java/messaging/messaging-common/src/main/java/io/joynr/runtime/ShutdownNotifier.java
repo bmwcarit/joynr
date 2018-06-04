@@ -37,11 +37,24 @@ public class ShutdownNotifier {
      * @param shutdownListener
      */
     public void registerForShutdown(ShutdownListener shutdownListener) {
+        shutdownListeners.add(0, shutdownListener);
+    }
+
+    /**
+     * register to have the listener's shutdown method called at system shutdown
+     * as one of the last listeners. It is a partial ordering and ensures that this
+     * listener's shutdown will be called after all listeners registered using
+     * {@link registerForShutdown}.
+     * NOTE: Listeners who manage some executor service should use this method.
+     * @param shutdownListener
+     */
+    public void registerToBeShutdownAsLast(ShutdownListener shutdownListener) {
         shutdownListeners.add(shutdownListener);
     }
 
     public void shutdown() {
         for (ShutdownListener shutdownListener : shutdownListeners) {
+            logger.trace("shutting down {}", shutdownListener);
             try {
                 shutdownListener.shutdown();
             } catch (Exception e) {

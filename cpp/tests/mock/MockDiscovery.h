@@ -33,6 +33,14 @@ public:
             )
     );
     MOCK_METHOD3(
+            add,
+            void(
+                const joynr::types::DiscoveryEntry& entry,
+                const bool& awaitGlobalRegistration,
+                boost::optional<joynr::MessagingQos> qos
+            )
+    );
+    MOCK_METHOD3(
             lookup,
             void(
                 joynr::types::DiscoveryEntryWithMetaInfo& result,
@@ -64,12 +72,32 @@ public:
                 boost::optional<joynr::MessagingQos> qos
             ) noexcept override
     {
-        return addAsyncMock(discoveryEntry, std::move(onSuccess), std::move(onRuntimeError), std::move(qos));
+        const bool awaitGlobalRegistration = false;
+        return addAsyncMock(discoveryEntry,
+                            awaitGlobalRegistration,
+                            std::move(onSuccess),
+                            std::move(onRuntimeError),
+                            std::move(qos));
     }
-    MOCK_METHOD4(
+    std::shared_ptr<joynr::Future<void>> addAsync (
+                const joynr::types::DiscoveryEntry& discoveryEntry,
+                const bool& awaitGlobalRegistration,
+                std::function<void(void)> onSuccess,
+                std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError,
+                boost::optional<joynr::MessagingQos> qos
+            ) noexcept override
+    {
+        return addAsyncMock(discoveryEntry,
+                            awaitGlobalRegistration,
+                            std::move(onSuccess),
+                            std::move(onRuntimeError),
+                            std::move(qos));
+    }
+    MOCK_METHOD5(
             addAsyncMock,
             std::shared_ptr<joynr::Future<void>>(
                 const joynr::types::DiscoveryEntry& discoveryEntry,
+                const bool& awaitGlobalRegistration,
                 std::function<void(void)> onSuccess,
                 std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError,
                 boost::optional<joynr::MessagingQos> qos

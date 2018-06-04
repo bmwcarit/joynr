@@ -4,6 +4,7 @@ function usage
 {
     echo "usage: build-docker-image --version versionnumber --joynrrpm rpmname"
     echo "       --testrpm testrpmname"
+    echo "       --mococrwrpm mococrwrpmname"
     echo "       --smrfrpm smrfrpmname"
     echo "       [--repository mydockerrepo.org]"
     echo "Must be called from the joynr source directory"
@@ -12,6 +13,7 @@ function usage
 repository=
 version=
 joynrrpm=
+mococrwrpm=
 smrfrpm=
 testrpm=
 dockerbuildargs=
@@ -32,6 +34,9 @@ echo "PARAM is: $1"
                                    ;;
         -j | --joynrrpm )          shift
                                    joynrrpm="$1"
+                                   ;;
+        -m | --mococrwrpm )        shift
+                                   mococrwrpm="$1"
                                    ;;
         -s | --smrfrpm )           shift
                                    smrfrpm="$1"
@@ -85,6 +90,7 @@ docker build \
     --build-arg http_proxy=${http_proxy} \
     --build-arg https_proxy=${https_proxy} \
     --build-arg no_proxy=${no_proxy} \
+    --build-arg MOCOCRW_RPM_NAME=${mococrwrpm} \
     --build-arg SMRF_RPM_NAME=${smrfrpm} \
     --build-arg JOYNR_RPM_NAME=${joynrrpm} \
     --build-arg JOYNR_TEST_RPM_NAME=${testrpm} \

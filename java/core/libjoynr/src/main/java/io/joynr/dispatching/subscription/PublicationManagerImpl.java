@@ -33,6 +33,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.google.common.collect.HashMultimap;
@@ -41,6 +44,7 @@ import com.google.common.collect.SetMultimap;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+
 import io.joynr.dispatcher.rpc.ReflectionUtils;
 import io.joynr.dispatching.DirectoryListener;
 import io.joynr.dispatching.Dispatcher;
@@ -74,8 +78,6 @@ import joynr.SubscriptionReply;
 import joynr.SubscriptionRequest;
 import joynr.UnicastSubscriptionQos;
 import joynr.exceptions.ProviderRuntimeException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Singleton
 public class PublicationManagerImpl implements PublicationManager, DirectoryListener<ProviderContainer>,
@@ -834,6 +836,11 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
 
     @Override
     public void shutdown() {
+        for (ScheduledFuture<?> future : subscriptionEndFutures.values()) {
+            if (future != null) {
+                future.cancel(false);
+            }
+        }
         providerDirectory.removeListener(this);
     }
 }

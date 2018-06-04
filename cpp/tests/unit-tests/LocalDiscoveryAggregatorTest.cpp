@@ -61,7 +61,7 @@ private:
 
 TEST_F(LocalDiscoveryAggregatorTest, addAsync_proxyNotSet_doesNotThrow) {
     const types::DiscoveryEntryWithMetaInfo discoveryEntry;
-    EXPECT_DEATH(localDiscoveryAggregator.addAsync(discoveryEntry, nullptr, nullptr), "Assertion.*");
+    EXPECT_DEATH(localDiscoveryAggregator.addAsync(discoveryEntry, false, nullptr, nullptr), "Assertion.*");
 }
 
 TEST_F(LocalDiscoveryAggregatorTest, lookupAsyncDomainInterface_proxyNotSet_doesNotThrow) {
@@ -91,8 +91,13 @@ TEST_F(LocalDiscoveryAggregatorTest, addAsync_callsProxy) {
 
     types::DiscoveryEntryWithMetaInfo discoveryEntry;
     discoveryEntry.setParticipantId("testParticipantId");
-    EXPECT_CALL(*discoveryMock, addAsyncMock(Eq(discoveryEntry), Eq(nullptr), Eq(nullptr),_));
-    localDiscoveryAggregator.addAsync(discoveryEntry, nullptr, nullptr);
+    EXPECT_CALL(*discoveryMock,
+                addAsyncMock(Eq(discoveryEntry),
+                             _,
+                             Eq(nullptr),
+                             Eq(nullptr),
+                             _));
+    localDiscoveryAggregator.addAsync(discoveryEntry, false, nullptr, nullptr);
 }
 
 TEST_F(LocalDiscoveryAggregatorTest, lookupAsyncDomainInterface_callsProxy) {

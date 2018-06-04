@@ -27,6 +27,7 @@ var CompatibleProvidersTest = require("../js/node_integration/CompatibleProvider
 var End2EndRPCTest = require("../js/node_integration/End2EndRPCTest.js");
 var End2EndSubscriptionTest = require("../js/node_integration/End2EndSubscriptionTest.js");
 var End2EndDatatypesTest = require("../js/node_integration/End2EndDatatypesTest.js");
+var IncompatibleProviderTest = require("../js/node_integration/IncompatibleProviderTest.js");
 var LocalDiscoveryTest = require("../js/node_integration/LocalDiscoveryTest");
 
 console.log("all tests modules loaded");

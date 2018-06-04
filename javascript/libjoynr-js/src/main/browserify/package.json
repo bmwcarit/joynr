@@ -16,8 +16,7 @@
     "node-persist": "2.1.0",
     "smrf-native": "0.2.2",
     "uuid": "3.2.1",
-    "ws": "1.0.1",
-    "wscpp": "1.0.0"
+    "ws": "4.0.0"
   },
   "scripts": {
     "postinstall": "node bundle.js"

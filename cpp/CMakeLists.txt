@@ -703,8 +703,30 @@ set(JOYNR_MOCOCRW_REQUIRED_VERSION 0.1.0)
 if (USE_PLATFORM_MOCOCRW)
     find_package(MoCOCrW ${JOYNR_MOCOCRW_REQUIRED_VERSION} REQUIRED CONFIG)
 else(USE_PLATFORM_MOCOCRW)
-    message(ERROR "Retrieving mococrw from an external source is not supported yet.")
+    message(STATUS "############ Download: MoCOCrW ${JOYNR_MOCOCRW_REQUIRED_VERSION} ############")
+    get_property(EP_PREFIX DIRECTORY PROPERTY EP_PREFIX)
+    set(MOCOCRW_LIBRARY_NAME ${CMAKE_SHARED_LIBRARY_PREFIX}mococrw${CMAKE_SHARED_LIBRARY_SUFFIX})
+
+    AddExternalProject(
+        MoCOCrW
+        GIT_REPOSITORY https://github.com/bmwcarit/MoCOCrW
+        GIT_TAG a74df3b # master
+        TIMEOUT 10
+        CMAKE_ARGS "-DBUILD_TESTING=Off"
+    )
+
+    ExternalProject_Get_Property(MoCOCrW SOURCE_DIR)
+    # The directory does not exist when the import targets are checked. As a workaround
+    # we need to create it here. Otherwise the initial cmake call will fail.
+    set(MOCOCRW_INCLUDE_DIRS "${SOURCE_DIR}/src")
+    file(MAKE_DIRECTORY ${MOCOCRW_INCLUDE_DIRS})
+
+    ExternalProject_Get_Property(MoCOCrW BINARY_DIR)
+    set(MOCOCRW_BINARY_DIR ${BINARY_DIR}/src)
+    set(MOCOCRW_LIBRARIES "${MOCOCRW_BINARY_DIR}/${MOCOCRW_LIBRARY_NAME}")
+
 endif(USE_PLATFORM_MOCOCRW)
+include(CheckMOCOCRWImportTargets)
 
 ### Add smrf ############################################################
 set(JOYNR_SMRF_REQUIRED_VERSION 0.2.2)
