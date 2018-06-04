@@ -19,25 +19,25 @@
  * #L%
  */
 
-var joynr = require("joynr");
-var testbase = require("test-base");
+const joynr = require("joynr");
+const testbase = require("test-base");
 
-var prettyLog = testbase.logging.prettyLog;
-var error = testbase.logging.error;
-var log = testbase.logging.log;
+const prettyLog = testbase.logging.prettyLog;
+const error = testbase.logging.error;
+const log = testbase.logging.log;
 
 exports.implementation = {
     simpleAttribute: {
-        set: function() {},
+        set() {},
 
-        get: function() {}
+        get() {}
     },
 
-    echoString: function(opArgs) {
+    echoString(opArgs) {
         return { responseData: opArgs.data };
     },
 
-    echoByteArray: function(opArgs) {
+    echoByteArray(opArgs) {
         if (opArgs.data === undefined) {
             throw new joynr.exceptions.ProviderRuntimeException({
                 detailMessage: "echoByteArray: invalid argument data"
@@ -47,7 +47,7 @@ exports.implementation = {
         }
     },
 
-    echoComplexStruct: function(opArgs) {
+    echoComplexStruct(opArgs) {
         if (opArgs.data === undefined) {
             throw new joynr.exceptions.ProviderRuntimeException({
                 detailMessage: "echoComplexStruct: invalid argument data"

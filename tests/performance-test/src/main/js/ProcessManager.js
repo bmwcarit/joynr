@@ -19,14 +19,14 @@
  * #L%
  */
 
-var child_process = require("child_process");
-var exitHook = require("exit-hook");
-var PerformanceUtilities = require("./performanceutilities");
+const child_process = require("child_process");
+const exitHook = require("exit-hook");
+const PerformanceUtilities = require("./performanceutilities");
 
-var options = PerformanceUtilities.getCommandLineOptionsOrDefaults();
-var measureMemory = options.measureMemory == "true";
+const options = PerformanceUtilities.getCommandLineOptionsOrDefaults();
+const measureMemory = options.measureMemory == "true";
 
-var ProcessManager = {};
+const ProcessManager = {};
 
 function ChildProcessStuff(type) {
     this.file = type === "provider" ? "providerChildProcess.js" : "proxyChildProcess.js";
@@ -38,9 +38,9 @@ ChildProcessStuff.prototype.initialize = function() {
 
     this.process = child_process.fork("src/main/js/" + this.file, [], config);
     this.ready = PerformanceUtilities.createPromise();
-    var that = this;
+    const that = this;
 
-    this.process.on("message", function(msg) {
+    this.process.on("message", msg => {
         switch (msg.msg) {
             case "initialized":
                 that.ready.resolve();
@@ -106,10 +106,10 @@ ProcessManager.proxy.executeBenchmark = function(benchmarkConfig) {
 };
 
 ProcessManager.initializeChildProcesses = function() {
-    let providerPromise = ProcessManager.provider.initialize();
-    let proxyPromise = ProcessManager.proxy.initialize();
+    const providerPromise = ProcessManager.provider.initialize();
+    const proxyPromise = ProcessManager.proxy.initialize();
 
-    exitHook(function() {
+    exitHook(() => {
         ProcessManager.provider.shutdown();
         ProcessManager.proxy.shutdown();
     });
@@ -121,7 +121,7 @@ ProcessManager.takeHeapSnapShot = function(name) {
     this.provider.process.send({ msg: "takeHeapSnapShot", name: "./provider" + name + ".heapsnapshot" });
 };
 
-var initializedBroadcasts = false;
+let initializedBroadcasts = false;
 
 ProcessManager.initializeBroadcast = function(benchmarkConfig) {
     if (initializedBroadcasts) {
@@ -130,10 +130,10 @@ ProcessManager.initializeBroadcast = function(benchmarkConfig) {
     initializedBroadcasts = true;
     let count = benchmarkConfig.numProxies;
     this.broadcastProxies = [];
-    let broadcastProxiesInitializedPromises = [];
+    const broadcastProxiesInitializedPromises = [];
     while (count--) {
-        let broadcastProxy = new ChildProcessStuff("proxy");
-        let broadCastProxyInitialized = broadcastProxy.initialize();
+        const broadcastProxy = new ChildProcessStuff("proxy");
+        const broadCastProxyInitialized = broadcastProxy.initialize();
         this.broadcastProxies.push(broadcastProxy);
         broadcastProxiesInitializedPromises.push(broadCastProxyInitialized);
     }
@@ -147,14 +147,14 @@ ProcessManager.prepareBroadcasts = function(benchmarkConfig) {
 };
 
 ProcessManager._prepareBroadcastResults = function() {
-    let timeMs = Date.now() - this.broadcastStarted;
+    const timeMs = Date.now() - this.broadcastStarted;
     console.log("broadcast took: " + timeMs + "ms");
-    let providerFinished = this.provider.stopMeasurement();
+    const providerFinished = this.provider.stopMeasurement();
 
-    let broadcastProxiesFinished = this.broadcastProxies.map(proxy => proxy.stopMeasurement());
-    let broadcastProxiesReduced = Promise.all(broadcastProxiesFinished).then(results => {
+    const broadcastProxiesFinished = this.broadcastProxies.map(proxy => proxy.stopMeasurement());
+    const broadcastProxiesReduced = Promise.all(broadcastProxiesFinished).then(results => {
         let total;
-        let numberOfProxies = broadcastProxiesFinished.length;
+        const numberOfProxies = broadcastProxiesFinished.length;
         if (measureMemory) {
             total = results.reduce(
                 (acc, curr) => {
@@ -187,9 +187,9 @@ ProcessManager._prepareBroadcastResults = function() {
 ProcessManager.executeBroadcasts = function(benchmarkConfig) {
     this.provider.startMeasurement();
     let l = this.broadcastProxies.length;
-    let promises = [];
+    const promises = [];
     while (l--) {
-        let broadcastProxy = this.broadcastProxies[l];
+        const broadcastProxy = this.broadcastProxies[l];
         broadcastProxy.startMeasurement();
         promises.push(broadcastProxy.broadcastsReceivedPromise.promise);
     }

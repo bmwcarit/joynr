@@ -19,61 +19,61 @@
  * #L%
  */
 
-var joynr = require("joynr");
-var testbase = require("test-base");
-var PerformanceUtilities = require("./performanceutilities.js");
+let joynr = require("joynr");
+const testbase = require("test-base");
+const PerformanceUtilities = require("./performanceutilities.js");
 PerformanceUtilities.overrideRequire();
 
-var error = testbase.logging.error;
-var log = testbase.logging.log;
-var options = PerformanceUtilities.getCommandLineOptionsOrDefaults();
-var timeout = 600000;
-var Benchmarks = require("./Benchmarks");
-var benchmarks;
+const error = testbase.logging.error;
+const log = testbase.logging.log;
+const options = PerformanceUtilities.getCommandLineOptionsOrDefaults();
+const timeout = 600000;
+const Benchmarks = require("./Benchmarks");
+let benchmarks;
 
-var testType = options.testType;
+const testType = options.testType;
 
 log("Using domain " + options.domain);
 error("test runs: " + options.testRuns);
 error("Using testType: " + testType);
-var provisioning = PerformanceUtilities.getProvisioning(false);
+const provisioning = PerformanceUtilities.getProvisioning(false);
 provisioning.ccAddress.host = options.cchost;
 provisioning.ccAddress.port = options.ccport;
 joynr.selectRuntime("websocket.libjoynr");
 
-var heapdump = require("heapdump");
+const heapdump = require("heapdump");
 
-var echoProxy;
+let echoProxy;
 
 joynr
     .load(provisioning)
-    .then(function(loadedJoynr) {
+    .then(loadedJoynr => {
         joynr = loadedJoynr;
         log("joynr started");
         return loadedJoynr;
     })
-    .then(function(loadedJoynr) {
-        var messagingQos = new loadedJoynr.messaging.MessagingQos({
+    .then(loadedJoynr => {
+        const messagingQos = new loadedJoynr.messaging.MessagingQos({
             ttl: timeout
         });
-        var EchoProxy = require("../generated-javascript/joynr/tests/performance/EchoProxy.js");
+        const EchoProxy = require("../generated-javascript/joynr/tests/performance/EchoProxy.js");
         return loadedJoynr.proxyBuilder.build(EchoProxy, {
             domain: options.domain,
-            messagingQos: messagingQos
+            messagingQos
         });
     })
-    .then(function(echoProxy1) {
+    .then(echoProxy1 => {
         log("build proxy");
         echoProxy = echoProxy1;
         benchmarks = new Benchmarks(echoProxy, joynr);
         process.send({ msg: "initialized" });
     })
-    .catch(function(e) {
+    .catch(e => {
         throw e;
     });
 
-var count = 0;
-var totalBroadcastToReceive = 0;
+let count = 0;
+let totalBroadcastToReceive = 0;
 function countReceivedBroadCasts() {
     count++;
     if (count === totalBroadcastToReceive) {
@@ -81,7 +81,7 @@ function countReceivedBroadCasts() {
     }
 }
 
-var broadCastsPreparedOnce = false;
+let broadCastsPreparedOnce = false;
 
 function prepareBroadcast(amount) {
     if (broadCastsPreparedOnce) {
@@ -89,10 +89,10 @@ function prepareBroadcast(amount) {
         return Promise.resolve();
     }
     broadCastsPreparedOnce = true;
-    var promise = PerformanceUtilities.createPromise();
+    const promise = PerformanceUtilities.createPromise();
     totalBroadcastToReceive = amount;
 
-    var subscriptionQosOnChange = new joynr.proxy.MulticastSubscriptionQos({ validityMs: 60000 });
+    const subscriptionQosOnChange = new joynr.proxy.MulticastSubscriptionQos({ validityMs: 60000 });
 
     echoProxy.broadcastWithSinglePrimitiveParameter.subscribe({
         subscriptionQos: subscriptionQosOnChange,
@@ -103,21 +103,21 @@ function prepareBroadcast(amount) {
     return promise.promise;
 }
 
-var cpuUsage;
-var memoryIntervalId;
-var measureMemory = options.measureMemory == "true";
-var totalMemory = 0;
-var totalMemoryMeasurements = 0;
-var testData;
-var handler = function(msg) {
+let cpuUsage;
+let memoryIntervalId;
+const measureMemory = options.measureMemory == "true";
+let totalMemory = 0;
+let totalMemoryMeasurements = 0;
+let testData;
+const handler = function(msg) {
     switch (msg.msg) {
         case "terminate":
             joynr.shutdown();
             break;
         case "startMeasurement":
             if (measureMemory) {
-                memoryIntervalId = setInterval(function() {
-                    var memoryUsage = process.memoryUsage();
+                memoryIntervalId = setInterval(() => {
+                    const memoryUsage = process.memoryUsage();
                     totalMemory += memoryUsage.rss;
                     totalMemoryMeasurements++;
                 }, 500);
@@ -135,7 +135,7 @@ var handler = function(msg) {
         case "prepareBenchmark":
             testData = [];
             var numRuns = msg.config.numRuns;
-            for (var i = 0; i < numRuns; i++) {
+            for (let i = 0; i < numRuns; i++) {
                 testData.push(benchmarks[msg.config.name].generateData(i));
             }
             process.send({ msg: "prepareBenchmarkFinished" });
@@ -144,7 +144,7 @@ var handler = function(msg) {
             // TODO: add different types of tests -> one request after another, all parallel, etc.
 
             if (testType === "burst") {
-                var promiseArray = testData.map(item => benchmarks[msg.config.name].testProcedure(item));
+                const promiseArray = testData.map(item => benchmarks[msg.config.name].testProcedure(item));
                 Promise.all(promiseArray).then(() => process.send({ msg: "executeBenchmarkFinished" }));
             } else if (testType === "single") {
                 testData
@@ -158,7 +158,7 @@ var handler = function(msg) {
             break;
         case "takeHeapSnapShot":
             var fileName = msg.name;
-            heapdump.writeSnapshot(fileName, function(err, filename) {
+            heapdump.writeSnapshot(fileName, (err, filename) => {
                 error("dump written to: " + filename);
             });
             break;

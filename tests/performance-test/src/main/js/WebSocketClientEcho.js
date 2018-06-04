@@ -19,44 +19,44 @@
  * #L%
  */
 
-var args = process.argv.slice(2);
-var port = args[0];
-var times = args[1];
-var receivedMessages = 0;
-var remainingMessagesToSend = times;
-var startTimestamp;
+const args = process.argv.slice(2);
+const port = args[0];
+const times = args[1];
+let receivedMessages = 0;
+let remainingMessagesToSend = times;
+let startTimestamp;
 
 if (!port || !times) {
     console.log("usage: node WebSocketClientEcho.js port times");
     return;
 }
 
-var WebSocket = require("ws");
-var ws = new WebSocket("ws://localhost:" + port);
+const WebSocket = require("ws");
+const ws = new WebSocket("ws://localhost:" + port);
 
 // sample request message
-var toSend =
-        {
-            _typeName    : "joynr.JoynrMessage",
-            customHeaders: {},
-            header       : {
-                expiryDate: "1468570049406",
-                msgId     : "bbdf49f0-f585-44e6-b152-4812d5106547",
-                from      : "e4025dd3-ee2e-466e-b6ca-ba6cc8d20787",
-                to        : "4300528c-23ba-488e-8567-4bf344e084e9"
-            },
-            payload: "{\"_typeName\":\"joynr.Request\",\"methodName\":\"updateRoute\",\"paramDatatypes\":[\"joynr.types.Localisation.GpsPosition[]\"],\"params\":[[{\"_typeName\":\"joynr.types.Localisation.GpsPosition\",\"latitude\":11.65,\"longitude\":49.0065}]],\"requestReplyId\":\"947d9e50-572e-43e6-9aca-865505b20e24\"}",
-            type   : "request"
-        };
+const toSend = {
+    _typeName: "joynr.JoynrMessage",
+    customHeaders: {},
+    header: {
+        expiryDate: "1468570049406",
+        msgId: "bbdf49f0-f585-44e6-b152-4812d5106547",
+        from: "e4025dd3-ee2e-466e-b6ca-ba6cc8d20787",
+        to: "4300528c-23ba-488e-8567-4bf344e084e9"
+    },
+    payload:
+        '{"_typeName":"joynr.Request","methodName":"updateRoute","paramDatatypes":["joynr.types.Localisation.GpsPosition[]"],"params":[[{"_typeName":"joynr.types.Localisation.GpsPosition","latitude":11.65,"longitude":49.0065}]],"requestReplyId":"947d9e50-572e-43e6-9aca-865505b20e24"}',
+    type: "request"
+};
 
-var killServerMessage = "killServer";
-var totalTime;
+const killServerMessage = "killServer";
+let totalTime;
 
 var send = function(data) {
     remainingMessagesToSend--;
 
     if (remainingMessagesToSend >= 0) {
-        ws.send(data, function (error) {
+        ws.send(data, error => {
             if (error === undefined) {
                 send(data);
             }
@@ -64,23 +64,23 @@ var send = function(data) {
     }
 };
 
-ws.on("message", function(data, flags) {
+ws.on("message", (data, flags) => {
     receivedMessages++;
 
     if (receivedMessages >= times) {
-        var elapsedTimeMs = Date.now() - startTimestamp;
+        const elapsedTimeMs = Date.now() - startTimestamp;
 
         console.log("Elapsed time : " + elapsedTimeMs + " ms");
-        console.log("Throughput   : " + (times / (elapsedTimeMs / 1000.0)) + " Msgs/s");
+        console.log("Throughput   : " + times / (elapsedTimeMs / 1000.0) + " Msgs/s");
 
-        ws.send(killServerMessage, function () {
+        ws.send(killServerMessage, () => {
             ws.terminate();
         });
         return;
     }
 });
 
-ws.on("open", function open() {
+ws.on("open", () => {
     console.log("sending times:" + times);
     startTimestamp = Date.now();
     send(JSON.stringify(toSend));

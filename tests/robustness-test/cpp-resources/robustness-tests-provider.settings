@@ -1,2 +1,3 @@
 [messaging]
 persistence-file=robustness-tests-provider.persistence
+discovery-entry-expiry-interval-ms=10000

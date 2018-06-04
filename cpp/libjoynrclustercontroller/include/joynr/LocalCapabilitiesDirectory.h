@@ -91,10 +91,13 @@ public:
 
     void shutdown();
 
-    /*
+    /**
      * Remove all capabilities associated to participantId.
+     * @param participantId Participant ID of the capability that shall be removed
+     * @param removeGlobally if set to true, capability will be removed from global capabilities
+     * directory; default is false
      */
-    void remove(const std::string& participantId);
+    void remove(const std::string& participantId, bool removeGlobally = true);
 
     /*
      * Returns a list of capabilitiess matching the given domain and interfaceName,
@@ -135,6 +138,12 @@ public:
 
     // inherited method from joynr::system::DiscoveryProvider
     void add(const joynr::types::DiscoveryEntry& discoveryEntry,
+             std::function<void()> onSuccess,
+             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+            override;
+    // inherited method from joynr::system::DiscoveryProvider
+    void add(const joynr::types::DiscoveryEntry& discoveryEntry,
+             const bool& awaitGlobalRegistration,
              std::function<void()> onSuccess,
              std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
             override;
@@ -285,7 +294,10 @@ private:
     void callPendingLookups(const InterfaceAddress& interfaceAddress);
     bool isGlobal(const types::DiscoveryEntry& discoveryEntry) const;
 
-    void addInternal(const joynr::types::DiscoveryEntry& entry);
+    void addInternal(const joynr::types::DiscoveryEntry& entry,
+                     bool awaitGlobalRegistration,
+                     std::function<void()> onSuccess,
+                     std::function<void(const exceptions::ProviderRuntimeException&)> onError);
     bool hasProviderPermission(const types::DiscoveryEntry& discoveryEntry);
 
     std::vector<types::DiscoveryEntry> optionalToVector(

@@ -18,6 +18,7 @@
  */
 const Typing = require("./Typing");
 const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
+const typeRegistry = TypeRegistrySingleton.getInstance();
 
 /**
  * @name Util
@@ -30,10 +31,8 @@ const Util = {};
  * @param {Object} value
  * @param {Object} typeRegistry
  */
-Util.ensureTypedValues = function(value, typeRegistry) {
+Util.ensureTypedValues = function(value) {
     let i;
-
-    typeRegistry = typeRegistry || TypeRegistrySingleton.getInstance();
 
     if (value !== undefined && value !== null) {
         if (Array.isArray(value)) {
@@ -41,7 +40,7 @@ Util.ensureTypedValues = function(value, typeRegistry) {
                 value[i] = Util.ensureTypedValues(value[i]);
             }
         } else if (typeof value === "object" && !Typing.isComplexJoynrObject(value)) {
-            value = Typing.augmentTypes(value, typeRegistry);
+            value = Typing.augmentTypes(value);
             const Constructor = typeRegistry.getConstructor(value._typeName);
             if (Constructor.checkMembers) {
                 Constructor.checkMembers(value, Typing.checkPropertyIfDefined);

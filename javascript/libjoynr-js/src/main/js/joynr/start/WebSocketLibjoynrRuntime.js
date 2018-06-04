@@ -267,10 +267,14 @@ function WebSocketLibjoynrRuntime(provisioning) {
             persistencyProvisioning.capabilities ||
             persistencyProvisioning.publications
         ) {
-            persistency = new LocalStorage({
-                clearPersistency: persistencyProvisioning.clearPersistency,
-                location: persistencyProvisioning.location
-            });
+            try {
+                persistency = new LocalStorage({
+                    clearPersistency: persistencyProvisioning.clearPersistency,
+                    location: persistencyProvisioning.location
+                });
+            } catch (e) {
+                return Promise.reject(e);
+            }
         }
         const routingTablePersistency = persistencyProvisioning.routingTable ? persistency : undefined;
         const capabilitiesPersistency = persistencyProvisioning.capabilities ? persistency : new MemoryStorage();
@@ -326,7 +330,6 @@ function WebSocketLibjoynrRuntime(provisioning) {
         messageRouter = new MessageRouter({
             initialRoutingTable,
             persistency: routingTablePersistency,
-            typeRegistry,
             joynrInstanceId: uuid(),
             messagingSkeletonFactory,
             messagingStubFactory,
@@ -358,7 +361,7 @@ function WebSocketLibjoynrRuntime(provisioning) {
         messagingSkeletons[WebSocketAddress._typeName] = webSocketMessagingSkeleton;
         messagingSkeletonFactory.setSkeletons(messagingSkeletons);
 
-        requestReplyManager = new RequestReplyManager(dispatcher, typeRegistry);
+        requestReplyManager = new RequestReplyManager(dispatcher);
         subscriptionManager = new SubscriptionManager(dispatcher);
         publicationManager = new PublicationManager(dispatcher, publicationsPersistency, "joynrInstanceId"); //TODO: create joynrInstanceId
 

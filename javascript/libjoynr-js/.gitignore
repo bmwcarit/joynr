@@ -2,9 +2,11 @@ userdirectorydb
 .classpath
 .project
 .settings/
+.nyc_output/
 src/main/js/generated*
 src/test/generated*
 src/main/js/joynr/buildSignature.js
+src/main/browserify/joynr.bundle.js
 capabilitiesdump/capabilities.json
 joynr.properties
 joynr_participantIds.properties

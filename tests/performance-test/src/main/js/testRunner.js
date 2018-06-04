@@ -19,29 +19,29 @@
  * #L%
  */
 
-var testbase = require("test-base");
-var PerformanceUtilities = require("./performanceutilities.js");
+const testbase = require("test-base");
+const PerformanceUtilities = require("./performanceutilities.js");
 
-var error = testbase.logging.error;
-var log = testbase.logging.log;
-var options = PerformanceUtilities.getCommandLineOptionsOrDefaults();
-var measureMemory = options.measureMemory == "true";
-var summary = [];
-var benchmarks = null;
-var Benchmarks = require("./Benchmarks");
-var ProcessManager = require("./ProcessManager");
+const error = testbase.logging.error;
+const log = testbase.logging.log;
+const options = PerformanceUtilities.getCommandLineOptionsOrDefaults();
+const measureMemory = options.measureMemory == "true";
+const summary = [];
+let benchmarks = null;
+const Benchmarks = require("./Benchmarks");
+const ProcessManager = require("./ProcessManager");
 
 var testRunner = {
-    displaySummary: function() {
+    displaySummary() {
         error("");
         error("Summary:");
         error("");
         summary.forEach(item => testRunner.logResults(item));
     },
 
-    executeBenchmarks: function() {
+    executeBenchmarks() {
         benchmarks = PerformanceUtilities.findBenchmarks(new Benchmarks(testRunner));
-        var final = [];
+        const final = [];
         return benchmarks
             .reduce((promise, benchmark) => {
                 return promise.then(() =>
@@ -51,9 +51,9 @@ var testRunner = {
             .then(testRunner.displaySummary);
     },
 
-    executeSubRuns: function(benchmarkConfig, index) {
-        var startTime;
-        var numRuns = benchmarkConfig.numRuns;
+    executeSubRuns(benchmarkConfig, index) {
+        let startTime;
+        const numRuns = benchmarkConfig.numRuns;
 
         if (benchmarkConfig.type === "broadcast") {
             return ProcessManager.prepareBroadcasts(benchmarkConfig).then(() =>
@@ -69,8 +69,8 @@ var testRunner = {
                 startTime = Date.now();
                 return ProcessManager.proxy.executeBenchmark(benchmarkConfig);
             })
-            .then(function() {
-                var elapsedTimeMs = Date.now() - startTime;
+            .then(() => {
+                const elapsedTimeMs = Date.now() - startTime;
                 log(
                     benchmarkConfig.name +
                         " " +
@@ -83,18 +83,18 @@ var testRunner = {
                         numRuns / (elapsedTimeMs / 1000) +
                         " msgs/s"
                 );
-                let providerMeasurementPromise = ProcessManager.provider.stopMeasurement();
-                let proxyMeasurementPromise = ProcessManager.proxy.stopMeasurement();
+                const providerMeasurementPromise = ProcessManager.provider.stopMeasurement();
+                const proxyMeasurementPromise = ProcessManager.proxy.stopMeasurement();
                 return Promise.all([providerMeasurementPromise, proxyMeasurementPromise]).then(values => {
                     return { proxy: values[1], provider: values[0], time: elapsedTimeMs };
                 });
             });
     },
 
-    executeSubRunsWithWarmUp: function(benchmarkConfig) {
+    executeSubRunsWithWarmUp(benchmarkConfig) {
         error("warming up: " + benchmarkConfig.name);
         if (options.heapSnapShot == "true") {
-            setTimeout(function() {
+            setTimeout(() => {
                 ProcessManager.takeHeapSnapShot(Date.now() + "start" + benchmarkConfig.name);
             }, 500);
         }
@@ -103,27 +103,27 @@ var testRunner = {
             .then(() => testRunner.executeMultipleSubRuns(benchmarkConfig));
     },
 
-    executeMultipleSubRuns: function(benchmarkConfig) {
-        var numRuns = benchmarkConfig.numRuns;
-        var testRuns = options.testRuns ? Number.parseInt(options.testRuns) : 1;
-        var totalRuns = numRuns * testRuns;
-        var totalLatency = 0;
-        var testIndex = 0;
-        var dummyArray = new Array(testRuns);
+    executeMultipleSubRuns(benchmarkConfig) {
+        const numRuns = benchmarkConfig.numRuns;
+        const testRuns = options.testRuns ? Number.parseInt(options.testRuns) : 1;
+        const totalRuns = numRuns * testRuns;
+        let totalLatency = 0;
+        let testIndex = 0;
+        const dummyArray = new Array(testRuns);
         dummyArray.fill(0);
-        var proxyUserTime = [];
-        var proxySystemTime = [];
-        var providerUserTime = [];
-        var providerSystemTime = [];
-        var proxyMemory = [];
-        var providerMemory = [];
-        var latency = [];
+        const proxyUserTime = [];
+        const proxySystemTime = [];
+        const providerUserTime = [];
+        const providerSystemTime = [];
+        const proxyMemory = [];
+        const providerMemory = [];
+        const latency = [];
 
         return dummyArray
             .reduce(accumulator => {
                 return accumulator.then(() => {
                     testIndex++;
-                    return testRunner.executeSubRuns(benchmarkConfig, testIndex).then(function(result) {
+                    return testRunner.executeSubRuns(benchmarkConfig, testIndex).then(result => {
                         totalLatency += result.time;
                         providerUserTime.push(result.provider.user);
                         providerSystemTime.push(result.provider.system);
@@ -137,22 +137,22 @@ var testRunner = {
                     });
                 });
             }, Promise.resolve())
-            .then(function() {
+            .then(() => {
                 error("summary started");
                 totalLatency = latency.reduce((acc, curr) => acc + curr);
-                var averageMsgPerSecond = totalRuns / (totalLatency / 1000);
-                var variance = 0;
-                var highestMsgPerSecond = -1;
+                let averageMsgPerSecond = totalRuns / (totalLatency / 1000);
+                let variance = 0;
+                let highestMsgPerSecond = -1;
                 latency.map(time => numRuns / (time / 1000)).forEach(runMsgPerSecond => {
                     variance += Math.pow(runMsgPerSecond - averageMsgPerSecond, 2);
                     highestMsgPerSecond = Math.max(runMsgPerSecond, highestMsgPerSecond);
                 });
                 variance /= proxyUserTime.length;
-                var deviation = Math.sqrt(variance).toFixed(2);
+                const deviation = Math.sqrt(variance).toFixed(2);
                 highestMsgPerSecond = highestMsgPerSecond.toFixed(2);
                 averageMsgPerSecond = averageMsgPerSecond.toFixed(2);
 
-                var result = { time: {}, percentage: {} };
+                const result = { time: {}, percentage: {} };
 
                 result.other = {
                     averageTime: averageMsgPerSecond,
@@ -184,26 +184,26 @@ var testRunner = {
                 summary.push(result);
             });
     },
-    logResults: function(result) {
+    logResults(result) {
         error("");
         error("Benchmark    : " + result.other.benchmarkName);
         error("total latency: " + result.other.totalLatency + " ms ");
         error("speed average: " + result.other.averageTime + " +/- " + result.other.deviation + " msgs/s: ");
         error("speed highest: " + result.other.highestMsgPerSecond + " msg/s");
 
-        for (let key in result.time) {
+        for (const key in result.time) {
             if (Object.prototype.hasOwnProperty.call(result.time, key)) {
                 error(key + ": " + result.time[key].toFixed(0) + "ms");
             }
         }
 
-        for (let key in result.percentage) {
+        for (const key in result.percentage) {
             if (Object.prototype.hasOwnProperty.call(result.percentage, key)) {
                 error(key + ": " + (result.percentage[key] * 100).toFixed(1) + "%");
             }
         }
 
-        for (let key in result.memory) {
+        for (const key in result.memory) {
             if (Object.prototype.hasOwnProperty.call(result.memory, key)) {
                 error(key + ": " + (result.memory[key] / 1048576.0).toFixed(2) + "MB");
             }

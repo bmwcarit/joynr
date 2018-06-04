@@ -164,9 +164,11 @@ void LibJoynrRuntime::init(
     dispatcherMessagingSkeleton = std::make_shared<InProcessMessagingSkeleton>(joynrDispatcher);
     dispatcherAddress = std::make_shared<InProcessMessagingAddress>(dispatcherMessagingSkeleton);
 
-    publicationManager = std::make_shared<PublicationManager>(singleThreadIOService->getIOService(),
-                                                              messageSender,
-                                                              messagingSettings.getTtlUpliftMs());
+    publicationManager = std::make_shared<PublicationManager>(
+            singleThreadIOService->getIOService(),
+            messageSender,
+            libjoynrSettings->isSubscriptionPersistencyEnabled(),
+            messagingSettings.getTtlUpliftMs());
     publicationManager->loadSavedAttributeSubscriptionRequestsMap(
             libjoynrSettings->getSubscriptionRequestPersistenceFilename());
     publicationManager->loadSavedBroadcastSubscriptionRequestsMap(
@@ -218,9 +220,21 @@ void LibJoynrRuntime::init(
             createProxyBuilder<joynr::system::RoutingProxy>(systemServicesDomain);
 
     std::uint64_t routingProxyTtl = 60000;
-    auto routingProxy = routingProxyBuilder->setMessagingQos(MessagingQos(routingProxyTtl))
-                                ->setDiscoveryQos(routingProviderDiscoveryQos)
-                                ->build();
+    std::shared_ptr<joynr::system::RoutingProxy> routingProxy;
+
+    try {
+        routingProxy = routingProxyBuilder->setMessagingQos(MessagingQos(routingProxyTtl))
+                               ->setDiscoveryQos(routingProviderDiscoveryQos)
+                               ->build();
+    } catch (const exceptions::JoynrRuntimeException& error) {
+        const std::string errorMessage = "Failed to build routingProxy: " + error.getMessage();
+        JOYNR_LOG_FATAL(logger(), errorMessage);
+        exceptions::JoynrRuntimeException wrappedError(errorMessage);
+        if (onError) {
+            onError(wrappedError);
+        }
+        return;
+    }
 
     libJoynrMessageRouter->setParentRouter(routingProxy);
 
@@ -237,9 +251,11 @@ void LibJoynrRuntime::init(
         try {
             globalAddressFuture->get(routingProxyTtl, globalAddress);
         } catch (const exceptions::JoynrRuntimeException& error) {
-            exceptions::JoynrRuntimeException wrappedError(
+            const std::string errorMessage =
                     "Failed to retrieve global address from cluster controller: " +
-                    error.getMessage());
+                    error.getMessage();
+            JOYNR_LOG_FATAL(logger(), errorMessage);
+            exceptions::JoynrRuntimeException wrappedError(errorMessage);
             if (onError) {
                 onError(wrappedError);
             }
@@ -283,9 +299,20 @@ void LibJoynrRuntime::init(
             createProxyBuilder<joynr::system::DiscoveryProxy>(systemServicesDomain);
 
     std::uint64_t discoveryProxyTtl = 60000;
-    auto proxy = discoveryProxyBuilder->setMessagingQos(MessagingQos(discoveryProxyTtl))
-                         ->setDiscoveryQos(discoveryProviderDiscoveryQos)
-                         ->build();
+    std::shared_ptr<joynr::system::DiscoveryProxy> proxy;
+    try {
+        proxy = discoveryProxyBuilder->setMessagingQos(MessagingQos(discoveryProxyTtl))
+                        ->setDiscoveryQos(discoveryProviderDiscoveryQos)
+                        ->build();
+    } catch (const exceptions::JoynrRuntimeException& error) {
+        const std::string errorMessage = "Failed to build discoveryProxy: " + error.getMessage();
+        JOYNR_LOG_FATAL(logger(), errorMessage);
+        exceptions::JoynrRuntimeException wrappedError(errorMessage);
+        if (onError) {
+            onError(wrappedError);
+        }
+        return;
+    }
 
     discoveryProxy->setDiscoveryProxy(std::move(proxy));
 }

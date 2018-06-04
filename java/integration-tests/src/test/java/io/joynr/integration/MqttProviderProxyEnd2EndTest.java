@@ -36,6 +36,7 @@ import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.MqttModule;
 import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
+import io.joynr.proxy.Future;
 import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
@@ -161,18 +162,25 @@ public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTe
                                              .setDiscoveryQos(discoveryQos)
                                              .build();
         final List<String> errors = new ArrayList<>();
-        testProxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
-            @Override
-            public void onReceive() {
-                semaphore.release();
-            }
-        }, new MulticastSubscriptionQos(), "one", "*");
-        testProxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
-            @Override
-            public void onReceive() {
-                errors.add("Received multicast on partition which wasn't published to: four/five/six");
-            }
-        }, new MulticastSubscriptionQos(), "four", "five", "six");
+        Future<String> subscriptionIdOfWildCard = testProxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
+                                                                                                   @Override
+                                                                                                   public void onReceive() {
+                                                                                                       semaphore.release();
+                                                                                                   }
+                                                                                               },
+                                                                                               new MulticastSubscriptionQos(),
+                                                                                               "one",
+                                                                                               "*");
+        Future<String> subscriptionIdOfOtherTopics = testProxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
+                                                                                                      @Override
+                                                                                                      public void onReceive() {
+                                                                                                          errors.add("Received multicast on partition which wasn't published to: four/five/six");
+                                                                                                      }
+                                                                                                  },
+                                                                                                  new MulticastSubscriptionQos(),
+                                                                                                  "four",
+                                                                                                  "five",
+                                                                                                  "six");
 
         // wait to allow the subscription request to arrive at the provider
         Thread.sleep(500);
@@ -186,6 +194,9 @@ public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTe
         if (errors.size() > 0) {
             fail("Got errors. " + errors);
         }
+
+        testProxy.unsubscribeFromEmptyBroadcastBroadcast(subscriptionIdOfWildCard.get());
+        testProxy.unsubscribeFromEmptyBroadcastBroadcast(subscriptionIdOfOtherTopics.get());
     }
 
     @Test
@@ -196,12 +207,16 @@ public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTe
                                              .setDiscoveryQos(discoveryQos)
                                              .build();
         final List<String> errors = new ArrayList<>();
-        testProxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
-            @Override
-            public void onReceive() {
-                semaphore.release();
-            }
-        }, new MulticastSubscriptionQos(), "one", "+", "three");
+        Future<String> futureOfWildCard = testProxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
+                                                                                           @Override
+                                                                                           public void onReceive() {
+                                                                                               semaphore.release();
+                                                                                           }
+                                                                                       },
+                                                                                       new MulticastSubscriptionQos(),
+                                                                                       "one",
+                                                                                       "+",
+                                                                                       "three");
 
         // wait to allow the subscription request to arrive at the provider
         Thread.sleep(500);
@@ -215,6 +230,7 @@ public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTe
         if (errors.size() > 0) {
             fail("Got errors. " + errors);
         }
+        testProxy.unsubscribeFromEmptyBroadcastBroadcast(futureOfWildCard.get());
     }
 
     @Test
@@ -225,12 +241,15 @@ public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTe
                                              .setDiscoveryQos(discoveryQos)
                                              .build();
         final List<String> errors = new ArrayList<>();
-        testProxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
-            @Override
-            public void onReceive() {
-                semaphore.release();
-            }
-        }, new MulticastSubscriptionQos(), "one", "+");
+        Future<String> subscriptionIdOfWildCard = testProxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
+                                                                                                   @Override
+                                                                                                   public void onReceive() {
+                                                                                                       semaphore.release();
+                                                                                                   }
+                                                                                               },
+                                                                                               new MulticastSubscriptionQos(),
+                                                                                               "one",
+                                                                                               "+");
 
         // wait to allow the subscription request to arrive at the provider
         Thread.sleep(500);
@@ -244,5 +263,6 @@ public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTe
         if (errors.size() > 0) {
             fail("Got errors. " + errors);
         }
+        testProxy.unsubscribeFromEmptyBroadcastBroadcast(subscriptionIdOfWildCard.get());
     }
 }

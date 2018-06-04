@@ -451,8 +451,16 @@ This is used to authenticate the client at the server (mqtt broker) side, if ena
 * **User property**: `joynr.messaging.mqtt.ssl.keyStore`
 * **Default value**: ""
 
+### `PROPERTY_KEY_MQTT_KEYSTORE_TYPE`
+Sets the type of the keystore file.
+
+* **OPTIONAL**
+* **Type**: String
+* **User property**: `joynr.messaging.mqtt.ssl.keystoretype`
+* **Default value**: "JKS"
+
 ### `PROPERTY_KEY_MQTT_TRUSTSTORE_PATH`
-Sets the path to a jks keystore file with a trusted CA certificate.
+Sets the path to a keystore file with a trusted CA certificate.
 
 This certificate will be used by the client to verify the MQTT brokers' certificate.
 
@@ -460,6 +468,14 @@ This certificate will be used by the client to verify the MQTT brokers' certific
 * **Type**: String
 * **User property**: `joynr.messaging.mqtt.ssl.truststore`
 * **Default value**: ""
+
+### `PROPERTY_KEY_MQTT_TRUSTSTORE_TYPE`
+Sets the type of the truststore file.
+
+* **OPTIONAL**
+* **Type**: String
+* **User property**: `joynr.messaging.mqtt.ssl.truststoretype`
+* **Default value**: "JKS"
 
 ### `PROPERTY_KEY_MQTT_KEYSTORE_PWD`
 Sets the keystore's password

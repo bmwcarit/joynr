@@ -35,11 +35,8 @@ const LoggingManager = require("../system/LoggingManager");
  *
  * @param {Dispatcher}
  *            dispatcher
- * @param {TypeRegistry}
- *            typeRegistry - the global type registry that records the type names
- *            together with their constructor.
  */
-function RequestReplyManager(dispatcher, typeRegistry) {
+function RequestReplyManager(dispatcher) {
     const log = LoggingManager.getLogger("joynr.dispatching.RequestReplyManager");
 
     const providers = {};
@@ -387,7 +384,7 @@ function RequestReplyManager(dispatcher, typeRegistry) {
                 if (reply.error instanceof Error) {
                     replyCaller.reject(reply.error);
                 } else {
-                    replyCaller.reject(Typing.augmentTypes(reply.error, typeRegistry));
+                    replyCaller.reject(Typing.augmentTypes(reply.error));
                 }
             } else {
                 replyCaller.resolve({ response: reply.response, settings: replyCaller.callbackSettings });

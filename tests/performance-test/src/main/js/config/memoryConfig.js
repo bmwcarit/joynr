@@ -22,27 +22,34 @@ module.exports = {
         {
             name: "attributeString",
             enabled: "true",
-            numRuns: 5000
+            numRuns: 8000
         },
         {
             name: "echoComplexStruct",
             enabled: "true",
-            numRuns: 300
+            numRuns: 8000
         },
         {
             name: "echoString",
             enabled: "true",
-            numRuns: 5000
+            numRuns: 8000
         },
         {
             name: "echoByteArray",
             enabled: "true",
-            numRuns: 500
+            numRuns: 8000
         },
         {
             name: "registerPlentyOfConsumers",
             enabled: "false",
             numRuns: 500
+        },
+        {
+            name: "simpleBroadcast",
+            enabled: "false",
+            numRuns: 8000,
+            type: "broadcast",
+            numProxies: 4
         }
     ],
     global: {
@@ -56,7 +63,7 @@ module.exports = {
         heapSnapShot: "false",
         stringLength: 10,
         timeout: 3600000,
-        byteArraySize: 1000,
+        byteArraySize: 20,
         testType: "burst" // burst, concurrency, single
     }
 };

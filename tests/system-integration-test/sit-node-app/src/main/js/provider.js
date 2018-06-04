@@ -19,11 +19,13 @@
  * #L%
  */
 
-var joynr = require("joynr");
-var testbase = require("test-base");
-var fs = require("fs");
-var log = testbase.logging.log;
-var provisioning = testbase.provisioning_common;
+let joynr = require("joynr");
+const testbase = require("test-base");
+const SystemIntegrationTestProvider = require("../generated-sources/joynr/test/SystemIntegrationTestProvider.js");
+const SystemIntegrationTestProviderImpl = require("./SystemIntegrationTestProviderImpl.js");
+const fs = require("fs");
+const log = testbase.logging.log;
+const provisioning = testbase.provisioning_common;
 
 if (process.env.domain === undefined) {
     log("please pass a domain as argument");
@@ -49,7 +51,7 @@ log("tlsKeyPath: " + process.env.tlsKeyPath);
 log("tlsCaPath: " + process.env.tlsCaPath);
 log("ownerId: " + process.env.ownerId);
 
-var domain = process.env.domain;
+const domain = process.env.domain;
 provisioning.ccAddress.host = process.env.cchost;
 provisioning.ccAddress.port = process.env.ccport;
 provisioning.ccAddress.protocol = process.env.ccprotocol;
@@ -69,29 +71,25 @@ if (process.env.tlsCertPath || process.env.tlsKeyPath || process.env.tlsCertPath
     provisioning.keychain.ownerId = process.env.ownerId;
 }
 
-joynr.load(testbase.provisioning_common).then(function(loadedJoynr) {
+joynr.load(testbase.provisioning_common).then((loadedJoynr) => {
     log("joynr started");
     joynr = loadedJoynr;
 
-    var providerQos = new joynr.types.ProviderQos({
+    const providerQos = new joynr.types.ProviderQos({
         customParameters : [],
         priority : Date.now(),
         scope : joynr.types.ProviderScope.GLOBAL,
         supportsOnChangeSubscriptions : true
     });
 
-    var SystemIntegrationTestProvider = require("../generated-sources/joynr/test/SystemIntegrationTestProvider.js");
-    var SystemIntegrationTestProviderImpl = require("./SystemIntegrationTestProviderImpl.js");
-    var systemIntegrationTestProvider = joynr.providerBuilder.build(
+
+    const systemIntegrationTestProvider = joynr.providerBuilder.build(
             SystemIntegrationTestProvider,
             SystemIntegrationTestProviderImpl.implementation);
 
-    joynr.registration.registerProvider(domain, systemIntegrationTestProvider, providerQos).then(function() {
-        log("provider registered successfully");
-    }).catch(function(error) {
-        log("error registering provider: " + error.toString());
-    });
-    return loadedJoynr;
-}).catch(function(error) {
-    throw error;
+    return joynr.registration.registerProvider(domain, systemIntegrationTestProvider, providerQos);
+}).then(() => {
+  log("provider registered successfully");
+}).catch((error) => {
+  log("error registering provider: " + error.toString());
 });

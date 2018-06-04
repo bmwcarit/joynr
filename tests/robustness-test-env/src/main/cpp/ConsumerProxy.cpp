@@ -46,7 +46,8 @@ void ConsumerProxy::thread_method1()
     while (!thread_exit) {
         std::this_thread::sleep_for(std::chrono::milliseconds(thread_delay_ms));
         std::string stringOut;
-        std::string stringIn = "Method1: Test string (" + std::to_string(count++) + ") for domain: ";
+        std::string stringIn =
+                "Method1: Test string (" + std::to_string(count++) + ") for domain: ";
         localProxy.methodWithStringParameters1(stringOut, stringIn);
         JOYNR_LOG_INFO(logger(), "{}", stringOut);
     }
@@ -62,7 +63,8 @@ void ConsumerProxy::thread_method2()
     while (!thread_exit) {
         std::this_thread::sleep_for(std::chrono::milliseconds(thread_delay_ms));
         std::string stringOut;
-        std::string stringIn = "Method2: Test string (" + std::to_string(count++) + ") for domain: ";
+        std::string stringIn =
+                "Method2: Test string (" + std::to_string(count++) + ") for domain: ";
         localProxy.methodWithStringParameters2(stringOut, stringIn);
         JOYNR_LOG_INFO(logger(), "{}", stringOut);
     }

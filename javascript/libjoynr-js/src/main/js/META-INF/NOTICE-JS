@@ -64,7 +64,7 @@ This project has following dependencies:
    │  │     │     ├─ is-relative (1.0.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/is-relative/package.json
    │  │     │     │  └─ is-unc-path (1.0.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/is-unc-path/package.json
    │  │     │     │     └─ unc-path-regex (0.1.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/unc-path-regex/package.json
-   │  │     │     └─ is-windows (1.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/is-windows/package.json
+   │  │     │     └─ is-windows (1.0.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/is-windows/package.json
    │  │     └─ unique-stream (2.2.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/unique-stream/package.json
    │  │        ├─ json-stable-stringify (1.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/json-stable-stringify/package.json
    │  │        │  └─ jsonify (0.0.0) ── public domain ── node_modules/jsonify/package.json
@@ -91,5 +91,5 @@ This project has following dependencies:
    ├─ smrf-native (0.2.2) ── Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0, http://www.opensource.org/licenses/Apache-2.0) ── node_modules/smrf-native/package.json
    │  ├─ bindings (1.2.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/bindings/package.json
    │  └─ nan (2.6.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/nan/package.json
-   ├─ ws (1.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/ws/package.json
-   └─ wscpp (1.0.0) ── Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0, http://www.opensource.org/licenses/Apache-2.0) ── node_modules/wscpp/package.json
+   ├─ uuid (3.2.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/uuid/package.json
+   └─ ws (4.0.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/ws/package.json

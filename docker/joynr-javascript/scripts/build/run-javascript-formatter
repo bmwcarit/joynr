@@ -12,7 +12,6 @@ set -e -x
 (
   echo "format javascript/libjoynr-js"
   cd javascript/libjoynr-js
-  npm i
-  npm run format
+  npm run format:install
 )
 

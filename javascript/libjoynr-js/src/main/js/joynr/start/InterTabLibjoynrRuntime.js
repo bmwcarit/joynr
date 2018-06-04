@@ -389,17 +389,17 @@ function InterTabLibjoynrRuntime(provisioning) {
         discovery.setSkeleton(
             new InProcessSkeleton({
                 lookup: function lookup(domains, interfaceName, discoveryQos) {
-                    return getDiscoveryProxy(discoveryQos.discoveryTimeoutMs).then(newDiscoveryProxy => {
-                        return newDiscoveryProxy
-                            .lookup({
+                    return getDiscoveryProxy(discoveryQos.discoveryTimeoutMs)
+                        .then(newDiscoveryProxy => {
+                            return newDiscoveryProxy.lookup({
                                 domains,
                                 interfaceName,
                                 discoveryQos
-                            })
-                            .then(opArgs => {
-                                return opArgs.result;
                             });
-                    });
+                        })
+                        .then(opArgs => {
+                            return opArgs.result;
+                        });
                 },
                 add: function add(discoveryEntry) {
                     return getDiscoveryProxy(TTL_30DAYS_IN_MS).then(newDiscoveryProxy => {

@@ -19,22 +19,22 @@
  * #L%
  */
 
-var PerformanceUtilities = require("./performanceutilities");
+const PerformanceUtilities = require("./performanceutilities");
 
-var options = PerformanceUtilities.getCommandLineOptionsOrDefaults();
+const options = PerformanceUtilities.getCommandLineOptionsOrDefaults();
 PerformanceUtilities.overrideRequire();
 
-var domain = options.domain;
-var testbase = require("test-base");
-var provisioning = testbase.provisioning_common;
+const domain = options.domain;
+const testbase = require("test-base");
+const provisioning = testbase.provisioning_common;
 
 function logMemory() {
-    let memory = process.memoryUsage();
-    let format = str => {
+    const memory = process.memoryUsage();
+    const format = str => {
         if (str.len < 6) {
             return str;
         }
-        let ar = Array.from(`${str}`);
+        const ar = Array.from(`${str}`);
         ar.splice(ar.length - 6, 0, "'");
         return ar.join("");
     };
@@ -49,10 +49,10 @@ function logMemory() {
 console.log("memory consumption before requiring jonyr");
 logMemory();
 
-var EchoProvider = require("../generated-javascript/joynr/tests/performance/EchoProvider.js");
-var EchoProviderImpl = require("./EchoProviderImpl.js");
+const EchoProvider = require("../generated-javascript/joynr/tests/performance/EchoProvider.js");
+const EchoProviderImpl = require("./EchoProviderImpl.js");
 
-var joynr = require("joynr");
+let joynr = require("joynr");
 joynr.selectRuntime("websocket.libjoynr");
 
 console.log("memory consumption after requiring jonyr and selecting runtime");
@@ -61,32 +61,32 @@ logMemory();
 provisioning.logging.configuration.loggers.root.level = "error";
 joynr
     .load(provisioning)
-    .then(function(loadedJoynr) {
+    .then(loadedJoynr => {
         console.log("memory consumption after loaded joynr and selecting runtime");
         logMemory();
         joynr = loadedJoynr;
 
-        var providerQos = new joynr.types.ProviderQos({
+        const providerQos = new joynr.types.ProviderQos({
             customParameters: [],
             priority: Date.now(),
             scope: joynr.types.ProviderScope.GLOBAL,
             supportsOnChangeSubscriptions: true
         });
 
-        var echoProvider = joynr.providerBuilder.build(EchoProvider, EchoProviderImpl.implementation);
+        const echoProvider = joynr.providerBuilder.build(EchoProvider, EchoProviderImpl.implementation);
 
         joynr.registration
             .registerProvider(domain, echoProvider, providerQos)
-            .then(function() {
+            .then(() => {
                 console.log("memory consumption after registering provider");
                 logMemory();
             })
-            .catch(function(error) {
+            .catch(error => {
                 console.log("error registering provider: " + error.toString());
             });
 
         return loadedJoynr;
     })
-    .catch(function(error) {
+    .catch(error => {
         throw error;
     });

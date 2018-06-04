@@ -42,7 +42,7 @@ describe("libjoynr-js.integration.end2end.rpc", () => {
     const expectPublication = abstractTest.expectPublication;
     const setAndTestAttribute = abstractTest.setAndTestAttribute;
 
-    beforeEach(done => {
+    beforeAll(done => {
         abstractTest.beforeEach().then(settings => {
             subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({
                 minIntervalMs: 50
@@ -807,5 +807,5 @@ describe("libjoynr-js.integration.end2end.rpc", () => {
             .catch(fail);
     });
 
-    afterEach(abstractTest.afterEach);
+    afterAll(abstractTest.afterEach);
 });

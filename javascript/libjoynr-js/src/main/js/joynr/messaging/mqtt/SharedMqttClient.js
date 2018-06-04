@@ -53,8 +53,7 @@ function sendQueuedUnsubscriptions(client, queuedUnsubscriptions) {
     queuedUnsubscriptions = [];
 }
 
-function sendQueuedSubscriptions(client, queuedSubscriptions, qosLevel) {
-    const deferred = UtilInternal.createDeferred();
+function sendQueuedSubscriptions(client, queuedSubscriptions, qosLevel, sendFinishedCb) {
     const subscribeObject = {};
     for (let i = 0; i < queuedSubscriptions.length; i++) {
         const topic = queuedSubscriptions[i];
@@ -63,9 +62,8 @@ function sendQueuedSubscriptions(client, queuedSubscriptions, qosLevel) {
     client.subscribe(subscribeObject, undefined, (err, granted) => {
         //TODO error handling
         queuedSubscriptions = [];
-        deferred.resolve();
+        sendFinishedCb();
     });
-    return deferred.promise;
 }
 
 function sendMessage(client, topic, joynrMessage, sendQosLevel, queuedMessages) {
@@ -162,7 +160,10 @@ SharedMqttClient.prototype._onOpen = function onOpen() {
         this._connected = true;
         sendQueuedMessages(this._client, this._queuedMessages);
         sendQueuedUnsubscriptions(this._client, this._queuedUnsubscriptions);
-        sendQueuedSubscriptions(this._client, this._queuedSubscriptions, this._qosLevel).then(
+        sendQueuedSubscriptions(
+            this._client,
+            this._queuedSubscriptions,
+            this._qosLevel,
             this._onConnectedDeferred.resolve
         );
     } catch (e) {

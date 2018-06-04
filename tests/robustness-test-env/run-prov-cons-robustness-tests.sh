@@ -1,4 +1,23 @@
 #!/bin/bash
+
+###
+# #%L
+# %%
+# Copyright (C) 2011 - 2018 BMW Car IT GmbH
+# %%
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#      http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# #L%
+###
 #set -x
 
 # PARAMETERS
@@ -128,10 +147,6 @@ function prechecks {
         fi
 }
 
-function killProcessByName {
-        killall $1
-}
-
 function start_services {
         echo "Starting mosquitto"
         mosquitto > $ROBUSTNESS_ENV_RESULTS_DIR/mosquitto.log 2>&1 &
@@ -140,8 +155,13 @@ function start_services {
 }
 
 function stop_services {
-        echo "# stopping mosquitto"
-        killProcessByName mosquitto
+        if [ -n "$MOSQUITTO_PID" ]
+        then
+            log "stopping mosquitto with PID $MOSQUITTO_PID"
+            kill -9 $MOSQUITTO_PID
+            MOSQUITTO_PID=""
+        fi
+        log "Mosquitto stopped"
 }
 
 function start_cluster_controller {
@@ -159,7 +179,6 @@ function start_cluster_controller {
 
 function stop_cluster_controller {
         log 'stopping cluster controller'
-        killall -15 cluster-controller > /dev/null
 
         PID=`pgrep -f cluster-controller`
         if [ -z "$PID" ]
@@ -231,7 +250,22 @@ function start_consumer {
 
 function stop_all_consumers {
         log 'killing all consumers'
-        killProcessByName $CONSUMER_APP
+        for counter in "${!CONSUMER_PIDS[@]}"
+        do
+            pid=${CONSUMER_PIDS[$counter]}
+            if [ -n "$pid" ]
+            then
+                log "stopping consumer with PID $pid"
+                kill -9 $pid
+                while (test -d /proc/$pid)
+                do
+                    echo "PID $pid still alive. Waiting ..."
+                    sleep 1
+                done
+                log "consumer stopped"
+                unset CONSUMER_PIDS[$counter]
+            fi
+        done
 }
 
 function check_all_processes {

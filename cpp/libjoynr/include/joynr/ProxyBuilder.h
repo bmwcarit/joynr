@@ -191,19 +191,19 @@ std::shared_ptr<T> ProxyBuilder<T>::build()
     if (runtimeSharedPtr == nullptr) {
         throw exceptions::DiscoveryException(runtimeAlreadyDestroyed);
     }
-    Future<std::shared_ptr<T>> proxyFuture;
+    auto proxyFuture = std::make_shared<Future<std::shared_ptr<T>>>();
 
     auto onSuccess =
-            [&proxyFuture](std::shared_ptr<T> proxy) { proxyFuture.onSuccess(std::move(proxy)); };
+            [proxyFuture](std::shared_ptr<T> proxy) { proxyFuture->onSuccess(std::move(proxy)); };
 
-    auto onError = [&proxyFuture](const exceptions::DiscoveryException& exception) {
-        proxyFuture.onError(std::make_shared<exceptions::DiscoveryException>(exception));
+    auto onError = [proxyFuture](const exceptions::DiscoveryException& exception) {
+        proxyFuture->onError(std::make_shared<exceptions::DiscoveryException>(exception));
     };
 
     buildAsync(std::move(onSuccess), std::move(onError));
 
     std::shared_ptr<T> createdProxy;
-    proxyFuture.get(createdProxy);
+    proxyFuture->get(createdProxy);
 
     return createdProxy;
 }

@@ -26,7 +26,6 @@ const DiscoveryQos = require("../../proxy/DiscoveryQos");
 const DiscoveryScope = require("../../../generated/joynr/types/DiscoveryScope");
 const ProviderScope = require("../../../generated/joynr/types/ProviderScope");
 const GlobalCapabilitiesDirectoryProxy = require("../../../generated/joynr/infrastructure/GlobalCapabilitiesDirectoryProxy");
-const TypeRegistrySingleton = require("../../../joynr/types/TypeRegistrySingleton");
 const Typing = require("../../util/Typing");
 const LoggingManager = require("../../system/LoggingManager");
 const UtilInternal = require("../../util/UtilInternal");
@@ -64,7 +63,6 @@ function CapabilityDiscovery(
     /*eslint-disable no-unused-vars*/
     let globalAddress, globalAddressSerialized;
     /*eslint-enable no-unused-vars*/
-    const typeRegistry = TypeRegistrySingleton.getInstance();
     let queuedGlobalDiscoveryEntries = [];
     let queuedGlobalLookups = [];
 
@@ -128,56 +126,54 @@ function CapabilityDiscovery(
     }
 
     function lookupGlobal(domains, interfaceName, ttl, capabilities) {
-        return getGlobalCapabilitiesDirectoryProxy(ttl).then(globalCapabilitiesDirectoryProxy => {
-            return globalCapabilitiesDirectoryProxy
-                .lookup({
+        return getGlobalCapabilitiesDirectoryProxy(ttl)
+            .then(globalCapabilitiesDirectoryProxy =>
+                globalCapabilitiesDirectoryProxy.lookup({
                     domains,
                     interfaceName
                 })
-                .then(opArgs => {
-                    const messageRouterPromises = [];
-                    const globalCapabilities = opArgs.result;
-                    let globalAddress;
-                    if (globalCapabilities === undefined) {
-                        log.error("globalCapabilitiesDirectoryProxy.lookup() returns with missing result");
-                    } else {
-                        for (let i = globalCapabilities.length - 1; i >= 0; i--) {
-                            const globalDiscoveryEntry = globalCapabilities[i];
-                            if (globalDiscoveryEntry.address === globalAddressSerialized) {
-                                globalCapabilities.splice(i, 1);
-                            } else {
-                                try {
-                                    globalAddress = Typing.augmentTypes(
-                                        JSON.parse(globalDiscoveryEntry.address),
-                                        typeRegistry
-                                    );
-                                } catch (e) {
-                                    log.error(
-                                        "unable to use global discoveryEntry with unknown address type: " +
-                                            globalDiscoveryEntry.address
-                                    );
-                                    continue;
-                                }
-                                // Update routing table
-                                const isGloballyVisible = globalDiscoveryEntry.qos.scope === ProviderScope.GLOBAL;
-                                messageRouterPromises.push(
-                                    messageRouter.addNextHop(
-                                        globalDiscoveryEntry.participantId,
-                                        globalAddress,
-                                        isGloballyVisible
-                                    )
+            )
+            .then(opArgs => {
+                const messageRouterPromises = [];
+                const globalCapabilities = opArgs.result;
+                let globalAddress;
+                if (globalCapabilities === undefined) {
+                    log.error("globalCapabilitiesDirectoryProxy.lookup() returns with missing result");
+                } else {
+                    for (let i = globalCapabilities.length - 1; i >= 0; i--) {
+                        const globalDiscoveryEntry = globalCapabilities[i];
+                        if (globalDiscoveryEntry.address === globalAddressSerialized) {
+                            globalCapabilities.splice(i, 1);
+                        } else {
+                            try {
+                                globalAddress = Typing.augmentTypes(JSON.parse(globalDiscoveryEntry.address));
+                            } catch (e) {
+                                log.error(
+                                    "unable to use global discoveryEntry with unknown address type: " +
+                                        globalDiscoveryEntry.address
                                 );
-                                capabilities.push(
-                                    CapabilitiesUtil.convertToDiscoveryEntryWithMetaInfo(false, globalDiscoveryEntry)
-                                );
+                                continue;
                             }
+                            // Update routing table
+                            const isGloballyVisible = globalDiscoveryEntry.qos.scope === ProviderScope.GLOBAL;
+                            messageRouterPromises.push(
+                                messageRouter.addNextHop(
+                                    globalDiscoveryEntry.participantId,
+                                    globalAddress,
+                                    isGloballyVisible
+                                )
+                            );
+                            capabilities.push(
+                                CapabilitiesUtil.convertToDiscoveryEntryWithMetaInfo(false, globalDiscoveryEntry)
+                            );
                         }
                     }
-                    return Promise.all(messageRouterPromises).then(() => {
-                        return capabilities;
-                    });
-                });
-        });
+                }
+                return Promise.all(messageRouterPromises);
+            })
+            .then(() => {
+                return capabilities;
+            });
     }
     /**
      * expects a capabilities array which is then filled with any that are found from the proxy
@@ -217,16 +213,16 @@ function CapabilityDiscovery(
      * @returns {Object} an A+ promise
      */
     function addGlobal(discoveryEntry) {
-        return getGlobalCapabilitiesDirectoryProxy(TTL_30DAYS_IN_MS).then(globalCapabilitiesDirectoryProxy => {
-            discoveryEntry.address = globalAddressSerialized;
-            return globalCapabilitiesDirectoryProxy
-                .add({
+        return getGlobalCapabilitiesDirectoryProxy(TTL_30DAYS_IN_MS)
+            .then(globalCapabilitiesDirectoryProxy => {
+                discoveryEntry.address = globalAddressSerialized;
+                return globalCapabilitiesDirectoryProxy.add({
                     globalDiscoveryEntry: new GlobalDiscoveryEntry(discoveryEntry)
-                })
-                .catch(error => {
-                    throw new Error('Error calling operation "add" of GlobalCapabilitiesDirectory because: ' + error);
                 });
-        });
+            })
+            .catch(error => {
+                throw new Error('Error calling operation "add" of GlobalCapabilitiesDirectory because: ' + error);
+            });
     }
 
     /**
@@ -451,17 +447,15 @@ function CapabilityDiscovery(
      * @returns {Object} an A+ promise
      */
     function removeParticipantIdFromGlobalCapabilitiesDirectory(participantId) {
-        return getGlobalCapabilitiesDirectoryProxy(TTL_30DAYS_IN_MS).then(globalCapabilitiesDirectoryProxy => {
-            return globalCapabilitiesDirectoryProxy
-                .remove({
+        return getGlobalCapabilitiesDirectoryProxy(TTL_30DAYS_IN_MS)
+            .then(globalCapabilitiesDirectoryProxy => {
+                return globalCapabilitiesDirectoryProxy.remove({
                     participantId
-                })
-                .catch(error => {
-                    throw new Error(
-                        'Error calling operation "remove" of GlobalCapabilitiesDirectory because: ' + error
-                    );
                 });
-        });
+            })
+            .catch(error => {
+                throw new Error('Error calling operation "remove" of GlobalCapabilitiesDirectory because: ' + error);
+            });
     }
 
     /**

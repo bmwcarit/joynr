@@ -19,16 +19,12 @@
 package io.joynr.dispatching.rpc;
 
 import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
-import io.joynr.common.ExpiryDate;
-import io.joynr.dispatching.Directory;
-import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.exceptions.JoynrShutdownException;
-import io.joynr.exceptions.JoynrTimeoutException;
-import io.joynr.runtime.ShutdownListener;
-import io.joynr.runtime.ShutdownNotifier;
 
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -37,6 +33,14 @@ import org.slf4j.LoggerFactory;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+
+import io.joynr.common.ExpiryDate;
+import io.joynr.dispatching.Directory;
+import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.exceptions.JoynrShutdownException;
+import io.joynr.exceptions.JoynrTimeoutException;
+import io.joynr.runtime.ShutdownListener;
+import io.joynr.runtime.ShutdownNotifier;
 
 /**
  * Queue to store replyCallers and remove them if the round-trip TTL of the corresponding request expires.
@@ -50,10 +54,13 @@ public class ReplyCallerDirectory extends Directory<ReplyCaller> implements Shut
 
     private ScheduledExecutorService cleanupScheduler;
 
+    private ConcurrentMap<String, ScheduledFuture<?>> cleanupSchedulerFuturesMap = null;
+
     @Inject
     public ReplyCallerDirectory(@Named(JOYNR_SCHEDULER_CLEANUP) ScheduledExecutorService cleanupScheduler,
                                 ShutdownNotifier shutdownNotifier) {
         this.cleanupScheduler = cleanupScheduler;
+        this.cleanupSchedulerFuturesMap = new ConcurrentHashMap<>();
         shutdownNotifier.registerForShutdown(this);
     }
 
@@ -61,22 +68,36 @@ public class ReplyCallerDirectory extends Directory<ReplyCaller> implements Shut
                                final ReplyCaller replyCaller,
                                final ExpiryDate roundTripTtlExpirationDate) {
         logger.trace("putReplyCaller: " + requestReplyId + " expiryDate: " + roundTripTtlExpirationDate);
-        super.add(requestReplyId, replyCaller);
-
-        try {
-            cleanupScheduler.schedule(new Runnable() {
-                @Override
-                public void run() {
-                    removeExpiredReplyCaller(requestReplyId);
+        if (super.contains(requestReplyId)) {
+            logger.error("RequestReplyId should not be replicated: {}", requestReplyId);
+        } else {
+            super.add(requestReplyId, replyCaller);
+            try {
+                ScheduledFuture<?> cleanupSchedulerFuture = cleanupScheduler.schedule(new Runnable() {
+                    @Override
+                    public void run() {
+                        removeExpiredReplyCaller(requestReplyId);
+                    }
+                }, roundTripTtlExpirationDate.getRelativeTtl(), TimeUnit.MILLISECONDS);
+                cleanupSchedulerFuturesMap.put(requestReplyId, cleanupSchedulerFuture);
+            } catch (RejectedExecutionException e) {
+                if (shutdown) {
+                    throw new JoynrShutdownException("shutdown in ReplyCallerDirectory");
                 }
-            }, roundTripTtlExpirationDate.getRelativeTtl(), TimeUnit.MILLISECONDS);
-        } catch (RejectedExecutionException e) {
-            if (shutdown) {
-                throw new JoynrShutdownException("shutdown in ReplyCallerDirectory");
+                throw new JoynrRuntimeException(e);
             }
-            throw new JoynrRuntimeException(e);
         }
 
+    }
+
+    @Override
+    public ReplyCaller remove(String id) {
+        ReplyCaller replyCaller = super.remove(id);
+        ScheduledFuture<?> future = cleanupSchedulerFuturesMap.remove(id);
+        if (future != null) {
+            future.cancel(false);
+        }
+        return replyCaller;
     }
 
     private void removeExpiredReplyCaller(String requestReplyId) {
@@ -94,6 +115,10 @@ public class ReplyCallerDirectory extends Directory<ReplyCaller> implements Shut
 
     @Override
     public void shutdown() {
+        for (ScheduledFuture<?> cleanupSchedulerFuture : cleanupSchedulerFuturesMap.values()) {
+            cleanupSchedulerFuture.cancel(false);
+        }
+
         shutdown = true;
     }
 

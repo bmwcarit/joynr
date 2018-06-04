@@ -27,6 +27,9 @@ ADD ${JOYNR_TEST_RPM_NAME} /tmp/joynr-test.rpm
 ARG SMRF_RPM_NAME
 ADD ${SMRF_RPM_NAME} /tmp/smrf.rpm
 
+ARG MOCOCRW_RPM_NAME
+ADD ${MOCOCRW_RPM_NAME} /tmp/MoCOCrW.rpm
+
 ARG http_proxy=""
 ARG https_proxy=""
 ARG no_proxy=""
@@ -36,9 +39,11 @@ ARG no_proxy=""
 RUN curl www.google.de > /dev/null
 
 RUN dnf install -y \
+	/tmp/MoCOCrW.rpm \
 	/tmp/smrf.rpm \
 	/tmp/joynr.rpm \
 	/tmp/joynr-test.rpm \
+	&& rm /tmp/MoCOCrW.rpm \
 	&& rm /tmp/smrf.rpm \
 	&& rm /tmp/joynr.rpm \
 	&& rm /tmp/joynr-test.rpm

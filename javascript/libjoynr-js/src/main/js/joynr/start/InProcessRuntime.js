@@ -1,3 +1,4 @@
+/*eslint promise/catch-or-return: "off"*/
 /*
  * #%L
  * %%
@@ -259,10 +260,7 @@ function InProcessRuntime(provisioning) {
             if (!capability.address) {
                 throw new Error("provisioned capability is missing address: " + JSON.stringify(capability));
             }
-            initialRoutingTable[capability.participantId] = Typing.augmentTypes(
-                JSON.parse(capability.address),
-                typeRegistry
-            );
+            initialRoutingTable[capability.participantId] = Typing.augmentTypes(JSON.parse(capability.address));
             typedCapabilities.push(capability);
         }
 

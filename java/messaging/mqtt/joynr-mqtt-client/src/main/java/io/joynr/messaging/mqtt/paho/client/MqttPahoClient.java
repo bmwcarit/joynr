@@ -40,6 +40,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Charsets;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.joynr.exceptions.JoynrDelayMessageException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
@@ -65,6 +66,8 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
     private boolean cleanSession;
     private String keyStorePath;
     private String trustStorePath;
+    private String keyStoreType;
+    private String trustStoreType;
     private String keyStorePWD;
     private String trustStorePWD;
     private MqttStatusReceiver mqttStatusReceiver;
@@ -86,6 +89,8 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
                           boolean cleanSession,
                           String keyStorePath,
                           String trustStorePath,
+                          String keyStoreType,
+                          String trustStoreType,
                           String keyStorePWD,
                           String trustStorePWD,
                           MqttStatusReceiver mqttStatusReceiver) throws MqttException {
@@ -99,6 +104,8 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
         this.cleanSession = cleanSession;
         this.keyStorePath = keyStorePath;
         this.trustStorePath = trustStorePath;
+        this.keyStoreType = keyStoreType;
+        this.trustStoreType = trustStoreType;
         this.keyStorePWD = keyStorePWD;
         this.trustStorePWD = trustStorePWD;
         this.mqttStatusReceiver = mqttStatusReceiver;
@@ -191,10 +198,10 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
         if (isSecureConnection) {
             // Set global SSL properties for all Joynr SSL clients
             Properties sslClientProperties = new Properties();
-            sslClientProperties.setProperty(SSLSocketFactoryFactory.KEYSTORETYPE, "JKS");
+            sslClientProperties.setProperty(SSLSocketFactoryFactory.KEYSTORETYPE, keyStoreType);
             sslClientProperties.setProperty(SSLSocketFactoryFactory.KEYSTORE, keyStorePath);
             sslClientProperties.setProperty(SSLSocketFactoryFactory.KEYSTOREPWD, keyStorePWD);
-            sslClientProperties.setProperty(SSLSocketFactoryFactory.TRUSTSTORETYPE, "JKS");
+            sslClientProperties.setProperty(SSLSocketFactoryFactory.TRUSTSTORETYPE, trustStoreType);
             sslClientProperties.setProperty(SSLSocketFactoryFactory.TRUSTSTORE, trustStorePath);
             sslClientProperties.setProperty(SSLSocketFactoryFactory.TRUSTSTOREPWD, trustStorePWD);
             options.setSSLProperties(sslClientProperties);
@@ -268,6 +275,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
     }
 
     @Override
+    @SuppressFBWarnings("NN-NN_NAKED_NOTIFY")
     public void shutdown() {
         shutdown.set(true);
         synchronized (this) {

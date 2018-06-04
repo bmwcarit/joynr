@@ -64,6 +64,14 @@ public class MqttPahoClientFactory implements MqttClientFactory {
     private String trustStorePath = "";
 
     @Inject(optional = true)
+    @Named(MqttModule.PROPERTY_KEY_MQTT_KEYSTORE_TYPE)
+    private String keyStoreType = "JKS";
+
+    @Inject(optional = true)
+    @Named(MqttModule.PROPERTY_KEY_MQTT_TRUSTSTORE_TYPE)
+    private String trustStoreType = "JKS";
+
+    @Inject(optional = true)
     @Named(MqttModule.PROPERTY_KEY_MQTT_KEYSTORE_PWD)
     private String keyStorePWD = "";
 
@@ -127,6 +135,8 @@ public class MqttPahoClientFactory implements MqttClientFactory {
                                             cleanSession,
                                             keyStorePath,
                                             trustStorePath,
+                                            keyStoreType,
+                                            trustStoreType,
                                             keyStorePWD,
                                             trustStorePWD,
                                             mqttStatusReceiver);

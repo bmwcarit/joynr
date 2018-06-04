@@ -26,34 +26,24 @@
 const JoynrRuntimeException = require("../joynr/exceptions/JoynrRuntimeException");
 const UtilInternal = require("../joynr/util/UtilInternal.js");
 const MessageSerializer = require("../joynr/messaging/MessageSerializer");
+const ws = require("ws");
 
 function useWebSocketNode() {
     if (typeof Buffer !== "function") {
         throw new JoynrRuntimeException("Decoding of binary websocket messages not possible. Buffer not available.");
     }
 
-    /*
-     * try to load the native C++ websocket implementation first; only if this fails
-     * fall back to JS implementation. Temporarily silence error output for first
-     * load attempt.
-     */
-    let ws;
-    try {
-        ws = require("wscpp");
-    } catch (e) {
-        ws = require("ws");
-    }
-
     function WebSocketNodeWrapper(remoteUrl, keychain, useUnencryptedTls) {
-        const clientOptions = keychain
-            ? {
-                  cert: keychain.tlsCert,
-                  key: keychain.tlsKey,
-                  ca: keychain.tlsCa,
-                  rejectUnauthorized: true,
-                  useUnencryptedTls
-              }
-            : undefined;
+        const clientOptions = {};
+        if (keychain) {
+            clientOptions.cert = keychain.tlsCert;
+            clientOptions.key = keychain.tlsKey;
+            clientOptions.ca = keychain.tlsCa;
+            clientOptions.rejectUnauthorized = true;
+        }
+        if (useUnencryptedTls) {
+            clientOptions.ciphers = "eNULL";
+        }
 
         const webSocketObj = new ws(remoteUrl, clientOptions);
 

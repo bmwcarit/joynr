@@ -15,6 +15,8 @@ BASE_DOCKER_IMAGE=joynr-runtime-environment-base:latest
 DOCKER_IMAGE_VERSION=latest
 DOCKER_RUN_ADD_FLAGS=
 JOBS=4
+NVM_DIR="/usr/local/nvm"
+NODE_VERSION=8.11.1
 
 # The --no-XYZ-build options can be used to skip building the given artifact
 # inside a Docker container (which can be quite slow depending on your system).
@@ -141,13 +143,13 @@ else
 		--projects io.joynr:basemodel,io.joynr.tools.generator:dependency-libs,io.joynr.tools.generator:generator-framework,io.joynr.tools.generator:joynr-generator-maven-plugin,io.joynr.tools.generator:cpp-generator,io.joynr.cpp:libjoynr,io.joynr.tools.generator:joynr-generator-standalone"'
 	fi
 
+	execute_in_docker '"echo \"Building and packaging MoCOCrW\" && /data/src/docker/joynr-cpp-base/scripts/build/cpp-build-MoCOCrW-rpm-package.sh 2>&1"'
+
 	execute_in_docker '"echo \"Building and packaging smrf\" && /data/src/docker/joynr-cpp-base/scripts/build/cpp-build-smrf-rpm-package.sh 2>&1"'
 
 	execute_in_docker '"echo \"Building joynr c++\" && /data/src/docker/joynr-cpp-base/scripts/build/cpp-clean-build.sh --additionalcmakeargs \"-DUSE_PLATFORM_MUESLI=OFF\" --jobs '"${JOBS}"' --enableclangformatter OFF --buildtests OFF 2>&1"'
 
 	execute_in_docker '"echo \"Packaging joynr c++\" && /data/src/docker/joynr-cpp-base/scripts/build/cpp-build-rpm-package.sh --rpm-spec tests/system-integration-test/docker/onboard/joynr-without-test.spec 2>&1"'
-
-	execute_in_docker '"echo \"Building MoCOCrW tarball\" && /data/src/docker/joynr-cpp-base/scripts/build/cpp-create-MoCOCrW-tarball.sh 2>&1"'
 
 fi
 
@@ -168,11 +170,14 @@ if [ -d ${BUILDDIR} ]; then
 fi
 mkdir -p ${BUILDDIR}
 
-cp -R ../../sit-node-app ${BUILDDIR}
+cp -R -L ../../sit-node-app ${BUILDDIR}
 
 cp -R ../../../../build/tests ${BUILDDIR}
 
 cp -R ../../../../build/dummyKeychain ${BUILDDIR}
+
+cp -R ././../../../../docker/joynr-base/scripts/gen-certificates.sh ${BUILDDIR}
+cp -R ././../../../../docker/joynr-base/openssl.conf ${BUILDDIR}
 
 # create the directory in any case because it is referenced in Dockerfile below
 mkdir ${BUILDDIR}/sit-java-app
@@ -199,21 +204,17 @@ cat > $BUILDDIR/Dockerfile <<-EOF
     ###################################################
     RUN dnf install -y \
         boost \
-        mosquitto
+        mosquitto \
+        openssl
 
     ###################################################
-    # Install MoCOCrW
-    ###################################################
-    COPY MoCOCrW.tar.gz /tmp/MoCOCrW.tar.gz
-    RUN cd / && \
-        tar xvf /tmp/MoCOCrW.tar.gz
-
-    ###################################################
-    # Install joynr and smrf
+    # Install joynr and smrf and MoCOCrW
     ###################################################
     COPY joynr.rpm /tmp/joynr.rpm
     COPY smrf.rpm /tmp/smrf.rpm
+    COPY MoCOCrW.rpm /tmp/MoCOCrW.rpm
     RUN rpm -i --nodeps \
+        /tmp/MoCOCrW.rpm \
         /tmp/smrf.rpm \
         /tmp/joynr.rpm \
         && rm /tmp/joynr.rpm
@@ -238,6 +239,38 @@ cat > $BUILDDIR/Dockerfile <<-EOF
     # Copy sit-java-app
     ###################################################
     COPY sit-java-app /data/sit-java-app
+
+    ###################################################
+    # Generate certificates
+    ###################################################
+    COPY gen-certificates.sh /data/scripts/gen-certificates.sh
+    COPY openssl.conf /tmp/openssl.cnf
+    RUN mkdir -p /data/ssl-data \
+    && /data/scripts/gen-certificates.sh --configfile /tmp/openssl.cnf --destdir /data/ssl-data
+
+    ###################################################
+    # install node.js
+    ###################################################
+    # nvm environment variables
+    ENV NVM_DIR $NVM_DIR
+
+    # node 8.11.1 is the current lts version
+    ENV NODE_VERSION $NODE_VERSION
+
+    # install nvm
+    RUN curl --silent -o- https://raw.githubusercontent.com/creationix/nvm/v0.31.2/install.sh | bash
+
+    # install node and npm
+    # having the nvm directory writable makes it possible to use nvm to change node versions manually
+    RUN source $NVM_DIR/nvm.sh \
+        && nvm install $NODE_VERSION \
+        && nvm alias default $NODE_VERSION \
+        && nvm use default \
+        && chmod -R a+rwx $NVM_DIR
+
+    # add node and npm to path
+    ENV NODE_PATH $NVM_DIR/v$NODE_VERSION/lib/node_modules
+    ENV PATH $NVM_DIR/versions/node/v$NODE_VERSION/bin:$PATH
 
     ###################################################
     # Copy run script

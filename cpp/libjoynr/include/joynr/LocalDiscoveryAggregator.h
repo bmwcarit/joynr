@@ -61,6 +61,15 @@ public:
             boost::optional<joynr::MessagingQos> messagingQos = boost::none) noexcept override;
 
     // inherited from joynr::system::IDiscoveryAsync
+    std::shared_ptr<joynr::Future<void>> addAsync(
+            const joynr::types::DiscoveryEntry& discoveryEntry,
+            const bool& awaitGlobalRegistration,
+            std::function<void()> onSuccess = nullptr,
+            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
+                    onRuntimeError = nullptr,
+            boost::optional<joynr::MessagingQos> messagingQos = boost::none) noexcept override;
+
+    // inherited from joynr::system::IDiscoveryAsync
     std::shared_ptr<joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>
     lookupAsync(
             const std::vector<std::string>& domains,

@@ -24,7 +24,7 @@ const mod = require("module");
 const wscppSpy = jasmine.createSpy("wscppSyp");
 const overriddenRequire = mod.prototype.require;
 mod.prototype.require = function(md) {
-    if (md.endsWith("wscpp")) {
+    if (md.endsWith("ws")) {
         return wscppSpy;
     }
 
@@ -53,7 +53,7 @@ describe("websocket node", () => {
             key: keychainWithCerts.tlsKey,
             ca: keychainWithCerts.tlsCa,
             rejectUnauthorized: true,
-            useUnencryptedTls
+            ciphers: "eNULL"
         });
     });
 
@@ -65,8 +65,7 @@ describe("websocket node", () => {
             cert: keychainWithCerts.tlsCert,
             key: keychainWithCerts.tlsKey,
             ca: keychainWithCerts.tlsCa,
-            rejectUnauthorized: true,
-            useUnencryptedTls
+            rejectUnauthorized: true
         });
     });
 });

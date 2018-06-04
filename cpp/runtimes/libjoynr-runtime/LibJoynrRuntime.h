@@ -27,6 +27,7 @@
 
 #include "joynr/JoynrRuntimeImpl.h"
 #include "joynr/LibjoynrSettings.h"
+#include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
 
 namespace joynr
@@ -81,6 +82,7 @@ private:
     DISALLOW_COPY_AND_ASSIGN(LibJoynrRuntime);
     std::shared_ptr<LibJoynrMessageRouter> libJoynrMessageRouter;
     std::atomic<bool> libJoynrRuntimeIsShuttingDown;
+    ADD_LOGGER(LibJoynrRuntime)
 };
 
 } // namespace joynr

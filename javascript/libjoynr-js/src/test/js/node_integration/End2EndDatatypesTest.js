@@ -27,7 +27,7 @@ describe("libjoynr-js.integration.end2end.datatypes", () => {
     let datatypesProxy;
     const abstractTest = new End2EndAbstractTest("End2EndDatatypesTest", "TestEnd2EndDatatypesProviderProcess");
 
-    beforeEach(done => {
+    beforeAll(done => {
         abstractTest.beforeEach().then(settings => {
             datatypesProxy = settings.dataProxy;
             done();
@@ -209,5 +209,5 @@ describe("libjoynr-js.integration.end2end.datatypes", () => {
         60000
     );
 
-    afterEach(abstractTest.afterEach);
+    afterAll(abstractTest.afterEach);
 });

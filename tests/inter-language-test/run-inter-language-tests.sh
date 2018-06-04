@@ -474,8 +474,6 @@ function start_javascript_consumer {
 	log 'Starting Javascript consumer.'
 	cd $ILT_DIR
 	rm -fr localStorageStorage
-	#npm install
-	#npm install jasmine-node
 	npm run-script startjasmine --interlanguageTest:domain=$DOMAIN > $ILT_RESULTS_DIR/consumer-javascript-$1.log 2>&1
 	SUCCESS=$?
 
@@ -491,11 +489,31 @@ function start_javascript_consumer {
 	fi
 }
 
+function start_js_bundle_consumer {
+	log 'Starting Javascript bundle consumer.'
+	cd $ILT_DIR
+	rm -fr localStorageStorage
+	npm run-script startjasminebundle --interlanguageTest:domain=$DOMAIN > $ILT_RESULTS_DIR/consumer-javascript-bundle$1.log 2>&1
+	SUCCESS=$?
+
+	if [ "$SUCCESS" != 0 ]
+	then
+		log 'Javascript bundle consumer FAILED.'
+		echo "STATUS = $SUCCESS"
+		#test_failed
+		let FAILED_TESTS+=1
+		#stopall
+	else
+		log 'Javascript bundle consumer successfully completed.'
+	fi
+}
+
 function start_consumers {
 	start_java_consumer_cc $1
 	start_java_consumer_ws $1
 	start_cpp_consumer $1
 	start_javascript_consumer $1
+	start_js_bundle_consumer $1
 }
 
 # TESTS

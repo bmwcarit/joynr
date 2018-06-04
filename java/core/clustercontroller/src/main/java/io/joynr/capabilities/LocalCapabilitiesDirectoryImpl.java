@@ -203,6 +203,12 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         return new Promise<>(deferred);
     }
 
+    @Override
+    public Promise<DeferredVoid> add(final DiscoveryEntry discoveryEntry, final Boolean awaitGlobalRegistration) {
+        // awaitGlobalRegistration is currently ignored in Java
+        return add(discoveryEntry);
+    }
+
     private void registerGlobal(final DiscoveryEntry discoveryEntry, final DeferredVoid deferred) {
         synchronized (globalAddressLock) {
             try {

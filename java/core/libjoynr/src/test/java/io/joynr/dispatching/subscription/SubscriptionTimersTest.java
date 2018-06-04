@@ -30,21 +30,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.google.common.collect.Sets;
-import io.joynr.dispatching.Dispatcher;
-import io.joynr.exceptions.JoynrMessageNotSentException;
-import io.joynr.exceptions.JoynrSendBufferFullException;
-import io.joynr.messaging.util.MulticastWildcardRegexFactory;
-import io.joynr.proxy.Future;
-import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
-import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
-import joynr.PeriodicSubscriptionQos;
-import joynr.exceptions.PublicationMissedException;
-import joynr.types.DiscoveryEntryWithMetaInfo;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -52,6 +37,23 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.google.common.collect.Sets;
+
+import io.joynr.dispatching.Dispatcher;
+import io.joynr.exceptions.JoynrMessageNotSentException;
+import io.joynr.exceptions.JoynrSendBufferFullException;
+import io.joynr.messaging.util.MulticastWildcardRegexFactory;
+import io.joynr.proxy.Future;
+import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
+import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
+import io.joynr.runtime.ShutdownNotifier;
+import joynr.PeriodicSubscriptionQos;
+import joynr.exceptions.PublicationMissedException;
+import joynr.types.DiscoveryEntryWithMetaInfo;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SubscriptionTimersTest {
@@ -69,6 +71,9 @@ public class SubscriptionTimersTest {
 
     @Mock
     private Dispatcher dispatcher;
+
+    @Mock
+    private ShutdownNotifier shutdownNotifier;
 
     @Mock
     private MulticastWildcardRegexFactory multicastWildcardRegexFactory;
@@ -93,7 +98,8 @@ public class SubscriptionTimersTest {
         subscriptionEndScheduler = Executors.newScheduledThreadPool(10);
         subscriptionManager = new SubscriptionManagerImpl(subscriptionEndScheduler,
                                                           dispatcher,
-                                                          multicastWildcardRegexFactory);
+                                                          multicastWildcardRegexFactory,
+                                                          shutdownNotifier);
         attributeName = "testAttribute";
         fromParticipantId = "fromParticipantId";
         toParticipantId = "toParticipantId";

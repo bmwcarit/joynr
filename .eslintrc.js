@@ -24,7 +24,8 @@ module.exports = {
         jasmine: true,
         browser: true
     },
-    extends: "eslint:recommended",
+    extends: ["plugin:promise/recommended", "eslint:recommended"],
+    plugins: ["promise"],
     rules: {
         indent: "off",
         quotes: "off",
@@ -68,7 +69,19 @@ module.exports = {
         "prefer-arrow-callback": "error",
         "prefer-const": "error",
         "prefer-destructuring": "off",
-        "prefer-spread": "error"
+        "prefer-spread": "error",
+        "promise/always-return": "off",
+        "promise/no-return-wrap": "error",
+        "promise/param-names": "error",
+        "promise/catch-or-return": "error",
+        "promise/no-native": "off",
+        "promise/no-nesting": "error",
+        "promise/no-promise-in-callback": "warn",
+        "promise/no-callback-in-promise": "warn",
+        "promise/avoid-new": "error",
+        "promise/no-new-statics": "off",
+        "promise/no-return-in-finally": "off",
+        "promise/valid-params": "off"
     },
     globals: { define: false },
     root: true

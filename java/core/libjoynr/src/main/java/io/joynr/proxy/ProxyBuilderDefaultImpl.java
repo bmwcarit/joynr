@@ -150,7 +150,10 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
     public ProxyBuilder<T> setMessagingQos(final MessagingQos messagingQos) {
         if (messagingQos.getRoundTripTtl_ms() > maxMessagingTtl) {
             logger.warn("Error in MessageQos. domains: {} interface: {} Max allowed ttl: {}. Passed ttl: {}",
-                        new Object[]{ domains, interfaceName, maxMessagingTtl, messagingQos.getRoundTripTtl_ms() });
+                        domains,
+                        interfaceName,
+                        maxMessagingTtl,
+                        messagingQos.getRoundTripTtl_ms());
             messagingQos.setTtl_ms(maxMessagingTtl);
         }
 
@@ -174,8 +177,10 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
 
             @Override
             public void onProxyCreationError(JoynrRuntimeException error) {
-                logger.error("error creating proxy: interface: {} domains: {}, error", new Object[]{ interfaceName,
-                        domains, error.getMessage() });
+                logger.error("error creating proxy: interface: {} domains: {}, error: {}",
+                             interfaceName,
+                             domains,
+                             error.getMessage());
             }
         });
     }

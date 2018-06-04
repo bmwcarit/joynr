@@ -19,14 +19,11 @@
  * #L%
  */
 
-var Promise = require("bluebird").Promise;
-var joynr = require("joynr");
-var testbase = require("test-base");
-var fs = require("fs");
-var provisioning = testbase.provisioning_common;
-var prettyLog = testbase.logging.prettyLog;
-var error = testbase.logging.error;
-var log = testbase.logging.log;
+let joynr = require("joynr");
+const testbase = require("test-base");
+const fs = require("fs");
+const provisioning = testbase.provisioning_common;
+const log = testbase.logging.log;
 
 if (process.env.domain === undefined) {
     log("please pass a domain as argument");
@@ -53,7 +50,7 @@ log("tlsKeyPath: " + process.env.tlsKeyPath);
 log("tlsCaPath: " + process.env.tlsCaPath);
 log("ownerId: " + process.env.ownerId);
 
-var domain = process.env.domain;
+const domain = process.env.domain;
 provisioning.ccAddress.host = process.env.cchost;
 provisioning.ccAddress.port = process.env.ccport;
 provisioning.ccAddress.protocol = process.env.ccprotocol;
@@ -73,16 +70,14 @@ if (process.env.tlsCertPath || process.env.tlsKeyPath || process.env.tlsCertPath
     provisioning.keychain.ownerId = process.env.ownerId;
 }
 
-var SystemIntegrationTestProxy = require("../generated-sources/joynr/test/SystemIntegrationTestProxy.js");
+const SystemIntegrationTestProxy = require("../generated-sources/joynr/test/SystemIntegrationTestProxy.js");
 
-var timeout = 600000;
-
-var runTest = function(systemIntegrationTestProxy) {
-    var addends = {
+const runTest = function(systemIntegrationTestProxy) {
+    const addends = {
         addendA : 123,
         addendB : 321
     };
-    return systemIntegrationTestProxy.add(addends).then(function(opArgs){
+    return systemIntegrationTestProxy.add(addends).then((opArgs) => {
         if (opArgs.result === undefined) {
             throw new Error("systemIntegrationTestProxy.add failed: result undefined");
         }
@@ -93,29 +88,29 @@ var runTest = function(systemIntegrationTestProxy) {
     });
 };
 
-joynr.load(provisioning).then(function(loadedJoynr) {
+joynr.load(provisioning).then((loadedJoynr) => {
     joynr = loadedJoynr;
-    var messagingQos = new joynr.messaging.MessagingQos({
+    const messagingQos = new joynr.messaging.MessagingQos({
         ttl : 60000
     });
 
-    var discoveryQos = new joynr.proxy.DiscoveryQos({
+    const discoveryQos = new joynr.proxy.DiscoveryQos({
         discoveryTimeoutMs : 120000 // 2 Mins
     });
 
     return joynr.proxyBuilder.build(SystemIntegrationTestProxy, {
-        domain : domain,
-        messagingQos : messagingQos,
-        discoveryQos : discoveryQos
-    }).then(function(systemIntegrationTestProxy) {
-        return runTest(systemIntegrationTestProxy).then(function(){
-            log("SIT RESULT success: node consumer -> " + domain);
-            process.exit(0);
-        });
-    }).catch(function(error) {
-        log("SIT RESULT error: node consumer -> " + domain + " error: " + JSON.stringify(error));
-        process.exit(1);
+        domain,
+        messagingQos,
+        discoveryQos
     });
-}).catch(function(error){
+}).then((systemIntegrationTestProxy) => {
+  return runTest(systemIntegrationTestProxy);
+}).then(() => {
+  log("SIT RESULT success: node consumer -> " + domain);
+  process.exit(0);
+}).catch((error) => {
+  log("SIT RESULT error: node consumer -> " + domain + " error: " + JSON.stringify(error));
+  process.exit(1);
+}).catch((error) => {
     throw error;
 });

@@ -29,8 +29,8 @@ if(${GENERATE_SOURCES})
     message(STATUS "variable JoynrGenerator_FOUND=${JoynrGenerator_FOUND}")
     message(STATUS "variable JoynrGenerator_JAR=${JoynrGenerator_JAR}")
     JoynrGenerator(
-        OUTPUTPATH ${CMAKE_SOURCE_DIR}/../robustness-test-base/src/main/generated-cpp
-        MODELPATH ${CMAKE_SOURCE_DIR}/../robustness-test-base/src/main/model/RobustnessTest.fidl
+        OUTPUTPATH ${CMAKE_CURRENT_SOURCE_DIR}/../robustness-test-base/src/main/generated-cpp
+        MODELPATH ${CMAKE_CURRENT_SOURCE_DIR}/../robustness-test-base/src/main/model/RobustnessTest.fidl
         GENERATION_LANGUAGE "cpp"
     )
 endif(${GENERATE_SOURCES})
@@ -46,14 +46,14 @@ find_package(Boost 1.58.0 REQUIRED
     program_options
 )
 
-INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/../robustness-test-base/src/main/generated-cpp/include)
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../robustness-test-base/src/main/generated-cpp/include)
 
 file(GLOB_RECURSE GENERATED_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}
-    "${CMAKE_SOURCE_DIR}/../robustness-test-base/src/main/generated-cpp/include/*.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../robustness-test-base/src/main/generated-cpp/include/*.h"
 )
 
 file(GLOB_RECURSE GENERATED_SOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-    "${CMAKE_SOURCE_DIR}/../robustness-test-base/src/main/generated-cpp/*.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../robustness-test-base/src/main/generated-cpp/*.cpp"
 )
 
 ## CONSUMER

@@ -21,10 +21,10 @@
 #include "joynr/tests/robustness/DefaultTestInterfaceProvider.h"
 
 #include <cstdint>
-#include <string>
 #include <functional>
-
 #include <memory>
+#include <string>
+
 #include "joynr/Logger.h"
 
 namespace exceptions
@@ -71,6 +71,10 @@ public:
     void fireBroadcastWithSingleStringParameterInternal(std::int64_t period_ms,
                                                         std::int64_t validity_ms,
                                                         std::shared_ptr<std::string> stringOut);
+
+    void ping(std::function<void()> onSuccess,
+              std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+            override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(RobustnessTestProvider);

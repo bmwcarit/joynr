@@ -33,6 +33,7 @@ class PosixSignalHandler
 public:
     static void setHandleAndRegisterForSignals(
             std::weak_ptr<IClusterControllerSignalHandler> clusterControllerRuntime);
+    static void stopSignalHandling();
 
 private:
     ADD_LOGGER(PosixSignalHandler)
@@ -40,8 +41,15 @@ private:
     ~PosixSignalHandler() = delete;
 
     static void handleSignal(int signal);
+    static void signalHandlerThreadFunction();
 
     static std::weak_ptr<IClusterControllerSignalHandler> clusterControllerPtr;
+    static std::thread signalHandlingThread;
+    static int sigReadFd;
+    static int sigWriteFd;
+    static const char sigUsr1CharValue;
+    static const char sigUsr2CharValue;
+    static const char sigTermCharValue;
 };
 } // namespace joynr
 

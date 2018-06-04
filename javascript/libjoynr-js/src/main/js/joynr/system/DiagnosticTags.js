@@ -59,7 +59,7 @@ DiagnosticTags.forChannel = function forChannel(channelInfo) {
 
 let forRequestHelper = function forRequestHelper(tagsForRequest, requestInfo) {
     if (requestInfo.request.params) {
-        tagsForRequest.params = JSON.stringify(requestInfo.request.params);
+        tagsForRequest.params = requestInfo.request.params;
     }
 };
 
@@ -79,7 +79,7 @@ DiagnosticTags.forRequest = function forRequest(requestInfo) {
 
 let forOneWayRequestHelper = function(tagsForOneWayRequest, requestInfo) {
     if (requestInfo.request.params) {
-        tagsForOneWayRequest.params = JSON.stringify(requestInfo.request.params);
+        tagsForOneWayRequest.params = requestInfo.request.params;
     }
 };
 
@@ -97,11 +97,7 @@ DiagnosticTags.forOneWayRequest = function forOneWayRequest(requestInfo) {
 };
 
 let forReplyHelper = function(tagsForReply, replyInfo) {
-    if (replyInfo.reply.error) {
-        tagsForReply.error = JSON.stringify(replyInfo.reply.error);
-    } else {
-        tagsForReply.response = JSON.stringify(replyInfo.reply.response);
-    }
+    tagsForReply.response = replyInfo.reply.response;
 };
 
 /**
@@ -114,6 +110,9 @@ DiagnosticTags.forReply = function forReply(replyInfo) {
         to: replyInfo.to,
         from: replyInfo.from
     };
+    if (replyInfo.reply.error) {
+        tagsForReply.error = replyInfo.reply.error;
+    }
     forReplyHelper(tagsForReply, replyInfo);
     return tagsForReply;
 };
@@ -122,12 +121,17 @@ DiagnosticTags.forReply = function forReply(replyInfo) {
  * @param {Object} subscriptionReplyInfo
  */
 DiagnosticTags.forSubscriptionReply = function forSubscriptionReply(subscriptionReplyInfo) {
-    return {
+    const subscriptionReplyTag = {
         diagnosticTag: "SubscriptionReply",
         subscriptionId: subscriptionReplyInfo.subscriptionReply.subscriptionId,
         to: subscriptionReplyInfo.to,
         from: subscriptionReplyInfo.from
     };
+    if (subscriptionReplyInfo.subscriptionReply.error) {
+        subscriptionReplyTag.error = subscriptionReplyInfo.subscriptionReply.error;
+    }
+
+    return subscriptionReplyTag;
 };
 
 /**
@@ -183,7 +187,7 @@ DiagnosticTags.forSubscriptionStop = function forSubscriptionStop(subscriptionSt
 };
 
 let forPublicationHelper = function(tagsForPublication, publicationInfo) {
-    tagsForPublication.response = JSON.stringify(publicationInfo.publication.response);
+    tagsForPublication.response = publicationInfo.publication.response;
 };
 
 /**
@@ -197,11 +201,14 @@ DiagnosticTags.forPublication = function forPublication(publicationInfo) {
         from: publicationInfo.from
     };
     forPublicationHelper(tagsForPublication, publicationInfo);
+    if (publicationInfo.error) {
+        tagsForPublication.error = publicationInfo.error;
+    }
     return tagsForPublication;
 };
 
 let forMulticastPublicationHelper = function(tagsForMulticastPublication, publicationInfo) {
-    tagsForMulticastPublication.response = JSON.stringify(publicationInfo.publication.response);
+    tagsForMulticastPublication.response = publicationInfo.publication.response;
 };
 
 /**
@@ -214,6 +221,9 @@ DiagnosticTags.forMulticastPublication = function forMulticastPublication(public
         from: publicationInfo.from
     };
     forMulticastPublicationHelper(tagsForMulticastPublication, publicationInfo);
+    if (publicationInfo.error) {
+        tagsForMulticastPublication.error = publicationInfo.error;
+    }
     return tagsForMulticastPublication;
 };
 

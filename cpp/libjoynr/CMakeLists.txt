@@ -274,6 +274,11 @@ GenerateJoynrExports(
     EXPORT_FILE_NAME "${CMAKE_CURRENT_SOURCE_DIR}/${JoynrLib_EXPORT_HEADER}"
 )
 
+if(NOT USE_PLATFORM_MOCOCRW)
+    # make sure the external project MoCOCrW is built before this
+    add_dependencies(Joynr MoCOCrW::mococrw)
+endif(NOT USE_PLATFORM_MOCOCRW)
+
 target_link_libraries(Joynr
     ${JoynrLib_TARGET_LIBRARIES}
     Boost::thread

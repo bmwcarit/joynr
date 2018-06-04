@@ -46,7 +46,6 @@ const JSONSerializer = require("../../util/JSONSerializer");
  * @param {Address} settings.incomingAddress
  * @param {Address} settings.parentMessageRouterAddress
  * @param {LocalStorage} settings.persistency - LocalStorage or another object implementing the same interface
- * @param {TypeRegistry} settings.typeRegistry
  *
  * @classdesc The <code>MessageRouter</code> is a joynr internal interface. The Message
  * Router receives messages from Message Receivers, and forwards them along using to the
@@ -77,7 +76,6 @@ function MessageRouter(settings) {
     const persistency = settings.persistency;
     const incomingAddress = settings.incomingAddress;
     const parentMessageRouterAddress = settings.parentMessageRouterAddress;
-    const typeRegistry = settings.typeRegistry;
     const multicastAddressCalculator = settings.multicastAddressCalculator;
     const messagingSkeletonFactory = settings.messagingSkeletonFactory;
     const multicastReceiversRegistry = {};
@@ -107,7 +105,7 @@ function MessageRouter(settings) {
             if (addressString === undefined || addressString === null || addressString === "{}") {
                 persistency.removeItem(that.getStorageKey(participantId));
             } else {
-                const address = Typing.augmentTypes(JSON.parse(addressString), typeRegistry);
+                const address = Typing.augmentTypes(JSON.parse(addressString));
                 routingTable[participantId] = address;
                 return address;
             }
@@ -452,7 +450,7 @@ function MessageRouter(settings) {
             } catch (error) {
                 messagesWithoutReplyTo.push(joynrMessage);
                 errorMsg = "replyTo address could not be set: " + error + ". Queuing message.";
-                log.warn(errorMsg, JSON.stringify(DiagnosticTags.forJoynrMessage(joynrMessage)));
+                log.warn(errorMsg, DiagnosticTags.forJoynrMessage(joynrMessage));
                 return Promise.resolve();
             }
         }
@@ -460,7 +458,7 @@ function MessageRouter(settings) {
         messagingStub = settings.messagingStubFactory.createMessagingStub(address);
         if (messagingStub === undefined) {
             errorMsg = "No message receiver found for participantId: " + joynrMessage.to + " queuing message.";
-            log.info(errorMsg, JSON.stringify(DiagnosticTags.forJoynrMessage(joynrMessage)));
+            log.info(errorMsg, DiagnosticTags.forJoynrMessage(joynrMessage));
             // TODO queue message and retry later
             return Promise.resolve();
         }
@@ -486,7 +484,7 @@ function MessageRouter(settings) {
                     const isGloballyVisible = true;
                     that.addNextHop(
                         joynrMessage.from,
-                        Typing.augmentTypes(JSON.parse(replyToAddress), typeRegistry),
+                        Typing.augmentTypes(JSON.parse(replyToAddress)),
                         isGloballyVisible
                     );
                 }

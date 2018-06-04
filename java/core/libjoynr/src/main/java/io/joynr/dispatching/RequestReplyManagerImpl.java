@@ -22,17 +22,24 @@ import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+
 import io.joynr.common.ExpiryDate;
 import io.joynr.dispatching.rpc.ReplyCaller;
 import io.joynr.dispatching.rpc.ReplyCallerDirectory;
@@ -54,9 +61,6 @@ import joynr.Reply;
 import joynr.Request;
 import joynr.types.DiscoveryEntryWithMetaInfo;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 @Singleton
 public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryListener<ProviderContainer>,
         ShutdownListener {
@@ -74,6 +78,8 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
     private MessageSender messageSender;
     private MutableMessageFactory messageFactory;
 
+    private ConcurrentMap<String, List<ScheduledFuture<?>>> cleanupSchedulerFuturesMap;
+
     private ScheduledExecutorService cleanupScheduler;
 
     @Inject
@@ -90,6 +96,7 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
         this.messageSender = messageSender;
         this.requestInterpreter = requestInterpreter;
         this.cleanupScheduler = cleanupScheduler;
+        this.cleanupSchedulerFuturesMap = new ConcurrentHashMap<>();
         providerDirectory.addListener(this);
         shutdownNotifier.registerForShutdown(this);
     }
@@ -218,6 +225,12 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
                 oneWayCallable.call();
             }
         }
+        List<ScheduledFuture<?>> futuresList = cleanupSchedulerFuturesMap.remove(participantId);
+        if (futuresList != null) {
+            for (ScheduledFuture<?> future : futuresList) {
+                future.cancel(false);
+            }
+        }
     }
 
     @Override
@@ -299,7 +312,8 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
         final ContentWithExpiryDate<Request> requestItem = new ContentWithExpiryDate<Request>(request, expiryDate);
         requestQueue.get(providerParticipantId).add(requestItem);
         replyCallbacks.put(request, replyCallback);
-        cleanupScheduler.schedule(new Runnable() {
+
+        ScheduledFuture<?> cleanupSchedulerFuture = cleanupScheduler.schedule(new Runnable() {
 
             @Override
             public void run() {
@@ -312,10 +326,22 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
 
             }
         }, expiryDate.getRelativeTtl(), TimeUnit.MILLISECONDS);
+        if (!cleanupSchedulerFuturesMap.containsKey(providerParticipantId)) {
+            List<ScheduledFuture<?>> cleanupSchedulerFuturesList = new LinkedList<ScheduledFuture<?>>();
+            cleanupSchedulerFuturesMap.put(providerParticipantId, cleanupSchedulerFuturesList);
+        }
+        cleanupSchedulerFuturesMap.get(providerParticipantId).add(cleanupSchedulerFuture);
     }
 
     @Override
     public void shutdown() {
+        for (List<ScheduledFuture<?>> futuresList : cleanupSchedulerFuturesMap.values()) {
+            if (futuresList != null) {
+                for (ScheduledFuture<?> future : futuresList) {
+                    future.cancel(false);
+                }
+            }
+        }
         running = false;
         synchronized (outstandingRequestThreads) {
             for (Thread thread : outstandingRequestThreads) {

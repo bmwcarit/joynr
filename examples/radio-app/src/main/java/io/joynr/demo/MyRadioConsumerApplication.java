@@ -90,6 +90,7 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
     private Future<String> subscriptionFutureCurrentStation;
     private Future<String> weakSignalFuture;
     private Future<String> weakSignalWithPartitionFuture;
+    private Future<String> newStationDiscoveredFuture;
     private RadioProxy radioProxy;
     @Inject
     private ObjectMapper objectMapper;
@@ -337,6 +338,13 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
                     LOG.error(e.getMessage());
                 }
             }
+            if (newStationDiscoveredFuture != null) {
+                try {
+                    radioProxy.unsubscribeFromNewStationDiscoveredBroadcast(newStationDiscoveredFuture.get());
+                } catch (JoynrRuntimeException | InterruptedException | ApplicationException e) {
+                    LOG.error(e.getMessage());
+                }
+            }
         }
 
         // Add any clean up code here for your application.
@@ -474,18 +482,20 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
             }
             newStationDiscoveredBroadcastFilterParams.setPositionOfInterest(positionOfInterestJson);
             newStationDiscoveredBroadcastFilterParams.setRadiusOfInterestArea("200000"); // 200 km
-            radioProxy.subscribeToNewStationDiscoveredBroadcast(new RadioBroadcastInterface.NewStationDiscoveredBroadcastAdapter() {
-                                                                    @Override
-                                                                    public void onReceive(RadioStation discoveredStation,
-                                                                                          GeoPosition geoPosition) {
-                                                                        LOG.info(PRINT_BORDER
-                                                                                + "BROADCAST SUBSCRIPTION: new station discovered: "
-                                                                                + discoveredStation + " at "
-                                                                                + geoPosition + PRINT_BORDER);
-                                                                    }
-                                                                },
-                                                                newStationDiscoveredBroadcastSubscriptionQos,
-                                                                newStationDiscoveredBroadcastFilterParams);
+            newStationDiscoveredFuture = radioProxy.subscribeToNewStationDiscoveredBroadcast(new RadioBroadcastInterface.NewStationDiscoveredBroadcastAdapter() {
+                                                                                                 @Override
+                                                                                                 public void onReceive(RadioStation discoveredStation,
+                                                                                                                       GeoPosition geoPosition) {
+                                                                                                     LOG.info(PRINT_BORDER
+                                                                                                             + "BROADCAST SUBSCRIPTION: new station discovered: "
+                                                                                                             + discoveredStation
+                                                                                                             + " at "
+                                                                                                             + geoPosition
+                                                                                                             + PRINT_BORDER);
+                                                                                                 }
+                                                                                             },
+                                                                                             newStationDiscoveredBroadcastSubscriptionQos,
+                                                                                             newStationDiscoveredBroadcastFilterParams);
 
             boolean success;
 

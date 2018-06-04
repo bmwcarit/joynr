@@ -143,10 +143,10 @@ TEST_F(PublicationManagerTest, add_requestCallerIsCalledCorrectlyByPublisherRunn
     std::string receiverId = "ReceiverId";
     std::string attributeName("Location");
     //SubscriptionQos
-    std::int64_t period_ms = 100;
-    std::int64_t validity_ms = 500;
-    std::int64_t alertInterval_ms = 2000;
-    std::int64_t publicationTtl_ms = 1000;
+    std::int64_t period_ms = 200;
+    std::int64_t validity_ms = 1000;
+    std::int64_t alertInterval_ms = 3000;
+    std::int64_t publicationTtl_ms = 2000;
     auto qos = std::make_shared<PeriodicSubscriptionQos>(
                         validity_ms,
                         publicationTtl_ms,
@@ -159,7 +159,7 @@ TEST_F(PublicationManagerTest, add_requestCallerIsCalledCorrectlyByPublisherRunn
     subscriptionRequest.setQos(qos);
     JOYNR_LOG_DEBUG(logger(), "adding request");
     publicationManager->add(senderId, receiverId, requestCaller,subscriptionRequest, mockPublicationSender);
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     publicationManager->shutdown();
 }
 
@@ -1251,7 +1251,7 @@ TEST_F(PublicationManagerTest, forwardProviderRuntimeExceptionToPublicationSende
     const std::string senderId = "SenderId";
     const std::string receiverId = "ReceiverId";
     const std::string attributeName("attributeWithProviderRuntimeException");
-    const std::int64_t period_ms = 100;
+    const std::int64_t period_ms = 200;
     const std::int64_t validity_ms = 1000;
     const std::int64_t publicationTtl_ms = 1000;
     const std::int64_t alertInterval_ms = 1000;
@@ -1284,7 +1284,7 @@ TEST_F(PublicationManagerTest, forwardProviderRuntimeExceptionToPublicationSende
     publicationManager->add(senderId, receiverId, requestCaller, subscriptionRequest, mockPublicationSender);
 
     // wait for the async publication
-    std::this_thread::sleep_for(std::chrono::milliseconds(150));
+    std::this_thread::sleep_for(std::chrono::milliseconds(300));
     //now, two publications should be noticed, even if the original subscription is expired
     publicationManager->shutdown();
 }

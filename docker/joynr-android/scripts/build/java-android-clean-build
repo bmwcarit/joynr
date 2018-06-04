@@ -35,11 +35,14 @@ mkdir -p /data/src/java/messaging/mqtt/joynr-mqtt-client/src/test/resources
 
 cd /data/src/java/messaging/mqtt/joynr-mqtt-client/src/test/resources/
 
-# create truststore
+# create JKS truststore
 keytool -keystore catruststore.jks -importcert -file $CERT_PATH/ca.cert.pem -storepass $KEYSTORE_PASSWORD -trustcacerts -noprompt
 
 # list the truststore contents
 keytool -list -keystore catruststore.jks -storepass $KEYSTORE_PASSWORD
+
+# create PKCS12 truststore
+keytool -importkeystore -srckeystore catruststore.jks -srcstorepass $KEYSTORE_PASSWORD -destkeystore catruststore.p12 -deststorepass $KEYSTORE_PASSWORD -srcstoretype JKS -deststoretype PKCS12
 
 # merge and import client certificate and private key into pkcs12 keystore
 openssl pkcs12 -export -in $CERT_PATH/client.cert.pem -inkey $PRIVATE_KEY_PATH/client.key.pem -out clientkeystore.p12 -password pass:$KEYSTORE_PASSWORD

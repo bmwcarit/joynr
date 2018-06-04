@@ -2,6 +2,23 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.3.0
+
+## API relevant changes
+* **[C++]** Registration of global providers can be made waiting until registration has been
+  propagated to GlobalCapabilitiesDirectory by passing an optional bool flag `awaitGlobalRegistration`
+  to `registerProvider` and `registerProviderAsync`.
+
+## Configuration property changes
+* **[Java]** Introduced `PROPERTY_KEY_MQTT_KEYSTORE_TYPE` and `PROPERTY_KEY_MQTT_TRUSTSTORE_TYPE` for
+specifying the keystore/truststore type. See [Java Configuration Reference](JavaSettings.md)for more details.
+
+## Other changes
+* **[JS]** Removed the dependency to wscpp. Joynr uses the ws npm module for websocket
+  communication instead.
+
+* **[C++]** Added a CMake flag `USE_PLATFORM_MOCOCRW` to download mococrw at build time.
+
 # joynr 1.2.0
 
 ## API relevant changes

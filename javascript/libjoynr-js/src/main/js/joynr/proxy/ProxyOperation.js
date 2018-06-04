@@ -116,7 +116,6 @@ function operationFunctionOnSuccess(settings) {
                 if (foundValidOperationSignature.outputParameter[responseKey] !== undefined) {
                     argumentValue[foundValidOperationSignature.outputParameter[responseKey].name] = Typing.augmentTypes(
                         response[responseKey],
-                        typeRegistry,
                         foundValidOperationSignature.outputParameter[responseKey].type
                     );
                 } else {

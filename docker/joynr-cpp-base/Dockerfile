@@ -74,6 +74,30 @@ RUN cd /opt \
     && rm -rf dlt-daemon \
     && echo '/usr/local/lib64' > /etc/ld.so.conf.d/dlt.conf
 
+###################################################
+# install boost
+###################################################
+RUN dnf update -y \
+    && dnf install -y \
+    boost \
+    boost-devel \
+    && dnf clean all
+
+###################################################
+# install MoCOCrW
+###################################################
+
+RUN export MoCOCrW_VERSION=master \
+    && cd /opt \
+    && git clone https://github.com/bmwcarit/MoCOCrW.git \
+    && cd MoCOCrW \
+    && git checkout $MoCOCrW_VERSION \
+    && mkdir build \
+    && cd build \
+    && cmake -DBUILD_TESTING=Off .. \
+    && make install -j"$(nproc)" \
+    && cd /opt \
+    && rm -rf MoCOCrW
 
 ###################################################
 # install flatbuffers

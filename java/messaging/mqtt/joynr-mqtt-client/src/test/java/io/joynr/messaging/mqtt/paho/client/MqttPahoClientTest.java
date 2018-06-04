@@ -228,11 +228,10 @@ public class MqttPahoClientTest {
         joynrMqttClient.publishMessage(ownTopic.getTopic(), largeSerializedMessage);
     }
 
-    @Test
-    public void mqttClientTestWithDisabledMessageSizeCheck() throws Exception {
+    private void mqttClientTestWithDisabledMessageSizeCheck(boolean isSecureConnection) throws Exception {
         final int initialMessageSize = 100;
         properties.put(MqttModule.PROPERTY_KEY_MQTT_MAX_MESSAGE_SIZE_BYTES, "0");
-        createJoynrMqttClient();
+        createJoynrMqttClient(isSecureConnection);
 
         byte[] shortSerializedMessage = new byte[initialMessageSize];
         joynrMqttClientPublishAndVerifyReceivedMessage(shortSerializedMessage);
@@ -242,11 +241,13 @@ public class MqttPahoClientTest {
     }
 
     @Test
-    public void mqttClientTLSTestWithDisabledMessageSizeCheck() throws URISyntaxException {
-        final int initialMessageSize = 100;
-        final boolean isSecureConnection = true;
-        properties.put(MqttModule.PROPERTY_KEY_MQTT_MAX_MESSAGE_SIZE_BYTES, "0");
+    public void mqttClientTestWithDisabledMessageSizeCheckWithoutTls() throws Exception {
+        final boolean isSecureConnection = false;
+        mqttClientTestWithDisabledMessageSizeCheck(isSecureConnection);
+    }
 
+    @Test
+    public void mqttClientTestWithDisabledMessageSizeCheckWithTlsAndDefaultJksStore() throws Exception {
         final String keyStorePath = getResourcePath("clientkeystore.jks");
         final String trustStorePath = getResourcePath("catruststore.jks");
         properties.put(MqttModule.PROPERTY_KEY_MQTT_KEYSTORE_PATH, keyStorePath);
@@ -254,13 +255,23 @@ public class MqttPahoClientTest {
         properties.put(MqttModule.PROPERTY_KEY_MQTT_KEYSTORE_PWD, KEYSTORE_PASSWORD);
         properties.put(MqttModule.PROPERTY_KEY_MQTT_TRUSTSTORE_PWD, KEYSTORE_PASSWORD);
 
-        createJoynrMqttClient(isSecureConnection);
+        final boolean isSecureConnection = true;
+        mqttClientTestWithDisabledMessageSizeCheck(isSecureConnection);
+    }
 
-        byte[] shortSerializedMessage = new byte[initialMessageSize];
-        joynrMqttClientPublishAndVerifyReceivedMessage(shortSerializedMessage);
+    @Test
+    public void mqttClientTestWithDisabledMessageSizeCheckWithTlsAndP12Store() throws Exception {
+        final String keyStorePath = getResourcePath("clientkeystore.p12");
+        final String trustStorePath = getResourcePath("catruststore.p12");
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_KEYSTORE_PATH, keyStorePath);
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_TRUSTSTORE_PATH, trustStorePath);
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_KEYSTORE_TYPE, "PKCS12");
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_TRUSTSTORE_TYPE, "PKCS12");
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_KEYSTORE_PWD, KEYSTORE_PASSWORD);
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_TRUSTSTORE_PWD, KEYSTORE_PASSWORD);
 
-        byte[] largeSerializedMessage = new byte[initialMessageSize + 1];
-        joynrMqttClientPublishAndVerifyReceivedMessage(largeSerializedMessage);
+        final boolean isSecureConnection = true;
+        mqttClientTestWithDisabledMessageSizeCheck(isSecureConnection);
     }
 
     private void testCreateMqttClientFailsWithJoynrIllegalArgumentException() {
@@ -445,6 +456,8 @@ public class MqttPahoClientTest {
                                              maxMsgsInflight,
                                              maxMsgSizeBytes,
                                              cleanSession,
+                                             "",
+                                             "",
                                              "",
                                              "",
                                              "",
