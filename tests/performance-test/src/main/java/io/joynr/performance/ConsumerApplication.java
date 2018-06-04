@@ -171,9 +171,13 @@ public class ConsumerApplication extends AbstractJoynrApplication {
 
     private void performAsyncSendStringTest(EchoProxy proxy) {
         runAsyncSendStringTest(proxy, invocationParameters.getNumberOfWarmupRuns());
+        int iterations = invocationParameters.getNumberOfIterations();
 
+        int numFailures = 0;
         long startTime = System.currentTimeMillis();
-        int numFailures = runAsyncSendStringTest(proxy, invocationParameters.getNumberOfRuns());
+        for (int i = 0; i < iterations; i++) {
+            numFailures += runAsyncSendStringTest(proxy, invocationParameters.getNumberOfRuns());
+        }
         long endTime = System.currentTimeMillis();
 
         printTestResult(endTime, startTime);
@@ -304,12 +308,19 @@ public class ConsumerApplication extends AbstractJoynrApplication {
     }
 
     private void printTestResult(long endTime, long startTime) {
+        printTestResult(endTime, startTime, 1);
+    }
+
+    private void printTestResult(long endTime, long startTime, int iterations) {
         long timeDeltaMilliseconds = endTime - startTime;
-        System.err.format("Test case took %d ms. %.2f Msgs/s transmitted\n startTime: %d, endTime: %d \n",
+        System.err.format("Test case took %d ms. %.2f Msgs/s transmitted\n startTime: %d, endTime: %d, runs: %d, iterations: %d \n",
                           timeDeltaMilliseconds,
-                          (double) invocationParameters.getNumberOfRuns() / ((double) timeDeltaMilliseconds / 1000.0),
+                          (double) (invocationParameters.getNumberOfRuns() * iterations)
+                                  / ((double) timeDeltaMilliseconds / 1000.0),
                           startTime,
-                          endTime);
+                          endTime,
+                          invocationParameters.getNumberOfRuns(),
+                          invocationParameters.getNumberOfIterations());
     }
 
     private <type> void printFailureStatistic(int numFailures, int numRuns) {

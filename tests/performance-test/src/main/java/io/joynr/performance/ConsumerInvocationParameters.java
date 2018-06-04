@@ -58,6 +58,7 @@ public class ConsumerInvocationParameters {
 
     private static final String CMDLINE_OPTIONNAME_DOMAINNAME = "domain";
     private static final String CMDLINE_OPTIONNAME_NUMRUNS = "runs";
+    private static final String CMDLINE_OPTIONNAME_ITERATIONS = "iterations";
     private static final String CMDLINE_OPTIONNAME_WARMUPS = "warmups";
     private static final String CMDLINE_OPTIONNAME_SYNCMODE = "syncmode";
     private static final String CMDLINE_OPTIONNAME_TESTCASE = "testcase";
@@ -72,6 +73,7 @@ public class ConsumerInvocationParameters {
 
     private static String domainName = "";
     private static int numberOfRuns = 1;
+    private static int numberOfIterations = 1;
     private static int numberOfWarmupRuns = 0;
     private static COMMUNICATIONMODE communicationMode = COMMUNICATIONMODE.SYNC;
     private static TESTCASE testCase = TESTCASE.SEND_STRING;
@@ -103,6 +105,14 @@ public class ConsumerInvocationParameters {
 
         if (numberOfWarmupRuns < 0) {
             throw new Exception("Number of warmup runs must be positive or zero");
+        }
+
+        if (commandLine.hasOption(CMDLINE_OPTIONNAME_ITERATIONS)) {
+            numberOfIterations = ((Number) commandLine.getParsedOptionValue(CMDLINE_OPTIONNAME_ITERATIONS)).intValue();
+
+            if (numberOfIterations <= 0) {
+                throw new Exception("Number of iterations must be positive");
+            }
         }
 
         if (commandLine.hasOption(CMDLINE_OPTIONNAME_STRINGDATALENGTH)) {
@@ -202,6 +212,15 @@ public class ConsumerInvocationParameters {
                                 .desc("Number of test runs")
                                 .build());
 
+        options.addOption(Option.builder("i")
+                                .longOpt(CMDLINE_OPTIONNAME_ITERATIONS)
+                                .required(false)
+                                .hasArg()
+                                .argName("numIterations")
+                                .type(Number.class)
+                                .desc("Number of test run iterations")
+                                .build());
+
         options.addOption(Option.builder("sl")
                                 .longOpt(CMDLINE_OPTIONNAME_STRINGDATALENGTH)
                                 .required(false)
@@ -293,6 +312,10 @@ public class ConsumerInvocationParameters {
 
     public int getNumberOfRuns() {
         return numberOfRuns;
+    }
+
+    public int getNumberOfIterations() {
+        return numberOfIterations;
     }
 
     public int getNumberOfWarmupRuns() {
