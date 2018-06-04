@@ -969,4 +969,17 @@ IltUtil.cmpByteBuffers = function(a, b) {
     return true;
 };
 
+function defer(resolve, reject) {
+    this.resolve = resolve;
+    this.reject = reject;
+}
+
+IltUtil.createDeferred = function() {
+    const deferred = {};
+    /*eslint-disable promise/avoid-new */
+    deferred.promise = new Promise(defer.bind(deferred));
+    /*eslint-enable promise/avoid-new */
+    return deferred;
+};
+
 module.exports = IltUtil;

@@ -40,1192 +40,557 @@ log(`domain: ${domain}`);
 describe("Consumer test", () => {
     let joynr = require("joynr");
     const provisioning = testbase.provisioning_common;
-    let initialized = false;
-    let testFinished = false;
     let testInterfaceProxy;
 
-    function loadJoynr(compressed) {
-        let ready = false;
+    async function loadJoynr(compressed) {
+        log("Environment not yet setup");
+        await joynr.load(provisioning);
+        log("joynr started");
+        const messagingQos = new joynr.messaging.MessagingQos({
+            ttl: 60000,
+            compress: compressed
+        });
+        log(`messagingQos - compressed = ${compressed}`);
+        const TestInterfaceProxy = require("../generated-javascript/joynr/interlanguagetest/TestInterfaceProxy.js");
+        testInterfaceProxy = await joynr.proxyBuilder.build(TestInterfaceProxy, {
+            domain,
+            messagingQos
+        });
 
-        if (initialized === false) {
-            runs(() => {
-                log("Environment not yet setup");
-                joynr
-                    .load(provisioning)
-                    .then(loadedJoynr => {
-                        log("joynr started");
-                        joynr = loadedJoynr;
-                        const messagingQos = new joynr.messaging.MessagingQos({
-                            ttl: 60000,
-                            compress: compressed
-                        });
-                        log(`messagingQos - compressed = ${compressed}`);
-                        const TestInterfaceProxy = require("../generated-javascript/joynr/interlanguagetest/TestInterfaceProxy.js");
-                        joynr.proxyBuilder
-                            .build(TestInterfaceProxy, {
-                                domain,
-                                messagingQos
-                            })
-                            .then(newTestInterfaceProxy => {
-                                testInterfaceProxy = newTestInterfaceProxy;
-                                log("testInterface proxy build");
-                                ready = true;
-                            })
-                            .catch(error => {
-                                log(`error building testInterfaceProxy: ${error}`);
-                            });
-                        return loadedJoynr;
-                    })
-                    .catch(error => {
-                        throw error;
-                    });
-            });
-
-            waitsFor(
-                () => {
-                    return ready;
-                },
-                "joynr proxy built",
-                5000
-            );
-
-            runs(() => {
-                initialized = true;
-            });
-        } else {
-            log("Environment already setup");
-        }
+        log("testInterface proxy build");
     }
 
     describe("with compressed joynr", () => {
-        let compressedFinished = false;
-        beforeEach(() => {
-            loadJoynr(true);
+        beforeAll(async () => {
+            return await loadJoynr(true);
         });
 
-        it("callMethodWithoutParametersCompressed", () => {
-            const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onError"]);
-            spy.onFulfilled.reset();
-            spy.onError.reset();
-
-            runs(() => {
-                log("callMethodWithoutParametersCompressed");
-                testInterfaceProxy
-                    .methodWithoutParameters()
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callMethodWithoutParametersCompressed",
-                5000
-            );
-
-            runs(() => {
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-            });
+        it("callMethodWithoutParametersCompressed", done => {
+            log("callMethodWithoutParametersCompressed");
+            testInterfaceProxy
+                .methodWithoutParameters()
+                .then(done)
+                .catch(fail);
         });
 
-        it("test finished", () => {
-            compressedFinished = true;
-        });
-
-        afterEach(() => {
-            if (compressedFinished) {
-                const doneSpy = jasmine.createSpy("done");
-                runs(() => {
-                    initialized = false;
-                    joynr.shutdown().then(() => {
-                        delete require.cache;
-                        joynr = require("joynr");
-                        doneSpy();
-                    });
-                });
-                waitsFor(() => {
-                    return doneSpy.callCount > 0;
-                });
-            }
+        afterAll(async () => {
+            await joynr.shutdown();
+            delete require.cache;
+            joynr = require("joynr");
         });
     });
 
-    // this formatting is wrong. Please fix after merge.
     describe("without compressed joynr", () => {
-        beforeEach(() => {
-            loadJoynr(false);
+        beforeAll(async () => {
+            return await loadJoynr(false);
         });
 
         it("proxy is defined", () => {
             expect(testInterfaceProxy).toBeDefined();
         });
 
-        it("callMethodWithoutParameters", () => {
-            const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onError"]);
-            spy.onFulfilled.reset();
-            spy.onError.reset();
-
-            runs(() => {
-                log("callMethodWithoutParameters");
-                testInterfaceProxy
-                    .methodWithoutParameters()
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callMethodWithoutParameters",
-                5000
-            );
-
-            runs(() => {
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-            });
+        it("callMethodWithoutParameters", async () => {
+            log("callMethodWithoutParameters");
+            return await testInterfaceProxy.methodWithoutParameters();
         });
 
-        it("callMethodWithoutInputParameter", () => {
-            const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onError"]);
-            spy.onFulfilled.reset();
-            spy.onError.reset();
-
-            runs(() => {
-                log("callMethodWithoutInputParameter");
-                testInterfaceProxy
-                    .methodWithoutInputParameter()
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callMethodWithoutInputParameter",
-                5000
-            );
-
-            runs(() => {
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-                const retObj = spy.onFulfilled.calls[0].args[0];
-                expect(retObj).toBeDefined();
-                expect(retObj.booleanOut).toBeDefined();
-                expect(retObj.booleanOut).toBeTruthy();
-            });
+        it("callMethodWithoutInputParameter", async () => {
+            log("callMethodWithoutInputParameter");
+            const retObj = await testInterfaceProxy.methodWithoutInputParameter();
+            expect(retObj).toBeDefined();
+            expect(retObj.booleanOut).toBeDefined();
+            expect(retObj.booleanOut).toBeTruthy();
         });
 
-        it("callMethodWithoutOutputParameter", () => {
-            const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onError"]);
-            spy.onFulfilled.reset();
-            spy.onError.reset();
-
-            runs(() => {
-                log("callMethodWithoutOutputParameter");
-                const args = {
-                    booleanArg: false
-                };
-                testInterfaceProxy
-                    .methodWithoutOutputParameter(args)
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callMethodWithoutOutputParameter",
-                5000
-            );
-
-            runs(() => {
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-                log("callMethodWithoutOutputParameter - OK");
-            });
+        it("callMethodWithoutOutputParameter", async () => {
+            log("callMethodWithoutOutputParameter");
+            const args = {
+                booleanArg: false
+            };
+            await testInterfaceProxy.methodWithoutOutputParameter(args);
+            log("callMethodWithoutOutputParameter - OK");
         });
 
-        it("callMethodWithSinglePrimitiveParameters", () => {
-            const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onError"]);
-            spy.onFulfilled.reset();
-            spy.onError.reset();
-            runs(() => {
-                log("callMethodWithSinglePrimitiveParameters");
-                const args = {
-                    uInt16Arg: 32767
-                };
-                testInterfaceProxy
-                    .methodWithSinglePrimitiveParameters(args)
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
+        it("callMethodWithSinglePrimitiveParameters", async () => {
+            log("callMethodWithSinglePrimitiveParameters");
+            const args = {
+                uInt16Arg: 32767
+            };
+            const retObj = await testInterfaceProxy.methodWithSinglePrimitiveParameters(args);
 
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callMethodWithSinglePrimitiveParameters",
-                5000
-            );
-
-            runs(() => {
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-                const retObj = spy.onFulfilled.calls[0].args[0];
-                expect(retObj).toBeDefined();
-                expect(retObj.stringOut).toBeDefined();
-                const x = 32767;
-                expect(retObj.stringOut).toEqual(x.toString());
-                log("callMethodWithSinglePrimitiveParameters - OK");
-            });
+            expect(retObj).toBeDefined();
+            expect(retObj.stringOut).toBeDefined();
+            const x = 32767;
+            expect(retObj.stringOut).toEqual(x.toString());
+            log("callMethodWithSinglePrimitiveParameters - OK");
         });
 
-        it("callMethodWithMultiplePrimitiveParameters", () => {
-            const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onError"]);
-            spy.onFulfilled.reset();
-            spy.onError.reset();
+        it("callMethodWithMultiplePrimitiveParameters", async () => {
             const arg2 = 47.11;
-            runs(() => {
-                log("callMethodWithMultiplePrimitiveParameters");
-                const args = {
-                    int32Arg: 2147483647,
-                    floatArg: arg2,
-                    booleanArg: false
-                };
-                testInterfaceProxy
-                    .methodWithMultiplePrimitiveParameters(args)
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
+            log("callMethodWithMultiplePrimitiveParameters");
+            const args = {
+                int32Arg: 2147483647,
+                floatArg: arg2,
+                booleanArg: false
+            };
+            const retObj = await testInterfaceProxy.methodWithMultiplePrimitiveParameters(args);
 
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callMethodWithMultiplePrimitiveParameters",
-                5000
-            );
-
-            runs(() => {
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-                const retObj = spy.onFulfilled.calls[0].args[0];
-                expect(retObj).toBeDefined();
-                expect(retObj.doubleOut).toBeDefined();
-                expect(retObj.stringOut).toBeDefined();
-                const x = 2147483647;
-                expect(retObj.doubleOut).toBeCloseTo(arg2);
-                expect(retObj.stringOut).toEqual(x.toString());
-                log("callMethodWithMultiplePrimitiveParameters - OK");
-            });
+            expect(retObj).toBeDefined();
+            expect(retObj.doubleOut).toBeDefined();
+            expect(retObj.stringOut).toBeDefined();
+            const x = 2147483647;
+            expect(retObj.doubleOut).toBeCloseTo(arg2);
+            expect(retObj.stringOut).toEqual(x.toString());
+            log("callMethodWithMultiplePrimitiveParameters - OK");
         });
 
-        it("callMethodWithSingleArrayParameters", () => {
-            const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onError"]);
-            spy.onFulfilled.reset();
-            spy.onError.reset();
-            runs(() => {
-                log("callMethodWithSingleArrayParameters");
-                const doubleArray = IltUtil.createDoubleArray();
-                const args = {
-                    doubleArrayArg: doubleArray
-                };
-                testInterfaceProxy
-                    .methodWithSingleArrayParameters(args)
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
+        it("callMethodWithSingleArrayParameters", async () => {
+            log("callMethodWithSingleArrayParameters");
+            const doubleArray = IltUtil.createDoubleArray();
+            const args = {
+                doubleArrayArg: doubleArray
+            };
+            const retObj = await testInterfaceProxy.methodWithSingleArrayParameters(args);
 
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callMethodWithSingleArrayParameters",
-                5000
-            );
-
-            runs(() => {
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-                const retObj = spy.onFulfilled.calls[0].args[0];
-                expect(retObj).toBeDefined();
-                expect(retObj.stringArrayOut).toBeDefined();
-                expect(IltUtil.checkStringArray(retObj.stringArrayOut)).toBeTruthy();
-                log("callMethodWithSingleArrayParameters - OK");
-            });
+            expect(retObj).toBeDefined();
+            expect(retObj.stringArrayOut).toBeDefined();
+            expect(IltUtil.checkStringArray(retObj.stringArrayOut)).toBeTruthy();
+            log("callMethodWithSingleArrayParameters - OK");
         });
 
-        it("callMethodWithMultipleArrayParameters", () => {
-            const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onError"]);
-            spy.onFulfilled.reset();
-            spy.onError.reset();
-            runs(() => {
-                log("callMethodWithMultipleArrayParameters");
-                const args = {
-                    stringArrayArg: IltUtil.createStringArray(),
-                    int8ArrayArg: IltUtil.createByteArray(),
-                    enumArrayArg: IltUtil.createExtendedInterfaceEnumerationInTypeCollectionArray(),
-                    structWithStringArrayArrayArg: IltUtil.createStructWithStringArrayArray()
-                };
-                testInterfaceProxy
-                    .methodWithMultipleArrayParameters(args)
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
+        it("callMethodWithMultipleArrayParameters", async () => {
+            log("callMethodWithMultipleArrayParameters");
+            const args = {
+                stringArrayArg: IltUtil.createStringArray(),
+                int8ArrayArg: IltUtil.createByteArray(),
+                enumArrayArg: IltUtil.createExtendedInterfaceEnumerationInTypeCollectionArray(),
+                structWithStringArrayArrayArg: IltUtil.createStructWithStringArrayArray()
+            };
+            const retObj = await testInterfaceProxy.methodWithMultipleArrayParameters(args);
 
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callMethodWithMultipleArrayParameters",
-                5000
-            );
-
-            runs(() => {
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-                const retObj = spy.onFulfilled.calls[0].args[0];
-                expect(retObj).toBeDefined();
-                expect(retObj.uInt64ArrayOut).toBeDefined();
-                expect(retObj.structWithStringArrayArrayOut).toBeDefined();
-                expect(retObj.structWithStringArrayArrayOut).not.toBeNull();
-                expect(IltUtil.checkUInt64Array(retObj.uInt64ArrayOut)).toBeTruthy();
-                expect(IltUtil.checkStructWithStringArrayArray(retObj.structWithStringArrayArrayOut)).toBeTruthy();
-                log("callMethodWithMultipleArrayParameters - OK");
-            });
+            expect(retObj).toBeDefined();
+            expect(retObj.uInt64ArrayOut).toBeDefined();
+            expect(retObj.structWithStringArrayArrayOut).toBeDefined();
+            expect(retObj.structWithStringArrayArrayOut).not.toBeNull();
+            expect(IltUtil.checkUInt64Array(retObj.uInt64ArrayOut)).toBeTruthy();
+            expect(IltUtil.checkStructWithStringArrayArray(retObj.structWithStringArrayArrayOut)).toBeTruthy();
+            log("callMethodWithMultipleArrayParameters - OK");
         });
 
-        it("callMethodWithSingleByteBufferParameter", () => {
-            const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onError"]);
+        it("callMethodWithSingleByteBufferParameter", async () => {
             const byteBufferArg = [-128, 0, 127];
-            runs(() => {
-                log("callMethodWithSingleByteBufferParameter");
-                const args = {
-                    byteBufferIn: byteBufferArg
-                };
-                testInterfaceProxy
-                    .methodWithSingleByteBufferParameter(args)
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
 
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callMethodWithSingleByteBufferParameter",
-                5000
-            );
+            log("callMethodWithSingleByteBufferParameter");
+            const args = {
+                byteBufferIn: byteBufferArg
+            };
+            const retObj = await testInterfaceProxy.methodWithSingleByteBufferParameter(args);
 
-            runs(() => {
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-                const retObj = spy.onFulfilled.calls[0].args[0];
-                expect(retObj).toBeDefined();
-                expect(retObj.byteBufferOut).toBeDefined();
-                expect(IltUtil.cmpByteBuffers(retObj.byteBufferOut, byteBufferArg)).toBeTruthy();
-                log("callMethodWithSingleByteBufferParameter - OK");
-            });
+            expect(retObj).toBeDefined();
+            expect(retObj.byteBufferOut).toBeDefined();
+            expect(IltUtil.cmpByteBuffers(retObj.byteBufferOut, byteBufferArg)).toBeTruthy();
+            log("callMethodWithSingleByteBufferParameter - OK");
         });
 
-        it("callMethodWithMultipleByteBufferParameters", () => {
-            const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onError"]);
+        it("callMethodWithMultipleByteBufferParameters", async () => {
             const byteBufferArg1 = [-5, 125];
             const byteBufferArg2 = [78, 0];
-            runs(() => {
-                log("callMethodWithMultipleByteBufferParameters");
-                const args = {
-                    byteBufferIn1: byteBufferArg1,
-                    byteBufferIn2: byteBufferArg2
-                };
-                testInterfaceProxy
-                    .methodWithMultipleByteBufferParameters(args)
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
 
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callMethodWithMultipleByteBufferParameters",
-                5000
-            );
+            log("callMethodWithMultipleByteBufferParameters");
+            const args = {
+                byteBufferIn1: byteBufferArg1,
+                byteBufferIn2: byteBufferArg2
+            };
+            const retObj = await testInterfaceProxy.methodWithMultipleByteBufferParameters(args);
 
-            runs(() => {
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-                const retObj = spy.onFulfilled.calls[0].args[0];
-                expect(retObj).toBeDefined();
-                expect(retObj.byteBufferOut).toBeDefined();
-                expect(
-                    IltUtil.cmpByteBuffers(retObj.byteBufferOut, byteBufferArg1.concat(byteBufferArg2))
-                ).toBeTruthy();
-                log("callMethodWithMultipleByteBufferParameters - OK");
-            });
+            expect(retObj).toBeDefined();
+            expect(retObj.byteBufferOut).toBeDefined();
+            expect(IltUtil.cmpByteBuffers(retObj.byteBufferOut, byteBufferArg1.concat(byteBufferArg2))).toBeTruthy();
+            log("callMethodWithMultipleByteBufferParameters - OK");
         });
 
-        it("callMethodWithSingleEnumParameters", () => {
-            const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onError"]);
-            spy.onFulfilled.reset();
-            spy.onError.reset();
-            runs(() => {
-                log("callMethodWithSingleEnumParameters");
-                const args = {
-                    enumerationArg:
-                        ExtendedEnumerationWithPartlyDefinedValues.ENUM_2_VALUE_EXTENSION_FOR_ENUM_WITHOUT_DEFINED_VALUES
-                };
-                testInterfaceProxy
-                    .methodWithSingleEnumParameters(args)
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callMethodWithSingleEnumParameters",
-                5000
-            );
-
-            runs(() => {
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-                const retObj = spy.onFulfilled.calls[0].args[0];
-                expect(retObj).toBeDefined();
-                expect(retObj.enumerationOut).toBeDefined();
-                expect(retObj.enumerationOut).toEqual(
-                    ExtendedTypeCollectionEnumerationInTypeCollection.ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION
-                );
-                log("callMethodWithSingleEnumParameters - OK");
-            });
-        });
-
-        it("callMethodWithMultipleEnumParameters", () => {
-            const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onError"]);
-            spy.onFulfilled.reset();
-            spy.onError.reset();
-            runs(() => {
-                log("callMethodWithMultipleEnumParameters");
-                const args = {
-                    enumerationArg: Enumeration.ENUM_0_VALUE_3,
-                    extendedEnumerationArg:
-                        ExtendedTypeCollectionEnumerationInTypeCollection.ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION
-                };
-                testInterfaceProxy
-                    .methodWithMultipleEnumParameters(args)
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callMethodWithMultipleEnumParameters",
-                5000
-            );
-
-            runs(() => {
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-                const retObj = spy.onFulfilled.calls[0].args[0];
-                expect(retObj).toBeDefined();
-                expect(retObj.enumerationOut).toBeDefined();
-                expect(retObj.extendedEnumerationOut).toBeDefined();
-                expect(retObj.enumerationOut).toEqual(Enumeration.ENUM_0_VALUE_1);
-                expect(retObj.extendedEnumerationOut).toEqual(
+        it("callMethodWithSingleEnumParameters", async () => {
+            log("callMethodWithSingleEnumParameters");
+            const args = {
+                enumerationArg:
                     ExtendedEnumerationWithPartlyDefinedValues.ENUM_2_VALUE_EXTENSION_FOR_ENUM_WITHOUT_DEFINED_VALUES
-                );
-                log("callMethodWithMultipleEnumParameters - OK");
-            });
-        });
+            };
+            const retObj = await testInterfaceProxy.methodWithSingleEnumParameters(args);
 
-        it("callMethodWithSingleStructParameters", () => {
-            const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onError"]);
-            spy.onFulfilled.reset();
-            spy.onError.reset();
-            runs(() => {
-                log("callMethodWithSingleStructParameters");
-                const args = {
-                    extendedBaseStructArg: IltUtil.createExtendedBaseStruct()
-                };
-                testInterfaceProxy
-                    .methodWithSingleStructParameters(args)
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callMethodWithSingleStructParameters",
-                5000
+            expect(retObj).toBeDefined();
+            expect(retObj.enumerationOut).toBeDefined();
+            expect(retObj.enumerationOut).toEqual(
+                ExtendedTypeCollectionEnumerationInTypeCollection.ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION
             );
-
-            runs(() => {
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-                const retObj = spy.onFulfilled.calls[0].args[0];
-                expect(retObj).toBeDefined();
-                expect(retObj.extendedStructOfPrimitivesOut).toBeDefined();
-                expect(IltUtil.checkExtendedStructOfPrimitives(retObj.extendedStructOfPrimitivesOut)).toBeTruthy();
-                log("callMethodWithSingleStructParameters - OK");
-            });
+            log("callMethodWithSingleEnumParameters - OK");
         });
 
-        it("callMethodWithMultipleStructParameters", () => {
-            const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onError"]);
-            spy.onFulfilled.reset();
-            spy.onError.reset();
-            runs(() => {
-                log("callMethodWithMultipleStructParameters");
-                const args = {
-                    extendedStructOfPrimitivesArg: IltUtil.createExtendedStructOfPrimitives(),
-                    // TODO
-                    // currently not supported:
-                    // anonymousBaseStructArg:
-                    baseStructArg: IltUtil.createBaseStruct()
-                };
-                testInterfaceProxy
-                    .methodWithMultipleStructParameters(args)
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
+        it("callMethodWithMultipleEnumParameters", async () => {
+            const args = {
+                enumerationArg: Enumeration.ENUM_0_VALUE_3,
+                extendedEnumerationArg:
+                    ExtendedTypeCollectionEnumerationInTypeCollection.ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION
+            };
+            const retObj = await testInterfaceProxy.methodWithMultipleEnumParameters(args);
 
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callMethodWithMultipleStructParameters",
-                5000
+            expect(retObj).toBeDefined();
+            expect(retObj.enumerationOut).toBeDefined();
+            expect(retObj.extendedEnumerationOut).toBeDefined();
+            expect(retObj.enumerationOut).toEqual(Enumeration.ENUM_0_VALUE_1);
+            expect(retObj.extendedEnumerationOut).toEqual(
+                ExtendedEnumerationWithPartlyDefinedValues.ENUM_2_VALUE_EXTENSION_FOR_ENUM_WITHOUT_DEFINED_VALUES
             );
-
-            runs(() => {
-                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                    log(spy.onError.calls[0].args[0]);
-                }
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-                const retObj = spy.onFulfilled.calls[0].args[0];
-                expect(retObj).toBeDefined();
-                expect(retObj.baseStructWithoutElementsOut).toBeDefined();
-                expect(retObj.extendedExtendedBaseStructOut).toBeDefined();
-                expect(IltUtil.checkBaseStructWithoutElements(retObj.baseStructWithoutElementsOut)).toBeTruthy();
-                expect(IltUtil.checkExtendedExtendedBaseStruct(retObj.extendedExtendedBaseStructOut)).toBeTruthy();
-                log("callMethodWithMultipleStructParameters - OK");
-            });
+            log("callMethodWithMultipleEnumParameters - OK");
         });
 
-        it("callMethodFireAndForgetWithoutParameter", () => {
+        it("callMethodWithSingleStructParameters", async () => {
+            log("callMethodWithSingleStructParameters");
+            const args = {
+                extendedBaseStructArg: IltUtil.createExtendedBaseStruct()
+            };
+            const retObj = await testInterfaceProxy.methodWithSingleStructParameters(args);
+
+            expect(retObj).toBeDefined();
+            expect(retObj.extendedStructOfPrimitivesOut).toBeDefined();
+            expect(IltUtil.checkExtendedStructOfPrimitives(retObj.extendedStructOfPrimitivesOut)).toBeTruthy();
+            log("callMethodWithSingleStructParameters - OK");
+        });
+
+        it("callMethodWithMultipleStructParameters", async () => {
+            log("callMethodWithMultipleStructParameters");
+            const args = {
+                extendedStructOfPrimitivesArg: IltUtil.createExtendedStructOfPrimitives(),
+                // TODO
+                // currently not supported:
+                // anonymousBaseStructArg:
+                baseStructArg: IltUtil.createBaseStruct()
+            };
+            const retObj = await testInterfaceProxy.methodWithMultipleStructParameters(args);
+
+            expect(retObj).toBeDefined();
+            expect(retObj.baseStructWithoutElementsOut).toBeDefined();
+            expect(retObj.extendedExtendedBaseStructOut).toBeDefined();
+            expect(IltUtil.checkBaseStructWithoutElements(retObj.baseStructWithoutElementsOut)).toBeTruthy();
+            expect(IltUtil.checkExtendedExtendedBaseStruct(retObj.extendedExtendedBaseStructOut)).toBeTruthy();
+            log("callMethodWithMultipleStructParameters - OK");
+        });
+
+        it("callMethodFireAndForgetWithoutParameter", done => {
             /*
         * FireAndForget methods do not have a return value and the calling proxy does not receive an answer to a fireAndForget method call.
         * The attribute attributeFireAndForget is used in fireAndForget method calls to check if the method is called at the provider.
         * The provider will change the attribute to a (fireAndForget) method specific value which will be checked in the subscription listener.
         */
             log("callMethodFireAndForgetWithoutParameter");
-            const spy = jasmine.createSpyObj("spy", ["onPublication", "onPublicationError"]);
             let expected = -1;
             const subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({
                 minIntervalMs: 50,
                 validityMs: 60000
             });
-            let attributeFireAndForgetValue = -1;
             let attributeFireAndForgetSubscriptionId;
 
-            runs(() => {
-                // set attributeFireAndForget to 0 (it might have been set to the expected value by another test)
-                log("callMethodFireAndForgetWithoutParameter - setAttributeFireAndForget");
-                const args = {
-                    value: 0
-                };
-                testInterfaceProxy.attributeFireAndForget
-                    .set(args)
-                    .then(() => {
-                        log("callMethodFireAndForgetWithoutParameter - setAttributeFireAndForget - OK");
+            // set attributeFireAndForget to 0 (it might have been set to the expected value by another test)
+            log("callMethodFireAndForgetWithoutParameter - setAttributeFireAndForget");
+            const args = {
+                value: 0
+            };
+            testInterfaceProxy.attributeFireAndForget
+                .set(args)
+                .then(() => {
+                    log("callMethodFireAndForgetWithoutParameter - setAttributeFireAndForget - OK");
 
-                        // subscribe to attributeFireAndForget
-                        log("callMethodFireAndForgetWithoutParameter - subscribeToAttributeFireAndForget");
-                        return testInterfaceProxy.attributeFireAndForget.subscribe({
-                            subscriptionQos: subscriptionQosOnChange,
-                            onReceive: spy.onPublication,
-                            onError: spy.onPublicationError
-                        });
-                    })
-                    .then(subscriptionId => {
-                        attributeFireAndForgetSubscriptionId = subscriptionId;
-                        log(
-                            `callMethodFireAndForgetWithoutParameter - subscribeToAttributeFireAndForget subscriptionId = ${attributeFireAndForgetSubscriptionId}`
-                        );
-                    })
-                    .catch(error => {
-                        log(
-                            `callMethodFireAndForgetWithoutParameter - subscribeToAttributeFireAndForget - FAILED: ${error}`
-                        );
-                        expect(
-                            `callMethodFireAndForgetWithoutParameter - subscribeToAttributeFireAndForget - FAILED: ${error}`
-                        ).toBeFalsy();
+                    // subscribe to attributeFireAndForget
+                    log("callMethodFireAndForgetWithoutParameter - subscribeToAttributeFireAndForget");
+
+                    /*eslint-disable no-use-before-define*/
+                    return testInterfaceProxy.attributeFireAndForget.subscribe({
+                        subscriptionQos: subscriptionQosOnChange,
+                        onReceive,
+                        onError: fail
                     });
-            });
-
-            waitsFor(
-                () => {
-                    return attributeFireAndForgetSubscriptionId !== undefined;
-                },
-                "callMethodFireAndForgetWithoutParameter - get attributeFireAndForgetSubscriptionId",
-                5000
-            );
-
-            waitsFor(
-                () => {
-                    return spy.onPublication.callCount > 0;
-                },
-                "callMethodFireAndForgetWithoutParameter - subscribeToAttributeFireAndForget initial Publication",
-                5000
-            );
-
-            runs(() => {
-                attributeFireAndForgetValue = spy.onPublication.calls[0].args[0];
-                expect(attributeFireAndForgetValue).toBeDefined();
-                expect(attributeFireAndForgetValue).toEqual(0);
-                log("callMethodFireAndForgetWithoutParameter - subscribeToAttributeFireAndForget - OK");
-
-                // call methodFireAndForgetWithoutParameter
-                expected = attributeFireAndForgetValue + 1;
-                spy.onPublication.reset();
-                spy.onPublicationError.reset();
-
-                log("callMethodFireAndForgetWithoutParameter CALL");
-                testInterfaceProxy.methodFireAndForgetWithoutParameter().catch(error => {
-                    log(`callMethodFireAndForgetWithoutParameter CALL - FAILED: ${error}`);
-                    expect(`callMethodFireAndForgetWithoutParameter CALL - FAILED: ${error}`).toBeFalsy();
+                    /*eslint-enable no-use-before-define*/
+                })
+                .then(subscriptionId => {
+                    attributeFireAndForgetSubscriptionId = subscriptionId;
+                    log(
+                        `callMethodFireAndForgetWithoutParameter - subscribeToAttributeFireAndForget subscriptionId = ${attributeFireAndForgetSubscriptionId}`
+                    );
+                })
+                .catch(error => {
+                    fail(
+                        `callMethodFireAndForgetWithoutParameter - subscribeToAttributeFireAndForget - FAILED: ${error}`
+                    );
                 });
-            });
 
-            waitsFor(
-                () => {
-                    return spy.onPublication.callCount > 0;
-                },
-                "callMethodFireAndForgetWithoutParameter Publication",
-                5000
-            );
+            let firstReceive = true;
 
-            runs(() => {
-                attributeFireAndForgetValue = spy.onPublication.calls[0].args[0];
-                expect(attributeFireAndForgetValue).toBeDefined();
-                expect(attributeFireAndForgetValue).toEqual(expected);
-                log("callMethodFireAndForgetWithoutParameter - OK");
+            function onReceive(attributeFireAndForgetValue) {
+                if (firstReceive) {
+                    firstReceive = false;
 
-                // unsubscribe again
-                log("callMethodFireAndForgetWithoutParameter - subscribeToAttributeFireAndForget unsubscribe");
-                testInterfaceProxy.attributeFireAndForget
-                    .unsubscribe({
-                        subscriptionId: attributeFireAndForgetSubscriptionId
-                    })
-                    .then(() => {
-                        log(
-                            "callMethodFireAndForgetWithoutParameter - subscribeToAttributeFireAndForget unsubscribe - OK"
-                        );
-                        log("callMethodFireAndForgetWithoutParameter - DONE");
-                    })
-                    .catch(error => {
-                        log(
-                            `callMethodFireAndForgetWithoutParameter - subscribeToAttributeFireAndForget unsubscribe - FAILED: ${error}`
-                        );
-                        expect(
-                            `callMethodFireAndForgetWithoutParameter - subscribeToAttributeFireAndForget unsubscribe - FAILED: ${error}`
-                        ).toBeFalsy();
+                    expect(attributeFireAndForgetValue).toBeDefined();
+                    expect(attributeFireAndForgetValue).toEqual(0);
+                    log("callMethodFireAndForgetWithoutParameter - subscribeToAttributeFireAndForget - OK");
+
+                    // call methodFireAndForgetWithoutParameter
+                    expected = attributeFireAndForgetValue + 1;
+
+                    log("callMethodFireAndForgetWithoutParameter CALL");
+                    testInterfaceProxy.methodFireAndForgetWithoutParameter().catch(error => {
+                        fail(`callMethodFireAndForgetWithoutParameter CALL - FAILED: ${error}`);
                     });
-            });
+                } else {
+                    expect(attributeFireAndForgetValue).toBeDefined();
+                    expect(attributeFireAndForgetValue).toEqual(expected);
+                    log("callMethodFireAndForgetWithoutParameter - OK");
+
+                    // unsubscribe again
+                    log("callMethodFireAndForgetWithoutParameter - subscribeToAttributeFireAndForget unsubscribe");
+                    testInterfaceProxy.attributeFireAndForget
+                        .unsubscribe({
+                            subscriptionId: attributeFireAndForgetSubscriptionId
+                        })
+                        .then(() => {
+                            log(
+                                "callMethodFireAndForgetWithoutParameter - subscribeToAttributeFireAndForget unsubscribe - OK"
+                            );
+                            log("callMethodFireAndForgetWithoutParameter - DONE");
+                            done();
+                        })
+                        .catch(error => {
+                            fail(
+                                `callMethodFireAndForgetWithoutParameter - subscribeToAttributeFireAndForget unsubscribe - FAILED: ${error}`
+                            );
+                        });
+                }
+            }
         });
 
-        it("callMethodFireAndForgetWithInputParameter", () => {
+        it("callMethodFireAndForgetWithInputParameter", done => {
             log("callMethodFireAndForgetWithInputParameter");
-            const spy = jasmine.createSpyObj("spy", ["onPublication", "onPublicationError"]);
             let expected = -1;
             const subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({
                 minIntervalMs: 50,
                 validityMs: 60000
             });
-            let attributeFireAndForgetValue = -1;
             let attributeFireAndForgetSubscriptionId;
 
-            runs(() => {
-                // set attributeFireAndForget to 0 (it might have been set to the expected value by another test)
-                log("callMethodFireAndForgetWithInputParameter - setAttributeFireAndForget");
-                const args = {
-                    value: 0
-                };
-                testInterfaceProxy.attributeFireAndForget
-                    .set(args)
-                    .then(() => {
-                        log("callMethodFireAndForgetWithInputParameter - setAttributeFireAndForget - OK");
+            // set attributeFireAndForget to 0 (it might have been set to the expected value by another test)
+            log("callMethodFireAndForgetWithInputParameter - setAttributeFireAndForget");
+            const args = {
+                value: 0
+            };
+            testInterfaceProxy.attributeFireAndForget
+                .set(args)
+                .then(() => {
+                    log("callMethodFireAndForgetWithInputParameter - setAttributeFireAndForget - OK");
 
-                        // subscribe to attributeFireAndForget
-                        log("callMethodFireAndForgetWithInputParameter - subscribeToAttributeFireAndForget");
-                        return testInterfaceProxy.attributeFireAndForget.subscribe({
-                            subscriptionQos: subscriptionQosOnChange,
-                            onReceive: spy.onPublication,
-                            onError: spy.onPublicationError
-                        });
-                    })
-                    .then(subscriptionId => {
-                        attributeFireAndForgetSubscriptionId = subscriptionId;
-                        log(
-                            `callMethodFireAndForgetWithInputParameter - subscribeToAttributeFireAndForget subscriptionId = ${attributeFireAndForgetSubscriptionId}`
-                        );
-                    })
-                    .catch(error => {
-                        log(
-                            `callMethodFireAndForgetWithInputParameter - subscribeToAttributeFireAndForget - FAILED: ${error}`
-                        );
-                        expect(
-                            `callMethodFireAndForgetWithInputParameter - subscribeToAttributeFireAndForget - FAILED: ${error}`
-                        ).toBeFalsy();
+                    // subscribe to attributeFireAndForget
+                    log("callMethodFireAndForgetWithInputParameter - subscribeToAttributeFireAndForget");
+                    /*eslint-disable no-use-before-define*/
+                    return testInterfaceProxy.attributeFireAndForget.subscribe({
+                        subscriptionQos: subscriptionQosOnChange,
+                        onReceive,
+                        onError: fail
                     });
-            });
-
-            waitsFor(
-                () => {
-                    return attributeFireAndForgetSubscriptionId !== undefined;
-                },
-                "callMethodFireAndForgetWithInputParameter - get attributeFireAndForgetSubscriptionId",
-                5000
-            );
-
-            waitsFor(
-                () => {
-                    return spy.onPublication.callCount > 0;
-                },
-                "callMethodFireAndForgetWithInputParameter - subscribeToAttributeFireAndForget initial Publication",
-                5000
-            );
-
-            runs(() => {
-                attributeFireAndForgetValue = spy.onPublication.calls[0].args[0];
-                expect(attributeFireAndForgetValue).toBeDefined();
-                expect(attributeFireAndForgetValue).toEqual(0);
-                log("callMethodFireAndForgetWithInputParameter - subscribeToAttributeFireAndForget - OK");
-
-                // call methodFireAndForgetWithInputParameter
-                expected = attributeFireAndForgetValue + 1;
-                spy.onPublication.reset();
-                spy.onPublicationError.reset();
-
-                log("callMethodFireAndForgetWithInputParameter CALL");
-                testInterfaceProxy.methodFireAndForgetWithoutParameter().catch(error => {
-                    log(`callMethodFireAndForgetWithInputParameter CALL - FAILED: ${error}`);
-                    expect(`callMethodFireAndForgetWithInputParameter CALL - FAILED: ${error}`).toBeFalsy();
+                    /*eslint-enable no-use-before-define*/
+                })
+                .then(subscriptionId => {
+                    attributeFireAndForgetSubscriptionId = subscriptionId;
+                    log(
+                        `callMethodFireAndForgetWithInputParameter - subscribeToAttributeFireAndForget subscriptionId = ${attributeFireAndForgetSubscriptionId}`
+                    );
+                })
+                .catch(error => {
+                    fail(
+                        `callMethodFireAndForgetWithInputParameter - subscribeToAttributeFireAndForget - FAILED: ${error}`
+                    );
                 });
-            });
 
-            waitsFor(
-                () => {
-                    return spy.onPublication.callCount > 0;
-                },
-                "callMethodFireAndForgetWithInputParameter Publication",
-                5000
-            );
+            let firstReceive = true;
+            function onReceive(attributeFireAndForgetValue) {
+                if (firstReceive) {
+                    firstReceive = false;
 
-            runs(() => {
-                attributeFireAndForgetValue = spy.onPublication.calls[0].args[0];
-                expect(attributeFireAndForgetValue).toBeDefined();
-                expect(attributeFireAndForgetValue).toEqual(expected);
-                log("callMethodFireAndForgetWithInputParameter - OK");
+                    expect(attributeFireAndForgetValue).toBeDefined();
+                    expect(attributeFireAndForgetValue).toEqual(0);
+                    log("callMethodFireAndForgetWithInputParameter - subscribeToAttributeFireAndForget - OK");
 
-                // unsubscribe again
-                log("callMethodFireAndForgetWithInputParameter - subscribeToAttributeFireAndForget unsubscribe");
-                testInterfaceProxy.attributeFireAndForget
-                    .unsubscribe({
-                        subscriptionId: attributeFireAndForgetSubscriptionId
-                    })
-                    .then(() => {
-                        log(
-                            "callMethodFireAndForgetWithInputParameter - subscribeToAttributeFireAndForget unsubscribe - OK"
-                        );
-                        log("callMethodFireAndForgetWithInputParameter - DONE");
-                    })
-                    .catch(error => {
-                        log(
-                            `callMethodFireAndForgetWithInputParameter - subscribeToAttributeFireAndForget unsubscribe - FAILED: ${error}`
-                        );
-                        expect(
-                            `callMethodFireAndForgetWithInputParameter - subscribeToAttributeFireAndForget unsubscribe - FAILED: ${error}`
-                        ).toBeFalsy();
+                    // call methodFireAndForgetWithInputParameter
+                    expected = attributeFireAndForgetValue + 1;
+
+                    log("callMethodFireAndForgetWithInputParameter CALL");
+                    testInterfaceProxy.methodFireAndForgetWithoutParameter().catch(error => {
+                        fail(`callMethodFireAndForgetWithInputParameter CALL - FAILED: ${error}`);
                     });
-            });
-        });
+                } else {
+                    expect(attributeFireAndForgetValue).toBeDefined();
+                    expect(attributeFireAndForgetValue).toEqual(expected);
+                    log("callMethodFireAndForgetWithInputParameter - OK");
 
-        it("callOverloadedMethod_1", () => {
-            const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onError"]);
-            spy.onFulfilled.reset();
-            spy.onError.reset();
-            runs(() => {
-                log("callOverloadedMethod_1");
-                testInterfaceProxy
-                    .overloadedMethod()
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callOverloadedMethod_1",
-                5000
-            );
-
-            runs(() => {
-                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                    log(spy.onError.calls[0].args[0]);
+                    // unsubscribe again
+                    log("callMethodFireAndForgetWithInputParameter - subscribeToAttributeFireAndForget unsubscribe");
+                    testInterfaceProxy.attributeFireAndForget
+                        .unsubscribe({
+                            subscriptionId: attributeFireAndForgetSubscriptionId
+                        })
+                        .then(() => {
+                            log(
+                                "callMethodFireAndForgetWithInputParameter - subscribeToAttributeFireAndForget unsubscribe - OK"
+                            );
+                            log("callMethodFireAndForgetWithInputParameter - DONE");
+                            done();
+                        })
+                        .catch(error => {
+                            fail(
+                                `callMethodFireAndForgetWithInputParameter - subscribeToAttributeFireAndForget unsubscribe - FAILED: ${error}`
+                            );
+                        });
                 }
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-                const retObj = spy.onFulfilled.calls[0].args[0];
-                expect(retObj).toBeDefined();
-                expect(retObj.stringOut).toBeDefined();
-                expect(retObj.stringOut).toEqual("TestString 1");
-                log("callOverloadedMethod_1 - OK");
-            });
+            }
         });
 
-        it("callOverloadedMethod_2", () => {
-            const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onError"]);
-            spy.onFulfilled.reset();
-            spy.onError.reset();
-            runs(() => {
-                const args = {
-                    booleanArg: false
-                };
-                log("callOverloadedMethod_2");
-                testInterfaceProxy
-                    .overloadedMethod(args)
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
+        it("callOverloadedMethod_1", async () => {
+            log("callOverloadedMethod_1");
+            const retObj = await testInterfaceProxy.overloadedMethod();
 
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callOverloadedMethod_2",
-                5000
-            );
-
-            runs(() => {
-                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                    log(spy.onError.calls[0].args[0]);
-                }
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-                const retObj = spy.onFulfilled.calls[0].args[0];
-                expect(retObj).toBeDefined();
-                expect(retObj.stringOut).toBeDefined();
-                expect(retObj.stringOut).toEqual("TestString 2");
-                log("callOverloadedMethod_2 - OK");
-            });
+            expect(retObj).toBeDefined();
+            expect(retObj.stringOut).toBeDefined();
+            expect(retObj.stringOut).toEqual("TestString 1");
+            log("callOverloadedMethod_1 - OK");
         });
 
-        it("callOverloadedMethod_3", () => {
-            const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onError"]);
-            spy.onFulfilled.reset();
-            spy.onError.reset();
-            runs(() => {
-                const args = {
-                    enumArrayArg: IltUtil.createExtendedExtendedEnumerationArray(),
-                    int64Arg: 1,
-                    baseStructArg: IltUtil.createBaseStruct(),
-                    booleanArg: false
-                };
-                log("callOverloadedMethod_3");
-                testInterfaceProxy
-                    .overloadedMethod(args)
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
+        it("callOverloadedMethod_2", async () => {
+            const args = {
+                booleanArg: false
+            };
+            log("callOverloadedMethod_2");
+            const retObj = await testInterfaceProxy.overloadedMethod(args);
 
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callOverloadedMethod_3",
-                5000
-            );
-
-            runs(() => {
-                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                    log(spy.onError.calls[0].args[0]);
-                }
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-                const retObj = spy.onFulfilled.calls[0].args[0];
-                expect(retObj).toBeDefined();
-                expect(retObj.doubleOut).toBeDefined();
-                expect(retObj.stringArrayOut).toBeDefined();
-                expect(retObj.extendedBaseStructOut).toBeDefined();
-                expect(IltUtil.cmpDouble(retObj.doubleOut, 0.0)).toBeTruthy();
-                expect(IltUtil.checkStringArray(retObj.stringArrayOut)).toBeTruthy();
-                expect(IltUtil.checkExtendedBaseStruct(retObj.extendedBaseStructOut)).toBeTruthy();
-                log("callOverloadedMethod_3 - OK");
-            });
+            expect(retObj).toBeDefined();
+            expect(retObj.stringOut).toBeDefined();
+            expect(retObj.stringOut).toEqual("TestString 2");
+            log("callOverloadedMethod_2 - OK");
         });
 
-        it("callOverloadedMethodWithSelector_1", () => {
-            const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onError"]);
-            spy.onFulfilled.reset();
-            spy.onError.reset();
-            runs(() => {
-                log("callOverloadedMethodWithSelector_1");
-                testInterfaceProxy
-                    .overloadedMethodWithSelector()
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
+        it("callOverloadedMethod_3", async () => {
+            const args = {
+                enumArrayArg: IltUtil.createExtendedExtendedEnumerationArray(),
+                int64Arg: 1,
+                baseStructArg: IltUtil.createBaseStruct(),
+                booleanArg: false
+            };
+            log("callOverloadedMethod_3");
+            const retObj = await testInterfaceProxy.overloadedMethod(args);
 
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callOverloadedMethodWithSelector_1",
-                5000
-            );
-
-            runs(() => {
-                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                    log(spy.onError.calls[0].args[0]);
-                }
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-                const retObj = spy.onFulfilled.calls[0].args[0];
-                expect(retObj).toBeDefined();
-                expect(retObj.stringOut).toBeDefined();
-                expect(retObj.stringOut).toEqual("Return value from overloadedMethodWithSelector 1");
-                log("callOverloadedMethodWithSelector_1 - OK");
-            });
+            expect(retObj).toBeDefined();
+            expect(retObj.doubleOut).toBeDefined();
+            expect(retObj.stringArrayOut).toBeDefined();
+            expect(retObj.extendedBaseStructOut).toBeDefined();
+            expect(IltUtil.cmpDouble(retObj.doubleOut, 0.0)).toBeTruthy();
+            expect(IltUtil.checkStringArray(retObj.stringArrayOut)).toBeTruthy();
+            expect(IltUtil.checkExtendedBaseStruct(retObj.extendedBaseStructOut)).toBeTruthy();
+            log("callOverloadedMethod_3 - OK");
         });
 
-        it("callOverloadedMethodWithSelector_2", () => {
-            const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onError"]);
-            spy.onFulfilled.reset();
-            spy.onError.reset();
-            runs(() => {
-                const args = {
-                    booleanArg: false
-                };
-                log("callOverloadedMethodWithSelector_2");
-                testInterfaceProxy
-                    .overloadedMethodWithSelector(args)
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
+        it("callOverloadedMethodWithSelector_1", async () => {
+            log("callOverloadedMethodWithSelector_1");
+            const retObj = await testInterfaceProxy.overloadedMethodWithSelector();
 
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callOverloadedMethodWithSelector_2",
-                5000
-            );
-
-            runs(() => {
-                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                    log(spy.onError.calls[0].args[0]);
-                }
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-                const retObj = spy.onFulfilled.calls[0].args[0];
-                expect(retObj).toBeDefined();
-                expect(retObj.stringOut).toBeDefined();
-                expect(retObj.stringOut).toEqual("Return value from overloadedMethodWithSelector 2");
-                log("callOverloadedMethodWithSelector_2 - OK");
-            });
+            expect(retObj).toBeDefined();
+            expect(retObj.stringOut).toBeDefined();
+            expect(retObj.stringOut).toEqual("Return value from overloadedMethodWithSelector 1");
+            log("callOverloadedMethodWithSelector_1 - OK");
         });
 
-        it("callOverloadedMethodWithSelector_3", () => {
-            const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onError"]);
-            spy.onFulfilled.reset();
-            spy.onError.reset();
-            runs(() => {
-                const args = {
-                    enumArrayArg: IltUtil.createExtendedExtendedEnumerationArray(),
-                    int64Arg: 1,
-                    baseStructArg: IltUtil.createBaseStruct(),
-                    booleanArg: false
-                };
-                log("callOverloadedMethodWithSelector_3");
-                testInterfaceProxy
-                    .overloadedMethod(args)
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
+        it("callOverloadedMethodWithSelector_2", async () => {
+            const args = {
+                booleanArg: false
+            };
+            log("callOverloadedMethodWithSelector_2");
+            const retObj = await testInterfaceProxy.overloadedMethodWithSelector(args);
 
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callOverloadedMethodWithSelector_3",
-                5000
-            );
-
-            runs(() => {
-                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                    log(spy.onError.calls[0].args[0]);
-                }
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-                const retObj = spy.onFulfilled.calls[0].args[0];
-                expect(retObj).toBeDefined();
-                expect(retObj.doubleOut).toBeDefined();
-                expect(retObj.stringArrayOut).toBeDefined();
-                expect(retObj.extendedBaseStructOut).toBeDefined();
-                expect(IltUtil.cmpDouble(retObj.doubleOut, 0.0)).toBeTruthy();
-                expect(IltUtil.checkStringArray(retObj.stringArrayOut)).toBeTruthy();
-                expect(IltUtil.checkExtendedBaseStruct(retObj.extendedBaseStructOut)).toBeTruthy();
-                log("callOverloadedMethodWithSelector_3 - OK");
-            });
+            expect(retObj).toBeDefined();
+            expect(retObj.stringOut).toBeDefined();
+            expect(retObj.stringOut).toEqual("Return value from overloadedMethodWithSelector 2");
+            log("callOverloadedMethodWithSelector_2 - OK");
         });
 
-        it("callMethodWithStringsAndSpecifiedStringOutputLength", () => {
-            const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onError"]);
-            spy.onFulfilled.reset();
-            spy.onError.reset();
-            runs(() => {
-                log("callMethodWithStringsAndSpecifiedStringOutputLength");
-                const args = {
-                    stringArg: "Hello world",
-                    int32StringLengthArg: 32
-                };
-                testInterfaceProxy
-                    .methodWithStringsAndSpecifiedStringOutLength(args)
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
+        it("callOverloadedMethodWithSelector_3", async () => {
+            const args = {
+                enumArrayArg: IltUtil.createExtendedExtendedEnumerationArray(),
+                int64Arg: 1,
+                baseStructArg: IltUtil.createBaseStruct(),
+                booleanArg: false
+            };
+            log("callOverloadedMethodWithSelector_3");
+            const retObj = await testInterfaceProxy.overloadedMethod(args);
 
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callMethodWithStringsAndSpecifiedStringOutputLength",
-                5000
-            );
-
-            runs(() => {
-                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                    log(spy.onError.calls[0].args[0]);
-                }
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-                const retObj = spy.onFulfilled.calls[0].args[0];
-                expect(retObj).toBeDefined();
-                expect(retObj.stringOut).toBeDefined();
-                expect(retObj.stringOut.length).toEqual(32);
-                log("callMethodWithStringsAndSpecifiedStringOutputLength - OK");
-            });
+            expect(retObj).toBeDefined();
+            expect(retObj.doubleOut).toBeDefined();
+            expect(retObj.stringArrayOut).toBeDefined();
+            expect(retObj.extendedBaseStructOut).toBeDefined();
+            expect(IltUtil.cmpDouble(retObj.doubleOut, 0.0)).toBeTruthy();
+            expect(IltUtil.checkStringArray(retObj.stringArrayOut)).toBeTruthy();
+            expect(IltUtil.checkExtendedBaseStruct(retObj.extendedBaseStructOut)).toBeTruthy();
+            log("callOverloadedMethodWithSelector_3 - OK");
         });
 
-        it("callMethodWithoutErrorEnum", () => {
-            const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onError"]);
-            spy.onFulfilled.reset();
-            spy.onError.reset();
-            runs(() => {
-                log("callMethodWithoutErrorEnum");
-                const args = {
-                    wantedExceptionArg: "ProviderRuntimeException"
-                };
-                testInterfaceProxy
-                    .methodWithoutErrorEnum(args)
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
+        it("callMethodWithStringsAndSpecifiedStringOutputLength", async () => {
+            log("callMethodWithStringsAndSpecifiedStringOutputLength");
+            const args = {
+                stringArg: "Hello world",
+                int32StringLengthArg: 32
+            };
+            const retObj = await testInterfaceProxy.methodWithStringsAndSpecifiedStringOutLength(args);
 
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callMethodWithoutErrorEnum",
-                5000
-            );
+            expect(retObj).toBeDefined();
+            expect(retObj.stringOut).toBeDefined();
+            expect(retObj.stringOut.length).toEqual(32);
+            log("callMethodWithStringsAndSpecifiedStringOutputLength - OK");
+        });
 
-            runs(() => {
-                //if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                //    log(spy.onError.calls[0].args[0]);
-                //}
-                expect(spy.onFulfilled.callCount).toEqual(0);
-                expect(spy.onError.callCount).toEqual(1);
-                const retObj = spy.onError.calls[0].args[0];
+        it("callMethodWithoutErrorEnum", async () => {
+            log("callMethodWithoutErrorEnum");
+            const args = {
+                wantedExceptionArg: "ProviderRuntimeException"
+            };
+            try {
+                await testInterfaceProxy.methodWithoutErrorEnum(args);
+                fail();
+            } catch (retObj) {
                 expect(retObj).toBeDefined();
                 expect(retObj._typeName).toEqual("joynr.exceptions.ProviderRuntimeException");
                 expect(retObj.detailMessage).toBeDefined();
                 expect(retObj.detailMessage).toEqual("Exception from methodWithoutErrorEnum");
                 log("callMethodWithoutErrorEnum - OK");
-            });
+            }
         });
 
-        it("callMethodWithAnonymousErrorEnum", () => {
-            const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onError"]);
-            spy.onFulfilled.reset();
-            spy.onError.reset();
-            runs(() => {
-                log("callMethodWithAnonymousErrorEnunm");
-                const args = {
-                    wantedExceptionArg: "ProviderRuntimeException"
-                };
-                testInterfaceProxy
-                    .methodWithAnonymousErrorEnum(args)
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
+        it("callMethodWithAnonymousErrorEnum", async () => {
+            log("callMethodWithAnonymousErrorEnunm");
+            let args = {
+                wantedExceptionArg: "ProviderRuntimeException"
+            };
 
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callMethodWithAnonymousErrorEnum",
-                5000
-            );
-
-            runs(() => {
-                expect(spy.onFulfilled.callCount).toEqual(0);
-                expect(spy.onError.callCount).toEqual(1);
-                const retObj = spy.onError.calls[0].args[0];
-                expect(retObj).toBeDefined();
+            try {
+                await testInterfaceProxy.methodWithAnonymousErrorEnum(args);
+                fail();
+            } catch (retObj) {
                 expect(retObj._typeName).toEqual("joynr.exceptions.ProviderRuntimeException");
                 expect(retObj.detailMessage).toBeDefined();
                 expect(retObj.detailMessage).toEqual("Exception from methodWithAnonymousErrorEnum");
                 log("callMethodWithAnonymousErrorEnunm - 1st - OK");
+            }
 
-                spy.onFulfilled.reset();
-                spy.onError.reset();
-                const args = {
-                    wantedExceptionArg: "ApplicationException"
-                };
-                testInterfaceProxy
-                    .methodWithAnonymousErrorEnum(args)
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
+            args = {
+                wantedExceptionArg: "ApplicationException"
+            };
 
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callMethodWithAnonymousErrorEnunm",
-                5000
-            );
-
-            runs(() => {
-                expect(spy.onFulfilled.callCount).toEqual(0);
-                expect(spy.onError.callCount).toEqual(1);
-                const retObj = spy.onError.calls[0].args[0];
+            try {
+                await testInterfaceProxy.methodWithAnonymousErrorEnum(args);
+                fail();
+            } catch (retObj) {
                 expect(retObj).toBeDefined();
                 expect(retObj._typeName).toEqual("joynr.exceptions.ApplicationException");
                 expect(retObj.error).toBeDefined();
@@ -1235,65 +600,34 @@ describe("Consumer test", () => {
                 );
                 expect(retObj.error.name).toEqual("ERROR_3_1_NTC");
                 log("callMethodWithAnonymousErrorEnun - 2nd - OK");
-            });
+            }
         });
 
-        it("callMethodWithExistingErrorEnum", () => {
-            const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onError"]);
-            spy.onFulfilled.reset();
-            spy.onError.reset();
-            runs(() => {
-                log("callMethodWithExistingErrorEnunm");
-                const args = {
-                    wantedExceptionArg: "ProviderRuntimeException"
-                };
-                testInterfaceProxy
-                    .methodWithExistingErrorEnum(args)
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
+        it("callMethodWithExistingErrorEnum", async () => {
+            log("callMethodWithExistingErrorEnunm");
+            let args = {
+                wantedExceptionArg: "ProviderRuntimeException"
+            };
 
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callMethodWithExistingErrorEnum",
-                5000
-            );
-
-            runs(() => {
-                expect(spy.onFulfilled.callCount).toEqual(0);
-                expect(spy.onError.callCount).toEqual(1);
-                const retObj = spy.onError.calls[0].args[0];
+            try {
+                await testInterfaceProxy.methodWithExistingErrorEnum(args);
+                fail();
+            } catch (retObj) {
                 expect(retObj).toBeDefined();
                 expect(retObj._typeName).toEqual("joynr.exceptions.ProviderRuntimeException");
                 expect(retObj.detailMessage).toBeDefined();
                 expect(retObj.detailMessage).toEqual("Exception from methodWithExistingErrorEnum");
                 log("callMethodWithExistingErrorEnunm - 1st - OK");
+            }
 
-                spy.onFulfilled.reset();
-                spy.onError.reset();
-                const args = {
-                    wantedExceptionArg: "ApplicationException_1"
-                };
-                testInterfaceProxy
-                    .methodWithExistingErrorEnum(args)
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
+            args = {
+                wantedExceptionArg: "ApplicationException_1"
+            };
 
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callMethodWithExistingErrorEnunm",
-                5000
-            );
-
-            runs(() => {
-                expect(spy.onFulfilled.callCount).toEqual(0);
-                expect(spy.onError.callCount).toEqual(1);
-                const retObj = spy.onError.calls[0].args[0];
+            try {
+                await testInterfaceProxy.methodWithExistingErrorEnum(args);
+                fail();
+            } catch (retObj) {
                 expect(retObj).toBeDefined();
                 expect(retObj._typeName).toEqual("joynr.exceptions.ApplicationException");
                 expect(retObj.error).toBeDefined();
@@ -1304,30 +638,16 @@ describe("Consumer test", () => {
                 );
                 expect(retObj.error.name).toEqual("ERROR_2_3_TC2");
                 log("callMethodWithExistingErrorEnun - 2nd - OK");
+            }
 
-                spy.onFulfilled.reset();
-                spy.onError.reset();
-                const args = {
-                    wantedExceptionArg: "ApplicationException_2"
-                };
-                testInterfaceProxy
-                    .methodWithExistingErrorEnum(args)
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
+            args = {
+                wantedExceptionArg: "ApplicationException_2"
+            };
 
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callMethodWithExistingErrorEnunm",
-                5000
-            );
-
-            runs(() => {
-                expect(spy.onFulfilled.callCount).toEqual(0);
-                expect(spy.onError.callCount).toEqual(1);
-                const retObj = spy.onError.calls[0].args[0];
+            try {
+                await testInterfaceProxy.methodWithExistingErrorEnum(args);
+                fail();
+            } catch (retObj) {
                 expect(retObj).toBeDefined();
                 expect(retObj._typeName).toEqual("joynr.exceptions.ApplicationException");
                 expect(retObj.error).toBeDefined();
@@ -1337,65 +657,33 @@ describe("Consumer test", () => {
                 );
                 expect(retObj.error.name).toEqual("ERROR_1_2_TC_2");
                 log("callMethodWithExistingErrorEnum - 3rd - OK");
-            });
+            }
         });
 
-        it("callMethodWithExtendedErrorEnum", () => {
-            const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onError"]);
-            spy.onFulfilled.reset();
-            spy.onError.reset();
-            runs(() => {
-                log("callMethodWithExtendedErrorEnum");
-                const args = {
-                    wantedExceptionArg: "ProviderRuntimeException"
-                };
-                testInterfaceProxy
-                    .methodWithExtendedErrorEnum(args)
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callMethodWithExtendedErrorEnum",
-                5000
-            );
-
-            runs(() => {
-                expect(spy.onFulfilled.callCount).toEqual(0);
-                expect(spy.onError.callCount).toEqual(1);
-                const retObj = spy.onError.calls[0].args[0];
+        it("callMethodWithExtendedErrorEnum", async () => {
+            log("callMethodWithExtendedErrorEnum");
+            let args = {
+                wantedExceptionArg: "ProviderRuntimeException"
+            };
+            try {
+                await testInterfaceProxy.methodWithExtendedErrorEnum(args);
+                fail();
+            } catch (retObj) {
                 expect(retObj).toBeDefined();
                 expect(retObj._typeName).toEqual("joynr.exceptions.ProviderRuntimeException");
                 expect(retObj.detailMessage).toBeDefined();
                 expect(retObj.detailMessage).toEqual("Exception from methodWithExtendedErrorEnum");
                 log("callMethodWithExtendedErrorEnum - 1st - OK");
+            }
 
-                spy.onFulfilled.reset();
-                spy.onError.reset();
-                const args = {
-                    wantedExceptionArg: "ApplicationException_1"
-                };
-                testInterfaceProxy
-                    .methodWithExtendedErrorEnum(args)
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
+            args = {
+                wantedExceptionArg: "ApplicationException_1"
+            };
 
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callMethodWithExtendedErrorEnum",
-                5000
-            );
-
-            runs(() => {
-                expect(spy.onFulfilled.callCount).toEqual(0);
-                expect(spy.onError.callCount).toEqual(1);
-                const retObj = spy.onError.calls[0].args[0];
+            try {
+                await testInterfaceProxy.methodWithExtendedErrorEnum(args);
+                fail();
+            } catch (retObj) {
                 expect(retObj).toBeDefined();
                 expect(retObj._typeName).toEqual("joynr.exceptions.ApplicationException");
                 expect(retObj.error).toBeDefined();
@@ -1405,30 +693,16 @@ describe("Consumer test", () => {
                 );
                 expect(retObj.error.name).toEqual("ERROR_3_3_NTC");
                 log("callMethodWithExtendedErrorEnum - 2nd - OK");
+            }
 
-                spy.onFulfilled.reset();
-                spy.onError.reset();
-                const args = {
-                    wantedExceptionArg: "ApplicationException_2"
-                };
-                testInterfaceProxy
-                    .methodWithExtendedErrorEnum(args)
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
+            args = {
+                wantedExceptionArg: "ApplicationException_2"
+            };
 
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callMethodWithExtendedErrorEnum",
-                5000
-            );
-
-            runs(() => {
-                expect(spy.onFulfilled.callCount).toEqual(0);
-                expect(spy.onError.callCount).toEqual(1);
-                const retObj = spy.onError.calls[0].args[0];
+            try {
+                await testInterfaceProxy.methodWithExtendedErrorEnum(args);
+                fail();
+            } catch (retObj) {
                 expect(retObj).toBeDefined();
                 expect(retObj._typeName).toEqual("joynr.exceptions.ApplicationException");
                 expect(retObj.error).toBeDefined();
@@ -1438,2819 +712,940 @@ describe("Consumer test", () => {
                 );
                 expect(retObj.error.name).toEqual("ERROR_2_1_TC2");
                 log("callMethodWithExtendedErrorEnum - 3rd - OK");
-            });
+            }
         });
 
-        it("callGetAttributeWithExceptionFromGetter", () => {
-            const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onError"]);
-            spy.onFulfilled.reset();
-            spy.onError.reset();
+        it("callGetAttributeWithExceptionFromGetter", async () => {
+            log("callGetAttributeWithExceptionFromGetter");
+            const args = {
+                value: false
+            };
 
-            runs(() => {
-                log("callGetAttributeWithExceptionFromGetter");
-                const args = {
-                    value: false
-                };
-                testInterfaceProxy.attributeWithExceptionFromGetter
-                    .get(args)
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callGetAttributeWithExceptionFromGetter",
-                5000
-            );
-
-            runs(() => {
-                expect(spy.onFulfilled.callCount).toEqual(0);
-                expect(spy.onError.callCount).toEqual(1);
-                const retObj = spy.onError.calls[0].args[0];
+            try {
+                await testInterfaceProxy.attributeWithExceptionFromGetter.get(args);
+                fail();
+            } catch (retObj) {
                 expect(retObj).toBeDefined();
                 expect(retObj._typeName).toEqual("joynr.exceptions.ProviderRuntimeException");
                 expect(retObj.detailMessage).toBeDefined();
                 expect(retObj.detailMessage).toEqual("Exception from getAttributeWithExceptionFromGetter");
                 log("callGetAttributeWithExceptionFromGetter - OK");
-            });
+            }
         });
 
-        it("callSetAttributeWithExceptionFromSetter", () => {
-            const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onError"]);
-            spy.onFulfilled.reset();
-            spy.onError.reset();
+        it("callSetAttributeWithExceptionFromSetter", async () => {
+            log("callSetAttributeWithExceptionFromSetter");
+            const args = {
+                value: false
+            };
 
-            runs(() => {
-                log("callSetAttributeWithExceptionFromSetter");
-                const args = {
-                    value: false
-                };
-                testInterfaceProxy.attributeWithExceptionFromSetter
-                    .set(args)
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callSetAttributeWithExceptionFromSetter",
-                5000
-            );
-
-            runs(() => {
-                expect(spy.onFulfilled.callCount).toEqual(0);
-                expect(spy.onError.callCount).toEqual(1);
-                const retObj = spy.onError.calls[0].args[0];
+            try {
+                await testInterfaceProxy.attributeWithExceptionFromSetter.set(args);
+                fail();
+            } catch (retObj) {
                 expect(retObj).toBeDefined();
                 expect(retObj._typeName).toEqual("joynr.exceptions.ProviderRuntimeException");
                 expect(retObj.detailMessage).toBeDefined();
                 expect(retObj.detailMessage).toEqual("Exception from setAttributeWithExceptionFromSetter");
                 log("callSetAttributeWithExceptionFromSetter - OK");
-            });
+            }
         });
 
-        it("callSetAttributeMapStringString", () => {
-            const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onError"]);
-            spy.onFulfilled.reset();
-            spy.onError.reset();
-
-            runs(() => {
-                log("callSetAttributeMapStringString");
-                const value = new MapStringString();
-                for (let i = 1; i <= 3; i++) {
-                    value.put(`keyString${i}`, `valueString${i}`);
-                }
-                const args = {
-                    value
-                };
-                testInterfaceProxy.attributeMapStringString
-                    .set(args)
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callSetAttributeMapStringString",
-                5000
-            );
-
-            runs(() => {
-                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                    log(spy.onError.calls[0].args[0]);
-                }
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-            });
+        it("callSetAttributeMapStringString", async () => {
+            log("callSetAttributeMapStringString");
+            const value = new MapStringString();
+            for (let i = 1; i <= 3; i++) {
+                value.put(`keyString${i}`, `valueString${i}`);
+            }
+            const args = {
+                value
+            };
+            await testInterfaceProxy.attributeMapStringString.set(args);
         });
 
-        it("callGetAttributeMapStringString", () => {
-            const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onError"]);
-            spy.onFulfilled.reset();
-            spy.onError.reset();
+        it("callGetAttributeMapStringString", async () => {
+            log("callGetAttributeMapStringString");
+            const retObj = await testInterfaceProxy.attributeMapStringString.get();
 
-            runs(() => {
-                log("callGetAttributeMapStringString");
-                testInterfaceProxy.attributeMapStringString
-                    .get()
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callGetAttributeMapStringString",
-                5000
-            );
-
-            runs(() => {
-                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                    log(spy.onError.calls[0].args[0]);
-                }
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-                const retObj = spy.onFulfilled.calls[0].args[0];
-                expect(retObj).toBeDefined();
-                expect(retObj).toBeDefined();
-                log(`result = ${JSON.stringify(retObj)}`);
-                for (let i = 1; i <= 3; i++) {
-                    expect(retObj.get(`keyString${i}`)).toEqual(`valueString${i}`);
-                }
-            });
+            expect(retObj).toBeDefined();
+            expect(retObj).toBeDefined();
+            log(`result = ${JSON.stringify(retObj)}`);
+            for (let i = 1; i <= 3; i++) {
+                expect(retObj.get(`keyString${i}`)).toEqual(`valueString${i}`);
+            }
         });
 
-        it("callMethodWithSingleMapParameters", () => {
-            const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onError"]);
-            spy.onFulfilled.reset();
-            spy.onError.reset();
-            runs(() => {
-                log("callMethodWithSingleMapParameters");
-                const mapArg = new MapStringString();
-                for (let i = 1; i <= 3; i++) {
-                    mapArg.put(`keyString${i}`, `valueString${i}`);
-                }
-                const args = {
-                    mapArg
-                };
-                testInterfaceProxy
-                    .methodWithSingleMapParameters(args)
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callMethodWithSingleMapParameters",
-                5000
-            );
-
-            runs(() => {
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-                const retObj = spy.onFulfilled.calls[0].args[0];
-                expect(retObj).toBeDefined();
-                expect(retObj.mapOut).toBeDefined();
-                for (let i = 1; i <= 3; i++) {
-                    expect(retObj.mapOut.get(`valueString${i}`)).toEqual(`keyString${i}`);
-                }
-                log("callMethodWithSingleMapParameters - OK");
-            });
+        it("callMethodWithSingleMapParameters", async () => {
+            log("callMethodWithSingleMapParameters");
+            const mapArg = new MapStringString();
+            for (let i = 1; i <= 3; i++) {
+                mapArg.put(`keyString${i}`, `valueString${i}`);
+            }
+            const args = {
+                mapArg
+            };
+            const retObj = await testInterfaceProxy.methodWithSingleMapParameters(args);
+            expect(retObj).toBeDefined();
+            expect(retObj.mapOut).toBeDefined();
+            for (let i = 1; i <= 3; i++) {
+                expect(retObj.mapOut.get(`valueString${i}`)).toEqual(`keyString${i}`);
+            }
+            log("callMethodWithSingleMapParameters - OK");
         });
 
-        it("callSetAttributeUInt8", () => {
-            const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onError"]);
-            spy.onFulfilled.reset();
-            spy.onError.reset();
-
-            runs(() => {
-                log("callSetAttributeUInt8");
-                const args = {
-                    value: 127
-                };
-                testInterfaceProxy.attributeUInt8
-                    .set(args)
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callSetAttributeUInt8",
-                5000
-            );
-
-            runs(() => {
-                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                    log(spy.onError.calls[0].args[0]);
-                }
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-            });
+        it("callSetAttributeUInt8", async () => {
+            log("callSetAttributeUInt8");
+            const args = {
+                value: 127
+            };
+            await testInterfaceProxy.attributeUInt8.set(args);
         });
 
-        it("callGetAttributeUInt8", () => {
-            const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onError"]);
-            spy.onFulfilled.reset();
-            spy.onError.reset();
-
-            runs(() => {
-                log("callGetAttributeUInt8");
-                testInterfaceProxy.attributeUInt8
-                    .get()
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callGetAttributeUInt8",
-                5000
-            );
-
-            runs(() => {
-                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                    log(spy.onError.calls[0].args[0]);
-                }
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-                const retObj = spy.onFulfilled.calls[0].args[0];
-                expect(retObj).toBeDefined();
-                log(`result = ${JSON.stringify(retObj)}`);
-                expect(retObj).toEqual(127);
-            });
+        it("callGetAttributeUInt8", async () => {
+            log("callGetAttributeUInt8");
+            const retObj = await testInterfaceProxy.attributeUInt8.get();
+            expect(retObj).toBeDefined();
+            log(`result = ${JSON.stringify(retObj)}`);
+            expect(retObj).toEqual(127);
         });
 
-        it("callSetAttributeDouble", () => {
-            const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onError"]);
-            spy.onFulfilled.reset();
-            spy.onError.reset();
-
-            runs(() => {
-                log("callSetAttributeDouble");
-                const args = {
-                    value: 1.1
-                };
-                testInterfaceProxy.attributeDouble
-                    .set(args)
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callSetAttributeDouble",
-                5000
-            );
-
-            runs(() => {
-                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                    log(spy.onError.calls[0].args[0]);
-                }
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-            });
+        it("callSetAttributeDouble", async () => {
+            log("callSetAttributeDouble");
+            const args = {
+                value: 1.1
+            };
+            await testInterfaceProxy.attributeDouble.set(args);
         });
 
-        it("callGetAttributeDouble", () => {
-            const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onError"]);
-            spy.onFulfilled.reset();
-            spy.onError.reset();
-
-            runs(() => {
-                log("callGetAttributeDouble");
-                testInterfaceProxy.attributeDouble
-                    .get()
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callGetAttributeDouble",
-                5000
-            );
-
-            runs(() => {
-                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                    log(spy.onError.calls[0].args[0]);
-                }
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-                const retObj = spy.onFulfilled.calls[0].args[0];
-                expect(retObj).toBeDefined();
-                expect(IltUtil.cmpDouble(retObj, 1.1)).toBeTruthy();
-            });
+        it("callGetAttributeDouble", async () => {
+            log("callGetAttributeDouble");
+            const retObj = await testInterfaceProxy.attributeDouble.get();
+            expect(retObj).toBeDefined();
+            expect(IltUtil.cmpDouble(retObj, 1.1)).toBeTruthy();
         });
 
-        it("callGetAttributeBooleanReadonly", () => {
-            const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onError"]);
-            spy.onFulfilled.reset();
-            spy.onError.reset();
-
-            runs(() => {
-                log("callGetAttributeBooleanReadonly");
-                testInterfaceProxy.attributeBooleanReadonly
-                    .get()
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callGetAttributeBooleanReadonly",
-                5000
-            );
-
-            runs(() => {
-                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                    log(spy.onError.calls[0].args[0]);
-                }
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-                const retObj = spy.onFulfilled.calls[0].args[0];
-                expect(retObj).toBeDefined();
-                expect(retObj).toBeTruthy();
-            });
+        it("callGetAttributeBooleanReadonly", async () => {
+            log("callGetAttributeBooleanReadonly");
+            const retObj = await testInterfaceProxy.attributeBooleanReadonly.get();
+            expect(retObj).toBeDefined();
+            expect(retObj).toBeTruthy();
         });
 
-        it("callSetAttributeStringNoSubscriptions", () => {
-            const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onError"]);
-            spy.onFulfilled.reset();
-            spy.onError.reset();
-
-            runs(() => {
-                log("callSetAttributeStringNoSubscriptions");
-                const args = {
-                    value: "Hello world"
-                };
-                testInterfaceProxy.attributeStringNoSubscriptions
-                    .set(args)
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callSetAttributeStringNoSubscriptions",
-                5000
-            );
-
-            runs(() => {
-                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                    log(spy.onError.calls[0].args[0]);
-                }
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-            });
+        it("callSetAttributeStringNoSubscriptions", async () => {
+            log("callSetAttributeStringNoSubscriptions");
+            const args = {
+                value: "Hello world"
+            };
+            await testInterfaceProxy.attributeStringNoSubscriptions.set(args);
         });
 
-        it("callGetAttributeStringNoSubscriptions", () => {
-            const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onError"]);
-            spy.onFulfilled.reset();
-            spy.onError.reset();
-
-            runs(() => {
-                log("callGetAttributeStringNoSubscriptions");
-                testInterfaceProxy.attributeStringNoSubscriptions
-                    .get()
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callGetAttributeStringNoSubscriptions",
-                5000
-            );
-
-            runs(() => {
-                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                    log(spy.onError.calls[0].args[0]);
-                }
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-                const retObj = spy.onFulfilled.calls[0].args[0];
-                expect(retObj).toBeDefined();
-                expect(retObj).toEqual("Hello world");
-            });
+        it("callGetAttributeStringNoSubscriptions", async () => {
+            log("callGetAttributeStringNoSubscriptions");
+            const retObj = await testInterfaceProxy.attributeStringNoSubscriptions.get();
+            expect(retObj).toBeDefined();
+            expect(retObj).toEqual("Hello world");
         });
 
-        it("callGetAttributeInt8readonlyNoSubscriptions", () => {
-            const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onError"]);
-            spy.onFulfilled.reset();
-            spy.onError.reset();
-
-            runs(() => {
-                log("callGetAttributeInt8readonlyNoSubscriptions");
-                testInterfaceProxy.attributeInt8readonlyNoSubscriptions
-                    .get()
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callGetAttributeInt8readonlyNoSubscriptions",
-                5000
-            );
-
-            runs(() => {
-                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                    log(spy.onError.calls[0].args[0]);
-                }
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-                const retObj = spy.onFulfilled.calls[0].args[0];
-                expect(retObj).toBeDefined();
-                expect(retObj).toEqual(-128);
-            });
+        it("callGetAttributeInt8readonlyNoSubscriptions", async () => {
+            log("callGetAttributeInt8readonlyNoSubscriptions");
+            const retObj = await testInterfaceProxy.attributeInt8readonlyNoSubscriptions.get();
+            expect(retObj).toBeDefined();
+            expect(retObj).toEqual(-128);
         });
 
-        it("callSetAttributeArrayOfStringImplicit", () => {
-            const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onError"]);
-            spy.onFulfilled.reset();
-            spy.onError.reset();
-
-            runs(() => {
-                log("callSetAttributeArrayOfStringImplicit");
-                const args = {
-                    value: IltUtil.createStringArray()
-                };
-                testInterfaceProxy.attributeArrayOfStringImplicit
-                    .set(args)
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callSetAttributeArrayOfStringImplicit",
-                5000
-            );
-
-            runs(() => {
-                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                    log(spy.onError.calls[0].args[0]);
-                }
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-            });
+        it("callSetAttributeArrayOfStringImplicit", async () => {
+            log("callSetAttributeArrayOfStringImplicit");
+            const args = {
+                value: IltUtil.createStringArray()
+            };
+            await testInterfaceProxy.attributeArrayOfStringImplicit.set(args);
         });
 
-        it("callGetAttributeArrayOfStringImplicit", () => {
-            const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onError"]);
-            spy.onFulfilled.reset();
-            spy.onError.reset();
-
-            runs(() => {
-                log("callGetAttributeArrayOfStringImplicit");
-                testInterfaceProxy.attributeArrayOfStringImplicit
-                    .get()
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callGetAttributeArrayOfStringImplicit",
-                5000
-            );
-
-            runs(() => {
-                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                    log(spy.onError.calls[0].args[0]);
-                }
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-                const retObj = spy.onFulfilled.calls[0].args[0];
-                expect(retObj).toBeDefined();
-                expect(IltUtil.checkStringArray(retObj)).toBeTruthy();
-            });
+        it("callGetAttributeArrayOfStringImplicit", async () => {
+            log("callGetAttributeArrayOfStringImplicit");
+            const retObj = await testInterfaceProxy.attributeArrayOfStringImplicit.get();
+            expect(retObj).toBeDefined();
+            expect(IltUtil.checkStringArray(retObj)).toBeTruthy();
         });
 
-        it("callSetandGetAttributeByteBuffer", () => {
-            const spy = jasmine.createSpyObj("spy", ["onSet", "onSetError", "onGet", "onGetError"]);
+        it("callSetandGetAttributeByteBuffer", async () => {
             const byteBufferArg = [-128, 0, 127];
 
-            runs(() => {
-                log("callSetAttributeByteBuffer");
-                const args = {
-                    value: byteBufferArg
-                };
-                testInterfaceProxy.attributeByteBuffer
-                    .set(args)
-                    .then(spy.onSet)
-                    .catch(spy.onSetError);
-            });
+            log("callSetAttributeByteBuffer");
+            const args = {
+                value: byteBufferArg
+            };
+            await testInterfaceProxy.attributeByteBuffer.set(args);
 
-            waitsFor(
-                () => {
-                    return spy.onSet.callCount > 0 || spy.onSetError.callCount > 0;
-                },
-                "callSetAttributeByteBuffer",
-                5000
-            );
-
-            runs(() => {
-                if (spy.onSetError.callCount > 0 && spy.onSetError.calls[0] && spy.onSetError.calls[0].args[0]) {
-                    log(spy.onSetError.calls[0].args[0]);
-                }
-                expect(spy.onSet.callCount).toEqual(1);
-                expect(spy.onSetError.callCount).toEqual(0);
-
-                log("callGetAttributeByteBuffer");
-                testInterfaceProxy.attributeByteBuffer
-                    .get()
-                    .then(spy.onGet)
-                    .catch(spy.onGetError);
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onGet.callCount > 0 || spy.onGetError.callCount > 0;
-                },
-                "callGetAttributeByteBuffer",
-                5000
-            );
-
-            runs(() => {
-                if (spy.onGetError.callCount > 0 && spy.onGetError.calls[0] && spy.onGetError.calls[0].args[0]) {
-                    log(spy.onGetError.calls[0].args[0]);
-                }
-                expect(spy.onGet.callCount).toEqual(1);
-                expect(spy.onGetError.callCount).toEqual(0);
-                const retObj = spy.onGet.calls[0].args[0];
-                expect(retObj).toBeDefined();
-                expect(IltUtil.cmpByteBuffers(retObj, byteBufferArg)).toBeTruthy();
-            });
+            log("callGetAttributeByteBuffer");
+            const retObj = await testInterfaceProxy.attributeByteBuffer.get();
+            expect(retObj).toBeDefined();
+            expect(IltUtil.cmpByteBuffers(retObj, byteBufferArg)).toBeTruthy();
         });
 
-        it("callSetAttributeEnumeration", () => {
-            const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onError"]);
-            spy.onFulfilled.reset();
-            spy.onError.reset();
-
-            runs(() => {
-                log("callSetAttributeEnumeration");
-                const args = {
-                    value: Enumeration.ENUM_0_VALUE_2
-                };
-                testInterfaceProxy.attributeEnumeration
-                    .set(args)
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callSetAttributeEnumeration",
-                5000
-            );
-
-            runs(() => {
-                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                    log(spy.onError.calls[0].args[0]);
-                }
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-            });
+        it("callSetAttributeEnumeration", async () => {
+            log("callSetAttributeEnumeration");
+            const args = {
+                value: Enumeration.ENUM_0_VALUE_2
+            };
+            await testInterfaceProxy.attributeEnumeration.set(args);
         });
 
-        it("callGetAttributeEnumeration", () => {
-            const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onError"]);
-            spy.onFulfilled.reset();
-            spy.onError.reset();
+        it("callGetAttributeEnumeration", async () => {
+            log("callGetAttributeEnumeration");
+            const retObj = await testInterfaceProxy.attributeEnumeration.get();
 
-            runs(() => {
-                log("callGetAttributeEnumeration");
-                testInterfaceProxy.attributeEnumeration
-                    .get()
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callGetAttributeEnumeration",
-                5000
-            );
-
-            runs(() => {
-                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                    log(spy.onError.calls[0].args[0]);
-                }
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-                const retObj = spy.onFulfilled.calls[0].args[0];
-                expect(retObj).toBeDefined();
-                expect(retObj).toEqual(Enumeration.ENUM_0_VALUE_2);
-            });
+            expect(retObj).toBeDefined();
+            expect(retObj).toEqual(Enumeration.ENUM_0_VALUE_2);
         });
 
-        it("callGetAttributeExtendedEnumerationReadonly", () => {
-            const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onError"]);
-            spy.onFulfilled.reset();
-            spy.onError.reset();
+        it("callGetAttributeExtendedEnumerationReadonly", async () => {
+            log("callGetAttributeExtendedEnumerationReadonly");
+            const retObj = await testInterfaceProxy.attributeExtendedEnumerationReadonly.get();
 
-            runs(() => {
-                log("callGetAttributeExtendedEnumerationReadonly");
-                testInterfaceProxy.attributeExtendedEnumerationReadonly
-                    .get()
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callGetAttributeExtendedEnumerationReadonly",
-                5000
+            expect(retObj).toBeDefined();
+            expect(retObj).toEqual(
+                ExtendedEnumerationWithPartlyDefinedValues.ENUM_2_VALUE_EXTENSION_FOR_ENUM_WITHOUT_DEFINED_VALUES
             );
-
-            runs(() => {
-                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                    log(spy.onError.calls[0].args[0]);
-                }
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-                const retObj = spy.onFulfilled.calls[0].args[0];
-                expect(retObj).toBeDefined();
-                expect(retObj).toEqual(
-                    ExtendedEnumerationWithPartlyDefinedValues.ENUM_2_VALUE_EXTENSION_FOR_ENUM_WITHOUT_DEFINED_VALUES
-                );
-            });
         });
 
-        it("callSetAttributeBaseStruct", () => {
-            const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onError"]);
-            spy.onFulfilled.reset();
-            spy.onError.reset();
-
-            runs(() => {
-                log("callSetAttributeBaseStruct");
-                const args = {
-                    value: IltUtil.createBaseStruct()
-                };
-                testInterfaceProxy.attributeBaseStruct
-                    .set(args)
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callSetAttributeBaseStruct",
-                5000
-            );
-
-            runs(() => {
-                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                    log(spy.onError.calls[0].args[0]);
-                }
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-            });
+        it("callSetAttributeBaseStruct", async () => {
+            log("callSetAttributeBaseStruct");
+            const args = {
+                value: IltUtil.createBaseStruct()
+            };
+            await testInterfaceProxy.attributeBaseStruct.set(args);
         });
 
-        it("callGetAttributeBaseStruct", () => {
-            const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onError"]);
-            spy.onFulfilled.reset();
-            spy.onError.reset();
-
-            runs(() => {
-                log("callGetAttributeBaseStruct");
-                testInterfaceProxy.attributeBaseStruct
-                    .get()
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callGetAttributeBaseStruct",
-                5000
-            );
-
-            runs(() => {
-                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                    log(spy.onError.calls[0].args[0]);
-                }
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-                const retObj = spy.onFulfilled.calls[0].args[0];
-                expect(retObj).toBeDefined();
-                expect(IltUtil.checkBaseStruct(retObj)).toBeTruthy();
-            });
+        it("callGetAttributeBaseStruct", async () => {
+            log("callGetAttributeBaseStruct");
+            const retObj = await testInterfaceProxy.attributeBaseStruct.get();
+            expect(retObj).toBeDefined();
+            expect(IltUtil.checkBaseStruct(retObj)).toBeTruthy();
         });
 
-        it("callSetAttributeExtendedExtendedBaseStruct", () => {
-            const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onError"]);
-            spy.onFulfilled.reset();
-            spy.onError.reset();
-
-            runs(() => {
-                log("callSetAttributeExtendedExtendedBaseStruct");
-                const args = {
-                    value: IltUtil.createExtendedExtendedBaseStruct()
-                };
-                testInterfaceProxy.attributeExtendedExtendedBaseStruct
-                    .set(args)
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callSetAttributeExtendedExtendedBaseStruct",
-                5000
-            );
-
-            runs(() => {
-                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                    log(spy.onError.calls[0].args[0]);
-                }
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-            });
+        it("callSetAttributeExtendedExtendedBaseStruct", async () => {
+            log("callSetAttributeExtendedExtendedBaseStruct");
+            const args = {
+                value: IltUtil.createExtendedExtendedBaseStruct()
+            };
+            await testInterfaceProxy.attributeExtendedExtendedBaseStruct.set(args);
         });
 
-        it("callGetAttributeExtendedExtendedBaseStruct", () => {
-            const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onError"]);
-            spy.onFulfilled.reset();
-            spy.onError.reset();
-
-            runs(() => {
-                log("callGetAttributeExtendedExtendedBaseStruct");
-                testInterfaceProxy.attributeExtendedExtendedBaseStruct
-                    .get()
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callGetAttributeExtendedExtendedBaseStruct",
-                5000
-            );
-
-            runs(() => {
-                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                    log(spy.onError.calls[0].args[0]);
-                }
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-                const retObj = spy.onFulfilled.calls[0].args[0];
-                expect(retObj).toBeDefined();
-                expect(IltUtil.checkExtendedExtendedBaseStruct(retObj)).toBeTruthy();
-            });
+        it("callGetAttributeExtendedExtendedBaseStruct", async () => {
+            log("callGetAttributeExtendedExtendedBaseStruct");
+            const retObj = await testInterfaceProxy.attributeExtendedExtendedBaseStruct.get();
+            expect(retObj).toBeDefined();
+            expect(IltUtil.checkExtendedExtendedBaseStruct(retObj)).toBeTruthy();
         });
 
-        it("callSubscribeAttributeEnumeration", () => {
-            const spy = jasmine.createSpyObj("spy", [
-                "onFulfilled",
-                "onError",
-                "onPublication",
-                "onPublicationError",
-                "onSubscribed"
-            ]);
-            let subscriptionId;
+        it("callSubscribeAttributeEnumeration", async () => {
             const subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({
                 minIntervalMs: 50,
                 validityMs: 60000
             });
-            spy.onFulfilled.reset();
-            spy.onError.reset();
-            spy.onPublication.reset();
-            spy.onPublicationError.reset();
-            spy.onSubscribed.reset();
 
-            runs(() => {
-                log("callSubscribeAttributeEnumeration");
-                testInterfaceProxy.attributeEnumeration
-                    .subscribe({
-                        subscriptionQos: subscriptionQosOnChange,
-                        onReceive: spy.onPublication,
-                        onError: spy.onPublicationError,
-                        onSubscribed: spy.onSubscribed
-                    })
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
+            const onSubscribedDeferred = IltUtil.createDeferred();
+            const onReceiveDeferred = IltUtil.createDeferred();
+
+            log("callSubscribeAttributeEnumeration");
+            const subscriptionId = await testInterfaceProxy.attributeEnumeration.subscribe({
+                subscriptionQos: subscriptionQosOnChange,
+                onReceive: onReceiveDeferred.resolve,
+                onError: fail,
+                onSubscribed: onSubscribedDeferred.resolve
             });
-
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callSubscribeAttributeEnumeration",
-                5000
-            );
-
-            runs(() => {
-                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                    log(spy.onError.calls[0].args[0]);
-                }
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-                subscriptionId = spy.onFulfilled.calls[0].args[0];
-                log(`subscriptionId = ${subscriptionId}`);
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onSubscribed.callCount > 0;
-                },
-                "callSubscribeAttributeEnumeration onSubscribed",
-                5000
-            );
-
-            runs(() => {
-                expect(spy.onSubscribed.callCount).toEqual(1);
-                expect(spy.onSubscribed.calls[0].args[0]).toEqual(subscriptionId);
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onPublication.callCount > 0 || spy.onPublicationError.callCount > 0;
-                },
-                "callSubscribeAttributeEnumeration Publication",
-                5000
-            );
-
-            runs(() => {
-                expect(spy.onPublication.callCount).toEqual(1);
-                expect(spy.onPublicationError.callCount).toEqual(0);
-                const retObj = spy.onPublication.calls[0].args[0];
-                expect(retObj).toBeDefined();
-                expect(retObj).toEqual(Enumeration.ENUM_0_VALUE_2);
-
-                // unsubscribe again
-                spy.onFulfilled.reset();
-                spy.onError.reset();
-                testInterfaceProxy.attributeEnumeration
-                    .unsubscribe({
-                        subscriptionId
-                    })
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callSubscribeAttributeEnumeration unsubscribe",
-                5000
-            );
-
-            runs(() => {
-                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                    log(spy.onError.calls[0].args[0]);
-                }
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
+            const id = await onSubscribedDeferred.promise;
+            expect(id).toEqual(subscriptionId);
+            const retObj = await onReceiveDeferred.promise;
+            expect(retObj).toBeDefined();
+            expect(retObj).toEqual(Enumeration.ENUM_0_VALUE_2);
+            await testInterfaceProxy.attributeEnumeration.unsubscribe({
+                subscriptionId
             });
         });
 
-        it("callSubscribeAttributeWithExceptionFromGetter", () => {
-            const spy = jasmine.createSpyObj("spy", [
-                "onFulfilled",
-                "onError",
-                "onPublication",
-                "onPublicationError",
-                "onSubscribed"
-            ]);
-            let subscriptionId;
+        it("callSubscribeAttributeWithExceptionFromGetter", async () => {
             const subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({
                 minIntervalMs: 50,
                 validityMs: 60000
             });
-            spy.onFulfilled.reset();
-            spy.onError.reset();
-            spy.onPublication.reset();
-            spy.onPublicationError.reset();
-            spy.onSubscribed.reset();
 
-            runs(() => {
-                log("callSubscribeAttributeWithExceptionFromGetter");
-                testInterfaceProxy.attributeWithExceptionFromGetter
-                    .subscribe({
-                        subscriptionQos: subscriptionQosOnChange,
-                        onReceive: spy.onPublication,
-                        onError: spy.onPublicationError,
-                        onSubscribed: spy.onSubscribed
-                    })
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
+            const onSubscribedDeferred = IltUtil.createDeferred();
+            const onReceiveDeferred = IltUtil.createDeferred();
+
+            log("callSubscribeAttributeWithExceptionFromGetter");
+            const subscriptionId = await testInterfaceProxy.attributeWithExceptionFromGetter.subscribe({
+                subscriptionQos: subscriptionQosOnChange,
+                onReceive: fail,
+                onError: onReceiveDeferred.resolve,
+                onSubscribed: onSubscribedDeferred.resolve
             });
 
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callSubscribeAttributeWithExceptionFromGetter",
-                5000
-            );
+            log(`callSubscribeAttributeWithExceptionFromGetter - subscriptionId = ${subscriptionId}`);
+            const id = await onSubscribedDeferred.promise;
+            expect(id).toEqual(subscriptionId);
 
-            runs(() => {
-                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                    log(spy.onError.calls[0].args[0]);
-                }
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-                subscriptionId = spy.onFulfilled.calls[0].args[0];
-                log(`callSubscribeAttributeWithExceptionFromGetter - subscriptionId = ${subscriptionId}`);
-            });
+            const retObj = await onReceiveDeferred.promise;
+            log(`retObj = ${JSON.stringify(retObj)}`);
+            expect(retObj).toBeDefined();
+            expect(retObj._typeName).toEqual("joynr.exceptions.ProviderRuntimeException");
+            expect(retObj.detailMessage).toBeDefined();
+            expect(retObj.detailMessage).toEqual("Exception from getAttributeWithExceptionFromGetter");
 
-            waitsFor(
-                () => {
-                    return spy.onSubscribed.callCount > 0;
-                },
-                "callSubscribeAttributeWithExceptionFromGetter onSubscribed",
-                5000
-            );
-
-            runs(() => {
-                expect(spy.onSubscribed.callCount).toEqual(1);
-                expect(spy.onSubscribed.calls[0].args[0]).toEqual(subscriptionId);
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onPublication.callCount > 0 || spy.onPublicationError.callCount > 0;
-                },
-                "callSubscribeAttributeWithExceptionFromGetter Publication",
-                5000
-            );
-
-            runs(() => {
-                expect(spy.onPublication.callCount).toEqual(0);
-                expect(spy.onPublicationError.callCount).toEqual(1);
-                const retObj = spy.onPublicationError.calls[0].args[0];
-                log(`retObj = ${JSON.stringify(retObj)}`);
-                expect(retObj).toBeDefined();
-                expect(retObj._typeName).toEqual("joynr.exceptions.ProviderRuntimeException");
-                expect(retObj.detailMessage).toBeDefined();
-                expect(retObj.detailMessage).toEqual("Exception from getAttributeWithExceptionFromGetter");
-
-                // unsubscribe again
-                spy.onFulfilled.reset();
-                spy.onError.reset();
-                testInterfaceProxy.attributeWithExceptionFromGetter
-                    .unsubscribe({
-                        subscriptionId
-                    })
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callSubscribeAttributeWithExceptionFromGetter unsubscribe",
-                5000
-            );
-
-            runs(() => {
-                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                    log(spy.onError.calls[0].args[0]);
-                }
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
+            await testInterfaceProxy.attributeWithExceptionFromGetter.unsubscribe({
+                subscriptionId
             });
         });
 
-        function callSubscribeBroadcastWithSinglePrimitiveParameter(partitionsToUse) {
-            const spy = jasmine.createSpyObj("spy", [
-                "onFulfilled",
-                "onError",
-                "onPublication",
-                "onPublicationError",
-                "onSubscribed"
-            ]);
-            let subscriptionId;
+        async function callSubscribeBroadcastWithSinglePrimitiveParameter(partitionsToUse) {
             const subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({
                 minIntervalMs: 50,
                 validityMs: 60000
             });
-            let sleepDone;
-            spy.onFulfilled.reset();
-            spy.onError.reset();
-            spy.onPublication.reset();
-            spy.onPublicationError.reset();
-            spy.onSubscribed.reset();
 
-            runs(() => {
-                log("callSubscribeBroadcastWithSinglePrimitiveParameter");
-                testInterfaceProxy.broadcastWithSinglePrimitiveParameter
-                    .subscribe({
-                        subscriptionQos: subscriptionQosOnChange,
-                        partitions: partitionsToUse,
-                        onReceive: spy.onPublication,
-                        onError: spy.onPublicationError,
-                        onSubscribed: spy.onSubscribed
-                    })
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
+            const onSubscribedDeferred = IltUtil.createDeferred();
+            const onReceiveDeferred = IltUtil.createDeferred();
+
+            log("callSubscribeBroadcastWithSinglePrimitiveParameter");
+            const subscriptionId = await testInterfaceProxy.broadcastWithSinglePrimitiveParameter.subscribe({
+                subscriptionQos: subscriptionQosOnChange,
+                partitions: partitionsToUse,
+                onReceive: retObj => {
+                    expect(retObj).toBeDefined();
+                    expect(retObj.stringOut).toBeDefined();
+                    expect(retObj.stringOut).toEqual("boom");
+                    log(`publication retObj: ${JSON.stringify(retObj)}`);
+
+                    testInterfaceProxy.broadcastWithSinglePrimitiveParameter
+                        .unsubscribe({
+                            subscriptionId
+                        })
+                        .then(onReceiveDeferred.resolve)
+                        .catch(onReceiveDeferred.reject);
+                },
+                onError: fail,
+                onSubscribed: onSubscribedDeferred.resolve
             });
 
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callSubscribeBroadcastWithSinglePrimitiveParameter",
-                5000
-            );
+            log(`subscriptionId = ${subscriptionId}`);
+            const id = await onSubscribedDeferred.promise;
+            expect(id).toEqual(subscriptionId);
+            await testInterfaceProxy.methodToFireBroadcastWithSinglePrimitiveParameter({
+                partitions: partitionsToUse
+            });
+            // call to fire broadcast went ok
+            // now wait for the publication to happen
+            await onReceiveDeferred.promise;
+        }
 
-            runs(() => {
-                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                    log(spy.onError.calls[0].args[0]);
-                }
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-                subscriptionId = spy.onFulfilled.calls[0].args[0];
-                log(`subscriptionId = ${subscriptionId}`);
+        it("callSubscribeBroadcastWithSinglePrimitiveParameter_NoPartitions", async () => {
+            return await callSubscribeBroadcastWithSinglePrimitiveParameter([]);
+        });
+
+        it("callSubscribeBroadcastWithSinglePrimitiveParameter_SimplePartitions", async () => {
+            return await callSubscribeBroadcastWithSinglePrimitiveParameter(["partition0", "partition1"]);
+        });
+
+        async function callSubscribeBroadcastWithMultiplePrimitiveParameters(partitionsToUse) {
+            const subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({
+                minIntervalMs: 50,
+                validityMs: 60000
             });
 
-            waitsFor(
-                () => {
-                    return spy.onSubscribed.callCount > 0;
-                },
-                "callSubscribeBroadcastWithSinglePrimitiveParameter onSubscribed",
-                5000
-            );
+            const onSubscribedDeferred = IltUtil.createDeferred();
+            const onReceiveDeferred = IltUtil.createDeferred();
 
-            runs(() => {
-                expect(spy.onSubscribed.callCount).toEqual(1);
-                expect(spy.onSubscribed.calls[0].args[0]).toEqual(subscriptionId);
-                setTimeout(() => {
-                    sleepDone = true;
-                }, 1000);
+            log("subscribeBroadcastWithMultiplePrimitiveParameters");
+            const subscriptionId = await testInterfaceProxy.broadcastWithMultiplePrimitiveParameters.subscribe({
+                subscriptionQos: subscriptionQosOnChange,
+                partitions: partitionsToUse,
+                onReceive: retObj => {
+                    expect(retObj).toBeDefined();
+                    expect(retObj.doubleOut).toBeDefined();
+                    expect(IltUtil.cmpDouble(retObj.doubleOut, 1.1)).toBeTruthy();
+                    expect(retObj.stringOut).toBeDefined();
+                    expect(retObj.stringOut).toEqual("boom");
+                    log(`publication retObj: ${JSON.stringify(retObj)}`);
+                    onReceiveDeferred.resolve();
+                },
+                onError: fail,
+                onSubscribed: onSubscribedDeferred.resolve
             });
 
-            waitsFor(
-                () => {
-                    return sleepDone;
-                },
-                "callSubscribeBroadcastWithSinglePrimitiveParameter sleep done",
-                2000
-            );
-
-            runs(() => {
-                // execute fire method here
-                // note that it can take time, until the broadcast is registered
-                // best if we would wait here for some time, and then fire the broadcast
-                spy.onFulfilled.reset();
-                spy.onError.reset();
-                testInterfaceProxy
-                    .methodToFireBroadcastWithSinglePrimitiveParameter({
-                        partitions: partitionsToUse
-                    })
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
+            log(`subscriptionId = ${subscriptionId}`);
+            const id = await onSubscribedDeferred.promise;
+            expect(id).toEqual(subscriptionId);
+            await testInterfaceProxy.methodToFireBroadcastWithMultiplePrimitiveParameters({
+                partitions: partitionsToUse
             });
 
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callSubscribeBroadcastWithSinglePrimitiveParameter methodToFireBroadcastWithSinglePrimitiveParameter",
-                5000
-            );
-
-            runs(() => {
-                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                    log(spy.onError.calls[0].args[0]);
-                }
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-                // call to fire broadcast went ok
-                // now wait for the publication to happen
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onPublication.callCount > 0 || spy.onPublicationError.callCount > 0;
-                },
-                "callSubscribeBroadcastWithSinglePrimitiveParameter Publication",
-                5000
-            );
-
-            runs(() => {
-                expect(spy.onPublication.callCount).toEqual(1);
-                expect(spy.onPublicationError.callCount).toEqual(0);
-                const retObj = spy.onPublication.calls[0].args[0];
-                expect(retObj).toBeDefined();
-                expect(retObj.stringOut).toBeDefined();
-                expect(retObj.stringOut).toEqual("boom");
-                log(`publication retObj: ${JSON.stringify(retObj)}`);
-
-                // unsubscribe again
-                spy.onFulfilled.reset();
-                spy.onError.reset();
-                testInterfaceProxy.broadcastWithSinglePrimitiveParameter
-                    .unsubscribe({
-                        subscriptionId
-                    })
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callSubscribeBroadcastWithSinglePrimitiveParameter unsubscribe",
-                5000
-            );
-
-            runs(() => {
-                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                    log(spy.onError.calls[0].args[0]);
-                }
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
+            // call to fire broadcast went ok
+            // now wait for the publication to happen
+            await onReceiveDeferred.promise;
+            await testInterfaceProxy.broadcastWithMultiplePrimitiveParameters.unsubscribe({
+                subscriptionId
             });
         }
 
-        it("callSubscribeBroadcastWithSinglePrimitiveParameter_NoPartitions", () => {
-            callSubscribeBroadcastWithSinglePrimitiveParameter([]);
+        it("callSubscribeBroadcastWithMultiplePrimitiveParameters_NoPartitions", async () => {
+            return await callSubscribeBroadcastWithMultiplePrimitiveParameters([]);
         });
 
-        it("callSubscribeBroadcastWithSinglePrimitiveParameter_SimplePartitions", () => {
-            callSubscribeBroadcastWithSinglePrimitiveParameter(["partition0", "partition1"]);
+        it("callSubscribeBroadcastWithMultiplePrimitiveParameters_SimplePartitions", async () => {
+            return await callSubscribeBroadcastWithMultiplePrimitiveParameters(["partition0", "partition1"]);
         });
 
-        function callSubscribeBroadcastWithMultiplePrimitiveParameters(partitionsToUse) {
-            const spy = jasmine.createSpyObj("spy", [
-                "onFulfilled",
-                "onError",
-                "onPublication",
-                "onPublicationError",
-                "onSubscribed"
-            ]);
-            let subscriptionId;
+        async function callSubscribeBroadcastWithSingleArrayParameter(partitionsToUse) {
             const subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({
                 minIntervalMs: 50,
                 validityMs: 60000
             });
-            spy.onFulfilled.reset();
-            spy.onError.reset();
-            spy.onPublication.reset();
-            spy.onPublicationError.reset();
-            spy.onSubscribed.reset();
 
-            runs(() => {
-                log("subscribeBroadcastWithMultiplePrimitiveParameters");
-                testInterfaceProxy.broadcastWithMultiplePrimitiveParameters
-                    .subscribe({
-                        subscriptionQos: subscriptionQosOnChange,
-                        partitions: partitionsToUse,
-                        onReceive: spy.onPublication,
-                        onError: spy.onPublicationError,
-                        onSubscribed: spy.onSubscribed
-                    })
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
+            const onSubscribedDeferred = IltUtil.createDeferred();
+            const onReceiveDeferred = IltUtil.createDeferred();
+
+            log("callSubscribeBroadcastWithSingleArrayParameter");
+            const subscriptionId = await testInterfaceProxy.broadcastWithSingleArrayParameter.subscribe({
+                subscriptionQos: subscriptionQosOnChange,
+                partitions: partitionsToUse,
+                onReceive: retObj => {
+                    expect(retObj).toBeDefined();
+                    expect(retObj.stringArrayOut).toBeDefined();
+                    expect(IltUtil.checkStringArray(retObj.stringArrayOut)).toBeTruthy();
+                    log(`publication retObj: ${JSON.stringify(retObj)}`);
+                    onReceiveDeferred.resolve();
+                },
+                onError: fail,
+                onSubscribed: onSubscribedDeferred.resolve
             });
 
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "subscribeBroadcastWithMultiplePrimitiveParameters",
-                5000
-            );
+            log(`subscriptionId = ${subscriptionId}`);
+            const id = await onSubscribedDeferred.promise;
+            expect(id).toEqual(subscriptionId);
 
-            runs(() => {
-                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                    log(spy.onError.calls[0].args[0]);
-                }
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-                subscriptionId = spy.onFulfilled.calls[0].args[0];
-                log(`subscriptionId = ${subscriptionId}`);
+            await testInterfaceProxy.methodToFireBroadcastWithSingleArrayParameter({
+                partitions: partitionsToUse
             });
 
-            waitsFor(
-                () => {
-                    return spy.onSubscribed.callCount > 0;
-                },
-                "callSubscribeBroadcastWithMultiplePrimitiveParameters onSubscribed",
-                5000
-            );
+            // call to fire broadcast went ok
+            // now wait for the publication to happen
 
-            runs(() => {
-                expect(spy.onSubscribed.callCount).toEqual(1);
-                expect(spy.onSubscribed.calls[0].args[0]).toEqual(subscriptionId);
-                // execute fire method here
-                spy.onFulfilled.reset();
-                spy.onError.reset();
-                testInterfaceProxy
-                    .methodToFireBroadcastWithMultiplePrimitiveParameters({
-                        partitions: partitionsToUse
-                    })
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
+            await onReceiveDeferred.promise;
 
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "subscribeBroadcastWithMultiplePrimitiveParameters methodToFireBroadcastWithMultiplePrimitiveParameter",
-                5000
-            );
-
-            runs(() => {
-                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                    log(spy.onError.calls[0].args[0]);
-                }
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-                // call to fire broadcast went ok
-                // now wait for the publication to happen
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onPublication.callCount > 0 || spy.onPublicationError.callCount > 0;
-                },
-                "subscribeBroadcastWithMultiplePrimitiveParameters Publication",
-                5000
-            );
-
-            runs(() => {
-                expect(spy.onPublication.callCount).toEqual(1);
-                expect(spy.onPublicationError.callCount).toEqual(0);
-                const retObj = spy.onPublication.calls[0].args[0];
-                expect(retObj).toBeDefined();
-                expect(retObj.doubleOut).toBeDefined();
-                expect(IltUtil.cmpDouble(retObj.doubleOut, 1.1)).toBeTruthy();
-                expect(retObj.stringOut).toBeDefined();
-                expect(retObj.stringOut).toEqual("boom");
-                log(`publication retObj: ${JSON.stringify(retObj)}`);
-
-                // unsubscribe again
-                spy.onFulfilled.reset();
-                spy.onError.reset();
-                testInterfaceProxy.broadcastWithMultiplePrimitiveParameters
-                    .unsubscribe({
-                        subscriptionId
-                    })
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "subscribeBroadcastWithMultiplePrimitiveParameters unsubscribe",
-                5000
-            );
-
-            runs(() => {
-                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                    log(spy.onError.calls[0].args[0]);
-                }
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
+            // unsubscribe again
+            await testInterfaceProxy.broadcastWithSingleArrayParameter.unsubscribe({
+                subscriptionId
             });
         }
 
-        it("callSubscribeBroadcastWithMultiplePrimitiveParameters_NoPartitions", () => {
-            callSubscribeBroadcastWithMultiplePrimitiveParameters([]);
+        it("callSubscribeBroadcastWithSingleArrayParameter_NoPartitions", async () => {
+            return await callSubscribeBroadcastWithSingleArrayParameter([]);
         });
 
-        it("callSubscribeBroadcastWithMultiplePrimitiveParameters_SimplePartitions", () => {
-            callSubscribeBroadcastWithMultiplePrimitiveParameters(["partition0", "partition1"]);
+        it("callSubscribeBroadcastWithSingleArrayParameter_SimplePartitions", async () => {
+            return await callSubscribeBroadcastWithSingleArrayParameter(["partition0", "partition1"]);
         });
 
-        function callSubscribeBroadcastWithSingleArrayParameter(partitionsToUse) {
-            const spy = jasmine.createSpyObj("spy", [
-                "onFulfilled",
-                "onError",
-                "onPublication",
-                "onPublicationError",
-                "onSubscribed"
-            ]);
-            let subscriptionId;
+        async function callSubscribeBroadcastWithMultipleArrayParameters(partitionsToUse) {
             const subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({
                 minIntervalMs: 50,
                 validityMs: 60000
             });
-            spy.onFulfilled.reset();
-            spy.onError.reset();
-            spy.onPublication.reset();
-            spy.onPublicationError.reset();
-            spy.onSubscribed.reset();
 
-            runs(() => {
-                log("callSubscribeBroadcastWithSingleArrayParameter");
-                testInterfaceProxy.broadcastWithSingleArrayParameter
-                    .subscribe({
-                        subscriptionQos: subscriptionQosOnChange,
-                        partitions: partitionsToUse,
-                        onReceive: spy.onPublication,
-                        onError: spy.onPublicationError,
-                        onSubscribed: spy.onSubscribed
-                    })
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
+            const onSubscribedDeferred = IltUtil.createDeferred();
+            const onReceiveDeferred = IltUtil.createDeferred();
+
+            log("callSubscribeBroadcastWithMultipleArrayParameters");
+            const subscriptionId = await testInterfaceProxy.broadcastWithMultipleArrayParameters.subscribe({
+                subscriptionQos: subscriptionQosOnChange,
+                partitions: partitionsToUse,
+                onReceive: retObj => {
+                    expect(retObj).toBeDefined();
+                    expect(retObj.uInt64ArrayOut).toBeDefined();
+                    expect(IltUtil.checkUInt64Array(retObj.uInt64ArrayOut)).toBeTruthy();
+                    expect(retObj.structWithStringArrayArrayOut).toBeDefined();
+                    expect(IltUtil.checkStructWithStringArrayArray(retObj.structWithStringArrayArrayOut)).toBeTruthy();
+                    log(`publication retObj: ${JSON.stringify(retObj)}`);
+                    onReceiveDeferred.resolve();
+                },
+                onError: fail,
+                onSubscribed: onSubscribedDeferred.resolve
             });
 
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callSubscribeBroadcastWithSingleArrayParameter",
-                5000
-            );
+            log(`subscriptionId = ${subscriptionId}`);
 
-            runs(() => {
-                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                    log(spy.onError.calls[0].args[0]);
-                }
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-                subscriptionId = spy.onFulfilled.calls[0].args[0];
-                log(`subscriptionId = ${subscriptionId}`);
+            const id = await onSubscribedDeferred.promise;
+            expect(id).toEqual(subscriptionId);
+
+            await testInterfaceProxy.methodToFireBroadcastWithMultipleArrayParameters({
+                partitions: partitionsToUse
             });
+            // call to fire broadcast went ok
+            // now wait for the publication to happen
+            await onReceiveDeferred.promise;
 
-            waitsFor(
-                () => {
-                    return spy.onSubscribed.callCount > 0;
-                },
-                "callSubscribeBroadcastWithSingleArrayParameter onSubscribed",
-                5000
-            );
-
-            runs(() => {
-                expect(spy.onSubscribed.callCount).toEqual(1);
-                expect(spy.onSubscribed.calls[0].args[0]).toEqual(subscriptionId);
-                // execute fire method here
-                spy.onFulfilled.reset();
-                spy.onError.reset();
-                testInterfaceProxy
-                    .methodToFireBroadcastWithSingleArrayParameter({
-                        partitions: partitionsToUse
-                    })
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callSubscribeBroadcastWithSingleArrayParameter methodToFireBroadcastWithSinglePrimitiveParameter",
-                5000
-            );
-
-            runs(() => {
-                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                    log(spy.onError.calls[0].args[0]);
-                }
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-                // call to fire broadcast went ok
-                // now wait for the publication to happen
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onPublication.callCount > 0 || spy.onPublicationError.callCount > 0;
-                },
-                "callSubscribeBroadcastWithSingleArrayParameter Publication",
-                5000
-            );
-
-            runs(() => {
-                expect(spy.onPublication.callCount).toEqual(1);
-                expect(spy.onPublicationError.callCount).toEqual(0);
-                const retObj = spy.onPublication.calls[0].args[0];
-                expect(retObj).toBeDefined();
-                expect(retObj.stringArrayOut).toBeDefined();
-                expect(IltUtil.checkStringArray(retObj.stringArrayOut)).toBeTruthy();
-                log(`publication retObj: ${JSON.stringify(retObj)}`);
-
-                // unsubscribe again
-                spy.onFulfilled.reset();
-                spy.onError.reset();
-                testInterfaceProxy.broadcastWithSingleArrayParameter
-                    .unsubscribe({
-                        subscriptionId
-                    })
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callSubscribeBroadcastWithSingleArrayParameter unsubscribe",
-                5000
-            );
-
-            runs(() => {
-                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                    log(spy.onError.calls[0].args[0]);
-                }
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
+            // unsubscribe again
+            await testInterfaceProxy.broadcastWithMultipleArrayParameters.unsubscribe({
+                subscriptionId
             });
         }
 
-        it("callSubscribeBroadcastWithSingleArrayParameter_NoPartitions", () => {
-            callSubscribeBroadcastWithSingleArrayParameter([]);
+        it("callSubscribeBroadcastWithMultipleArrayParameters_NoPartitions", async () => {
+            return await callSubscribeBroadcastWithMultipleArrayParameters([]);
         });
 
-        it("callSubscribeBroadcastWithSingleArrayParameter_SimplePartitions", () => {
-            callSubscribeBroadcastWithSingleArrayParameter(["partition0", "partition1"]);
-        });
-
-        function callSubscribeBroadcastWithMultipleArrayParameters(partitionsToUse) {
-            const spy = jasmine.createSpyObj("spy", [
-                "onFulfilled",
-                "onError",
-                "onPublication",
-                "onPublicationError",
-                "onSubscribed"
-            ]);
-            let subscriptionId;
-            const subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({
-                minIntervalMs: 50,
-                validityMs: 60000
-            });
-            spy.onFulfilled.reset();
-            spy.onError.reset();
-            spy.onPublication.reset();
-            spy.onPublicationError.reset();
-            spy.onSubscribed.reset();
-
-            runs(() => {
-                log("callSubscribeBroadcastWithMultipleArrayParameters");
-                testInterfaceProxy.broadcastWithMultipleArrayParameters
-                    .subscribe({
-                        subscriptionQos: subscriptionQosOnChange,
-                        partitions: partitionsToUse,
-                        onReceive: spy.onPublication,
-                        onError: spy.onPublicationError,
-                        onSubscribed: spy.onSubscribed
-                    })
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callSubscribeBroadcastWithMultipleArrayParameters",
-                5000
-            );
-
-            runs(() => {
-                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                    log(spy.onError.calls[0].args[0]);
-                }
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-                subscriptionId = spy.onFulfilled.calls[0].args[0];
-                log(`subscriptionId = ${subscriptionId}`);
-                log(`subscriptionId = ${subscriptionId}`);
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onSubscribed.callCount > 0;
-                },
-                "callSubscribeBroadcastWithMultipleArrayParameters onSubscribed",
-                5000
-            );
-
-            runs(() => {
-                expect(spy.onSubscribed.callCount).toEqual(1);
-                expect(spy.onSubscribed.calls[0].args[0]).toEqual(subscriptionId);
-                // execute fire method here
-                spy.onFulfilled.reset();
-                spy.onError.reset();
-                testInterfaceProxy
-                    .methodToFireBroadcastWithMultipleArrayParameters({
-                        partitions: partitionsToUse
-                    })
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callSubscribeBroadcastWithMultipleArrayParameters methodToFireBroadcastWithSinglePrimitiveParameter",
-                5000
-            );
-
-            runs(() => {
-                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                    log(spy.onError.calls[0].args[0]);
-                }
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-                // call to fire broadcast went ok
-                // now wait for the publication to happen
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onPublication.callCount > 0 || spy.onPublicationError.callCount > 0;
-                },
-                "callSubscribeBroadcastWithMultipleArrayParameters Publication",
-                5000
-            );
-
-            runs(() => {
-                expect(spy.onPublication.callCount).toEqual(1);
-                expect(spy.onPublicationError.callCount).toEqual(0);
-                const retObj = spy.onPublication.calls[0].args[0];
-                expect(retObj).toBeDefined();
-                expect(retObj.uInt64ArrayOut).toBeDefined();
-                expect(IltUtil.checkUInt64Array(retObj.uInt64ArrayOut)).toBeTruthy();
-                expect(retObj.structWithStringArrayArrayOut).toBeDefined();
-                expect(IltUtil.checkStructWithStringArrayArray(retObj.structWithStringArrayArrayOut)).toBeTruthy();
-                log(`publication retObj: ${JSON.stringify(retObj)}`);
-
-                // unsubscribe again
-                spy.onFulfilled.reset();
-                spy.onError.reset();
-                testInterfaceProxy.broadcastWithMultipleArrayParameters
-                    .unsubscribe({
-                        subscriptionId
-                    })
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callSubscribeBroadcastWithMultipleArrayParameters unsubscribe",
-                5000
-            );
-
-            runs(() => {
-                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                    log(spy.onError.calls[0].args[0]);
-                }
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-            });
-        }
-
-        it("callSubscribeBroadcastWithMultipleArrayParameters_NoPartitions", () => {
-            callSubscribeBroadcastWithMultipleArrayParameters([]);
-        });
-
-        it("callSubscribeBroadcastWithMultipleArrayParameters_SimplePartitions", () => {
-            callSubscribeBroadcastWithMultipleArrayParameters(["partition0", "partition1"]);
+        it("callSubscribeBroadcastWithMultipleArrayParameters_SimplePartitions", async () => {
+            return await callSubscribeBroadcastWithMultipleArrayParameters(["partition0", "partition1"]);
         });
 
         const byteBufferArg = [-128, 0, 127];
 
-        function callSubscribeBroadcastWithSingleByteBufferParameter(byteBufferArg, partitionsToUse) {
-            const spy = jasmine.createSpyObj("spy", [
-                "onPublication",
-                "onPublicationError",
-                "onSubscribed",
-                "onSubscribedError",
-                "onFiredError",
-                "onUnsubscribed",
-                "onUnsubscribedError"
-            ]);
-            let subscriptionId;
+        async function callSubscribeBroadcastWithSingleByteBufferParameter(byteBufferArg, partitionsToUse) {
             const subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({
                 minIntervalMs: 50,
                 validityMs: 60000
             });
 
-            runs(() => {
-                log("callSubscribeBroadcastWithSingleByteBufferParameter");
-                testInterfaceProxy.broadcastWithSingleByteBufferParameter
-                    .subscribe({
-                        subscriptionQos: subscriptionQosOnChange,
-                        partitions: partitionsToUse,
-                        onReceive: spy.onPublication,
-                        onError: spy.onPublicationError,
-                        onSubscribed: spy.onSubscribed
-                    })
-                    .catch(spy.onSubscribedError);
+            const onSubscribedDeferred = IltUtil.createDeferred();
+            const onReceiveDeferred = IltUtil.createDeferred();
+
+            log("callSubscribeBroadcastWithSingleByteBufferParameter");
+            const subscriptionId = await testInterfaceProxy.broadcastWithSingleByteBufferParameter.subscribe({
+                subscriptionQos: subscriptionQosOnChange,
+                partitions: partitionsToUse,
+                onReceive: retObj => {
+                    expect(retObj).toBeDefined();
+                    expect(retObj.byteBufferOut).toBeDefined();
+                    expect(IltUtil.cmpByteBuffers(retObj.byteBufferOut, byteBufferArg)).toBeTruthy();
+                    log(`Successful publication of retObj: ${JSON.stringify(retObj)}`);
+                    onReceiveDeferred.resolve();
+                },
+                onError: fail,
+                onSubscribed: onSubscribedDeferred.resolve
+            });
+            const id = await onSubscribedDeferred.promise;
+            expect(id).toEqual(subscriptionId);
+
+            log(`Subscription was successful with subscriptionId = ${subscriptionId}`);
+
+            // execute fire method here
+            testInterfaceProxy.methodToFireBroadcastWithSingleByteBufferParameter({
+                byteBufferIn: byteBufferArg,
+                partitions: partitionsToUse
             });
 
-            waitsFor(
-                () => {
-                    return spy.onSubscribed.callCount > 0 || spy.onSubscribedError.callCount > 0;
-                },
-                "callSubscribeBroadcastWithSingleByteBufferParameter",
-                5000
-            );
+            await onReceiveDeferred.promise;
 
-            runs(() => {
-                if (
-                    spy.onSubscribedError.callCount > 0 &&
-                    spy.onSubscribedError.calls[0] &&
-                    spy.onSubscribedError.calls[0].args[0]
-                ) {
-                    log(spy.onSubscribedError.calls[0].args[0]);
-                }
-                expect(spy.onSubscribed.callCount).toEqual(1);
-                expect(spy.onSubscribedError.callCount).toEqual(0);
-                subscriptionId = spy.onSubscribed.calls[0].args[0];
-                log(`Subscription was succesful with subscriptionId = ${subscriptionId}`);
-
-                // execute fire method here
-                testInterfaceProxy
-                    .methodToFireBroadcastWithSingleByteBufferParameter({
-                        byteBufferIn: byteBufferArg,
-                        partitions: partitionsToUse
-                    })
-                    .catch(spy.onFiredError);
-            });
-
-            waitsFor(
-                () => {
-                    return (
-                        spy.onPublication.callCount > 0 || spy.onPublicationError.callCount > 0 || spy.onFiredError > 0
-                    );
-                },
-                "callSubscribeBroadcastWithSingleByteBufferParameter methodToFireBroadcastWithSingleByteBufferParameter and Publication",
-                5000
-            );
-
-            runs(() => {
-                if (spy.onFiredError.callCount > 0 && spy.onFiredError.calls[0] && spy.onFiredError.calls[0].args[0]) {
-                    log(spy.onFiredError.calls[0].args[0]);
-                }
-                if (
-                    spy.onPublicationError.callCount > 0 &&
-                    spy.onPublicationError.calls[0] &&
-                    spy.onPublicationError.calls[0].args[0]
-                ) {
-                    log(spy.onPublicationError.calls[0].args[0]);
-                }
-                expect(spy.onPublication.callCount).toEqual(1);
-                expect(spy.onPublicationError.callCount).toEqual(0);
-                expect(spy.onFiredError.callCount).toEqual(0);
-                const retObj = spy.onPublication.calls[0].args[0];
-                expect(retObj).toBeDefined();
-                expect(retObj.byteBufferOut).toBeDefined();
-                expect(IltUtil.cmpByteBuffers(retObj.byteBufferOut, byteBufferArg)).toBeTruthy();
-                log(`Successful publication of retObj: ${JSON.stringify(retObj)}`);
-
-                // unsubscribe again
-                testInterfaceProxy.broadcastWithSingleByteBufferParameter
-                    .unsubscribe({
-                        subscriptionId
-                    })
-                    .then(spy.onUnsubscribed)
-                    .catch(spy.onUnsubscribedError);
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onUnsubscribed.callCount > 0 || spy.onUnsubscribedError.callCount > 0;
-                },
-                "callSubscribeBroadcastWithSingleByteBufferParameter Unsubscribe",
-                5000
-            );
-
-            runs(() => {
-                if (
-                    spy.onSubscribedError.callCount > 0 &&
-                    spy.onSubscribedError.calls[0] &&
-                    spy.onSubscribedError.calls[0].args[0]
-                ) {
-                    log(spy.onSubscribedError.calls[0].args[0]);
-                }
-                expect(spy.onSubscribed.callCount).toEqual(1);
-                expect(spy.onSubscribedError.callCount).toEqual(0);
-                log("Successfully unsubscribed from broadcast");
+            // unsubscribe again
+            await testInterfaceProxy.broadcastWithSingleByteBufferParameter.unsubscribe({
+                subscriptionId
             });
         }
 
-        it("callSubscribeBroadcastWithSingleByteBufferParameter_NoPartitions", () => {
-            callSubscribeBroadcastWithSingleByteBufferParameter(byteBufferArg, []);
+        it("callSubscribeBroadcastWithSingleByteBufferParameter_NoPartitions", async () => {
+            return await callSubscribeBroadcastWithSingleByteBufferParameter(byteBufferArg, []);
         });
 
-        it("callSubscribeBroadcastWithSingleByteBufferParameter_SimplePartitions", () => {
-            callSubscribeBroadcastWithSingleByteBufferParameter(byteBufferArg, ["partition0", "partition1"]);
-        });
-
-        const byteBufferArg1 = [-5, 125];
-        const byteBufferArg2 = [78, 0];
-
-        function callSubscribeBroadcastWithMultipleByteBufferParameters(
-            byteBufferArg1,
-            byteBufferArg2,
-            partitionsToUse
-        ) {
-            const spy = jasmine.createSpyObj("spy", [
-                "onPublication",
-                "onPublicationError",
-                "onSubscribed",
-                "onSubscribedError",
-                "onFiredError",
-                "onUnsubscribed",
-                "onUnsubscribedError"
-            ]);
-            let subscriptionId;
-            const subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({
-                minIntervalMs: 50,
-                validityMs: 60000
-            });
-
-            runs(() => {
-                log("callSubscribeBroadcastWithMultipleByteBufferParameters");
-                testInterfaceProxy.broadcastWithMultipleByteBufferParameters
-                    .subscribe({
-                        subscriptionQos: subscriptionQosOnChange,
-                        partitions: partitionsToUse,
-                        onReceive: spy.onPublication,
-                        onError: spy.onPublicationError,
-                        onSubscribed: spy.onSubscribed
-                    })
-                    .catch(spy.onSubscribedError);
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onSubscribed.callCount > 0 || spy.onSubscribedError.callCount > 0;
-                },
-                "callSubscribeBroadcastWithMultipleByteBufferParameters",
-                5000
-            );
-
-            runs(() => {
-                if (
-                    spy.onSubscribedError.callCount > 0 &&
-                    spy.onSubscribedError.calls[0] &&
-                    spy.onSubscribedError.calls[0].args[0]
-                ) {
-                    log(spy.onSubscribedError.calls[0].args[0]);
-                }
-                expect(spy.onSubscribed.callCount).toEqual(1);
-                expect(spy.onSubscribedError.callCount).toEqual(0);
-                subscriptionId = spy.onSubscribed.calls[0].args[0];
-                log(`Subscription was successful with subscriptionId = ${subscriptionId}`);
-
-                // execute fire method here
-                testInterfaceProxy
-                    .methodToFireBroadcastWithMultipleByteBufferParameters({
-                        byteBufferIn1: byteBufferArg1,
-                        byteBufferIn2: byteBufferArg2,
-                        partitions: partitionsToUse
-                    })
-                    .catch(spy.onFiredError);
-            });
-
-            waitsFor(
-                () => {
-                    return (
-                        spy.onPublication.callCount > 0 ||
-                        spy.onPublicationError.callCount > 0 ||
-                        spy.onFiredError.callCount > 0
-                    );
-                },
-                "callSubscribeBroadcastWithMultipleByteBufferParameters methodToFireBroadcastWithMultipleByteBufferParameters and Publication",
-                5000
-            );
-
-            runs(() => {
-                if (
-                    spy.onPublicationError.callCount > 0 &&
-                    spy.onPublicationError.calls[0] &&
-                    spy.onPublicationError.calls[0].args[0]
-                ) {
-                    log(spy.onPublicationError.calls[0].args[0]);
-                }
-                if (spy.onFiredError.callCount > 0 && spy.onFiredError.calls[0] && spy.onFiredError.calls[0].args[0]) {
-                    log(spy.onFiredError.calls[0].args[0]);
-                }
-                expect(spy.onPublication.callCount).toEqual(1);
-                expect(spy.onPublicationError.callCount).toEqual(0);
-                expect(spy.onFiredError.callCount).toEqual(0);
-                const retObj = spy.onPublication.calls[0].args[0];
-                expect(retObj).toBeDefined();
-                expect(retObj.byteBufferOut1).toBeDefined();
-                expect(retObj.byteBufferOut2).toBeDefined();
-                expect(IltUtil.cmpByteBuffers(retObj.byteBufferOut1, byteBufferArg1)).toBeTruthy();
-                expect(IltUtil.cmpByteBuffers(retObj.byteBufferOut2, byteBufferArg2)).toBeTruthy();
-                log(`Successful publication of retObj: ${JSON.stringify(retObj)}`);
-
-                // unsubscribe again
-                testInterfaceProxy.broadcastWithMultipleByteBufferParameters
-                    .unsubscribe({
-                        subscriptionId
-                    })
-                    .then(spy.onUnsubscribed)
-                    .catch(spy.onUnsubscribedError);
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onUnsubscribed.callCount > 0 || spy.onUnsubscribedError.callCount > 0;
-                },
-                "callSubscribeBroadcastWithMultipleByteBufferParameters Unsubscribe",
-                5000
-            );
-
-            runs(() => {
-                if (
-                    spy.onUnsubscribedError.callCount > 0 &&
-                    spy.onUnsubscribedError.calls[0] &&
-                    spy.onUnsubscribedError.calls[0].args[0]
-                ) {
-                    log(spy.onUnsubscribedError.calls[0].args[0]);
-                }
-                expect(spy.onUnsubscribed.callCount).toEqual(1);
-                expect(spy.onUnsubscribedError.callCount).toEqual(0);
-                log("Successfully unsubscribed from broadcast");
-            });
-        }
-
-        it("callSubscribeBroadcastWithMultipleByteBufferParameters_NoPartitions", () => {
-            callSubscribeBroadcastWithMultipleByteBufferParameters(byteBufferArg1, byteBufferArg2, []);
-        });
-
-        it("callSubscribeBroadcastWithMultipleByteBufferParameters_SimplePartitions", () => {
-            callSubscribeBroadcastWithMultipleByteBufferParameters(byteBufferArg1, byteBufferArg2, [
+        it("callSubscribeBroadcastWithSingleByteBufferParameter_SimplePartitions", async () => {
+            return await callSubscribeBroadcastWithSingleByteBufferParameter(byteBufferArg, [
                 "partition0",
                 "partition1"
             ]);
         });
 
-        function callSubscribeBroadcastWithSingleEnumerationParameter(partitionsToUse) {
-            const spy = jasmine.createSpyObj("spy", [
-                "onFulfilled",
-                "onError",
-                "onPublication",
-                "onPublicationError",
-                "onSubscribed"
-            ]);
-            let subscriptionId;
+        const byteBufferArg1 = [-5, 125];
+        const byteBufferArg2 = [78, 0];
+
+        async function callSubscribeBroadcastWithMultipleByteBufferParameters(
+            byteBufferArg1,
+            byteBufferArg2,
+            partitionsToUse
+        ) {
             const subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({
                 minIntervalMs: 50,
                 validityMs: 60000
             });
-            spy.onFulfilled.reset();
-            spy.onError.reset();
-            spy.onPublication.reset();
-            spy.onPublicationError.reset();
-            spy.onSubscribed.reset();
 
-            runs(() => {
-                log("callSubscribeBroadcastWithSingleEnumerationParameter");
-                testInterfaceProxy.broadcastWithSingleEnumerationParameter
-                    .subscribe({
-                        subscriptionQos: subscriptionQosOnChange,
-                        partitions: partitionsToUse,
-                        onReceive: spy.onPublication,
-                        onError: spy.onPublicationError,
-                        onSubscribed: spy.onSubscribed
-                    })
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
+            const onSubscribedDeferred = IltUtil.createDeferred();
+            const onReceiveDeferred = IltUtil.createDeferred();
+
+            log("callSubscribeBroadcastWithMultipleByteBufferParameters");
+            const subscriptionId = await testInterfaceProxy.broadcastWithMultipleByteBufferParameters.subscribe({
+                subscriptionQos: subscriptionQosOnChange,
+                partitions: partitionsToUse,
+                onReceive: retObj => {
+                    expect(retObj).toBeDefined();
+                    expect(retObj.byteBufferOut1).toBeDefined();
+                    expect(retObj.byteBufferOut2).toBeDefined();
+                    expect(IltUtil.cmpByteBuffers(retObj.byteBufferOut1, byteBufferArg1)).toBeTruthy();
+                    expect(IltUtil.cmpByteBuffers(retObj.byteBufferOut2, byteBufferArg2)).toBeTruthy();
+                    log(`Successful publication of retObj: ${JSON.stringify(retObj)}`);
+                    onReceiveDeferred.resolve();
+                },
+                onError: fail,
+                onSubscribed: onSubscribedDeferred.resolve
             });
 
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callSubscribeBroadcastWithSingleEnumerationParameter",
-                5000
-            );
+            const id = await onSubscribedDeferred.promise;
+            expect(id).toEqual(subscriptionId);
 
-            runs(() => {
-                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                    log(spy.onError.calls[0].args[0]);
-                }
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-                subscriptionId = spy.onFulfilled.calls[0].args[0];
-                log(`subscriptionId = ${subscriptionId}`);
+            log(`Subscription was successful with subscriptionId = ${subscriptionId}`);
+
+            // execute fire method here
+            await testInterfaceProxy.methodToFireBroadcastWithMultipleByteBufferParameters({
+                byteBufferIn1: byteBufferArg1,
+                byteBufferIn2: byteBufferArg2,
+                partitions: partitionsToUse
             });
 
-            waitsFor(
-                () => {
-                    return spy.onSubscribed.callCount > 0;
-                },
-                "callSubscribeBroadcastWithSingleEnumerationParameter onSubscribed",
-                5000
-            );
+            await onReceiveDeferred.promise;
 
-            runs(() => {
-                expect(spy.onSubscribed.callCount).toEqual(1);
-                expect(spy.onSubscribed.calls[0].args[0]).toEqual(subscriptionId);
-                // execute fire method here
-                spy.onFulfilled.reset();
-                spy.onError.reset();
-                testInterfaceProxy
-                    .methodToFireBroadcastWithSingleEnumerationParameter({
-                        partitions: partitionsToUse
-                    })
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
+            // unsubscribe again
+            await testInterfaceProxy.broadcastWithMultipleByteBufferParameters.unsubscribe({
+                subscriptionId
             });
 
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callSubscribeBroadcastWithSingleEnumerationParameter methodToFireBroadcastWithSinglePrimitiveParameter",
-                5000
-            );
+            log("Successfully unsubscribed from broadcast");
+        }
 
-            runs(() => {
-                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                    log(spy.onError.calls[0].args[0]);
-                }
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-                // call to fire broadcast went ok
-                // now wait for the publication to happen
+        it("callSubscribeBroadcastWithMultipleByteBufferParameters_NoPartitions", async () => {
+            return await callSubscribeBroadcastWithMultipleByteBufferParameters(byteBufferArg1, byteBufferArg2, []);
+        });
+
+        it("callSubscribeBroadcastWithMultipleByteBufferParameters_SimplePartitions", async () => {
+            return await callSubscribeBroadcastWithMultipleByteBufferParameters(byteBufferArg1, byteBufferArg2, [
+                "partition0",
+                "partition1"
+            ]);
+        });
+
+        async function callSubscribeBroadcastWithSingleEnumerationParameter(partitionsToUse) {
+            const subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({
+                minIntervalMs: 50,
+                validityMs: 60000
             });
 
-            waitsFor(
-                () => {
-                    return spy.onPublication.callCount > 0 || spy.onPublicationError.callCount > 0;
+            const onSubscribedDeferred = IltUtil.createDeferred();
+            const onReceiveDeferred = IltUtil.createDeferred();
+
+            log("callSubscribeBroadcastWithSingleEnumerationParameter");
+            const subscriptionId = await testInterfaceProxy.broadcastWithSingleEnumerationParameter.subscribe({
+                subscriptionQos: subscriptionQosOnChange,
+                partitions: partitionsToUse,
+                onReceive: retObj => {
+                    expect(retObj).toBeDefined();
+                    expect(retObj.enumerationOut).toBeDefined();
+                    expect(retObj.enumerationOut).toEqual(
+                        ExtendedTypeCollectionEnumerationInTypeCollection.ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION
+                    );
+                    log(`publication retObj: ${JSON.stringify(retObj)}`);
+                    onReceiveDeferred.resolve();
                 },
-                "callSubscribeBroadcastWithSingleEnumerationParameter Publication",
-                5000
-            );
-
-            runs(() => {
-                expect(spy.onPublication.callCount).toEqual(1);
-                expect(spy.onPublicationError.callCount).toEqual(0);
-                const retObj = spy.onPublication.calls[0].args[0];
-                expect(retObj).toBeDefined();
-                expect(retObj.enumerationOut).toBeDefined();
-                expect(retObj.enumerationOut).toEqual(
-                    ExtendedTypeCollectionEnumerationInTypeCollection.ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION
-                );
-                log(`publication retObj: ${JSON.stringify(retObj)}`);
-
-                // unsubscribe again
-                spy.onFulfilled.reset();
-                spy.onError.reset();
-                testInterfaceProxy.broadcastWithSingleEnumerationParameter
-                    .unsubscribe({
-                        subscriptionId
-                    })
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
+                onError: fail,
+                onSubscribed: onSubscribedDeferred.resolve
             });
 
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callSubscribeBroadcastWithSingleEnumerationParameter unsubscribe",
-                5000
-            );
+            const id = await onSubscribedDeferred.promise;
+            expect(id).toEqual(subscriptionId);
+            log(`subscriptionId = ${subscriptionId}`);
 
-            runs(() => {
-                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                    log(spy.onError.calls[0].args[0]);
-                }
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
+            await testInterfaceProxy.methodToFireBroadcastWithSingleEnumerationParameter({
+                partitions: partitionsToUse
+            });
+
+            // call to fire broadcast went ok
+            // now wait for the publication to happen
+            await onReceiveDeferred.promise;
+
+            // unsubscribe again
+            await testInterfaceProxy.broadcastWithSingleEnumerationParameter.unsubscribe({
+                subscriptionId
             });
         }
 
-        it("callSubscribeBroadcastWithSingleEnumerationParameter_NoPartitions", () => {
-            callSubscribeBroadcastWithSingleEnumerationParameter([]);
+        it("callSubscribeBroadcastWithSingleEnumerationParameter_NoPartitions", async () => {
+            return await callSubscribeBroadcastWithSingleEnumerationParameter([]);
         });
 
-        it("callSubscribeBroadcastWithSingleEnumerationParameter_SimplePartitions", () => {
-            callSubscribeBroadcastWithSingleEnumerationParameter(["partition0", "partition1"]);
+        it("callSubscribeBroadcastWithSingleEnumerationParameter_SimplePartitions", async () => {
+            return await callSubscribeBroadcastWithSingleEnumerationParameter(["partition0", "partition1"]);
         });
 
-        function callSubscribeBroadcastWithMultipleEnumerationParameter(partitionsToUse) {
-            const spy = jasmine.createSpyObj("spy", [
-                "onFulfilled",
-                "onError",
-                "onPublication",
-                "onPublicationError",
-                "onSubscribed"
-            ]);
-            let subscriptionId;
+        async function callSubscribeBroadcastWithMultipleEnumerationParameter(partitionsToUse) {
             const subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({
                 minIntervalMs: 50,
                 validityMs: 60000
             });
-            spy.onFulfilled.reset();
-            spy.onError.reset();
-            spy.onPublication.reset();
-            spy.onPublicationError.reset();
-            spy.onSubscribed.reset();
 
-            runs(() => {
-                log("callSubscribeBroadcastWithMultipleEnumerationParameters");
-                testInterfaceProxy.broadcastWithMultipleEnumerationParameters
-                    .subscribe({
-                        subscriptionQos: subscriptionQosOnChange,
-                        partitions: partitionsToUse,
-                        onReceive: spy.onPublication,
-                        onError: spy.onPublicationError,
-                        onSubscribed: spy.onSubscribed
-                    })
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
+            const onSubscribedDeferred = IltUtil.createDeferred();
+            const onReceiveDeferred = IltUtil.createDeferred();
+
+            log("callSubscribeBroadcastWithMultipleEnumerationParameters");
+            const subscriptionId = await testInterfaceProxy.broadcastWithMultipleEnumerationParameters.subscribe({
+                subscriptionQos: subscriptionQosOnChange,
+                partitions: partitionsToUse,
+                onReceive: retObj => {
+                    expect(retObj).toBeDefined();
+                    expect(retObj.extendedEnumerationOut).toBeDefined();
+                    expect(retObj.extendedEnumerationOut).toEqual(
+                        ExtendedEnumerationWithPartlyDefinedValues.ENUM_2_VALUE_EXTENSION_FOR_ENUM_WITHOUT_DEFINED_VALUES
+                    );
+                    expect(retObj.enumerationOut).toBeDefined();
+                    expect(retObj.enumerationOut).toEqual(Enumeration.ENUM_0_VALUE_1);
+                    onReceiveDeferred.resolve();
+                },
+                onError: fail,
+                onSubscribed: onSubscribedDeferred.resolve
             });
 
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callSubscribeBroadcastWithMultipleEnumerationParameters",
-                5000
-            );
+            const id = await onSubscribedDeferred.promise;
+            expect(id).toEqual(subscriptionId);
+            log(`subscriptionId = ${subscriptionId}`);
 
-            runs(() => {
-                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                    log(spy.onError.calls[0].args[0]);
-                }
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-                subscriptionId = spy.onFulfilled.calls[0].args[0];
-                log(`subscriptionId = ${subscriptionId}`);
-                setTimeout(() => {
-                    sleepDone = true;
-                }, 1000);
+            testInterfaceProxy.methodToFireBroadcastWithMultipleEnumerationParameters({
+                partitions: partitionsToUse
             });
+            // call to fire broadcast went ok
+            // now wait for the publication to happen
+            await onReceiveDeferred.promise;
 
-            waitsFor(
-                () => {
-                    return spy.onSubscribed.callCount > 0;
-                },
-                "callSubscribeBroadcastWithMultipleEnumerationParameters onSubscribed",
-                5000
-            );
-
-            runs(() => {
-                expect(spy.onSubscribed.callCount).toEqual(1);
-                expect(spy.onSubscribed.calls[0].args[0]).toEqual(subscriptionId);
-                // execute fire method here
-                spy.onFulfilled.reset();
-                spy.onError.reset();
-                testInterfaceProxy
-                    .methodToFireBroadcastWithMultipleEnumerationParameters({
-                        partitions: partitionsToUse
-                    })
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callSubscribeBroadcastWithMultipleEnumerationParameters methodToFireBroadcastWithSinglePrimitiveParameter",
-                5000
-            );
-
-            runs(() => {
-                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                    log(spy.onError.calls[0].args[0]);
-                }
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-                // call to fire broadcast went ok
-                // now wait for the publication to happen
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onPublication.callCount > 0 || spy.onPublicationError.callCount > 0;
-                },
-                "callSubscribeBroadcastWithMultipleEnumerationParameters Publication",
-                5000
-            );
-
-            runs(() => {
-                expect(spy.onPublication.callCount).toEqual(1);
-                expect(spy.onPublicationError.callCount).toEqual(0);
-                const retObj = spy.onPublication.calls[0].args[0];
-                expect(retObj).toBeDefined();
-                expect(retObj.extendedEnumerationOut).toBeDefined();
-                expect(retObj.extendedEnumerationOut).toEqual(
-                    ExtendedEnumerationWithPartlyDefinedValues.ENUM_2_VALUE_EXTENSION_FOR_ENUM_WITHOUT_DEFINED_VALUES
-                );
-                expect(retObj.enumerationOut).toBeDefined();
-                expect(retObj.enumerationOut).toEqual(Enumeration.ENUM_0_VALUE_1);
-
-                // unsubscribe again
-                spy.onFulfilled.reset();
-                spy.onError.reset();
-                testInterfaceProxy.broadcastWithMultipleEnumerationParameters
-                    .unsubscribe({
-                        subscriptionId
-                    })
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callSubscribeBroadcastWithMultipleEnumerationParameters unsubscribe",
-                5000
-            );
-
-            runs(() => {
-                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                    log(spy.onError.calls[0].args[0]);
-                }
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
+            // unsubscribe again
+            await testInterfaceProxy.broadcastWithMultipleEnumerationParameters.unsubscribe({
+                subscriptionId
             });
         }
 
-        it("callSubscribeBroadcastWithMultipleEnumerationParameter_NoPartitions", () => {
-            callSubscribeBroadcastWithMultipleEnumerationParameter([]);
+        it("callSubscribeBroadcastWithMultipleEnumerationParameter_NoPartitions", async () => {
+            return await callSubscribeBroadcastWithMultipleEnumerationParameter([]);
         });
 
-        it("callSubscribeBroadcastWithMultipleEnumerationParameter_SimplePartitions", () => {
-            callSubscribeBroadcastWithMultipleEnumerationParameter(["partition0", "partition1"]);
+        it("callSubscribeBroadcastWithMultipleEnumerationParameter_SimplePartitions", async () => {
+            return await callSubscribeBroadcastWithMultipleEnumerationParameter(["partition0", "partition1"]);
         });
 
-        function callSubscribeBroadcastWithSingleStructParameter(partitionsToUse) {
-            const spy = jasmine.createSpyObj("spy", [
-                "onFulfilled",
-                "onError",
-                "onPublication",
-                "onPublicationError",
-                "onSubscribed"
-            ]);
-            let subscriptionId;
+        async function callSubscribeBroadcastWithSingleStructParameter(partitionsToUse) {
             const subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({
                 minIntervalMs: 50,
                 validityMs: 60000
             });
-            spy.onFulfilled.reset();
-            spy.onError.reset();
-            spy.onPublication.reset();
-            spy.onPublicationError.reset();
-            spy.onSubscribed.reset();
 
-            runs(() => {
-                log("callSubscribeBroadcastWithSingleStructParameter");
-                testInterfaceProxy.broadcastWithSingleStructParameter
-                    .subscribe({
-                        subscriptionQos: subscriptionQosOnChange,
-                        partitions: partitionsToUse,
-                        onReceive: spy.onPublication,
-                        onError: spy.onPublicationError,
-                        onSubscribed: spy.onSubscribed
-                    })
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
+            const onSubscribedDeferred = IltUtil.createDeferred();
+            const onReceiveDeferred = IltUtil.createDeferred();
 
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
+            log("callSubscribeBroadcastWithSingleStructParameter");
+            const subscriptionId = await testInterfaceProxy.broadcastWithSingleStructParameter.subscribe({
+                subscriptionQos: subscriptionQosOnChange,
+                partitions: partitionsToUse,
+                onReceive: retObj => {
+                    expect(retObj).toBeDefined();
+                    expect(retObj.extendedStructOfPrimitivesOut).toBeDefined();
+                    expect(IltUtil.checkExtendedStructOfPrimitives(retObj.extendedStructOfPrimitivesOut)).toBeTruthy();
+                    log(`publication retObj: ${JSON.stringify(retObj)}`);
+                    onReceiveDeferred.resolve();
                 },
-                "callSubscribeBroadcastWithSingleStructParameter",
-                5000
-            );
-
-            runs(() => {
-                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                    log(spy.onError.calls[0].args[0]);
-                }
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-                subscriptionId = spy.onFulfilled.calls[0].args[0];
-                log(`subscriptionId = ${subscriptionId}`);
+                onError: fail,
+                onSubscribed: onSubscribedDeferred.resolve
             });
 
-            waitsFor(
-                () => {
-                    return spy.onSubscribed.callCount > 0;
-                },
-                "callSubscribeBroadcastWithSingleStructParameter onSubscribed",
-                5000
-            );
+            const id = await onSubscribedDeferred.promise;
+            expect(id).toEqual(subscriptionId);
+            log(`subscriptionId = ${subscriptionId}`);
 
-            runs(() => {
-                expect(spy.onSubscribed.callCount).toEqual(1);
-                expect(spy.onSubscribed.calls[0].args[0]).toEqual(subscriptionId);
+            await testInterfaceProxy.methodToFireBroadcastWithSingleStructParameter({
+                partitions: partitionsToUse
             });
+            // call to fire broadcast went ok
+            // now wait for the publication to happen
+            await onReceiveDeferred.promise;
 
-            runs(() => {
-                // execute fire method here
-                // note that it can take time, until the broadcast is registered
-                // best if we would wait here for some time, and then fire the broadcast
-                spy.onFulfilled.reset();
-                spy.onError.reset();
-                testInterfaceProxy
-                    .methodToFireBroadcastWithSingleStructParameter({
-                        partitions: partitionsToUse
-                    })
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callSubscribeBroadcastWithSingleStructParameter methodToFireBroadcastWithSinglePrimitiveParameter",
-                5000
-            );
-
-            runs(() => {
-                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                    log(spy.onError.calls[0].args[0]);
-                }
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-                // call to fire broadcast went ok
-                // now wait for the publication to happen
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onPublication.callCount > 0 || spy.onPublicationError.callCount > 0;
-                },
-                "callSubscribeBroadcastWithSingleStructParameter Publication",
-                5000
-            );
-
-            runs(() => {
-                expect(spy.onPublication.callCount).toEqual(1);
-                expect(spy.onPublicationError.callCount).toEqual(0);
-                const retObj = spy.onPublication.calls[0].args[0];
-                expect(retObj).toBeDefined();
-                expect(retObj.extendedStructOfPrimitivesOut).toBeDefined();
-                expect(IltUtil.checkExtendedStructOfPrimitives(retObj.extendedStructOfPrimitivesOut)).toBeTruthy();
-                log(`publication retObj: ${JSON.stringify(retObj)}`);
-
-                // unsubscribe again
-                spy.onFulfilled.reset();
-                spy.onError.reset();
-                testInterfaceProxy.broadcastWithSingleStructParameter
-                    .unsubscribe({
-                        subscriptionId
-                    })
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callSubscribeBroadcastWithSingleStructParameter unsubscribe",
-                5000
-            );
-
-            runs(() => {
-                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                    log(spy.onError.calls[0].args[0]);
-                }
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
+            // unsubscribe again
+            await testInterfaceProxy.broadcastWithSingleStructParameter.unsubscribe({
+                subscriptionId
             });
         }
 
-        it("callSubscribeBroadcastWithSingleStructParameter_NoPartitions", () => {
-            callSubscribeBroadcastWithSingleStructParameter([]);
+        it("callSubscribeBroadcastWithSingleStructParameter_NoPartitions", async () => {
+            return await callSubscribeBroadcastWithSingleStructParameter([]);
         });
 
-        it("callSubscribeBroadcastWithSingleStructParameter_SimplePartitions", () => {
-            callSubscribeBroadcastWithSingleStructParameter(["partition0", "partition1"]);
+        it("callSubscribeBroadcastWithSingleStructParameter_SimplePartitions", async () => {
+            return await callSubscribeBroadcastWithSingleStructParameter(["partition0", "partition1"]);
         });
 
-        function callSubscribeBroadcastWithMultipleStructParameter(partitionsToUse) {
-            const spy = jasmine.createSpyObj("spy", [
-                "onFulfilled",
-                "onError",
-                "onPublication",
-                "onPublicationError",
-                "onSubscribed"
-            ]);
-            let subscriptionId;
+        async function callSubscribeBroadcastWithMultipleStructParameter(partitionsToUse) {
             const subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({
                 minIntervalMs: 50,
                 validityMs: 60000
             });
-            spy.onFulfilled.reset();
-            spy.onError.reset();
-            spy.onPublication.reset();
-            spy.onPublicationError.reset();
 
-            runs(() => {
-                log("callSubscribeBroadcastWithMultipleStructParameters");
-                testInterfaceProxy.broadcastWithMultipleStructParameters
-                    .subscribe({
-                        subscriptionQos: subscriptionQosOnChange,
-                        partitions: partitionsToUse,
-                        onReceive: spy.onPublication,
-                        onError: spy.onPublicationError,
-                        onSubscribed: spy.onSubscribed
-                    })
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
+            const onSubscribedDeferred = IltUtil.createDeferred();
+            const onReceiveDeferred = IltUtil.createDeferred();
+
+            log("callSubscribeBroadcastWithMultipleStructParameters");
+            const subscriptionId = await testInterfaceProxy.broadcastWithMultipleStructParameters.subscribe({
+                subscriptionQos: subscriptionQosOnChange,
+                partitions: partitionsToUse,
+                onReceive: retObj => {
+                    log(`XXX: publication retObj: ${JSON.stringify(retObj)}`);
+                    expect(retObj).toBeDefined();
+                    expect(retObj.baseStructWithoutElementsOut).toBeDefined();
+                    expect(IltUtil.checkBaseStructWithoutElements(retObj.baseStructWithoutElementsOut)).toBeTruthy();
+                    expect(retObj.extendedExtendedBaseStructOut).toBeDefined();
+                    expect(IltUtil.checkExtendedExtendedBaseStruct(retObj.extendedExtendedBaseStructOut)).toBeTruthy();
+                    onReceiveDeferred.resolve();
+                },
+                onError: fail,
+                onSubscribed: onSubscribedDeferred.resolve
             });
 
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callSubscribeBroadcastWithMultipleStructParameters",
-                5000
-            );
+            const id = await onSubscribedDeferred.promise;
+            expect(id).toEqual(subscriptionId);
+            log(`subscriptionId = ${subscriptionId}`);
 
-            runs(() => {
-                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                    log(spy.onError.calls[0].args[0]);
-                }
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-                subscriptionId = spy.onFulfilled.calls[0].args[0];
-                log(`subscriptionId = ${subscriptionId}`);
+            await testInterfaceProxy.methodToFireBroadcastWithMultipleStructParameters({
+                partitions: partitionsToUse
             });
 
-            waitsFor(
-                () => {
-                    return spy.onSubscribed.callCount > 0;
-                },
-                "callSubscribeBroadcastWithMultipleStructParameters onSubscribed",
-                5000
-            );
+            // call to fire broadcast went ok
+            // now wait for the publication to happen
+            await onReceiveDeferred.promise;
 
-            runs(() => {
-                expect(spy.onSubscribed.callCount).toEqual(1);
-                expect(spy.onSubscribed.calls[0].args[0]).toEqual(subscriptionId);
-                // execute fire method here
-                spy.onFulfilled.reset();
-                spy.onError.reset();
-                testInterfaceProxy
-                    .methodToFireBroadcastWithMultipleStructParameters({
-                        partitions: partitionsToUse
-                    })
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callSubscribeBroadcastWithMultipleStructParameters methodToFireBroadcastWithMultipleStructParameters",
-                5000
-            );
-
-            runs(() => {
-                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                    log(spy.onError.calls[0].args[0]);
-                }
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-                // call to fire broadcast went ok
-                // now wait for the publication to happen
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onPublication.callCount > 0 || spy.onPublicationError.callCount > 0;
-                },
-                "callSubscribeBroadcastWithMultipleStructParameters Publication",
-                5000
-            );
-
-            runs(() => {
-                expect(spy.onPublication.callCount).toEqual(1);
-                expect(spy.onPublicationError.callCount).toEqual(0);
-                const retObj = spy.onPublication.calls[0].args[0];
-                log(`XXX: publication retObj: ${JSON.stringify(retObj)}`);
-                expect(retObj).toBeDefined();
-                expect(retObj.baseStructWithoutElementsOut).toBeDefined();
-                expect(IltUtil.checkBaseStructWithoutElements(retObj.baseStructWithoutElementsOut)).toBeTruthy();
-                expect(retObj.extendedExtendedBaseStructOut).toBeDefined();
-                expect(IltUtil.checkExtendedExtendedBaseStruct(retObj.extendedExtendedBaseStructOut)).toBeTruthy();
-
-                // unsubscribe again
-                spy.onFulfilled.reset();
-                spy.onError.reset();
-                testInterfaceProxy.broadcastWithMultipleStructParameters
-                    .unsubscribe({
-                        subscriptionId
-                    })
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callSubscribeBroadcastWithMultipleStructParameters unsubscribe",
-                5000
-            );
-
-            runs(() => {
-                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                    log(spy.onError.calls[0].args[0]);
-                }
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
+            // unsubscribe again
+            await testInterfaceProxy.broadcastWithMultipleStructParameters.unsubscribe({
+                subscriptionId
             });
         }
 
-        it("callSubscribeBroadcastWithMultipleStructParameter_NoPartitions", () => {
-            callSubscribeBroadcastWithMultipleStructParameter([]);
+        it("callSubscribeBroadcastWithMultipleStructParameter_NoPartitions", async () => {
+            return await callSubscribeBroadcastWithMultipleStructParameter([]);
         });
 
-        it("callSubscribeBroadcastWithMultipleStructParameter_SimplePartitions", () => {
-            callSubscribeBroadcastWithMultipleStructParameter(["partition0", "partition1"]);
+        it("callSubscribeBroadcastWithMultipleStructParameter_SimplePartitions", async () => {
+            return await callSubscribeBroadcastWithMultipleStructParameter(["partition0", "partition1"]);
         });
 
-        it("doNotReceivePublicationsForOtherPartitions", () => {
-            const spy = jasmine.createSpyObj("spy", [
-                "onFulfilled",
-                "onError",
-                "onPublication",
-                "onPublicationError",
-                "onSubscribed"
-            ]);
-            let subscriptionId;
+        // different pattern compared to the rest of the tests
+        it("doNotReceivePublicationsForOtherPartitions", async () => {
             const subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({
                 minIntervalMs: 50,
                 validityMs: 60000
             });
+
+            const onSubscribedDeferred = IltUtil.createDeferred();
+            const onReceiveDeferred = IltUtil.createDeferred();
+            const onReceivedSpy = jasmine.createSpy("onReceived");
 
             const subscribeToPartitions = ["partition0", "partition1"];
             const broadcastPartition = ["otherPartition"];
 
-            runs(() => {
-                log("doNotReceivePublicationsForOtherPartitions");
-                testInterfaceProxy.broadcastWithSingleEnumerationParameter
-                    .subscribe({
-                        subscriptionQos: subscriptionQosOnChange,
-                        partitions: subscribeToPartitions,
-                        onReceive: spy.onPublication,
-                        onError: spy.onPublicationError,
-                        onSubscribed: spy.onSubscribed
-                    })
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
+            log("doNotReceivePublicationsForOtherPartitions");
+            const subscriptionId = await testInterfaceProxy.broadcastWithSingleEnumerationParameter.subscribe({
+                subscriptionQos: subscriptionQosOnChange,
+                partitions: subscribeToPartitions,
+                onReceive: retObj => {
+                    onReceivedSpy(retObj);
+                    onReceiveDeferred.resolve();
                 },
-                "doNotReceivePublicationsForOtherPartitions waitForSubscribe",
-                5000
-            );
-
-            runs(() => {
-                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                    log(spy.onError.calls[0].args[0]);
-                }
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-                subscriptionId = spy.onFulfilled.calls[0].args[0];
-                log(`subscriptionId = ${subscriptionId}`);
+                onError: fail,
+                onSubscribed: onSubscribedDeferred.resolve
             });
 
-            waitsFor(
-                () => {
-                    return spy.onSubscribed.callCount > 0;
-                },
-                "doNotReceivePublicationsForOtherPartitions onSubscribed",
-                5000
-            );
+            const id = await onSubscribedDeferred.promise;
+            expect(id).toEqual(subscriptionId);
+            log(`subscriptionId = ${subscriptionId}`);
 
-            runs(() => {
-                spy.onFulfilled.reset();
-                spy.onError.reset();
-                spy.onPublication.reset();
-                spy.onPublicationError.reset();
-                testInterfaceProxy
-                    .methodToFireBroadcastWithSingleEnumerationParameter({
-                        partitions: broadcastPartition
-                    })
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
+            await testInterfaceProxy.methodToFireBroadcastWithSingleEnumerationParameter({
+                partitions: broadcastPartition
             });
 
-            waitsFor(
-                () => {
-                    return (
-                        spy.onFulfilled.callCount > 0 ||
-                        spy.onError.callCount > 0 ||
-                        spy.onPublication.callCount > 0 ||
-                        spy.onPublicationError.callCount > 0
-                    );
-                },
-                "doNotReceivePublicationsForOtherPartitions receiveNoPublication",
-                2000
-            );
+            // The partitions do not match. Expect no broadcast
+            expect(onReceivedSpy).not.toHaveBeenCalled();
 
-            runs(() => {
-                // The partitions do not match. Expect no broadcast
-                expect(spy.onPublication.callCount).toEqual(0);
-                expect(spy.onPublicationError.callCount).toEqual(0);
+            await testInterfaceProxy.methodToFireBroadcastWithSingleEnumerationParameter({
+                partitions: subscribeToPartitions
             });
 
-            runs(() => {
-                spy.onFulfilled.reset();
-                spy.onError.reset();
-                spy.onPublication.reset();
-                spy.onPublicationError.reset();
-                // Make sure there is no other reason that we did not receive any broadcast
-                testInterfaceProxy
-                    .methodToFireBroadcastWithSingleEnumerationParameter({
-                        partitions: subscribeToPartitions
-                    })
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onPublication.callCount > 0 || spy.onPublicationError.callCount;
-                },
-                "doNotReceivePublicationsForOtherPartitions receivePublication",
-                2000
-            );
-
-            waitsFor(
-                () => {
-                    // Wait until testInterfaceProxy.methodToFireBroadcastWithSingleEnumerationParameter finished
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "doNotReceivePublicationsForOtherPartitions fireBroadcastFinished",
-                5000
-            );
-
-            runs(() => {
-                expect(spy.onPublication.callCount).toEqual(1);
-                expect(spy.onPublicationError.callCount).toEqual(0);
-            });
-
-            runs(() => {
-                // unsubscribe
-                spy.onFulfilled.reset();
-                spy.onError.reset();
-                testInterfaceProxy.broadcastWithMultipleStructParameters
-                    .unsubscribe({
-                        subscriptionId
-                    })
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "doNotReceivePublicationsForOtherPartitions unsubscribe",
-                5000
-            );
-
-            runs(() => {
-                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                    log(spy.onError.calls[0].args[0]);
-                }
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
+            await onReceiveDeferred.promise;
+            await testInterfaceProxy.broadcastWithMultipleStructParameters.unsubscribe({
+                subscriptionId
             });
         });
 
-        it("callSubscribeBroadcastWithFiltering", () => {
-            const spy = jasmine.createSpyObj("spy", [
-                "onFulfilled",
-                "onError",
-                "onPublication",
-                "onPublicationError",
-                "onSubscribed"
-            ]);
-            let subscriptionId;
+        it("callSubscribeBroadcastWithFiltering", async () => {
             const subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({
                 minIntervalMs: 50,
                 validityMs: 60000
             });
-            spy.onFulfilled.reset();
-            spy.onError.reset();
-            spy.onPublication.reset();
-            spy.onPublicationError.reset();
-            spy.onSubscribed.reset();
 
-            runs(() => {
-                log("callSubscribeBroadcastWithFiltering");
-                const filterParameters = testInterfaceProxy.broadcastWithFiltering.createFilterParameters();
-                const stringOfInterest = "fireBroadcast";
-                filterParameters.setStringOfInterest(stringOfInterest);
-                //filterParameters.setStringArrayOfInterest(JSON.stringify(IltUtil.createStringArray()));
-                //filterParameters.setEnumerationOfInterest(JSON.stringify(ExtendedTypeCollectionEnumerationInTypeCollection.ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION));
-                //filterParameters.setStructWithStringArrayOfInterest(JSON.stringify(IltUtil.createStructWithStringArray()));
-                //filterParameters.setStructWithStringArrayArrayOfInterest(JSON.stringify(IltUtil.createStructWithStringArrayArray()));
-                filterParameters.setStringArrayOfInterest('["Hello","World"]');
-                filterParameters.setEnumerationOfInterest('"ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION"');
-                filterParameters.setStructWithStringArrayOfInterest(
-                    '{"_typeName":"joynr.interlanguagetest.namedTypeCollection1.StructWithStringArray","stringArrayElement":["Hello","World"]}'
-                );
-                filterParameters.setStructWithStringArrayArrayOfInterest(
-                    '[{"_typeName":"joynr.interlanguagetest.namedTypeCollection1.StructWithStringArray","stringArrayElement":["Hello","World"]},{"_typeName":"joynr.interlanguagetest.namedTypeCollection1.StructWithStringArray","stringArrayElement":["Hello","World"]}]'
-                );
+            const onSubscribedDeferred = IltUtil.createDeferred();
+            const onReceiveDeferred = IltUtil.createDeferred();
 
-                testInterfaceProxy.broadcastWithFiltering
-                    .subscribe({
-                        subscriptionQos: subscriptionQosOnChange,
-                        onReceive: spy.onPublication,
-                        onError: spy.onPublicationError,
-                        onSubscribed: spy.onSubscribed,
-                        filterParameters
-                    })
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callSubscribeBroadcastWithFiltering",
-                5000
+            log("callSubscribeBroadcastWithFiltering");
+            const filterParameters = testInterfaceProxy.broadcastWithFiltering.createFilterParameters();
+            const stringOfInterest = "fireBroadcast";
+            filterParameters.setStringOfInterest(stringOfInterest);
+            //filterParameters.setStringArrayOfInterest(JSON.stringify(IltUtil.createStringArray()));
+            //filterParameters.setEnumerationOfInterest(JSON.stringify(ExtendedTypeCollectionEnumerationInTypeCollection.ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION));
+            //filterParameters.setStructWithStringArrayOfInterest(JSON.stringify(IltUtil.createStructWithStringArray()));
+            //filterParameters.setStructWithStringArrayArrayOfInterest(JSON.stringify(IltUtil.createStructWithStringArrayArray()));
+            filterParameters.setStringArrayOfInterest('["Hello","World"]');
+            filterParameters.setEnumerationOfInterest('"ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION"');
+            filterParameters.setStructWithStringArrayOfInterest(
+                '{"_typeName":"joynr.interlanguagetest.namedTypeCollection1.StructWithStringArray","stringArrayElement":["Hello","World"]}'
+            );
+            filterParameters.setStructWithStringArrayArrayOfInterest(
+                '[{"_typeName":"joynr.interlanguagetest.namedTypeCollection1.StructWithStringArray","stringArrayElement":["Hello","World"]},{"_typeName":"joynr.interlanguagetest.namedTypeCollection1.StructWithStringArray","stringArrayElement":["Hello","World"]}]'
             );
 
-            runs(() => {
-                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                    log(spy.onError.calls[0].args[0]);
-                }
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-                subscriptionId = spy.onFulfilled.calls[0].args[0];
-                log(`subscriptionId = ${subscriptionId}`);
+            const subscriptionId = await testInterfaceProxy.broadcastWithFiltering.subscribe({
+                subscriptionQos: subscriptionQosOnChange,
+                onReceive: retObj => {
+                    onReceiveDeferred.resolve(retObj);
+                },
+                onError: fail,
+                onSubscribed: onSubscribedDeferred.resolve,
+                filterParameters
             });
 
-            waitsFor(
-                () => {
-                    return spy.onSubscribed.callCount > 0;
-                },
-                "callSubscribeBroadcastWithFiltering onSubscribed",
-                5000
+            const id = await onSubscribedDeferred.promise;
+            expect(id).toEqual(subscriptionId);
+            log(`subscriptionId = ${subscriptionId}`);
+
+            // execute fire method here
+            const args = {
+                stringArg: "fireBroadcast"
+            };
+            await testInterfaceProxy.methodToFireBroadcastWithFiltering(args);
+
+            // call to fire broadcast went ok
+            // now wait for the publication to happen
+
+            const retObj = await onReceiveDeferred.promise;
+
+            log(`XXX: publication retObj: ${JSON.stringify(retObj)}`);
+            expect(retObj).toBeDefined();
+            expect(retObj.stringOut).toBeDefined();
+            expect(retObj.stringOut).toEqual("fireBroadcast");
+            expect(retObj.enumerationOut).toBeDefined();
+            expect(retObj.enumerationOut).toEqual(
+                ExtendedTypeCollectionEnumerationInTypeCollection.ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION
             );
+            expect(retObj.stringArrayOut).toBeDefined();
+            expect(IltUtil.checkStringArray(retObj.stringArrayOut)).toBeTruthy();
+            expect(retObj.structWithStringArrayOut).toBeDefined();
+            expect(IltUtil.checkStructWithStringArray(retObj.structWithStringArrayOut)).toBeTruthy();
+            expect(retObj.structWithStringArrayArrayOut).toBeDefined();
+            expect(IltUtil.checkStructWithStringArrayArray(retObj.structWithStringArrayArrayOut)).toBeTruthy();
 
-            runs(() => {
-                expect(spy.onSubscribed.callCount).toEqual(1);
-                expect(spy.onSubscribed.calls[0].args[0]).toEqual(subscriptionId);
-                // execute fire method here
-                spy.onFulfilled.reset();
-                spy.onError.reset();
-                const args = {
-                    stringArg: "fireBroadcast"
-                };
-                testInterfaceProxy
-                    .methodToFireBroadcastWithFiltering(args)
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callSubscribeBroadcastWithFiltering methodToFireBroadcastWithSinglePrimitiveParameter",
-                5000
-            );
-
-            runs(() => {
-                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                    log(spy.onError.calls[0].args[0]);
-                }
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
-                // call to fire broadcast went ok
-                // now wait for the publication to happen
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onPublication.callCount > 0 || spy.onPublicationError.callCount > 0;
-                },
-                "callSubscribeBroadcastWithFiltering Publication",
-                5000
-            );
-
-            runs(() => {
-                expect(spy.onPublication.callCount).toEqual(1);
-                expect(spy.onPublicationError.callCount).toEqual(0);
-                const retObj = spy.onPublication.calls[0].args[0];
-                log(`XXX: publication retObj: ${JSON.stringify(retObj)}`);
-                expect(retObj).toBeDefined();
-                expect(retObj.stringOut).toBeDefined();
-                expect(retObj.stringOut).toEqual("fireBroadcast");
-                expect(retObj.enumerationOut).toBeDefined();
-                expect(retObj.enumerationOut).toEqual(
-                    ExtendedTypeCollectionEnumerationInTypeCollection.ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION
-                );
-                expect(retObj.stringArrayOut).toBeDefined();
-                expect(IltUtil.checkStringArray(retObj.stringArrayOut)).toBeTruthy();
-                expect(retObj.structWithStringArrayOut).toBeDefined();
-                expect(IltUtil.checkStructWithStringArray(retObj.structWithStringArrayOut)).toBeTruthy();
-                expect(retObj.structWithStringArrayArrayOut).toBeDefined();
-                expect(IltUtil.checkStructWithStringArrayArray(retObj.structWithStringArrayArrayOut)).toBeTruthy();
-
-                // unsubscribe again
-                spy.onFulfilled.reset();
-                spy.onError.reset();
-                testInterfaceProxy.broadcastWithFiltering
-                    .unsubscribe({
-                        subscriptionId
-                    })
-                    .then(spy.onFulfilled)
-                    .catch(spy.onError);
-            });
-
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.callCount > 0 || spy.onError.callCount > 0;
-                },
-                "callSubscribeBroadcastWithFiltering unsubscribe",
-                5000
-            );
-
-            runs(() => {
-                if (spy.onError.callCount > 0 && spy.onError.calls[0] && spy.onError.calls[0].args[0]) {
-                    log(spy.onError.calls[0].args[0]);
-                }
-                expect(spy.onFulfilled.callCount).toEqual(1);
-                expect(spy.onError.callCount).toEqual(0);
+            // unsubscribe again
+            await testInterfaceProxy.broadcastWithFiltering.unsubscribe({
+                subscriptionId
             });
         });
 
-        it("has finished the tests", () => {
-            testFinished = true;
+        afterAll(async () => {
+            await joynr.shutdown();
         });
-
-        afterEach(() => {
-            if (testFinished === true) {
-                joynr.shutdown();
-            }
-        });
-
-        // fix this formatting
     });
 });
