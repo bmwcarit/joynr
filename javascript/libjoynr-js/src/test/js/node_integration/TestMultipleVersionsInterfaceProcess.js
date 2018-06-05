@@ -28,14 +28,9 @@ const provisioning = require("../../resources/joynr/provisioning/provisioning_cc
 const MultipleVersionsInterfaceProviderNameVersion = require("../../generated/joynr/tests/MultipleVersionsInterface2Provider");
 const MultipleVersionsInterfaceProviderPackageVersion1 = require("../../generated/joynr/tests/v1/MultipleVersionsInterfaceProvider");
 const MultipleVersionsInterfaceProviderPackageVersion2 = require("../../generated/joynr/tests/v2/MultipleVersionsInterfaceProvider");
+const providerImplementation = require("./MultipleVersionsInterfaceProviderImplementation");
 
 let loadedJoynr, providerDomain, multipleVersionsInterfaceProvider, MultipleVersionsInterfaceProvider;
-
-const providerImplementation = {
-    getTrue: () => {
-        return true;
-    }
-};
 
 function initializeTest(provisioningSuffix, providedDomain, versioning) {
     providerDomain = providedDomain;
@@ -45,7 +40,7 @@ function initializeTest(provisioningSuffix, providedDomain, versioning) {
         loadedJoynr = newJoynr;
         const providerQos = new joynr.types.ProviderQos({
             customParameters: [],
-            providerpriority: 5,
+            priority: 5,
             scope: joynr.types.ProviderScope.GLOBAL,
             supportsOnChangeSubscriptions: false
         });
