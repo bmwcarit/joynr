@@ -67,7 +67,7 @@ class CppInterfaceUtil extends InterfaceUtil {
 '''
 	«val returnType = attribute.typeName»
 	«val attributeName = attribute.joynrName»
-	void «IF className != null»«className»::«ENDIF»get«attributeName.toFirstUpper»(«returnType»& «attributeName», boost::optional<joynr::MessagingQos> qos«IF className==null» = boost::none«ENDIF»)
+	void «IF className !== null»«className»::«ENDIF»get«attributeName.toFirstUpper»(«returnType»& «attributeName», boost::optional<joynr::MessagingQos> qos«IF className===null» = boost::none«ENDIF»)
 '''
 
     def produceSyncGetterSignature(FAttribute attribute) {
@@ -97,11 +97,11 @@ class CppInterfaceUtil extends InterfaceUtil {
 '''
 	«val returnType = attribute.typeName»
 	«val attributeName = attribute.joynrName»
-	«val defaultArg = if(className == null) " = nullptr" else ""»
-	std::shared_ptr<joynr::Future<«returnType»> > «IF className != null»«className»::«ENDIF»get«attributeName.toFirstUpper»Async(
+	«val defaultArg = if(className === null) " = nullptr" else ""»
+	std::shared_ptr<joynr::Future<«returnType»> > «IF className !== null»«className»::«ENDIF»get«attributeName.toFirstUpper»Async(
 				std::function<void(const «returnType»& «attributeName»)> onSuccess«defaultArg»,
 				std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError«defaultArg»,
-				boost::optional<joynr::MessagingQos> qos«IF className==null» = boost::none«ENDIF»)
+				boost::optional<joynr::MessagingQos> qos«IF className===null» = boost::none«ENDIF»)
 				noexcept
 '''
 
@@ -133,7 +133,7 @@ class CppInterfaceUtil extends InterfaceUtil {
 '''
 	«val returnType = attribute.typeName»
 	«val attributeName = attribute.joynrName»
-	void «IF className != null»«className»::«ENDIF»set«attributeName.toFirstUpper»(const «returnType»& «attributeName», boost::optional<joynr::MessagingQos> qos«IF className==null» = boost::none«ENDIF»)
+	void «IF className !== null»«className»::«ENDIF»set«attributeName.toFirstUpper»(const «returnType»& «attributeName», boost::optional<joynr::MessagingQos> qos«IF className===null» = boost::none«ENDIF»)
 '''
 
 	def produceSyncSetterSignature(FAttribute attribute) {
@@ -162,12 +162,12 @@ class CppInterfaceUtil extends InterfaceUtil {
 '''
 	«val returnType = attribute.typeName»
 	«val attributeName = attribute.joynrName»
-	«val defaultArg = if(className == null) " = nullptr" else ""»
-	std::shared_ptr<joynr::Future<void> > «IF className != null»«className»::«ENDIF»set«attributeName.toFirstUpper»Async(
+	«val defaultArg = if(className === null) " = nullptr" else ""»
+	std::shared_ptr<joynr::Future<void> > «IF className !== null»«className»::«ENDIF»set«attributeName.toFirstUpper»Async(
 				«returnType» «attributeName»,
 				std::function<void(void)> onSuccess«defaultArg»,
 				std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError«defaultArg»,
-				boost::optional<joynr::MessagingQos> qos«IF className==null» = boost::none«ENDIF»)
+				boost::optional<joynr::MessagingQos> qos«IF className===null» = boost::none«ENDIF»)
 				noexcept
 '''
 
@@ -200,14 +200,14 @@ class CppInterfaceUtil extends InterfaceUtil {
 '''
 	«val outputTypedParamList = method.commaSeperatedTypedOutputParameterList»
 	«val inputTypedParamList = method.commaSeperatedTypedConstInputParameterList»
-	void «IF className != null»«className»::«ENDIF»«method.joynrName»(
+	void «IF className !== null»«className»::«ENDIF»«method.joynrName»(
 				«IF !method.outputParameters.empty»
 				«outputTypedParamList»,
 				«ENDIF»
 				«IF !method.inputParameters.empty»
 				«inputTypedParamList»,
 				«ENDIF»
-				boost::optional<joynr::MessagingQos> qos«IF className==null» = boost::none«ENDIF»
+				boost::optional<joynr::MessagingQos> qos«IF className===null» = boost::none«ENDIF»
 	)
 '''
 
@@ -239,7 +239,7 @@ class CppInterfaceUtil extends InterfaceUtil {
 
 	def getMethodErrorEnum(FInterface serviceInterface, FMethod method) {
     	val methodToErrorEnumName = serviceInterface.methodToErrorEnumName;
-    	if(method.errors != null) {
+    	if(method.errors !== null) {
     		val packagePath = getPackagePathWithJoynrPrefix(method.errors, "::");
     		return packagePath + "::" + methodToErrorEnumName.get(method) + "::" + nestedEnumName;
     	}
@@ -253,8 +253,8 @@ class CppInterfaceUtil extends InterfaceUtil {
 	«val outputParameters = method.commaSeparatedOutputParameterTypes»
 	«val outputTypedParamList = method.commaSeperatedTypedConstOutputParameterList»
 	«val returnValue = "std::shared_ptr<joynr::Future<" + outputParameters + ">>"»
-	«val defaultArg = if(className == null) " = nullptr" else ""»
-	«returnValue» «IF className != null»«className»::«ENDIF» «method.joynrName»Async(
+	«val defaultArg = if(className === null) " = nullptr" else ""»
+	«returnValue» «IF className !== null»«className»::«ENDIF» «method.joynrName»Async(
 				«IF !method.inputParameters.empty»
 					«method.commaSeperatedTypedConstInputParameterList»,
 				«ENDIF»
@@ -263,7 +263,7 @@ class CppInterfaceUtil extends InterfaceUtil {
 					std::function<void (const «getMethodErrorEnum(serviceInterface, method)»& errorEnum)> onApplicationError«defaultArg»,
 				«ENDIF»
 				std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError«defaultArg»,
-				boost::optional<joynr::MessagingQos> qos«IF className==null» = boost::none«ENDIF»
+				boost::optional<joynr::MessagingQos> qos«IF className===null» = boost::none«ENDIF»
 	) noexcept
 '''
 
@@ -312,11 +312,11 @@ class CppInterfaceUtil extends InterfaceUtil {
 	def produceFireAndForgetMethodSignature(FMethod method, String className)
 '''
 	«val inputTypedParamList = method.commaSeperatedTypedConstInputParameterList»
-	void «IF className != null»«className»::«ENDIF»«method.joynrName»(
+	void «IF className !== null»«className»::«ENDIF»«method.joynrName»(
 	«IF !method.inputParameters.empty»
 	«inputTypedParamList»,
 	«ENDIF»
-	boost::optional<joynr::MessagingQos> qos«IF className==null» = boost::none«ENDIF»)
+	boost::optional<joynr::MessagingQos> qos«IF className===null» = boost::none«ENDIF»)
 '''
 
 	def produceFireAndForgetMethodSignature(FMethod method) {

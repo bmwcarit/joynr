@@ -35,7 +35,7 @@ abstract class InterfaceTemplate {
 	protected var minorVersion = 0
 
 	def init() {
-		if (francaIntf.version != null) {
+		if (francaIntf.version !== null) {
 			majorVersion = francaIntf.version.major;
 			minorVersion = francaIntf.version.minor;
 		}

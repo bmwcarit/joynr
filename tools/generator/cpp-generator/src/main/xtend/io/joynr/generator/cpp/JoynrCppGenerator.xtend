@@ -163,10 +163,10 @@ class JoynrCppGenerator implements IJoynrGenerator{
 
 	def getOutputHeaderPath() {
 		var String result = null;
-		if (parameters != null) {
-			if (parameters.get(OUTPUT_HEADER_PATH) != null) {
+		if (parameters !== null) {
+			if (parameters.get(OUTPUT_HEADER_PATH) !== null) {
 				result = parameters.get(OUTPUT_HEADER_PATH);
-			} else if (parameters.get(InvocationArguments::OUTPUT_PATH) != null) {
+			} else if (parameters.get(InvocationArguments::OUTPUT_PATH) !== null) {
 				result = parameters.get(InvocationArguments::OUTPUT_PATH) + File::separator + "include"
 			}
 		}
@@ -175,7 +175,7 @@ class JoynrCppGenerator implements IJoynrGenerator{
 
 	def getHeaderFileSystemAccess(IFileSystemAccess fsa) {
 		var headerFSA = fsa;
-		if (outputHeaderPath != null) {
+		if (outputHeaderPath !== null) {
 			FileSystemAccessUtil::createFileSystemAccess(outputHeaderFileSystem, outputHeaderPath);
 			headerFSA = outputHeaderFileSystem;
 		}

@@ -35,7 +35,7 @@ public class MethodUtil {
 	private extension NamingUtil;
 
 	def Iterable<FArgument> getOutputParameters(FMethod method) {
-		if (method == null || method.outArgs.size() == 0){
+		if (method === null || method.outArgs.size() == 0){
 			return new HashSet<FArgument>
 		}
 		else{
@@ -45,7 +45,7 @@ public class MethodUtil {
 
 
 	def Iterable<FArgument> getInputParameters(FMethod method) {
-		if (method == null || method.inArgs.size() == 0){
+		if (method === null || method.inArgs.size() == 0){
 			return new HashSet<FArgument>
 		}
 		else{
@@ -67,13 +67,13 @@ public class MethodUtil {
 			if (method.errors !== null) {
 				datatype = getDatatype(method.errors);
 				method.errors.name = methodErrorEnumName
-				if (datatype != null) {
+				if (datatype !== null) {
 					typeList.add(datatype)
 				}
 			}
 			if (method.errorEnum !== null) {
 				datatype = getDatatype(method.errorEnum);
-				if (datatype != null) {
+				if (datatype !== null) {
 					typeList.add(datatype)
 				}
 			}
@@ -100,7 +100,7 @@ public class MethodUtil {
 	}
 
 	def boolean hasErrorEnum(FMethod method) {
-		return (method.errors != null) || (method.errorEnum != null);
+		return (method.errors !== null) || (method.errorEnum !== null);
 	}
 
 	def boolean hasEnumInputParameter(FMethod method) {

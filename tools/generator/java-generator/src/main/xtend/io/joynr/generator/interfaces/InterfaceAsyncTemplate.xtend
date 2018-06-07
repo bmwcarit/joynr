@@ -53,7 +53,7 @@ class InterfaceAsyncTemplate extends InterfaceTemplate {
 
 				if (method.hasErrorEnum) {
 					var errorEnumType = ""
-					if (method.errors != null) {
+					if (method.errors !== null) {
 						errorEnumType = packagePath + "." + serviceInterface.joynrName + "." +
 							methodToErrorEnumName.get(method)
 					} else {
@@ -190,7 +190,7 @@ public interface «asyncClassName» extends «interfaceName»«IF hasFireAndForg
 		«val callbackName = methodToCallbackName.get(method)»
 		«val outputParametersLength = method.outputParameters.length»
 		«IF method.hasErrorEnum»
-			«IF method.errors != null»
+			«IF method.errors !== null»
 				«val errorEnumType = packagePath + "." + interfaceName + "." + methodToErrorEnumName.get(method)»
 				public abstract class «callbackName» implements ICallback, ICallbackWithModeledError<«errorEnumType»> {
 			«ELSE»

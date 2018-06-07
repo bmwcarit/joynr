@@ -99,7 +99,7 @@ class NamingUtil {
 	}
 
 	def joynrName(FTypeRef typeRef) {
-		if (typeRef.derived != null) {
+		if (typeRef.derived !== null) {
 			typeRef.derived.joynrName
 		}
 		else {

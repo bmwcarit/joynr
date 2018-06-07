@@ -90,7 +90,7 @@ class JoynrCppGeneratorExtensions extends JoynrGeneratorExtensions {
 
 	// for classes and methods
 	def appendDoxygenSummaryAndWriteSeeAndDescription(FModelElement element, String prefix)'''
-		«IF element.comment != null»
+		«IF element.comment !== null»
 			«FOR comment : element.comment.elements»
 				«IF comment.type == FAnnotationType::DESCRIPTION»
 					«prefix» @brief «comment.comment.replaceAll("\\s+", " ").replaceAll("\n", "\n" + prefix)»
@@ -110,7 +110,7 @@ class JoynrCppGeneratorExtensions extends JoynrGeneratorExtensions {
 
 	// for parts
 	def appendDoxygenComment(FModelElement element, String prefix)'''
-		«IF element.comment != null»
+		«IF element.comment !== null»
 			«FOR comment : element.comment.elements»
 				«IF comment.type == FAnnotationType::DESCRIPTION»
 					«comment.comment.replaceAll("\\s+", " ").replaceAll("\n", "\n" + prefix)»
@@ -121,7 +121,7 @@ class JoynrCppGeneratorExtensions extends JoynrGeneratorExtensions {
 
 	// for parameters
 	def appendDoxygenParameter(FModelElement element, String prefix)'''
-		«IF element.comment != null»
+		«IF element.comment !== null»
 			«FOR comment : element.comment.elements»
 				«IF comment.type == FAnnotationType::DESCRIPTION»
 					«prefix» @param «element.joynrName» «comment.comment.replaceAll("\\s+", " ").replaceAll("\n", "\n" + prefix)»

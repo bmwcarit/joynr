@@ -176,7 +176,7 @@ class JSTypeUtil extends AbstractTypeUtil {
 					typedElement.type.jsdocTypeNameForList
 				else
 					typedElement.type.jsdocTypeName
-		if (result == null) {
+		if (result === null) {
 			throw new IllegalStateException ("Datatype for element " + typedElement.name + " could not be found");
 		}
 		return result;
@@ -203,7 +203,7 @@ class JSTypeUtil extends AbstractTypeUtil {
 	}
 
 	def String getJsdocTypeName(FTypeRef type) {
-		if (type.derived != null) {
+		if (type.derived !== null) {
 			type.derived.jsdocTypeName
 		} else {
 			type.predefined.typeName
@@ -211,7 +211,7 @@ class JSTypeUtil extends AbstractTypeUtil {
 	}
 
 	def String getJsdocTypeNameForList(FTypeRef type) {
-		if (type.derived != null) {
+		if (type.derived !== null) {
 			type.derived.jsdocTypeNameForList
 		} else {
 			type.predefined.jsdocTypeNameForList
@@ -263,7 +263,7 @@ class JSTypeUtil extends AbstractTypeUtil {
 	}
 
 	def appendJSDocSummaryAndWriteSeeAndDescription(FModelElement element, String prefix) '''
-		«IF element.comment != null»
+		«IF element.comment !== null»
 			«FOR comment : element.comment.elements»
 				«IF comment.type == FAnnotationType::DESCRIPTION»
 					«prefix»<br/><br/>«comment.comment.replaceAll("\n\\s*", "\n" + prefix)»
@@ -285,7 +285,7 @@ class JSTypeUtil extends AbstractTypeUtil {
 			«prefix»@param {Object} settings the arguments object for this function call
 			«FOR param: operation.inputParameters»
 				«prefix»@param {«param.jsdocTypeName»} settings.«param.joynrName» -
-				«IF param.comment!=null»
+				«IF param.comment!==null»
 					«prefix»«FOR comment: param.comment.elements SEPARATOR "<br/>"»«comment.comment.replaceAll("\n\\s*", "\n" + prefix)»«ENDFOR»
 				«ENDIF»
 			«ENDFOR»
@@ -302,7 +302,7 @@ class JSTypeUtil extends AbstractTypeUtil {
 		«prefix»@typedef {Object} «interfaceName»#«operationName.toFirstUpper»Returned
 		«FOR param : operation.outputParameters»
 			«prefix»@property {«param.jsdocTypeName»} «param.joynrName»
-			«IF param.comment!=null»
+			«IF param.comment!==null»
 			«prefix»«FOR comment: param.comment.elements SEPARATOR "<br/>"»«comment.comment.replaceAll("\n\\s*", "\n" + prefix)»«ENDFOR»
 			«ENDIF»
 		«ENDFOR»
