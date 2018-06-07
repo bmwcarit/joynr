@@ -217,6 +217,11 @@ function SubscriptionManager(dispatcher) {
     }
 
     function cleanupSubscription(subscriptionId) {
+        if (publicationCheckTimerIds[subscriptionId] !== undefined) {
+            LongTimer.clearTimeout(publicationCheckTimerIds[subscriptionId]);
+            delete publicationCheckTimerIds[subscriptionId];
+        }
+
         if (subscriptionInfos[subscriptionId] !== undefined) {
             const subscriptionInfo = subscriptionInfos[subscriptionId];
             if (subscriptionInfo.multicastId !== undefined) {
@@ -655,11 +660,6 @@ function SubscriptionManager(dispatcher) {
                 messagingQos: settings.messagingQos,
                 subscriptionStop
             });
-        }
-
-        if (publicationCheckTimerIds[settings.subscriptionId] !== undefined) {
-            LongTimer.clearTimeout(publicationCheckTimerIds[settings.subscriptionId]);
-            delete publicationCheckTimerIds[settings.subscriptionId];
         }
 
         cleanupSubscription(settings.subscriptionId);
