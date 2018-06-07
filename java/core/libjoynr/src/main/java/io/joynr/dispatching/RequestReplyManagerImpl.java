@@ -46,7 +46,7 @@ import io.joynr.dispatching.rpc.ReplyCallerDirectory;
 import io.joynr.dispatching.rpc.RequestInterpreter;
 import io.joynr.dispatching.rpc.SynchronizedReplyCaller;
 import io.joynr.exceptions.JoynrCommunicationException;
-import io.joynr.exceptions.JoynrMessageNotSentException;
+import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrRequestInterruptedException;
 import io.joynr.exceptions.JoynrShutdownException;
 import io.joynr.messaging.MessagingQos;
@@ -159,7 +159,7 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
             while (running && responsePayloadContainer.isEmpty()
                     && entryTime + messagingQos.getRoundTripTtl_ms() > System.currentTimeMillis()) {
                 try {
-                    responsePayloadContainer.wait(messagingQos.getRoundTripTtl_ms());
+                    responsePayloadContainer.wait();
                 } catch (InterruptedException e) {
                     if (running) {
                         throw new JoynrRequestInterruptedException("Request: " + request.getRequestReplyId()
@@ -167,21 +167,20 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
                     }
                     throw new JoynrShutdownException("Request: " + request.getRequestReplyId()
                             + " interrupted by shutdown");
-
                 }
             }
         }
         outstandingRequestThreads.remove(Thread.currentThread());
 
         if (responsePayloadContainer.isEmpty()) {
-            throw new JoynrCommunicationException("Request: " + request.getRequestReplyId()
-                    + " failed. The response didn't arrive in time");
+            throw new JoynrIllegalStateException("Request: " + request.getRequestReplyId()
+                    + " failed unexpectedly without response.");
         }
 
         Object response = responsePayloadContainer.get(0);
         if (response instanceof Throwable) {
             Throwable error = (Throwable) response;
-            throw new JoynrMessageNotSentException("Request: " + request.getRequestReplyId() + " failed: "
+            throw new JoynrCommunicationException("Request: " + request.getRequestReplyId() + " failed: "
                     + error.getMessage(), error);
         }
 
