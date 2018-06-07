@@ -244,4 +244,63 @@ describe("libjoynr-js.joynr.types.ArbitrationStrategyCollection", () => {
             }
         }
     });
+
+    it("Strategy 'Keyword' only matches against CustomParameters with name 'keyword' and the right keyword", () => {
+        const rightKeyword = "rightKeyword";
+        const rightName = "keyword";
+        const wrongName = "wrongName";
+        const wrongKeyword = "wrongKeyword";
+
+        // this object isn't a practical input. For the tests unnecessary keys got removed
+        const discoveryEntryList = [
+            {
+                domain: "correct",
+                qos: {
+                    customParameters: [
+                        new CustomParameter({
+                            name: rightName,
+                            value: rightKeyword
+                        })
+                    ]
+                }
+            },
+            {
+                domain: "wrongName",
+                qos: {
+                    customParameters: [
+                        new CustomParameter({
+                            name: wrongName,
+                            value: wrongKeyword
+                        })
+                    ]
+                }
+            },
+            {
+                domain: "wrongKeyword",
+                qos: {
+                    customParameters: [
+                        new CustomParameter({
+                            name: rightName,
+                            value: wrongKeyword
+                        })
+                    ]
+                }
+            },
+            {
+                domain: "allWrong",
+                qos: {
+                    customParameters: [
+                        new CustomParameter({
+                            name: wrongName,
+                            value: wrongKeyword
+                        })
+                    ]
+                }
+            }
+        ];
+
+        const keywordCapInfoList = ArbitrationStrategyCollection.Keyword(rightKeyword, discoveryEntryList);
+        expect(keywordCapInfoList.length).toBe(1);
+        expect(keywordCapInfoList[0].domain).toEqual("correct");
+    });
 });

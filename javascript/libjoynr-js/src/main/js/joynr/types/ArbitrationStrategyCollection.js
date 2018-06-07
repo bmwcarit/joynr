@@ -96,7 +96,7 @@ ArbitrationStrategyCollection.Keyword = function(keyword, capabilities) {
                 for (const qosId in cap.qos.customParameters) {
                     if (cap.qos.customParameters.hasOwnProperty(qosId)) {
                         const qosParam = cap.qos.customParameters[qosId];
-                        if (qosParam && qosParam.value && qosParam.value === keyword) {
+                        if (qosParam && qosParam.value && qosParam.name === "keyword" && qosParam.value === keyword) {
                             keywordCaps.push(cap);
                         }
                     }
