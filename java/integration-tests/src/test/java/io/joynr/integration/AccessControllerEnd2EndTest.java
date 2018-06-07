@@ -39,7 +39,7 @@ import com.google.inject.util.Modules;
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
-import io.joynr.exceptions.JoynrMessageNotSentException;
+import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.integration.util.DummyJoynrApplication;
 import io.joynr.messaging.MessagingPropertyKeys;
@@ -81,6 +81,7 @@ public class AccessControllerEnd2EndTest {
     private static final long MESSAGING_TTL = 5000;
 
     private JoynrRuntime runtime;
+    private TestProviderImpl testProvider;
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
@@ -97,10 +98,15 @@ public class AccessControllerEnd2EndTest {
     @Before
     public void setUp() {
         runtime = createRuntime();
+        registerProvider(runtime);
     }
 
     @After
     public void tearDown() {
+        if (testProvider != null) {
+            runtime.unregisterProvider(TEST_DOMAIN, testProvider);
+            testProvider = null;
+        }
         runtime.shutdown(true);
     }
 
@@ -112,7 +118,6 @@ public class AccessControllerEnd2EndTest {
                                  ImmutableMessage.DUMMY_CREATOR_USER_ID,
                                  Permission.YES);
 
-        registerProvider(runtime);
         testProxy testProxy = createProxy(runtime);
 
         Integer result = testProxy.addNumbers(3, 5, 7);
@@ -128,10 +133,9 @@ public class AccessControllerEnd2EndTest {
                                  ImmutableMessage.DUMMY_CREATOR_USER_ID,
                                  Permission.NO);
 
-        registerProvider(runtime);
         testProxy testProxy = createProxy(runtime);
 
-        expectedException.expect(JoynrMessageNotSentException.class);
+        expectedException.expect(JoynrCommunicationException.class);
         testProxy.addNumbers(3, 5, 7);
     }
 
@@ -160,7 +164,7 @@ public class AccessControllerEnd2EndTest {
         providerQos.setScope(ProviderScope.LOCAL);
         providerQos.setPriority(System.currentTimeMillis());
 
-        TestProviderImpl testProvider = new TestProviderImpl();
+        testProvider = new TestProviderImpl();
 
         runtime.registerProvider(TEST_DOMAIN, testProvider, providerQos);
     }
