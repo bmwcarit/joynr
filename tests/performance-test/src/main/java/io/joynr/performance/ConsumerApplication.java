@@ -308,15 +308,12 @@ public class ConsumerApplication extends AbstractJoynrApplication {
     }
 
     private void printTestResult(long endTime, long startTime) {
-        printTestResult(endTime, startTime, 1);
-    }
-
-    private void printTestResult(long endTime, long startTime, int iterations) {
         long timeDeltaMilliseconds = endTime - startTime;
         System.err.format("Test case took %d ms. %.2f Msgs/s transmitted\n startTime: %d, endTime: %d, runs: %d, iterations: %d \n",
                           timeDeltaMilliseconds,
-                          (double) (invocationParameters.getNumberOfRuns() * iterations)
-                                  / ((double) timeDeltaMilliseconds / 1000.0),
+                          ((double) (invocationParameters.getNumberOfRuns()
+                                  * invocationParameters.getNumberOfIterations()))
+                                  / (((double) timeDeltaMilliseconds) / 1000.0d),
                           startTime,
                           endTime,
                           invocationParameters.getNumberOfRuns(),
