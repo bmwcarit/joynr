@@ -433,7 +433,7 @@ public class CcMessageRouterTest {
                     previousInvocationTimeMs = now;
                 }
 
-                invocation.getArgumentAt(1, FailureAction.class).execute(new Exception());
+                invocation.getArgumentAt(2, FailureAction.class).execute(new Exception());
 
                 return null;
             }
@@ -480,7 +480,7 @@ public class CcMessageRouterTest {
         Mockito.doAnswer(new Answer<Object>() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
-                invocation.getArgumentAt(1, FailureAction.class).execute(new Exception());
+                invocation.getArgumentAt(2, FailureAction.class).execute(new Exception());
                 return null;
             }
         })
