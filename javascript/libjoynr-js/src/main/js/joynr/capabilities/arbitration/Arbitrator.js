@@ -55,8 +55,8 @@ function discoverStaticCapabilities(capabilities, domains, interfaceName, discov
                 if (
                     domains.indexOf(capability.domain) !== -1 &&
                     interfaceName === capability.interfaceName &&
-                    capability.providerVersion.MAJOR_VERSION === proxyVersion.MAJOR_VERSION &&
-                    capability.providerVersion.MINOR_VERSION === proxyVersion.MINOR_VERSION &&
+                    capability.providerVersion.majorVersion === proxyVersion.majorVersion &&
+                    capability.providerVersion.minorVersion >= proxyVersion.minorVersion &&
                     checkSupportsOnChangeSubscriptions(capability, discoveryQos.providerMustSupportOnChange)
                 ) {
                     arbitratedCaps.push(capability);
