@@ -42,13 +42,12 @@ function checkSupportsOnChangeSubscriptions(discoveryEntry, providerMustSupportO
     return discoveryEntry.qos.supportsOnChangeSubscriptions;
 }
 
-function discoverStaticCapabilities(capabilities, domains, interfaceName, discoveryQos, proxyVersion, deferred) {
+async function discoverStaticCapabilities(capabilities, domains, interfaceName, discoveryQos, proxyVersion) {
     try {
         const arbitratedCaps = [];
 
-        deferred.pending = false;
         if (capabilities === undefined) {
-            deferred.reject(new Error("Exception while arbitrating: static capabilities are missing"));
+            return Promise.reject(new Error("Exception while arbitrating: static capabilities are missing"));
         } else {
             for (let i = 0; i < capabilities.length; ++i) {
                 const capability = capabilities[i];
@@ -62,11 +61,10 @@ function discoverStaticCapabilities(capabilities, domains, interfaceName, discov
                     arbitratedCaps.push(capability);
                 }
             }
-            deferred.resolve(discoveryQos.arbitrationStrategy(arbitratedCaps));
+            return discoveryQos.arbitrationStrategy(arbitratedCaps);
         }
     } catch (e) {
-        deferred.pending = false;
-        deferred.reject(new Error(`Exception while arbitrating: ${e}`));
+        return Promise.reject(new Error(`Exception while arbitrating: ${e}`));
     }
 }
 
@@ -221,7 +219,7 @@ function Arbitrator(capabilityDiscoveryStub, staticCapabilities) {
  * @param {Version} [settings.proxyVersion] the version of the proxy object
  * @returns {Object} a A+ Promise object, that will provide asynchronously an array of arbitrated capabilities
  */
-Arbitrator.prototype.startArbitration = function startArbitration(settings) {
+Arbitrator.prototype.startArbitration = async function startArbitration(settings) {
     const that = this;
 
     if (!that._started) {
@@ -269,13 +267,12 @@ Arbitrator.prototype.startArbitration = function startArbitration(settings) {
     }
 
     if (settings.staticArbitration && that._staticCapabilities) {
-        discoverStaticCapabilities(
+        return discoverStaticCapabilities(
             that._staticCapabilities,
             settings.domains,
             settings.interfaceName,
             settings.discoveryQos,
-            settings.proxyVersion,
-            deferred
+            settings.proxyVersion
         );
     } else {
         that._pendingArbitrations[deferred.id] = deferred;
