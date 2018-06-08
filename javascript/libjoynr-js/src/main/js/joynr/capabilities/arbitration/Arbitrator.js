@@ -226,10 +226,28 @@ Arbitrator.prototype.startArbitration = async function startArbitration(settings
         return Promise.reject(new Error("Arbitrator is already shut down"));
     }
 
-    const startArbitrationDeferred = UtilInternal.createDeferred();
     settings = UtilInternal.extendDeep({}, settings);
 
     this._arbitrationId++;
+
+    if (settings.staticArbitration && that._staticCapabilities) {
+        return discoverStaticCapabilities(
+            that._staticCapabilities,
+            settings.domains,
+            settings.interfaceName,
+            settings.discoveryQos,
+            settings.proxyVersion
+        );
+    } else {
+        return this._discoverCapabilitiesWrapper(settings);
+    }
+};
+
+Arbitrator.prototype._discoverCapabilitiesWrapper = function(settings) {
+    const that = this;
+
+    const startArbitrationDeferred = UtilInternal.createDeferred();
+
     const deferred = {
         id: this._arbitrationId,
         resolve: startArbitrationDeferred.resolve,
@@ -266,41 +284,31 @@ Arbitrator.prototype.startArbitration = async function startArbitration(settings
         }
     }
 
-    if (settings.staticArbitration && that._staticCapabilities) {
-        return discoverStaticCapabilities(
-            that._staticCapabilities,
-            settings.domains,
-            settings.interfaceName,
-            settings.discoveryQos,
-            settings.proxyVersion
-        );
-    } else {
-        that._pendingArbitrations[deferred.id] = deferred;
-        deferred.discoveryTimeoutMsId = LongTimer.setTimeout(
-            discoveryCapabilitiesTimeOutHandler.bind(this),
-            settings.discoveryQos.discoveryTimeoutMs
-        );
-        const resolveWrapper = function(args) {
-            LongTimer.clearTimeout(deferred.discoveryTimeoutMsId);
-            delete that._pendingArbitrations[deferred.id];
-            startArbitrationDeferred.resolve(args);
-        };
-        const rejectWrapper = function(args) {
-            LongTimer.clearTimeout(deferred.discoveryTimeoutMsId);
-            delete that._pendingArbitrations[deferred.id];
-            startArbitrationDeferred.reject(args);
-        };
-        deferred.resolve = resolveWrapper;
-        deferred.reject = rejectWrapper;
-        discoverCapabilities(
-            that._capabilityDiscoveryStub,
-            settings.domains,
-            settings.interfaceName,
-            settings.discoveryQos,
-            settings.proxyVersion,
-            deferred
-        );
-    }
+    that._pendingArbitrations[deferred.id] = deferred;
+    deferred.discoveryTimeoutMsId = LongTimer.setTimeout(
+        discoveryCapabilitiesTimeOutHandler.bind(this),
+        settings.discoveryQos.discoveryTimeoutMs
+    );
+    const resolveWrapper = function(args) {
+        LongTimer.clearTimeout(deferred.discoveryTimeoutMsId);
+        delete that._pendingArbitrations[deferred.id];
+        startArbitrationDeferred.resolve(args);
+    };
+    const rejectWrapper = function(args) {
+        LongTimer.clearTimeout(deferred.discoveryTimeoutMsId);
+        delete that._pendingArbitrations[deferred.id];
+        startArbitrationDeferred.reject(args);
+    };
+    deferred.resolve = resolveWrapper;
+    deferred.reject = rejectWrapper;
+    discoverCapabilities(
+        that._capabilityDiscoveryStub,
+        settings.domains,
+        settings.interfaceName,
+        settings.discoveryQos,
+        settings.proxyVersion,
+        deferred
+    );
 
     return startArbitrationDeferred.promise;
 };
