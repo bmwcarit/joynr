@@ -68,6 +68,18 @@ async function discoverStaticCapabilities(capabilities, domains, interfaceName, 
     }
 }
 
+function addToListIfNotExisting(list, providerVersion) {
+    for (let j = 0; j < list.length; ++j) {
+        if (
+            list[j].majorVersion === providerVersion.majorVersion &&
+            list[j].minorVersion === providerVersion.minorVersion
+        ) {
+            return;
+        }
+    }
+    list.push(providerVersion);
+}
+
 /**
  * Tries to discover capabilities with given domains, interfaceName and discoveryQos within the localCapDir as long as the deferred's state is pending
  * @private
@@ -113,27 +125,14 @@ function discoverCapabilities(
         // filter caps according to chosen arbitration strategy
         const arbitratedCaps = applicationDiscoveryQos.arbitrationStrategy(discoveredCaps);
         const versionCompatibleArbitratedCaps = [];
-        let i;
+
         // if deferred is still pending => discoveryTimeoutMs is not expired yet
         if (deferred.pending) {
             // if there are caps found
             deferred.incompatibleVersionsFound = [];
             let providerVersion;
 
-            const addtoListIfNotExisting = function(list, providerVersion) {
-                let j;
-                for (j = 0; j < list.length; ++j) {
-                    if (
-                        list[j].majorVersion === providerVersion.majorVersion &&
-                        list[j].minorVersion === providerVersion.minorVersion
-                    ) {
-                        return;
-                    }
-                }
-                list.push(providerVersion);
-            };
-
-            for (i = 0; i < arbitratedCaps.length; i++) {
+            for (let i = 0; i < arbitratedCaps.length; i++) {
                 providerVersion = arbitratedCaps[i].providerVersion;
                 if (
                     providerVersion.majorVersion === proxyVersion.majorVersion &&
@@ -145,7 +144,7 @@ function discoverCapabilities(
                 ) {
                     versionCompatibleArbitratedCaps.push(arbitratedCaps[i]);
                 } else {
-                    addtoListIfNotExisting(deferred.incompatibleVersionsFound, providerVersion);
+                    addToListIfNotExisting(deferred.incompatibleVersionsFound, providerVersion);
                 }
             }
             if (versionCompatibleArbitratedCaps.length > 0) {
@@ -156,7 +155,6 @@ function discoverCapabilities(
                 retryCapabilityDiscovery();
             }
         }
-        return null;
     }
 
     function capabilitiesDiscoveredError(error) {
@@ -220,9 +218,7 @@ function Arbitrator(capabilityDiscoveryStub, staticCapabilities) {
  * @returns {Object} a A+ Promise object, that will provide asynchronously an array of arbitrated capabilities
  */
 Arbitrator.prototype.startArbitration = async function startArbitration(settings) {
-    const that = this;
-
-    if (!that._started) {
+    if (!this._started) {
         return Promise.reject(new Error("Arbitrator is already shut down"));
     }
 
@@ -230,9 +226,9 @@ Arbitrator.prototype.startArbitration = async function startArbitration(settings
 
     this._arbitrationId++;
 
-    if (settings.staticArbitration && that._staticCapabilities) {
+    if (settings.staticArbitration && this._staticCapabilities) {
         return discoverStaticCapabilities(
-            that._staticCapabilities,
+            this._staticCapabilities,
             settings.domains,
             settings.interfaceName,
             settings.discoveryQos,
@@ -250,8 +246,6 @@ Arbitrator.prototype._discoverCapabilitiesWrapper = function(settings) {
 
     const deferred = {
         id: this._arbitrationId,
-        resolve: startArbitrationDeferred.resolve,
-        reject: startArbitrationDeferred.reject,
         incompatibleVersionsFound: [],
         pending: true
     };
@@ -286,7 +280,7 @@ Arbitrator.prototype._discoverCapabilitiesWrapper = function(settings) {
 
     that._pendingArbitrations[deferred.id] = deferred;
     deferred.discoveryTimeoutMsId = LongTimer.setTimeout(
-        discoveryCapabilitiesTimeOutHandler.bind(this),
+        discoveryCapabilitiesTimeOutHandler,
         settings.discoveryQos.discoveryTimeoutMs
     );
     const resolveWrapper = function(args) {
@@ -320,8 +314,7 @@ Arbitrator.prototype._discoverCapabilitiesWrapper = function(settings) {
  * @name Arbitrator#shutdown
  */
 Arbitrator.prototype.shutdown = function shutdown() {
-    let id;
-    for (id in this._pendingArbitrations) {
+    for (const id in this._pendingArbitrations) {
         if (this._pendingArbitrations.hasOwnProperty(id)) {
             const pendingArbitration = this._pendingArbitrations[id];
             if (pendingArbitration.discoveryTimeoutMsId !== undefined) {
