@@ -101,7 +101,8 @@ CapabilitiesRegistrar.prototype.register = function register(settings) {
         settings.providerQos,
         settings.expiryDateMs,
         settings.loggingContext,
-        settings.participantId
+        settings.participantId,
+        settings.awaitGlobalRegistration
     );
 };
 
@@ -136,7 +137,8 @@ CapabilitiesRegistrar.prototype.registerProvider = function registerProvider(
     providerQos,
     expiryDateMs,
     loggingContext,
-    participantId
+    participantId,
+    awaitGlobalRegistration
 ) {
     this._checkIfReady();
 
@@ -155,6 +157,16 @@ CapabilitiesRegistrar.prototype.registerProvider = function registerProvider(
 
     if (loggingContext !== undefined) {
         log.warn("loggingContext is currently not supported");
+    }
+
+    if (awaitGlobalRegistration === undefined) {
+        awaitGlobalRegistration = false;
+    }
+
+    if (typeof awaitGlobalRegistration !== "boolean") {
+        const errText = "awaitGlobalRegistration must be boolean";
+        log.warn(errText);
+        return Promise.reject(new Error(errText));
     }
 
     // register provider at RequestReplyManager
@@ -187,7 +199,8 @@ CapabilitiesRegistrar.prototype.registerProvider = function registerProvider(
             publicKeyId: defaultPublicKeyId,
             expiryDateMs: expiryDateMs || Date.now() + defaultExpiryIntervalMs,
             lastSeenDateMs: Date.now()
-        })
+        }),
+        awaitGlobalRegistration
     );
 
     function registerProviderFinished() {
