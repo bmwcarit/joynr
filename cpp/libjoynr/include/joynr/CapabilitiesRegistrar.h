@@ -110,13 +110,6 @@ public:
             persist
         ]()
         {
-            for (std::shared_ptr<IDispatcher> currentDispatcher : dispatcherList) {
-                // TODO will the provider be registered at all dispatchers or
-                //     should it be configurable which ones are used to contact it.
-                assert(currentDispatcher != nullptr);
-                currentDispatcher->addRequestCaller(participantId, caller);
-            }
-
             if (persist) {
                 // Sync persistency to disk now that registration is done.
                 if (auto participantIdStoragePtr = participantIdStorage.lock()) {
@@ -158,6 +151,13 @@ public:
                 onErrorWrapper(error);
             }
         };
+
+        for (std::shared_ptr<IDispatcher> currentDispatcher : dispatcherList) {
+            // TODO will the provider be registered at all dispatchers or
+            //     should it be configurable which ones are used to contact it.
+            assert(currentDispatcher != nullptr);
+            currentDispatcher->addRequestCaller(participantId, caller);
+        }
 
         constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
         const bool isSticky = false;
