@@ -289,6 +289,41 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", () => {
         done();
     });
 
+    async function testAwaitGlobalRegistrationScenario(awaitGlobalRegistration) {
+        let expiryDateMs; // intentionally left undefined
+        let loggingContext; // intentionally left undefined
+        let participantId; // intentionally left undefined
+
+        await capabilitiesRegistrar.registerProvider(
+            domain,
+            provider,
+            providerQos,
+            expiryDateMs,
+            loggingContext,
+            participantId,
+            awaitGlobalRegistration
+        );
+        const actualAwaitGlobalRegistration = discoveryStubSpy.add.calls.argsFor(0)[1];
+        expect(actualAwaitGlobalRegistration).toEqual(awaitGlobalRegistration);
+    }
+
+    it("calls discoveryProxy.add() with same awaitGlobalRegistration parameter true used in call to registerProvider", async () => {
+        const awaitGlobalRegistration = true;
+        await testAwaitGlobalRegistrationScenario(awaitGlobalRegistration);
+    });
+
+    it("calls discoveryProxy.add() with same awaitGlobalRegistration parameter false used in call to registerProvider", async () => {
+        const awaitGlobalRegistration = false;
+        await testAwaitGlobalRegistrationScenario(awaitGlobalRegistration);
+    });
+
+    it("calls discoveryProxy.add() with awaitGlobalRegistration parameter false on default call of registerProvider", async () => {
+        await capabilitiesRegistrar.registerProvider(domain, provider, providerQos);
+        const expectedAwaitGlobalRegistration = false;
+        const actualAwaitGlobalRegistration = discoveryStubSpy.add.calls.argsFor(0)[1];
+        expect(actualAwaitGlobalRegistration).toEqual(expectedAwaitGlobalRegistration);
+    });
+
     it("returns the provider participant ID", done => {
         capabilitiesRegistrar
             .registerProvider(domain, provider, providerQos)
