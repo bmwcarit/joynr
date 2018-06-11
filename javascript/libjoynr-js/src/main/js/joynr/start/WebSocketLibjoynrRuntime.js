@@ -405,6 +405,16 @@ function WebSocketLibjoynrRuntime(provisioning) {
             )
         );
 
+        /*
+         * if no internalMessagingQos is provided, extend the default ttl by 10 seconds in order
+         * to allow the cluster controller to handle timeout for global discovery requests and
+         * send back the response to discoveryProxy
+         */
+        if (provisioning.internalMessagingQos === undefined || provisioning.internalMessagingQos === null) {
+            provisioning.internalMessagingQos = {};
+            provisioning.internalMessagingQos.ttl = MessagingQos.DEFAULT_TTL + 10000;
+        }
+
         const internalMessagingQos = new MessagingQos(provisioning.internalMessagingQos);
 
         function buildDiscoveryProxyOnSuccess(newDiscoveryProxy) {
@@ -421,9 +431,10 @@ function WebSocketLibjoynrRuntime(provisioning) {
                                 return opArgs.result;
                             });
                     },
-                    add: function add(discoveryEntry) {
+                    add: function add(discoveryEntry, awaitGlobalRegistration) {
                         return newDiscoveryProxy.add({
-                            discoveryEntry
+                            discoveryEntry,
+                            awaitGlobalRegistration
                         });
                     },
                     remove: function remove(participantId) {
