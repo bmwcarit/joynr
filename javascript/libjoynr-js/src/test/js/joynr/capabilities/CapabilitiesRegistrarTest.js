@@ -114,14 +114,14 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", () => {
         done();
     });
 
-    it("is has all members", done => {
+    it("has all members", done => {
         expect(capabilitiesRegistrar.registerProvider).toBeDefined();
         expect(typeof capabilitiesRegistrar.registerProvider === "function").toBeTruthy();
         expect(typeof capabilitiesRegistrar.register === "function").toBeTruthy();
         done();
     });
 
-    it("is checks the provider's implementation", done => {
+    it("checks the provider's implementation", done => {
         capabilitiesRegistrar
             .registerProvider(domain, provider, providerQos)
             .then(() => {
@@ -134,7 +134,7 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", () => {
         done();
     });
 
-    it("defaultDelayMs can be configured", async () => {
+    it("supports configuring defaultDelayMs", async () => {
         const overwrittenDelay = 100000;
 
         jasmine.clock().install();
@@ -155,7 +155,7 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", () => {
         jasmine.clock().uninstall();
     });
 
-    it("is checks the provider's implementation, and throws if incomplete", done => {
+    it("checks the provider's implementation, and throws if incomplete", done => {
         provider.checkImplementation = function() {
             return ["Operation:addFavoriteStation"];
         };
@@ -319,7 +319,7 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", () => {
             });
     });
 
-    it("CapabilitiesRegistrar throws exception when called while shut down", done => {
+    it("throws exception when called while shutting down", done => {
         capabilitiesRegistrar.shutdown();
         expect(() => {
             capabilitiesRegistrar.registerProvider(domain, provider, providerQos);
