@@ -134,7 +134,7 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", () => {
         done();
     });
 
-    it("defaultDelayMs can be configured", done => {
+    it("defaultDelayMs can be configured", async () => {
         const overwrittenDelay = 100000;
 
         jasmine.clock().install();
@@ -143,23 +143,16 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", () => {
 
         CapabilitiesRegistrar.setDefaultExpiryIntervalMs(overwrittenDelay);
 
-        capabilitiesRegistrar
-            .registerProvider(domain, provider, providerQos)
-            .then(() => {
-                return null;
-            })
-            .catch(() => {
-                return null;
-            });
+        await capabilitiesRegistrar.registerProvider(domain, provider, providerQos).catch(error => {
+            jasmine.clock().uninstall();
+            throw error;
+        });
 
-        expect(discoveryStubSpy.add).toHaveBeenCalledWith(
-            jasmine.objectContaining({
-                expiryDateMs: baseTime.getTime() + overwrittenDelay
-            })
-        );
+        expect(discoveryStubSpy.add).toHaveBeenCalled();
+        const actualDiscoveryEntry = discoveryStubSpy.add.calls.argsFor(0)[0];
+        expect(actualDiscoveryEntry.expiryDateMs).toEqual(baseTime.getTime() + overwrittenDelay);
 
         jasmine.clock().uninstall();
-        done();
     });
 
     it("is checks the provider's implementation, and throws if incomplete", done => {
