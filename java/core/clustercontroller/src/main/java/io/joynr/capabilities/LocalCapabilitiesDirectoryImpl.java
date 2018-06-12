@@ -309,7 +309,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                  interfaceName,
                                  discoveryQos,
                                  capabilitiesCallback,
-                                 CapabilityUtils.convertToDiscoveryEntryWithMetaInfoSet(true, localDiscoveryEntries),
+                                 localDiscoveryEntries,
                                  globalDiscoveryEntries);
             break;
         default:
@@ -344,13 +344,19 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                       String interfaceName,
                                       DiscoveryQos discoveryQos,
                                       CapabilitiesCallback capabilitiesCallback,
-                                      Set<DiscoveryEntryWithMetaInfo> localDiscoveryEntries,
+                                      Set<DiscoveryEntry> localDiscoveryEntries,
                                       Set<DiscoveryEntryWithMetaInfo> globalDiscoveryEntries) {
+        Set<DiscoveryEntryWithMetaInfo> localDiscoveryEntriesWithMetaInfo = CapabilityUtils.convertToDiscoveryEntryWithMetaInfoSet(true,
+                                                                                                                                   localDiscoveryEntries);
+
         Set<String> domainsForGlobalLookup = new HashSet<>();
         Set<DiscoveryEntryWithMetaInfo> matchedDiscoveryEntries = new HashSet<>();
         for (String domainToMatch : domains) {
-            addEntriesForDomain(localDiscoveryEntries, matchedDiscoveryEntries, domainToMatch);
-            if (!addEntriesForDomain(globalDiscoveryEntries, matchedDiscoveryEntries, domainToMatch)) {
+            addEntriesForDomain(localDiscoveryEntriesWithMetaInfo, matchedDiscoveryEntries, domainToMatch);
+            if (!addNonDuplicatedEntriesForDomain(globalDiscoveryEntries,
+                                                  matchedDiscoveryEntries,
+                                                  domainToMatch,
+                                                  localDiscoveryEntries)) {
                 domainsForGlobalLookup.add(domainToMatch);
             }
         }
@@ -400,6 +406,24 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         for (DiscoveryEntryWithMetaInfo discoveryEntry : discoveryEntries) {
             if (discoveryEntry.getDomain().equals(domain)) {
                 addTo.add(discoveryEntry);
+                domainMatched = true;
+            }
+        }
+        return domainMatched;
+    }
+
+    private boolean addNonDuplicatedEntriesForDomain(Collection<DiscoveryEntryWithMetaInfo> discoveryEntries,
+                                                     Collection<DiscoveryEntryWithMetaInfo> addTo,
+                                                     String domain,
+                                                     Collection<DiscoveryEntry> possibleDuplicateEntries) {
+
+        boolean domainMatched = false;
+        for (DiscoveryEntryWithMetaInfo discoveryEntry : discoveryEntries) {
+            if (discoveryEntry.getDomain().equals(domain)) {
+                DiscoveryEntry foundDiscoveryEntry = new DiscoveryEntry(discoveryEntry);
+                if (!possibleDuplicateEntries.contains(foundDiscoveryEntry)) {
+                    addTo.add(discoveryEntry);
+                }
                 domainMatched = true;
             }
         }
