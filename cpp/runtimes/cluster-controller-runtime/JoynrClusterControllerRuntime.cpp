@@ -674,9 +674,9 @@ void JoynrClusterControllerRuntime::enableAccessController(
         return;
     }
 
-    JOYNR_LOG_DEBUG(logger(),
-                    "AccessControl was enabled attempting to load entries from {}.",
-                    clusterControllerSettings.getAclEntriesDirectory());
+    JOYNR_LOG_INFO(logger(),
+                   "Access control was enabled attempting to load entries from {}.",
+                   clusterControllerSettings.getAclEntriesDirectory());
 
     auto localDomainAccessStore = std::make_shared<joynr::LocalDomainAccessStore>(
             clusterControllerSettings.getLocalDomainAccessStorePersistenceFilename());
@@ -688,8 +688,9 @@ void JoynrClusterControllerRuntime::enableAccessController(
     if (fs::is_directory(aclEntriesPath)) {
         for (const auto& entry : fs::directory_iterator(aclEntriesPath)) {
             if (fs::is_regular_file(entry.path())) {
-                localDomainAccessStore->mergeDomainAccessStore(
-                        LocalDomainAccessStore(entry.path().string()));
+                const std::string aclPath = entry.path().string();
+                localDomainAccessStore->mergeDomainAccessStore(LocalDomainAccessStore(aclPath));
+                JOYNR_LOG_INFO(logger(), "Loading ACL/RCL templates from {}", aclPath);
             }
         }
     } else {
