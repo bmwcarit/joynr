@@ -788,6 +788,57 @@ public class LocalCapabilitiesDirectoryTest {
         reset(capabilitiesCallback);
     }
 
+    @Test(timeout = 1000)
+    public void lookupLocalAndGlobalFiltersDuplicates() throws InterruptedException {
+        String domain = "domain";
+        String interfaceName = "interfaceName";
+        String participant = "participant";
+        DiscoveryQos discoveryQos = new DiscoveryQos(30000,
+                                                     ArbitrationStrategy.HighestPriority,
+                                                     500,
+                                                     DiscoveryScope.LOCAL_AND_GLOBAL);
+
+        // add same discovery entry to localCapabilitiesDirectory and cached GlobalCapabilitiesDirectory
+        ProviderQos providerQos = new ProviderQos();
+        long currentTime = System.currentTimeMillis();
+        DiscoveryEntry discoveryEntry = new DiscoveryEntry(new Version(47, 11),
+                                                           domain,
+                                                           interfaceName,
+                                                           participant,
+                                                           providerQos,
+                                                           currentTime,
+                                                           expiryDateMs,
+                                                           publicKeyId);
+
+        when(localDiscoveryEntryStoreMock.lookup(eq(new String[]{ domain }), eq(interfaceName))).thenReturn(Lists.newArrayList(discoveryEntry));
+
+        GlobalDiscoveryEntry capInfo = new GlobalDiscoveryEntry(new Version(47, 11),
+                                                                domain,
+                                                                interfaceName,
+                                                                participant,
+                                                                providerQos,
+                                                                currentTime,
+                                                                expiryDateMs,
+                                                                publicKeyId,
+                                                                channelAddressSerialized);
+
+        when(globalDiscoveryEntryCacheMock.lookup(eq(new String[]{ domain }),
+                                                  eq(interfaceName),
+                                                  eq(discoveryQos.getCacheMaxAgeMs()))).thenReturn(Lists.newArrayList((DiscoveryEntry) capInfo));
+
+        CapabilitiesCallback capabilitiesCallback = Mockito.mock(CapabilitiesCallback.class);
+        localCapabilitiesDirectory.lookup(new String[]{ domain }, interfaceName, discoveryQos, capabilitiesCallback);
+
+        verify(capabilitiesCallback, times(1)).processCapabilitiesReceived(argThat(hasNEntries(1)));
+
+        verify(capabilitiesCallback).processCapabilitiesReceived(capabilitiesCaptor.capture());
+        Collection<DiscoveryEntryWithMetaInfo> discoveredEntries = capabilitiesCaptor.getValue();
+        assertTrue(discoveredEntries.contains(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(true, discoveryEntry)));
+
+        reset(globalCapabilitiesClient);
+        reset(capabilitiesCallback);
+    }
+
     @Test
     public void testLookupMultipleDomainsLocalOnly() {
         String[] domains = new String[]{ "domain1", "domain2" };
