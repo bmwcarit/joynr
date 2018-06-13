@@ -27,6 +27,7 @@ import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.after;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -334,8 +335,7 @@ public class LocalCapabilitiesDirectoryTest {
                 verify(globalCapabilitiesClient).add(any(Callback.class), eq(globalDiscoveryEntry));
                 reset(globalCapabilitiesClient);
                 localCapabilitiesDirectory.add(discoveryEntry);
-                verify(globalCapabilitiesClient, timeout(200).never()).add(any(Callback.class),
-                                                                           eq(globalDiscoveryEntry));
+                verify(globalCapabilitiesClient, after(200).never()).add(any(Callback.class), eq(globalDiscoveryEntry));
             }
 
             @Override
@@ -1007,11 +1007,14 @@ public class LocalCapabilitiesDirectoryTest {
         doAnswer(new Answer<Void>() {
             @Override
             public Void answer(InvocationOnMock invocation) throws Throwable {
+                @SuppressWarnings("unchecked")
                 Callback<GlobalDiscoveryEntry> callback = (Callback<GlobalDiscoveryEntry>) invocation.getArguments()[0];
                 callback.onSuccess(remoteGlobalEntry);
                 return null;
             }
-        }).when(globalCapabilitiesClient).lookup(any(Callback.class), eq(participantId), anyLong());
+        }).when(globalCapabilitiesClient).lookup(org.mockito.Matchers.<Callback<GlobalDiscoveryEntry>> any(),
+                                                 eq(participantId),
+                                                 anyLong());
 
         DiscoveryEntryWithMetaInfo capturedRemoteGlobalEntry = localCapabilitiesDirectory.lookup(participantId,
                                                                                                  discoveryQos);
@@ -1054,11 +1057,12 @@ public class LocalCapabilitiesDirectoryTest {
         doAnswer(new Answer<Void>() {
             @Override
             public Void answer(InvocationOnMock invocation) throws Throwable {
+                @SuppressWarnings("unchecked")
                 Callback<List<GlobalDiscoveryEntry>> callback = (Callback<List<GlobalDiscoveryEntry>>) invocation.getArguments()[0];
                 callback.onSuccess(Lists.newArrayList(remoteGlobalEntry));
                 return null;
             }
-        }).when(globalCapabilitiesClient).lookup(any(Callback.class),
+        }).when(globalCapabilitiesClient).lookup(org.mockito.Matchers.<Callback<List<GlobalDiscoveryEntry>>> any(),
                                                  eq(new String[]{ remoteGlobalDomain }),
                                                  eq(interfaceName),
                                                  anyLong());
