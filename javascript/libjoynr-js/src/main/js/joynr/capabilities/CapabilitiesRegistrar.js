@@ -91,6 +91,9 @@ CapabilitiesRegistrar.prototype._checkIfReady = function() {
  *            [settings.participantId] optional. If not set, a globally unique UUID participantId will be generated, and persisted to
  *            localStorage. If set, the participantId must be unique in the context of the provider's scope, as set in the ProviderQos;
  *            The application setting the participantId is responsible for guaranteeing uniqueness.
+ * @param {Boolean}
+ *            [settings.awaitGlobalRegistration] optional. If provided and set to true registerProvider will wait until local and global
+ *            registration succeeds or timeout is reached: otherwise registerProvider only waits for local registration.
  *
  * @returns {Object} an A+ promise
  */
@@ -128,6 +131,9 @@ CapabilitiesRegistrar.prototype.register = function register(settings) {
  *            [loggingContext] optional logging context will be appended to logging messages created in the name of this proxy
  * @param {String}
  *            [participantId] optional. If not set, a globally unique UUID participantId will be generated, and persisted to localStorage.
+ * @param {Boolean}
+ *            [awaitGlobalRegistration] optional. If provided and set to true registerProvider will wait until local and global
+ *            registration succeeds or timeout is reached: otherwise registerProvider only waits for local registration.
  *
  * @returns {Object} an A+ promise
  */
