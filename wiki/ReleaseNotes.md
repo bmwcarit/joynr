@@ -2,6 +2,11 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+## API relevant changes
+* **[JS]** Registration of global providers can be made waiting until registration has been
+  propagated to GlobalCapabilitiesDirectory by passing an optional boolean flag `awaitGlobalRegistration`
+  to `registerProvider` or `settings.awaitGlobalRegistration` to `register` APIs of joynr.registration.
+
 # joynr 1.3.0
 
 ## API relevant changes
