@@ -190,6 +190,7 @@ private:
 
     void registerInternalSystemServiceProviders();
     void unregisterInternalSystemServiceProviders();
+    void unregisterInternalSystemServiceProvider(const std::string& participantId);
     void startLocalCommunication();
     std::shared_ptr<joynr::infrastructure::GlobalDomainAccessControllerProxy>
     createGlobalDomainAccessControllerProxy();

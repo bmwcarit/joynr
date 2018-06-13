@@ -769,15 +769,23 @@ void JoynrClusterControllerRuntime::registerInternalSystemServiceProviders()
     ClusterControllerCallContextStorage::invalidate();
 }
 
+void JoynrClusterControllerRuntime::unregisterInternalSystemServiceProvider(const std::string& participantId)
+{
+    localCapabilitiesDirectory->remove(participantId, true);
+    for (std::shared_ptr<IDispatcher> currentDispatcher : dispatcherList) {
+        currentDispatcher->removeRequestCaller(participantId);
+    }
+}
 void JoynrClusterControllerRuntime::unregisterInternalSystemServiceProviders()
 {
     if (!accessControlListEditorProviderParticipantId.empty()) {
-        unregisterProvider(accessControlListEditorProviderParticipantId);
+        unregisterInternalSystemServiceProvider(accessControlListEditorProviderParticipantId);
     }
-    unregisterProvider(messageNotificationProviderParticipantId);
-    unregisterProvider(discoveryProviderParticipantId);
-    unregisterProvider(providerReregistrationControllerParticipantId);
-    unregisterProvider(routingProviderParticipantId);
+
+    unregisterInternalSystemServiceProvider(messageNotificationProviderParticipantId);
+    unregisterInternalSystemServiceProvider(providerReregistrationControllerParticipantId);
+    unregisterInternalSystemServiceProvider(routingProviderParticipantId);
+    unregisterInternalSystemServiceProvider(discoveryProviderParticipantId);
 }
 
 void JoynrClusterControllerRuntime::startLocalCommunication()
