@@ -600,6 +600,9 @@ public:
      */
     bool mergeDomainAccessStore(const LocalDomainAccessStore& other);
 
+    // Use the logger to print content of entire access store
+    void logContent();
+
 private:
     ADD_LOGGER(LocalDomainAccessStore)
     void persistToFile() const;
