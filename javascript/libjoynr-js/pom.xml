@@ -131,6 +131,26 @@
 					</filesets>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>npm:clean</id>
+						<phase>clean</phase>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<configuration>
+							<executable>npm</executable>
+							<arguments>
+								<argument>run</argument>
+								<argument>clean</argument>
+							</arguments>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 
 			<plugin>
 				<groupId>io.joynr.tools.generator</groupId>
@@ -474,7 +494,7 @@
 									<executable>npm</executable>
 									<arguments>
 										<argument>run</argument>
-										<argument>build</argument>
+										<argument>build:fast</argument>
 									</arguments>
 								</configuration>
 							</execution>
