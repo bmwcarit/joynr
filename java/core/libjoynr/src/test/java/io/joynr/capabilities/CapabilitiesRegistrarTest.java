@@ -122,7 +122,8 @@ public class CapabilitiesRegistrarTest {
 
         ArgumentCaptor<DiscoveryEntry> discoveryEntryCaptor = ArgumentCaptor.forClass(DiscoveryEntry.class);
 
-        registrar.registerProvider(domain, testProvider, providerQos);
+        final boolean awaitGlobalRegistration = false;
+        registrar.registerProvider(domain, testProvider, providerQos, awaitGlobalRegistration);
         verify(localDiscoveryAggregator).add(any(Callback.class), discoveryEntryCaptor.capture());
         DiscoveryEntry actual = discoveryEntryCaptor.getValue();
         Assert.assertEquals(actual.getProviderVersion(), testVersion);

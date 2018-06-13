@@ -32,9 +32,14 @@ public interface CapabilitiesRegistrar {
      *            Provider instance.
      * @param providerQos
      *            Provider quality of service.
+     * @param awaitGlobalRegistration
+     *            If true, wait for global registration to complete or timeout, if required.
      * @return registration future
      */
-    Future<Void> registerProvider(String domain, Object provider, ProviderQos providerQos);
+    Future<Void> registerProvider(String domain,
+                                  Object provider,
+                                  ProviderQos providerQos,
+                                  boolean awaitGlobalRegistration);
 
     Future<Void> unregisterProvider(String domain, Object provider);
 }

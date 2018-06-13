@@ -151,7 +151,8 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
      */
     @Override
     public Future<Void> registerProvider(String domain, Object provider, ProviderQos providerQos) {
-        return capabilitiesRegistrar.registerProvider(domain, provider, providerQos);
+        final boolean awaitGlobalRegistration = false;
+        return capabilitiesRegistrar.registerProvider(domain, provider, providerQos, awaitGlobalRegistration);
     }
 
     /**
@@ -173,7 +174,7 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
                                          Object provider,
                                          ProviderQos providerQos,
                                          boolean awaitGlobalRegistration) {
-        return capabilitiesRegistrar.registerProvider(domain, provider, providerQos);
+        return capabilitiesRegistrar.registerProvider(domain, provider, providerQos, awaitGlobalRegistration);
     }
 
     @Override
