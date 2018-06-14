@@ -20,11 +20,14 @@
 #ifndef WILDCARDSTORAGE_H
 #define WILDCARDSTORAGE_H
 
+#include <numeric>
 #include <string>
 #include <tuple>
 #include <unordered_set>
 
 #include <boost/optional.hpp>
+
+#include "joynr/serializer/Serializer.h"
 
 #include "libjoynrclustercontroller/access-control/AccessControlUtils.h"
 #include "libjoynrclustercontroller/access-control/RadixTree.h"
@@ -114,6 +117,20 @@ public:
         // longest match exists but no ACE/RCE entry was set for it
         // is this a configuration error?
         return boost::none;
+    }
+
+    std::string toString()
+    {
+        std::stringstream stream;
+        auto visitor = [&stream](const auto& node, const auto& keys) {
+            const std::string key = std::accumulate(
+                    keys.begin(), keys.end(), std::string(), [](std::string& s, const auto& i) {
+                        return s + i.get();
+                    });
+            stream << key << "->" << serializer::serializeToJson(node.getValue()) << std::endl;
+        };
+        storage.visit(visitor);
+        return stream.str();
     }
 
 private:
