@@ -119,7 +119,7 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
 
             }
         };
-        return localDiscoveryAggregator.add(callback, discoveryEntry);
+        return localDiscoveryAggregator.add(callback, discoveryEntry, awaitGlobalRegistration);
     }
 
     @Override
