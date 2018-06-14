@@ -61,6 +61,8 @@ public class ConsumerInvocationParameters {
     private static final String CMDLINE_OPTIONNAME_MESSAGING_QOS_EFFORT = "effort";
     private static final String CMDLINE_OPTIONNAME_NUMRUNS = "runs";
     private static final String CMDLINE_OPTIONNAME_ITERATIONS = "iterations";
+    private static final String CMDLINE_OPTIONNAME_PENDING_REQUESTS = "pendingrequests";
+    private static final String CMDLINE_OPTIONNAME_NUMTHREADS = "threads";
     private static final String CMDLINE_OPTIONNAME_WARMUPS = "warmups";
     private static final String CMDLINE_OPTIONNAME_SYNCMODE = "syncmode";
     private static final String CMDLINE_OPTIONNAME_TESTCASE = "testcase";
@@ -72,11 +74,14 @@ public class ConsumerInvocationParameters {
     private static final String CMDLINE_OPTIONNAME_MQTTBROKERURI = "mqttbrokeruri";
     private static final String CMDLINE_OPTIONNAME_CC_HOST = "cchost";
     private static final String CMDLINE_OPTIONNAME_CC_PORT = "ccport";
+    private static final String CMDLINE_OPTIONNAME_CONSTANT_NUMBER_OF_PENDING_REQUESTS = "constantnumberofpendingrequests";
 
     private static String domainName = "";
     private static MessagingQosEffort effort = MessagingQosEffort.NORMAL;
     private static int numberOfRuns = 1;
     private static int numberOfIterations = 1;
+    private static int numberOfpendingRequests = 100;
+    private static int numberOfThreads = 1;
     private static int numberOfWarmupRuns = 0;
     private static COMMUNICATIONMODE communicationMode = COMMUNICATIONMODE.SYNC;
     private static TESTCASE testCase = TESTCASE.SEND_STRING;
@@ -88,6 +93,7 @@ public class ConsumerInvocationParameters {
     private String mqttBrokerUri = "tcp://localhost:1883";
     private String ccHost = "localhost";
     private String ccPort = "4242";
+    private boolean constantNumberOfPendingRequests = false;
 
     public ConsumerInvocationParameters(String[] args) throws Exception {
         CommandLine commandLine = parseCommandLineArgs(args);
@@ -119,6 +125,26 @@ public class ConsumerInvocationParameters {
 
             if (numberOfIterations <= 0) {
                 throw new Exception("Number of iterations must be positive");
+            }
+        }
+
+        if (commandLine.hasOption(CMDLINE_OPTIONNAME_CONSTANT_NUMBER_OF_PENDING_REQUESTS)) {
+            constantNumberOfPendingRequests = true;
+
+            if (commandLine.hasOption(CMDLINE_OPTIONNAME_PENDING_REQUESTS)) {
+                numberOfpendingRequests = ((Number) commandLine.getParsedOptionValue(CMDLINE_OPTIONNAME_PENDING_REQUESTS)).intValue();
+
+                if (numberOfpendingRequests <= 0) {
+                    throw new Exception("Number of pending requests must be positive");
+                }
+            }
+
+            if (commandLine.hasOption(CMDLINE_OPTIONNAME_NUMTHREADS)) {
+                numberOfThreads = ((Number) commandLine.getParsedOptionValue(CMDLINE_OPTIONNAME_NUMTHREADS)).intValue();
+
+                if (numberOfThreads <= 0) {
+                    throw new Exception("Number of threads must be positive");
+                }
             }
         }
 
@@ -171,6 +197,7 @@ public class ConsumerInvocationParameters {
         }
     }
 
+    @SuppressWarnings("checkstyle:methodlength")
     private CommandLine parseCommandLineArgs(String[] args) throws ParseException {
         Options options = new Options();
 
@@ -235,6 +262,32 @@ public class ConsumerInvocationParameters {
                                 .argName("numIterations")
                                 .type(Number.class)
                                 .desc("Number of test run iterations")
+                                .build());
+
+        options.addOption(Option.builder("cnr")
+                                .longOpt(CMDLINE_OPTIONNAME_CONSTANT_NUMBER_OF_PENDING_REQUESTS)
+                                .required(false)
+                                .argName("constantNumberOfPendingRequests")
+                                .type(Boolean.class)
+                                .desc("TBD")
+                                .build());
+
+        options.addOption(Option.builder("pending")
+                                .longOpt(CMDLINE_OPTIONNAME_PENDING_REQUESTS)
+                                .required(false)
+                                .hasArg()
+                                .argName("numPendingRequests")
+                                .type(Number.class)
+                                .desc("Number of pending requests if cnr is enabled")
+                                .build());
+
+        options.addOption(Option.builder("threads")
+                                .longOpt(CMDLINE_OPTIONNAME_NUMTHREADS)
+                                .required(false)
+                                .hasArg()
+                                .argName("numThreads")
+                                .type(Number.class)
+                                .desc("Number of threads if cnr is enabled")
                                 .build());
 
         options.addOption(Option.builder("sl")
@@ -336,6 +389,18 @@ public class ConsumerInvocationParameters {
 
     public int getNumberOfIterations() {
         return numberOfIterations;
+    }
+
+    public boolean constantNumberOfPendingRequests() {
+        return constantNumberOfPendingRequests;
+    }
+
+    public int getNumberOfPendingRequests() {
+        return numberOfpendingRequests;
+    }
+
+    public int getNumberOfThreads() {
+        return numberOfThreads;
     }
 
     public int getNumberOfWarmupRuns() {

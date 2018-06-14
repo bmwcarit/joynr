@@ -18,6 +18,7 @@
  */
 package io.joynr.performance;
 
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import io.joynr.exceptions.JoynrRuntimeException;
@@ -39,15 +40,28 @@ public class AsyncResponseCounterCallback<type> extends Callback<type> {
      */
     private AtomicInteger failureCounter = new AtomicInteger(0);
 
+    private Semaphore responseCounterSemaphore = new Semaphore(0);
+
     @Override
     public void onFailure(JoynrRuntimeException runtimeException) {
         responseCounter.incrementAndGet();
+        responseCounterSemaphore.release();
         failureCounter.incrementAndGet();
     }
 
     @Override
     public void onSuccess(type result) {
         responseCounter.incrementAndGet();
+        responseCounterSemaphore.release();
+    }
+
+    public void acquire() {
+        try {
+            responseCounterSemaphore.acquire();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
     }
 
     public void waitForNumberOfResponses(int numExpectedResponses, int sleepIntervalMilliSec) {
@@ -59,6 +73,19 @@ public class AsyncResponseCounterCallback<type> extends Callback<type> {
                 // exception
             }
         }
+    }
+
+    public void waitForNumberOfResponses(int numExpectedResponses) {
+        try {
+            responseCounterSemaphore.acquire(numExpectedResponses);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+    }
+
+    public void release(int permits) {
+        responseCounterSemaphore.release(permits);
     }
 
     public boolean failuresOccured() {

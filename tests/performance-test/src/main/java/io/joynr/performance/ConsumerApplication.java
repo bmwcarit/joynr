@@ -20,6 +20,10 @@ package io.joynr.performance;
 
 import java.util.Arrays;
 import java.util.Properties;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
@@ -62,7 +66,7 @@ public class ConsumerApplication extends AbstractJoynrApplication {
             consumerApp.run();
             consumerApp.shutdown();
         } catch (Exception exception) {
-            System.err.println(exception.getMessage());
+            invocationParameters.getNumberOfThreads();
             System.exit(-1);
         }
     }
@@ -169,14 +173,67 @@ public class ConsumerApplication extends AbstractJoynrApplication {
         }
     }
 
+    private class EchoRunnable implements Runnable {
+        private EchoProxy proxy;
+        private AtomicLong sentRequests;
+        private final int runs;
+        private final String inputString;
+        private AsyncResponseCounterCallback<String> responseCallback;
+
+        EchoRunnable(EchoProxy proxy,
+                     AtomicLong sentRequests,
+                     final int runs,
+                     final String inputString,
+                     AsyncResponseCounterCallback<String> responseCallback) {
+            this.proxy = proxy;
+            this.sentRequests = sentRequests;
+            this.runs = runs;
+            this.inputString = inputString;
+            this.responseCallback = responseCallback;
+        }
+
+        @Override
+        public void run() {
+            try {
+                while (sentRequests.get() < runs) {
+                    responseCallback.acquire();
+                    if (sentRequests.incrementAndGet() > runs) {
+                        sentRequests.decrementAndGet();
+                        break;
+                    }
+                    proxy.echoString(responseCallback, inputString);
+                }
+            } catch (Exception e) {
+                System.err.println("ERROR in Runnable: " + e);
+            }
+        }
+
+    }
+
     private void performAsyncSendStringTest(EchoProxy proxy) {
         runAsyncSendStringTest(proxy, invocationParameters.getNumberOfWarmupRuns());
         int iterations = invocationParameters.getNumberOfIterations();
+        int runs = invocationParameters.getNumberOfRuns();
 
         int numFailures = 0;
-        long startTime = System.currentTimeMillis();
-        for (int i = 0; i < iterations; i++) {
-            numFailures += runAsyncSendStringTest(proxy, invocationParameters.getNumberOfRuns());
+        long startTime;
+        if (invocationParameters.constantNumberOfPendingRequests()) {
+            int pendingRequests = invocationParameters.getNumberOfPendingRequests();
+            int numThreads = invocationParameters.getNumberOfThreads();
+            System.err.format("CNR runs: %d, pending: %d, threads: %d \n", runs, pendingRequests, numThreads);
+
+            startTime = System.currentTimeMillis();
+            for (int i = 0; i < iterations; i++) {
+                numFailures += runAsyncSendStringTestWithConstantNumberOfPendingRequests(proxy,
+                                                                                         runs,
+                                                                                         pendingRequests,
+                                                                                         numThreads);
+            }
+        } else {
+            startTime = System.currentTimeMillis();
+            for (int i = 0; i < iterations; i++) {
+                numFailures += runAsyncSendStringTest(proxy, runs);
+            }
         }
         long endTime = System.currentTimeMillis();
 
@@ -184,6 +241,39 @@ public class ConsumerApplication extends AbstractJoynrApplication {
         printFailureStatistic(numFailures,
                               invocationParameters.getNumberOfRuns(),
                               invocationParameters.getNumberOfIterations());
+    }
+
+    private int runAsyncSendStringTestWithConstantNumberOfPendingRequests(EchoProxy proxy,
+                                                                          int runs,
+                                                                          int pendingRequests,
+                                                                          int numThreads) {
+        AsyncResponseCounterCallback<String> responseCallback = new AsyncResponseCounterCallback<String>();
+        String inputString = createInputString(invocationParameters.getStringDataLength(), 'x');
+
+        AtomicLong sentRequests = new AtomicLong(pendingRequests);
+
+        ExecutorService executorService = Executors.newFixedThreadPool(numThreads);
+        for (int t = 0; t < numThreads; t++) {
+            executorService.execute(new EchoRunnable(proxy, sentRequests, runs, inputString, responseCallback));
+        }
+
+        for (int j = 0; j < pendingRequests; j++) {
+            proxy.echoString(responseCallback, inputString);
+        }
+
+        responseCallback.waitForNumberOfResponses((int) runs, ASYNCTEST_RESPONSE_SAMPLEINTERVAL_MS);
+
+        responseCallback.release(numThreads);
+        executorService.shutdown();
+        try {
+            if (!executorService.awaitTermination(1000, TimeUnit.MILLISECONDS)) {
+                System.err.println("ERROR: ExecutorService did not shutdown in time.");
+                executorService.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            System.err.println("ERROR: ExecutorService shutdown interrupted: " + e);
+        }
+        return responseCallback.getNumberOfFailures();
     }
 
     private int runAsyncSendStringTest(EchoProxy proxy, int runs) {
@@ -194,7 +284,7 @@ public class ConsumerApplication extends AbstractJoynrApplication {
             proxy.echoString(responseCallback, inputString);
         }
 
-        responseCallback.waitForNumberOfResponses(runs, ASYNCTEST_RESPONSE_SAMPLEINTERVAL_MS);
+        responseCallback.waitForNumberOfResponses(runs);
 
         return responseCallback.getNumberOfFailures();
     }
@@ -236,7 +326,7 @@ public class ConsumerApplication extends AbstractJoynrApplication {
             proxy.echoComplexStruct(responseCallback, inputData);
         }
 
-        responseCallback.waitForNumberOfResponses(runs, ASYNCTEST_RESPONSE_SAMPLEINTERVAL_MS);
+        responseCallback.waitForNumberOfResponses(runs);
 
         return responseCallback.getNumberOfFailures();
     }
@@ -289,7 +379,7 @@ public class ConsumerApplication extends AbstractJoynrApplication {
             proxy.echoByteArray(responseCallback, inputData);
         }
 
-        responseCallback.waitForNumberOfResponses(runs, ASYNCTEST_RESPONSE_SAMPLEINTERVAL_MS);
+        responseCallback.waitForNumberOfResponses(runs);
 
         return responseCallback.getNumberOfFailures();
     }
