@@ -102,7 +102,7 @@ TEST_F(RadixTreeTest, longestMatchRetrievesCorrectValues)
     // find the entries by their original key
     for (auto& entry : data) {
         Node* node = tree.longestMatch(entry.first);
-        ASSERT_TRUE(node) << "queried value (entry.first): "<< entry.first;
+        ASSERT_TRUE(node) << "queried value (entry.first): " << entry.first;
         EXPECT_EQ(entry.second, node->getValue());
     }
 
@@ -174,7 +174,6 @@ TEST_F(RadixTreeTest, eraseMidNodeRestructuresTree)
     validateParents("0137", {});
 }
 
-
 TEST_F(RadixTreeTest, eraseRoot)
 {
     const std::string rootKey = "";
@@ -194,7 +193,8 @@ TEST_F(RadixTreeTest, eraseRoot)
     validateParents("012", {});
 }
 
-TEST_F(RadixTreeTest, callParentsOnRoot){
+TEST_F(RadixTreeTest, callParentsOnRoot)
+{
     const std::string rootKey = "";
     tree.insert(rootKey, "root");
     Node* rootNode = tree.longestMatch(rootKey);
