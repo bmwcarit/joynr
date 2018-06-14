@@ -181,7 +181,9 @@ public class ConsumerApplication extends AbstractJoynrApplication {
         long endTime = System.currentTimeMillis();
 
         printTestResult(endTime, startTime);
-        printFailureStatistic(numFailures, invocationParameters.getNumberOfRuns());
+        printFailureStatistic(numFailures,
+                              invocationParameters.getNumberOfRuns(),
+                              invocationParameters.getNumberOfIterations());
     }
 
     private int runAsyncSendStringTest(EchoProxy proxy, int runs) {
@@ -223,7 +225,7 @@ public class ConsumerApplication extends AbstractJoynrApplication {
         long endTime = System.currentTimeMillis();
 
         printTestResult(endTime, startTime);
-        printFailureStatistic(numFailures, invocationParameters.getNumberOfRuns());
+        printFailureStatistic(numFailures, invocationParameters.getNumberOfRuns(), 1);
     }
 
     private int runAsyncSendStructTest(EchoProxy proxy, int runs) {
@@ -276,7 +278,7 @@ public class ConsumerApplication extends AbstractJoynrApplication {
         long endTime = System.currentTimeMillis();
 
         printTestResult(endTime, startTime);
-        printFailureStatistic(numFailures, invocationParameters.getNumberOfRuns());
+        printFailureStatistic(numFailures, invocationParameters.getNumberOfRuns(), 1);
     }
 
     private int runAsyncSendByteArrayTest(EchoProxy proxy, int runs) {
@@ -320,9 +322,9 @@ public class ConsumerApplication extends AbstractJoynrApplication {
                           invocationParameters.getNumberOfIterations());
     }
 
-    private <type> void printFailureStatistic(int numFailures, int numRuns) {
+    private <type> void printFailureStatistic(int numFailures, int numRuns, int iterations) {
         if (numFailures > 0) {
-            System.err.format("%d out of %d transmissions failed\n", numFailures, numRuns);
+            System.err.format("%d out of %d transmissions failed\n", numFailures, numRuns * iterations);
         }
     }
 
