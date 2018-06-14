@@ -18,6 +18,7 @@
  */
 #include <string>
 #include <unordered_map>
+#include <numeric>
 
 #include <gtest/gtest.h>
 
@@ -201,4 +202,19 @@ TEST_F(RadixTreeTest, callParentsOnRoot)
     ASSERT_TRUE(rootNode);
     auto parents = rootNode->parents();
     EXPECT_EQ(parents.begin(), parents.end());
+}
+
+TEST_F(RadixTreeTest, visit)
+{
+    std::size_t nodeCount = 0;
+    auto fun = [&nodeCount, data = data ](const auto& node, const auto& keyVector)
+    {
+        const std::string key = std::accumulate(keyVector.begin(), keyVector.end(), std::string(),  [](std::string& s, const auto& i) {
+                return s+i.get();
+              });
+        ASSERT_EQ(data.at(key), node.getValue());
+        nodeCount++;
+    };
+    tree.visit(fun);
+    EXPECT_EQ(nodeCount, data.size());
 }
