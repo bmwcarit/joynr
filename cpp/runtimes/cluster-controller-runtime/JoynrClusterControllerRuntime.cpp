@@ -769,7 +769,8 @@ void JoynrClusterControllerRuntime::registerInternalSystemServiceProviders()
     ClusterControllerCallContextStorage::invalidate();
 }
 
-void JoynrClusterControllerRuntime::unregisterInternalSystemServiceProvider(const std::string& participantId)
+void JoynrClusterControllerRuntime::unregisterInternalSystemServiceProvider(
+        const std::string& participantId)
 {
     localCapabilitiesDirectory->remove(participantId, true);
     for (std::shared_ptr<IDispatcher> currentDispatcher : dispatcherList) {
