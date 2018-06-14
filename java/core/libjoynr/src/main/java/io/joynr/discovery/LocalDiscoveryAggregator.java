@@ -97,7 +97,7 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
 
     @Override
     public Future<Void> add(Callback<Void> callback, DiscoveryEntry discoveryEntry) {
-        return getDefaultDiscoveryProxy().add(callback, discoveryEntry);
+        return getDefaultDiscoveryProxy().add(callback, discoveryEntry, false);
     }
 
     @Override
