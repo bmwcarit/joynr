@@ -178,7 +178,15 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
 
     private DiscoveryProxy getDefaultDiscoveryProxy() {
         if (defaultDiscoveryProxy == null) {
-            defaultDiscoveryProxy = proxyBuilderFactory.get(systemServiceDomain, DiscoveryProxy.class).build();
+            // extend default ttl by 10 seconds to allow the cluster controller to handle timeout for
+            // global discovery requests and send back the response to discoveryProxy.
+            // Note that ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_TTL_MS must be
+            // larger than the resulting value here.
+            MessagingQos internalMessagingQos = new MessagingQos();
+            internalMessagingQos.setTtl_ms(internalMessagingQos.getRoundTripTtl_ms() + 10000);
+            defaultDiscoveryProxy = proxyBuilderFactory.get(systemServiceDomain, DiscoveryProxy.class)
+                                                       .setMessagingQos(internalMessagingQos)
+                                                       .build();
         }
 
         return defaultDiscoveryProxy;
