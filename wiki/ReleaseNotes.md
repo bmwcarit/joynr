@@ -7,6 +7,10 @@ the versioning scheme [here](JoynrVersioning.md).
   propagated to GlobalCapabilitiesDirectory by passing an optional boolean flag `awaitGlobalRegistration`
   to `registerProvider` or `settings.awaitGlobalRegistration` to `register` APIs of joynr.registration.
 
+## Other changes
+* **[C++,Generator]** Deleted InProcess bypass. Every message has to be now routed
+  through message router.
+
 # joynr 1.3.0
 
 ## API relevant changes
