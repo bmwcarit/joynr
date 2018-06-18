@@ -49,11 +49,11 @@ class InterfaceProxyBaseCppTemplate extends InterfaceTemplate {
 «getNamespaceStarter(francaIntf)»
 «className»::«className»(
 		std::weak_ptr<joynr::JoynrRuntimeImpl> runtime,
-		joynr::JoynrMessagingConnectorFactory* connectorFactory,
+		std::shared_ptr<joynr::JoynrMessagingConnectorFactory> connectorFactory,
 		const std::string &domain,
 		const joynr::MessagingQos &qosSettings
 ) :
-		joynr::ProxyBase(std::move(runtime), connectorFactory, domain, qosSettings),
+		joynr::ProxyBase(std::move(runtime), std::move(connectorFactory), domain, qosSettings),
 		connector()
 {
 }
