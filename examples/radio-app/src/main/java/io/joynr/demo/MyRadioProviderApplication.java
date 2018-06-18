@@ -327,7 +327,8 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
         ProviderQos providerQos = new ProviderQos();
         providerQos.setPriority(System.currentTimeMillis());
         providerQos.setScope(providerScope);
-        runtime.registerProvider(localDomain, provider, providerQos);
+        boolean awaitGlobalRegistration = true;
+        runtime.registerProvider(localDomain, provider, providerQos, awaitGlobalRegistration);
 
         ConsoleReader console;
         try {
