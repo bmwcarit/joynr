@@ -38,7 +38,7 @@ class JOYNR_EXPORT ProxyBase : public std::enable_shared_from_this<ProxyBase>
 
 public:
     ProxyBase(std::weak_ptr<JoynrRuntimeImpl> runtime,
-              JoynrMessagingConnectorFactory* connectorFactory,
+              std::shared_ptr<JoynrMessagingConnectorFactory> connectorFactory,
               const std::string& domain,
               const MessagingQos& qosSettings);
     virtual ~ProxyBase() = default;
@@ -61,7 +61,7 @@ protected:
             const types::DiscoveryEntryWithMetaInfo& providerDiscoveryEntry);
 
     std::weak_ptr<JoynrRuntimeImpl> runtime;
-    JoynrMessagingConnectorFactory* connectorFactory;
+    std::shared_ptr<JoynrMessagingConnectorFactory> connectorFactory;
     std::string domain;
     MessagingQos qosSettings;
     std::string proxyParticipantId;

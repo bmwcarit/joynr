@@ -25,11 +25,11 @@ namespace joynr
 {
 
 ProxyBase::ProxyBase(std::weak_ptr<JoynrRuntimeImpl> runtime,
-                     JoynrMessagingConnectorFactory* connectorFactory,
+                     std::shared_ptr<JoynrMessagingConnectorFactory> connectorFactory,
                      const std::string& domain,
                      const MessagingQos& qosSettings)
         : runtime(std::move(runtime)),
-          connectorFactory(connectorFactory),
+          connectorFactory(std::move(connectorFactory)),
           domain(domain),
           qosSettings(qosSettings),
           proxyParticipantId(""),

@@ -36,7 +36,7 @@ class JoynrRuntimeImpl;
 class JOYNR_EXPORT ProxyFactory
 {
 public:
-    ProxyFactory(std::unique_ptr<JoynrMessagingConnectorFactory> connectorFactory);
+    ProxyFactory(std::shared_ptr<JoynrMessagingConnectorFactory> connectorFactory);
 
     // Create a proxy of type T
     template <class T>
@@ -44,13 +44,13 @@ public:
                                    const std::string& domain,
                                    const MessagingQos& qosSettings)
     {
-        auto proxy = std::make_shared<T>(runtime, connectorFactory.get(), domain, qosSettings);
+        auto proxy = std::make_shared<T>(runtime, connectorFactory, domain, qosSettings);
         return proxy;
     }
 
 private:
     DISALLOW_COPY_AND_ASSIGN(ProxyFactory);
-    std::unique_ptr<JoynrMessagingConnectorFactory> connectorFactory;
+    std::shared_ptr<JoynrMessagingConnectorFactory> connectorFactory;
 };
 
 } // namespace joynr
