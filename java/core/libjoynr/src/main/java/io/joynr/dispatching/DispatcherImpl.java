@@ -41,6 +41,7 @@ import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.messaging.MessagingQosEffort;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.sender.MessageSender;
 import io.joynr.provider.ProviderCallback;
@@ -161,8 +162,9 @@ public class DispatcherImpl implements Dispatcher {
                           Reply reply,
                           final long expiryDateMs,
                           Map<String, String> customHeaders,
+                          final MessagingQosEffort effort,
                           boolean compress) throws IOException {
-        MessagingQos messagingQos = new MessagingQos(expiryDateMs);
+        MessagingQos messagingQos = new MessagingQos(expiryDateMs, effort);
         messagingQos.getCustomMessageHeaders().putAll(customHeaders);
         if (overrideCompress) {
             compress = true;
@@ -204,6 +206,9 @@ public class DispatcherImpl implements Dispatcher {
             return;
         }
 
+        MessagingQosEffort effort = message.getEffort() == null ? null
+                : MessagingQosEffort.valueOf(message.getEffort());
+
         String payload;
 
         try {
@@ -234,6 +239,7 @@ public class DispatcherImpl implements Dispatcher {
                        message.getRecipient(),
                        expiryDate,
                        customHeaders,
+                       effort,
                        message.isCompressed());
             } else if (Message.VALUE_MESSAGE_TYPE_ONE_WAY.equals(type)) {
                 OneWayRequest oneWayRequest = objectMapper.readValue(payload, OneWayRequest.class);
@@ -275,13 +281,20 @@ public class DispatcherImpl implements Dispatcher {
                         final String toParticipantId,
                         final long expiryDate,
                         final Map<String, String> customHeaders,
+                        final MessagingQosEffort effort,
                         final boolean compress) {
         requestReplyManager.handleRequest(new ProviderCallback<Reply>() {
             @Override
             public void onSuccess(Reply reply) {
                 try {
                     if (!DispatcherUtils.isExpired(expiryDate)) {
-                        sendReply(toParticipantId, fromParticipantId, reply, expiryDate, customHeaders, compress);
+                        sendReply(toParticipantId,
+                                  fromParticipantId,
+                                  reply,
+                                  expiryDate,
+                                  customHeaders,
+                                  effort,
+                                  compress);
                     } else {
                         logger.error("Error: reply {} is not send to caller, as the expiryDate of the reply message {} has been reached.",
                                      reply,
@@ -300,7 +313,7 @@ public class DispatcherImpl implements Dispatcher {
                 }
                 Reply reply = new Reply(request.getRequestReplyId(), error);
                 try {
-                    sendReply(toParticipantId, fromParticipantId, reply, expiryDate, customHeaders, compress);
+                    sendReply(toParticipantId, fromParticipantId, reply, expiryDate, customHeaders, effort, compress);
                 } catch (Exception e) {
                     logger.error("Error sending error reply: \r\n {}", reply, e);
                 }
