@@ -25,9 +25,7 @@
 #include "joynr/Dispatcher.h"
 #include "joynr/CapabilitiesRegistrar.h"
 #include "joynr/IMulticastAddressCalculator.h"
-#include "joynr/InProcessDispatcher.h"
 #include "joynr/InProcessMessagingAddress.h"
-#include "joynr/InProcessPublicationSender.h"
 #include "joynr/MessageSender.h"
 #include "joynr/MessageQueue.h"
 #include "joynr/LibJoynrMessageRouter.h"
@@ -53,10 +51,8 @@ LibJoynrRuntime::LibJoynrRuntime(std::unique_ptr<Settings> settings,
                                  std::shared_ptr<IKeychain> keyChain)
         : JoynrRuntimeImpl(*settings, std::move(keyChain)),
           subscriptionManager(nullptr),
-          inProcessPublicationSender(),
           messageSender(nullptr),
           joynrDispatcher(nullptr),
-          inProcessDispatcher(),
           settings(std::move(settings)),
           libjoynrSettings(new LibjoynrSettings(*this->settings)),
           dispatcherMessagingSkeleton(nullptr),
@@ -91,10 +87,6 @@ void LibJoynrRuntime::shutdown()
     }
     proxyBuilders.clear();
 
-    if (inProcessDispatcher) {
-        inProcessDispatcher->shutdown();
-        inProcessDispatcher.reset();
-    }
     if (joynrDispatcher) {
         joynrDispatcher->shutdown();
         joynrDispatcher.reset();
@@ -108,9 +100,6 @@ void LibJoynrRuntime::shutdown()
     if (libjoynrSettings) {
         delete libjoynrSettings;
         libjoynrSettings = nullptr;
-    }
-    if (inProcessPublicationSender) {
-        inProcessPublicationSender.reset();
     }
     if (libJoynrMessageRouter) {
         libJoynrMessageRouter->shutdown();
@@ -176,22 +165,11 @@ void LibJoynrRuntime::init(
 
     subscriptionManager = std::make_shared<SubscriptionManager>(
             singleThreadIOService->getIOService(), libJoynrMessageRouter);
-    inProcessDispatcher =
-            std::make_shared<InProcessDispatcher>(singleThreadIOService->getIOService());
 
-    inProcessPublicationSender = std::make_shared<InProcessPublicationSender>(subscriptionManager);
-    // TODO: replace raw ptr to IRequestCallerDirectory
-    auto inProcessConnectorFactory = std::make_unique<InProcessConnectorFactory>(
-            subscriptionManager,
-            publicationManager,
-            inProcessPublicationSender,
-            std::dynamic_pointer_cast<IRequestCallerDirectory>(inProcessDispatcher));
     auto joynrMessagingConnectorFactory =
             std::make_unique<JoynrMessagingConnectorFactory>(messageSender, subscriptionManager);
 
-    auto connectorFactory = std::make_unique<ConnectorFactory>(
-            std::move(inProcessConnectorFactory), std::move(joynrMessagingConnectorFactory));
-    proxyFactory = std::make_unique<ProxyFactory>(std::move(connectorFactory));
+    proxyFactory = std::make_unique<ProxyFactory>(std::move(joynrMessagingConnectorFactory));
 
     // Set up the persistence file for storing provider participant ids
     std::string persistenceFilename = libjoynrSettings->getParticipantIdsPersistenceFilename();
@@ -202,9 +180,6 @@ void LibJoynrRuntime::init(
     joynrDispatcher->registerSubscriptionManager(subscriptionManager);
 
     discoveryProxy = std::make_shared<LocalDiscoveryAggregator>(getProvisionedEntries());
-
-    requestCallerDirectory =
-            std::dynamic_pointer_cast<IRequestCallerDirectory>(inProcessDispatcher);
 
     std::string systemServicesDomain = systemServicesSettings.getDomain();
 
@@ -264,7 +239,6 @@ void LibJoynrRuntime::init(
         messageSender->setReplyToAddress(replyAddress);
 
         std::vector<std::shared_ptr<IDispatcher>> dispatcherList;
-        dispatcherList.push_back(inProcessDispatcher);
         dispatcherList.push_back(joynrDispatcher);
 
         capabilitiesRegistrar = std::make_unique<CapabilitiesRegistrar>(

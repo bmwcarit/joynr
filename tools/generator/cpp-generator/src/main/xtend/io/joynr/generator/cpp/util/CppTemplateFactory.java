@@ -33,8 +33,6 @@ import io.joynr.generator.cpp.communicationmodel.TypeCppTemplate;
 import io.joynr.generator.cpp.communicationmodel.TypeHTemplate;
 import io.joynr.generator.cpp.defaultProvider.DefaultInterfaceProviderCppTemplate;
 import io.joynr.generator.cpp.defaultProvider.DefaultInterfaceProviderHTemplate;
-import io.joynr.generator.cpp.inprocess.InterfaceInProcessConnectorCPPTemplate;
-import io.joynr.generator.cpp.inprocess.InterfaceInProcessConnectorHTemplate;
 import io.joynr.generator.cpp.joynrmessaging.InterfaceJoynrMessagingConnectorCppTemplate;
 import io.joynr.generator.cpp.joynrmessaging.InterfaceJoynrMessagingConnectorHTemplate;
 import io.joynr.generator.cpp.provider.InterfaceAbstractProviderCppTemplate;
@@ -65,10 +63,6 @@ public interface CppTemplateFactory {
     DefaultInterfaceProviderHTemplate createDefaultInterfaceProviderHTemplate(FInterface francaIntf);
 
     DefaultInterfaceProviderCppTemplate createDefaultInterfaceProviderCppTemplate(FInterface francaIntf);
-
-    InterfaceInProcessConnectorHTemplate createInterfaceInProcessConnectorHTemplate(FInterface francaIntf);
-
-    InterfaceInProcessConnectorCPPTemplate createInterfaceInProcessConnectorCPPTemplate(FInterface francaIntf);
 
     InterfaceJoynrMessagingConnectorHTemplate createInterfaceJoynrMessagingConnectorHTemplate(FInterface francaIntf);
 

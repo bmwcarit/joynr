@@ -24,7 +24,6 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "joynr/InProcessAddress.h"
 #include "joynr/InProcessMessagingAddress.h"
 #include "joynr/system/RoutingProxy.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
@@ -361,14 +360,6 @@ void LibJoynrMessageRouterTest::testAddNextHopCallsRoutingProxyCorrectly(const b
 
 TEST_F(LibJoynrMessageRouterTest, addNextHop_callsAddNextHopInRoutingProxy) {
     bool isGloballyVisible;
-
-    // InProcessAddress
-    auto mockRequestCaller = std::make_shared<MockTestRequestCaller>();
-    const auto providerAddress1 = std::make_shared<const joynr::InProcessAddress>(mockRequestCaller);
-    isGloballyVisible = false;
-    testAddNextHopCallsRoutingProxyCorrectly(isGloballyVisible, providerAddress1);
-    isGloballyVisible = true;
-    testAddNextHopCallsRoutingProxyCorrectly(isGloballyVisible, providerAddress1);
 
     // InprocessMessagingAddress
     auto dispatcher = std::make_shared<MockDispatcher>();

@@ -58,7 +58,6 @@ class SubscriptionRequest;
 class BroadcastSubscriptionRequest;
 class MulticastSubscriptionRequest;
 class SubscriptionInformation;
-class IPublicationSender;
 class RequestCaller;
 class UnicastBroadcastListener;
 class SubscriptionQos;

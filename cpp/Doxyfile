@@ -964,7 +964,6 @@ EXCLUDE                = libjoynr/LibjoynrSettings.cpp \
                          libjoynr/include/joynr/BroadcastSubscriptionRequest.h \
                          libjoynr/include/joynr/CapabilitiesRegistrar.h \
                          libjoynr/include/joynr/CapabilityEntry.h \
-                         libjoynr/include/joynr/ConnectorFactory.h \
                          libjoynr/include/joynr/DefaultArbitrator.h \
                          libjoynr/include/joynr/Dispatcher.h \
                          libjoynr/include/joynr/FixedParticipantArbitrator.h \
@@ -1038,11 +1037,7 @@ EXCLUDE                = libjoynr/LibjoynrSettings.cpp \
                          libjoynr/include/joynr/infrastructure/IGlobalCapabilitiesDirectory.h \
                          libjoynr/include/joynr/infrastructure/IGlobalDomainAccessControllerConnector.h \
                          libjoynr/include/joynr/infrastructure/IGlobalDomainAccessController.h \
-                         libjoynr/include/joynr/InProcessAddress.h \
-                         libjoynr/include/joynr/InProcessConnectorFactory.h \
-                         libjoynr/include/joynr/InProcessDispatcher.h \
                          libjoynr/include/joynr/InProcessMessagingAddress.h \
-                         libjoynr/include/joynr/InProcessPublicationSender.h \
                          libjoynr/include/joynr/InterfaceRegistrar.h \
                          libjoynr/include/joynr/IPlatformSecurityManager.h \
                          libjoynr/include/joynr/IPublicationSender.h \
@@ -1087,7 +1082,6 @@ EXCLUDE                = libjoynr/LibjoynrSettings.cpp \
                          libjoynr/include/joynr/system/DefaultLoggingProvider.h \
                          libjoynr/include/joynr/system/DefaultRoutingProvider.h \
                          libjoynr/include/joynr/system/DiscoveryAsyncProxy.h \
-                         libjoynr/include/joynr/system/DiscoveryInProcessConnector.h \
                          libjoynr/include/joynr/system/DiscoveryJoynrMessagingConnector.h \
                          libjoynr/include/joynr/system/DiscoveryProvider.h \
                          libjoynr/include/joynr/system/DiscoveryProxyBase.h \
@@ -1138,9 +1132,6 @@ EXCLUDE                = libjoynr/LibjoynrSettings.cpp \
                          libjoynr/in-process/generated/system/DiscoveryInProcessConnector.cpp \
                          libjoynr/in-process/generated/system/LoggingInProcessConnector.cpp \
                          libjoynr/in-process/generated/system/RoutingInProcessConnector.cpp \
-                         libjoynr/in-process/InProcessAddress.cpp \
-                         libjoynr/in-process/InProcessConnectorFactory.cpp \
-                         libjoynr/in-process/InProcessDispatcher.cpp \
                          libjoynr/in-process/InProcessLibJoynrMessagingSkeleton.cpp \
                          libjoynr/include/joynr/system/RoutingTypes/WebSocketAddress.h \
                          libjoynr/include/joynr/system/RoutingTypes/WebSocketClientAddress.h \
@@ -1149,7 +1140,6 @@ EXCLUDE                = libjoynr/LibjoynrSettings.cpp \
                          libjoynr/in-process/InProcessMessagingAddress.cpp \
                          libjoynr/in-process/InProcessMessagingStubFactory.cpp \
                          libjoynr/in-process/InProcessMessagingStubFactory.h \
-                         libjoynr/in-process/InProcessPublicationSender.cpp \
                          libjoynr/joynr-messaging/AbstractJoynrMessagingConnector.cpp \
                          libjoynr/joynr-messaging/BrokerUrl.cpp \
                          libjoynr/joynr-messaging/dispatcher/Dispatcher.cpp \
@@ -1196,7 +1186,6 @@ EXCLUDE                = libjoynr/LibjoynrSettings.cpp \
                          libjoynr/provider/generated/system/RoutingRequestInterpreter.cpp \
                          libjoynr/provider/InterfaceRegistrar.cpp \
                          libjoynr/provider/RequestCaller.cpp \
-                         libjoynr/proxy/ConnectorFactory.cpp \
                          libjoynr/proxy/DefaultArbitrator.cpp \
                          libjoynr/proxy/FixedParticipantArbitrator.cpp \
                          libjoynr/proxy/generated/infrastructure/ChannelUrlDirectoryAsyncProxy.cpp \
