@@ -187,6 +187,22 @@ public class DispatcherImpl implements Dispatcher {
         messageSender.sendMessage(message);
     }
 
+    private MessagingQosEffort getEffort(final ImmutableMessage message) {
+        String effortString = message.getEffort();
+        if (effortString == null) {
+            return null;
+        } else {
+            try {
+                return MessagingQosEffort.valueOf(effortString);
+            } catch (IllegalArgumentException e) {
+                logger.error("received message (id: {}) with invalid effort: {}. Using default effort for reply message.",
+                             message.getId(),
+                             effortString);
+                return null;
+            }
+        }
+    }
+
     @Override
     public void messageArrived(final ImmutableMessage message) {
         if (message == null) {
@@ -205,9 +221,6 @@ public class DispatcherImpl implements Dispatcher {
             logger.debug("TTL expired, discarding message : {}", message);
             return;
         }
-
-        MessagingQosEffort effort = message.getEffort() == null ? null
-                : MessagingQosEffort.valueOf(message.getEffort());
 
         String payload;
 
@@ -230,6 +243,7 @@ public class DispatcherImpl implements Dispatcher {
                 logger.trace("Parsed subscription reply from message payload :" + payload);
                 handle(subscriptionReply);
             } else if (Message.VALUE_MESSAGE_TYPE_REQUEST.equals(type)) {
+                MessagingQosEffort effort = getEffort(message);
                 final Request request = objectMapper.readValue(payload, Request.class);
                 request.setCreatorUserId(message.getCreatorUserId());
                 request.setContext(message.getContext());

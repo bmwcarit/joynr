@@ -376,6 +376,34 @@ public class DispatcherImplTest {
         testPropagateEffortFromRequestToRepliesImpl(effort);
     }
 
+    @Test
+    public void testRequestWithInvalidEffort_replyUsesDefaultEffort() throws Exception {
+        MessagingQos messagingQos = new MessagingQos(1000L);
+
+        String requestReplyId = UUID.randomUUID().toString();
+        Request request = new Request("methodName", new Object[]{}, new String[]{}, requestReplyId);
+        final String providerParticipantId = "toParticipantId";
+
+        MutableMessage joynrMessage = messageFactory.createRequest("fromParticipantId",
+                                                                   providerParticipantId,
+                                                                   request,
+                                                                   messagingQos);
+
+        joynrMessage.setEffort("INVALID_EFFORT");
+        ImmutableMessage outgoingMessage = joynrMessage.getImmutableMessage();
+
+        fixture.messageArrived(outgoingMessage);
+        verify(requestReplyManagerMock).handleRequest(providerCallbackReply.capture(),
+                                                      eq(providerParticipantId),
+                                                      eq(request),
+                                                      eq(joynrMessage.getTtlMs()));
+        providerCallbackReply.getValue().onSuccess(new Reply(requestReplyId));
+        ArgumentCaptor<MutableMessage> captor = ArgumentCaptor.forClass(MutableMessage.class);
+        verify(messageSenderMock).sendMessage(captor.capture());
+        ImmutableMessage immutableMessage = captor.getValue().getImmutableMessage();
+        assertEquals(null, immutableMessage.getEffort());
+    }
+
     private static class MessageIsCompressedMatcher extends ArgumentMatcher<MutableMessage> {
         private final boolean shouldMessageBeCompressed;
 
