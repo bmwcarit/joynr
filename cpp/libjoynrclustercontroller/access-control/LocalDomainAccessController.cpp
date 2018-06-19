@@ -355,6 +355,7 @@ void LocalDomainAccessController::getConsumerPermission(
     // The operations of the ACEs should only contain wildcards, if not
     // getConsumerPermission should be called with an operation
     if (!localDomainAccessStore->onlyWildcardOperations(userId, domain, interfaceName)) {
+        JOYNR_LOG_INFO(logger(), "Operation needed for ACL check.");
         callback->operationNeeded();
     } else {
         // The operations are all wildcards
