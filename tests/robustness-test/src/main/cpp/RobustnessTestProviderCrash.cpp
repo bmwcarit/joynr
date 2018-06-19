@@ -39,8 +39,7 @@ TEST_F(RobustnessTestProviderCrash, call_methodWithStringParametersAfterProvider
     callMethodWithStringParameters();
 }
 
-// this test will temporarily be skipped as it currently does not work, will be enabled later on
-TEST_F(RobustnessTestProviderCrash, DISABLED_call_methodWithStringParametersBeforeProviderRestart)
+TEST_F(RobustnessTestProviderCrash, call_methodWithStringParametersBeforeProviderRestart)
 {
     // wait for the provider from the last test case to be expired
     std::this_thread::sleep_for(std::chrono::milliseconds(10000));
