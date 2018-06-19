@@ -34,6 +34,8 @@ macro(CONFIGURE_TEST_FILES targetDirectory)
         "AccessControlYesPermission.entries"
         "AccessStoreTest.persist"
         "AclRclJoynrClusterControllerRuntimeTest.settings"
+        "application1_ACL_RCL_Permissions.json"
+        "application2_ACL_RCL_Permissions.json"
         "integrationtest.settings"
         "websocket-cc-tls.settings"
         "websocket-libjoynr-tls.settings"

@@ -1,0 +1,52 @@
+{
+  "masterAccessTable": [
+    {
+      "_typeName": "joynr.infrastructure.DacTypes.MasterAccessControlEntry",
+      "uid": "application_1",
+      "domain": "*",
+      "interfaceName": "*",
+      "defaultRequiredTrustLevel": "HIGH",
+      "possibleRequiredTrustLevels": [
+        "HIGH"
+      ],
+      "defaultRequiredControlEntryChangeTrustLevel": "HIGH",
+      "possibleRequiredControlEntryChangeTrustLevels": [
+        "HIGH"
+      ],
+      "operation": "*",
+      "defaultConsumerPermission": "YES",
+      "possibleConsumerPermissions": [
+        "YES",
+        "NO",
+        "ASK"
+      ]
+    }
+  ],
+  "mediatorAccessTable": [],
+  "ownerAccessTable": [],
+  "masterRegistrationTable": [
+    {
+      "_typeName": "joynr.infrastructure.DacTypes.MasterRegistrationControlEntry",
+      "uid": "application_1",
+      "domain": "*",
+      "interfaceName": "*",
+      "defaultRequiredTrustLevel": "HIGH",
+      "possibleRequiredTrustLevels": [
+        "HIGH"
+      ],
+      "defaultRequiredControlEntryChangeTrustLevel": "HIGH",
+      "possibleRequiredControlEntryChangeTrustLevels": [
+        "HIGH"
+      ],
+      "defaultProviderPermission": "YES",
+      "possibleProviderPermissions": [
+        "YES",
+        "NO",
+        "ASK"
+      ]
+    }
+  ],
+  "mediatorRegistrationTable": [],
+  "ownerRegistrationTable": [],
+  "domainRoleTable": []
+}

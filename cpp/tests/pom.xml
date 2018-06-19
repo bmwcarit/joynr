@@ -237,6 +237,8 @@
 						<exclude>resources/MasterRegistrationTable.json</exclude>
 						<exclude>resources/OwnerAccessTable.json</exclude>
 						<exclude>resources/OwnerRegistrationTable.json</exclude>
+						<exclude>resources/application1_ACL_RCL_Permissions.json</exclude>
+						<exclude>resources/application2_ACL_RCL_Permissions.json</exclude>
 					</excludes>
 				</configuration>
 			</plugin>
