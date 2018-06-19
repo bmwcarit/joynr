@@ -18,9 +18,9 @@
   #L%
   -->
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
-  <modelVersion>4.0.0</modelVersion>
+	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
 		<groupId>io.joynr.examples</groupId>
@@ -29,74 +29,74 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
-  <groupId>io.joynr.examples.radio-jee</groupId>
-  <artifactId>radio-jee-consumer</artifactId>
-  <packaging>war</packaging>
-  <name>${project.groupId}:${project.artifactId}</name>
+	<groupId>io.joynr.examples.radio-jee</groupId>
+	<artifactId>radio-jee-consumer</artifactId>
+	<packaging>war</packaging>
+	<name>${project.groupId}:${project.artifactId}</name>
 
-  <build>
+	<build>
 
-    <plugins>
+		<plugins>
 
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-war-plugin</artifactId>
-        <configuration>
-          <failOnMissingWebXml>false</failOnMissingWebXml>
-          <warName>radio-jee-consumer</warName>
-        </configuration>
-      </plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-war-plugin</artifactId>
+				<configuration>
+					<failOnMissingWebXml>false</failOnMissingWebXml>
+					<warName>radio-jee-consumer</warName>
+				</configuration>
+			</plugin>
 
-    </plugins>
+		</plugins>
 
-  </build>
+	</build>
 
-  <dependencies>
+	<dependencies>
 
-    <!-- Own dependencies -->
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>radio-jee-api</artifactId>
-      <version>${project.version}</version>
-    </dependency>
+		<!-- Own dependencies -->
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>radio-jee-api</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 
-    <!-- Libraries -->
-    <dependency>
-      <groupId>javax</groupId>
-      <artifactId>javaee-api</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.joynr.java</groupId>
-      <artifactId>jeeintegration</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-jdk14</artifactId>
-    </dependency>
+		<!-- Libraries -->
+		<dependency>
+			<groupId>javax</groupId>
+			<artifactId>javaee-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.joynr.java</groupId>
+			<artifactId>jeeintegration</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-jdk14</artifactId>
+		</dependency>
 
-    <!-- Test dependencies -->
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-all</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>ch.qos.logback</groupId>
-      <artifactId>logback-classic</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.codehaus.groovy</groupId>
-      <artifactId>groovy-all</artifactId>
-      <scope>test</scope>
-    </dependency>
+		<!-- Test dependencies -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-all</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.codehaus.groovy</groupId>
+			<artifactId>groovy-all</artifactId>
+			<scope>test</scope>
+		</dependency>
 
-  </dependencies>
+	</dependencies>
 
 </project>

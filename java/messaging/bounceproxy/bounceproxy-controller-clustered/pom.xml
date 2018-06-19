@@ -25,8 +25,7 @@
 
 	<name>${project.groupId}:${project.artifactId}</name>
 
-	<description>Bounceproxy controller that works in a clustered environment.
-	</description>
+	<description>Bounceproxy controller that works in a clustered environment.</description>
 
 	<parent>
 		<groupId>io.joynr.java.messaging</groupId>
@@ -35,12 +34,7 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
-	<properties>
-
-	</properties>
-
-    <dependencies>
-
+	<dependencies>
 		<dependency>
 			<groupId>io.joynr.java.messaging.bounceproxy</groupId>
 			<artifactId>bounceproxy-controller</artifactId>
@@ -67,13 +61,10 @@
 			<artifactId>channel-service</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-
 	</dependencies>
-
 
 	<build>
 		<finalName>${project.artifactId}</finalName>
-
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -83,29 +74,24 @@
 					<warName>${project.build.finalName}</warName>
 					<warSourceDirectory>src/main/resources</warSourceDirectory>
 					<attachClasses>true</attachClasses>
-		            <packagingExcludes>
-		            	**/jetty-logging.properties
-		            </packagingExcludes>
-		            <overlays>
+					<packagingExcludes>**/jetty-logging.properties</packagingExcludes>
+					<overlays>
 						<overlay>
 							<groupId>io.joynr.java.messaging</groupId>
 							<artifactId>channel-service</artifactId>
 							<type>jar</type>
 							<includes>
-				                <include>css/**</include>
-				                <include>script/**</include>
-				                <include>channels.html</include>
-				                <include>NOTICE-javascript</include>
+								<include>css/**</include>
+								<include>script/**</include>
+								<include>channels.html</include>
+								<include>NOTICE-javascript</include>
 								<include>MIT-LICENSE</include>
 								<include>LICENSE_INFO</include>
-				            </includes>
+							</includes>
 						</overlay>
 					</overlays>
 				</configuration>
 			</plugin>
-
 		</plugins>
-
 	</build>
-
 </project>

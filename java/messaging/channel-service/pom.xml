@@ -53,8 +53,8 @@
 					</plugin>
 				</plugins>
 			</build>
-        </profile>
-    </profiles>
+		</profile>
+	</profiles>
 
 	<properties>
 		<atmosphere-version>2.0.8</atmosphere-version>
@@ -108,9 +108,11 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!-- Workaround for Maven bug MNG-1378: Make dependencies of test-jars transitive
-		     Dependencies should come from service-common test-jar, but they aren't resolved
-		     transitively. Thus they are duplicated here. -->
+		<!--
+			Workaround for Maven bug MNG-1378: Make dependencies of test-jars transitive
+			Dependencies should come from service-common test-jar, but they aren't resolved
+			transitively. Thus they are duplicated here.
+		-->
 		<dependency>
 			<groupId>com.jayway.restassured</groupId>
 			<artifactId>rest-assured</artifactId>
