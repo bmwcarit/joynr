@@ -228,6 +228,16 @@ function WebSocketLibjoynrRuntime(provisioning) {
 
         bufferedOwnerId = Buffer.from(keychain.ownerId);
         JoynrMessage.setSigningCallback(signingCallback);
+
+        keychain.checkServerIdentity = function(server) {
+            if (provisioning.ccAddress.host === server) {
+                return undefined;
+            } else {
+                throw new Error(
+                    `message from unknown host: ${server} on accepted host is cc: ${provisioning.ccAddress.host}.`
+                );
+            }
+        };
     }
 
     /**

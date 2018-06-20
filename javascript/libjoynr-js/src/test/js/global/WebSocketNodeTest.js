@@ -34,6 +34,8 @@ mod.prototype.require = function(md) {
 // req path starting at: node-run-unit-tests
 const WebsocketNode = req("../../main/js/global/WebSocketNode");
 
+function checkServerIdentity() {}
+
 describe("websocket node", () => {
     let websocketNode;
     const remoteUrl = "url";
@@ -41,7 +43,8 @@ describe("websocket node", () => {
         tlsCert: "tlsCert",
         tlsKey: "tlsKey",
         tlsCa: "tlsCa",
-        ownerId: "ownerID"
+        ownerId: "ownerID",
+        checkServerIdentity
     };
 
     it("calls the wscpp constructor with certs for unencrypted Tls communication", () => {
@@ -53,7 +56,8 @@ describe("websocket node", () => {
             key: keychainWithCerts.tlsKey,
             ca: keychainWithCerts.tlsCa,
             rejectUnauthorized: true,
-            ciphers: "eNULL"
+            ciphers: "eNULL",
+            checkServerIdentity
         });
     });
 
@@ -65,7 +69,8 @@ describe("websocket node", () => {
             cert: keychainWithCerts.tlsCert,
             key: keychainWithCerts.tlsKey,
             ca: keychainWithCerts.tlsCa,
-            rejectUnauthorized: true
+            rejectUnauthorized: true,
+            checkServerIdentity
         });
     });
 });
