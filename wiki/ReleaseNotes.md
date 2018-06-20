@@ -10,6 +10,8 @@ the versioning scheme [here](JoynrVersioning.md).
 ## Other changes
 * **[C++,Generator]** Deleted InProcess bypass. Every message has to be now routed
   through message router.
+* **[C++]** The application thread will not return immediately if persistency is ON. Persistency of subscriptions
+  is being loaded in the same thread as registerProvider.
 
 # joynr 1.3.0
 
