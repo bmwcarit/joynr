@@ -222,6 +222,18 @@ void Dispatcher::handleRequestReceived(std::shared_ptr<ImmutableMessage> message
             const std::chrono::milliseconds ttl = requestExpiryDate.relativeFromNow();
             MessagingQos messagingQos(ttl.count());
             messagingQos.setCompress(message->isCompressed());
+            const boost::optional<std::string> effort = message->getEffort();
+            if (effort) {
+                try {
+                    messagingQos.setEffort(MessagingQosEffort::getEnum(*effort));
+                } catch (const std::invalid_argument& e) {
+                    JOYNR_LOG_ERROR(logger(),
+                                    "Request message (id: {}) uses invalid effort: {}. Using "
+                                    "default effort for reply message.",
+                                    message->getId(),
+                                    *effort);
+                }
+            }
             thisSharedPtr->messageSender->sendReply(
                     receiverId, // receiver of the request is sender of reply
                     senderId,   // sender of request is receiver of reply
