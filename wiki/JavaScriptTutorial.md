@@ -1,4 +1,4 @@
-This tutorial will guide you through a simple joynr radio application, explaining three essential
+This tutorial will guide you through a simple node joynr radio application, explaining three essential
 joynr concepts:
 
 * A simple radio **communication interface**
@@ -22,15 +22,13 @@ in the `<JOYNR>/tools/generator/dependency-libs/` directory.
 The joynr JS binding is build using Maven:
 
 ```bash
-<JOYNR>/javascript$ mvn clean install -DskipTests
+<JOYNR>/javascript$ mvn clean install
 ```
 
 # Exploring the JavaScript demo
 
-The JavasciptRadioApp demo is located in `<JOYNR>/examples/radio-js`. We refer to this location as
-`RADIO_HOME`.
-
-There is also a Node.js version of the radio demo application located in `<JOYNR>/examples/radio-node`.
+The node JavasciptRadioApp demo is located in `<JOYNR>/examples/radio-node`. We refer to this
+location as `RADIO_HOME`.
 
 Have a look into the [Radio Tutorial](Tutorial.md) to get an understading of the communication
 interface and the basic joynr concepts.
@@ -39,24 +37,29 @@ The generated source code from the Radio model is located in `<RADIO_HOME>/src/m
 
 ## Providers
 
-Have a look into [\<RADIO_HOME\>/src/main/webapp/js/provider.js]
-(/examples/radio-js/src/main/webapp/js/provider.js) for provider implementation and
-registration details.
+Have a look into [\<RADIO_HOME\>/src/main/js/radioProvider.js]
+(/examples/radio-node/src/main/js/radioProvider.js) and
+[\<RADIO_HOME\>/src/main/js/MyRadioProvider.js]
+(/examples/radio-node/src/main/js/MyRadioProvider.js)
+for provider implementation and registration details.
 
 ## Consumers
 
-Have a look into [\<RADIO_HOME\>/src/main/webapp/js/consumer.js]
-(/examples/radio-js/src/main/webapp/js/consumer.js) for consumer implementation details.
+Have a look into [\<RADIO_HOME\>/src/main/js/radioConsumer.js]
+(/examples/radio-js/src/main/js/radioConsumer.js) for consumer implementation details.
 
 ## In Action
 
 ### Prerequisite
+
 You need to have Maven installed. Joynr is tested with Maven 3.3.3, but more recent versions should
 also work here.
 
-For both, consumer and provider, the backend (Bounceproxy and Discovery) has to be started first.
+For both, consumer and provider, the backend (MQTT broker, JEE based Discovery and AccessControl)
+and a local standalone cluster-controller need to be started first.
 
 ### Starting the Backend
+
 Run a MQTT broker (e.g. [Mosquitto](http://mosquitto.org)) listening on port 1883 and deploy
 discovery-directory-jee and domain-access-controller-jee to a Java EE application server
 (e.g. Payara):
@@ -68,39 +71,51 @@ asadmin deploy <RADIO_HOME>/target/accesscontrol-jee.war
 See [JEE Developer Guide](jee.md) or [Radio App Tutorial](Tutorial.md) for the
 configuration of Payara.
 
-### Deploy provider and consumer on a Jetty server
-The following Maven command will start a [Jetty Server](http://eclipse.org/jetty/) on
-`localhost:8080` and automatically deploy provider and consumer webapp:
+### Starting the Cluster controller
+
+In order to be able to start a standalone C++ cluster controller,
+the C++ environment must have been built previously.
+
+Start the standalone cluster controller as follows:
 
 ```bash
-<RADIO_HOME>$ mvn jetty:run-war
+cd <JOYNR>/cpp/build/joynr/bin
+./cluster_controller
+```
+
+### Prepare the node runtime environment
+
+The node environment has to be prepared once prior to starting
+applications.
+
+```bash
+<RADIO_HOME>$ npm install
 ```
 
 ### Running the Provider and Consumer
 
-To run the provider and consumer open the following URLs in your browser (tested with Chrome and
-Firefox):
+Run the provider application in a terminal
 
-* Provider: http://localhost:8080/provider.html
-* Consumer: http://localhost:8080/consumer.html
+```bash
+<RADIO_HOME>$ npm run-script startprovider
+```
+
+Run the consumer in another terminal
+
+```bash
+<RADIO_HOME>$ npm run-script startconsumer
+```
 
 ## Provisioning
-joynr provides four different joynr runtimes:
 
-* WebSocket libjoynr runtime: communicates
-  via WebSocket with a preexisting cluster controller
-* Inprocess runtime: provides its own cluster
-  controller
-* Intertab cluster controller runtime: runtime expected
-  to run in the browser. Allows to be
-  accessed by other browser tabs for uplink
-  communication with the joynr backend infrastructure
-* Intertab libjoynr runtime: runtime expected to run in
-  the browser. Communicates via intertab
-  communication with a preexisting cluster controller
-  in the browser
+The provisioning is partially done in the files
+[\<RADIO_HOME\>/package.json](/examples/radio-node/package.json)
+[\<RADIO_HOME\>/src/main/js/provisioning_common.js](/examples/radio-node/src/main/js/provisioning_common.js)
 
-Ensuring a proper startup of the several runtimes, the following objects must be provided to the constructor
+This example uses the WebSocket libjoynr runtime which communicates via WebSocket with a preexisting
+cluster controller.
+
+Ensuring a proper startup of the runtime, the following objects must be provided to the constructor
 of the runtime.
 
 ```
@@ -189,90 +204,11 @@ var websocketLibJoynrProvisioning = {
                              *     port: <port>,
                              *     host: <host>,
                              *     path: <path> //default value is ""
+                             * }
                              */
     websocket: { // optional
         // default value is 1000
         reconnectSleepTimeMs : <time in milliseconds between websocket reconnect attempts>
     }
 };
-
-var interTabLibjoynrProvisioning = {
-    capabilities: capabilitiesValue, //optional
-    logging: loggingValue, //optional
-    internalMessagingQos: internalMessagingQosValue, //optional
-    messaging: messagingValue, //optional
-    persistency: persistencyValue, //optional
-    shutdownSettings: shutdownSettingsValue, //optional
-    window : <window object>,
-    windowId : windowId,
-    parentWindow : <parent windows>, // e.g. window.opener || window.top
-    parentOrigin : <paranet origin> // e.g. location.origin || (window.location.protocol+'//'+window.location.host)
-};
-
-var inProcessProvisioning = {
-    capabilities: capabilitiesValue, //optional
-    logging: loggingValue, //optional
-    internalMessagingQos: internalMessagingQosValue, //optional
-    messaging: messagingValue, //optional
-    persistency: persistencyValue, //optional
-    shutdownSettings: shutdownSettingsValue, //optional
-    brokerUrl: <url of the mqtt broker>, // e.g. tcp://127.0.0.1:9001
-    bounceProxyBaseUrl: <base url to the bounce proxy>, // e.g. http://127.0.0.1:8080
-    bounceProxyUrl: <url to bounce proxy>, // e.g. http://127.0.0.1:8080/bounceproxy/
-    channelId: <channelId to be used>, // optional
-    channelUrls: { ... }, // optional provisioned mapping of channelId to url
-    channelQos: { // optional
-        messageProcessors: <# of message processors>, //default value is 4
-        resendDelay_ms: <resend delay>, //default value is 1000
-    },
-    // Interval in milliseconds at which the clustercontroller will send a freshness
-    // update message to the global discovery directory
-    capabilitiesFreshnessUpdateIntervalMs : <capabilitiesFreshnessUpdateIntervalMs> // optional, default value is 3600000 (1 hour)
-};
-
-var interTabClusterControllerProvisioning = {
-    capabilities: capabilitiesValue, //optional
-    logging: loggingValue, //optional
-    internalMessagingQos: internalMessagingQosValue, //optional
-    messaging: messagingValue, //optional
-    persistency: persistencyValue, //optional
-    shutdownSettings: shutdownSettingsValue, //optional
-    brokerUrl: <url of the mqtt broker>, // e.g. tcp://127.0.0.1:9001
-    bounceProxyBaseUrl: <base url to the bounce proxy>, // e.g. http://127.0.0.1:8080
-    bounceProxyUrl: <url to bounce proxy>, // e.g. http://127.0.0.1:8080/bounceproxy/
-    channelId: <channelId to be used>, // optional
-    channelUrls: { ... }, // optional provisioned mapping of channelId to url
-    channelQos: { // optional
-        messageProcessors: <# of message processors>, //default value is 4
-        resendDelay_ms: <resend delay>, //default value is 1000
-    }
-    parentWindow : <parent windows>, // e.g. window.opener || window.top
-    parentOrigin : <paranet origin>, // e.g. location.origin || (window.location.protocol+'//'+window.location.host)
-    window : <window object>,
-    // Interval in milliseconds at which the clustercontroller will send a freshness
-    // update message to the global discovery directory
-    capabilitiesFreshnessUpdateIntervalMs : <capabilitiesFreshnessUpdateIntervalMs> // optional, default value is 3600000 (1 hour)
-};
-```
-
-## Browserify for joynr
-
-the npm package of joynr contains the functionality of all the four joynr runtimes. When selecting a runtime
-before loading joynr, only the selected runtime will be required. Browserify won't recognize this when packing
-a compressed joynr. It will include all four joynr runtimes and it's dependencies recursively, which will create
-unnecessary bloat. Therefore it's necessary to manually exclude the three other runtimes. This can for example be done
-with the -i option, which will replace those files with an empty stub.
-For example when using the WebSocket libjoynr runtime, things could work the following way.
-Assume joynr is installed in the node_modules folder and is required by index.js.
-
-```
-browserify index.js \
--r ./node_modules/joynr:joynr \
--i ./node_modules/joynr/joynr/Runtime.inprocess.js \
--i ./node_modules/joynr/joynr/Runtime.intertab.clustercontroller.js \
--i ./node_modules/joynr/joynr/Runtime.intertab.libjoynr.js \
--u smrf-native-cpp.node \
--u wscpp-client.node \
--u ws \
--o browserifiedJoynr.js
 ```
