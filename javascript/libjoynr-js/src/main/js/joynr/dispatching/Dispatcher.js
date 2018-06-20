@@ -424,6 +424,12 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
      *            settings.expiryDate time-to-live
      * @param {Object}
      *            settings.customHeaders custom headers from request
+     * @param {String}
+     *            settings.messageType
+     * @param {String}
+     *            settings.effort
+     * @param {boolean}
+     *            settings.compress
      * @param {Reply|SubscriptionReply}
      *            settings.reply the reply to be transmitted. It can either be a Reply or a SubscriptionReply object
      * @returns {Object} A+ promise object
@@ -441,6 +447,10 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
 
         // set custom headers
         joynrMessage.setCustomHeaders(settings.customHeaders);
+
+        if (settings.effort && settings.effort !== MessagingQosEffort.NORMAL) {
+            joynrMessage.effort = settings.effort.value;
+        }
 
         if (settings.compress) {
             joynrMessage.compress = true;
@@ -464,8 +474,15 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
      *            settings.expiryDate time-to-live
      * @param {Object}
      *            settings.customHeaders custom headers from request
+     * @param {String}
+     *            settings.messageType
+     * @param {String}
+     *            settings.effort
+     * @param {boolean}
+     *            settings.compress
      * @param {Reply}
      *            reply
+     * @returns {Object} A+ promise object
      */
     function sendRequestReply(settings, reply) {
         const toParticipantId = settings.to;
@@ -662,6 +679,10 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
 
                     const handleReplySettings = createReplySettings(joynrMessage);
 
+                    const effort = joynrMessage.effort;
+                    if (effort && MessagingQosEffort[effort]) {
+                        handleReplySettings.effort = MessagingQosEffort[effort];
+                    }
                     if (joynrMessage.compress) {
                         handleReplySettings.compress = true;
                     }

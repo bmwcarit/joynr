@@ -534,6 +534,50 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", () => {
         done();
     });
 
+    function verifyEffortForReply(request, expectedEffort) {
+        expect(requestReplyManager.handleRequest).toHaveBeenCalled();
+        expect(requestReplyManager.handleRequest.calls.mostRecent().args[0]).toEqual(providerId);
+        expect(requestReplyManager.handleRequest.calls.mostRecent().args[1]).toEqual(request);
+        expect(clusterControllerMessagingStub.transmit.calls.mostRecent().args[0].effort).toEqual(expectedEffort);
+
+        requestReplyManager.handleRequest.calls.reset();
+        clusterControllerMessagingStub.transmit.calls.reset();
+    }
+
+    it("sets the correct effort for replies if the effort was set in the corresponding request", async () => {
+        const request = new Request({
+            methodName: "methodName"
+        });
+        const joynrMessage = new JoynrMessage({
+            type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
+            payload: JSON.stringify(request)
+        });
+        joynrMessage.to = providerId;
+        joynrMessage.from = proxyId;
+        joynrMessage.compress = true;
+
+        requestReplyManager.handleRequest.and.callFake((to, request, cb, replySettings) => {
+            cb(replySettings, request);
+            return Promise.resolve();
+        });
+
+        joynrMessage.effort = undefined; // default
+        await dispatcher.receive(joynrMessage);
+        verifyEffortForReply(request, undefined);
+
+        joynrMessage.effort = MessagingQosEffort.NORMAL.value;
+        await dispatcher.receive(joynrMessage);
+        verifyEffortForReply(request, undefined);
+
+        joynrMessage.effort = MessagingQosEffort.BEST_EFFORT.value;
+        await dispatcher.receive(joynrMessage);
+        verifyEffortForReply(request, MessagingQosEffort.BEST_EFFORT.value);
+
+        joynrMessage.effort = "INVALID_EFFORT";
+        await dispatcher.receive(joynrMessage);
+        verifyEffortForReply(request, undefined);
+    });
+
     it("sets the compressed flag for replies if the request was compressed", done => {
         const request = new Request({
             methodName: "methodName"
