@@ -27,6 +27,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
 import io.joynr.arbitration.DiscoveryScope;
+import io.joynr.messaging.MessagingQosEffort;
 
 /**
  * Takes the command line arguments of the application, parses and checks them.
@@ -57,6 +58,7 @@ public class ConsumerInvocationParameters {
     }
 
     private static final String CMDLINE_OPTIONNAME_DOMAINNAME = "domain";
+    private static final String CMDLINE_OPTIONNAME_MESSAGING_QOS_EFFORT = "effort";
     private static final String CMDLINE_OPTIONNAME_NUMRUNS = "runs";
     private static final String CMDLINE_OPTIONNAME_ITERATIONS = "iterations";
     private static final String CMDLINE_OPTIONNAME_WARMUPS = "warmups";
@@ -72,6 +74,7 @@ public class ConsumerInvocationParameters {
     private static final String CMDLINE_OPTIONNAME_CC_PORT = "ccport";
 
     private static String domainName = "";
+    private static MessagingQosEffort effort = MessagingQosEffort.NORMAL;
     private static int numberOfRuns = 1;
     private static int numberOfIterations = 1;
     private static int numberOfWarmupRuns = 0;
@@ -93,6 +96,10 @@ public class ConsumerInvocationParameters {
 
         if (domainName.length() == 0) {
             throw new Exception("Provide a non-empty domain name");
+        }
+
+        if (commandLine.hasOption(CMDLINE_OPTIONNAME_MESSAGING_QOS_EFFORT)) {
+            effort = MessagingQosEffort.valueOf(commandLine.getOptionValue(CMDLINE_OPTIONNAME_MESSAGING_QOS_EFFORT));
         }
 
         numberOfRuns = ((Number) commandLine.getParsedOptionValue(CMDLINE_OPTIONNAME_NUMRUNS)).intValue();
@@ -192,6 +199,15 @@ public class ConsumerInvocationParameters {
                                 .argName("domainName")
                                 .type(String.class)
                                 .desc("Provider domain")
+                                .build());
+
+        options.addOption(Option.builder("effort")
+                                .longOpt(CMDLINE_OPTIONNAME_MESSAGING_QOS_EFFORT)
+                                .required(false)
+                                .hasArg()
+                                .argName("effort")
+                                .type(String.class)
+                                .desc("MessagingQosEffort")
                                 .build());
 
         options.addOption(Option.builder("w")
@@ -308,6 +324,10 @@ public class ConsumerInvocationParameters {
 
     public String getDomainName() {
         return domainName;
+    }
+
+    public MessagingQosEffort getEffort() {
+        return effort;
     }
 
     public int getNumberOfRuns() {

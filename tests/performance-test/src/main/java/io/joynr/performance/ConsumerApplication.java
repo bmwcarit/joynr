@@ -147,7 +147,7 @@ public class ConsumerApplication extends AbstractJoynrApplication {
         ProxyBuilder<EchoProxy> proxyBuilder = runtime.getProxyBuilder(invocationParameters.getDomainName(),
                                                                        EchoProxy.class);
 
-        return proxyBuilder.setMessagingQos(new MessagingQos(60000)). // 1 minute
+        return proxyBuilder.setMessagingQos(new MessagingQos(60000, invocationParameters.getEffort())). // 1 minute
                            setDiscoveryQos(discoveryQos).build();
     }
 
