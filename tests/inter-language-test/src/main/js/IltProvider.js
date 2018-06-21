@@ -47,6 +47,28 @@ let attributeBaseStruct;
 let attributeExtendedExtendedBaseStruct;
 let attributeMapStringString;
 let attributeFireAndForget = 0;
+const typeDefValues = {
+    attributeInt64: 1,
+    attributeString: "TypeDefString",
+    attributeStruct: IltUtil.createBaseStruct(),
+    attributeMap: new MapStringString(),
+    attributeEnum: Enumeration.ENUM_0_VALUE_1,
+    attributeByteBufferTypeDef: IltUtil.createByteArray(),
+    attributeArrayTypeDef: IltUtil.createStringArray()
+};
+
+function genericSetterGetter(attributeName) {
+    return {
+        set: async value => {
+            prettyLog(`IltProvider.set called for attribute ${attributeName}`);
+            typeDefValues[attributeName] = value;
+        },
+        get: async () => {
+            prettyLog(`IltProvider.get called for attribute ${attributeName}`);
+            return typeDefValues[attributeName];
+        }
+    };
+}
 
 const IltProvider = {
     // attribute getter and setter
@@ -190,6 +212,20 @@ const IltProvider = {
             return Promise.resolve();
         }
     },
+
+    attributeInt64TypeDef: genericSetterGetter("attributeInt64"),
+
+    attributeStringTypeDef: genericSetterGetter("attributeString"),
+
+    attributeStructTypeDef: genericSetterGetter("attributeStruct"),
+
+    attributeMapTypeDef: genericSetterGetter("attributeMap"),
+
+    attributeEnumTypeDef: genericSetterGetter("attributeEnum"),
+
+    attributeByteBufferTypeDef: genericSetterGetter("attributeByteBuffer"),
+
+    attributeArrayTypeDef: genericSetterGetter("attributeArray"),
 
     attributeFireAndForget: {
         get() {
@@ -403,6 +439,76 @@ const IltProvider = {
             );
         }
         return Promise.resolve({ byteBufferOut: opArgs.byteBufferIn1.concat(opArgs.byteBufferIn2) });
+    },
+
+    async methodWithInt64TypeDefParameter(opArgs) {
+        prettyLog(`IltProvider.methodWithInt64TypeDefParameter(${JSON.stringify(opArgs)}) called`);
+        if (opArgs.int64TypeDefIn === undefined || opArgs.int64TypeDefIn === null) {
+            throw new joynr.exceptions.ProviderRuntimeException({
+                detailMessage: "methodWithInt64TypeDefParameter: received wrong argument"
+            });
+        }
+        return { int64TypeDefOut: opArgs.int64TypeDefIn };
+    },
+
+    async methodWithStringTypeDefParameter(opArgs) {
+        prettyLog(`IltProvider.methodWithStringTypeDefParameter(${JSON.stringify(opArgs)}) called`);
+        if (opArgs.stringTypeDefIn === undefined || opArgs.stringTypeDefIn === null) {
+            throw new joynr.exceptions.ProviderRuntimeException({
+                detailMessage: "methodWithStringTypeDefParameter: received wrong argument"
+            });
+        }
+        return { stringTypeDefOut: opArgs.stringTypeDefIn };
+    },
+
+    async methodWithStructTypeDefParameter(opArgs) {
+        prettyLog(`IltProvider.methodWithStructTypeDefParameter(${JSON.stringify(opArgs)}) called`);
+        if (opArgs.structTypeDefIn === undefined || opArgs.structTypeDefIn === null) {
+            throw new joynr.exceptions.ProviderRuntimeException({
+                detailMessage: "methodWithStructTypeDefParameter: received wrong argument"
+            });
+        }
+        return { structTypeDefOut: opArgs.structTypeDefIn };
+    },
+
+    async methodWithMapTypeDefParameter(opArgs) {
+        prettyLog(`IltProvider.methodWithMapTypeDefParameter(${JSON.stringify(opArgs)}) called`);
+        if (opArgs.mapTypeDefIn === undefined || opArgs.mapTypeDefIn === null) {
+            throw new joynr.exceptions.ProviderRuntimeException({
+                detailMessage: "methodWithMapTypeDefParameter: received wrong argument"
+            });
+        }
+        return { mapTypeDefOut: opArgs.mapTypeDefIn };
+    },
+
+    async methodWithEnumTypeDefParameter(opArgs) {
+        prettyLog(`IltProvider.methodWithEnumTypeDefParameter(${JSON.stringify(opArgs)}) called`);
+        if (opArgs.enumTypeDefIn === undefined || opArgs.enumTypeDefIn === null) {
+            throw new joynr.exceptions.ProviderRuntimeException({
+                detailMessage: "methodWithEnumTypeDefParameter: received wrong argument"
+            });
+        }
+        return { enumTypeDefOut: opArgs.enumTypeDefIn };
+    },
+
+    async methodWithByteBufferTypeDefParameter(opArgs) {
+        prettyLog(`IltProvider.methodWithByteBufferTypeDefParameter(${JSON.stringify(opArgs)}) called`);
+        if (opArgs.byteBufferTypeDefIn === undefined || opArgs.byteBufferTypeDefIn === null) {
+            throw new joynr.exceptions.ProviderRuntimeException({
+                detailMessage: "methodWithByteBufferTypeDefParameter: received wrong argument"
+            });
+        }
+        return { byteBufferTypeDefOut: opArgs.byteBufferTypeDefIn };
+    },
+
+    async methodWithArrayTypeDefParameter(opArgs) {
+        prettyLog(`IltProvider.methodWithArrayTypeDefParameter(${JSON.stringify(opArgs)}) called`);
+        if (opArgs.arrayTypeDefIn === undefined || opArgs.arrayTypeDefIn === null) {
+            throw new joynr.exceptions.ProviderRuntimeException({
+                detailMessage: "methodWithArrayTypeDefParameter: received wrong argument"
+            });
+        }
+        return { arrayTypeDefOut: opArgs.arrayTypeDefIn };
     },
 
     methodWithSingleEnumParameters(opArgs) {
