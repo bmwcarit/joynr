@@ -28,7 +28,7 @@
 	<parent>
 		<groupId>io.joynr.java</groupId>
 		<artifactId>backend-services</artifactId>
-		<version>1.3.0-SNAPSHOT</version>
+		<version>1.4.0-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -38,17 +38,17 @@
 	</properties>
 
 	<dependencies>
-    <dependency>
-      <groupId>javax</groupId>
-      <artifactId>javaee-api</artifactId>
-      <version>7.0</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.joynr.java</groupId>
-      <artifactId>jeeintegration</artifactId>
-      <version>${project.version}</version>
-    </dependency>
+		<dependency>
+			<groupId>javax</groupId>
+			<artifactId>javaee-api</artifactId>
+			<version>7.0</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.joynr.java</groupId>
+			<artifactId>jeeintegration</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>io.joynr.java.backend-services</groupId>
 			<artifactId>capabilities-directory</artifactId>
@@ -68,10 +68,10 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-jdk14</artifactId>
-    </dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-jdk14</artifactId>
+		</dependency>
 
 		<!-- Test dependencies -->
 		<dependency>
@@ -119,7 +119,6 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-
 
 	<build>
 		<finalName>${project.artifactId}</finalName>

@@ -5,9 +5,9 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-    <groupId>io.joynr</groupId>
-    <artifactId>hello-world-parent</artifactId>
-    <version>1.3.0-SNAPSHOT</version>
+		<groupId>io.joynr</groupId>
+		<artifactId>hello-world-parent</artifactId>
+		<version>1.4.0-SNAPSHOT</version>
 	</parent>
 	<artifactId>hello-world-interface</artifactId>
 

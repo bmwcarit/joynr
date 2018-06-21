@@ -1,6 +1,6 @@
 {
   "name": "sit-node-app",
-  "version": "1.3.0-SNAPSHOT",
+  "version": "1.4.0-SNAPSHOT",
   "license": "Apache-2.0",
   "description": "System Integration Test Node App",
   "main": "src/main/js/consumer.js",
@@ -17,15 +17,22 @@
       "host": "localhost",
       "port": "4242"
     },
+    "ccTls": {
+      "protocol": "wss",
+      "host": "localhost",
+      "port": "4243"
+    },
     "tls": {
-      "certPath": "",
-      "keyPath": "",
-      "caPath": "",
-      "ownerId": ""
+      "certPath": "/data/ssl-data/certs/client.cert.pem",
+      "keyPath": "/data/ssl-data/private/client.key.pem",
+      "caPath": "/data/ssl-data/certs/ca.cert.pem",
+      "ownerId": "client"
     }
   },
   "scripts": {
-    "startconsumer": "domain=$npm_package_config_domain ccprotocol=$npm_package_config_cc_protocol cchost=$npm_package_config_cc_host ccport=$npm_package_config_cc_port tlsCertPath=$npm_package_config_tls_certPath tlsKeyPath=$npm_package_config_tls_keyPath tlsCaPath=$npm_package_config_tls_caPath ownerId=$npm_package_config_tls_ownerId node src/main/js/consumer.js",
-    "startprovider": "domain=$npm_package_config_domain ccprotocol=$npm_package_config_cc_protocol cchost=$npm_package_config_cc_host ccport=$npm_package_config_cc_port tlsCertPath=$npm_package_config_tls_certPath tlsKeyPath=$npm_package_config_tls_keyPath tlsCaPath=$npm_package_config_tls_caPath ownerId=$npm_package_config_tls_ownerId node src/main/js/provider.js"
+    "startconsumer": "domain=$npm_package_config_domain ccprotocol=$npm_package_config_cc_protocol cchost=$npm_package_config_cc_host ccport=$npm_package_config_cc_port node src/main/js/consumer.js",
+    "startprovider": "domain=$npm_package_config_domain ccprotocol=$npm_package_config_cc_protocol cchost=$npm_package_config_cc_host ccport=$npm_package_config_cc_port node src/main/js/provider.js",
+    "startconsumertls": "domain=$npm_package_config_domain ccprotocol=$npm_package_config_ccTls_protocol cchost=$npm_package_config_ccTls_host ccport=$npm_package_config_ccTls_port tlsCertPath=$npm_package_config_tls_certPath tlsKeyPath=$npm_package_config_tls_keyPath tlsCaPath=$npm_package_config_tls_caPath ownerId=$npm_package_config_tls_ownerId node src/main/js/consumer.js",
+    "startprovidertls": "domain=$npm_package_config_domain ccprotocol=$npm_package_config_ccTls_protocol cchost=$npm_package_config_ccTls_host ccport=$npm_package_config_ccTls_port tlsCertPath=$npm_package_config_tls_certPath tlsKeyPath=$npm_package_config_tls_keyPath tlsCaPath=$npm_package_config_tls_caPath ownerId=$npm_package_config_tls_ownerId node src/main/js/provider.js"
   }
 }

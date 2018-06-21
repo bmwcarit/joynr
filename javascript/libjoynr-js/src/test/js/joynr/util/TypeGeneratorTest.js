@@ -136,25 +136,19 @@ describe("libjoynr-js.joynr.TypeGenerator.Compound", () => {
         testStruct.typeDefForTStruct = "string";
         expect(
             TStructWithTypedefMembers.checkMembers.bind(this, testStruct, Typing.checkPropertyIfDefined)
-        ).toThrowError(Error, "members.typeDefForTStruct is not of a type from Object,TStruct. Actual type is String");
+        ).toThrowError(Error, "members.typeDefForTStruct is not of type TStruct. Actual type is String");
 
         testStruct = new TStructWithTypedefMembers(testStructWithTypeDefMembers);
         testStruct.typeDefForTStringKeyMap = "string";
         expect(
             TStructWithTypedefMembers.checkMembers.bind(this, testStruct, Typing.checkPropertyIfDefined)
-        ).toThrowError(
-            Error,
-            "members.typeDefForTStringKeyMap is not of a type from Object,TStringKeyMap. Actual type is String"
-        );
+        ).toThrowError(Error, "members.typeDefForTStringKeyMap is not of type TStringKeyMap. Actual type is String");
 
         testStruct = new TStructWithTypedefMembers(testStructWithTypeDefMembers);
         testStruct.typeDefForTEnum = 44;
         expect(
             TStructWithTypedefMembers.checkMembers.bind(this, testStruct, Typing.checkPropertyIfDefined)
-        ).toThrowError(
-            Error,
-            "members.typeDefForTEnum is not of a type from String,Object,TEnum. Actual type is Number"
-        );
+        ).toThrowError(Error, "members.typeDefForTEnum is not of type TEnum. Actual type is Number");
 
         testStruct = new TStructWithTypedefMembers(testStructWithTypeDefMembers);
         testStruct.arrayOfTypeDefForPrimitive = testStruct.typeDefForPrimitive;
@@ -197,25 +191,19 @@ describe("libjoynr-js.joynr.TypeGenerator.Compound", () => {
         testStruct.typeDefForTStruct = "string";
         expect(
             TStructWithTypedefMembers.checkMembers.bind(this, testStruct, Typing.checkPropertyIfDefined)
-        ).toThrowError(Error, "members.typeDefForTStruct is not of a type from Object,TStruct. Actual type is String");
+        ).toThrowError(Error, "members.typeDefForTStruct is not of type TStruct. Actual type is String");
 
         testStruct = new TStructWithTypedefMembers(testStructWithObjectNullMaps);
         testStruct.typeDefForTStringKeyMap = "string";
         expect(
             TStructWithTypedefMembers.checkMembers.bind(this, testStruct, Typing.checkPropertyIfDefined)
-        ).toThrowError(
-            Error,
-            "members.typeDefForTStringKeyMap is not of a type from Object,TStringKeyMap. Actual type is String"
-        );
+        ).toThrowError(Error, "members.typeDefForTStringKeyMap is not of type TStringKeyMap. Actual type is String");
 
         testStruct = new TStructWithTypedefMembers(testStructWithObjectNullMaps);
         testStruct.typeDefForTEnum = 44;
         expect(
             TStructWithTypedefMembers.checkMembers.bind(this, testStruct, Typing.checkPropertyIfDefined)
-        ).toThrowError(
-            Error,
-            "members.typeDefForTEnum is not of a type from String,Object,TEnum. Actual type is Number"
-        );
+        ).toThrowError(Error, "members.typeDefForTEnum is not of type TEnum. Actual type is Number");
 
         testStruct = new TStructWithTypedefMembers(testStructWithObjectNullMaps);
         testStruct.arrayOfTypeDefForPrimitive = testStruct.typeDefForPrimitive;

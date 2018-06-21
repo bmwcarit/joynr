@@ -195,7 +195,7 @@ describe("libjoynr-js.integration.end2end.datatypes", () => {
             for (i = 0; i < TestEnd2EndDatatypesTestData.length; ++i) {
                 const test = TestEnd2EndDatatypesTestData[i];
                 /* replace all dots with _ */
-                let paramName = test.joynrType.replace(/\./g, "_") + "Arg";
+                let paramName = `${test.joynrType.replace(/\./g, "_")}Arg`;
                 paramName = paramName.slice(0, 1).toLowerCase() + paramName.slice(1);
                 opArgs[paramName] = test.values[0];
             }

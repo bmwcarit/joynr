@@ -117,7 +117,7 @@ describe("libjoynr-js.joynr.capabilities.discovery.CapabilityDiscovery", () => {
         domain = "myDomain";
         interfaceName = "myInterfaceName";
         address = new ChannelAddress({
-            channelId: domain + "TestCapabilityDiscoveryChannel",
+            channelId: `${domain}TestCapabilityDiscoveryChannel`,
             messagingEndpointUrl: "http://testUrl"
         });
         discoveryQos = new DiscoveryQos({
@@ -140,7 +140,7 @@ describe("libjoynr-js.joynr.capabilities.discovery.CapabilityDiscovery", () => {
                 domain + i.toString(),
                 interfaceName + i.toString(),
                 new ChannelAddress({
-                    channelId: "globalCapInfo" + i.toString(),
+                    channelId: `globalCapInfo${i.toString()}`,
                     messagingEndpointUrl: "http://testurl"
                 })
             );
@@ -351,15 +351,15 @@ describe("libjoynr-js.joynr.capabilities.discovery.CapabilityDiscovery", () => {
         expectedReturnValue
     ) {
         const localCapStoreSpy = getSpiedLookupObjWithReturnValue(
-            "localCapStoreSpy" + descriptor,
+            `localCapStoreSpy${descriptor}`,
             localdiscoveryEntries
         );
         const globalCapCacheSpy = getSpiedLookupObjWithReturnValue(
-            "globalCapCacheSpy" + descriptor,
+            `globalCapCacheSpy${descriptor}`,
             globalCapCacheEntries
         );
         const globalCapDirSpy = getSpiedLookupObjWithReturnValue(
-            "globalCapDirSpy" + descriptor,
+            `globalCapDirSpy${descriptor}`,
             Promise.resolve({
                 result: globalCapabilityInfos
             })
@@ -398,7 +398,7 @@ describe("libjoynr-js.joynr.capabilities.discovery.CapabilityDiscovery", () => {
             })
             .catch(() => {
                 if (expectedReturnValue !== undefined) {
-                    fail("a return value was expected: " + expectedReturnValue);
+                    fail(`a return value was expected: ${expectedReturnValue}`);
                 }
             });
     }

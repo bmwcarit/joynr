@@ -24,7 +24,6 @@ import io.joynr.generator.IJoynrGenerator
 import io.joynr.generator.cpp.communicationmodel.CommunicationModelGenerator
 import io.joynr.generator.cpp.defaultProvider.DefaultInterfaceProviderGenerator
 import io.joynr.generator.cpp.filter.FilterGenerator
-import io.joynr.generator.cpp.inprocess.InProcessGenerator
 import io.joynr.generator.cpp.joynrmessaging.JoynrMessagingGenerator
 import io.joynr.generator.cpp.provider.ProviderGenerator
 import io.joynr.generator.cpp.proxy.ProxyGenerator
@@ -49,7 +48,6 @@ class JoynrCppGenerator implements IJoynrGenerator{
 	@Inject ProxyGenerator proxyGenerator
 	@Inject ProviderGenerator providerGenerator
 	@Inject FilterGenerator filterGenerator;
-	@Inject InProcessGenerator inProcessGenerator
 	@Inject JoynrMessagingGenerator joynrMessagingGenerator
 	@Inject DefaultInterfaceProviderGenerator defaultProviderGenerator
 
@@ -121,14 +119,6 @@ class JoynrCppGenerator implements IJoynrGenerator{
 			headerFileSystem,
 			getSourceContainerPath(sourceFileSystem, "joynr-messaging"),
 			getHeaderContainerPath(sourceFileSystem, headerFileSystem, "joynr-messaging")
-		);
-
-		inProcessGenerator.doGenerate(
-			fModel,
-			sourceFileSystem,
-			headerFileSystem,
-			getSourceContainerPath(sourceFileSystem, "in-process"),
-			getHeaderContainerPath(sourceFileSystem, headerFileSystem, "in-process")
 		);
 
 		communicationModelGenerator.doGenerate(

@@ -23,11 +23,11 @@ describe("libjoynr-js.joynr.messaging.JoynrMessage", () => {
     function getTestMessageFields() {
         const suffix = Date.now();
         return {
-            to: "to" + suffix,
-            from: "from" + suffix,
+            to: `to${suffix}`,
+            from: `from${suffix}`,
             expiryDate: Date.now(),
-            replyChannelId: "replyChannelId" + suffix,
-            requestReplyId: "requestReplyId" + suffix
+            replyChannelId: `replyChannelId${suffix}`,
+            requestReplyId: `requestReplyId${suffix}`
         };
     }
 
@@ -84,7 +84,7 @@ describe("libjoynr-js.joynr.messaging.JoynrMessage", () => {
             type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
         });
         const headerKey = "headerKey";
-        const customHeaderKey = "custom-" + headerKey;
+        const customHeaderKey = `custom-${headerKey}`;
         const customHeaders = {};
         customHeaders[headerKey] = "customHeaderValue";
 
@@ -95,7 +95,7 @@ describe("libjoynr-js.joynr.messaging.JoynrMessage", () => {
 
     it("allows getting custom headers", done => {
         const headerKey = "headerKey";
-        const customHeaderKey = "custom-" + headerKey;
+        const customHeaderKey = `custom-${headerKey}`;
         const headerValue = "headerValue";
         const myCustomHeaders = {};
         myCustomHeaders[headerKey] = "customHeaderValue";

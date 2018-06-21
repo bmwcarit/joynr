@@ -65,7 +65,7 @@ function BroadcastOutputParameters(outputParameterProperties) {
     for (i = 0; i < outputParameterProperties.length; i++) {
         if (outputParameterProperties[i].hasOwnProperty("name")) {
             parameterName = outputParameterProperties[i].name;
-            setterFuncName = "set" + parameterName.charAt(0).toUpperCase() + parameterName.substring(1);
+            setterFuncName = `set${parameterName.charAt(0).toUpperCase()}${parameterName.substring(1)}`;
             //output[funcName] = makeSetterFunction(output, parameterName);
             Object.defineProperty(this, setterFuncName, {
                 configurable: false,
@@ -73,7 +73,7 @@ function BroadcastOutputParameters(outputParameterProperties) {
                 enumerable: false,
                 value: makeSetterFunction(this, i)
             });
-            getterFuncName = "get" + parameterName.charAt(0).toUpperCase() + parameterName.substring(1);
+            getterFuncName = `get${parameterName.charAt(0).toUpperCase()}${parameterName.substring(1)}`;
             Object.defineProperty(this, getterFuncName, {
                 configurable: false,
                 writable: false,

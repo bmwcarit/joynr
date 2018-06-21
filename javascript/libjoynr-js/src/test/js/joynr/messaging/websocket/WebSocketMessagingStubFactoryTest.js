@@ -64,14 +64,14 @@ describe("libjoynr-js.joynr.messaging.webmessaging.WebSocketMessagingStubFactory
         expect(typeof webSocketMessagingStubFactory.build === "function").toBeTruthy();
     });
 
-    it("creates a websocket messaging stub and uses it correctly", () => {
+    it("creates a websocket messaging stub and uses it correctly", async () => {
         websocket.readyState = WebSocket.OPEN;
 
+        sharedWebSocket.send = jasmine.createSpy("sharedWebSocketSend");
+        sharedWebSocket.send.and.returnValue(Promise.resolve());
         const webSocketMessagingStub = webSocketMessagingStubFactory.build(ccAddress);
-        webSocketMessagingStub.transmit(joynrMessage);
-        expect(websocket.send).toHaveBeenCalledWith(websocket.marshalJoynrMessage(joynrMessage), {
-            binary: true
-        });
+        await webSocketMessagingStub.transmit(joynrMessage);
+        expect(sharedWebSocket.send).toHaveBeenCalledWith(joynrMessage);
     });
 
     it("reuses existing websocket messaging stub", () => {

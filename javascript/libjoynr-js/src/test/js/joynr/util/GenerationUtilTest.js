@@ -107,14 +107,20 @@ describe("libjoynr-js.joynr.GenerationUtil", () => {
         });
 
         it("returns false when the _typeName is not set", () => {
-            comparatorObject = new CompoundJoynrObject({ name: "name", value: "value" });
+            comparatorObject = new CompoundJoynrObject({
+                name: "name",
+                value: "value"
+            });
             delete comparatorObject._typeName;
             expect(compoundObject.equals(comparatorObject)).toBeFalsy();
         });
 
         it("returns false when the second Object has additional keys", () => {
             compoundObject = new CompoundJoynrObject({ key1: "key1" });
-            comparatorObject = new CompoundJoynrObject({ key1: "key1", key2: "key2" });
+            comparatorObject = new CompoundJoynrObject({
+                key1: "key1",
+                key2: "key2"
+            });
             expect(compoundObject.equals(comparatorObject)).toBeFalsy();
         });
 
@@ -144,7 +150,9 @@ describe("libjoynr-js.joynr.GenerationUtil", () => {
         it("calls equals when the array elements have an equals function", () => {
             const equalsSpy = jasmine.createSpy("equalsSpy").and.returnValue(true);
             const otherMember = { someData: "data" };
-            compoundObject = new CompoundJoynrObject({ key1: [{ equals: equalsSpy }] });
+            compoundObject = new CompoundJoynrObject({
+                key1: [{ equals: equalsSpy }]
+            });
             comparatorObject = new CompoundJoynrObject({ key1: [otherMember] });
             expect(compoundObject.equals(comparatorObject)).toBeTruthy();
             expect(equalsSpy).toHaveBeenCalledWith(otherMember);

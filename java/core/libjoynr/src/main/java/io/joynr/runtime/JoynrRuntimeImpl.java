@@ -151,7 +151,30 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
      */
     @Override
     public Future<Void> registerProvider(String domain, Object provider, ProviderQos providerQos) {
-        return capabilitiesRegistrar.registerProvider(domain, provider, providerQos);
+        final boolean awaitGlobalRegistration = false;
+        return capabilitiesRegistrar.registerProvider(domain, provider, providerQos, awaitGlobalRegistration);
+    }
+
+    /**
+     * Registers a provider in the joynr framework
+     *
+     * @param domain
+     *            The domain the provider should be registered for. Has to be identical at the client to be able to find
+     *            the provider.
+     * @param provider
+     *            Instance of the provider implementation (has to extend a generated ...AbstractProvider).
+     * @param providerQos
+     *            the provider's quality of service settings
+     * @param awaitGlobalRegistration
+     *            If true, wait for global registration to complete or timeout, if required.
+     * @return Returns a Future which can be used to check the registration status.
+     */
+    @Override
+    public Future<Void> registerProvider(String domain,
+                                         Object provider,
+                                         ProviderQos providerQos,
+                                         boolean awaitGlobalRegistration) {
+        return capabilitiesRegistrar.registerProvider(domain, provider, providerQos, awaitGlobalRegistration);
     }
 
     @Override

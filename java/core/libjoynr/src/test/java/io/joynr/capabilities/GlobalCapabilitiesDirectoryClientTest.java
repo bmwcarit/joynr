@@ -78,7 +78,7 @@ public class GlobalCapabilitiesDirectoryClientTest {
 
     private GlobalCapabilitiesDirectoryClient subject;
 
-    private static final long DEFAULT_TTL_ADD_AND_REMOVE = 30L * 24L * 60L * 60L * 1000L;
+    private static final long DEFAULT_TTL_ADD_AND_REMOVE = 60L * 1000L;
 
     private static final long CUSTOM_TTL = 3L * 1000L;
 

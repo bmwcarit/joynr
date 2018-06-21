@@ -44,12 +44,9 @@ MessagingStubFactory.prototype.createMessagingStub = function createMessagingStu
     const factory = this._messagingStubFactories[className];
 
     if (UtilInternal.checkNullUndefined(factory)) {
-        const errorMsg =
-            'Could not find a MessagingStubFactory for "' +
-            className +
-            '" within messagingStubFactories [' +
-            Object.keys(this._messagingStubFactories).join(",") +
-            "]";
+        const errorMsg = `Could not find a MessagingStubFactory for "${className}" within messagingStubFactories [${Object.keys(
+            this._messagingStubFactories
+        ).join(",")}]`;
         log.debug(errorMsg);
         throw new Error(errorMsg);
     }

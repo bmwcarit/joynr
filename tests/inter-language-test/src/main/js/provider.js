@@ -19,30 +19,34 @@
  * #L%
  */
 
-
-var joynr = require("joynr");
-var testbase = require("test-base");
-var log = testbase.logging.log;
-var provisioning = testbase.provisioning_common;
+let joynr = require("joynr");
+const testbase = require("test-base");
+const log = testbase.logging.log;
+const provisioning = testbase.provisioning_common;
+const TestInterfaceProvider = require("../generated-javascript/joynr/interlanguagetest/TestInterfaceProvider.js");
+const IltTestInterfaceProvider = require("./IltProvider.js");
+const IltStringBroadcastFilter = require("./IltStringBroadcastFilter.js");
 
 provisioning.logging.configuration = {
-    appenders : {
-        appender : [
+    appenders: {
+        appender: [
             {
-                type : "Console",
-                name : "STDOUT",
-                PatternLayout : {
-                    pattern : "[%d{HH:mm:ss,SSS}][%c][%p] %m{2}"
+                type: "Console",
+                name: "STDOUT",
+                PatternLayout: {
+                    pattern: "[%d{HH:mm:ss,SSS}][%c][%p] %m{2}"
                 }
             }
         ]
     },
-    loggers : {
-        root : {
-            level : "debug",
-            AppenderRef : [{
-                    ref : "STDOUT"
-            }]
+    loggers: {
+        root: {
+            level: "debug",
+            AppenderRef: [
+                {
+                    ref: "STDOUT"
+                }
+            ]
         }
     }
 };
@@ -51,37 +55,34 @@ if (process.argv.length !== 3) {
     log("please pass a domain as argument");
     process.exit(0);
 }
-var domain = process.argv[2];
-log("domain: " + domain);
+const domain = process.argv[2];
+log(`domain: ${domain}`);
 
-joynr.load(provisioning).then(function(loadedJoynr) {
-    log("joynr started");
-    joynr = loadedJoynr;
+joynr
+    .load(provisioning)
+    .then(loadedJoynr => {
+        log("joynr started");
+        joynr = loadedJoynr;
 
-    var providerQos = new joynr.types.ProviderQos({
-        customParameters : [],
-        priority : Date.now(),
-        scope : joynr.types.ProviderScope.GLOBAL,
-        supportsOnChangeSubscriptions : true
-    });
+        const providerQos = new joynr.types.ProviderQos({
+            customParameters: [],
+            priority: Date.now(),
+            scope: joynr.types.ProviderScope.GLOBAL,
+            supportsOnChangeSubscriptions: true
+        });
 
-    var TestInterfaceProvider = require("../generated-javascript/joynr/interlanguagetest/TestInterfaceProvider.js");
-    var IltTestInterfaceProvider = require("./IltProvider.js");
-    var testInterfaceProvider = joynr.providerBuilder.build(
+        const testInterfaceProvider = joynr.providerBuilder.build(
             TestInterfaceProvider,
-            IltTestInterfaceProvider.implementation);
-    IltTestInterfaceProvider.setProvider(testInterfaceProvider);
+            IltTestInterfaceProvider.implementation
+        );
 
-    var IltStringBroadcastFilter = require("./IltStringBroadcastFilter.js");
-    testInterfaceProvider.broadcastWithFiltering.addBroadcastFilter(new IltStringBroadcastFilter());
+        testInterfaceProvider.broadcastWithFiltering.addBroadcastFilter(new IltStringBroadcastFilter());
 
-    joynr.registration.registerProvider(domain, testInterfaceProvider, providerQos)
-    .then(function() {
+        return joynr.registration.registerProvider(domain, testInterfaceProvider, providerQos);
+    })
+    .then(() => {
         log("provider registered successfully");
-    }).catch(function(error) {
-        log("error registering provider: " + error.toString());
+    })
+    .catch(error => {
+        log(`error registering provider: ${error.toString()}`);
     });
-    return loadedJoynr;
-}).catch(function(error) {
-    throw error;
-});

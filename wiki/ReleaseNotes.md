@@ -2,6 +2,15 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+## API relevant changes
+* **[JS]** Registration of global providers can be made waiting until registration has been
+  propagated to GlobalCapabilitiesDirectory by passing an optional boolean flag `awaitGlobalRegistration`
+  to `registerProvider` or `settings.awaitGlobalRegistration` to `register` APIs of joynr.registration.
+
+## Other changes
+* **[C++,Generator]** Deleted InProcess bypass. Every message has to be now routed
+  through message router.
+
 # joynr 1.3.0
 
 ## API relevant changes
@@ -16,6 +25,8 @@ specifying the keystore/truststore type. See [Java Configuration Reference](Java
 ## Other changes
 * **[JS]** Removed the dependency to wscpp. Joynr uses the ws npm module for websocket
   communication instead.
+* **[JS]** The minimum required node version changes to 8.0.0. to allow the usage of
+  async await and util.promisify.
 
 * **[C++]** Added a CMake flag `USE_PLATFORM_MOCOCRW` to download mococrw at build time.
 

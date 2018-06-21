@@ -41,37 +41,34 @@ class InterfaceProxyBaseCppTemplate extends InterfaceTemplate {
 «warning()»
 
 #include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«className».h"
-#include "joynr/ConnectorFactory.h"
 #include "joynr/ISubscriptionListener.h"
 #include "joynr/types/DiscoveryEntryWithMetaInfo.h"
-#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«serviceName»InProcessConnector.h"
+#include "joynr/JoynrMessagingConnectorFactory.h"
 #include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«serviceName»JoynrMessagingConnector.h"
 
 «getNamespaceStarter(francaIntf)»
 «className»::«className»(
 		std::weak_ptr<joynr::JoynrRuntimeImpl> runtime,
-		joynr::ConnectorFactory* connectorFactory,
+		std::shared_ptr<joynr::JoynrMessagingConnectorFactory> connectorFactory,
 		const std::string &domain,
 		const joynr::MessagingQos &qosSettings
 ) :
-		joynr::ProxyBase(std::move(runtime), connectorFactory, domain, qosSettings),
+		joynr::ProxyBase(std::move(runtime), std::move(connectorFactory), domain, qosSettings),
 		connector()
 {
 }
 
 void «className»::handleArbitrationFinished(
-		const joynr::types::DiscoveryEntryWithMetaInfo& providerDiscoveryEntry,
-		bool useInProcessConnector
+		const joynr::types::DiscoveryEntryWithMetaInfo& providerDiscoveryEntry
 ) {
 	connector = connectorFactory->create<«getPackagePathWithJoynrPrefix(francaIntf, "::")»::I«serviceName»Connector>(
 				domain,
 				proxyParticipantId,
 				qosSettings,
-				useInProcessConnector,
 				providerDiscoveryEntry
 	);
 
-	joynr::ProxyBase::handleArbitrationFinished(providerDiscoveryEntry, useInProcessConnector);
+	joynr::ProxyBase::handleArbitrationFinished(providerDiscoveryEntry);
 }
 
 «FOR attribute: getAttributes(francaIntf).filter[attribute | attribute.notifiable]»

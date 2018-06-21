@@ -313,7 +313,7 @@ describe("libjoynr-js.joynr.Typing.augmentType", () => {
             Typing.augmentTypes(rawInput);
         }
         const delta = Date.now() - timeStart;
-        log.info('Time took for augmenting struct type "ComplexStruct"' + times + " times: " + delta + "ms");
+        log.info(`Time took for augmenting struct type "ComplexStruct"${times} times: ${delta}ms`);
     });
 
     it("throws when giving a function or an object with a custom type", done => {
@@ -369,6 +369,24 @@ describe("libjoynr-js.joynr.Typing.augmentType", () => {
         done();
     });
 
+    it("augmentTypes is able to deal with cached structs containing enum members", done => {
+        const fixture = {
+            _typeName: "joynr.datatypes.exampleTypes.ComplexRadioStation",
+            name: "name",
+            station: "station",
+            source: "AUSTRIA"
+        };
+        const expected = new ComplexRadioStation({
+            name: fixture.name,
+            station: fixture.station,
+            source: Country.AUSTRIA
+        });
+        const cachedFixture = JSON.parse(JSON.stringify(Typing.augmentTypes(fixture)));
+
+        expect(Typing.augmentTypes(cachedFixture)).toEqual(expected);
+        done();
+    });
+
     it("augmentTypes is able to deal with complex structs containing enum array and other structs as members", done => {
         const providerQos = {
             _typeName: "joynr.types.ProviderQos",
@@ -420,7 +438,7 @@ describe("libjoynr-js.joynr.Typing.augmentType", () => {
 
 function augmentTypeName(obj, expectedType, customMember) {
     const objWithTypeName = Typing.augmentTypeName(obj, "joynr", customMember);
-    expect(objWithTypeName[customMember || "_typeName"]).toEqual("joynr." + expectedType);
+    expect(objWithTypeName[customMember || "_typeName"]).toEqual(`joynr.${expectedType}`);
 }
 
 describe("libjoynr-js.joynr.Typing.augmentTypeName", () => {

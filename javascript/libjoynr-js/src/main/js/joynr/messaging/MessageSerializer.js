@@ -31,7 +31,7 @@ function useSmrf() {
         try {
             return smrf.serialize(smrfMsg);
         } catch (e) {
-            throw new Error("ws.marshalJoynrMessage: got exception " + e);
+            throw new Error(`ws.marshalJoynrMessage: got exception ${e}`);
         }
     }
 
@@ -39,7 +39,7 @@ function useSmrf() {
         try {
             return smrf.deserialize(data);
         } catch (e) {
-            throw new Error("ws.marshalJoynrMessage: got exception " + e);
+            throw new Error(`ws.marshalJoynrMessage: got exception ${e}`);
         }
     }
 

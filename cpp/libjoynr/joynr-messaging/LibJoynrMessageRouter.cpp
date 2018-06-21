@@ -134,11 +134,12 @@ void LibJoynrMessageRouter::routeInternal(std::shared_ptr<ImmutableMessage> mess
 
             lock.unlock();
             // and try to resolve destination address via parent message router
-            std::lock_guard<std::mutex> lock(parentResolveMutex);
+            std::unique_lock<std::mutex> parentResolveLock(parentResolveMutex);
             if (runningParentResolves.find(destinationPartId) == runningParentResolves.end()) {
                 EXIT_IF_PARENT_MESSAGE_ROUTER_IS_NOT_SET();
 
                 runningParentResolves.insert(destinationPartId);
+                parentResolveLock.unlock();
 
                 std::function<void(const bool&)> onSuccess = [
                     destinationPartId,

@@ -91,6 +91,9 @@ CapabilitiesRegistrar.prototype._checkIfReady = function() {
  *            [settings.participantId] optional. If not set, a globally unique UUID participantId will be generated, and persisted to
  *            localStorage. If set, the participantId must be unique in the context of the provider's scope, as set in the ProviderQos;
  *            The application setting the participantId is responsible for guaranteeing uniqueness.
+ * @param {Boolean}
+ *            [settings.awaitGlobalRegistration] optional. If provided and set to true registerProvider will wait until local and global
+ *            registration succeeds or timeout is reached: otherwise registerProvider only waits for local registration.
  *
  * @returns {Object} an A+ promise
  */
@@ -101,7 +104,8 @@ CapabilitiesRegistrar.prototype.register = function register(settings) {
         settings.providerQos,
         settings.expiryDateMs,
         settings.loggingContext,
-        settings.participantId
+        settings.participantId,
+        settings.awaitGlobalRegistration
     );
 };
 
@@ -127,6 +131,9 @@ CapabilitiesRegistrar.prototype.register = function register(settings) {
  *            [loggingContext] optional logging context will be appended to logging messages created in the name of this proxy
  * @param {String}
  *            [participantId] optional. If not set, a globally unique UUID participantId will be generated, and persisted to localStorage.
+ * @param {Boolean}
+ *            [awaitGlobalRegistration] optional. If provided and set to true registerProvider will wait until local and global
+ *            registration succeeds or timeout is reached: otherwise registerProvider only waits for local registration.
  *
  * @returns {Object} an A+ promise
  */
@@ -136,7 +143,8 @@ CapabilitiesRegistrar.prototype.registerProvider = function registerProvider(
     providerQos,
     expiryDateMs,
     loggingContext,
-    participantId
+    participantId,
+    awaitGlobalRegistration
 ) {
     this._checkIfReady();
 
@@ -144,7 +152,7 @@ CapabilitiesRegistrar.prototype.registerProvider = function registerProvider(
 
     if (missingImplementations.length > 0) {
         throw new Error(
-            "provider: " + domain + "/" + provider.interfaceName + " is missing: " + missingImplementations.toString()
+            `provider: ${domain}/${provider.interfaceName} is missing: ${missingImplementations.toString()}`
         );
     }
 
@@ -155,6 +163,16 @@ CapabilitiesRegistrar.prototype.registerProvider = function registerProvider(
 
     if (loggingContext !== undefined) {
         log.warn("loggingContext is currently not supported");
+    }
+
+    if (awaitGlobalRegistration === undefined) {
+        awaitGlobalRegistration = false;
+    }
+
+    if (typeof awaitGlobalRegistration !== "boolean") {
+        const errText = "awaitGlobalRegistration must be boolean";
+        log.warn(errText);
+        return Promise.reject(new Error(errText));
     }
 
     // register provider at RequestReplyManager
@@ -187,17 +205,15 @@ CapabilitiesRegistrar.prototype.registerProvider = function registerProvider(
             publicKeyId: defaultPublicKeyId,
             expiryDateMs: expiryDateMs || Date.now() + defaultExpiryIntervalMs,
             lastSeenDateMs: Date.now()
-        })
+        }),
+        awaitGlobalRegistration
     );
 
     function registerProviderFinished() {
         log.info(
-            "Provider registered: participantId: " +
-                participantId +
-                ", domain: " +
-                domain +
-                ", interfaceName: " +
+            `Provider registered: participantId: ${participantId}, domain: ${domain}, interfaceName: ${
                 provider.interfaceName
+            }`
         );
         return participantId;
     }
@@ -237,12 +253,9 @@ CapabilitiesRegistrar.prototype.unregisterProvider = function unregisterProvider
 
     return Promise.all([discoveryStubPromise, messageRouterPromise]).then(() => {
         log.info(
-            "Provider unregistered: participantId: " +
-                participantId +
-                ", domain: " +
-                domain +
-                ", interfaceName: " +
+            `Provider unregistered: participantId: ${participantId}, domain: ${domain}, interfaceName: ${
                 provider.interfaceName
+            }`
         );
     });
 };

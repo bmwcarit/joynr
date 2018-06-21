@@ -17,53 +17,6 @@
  * #L%
  */
 
-module.exports = {
-    benchmarks: [
-        {
-            name: "attributeString",
-            enabled: "true",
-            numRuns: 8000
-        },
-        {
-            name: "echoComplexStruct",
-            enabled: "true",
-            numRuns: 8000
-        },
-        {
-            name: "echoString",
-            enabled: "true",
-            numRuns: 8000
-        },
-        {
-            name: "echoByteArray",
-            enabled: "true",
-            numRuns: 8000
-        },
-        {
-            name: "registerPlentyOfConsumers",
-            enabled: "false",
-            numRuns: 500
-        },
-        {
-            name: "simpleBroadcast",
-            enabled: "false",
-            numRuns: 8000,
-            type: "broadcast",
-            numProxies: 4
-        }
-    ],
-    global: {
-        testRuns: 30,
-        domain: "performance_test_domain",
-        cc: {
-            host: "localhost",
-            port: "4242"
-        },
-        measureMemory: "true",
-        heapSnapShot: "false",
-        stringLength: 10,
-        timeout: 3600000,
-        byteArraySize: 20,
-        testType: "burst" // burst, concurrency, single
-    }
-};
+const baseConfig = require("./config");
+baseConfig.global.measureMemory = "true";
+module.exports = baseConfig;

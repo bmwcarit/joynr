@@ -17,35 +17,35 @@
  * #L%
  */
 
-define(
-    ["joynr/dispatching/types/SubscriptionReply", "joynr/exceptions/SubscriptionException"],
-    (SubscriptionReply, SubscriptionException) => {
-        describe("libjoynr-js.joynr.dispatching.types.SubscriptionReply", () => {
-            it("is instantiable", () => {
-                const subscriptionReply = new SubscriptionReply({
-                    subscriptionId: "id"
-                });
-                expect(subscriptionReply).toBeDefined();
-                expect(subscriptionReply instanceof SubscriptionReply).toBeTruthy();
-                expect(subscriptionReply._typeName).toEqual("joynr.SubscriptionReply");
-                expect(subscriptionReply.subscriptionId).toEqual("id");
+define(["joynr/dispatching/types/SubscriptionReply", "joynr/exceptions/SubscriptionException"], (
+    SubscriptionReply,
+    SubscriptionException
+) => {
+    describe("libjoynr-js.joynr.dispatching.types.SubscriptionReply", () => {
+        it("is instantiable", () => {
+            const subscriptionReply = new SubscriptionReply({
+                subscriptionId: "id"
             });
-
-            it("is instantiable with error", () => {
-                const subscriptionException = new SubscriptionException({
-                    subscriptionId: "id"
-                });
-
-                const subscriptionReply = new SubscriptionReply({
-                    subscriptionId: "id",
-                    error: subscriptionException
-                });
-                expect(subscriptionReply).toBeDefined();
-                expect(subscriptionReply instanceof SubscriptionReply).toBeTruthy();
-                expect(subscriptionReply._typeName).toEqual("joynr.SubscriptionReply");
-                expect(subscriptionReply.subscriptionId).toEqual("id");
-                expect(subscriptionReply.error).toEqual(subscriptionException);
-            });
+            expect(subscriptionReply).toBeDefined();
+            expect(subscriptionReply instanceof SubscriptionReply).toBeTruthy();
+            expect(subscriptionReply._typeName).toEqual("joynr.SubscriptionReply");
+            expect(subscriptionReply.subscriptionId).toEqual("id");
         });
-    }
-); // require
+
+        it("is instantiable with error", () => {
+            const subscriptionException = new SubscriptionException({
+                subscriptionId: "id"
+            });
+
+            const subscriptionReply = new SubscriptionReply({
+                subscriptionId: "id",
+                error: subscriptionException
+            });
+            expect(subscriptionReply).toBeDefined();
+            expect(subscriptionReply instanceof SubscriptionReply).toBeTruthy();
+            expect(subscriptionReply._typeName).toEqual("joynr.SubscriptionReply");
+            expect(subscriptionReply.subscriptionId).toEqual("id");
+            expect(subscriptionReply.error).toEqual(subscriptionException);
+        });
+    });
+}); // require

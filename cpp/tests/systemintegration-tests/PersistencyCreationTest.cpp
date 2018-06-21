@@ -18,6 +18,7 @@
  */
 
 #include <memory>
+#include <chrono>
 #include <string>
 
 #include <boost/filesystem.hpp>
@@ -42,26 +43,27 @@ using namespace joynr;
 class PersistencyCreationTest : public testing::Test
 {
 public:
-    PersistencyCreationTest() :
-        testProvider(nullptr),
-        testProxy(nullptr),
-        domain("PersistencyCreationTest"),
-        providerParticipantId(),
-        semaphore(0),
-        MESSAGINGQOS_TTL(1000)
+    PersistencyCreationTest()
+            : testProvider(nullptr),
+              testProxy(nullptr),
+              domain("PersistencyCreationTest"),
+              providerParticipantId(),
+              semaphore(0),
+              MESSAGINGQOS_TTL(1000)
     {
     }
 
     void init(const std::string& settings)
     {
-        ccRuntime = JoynrClusterControllerRuntime::create(
-                    std::make_unique<joynr::Settings>(settings));
+        ccRuntime =
+                JoynrClusterControllerRuntime::create(std::make_unique<joynr::Settings>(settings));
 
         types::ProviderQos providerQos;
         providerQos.setScope(joynr::types::ProviderScope::LOCAL);
 
         testProvider = std::make_shared<MockTestProvider>();
-        providerParticipantId = ccRuntime->registerProvider<tests::testProvider>(domain, testProvider, providerQos);
+        providerParticipantId =
+                ccRuntime->registerProvider<tests::testProvider>(domain, testProvider, providerQos);
 
         // Create a proxy
         auto testProxyBuilder = ccRuntime->createProxyBuilder<tests::testProxy>(domain);
@@ -71,8 +73,8 @@ public:
         discoveryQos.setDiscoveryTimeoutMs(1000);
 
         testProxy = testProxyBuilder->setMessagingQos(MessagingQos(MESSAGINGQOS_TTL))
-                                                   ->setDiscoveryQos(discoveryQos)
-                                                   ->build();
+                            ->setDiscoveryQos(discoveryQos)
+                            ->build();
     }
 
     void SetUp()
@@ -122,24 +124,29 @@ TEST_F(PersistencyCreationTest, testPersistencyFilesAreNotWrittenWhenDisabled)
     testProxy->subscribeToBooleanBroadcastBroadcast(
             filterParameters,
             std::make_shared<MockSubscriptionListenerOneType<bool>>(),
-            std::make_shared<OnChangeSubscriptionQos>()
-    );
+            std::make_shared<OnChangeSubscriptionQos>());
 
     testProxy->subscribeToATTRIBUTEWITHCAPITALLETTERS(
             std::make_shared<MockSubscriptionListenerOneType<std::int32_t>>(),
-            std::make_shared<SubscriptionQos>()
-    );
+            std::make_shared<SubscriptionQos>());
 
     testProxy->subscribeToLocationUpdateBroadcast(
-            std::make_shared<MockSubscriptionListenerOneType<joynr::types::Localisation::GpsLocation>>(),
-            std::make_shared<MulticastSubscriptionQos>()
-    );
+            std::make_shared<
+                    MockSubscriptionListenerOneType<joynr::types::Localisation::GpsLocation>>(),
+            std::make_shared<MulticastSubscriptionQos>());
 
-    EXPECT_FALSE(boost::filesystem::exists(LibjoynrSettings::DEFAULT_MESSAGE_ROUTER_PERSISTENCE_FILENAME()));
-    EXPECT_FALSE(boost::filesystem::exists(LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME()));
-    EXPECT_FALSE(boost::filesystem::exists(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME()));
-    EXPECT_FALSE(boost::filesystem::exists(ClusterControllerSettings::DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME()));
-    EXPECT_FALSE(boost::filesystem::exists(ClusterControllerSettings::DEFAULT_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCE_FILENAME()));
+    EXPECT_FALSE(boost::filesystem::exists(
+            LibjoynrSettings::DEFAULT_MESSAGE_ROUTER_PERSISTENCE_FILENAME()));
+    EXPECT_FALSE(boost::filesystem::exists(
+            LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME()));
+    EXPECT_FALSE(boost::filesystem::exists(
+            LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME()));
+    EXPECT_FALSE(boost::filesystem::exists(
+            ClusterControllerSettings::
+                    DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME()));
+    EXPECT_FALSE(boost::filesystem::exists(
+            ClusterControllerSettings::
+                    DEFAULT_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCE_FILENAME()));
 }
 
 TEST_F(PersistencyCreationTest, testPersistencyFilesAreWrittenWhenEnabled)
@@ -153,23 +160,30 @@ TEST_F(PersistencyCreationTest, testPersistencyFilesAreWrittenWhenEnabled)
     testProxy->subscribeToBooleanBroadcastBroadcast(
             filterParameters,
             std::make_shared<MockSubscriptionListenerOneType<bool>>(),
-            std::make_shared<OnChangeSubscriptionQos>()
-    );
+            std::make_shared<OnChangeSubscriptionQos>());
 
     testProxy->subscribeToATTRIBUTEWITHCAPITALLETTERS(
             std::make_shared<MockSubscriptionListenerOneType<std::int32_t>>(),
-            std::make_shared<SubscriptionQos>()
-    );
+            std::make_shared<SubscriptionQos>());
 
     testProxy->subscribeToLocationUpdateBroadcast(
-            std::make_shared<MockSubscriptionListenerOneType<joynr::types::Localisation::GpsLocation>>(),
-            std::make_shared<MulticastSubscriptionQos>()
-    );
+            std::make_shared<
+                    MockSubscriptionListenerOneType<joynr::types::Localisation::GpsLocation>>(),
+            std::make_shared<MulticastSubscriptionQos>());
 
-    EXPECT_TRUE(boost::filesystem::exists(LibjoynrSettings::DEFAULT_MESSAGE_ROUTER_PERSISTENCE_FILENAME()));
-    EXPECT_TRUE(boost::filesystem::exists(LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME()));
-    EXPECT_TRUE(boost::filesystem::exists(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME()));
-    EXPECT_TRUE(boost::filesystem::exists(ClusterControllerSettings::DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME()));
-    EXPECT_TRUE(boost::filesystem::exists(ClusterControllerSettings::DEFAULT_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCE_FILENAME()));
+    // Timing: subscriptionRequests are not allways persisted in time, before the check.
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+    EXPECT_TRUE(boost::filesystem::exists(
+            LibjoynrSettings::DEFAULT_MESSAGE_ROUTER_PERSISTENCE_FILENAME()));
+    EXPECT_TRUE(boost::filesystem::exists(
+            LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME()));
+    EXPECT_TRUE(boost::filesystem::exists(
+            LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME()));
+    EXPECT_TRUE(boost::filesystem::exists(
+            ClusterControllerSettings::
+                    DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME()));
+    EXPECT_TRUE(boost::filesystem::exists(
+            ClusterControllerSettings::
+                    DEFAULT_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCE_FILENAME()));
 }
-

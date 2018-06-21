@@ -320,7 +320,9 @@ describe("libjoynr-js.joynr.capabilities.arbitration.Arbitrator", () => {
 
     function setSupportsOnChangeSubscriptionsToTrue(discoveryEntry) {
         discoveryEntry.qos = new ProviderQos(
-            UtilInternal.extend(discoveryEntry.qos, { supportsOnChangeSubscriptions: true })
+            UtilInternal.extend(discoveryEntry.qos, {
+                supportsOnChangeSubscriptions: true
+            })
         );
     }
 
@@ -412,7 +414,10 @@ describe("libjoynr-js.joynr.capabilities.arbitration.Arbitrator", () => {
                 domains: [domain],
                 interfaceName,
                 discoveryQos: discoveryQosWithShortTimers,
-                proxyVersion: new Version({ majorVersion: 49, minorVersion: expectedMinimumMinorVersion })
+                proxyVersion: new Version({
+                    majorVersion: 49,
+                    minorVersion: expectedMinimumMinorVersion
+                })
             })
             .then(onFulfilledSpy)
             .catch(onRejectedSpy);
@@ -623,7 +628,7 @@ describe("libjoynr-js.joynr.capabilities.arbitration.Arbitrator", () => {
                         () => {
                             return capDiscoverySpy.lookup.calls.count() === i;
                         },
-                        "lookup " + i,
+                        `lookup ${i}`,
                         1000
                     ).then(() => {
                         expect(capDiscoverySpy.lookup.calls.count()).toBe(i);
@@ -831,7 +836,7 @@ describe("libjoynr-js.joynr.capabilities.arbitration.Arbitrator", () => {
                 return null;
             })
             .catch(error => {
-                fail("an unexpected ArbitrationException was caught: " + error);
+                fail(`an unexpected ArbitrationException was caught: ${error}`);
                 return null;
             });
         // resolve/reject callbacks are called

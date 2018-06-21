@@ -87,6 +87,17 @@ public class JoynrAndroidRuntime implements JoynrRuntime {
     }
 
     @Override
+    public Future<Void> registerProvider(String domain, Object provider, ProviderQos providerQos, boolean awaitGlobalRegistration) {
+        // this will block until the runtime is created successfully
+        // TODO since the caller expects the register call to be async, we need to check if
+        // this will not block to long
+        JoynrRuntime runtime = getJoynrRuntime();
+
+        // registration of providers is asynchronously
+        return runtime.registerProvider(domain, provider, providerQos, awaitGlobalRegistration);
+    }
+
+    @Override
     public void unregisterProvider(String domain, Object provider) {
         // this will block until the runtime is created successfully
         // TODO since the caller expects the unregister call to be async, we need to check if

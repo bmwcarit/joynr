@@ -237,20 +237,32 @@ describe("libjoynr-js.joynr.proxy.SubscriptionQos", () => {
         }
         // publicationTtlMs < SubscriptionQos.MIN_PUBLICATION_TTL_MS
         {
-            const input = addDefaultKeys({ publicationTtlMs: SubscriptionQos.MIN_PUBLICATION_TTL_MS - 1 });
-            const expectedOutput = addDefaultKeys({ publicationTtlMs: SubscriptionQos.MIN_PUBLICATION_TTL_MS });
+            const input = addDefaultKeys({
+                publicationTtlMs: SubscriptionQos.MIN_PUBLICATION_TTL_MS - 1
+            });
+            const expectedOutput = addDefaultKeys({
+                publicationTtlMs: SubscriptionQos.MIN_PUBLICATION_TTL_MS
+            });
             checkSettingsInSubscriptionQosAndChildren(input, expectedOutput);
         }
         // publicationTtlMs > SubscriptionQos.MAX_PUBLICATION_TTL_MS
         {
-            const input = addDefaultKeys({ publicationTtlMs: SubscriptionQos.MAX_PUBLICATION_TTL_MS + 1 });
-            const expectedOutput = addDefaultKeys({ publicationTtlMs: SubscriptionQos.MAX_PUBLICATION_TTL_MS });
+            const input = addDefaultKeys({
+                publicationTtlMs: SubscriptionQos.MAX_PUBLICATION_TTL_MS + 1
+            });
+            const expectedOutput = addDefaultKeys({
+                publicationTtlMs: SubscriptionQos.MAX_PUBLICATION_TTL_MS
+            });
             checkSettingsInSubscriptionQosAndChildren(input, expectedOutput);
         }
         // expiryDateMs < SubscriptionQos.MIN_EXPIRY_MS
         {
-            const input = addDefaultKeys({ expiryDateMs: SubscriptionQos.MIN_EXPIRY_MS - 1 });
-            const expectedOutput = addDefaultKeys({ expiryDateMs: SubscriptionQos.MIN_EXPIRY_MS });
+            const input = addDefaultKeys({
+                expiryDateMs: SubscriptionQos.MIN_EXPIRY_MS - 1
+            });
+            const expectedOutput = addDefaultKeys({
+                expiryDateMs: SubscriptionQos.MIN_EXPIRY_MS
+            });
             checkSettingsInSubscriptionQosAndChildren(input, expectedOutput);
         }
         // periodMs < PeriodicSubscriptionQos.MIN_PERIOD_MS
@@ -265,8 +277,14 @@ describe("libjoynr-js.joynr.proxy.SubscriptionQos", () => {
 
         // PeriodicSubscriptionQos.alertAfterIntervalMs !== PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL && PeriodicSubscriptionQos.alertAfterIntervalMs < periodMs
         {
-            const input = addDefaultKeys({ periodicAlertAfterIntervalMs: 2999, periodMs: 3000 });
-            const expectedOutput = addDefaultKeys({ periodicAlertAfterIntervalMs: 3000, periodMs: 3000 });
+            const input = addDefaultKeys({
+                periodicAlertAfterIntervalMs: 2999,
+                periodMs: 3000
+            });
+            const expectedOutput = addDefaultKeys({
+                periodicAlertAfterIntervalMs: 3000,
+                periodMs: 3000
+            });
             checkSettingsInSubscriptionQosAndChildren(input, expectedOutput);
         }
         // PeriodicSubscriptionQos.alertAfterIntervalMs === PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL && PeriodicSubscriptionQos.alertAfterIntervalMs < periodMs
@@ -293,8 +311,12 @@ describe("libjoynr-js.joynr.proxy.SubscriptionQos", () => {
         }
         // minIntervalMs < OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS
         {
-            const input = addDefaultKeys({ minIntervalMs: OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS - 1 });
-            const expectedOutput = addDefaultKeys({ minIntervalMs: OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS });
+            const input = addDefaultKeys({
+                minIntervalMs: OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS - 1
+            });
+            const expectedOutput = addDefaultKeys({
+                minIntervalMs: OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS
+            });
             checkSettingsInSubscriptionQosAndChildren(input, expectedOutput);
         }
         // minIntervalMs > OnChangeSubscriptionQos.MAX_MIN_INTERVAL_MS
@@ -336,14 +358,23 @@ describe("libjoynr-js.joynr.proxy.SubscriptionQos", () => {
         // maxIntervalMs < minIntervalMs
         {
             const input = addDefaultKeys({ maxIntervalMs: 200, minIntervalMs: 500 });
-            const expectedOutput = addDefaultKeys({ maxIntervalMs: 500, minIntervalMs: 500 });
+            const expectedOutput = addDefaultKeys({
+                maxIntervalMs: 500,
+                minIntervalMs: 500
+            });
             checkSettingsInSubscriptionQosAndChildren(input, expectedOutput);
         }
         // OnChangeWithKeepAliveSubscriptionQos.alertAfterIntervalMs !== OnChangeWithKeepAliveSubscriptionQos.NO_ALERT_AFTER_INTERVAL
         // && OnChangeWithKeepAliveSubscriptionQos.alertAfterIntervalMs < maxIntervalMs
         {
-            const input = addDefaultKeys({ maxIntervalMs: 4000, onChangeAlertAfterIntervalMs: 2000 });
-            const expectedOutput = addDefaultKeys({ maxIntervalMs: 4000, onChangeAlertAfterIntervalMs: 4000 });
+            const input = addDefaultKeys({
+                maxIntervalMs: 4000,
+                onChangeAlertAfterIntervalMs: 2000
+            });
+            const expectedOutput = addDefaultKeys({
+                maxIntervalMs: 4000,
+                onChangeAlertAfterIntervalMs: 4000
+            });
             checkSettingsInSubscriptionQosAndChildren(input, expectedOutput);
         }
         // OnChangeWithKeepAliveSubscriptionQos.alertAfterIntervalMs === OnChangeWithKeepAliveSubscriptionQos.NO_ALERT_AFTER_INTERVAL
@@ -489,7 +520,11 @@ describe("libjoynr-js.joynr.proxy.SubscriptionQos", () => {
                     MulticastSubscriptionQos({ expiryDateMs, publicationTtlMs });
                 }).toThrow();
                 expect(() => {
-                    OnChangeSubscriptionQos({ expiryDateMs, publicationTtlMs, minIntervalMs });
+                    OnChangeSubscriptionQos({
+                        expiryDateMs,
+                        publicationTtlMs,
+                        minIntervalMs
+                    });
                 }).toThrow();
             // fall through
             case "alertAfterIntervalMs":
@@ -507,14 +542,23 @@ describe("libjoynr-js.joynr.proxy.SubscriptionQos", () => {
             case "periodMs":
                 // only PeriodicSubscriptionQos has the field periodMs
                 expect(() => {
-                    PeriodicSubscriptionQos({ expiryDateMs, publicationTtlMs, alertAfterIntervalMs, periodMs });
+                    PeriodicSubscriptionQos({
+                        expiryDateMs,
+                        publicationTtlMs,
+                        alertAfterIntervalMs,
+                        periodMs
+                    });
                 }).toThrow();
                 break;
             case "minIntervalMs":
                 // only OnChangeSubscriptionQos and OnChangeWithKeepAliveSubscriptionQos should
                 // throw an exception with uncorrectly typed field minIntervalMs
                 expect(() => {
-                    OnChangeSubscriptionQos({ expiryDateMs, publicationTtlMs, minIntervalMs });
+                    OnChangeSubscriptionQos({
+                        expiryDateMs,
+                        publicationTtlMs,
+                        minIntervalMs
+                    });
                 }).toThrow();
             // fall through
             case "maxIntervalMs":
@@ -538,10 +582,19 @@ describe("libjoynr-js.joynr.proxy.SubscriptionQos", () => {
                     MulticastSubscriptionQos({ expiryDateMs, publicationTtlMs });
                 }).not.toThrow();
                 expect(() => {
-                    PeriodicSubscriptionQos({ expiryDateMs, publicationTtlMs, alertAfterIntervalMs, periodMs });
+                    PeriodicSubscriptionQos({
+                        expiryDateMs,
+                        publicationTtlMs,
+                        alertAfterIntervalMs,
+                        periodMs
+                    });
                 }).not.toThrow();
                 expect(() => {
-                    OnChangeSubscriptionQos({ expiryDateMs, publicationTtlMs, minIntervalMs });
+                    OnChangeSubscriptionQos({
+                        expiryDateMs,
+                        publicationTtlMs,
+                        minIntervalMs
+                    });
                 }).not.toThrow();
                 expect(() => {
                     OnChangeWithKeepAliveSubscriptionQos({

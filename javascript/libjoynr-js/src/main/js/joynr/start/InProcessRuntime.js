@@ -212,7 +212,7 @@ function InProcessRuntime(provisioning) {
         let i;
 
         if (joynrState !== JoynrStates.SHUTDOWN) {
-            throw new Error("Cannot start libjoynr because it's currently \"" + joynrState + '"');
+            throw new Error(`Cannot start libjoynr because it's currently "${joynrState}"`);
         }
         joynrState = JoynrStates.STARTING;
 
@@ -227,6 +227,7 @@ function InProcessRuntime(provisioning) {
             clearPersistency: persistencyProvisioning.clearPersistency,
             location: persistencyProvisioning.location
         });
+        const persistencyPromise = persistency.init();
 
         if (UtilInternal.checkNullUndefined(provisioning.bounceProxyUrl)) {
             throw new Error("bounce proxy URL not set in provisioning.bounceProxyUrl");
@@ -240,7 +241,7 @@ function InProcessRuntime(provisioning) {
 
         initialRoutingTable = {};
 
-        channelId = provisioning.channelId || persistency.getItem("joynr.channels.channelId.1") || "chjs_" + uuid();
+        channelId = provisioning.channelId || persistency.getItem("joynr.channels.channelId.1") || `chjs_${uuid()}`;
         persistency.setItem("joynr.channels.channelId.1", channelId);
 
         untypedCapabilities = provisioning.capabilities || [];
@@ -258,7 +259,7 @@ function InProcessRuntime(provisioning) {
         for (i = 0; i < untypedCapabilities.length; i++) {
             const capability = new GlobalDiscoveryEntry(untypedCapabilities[i]);
             if (!capability.address) {
-                throw new Error("provisioned capability is missing address: " + JSON.stringify(capability));
+                throw new Error(`provisioned capability is missing address: ${JSON.stringify(capability)}`);
             }
             initialRoutingTable[capability.participantId] = Typing.augmentTypes(JSON.parse(capability.address));
             typedCapabilities.push(capability);
@@ -408,7 +409,7 @@ function InProcessRuntime(provisioning) {
         const period = provisioning.capabilitiesFreshnessUpdateIntervalMs || 3600000; // default: 1 hour
         freshnessIntervalId = LongTimer.setInterval(() => {
             capabilityDiscovery.touch(channelId, period).catch(error => {
-                log.error("error sending freshness update: " + error);
+                log.error(`error sending freshness update: ${error}`);
             });
             return null;
         }, period);
@@ -422,7 +423,7 @@ function InProcessRuntime(provisioning) {
         joynrState = JoynrStates.STARTED;
         publicationManager.restore();
         log.debug("joynr initialized");
-        return Promise.resolve();
+        return persistencyPromise;
     };
 
     /**
@@ -435,7 +436,7 @@ function InProcessRuntime(provisioning) {
      */
     this.shutdown = function shutdown(settings) {
         if (joynrState !== JoynrStates.STARTED) {
-            throw new Error("Cannot shutdown libjoynr because it's currently \"" + joynrState + '"');
+            throw new Error(`Cannot shutdown libjoynr because it's currently "${joynrState}"`);
         }
         joynrState = JoynrStates.SHUTTINGDOWN;
 
@@ -504,9 +505,11 @@ function InProcessRuntime(provisioning) {
             typeRegistry.shutdown();
         }
 
+        const persistencyPromise = persistency !== undefined ? persistency.shutdown() : Promise.resolve();
+
         joynrState = JoynrStates.SHUTDOWN;
         log.debug("joynr shut down");
-        return Promise.resolve();
+        return persistencyPromise;
     };
 
     // make every instance immutable

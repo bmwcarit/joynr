@@ -29,24 +29,30 @@ const Typing = {};
 
 Typing.checkProperty = function(obj, type, description) {
     if (obj === undefined) {
-        throw new Error(description + " is undefined");
+        throw new Error(`${description} is undefined`);
     }
-    if (typeof type === "string" && Typing.getObjectType(obj) !== type) {
-        throw new Error(description + " is not of type " + type + ". Actual type is " + Typing.getObjectType(obj));
+    const objectType = Typing.getObjectType(obj);
+    if (typeof type === "string" && objectType !== type) {
+        throw new Error(`${description} is not of type ${type}. Actual type is ${objectType}`);
     }
-    if (Array.isArray(type) && !Typing.getObjectType(obj).match("^" + type.join("$|^") + "$")) {
-        throw new Error(
-            description + " is not of a type from " + type + ". Actual type is " + Typing.getObjectType(obj)
-        );
+    if (Array.isArray(type) && !objectType.match(`^${type.join("$|^")}$`)) {
+        throw new Error(`${description} is not of a type from ${type}. Actual type is ${objectType}`);
     }
     if (typeof type === "function" && !(obj instanceof type)) {
-        throw new Error(
-            description +
-                " is not of type " +
-                Typing.getObjectType(type) +
-                ". Actual type is " +
-                Typing.getObjectType(obj)
-        );
+        throw new Error(`${description} is not of type ${Typing.getObjectType(type)}. Actual type is ${objectType}`);
+    }
+};
+
+Typing.checkPropertyAllowObject = function(obj, type, description) {
+    const objectType = Typing.getObjectType(obj);
+    if (typeof type === "string" && objectType !== type) {
+        if (obj._typeName) {
+            if (typeRegistry.getConstructor(obj._typeName).name === type) {
+                return;
+            }
+            throw new Error(`${description} is not of type ${type} or Object. Actual type is ${objectType}`);
+        }
+        throw new Error(`${description} is not of type ${type}. Actual type is ${objectType}`);
     }
 };
 
@@ -117,6 +123,10 @@ Typing.augmentTypes = function(untyped, typeHint) {
 
     // return already typed objects immediately
     if (Typing.isComplexJoynrObject(untyped)) {
+        const Constructor = untyped.constructor;
+        if (Constructor.checkMembers) {
+            Constructor.checkMembers(untyped, Typing.checkPropertyAllowObject);
+        }
         return untyped;
     }
 
@@ -126,7 +136,7 @@ Typing.augmentTypes = function(untyped, typeHint) {
     // what should we do with a function?
     if (type === "Function") {
         // functions should not at all appear here!!!
-        throw new Error('cannot augment object type "' + type + '"');
+        throw new Error(`cannot augment object type "${type}"`);
     }
 
     // try to type each single element of an array
@@ -143,7 +153,8 @@ Typing.augmentTypes = function(untyped, typeHint) {
         }
     } else if (typeHint !== undefined && typeRegistry.isEnumType(typeHint)) {
         //check if provisioned type name is given. In this case, check for special considerations
-        typedObj = typeRegistry.getConstructor(typeHint)[untyped];
+        const Constructor = typeRegistry.getConstructor(typeHint);
+        typedObj = untyped.name ? Constructor[untyped.name] : Constructor[untyped];
     } else if (type === "Boolean" || type === "Number" || type === "String") {
         // leave integral data types untyped
         typedObj = untyped;
@@ -169,16 +180,20 @@ Typing.augmentTypes = function(untyped, typeHint) {
                         }
                     }
                 }
+
+                if (Constructor.checkMembers) {
+                    Constructor.checkMembers(typedObj, Typing.checkProperty);
+                }
             }
         } else {
             throw new Error(
-                "type must contain a _typeName that is registered in the type registry: " + JSON.stringify(untyped)
+                `type must contain a _typeName that is registered in the type registry: ${JSON.stringify(untyped)}`
             );
         }
     } else {
         // encountered an unknown object type, that should not appear here
         throw new Error(
-            'encountered unknown object "' + JSON.stringify(untyped) + '" of type "' + type + '" while augmenting types'
+            `encountered unknown object "${JSON.stringify(untyped)}" of type "${type}" while augmenting types`
         );
     }
 
@@ -197,7 +212,7 @@ Typing.augmentTypes = function(untyped, typeHint) {
  * @returns {?} the same object with the typeName set
  */
 Typing.augmentTypeName = function(obj, packageName, memberName) {
-    packageName = packageName === undefined ? "" : packageName + ".";
+    packageName = packageName === undefined ? "" : `${packageName}.`;
     obj[memberName || "_typeName"] = packageName + Typing.getObjectType(obj);
     return obj;
 };

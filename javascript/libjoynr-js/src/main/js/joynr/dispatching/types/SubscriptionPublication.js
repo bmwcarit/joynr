@@ -16,8 +16,6 @@
  * limitations under the License.
  * #L%
  */
-const Util = require("../../util/Util");
-const Typing = require("../../util/Typing");
 
 /**
  * @name SubscriptionPublication
@@ -31,35 +29,15 @@ const Typing = require("../../util/Typing");
  *            settings.error The exception object in case of publication failure
  */
 function SubscriptionPublication(settings) {
-    if (settings.response) {
-        settings.response = Util.ensureTypedValues(settings.response);
-    }
-
-    /**
-     * @name SubscriptionPublication#subscriptionId
-     * @type String
-     */
-    this.subscriptionId = settings.subscriptionId;
-    /**
-     * @name SubscriptionPublication#response
-     * @type Object
-     */
-    this.response = settings.response;
-    /**
-     * @name SubscriptionPublication#error
-     * @type Object
-     */
-    this.error = settings.error;
-
     /**
      * The joynr type name
      *
      * @name SubscriptionPublication#_typeName
      * @type String
      */
-    Typing.augmentTypeName(this, "joynr");
+    settings._typeName = "joynr.SubscriptionPublication";
 
-    return Object.freeze(this);
+    return settings;
 }
 
 module.exports = SubscriptionPublication;

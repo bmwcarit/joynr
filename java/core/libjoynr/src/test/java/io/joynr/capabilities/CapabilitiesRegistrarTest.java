@@ -88,6 +88,10 @@ public class CapabilitiesRegistrarTest {
     private String participantId = "participantId";
     private String publicKeyId = "";
     private ProviderQos providerQos = new ProviderQos();
+    private JoynrVersion currentJoynrVersion;
+    private Version testVersion;
+    private RequestCaller requestCallerMock;
+    private ArgumentCaptor<DiscoveryEntry> discoveryEntryCaptor;
 
     @JoynrInterface(provider = TestProvider.class, provides = TestProvider.class, name = TestProvider.INTERFACE_NAME)
     @JoynrVersion(major = 1337, minor = 42)
@@ -105,25 +109,23 @@ public class CapabilitiesRegistrarTest {
                                                   participantIdStorage,
                                                   ONE_DAY_IN_MS,
                                                   new InProcessAddress(new InProcessLibjoynrMessagingSkeleton(dispatcher)));
-    }
-
-    @SuppressWarnings("unchecked")
-    @Test
-    public void registerWithCapRegistrar() {
-        JoynrVersion currentJoynrVersion = (JoynrVersion) TestProvider.class.getAnnotation(JoynrVersion.class);
-        Version testVersion = new Version(currentJoynrVersion.major(), currentJoynrVersion.minor());
+        currentJoynrVersion = (JoynrVersion) TestProvider.class.getAnnotation(JoynrVersion.class);
+        testVersion = new Version(currentJoynrVersion.major(), currentJoynrVersion.minor());
 
         when(providerContainer.getInterfaceName()).thenReturn(TestProvider.INTERFACE_NAME);
-        RequestCaller requestCallerMock = mock(RequestCaller.class);
+        requestCallerMock = mock(RequestCaller.class);
         when(providerContainer.getRequestCaller()).thenReturn(requestCallerMock);
         when(providerContainer.getSubscriptionPublisher()).thenReturn(subscriptionPublisher);
         when(participantIdStorage.getProviderParticipantId(eq(domain), eq(TestProvider.INTERFACE_NAME))).thenReturn(participantId);
         when(providerContainerFactory.create(testProvider)).thenReturn(providerContainer);
 
-        ArgumentCaptor<DiscoveryEntry> discoveryEntryCaptor = ArgumentCaptor.forClass(DiscoveryEntry.class);
+        discoveryEntryCaptor = ArgumentCaptor.forClass(DiscoveryEntry.class);
+    }
 
-        registrar.registerProvider(domain, testProvider, providerQos);
-        verify(localDiscoveryAggregator).add(any(Callback.class), discoveryEntryCaptor.capture());
+    private void verifyResults(boolean awaitGlobalRegistration) {
+        verify(localDiscoveryAggregator).add(any(Callback.class),
+                                             discoveryEntryCaptor.capture(),
+                                             eq(awaitGlobalRegistration));
         DiscoveryEntry actual = discoveryEntryCaptor.getValue();
         Assert.assertEquals(actual.getProviderVersion(), testVersion);
         Assert.assertEquals(actual.getDomain(), domain);
@@ -133,15 +135,28 @@ public class CapabilitiesRegistrarTest {
         Assert.assertTrue((System.currentTimeMillis() - actual.getLastSeenDateMs()) < 5000);
         Assert.assertTrue((actual.getExpiryDateMs() - expiryDateMs) < 5000);
         Assert.assertEquals(actual.getPublicKeyId(), publicKeyId);
-
         verify(providerDirectory).add(eq(participantId), eq(providerContainer));
     }
 
     @SuppressWarnings("unchecked")
     @Test
+    public void registerWithCapRegistrarWithoutAwaitGlobalRegistration() {
+        boolean awaitGlobalRegistration = false;
+        registrar.registerProvider(domain, testProvider, providerQos, awaitGlobalRegistration);
+        verifyResults(awaitGlobalRegistration);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void registerWithCapRegistrarWithAwaitGlobalRegistration() {
+        boolean awaitGlobalRegistration = true;
+        registrar.registerProvider(domain, testProvider, providerQos, awaitGlobalRegistration);
+        verifyResults(awaitGlobalRegistration);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
     public void unregisterProvider() {
-        when(providerContainer.getInterfaceName()).thenReturn(TestProvider.INTERFACE_NAME);
-        when(participantIdStorage.getProviderParticipantId(eq(domain), eq(TestProvider.INTERFACE_NAME))).thenReturn(participantId);
         registrar.unregisterProvider(domain, testProvider);
 
         verify(localDiscoveryAggregator).remove(any(Callback.class), eq(participantId));

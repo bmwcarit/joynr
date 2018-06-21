@@ -25,7 +25,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>joynr</artifactId>
-		<version>1.3.0-SNAPSHOT</version>
+		<version>1.4.0-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -49,7 +49,7 @@
 	<build>
 		<pluginManagement>
 			<plugins>
-				<!-- NOTE the license to be added to the source header files must be 
+				<!-- NOTE the license to be added to the source header files must be
 					specifically (redundantly) defined below -->
 				<!-- This is a shortcoming of the license-maven-plugin -->
 				<plugin>
@@ -64,10 +64,12 @@
 						</roots>
 					<excludes>
 						<exclude>tests/resources/ListOfCapabilitiesToInject.json</exclude>
-                                                <exclude>tests/resources/MasterAccessTable.json</exclude>
-                                                <exclude>tests/resources/MasterRegistrationTable.json</exclude>
-                                                <exclude>tests/resources/OwnerAccessTable.json</exclude>
-                                                <exclude>tests/resources/OwnerRegistrationTable.json</exclude>
+						<exclude>tests/resources/MasterAccessTable.json</exclude>
+						<exclude>tests/resources/MasterRegistrationTable.json</exclude>
+						<exclude>tests/resources/OwnerAccessTable.json</exclude>
+						<exclude>tests/resources/OwnerRegistrationTable.json</exclude>
+						<exclude>tests/resources/application1_ACL_RCL_Permissions.json</exclude>
+						<exclude>tests/resources/application2_ACL_RCL_Permissions.json</exclude>
 					</excludes>
 					</configuration>
 				</plugin>

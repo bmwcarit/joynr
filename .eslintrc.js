@@ -24,6 +24,9 @@ module.exports = {
         jasmine: true,
         browser: true
     },
+    parserOptions: {
+        ecmaVersion: 2017
+    },
     extends: ["plugin:promise/recommended", "eslint:recommended"],
     plugins: ["promise"],
     rules: {
@@ -69,6 +72,7 @@ module.exports = {
         "prefer-arrow-callback": "error",
         "prefer-const": "error",
         "prefer-destructuring": "off",
+        "prefer-template": "error",
         "prefer-spread": "error",
         "promise/always-return": "off",
         "promise/no-return-wrap": "error",

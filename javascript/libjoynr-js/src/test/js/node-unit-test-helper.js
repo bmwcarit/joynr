@@ -24,7 +24,7 @@ const jasmine = new Jasmine();
 const path = require("path");
 const jasminePath = path.join(__dirname, "..", "resources/spec/support/jasmine.json");
 jasmine.loadConfigFile(jasminePath);
-console.log("Jasmine version: " + jasmine.version);
+console.log(`Jasmine version: ${jasmine.jasmine.version}`);
 
 const mod = require("module");
 // expose req as a global variable for WebSocketNode (that the mock won't be required)

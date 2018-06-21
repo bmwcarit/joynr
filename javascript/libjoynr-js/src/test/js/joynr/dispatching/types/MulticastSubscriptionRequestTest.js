@@ -17,142 +17,139 @@
  * #L%
  */
 
-define(
-    [
-        "joynr/dispatching/types/MulticastSubscriptionRequest",
-        "joynr/proxy/OnChangeSubscriptionQos",
-        "joynr/proxy/MulticastSubscriptionQos"
-    ],
-    (MulticastSubscriptionRequest, OnChangeSubscriptionQos, MulticastSubscriptionQos) => {
-        describe("libjoynr-js.joynr.dispatching.types.MulticastSubscriptionRequest", () => {
-            const qosSettings = {
-                expiryDateMs: 1
-            };
+define([
+    "joynr/dispatching/types/MulticastSubscriptionRequest",
+    "joynr/proxy/OnChangeSubscriptionQos",
+    "joynr/proxy/MulticastSubscriptionQos"
+], (MulticastSubscriptionRequest, OnChangeSubscriptionQos, MulticastSubscriptionQos) => {
+    describe("libjoynr-js.joynr.dispatching.types.MulticastSubscriptionRequest", () => {
+        const qosSettings = {
+            expiryDateMs: 1
+        };
 
-            it("is defined", () => {
-                expect(MulticastSubscriptionRequest).toBeDefined();
+        it("is defined", () => {
+            expect(MulticastSubscriptionRequest).toBeDefined();
+        });
+
+        it("is instantiable", () => {
+            const multicastSubscriptionRequest = new MulticastSubscriptionRequest({
+                multicastId: "multicastId",
+                subscribedToName: "multicastName",
+                subscriptionId: "testSubscriptionId",
+                qos: new MulticastSubscriptionQos(qosSettings)
             });
+            expect(multicastSubscriptionRequest).toBeDefined();
+            expect(multicastSubscriptionRequest).not.toBeNull();
+            expect(typeof multicastSubscriptionRequest === "object").toBeTruthy();
+            expect(multicastSubscriptionRequest instanceof MulticastSubscriptionRequest).toBeTruthy();
+        });
 
-            it("is instantiable", () => {
-                const multicastSubscriptionRequest = new MulticastSubscriptionRequest({
+        it("handles missing parameters correctly", () => {
+            /* eslint-disable no-unused-vars*/
+            // does not throw, with qos
+            expect(() => {
+                const subReq = new MulticastSubscriptionRequest({
                     multicastId: "multicastId",
                     subscribedToName: "multicastName",
                     subscriptionId: "testSubscriptionId",
                     qos: new MulticastSubscriptionQos(qosSettings)
                 });
-                expect(multicastSubscriptionRequest).toBeDefined();
-                expect(multicastSubscriptionRequest).not.toBeNull();
-                expect(typeof multicastSubscriptionRequest === "object").toBeTruthy();
-                expect(multicastSubscriptionRequest instanceof MulticastSubscriptionRequest).toBeTruthy();
-            });
+            }).not.toThrow();
 
-            it("handles missing parameters correctly", () => {
-                /* eslint-disable no-unused-vars*/
-                // does not throw, with qos
-                expect(() => {
-                    const subReq = new MulticastSubscriptionRequest({
-                        multicastId: "multicastId",
-                        subscribedToName: "multicastName",
-                        subscriptionId: "testSubscriptionId",
-                        qos: new MulticastSubscriptionQos(qosSettings)
-                    });
-                }).not.toThrow();
-
-                // does not throw, without qos
-                expect(() => {
-                    const subReq = new MulticastSubscriptionRequest({
-                        multicastId: "multicastId",
-                        subscribedToName: "multicastName",
-                        subscriptionId: "testSubscriptionId"
-                    });
-                }).not.toThrow();
-
-                // throws on wrongly typed subscribedToName
-                expect(() => {
-                    const subReq = new MulticastSubscriptionRequest({
-                        multicastId: "multicastId",
-                        subscribedToName: {},
-                        subscriptionId: "testSubscriptionId",
-                        qos: new MulticastSubscriptionQos(qosSettings)
-                    });
-                }).toThrow();
-
-                // throws on missing subscribedToName
-                expect(() => {
-                    const subReq = new MulticastSubscriptionRequest({
-                        multicastId: "multicastId",
-                        subscriptionId: "testSubscriptionId",
-                        qos: new MulticastSubscriptionQos(qosSettings)
-                    });
-                }).toThrow();
-
-                // throws on missing multicastId
-                expect(() => {
-                    const subReq = new MulticastSubscriptionRequest({
-                        subscriptionId: "subscriptionId",
-                        subscribedToName: "subscribedToName",
-                        qos: new MulticastSubscriptionQos(qosSettings)
-                    });
-                }).toThrow();
-
-                // throws on missing subscriptionId
-                expect(() => {
-                    const subReq = new MulticastSubscriptionRequest({
-                        multicastId: "multicastId",
-                        subscribedToName: "subscribedToName",
-                        qos: new MulticastSubscriptionQos(qosSettings)
-                    });
-                }).toThrow();
-
-                // throws on missing settings object type
-                expect(() => {
-                    const subReq = new MulticastSubscriptionRequest();
-                }).toThrow();
-
-                // throws on wrong settings object type
-                expect(() => {
-                    const subReq = new MulticastSubscriptionRequest("wrong type");
-                }).toThrow();
-                // throws on incorrect qos
-                expect(() => {
-                    const subReq = new MulticastSubscriptionRequest({
-                        multicastId: "multicastId",
-                        subscribedToName: "attributeName",
-                        subscriptionId: "testSubscriptionId",
-                        qos: 1000
-                    });
-                }).toThrow();
-
-                // does not throw if old OnChangeSubscriptonQos is passed
-                expect(() => {
-                    const subReq = new MulticastSubscriptionRequest({
-                        multicastId: "multicastId",
-                        subscribedToName: "attributeName",
-                        subscriptionId: "testSubscriptionId",
-                        qos: new OnChangeSubscriptionQos(qosSettings)
-                    });
-                }).not.toThrow();
-                /* eslint-enable no-unused-vars*/
-            });
-
-            it("is constructs with correct member values", () => {
-                const multicastId = "multicastId";
-                const subscribedToName = "subscribedToName";
-                const subscriptionQos = new MulticastSubscriptionQos(qosSettings);
-                const subscriptionId = "testSubscriptionId";
-
-                const subscriptionRequest = new MulticastSubscriptionRequest({
+            // does not throw, without qos
+            expect(() => {
+                const subReq = new MulticastSubscriptionRequest({
                     multicastId: "multicastId",
-                    subscribedToName,
-                    qos: subscriptionQos,
-                    subscriptionId
+                    subscribedToName: "multicastName",
+                    subscriptionId: "testSubscriptionId"
                 });
+            }).not.toThrow();
 
-                expect(subscriptionRequest.multicastId).toEqual(multicastId);
-                expect(subscriptionRequest.subscribedToName).toEqual(subscribedToName);
-                expect(subscriptionRequest.qos).toEqual(subscriptionQos);
-                expect(subscriptionRequest.subscriptionId).toEqual(subscriptionId);
-            });
+            // throws on wrongly typed subscribedToName
+            expect(() => {
+                const subReq = new MulticastSubscriptionRequest({
+                    multicastId: "multicastId",
+                    subscribedToName: {},
+                    subscriptionId: "testSubscriptionId",
+                    qos: new MulticastSubscriptionQos(qosSettings)
+                });
+            }).toThrow();
+
+            // throws on missing subscribedToName
+            expect(() => {
+                const subReq = new MulticastSubscriptionRequest({
+                    multicastId: "multicastId",
+                    subscriptionId: "testSubscriptionId",
+                    qos: new MulticastSubscriptionQos(qosSettings)
+                });
+            }).toThrow();
+
+            // throws on missing multicastId
+            expect(() => {
+                const subReq = new MulticastSubscriptionRequest({
+                    subscriptionId: "subscriptionId",
+                    subscribedToName: "subscribedToName",
+                    qos: new MulticastSubscriptionQos(qosSettings)
+                });
+            }).toThrow();
+
+            // throws on missing subscriptionId
+            expect(() => {
+                const subReq = new MulticastSubscriptionRequest({
+                    multicastId: "multicastId",
+                    subscribedToName: "subscribedToName",
+                    qos: new MulticastSubscriptionQos(qosSettings)
+                });
+            }).toThrow();
+
+            // throws on missing settings object type
+            expect(() => {
+                const subReq = new MulticastSubscriptionRequest();
+            }).toThrow();
+
+            // throws on wrong settings object type
+            expect(() => {
+                const subReq = new MulticastSubscriptionRequest("wrong type");
+            }).toThrow();
+            // throws on incorrect qos
+            expect(() => {
+                const subReq = new MulticastSubscriptionRequest({
+                    multicastId: "multicastId",
+                    subscribedToName: "attributeName",
+                    subscriptionId: "testSubscriptionId",
+                    qos: 1000
+                });
+            }).toThrow();
+
+            // does not throw if old OnChangeSubscriptonQos is passed
+            expect(() => {
+                const subReq = new MulticastSubscriptionRequest({
+                    multicastId: "multicastId",
+                    subscribedToName: "attributeName",
+                    subscriptionId: "testSubscriptionId",
+                    qos: new OnChangeSubscriptionQos(qosSettings)
+                });
+            }).not.toThrow();
+            /* eslint-enable no-unused-vars*/
         });
-    }
-); // require
+
+        it("is constructs with correct member values", () => {
+            const multicastId = "multicastId";
+            const subscribedToName = "subscribedToName";
+            const subscriptionQos = new MulticastSubscriptionQos(qosSettings);
+            const subscriptionId = "testSubscriptionId";
+
+            const subscriptionRequest = new MulticastSubscriptionRequest({
+                multicastId: "multicastId",
+                subscribedToName,
+                qos: subscriptionQos,
+                subscriptionId
+            });
+
+            expect(subscriptionRequest.multicastId).toEqual(multicastId);
+            expect(subscriptionRequest.subscribedToName).toEqual(subscribedToName);
+            expect(subscriptionRequest.qos).toEqual(subscriptionQos);
+            expect(subscriptionRequest.subscriptionId).toEqual(subscriptionId);
+        });
+    });
+}); // require

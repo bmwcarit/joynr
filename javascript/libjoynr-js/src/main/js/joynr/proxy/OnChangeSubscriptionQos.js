@@ -113,15 +113,17 @@ function OnChangeSubscriptionQos(settings) {
     UtilInternal.extend(this, defaultSettings, settings, subscriptionQos);
     if (this.minIntervalMs < OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS) {
         log.warn(
-            "minIntervalMs < MIN_MIN_INTERVAL_MS. Using MIN_MIN_INTERVAL_MS: " +
+            `minIntervalMs < MIN_MIN_INTERVAL_MS. Using MIN_MIN_INTERVAL_MS: ${
                 OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS
+            }`
         );
         this.minIntervalMs = OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS;
     }
     if (this.minIntervalMs > OnChangeSubscriptionQos.MAX_MIN_INTERVAL_MS) {
         log.warn(
-            "minIntervalMs > MAX_MIN_INTERVAL_MS. Using MAX_MIN_INTERVAL_MS: " +
+            `minIntervalMs > MAX_MIN_INTERVAL_MS. Using MAX_MIN_INTERVAL_MS: ${
                 OnChangeSubscriptionQos.MAX_MIN_INTERVAL_MS
+            }`
         );
         this.minIntervalMs = OnChangeSubscriptionQos.MAX_MIN_INTERVAL_MS;
     }

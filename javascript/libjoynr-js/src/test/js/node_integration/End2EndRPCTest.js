@@ -423,8 +423,9 @@ describe("libjoynr-js.integration.end2end.rpc", () => {
             .catch(error => {
                 return IntegrationUtils.outputPromiseError(
                     new Error(
-                        "End2EndRPCTest.can call an operation successfully (Provider async, String parameter).addFavoriteStation: " +
+                        `End2EndRPCTest.can call an operation successfully (Provider async, String parameter).addFavoriteStation: ${
                             error.message
+                        }`
                     )
                 );
             });

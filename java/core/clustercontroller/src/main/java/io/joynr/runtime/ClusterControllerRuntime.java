@@ -69,7 +69,14 @@ public class ClusterControllerRuntime extends JoynrRuntimeImpl {
         ProviderQos providerQos = new ProviderQos();
         providerQos.setScope(ProviderScope.LOCAL);
 
-        capabilitiesRegistrar.registerProvider(systemServicesDomain, localCapabilitiesDirectory, providerQos);
-        capabilitiesRegistrar.registerProvider(systemServicesDomain, routingProvider, providerQos);
+        final boolean awaitGlobalRegistration = false;
+        capabilitiesRegistrar.registerProvider(systemServicesDomain,
+                                               localCapabilitiesDirectory,
+                                               providerQos,
+                                               awaitGlobalRegistration);
+        capabilitiesRegistrar.registerProvider(systemServicesDomain,
+                                               routingProvider,
+                                               providerQos,
+                                               awaitGlobalRegistration);
     }
 }

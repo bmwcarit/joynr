@@ -26,13 +26,13 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>android</artifactId>
-		<version>1.3.0-SNAPSHOT</version>
+		<version>1.4.0-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
 	<!-- There is interference between the webservice dependencies (needed for testing)
 		and Android dependencies. A Jetty plugin is set up to only use compile 
- 		dependencies and all Android dependencies are included as test dependences. -->
+		dependencies and all Android dependencies are included as test dependences. -->
 	<dependencies>
 		<dependency>
 			<groupId>io.joynr.java.common</groupId>
@@ -55,13 +55,13 @@
 			<version>20080701</version>
 			<scope>test</scope>
 		</dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
-        
-        
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+
 		<!-- Android dependencies -->
 		<dependency>
 			<groupId>io.joynr.java.android</groupId>

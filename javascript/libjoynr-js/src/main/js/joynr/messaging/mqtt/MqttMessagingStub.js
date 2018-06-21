@@ -40,7 +40,7 @@ function MqttMessagingStub(settings) {
  * @param {Object|JoynrMessage} message the message to transmit
  */
 MqttMessagingStub.prototype.transmit = function transmit(message) {
-    log.debug('transmit message: "' + JSONSerializer.stringify(message) + '"');
+    log.debug(`transmit message: "${JSONSerializer.stringify(message)}"`);
     let topic = this._settings.address.topic;
     if (!(JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST === message.type)) {
         topic += MqttMessagingStub.PRIORITY_LOW + message.to;

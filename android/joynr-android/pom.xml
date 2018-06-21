@@ -26,7 +26,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>android</artifactId>
-		<version>1.3.0-SNAPSHOT</version>
+		<version>1.4.0-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -38,12 +38,12 @@
 			<artifactId>android</artifactId>
 			<scope>provided</scope>
 		</dependency>
-        <dependency>
-            <groupId>com.google.inject</groupId>
-            <artifactId>guice</artifactId>
-            <version>3.0</version>
-            <classifier>no_aop</classifier>
-        </dependency>
+		<dependency>
+			<groupId>com.google.inject</groupId>
+			<artifactId>guice</artifactId>
+			<version>3.0</version>
+			<classifier>no_aop</classifier>
+		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-android</artifactId>

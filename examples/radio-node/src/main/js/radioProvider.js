@@ -145,7 +145,12 @@ joynr.load(provisioning).then(function(loadedJoynr) {
         radioProviderImpl);
     radioProviderImpl.setProvider(radioProvider);
 
-    joynr.registration.registerProvider(domain, radioProvider, providerQos).then(function() {
+    var expiryDateMs; // intentionally left undefined by default
+    var loggingContext; // intentionally left undefined by default
+    var participantId; // intentionally left undefined by default
+    var awaitGlobalRegistration = true;
+
+    joynr.registration.registerProvider(domain, radioProvider, providerQos, expiryDateMs, loggingContext, participantId, awaitGlobalRegistration).then(function() {
         log("provider registered successfully");
         runInteractiveConsole(radioProviderImpl, function() {
             return joynr.registration.unregisterProvider(domain, radioProvider)
@@ -158,6 +163,7 @@ joynr.load(provisioning).then(function(loadedJoynr) {
         return null;
     }).catch(function(error) {
         log("error registering provider: " + error.toString());
+        joynr.shutdown();
     });
     return loadedJoynr;
 }).catch(function(error){

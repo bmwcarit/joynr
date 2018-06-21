@@ -30,7 +30,7 @@ if (typeof TextDecoder !== "function") {
 const log = LoggingManager.getLogger("joynr.messaging.websocket.WebSocket");
 const fileReader = new FileReader();
 fileReader.onError = function(error) {
-    log.error("Decoding of binary message failed: " + error);
+    log.error(`Decoding of binary message failed: ${error}`);
 };
 const textDecoder = new TextDecoder();
 const textEncoder = new TextEncoder();

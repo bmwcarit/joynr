@@ -23,7 +23,7 @@ const defaultClusterControllerSettings = function(settings) {
     defaultSettings.discoveryChannel = "discoverydirectory_channelid";
 
     defaultSettings.getDefaultDiscoveryChannelUrl = function() {
-        return settings.bounceProxyBaseUrl + "/discovery/channels/" + defaultSettings.discoveryChannel + "/";
+        return `${settings.bounceProxyBaseUrl}/discovery/channels/${defaultSettings.discoveryChannel}/`;
     };
 
     const globalCapDirCapability = {

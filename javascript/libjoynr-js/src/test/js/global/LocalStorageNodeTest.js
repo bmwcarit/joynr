@@ -44,41 +44,49 @@ describe("local storage", () => {
 
     afterAll(() => {
         if (clearResults) {
-            child_process.execSync("rm -rf " + basePath);
+            child_process.execSync(`rm -rf ${basePath}`);
         }
     });
 
     beforeEach(() => {
         testNum++;
-        location = testDirectory + "/LocalStorage-" + testNum;
+        location = `${testDirectory}/LocalStorage-${testNum}`;
         locationPath = path.join(process.cwd(), location);
     });
 
-    it("without clean directory", () => {
+    it("without clean directory", done => {
         fs.mkdirSync(locationPath);
         const subDirectoryName = "SubdirectoryName";
         const subDirectoryLocation = path.join(locationPath, subDirectoryName);
         fs.mkdirSync(subDirectoryLocation);
-        expect(() => {
-            storage = new LocalStorage({
-                clearPersistency: false,
-                location
+        storage = new LocalStorage({
+            clearPersistency: false,
+            location
+        });
+        storage
+            .init()
+            .then(fail)
+            .catch(e => {
+                expect(e.message).toEqual(
+                    `joynr configuration error: Persistency subdirectory must not include other subdirectories. Directories found: ${JSON.stringify(
+                        [subDirectoryName]
+                    )}`
+                );
+                done();
             });
-        }).toThrow(
-            new Error(
-                "joynr configuration error: Persistency subdirectory must not include other subdirectories. Directories found: " +
-                    JSON.stringify([subDirectoryName])
-            )
-        );
-        fs.rmdirSync(subDirectoryLocation);
     });
 
     describe("with clean directory", () => {
-        beforeEach(() => {
+        beforeEach(async () => {
             storage = new LocalStorage({
                 clearPersistency: false,
                 location
             });
+            await storage.init();
+        });
+
+        afterEach(async () => {
+            await storage.shutdown();
         });
 
         it("can set and load item", () => {
@@ -99,52 +107,58 @@ describe("local storage", () => {
             storage.setItem(key, JSON.stringify(item));
             storage.removeItem(key);
             const result = storage.getItem(key);
-            expect(result).toEqual(null);
+            expect(result).toEqual(undefined);
         });
 
         it("can clear items", () => {
             storage.setItem(key, JSON.stringify(item));
             storage.clear();
             const result = storage.getItem(key);
-            expect(result).toEqual(null);
+            expect(result).toEqual(undefined);
         });
 
-        it("ignores corrupt files", () => {
+        it("ignores corrupt files", async () => {
             storage.setItem(key, JSON.stringify(item));
+            await storage.shutdown();
             const filename = fs.readdirSync(location)[0];
-            fs.writeFileSync(location + "/" + filename, corruptData);
+            fs.writeFileSync(`${location}/${filename}`, corruptData);
 
             storage = new LocalStorage({
                 clearPersistency: false,
                 location
             });
-            expect(storage.getItem(key)).toBe(null);
+            await storage.init();
+            expect(storage.getItem(key)).toBe(undefined);
         });
 
-        it("overwrites corrupt files", () => {
+        it("overwrites corrupt files", async () => {
             storage.setItem(key, JSON.stringify(item));
+            await storage.shutdown();
             const filename = fs.readdirSync(location)[0];
-            fs.writeFileSync(location + "/" + filename, corruptData);
+            fs.writeFileSync(`${location}/${filename}`, corruptData);
 
             storage = new LocalStorage({
                 clearPersistency: false,
                 location
             });
 
+            await storage.init();
             storage.setItem(key, JSON.stringify(item));
             const files = fs.readdirSync(location);
             expect(files.length).toBe(1);
         });
 
-        it("ignores other files", () => {
+        it("ignores other files", async () => {
             storage.setItem(key, JSON.stringify(item));
-            fs.writeFileSync(location + "/otherFile", "other Data");
+            await storage.shutdown();
+
+            fs.writeFileSync(`${location}/otherFile`, "other Data");
 
             storage = new LocalStorage({
                 clearPersistency: false,
                 location
             });
-
+            await storage.init();
             const files = fs.readdirSync(location);
             expect(files.length).toBe(2);
         });

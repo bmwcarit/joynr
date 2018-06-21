@@ -34,6 +34,8 @@ macro(CONFIGURE_TEST_FILES targetDirectory)
         "AccessControlYesPermission.entries"
         "AccessStoreTest.persist"
         "AclRclJoynrClusterControllerRuntimeTest.settings"
+        "application1_ACL_RCL_Permissions.json"
+        "application2_ACL_RCL_Permissions.json"
         "integrationtest.settings"
         "websocket-cc-tls.settings"
         "websocket-libjoynr-tls.settings"
@@ -286,7 +288,6 @@ if(${BUILD_UNIT_TESTS} OR ${BUILD_INTEGRATION_TESTS} OR ${BUILD_SYSTEM_INTEGRATI
         mock/MockRunnableWithAccuracy.cpp
         mock/MockRunnableWithAccuracy.h
         mock/MockRunnableBlocking.h
-        mock/MockInProcessConnectorFactory.h
         mock/MockKeychain.h
         mock/MockMessageSender.h
         mock/MockReplyCaller.h

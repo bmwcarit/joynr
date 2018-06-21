@@ -275,7 +275,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
     }
 
     @Override
-    @SuppressFBWarnings("NN-NN_NAKED_NOTIFY")
+    @SuppressFBWarnings(value = "NN_NAKED_NOTIFY", justification = "required to control shutdown of this instance")
     public void shutdown() {
         shutdown.set(true);
         synchronized (this) {

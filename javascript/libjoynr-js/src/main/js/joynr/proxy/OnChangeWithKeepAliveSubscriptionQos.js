@@ -149,22 +149,24 @@ function OnChangeWithKeepAliveSubscriptionQos(settings) {
 
     if (this.maxIntervalMs < OnChangeWithKeepAliveSubscriptionQos.MIN_MAX_INTERVAL_MS) {
         log.warn(
-            "maxIntervalMs < MIN_MAX_INTERVAL_MS. Using MIN_MAX_INTERVAL_MS: " +
+            `maxIntervalMs < MIN_MAX_INTERVAL_MS. Using MIN_MAX_INTERVAL_MS: ${
                 OnChangeWithKeepAliveSubscriptionQos.MIN_MAX_INTERVAL_MS
+            }`
         );
         this.maxIntervalMs = OnChangeWithKeepAliveSubscriptionQos.MIN_MAX_INTERVAL_MS;
     }
 
     if (this.maxIntervalMs > OnChangeWithKeepAliveSubscriptionQos.MAX_MAX_INTERVAL_MS) {
         log.warn(
-            "maxIntervalMs > MAX_MAX_INTERVAL_MS. Using MAX_MAX_INTERVAL_MS: " +
+            `maxIntervalMs > MAX_MAX_INTERVAL_MS. Using MAX_MAX_INTERVAL_MS: ${
                 OnChangeWithKeepAliveSubscriptionQos.MAX_MAX_INTERVAL_MS
+            }`
         );
         this.maxIntervalMs = OnChangeWithKeepAliveSubscriptionQos.MAX_MAX_INTERVAL_MS;
     }
 
     if (this.maxIntervalMs < this.minIntervalMs) {
-        log.warn("maxIntervalMs < minIntervalMs. Using minIntervalMs: " + this.minIntervalMs);
+        log.warn(`maxIntervalMs < minIntervalMs. Using minIntervalMs: ${this.minIntervalMs}`);
         this.maxIntervalMs = this.minIntervalMs;
     }
 
@@ -172,14 +174,15 @@ function OnChangeWithKeepAliveSubscriptionQos(settings) {
         this.alertAfterIntervalMs !== OnChangeWithKeepAliveSubscriptionQos.NO_ALERT_AFTER_INTERVAL &&
         this.alertAfterIntervalMs < this.maxIntervalMs
     ) {
-        log.warn("alertAfterIntervalMs < maxIntervalMs. Using maxIntervalMs: " + this.maxIntervalMs);
+        log.warn(`alertAfterIntervalMs < maxIntervalMs. Using maxIntervalMs: ${this.maxIntervalMs}`);
         this.alertAfterIntervalMs = this.maxIntervalMs;
     }
 
     if (this.alertAfterIntervalMs > OnChangeWithKeepAliveSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS) {
         log.warn(
-            "alertAfterIntervalMs > MAX_ALERT_AFTER_INTERVAL_MS. Using MAX_ALERT_AFTER_INTERVAL_MS: " +
+            `alertAfterIntervalMs > MAX_ALERT_AFTER_INTERVAL_MS. Using MAX_ALERT_AFTER_INTERVAL_MS: ${
                 OnChangeWithKeepAliveSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS
+            }`
         );
         this.alertAfterIntervalMs = OnChangeWithKeepAliveSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS;
     }

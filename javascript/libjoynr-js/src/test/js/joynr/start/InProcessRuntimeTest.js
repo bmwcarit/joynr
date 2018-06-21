@@ -71,7 +71,7 @@ describe("libjoynr-js.joynr.start.TestInProcessRuntime", () => {
     });
 
     const nrRestarts = 3;
-    it("can be started and shut down successfully " + nrRestarts + " times", done => {
+    it(`can be started and shut down successfully ${nrRestarts} times`, done => {
         let i;
 
         function createFunc(promiseChain) {

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,17 +16,13 @@
  * limitations under the License.
  * #L%
  */
-#include "joynr/ConnectorFactory.h"
 
-namespace joynr
-{
+const baseConfig = require("./config");
+baseConfig.tls = {
+    certPath: "/data/ssl-data/certs/client.cert.pem",
+    keyPath: "/data/ssl-data/private/client.key.pem",
+    caPath: "/data/ssl-data/certs/ca.cert.pem",
+    ownerId: "client"
+};
 
-ConnectorFactory::ConnectorFactory(
-        std::shared_ptr<InProcessConnectorFactory> inProcessConnectorFactory,
-        std::unique_ptr<JoynrMessagingConnectorFactory> joynrMessagingConnectorFactory)
-        : inProcessConnectorFactory(std::move(inProcessConnectorFactory)),
-          joynrMessagingConnectorFactory(std::move(joynrMessagingConnectorFactory))
-{
-}
-
-} // namespace joynr
+module.exports = baseConfig;

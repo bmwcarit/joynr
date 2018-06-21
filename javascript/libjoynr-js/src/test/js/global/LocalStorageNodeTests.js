@@ -42,7 +42,7 @@ const uuid = require("../../../main/js/joynr/util/uuid");
  */
 const LocalStorageWrapper = function(settings) {
     settings = settings || {};
-    settings.location = settings.location || "localStorageTestResults/LocalStorage-" + uuid();
+    settings.location = settings.location || `localStorageTestResults/LocalStorage-${uuid()}`;
     return new LocalStorage(settings);
 };
 module.exports = LocalStorageWrapper;

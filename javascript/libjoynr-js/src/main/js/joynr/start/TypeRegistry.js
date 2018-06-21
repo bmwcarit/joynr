@@ -110,9 +110,7 @@ function TypeRegistry() {
         if (timeout && timeout > 0) {
             registryPromise[joynrTypeName].timeoutTimer = setTimeout(() => {
                 registryPromise[joynrTypeName].reject(
-                    new Error(
-                        "joynr/start/TypeRegistry: " + joynrTypeName + " is not registered in the joynr type registry"
-                    )
+                    new Error(`joynr/start/TypeRegistry: ${joynrTypeName} is not registered in the joynr type registry`)
                 );
             }, timeout);
         }

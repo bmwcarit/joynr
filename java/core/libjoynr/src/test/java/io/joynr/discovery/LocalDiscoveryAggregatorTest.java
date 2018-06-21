@@ -141,7 +141,34 @@ public class LocalDiscoveryAggregatorTest {
                                                            expiryDateMs,
                                                            publicKeyId);
         localDiscoveryAggregator.add(addCallback, discoveryEntry);
-        verify(discoveryProxyMock, times(1)).add(any(Callback.class), eq(discoveryEntry));
+        verify(discoveryProxyMock, times(1)).add(any(Callback.class), eq(discoveryEntry), eq(false));
+    }
+
+    private void testAwaitGlobalRegistration(boolean awaitGlobalRegistration) {
+        DiscoveryEntry discoveryEntry = new DiscoveryEntry(new Version(0, 0),
+                                                           "anyDomain",
+                                                           "anyInterface",
+                                                           "anyParticipant",
+                                                           new ProviderQos(),
+                                                           System.currentTimeMillis(),
+                                                           expiryDateMs,
+                                                           publicKeyId);
+        localDiscoveryAggregator.add(addCallback, discoveryEntry, awaitGlobalRegistration);
+        verify(discoveryProxyMock, times(1)).add(any(Callback.class), eq(discoveryEntry), eq(awaitGlobalRegistration));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void handlesAwaitGlobalRegistration() {
+        boolean awaitGlobalRegistration = true;
+        testAwaitGlobalRegistration(awaitGlobalRegistration);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void handlesDoNotAwaitGlobalRegistration() {
+        boolean awaitGlobalRegistration = false;
+        testAwaitGlobalRegistration(awaitGlobalRegistration);
     }
 
     @SuppressWarnings("unchecked")

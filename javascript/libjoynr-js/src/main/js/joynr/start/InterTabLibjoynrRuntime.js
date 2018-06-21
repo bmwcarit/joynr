@@ -212,7 +212,7 @@ function InterTabLibjoynrRuntime(provisioning) {
         });
 
         if (joynrState !== JoynrStates.SHUTDOWN) {
-            throw new Error("Cannot start libjoynr because it's currently \"" + joynrState + '"');
+            throw new Error(`Cannot start libjoynr because it's currently "${joynrState}"`);
         }
         joynrState = JoynrStates.STARTING;
 
@@ -234,9 +234,9 @@ function InterTabLibjoynrRuntime(provisioning) {
 
         if (UtilInternal.checkNullUndefined(provisioning.parentWindow)) {
             log.debug(
-                'provisioning.parentWindow not set. Use default setting "' +
-                    defaultInterTabSettings.parentWindow +
-                    '" instead'
+                `provisioning.parentWindow not set. Use default setting "${
+                    defaultInterTabSettings.parentWindow
+                }" instead`
             );
         }
 
@@ -381,7 +381,7 @@ function InterTabLibjoynrRuntime(provisioning) {
                     staticArbitration: true
                 })
                 .catch(error => {
-                    throw new Error("Failed to create discovery proxy: " + error);
+                    throw new Error(`Failed to create discovery proxy: ${error}`);
                 });
         };
 
@@ -431,9 +431,9 @@ function InterTabLibjoynrRuntime(provisioning) {
             })
             .catch(error => {
                 throw new Error(
-                    "Failed to create routing proxy: " +
-                        error +
-                        (error instanceof JoynrException ? " " + error.detailMessage : "")
+                    `Failed to create routing proxy: ${error}${
+                        error instanceof JoynrException ? ` ${error.detailMessage}` : ""
+                    }`
                 );
             })
             .then(newRoutingProxy => {
@@ -450,7 +450,7 @@ function InterTabLibjoynrRuntime(provisioning) {
                 return;
             })
             .catch(error => {
-                log.error("error starting up joynr: " + error);
+                log.error(`error starting up joynr: ${error}`);
                 throw error;
             });
     };
@@ -465,7 +465,7 @@ function InterTabLibjoynrRuntime(provisioning) {
      */
     this.shutdown = function shutdown(settings) {
         if (joynrState !== JoynrStates.STARTED) {
-            throw new Error("Cannot shutdown libjoynr because it's currently \"" + joynrState + '"');
+            throw new Error(`Cannot shutdown libjoynr because it's currently "${joynrState}"`);
         }
         joynrState = JoynrStates.SHUTTINGDOWN;
 

@@ -58,7 +58,6 @@ class SubscriptionRequest;
 class BroadcastSubscriptionRequest;
 class MulticastSubscriptionRequest;
 class SubscriptionInformation;
-class IPublicationSender;
 class RequestCaller;
 class UnicastBroadcastListener;
 class SubscriptionQos;
@@ -384,9 +383,10 @@ private:
     void removePublicationEndRunnable(std::shared_ptr<Publication> publication);
 
     template <typename BroadcastFilter, typename... Ts>
-    bool processFilterChain(const std::string& subscriptionId,
-                            const std::vector<std::shared_ptr<BroadcastFilter>>& filters,
-                            const Ts&... broadcastValues);
+    bool processFilterChain(
+            std::shared_ptr<BroadcastSubscriptionRequestInformation> subscriptionRequest,
+            const std::vector<std::shared_ptr<BroadcastFilter>>& filters,
+            const Ts&... broadcastValues);
 };
 
 } // namespace joynr
@@ -555,7 +555,7 @@ void PublicationManager::selectiveBroadcastOccurred(
 
         if (timeUntilNextPublication == 0) {
             // Execute broadcast filters
-            if (processFilterChain(subscriptionId, filters, values...)) {
+            if (processFilterChain(subscriptionRequest, filters, values...)) {
                 // Send the publication
                 BaseReply replyValues;
                 replyValues.setResponse(values...);
@@ -583,16 +583,11 @@ void PublicationManager::selectiveBroadcastOccurred(
 
 template <typename BroadcastFilter, typename... Ts>
 bool PublicationManager::processFilterChain(
-        const std::string& subscriptionId,
+        std::shared_ptr<BroadcastSubscriptionRequestInformation> subscriptionRequest,
         const std::vector<std::shared_ptr<BroadcastFilter>>& filters,
         const Ts&... broadcastValues)
 {
     bool success = true;
-
-    std::shared_ptr<BroadcastSubscriptionRequestInformation> subscriptionRequest =
-            subscriptionId2BroadcastSubscriptionRequest.value(subscriptionId);
-
-    assert(subscriptionRequest);
 
     const boost::optional<BroadcastFilterParameters>& filterParameters =
             subscriptionRequest->getFilterParameters();

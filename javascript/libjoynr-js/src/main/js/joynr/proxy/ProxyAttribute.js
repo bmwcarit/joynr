@@ -16,28 +16,12 @@
  * limitations under the License.
  * #L%
  */
+
 const Promise = require("../../global/Promise");
 const UtilInternal = require("../util/UtilInternal");
 const Request = require("../dispatching/types/Request");
 const MessagingQos = require("../messaging/MessagingQos");
 const Typing = require("../util/Typing");
-const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
-
-const typeRegistry = TypeRegistrySingleton.getInstance();
-
-function checkArgument(value) {
-    if (!UtilInternal.checkNullUndefined(value)) {
-        const Constructor = typeRegistry.getConstructor(value._typeName);
-
-        try {
-            if (Constructor && Constructor.checkMembers) {
-                Constructor.checkMembers(value, Typing.checkPropertyIfDefined);
-            }
-        } catch (error) {
-            return error;
-        }
-    }
-}
 
 // prettier-ignore
 const asRead = (function() {
@@ -58,7 +42,7 @@ const asRead = (function() {
             // deferred object
             settings = settings || {};
             const request = new Request({
-                methodName: "get" + UtilInternal.firstUpper(context.attributeName)
+                methodName: `get${  UtilInternal.firstUpper(context.attributeName)}`
             });
             return context.executeRequest(request, settings);
         };
@@ -87,15 +71,14 @@ const asWrite = (function() {
         // ensure settings variable holds a valid object and initialize deferred
         // object
         settings = settings || {};
-        const error = checkArgument(settings.value);
-        if (error) {
-            return Promise.reject(
-                new Error("error setting attribute: " + this.attributeName + ": " + error.toString())
-            );
+        try {
+            settings.value = Typing.augmentTypes(settings.value);
+        } catch (e) {
+            return Promise.reject(new Error(`error setting attribute: ${  this.attributeName  }: ${  e.toString()}`));
         }
 
         const request = new Request({
-            methodName: "set" + UtilInternal.firstUpper(this.attributeName),
+            methodName: `set${  UtilInternal.firstUpper(this.attributeName)}`,
             paramDatatypes: [this.attributeType],
             params: [settings.value]
         });
@@ -105,7 +88,7 @@ const asWrite = (function() {
     return function() {
         this.set = set;
     };
-}());
+})();
 
 // prettier-ignore
 const asNotify = (function() {

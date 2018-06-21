@@ -25,6 +25,7 @@ const MethodInvocationException = require("../exceptions/MethodInvocationExcepti
 const ProviderRuntimeException = require("../exceptions/ProviderRuntimeException");
 const Version = require("../../generated/joynr/types/Version");
 const LoggingManager = require("../system/LoggingManager");
+const util = require("util");
 /**
  * The RequestReplyManager is responsible maintaining a list of providers that wish to
  * receive incoming requests, and also a list of requestReplyIds which is used to match
@@ -49,7 +50,7 @@ function RequestReplyManager(dispatcher) {
         const currentTime = Date.now();
         for (const [id, caller] of replyCallers) {
             if (caller.expiresAt <= currentTime) {
-                caller.reject(new Error('Request with id "' + id + '" failed: ttl expired'));
+                caller.callback(new Error(`Request with id "${id}" failed: ttl expired`));
                 replyCallers.delete(id);
             }
         }
@@ -59,6 +60,25 @@ function RequestReplyManager(dispatcher) {
         if (!started) {
             throw new Error("RequestReplyManager is already shut down");
         }
+    }
+
+    function sendRequestInternal(settings, callbackSettings, callback) {
+        try {
+            checkIfReady();
+        } catch (e) {
+            callback(e);
+        }
+
+        this.addReplyCaller(
+            settings.request.requestReplyId,
+            {
+                callback,
+                callbackSettings
+            },
+            settings.messagingQos.ttl
+        );
+
+        dispatcher.sendRequest(settings);
     }
 
     /**
@@ -79,25 +99,7 @@ function RequestReplyManager(dispatcher) {
      *          additional settings to handle the reply.
      * @returns {Promise} the Promise for the Request
      */
-    this.sendRequest = function sendRequest(settings, callbackSettings) {
-        checkIfReady();
-
-        const deferred = UtilInternal.createDeferred();
-        this.addReplyCaller(
-            settings.request.requestReplyId,
-            {
-                resolve: deferred.resolve,
-                reject: deferred.reject,
-                callbackSettings
-            },
-            settings.messagingQos.ttl
-        );
-        // resolve will be called upon successful response
-
-        dispatcher.sendRequest(settings);
-
-        return deferred.promise;
-    };
+    this.sendRequest = util.promisify(sendRequestInternal);
 
     /**
      * @name RequestReplyManager#sendOneWayRequest
@@ -175,7 +177,7 @@ function RequestReplyManager(dispatcher) {
         try {
             delete providers[participantId];
         } catch (error) {
-            log.error("error removing provider with participantId: " + participantId + " error: " + error);
+            log.error(`error removing provider with participantId: ${participantId} error: ${error}`);
         }
     };
 
@@ -212,12 +214,9 @@ function RequestReplyManager(dispatcher) {
             checkIfReady();
         } catch (error) {
             exception = new MethodInvocationException({
-                detailMessage:
-                    "error handling request: " +
-                    JSONSerializer.stringify(request) +
-                    " for providerParticipantId " +
-                    providerParticipantId +
-                    ". Joynr runtime already shut down."
+                detailMessage: `error handling request: ${JSONSerializer.stringify(
+                    request
+                )} for providerParticipantId ${providerParticipantId}. Joynr runtime already shut down.`
             });
             return Promise.resolve(createReplyFromError(exception));
         }
@@ -227,11 +226,9 @@ function RequestReplyManager(dispatcher) {
             // TODO what if no provider is found in the mean time?
             // Do we need to add a task to handleRequest later?
             exception = new MethodInvocationException({
-                detailMessage:
-                    "error handling request: " +
-                    JSONSerializer.stringify(request) +
-                    " for providerParticipantId " +
-                    providerParticipantId
+                detailMessage: `error handling request: ${JSONSerializer.stringify(
+                    request
+                )} for providerParticipantId ${providerParticipantId}`
             });
             return Promise.resolve(createReplyFromError(exception));
         }
@@ -269,8 +266,7 @@ function RequestReplyManager(dispatcher) {
                             exception = internalGetterSetterException;
                         } else {
                             exception = new ProviderRuntimeException({
-                                detailMessage:
-                                    "getter/setter method of attribute " + attributeName + " reported an error"
+                                detailMessage: `getter/setter method of attribute ${attributeName} reported an error`
                             });
                         }
                     }
@@ -278,12 +274,9 @@ function RequestReplyManager(dispatcher) {
                     // if neither an operation nor an attribute exists in the
                     // provider => deliver MethodInvocationException
                     exception = new MethodInvocationException({
-                        detailMessage:
-                            'Could not find an operation "' +
-                            request.methodName +
-                            '" or an attribute "' +
-                            attributeName +
-                            '" in the provider',
+                        detailMessage: `Could not find an operation "${
+                            request.methodName
+                        }" or an attribute "${attributeName}" in the provider`,
                         providerVersion: new Version({
                             majorVersion: provider.constructor.MAJOR_VERSION,
                             minorVersion: provider.constructor.MINOR_VERSION
@@ -294,7 +287,7 @@ function RequestReplyManager(dispatcher) {
                 // if no operation was found and methodName didn't start with "get"
                 // or "set" => deliver MethodInvocationException
                 exception = new MethodInvocationException({
-                    detailMessage: 'Could not find an operation "' + request.methodName + '" in the provider',
+                    detailMessage: `Could not find an operation "${request.methodName}" in the provider`,
                     providerVersion: new Version({
                         majorVersion: provider.constructor.MAJOR_VERSION,
                         minorVersion: provider.constructor.MINOR_VERSION
@@ -336,11 +329,9 @@ function RequestReplyManager(dispatcher) {
         const provider = providers[providerParticipantId];
         if (!provider) {
             throw new MethodInvocationException({
-                detailMessage:
-                    "error handling one-way request: " +
-                    JSONSerializer.stringify(request) +
-                    " for providerParticipantId " +
-                    providerParticipantId
+                detailMessage: `error handling one-way request: ${JSONSerializer.stringify(
+                    request
+                )} for providerParticipantId ${providerParticipantId}`
             });
         }
 
@@ -352,7 +343,7 @@ function RequestReplyManager(dispatcher) {
             provider[request.methodName].callOperation(request.params, request.paramDatatypes);
         } else {
             throw new MethodInvocationException({
-                detailMessage: 'Could not find an operation "' + request.methodName + '" in the provider',
+                detailMessage: `Could not find an operation "${request.methodName}" in the provider`,
                 providerVersion: new Version({
                     majorVersion: provider.constructor.MAJOR_VERSION,
                     minorVersion: provider.constructor.MINOR_VERSION
@@ -373,8 +364,11 @@ function RequestReplyManager(dispatcher) {
 
         if (replyCaller === undefined) {
             log.error(
-                "error handling reply resolve, because replyCaller could not be found: " +
-                    JSONSerializer.stringify(reply, undefined, 4)
+                `error handling reply resolve, because replyCaller could not be found: ${JSONSerializer.stringify(
+                    reply,
+                    undefined,
+                    4
+                )}`
             );
             return;
         }
@@ -382,21 +376,21 @@ function RequestReplyManager(dispatcher) {
         try {
             if (reply.error) {
                 if (reply.error instanceof Error) {
-                    replyCaller.reject(reply.error);
+                    replyCaller.callback(reply.error);
                 } else {
-                    replyCaller.reject(Typing.augmentTypes(reply.error));
+                    replyCaller.callback(Typing.augmentTypes(reply.error));
                 }
             } else {
-                replyCaller.resolve({ response: reply.response, settings: replyCaller.callbackSettings });
+                replyCaller.callback(undefined, {
+                    response: reply.response,
+                    settings: replyCaller.callbackSettings
+                });
             }
 
             replyCallers.delete(reply.requestReplyId);
         } catch (e) {
             log.error(
-                "exception thrown during handling reply " +
-                    JSONSerializer.stringify(reply, undefined, 4) +
-                    ":\n" +
-                    e.stack
+                `exception thrown during handling reply ${JSONSerializer.stringify(reply, undefined, 4)}:\n${e.stack}`
             );
         }
     };
@@ -413,7 +407,7 @@ function RequestReplyManager(dispatcher) {
         /*eslint-disable no-unused-vars*/
         for (const [requestReplyId, replyCaller] of replyCallers) {
             if (replyCaller) {
-                replyCaller.reject(new Error("RequestReplyManager is already shut down"));
+                replyCaller.callback(new Error("RequestReplyManager is already shut down"));
             }
         }
         /*eslint-enable no-unused-vars*/

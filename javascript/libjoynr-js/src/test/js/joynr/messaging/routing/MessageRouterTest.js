@@ -71,9 +71,9 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
         parentMessageRouterAddress = new BrowserAddress({
             windowId: "parentMessageRouterAddress"
         });
-        senderParticipantId = "testSenderParticipantId_" + Date.now();
-        receiverParticipantId = "TestMessageRouter_participantId_" + Date.now();
-        receiverParticipantId2 = "TestMessageRouter_delayedParticipantId_" + Date.now();
+        senderParticipantId = `testSenderParticipantId_${Date.now()}`;
+        receiverParticipantId = `TestMessageRouter_participantId_${Date.now()}`;
+        receiverParticipantId2 = `TestMessageRouter_delayedParticipantId_${Date.now()}`;
         joynrMessage = new JoynrMessage({
             type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
             payload: "hello"
@@ -187,7 +187,7 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
                 return null;
             })
             .catch(error => {
-                fail("got reject from resolveNextHop: " + error);
+                fail(`got reject from resolveNextHop: ${error}`);
                 return null;
             });
         increaseFakeTime(1);
@@ -208,7 +208,7 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
                 return null;
             })
             .catch(error => {
-                fail("got reject from resolveNextHop: " + error);
+                fail(`got reject from resolveNextHop: ${error}`);
                 return null;
             });
         increaseFakeTime(1);
@@ -397,7 +397,7 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
     function routeMessageWithValidReplyToAddressCallsAddNextHop() {
         messageRouter.addNextHop.calls.reset();
         expect(messageRouter.addNextHop).not.toHaveBeenCalled();
-        const channelId = "testChannelId_" + Date.now();
+        const channelId = `testChannelId_${Date.now()}`;
         const channelAddress = new ChannelAddress({
             messagingEndpointUrl: "http://testurl.com",
             channelId
@@ -433,7 +433,7 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
 
     function routeMessageWithValidReplyToAddressDoesNotCallAddNextHop() {
         messageRouter.addNextHop.calls.reset();
-        const channelId = "testChannelId_" + Date.now();
+        const channelId = `testChannelId_${Date.now()}`;
         const channelAddress = new ChannelAddress({
             messagingEndpointUrl: "http://testurl.com",
             channelId
@@ -530,7 +530,7 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
         let isGloballyVisible;
         beforeEach(() => {
             parameters = {
-                multicastId: "multicastId- " + uuid(),
+                multicastId: `multicastId- ${uuid()}`,
                 subscriberParticipantId: "subscriberParticipantId",
                 providerParticipantId: "providerParticipantId"
             };
@@ -801,7 +801,7 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
             let parameters;
             beforeEach(() => {
                 parameters = {
-                    multicastId: "multicastId- " + uuid(),
+                    multicastId: `multicastId- ${uuid()}`,
                     subscriberParticipantId: "subscriberParticipantId",
                     providerParticipantId: "providerParticipantId"
                 };
@@ -875,7 +875,7 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
             let parameters;
             beforeEach(() => {
                 parameters = {
-                    multicastId: "multicastId- " + uuid(),
+                    multicastId: `multicastId- ${uuid()}`,
                     subscriberParticipantId: "subscriberParticipantId",
                     providerParticipantId: "providerParticipantId"
                 };

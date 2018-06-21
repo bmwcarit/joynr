@@ -32,7 +32,7 @@ MulticastWildcardRegexFactory.prototype.createIdPattern = function(multicastId) 
         patternString += "$";
     }
     if (patternString.length === 0 || patternString[0] !== "^") {
-        patternString = "^" + patternString;
+        patternString = `^${patternString}`;
     }
     return patternString;
 };

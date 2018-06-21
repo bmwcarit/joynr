@@ -33,7 +33,6 @@ describe("libjoynr-js.joynr.dispatching.types.MulticastPublication", () => {
         expect(publication).toBeDefined();
         expect(publication).not.toBeNull();
         expect(typeof publication === "object").toBeTruthy();
-        expect(publication instanceof MulticastPublication).toBeTruthy();
     });
 
     it("is constructs with correct member values", () => {

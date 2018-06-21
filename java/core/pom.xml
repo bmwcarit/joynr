@@ -26,15 +26,15 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>java</artifactId>
-		<version>1.3.0-SNAPSHOT</version>
+		<version>1.4.0-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<modules>
 		<module>libjoynr</module>
 		<module>clustercontroller</module>
-        <module>libjoynr-websocket-runtime</module>
-        <module>clustercontroller-websocket-runtime</module>
-        <module>clustercontroller-inprocess-runtime</module>
-        <module>clustercontroller-standalone</module>
-    </modules>
+		<module>libjoynr-websocket-runtime</module>
+		<module>clustercontroller-websocket-runtime</module>
+		<module>clustercontroller-inprocess-runtime</module>
+		<module>clustercontroller-standalone</module>
+	</modules>
 </project>
