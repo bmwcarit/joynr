@@ -25,6 +25,10 @@ the versioning scheme [here](JoynrVersioning.md).
 * **[C++]** The application thread will not return immediately if persistency is ON. Persistency of subscriptions
   is being loaded in the same thread as registerProvider.
 
+## Configuration property changes
+* **[Java]** Introduced `PROPERTY_KEY_MQTT_SEPARATE_CONNECTIONS` to use separate MQTT connections.
+  See [Java Configuration Reference](JavaSettings.md) for more details.
+
 # joynr 1.3.1
 
 ## API relevant changes
