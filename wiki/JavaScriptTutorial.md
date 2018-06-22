@@ -46,7 +46,7 @@ for provider implementation and registration details.
 ## Consumers
 
 Have a look into [\<RADIO_HOME\>/src/main/js/radioConsumer.js]
-(/examples/radio-js/src/main/js/radioConsumer.js) for consumer implementation details.
+(/examples/radio-node/src/main/js/radioConsumer.js) for consumer implementation details.
 
 ## In Action
 
