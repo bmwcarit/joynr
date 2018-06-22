@@ -403,8 +403,8 @@
 		<franca.version>0.13.0</franca.version>
 		<xtend.version>2.11.0</xtend.version>
 		<xtext.version>2.11.0</xtext.version>
-		<maven.compiler.source>1.7</maven.compiler.source>
-		<maven.compiler.target>1.7</maven.compiler.target>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
 		<slf4j.version>1.7.25</slf4j.version>
 		<smrf.version>0.2.2</smrf.version>
 	</properties>

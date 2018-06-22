@@ -59,5 +59,4 @@ public class GeneratorTask {
             log.info("no additional information available for the provider generator");
         }
     }
-
 }
