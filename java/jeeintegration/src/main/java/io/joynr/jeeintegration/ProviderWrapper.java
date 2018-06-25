@@ -191,16 +191,21 @@ public class ProviderWrapper implements InvocationHandler {
         return deferred;
     }
 
-    private JoynrException getJoynrExceptionFromInvocationException(InvocationTargetException e)
-                                                                                                throws InvocationTargetException {
+    private JoynrException getJoynrExceptionFromInvocationException(InvocationTargetException e) throws InvocationTargetException {
         JoynrException joynrException = null;
         if (e.getCause() != null) {
             if (e.getCause() instanceof EJBException) {
+                // an EJBException is only thrown when the exception is not in the throws declaration
+                // ApplicationExceptions are always declared with throw and thus EJBExceptions won't be caused by them.
                 Exception exception = ((EJBException) e.getCause()).getCausedByException();
                 if (exception instanceof ProviderRuntimeException) {
                     joynrException = (ProviderRuntimeException) exception;
+                } else {
+                    joynrException = new ProviderRuntimeException("Unexpected exception from provider: "
+                            + exception == null ? e.getCause().toString() : exception.toString());
                 }
-            } else if (e.getCause() instanceof ProviderRuntimeException || e.getCause() instanceof ApplicationException) {
+            } else if (e.getCause() instanceof ProviderRuntimeException
+                    || e.getCause() instanceof ApplicationException) {
                 joynrException = (JoynrException) e.getCause();
             }
         }
