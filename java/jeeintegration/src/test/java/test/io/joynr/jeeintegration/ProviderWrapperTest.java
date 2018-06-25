@@ -36,6 +36,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Map;
 
+import javax.ejb.EJBException;
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.spi.Annotated;
 import javax.enterprise.inject.spi.Bean;
@@ -101,6 +102,8 @@ public class ProviderWrapperTest {
 
         Promise<DeferredVoid> testThrowsProviderRuntimeException();
 
+        Promise<DeferredVoid> testThrowsEJBExceptionWrappingRuntimeException();
+
         Promise<DeferredVoid> testThrowsApplicationException();
 
         Promise<Deferred<Object[]>> testMultiOutMethod();
@@ -118,6 +121,8 @@ public class ProviderWrapperTest {
         void assertMessageContextActive();
 
         void testThrowsProviderRuntimeException();
+
+        void testThrowsEJBExceptionWrappingRuntimeException();
 
         void testThrowsApplicationException() throws ApplicationException;
 
@@ -171,6 +176,11 @@ public class ProviderWrapperTest {
         @Override
         public void testThrowsProviderRuntimeException() {
             throw new ProviderRuntimeException("test");
+        }
+
+        @Override
+        public void testThrowsEJBExceptionWrappingRuntimeException() {
+            throw new EJBException(new RuntimeException("test"));
         }
 
         @Override
@@ -229,6 +239,30 @@ public class ProviderWrapperTest {
         JoynrProvider proxy = createProxy(subject);
 
         Method method = TestServiceProviderInterface.class.getMethod("testThrowsProviderRuntimeException");
+
+        Object result = subject.invoke(proxy, method, new Object[0]);
+        assertNotNull(result);
+        assertTrue(result instanceof Promise);
+        assertTrue(((Promise<?>) result).isRejected());
+        ((Promise<?>) result).then(new PromiseListener() {
+            @Override
+            public void onFulfillment(Object... values) {
+                fail("Should never get here");
+            }
+
+            @Override
+            public void onRejection(JoynrException error) {
+                assertTrue(error instanceof ProviderRuntimeException);
+            }
+        });
+    }
+
+    @Test
+    public void testInvokeMethodThrowingEJBExceptionWrappingRuntimeException() throws Throwable {
+        ProviderWrapper subject = createSubject();
+        JoynrProvider proxy = createProxy(subject);
+
+        Method method = TestServiceProviderInterface.class.getMethod("testThrowsEJBExceptionWrappingRuntimeException");
 
         Object result = subject.invoke(proxy, method, new Object[0]);
         assertNotNull(result);
