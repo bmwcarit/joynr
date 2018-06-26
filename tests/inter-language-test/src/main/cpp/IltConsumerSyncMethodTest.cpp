@@ -24,7 +24,28 @@ class IltConsumerSyncMethodTest : public IltAbstractConsumerTest<::testing::Test
 {
 public:
     IltConsumerSyncMethodTest() = default;
+
+    template <typename AttributeType>
+    void callProxyMethodWithParameterAndAssertResult(
+            std::function<void(joynr::interlanguagetest::TestInterfaceSyncProxy*,
+                               AttributeType&,
+                               const AttributeType&,
+                               boost::optional<joynr::MessagingQos>)> testMethod,
+            AttributeType expectedResult);
 };
+
+template <typename AttributeType>
+void IltConsumerSyncMethodTest::callProxyMethodWithParameterAndAssertResult(
+        std::function<void(joynr::interlanguagetest::TestInterfaceSyncProxy*,
+                           AttributeType&,
+                           const AttributeType&,
+                           boost::optional<joynr::MessagingQos>)> testMethod,
+        AttributeType expectedResult)
+{
+    AttributeType result;
+    JOYNR_ASSERT_NO_THROW(testMethod(testInterfaceProxy.get(), result, expectedResult, {}));
+    ASSERT_EQ(result, expectedResult);
+}
 
 // no check possible other than handling exceptions
 TEST_F(IltConsumerSyncMethodTest, callMethodWithoutParameters)
@@ -85,6 +106,66 @@ TEST_F(IltConsumerSyncMethodTest, callMethodWithMultipleByteBufferParameters)
     JOYNR_ASSERT_NO_THROW(testInterfaceProxy->methodWithMultipleByteBufferParameters(
             byteBufferOut, byteBufferIn1, byteBufferIn2));
     ASSERT_EQ(byteBufferOut, IltUtil::concatByteBuffers(byteBufferIn1, byteBufferIn2));
+}
+
+TEST_F(IltConsumerSyncMethodTest, callMethodWithInt64TypeDefParameter)
+{
+    callProxyMethodWithParameterAndAssertResult<std::int64_t>(
+            &joynr::interlanguagetest::TestInterfaceProxy::methodWithInt64TypeDefParameter, 1L);
+}
+
+TEST_F(IltConsumerSyncMethodTest, callMethodWithStringTypeDefParameter)
+{
+    callProxyMethodWithParameterAndAssertResult<std::string>(
+            &joynr::interlanguagetest::TestInterfaceProxy::methodWithStringTypeDefParameter,
+            "TypeDefTestString");
+}
+
+TEST_F(IltConsumerSyncMethodTest, callMethodWithStructTypeDefParameter)
+{
+    callProxyMethodWithParameterAndAssertResult<
+            joynr::interlanguagetest::namedTypeCollection2::BaseStruct>(
+            &joynr::interlanguagetest::TestInterfaceProxy::methodWithStructTypeDefParameter,
+            IltUtil::createBaseStruct());
+}
+
+TEST_F(IltConsumerSyncMethodTest, callMethodWithMapTypeDefParameter)
+{
+    joynr::interlanguagetest::namedTypeCollection2::MapStringString mapTypeDefArg;
+    mapTypeDefArg.insert(std::pair<std::string, std::string>("keyString1", "valueString1"));
+    mapTypeDefArg.insert(std::pair<std::string, std::string>("keyString2", "valueString2"));
+    mapTypeDefArg.insert(std::pair<std::string, std::string>("keyString3", "valueString3"));
+
+    callProxyMethodWithParameterAndAssertResult<
+            joynr::interlanguagetest::namedTypeCollection2::MapStringString>(
+            &joynr::interlanguagetest::TestInterfaceProxy::methodWithMapTypeDefParameter,
+            mapTypeDefArg);
+}
+
+TEST_F(IltConsumerSyncMethodTest, callMethodWithEnumTypeDefParameter)
+{
+    callProxyMethodWithParameterAndAssertResult<joynr::interlanguagetest::Enumeration::Enum>(
+            &joynr::interlanguagetest::TestInterfaceProxy::methodWithEnumTypeDefParameter,
+            joynr::interlanguagetest::Enumeration::ENUM_0_VALUE_1);
+}
+
+TEST_F(IltConsumerSyncMethodTest, callMethodWithByteBufferTypeDefParameter)
+{
+    callProxyMethodWithParameterAndAssertResult<joynr::ByteBuffer>(
+            &joynr::interlanguagetest::TestInterfaceProxy::methodWithByteBufferTypeDefParameter,
+            {0x00, 0x64, 0xFF});
+}
+
+TEST_F(IltConsumerSyncMethodTest, callMethodWithArrayTypeDefParameter)
+{
+    std::vector<std::string> stringArray = IltUtil::createStringArray();
+    joynr::interlanguagetest::typeDefCollection::ArrayTypeDefStruct arrayTypeDefArg;
+    arrayTypeDefArg.setTypeDefStringArray(stringArray);
+
+    callProxyMethodWithParameterAndAssertResult<
+            joynr::interlanguagetest::typeDefCollection::ArrayTypeDefStruct>(
+            &joynr::interlanguagetest::TestInterfaceProxy::methodWithArrayTypeDefParameter,
+            arrayTypeDefArg);
 }
 
 TEST_F(IltConsumerSyncMethodTest, callMethodWithSingleArrayParameters)
