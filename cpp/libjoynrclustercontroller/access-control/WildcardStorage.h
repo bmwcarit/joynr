@@ -65,26 +65,31 @@ public:
         key.pop_back();
 
         RadixTreeNode* longestMatch = storage.longestMatch(key);
-        if (longestMatch == nullptr) {
-            // if not found then create StorageEntry and insert in radix_tree
-            OptionalSet<ACEntry> newSet = Set<ACEntry>();
-            newSet->insert(entry);
-            StorageEntry newStorageEntry;
-            setStorageEntry<ACEntry>(newStorageEntry, newSet);
-            storage.insert(std::move(key), std::move(newStorageEntry));
-        } else {
-            StorageEntry& foundStorageEntry = longestMatch->getValue();
-            OptionalSet<ACEntry>& setOfACEntries = getStorageEntry<ACEntry>(foundStorageEntry);
-            // does the set exist in the storageEntry?
-            if (setOfACEntries) {
-                setOfACEntries->insert(entry);
-            } else {
-                // update entry into the set and then set into the tree
-                OptionalSet<ACEntry> newSet = Set<ACEntry>();
-                newSet->insert(entry);
-                setStorageEntry<ACEntry>(foundStorageEntry, std::move(newSet));
+        if (longestMatch != nullptr) {
+            // node with exact key already in tree
+            if (longestMatch->getKey() == key) {
+                StorageEntry& foundStorageEntry = longestMatch->getValue();
+                OptionalSet<ACEntry>& setOfACEntries = getStorageEntry<ACEntry>(foundStorageEntry);
+                // does the set exist in the storageEntry?
+                if (setOfACEntries) {
+                    setOfACEntries->insert(entry);
+                    return;
+                } else {
+                    // update entry into the set and then set into the tree
+                    OptionalSet<ACEntry> newSet = Set<ACEntry>();
+                    newSet->insert(entry);
+                    setStorageEntry<ACEntry>(foundStorageEntry, std::move(newSet));
+                    return;
+                }
             }
         }
+
+        // if not found then create StorageEntry and insert in radix_tree
+        OptionalSet<ACEntry> newSet = Set<ACEntry>();
+        newSet->insert(entry);
+        StorageEntry newStorageEntry;
+        setStorageEntry<ACEntry>(newStorageEntry, newSet);
+        storage.insert(std::move(key), std::move(newStorageEntry));
     }
 
     template <typename ACEntry>
