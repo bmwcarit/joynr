@@ -58,6 +58,7 @@ public:
     void insert(const std::string& inputKey, const ACEntry& entry)
     {
         assert(!inputKey.empty());
+        assert(inputKey.back() == *joynr::access_control::WILDCARD);
 
         std::string key = inputKey;
         // remove wildcard symbol at the end
