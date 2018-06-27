@@ -137,7 +137,7 @@ CapabilitiesRegistrar.prototype.register = function register(settings) {
  *
  * @returns {Object} an A+ promise
  */
-CapabilitiesRegistrar.prototype.registerProvider = function registerProvider(
+CapabilitiesRegistrar.prototype.registerProvider = async function registerProvider(
     domain,
     provider,
     providerQos,
@@ -178,21 +178,17 @@ CapabilitiesRegistrar.prototype.registerProvider = function registerProvider(
     // register provider at RequestReplyManager
     this._requestReplyManager.addRequestCaller(participantId, provider);
 
-    // register routing address at routingTable
-    const isGloballyVisible = providerQos.scope === ProviderScope.GLOBAL;
-    const messageRouterPromise = this._messageRouter.addNextHop(
-        participantId,
-        this._libjoynrMessagingAddress,
-        isGloballyVisible
-    );
-
     // if provider has at least one attribute, add it as publication provider
     this._publicationManager.addPublicationProvider(participantId, provider);
+
+    // register routing address at routingTable
+    const isGloballyVisible = providerQos.scope === ProviderScope.GLOBAL;
+    await this._messageRouter.addNextHop(participantId, this._libjoynrMessagingAddress, isGloballyVisible);
 
     // TODO: Must be later provided by the user or retrieved from somewhere
     const defaultPublicKeyId = "";
 
-    const discoveryStubPromise = this._discoveryStub.add(
+    await this._discoveryStub.add(
         new DiscoveryEntry({
             providerVersion: new Version({
                 majorVersion: provider.constructor.MAJOR_VERSION,
@@ -209,16 +205,12 @@ CapabilitiesRegistrar.prototype.registerProvider = function registerProvider(
         awaitGlobalRegistration
     );
 
-    function registerProviderFinished() {
-        log.info(
-            `Provider registered: participantId: ${participantId}, domain: ${domain}, interfaceName: ${
-                provider.interfaceName
-            }`
-        );
-        return participantId;
-    }
-
-    return Promise.all([messageRouterPromise, discoveryStubPromise]).then(registerProviderFinished);
+    log.info(
+        `Provider registered: participantId: ${participantId}, domain: ${domain}, interfaceName: ${
+            provider.interfaceName
+        }`
+    );
+    return participantId;
 };
 
 /**
@@ -234,7 +226,7 @@ CapabilitiesRegistrar.prototype.registerProvider = function registerProvider(
  *            provider.interfaceName
  * @returns {Object} an A+ promise
  */
-CapabilitiesRegistrar.prototype.unregisterProvider = function unregisterProvider(domain, provider) {
+CapabilitiesRegistrar.prototype.unregisterProvider = async function unregisterProvider(domain, provider) {
     this._checkIfReady();
     // retrieve participantId
     const participantId = this._participantIdStorage.getParticipantId(domain, provider);
