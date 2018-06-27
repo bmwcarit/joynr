@@ -23,6 +23,7 @@ const Version = require("../../generated/joynr/types/Version");
 let defaultExpiryIntervalMs = 6 * 7 * 24 * 60 * 60 * 1000; // 6 Weeks
 const loggingManager = require("../system/LoggingManager");
 const log = loggingManager.getLogger("joynr.capabilities.CapabilitiesRegistrar");
+const UtilInternal = require("../util/UtilInternal");
 
 /**
  * The Capabilities Registrar
@@ -188,22 +189,27 @@ CapabilitiesRegistrar.prototype.registerProvider = async function registerProvid
     // TODO: Must be later provided by the user or retrieved from somewhere
     const defaultPublicKeyId = "";
 
-    await this._discoveryStub.add(
-        new DiscoveryEntry({
-            providerVersion: new Version({
-                majorVersion: provider.constructor.MAJOR_VERSION,
-                minorVersion: provider.constructor.MINOR_VERSION
+    try {
+        await this._discoveryStub.add(
+            new DiscoveryEntry({
+                providerVersion: new Version({
+                    majorVersion: provider.constructor.MAJOR_VERSION,
+                    minorVersion: provider.constructor.MINOR_VERSION
+                }),
+                domain,
+                interfaceName: provider.interfaceName,
+                participantId,
+                qos: providerQos,
+                publicKeyId: defaultPublicKeyId,
+                expiryDateMs: expiryDateMs || Date.now() + defaultExpiryIntervalMs,
+                lastSeenDateMs: Date.now()
             }),
-            domain,
-            interfaceName: provider.interfaceName,
-            participantId,
-            qos: providerQos,
-            publicKeyId: defaultPublicKeyId,
-            expiryDateMs: expiryDateMs || Date.now() + defaultExpiryIntervalMs,
-            lastSeenDateMs: Date.now()
-        }),
-        awaitGlobalRegistration
-    );
+            awaitGlobalRegistration
+        );
+    } catch (e) {
+        this._messageRouter.removeNextHop(participantId).catch(UtilInternal.emptyFunction);
+        throw e;
+    }
 
     log.info(
         `Provider registered: participantId: ${participantId}, domain: ${domain}, interfaceName: ${

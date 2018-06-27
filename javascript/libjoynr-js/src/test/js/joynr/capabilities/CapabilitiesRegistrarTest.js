@@ -87,7 +87,7 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", () => {
         requestReplyManagerSpy = jasmine.createSpyObj("RequestReplyManager", ["addRequestCaller"]);
         discoveryStubSpy = jasmine.createSpyObj("discoveryStub", ["add"]);
         discoveryStubSpy.add.and.returnValue(Promise.resolve());
-        messageRouterSpy = jasmine.createSpyObj("messageRouter", ["addNextHop"]);
+        messageRouterSpy = jasmine.createSpyObj("messageRouter", ["addNextHop", "removeNextHop"]);
 
         messageRouterSpy.addNextHop.and.returnValue(Promise.resolve());
         libjoynrMessagingAddress = {
@@ -95,6 +95,7 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", () => {
             toBe: "a",
             object: {}
         };
+        messageRouterSpy.removeNextHop.and.returnValue(Promise.resolve());
 
         capabilitiesRegistrar = new CapabilitiesRegistrar({
             discoveryStub: discoveryStubSpy,
@@ -359,5 +360,13 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", () => {
         capabilitiesRegistrar.shutdown();
         await reversePromise(capabilitiesRegistrar.registerProvider(domain, provider, providerQos));
         await reversePromise(capabilitiesRegistrar.unregisterProvider(domain, provider));
+    });
+
+    it("deletes the next hop when discoveryStub.add fails", async () => {
+        const error = new Error("some Error");
+        discoveryStubSpy.add.and.returnValue(Promise.reject(error));
+        const e = await reversePromise(capabilitiesRegistrar.registerProvider(domain, provider, providerQos));
+        expect(e).toEqual(error);
+        expect(messageRouterSpy.removeNextHop).toHaveBeenCalled();
     });
 });
