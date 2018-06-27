@@ -237,25 +237,23 @@ CapabilitiesRegistrar.prototype.unregisterProvider = async function unregisterPr
     // retrieve participantId
     const participantId = this._participantIdStorage.getParticipantId(domain, provider);
 
-    const discoveryStubPromise = this._discoveryStub.remove(participantId);
+    await this._discoveryStub.remove(participantId);
+
+    // unregister routing address at routingTable
+    await this._messageRouter.removeNextHop(participantId);
 
     // if provider has at least one attribute, remove it as publication
     // provider
     this._publicationManager.removePublicationProvider(participantId, provider);
 
-    // unregister routing address at routingTable
-    const messageRouterPromise = this._messageRouter.removeNextHop(participantId);
-
     // unregister provider at RequestReplyManager
     this._requestReplyManager.removeRequestCaller(participantId);
 
-    return Promise.all([discoveryStubPromise, messageRouterPromise]).then(() => {
-        log.info(
-            `Provider unregistered: participantId: ${participantId}, domain: ${domain}, interfaceName: ${
-                provider.interfaceName
-            }`
-        );
-    });
+    log.info(
+        `Provider unregistered: participantId: ${participantId}, domain: ${domain}, interfaceName: ${
+            provider.interfaceName
+        }`
+    );
 };
 
 /**

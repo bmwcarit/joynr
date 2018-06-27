@@ -47,6 +47,7 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", () => {
 
         publicationManagerSpy = jasmine.createSpyObj("PublicationManager", [
             "addPublicationProvider",
+            "removePublicationProvider",
             "registerOnChangedProvider"
         ]);
 
@@ -84,9 +85,13 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", () => {
         participantId = "myParticipantId";
         participantIdStorageSpy = jasmine.createSpyObj("participantIdStorage", ["getParticipantId"]);
         participantIdStorageSpy.getParticipantId.and.returnValue(participantId);
-        requestReplyManagerSpy = jasmine.createSpyObj("RequestReplyManager", ["addRequestCaller"]);
-        discoveryStubSpy = jasmine.createSpyObj("discoveryStub", ["add"]);
+        requestReplyManagerSpy = jasmine.createSpyObj("RequestReplyManager", [
+            "addRequestCaller",
+            "removeRequestCaller"
+        ]);
+        discoveryStubSpy = jasmine.createSpyObj("discoveryStub", ["add", "remove"]);
         discoveryStubSpy.add.and.returnValue(Promise.resolve());
+        discoveryStubSpy.remove.and.returnValue(Promise.resolve());
         messageRouterSpy = jasmine.createSpyObj("messageRouter", ["addNextHop", "removeNextHop"]);
 
         messageRouterSpy.addNextHop.and.returnValue(Promise.resolve());
@@ -368,5 +373,14 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", () => {
         const e = await reversePromise(capabilitiesRegistrar.registerProvider(domain, provider, providerQos));
         expect(e).toEqual(error);
         expect(messageRouterSpy.removeNextHop).toHaveBeenCalled();
+    });
+
+    it("removes capability at discoveryStub and removes next hop in routing table when unregistering provider", async () => {
+        await capabilitiesRegistrar.registerProvider(domain, provider, providerQos);
+
+        await capabilitiesRegistrar.unregisterProvider(domain, provider);
+
+        expect(messageRouterSpy.removeNextHop).toHaveBeenCalled();
+        expect(discoveryStubSpy.remove).toHaveBeenCalled();
     });
 });
