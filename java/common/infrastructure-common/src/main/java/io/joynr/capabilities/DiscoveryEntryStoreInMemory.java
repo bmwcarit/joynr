@@ -94,7 +94,8 @@ public class DiscoveryEntryStoreInMemory implements DiscoveryEntryStore {
             registeredCapabilitiesTime.put(discoveryEntryId, System.currentTimeMillis());
 
             // update interfaceDomain to capability mapping
-            String domainInterfaceId = domainInterfaceKey(discoveryEntry.getDomain(), discoveryEntry.getInterfaceName());
+            String domainInterfaceId = domainInterfaceKey(discoveryEntry.getDomain(),
+                                                          discoveryEntry.getInterfaceName());
 
             // if domainInterfaceId not in the mapping, map it to an empty map,
             // otherwise use the mapping that is  already there

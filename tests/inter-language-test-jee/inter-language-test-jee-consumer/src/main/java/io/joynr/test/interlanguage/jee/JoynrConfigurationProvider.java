@@ -41,10 +41,8 @@ public class JoynrConfigurationProvider {
         joynrProperties.setProperty(MessagingPropertyKeys.CHANNELID, "io.joynr.test.interlanguage.jee.consumer");
         joynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "tcp://localhost:1883");
         joynrProperties.setProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL, "http://localhost:8383/bounceproxy/");
-        joynrProperties.setProperty(MessagingPropertyKeys.DISCOVERYDIRECTORYURL,
-                                    "tcp://localhost:1883");
-        joynrProperties.setProperty(MessagingPropertyKeys.DOMAINACCESSCONTROLLERURL,
-                                    "tcp://localhost:1883");
+        joynrProperties.setProperty(MessagingPropertyKeys.DISCOVERYDIRECTORYURL, "tcp://localhost:1883");
+        joynrProperties.setProperty(MessagingPropertyKeys.DOMAINACCESSCONTROLLERURL, "tcp://localhost:1883");
         joynrProperties.setProperty(MessagingPropertyKeys.PERSISTENCE_FILE, "ilt-jee-consumer-joynr.properties");
 
         return joynrProperties;

@@ -231,7 +231,8 @@ public class MqttPahoClientTest {
 
         clientSender.start();
         clientReceiver.start();
-        verify(mqttStatusReceiver, times(2)).notifyConnectionStatusChanged(MqttStatusReceiver.ConnectionStatus.CONNECTED);
+        verify(mqttStatusReceiver,
+               times(2)).notifyConnectionStatusChanged(MqttStatusReceiver.ConnectionStatus.CONNECTED);
 
         clientReceiver.subscribe(ownTopic.getTopic());
 
@@ -240,7 +241,8 @@ public class MqttPahoClientTest {
 
         clientReceiver.shutdown();
         clientSender.shutdown();
-        verify(mqttStatusReceiver, timeout(500).times(2)).notifyConnectionStatusChanged(MqttStatusReceiver.ConnectionStatus.NOT_CONNECTED);
+        verify(mqttStatusReceiver,
+               timeout(500).times(2)).notifyConnectionStatusChanged(MqttStatusReceiver.ConnectionStatus.NOT_CONNECTED);
     }
 
     @Test
@@ -255,11 +257,13 @@ public class MqttPahoClientTest {
 
         clientSender.start();
         clientReceiver.start();
-        verify(mqttStatusReceiver, times(1)).notifyConnectionStatusChanged(MqttStatusReceiver.ConnectionStatus.CONNECTED);
+        verify(mqttStatusReceiver,
+               times(1)).notifyConnectionStatusChanged(MqttStatusReceiver.ConnectionStatus.CONNECTED);
 
         clientReceiver.shutdown();
         clientSender.shutdown();
-        verify(mqttStatusReceiver, timeout(500).times(1)).notifyConnectionStatusChanged(MqttStatusReceiver.ConnectionStatus.NOT_CONNECTED);
+        verify(mqttStatusReceiver,
+               timeout(500).times(1)).notifyConnectionStatusChanged(MqttStatusReceiver.ConnectionStatus.NOT_CONNECTED);
     }
 
     private void joynrMqttClientPublishAndVerifyReceivedMessage(byte[] serializedMessage) {
@@ -553,7 +557,8 @@ public class MqttPahoClientTest {
 
         startBroker();
         Thread.sleep(2000);
-        verify(mqttStatusReceiver, times(2)).notifyConnectionStatusChanged(MqttStatusReceiver.ConnectionStatus.CONNECTED);
+        verify(mqttStatusReceiver,
+               times(2)).notifyConnectionStatusChanged(MqttStatusReceiver.ConnectionStatus.CONNECTED);
     }
 
     @Test

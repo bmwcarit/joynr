@@ -78,9 +78,10 @@ class TestRequestDispatcher extends ContextHandler {
     }
 
     @Override
-    public void doHandle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
-                                                                                                                      throws IOException,
-                                                                                                                      ServletException {
+    public void doHandle(String target,
+                         Request baseRequest,
+                         HttpServletRequest request,
+                         HttpServletResponse response) throws IOException, ServletException {
 
         String sessionId = request.getRequestedSessionId();
 
@@ -116,7 +117,9 @@ class TestRequestDispatcher extends ContextHandler {
                 sessionStore.put(sessionId, targetPath);
                 logger.debug("Created new target path {} for session {}", targetPath, sessionId);
             } else {
-                logger.debug("Applying sticky session pattern for target path {} and session {}", targetPath, sessionId);
+                logger.debug("Applying sticky session pattern for target path {} and session {}",
+                             targetPath,
+                             sessionId);
                 forwardToUrl(targetPath, baseRequest, response);
             }
 
@@ -155,7 +158,7 @@ class TestRequestDispatcher extends ContextHandler {
     }
 
     private String forwardRoundRobin(Request baseRequest, HttpServletResponse response) throws ServletException,
-                                                                                       IOException {
+                                                                                        IOException {
 
         String contextPath = getNextServerInstanceContext();
         forwardToUrl(contextPath, baseRequest, response);
@@ -173,9 +176,9 @@ class TestRequestDispatcher extends ContextHandler {
         return nextNode.getContextPath();
     }
 
-    private void forwardToUrl(final String targetContextPath, Request baseRequest, HttpServletResponse response)
-                                                                                                                throws ServletException,
-                                                                                                                IOException {
+    private void forwardToUrl(final String targetContextPath,
+                              Request baseRequest,
+                              HttpServletResponse response) throws ServletException, IOException {
 
         logger.info("Forward request {} to context {}", baseRequest.toString(), targetContextPath);
 

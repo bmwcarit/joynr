@@ -50,5 +50,6 @@ public interface MessageReceiver {
      * for successful or failed start
      * @return a future that signals when the receiver is ready to be used.
      */
-    Future<Void> start(MessageArrivedListener messageArrivedListener, ReceiverStatusListener... receiverStatusListeners);
+    Future<Void> start(MessageArrivedListener messageArrivedListener,
+                       ReceiverStatusListener... receiverStatusListeners);
 }

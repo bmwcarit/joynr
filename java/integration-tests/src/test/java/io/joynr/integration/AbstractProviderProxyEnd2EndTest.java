@@ -208,8 +208,8 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
                 + "-end2endConsumer";
 
         Properties joynrConfigProvider = PropertyLoader.loadProperties("testMessaging.properties");
-        joynrConfigProvider.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, "localdomain."
-                + UUID.randomUUID().toString());
+        joynrConfigProvider.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL,
+                                "localdomain." + UUID.randomUUID().toString());
         joynrConfigProvider.put(MessagingPropertyKeys.CHANNELID, channelIdProvider);
         joynrConfigProvider.put(MessagingPropertyKeys.RECEIVERID, UUID.randomUUID().toString());
         joynrConfigProvider.put(ConfigurableMessagingSettings.PROPERTY_MAX_MESSAGE_SIZE, MAX_MESSAGE_SIZE);
@@ -223,8 +223,8 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         }
 
         Properties joynrConfigConsumer = PropertyLoader.loadProperties("testMessaging.properties");
-        joynrConfigConsumer.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, "localdomain."
-                + UUID.randomUUID().toString());
+        joynrConfigConsumer.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL,
+                                "localdomain." + UUID.randomUUID().toString());
         joynrConfigConsumer.put(MessagingPropertyKeys.CHANNELID, channelIdConsumer);
         joynrConfigConsumer.put(MessagingPropertyKeys.RECEIVERID, UUID.randomUUID().toString());
         joynrConfigConsumer.put(ConfigurableMessagingSettings.PROPERTY_MAX_MESSAGE_SIZE, MAX_MESSAGE_SIZE);
@@ -466,8 +466,8 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         @Override
         public void methodFireAndForget(Integer intIn, String stringIn, ComplexTestType complexTestTypeIn) {
             if (intIn != 1) {
-                throw new IllegalArgumentException("Didn't receive expected int value: "
-                        + FIRE_AND_FORGET_INT_PARAMETER + ", instead: " + intIn);
+                throw new IllegalArgumentException("Didn't receive expected int value: " + FIRE_AND_FORGET_INT_PARAMETER
+                        + ", instead: " + intIn);
             }
             if (!FIRE_AND_FORGET_STRING_PARAMETER.equals(stringIn)) {
                 throw new IllegalArgumentException("Didn't receive expected string value: "
@@ -524,7 +524,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void registerProviderCreateProxyAndCallMethod() throws DiscoveryException, JoynrIllegalStateException,
-                                                          InterruptedException {
+                                                           InterruptedException {
         int result;
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
         testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
@@ -536,7 +536,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void sendObjectsAsArgumentAndReturnValue() throws DiscoveryException, JoynrIllegalStateException,
-                                                     InterruptedException {
+                                                      InterruptedException {
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
         testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
 
@@ -554,7 +554,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void asyncMethodCallWithCallback() throws DiscoveryException, JoynrIllegalStateException,
-                                             InterruptedException, JoynrWaitExpiredException, ApplicationException {
+                                              InterruptedException, JoynrWaitExpiredException, ApplicationException {
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
         testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
 
@@ -608,7 +608,10 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
             }
 
             @Override
-            public void onSuccess(String aString, Integer aNumber, GpsLocation aComplexDataType, TestEnum anEnumResult) {
+            public void onSuccess(String aString,
+                                  Integer aNumber,
+                                  GpsLocation aComplexDataType,
+                                  TestEnum anEnumResult) {
                 result.put("receivedString", aString);
                 result.put("receivedNumber", aNumber);
                 result.put("receivedComplexDataType", aComplexDataType);
@@ -641,7 +644,10 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
             }
 
             @Override
-            public void onSuccess(String aString, Integer aNumber, GpsLocation aComplexDataType, TestEnum anEnumResult) {
+            public void onSuccess(String aString,
+                                  Integer aNumber,
+                                  GpsLocation aComplexDataType,
+                                  TestEnum anEnumResult) {
                 assertEquals(TEST_INTEGER, aNumber);
                 assertEquals(TEST_STRING, aString);
                 assertEquals(TEST_COMPLEXTYPE, aComplexDataType);
@@ -660,7 +666,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
     @Ignore
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void asyncMethodCallWithTtlExpiring() throws DiscoveryException, JoynrIllegalStateException,
-                                                InterruptedException, ApplicationException {
+                                                 InterruptedException, ApplicationException {
 
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
         long ttl = 2000L;
@@ -693,7 +699,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void testMethodWithEnumInputReturnsResult() throws DiscoveryException, JoynrIllegalStateException,
-                                                      InterruptedException {
+                                                       InterruptedException {
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
         testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
 
@@ -706,7 +712,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void testVoidOperation() throws DiscoveryException, JoynrIllegalStateException, InterruptedException,
-                                   JoynrWaitExpiredException, ApplicationException {
+                                    JoynrWaitExpiredException, ApplicationException {
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
         testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
 
@@ -739,7 +745,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void testMethodWithNullEnumInputReturnsSomethingSensible() throws DiscoveryException,
-                                                                     JoynrIllegalStateException, InterruptedException {
+                                                                      JoynrIllegalStateException, InterruptedException {
         TestEnum input = null;
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
         testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
@@ -749,7 +755,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void sendingANullValueOnceDoesntCrashProvider() throws DiscoveryException, JoynrIllegalStateException,
-                                                          InterruptedException {
+                                                           InterruptedException {
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
         testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
         proxy.methodWithEnumParameter(null);
@@ -779,7 +785,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void testLargeByteBufferAttribute() throws DiscoveryException, JoynrIllegalStateException,
-                                              InterruptedException {
+                                               InterruptedException {
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
         testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
         byte[] bytes = new byte[1000000];
@@ -796,7 +802,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void testSimpleBroadcast() throws InterruptedException, JoynrWaitExpiredException, JoynrRuntimeException,
-                                     ApplicationException {
+                                      ApplicationException {
         final Semaphore broadcastReceived = new Semaphore(0);
         final GpsLocation gpsLocation = new GpsLocation(1.0,
                                                         2.0,
@@ -814,17 +820,13 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
         testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
         Future<String> subscriptionIdFuture = proxy.subscribeToLocationUpdateWithSpeedBroadcast(new LocationUpdateWithSpeedBroadcastAdapter() {
-                                                                                                    @Override
-                                                                                                    public void onReceive(GpsLocation receivedGpsLocation,
-                                                                                                                          Float receivedCurrentSpeed) {
-                                                                                                        assertEquals(gpsLocation,
-                                                                                                                     receivedGpsLocation);
-                                                                                                        assertEquals(currentSpeed,
-                                                                                                                     receivedCurrentSpeed);
-                                                                                                        broadcastReceived.release();
-                                                                                                    }
-                                                                                                },
-                                                                                                new MulticastSubscriptionQos());
+            @Override
+            public void onReceive(GpsLocation receivedGpsLocation, Float receivedCurrentSpeed) {
+                assertEquals(gpsLocation, receivedGpsLocation);
+                assertEquals(currentSpeed, receivedCurrentSpeed);
+                broadcastReceived.release();
+            }
+        }, new MulticastSubscriptionQos());
 
         // wait to allow the subscription request to arrive at the provider
         subscriptionIdFuture.get();
@@ -836,7 +838,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
     @Ignore
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void testBroadcastWithMapParameter() throws DiscoveryException, JoynrIllegalStateException,
-                                               InterruptedException {
+                                                InterruptedException {
         final Semaphore broadcastReceived = new Semaphore(0);
 
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
@@ -868,8 +870,8 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
     @Ignore
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void asyncMethodCallWithCallbackAndParameter() throws DiscoveryException, JoynrIllegalStateException,
-                                                         InterruptedException, JoynrWaitExpiredException,
-                                                         ApplicationException {
+                                                          InterruptedException, JoynrWaitExpiredException,
+                                                          ApplicationException {
 
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
 
@@ -888,8 +890,8 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void asyncMethodCallWithIntegerParametersAndFuture() throws DiscoveryException, JoynrIllegalStateException,
-                                                               InterruptedException, JoynrWaitExpiredException,
-                                                               ApplicationException {
+                                                                InterruptedException, JoynrWaitExpiredException,
+                                                                ApplicationException {
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
         testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
 
@@ -906,8 +908,8 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void asyncMethodCallWithEnumParametersAndFuture() throws DiscoveryException, JoynrIllegalStateException,
-                                                            InterruptedException, JoynrWaitExpiredException,
-                                                            ApplicationException {
+                                                             InterruptedException, JoynrWaitExpiredException,
+                                                             ApplicationException {
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
         testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
 
@@ -925,7 +927,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
     @Ignore
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void asyncMethodCallWithEnumListReturned() throws DiscoveryException, JoynrIllegalStateException,
-                                                     InterruptedException {
+                                                      InterruptedException {
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
         testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
 
@@ -979,7 +981,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void asyncMethodCallWithByteBuffer() throws JoynrWaitExpiredException, JoynrRuntimeException,
-                                               InterruptedException, ApplicationException {
+                                                InterruptedException, ApplicationException {
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
         testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
 
@@ -1217,7 +1219,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
     @Ignore
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void overloadedMethodWithInheritance() throws DiscoveryException, JoynrIllegalStateException,
-                                                 InterruptedException {
+                                                  InterruptedException {
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
         testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
 
@@ -1233,7 +1235,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void overloadedMethodWithDifferentReturnTypes() throws DiscoveryException, JoynrIllegalStateException,
-                                                          InterruptedException {
+                                                           InterruptedException {
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
         testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
 

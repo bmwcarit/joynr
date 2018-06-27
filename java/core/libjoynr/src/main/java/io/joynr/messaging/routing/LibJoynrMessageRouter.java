@@ -174,7 +174,9 @@ public class LibJoynrMessageRouter extends AbstractMessageRouter {
     }
 
     @Override
-    public void removeMulticastReceiver(String multicastId, String subscriberParticipantId, String providerParticipantId) {
+    public void removeMulticastReceiver(String multicastId,
+                                        String subscriberParticipantId,
+                                        String providerParticipantId) {
         super.removeMulticastReceiver(multicastId, subscriberParticipantId, providerParticipantId);
         if (parentRouter == null) {
             synchronized (deferredMulticastRegistrations) {

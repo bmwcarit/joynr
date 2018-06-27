@@ -73,14 +73,15 @@ public class WebSocketProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2
         ccConfig.putAll(webSocketConfig);
         ccConfig.putAll(baseTestConfig);
         ccConfig.setProperty(ConfigurableMessagingSettings.PROPERTY_CC_CONNECTION_TYPE, "WEBSOCKET");
-        injectorCC = new JoynrInjectorFactory(ccConfig, Modules.override(new CCWebSocketRuntimeModule())
-                                                               .with(new MqttPahoModule(), new AbstractModule() {
-                                                                   @Override
-                                                                   protected void configure() {
-                                                                       bind(Boolean.class).annotatedWith(Names.named(WebSocketMessagingSkeleton.WEBSOCKET_IS_MAIN_TRANSPORT))
-                                                                                          .toInstance(Boolean.TRUE);
-                                                                   }
-                                                               })).getInjector();
+        injectorCC = new JoynrInjectorFactory(ccConfig,
+                                              Modules.override(new CCWebSocketRuntimeModule())
+                                                     .with(new MqttPahoModule(), new AbstractModule() {
+                                                         @Override
+                                                         protected void configure() {
+                                                             bind(Boolean.class).annotatedWith(Names.named(WebSocketMessagingSkeleton.WEBSOCKET_IS_MAIN_TRANSPORT))
+                                                                                .toInstance(Boolean.TRUE);
+                                                         }
+                                                     })).getInjector();
         return injectorCC.getInstance(JoynrRuntime.class);
     }
 

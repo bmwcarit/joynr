@@ -210,14 +210,13 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
         provisionAccessControl(joynrConfig, localDomain);
         JoynrApplication joynrApplication = new JoynrInjectorFactory(joynrConfig,
                                                                      runtimeModule,
-                                                                     new StaticDomainAccessControlProvisioningModule()).createApplication(new JoynrApplicationModule(MyRadioProviderApplication.class,
-                                                                                                                                                                     appConfig) {
-            @Override
-            protected void configure() {
-                super.configure();
-                bind(ProviderScope.class).toInstance(providerScope);
-            }
-        });
+                                                                     new StaticDomainAccessControlProvisioningModule()).createApplication(new JoynrApplicationModule(MyRadioProviderApplication.class, appConfig) {
+                                                                         @Override
+                                                                         protected void configure() {
+                                                                             super.configure();
+                                                                             bind(ProviderScope.class).toInstance(providerScope);
+                                                                         }
+                                                                     });
         joynrApplication.run();
 
         joynrApplication.shutdown();
@@ -398,12 +397,15 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
                                                                                             domain,
                                                                                             ProviderAnnotations.getInterfaceName(MyRadioProvider.class),
                                                                                             TrustLevel.LOW,
-                                                                                            new TrustLevel[]{ TrustLevel.LOW },
+                                                                                            new TrustLevel[]{
+                                                                                                    TrustLevel.LOW },
                                                                                             TrustLevel.LOW,
-                                                                                            new TrustLevel[]{ TrustLevel.LOW },
+                                                                                            new TrustLevel[]{
+                                                                                                    TrustLevel.LOW },
                                                                                             "*",
                                                                                             Permission.YES,
-                                                                                            new Permission[]{ Permission.YES });
+                                                                                            new Permission[]{
+                                                                                                    Permission.YES });
 
         MasterAccessControlEntry[] provisionedAccessControlEntries = { newMasterAccessControlEntry };
         String provisionedAccessControlEntriesAsJson = objectMapper.writeValueAsString(provisionedAccessControlEntries);

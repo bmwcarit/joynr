@@ -177,11 +177,14 @@ public class ProviderWrapper implements InvocationHandler {
                       joynrException);
             if (joynrException instanceof ApplicationException) {
                 try {
-                    Method rejectMethod = AbstractDeferred.class.getDeclaredMethod("reject", new Class[] { JoynrException.class });
+                    Method rejectMethod = AbstractDeferred.class.getDeclaredMethod("reject",
+                                                                                   new Class[]{ JoynrException.class });
                     rejectMethod.setAccessible(true);
-                    rejectMethod.invoke(deferred, new Object[] { joynrException });
+                    rejectMethod.invoke(deferred, new Object[]{ joynrException });
                 } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
-                    LOG.warn("Unable to set {} as rejection reason on {}. Wrapping in ProviderRuntimeException instead.", joynrException, deferred);
+                    LOG.warn("Unable to set {} as rejection reason on {}. Wrapping in ProviderRuntimeException instead.",
+                             joynrException,
+                             deferred);
                     deferred.reject(new ProviderRuntimeException(((ApplicationException) joynrException).getMessage()));
                 }
             } else if (joynrException instanceof ProviderRuntimeException) {
@@ -240,11 +243,11 @@ public class ProviderWrapper implements InvocationHandler {
         jeeMessageContext.setMessageContext(joynrMessageContext.getMessageContext());
     }
 
-    private <T> T getUniqueBeanReference(Class<T> beanClass)
-    {
+    private <T> T getUniqueBeanReference(Class<T> beanClass) {
         Set<Bean<?>> beans = beanManager.getBeans(beanClass);
         if (beans.size() != 1) {
-            throw new IllegalStateException("There must be exactly one EJB of type " + beanClass.getName() + ". Found " + beans.size());
+            throw new IllegalStateException("There must be exactly one EJB of type " + beanClass.getName() + ". Found "
+                    + beans.size());
         }
 
         @SuppressWarnings("unchecked")

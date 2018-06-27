@@ -28,7 +28,8 @@ public abstract class AbstractGlobalDiscoveryEntryProvider implements Provider<G
     private final CapabilitiesProvisioning capabilitiesProvisioning;
     private final String interfaceName;
 
-    public AbstractGlobalDiscoveryEntryProvider(CapabilitiesProvisioning capabilitiesProvisioning, String interfaceName) {
+    public AbstractGlobalDiscoveryEntryProvider(CapabilitiesProvisioning capabilitiesProvisioning,
+                                                String interfaceName) {
         assert capabilitiesProvisioning != null : "Capabilities provisioning must not be null.";
         assert interfaceName != null : "Interface name must not be null.";
         this.capabilitiesProvisioning = capabilitiesProvisioning;

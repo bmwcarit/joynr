@@ -146,8 +146,8 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
                 case MqttException.REASON_CODE_CLIENT_EXCEPTION:
                     if (isSecureConnection) {
                         logger.error("Failed to establish TLS connection, error: " + mqttError);
-                        if (mqttError instanceof MqttSecurityException
-                                || (mqttError.getCause() != null && mqttError.getCause() instanceof SSLHandshakeException)) {
+                        if (mqttError instanceof MqttSecurityException || (mqttError.getCause() != null
+                                && mqttError.getCause() instanceof SSLHandshakeException)) {
                             throw new JoynrIllegalStateException("Unable to create TLS MqttPahoClient: " + mqttError);
                         }
                     }

@@ -177,14 +177,14 @@ public class ServiceProviderDiscoveryTest {
         BeanManager mockBeanManager = mock(BeanManager.class);
 
         Bean<DummyBeanOne> mockBeanOne = mock(Bean.class);
-            Mockito.doReturn(DummyBeanOne.class).when(mockBeanOne).getBeanClass();
+        Mockito.doReturn(DummyBeanOne.class).when(mockBeanOne).getBeanClass();
         Bean<DummyBeanFour> mockBeanFour = mock(Bean.class);
-            Mockito.doReturn(DummyBeanFour.class).when(mockBeanFour).getBeanClass();
+        Mockito.doReturn(DummyBeanFour.class).when(mockBeanFour).getBeanClass();
 
         Set<Bean<?>> beans = new HashSet<>();
-            beans.add(mockBeanOne);
-            beans.add(mockBeanFour);
-            Mockito.when(mockBeanManager.getBeans(Object.class, new AnnotationLiteral<Any>() {
+        beans.add(mockBeanOne);
+        beans.add(mockBeanFour);
+        Mockito.when(mockBeanManager.getBeans(Object.class, new AnnotationLiteral<Any>() {
         })).thenReturn(beans);
 
         ServiceProviderDiscovery subject = new ServiceProviderDiscovery(mockBeanManager);

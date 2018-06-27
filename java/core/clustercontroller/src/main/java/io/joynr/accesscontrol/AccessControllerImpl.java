@@ -120,7 +120,8 @@ public class AccessControllerImpl implements AccessController {
             @Override
             public void processCapabilityReceived(DiscoveryEntryWithMetaInfo discoveryEntry) {
                 if (discoveryEntry == null) {
-                    logger.error("Failed to get capability for participant id {} for acl check", message.getRecipient());
+                    logger.error("Failed to get capability for participant id {} for acl check",
+                                 message.getRecipient());
                     hasConsumerPermissionCallback.hasConsumerPermission(false);
                     return;
                 }

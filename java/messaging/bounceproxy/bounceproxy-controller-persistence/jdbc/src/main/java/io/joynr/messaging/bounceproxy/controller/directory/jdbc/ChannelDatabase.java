@@ -116,8 +116,9 @@ public class ChannelDatabase implements ChannelDirectory {
                         + "' registered for channel '" + channel.getChannelId() + "'");
             }
 
-            ChannelEntity entity = new ChannelEntity(channel.getChannelId(), bpInfoEntity, channel.getLocation()
-                                                                                                  .toString());
+            ChannelEntity entity = new ChannelEntity(channel.getChannelId(),
+                                                     bpInfoEntity,
+                                                     channel.getLocation().toString());
             em.persist(entity);
 
             tx.commit();

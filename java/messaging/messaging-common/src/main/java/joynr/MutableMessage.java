@@ -54,7 +54,7 @@ public class MutableMessage extends Message {
     }
 
     public ImmutableMessage getImmutableMessage() throws SecurityException, EncodingException,
-                                                 UnsuppportedVersionException {
+                                                  UnsuppportedVersionException {
         MessageSerializer messageSerializer = new MessageSerializerImpl();
 
         messageSerializer.setSender(getSender());

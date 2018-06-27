@@ -66,7 +66,7 @@ public class GlobalDomainRoleControllerBeanTest {
     public void testCreate() {
         DomainRoleEntry domainRoleEntry = new DomainRoleEntry(USER_ID, DOMAINS, ROLE);
         CreateOrUpdateResult<DomainRoleEntry> createOrUpdateResult = new CreateOrUpdateResult<>(domainRoleEntry,
-            ChangeType.ADD);
+                                                                                                ChangeType.ADD);
 
         when(domainRoleEntryManagerMock.createOrUpdate(domainRoleEntry)).thenReturn(createOrUpdateResult);
 
@@ -74,15 +74,15 @@ public class GlobalDomainRoleControllerBeanTest {
 
         verify(domainRoleEntryManagerMock).createOrUpdate(eq(domainRoleEntry));
         verify(globalDomainRoleControllerSubscriptionPublisherMock).fireDomainRoleEntryChanged(eq(ChangeType.ADD),
-            eq(domainRoleEntry), eq(
-                USER_PARTITION));
+                                                                                               eq(domainRoleEntry),
+                                                                                               eq(USER_PARTITION));
     }
 
     @Test
     public void testUpdate() {
         DomainRoleEntry domainRoleEntry = new DomainRoleEntry(USER_ID, DOMAINS, ROLE);
         CreateOrUpdateResult<DomainRoleEntry> createOrUpdateResult = new CreateOrUpdateResult<>(domainRoleEntry,
-            ChangeType.UPDATE);
+                                                                                                ChangeType.UPDATE);
 
         when(domainRoleEntryManagerMock.createOrUpdate(domainRoleEntry)).thenReturn(createOrUpdateResult);
 
@@ -90,8 +90,8 @@ public class GlobalDomainRoleControllerBeanTest {
 
         verify(domainRoleEntryManagerMock).createOrUpdate(eq(domainRoleEntry));
         verify(globalDomainRoleControllerSubscriptionPublisherMock).fireDomainRoleEntryChanged(eq(ChangeType.UPDATE),
-            eq(domainRoleEntry),
-            eq(USER_PARTITION));
+                                                                                               eq(domainRoleEntry),
+                                                                                               eq(USER_PARTITION));
     }
 
     @Test
@@ -104,7 +104,7 @@ public class GlobalDomainRoleControllerBeanTest {
 
         verify(domainRoleEntryManagerMock).removeByUserIdAndRole(eq(USER_ID), eq(ROLE));
         verify(globalDomainRoleControllerSubscriptionPublisherMock).fireDomainRoleEntryChanged(eq(ChangeType.REMOVE),
-                                                                                                 eq(domainRoleEntry),
-                                                                                                 eq(USER_PARTITION));
+                                                                                               eq(domainRoleEntry),
+                                                                                               eq(USER_PARTITION));
     }
 }

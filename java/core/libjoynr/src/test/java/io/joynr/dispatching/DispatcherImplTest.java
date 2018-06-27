@@ -172,10 +172,11 @@ public class DispatcherImplTest {
                      *
                      */
                     messageReceiverMock.setBlockOnInitialisation(true);
-                    requestCallerDirectory.add(requestReplyId, new ProviderContainer("interfaceName",
-                                                                                     DispatcherImplTest.class,
-                                                                                     requestCaller,
-                                                                                     subscriptionPublisher));
+                    requestCallerDirectory.add(requestReplyId,
+                                               new ProviderContainer("interfaceName",
+                                                                     DispatcherImplTest.class,
+                                                                     requestCaller,
+                                                                     subscriptionPublisher));
                 } finally {
                     messageReceiverMock.setBlockOnInitialisation(false);
                 }
@@ -261,8 +262,7 @@ public class DispatcherImplTest {
     }
 
     private void testPropagateCompressFlagFromRequestToRepliesImpl(final boolean compress,
-                                                                   final boolean compressAllOutgoingReplies)
-                                                                                                            throws Exception {
+                                                                   final boolean compressAllOutgoingReplies) throws Exception {
         MessagingQos messagingQos = new MessagingQos(1000L);
         messagingQos.setCompress(compress);
 

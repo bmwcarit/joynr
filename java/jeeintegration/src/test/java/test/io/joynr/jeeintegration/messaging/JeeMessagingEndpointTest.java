@@ -73,7 +73,7 @@ public class JeeMessagingEndpointTest {
     private void callPostMethod(PostMethodCaller postMethodCaller) throws Exception {
         SubjectData subjectData = createSubject();
         JeeMessagingEndpoint subject = subjectData.subject;
-        byte[] payload = new byte[] { 1, 2, 3 };
+        byte[] payload = new byte[]{ 1, 2, 3 };
 
         UriInfo uriInfo = mock(UriInfo.class);
         UriBuilder uriBuilder = mock(UriBuilder.class);
@@ -88,7 +88,10 @@ public class JeeMessagingEndpointTest {
 
         when(uriBuilder.path("messages/" + mutableMessage.getId())).thenReturn(pathBuilder);
         when(uriInfo.getBaseUriBuilder()).thenReturn(uriBuilder);
-        postMethodCaller.call(subject, "channel-1", mutableMessage.getImmutableMessage().getSerializedMessage(), uriInfo);
+        postMethodCaller.call(subject,
+                              "channel-1",
+                              mutableMessage.getImmutableMessage().getSerializedMessage(),
+                              uriInfo);
         Mockito.verify(subjectData.messageReceiver).receive(Mockito.any());
     }
 

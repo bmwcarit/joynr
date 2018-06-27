@@ -67,8 +67,8 @@ import joynr.types.GlobalDiscoveryEntry;
 import joynr.types.ProviderScope;
 
 @Singleton
-public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDirectory implements
-        TransportReadyListener {
+public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDirectory
+        implements TransportReadyListener {
 
     private static final Logger logger = LoggerFactory.getLogger(LocalCapabilitiesDirectoryImpl.class);
 
@@ -150,15 +150,13 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         this.globalCapabilitiesDirectoryClient = globalCapabilitiesDirectoryClient;
         this.globalDiscoveryEntryCache.add(capabilitiesProvisioning.getDiscoveryEntries());
         expiredDiscoveryEntryCacheCleaner.scheduleCleanUpForCaches(new ExpiredDiscoveryEntryCacheCleaner.CleanupAction() {
-                                                                       @Override
-                                                                       public void cleanup(Set<DiscoveryEntry> expiredDiscoveryEntries) {
-                                                                           for (DiscoveryEntry discoveryEntry : expiredDiscoveryEntries) {
-                                                                               remove(discoveryEntry);
-                                                                           }
-                                                                       }
-                                                                   },
-                                                                   globalDiscoveryEntryCache,
-                                                                   localDiscoveryEntryStore);
+            @Override
+            public void cleanup(Set<DiscoveryEntry> expiredDiscoveryEntries) {
+                for (DiscoveryEntry discoveryEntry : expiredDiscoveryEntries) {
+                    remove(discoveryEntry);
+                }
+            }
+        }, globalDiscoveryEntryCache, localDiscoveryEntryStore);
         this.freshnessUpdateScheduler = freshnessUpdateScheduler;
         setUpPeriodicFreshnessUpdate(freshnessUpdateIntervalMs);
         shutdownNotifier.registerForShutdown(this);
@@ -198,7 +196,8 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
         if (localDiscoveryEntryStore.hasDiscoveryEntry(discoveryEntry)) {
             if (discoveryEntry.getQos().getScope().equals(ProviderScope.LOCAL)
-                    || globalDiscoveryEntryCache.lookup(discoveryEntry.getParticipantId(), DiscoveryQos.NO_MAX_AGE) != null) {
+                    || globalDiscoveryEntryCache.lookup(discoveryEntry.getParticipantId(),
+                                                        DiscoveryQos.NO_MAX_AGE) != null) {
                 // in this case, no further need for global registration is required. Registration completed.
                 deferred.resolve();
                 return new Promise<>(deferred);
@@ -613,9 +612,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                     capabilitiesCallback.onError(exception);
 
                 }
-            },
-                                                     participantId,
-                                                     discoveryQos.getDiscoveryTimeoutMs());
+            }, participantId, discoveryQos.getDiscoveryTimeoutMs());
         }
 
     }
@@ -629,7 +626,8 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                               long discoveryTimeout,
                                               final CapabilitiesCallback capabilitiesCallback) {
 
-        final Collection<DiscoveryEntryWithMetaInfo> localDiscoveryEntries = localDiscoveryEntries2 == null ? new LinkedList<DiscoveryEntryWithMetaInfo>()
+        final Collection<DiscoveryEntryWithMetaInfo> localDiscoveryEntries = localDiscoveryEntries2 == null
+                ? new LinkedList<DiscoveryEntryWithMetaInfo>()
                 : localDiscoveryEntries2;
 
         globalCapabilitiesDirectoryClient.lookup(new Callback<List<GlobalDiscoveryEntry>>() {
@@ -654,10 +652,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             public void onFailure(JoynrRuntimeException exception) {
                 capabilitiesCallback.onError(exception);
             }
-        },
-                                                 domains,
-                                                 interfaceName,
-                                                 discoveryTimeout);
+        }, domains, interfaceName, discoveryTimeout);
     }
 
     @Override
@@ -705,7 +700,9 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
     }
 
     @Override
-    public Promise<Lookup1Deferred> lookup(String[] domains, String interfaceName, joynr.types.DiscoveryQos discoveryQos) {
+    public Promise<Lookup1Deferred> lookup(String[] domains,
+                                           String interfaceName,
+                                           joynr.types.DiscoveryQos discoveryQos) {
         final Lookup1Deferred deferred = new Lookup1Deferred();
         CapabilitiesCallback callback = new CapabilitiesCallback() {
             @Override
@@ -723,11 +720,14 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             }
         };
         DiscoveryScope discoveryScope = DiscoveryScope.valueOf(discoveryQos.getDiscoveryScope().name());
-        lookup(domains, interfaceName, new DiscoveryQos(discoveryQos.getDiscoveryTimeout(),
-                                                        defaultDiscoveryRetryInterval,
-                                                        ArbitrationStrategy.NotSet,
-                                                        discoveryQos.getCacheMaxAge(),
-                                                        discoveryScope), callback);
+        lookup(domains,
+               interfaceName,
+               new DiscoveryQos(discoveryQos.getDiscoveryTimeout(),
+                                defaultDiscoveryRetryInterval,
+                                ArbitrationStrategy.NotSet,
+                                discoveryQos.getCacheMaxAge(),
+                                discoveryScope),
+               callback);
 
         return new Promise<>(deferred);
     }

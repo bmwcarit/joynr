@@ -64,7 +64,8 @@ public class JeeJoynrIntegrationModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        bind(Long.class).annotatedWith(Names.named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_GLOBAL_ADD_AND_REMOVE_TTL_MS)).toInstance(jeeGlobalAddAndRemoveTtlMs);
+        bind(Long.class).annotatedWith(Names.named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_GLOBAL_ADD_AND_REMOVE_TTL_MS))
+                        .toInstance(jeeGlobalAddAndRemoveTtlMs);
 
         bind(ScheduledExecutorService.class).annotatedWith(Names.named(MessageRouter.SCHEDULEDTHREADPOOL))
                                             .toInstance(scheduledExecutorService);
@@ -88,8 +89,7 @@ public class JeeJoynrIntegrationModule extends AbstractModule {
 
         install(new JeeHttpMessagingModule(messagingSkeletonFactory, messagingStubFactory));
         install(new HttpBridgeEndpointRegistryClientModule());
-        install(new JeeMqttMessageSendingModule(messagingSkeletonFactory,
-                                                messagingStubFactory));
+        install(new JeeMqttMessageSendingModule(messagingSkeletonFactory, messagingStubFactory));
     }
 
 }

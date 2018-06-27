@@ -91,7 +91,9 @@ public class DiscoveryQos {
      *            Maximum age of entries in the localCapabilitiesDirectory. If this value filters out all entries of the
      *            local capabilities directory a lookup in the global capabilitiesDirectory will take place.
      */
-    public DiscoveryQos(long discoveryTimeout, ArbitrationStrategyFunction arbitrationStrategyFunction, long cacheMaxAge) {
+    public DiscoveryQos(long discoveryTimeout,
+                        ArbitrationStrategyFunction arbitrationStrategyFunction,
+                        long cacheMaxAge) {
         this(discoveryTimeout, arbitrationStrategyFunction, cacheMaxAge, DEFAULT_DISCOVERYSCOPE);
     }
 

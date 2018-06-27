@@ -116,7 +116,8 @@ public class CapabilitiesRegistrarTest {
         requestCallerMock = mock(RequestCaller.class);
         when(providerContainer.getRequestCaller()).thenReturn(requestCallerMock);
         when(providerContainer.getSubscriptionPublisher()).thenReturn(subscriptionPublisher);
-        when(participantIdStorage.getProviderParticipantId(eq(domain), eq(TestProvider.INTERFACE_NAME))).thenReturn(participantId);
+        when(participantIdStorage.getProviderParticipantId(eq(domain),
+                                                           eq(TestProvider.INTERFACE_NAME))).thenReturn(participantId);
         when(providerContainerFactory.create(testProvider)).thenReturn(providerContainer);
 
         discoveryEntryCaptor = ArgumentCaptor.forClass(DiscoveryEntry.class);

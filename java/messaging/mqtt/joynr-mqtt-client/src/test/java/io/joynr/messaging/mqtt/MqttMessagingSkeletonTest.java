@@ -240,7 +240,8 @@ public class MqttMessagingSkeletonTest {
         verify(messageRouter, times(maxIncomingMqttRequests)).route(any(ImmutableMessage.class));
 
         // Further non-request messages should still be accepted
-        subject.transmit(createTestMessage(Message.VALUE_MESSAGE_TYPE_REPLY).getSerializedMessage(), failIfCalledAction);
+        subject.transmit(createTestMessage(Message.VALUE_MESSAGE_TYPE_REPLY).getSerializedMessage(),
+                         failIfCalledAction);
         subject.transmit(createTestMessage(Message.VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST).getSerializedMessage(),
                          failIfCalledAction);
         subject.transmit(createTestMessage(Message.VALUE_MESSAGE_TYPE_MULTICAST).getSerializedMessage(),

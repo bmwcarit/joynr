@@ -71,7 +71,8 @@ public class RoutingTableOverwriteEnd2EndTest {
         }
 
         Module module = Modules.override(new CCInProcessRuntimeModule()).with(new MqttPahoModule());
-        DummyJoynrApplication application = (DummyJoynrApplication) new JoynrInjectorFactory(properties, module).createApplication(DummyJoynrApplication.class);
+        DummyJoynrApplication application = (DummyJoynrApplication) new JoynrInjectorFactory(properties,
+                                                                                             module).createApplication(DummyJoynrApplication.class);
 
         return application.getRuntime();
     }

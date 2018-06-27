@@ -110,10 +110,10 @@ public class DiscoveryEntryStorePersistedTest {
         assertNotEquals(System.identityHashCode(discoveryEntry), System.identityHashCode(persistedEntry));
         assertNotNull(persistedEntry);
         assertNotNull(persistedEntry.getProviderVersion());
-        assertEquals(discoveryEntry.getProviderVersion().getMajorVersion(), persistedEntry.getProviderVersion()
-                                                                                          .getMajorVersion());
-        assertEquals(discoveryEntry.getProviderVersion().getMinorVersion(), persistedEntry.getProviderVersion()
-                                                                                          .getMinorVersion());
+        assertEquals(discoveryEntry.getProviderVersion().getMajorVersion(),
+                     persistedEntry.getProviderVersion().getMajorVersion());
+        assertEquals(discoveryEntry.getProviderVersion().getMinorVersion(),
+                     persistedEntry.getProviderVersion().getMinorVersion());
     }
 
     @Test
@@ -221,9 +221,8 @@ public class DiscoveryEntryStorePersistedTest {
         // check: lastSeenDateMs < System.currentTimeMillis()
         long currentTimeMillisBefore = System.currentTimeMillis();
 
-        List<DiscoveryEntry> returnedEntries = (List<DiscoveryEntry>) store.lookup(new String[]{ discoveryEntry1.getDomain() },
-                                                                                   discoveryEntry1.getInterfaceName(),
-                                                                                   CACHE_MAX_AGE);
+        List<DiscoveryEntry> returnedEntries = (List<DiscoveryEntry>) store.lookup(new String[]{
+                discoveryEntry1.getDomain() }, discoveryEntry1.getInterfaceName(), CACHE_MAX_AGE);
         assertTrue(returnedEntries.contains(discoveryEntry1));
         assertTrue(returnedEntries.size() == 1);
         assertTrue(returnedEntries.get(0).getLastSeenDateMs() < currentTimeMillisBefore);
@@ -299,8 +298,9 @@ public class DiscoveryEntryStorePersistedTest {
         assertTrue(returnedEntries.size() == 2);
     }
 
-    private GlobalDiscoveryEntryPersisted createDiscoveryEntry(String domain, String interfaceName, String participantId)
-                                                                                                                         throws Exception {
+    private GlobalDiscoveryEntryPersisted createDiscoveryEntry(String domain,
+                                                               String interfaceName,
+                                                               String participantId) throws Exception {
         ProviderQos qos = new ProviderQos();
         long lastSeenDateMs = 123L;
         long expiryDateMs = Long.MAX_VALUE;

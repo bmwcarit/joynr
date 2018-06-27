@@ -127,8 +127,9 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
         });
     }
 
-    private Object executeMethodWithCaller(Method method, Object[] args, ConnectorCaller connectorCaller)
-                                                                                                         throws ApplicationException {
+    private Object executeMethodWithCaller(Method method,
+                                           Object[] args,
+                                           ConnectorCaller connectorCaller) throws ApplicationException {
         try {
             if (waitForConnectorFinished()) {
                 if (connector == null) {
@@ -293,8 +294,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
             } else if (method.getAnnotation(JoynrMulticast.class) != null) {
                 executeMulticastSubscriptionMethod(method, args, future);
             } else {
-                throw new JoynrRuntimeException("Method "
-                        + method
+                throw new JoynrRuntimeException("Method " + method
                         + " not declared in JoynrSubscriptionInterface or annotated with either @JoynrRpcBroadcast or @JoynrMulticast.");
             }
             return future;
@@ -473,8 +473,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
                 }
             } catch (Exception metaInfoException) {
                 logger.error("aborting call to method: " + invocation.getMethod().getName()
-                                     + " but unable to call onError callback because of: "
-                                     + metaInfoException.getMessage(),
+                        + " but unable to call onError callback because of: " + metaInfoException.getMessage(),
                              metaInfoException);
             }
             invocation.getFuture().onFailure(exception);

@@ -160,7 +160,7 @@ public class RpcStubbingTest {
     @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "NP_NULL_PARAM_DEREF",
                                                       justification = "NPE in test would fail test")
     public void setUp() throws JoynrCommunicationException, JoynrSendBufferFullException, JsonGenerationException,
-                       JsonMappingException, IOException, JoynrMessageNotSentException {
+                        JsonMappingException, IOException, JoynrMessageNotSentException {
         Deferred<GpsLocation> deferredGpsLocation = new Deferred<GpsLocation>();
         deferredGpsLocation.resolve(gpsValue);
         when(testMock.returnsGpsLocation()).thenReturn(new Promise<Deferred<GpsLocation>>(deferredGpsLocation));
@@ -170,7 +170,8 @@ public class RpcStubbingTest {
         DeferredVoid deferredVoid = new DeferredVoid();
         deferredVoid.resolve();
         when(testMock.noParamsNoReturnValue()).thenReturn(new Promise<DeferredVoid>(deferredVoid));
-        when(testMock.takesTwoSimpleParams(any(Integer.class), any(String.class))).thenReturn(new Promise<DeferredVoid>(deferredVoid));
+        when(testMock.takesTwoSimpleParams(any(Integer.class),
+                                           any(String.class))).thenReturn(new Promise<DeferredVoid>(deferredVoid));
 
         fromParticipantId = UUID.randomUUID().toString();
         toParticipantId = UUID.randomUUID().toString();
@@ -207,34 +208,34 @@ public class RpcStubbingTest {
                                                  any(SynchronizedReplyCaller.class),
                                                  eq(messagingQos))).thenAnswer(new Answer<Reply>() {
 
-            @Override
-            public Reply answer(InvocationOnMock invocation) throws Throwable {
-                RequestCaller requestCaller = requestCallerFactory.create(testMock);
-                Object[] args = invocation.getArguments();
-                Request request = null;
-                for (Object arg : args) {
-                    if (arg instanceof Request) {
-                        request = (Request) arg;
-                        break;
-                    }
-                }
-                final Future<Reply> future = new Future<Reply>();
-                ProviderCallback<Reply> callback = new ProviderCallback<Reply>() {
+                                                     @Override
+                                                     public Reply answer(InvocationOnMock invocation) throws Throwable {
+                                                         RequestCaller requestCaller = requestCallerFactory.create(testMock);
+                                                         Object[] args = invocation.getArguments();
+                                                         Request request = null;
+                                                         for (Object arg : args) {
+                                                             if (arg instanceof Request) {
+                                                                 request = (Request) arg;
+                                                                 break;
+                                                             }
+                                                         }
+                                                         final Future<Reply> future = new Future<Reply>();
+                                                         ProviderCallback<Reply> callback = new ProviderCallback<Reply>() {
 
-                    @Override
-                    public void onSuccess(Reply result) {
-                        future.onSuccess(result);
-                    }
+                                                             @Override
+                                                             public void onSuccess(Reply result) {
+                                                                 future.onSuccess(result);
+                                                             }
 
-                    @Override
-                    public void onFailure(JoynrException error) {
-                        future.onFailure(error);
-                    }
-                };
-                requestInterpreter.execute(callback, requestCaller, request);
-                return future.get();
-            }
-        });
+                                                             @Override
+                                                             public void onFailure(JoynrException error) {
+                                                                 future.onFailure(error);
+                                                             }
+                                                         };
+                                                         requestInterpreter.execute(callback, requestCaller, request);
+                                                         return future.get();
+                                                     }
+                                                 });
 
         JoynrMessagingConnectorFactory joynrMessagingConnectorFactory = new JoynrMessagingConnectorFactory(requestReplyManager,
                                                                                                            replyCallerDirectory,
@@ -247,8 +248,8 @@ public class RpcStubbingTest {
 
     @Test
     public void testWithoutArguments() throws IOException, JoynrRuntimeException, SecurityException,
-                                      InstantiationException, IllegalAccessException, NoSuchMethodException,
-                                      ApplicationException {
+                                       InstantiationException, IllegalAccessException, NoSuchMethodException,
+                                       ApplicationException {
         // Send
         String methodName = "noParamsNoReturnValue";
         Object result = connector.executeSyncMethod(TestSync.class.getDeclaredMethod(methodName, new Class<?>[]{}),
@@ -270,14 +271,15 @@ public class RpcStubbingTest {
 
     @Test
     public void testWithArguments() throws IOException, JoynrRuntimeException, ApplicationException, SecurityException,
-                                   InstantiationException, IllegalAccessException, NoSuchMethodException {
+                                    InstantiationException, IllegalAccessException, NoSuchMethodException {
         // Send
 
         String methodName = "takesTwoSimpleParams";
         Object[] args = new Object[]{ 3, "abc" };
         Object response = connector.executeSyncMethod(TestSync.class.getDeclaredMethod(methodName,
                                                                                        Integer.class,
-                                                                                       String.class), args);
+                                                                                       String.class),
+                                                      args);
 
         // no return value expected
         assertNull(response);
@@ -297,7 +299,7 @@ public class RpcStubbingTest {
 
     @Test
     public void testWithReturn() throws IOException, JoynrRuntimeException, ApplicationException, SecurityException,
-                                InstantiationException, IllegalAccessException, NoSuchMethodException {
+                                 InstantiationException, IllegalAccessException, NoSuchMethodException {
         // Send
         String methodName = "returnsGpsLocation";
         Object response = connector.executeSyncMethod(TestSync.class.getDeclaredMethod(methodName), new Object[]{});
@@ -316,9 +318,8 @@ public class RpcStubbingTest {
     }
 
     @Test
-    public void testWithListReturn() throws IOException, JoynrRuntimeException, ApplicationException,
-                                    SecurityException, InstantiationException, IllegalAccessException,
-                                    NoSuchMethodException {
+    public void testWithListReturn() throws IOException, JoynrRuntimeException, ApplicationException, SecurityException,
+                                     InstantiationException, IllegalAccessException, NoSuchMethodException {
         // Send
         String methodName = "returnsGpsLocationList";
         Object response = connector.executeSyncMethod(TestSync.class.getDeclaredMethod(methodName), new Object[]{});

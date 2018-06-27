@@ -18,6 +18,6 @@
  */
 package io.joynr.proxy;
 
-public abstract class CallbackWithModeledError<T, U extends Enum<?>> extends Callback<T> implements
-        ICallbackWithModeledError<U> {
+public abstract class CallbackWithModeledError<T, U extends Enum<?>> extends Callback<T>
+        implements ICallbackWithModeledError<U> {
 }

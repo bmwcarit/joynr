@@ -90,8 +90,8 @@ public class JeeMqttMessagingSkeletonProvider extends MqttMessagingSkeletonProvi
               new HashSet<JoynrMessageProcessor>(),
               jeeJoynrStatusMetrics);
         httpBridgeEnabled = enableHttpBridge;
-        logger.debug("Created with httpBridgeEnabled: {} ownAddress: {} channelId: {}", new Object[]{ httpBridgeEnabled,
-                ownAddress, channelId });
+        logger.debug("Created with httpBridgeEnabled: {} ownAddress: {} channelId: {}",
+                     new Object[]{ httpBridgeEnabled, ownAddress, channelId });
     }
 
     @Override

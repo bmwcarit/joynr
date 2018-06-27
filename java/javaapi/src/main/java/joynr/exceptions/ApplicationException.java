@@ -148,7 +148,7 @@ public class ApplicationException extends Exception implements JoynrException {
 
         @Override
         public void serialize(Enum value, JsonGenerator jgen, SerializerProvider provider) throws IOException,
-                                                                                          JsonGenerationException {
+                                                                                           JsonGenerationException {
             provider.defaultSerializeValue(value, jgen);
         }
 
@@ -173,15 +173,16 @@ public class ApplicationException extends Exception implements JoynrException {
         }
 
         @Override
-        public Enum deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+        public Enum deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException,
+                                                                            JsonProcessingException {
             return null;
         }
 
         @SuppressWarnings("unchecked")
         @Override
-        public Enum deserializeWithType(JsonParser jp, DeserializationContext ctxt, TypeDeserializer typeDeserializer)
-                                                                                                                      throws IOException,
-                                                                                                                      JsonProcessingException {
+        public Enum deserializeWithType(JsonParser jp,
+                                        DeserializationContext ctxt,
+                                        TypeDeserializer typeDeserializer) throws IOException, JsonProcessingException {
             String typeName = null;
             String enumName = null;
 

@@ -328,13 +328,13 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
                     logger.warn("{}", error.getMessage());
                     return;
                 } else if (error instanceof JoynrMessageNotSentException) {
-                    logger.error(" ERROR SENDING:  aborting send of messageId: {}. Error: {}", new Object[]{ messageId,
-                            error.getMessage() });
+                    logger.error(" ERROR SENDING:  aborting send of messageId: {}. Error: {}",
+                                 new Object[]{ messageId, error.getMessage() });
                     callMessageProcessedListeners(messageId);
                     return;
                 }
-                logger.warn("PROBLEM SENDING, will retry. messageId: {}. Error: {} Message: {}", new Object[]{
-                        messageId, error.getClass().getName(), error.getMessage() });
+                logger.warn("PROBLEM SENDING, will retry. messageId: {}. Error: {} Message: {}",
+                            new Object[]{ messageId, error.getClass().getName(), error.getMessage() });
 
                 long delayMs;
                 if (error instanceof JoynrDelayMessageException) {

@@ -79,19 +79,18 @@ public class MasterAccessControlEntryManager {
 
     public MasterAccessControlEntry[] findByUserId(String userId, ControlEntryType type) {
         Query query = entityManager.createQuery("select mace from MasterAccessControlEntryEntity mace where mace.userId = :userId and mace.type = :type",
-            MasterAccessControlEntryEntity.class);
+                                                MasterAccessControlEntryEntity.class);
         query.setParameter("userId", userId);
         query.setParameter("type", type);
         List<MasterAccessControlEntryEntity> resultList = query.getResultList();
-        Set<MasterAccessControlEntry> resultSet = resultList.stream().map(this::mapEntityToJoynrType).collect(
-            toSet());
+        Set<MasterAccessControlEntry> resultSet = resultList.stream().map(this::mapEntityToJoynrType).collect(toSet());
         return resultSet.toArray(new MasterAccessControlEntry[resultSet.size()]);
     }
 
     public MasterAccessControlEntry[] findByUserIdThatAreEditable(String userId, ControlEntryType type) {
         Query query = entityManager.createQuery("select mace from MasterAccessControlEntryEntity mace, "
-            + "DomainRoleEntryEntity dre, in(dre.domains) dds where mace.userId = :userId and mace.type = :type "
-            + "and mace.domain = dds and dre.userId = :userId and dre.role = :role");
+                + "DomainRoleEntryEntity dre, in(dre.domains) dds where mace.userId = :userId and mace.type = :type "
+                + "and mace.domain = dds and dre.userId = :userId and dre.role = :role");
         query.setParameter("userId", userId);
         query.setParameter("type", type);
         query.setParameter("role", Role.MASTER);
@@ -100,9 +99,12 @@ public class MasterAccessControlEntryManager {
         return resultSet.toArray(new MasterAccessControlEntry[resultSet.size()]);
     }
 
-    public MasterAccessControlEntry[] findByDomainAndInterfaceName(String domain, String interfaceName, ControlEntryType type) {
+    public MasterAccessControlEntry[] findByDomainAndInterfaceName(String domain,
+                                                                   String interfaceName,
+                                                                   ControlEntryType type) {
         Query query = entityManager.createQuery("select mace from MasterAccessControlEntryEntity mace "
-            + "where mace.domain = :domain and mace.interfaceName = :interfaceName and mace.type = :type", MasterAccessControlEntryEntity.class);
+                + "where mace.domain = :domain and mace.interfaceName = :interfaceName and mace.type = :type",
+                                                MasterAccessControlEntryEntity.class);
         query.setParameter("domain", domain);
         query.setParameter("interfaceName", interfaceName);
         query.setParameter("type", type);
@@ -138,7 +140,8 @@ public class MasterAccessControlEntryManager {
         return entity;
     }
 
-    public CreateOrUpdateResult<MasterAccessControlEntry> createOrUpdate(MasterAccessControlEntry updatedMasterAce, ControlEntryType type) {
+    public CreateOrUpdateResult<MasterAccessControlEntry> createOrUpdate(MasterAccessControlEntry updatedMasterAce,
+                                                                         ControlEntryType type) {
         MasterAccessControlEntryEntity entity = findByUserIdDomainInterfaceNameOperationAndType(updatedMasterAce.getUid(),
                                                                                                 updatedMasterAce.getDomain(),
                                                                                                 updatedMasterAce.getInterfaceName(),

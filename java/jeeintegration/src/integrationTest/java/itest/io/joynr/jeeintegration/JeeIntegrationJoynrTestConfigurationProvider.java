@@ -38,22 +38,22 @@ import io.joynr.messaging.MessagingPropertyKeys;
 @Singleton
 public class JeeIntegrationJoynrTestConfigurationProvider {
 
-	@Produces
-	@JoynrProperties
-	public Properties joynrProperties() {
-		Properties joynrProperties = new Properties();
-		joynrProperties.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_CONTEXT_ROOT,
-				"/io.joynr.jeeintegration.providerwar/messaging");
-		joynrProperties.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH, "http://localhost:28585");
-		joynrProperties.setProperty(JEE_INTEGRATION_ENDPOINTREGISTRY_URI, "http://localhost:18080");
-		joynrProperties.setProperty(JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY, "true");
-		return joynrProperties;
-	}
+    @Produces
+    @JoynrProperties
+    public Properties joynrProperties() {
+        Properties joynrProperties = new Properties();
+        joynrProperties.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_CONTEXT_ROOT,
+                                    "/io.joynr.jeeintegration.providerwar/messaging");
+        joynrProperties.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH, "http://localhost:28585");
+        joynrProperties.setProperty(JEE_INTEGRATION_ENDPOINTREGISTRY_URI, "http://localhost:18080");
+        joynrProperties.setProperty(JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY, "true");
+        return joynrProperties;
+    }
 
-	@Produces
-	@JoynrLocalDomain
-	public String joynrLocalDomain() {
-		return "io.joynr.jeeintegration";
-	}
+    @Produces
+    @JoynrLocalDomain
+    public String joynrLocalDomain() {
+        return "io.joynr.jeeintegration";
+    }
 
 }

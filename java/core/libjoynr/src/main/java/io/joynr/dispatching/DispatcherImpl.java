@@ -132,7 +132,7 @@ public class DispatcherImpl implements Dispatcher {
                                                                            messagingQos);
             message.setLocalMessage(toDiscoveryEntry.getIsLocal());
             logger.debug("UNREGISTER SUBSCRIPTION call proxy: subscriptionId: {}, messageId: {}, proxy participantId: {}, "
-                                 + "provider participantId: {}",
+                    + "provider participantId: {}",
                          subscriptionStop.getSubscriptionId(),
                          message.getId(),
                          fromParticipantId,
@@ -332,10 +332,7 @@ public class DispatcherImpl implements Dispatcher {
                     logger.error("Error sending error reply: \r\n {}", reply, e);
                 }
             }
-        },
-                                          toParticipantId,
-                                          request,
-                                          expiryDate);
+        }, toParticipantId, request, expiryDate);
     }
 
     private void handle(Reply reply) {

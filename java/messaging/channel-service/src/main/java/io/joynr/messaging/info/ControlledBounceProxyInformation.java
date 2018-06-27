@@ -110,7 +110,10 @@ public class ControlledBounceProxyInformation extends BounceProxyInformation {
      *   bounce proxy url for bounce proxy controller that is possibly
      *   on the same subnet
      */
-    public ControlledBounceProxyInformation(String clusterId, String instanceId, URI locationForCCs, URI locationForBpc) {
+    public ControlledBounceProxyInformation(String clusterId,
+                                            String instanceId,
+                                            URI locationForCCs,
+                                            URI locationForBpc) {
         super(clusterId + "." + instanceId, locationForCCs);
         this.locationForBpc = locationForBpc;
         this.instanceId = instanceId;

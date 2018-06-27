@@ -104,7 +104,8 @@ public class MessagingServiceRestAdapter {
 
             // TODO Can this happen at all with empty path parameter???
             if (ccid == null) {
-                log.error("POST message to channel: NULL. message: {} dropped because: channel Id was not set", message);
+                log.error("POST message to channel: NULL. message: {} dropped because: channel Id was not set",
+                          message);
                 throw new JoynrHttpException(Status.BAD_REQUEST, JOYNRMESSAGINGERROR_CHANNELNOTSET);
             }
 

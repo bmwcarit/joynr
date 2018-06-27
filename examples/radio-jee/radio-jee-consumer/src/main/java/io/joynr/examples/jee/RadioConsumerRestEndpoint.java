@@ -75,7 +75,7 @@ public class RadioConsumerRestEndpoint {
     }
 
     @POST
-    @Produces({MediaType.TEXT_PLAIN})
+    @Produces({ MediaType.TEXT_PLAIN })
     public boolean addRadioStation(String name) {
         try {
             return getRadioClient().addFavoriteStation(new RadioStation(name, true, Country.GERMANY));

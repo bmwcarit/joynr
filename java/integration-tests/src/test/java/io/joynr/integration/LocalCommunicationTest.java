@@ -32,7 +32,8 @@ public class LocalCommunicationTest extends AbstractLocalCommunicationTest {
 
     @Override
     protected JoynrRuntime getRuntime(Properties joynrConfig) {
-        injectorA = new JoynrInjectorFactory(new JoynrBaseModule(joynrConfig, new AtmosphereMessagingModule())).getInjector();
+        injectorA = new JoynrInjectorFactory(new JoynrBaseModule(joynrConfig,
+                                                                 new AtmosphereMessagingModule())).getInjector();
         return injectorA.getInstance(JoynrRuntime.class);
     }
 

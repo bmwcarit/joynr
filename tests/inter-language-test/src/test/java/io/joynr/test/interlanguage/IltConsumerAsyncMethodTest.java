@@ -635,8 +635,8 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
                         methodWithExtendedErrorEnumAsyncCallbackDone = true;
                         return;
                     }
-                    LOG.info(name.getMethodName()
-                            + " - 2nd - callback - caught invalid ApplicationException with enum " + errorEnum);
+                    LOG.info(name.getMethodName() + " - 2nd - callback - caught invalid ApplicationException with enum "
+                            + errorEnum);
 
                     methodWithExtendedErrorEnumAsyncCallbackResult = false;
                     methodWithExtendedErrorEnumAsyncCallbackDone = true;

@@ -221,7 +221,10 @@ public class TtlUpliftTest {
     @Test
     public void testDefaultTtlUpliftMs() {
         expiryDate = DispatcherUtils.convertTtlToExpirationDate(messagingQos.getRoundTripTtl_ms());
-        MutableMessage message = messageFactory.createRequest(fromParticipantId, toParticipantId, request, messagingQos);
+        MutableMessage message = messageFactory.createRequest(fromParticipantId,
+                                                              toParticipantId,
+                                                              request,
+                                                              messagingQos);
 
         long expiryDateValue = expiryDate.getValue();
         MutableMessageFactoryTest.assertExpiryDateEquals(expiryDateValue, message);
@@ -395,8 +398,7 @@ public class TtlUpliftTest {
         MessagingQos capturedMessagingQos = messagingQosCaptor.getValue();
         long diff = Math.abs(expectedSubscriptionReplyTtl - capturedMessagingQos.getRoundTripTtl_ms());
         assertTrue("TTL of subscriptionReply=" + capturedMessagingQos.getRoundTripTtl_ms() + " differs " + diff
-                           + "ms (more than " + toleranceMs + "ms) from the expected value="
-                           + expectedSubscriptionReplyTtl,
+                + "ms (more than " + toleranceMs + "ms) from the expected value=" + expectedSubscriptionReplyTtl,
                    (diff <= toleranceMs));
     }
 
@@ -444,10 +446,11 @@ public class TtlUpliftTest {
 
         publicationManager.attributeValueChanged(SUBSCRIPTION_ID, valueToPublish);
 
-        verify(dispatcher, timeout(300).times(0)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                              (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
-                                                                              any(SubscriptionPublication.class),
-                                                                              any(MessagingQos.class));
+        verify(dispatcher,
+               timeout(300).times(0)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
+                                                                  (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
+                                                                  any(SubscriptionPublication.class),
+                                                                  any(MessagingQos.class));
     }
 
     @SuppressWarnings("unchecked")
@@ -478,10 +481,11 @@ public class TtlUpliftTest {
 
         publicationManagerWithTtlUplift.attributeValueChanged(SUBSCRIPTION_ID, valueToPublish);
         // sending initial value plus 2 times the attributeValueChanged
-        verify(dispatcher, times(3)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                 (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
-                                                                 any(SubscriptionPublication.class),
-                                                                 argThat(new MessagingQosMatcher(expectedPublicationTtlMs)));
+        verify(dispatcher,
+               times(3)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
+                                                     (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
+                                                     any(SubscriptionPublication.class),
+                                                     argThat(new MessagingQosMatcher(expectedPublicationTtlMs)));
 
         Thread.sleep(SUBSCRIPTION_UPLIFT_MS);
         reset(dispatcher);
@@ -505,10 +509,11 @@ public class TtlUpliftTest {
 
         publicationManagerWithTtlUplift.attributeValueChanged(SUBSCRIPTION_ID, valueToPublish);
 
-        verify(dispatcher, timeout(300).times(0)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                              (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
-                                                                              any(SubscriptionPublication.class),
-                                                                              any(MessagingQos.class));
+        verify(dispatcher,
+               timeout(300).times(0)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
+                                                                  (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
+                                                                  any(SubscriptionPublication.class),
+                                                                  any(MessagingQos.class));
     }
 
     @Ignore
@@ -530,10 +535,11 @@ public class TtlUpliftTest {
 
         publicationManagerWithTtlUplift.attributeValueChanged(SUBSCRIPTION_ID, valueToPublish);
 
-        verify(dispatcher, timeout(300).times(1)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                              (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
-                                                                              any(SubscriptionPublication.class),
-                                                                              argThat(new MessagingQosMatcher(expectedPublicationTtlMs)));
+        verify(dispatcher,
+               timeout(300).times(1)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
+                                                                  (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
+                                                                  any(SubscriptionPublication.class),
+                                                                  argThat(new MessagingQosMatcher(expectedPublicationTtlMs)));
     }
 
     @SuppressWarnings("unchecked")
@@ -554,10 +560,11 @@ public class TtlUpliftTest {
 
         publicationManagerWithTtlUplift.attributeValueChanged(SUBSCRIPTION_ID, valueToPublish);
 
-        verify(dispatcher, timeout(300).times(1)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                              (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
-                                                                              any(SubscriptionPublication.class),
-                                                                              argThat(new MessagingQosMatcher(expectedPublicationTtlMs)));
+        verify(dispatcher,
+               timeout(300).times(1)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
+                                                                  (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
+                                                                  any(SubscriptionPublication.class),
+                                                                  argThat(new MessagingQosMatcher(expectedPublicationTtlMs)));
     }
 
     @SuppressWarnings("unchecked")
@@ -598,10 +605,11 @@ public class TtlUpliftTest {
 
         publicationManager.broadcastOccurred(SUBSCRIPTION_ID, null, valueToPublish);
 
-        verify(dispatcher, timeout(300).times(0)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                              (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
-                                                                              any(SubscriptionPublication.class),
-                                                                              any(MessagingQos.class));
+        verify(dispatcher,
+               timeout(300).times(0)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
+                                                                  (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
+                                                                  any(SubscriptionPublication.class),
+                                                                  any(MessagingQos.class));
     }
 
     @SuppressWarnings("unchecked")
@@ -635,10 +643,11 @@ public class TtlUpliftTest {
 
         publicationManagerWithTtlUplift.broadcastOccurred(SUBSCRIPTION_ID, null, valueToPublish);
         // sending 2 times the broadcastOccurred
-        verify(dispatcher, times(2)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                 (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
-                                                                 any(SubscriptionPublication.class),
-                                                                 argThat(new MessagingQosMatcher(expectedPublicationTtlMs)));
+        verify(dispatcher,
+               times(2)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
+                                                     (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
+                                                     any(SubscriptionPublication.class),
+                                                     argThat(new MessagingQosMatcher(expectedPublicationTtlMs)));
 
         Thread.sleep(SUBSCRIPTION_UPLIFT_MS);
         reset(dispatcher);
@@ -662,10 +671,11 @@ public class TtlUpliftTest {
 
         publicationManagerWithTtlUplift.broadcastOccurred(SUBSCRIPTION_ID, null, valueToPublish);
 
-        verify(dispatcher, timeout(300).times(0)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                              (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
-                                                                              any(SubscriptionPublication.class),
-                                                                              any(MessagingQos.class));
+        verify(dispatcher,
+               timeout(300).times(0)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
+                                                                  (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
+                                                                  any(SubscriptionPublication.class),
+                                                                  any(MessagingQos.class));
     }
 
     @Ignore
@@ -687,10 +697,11 @@ public class TtlUpliftTest {
 
         publicationManagerWithTtlUplift.broadcastOccurred(SUBSCRIPTION_ID, null, valueToPublish);
 
-        verify(dispatcher, timeout(300).times(1)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                              (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
-                                                                              any(SubscriptionPublication.class),
-                                                                              argThat(new MessagingQosMatcher(expectedPublicationTtlMs)));
+        verify(dispatcher,
+               timeout(300).times(1)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
+                                                                  (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
+                                                                  any(SubscriptionPublication.class),
+                                                                  argThat(new MessagingQosMatcher(expectedPublicationTtlMs)));
     }
 
     @SuppressWarnings("unchecked")
@@ -711,9 +722,10 @@ public class TtlUpliftTest {
 
         publicationManagerWithTtlUplift.broadcastOccurred(SUBSCRIPTION_ID, null, valueToPublish);
 
-        verify(dispatcher, timeout(300).times(1)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                              (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
-                                                                              any(SubscriptionPublication.class),
-                                                                              argThat(new MessagingQosMatcher(expectedPublicationTtlMs)));
+        verify(dispatcher,
+               timeout(300).times(1)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
+                                                                  (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
+                                                                  any(SubscriptionPublication.class),
+                                                                  argThat(new MessagingQosMatcher(expectedPublicationTtlMs)));
     }
 }

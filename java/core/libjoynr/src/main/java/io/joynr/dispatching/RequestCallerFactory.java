@@ -34,8 +34,9 @@ public class RequestCallerFactory {
                                               new InvocationHandler() {
 
                                                   @Override
-                                                  public Object invoke(Object proxy, Method method, Object[] args)
-                                                                                                                  throws Throwable {
+                                                  public Object invoke(Object proxy,
+                                                                       Method method,
+                                                                       Object[] args) throws Throwable {
                                                       try {
                                                           return method.invoke(provider, args);
                                                       } catch (InvocationTargetException ex) {

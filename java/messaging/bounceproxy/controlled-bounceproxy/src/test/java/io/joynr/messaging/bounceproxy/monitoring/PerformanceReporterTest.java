@@ -154,25 +154,22 @@ public class PerformanceReporterTest {
         Mockito.when(mockPerformanceMonitor.getAsKeyValuePairs()).thenReturn(createPerformanceMap(1, 100));
         clock.tick(100);
         ArgumentCaptor<HttpRequest> argumentFirstCall = ArgumentCaptor.forClass(HttpRequest.class);
-        Mockito.verify(mockHandler, Mockito.times(1)).handle(argumentFirstCall.capture(),
-                                                             Mockito.any(HttpResponse.class),
-                                                             Mockito.any(HttpContext.class));
+        Mockito.verify(mockHandler, Mockito.times(1))
+               .handle(argumentFirstCall.capture(), Mockito.any(HttpResponse.class), Mockito.any(HttpContext.class));
         Assert.assertThat(argumentFirstCall.getValue(), MockitoTestUtils.isAnyPerformanceHttpRequest("X.Y", 1, 100));
 
         Mockito.when(mockPerformanceMonitor.getAsKeyValuePairs()).thenReturn(createPerformanceMap(2, 200));
         clock.tick(200);
         ArgumentCaptor<HttpRequest> argumentSecondCall = ArgumentCaptor.forClass(HttpRequest.class);
-        Mockito.verify(mockHandler, Mockito.times(2)).handle(argumentSecondCall.capture(),
-                                                             Mockito.any(HttpResponse.class),
-                                                             Mockito.any(HttpContext.class));
+        Mockito.verify(mockHandler, Mockito.times(2))
+               .handle(argumentSecondCall.capture(), Mockito.any(HttpResponse.class), Mockito.any(HttpContext.class));
         Assert.assertThat(argumentSecondCall.getValue(), MockitoTestUtils.isAnyPerformanceHttpRequest("X.Y", 2, 200));
 
         Mockito.when(mockPerformanceMonitor.getAsKeyValuePairs()).thenReturn(createPerformanceMap(3, 300));
         clock.tick(300);
         ArgumentCaptor<HttpRequest> argumentThirdCall = ArgumentCaptor.forClass(HttpRequest.class);
-        Mockito.verify(mockHandler, Mockito.times(3)).handle(argumentThirdCall.capture(),
-                                                             Mockito.any(HttpResponse.class),
-                                                             Mockito.any(HttpContext.class));
+        Mockito.verify(mockHandler, Mockito.times(3))
+               .handle(argumentThirdCall.capture(), Mockito.any(HttpResponse.class), Mockito.any(HttpContext.class));
         Assert.assertThat(argumentThirdCall.getValue(), MockitoTestUtils.isAnyPerformanceHttpRequest("X.Y", 3, 300));
     }
 
@@ -198,9 +195,8 @@ public class PerformanceReporterTest {
         Mockito.when(mockPerformanceMonitor.getAsKeyValuePairs()).thenReturn(createPerformanceMap(3, 300));
         clock.tick(300);
         ArgumentCaptor<HttpRequest> argument = ArgumentCaptor.forClass(HttpRequest.class);
-        Mockito.verify(mockHandler, Mockito.times(1)).handle(argument.capture(),
-                                                             Mockito.any(HttpResponse.class),
-                                                             Mockito.any(HttpContext.class));
+        Mockito.verify(mockHandler, Mockito.times(1))
+               .handle(argument.capture(), Mockito.any(HttpResponse.class), Mockito.any(HttpContext.class));
         Assert.assertThat(argument.getValue(), MockitoTestUtils.isAnyPerformanceHttpRequest("X.Y", 3, 300));
     }
 
@@ -208,9 +204,9 @@ public class PerformanceReporterTest {
         // HttpResponse is set as out parameter of the handle method. The way to
         // set out parameters with Mockito is to use doAnswer
         Answer<Void> answerForHttpResponse = MockitoTestUtils.createAnswerForHttpResponse(HttpStatus.SC_NO_CONTENT);
-        Mockito.doAnswer(answerForHttpResponse)
-               .when(mockHandler)
-               .handle(any(HttpRequest.class), any(HttpResponse.class), any(HttpContext.class));
+        Mockito.doAnswer(answerForHttpResponse).when(mockHandler).handle(any(HttpRequest.class),
+                                                                         any(HttpResponse.class),
+                                                                         any(HttpContext.class));
     }
 
     private Map<String, Integer> createPerformanceMap(int activeLongPolls, int assignedChannels) {

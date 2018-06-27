@@ -127,8 +127,8 @@ public class MqttTwoConnectionsProviderProxyEnd2EndTest extends JoynrEnd2EndTest
                 + "-end2endConsumer";
 
         Properties joynrConfigProvider = PropertyLoader.loadProperties("testMessaging.properties");
-        joynrConfigProvider.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, "localdomain."
-                + UUID.randomUUID().toString());
+        joynrConfigProvider.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL,
+                                "localdomain." + UUID.randomUUID().toString());
         joynrConfigProvider.put(MessagingPropertyKeys.CHANNELID, channelIdProvider);
         joynrConfigProvider.put(MessagingPropertyKeys.RECEIVERID, UUID.randomUUID().toString());
         joynrConfigProvider.put(ConfigurableMessagingSettings.PROPERTY_MAX_MESSAGE_SIZE, MAX_MESSAGE_SIZE);
@@ -138,8 +138,8 @@ public class MqttTwoConnectionsProviderProxyEnd2EndTest extends JoynrEnd2EndTest
                                      new StaticDomainAccessControlProvisioningModule());
 
         Properties joynrConfigConsumer = PropertyLoader.loadProperties("testMessaging.properties");
-        joynrConfigConsumer.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, "localdomain."
-                + UUID.randomUUID().toString());
+        joynrConfigConsumer.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL,
+                                "localdomain." + UUID.randomUUID().toString());
         joynrConfigConsumer.put(MessagingPropertyKeys.CHANNELID, channelIdConsumer);
         joynrConfigConsumer.put(MessagingPropertyKeys.RECEIVERID, UUID.randomUUID().toString());
         joynrConfigConsumer.put(ConfigurableMessagingSettings.PROPERTY_MAX_MESSAGE_SIZE, MAX_MESSAGE_SIZE);

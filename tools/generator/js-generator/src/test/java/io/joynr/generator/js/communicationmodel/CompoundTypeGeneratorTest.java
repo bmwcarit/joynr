@@ -67,8 +67,7 @@ public class CompoundTypeGeneratorTest {
                 bind(Boolean.class).annotatedWith(Names.named(NamingUtil.JOYNR_GENERATOR_INTERFACENAMEWITHVERSION))
                                    .toInstance(false);
             }
-        })
-                                                 .getInstance(JsTemplateFactory.class);
+        }).getInstance(JsTemplateFactory.class);
         CompoundTypeGenerator generator = templateFactory.createCompoundTypeGenerator(structType);
         generator.generate();
     }

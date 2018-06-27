@@ -107,16 +107,18 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
 
     private void triggerAndVerifySharedSubscriptionsTopicUnsubscribeAndSubscribeCycle(String expectedChannelId,
                                                                                       int expectedTotalUnsubscribeCallCount,
-                                                                                      int expectedTotalSubscribeCallCount)
-                                                                                                                          throws Exception {
+                                                                                      int expectedTotalSubscribeCallCount) throws Exception {
         final String expectedSharedSubscriptionsTopicPrefix = "$share:" + expectedChannelId + ":";
 
-        final int mqttRequestsToHitUpperThreshold = (maxMqttMessagesInQueue * backpressureIncomingMqttRequestsUpperThreshold) / 100;
-        final int mqttRequestsToHitLowerThreshold = (maxMqttMessagesInQueue * backpressureIncomingMqttRequestsLowerThreshold) / 100;
+        final int mqttRequestsToHitUpperThreshold = (maxMqttMessagesInQueue
+                * backpressureIncomingMqttRequestsUpperThreshold) / 100;
+        final int mqttRequestsToHitLowerThreshold = (maxMqttMessagesInQueue
+                * backpressureIncomingMqttRequestsLowerThreshold) / 100;
 
         // fill up with requests and verify unsubscribe
         List<String> messageIds = feedMqttSkeletonWithRequests(subject, mqttRequestsToHitUpperThreshold + 1);
-        verify(mqttClient, times(expectedTotalUnsubscribeCallCount)).unsubscribe(startsWith(expectedSharedSubscriptionsTopicPrefix));
+        verify(mqttClient,
+               times(expectedTotalUnsubscribeCallCount)).unsubscribe(startsWith(expectedSharedSubscriptionsTopicPrefix));
 
         // finish processing of as many requests needed to drop below lower threshold
         final int numOfRequestsToProcess = mqttRequestsToHitUpperThreshold - mqttRequestsToHitLowerThreshold + 2;
@@ -125,7 +127,8 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
         }
 
         // verify that now subscribe is triggered again
-        verify(mqttClient, times(expectedTotalSubscribeCallCount)).subscribe(startsWith(expectedSharedSubscriptionsTopicPrefix));
+        verify(mqttClient,
+               times(expectedTotalSubscribeCallCount)).subscribe(startsWith(expectedSharedSubscriptionsTopicPrefix));
 
         // cleanup: process the rest of the messages in order to have 0 pending requests
         for (int i = numOfRequestsToProcess; i < messageIds.size(); i++) {
@@ -193,14 +196,16 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
         backpressureEnabled = true;
         createAndInitSkeleton("channelIdBackpressure");
 
-        final int mqttRequestsToHitUpperThreshold = (maxMqttMessagesInQueue * backpressureIncomingMqttRequestsUpperThreshold) / 100;
+        final int mqttRequestsToHitUpperThreshold = (maxMqttMessagesInQueue
+                * backpressureIncomingMqttRequestsUpperThreshold) / 100;
         feedMqttSkeletonWithRequests(subject, mqttRequestsToHitUpperThreshold - 1);
 
         // just below threshold, still no unsubscribe call expected
         verify(mqttClient, times(0)).unsubscribe(any(String.class));
 
         // messages that are not of request type should not trigger unsubscribe as well
-        subject.transmit(createTestMessage(Message.VALUE_MESSAGE_TYPE_REPLY).getSerializedMessage(), failIfCalledAction);
+        subject.transmit(createTestMessage(Message.VALUE_MESSAGE_TYPE_REPLY).getSerializedMessage(),
+                         failIfCalledAction);
         subject.transmit(createTestMessage(Message.VALUE_MESSAGE_TYPE_MULTICAST).getSerializedMessage(),
                          failIfCalledAction);
         verify(mqttClient, times(0)).unsubscribe(any(String.class));

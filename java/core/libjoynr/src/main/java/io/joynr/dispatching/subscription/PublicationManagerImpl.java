@@ -80,8 +80,8 @@ import joynr.UnicastSubscriptionQos;
 import joynr.exceptions.ProviderRuntimeException;
 
 @Singleton
-public class PublicationManagerImpl implements PublicationManager, DirectoryListener<ProviderContainer>,
-        ShutdownListener {
+public class PublicationManagerImpl
+        implements PublicationManager, DirectoryListener<ProviderContainer>, ShutdownListener {
     private static final Logger logger = LoggerFactory.getLogger(PublicationManagerImpl.class);
     // Map ProviderId -> SubscriptionRequest
     private final SetMultimap<String, PublicationInformation> queuedSubscriptionRequests;
@@ -289,9 +289,10 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
         String attributeName = subscriptionRequest.getSubscribedToName();
         SubscriptionPublisherObservable subscriptionPublisher = providerContainer.getSubscriptionPublisher();
         subscriptionPublisher.registerAttributeListener(attributeName, attributeListener);
-        unregisterAttributeListeners.put(subscriptionId, new UnregisterAttributeListener(subscriptionPublisher,
-                                                                                         attributeName,
-                                                                                         attributeListener));
+        unregisterAttributeListeners.put(subscriptionId,
+                                         new UnregisterAttributeListener(subscriptionPublisher,
+                                                                         attributeName,
+                                                                         attributeListener));
     }
 
     private void sendSubscriptionReplyWithError(PublicationInformation publicationInformation,
@@ -749,8 +750,7 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
                         sendPublicationError((JoynrRuntimeException) error, publicationInformation);
                     } else {
                         sendPublicationError(new ProviderRuntimeException("Unexpected exception while calling getter for attribute "
-                                                     + publicationInformation.getSubscribedToName()),
-                                             publicationInformation);
+                                + publicationInformation.getSubscribedToName()), publicationInformation);
                     }
 
                 }
@@ -776,12 +776,11 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
 
     @Override
     public void sendSubscriptionPublication(SubscriptionPublication publication,
-                                            PublicationInformation publicationInformation)
-                                                                                          throws JoynrSendBufferFullException,
-                                                                                          JoynrMessageNotSentException,
-                                                                                          JsonGenerationException,
-                                                                                          JsonMappingException,
-                                                                                          IOException {
+                                            PublicationInformation publicationInformation) throws JoynrSendBufferFullException,
+                                                                                           JoynrMessageNotSentException,
+                                                                                           JsonGenerationException,
+                                                                                           JsonMappingException,
+                                                                                           IOException {
         MessagingQos messagingQos = new MessagingQos();
         // TTL uplift will be done in JoynrMessageFactory
         messagingQos.setTtl_ms(publicationInformation.getQos().getPublicationTtlMs());

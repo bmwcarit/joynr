@@ -275,7 +275,9 @@ public class DatabasesTest {
 
         Assert.assertEquals(channel.getChannelId(), channelDb.getChannel("channel1").getChannelId());
 
-        channelDb.addChannel(new Channel(bpInfo1, "channel1b", URI.create("http://www.joyn1.de/bp1/channels/channel1b")));
+        channelDb.addChannel(new Channel(bpInfo1,
+                                         "channel1b",
+                                         URI.create("http://www.joyn1.de/bp1/channels/channel1b")));
 
         channels = channelDb.getChannels();
         Assert.assertEquals(2, channels.size());

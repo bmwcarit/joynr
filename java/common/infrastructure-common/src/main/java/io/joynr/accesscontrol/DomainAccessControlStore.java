@@ -269,7 +269,10 @@ public interface DomainAccessControlStore {
      * @param operation The operation you search ACE for.
      * @return Owner ACE associated to given uid, domain, interface and operation.
      */
-    OwnerAccessControlEntry getOwnerAccessControlEntry(String uid, String domain, String interfaceName, String operation);
+    OwnerAccessControlEntry getOwnerAccessControlEntry(String uid,
+                                                       String domain,
+                                                       String interfaceName,
+                                                       String operation);
 
     /**
      * Update given owner ACE.

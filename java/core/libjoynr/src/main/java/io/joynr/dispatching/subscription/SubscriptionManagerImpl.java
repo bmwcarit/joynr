@@ -154,8 +154,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager, ShutdownLis
 
         long expiryDate = qos.getExpiryDateMs();
         logger.trace("subscription: {} expiryDate: "
-                             + (expiryDate == SubscriptionQos.NO_EXPIRY_DATE ? "never" : expiryDate
-                                     - System.currentTimeMillis()),
+                + (expiryDate == SubscriptionQos.NO_EXPIRY_DATE ? "never" : expiryDate - System.currentTimeMillis()),
                      subscriptionId);
 
         if (expiryDate != SubscriptionQos.NO_EXPIRY_DATE) {
@@ -244,7 +243,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager, ShutdownLis
                                                                          multicastSubscribeInvocation.getSubscriptionName(),
                                                                          multicastSubscribeInvocation.getPartitions());
             logger.debug("SUBSCRIPTION call proxy: subscriptionId: {}, multicastId: {}, broadcast: {}, qos: {},"
-                                 + " proxy participantId: {}, provider participantId: {}",
+                    + " proxy participantId: {}, provider participantId: {}",
                          multicastSubscribeInvocation.getSubscriptionId(),
                          multicastId,
                          multicastSubscribeInvocation.getSubscriptionName(),

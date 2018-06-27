@@ -73,7 +73,7 @@ class SingleTestRunner extends BlockJUnit4ClassRunner {
     }
 
     private void injectBounceProxySetup(Object testClassInstance) throws IllegalArgumentException,
-                                                                 IllegalAccessException {
+                                                                  IllegalAccessException {
 
         for (Field field : testClassInstance.getClass().getDeclaredFields()) {
 

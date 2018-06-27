@@ -83,14 +83,14 @@ public class BounceProxyInstanceLifeCycleTest extends AbstractServiceInterfaceTe
         Mockito.when(mock.isRegistered("0.0")).thenReturn(true);
 
         Response response = //
-        given() //
-        .queryParam("url4cc", "http://testurl/url4cc")
-               .and()
-               .queryParam("url4bpc", "http://testurl/url4bpc")
-               //
-               .when()
-               //
-               .put(serverUrl + "?bpid=0.0");
+                given() //
+                        .queryParam("url4cc", "http://testurl/url4cc")
+                        .and()
+                        .queryParam("url4bpc", "http://testurl/url4bpc")
+                        //
+                        .when()
+                        //
+                        .put(serverUrl + "?bpid=0.0");
 
         assertEquals(204 /* No Content */, response.getStatusCode());
         assertNull(response.getHeader("Location"));
@@ -105,16 +105,16 @@ public class BounceProxyInstanceLifeCycleTest extends AbstractServiceInterfaceTe
         Mockito.when(mock.isRegistered("0.0")).thenReturn(false);
 
         Response response = //
-        given() //
-        .queryParam("url4cc", "http://testurl/url4cc")
-               //
-               .and()
-               //
-               .queryParam("url4bpc", "http://testurl/url4bpc")
-               //
-               .when()
-               //
-               .put(serverUrl + "?bpid=0.0");
+                given() //
+                        .queryParam("url4cc", "http://testurl/url4cc")
+                        //
+                        .and()
+                        //
+                        .queryParam("url4bpc", "http://testurl/url4bpc")
+                        //
+                        .when()
+                        //
+                        .put(serverUrl + "?bpid=0.0");
 
         assertEquals(201 /* Created */, response.getStatusCode());
         assertEquals("http://testurl/url4bpc", response.getHeader("Location"));
@@ -129,14 +129,14 @@ public class BounceProxyInstanceLifeCycleTest extends AbstractServiceInterfaceTe
         Mockito.when(mock.isRegistered("0.0")).thenReturn(true);
 
         Response response = //
-        given() //
-        .when()
-               //
-               .contentType(ContentType.JSON)
-               //
-               .body("{\"activeLongPolls\":5}")
-               //
-               .post(serverUrl + "0.0/performance");
+                given() //
+                        .when()
+                        //
+                        .contentType(ContentType.JSON)
+                        //
+                        .body("{\"activeLongPolls\":5}")
+                        //
+                        .post(serverUrl + "0.0/performance");
 
         assertEquals(204 /* No Content */, response.getStatusCode());
         Mockito.verify(mock)
@@ -153,19 +153,20 @@ public class BounceProxyInstanceLifeCycleTest extends AbstractServiceInterfaceTe
         Mockito.when(mock.isRegistered("0.0")).thenReturn(false);
 
         Response response = //
-        given() //
-        .when()
-               //
-               .contentType(ContentType.JSON)
-               //
-               .body("{\"activeLongPolls\":5}")
-               //
-               .post(serverUrl + "0.0/performance");
+                given() //
+                        .when()
+                        //
+                        .contentType(ContentType.JSON)
+                        //
+                        .body("{\"activeLongPolls\":5}")
+                        //
+                        .post(serverUrl + "0.0/performance");
 
         assertEquals(400 /* Bad Request */, response.getStatusCode());
         assertEquals(String.format("{\"_typeName\":\"Error\",\"code\":%d,\"reason\":\"%s: bounce proxy '0.0'\"}",
                                    BOUNCEPROXY_UNKNOWN.getCode(),
-                                   BOUNCEPROXY_UNKNOWN.getDescription()), response.getBody().asString());
+                                   BOUNCEPROXY_UNKNOWN.getDescription()),
+                     response.getBody().asString());
         Mockito.verify(mock).isRegistered("0.0");
         Mockito.verifyNoMoreInteractions(mock);
     }
@@ -176,12 +177,13 @@ public class BounceProxyInstanceLifeCycleTest extends AbstractServiceInterfaceTe
         Mockito.when(mock.isRegistered("0.0")).thenReturn(true);
 
         Response response = //
-        given().when().put(serverUrl + "0.0/lifecycle?status=blablabla");
+                given().when().put(serverUrl + "0.0/lifecycle?status=blablabla");
 
         assertEquals(400 /* Bad Request */, response.getStatusCode());
         assertEquals(String.format("{\"_typeName\":\"Error\",\"code\":%d,\"reason\":\"%s: status 'blablabla'\"}",
                                    BOUNCEPROXY_STATUS_UNKNOWN.getCode(),
-                                   BOUNCEPROXY_STATUS_UNKNOWN.getDescription()), response.getBody().asString());
+                                   BOUNCEPROXY_STATUS_UNKNOWN.getDescription()),
+                     response.getBody().asString());
         Mockito.verifyZeroInteractions(mock);
     }
 
@@ -191,14 +193,14 @@ public class BounceProxyInstanceLifeCycleTest extends AbstractServiceInterfaceTe
         Mockito.when(mock.isRegistered("0.0")).thenReturn(true);
 
         Response response = //
-        given() //
-        .when()
-               //
-               .contentType(ContentType.JSON)
-               //
-               .body("{ \"active\" : 5 }")
-               //
-               .post(serverUrl + "0.0/performance");
+                given() //
+                        .when()
+                        //
+                        .contentType(ContentType.JSON)
+                        //
+                        .body("{ \"active\" : 5 }")
+                        //
+                        .post(serverUrl + "0.0/performance");
 
         assertEquals(204 /* No Content */, response.getStatusCode());
         Mockito.verify(mock).updatePerformanceMeasures("0.0", new PerformanceMeasures());
@@ -212,11 +214,11 @@ public class BounceProxyInstanceLifeCycleTest extends AbstractServiceInterfaceTe
         Mockito.when(mock.isRegistered("0.0")).thenReturn(true);
 
         Response response = //
-        given(). //
-        when()
-               .contentType(ContentType.JSON)
-               .body("{ \"activeLongPolls\" : 5, \"assignedChannels\" : 3 }")
-               .post(serverUrl + "0.0/performance");
+                given(). //
+                       when()
+                       .contentType(ContentType.JSON)
+                       .body("{ \"activeLongPolls\" : 5, \"assignedChannels\" : 3 }")
+                       .post(serverUrl + "0.0/performance");
 
         assertEquals(204 /* No Content */, response.getStatusCode());
         Mockito.verify(mock)
@@ -234,7 +236,7 @@ public class BounceProxyInstanceLifeCycleTest extends AbstractServiceInterfaceTe
         Mockito.when(mock.isRegistered("0.0")).thenReturn(true);
 
         Response response = //
-        given().when().put(serverUrl + "0.0/lifecycle?status=shutdown");
+                given().when().put(serverUrl + "0.0/lifecycle?status=shutdown");
 
         assertEquals(204 /* No Content */, response.getStatusCode());
         Mockito.verify(mock).updateStatus("0.0", BounceProxyStatus.SHUTDOWN);
@@ -248,12 +250,13 @@ public class BounceProxyInstanceLifeCycleTest extends AbstractServiceInterfaceTe
         Mockito.when(mock.isRegistered("0.0")).thenReturn(false);
 
         Response response = //
-        given().when().put(serverUrl + "0.0/lifecycle?status=shutdown");
+                given().when().put(serverUrl + "0.0/lifecycle?status=shutdown");
 
         assertEquals(400 /* Bad Request */, response.getStatusCode());
         assertEquals(String.format("{\"_typeName\":\"Error\",\"code\":%d,\"reason\":\"%s: bounce proxy '0.0'\"}",
                                    BOUNCEPROXY_UNKNOWN.getCode(),
-                                   BOUNCEPROXY_UNKNOWN.getDescription()), response.getBody().asString());
+                                   BOUNCEPROXY_UNKNOWN.getDescription()),
+                     response.getBody().asString());
 
         Mockito.verify(mock).isRegistered("0.0");
         Mockito.verifyNoMoreInteractions(mock);

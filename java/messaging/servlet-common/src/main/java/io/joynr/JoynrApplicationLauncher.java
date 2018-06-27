@@ -82,7 +82,8 @@ public class JoynrApplicationLauncher {
                 AcceptsMessageReceiver acceptsMessageReceiverAnnotation = appClass.getAnnotation(AcceptsMessageReceiver.class);
                 // TODO why not reuse the previously requested value for
                 // AcceptsMessageReceiver?
-                MessageReceiverType messageReceiverType = acceptsMessageReceiverAnnotation == null ? MessageReceiverType.ANY
+                MessageReceiverType messageReceiverType = acceptsMessageReceiverAnnotation == null
+                        ? MessageReceiverType.ANY
                         : appClass.getAnnotation(AcceptsMessageReceiver.class).value();
                 if (messageReceiverType.equals(MessageReceiverType.SERVLET)) {
                     continue;

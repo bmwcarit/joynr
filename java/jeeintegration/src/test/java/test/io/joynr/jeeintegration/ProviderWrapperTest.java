@@ -144,8 +144,8 @@ public class ProviderWrapperTest {
         void myValueChanged(String myValue);
     }
 
-    public static interface TestServiceSubscriptionPublisherInjection extends
-            SubscriptionPublisherInjection<MySubscriptionPublisher> {
+    public static interface TestServiceSubscriptionPublisherInjection
+            extends SubscriptionPublisherInjection<MySubscriptionPublisher> {
     }
 
     public static class TestServiceImpl implements TestServiceInterface {
@@ -335,8 +335,8 @@ public class ProviderWrapperTest {
         ProviderWrapper subject = createSubject();
         JoynrProvider proxy = createProxy(subject);
 
-        Method method = TestServiceProviderInterface.class.getMethod("testServiceMethod", new Class[]{ Integer.TYPE,
-                String.class });
+        Method method = TestServiceProviderInterface.class.getMethod("testServiceMethod",
+                                                                     new Class[]{ Integer.TYPE, String.class });
 
         Object result = subject.invoke(proxy, method, new Object[]{ 1, "one" });
 
@@ -363,7 +363,8 @@ public class ProviderWrapperTest {
         JoynrProvider proxy = createProxy(subject);
 
         Method method = TestServiceSubscriptionPublisherInjection.class.getMethod("setSubscriptionPublisher",
-                                                                                  new Class[]{ SubscriptionPublisher.class });
+                                                                                  new Class[]{
+                                                                                          SubscriptionPublisher.class });
 
         subject.invoke(proxy, method, new Object[]{ mock(MySubscriptionPublisher.class) });
         assertFalse(JoynrJeeMessageContext.getInstance().isActive());
@@ -375,7 +376,8 @@ public class ProviderWrapperTest {
         JoynrProvider proxy = createProxy(subject);
 
         Method method = TestServiceSubscriptionPublisherInjection.class.getMethod("setSubscriptionPublisher",
-                                                                                  new Class[]{ SubscriptionPublisher.class });
+                                                                                  new Class[]{
+                                                                                          SubscriptionPublisher.class });
 
         subject.invoke(proxy, method, new Object[]{ mock(MySubscriptionPublisher.class) });
         verify(subscriptionPublisherProducer).add(any(), eq(TestServiceImpl.class));
@@ -459,13 +461,10 @@ public class ProviderWrapperTest {
         when(injector.getInstance(eq(JoynrMessageMetaInfo.class))).thenReturn(joynrMessageContext);
         when(joynrMessageContext.getMessageContext()).thenReturn(expectedMessageContext);
         Bean<?> joynrMessageContextBean = mock(Bean.class);
-        when(beanManager.getBeans(
-                JoynrJeeMessageMetaInfo.class)).
-                thenReturn(Sets.newHashSet(joynrMessageContextBean));
-        when(beanManager.getReference(
-                eq(joynrMessageContextBean),
-                eq(JoynrJeeMessageMetaInfo.class),
-                Mockito.any())).thenReturn(joynrJeeMessageContext);
+        when(beanManager.getBeans(JoynrJeeMessageMetaInfo.class)).thenReturn(Sets.newHashSet(joynrMessageContextBean));
+        when(beanManager.getReference(eq(joynrMessageContextBean),
+                                      eq(JoynrJeeMessageMetaInfo.class),
+                                      Mockito.any())).thenReturn(joynrJeeMessageContext);
 
         // Setup mock SubscriptionPublisherProducer instance in mock bean manager
         Bean subscriptionPublisherProducerBean = mock(Bean.class);
@@ -488,8 +487,9 @@ public class ProviderWrapperTest {
     }
 
     private JoynrProvider createProxy(ProviderWrapper forWrapper) {
-        return (JoynrProvider) Proxy.newProxyInstance(ProviderWrapper.class.getClassLoader(), new Class[]{
-                JoynrProvider.class, TestServiceInterface.class }, forWrapper);
+        return (JoynrProvider) Proxy.newProxyInstance(ProviderWrapper.class.getClassLoader(),
+                                                      new Class[]{ JoynrProvider.class, TestServiceInterface.class },
+                                                      forWrapper);
     }
 
 }

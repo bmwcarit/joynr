@@ -150,7 +150,7 @@ public abstract class AbstractJoynGeneratorMojo extends AbstractMojo {
     }
 
     protected abstract void invokeGenerator(GeneratorTask task) throws IOException, ClassNotFoundException,
-                                                               InstantiationException, IllegalAccessException;
+                                                                InstantiationException, IllegalAccessException;
 
     protected InvocationArguments createInvocationArguments() {
         InvocationArguments arguments = new InvocationArguments();

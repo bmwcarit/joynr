@@ -52,10 +52,10 @@ public class SubscriptionPublisherInjectionTest {
     public static Archive<?> getDeployment() {
         return ShrinkWrap.create(JavaArchive.class)
                          .addClasses(SubscriptionPublisherCdiExtension.class,
-                             SubscriptionPublisherInjectionWrapper.class,
-                             SubscriptionPublisherWrapper.class,
-                             SubscriptionPublisherProducer.class,
-                             BeanWithSubscriptionPublisher.class)
+                                     SubscriptionPublisherInjectionWrapper.class,
+                                     SubscriptionPublisherWrapper.class,
+                                     SubscriptionPublisherProducer.class,
+                                     BeanWithSubscriptionPublisher.class)
                          .addAsManifestResource(new File("src/main/resources/META-INF/beans.xml"))
                          .addAsManifestResource(new File("src/main/resources/META-INF/services/javax.enterprise.inject.spi.Extension"));
     }
@@ -70,7 +70,7 @@ public class SubscriptionPublisherInjectionTest {
 
     private MyServiceSubscriptionPublisher myServiceSubscriptionPublisher = new MyServiceSubscriptionPublisher() {
         @Override
-        public void fireMyMulticast(String someValue, String ... partitions) {
+        public void fireMyMulticast(String someValue, String... partitions) {
             logger.info("Multicast fired: " + someValue);
             multicastFired = true;
         }

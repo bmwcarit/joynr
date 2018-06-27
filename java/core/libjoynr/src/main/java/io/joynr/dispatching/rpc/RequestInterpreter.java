@@ -151,8 +151,8 @@ public class RequestInterpreter {
         } catch (InvocationTargetException e) {
             logger.debug("invokeMethod error", e);
             Throwable cause = e.getCause();
-            logger.error("RequestInterpreter: Could not perform an RPC invocation: {}", cause == null ? e.toString()
-                    : cause.getMessage());
+            logger.error("RequestInterpreter: Could not perform an RPC invocation: {}",
+                         cause == null ? e.toString() : cause.getMessage());
             throw new ProviderRuntimeException(cause == null ? e.toString() : cause.toString());
         } finally {
             requestCaller.removeContext();

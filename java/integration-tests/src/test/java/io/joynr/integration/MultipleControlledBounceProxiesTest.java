@@ -60,14 +60,15 @@ public class MultipleControlledBounceProxiesTest {
         /* @formatter:off */
         JsonPath listBps = given().get("bounceproxies").getBody().jsonPath();
         /* @formatter:on */
-        assertThat(listBps, allOf( //
-        anyOf(containsBounceProxy("X.Y", "ALIVE"), containsBounceProxy("X.Y", "ACTIVE")), //
-                                  anyOf(containsBounceProxy("A.B", "ALIVE"), containsBounceProxy("A.B", "ACTIVE"))));
+        assertThat(listBps,
+                   allOf( //
+                          anyOf(containsBounceProxy("X.Y", "ALIVE"), containsBounceProxy("X.Y", "ACTIVE")), //
+                          anyOf(containsBounceProxy("A.B", "ALIVE"), containsBounceProxy("A.B", "ACTIVE"))));
 
         // create channel on bounce proxy
         /* @formatter:off */
         Response responseCreateFirstChannel = //
-        given().header(X_ATMOSPHERE_TRACKING_ID, "trackingId-123").post("channels?ccid=channel-123");
+                given().header(X_ATMOSPHERE_TRACKING_ID, "trackingId-123").post("channels?ccid=channel-123");
         /* @formatter:on */
         assertEquals(201 /* Created */, responseCreateFirstChannel.getStatusCode());
         assertEquals("X.Y", responseCreateFirstChannel.getHeader(HEADER_BOUNCEPROXY_ID));
@@ -77,7 +78,7 @@ public class MultipleControlledBounceProxiesTest {
         // create channel on different bounce proxy
         /* @formatter:off */
         Response responseCreateSecondChannel = //
-        given().header(X_ATMOSPHERE_TRACKING_ID, "trackingId-abc").post("channels?ccid=channel-abc");
+                given().header(X_ATMOSPHERE_TRACKING_ID, "trackingId-abc").post("channels?ccid=channel-abc");
         /* @formatter:on */
         assertEquals(201 /* Created */, responseCreateSecondChannel.getStatusCode());
         assertEquals("A.B", responseCreateSecondChannel.getHeader(HEADER_BOUNCEPROXY_ID));

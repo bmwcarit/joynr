@@ -17,4 +17,3 @@
  * #L%
  */
 package io.joynr.subscription;
-

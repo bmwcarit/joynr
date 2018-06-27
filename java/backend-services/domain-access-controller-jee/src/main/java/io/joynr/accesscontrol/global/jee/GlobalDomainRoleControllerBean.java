@@ -18,7 +18,6 @@
  */
 package io.joynr.accesscontrol.global.jee;
 
-
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
@@ -47,7 +46,7 @@ public class GlobalDomainRoleControllerBean implements GlobalDomainRoleControlle
 
     @Inject
     public GlobalDomainRoleControllerBean(@SubscriptionPublisher GlobalDomainRoleControllerSubscriptionPublisher globalDomainRoleControllerSubscriptionPublisher,
-                                            DomainRoleEntryManager domainRoleEntryManager) {
+                                          DomainRoleEntryManager domainRoleEntryManager) {
         this.globalDomainRoleControllerSubscriptionPublisher = globalDomainRoleControllerSubscriptionPublisher;
         this.domainRoleEntryManager = domainRoleEntryManager;
     }
@@ -61,9 +60,9 @@ public class GlobalDomainRoleControllerBean implements GlobalDomainRoleControlle
     public Boolean updateDomainRole(DomainRoleEntry updatedEntry) {
         CreateOrUpdateResult<DomainRoleEntry> result = domainRoleEntryManager.createOrUpdate(updatedEntry);
         globalDomainRoleControllerSubscriptionPublisher.fireDomainRoleEntryChanged(result.getChangeType(),
-                                                                                     result.getEntry(),
-                                                                                     sanitizeForPartition(result.getEntry()
-                                                                                                                .getUid()));
+                                                                                   result.getEntry(),
+                                                                                   sanitizeForPartition(result.getEntry()
+                                                                                                              .getUid()));
         return true;
     }
 
@@ -72,8 +71,8 @@ public class GlobalDomainRoleControllerBean implements GlobalDomainRoleControlle
         DomainRoleEntry removedEntry = domainRoleEntryManager.removeByUserIdAndRole(uid, role);
         if (removedEntry != null) {
             globalDomainRoleControllerSubscriptionPublisher.fireDomainRoleEntryChanged(ChangeType.REMOVE,
-                                                                                         removedEntry,
-                                                                                         sanitizeForPartition(uid));
+                                                                                       removedEntry,
+                                                                                       sanitizeForPartition(uid));
             return true;
         }
         return false;

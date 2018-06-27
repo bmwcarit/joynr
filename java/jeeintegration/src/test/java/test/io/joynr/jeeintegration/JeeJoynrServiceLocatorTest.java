@@ -97,7 +97,7 @@ public class JeeJoynrServiceLocatorTest {
         verify(myJoynrProxy).callMe("one");
     }
 
-    private void forceJoynrProxyToThrowSpecifiedException(Exception exceptionToThrow){
+    private void forceJoynrProxyToThrowSpecifiedException(Exception exceptionToThrow) {
         reset(myJoynrProxy);
         when(myJoynrProxy.callMe(anyString())).thenThrow(exceptionToThrow);
 
