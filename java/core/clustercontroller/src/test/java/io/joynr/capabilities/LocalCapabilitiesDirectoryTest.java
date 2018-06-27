@@ -263,7 +263,8 @@ public class LocalCapabilitiesDirectoryTest {
     public void addCapability() throws InterruptedException {
         when(globalAddressProvider.get()).thenReturn(channelAddress);
 
-        localCapabilitiesDirectory.add(discoveryEntry);
+        final boolean awaitGlobalRegistration = true;
+        localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration);
 
         ArgumentCaptor<GlobalDiscoveryEntry> argumentCaptor = ArgumentCaptor.forClass(GlobalDiscoveryEntry.class);
         verify(globalCapabilitiesClient, timeout(200)).add(any(Callback.class), argumentCaptor.capture());
@@ -323,7 +324,8 @@ public class LocalCapabilitiesDirectoryTest {
                                                         publicKeyId,
                                                         channelAddressSerialized);
 
-        Promise<DeferredVoid> promise = localCapabilitiesDirectory.add(discoveryEntry);
+        final boolean awaitGlobalRegistration = true;
+        Promise<DeferredVoid> promise = localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration);
         promise.then(new PromiseListener() {
             @Override
             public void onFulfillment(Object... values) {
@@ -334,7 +336,7 @@ public class LocalCapabilitiesDirectoryTest {
                 verify(globalDiscoveryEntryCacheMock).add(eq(globalDiscoveryEntry));
                 verify(globalCapabilitiesClient).add(any(Callback.class), eq(globalDiscoveryEntry));
                 reset(globalCapabilitiesClient);
-                localCapabilitiesDirectory.add(discoveryEntry);
+                localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration);
                 verify(globalCapabilitiesClient, after(200).never()).add(any(Callback.class), eq(globalDiscoveryEntry));
             }
 
@@ -377,14 +379,15 @@ public class LocalCapabilitiesDirectoryTest {
                .when(globalCapabilitiesClient)
                .add(any(Callback.class), eq(globalDiscoveryEntry));
 
-        Promise<DeferredVoid> promise = localCapabilitiesDirectory.add(discoveryEntry);
+        final boolean awaitGlobalRegistration = true;
+        Promise<DeferredVoid> promise = localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration);
         promise.then(new PromiseListener() {
             @Override
             public void onFulfillment(Object... values) {
                 verify(globalDiscoveryEntryCacheMock, never()).add(eq(globalDiscoveryEntry));
                 verify(globalCapabilitiesClient).add(any(Callback.class), eq(globalDiscoveryEntry));
                 reset(globalCapabilitiesClient);
-                localCapabilitiesDirectory.add(discoveryEntry);
+                localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration);
                 verify(globalCapabilitiesClient, timeout(200)).add(any(Callback.class), eq(globalDiscoveryEntry));
 
             }
@@ -481,7 +484,8 @@ public class LocalCapabilitiesDirectoryTest {
                                                            System.currentTimeMillis(),
                                                            expiryDateMs,
                                                            publicKeyId);
-        localCapabilitiesDirectory.add(discoveryEntry);
+        final boolean awaitGlobalRegistration = true;
+        localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration);
         localCapabilitiesDirectory.lookup(new String[]{ domain1 }, interfaceName1, discoveryQos, capabilitiesCallback);
         verify(globalCapabilitiesClient, times(2)).lookup(any(Callback.class),
                                                           eq(new String[]{ domain1 }),

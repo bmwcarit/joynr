@@ -180,6 +180,12 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
      */
     @Override
     public Promise<DeferredVoid> add(final DiscoveryEntry discoveryEntry) {
+        boolean awaitGlobalRegistration = false;
+        return add(discoveryEntry, awaitGlobalRegistration);
+    }
+
+    @Override
+    public Promise<DeferredVoid> add(final DiscoveryEntry discoveryEntry, final Boolean awaitGlobalRegistration) {
         final DeferredVoid deferred = new DeferredVoid();
 
         if (localDiscoveryEntryStore.hasDiscoveryEntry(discoveryEntry)) {
@@ -196,17 +202,19 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         }
 
         if (discoveryEntry.getQos().getScope().equals(ProviderScope.GLOBAL)) {
-            registerGlobal(discoveryEntry, deferred);
+            DeferredVoid deferredForRegisterGlobal;
+            if (awaitGlobalRegistration == true) {
+                deferredForRegisterGlobal = deferred;
+            } else {
+                // use an independent DeferredVoid we do not wait for
+                deferredForRegisterGlobal = new DeferredVoid();
+                deferred.resolve();
+            }
+            registerGlobal(discoveryEntry, deferredForRegisterGlobal);
         } else {
             deferred.resolve();
         }
         return new Promise<>(deferred);
-    }
-
-    @Override
-    public Promise<DeferredVoid> add(final DiscoveryEntry discoveryEntry, final Boolean awaitGlobalRegistration) {
-        // awaitGlobalRegistration is currently ignored in Java
-        return add(discoveryEntry);
     }
 
     private void registerGlobal(final DiscoveryEntry discoveryEntry, final DeferredVoid deferred) {
