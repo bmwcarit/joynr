@@ -105,10 +105,14 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
     static class QueuedDiscoveryEntry {
         private DiscoveryEntry discoveryEntry;
         private DeferredVoid deferred;
+        private boolean awaitGlobalRegistration;
 
-        public QueuedDiscoveryEntry(DiscoveryEntry discoveryEntry, DeferredVoid deferred) {
+        public QueuedDiscoveryEntry(DiscoveryEntry discoveryEntry,
+                                    DeferredVoid deferred,
+                                    boolean awaitGlobalRegistration) {
             this.discoveryEntry = discoveryEntry;
             this.deferred = deferred;
+            this.awaitGlobalRegistration = awaitGlobalRegistration;
         }
 
         public DiscoveryEntry getDiscoveryEntry() {
@@ -117,6 +121,10 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
         public DeferredVoid getDeferred() {
             return deferred;
+        }
+
+        public boolean getAwaitGlobalRegistration() {
+            return awaitGlobalRegistration;
         }
     }
 
@@ -201,23 +209,37 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             notifyCapabilityAdded(discoveryEntry);
         }
 
+        /*
+         * In case awaitGlobalRegistration is true, a result for this 'add'
+         * call will not be returned before the call to the globalDiscovery
+         * has either succeeded, failed or timed out. In case of failure or
+         * timeout the already created discoveryEntry will also be removed
+         * again from localDiscoveryStore.
+         *
+         * If awaitGlobalRegistration is false, the call to the globalDiscovery
+         * will just be triggered, but it is not being waited for results or
+         * timeout. Also, in case it does not succeed, the entry remains in
+         * localDiscoveryStore.
+         */
         if (discoveryEntry.getQos().getScope().equals(ProviderScope.GLOBAL)) {
             DeferredVoid deferredForRegisterGlobal;
             if (awaitGlobalRegistration == true) {
                 deferredForRegisterGlobal = deferred;
             } else {
-                // use an independent DeferredVoid we do not wait for
+                // use an independent DeferredVoid not used for waiting
                 deferredForRegisterGlobal = new DeferredVoid();
                 deferred.resolve();
             }
-            registerGlobal(discoveryEntry, deferredForRegisterGlobal);
+            registerGlobal(discoveryEntry, deferredForRegisterGlobal, awaitGlobalRegistration);
         } else {
             deferred.resolve();
         }
         return new Promise<>(deferred);
     }
 
-    private void registerGlobal(final DiscoveryEntry discoveryEntry, final DeferredVoid deferred) {
+    private void registerGlobal(final DiscoveryEntry discoveryEntry,
+                                final DeferredVoid deferred,
+                                final boolean awaitGlobalRegistration) {
         synchronized (globalAddressLock) {
             try {
                 globalAddress = globalAddressProvider.get();
@@ -227,7 +249,16 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             }
 
             if (globalAddress == null) {
-                queuedDiscoveryEntries.add(new QueuedDiscoveryEntry(discoveryEntry, deferred));
+                DeferredVoid deferredForQueueDiscoveryEntry;
+                if (awaitGlobalRegistration == true) {
+                    deferredForQueueDiscoveryEntry = deferred;
+                } else {
+                    // use an independent DeferredVoid we do not wait for
+                    deferredForQueueDiscoveryEntry = new DeferredVoid();
+                }
+                queuedDiscoveryEntries.add(new QueuedDiscoveryEntry(discoveryEntry,
+                                                                    deferredForQueueDiscoveryEntry,
+                                                                    awaitGlobalRegistration));
                 globalAddressProvider.registerGlobalAddressesReadyListener(this);
                 return;
             }
@@ -244,8 +275,9 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
                 @Override
                 public void onSuccess(Void nothing) {
-                    logger.info("global registration for " + globalDiscoveryEntry.getDomain() + " : "
-                            + globalDiscoveryEntry.getInterfaceName() + " completed");
+                    logger.info("global registration for " + globalDiscoveryEntry.getParticipantId() + ", "
+                            + globalDiscoveryEntry.getDomain() + " : " + globalDiscoveryEntry.getInterfaceName()
+                            + " completed");
                     deferred.resolve();
                     globalDiscoveryEntryCache.add(CapabilityUtils.discoveryEntry2GlobalDiscoveryEntry(discoveryEntry,
                                                                                                       globalAddress));
@@ -253,6 +285,12 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
                 @Override
                 public void onFailure(JoynrRuntimeException exception) {
+                    logger.info("global registration for " + globalDiscoveryEntry.getParticipantId() + ", "
+                            + globalDiscoveryEntry.getDomain() + " : " + globalDiscoveryEntry.getInterfaceName()
+                            + " failed");
+                    if (awaitGlobalRegistration == true) {
+                        localDiscoveryEntryStore.remove(globalDiscoveryEntry.getParticipantId());
+                    }
                     deferred.reject(new ProviderRuntimeException(exception.toString()));
                 }
             }, globalDiscoveryEntry);
@@ -726,7 +764,9 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             globalAddress = address;
         }
         for (QueuedDiscoveryEntry queuedDiscoveryEntry : queuedDiscoveryEntries) {
-            registerGlobal(queuedDiscoveryEntry.getDiscoveryEntry(), queuedDiscoveryEntry.getDeferred());
+            registerGlobal(queuedDiscoveryEntry.getDiscoveryEntry(),
+                           queuedDiscoveryEntry.getDeferred(),
+                           queuedDiscoveryEntry.getAwaitGlobalRegistration());
         }
     }
 }
