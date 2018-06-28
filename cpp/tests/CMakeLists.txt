@@ -398,6 +398,8 @@ if(${BUILD_INTEGRATION_TESTS})
        "../runtimes/libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.h"
        "../runtimes/libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.cpp"
        "../runtimes/libjoynr-runtime/LibJoynrRuntime.cpp"
+       # Allow unit-testing of private header WildcardStorage.h
+       "../libjoynrclustercontroller/access-control/WildcardStorage.h"
     )
 
     target_link_libraries(
