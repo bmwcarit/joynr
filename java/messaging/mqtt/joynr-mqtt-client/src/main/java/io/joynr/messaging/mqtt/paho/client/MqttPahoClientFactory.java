@@ -36,10 +36,12 @@ import io.joynr.messaging.mqtt.MqttClientIdProvider;
 import io.joynr.messaging.mqtt.MqttModule;
 import io.joynr.messaging.mqtt.statusmetrics.MqttStatusReceiver;
 import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.runtime.ShutdownListener;
+import io.joynr.runtime.ShutdownNotifier;
 import joynr.system.RoutingTypes.MqttAddress;
 
 @Singleton
-public class MqttPahoClientFactory implements MqttClientFactory {
+public class MqttPahoClientFactory implements MqttClientFactory, ShutdownListener {
 
     private static final Logger logger = LoggerFactory.getLogger(MqttPahoClientFactory.class);
     private MqttAddress ownAddress;
@@ -94,7 +96,8 @@ public class MqttPahoClientFactory implements MqttClientFactory {
                                  @Named(MqttModule.PROPERTY_KEY_MQTT_SEPARATE_CONNECTIONS) boolean separateConnections,
                                  @Named(MessageRouter.SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduledExecutorService,
                                  MqttClientIdProvider mqttClientIdProvider,
-                                 MqttStatusReceiver mqttStatusReceiver) {
+                                 MqttStatusReceiver mqttStatusReceiver,
+                                 ShutdownNotifier shutdownNotifier) {
         this.ownAddress = ownAddress;
         this.reconnectSleepMs = reconnectSleepMs;
         this.scheduledExecutorService = scheduledExecutorService;
@@ -107,6 +110,7 @@ public class MqttPahoClientFactory implements MqttClientFactory {
         this.maxMsgSizeBytes = maxMsgSizeBytes;
         this.cleanSession = cleanSession;
         this.separateConnections = separateConnections;
+        shutdownNotifier.registerForShutdown(this);
     }
 
     @Override
@@ -131,6 +135,14 @@ public class MqttPahoClientFactory implements MqttClientFactory {
             }
         }
         return mqttClient2;
+    }
+
+    @Override
+    public synchronized void shutdown() {
+        mqttClient1.shutdown();
+        if (separateConnections) {
+            mqttClient2.shutdown();
+        }
     }
 
     private void createCombinedClient() {

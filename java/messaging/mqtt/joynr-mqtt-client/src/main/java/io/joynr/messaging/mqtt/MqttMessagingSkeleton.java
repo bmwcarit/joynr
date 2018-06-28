@@ -114,7 +114,7 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
 
     @Override
     public void shutdown() {
-        mqttClient.shutdown();
+
     }
 
     @Override
