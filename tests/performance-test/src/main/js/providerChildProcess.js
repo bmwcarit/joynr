@@ -37,7 +37,7 @@ const testbase = require("test-base");
 const provisioning = PerformanceUtilities.getProvisioning(true);
 const log = testbase.logging.log;
 const error = testbase.logging.error;
-log("domain: " + domain);
+log(`domain: ${domain}`);
 
 joynr
     .load(provisioning)
@@ -48,13 +48,13 @@ joynr
         const providerQos = new joynr.types.ProviderQos({
             customParameters: [],
             priority: Date.now(),
-            scope: joynr.types.ProviderScope.GLOBAL,
+            scope: joynr.types.ProviderScope.LOCAL,
             supportsOnChangeSubscriptions: true
         });
 
         const echoProvider = joynr.providerBuilder.build(EchoProvider, EchoProviderImpl.implementation);
 
-        joynr.registration
+        return joynr.registration
             .registerProvider(domain, echoProvider, providerQos)
             .then(() => {
                 log("provider registered successfully");
@@ -63,7 +63,7 @@ joynr
                 });
             })
             .catch(error => {
-                log("error registering provider: " + error.toString());
+                log(`error registering provider: ${error.toString()}`);
             });
 
         return loadedJoynr;
@@ -76,7 +76,7 @@ function fireBroadcasts(numberOfBroadCasts) {
     const implementation = EchoProviderImpl.implementation;
 
     for (let i = 0; i < numberOfBroadCasts; i++) {
-        const stringOut = "boom" + i;
+        const stringOut = `boom${i}`;
         const outputParameters = implementation.broadcastWithSinglePrimitiveParameter.createBroadcastOutputParameters();
         outputParameters.setStringOut(stringOut);
         implementation.broadcastWithSinglePrimitiveParameter.fire(outputParameters);
@@ -110,7 +110,7 @@ const handler = function(msg) {
     } else if (msg.msg === "takeHeapSnapShot") {
         const fileName = msg.name;
         heapdump.writeSnapshot(fileName, (err, filename) => {
-            error("dump written to: " + filename);
+            error(`dump written to: ${filename}`);
         });
     } else if (msg.msg === "fireBroadCast") {
         const numberOfBroadCasts = msg.amount;
