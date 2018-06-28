@@ -102,27 +102,29 @@ public:
             return boost::none;
         }
 
-        // if there is a set in the StorageEntry for this ACEntry -> return it
+        // if there is a set in the StorageEntry for this ACEntry -> add it to the result set
+        Set<ACEntry> resultSet;
+
         StorageEntry& storageEntry = longestMatch->getValue();
-        OptionalSet<ACEntry> result = getStorageEntry<ACEntry>(storageEntry);
-        if (result) {
-            return result;
+        auto longestMatchEntry = getStorageEntry<ACEntry>(storageEntry);
+        if (longestMatchEntry) {
+            resultSet.insert(longestMatchEntry->begin(), longestMatchEntry->end());
         }
 
-        // otherwise try to get an entry from one of the parents in the tree
+        // also add all parents (need to add the entire branch of the radix-tree)
         auto parents = longestMatch->parents();
         for (auto parentIt = parents.begin(); parentIt != parents.end(); ++parentIt) {
             // if there is a set in the StorageEntry of the parent -> return it
-            result = getStorageEntry<ACEntry>((*parentIt)->getValue());
-            if (result) {
-                return result;
+            auto parentSet = getStorageEntry<ACEntry>((*parentIt)->getValue());
+            if (parentSet) {
+                resultSet.insert(parentSet->begin(), parentSet->end());
             }
         }
 
-        // otherwise return none
-        // longest match exists but no ACE/RCE entry was set for it
-        // is this a configuration error?
-        return boost::none;
+        if (resultSet.empty()) {
+            return boost::none;
+        }
+        return resultSet;
     }
 
     std::string toString()
