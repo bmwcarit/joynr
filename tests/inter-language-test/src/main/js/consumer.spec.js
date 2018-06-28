@@ -27,6 +27,7 @@ const ExtendedEnumerationWithPartlyDefinedValues = require("../generated-javascr
 const ExtendedTypeCollectionEnumerationInTypeCollection = require("../generated-javascript/joynr/interlanguagetest/namedTypeCollection2/ExtendedTypeCollectionEnumerationInTypeCollection.js");
 const Enumeration = require("../generated-javascript/joynr/interlanguagetest/Enumeration.js");
 const MapStringString = require("../generated-javascript/joynr/interlanguagetest/namedTypeCollection2/MapStringString.js");
+const ArrayTypeDefStruct = require("../generated-javascript/joynr/interlanguagetest/typeDefCollection/ArrayTypeDefStruct.js");
 
 jasmine.getEnv().addReporter(new testbase.TestReporter());
 
@@ -881,6 +882,60 @@ describe("Consumer test", () => {
             const retObj = await testInterfaceProxy.attributeByteBuffer.get();
             expect(retObj).toBeDefined();
             expect(IltUtil.cmpByteBuffers(retObj, byteBufferArg)).toBeTruthy();
+        });
+
+        async function genericSetGet(testObj, testValue) {
+            log(`genericSetGet called with testValue = ${JSON.stringify(testValue)}`);
+            await testObj.set({ value: testValue });
+
+            const retObj = await testObj.get();
+            expect(retObj).toBeDefined();
+            expect(retObj).toEqual(testValue);
+        }
+
+        it("callSetandGetAttributeInt64TypeDef", async () => {
+            log("callSetandGetAttributeInt64TypeDef");
+            const testValue = 1;
+            return await genericSetGet(testInterfaceProxy.attributeInt64TypeDef, testValue);
+        });
+
+        it("callSetandGetAttributeStringTypeDef", async () => {
+            log("callSetandGetAttributeStringTypeDef");
+            return await genericSetGet(testInterfaceProxy.attributeStringTypeDef, "StringTypeDef");
+        });
+
+        it("callSetandGetAttributeStructTypeDef", async () => {
+            log("callSetandGetAttributeStructTypeDef");
+            return await genericSetGet(testInterfaceProxy.attributeStructTypeDef, IltUtil.createBaseStruct());
+        });
+
+        it("callSetandGetAttributeMapTypeDef", async () => {
+            log("callSetandGetAttributeMapTypeDef");
+            const value = new MapStringString();
+            for (let i = 1; i <= 3; i++) {
+                value.put(`keyString${i}`, `valueString${i}`);
+            }
+            return await genericSetGet(testInterfaceProxy.attributeMapTypeDef, value);
+        });
+
+        it("callSetandGetAttributeEnumTypeDef", async () => {
+            log("callSetandGetAttributeEnumTypeDef");
+            return await genericSetGet(testInterfaceProxy.attributeEnumTypeDef, Enumeration.ENUM_0_VALUE_1);
+        });
+
+        it("callSetandGetAttributeByteBufferTypeDef", async () => {
+            log("callSetandGetAttributeByteBufferTypeDef");
+            return await genericSetGet(testInterfaceProxy.attributeByteBufferTypeDef, IltUtil.createByteArray());
+        });
+
+        it("callSetandGetAttributeArrayTypeDef", async () => {
+            log("callSetandGetAttributeArrayTypeDef");
+            const args = {
+                typeDefStringArray: IltUtil.createStringArray()
+            };
+            const arrayTypeDefArg = new ArrayTypeDefStruct(args);
+
+            return await genericSetGet(testInterfaceProxy.attributeArrayTypeDef, arrayTypeDefArg);
         });
 
         it("callSetAttributeEnumeration", async () => {
