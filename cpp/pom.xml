@@ -63,6 +63,7 @@
 							<root>.</root>
 						</roots>
 					<excludes>
+						<exclude>tests/resources/LDAS_checkPermissionToAdd.json</exclude>
 						<exclude>tests/resources/ListOfCapabilitiesToInject.json</exclude>
 						<exclude>tests/resources/MasterAccessTable.json</exclude>
 						<exclude>tests/resources/MasterRegistrationTable.json</exclude>

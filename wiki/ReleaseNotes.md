@@ -13,6 +13,20 @@ the versioning scheme [here](JoynrVersioning.md).
 * **[C++]** The application thread will not return immediately if persistency is ON. Persistency of subscriptions
   is being loaded in the same thread as registerProvider.
 
+# joynr 1.3.1
+
+## API relevant changes
+None.
+
+## Configuration property changes
+None.
+
+## Other changes
+* **[C++]** Reduce lookups of subscriptionRequest via subscriptionId.
+* **[C++]** Fixed race condition on parentResolveMutex in LibJoynrMessageRouter.
+* **[C++]** Fix initialization sequence of libjoynr by calling addRequestCaller before addNextHop.
+* **[C++]** Access control: build wildcard storage tree correctly and always return entire branch for lookups.
+
 # joynr 1.3.0
 
 ## API relevant changes

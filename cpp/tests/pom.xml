@@ -232,6 +232,7 @@
 						<root>.</root>
 					</roots>
 					<excludes>
+						<exclude>resources/LDAS_checkPermissionToAdd.json</exclude>
 						<exclude>resources/ListOfCapabilitiesToInject.json</exclude>
 						<exclude>resources/MasterAccessTable.json</exclude>
 						<exclude>resources/MasterRegistrationTable.json</exclude>

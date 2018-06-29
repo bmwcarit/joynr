@@ -600,6 +600,9 @@ public:
      */
     bool mergeDomainAccessStore(const LocalDomainAccessStore& other);
 
+    // Use the logger to print content of entire access store
+    void logContent();
+
 private:
     ADD_LOGGER(LocalDomainAccessStore)
     void persistToFile() const;
@@ -817,7 +820,9 @@ private:
             if (value.getDomain() == domain) {
                 // exact match
                 resultSet.insert(value);
-            } else if (matchWildcard(domain, value.getDomain())) {
+            } else if (endsWithWildcard(value.getDomain()) &&
+                       matchWildcard(domain, value.getDomain())) {
+                // wildcard match
                 resultSet.insert(value);
             }
         }
@@ -841,7 +846,9 @@ private:
             if (value.getInterfaceName() == interface) {
                 // exact match
                 resultSet.insert(value);
-            } else if (matchWildcard(interface, value.getInterfaceName())) {
+            } else if (endsWithWildcard(value.getInterfaceName()) &&
+                       matchWildcard(interface, value.getInterfaceName())) {
+                // wildcard match
                 resultSet.insert(value);
             }
         }

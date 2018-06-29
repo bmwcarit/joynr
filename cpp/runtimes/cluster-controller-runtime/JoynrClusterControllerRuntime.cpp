@@ -690,12 +690,15 @@ void JoynrClusterControllerRuntime::enableAccessController(
 
     ccMessageRouter->setAccessController(std::move(util::as_weak_ptr(accessController)));
 
-    aclEditor = std::make_shared<AccessControlListEditor>(std::move(localDomainAccessStore),
+    aclEditor = std::make_shared<AccessControlListEditor>(localDomainAccessStore,
                                                           localDomainAccessController,
                                                           clusterControllerSettings.aclAudit());
 
     // Set accessController also in LocalCapabilitiesDirectory
     localCapabilitiesDirectory->setAccessController(std::move(util::as_weak_ptr(accessController)));
+
+    // Log entries
+    localDomainAccessStore->logContent();
 }
 
 std::shared_ptr<infrastructure::GlobalDomainAccessControllerProxy> JoynrClusterControllerRuntime::
