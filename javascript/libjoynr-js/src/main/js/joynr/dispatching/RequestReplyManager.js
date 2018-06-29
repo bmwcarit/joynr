@@ -404,13 +404,11 @@ function RequestReplyManager(dispatcher) {
     this.shutdown = function shutdown() {
         clearInterval(cleanupInterval);
 
-        /*eslint-disable no-unused-vars*/
-        for (const [requestReplyId, replyCaller] of replyCallers) {
+        for (const replyCaller of replyCallers.values()) {
             if (replyCaller) {
                 replyCaller.callback(new Error("RequestReplyManager is already shut down"));
             }
         }
-        /*eslint-enable no-unused-vars*/
         replyCallers.clear();
         started = false;
     };
