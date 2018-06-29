@@ -96,7 +96,7 @@ const SharedWebSocket = function SharedWebSocket(settings) {
                 // Error is thrown if the socket is no longer open, so requeue to the front
             } catch (e) {
                 // add the message back to the front of the queue
-                queuedMessages.unshift(joynrMessage);
+                queuedMessages.unshift(marshaledMessage);
                 log.error(`could not send joynrMessage: ${joynrMessage.msgId} requeuing message. Error: ${e}`);
             }
         } else {
