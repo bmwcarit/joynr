@@ -62,6 +62,7 @@ macro(CONFIGURE_TEST_FILES targetDirectory)
         "persistency-cc-enabled.settings"
         "ca.crt"
         "testclient.pem"
+        "LDAS_checkPermissionToAdd.json"
     )
 
     foreach(testFile ${TEST_FILES})
