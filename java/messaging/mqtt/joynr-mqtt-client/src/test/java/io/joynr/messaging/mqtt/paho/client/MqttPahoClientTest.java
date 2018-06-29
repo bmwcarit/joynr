@@ -202,7 +202,7 @@ public class MqttPahoClientTest {
         // create a new Factory because the factory caches its client.
         mqttClientFactory = injector.getInstance(MqttClientFactory.class);
 
-        JoynrMqttClient client = mqttClientFactory.create();
+        JoynrMqttClient client = mqttClientFactory.createSender();
         client.setMessageListener(mockReceiver);
         return client;
     }
@@ -446,6 +446,8 @@ public class MqttPahoClientTest {
         int maxMsgsInflight = 100;
         int maxMsgSizeBytes = 0;
         boolean cleanSession = true;
+        final boolean isReceiver = true;
+        final boolean separateConnections = false;
 
         MqttClient mqttClient = new MqttClient(brokerUri, clientId, new MemoryPersistence(), scheduledExecutorService);
         joynrMqttClient = new MqttPahoClient(mqttClient,
@@ -456,6 +458,8 @@ public class MqttPahoClientTest {
                                              maxMsgsInflight,
                                              maxMsgSizeBytes,
                                              cleanSession,
+                                             isReceiver,
+                                             separateConnections,
                                              "",
                                              "",
                                              "",

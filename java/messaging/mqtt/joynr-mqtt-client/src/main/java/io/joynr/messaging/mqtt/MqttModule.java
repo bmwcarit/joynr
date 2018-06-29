@@ -66,6 +66,7 @@ public class MqttModule extends AbstractModule {
     public static final String PROPERTY_KEY_MQTT_TRUSTSTORE_TYPE = "joynr.messaging.mqtt.ssl.truststoretype";
     public static final String PROPERTY_KEY_MQTT_KEYSTORE_PWD = "joynr.messaging.mqtt.ssl.keystorepassword";
     public static final String PROPERTY_KEY_MQTT_TRUSTSTORE_PWD = "joynr.messaging.mqtt.ssl.truststorepassword";
+    public static final String PROPERTY_KEY_MQTT_SEPARATE_CONNECTIONS = "joynr.messaging.mqtt.separateconnections";
 
     /**
      * Use this key to activate shared subscription support by setting the property's value to <code>true</code>. Shared

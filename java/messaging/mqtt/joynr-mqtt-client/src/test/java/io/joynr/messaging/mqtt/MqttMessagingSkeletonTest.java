@@ -91,7 +91,8 @@ public class MqttMessagingSkeletonTest {
                                             new NoOpRawMessagingPreprocessor(),
                                             new HashSet<JoynrMessageProcessor>(),
                                             mqttStatusReceiver);
-        when(mqttClientFactory.create()).thenReturn(mqttClient);
+        when(mqttClientFactory.createReceiver()).thenReturn(mqttClient);
+        when(mqttClientFactory.createSender()).thenReturn(mqttClient);
         subject.init();
         verify(mqttClient).subscribe(anyString());
         reset(mqttClient);

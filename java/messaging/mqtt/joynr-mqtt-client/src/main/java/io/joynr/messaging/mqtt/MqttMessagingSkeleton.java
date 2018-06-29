@@ -96,9 +96,10 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
 
         messageRouter.registerMessageProcessedListener(this);
 
-        mqttClient = mqttClientFactory.create();
+        mqttClient = mqttClientFactory.createReceiver();
         mqttClient.setMessageListener(this);
         mqttClient.start();
+        mqttClientFactory.createSender().start();
         subscribe();
     }
 
