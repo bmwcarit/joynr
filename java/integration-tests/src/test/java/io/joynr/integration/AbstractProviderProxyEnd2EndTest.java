@@ -241,11 +241,14 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
         // check that registerProvider does not block
         long startTime = System.currentTimeMillis();
-        providerRuntime.registerProvider(domain, provider, testProviderQos).get(CONST_DEFAULT_TEST_TIMEOUT);
+        boolean awaitGlobalRegistration = true;
+        providerRuntime.registerProvider(domain, provider, testProviderQos, awaitGlobalRegistration)
+                       .get(CONST_DEFAULT_TEST_TIMEOUT);
         long endTime = System.currentTimeMillis();
         timeTookToRegisterProvider = endTime - startTime;
 
-        providerRuntime.registerProvider(domainAsync, providerAsync, testProviderQos).get(CONST_DEFAULT_TEST_TIMEOUT);
+        providerRuntime.registerProvider(domainAsync, providerAsync, testProviderQos, awaitGlobalRegistration)
+                       .get(CONST_DEFAULT_TEST_TIMEOUT);
 
         // this sleep greatly speeds up the tests (400 ms vs 2500 / test) by
         // making sure the channel is created before first messages sent.
