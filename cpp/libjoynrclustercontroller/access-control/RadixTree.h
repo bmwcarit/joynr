@@ -23,9 +23,12 @@
 #include <cassert>
 
 #include <algorithm>
+#include <functional>
+
 #include <map>
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/optional.hpp>
@@ -285,6 +288,26 @@ private:
         return !value;
     }
 
+    template <typename Fun>
+    void visit(const Fun& fun, std::vector<std::reference_wrapper<Key>>& parentKeys)
+    {
+        parentKeys.push_back(key);
+        if (!isInternal()) {
+            fun(*this, parentKeys);
+        }
+
+        if (isLeaf()) {
+            parentKeys.pop_back();
+            return;
+        }
+
+        for (auto& childIt : *children) {
+            const ChildPtr& child = childIt.second;
+            child->visit(fun, parentKeys);
+        }
+        parentKeys.pop_back();
+    }
+
     RadixTreeNode* parent;
     Key key;
     boost::optional<Value> value;
@@ -322,6 +345,13 @@ public:
             return nullptr;
         }
         return node;
+    }
+
+    template <typename Fun>
+    void visit(const Fun& fun)
+    {
+        std::vector<std::reference_wrapper<Key>> keys;
+        root.visit(fun, keys);
     }
 
 private:

@@ -26,7 +26,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>cpp</artifactId>
-		<version>1.3.0</version>
+		<version>1.3.1</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -231,13 +231,14 @@
 					<roots>
 						<root>.</root>
 					</roots>
-                        		<excludes>
-        		                    <exclude>resources/ListOfCapabilitiesToInject.json</exclude>
-                                            <exclude>resources/MasterAccessTable.json</exclude>
-                                            <exclude>resources/MasterRegistrationTable.json</exclude>
-                                            <exclude>resources/OwnerAccessTable.json</exclude>
-                                            <exclude>resources/OwnerRegistrationTable.json</exclude>
-	                       		</excludes>
+      		<excludes>
+							<exclude>resources/LDAS_checkPermissionToAdd.json</exclude>
+							<exclude>resources/ListOfCapabilitiesToInject.json</exclude>
+							<exclude>resources/MasterAccessTable.json</exclude>
+							<exclude>resources/MasterRegistrationTable.json</exclude>
+							<exclude>resources/OwnerAccessTable.json</exclude>
+							<exclude>resources/OwnerRegistrationTable.json</exclude>
+       		</excludes>
 				</configuration>
 			</plugin>
 		</plugins>

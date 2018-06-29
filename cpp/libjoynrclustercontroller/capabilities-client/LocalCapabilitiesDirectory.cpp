@@ -25,6 +25,7 @@
 
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/asio/io_service.hpp>
+#include <spdlog/fmt/fmt.h>
 
 #include "joynr/access-control/IAccessController.h"
 
@@ -737,7 +738,9 @@ void LocalCapabilitiesDirectory::add(
         return;
     }
     onError(joynr::exceptions::ProviderRuntimeException(
-            "Provider does not have permissions to register domain/interface."));
+            fmt::format("Provider does not have permissions to register interface {} on domain {}.",
+                        discoveryEntry.getInterfaceName(),
+                        discoveryEntry.getDomain())));
 }
 
 bool LocalCapabilitiesDirectory::hasProviderPermission(const types::DiscoveryEntry& discoveryEntry)

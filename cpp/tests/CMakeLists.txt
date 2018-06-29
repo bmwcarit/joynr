@@ -62,6 +62,7 @@ macro(CONFIGURE_TEST_FILES targetDirectory)
         "persistency-cc-enabled.settings"
         "ca.crt"
         "testclient.pem"
+        "LDAS_checkPermissionToAdd.json"
     )
 
     foreach(testFile ${TEST_FILES})
@@ -398,6 +399,8 @@ if(${BUILD_INTEGRATION_TESTS})
        "../runtimes/libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.h"
        "../runtimes/libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.cpp"
        "../runtimes/libjoynr-runtime/LibJoynrRuntime.cpp"
+       # Allow unit-testing of private header WildcardStorage.h
+       "../libjoynrclustercontroller/access-control/WildcardStorage.h"
     )
 
     target_link_libraries(

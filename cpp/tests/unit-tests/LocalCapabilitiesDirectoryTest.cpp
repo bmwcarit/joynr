@@ -25,6 +25,12 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
+#include "../../libjoynrclustercontroller/access-control/LocalDomainAccessStore.h"
+#include "../../libjoynrclustercontroller/access-control/LocalDomainAccessController.h"
+#include "../../libjoynrclustercontroller/access-control/AccessController.h"
+
+#include "joynr/CallContext.h"
+#include "joynr/CallContextStorage.h"
 #include "joynr/CapabilityUtils.h"
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "joynr/ClusterControllerDirectories.h"
@@ -1912,11 +1918,11 @@ TEST_F(LocalCapabilitiesDirectoryTest, callTouchPeriodically)
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(250)));
 }
 
-class LocalCapabilitiesDirectoryACTest : public LocalCapabilitiesDirectoryTest,
+class LocalCapabilitiesDirectoryACMockTest : public LocalCapabilitiesDirectoryTest,
                                          public ::testing::WithParamInterface<std::tuple<bool,bool>>
 {
 public:
-    LocalCapabilitiesDirectoryACTest():
+    LocalCapabilitiesDirectoryACMockTest():
         ENABLE_ACCESS_CONTROL(std::get<0>(GetParam())),
         HAS_PERMISSION(std::get<1>(GetParam()))
     {
@@ -1928,7 +1934,7 @@ protected:
     const bool HAS_PERMISSION;
 };
 
-TEST_P(LocalCapabilitiesDirectoryACTest, checkPermissionToRegister)
+TEST_P(LocalCapabilitiesDirectoryACMockTest, checkPermissionToRegisterWithMock)
 {
     auto mockAccessController = std::make_shared<MockAccessController>();
     ON_CALL(*mockAccessController, hasProviderPermission(_,_,_,_))
@@ -1964,7 +1970,74 @@ std::tuple<bool,bool> const LCDWithAC_UseCases[] = {
 };
 
 INSTANTIATE_TEST_CASE_P(
-  WithAC, LocalCapabilitiesDirectoryACTest, ::testing::ValuesIn(LCDWithAC_UseCases));
+  WithAC, LocalCapabilitiesDirectoryACMockTest, ::testing::ValuesIn(LCDWithAC_UseCases));
+
+class LocalCapabilitiesDirectoryACTest : public LocalCapabilitiesDirectoryTest
+{
+public:
+    LocalCapabilitiesDirectoryACTest()
+    {
+        clusterControllerSettings.setEnableAccessController(true);
+        auto localDomainAccessStore = std::make_shared<joynr::LocalDomainAccessStore>("test-resources/LDAS_checkPermissionToAdd.json");
+        auto localDomainAccessController = std::make_shared<joynr::LocalDomainAccessController>(localDomainAccessStore, true);
+        accessController = std::make_shared<joynr::AccessController>(localCapabilitiesDirectory, localDomainAccessController);
+        localCapabilitiesDirectory->setAccessController(util::as_weak_ptr(accessController));
+
+        localDomainAccessStore->logContent();
+    }
+
+protected:
+    std::shared_ptr<IAccessController> accessController;
+};
+
+TEST_F(LocalCapabilitiesDirectoryACTest, checkPermissionToAdd)
+{
+    joynr::types::DiscoveryEntry OK_entry(defaultProviderVersion,
+                                       "domain-1234",
+                                       "my/favourite/interface/Name",
+                                       dummyParticipantId1,
+                                       types::ProviderQos(),
+                                       lastSeenDateMs,
+                                       expiryDateMs,
+                                       PUBLIC_KEY_ID);
+
+    joynr::types::DiscoveryEntry NOT_OK_entry_1(defaultProviderVersion,
+                                       "domain-1234", // domain is OK
+                                       "my/favourite/interface/Nam", // interfaceName is a substring of the allowed one
+                                       dummyParticipantId1,
+                                       types::ProviderQos(),
+                                       lastSeenDateMs,
+                                       expiryDateMs,
+                                       PUBLIC_KEY_ID);
+
+    joynr::types::DiscoveryEntry NOT_OK_entry_2(defaultProviderVersion,
+                                       "domain-123", // domain is a substring of the allowed one
+                                       "my/favourite/interface/Name", // interfaceName is OK
+                                       dummyParticipantId1,
+                                       types::ProviderQos(),
+                                       lastSeenDateMs,
+                                       expiryDateMs,
+                                       PUBLIC_KEY_ID);
+
+    std::string principal = "testUser";
+    CallContext callContext;
+    callContext.setPrincipal(principal);
+    CallContextStorage::set(std::move(callContext));
+
+    localCapabilitiesDirectory->add(OK_entry,
+                                    [](){ SUCCEED() << "OK"; },
+                                    [](const joynr::exceptions::ProviderRuntimeException& ex){ FAIL() << ex.getMessage();});
+
+    localCapabilitiesDirectory->add(NOT_OK_entry_1,
+                                    [](){ FAIL(); },
+                                    [](const joynr::exceptions::ProviderRuntimeException& ex){ SUCCEED() << ex.getMessage();});
+
+    localCapabilitiesDirectory->add(NOT_OK_entry_2,
+                                    [](){ FAIL(); },
+                                    [](const joynr::exceptions::ProviderRuntimeException& ex){ SUCCEED() << ex.getMessage();});
+
+    CallContextStorage::invalidate();
+}
 
 class LocalCapabilitiesDirectoryWithProviderScope
         : public LocalCapabilitiesDirectoryTest,
