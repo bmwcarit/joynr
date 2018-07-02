@@ -108,7 +108,8 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
     // This timeout must be shared by all integration test environments and
     // cannot be too short.
-    protected static final int CONST_DEFAULT_TEST_TIMEOUT = 30000;
+    protected static final long CONST_DEFAULT_TEST_TIMEOUT = 90000L;
+    protected static final long CONST_DEFAULT_PROVIDER_REGISTRATION_TIMEOUT = 80000L;
 
     public static final Semaphore FIRE_AND_FORGET_SEMAPHORE = new Semaphore(1);
     public static final Semaphore FIRE_AND_FORGET_WITH_ENUM_WITH_VALUES_PARAM_SEMAPHORE = new Semaphore(0);
@@ -243,12 +244,12 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         long startTime = System.currentTimeMillis();
         boolean awaitGlobalRegistration = true;
         providerRuntime.registerProvider(domain, provider, testProviderQos, awaitGlobalRegistration)
-                       .get(CONST_DEFAULT_TEST_TIMEOUT);
+                       .get(CONST_DEFAULT_PROVIDER_REGISTRATION_TIMEOUT);
         long endTime = System.currentTimeMillis();
         timeTookToRegisterProvider = endTime - startTime;
 
         providerRuntime.registerProvider(domainAsync, providerAsync, testProviderQos, awaitGlobalRegistration)
-                       .get(CONST_DEFAULT_TEST_TIMEOUT);
+                       .get(CONST_DEFAULT_PROVIDER_REGISTRATION_TIMEOUT);
 
         // this sleep greatly speeds up the tests (400 ms vs 2500 / test) by
         // making sure the channel is created before first messages sent.
