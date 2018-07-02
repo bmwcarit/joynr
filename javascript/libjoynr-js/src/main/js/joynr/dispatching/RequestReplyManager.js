@@ -180,6 +180,14 @@ function RequestReplyManager(dispatcher) {
         }
     };
 
+    function createReplyFromError(exception, requestReplyId, handleReplyCallback, replySettings) {
+        const reply = new Reply({
+            error: exception,
+            requestReplyId
+        });
+        return handleReplyCallback(replySettings, reply);
+    }
+
     /**
      * @name RequestReplyManager#handleRequest
      * @param {String} providerParticipantId
@@ -198,22 +206,6 @@ function RequestReplyManager(dispatcher) {
     ) {
         let exception;
 
-        function createReplyFromError(exception) {
-            const reply = new Reply({
-                error: exception,
-                requestReplyId: request.requestReplyId
-            });
-            return handleReplyCallback(replySettings, reply);
-        }
-
-        function createReplyFromSuccess(response) {
-            const reply = new Reply({
-                response,
-                requestReplyId: request.requestReplyId
-            });
-            return handleReplyCallback(replySettings, reply);
-        }
-
         try {
             checkIfReady();
         } catch (error) {
@@ -222,7 +214,7 @@ function RequestReplyManager(dispatcher) {
                     request
                 )} for providerParticipantId ${providerParticipantId}. Joynr runtime already shut down.`
             });
-            return createReplyFromError(exception);
+            return createReplyFromError(exception, request.requestReplyId, handleReplyCallback, replySettings);
         }
         const provider = providers[providerParticipantId];
         if (!provider) {
@@ -234,7 +226,7 @@ function RequestReplyManager(dispatcher) {
                     request
                 )} for providerParticipantId ${providerParticipantId}`
             });
-            return createReplyFromError(exception);
+            return createReplyFromError(exception, request.requestReplyId, handleReplyCallback, replySettings);
         }
 
         // if there's an operation available to call
@@ -307,9 +299,14 @@ function RequestReplyManager(dispatcher) {
         */
 
         if (exception) {
-            return createReplyFromError(exception);
+            return createReplyFromError(exception, request.requestReplyId, handleReplyCallback, replySettings);
         }
-        return createReplyFromSuccess(result);
+
+        const reply = new Reply({
+            response: result,
+            requestReplyId: request.requestReplyId
+        });
+        return handleReplyCallback(replySettings, reply);
     };
 
     /**
