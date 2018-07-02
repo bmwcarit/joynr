@@ -16,7 +16,6 @@
  * limitations under the License.
  * #L%
  */
-const Promise = require("../../global/Promise");
 const Reply = require("./types/Reply");
 const Typing = require("../util/Typing");
 const UtilInternal = require("../util/UtilInternal");
@@ -191,7 +190,12 @@ function RequestReplyManager(dispatcher) {
      *          settings for handleReplyCallback to avoid unnecessary function object creation
      * @returns {*}
      */
-    this.handleRequest = function handleRequest(providerParticipantId, request, handleReplyCallback, replySettings) {
+    this.handleRequest = async function handleRequest(
+        providerParticipantId,
+        request,
+        handleReplyCallback,
+        replySettings
+    ) {
         let exception;
 
         function createReplyFromError(exception) {
@@ -218,7 +222,7 @@ function RequestReplyManager(dispatcher) {
                     request
                 )} for providerParticipantId ${providerParticipantId}. Joynr runtime already shut down.`
             });
-            return Promise.resolve(createReplyFromError(exception));
+            return createReplyFromError(exception);
         }
         const provider = providers[providerParticipantId];
         if (!provider) {
@@ -230,7 +234,7 @@ function RequestReplyManager(dispatcher) {
                     request
                 )} for providerParticipantId ${providerParticipantId}`
             });
-            return Promise.resolve(createReplyFromError(exception));
+            return createReplyFromError(exception);
         }
 
         // if there's an operation available to call
@@ -242,7 +246,7 @@ function RequestReplyManager(dispatcher) {
             // that one may return either promise (preferred) or direct result
             // and may possibly also throw exception in the latter case.
             try {
-                result = provider[request.methodName].callOperation(request.params, request.paramDatatypes);
+                result = await provider[request.methodName].callOperation(request.params, request.paramDatatypes);
             } catch (internalException) {
                 exception = internalException;
             }
@@ -257,9 +261,9 @@ function RequestReplyManager(dispatcher) {
                 if (attributeObject && !attributeObject.callOperation) {
                     try {
                         if (getSet === "get") {
-                            result = attributeObject.get();
+                            result = await attributeObject.get();
                         } else if (getSet === "set") {
-                            result = attributeObject.set(request.params[0]);
+                            result = await attributeObject.set(request.params[0]);
                         }
                     } catch (internalGetterSetterException) {
                         if (internalGetterSetterException instanceof ProviderRuntimeException) {
@@ -296,23 +300,16 @@ function RequestReplyManager(dispatcher) {
             }
         }
 
-        /* Asynchronously pass the result back to the dispatcher
-         *
-         * Call operations can be a sync or async method. In the sync case,
-         * the return value of the call operation
-         * is simply the result of the call. In the async case, the provider has
-         * the possibility to return a promise
-         * object. In this case, we wait until the promise object is resolved
-         * and call then the callbackDispatcher
-         */
+        /*
+          both ProviderOperation.callOperation and ProviderAttribute.get/set have
+          have asynchronous API. Therefore the result is always a promise and thus
+          it's possible to await for its result.
+        */
 
-        if (!exception && UtilInternal.isPromise(result)) {
-            return result.then(createReplyFromSuccess).catch(createReplyFromError);
-        }
         if (exception) {
-            return Promise.resolve(createReplyFromError(exception));
+            return createReplyFromError(exception);
         }
-        return Promise.resolve(createReplyFromSuccess(result));
+        return createReplyFromSuccess(result);
     };
 
     /**
