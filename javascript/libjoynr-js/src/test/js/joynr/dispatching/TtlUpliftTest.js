@@ -143,7 +143,7 @@ describe("libjoynr-js.joynr.ttlUpliftTest", () => {
         jasmine.addMatchers(customMatchers);
 
         const sendRequestReply = function(providerParticipantId, request, cb, replySettings) {
-            const reply = new Reply({
+            const reply = Reply.create({
                 response: "response",
                 requestReplyId: request.requestReplyId
             });
@@ -352,7 +352,7 @@ describe("libjoynr-js.joynr.ttlUpliftTest", () => {
                 expiryDate: expiryDateMs
             };
             const multicastId = "multicastId";
-            const publication = new MulticastPublication({
+            const publication = MulticastPublication.create({
                 multicastId
             });
 
@@ -628,7 +628,7 @@ describe("libjoynr-js.joynr.ttlUpliftTest", () => {
                 expiryDate: expiryDateMs
             };
             const multicastId = "multicastId";
-            const publication = new MulticastPublication({
+            const publication = MulticastPublication.create({
                 multicastId
             });
 

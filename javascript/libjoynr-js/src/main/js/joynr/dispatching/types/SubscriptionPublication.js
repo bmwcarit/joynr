@@ -40,4 +40,4 @@ function SubscriptionPublication(settings) {
     return settings;
 }
 
-module.exports = SubscriptionPublication;
+exports.create = SubscriptionPublication;

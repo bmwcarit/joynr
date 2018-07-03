@@ -58,5 +58,4 @@ function Request(settings) {
 
     return settings;
 }
-
-module.exports = Request;
+exports.create = Request;

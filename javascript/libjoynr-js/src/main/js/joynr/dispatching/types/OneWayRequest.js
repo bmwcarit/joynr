@@ -48,4 +48,4 @@ function OneWayRequest(settings) {
     return settings;
 }
 
-module.exports = OneWayRequest;
+exports.create = OneWayRequest;

@@ -341,7 +341,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", () =>
                 // increase time by 50ms and see if alert was triggered
                 increaseFakeTime(alertAfterIntervalMs / 2);
                 expect(publicationMissedSpy).not.toHaveBeenCalled();
-                const publication = new SubscriptionPublication({
+                const publication = SubscriptionPublication.create({
                     response: ["test"],
                     subscriptionId
                 });
@@ -404,7 +404,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", () =>
                 // increase time by 50ms and see if alert was triggered
                 increaseFakeTime(50);
                 expect(publicationMissedSpy).not.toHaveBeenCalled();
-                const publication = new SubscriptionPublication({
+                const publication = SubscriptionPublication.create({
                     response: ["ZERO"],
                     subscriptionId
                 });
@@ -460,7 +460,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", () =>
                 const testInt = 2;
                 const testEnum = TestEnum.ZERO;
                 expect(onErrorSpy).not.toHaveBeenCalled();
-                const publication = new SubscriptionPublication({
+                const publication = SubscriptionPublication.create({
                     response: [testString, testInt, testEnum.name],
                     subscriptionId
                 });

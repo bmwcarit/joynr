@@ -22,7 +22,7 @@ const Reply = require("../../../../../main/js/joynr/dispatching/types/Reply");
 describe("libjoynr-js.joynr.dispatching.types.Reply", () => {
     it("is instantiable", () => {
         const response = ["response"];
-        const reply = new Reply({
+        const reply = Reply.create({
             requestReplyId: "id",
             response
         });

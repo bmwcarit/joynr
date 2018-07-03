@@ -22,7 +22,7 @@ const Request = require("../../../../../main/js/joynr/dispatching/types/Request"
 describe("libjoynr-js.joynr.dispatching.types.Request", () => {
     it("is instantiable", () => {
         const methodName = "myMethodName";
-        const request = new Request({
+        const request = Request.create({
             methodName
         });
         expect(request).toBeDefined();
@@ -32,7 +32,7 @@ describe("libjoynr-js.joynr.dispatching.types.Request", () => {
 
     it("converts an untyped param to typed", () => {
         const methodName = "myMethodName";
-        const request = new Request({
+        const request = Request.create({
             methodName,
             paramDatatypes: ["joynr.vehicle.radiotypes.RadioStation"],
             params: [

@@ -181,7 +181,7 @@ function RequestReplyManager(dispatcher) {
     };
 
     function createReplyFromError(exception, requestReplyId, handleReplyCallback, replySettings) {
-        const reply = new Reply({
+        const reply = Reply.create({
             error: exception,
             requestReplyId
         });
@@ -302,7 +302,7 @@ function RequestReplyManager(dispatcher) {
             return createReplyFromError(exception, request.requestReplyId, handleReplyCallback, replySettings);
         }
 
-        const reply = new Reply({
+        const reply = Reply.create({
             response: result,
             requestReplyId: request.requestReplyId
         });
