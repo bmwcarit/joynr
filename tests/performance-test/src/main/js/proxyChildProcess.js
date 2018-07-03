@@ -128,6 +128,29 @@ switch (testType) {
                 .then(() => process.send({ msg: "executeBenchmarkFinished" }));
         };
         break;
+    case "immediate": {
+        executeBenchmark = function(name) {
+            const dataLength = testData.length;
+            let finishedTests = 0;
+
+            const testFinished = function() {
+                finishedTests++;
+                if (finishedTests === dataLength) {
+                    process.send({ msg: "executeBenchmarkFinished" });
+                }
+            };
+
+            const pushSome = function() {
+                if (testData.length > 0) {
+                    const item = testData.pop();
+                    benchmarks[name].testProcedure(item).then(testFinished);
+                    setImmediate(pushSome);
+                }
+            };
+            pushSome();
+        };
+        break;
+    }
     default:
         throw new Error("unknown testType");
 }

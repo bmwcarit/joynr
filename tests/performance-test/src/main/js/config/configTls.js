@@ -25,6 +25,7 @@ baseConfig.tls = {
     caPath: "/data/ssl-data/certs/ca.cert.pem",
     ownerId: "client"
 };
+baseConfig.global.testType = "immediate";
 
 for (let i = 0; i < baseConfig.benchmarks.length; i++) {
     baseConfig.benchmarks[i].numRuns /= 12;
