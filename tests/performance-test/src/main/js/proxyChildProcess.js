@@ -33,9 +33,9 @@ let benchmarks;
 
 const testType = options.testType;
 
-log("Using domain " + options.domain);
-error("test runs: " + options.testRuns);
-error("Using testType: " + testType);
+log(`Using domain ${options.domain}`);
+error(`test runs: ${options.testRuns}`);
+error(`Using testType: ${testType}`);
 const provisioning = PerformanceUtilities.getProvisioning(false);
 provisioning.ccAddress.host = options.cchost;
 provisioning.ccAddress.port = options.ccport;
@@ -109,6 +109,29 @@ const measureMemory = options.measureMemory == "true";
 let totalMemory = 0;
 let totalMemoryMeasurements = 0;
 let testData;
+
+let executeBenchmark;
+
+switch (testType) {
+    case "burst":
+        executeBenchmark = function(name) {
+            const promiseArray = testData.map(item => benchmarks[name].testProcedure(item));
+            Promise.all(promiseArray).then(() => process.send({ msg: "executeBenchmarkFinished" }));
+        };
+        break;
+    case "single":
+        executeBenchmark = function(name) {
+            testData
+                .reduce((accumulator, item) => {
+                    return accumulator.then(() => benchmarks[name].testProcedure(item));
+                }, Promise.resolve())
+                .then(() => process.send({ msg: "executeBenchmarkFinished" }));
+        };
+        break;
+    default:
+        throw new Error("unknown testType");
+}
+
 const handler = function(msg) {
     switch (msg.msg) {
         case "terminate":
@@ -141,25 +164,12 @@ const handler = function(msg) {
             process.send({ msg: "prepareBenchmarkFinished" });
             break;
         case "executeBenchmark":
-            // TODO: add different types of tests -> one request after another, all parallel, etc.
-
-            if (testType === "burst") {
-                const promiseArray = testData.map(item => benchmarks[msg.config.name].testProcedure(item));
-                Promise.all(promiseArray).then(() => process.send({ msg: "executeBenchmarkFinished" }));
-            } else if (testType === "single") {
-                testData
-                    .reduce((accumulator, item) => {
-                        return accumulator.then(() => benchmarks[msg.config.name].testProcedure(item));
-                    }, Promise.resolve())
-                    .then(() => process.send({ msg: "executeBenchmarkFinished" }));
-            } else {
-                throw new Error("unknown testType");
-            }
+            executeBenchmark(msg.config.name);
             break;
         case "takeHeapSnapShot":
             var fileName = msg.name;
             heapdump.writeSnapshot(fileName, (err, filename) => {
-                error("dump written to: " + filename);
+                error(`dump written to: ${filename}`);
             });
             break;
         case "subscribeBroadcast":
