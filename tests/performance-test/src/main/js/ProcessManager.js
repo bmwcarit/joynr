@@ -32,11 +32,10 @@ function ChildProcessStuff(type) {
     this.file = type === "provider" ? "providerChildProcess.js" : "proxyChildProcess.js";
 }
 ChildProcessStuff.prototype.initialize = function() {
-    const port = PerformanceUtilities.getRandomInt(1000, 9000);
-    const config = process.env.debug == "true" ? { execArgv: ["--inspect-brk=" + port] } : {};
+    const config = PerformanceUtilities.createChildProcessConfig();
     config.env = Object.create(process.env);
 
-    this.process = child_process.fork("src/main/js/" + this.file, [], config);
+    this.process = child_process.fork(`src/main/js/${this.file}`, [], config);
     this.ready = PerformanceUtilities.createPromise();
     const that = this;
 
@@ -61,8 +60,7 @@ ChildProcessStuff.prototype.initialize = function() {
                 that.broadcastsReceivedPromise.resolve();
                 break;
             default:
-                throw new Error("unknown MessageType" + JSON.stringify(msg));
-                break;
+                throw new Error(`unknown MessageType${JSON.stringify(msg)}`);
         }
     });
 
@@ -117,8 +115,8 @@ ProcessManager.initializeChildProcesses = function() {
 };
 
 ProcessManager.takeHeapSnapShot = function(name) {
-    this.proxy.process.send({ msg: "takeHeapSnapShot", name: "./proxy" + name + ".heapsnapshot" });
-    this.provider.process.send({ msg: "takeHeapSnapShot", name: "./provider" + name + ".heapsnapshot" });
+    this.proxy.process.send({ msg: "takeHeapSnapShot", name: `./proxy${name}.heapsnapshot` });
+    this.provider.process.send({ msg: "takeHeapSnapShot", name: `./provider${name}.heapsnapshot` });
 };
 
 let initializedBroadcasts = false;
@@ -148,7 +146,7 @@ ProcessManager.prepareBroadcasts = function(benchmarkConfig) {
 
 ProcessManager._prepareBroadcastResults = function() {
     const timeMs = Date.now() - this.broadcastStarted;
-    console.log("broadcast took: " + timeMs + "ms");
+    console.log(`broadcast took: ${timeMs}ms`);
     const providerFinished = this.provider.stopMeasurement();
 
     const broadcastProxiesFinished = this.broadcastProxies.map(proxy => proxy.stopMeasurement());

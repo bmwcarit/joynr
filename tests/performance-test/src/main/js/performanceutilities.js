@@ -199,4 +199,28 @@ PerformanceUtilities.getProvisioning = function(isProvider) {
     return provisioning;
 };
 
+let portOffset = 0;
+/**
+ * creates execArgv for child processes the same as parent but with incremented debug port
+ * @returns {{execArgv: Array}}
+ */
+PerformanceUtilities.createChildProcessConfig = function() {
+    const childArgs = [];
+
+    for (const argument of process.execArgv) {
+        if (argument.includes("--inspect")) {
+            const split = argument.split("=");
+            const newDebugPort = Number(split[1]) + ++portOffset;
+            // inspect is either --inspect-brk or --inspect
+            const inspect = split[0];
+            childArgs.push(`${inspect}=${newDebugPort}`);
+        } else {
+            // keep the same arguments for the child as for the parent. e.g. expose-gc
+            childArgs.push(argument);
+        }
+    }
+
+    return { execArgv: childArgs };
+};
+
 module.exports = PerformanceUtilities;
