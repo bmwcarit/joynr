@@ -5,7 +5,19 @@ the versioning scheme [here](JoynrVersioning.md).
 ## API relevant changes
 * **[JS]** Registration of global providers can be made waiting until registration has been
   propagated to GlobalCapabilitiesDirectory by passing an optional boolean flag `awaitGlobalRegistration`
-  to `registerProvider` or `settings.awaitGlobalRegistration` to `register` APIs of joynr.registration.
+  with value `true` to `registerProvider` or `settings.awaitGlobalRegistration` to `register` APIs of
+  joynr.registration.
+
+* **[Java]** Registration of global providers can be made waiting until registration has been
+  propagated to GlobalCapabilitiesDirectory by passing a boolean flag `awaitGlobalRegistration`
+  with value `true` to overloaded `registerProvider`. The `registerProvider` without the flag
+  parameter will still trigger but no longer wait for registration at GlobalCapabilitiesDirectory.
+  The default timeout for calls to the GlobalCapabilitiesDirectory has been shortened to
+  60 seconds in order to be able to return result / timeout to the caller of `registerProvider`,
+  automatically internally undo the local registration as well and allow for a later retry by
+  the application.
+  The JEE case where `registerProvider` is called internally based on annotations continues
+  to use a very long default timeout for the call to GlobalCapabilitiesDirectory as before.
 
 ## Other changes
 * **[C++,Generator]** Deleted InProcess bypass. Every message has to be now routed
