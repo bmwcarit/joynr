@@ -67,7 +67,7 @@ public:
         RadixTreeNode* longestMatch = storage.longestMatch(key);
         if (longestMatch != nullptr) {
             // node with exact key already in tree
-            if (longestMatch->getKey() == key) {
+            if (longestMatch->getFullKey() == key) {
                 StorageEntry& foundStorageEntry = longestMatch->getValue();
                 OptionalSet<ACEntry>& setOfACEntries = getStorageEntry<ACEntry>(foundStorageEntry);
                 // does the set exist in the storageEntry?
