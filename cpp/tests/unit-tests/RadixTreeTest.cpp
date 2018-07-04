@@ -128,6 +128,22 @@ TEST_F(RadixTreeTest, longestMatchDoesNotFindEntryForInternalNodeKey)
     EXPECT_FALSE(node);
 }
 
+TEST(RadixTreeTest2, longestMatchDoesNotReturnNonPrefixEntry)
+{
+    using Tree = joynr::RadixTree<std::string, std::string>;
+    using Node = typename Tree::Node;
+    Tree longestMatchTestTree;
+
+    const std::string rootKey = "";
+    longestMatchTestTree.insert(rootKey, "rootvalue");
+    const std::string secondKey = "abc";
+    longestMatchTestTree.insert(secondKey, "value1");
+
+    const std::string searchKey = "abxyz";
+    Node* resultNode = longestMatchTestTree.longestMatch(searchKey);
+    EXPECT_EQ(resultNode->getKey(), rootKey);
+}
+
 TEST_F(RadixTreeTest, parentsAreValidWithRootValue)
 {
     tree.insert(std::string(""), "root");
