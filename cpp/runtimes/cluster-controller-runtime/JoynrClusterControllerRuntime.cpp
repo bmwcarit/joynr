@@ -268,8 +268,7 @@ void JoynrClusterControllerRuntime::init()
 
     MessagingPropertiesPersistence persist(
             messagingSettings.getMessagingPropertiesPersistenceFilename());
-    std::string clusterControllerId = persist.getChannelId();
-    std::string receiverId = persist.getReceiverId();
+    const std::string clusterControllerId = persist.getChannelId();
 
     std::vector<std::shared_ptr<ITransportStatus>> transportStatuses;
 
@@ -279,6 +278,7 @@ void JoynrClusterControllerRuntime::init()
                             "The http message receiver supplied is NULL, creating the default "
                             "http MessageReceiver");
 
+            const std::string receiverId = persist.getReceiverId();
             httpMessageReceiver = std::make_shared<HttpReceiver>(
                     messagingSettings, clusterControllerId, receiverId);
 
@@ -291,8 +291,9 @@ void JoynrClusterControllerRuntime::init()
 
     if (doMqttMessaging) {
         if (!mqttMessageReceiver || !mqttMessageSender) {
-            std::string ccMqttClientIdPrefix = clusterControllerSettings.getMqttClientIdPrefix();
-            std::string mqttCliendId = ccMqttClientIdPrefix + receiverId;
+            const std::string ccMqttClientIdPrefix =
+                    clusterControllerSettings.getMqttClientIdPrefix();
+            const std::string mqttCliendId = ccMqttClientIdPrefix + clusterControllerId;
 
             mosquittoConnection = std::make_shared<MosquittoConnection>(
                     messagingSettings, clusterControllerSettings, mqttCliendId);
