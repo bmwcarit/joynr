@@ -24,7 +24,6 @@ import joynr.ImmutableMessage;
 import joynr.system.RoutingTypes.Address;
 
 public interface MessageRouter {
-    static final String ROUTER_GLOBAL_ADDRESS = "io.joynr.messaging.globalAddress";
     static final String SCHEDULEDTHREADPOOL = "io.joynr.messaging.scheduledthreadpool";
 
     public void route(ImmutableMessage message);
