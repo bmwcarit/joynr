@@ -897,13 +897,15 @@ private:
         }
 
         if (ifRes) {
+            auto ifSetResult = filterForDomain(ifRes, uid, domain);
             // only got a result from the interface wildcard storage
-            return pickClosest(*ifRes);
+            return pickClosest(ifSetResult);
         }
 
         if (dRes) {
             // only got a result from the domain wildcard storage
-            return pickClosest(*dRes);
+            auto dRetResult = filterForInterface(dRes, uid, interfaceName);
+            return pickClosest(dRetResult);
         }
 
         // no match found
