@@ -30,7 +30,7 @@ import io.joynr.messaging.routing.GlobalAddressFactory;
 import joynr.system.RoutingTypes.Address;
 
 public class GlobalAddressProvider implements Provider<Address> {
-    public static final String GLOBAL_ADDRESS_PROVIDER = "global_address_provider";
+    public static final String GLOBAL_ADDRESS_FACTORIES = "global_address_factories";
 
     private Set<GlobalAddressFactory<? extends Address>> addressFactories;
 
@@ -43,7 +43,7 @@ public class GlobalAddressProvider implements Provider<Address> {
     String primaryGlobalTransport;
 
     @Inject
-    public GlobalAddressProvider(@Named(GLOBAL_ADDRESS_PROVIDER) Set<GlobalAddressFactory<? extends Address>> addressFactories) {
+    public GlobalAddressProvider(@Named(GLOBAL_ADDRESS_FACTORIES) Set<GlobalAddressFactory<? extends Address>> addressFactories) {
         this.addressFactories = addressFactories;
     }
 

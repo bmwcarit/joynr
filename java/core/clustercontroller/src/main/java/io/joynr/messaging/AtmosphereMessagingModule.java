@@ -48,7 +48,7 @@ public class AtmosphereMessagingModule extends AbstractModule {
         globalAddresses = Multibinder.newSetBinder(binder(),
                                                    new TypeLiteral<GlobalAddressFactory<? extends Address>>() {
                                                    },
-                                                   Names.named(GlobalAddressProvider.GLOBAL_ADDRESS_PROVIDER));
+                                                   Names.named(GlobalAddressProvider.GLOBAL_ADDRESS_FACTORIES));
         globalAddresses.addBinding().to(LongPollingHttpGlobalAddressFactory.class);
 
         Multibinder<GlobalAddressFactory<? extends Address>> replyToAddresses;

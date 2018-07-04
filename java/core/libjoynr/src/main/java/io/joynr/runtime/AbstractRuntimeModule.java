@@ -119,7 +119,7 @@ abstract class AbstractRuntimeModule extends AbstractModule {
         // other address types must be added to the Multibinder to support global addressing. Created here to make
         // sure the Set exists, even if empty.
         Multibinder.newSetBinder(binder(), new TypeLiteral<GlobalAddressFactory<? extends Address>>() {
-        }, Names.named(GlobalAddressProvider.GLOBAL_ADDRESS_PROVIDER));
+        }, Names.named(GlobalAddressProvider.GLOBAL_ADDRESS_FACTORIES));
         Multibinder.newSetBinder(binder(), new TypeLiteral<GlobalAddressFactory<? extends Address>>() {
         }, Names.named(ReplyToAddressProvider.REPLY_TO_ADDRESS_PROVIDER));
 
