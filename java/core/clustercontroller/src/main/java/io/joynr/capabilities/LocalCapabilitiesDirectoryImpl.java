@@ -209,15 +209,12 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         }
 
         /*
-         * In case awaitGlobalRegistration is true, a result for this 'add'
-         * call will not be returned before the call to the globalDiscovery
-         * has either succeeded, failed or timed out. In case of failure or
-         * timeout the already created discoveryEntry will also be removed
-         * again from localDiscoveryStore.
+         * In case awaitGlobalRegistration is true, a result for this 'add' call will not be returned before the call to
+         * the globalDiscovery has either succeeded, failed or timed out. In case of failure or timeout the already
+         * created discoveryEntry will also be removed again from localDiscoveryStore.
          *
-         * If awaitGlobalRegistration is false, the call to the globalDiscovery
-         * will just be triggered, but it is not being waited for results or
-         * timeout. Also, in case it does not succeed, the entry remains in
+         * If awaitGlobalRegistration is false, the call to the globalDiscovery will just be triggered, but it is not
+         * being waited for results or timeout. Also, in case it does not succeed, the entry remains in
          * localDiscoveryStore.
          */
         if (discoveryEntry.getQos().getScope().equals(ProviderScope.GLOBAL)) {
@@ -277,9 +274,8 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                     logger.info("global registration for " + globalDiscoveryEntry.getParticipantId() + ", "
                             + globalDiscoveryEntry.getDomain() + " : " + globalDiscoveryEntry.getInterfaceName()
                             + " completed");
+                    globalDiscoveryEntryCache.add(globalDiscoveryEntry);
                     deferred.resolve();
-                    globalDiscoveryEntryCache.add(CapabilityUtils.discoveryEntry2GlobalDiscoveryEntry(discoveryEntry,
-                                                                                                      globalAddress));
                 }
 
                 @Override
@@ -312,7 +308,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
                 @Override
                 public void onFailure(JoynrRuntimeException error) {
-                    //do nothing
+                    // do nothing
                 }
             };
             globalCapabilitiesDirectoryClient.remove(callback, Arrays.asList(discoveryEntry.getParticipantId()));
