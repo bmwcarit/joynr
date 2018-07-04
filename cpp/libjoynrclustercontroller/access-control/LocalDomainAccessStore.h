@@ -889,11 +889,11 @@ private:
         OptionalSet dRes = domainWildcardStorage.getLongestMatch<Value>(domain);
 
         if (ifRes && dRes) {
-            auto ifSetResutl = filterForDomain(ifRes, uid, domain);
-            auto dRetResutl = filterForInterface(dRes, uid, interfaceName);
+            auto ifSetResult = filterForDomain(ifRes, uid, domain);
+            auto dRetResult = filterForInterface(dRes, uid, interfaceName);
             // both the domain and interface wildcard results match the input parameters
             // selection can be done without taking into account all input parameters
-            return pickClosest(ifSetResutl, dRetResutl);
+            return pickClosest(ifSetResult, dRetResult);
         }
 
         if (ifRes) {
