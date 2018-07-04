@@ -110,6 +110,17 @@ public:
     {
     }
 
+    Key getFullKey() const
+    {
+        auto currentNode = this;
+        Key fullKey = currentNode->key;
+        while (!currentNode->isRoot()) {
+            currentNode = currentNode->parent;
+            fullKey = currentNode->key + fullKey;
+        }
+        return fullKey;
+    }
+
     bool isLeaf() const
     {
         return !children || children->size() == 0;
