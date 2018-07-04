@@ -121,7 +121,7 @@ abstract class AbstractRuntimeModule extends AbstractModule {
         Multibinder.newSetBinder(binder(), new TypeLiteral<GlobalAddressFactory<? extends Address>>() {
         }, Names.named(GlobalAddressProvider.GLOBAL_ADDRESS_FACTORIES));
         Multibinder.newSetBinder(binder(), new TypeLiteral<GlobalAddressFactory<? extends Address>>() {
-        }, Names.named(ReplyToAddressProvider.REPLY_TO_ADDRESS_PROVIDER));
+        }, Names.named(ReplyToAddressProvider.REPLY_TO_ADDRESS_FACTORIES));
 
         multicastAddressCalculators = Multibinder.newSetBinder(binder(), new TypeLiteral<MulticastAddressCalculator>() {
         });

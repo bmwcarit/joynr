@@ -30,7 +30,7 @@ import io.joynr.messaging.routing.GlobalAddressFactory;
 import joynr.system.RoutingTypes.Address;
 
 public class ReplyToAddressProvider implements Provider<Address> {
-    public static final String REPLY_TO_ADDRESS_PROVIDER = "reply_to_address_provider";
+    public static final String REPLY_TO_ADDRESS_FACTORIES = "reply_to_address_factories";
 
     private Set<GlobalAddressFactory<? extends Address>> replyToAddressFactories;
 
@@ -43,7 +43,7 @@ public class ReplyToAddressProvider implements Provider<Address> {
     String primaryGlobalTransport;
 
     @Inject
-    public ReplyToAddressProvider(@Named(REPLY_TO_ADDRESS_PROVIDER) Set<GlobalAddressFactory<? extends Address>> addressFactories) {
+    public ReplyToAddressProvider(@Named(REPLY_TO_ADDRESS_FACTORIES) Set<GlobalAddressFactory<? extends Address>> addressFactories) {
         this.replyToAddressFactories = addressFactories;
     }
 

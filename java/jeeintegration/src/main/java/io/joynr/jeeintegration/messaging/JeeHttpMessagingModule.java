@@ -82,7 +82,7 @@ public class JeeHttpMessagingModule extends AbstractModule {
         replyToAddresses = Multibinder.newSetBinder(binder(),
                                                     new TypeLiteral<GlobalAddressFactory<? extends Address>>() {
                                                     },
-                                                    Names.named(ReplyToAddressProvider.REPLY_TO_ADDRESS_PROVIDER));
+                                                    Names.named(ReplyToAddressProvider.REPLY_TO_ADDRESS_FACTORIES));
         replyToAddresses.addBinding().to(ServletHttpGlobalAddressFactory.class);
 
         install(new AccessControlClientModule());

@@ -117,7 +117,7 @@ public class MqttModule extends AbstractModule {
         replyToAddresses = Multibinder.newSetBinder(binder(),
                                                     new TypeLiteral<GlobalAddressFactory<? extends Address>>() {
                                                     },
-                                                    Names.named(ReplyToAddressProvider.REPLY_TO_ADDRESS_PROVIDER));
+                                                    Names.named(ReplyToAddressProvider.REPLY_TO_ADDRESS_FACTORIES));
         replyToAddresses.addBinding().to(MqttReplyToAddressFactory.class);
 
         Multibinder<MulticastAddressCalculator> multicastAddressCalculators = Multibinder.newSetBinder(binder(),
