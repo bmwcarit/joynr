@@ -269,10 +269,10 @@ private:
         for (auto& childIt : *children) {
             const ChildPtr& child = childIt.second;
             if (child->key.front() == key.front()) {
-                if (child->key.size() <= key.size()) {
+                if (child->key.size() <= key.size() &&
+                    key.compare(0, child->key.size(), child->key) == 0) {
                     return child->find(Key(key.begin() + child->key.size(), key.end()));
                 }
-                return child.get();
             }
         }
         return const_cast<RadixTreeNode*>(this);
