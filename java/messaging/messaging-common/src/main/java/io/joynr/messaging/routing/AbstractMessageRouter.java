@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.DelayQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -81,7 +80,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
     private AddressManager addressManager;
     protected final MulticastReceiverRegistry multicastReceiverRegistry;
 
-    private final DelayQueue<DelayableImmutableMessage> messageQueue;
+    private final MessageQueue messageQueue;
     private final StatusReceiver statusReceiver;
 
     private List<MessageProcessedListener> messageProcessedListeners;
@@ -103,7 +102,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
                                  MessagingSkeletonFactory messagingSkeletonFactory,
                                  AddressManager addressManager,
                                  MulticastReceiverRegistry multicastReceiverRegistry,
-                                 DelayQueue<DelayableImmutableMessage> messageQueue,
+                                 MessageQueue messageQueue,
                                  ShutdownNotifier shutdownNotifier,
                                  StatusReceiver statusReceiver) {
         // CHECKSTYLE:ON
@@ -408,6 +407,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
 
     @Override
     public void shutdown() {
+        messageQueue.waitForQueueToDrain();
         for (MessageWorker worker : messageWorkers) {
             worker.stopWorker();
         }

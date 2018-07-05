@@ -18,7 +18,6 @@
  */
 package io.joynr.messaging.routing;
 
-import java.util.concurrent.DelayQueue;
 import java.util.concurrent.ScheduledExecutorService;
 
 import javax.inject.Inject;
@@ -57,7 +56,7 @@ public class CcMessageRouter extends AbstractMessageRouter {
                            MulticastReceiverRegistry multicastReceiverRegistry,
                            AccessController accessController,
                            @Named(ClusterControllerRuntimeModule.PROPERTY_ACCESSCONTROL_ENABLE) boolean enableAccessControl,
-                           DelayQueue<DelayableImmutableMessage> messageQueue,
+                           MessageQueue messageQueue,
                            ShutdownNotifier shutdownNotifier,
                            StatusReceiver statusReceiver) {
         super(routingTable,
