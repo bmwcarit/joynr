@@ -240,6 +240,9 @@
 						<exclude>resources/OwnerRegistrationTable.json</exclude>
 						<exclude>resources/application1_ACL_RCL_Permissions.json</exclude>
 						<exclude>resources/application2_ACL_RCL_Permissions.json</exclude>
+						<exclude>resources/application3_ACL_RCL_Permissions.json</exclude>
+						<exclude>resources/application4_ACL_RCL_Permissions.json</exclude>
+						<exclude>resources/application5_ACL_RCL_Permissions.json</exclude>
 					</excludes>
 				</configuration>
 			</plugin>

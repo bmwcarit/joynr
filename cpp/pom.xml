@@ -71,6 +71,9 @@
 						<exclude>tests/resources/OwnerRegistrationTable.json</exclude>
 						<exclude>tests/resources/application1_ACL_RCL_Permissions.json</exclude>
 						<exclude>tests/resources/application2_ACL_RCL_Permissions.json</exclude>
+						<exclude>tests/resources/application3_ACL_RCL_Permissions.json</exclude>
+						<exclude>tests/resources/application4_ACL_RCL_Permissions.json</exclude>
+						<exclude>tests/resources/application5_ACL_RCL_Permissions.json</exclude>
 					</excludes>
 					</configuration>
 				</plugin>
