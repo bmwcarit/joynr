@@ -64,20 +64,8 @@ public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTe
         joynrConfig.putAll(mqttConfig);
         joynrConfig.putAll(baseTestConfig);
         Module runtimeModule = Modules.override(new CCInProcessRuntimeModule()).with(modules);
-        Module modulesWithRuntime = Modules.override(runtimeModule).with(new MqttPahoModule(), new AbstractModule() {
+        Module modulesWithRuntime = Modules.override(runtimeModule).with(new MqttPahoModule());
 
-            @Override
-            protected void configure() {
-                bind(RawMessagingPreprocessor.class).toInstance(new RawMessagingPreprocessor() {
-
-                    @Override
-                    public byte[] process(byte[] rawMessage, Map<String, Serializable> context) {
-                        return rawMessage;
-                    }
-                });
-            }
-
-        });
         DummyJoynrApplication application = (DummyJoynrApplication) new JoynrInjectorFactory(joynrConfig,
                                                                                              modulesWithRuntime).createApplication(DummyJoynrApplication.class);
 
