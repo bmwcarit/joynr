@@ -105,6 +105,59 @@ public:
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
                     onError) override;
 
+    void methodWithInt64TypeDefParameter(
+            const joynr::interlanguagetest::typeDefCollection::TypeDefForInt64& int64TypeDefIn,
+            std::function<void(const joynr::interlanguagetest::typeDefCollection::TypeDefForInt64&
+                                       int64TypeDefOut)> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+            override;
+
+    void methodWithStringTypeDefParameter(
+            const joynr::interlanguagetest::typeDefCollection::TypeDefForString& stringTypeDefIn,
+            std::function<void(const joynr::interlanguagetest::typeDefCollection::TypeDefForString&
+                                       stringTypeDefOut)> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+            override;
+
+    void methodWithStructTypeDefParameter(
+            const joynr::interlanguagetest::typeDefCollection::TypeDefForStruct& structTypeDefIn,
+            std::function<void(const joynr::interlanguagetest::typeDefCollection::TypeDefForStruct&
+                                       structTypeDefOut)> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+            override;
+
+    void methodWithMapTypeDefParameter(
+            const joynr::interlanguagetest::typeDefCollection::TypeDefForMap& mapTypeDefIn,
+            std::function<void(const joynr::interlanguagetest::typeDefCollection::TypeDefForMap&
+                                       mapTypeDefOut)> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+            override;
+
+    void methodWithEnumTypeDefParameter(
+            const joynr::interlanguagetest::typeDefCollection::TypeDefForEnum::Enum& enumTypeDefIn,
+            std::function<
+                    void(const joynr::interlanguagetest::typeDefCollection::TypeDefForEnum::Enum&
+                                 enumTypeDefOut)> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+            override;
+
+    void methodWithByteBufferTypeDefParameter(
+            const joynr::interlanguagetest::typeDefCollection::TypeDefForByteBuffer&
+                    byteBufferTypeDefIn,
+            std::function<
+                    void(const joynr::interlanguagetest::typeDefCollection::TypeDefForByteBuffer&
+                                 byteBufferTypeDefOut)> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+            override;
+
+    void methodWithArrayTypeDefParameter(
+            const joynr::interlanguagetest::typeDefCollection::ArrayTypeDefStruct& arrayTypeDefIn,
+            std::function<
+                    void(const joynr::interlanguagetest::typeDefCollection::ArrayTypeDefStruct&
+                                 arrayTypeDefOut)> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+            override;
+
     void methodWithSingleEnumParameters(
             const joynr::interlanguagetest::namedTypeCollection2::
                     ExtendedEnumerationWithPartlyDefinedValues::Enum& enumerationArg,

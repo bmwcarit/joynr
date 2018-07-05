@@ -236,6 +236,154 @@ void IltProvider::methodWithMultipleByteBufferParameters(
     onSuccess(byteBufferOut);
 }
 
+void IltProvider::methodWithInt64TypeDefParameter(
+        const joynr::interlanguagetest::typeDefCollection::TypeDefForInt64& int64TypeDefIn,
+        std::function<void(const joynr::interlanguagetest::typeDefCollection::TypeDefForInt64&
+                                   int64TypeDefOut)> onSuccess,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+{
+    JOYNR_LOG_INFO(logger(), "*****************************************************");
+    JOYNR_LOG_INFO(logger(), "* IltProvider::methodWithInt64TypeDefParameter called");
+    JOYNR_LOG_INFO(logger(), "*****************************************************");
+    std::int64_t intReferenceType;
+    if (!IltUtil::checkType(intReferenceType, int64TypeDefIn)) {
+        JOYNR_LOG_WARN(
+                logger(),
+                "methodWithInt64TypeDefParameter - FAILED: invalid input parameter int64TypeDefIn");
+        onError(joynr::exceptions::ProviderRuntimeException(
+                "methodWithInt64TypeDefParameter: received wrong argument"));
+        return;
+    }
+    onSuccess(int64TypeDefIn);
+}
+
+void IltProvider::methodWithStringTypeDefParameter(
+        const joynr::interlanguagetest::typeDefCollection::TypeDefForString& stringTypeDefIn,
+        std::function<void(const joynr::interlanguagetest::typeDefCollection::TypeDefForString&
+                                   stringTypeDefOut)> onSuccess,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+{
+    JOYNR_LOG_INFO(logger(), "******************************************************");
+    JOYNR_LOG_INFO(logger(), "* IltProvider::methodWithStringTypeDefParameter called");
+    JOYNR_LOG_INFO(logger(), "******************************************************");
+    std::string stringReferenceType;
+    if (!IltUtil::checkType(stringReferenceType, stringTypeDefIn)) {
+        JOYNR_LOG_WARN(logger(),
+                       "methodWithStringTypeDefParameter - FAILED: invalid input "
+                       "parameter stringTypeDefIn");
+        onError(joynr::exceptions::ProviderRuntimeException(
+                "methodWithStringTypeDefParameter: received wrong argument"));
+        return;
+    }
+    onSuccess(stringTypeDefIn);
+}
+
+void IltProvider::methodWithStructTypeDefParameter(
+        const joynr::interlanguagetest::typeDefCollection::TypeDefForStruct& structTypeDefIn,
+        std::function<void(const joynr::interlanguagetest::typeDefCollection::TypeDefForStruct&
+                                   structTypeDefOut)> onSuccess,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+{
+    JOYNR_LOG_INFO(logger(), "******************************************************");
+    JOYNR_LOG_INFO(logger(), "* IltProvider::methodWithStructTypeDefParameter called");
+    JOYNR_LOG_INFO(logger(), "******************************************************");
+    joynr::interlanguagetest::namedTypeCollection2::BaseStruct structReferenceType;
+    if (!IltUtil::checkType(structReferenceType, structTypeDefIn)) {
+        JOYNR_LOG_WARN(logger(),
+                       "methodWithStructTypeDefParameter - FAILED: invalid input "
+                       "parameter structTypeDefIn");
+        onError(joynr::exceptions::ProviderRuntimeException(
+                "methodWithStructTypeDefParameter: received wrong argument"));
+        return;
+    }
+    onSuccess(structTypeDefIn);
+}
+
+void IltProvider::methodWithMapTypeDefParameter(
+        const joynr::interlanguagetest::typeDefCollection::TypeDefForMap& mapTypeDefIn,
+        std::function<void(const joynr::interlanguagetest::typeDefCollection::TypeDefForMap&
+                                   mapTypeDefOut)> onSuccess,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+{
+    JOYNR_LOG_INFO(logger(), "***************************************************");
+    JOYNR_LOG_INFO(logger(), "* IltProvider::methodWithMapTypeDefParameter called");
+    JOYNR_LOG_INFO(logger(), "***************************************************");
+    joynr::interlanguagetest::namedTypeCollection2::MapStringString mapReferenceType;
+    if (!IltUtil::checkType(mapReferenceType, mapTypeDefIn)) {
+        JOYNR_LOG_WARN(logger(),
+                       "methodWithMapTypeDefParameter - FAILED: invalid input "
+                       "parameter mapTypeDefIn");
+        onError(joynr::exceptions::ProviderRuntimeException(
+                "methodWithMapTypeDefParameter: received wrong argument"));
+        return;
+    }
+    onSuccess(mapTypeDefIn);
+}
+
+void IltProvider::methodWithEnumTypeDefParameter(
+        const joynr::interlanguagetest::typeDefCollection::TypeDefForEnum::Enum& enumTypeDefIn,
+        std::function<void(const joynr::interlanguagetest::typeDefCollection::TypeDefForEnum::Enum&
+                                   enumTypeDefOut)> onSuccess,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+{
+    JOYNR_LOG_INFO(logger(), "****************************************************");
+    JOYNR_LOG_INFO(logger(), "* IltProvider::methodWithEnumTypeDefParameter called");
+    JOYNR_LOG_INFO(logger(), "****************************************************");
+    joynr::interlanguagetest::Enumeration::Enum enumReferenceType;
+    if (!IltUtil::checkType(enumReferenceType, enumTypeDefIn)) {
+        JOYNR_LOG_WARN(logger(),
+                       "methodWithEnumTypeDefParameter - FAILED: invalid input "
+                       "parameter enumTypeDefIn");
+        onError(joynr::exceptions::ProviderRuntimeException(
+                "methodWithEnumTypeDefParameter: received wrong argument"));
+        return;
+    }
+    onSuccess(enumTypeDefIn);
+}
+
+void IltProvider::methodWithByteBufferTypeDefParameter(
+        const joynr::interlanguagetest::typeDefCollection::TypeDefForByteBuffer&
+                byteBufferTypeDefIn,
+        std::function<void(const joynr::interlanguagetest::typeDefCollection::TypeDefForByteBuffer&
+                                   byteBufferTypeDefOut)> onSuccess,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+{
+    JOYNR_LOG_INFO(logger(), "**********************************************************");
+    JOYNR_LOG_INFO(logger(), "* IltProvider::methodWithByteBufferTypeDefParameter called");
+    JOYNR_LOG_INFO(logger(), "**********************************************************");
+    joynr::ByteBuffer byteBufferReferenceType;
+    if (!IltUtil::checkType(byteBufferReferenceType, byteBufferTypeDefIn)) {
+        JOYNR_LOG_WARN(logger(),
+                       "methodWithByteBufferTypeDefParameter - FAILED: invalid input "
+                       "parameter byteBufferTypeDefIn");
+        onError(joynr::exceptions::ProviderRuntimeException(
+                "methodWithByteBufferTypeDefParameter: received wrong argument"));
+        return;
+    }
+    onSuccess(byteBufferTypeDefIn);
+}
+
+void IltProvider::methodWithArrayTypeDefParameter(
+        const interlanguagetest::typeDefCollection::ArrayTypeDefStruct& arrayTypeDefIn,
+        std::function<void(const interlanguagetest::typeDefCollection::ArrayTypeDefStruct&)>
+                onSuccess,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+{
+    JOYNR_LOG_INFO(logger(), "*****************************************************");
+    JOYNR_LOG_INFO(logger(), "* IltProvider::methodWithArrayTypeDefParameter called");
+    JOYNR_LOG_INFO(logger(), "*****************************************************");
+    joynr::interlanguagetest::typeDefCollection::ArrayTypeDefStruct arrayReferenceType;
+    if (!IltUtil::checkType(arrayTypeDefIn, arrayTypeDefIn)) {
+        JOYNR_LOG_WARN(logger(),
+                       "methodWithArrayTypeDefParameter - FAILED: invalid input "
+                       "parameter arrayTypeDefIn");
+        onError(joynr::exceptions::ProviderRuntimeException(
+                "methodWithArrayTypeDefParameter: received wrong argument"));
+        return;
+    }
+    onSuccess(arrayTypeDefIn);
+}
+
 void IltProvider::methodWithSingleEnumParameters(
         const joynr::interlanguagetest::namedTypeCollection2::
                 ExtendedEnumerationWithPartlyDefinedValues::Enum& enumerationArg,

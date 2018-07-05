@@ -1100,5 +1100,23 @@ public:
         }
         return result;
     }
+
+    // compares the types of two given parameters
+    template <typename T, typename U>
+    static bool checkType(T a, U b)
+    {
+        if (typeid(a) != typeid(b)) {
+            JOYNR_LOG_WARN(logger(),
+                           "checkType: Types {} and {} are not equal!",
+                           typeid(a).name(),
+                           typeid(b).name());
+            return false;
+        }
+        JOYNR_LOG_TRACE(logger(),
+                        "checkType: Types {} and {} are equal",
+                        typeid(a).name(),
+                        typeid(b).name());
+        return true;
+    }
 };
 #endif // ILTUTIL_H
