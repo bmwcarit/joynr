@@ -2,6 +2,18 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.3.2
+
+## API relevant changes
+None.
+
+## Configuration property changes
+None.
+
+## Other changes
+* **[C++]** Additional fix for wildcard storage structure.
+* **[C++]** Use cluster-controller ID instead of receiverID in mqttClientID
+
 # joynr 1.3.1
 
 ## API relevant changes
