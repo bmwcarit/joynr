@@ -233,18 +233,29 @@ public class ProviderWrapperTest {
         assertTrue(result instanceof Promise);
     }
 
-    @Test
-    public void testInvokeMethodThrowingProviderRuntimeException() throws Throwable {
+    private void testProxyInvokesProviderMethod(String methodName,
+                                                PromiseListener promiseListener,
+                                                Boolean shouldBeFulfilled) throws Throwable {
         ProviderWrapper subject = createSubject();
         JoynrProvider proxy = createProxy(subject);
 
-        Method method = TestServiceProviderInterface.class.getMethod("testThrowsProviderRuntimeException");
+        Method method = TestServiceProviderInterface.class.getMethod(methodName);
 
         Object result = subject.invoke(proxy, method, new Object[0]);
         assertNotNull(result);
         assertTrue(result instanceof Promise);
-        assertTrue(((Promise<?>) result).isRejected());
-        ((Promise<?>) result).then(new PromiseListener() {
+        Promise<?> promise = (Promise<?>) result;
+        if (shouldBeFulfilled) {
+            assertTrue(promise.isFulfilled());
+        } else {
+            assertTrue(promise.isRejected());
+        }
+        promise.then(promiseListener);
+    }
+
+    @Test
+    public void testInvokeMethodThrowingProviderRuntimeException() throws Throwable {
+        testProxyInvokesProviderMethod("testThrowsProviderRuntimeException", new PromiseListener() {
             @Override
             public void onFulfillment(Object... values) {
                 fail("Should never get here");
@@ -254,21 +265,12 @@ public class ProviderWrapperTest {
             public void onRejection(JoynrException error) {
                 assertTrue(error instanceof ProviderRuntimeException);
             }
-        });
+        }, false);
     }
 
     @Test
     public void testInvokeMethodThrowingEJBExceptionWrappingRuntimeException() throws Throwable {
-        ProviderWrapper subject = createSubject();
-        JoynrProvider proxy = createProxy(subject);
-
-        Method method = TestServiceProviderInterface.class.getMethod("testThrowsEJBExceptionWrappingRuntimeException");
-
-        Object result = subject.invoke(proxy, method, new Object[0]);
-        assertNotNull(result);
-        assertTrue(result instanceof Promise);
-        assertTrue(((Promise<?>) result).isRejected());
-        ((Promise<?>) result).then(new PromiseListener() {
+        testProxyInvokesProviderMethod("testThrowsEJBExceptionWrappingRuntimeException", new PromiseListener() {
             @Override
             public void onFulfillment(Object... values) {
                 fail("Should never get here");
@@ -278,21 +280,12 @@ public class ProviderWrapperTest {
             public void onRejection(JoynrException error) {
                 assertTrue(error instanceof ProviderRuntimeException);
             }
-        });
+        }, false);
     }
 
     @Test
     public void testInvokeMethodThrowingApplicationException() throws Throwable {
-        ProviderWrapper subject = createSubject();
-        JoynrProvider proxy = createProxy(subject);
-
-        Method method = TestServiceProviderInterface.class.getMethod("testThrowsApplicationException");
-
-        Object result = subject.invoke(proxy, method, new Object[0]);
-        assertNotNull(result);
-        assertTrue(result instanceof Promise);
-        assertTrue(((Promise<?>) result).isRejected());
-        ((Promise<?>) result).then(new PromiseListener() {
+        testProxyInvokesProviderMethod("testThrowsApplicationException", new PromiseListener() {
             @Override
             public void onFulfillment(Object... values) {
                 fail("Should never get here");
@@ -302,22 +295,12 @@ public class ProviderWrapperTest {
             public void onRejection(JoynrException error) {
                 assertTrue(error instanceof ApplicationException);
             }
-        });
+        }, false);
     }
 
     @Test
     public void testInvokeMultiOutMethod() throws Throwable {
-        ProviderWrapper subject = createSubject();
-        JoynrProvider proxy = createProxy(subject);
-
-        Method method = TestServiceProviderInterface.class.getMethod("testMultiOutMethod");
-
-        Object result = subject.invoke(proxy, method, new Object[0]);
-
-        assertTrue(result instanceof Promise);
-        Promise<?> promise = (Promise<?>) result;
-        assertTrue(promise.isFulfilled());
-        promise.then(new PromiseListener() {
+        testProxyInvokesProviderMethod("testMultiOutMethod", new PromiseListener() {
             @Override
             public void onFulfillment(Object... values) {
                 assertArrayEquals(new Object[]{ "one", "two" }, values);
@@ -327,7 +310,7 @@ public class ProviderWrapperTest {
             public void onRejection(JoynrException error) {
                 fail("Shouldn't be here.");
             }
-        });
+        }, true);
     }
 
     @Test
