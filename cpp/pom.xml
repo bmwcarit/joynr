@@ -62,14 +62,15 @@
 						<roots>
 							<root>.</root>
 						</roots>
-						<excludes>
-							<exclude>tests/resources/LDAS_checkPermissionToAdd.json</exclude>
-							<exclude>tests/resources/ListOfCapabilitiesToInject.json</exclude>
-							<exclude>tests/resources/MasterAccessTable.json</exclude>
-							<exclude>tests/resources/MasterRegistrationTable.json</exclude>
-							<exclude>tests/resources/OwnerAccessTable.json</exclude>
-							<exclude>tests/resources/OwnerRegistrationTable.json</exclude>
-						</excludes>
+					<excludes>
+						<exclude>tests/resources/ListOfCapabilitiesToInject.json</exclude>
+						<exclude>tests/resources/MasterAccessTable.json</exclude>
+						<exclude>tests/resources/MasterRegistrationTable.json</exclude>
+						<exclude>tests/resources/OwnerAccessTable.json</exclude>
+						<exclude>tests/resources/OwnerRegistrationTable.json</exclude>
+						<exclude>tests/resources/application1_ACL_RCL_Permissions.json</exclude>
+						<exclude>tests/resources/application2_ACL_RCL_Permissions.json</exclude>
+					</excludes>
 					</configuration>
 				</plugin>
 			</plugins>

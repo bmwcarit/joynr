@@ -928,3 +928,31 @@ TEST_F(LocalDomainAccessStoreTest, denyEverything) {
                                                        joynr::access_control::WILDCARD);
     ASSERT_FALSE(result);
 }
+
+
+TEST_F(LocalDomainAccessStoreTest, loadTwoIdenticalTemplatesWithDifferentUserId) {
+    // load both templates
+    localDomainAccessStore.mergeDomainAccessStore(LocalDomainAccessStore("test-resources/application1_ACL_RCL_Permissions.json"));
+    localDomainAccessStore.mergeDomainAccessStore(LocalDomainAccessStore("test-resources/application2_ACL_RCL_Permissions.json"));
+
+    // verify both userId have rights as defined in the permission file
+    auto result = localDomainAccessStore.getMasterAccessControlEntry("application_1",
+                                                       "domain",
+                                                       "interfaceName",
+                                                       joynr::access_control::WILDCARD);
+    EXPECT_TRUE(result);
+    EXPECT_EQ(result->getUid(), "application_1");
+    EXPECT_EQ(result->getDomain(), "*");
+    EXPECT_EQ(result->getInterfaceName(), "*");
+    EXPECT_EQ(result->getDefaultConsumerPermission(), joynr::infrastructure::DacTypes::Permission::YES);
+
+    result = localDomainAccessStore.getMasterAccessControlEntry("application_2",
+                                                       "domain",
+                                                       "interfaceName",
+                                                       joynr::access_control::WILDCARD);
+    EXPECT_TRUE(result);
+    EXPECT_EQ(result->getUid(), "application_2");
+    EXPECT_EQ(result->getDomain(), "*");
+    EXPECT_EQ(result->getInterfaceName(), "*");
+    EXPECT_EQ(result->getDefaultConsumerPermission(), joynr::infrastructure::DacTypes::Permission::YES);
+}
