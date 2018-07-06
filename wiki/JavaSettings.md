@@ -739,6 +739,21 @@ the value of this property.
 * **Unit**: milliseconds
 * **Default value**: `3628800000 (6 weeks)`
 
+
+## ShutdownNotifier
+
+### `PREPARE_FOR_SHUTDOWN_PROPERTY`
+Allows you to specify the number of seconds that `ShutdownNotifier#prepareForShutdown`
+will block before timing out and returning control to the user if the system isn't able
+to prepare for shutdown in time.
+
+* **OPTIONAL**
+* **Type**: int
+* **User property**: `joynr.runtime.prepareforshutdowntimeout`
+* **Unit**: seconds
+* **Default value**: 5
+
+
 ## JEE Integration
 
 These properties are defined as constants in the

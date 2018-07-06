@@ -50,6 +50,10 @@ public class TestRuntime implements JoynrRuntime {
     }
 
     @Override
+    public void prepareForShutdown() {
+    }
+
+    @Override
     public void shutdown(boolean clear) {
     }
 

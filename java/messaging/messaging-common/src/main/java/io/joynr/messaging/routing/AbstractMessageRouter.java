@@ -406,8 +406,12 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
     }
 
     @Override
-    public void shutdown() {
+    public void prepareForShutdown() {
         messageQueue.waitForQueueToDrain();
+    }
+
+    @Override
+    public void shutdown() {
         for (MessageWorker worker : messageWorkers) {
             worker.stopWorker();
         }
