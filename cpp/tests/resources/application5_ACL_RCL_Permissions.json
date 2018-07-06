@@ -1,0 +1,52 @@
+{
+  "masterAccessTable": [
+    {
+      "_typeName": "joynr.infrastructure.DacTypes.MasterAccessControlEntry",
+      "uid": "application_1",
+      "domain": "common.prefix.domain1",
+      "interfaceName": "same/interface/prefix/*",
+      "defaultRequiredTrustLevel": "HIGH",
+      "possibleRequiredTrustLevels": [
+        "HIGH"
+      ],
+      "defaultRequiredControlEntryChangeTrustLevel": "HIGH",
+      "possibleRequiredControlEntryChangeTrustLevels": [
+        "HIGH"
+      ],
+      "operation": "*",
+      "defaultConsumerPermission": "YES",
+      "possibleConsumerPermissions": [
+        "YES",
+        "NO",
+        "ASK"
+      ]
+    },
+    {
+      "_typeName": "joynr.infrastructure.DacTypes.MasterAccessControlEntry",
+      "uid": "application_1",
+      "domain": "common.prefix.domain2",
+      "interfaceName": "same/interface/prefix/*",
+      "defaultRequiredTrustLevel": "HIGH",
+      "possibleRequiredTrustLevels": [
+        "HIGH"
+      ],
+      "defaultRequiredControlEntryChangeTrustLevel": "HIGH",
+      "possibleRequiredControlEntryChangeTrustLevels": [
+        "HIGH"
+      ],
+      "operation": "*",
+      "defaultConsumerPermission": "YES",
+      "possibleConsumerPermissions": [
+        "YES",
+        "NO",
+        "ASK"
+      ]
+    }
+  ],
+  "mediatorAccessTable": [],
+  "ownerAccessTable": [],
+  "masterRegistrationTable": [],
+  "mediatorRegistrationTable": [],
+  "ownerRegistrationTable": [],
+  "domainRoleTable": []
+}

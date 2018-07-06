@@ -78,6 +78,7 @@ protected:
     dac::MasterAccessControlEntry mace_0;
     dac::MasterAccessControlEntry mace_1;
 
+public:
     static bool isACEinSet(const OptionalSet<dac::MasterAccessControlEntry>& set,
                            const dac::MasterAccessControlEntry& mace)
     {
@@ -183,4 +184,52 @@ TYPED_TEST(WildcardStorageTestTypedTest, lookupInEmptySet)
     const std::string key = "key*";
     const OptionalSet<TypeParam> resultSet = storage.getLongestMatch<TypeParam>(key);
     ASSERT_TRUE(!resultSet);
+}
+
+TEST(WildcardStorageTest, insertTestWithMultipleEntriesPerKey)
+{
+    joynr::access_control::WildcardStorage storage;
+
+    const std::string rootKey = "*";
+    dac::MasterAccessControlEntry rootEntry;
+    rootEntry.setInterfaceName("rootEntry");
+
+    const std::string subkey1 = "wildcard.key.with.common.parts.123*";
+    dac::MasterAccessControlEntry entry1;
+    entry1.setInterfaceName("entry1");
+
+    dac::MasterAccessControlEntry entry2;
+    entry2.setInterfaceName("entry2");
+
+    const std::string subkey2 = "wildcard.key.with.common.parts.456*";
+    dac::MasterAccessControlEntry entry3;
+    entry3.setInterfaceName("entry3");
+
+    dac::MasterAccessControlEntry entry4;
+    entry4.setInterfaceName("entry4");
+
+    dac::MasterAccessControlEntry entry5;
+    entry5.setInterfaceName("entry5");
+
+    storage.insert<std::string>(rootKey, rootEntry);
+    storage.insert<std::string>(subkey1, entry1);
+    storage.insert<std::string>(subkey1, entry2);
+    storage.insert<std::string>(subkey2, entry3);
+    storage.insert<std::string>(subkey2, entry4);
+    storage.insert<std::string>(subkey2, entry5);
+
+    OptionalSet<dac::MasterAccessControlEntry> resultSet = storage.getLongestMatch<dac::MasterAccessControlEntry>(subkey1);
+    ASSERT_TRUE(resultSet);
+    EXPECT_EQ(resultSet->size(), 3); // 2 specific entries + root entry
+    EXPECT_TRUE(WildcardStorageTestP::isACEinSet(resultSet, rootEntry));
+    EXPECT_TRUE(WildcardStorageTestP::isACEinSet(resultSet, entry1));
+    EXPECT_TRUE(WildcardStorageTestP::isACEinSet(resultSet, entry2));
+
+    resultSet = storage.getLongestMatch<dac::MasterAccessControlEntry>(subkey2);
+    ASSERT_TRUE(resultSet);
+    EXPECT_EQ(resultSet->size(), 4); // 3 specific entries + root entry
+    EXPECT_TRUE(WildcardStorageTestP::isACEinSet(resultSet, rootEntry));
+    EXPECT_TRUE(WildcardStorageTestP::isACEinSet(resultSet, entry3));
+    EXPECT_TRUE(WildcardStorageTestP::isACEinSet(resultSet, entry4));
+    EXPECT_TRUE(WildcardStorageTestP::isACEinSet(resultSet, entry5));
 }
