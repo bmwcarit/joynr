@@ -18,12 +18,16 @@
  */
 package io.joynr.test.interlanguage;
 
+import java.lang.reflect.Method;
+import java.util.Objects;
+
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.interlanguagetest.Enumeration;
 import joynr.interlanguagetest.namedTypeCollection2.BaseStruct;
 import joynr.interlanguagetest.namedTypeCollection2.ExtendedEnumerationWithPartlyDefinedValues;
 import joynr.interlanguagetest.namedTypeCollection2.ExtendedExtendedBaseStruct;
 import joynr.interlanguagetest.namedTypeCollection2.MapStringString;
+import joynr.interlanguagetest.typeDefCollection.ArrayTypeDefStruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +37,10 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public class IltConsumerGetterSetterTest extends IltConsumerTest {
@@ -50,6 +58,23 @@ public class IltConsumerGetterSetterTest extends IltConsumerTest {
         LOG.info("tearDown: Entering");
         generalTearDown();
         LOG.info("tearDown: Leaving");
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T> void genericGetterSetterTestMethod(T arg, String methodName) {
+        try {
+            Method mSetter = testInterfaceProxy.getClass().getMethod("set" + methodName, arg.getClass());
+            Method mGetter = testInterfaceProxy.getClass().getMethod("get" + methodName);
+
+            mSetter.invoke(testInterfaceProxy, arg);
+            T result = (T) mGetter.invoke(testInterfaceProxy);
+
+            assertNotNull(name.getMethodName() + TEST_FAILED_NO_RESULT, result);
+            assertTrue(name.getMethodName() + TEST_FAILED_INVALID_RESULT, Objects.deepEquals(arg, result));
+
+        } catch (Exception e) {
+            fail(name.getMethodName() + TEST_FAILED_EXCEPTION + e.getMessage());
+        }
     }
 
     /*
@@ -287,6 +312,66 @@ public class IltConsumerGetterSetterTest extends IltConsumerTest {
         }
 
         LOG.info(name.getMethodName() + " - OK");
+    }
+
+    @Test
+    public void callGetAttributeInt64TypeDef() {
+        LOG.info(name.getMethodName());
+        Long int64TypeDefArg = 1L;
+        genericGetterSetterTestMethod(int64TypeDefArg, "AttributeInt64TypeDef");
+        LOG.info(name.getMethodName() + TEST_SUCCEEDED);
+    }
+
+    @Test
+    public void callGetAttributeStringTypeDef() {
+        LOG.info(name.getMethodName());
+        String stringTypeDefArg = "StringTypeDef";
+        genericGetterSetterTestMethod(stringTypeDefArg, "AttributeStringTypeDef");
+        LOG.info(name.getMethodName() + TEST_SUCCEEDED);
+    }
+
+    @Test
+    public void callGetAttributeStructTypeDef() {
+        LOG.info(name.getMethodName());
+        BaseStruct structTypeDefArg = IltUtil.createBaseStruct();
+        genericGetterSetterTestMethod(structTypeDefArg, "AttributeStructTypeDef");
+        LOG.info(name.getMethodName() + TEST_SUCCEEDED);
+    }
+
+    @Test
+    public void callGetAttributeMapTypeDef() {
+        LOG.info(name.getMethodName());
+        MapStringString mapTypeDefArg = new MapStringString();
+        mapTypeDefArg.put("keyString1", "valueString1");
+        mapTypeDefArg.put("keyString2", "valueString2");
+        mapTypeDefArg.put("keyString3", "valueString3");
+        genericGetterSetterTestMethod(mapTypeDefArg, "AttributeMapTypeDef");
+        LOG.info(name.getMethodName() + TEST_SUCCEEDED);
+    }
+
+    @Test
+    public void callGetAttributeEnumTypeDef() {
+        LOG.info(name.getMethodName());
+        Enumeration enumTypeDefArg = Enumeration.ENUM_0_VALUE_1;
+        genericGetterSetterTestMethod(enumTypeDefArg, "AttributeEnumTypeDef");
+        LOG.info(name.getMethodName() + TEST_SUCCEEDED);
+    }
+
+    @Test
+    public void callGetAttributeByteBufferTypeDef() {
+        LOG.info(name.getMethodName());
+        Byte[] byteBufferTypeDefArg = { -128, 0, 127 };
+        genericGetterSetterTestMethod(byteBufferTypeDefArg, "AttributeByteBufferTypeDef");
+        LOG.info(name.getMethodName() + TEST_SUCCEEDED);
+    }
+
+    @Test
+    public void callGetAttributeArrayTypeDef() {
+        LOG.info(name.getMethodName());
+        String[] stringArray = IltUtil.createStringArray();
+        ArrayTypeDefStruct arrayTypeDefArg = new ArrayTypeDefStruct(stringArray);
+        genericGetterSetterTestMethod(arrayTypeDefArg, "AttributeArrayTypeDef");
+        LOG.info(name.getMethodName() + TEST_SUCCEEDED);
     }
 
     @Test
