@@ -29,6 +29,19 @@ the versioning scheme [here](JoynrVersioning.md).
 * **[Java]** Introduced `PROPERTY_KEY_MQTT_SEPARATE_CONNECTIONS` to use separate MQTT connections.
   See [Java Configuration Reference](JavaSettings.md) for more details.
 
+# joynr 1.3.2
+
+## API relevant changes
+None.
+
+## Configuration property changes
+None.
+
+## Other changes
+* **[C++]** Additional fix for wildcard storage structure.
+* **[C++]** Use cluster-controller ID instead of receiverID in mqttClientID
+* **[C++]** Allow local communication before initializing global communication
+
 # joynr 1.3.1
 
 ## API relevant changes
