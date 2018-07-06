@@ -13,6 +13,7 @@ None.
 ## Other changes
 * **[C++]** Additional fix for wildcard storage structure.
 * **[C++]** Use cluster-controller ID instead of receiverID in mqttClientID
+* **[C++]** Allow local communication before initializing global communication
 
 # joynr 1.3.1
 
