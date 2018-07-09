@@ -24,6 +24,7 @@ const PerformanceUtilities = {};
 const configName = process.env.configName || "config";
 const config = require(`./config/${configName}`);
 const fs = require("fs");
+const child_process = require("child_process");
 
 PerformanceUtilities.createByteArray = function(size, defaultValue) {
     const result = [];
@@ -104,6 +105,34 @@ PerformanceUtilities.getCommandLineOptionsOrDefaults = function() {
     };
 };
 
+PerformanceUtilities.getCcPiD = function() {
+    let pid;
+    try {
+        const execResult = child_process.execSync("ps -ef | grep cluster-controller | grep -v grep").toString();
+
+        if (execResult.length === 0) {
+            throw new Error("did not find a cc pid. -> Is the clustercontroller running? ");
+        }
+        pid = execResult.replace(/\s+/g, " ").split(" ")[1];
+    } catch (e) {
+        // ps -ef is not available -> assume busybox
+        const execResult = child_process.execSync("ps | grep cluster-controller | grep -v grep").toString();
+        pid = execResult
+            .replace(/\s+/g, " ")
+            .trim()
+            .split(" ")[0];
+        // trim is necessary because ps sometimes has a blank first
+    }
+
+    console.log(`cluster-controller pid is: ${pid}`);
+
+    if (isNaN(pid)) {
+        throw new Error(`cluster-controller pid is not a number: ${pid}`);
+    }
+
+    return pid;
+};
+
 PerformanceUtilities.getRandomInt = function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 };
@@ -177,8 +206,12 @@ PerformanceUtilities.getProvisioning = function(isProvider) {
         provisioning = require("test-base").provisioning_common;
         provisioning.logging.configuration.loggers.root.level = "error";
     }
+    if (config.keychain) {
+        provisioning.keychain = config.keychain;
 
-    if (config.tls) {
+        provisioning.ccAddress.protocol = "wss";
+        provisioning.ccAddress.port = 4243;
+    } else if (config.tls) {
         provisioning.keychain = {};
 
         if (config.tls.certPath) {

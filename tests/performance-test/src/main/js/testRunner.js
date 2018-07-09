@@ -30,6 +30,10 @@ const summary = [];
 let benchmarks = null;
 const Benchmarks = require("./Benchmarks");
 const ProcessManager = require("./ProcessManager");
+const child_process = require("child_process");
+const path = require("path");
+const getCpuScript = path.join(__dirname, "getCpuTime.sh");
+const ccPId = PerformanceUtilities.getCcPiD();
 
 var testRunner = {
     displaySummary() {
@@ -72,19 +76,12 @@ var testRunner = {
             .then(() => {
                 const elapsedTimeMs = Date.now() - startTime;
                 log(
-                    benchmarkConfig.name +
-                        " " +
-                        index +
-                        " runs: " +
-                        numRuns +
-                        " took " +
-                        elapsedTimeMs +
-                        " ms. " +
-                        numRuns / (elapsedTimeMs / 1000) +
-                        " msgs/s"
+                    `${benchmarkConfig.name} ${index} runs: ${numRuns} took ${elapsedTimeMs} ms. ${numRuns /
+                        (elapsedTimeMs / 1000)} msgs/s`
                 );
                 const providerMeasurementPromise = ProcessManager.provider.stopMeasurement();
                 const proxyMeasurementPromise = ProcessManager.proxy.stopMeasurement();
+
                 return Promise.all([providerMeasurementPromise, proxyMeasurementPromise]).then(values => {
                     return { proxy: values[1], provider: values[0], time: elapsedTimeMs };
                 });
@@ -92,10 +89,10 @@ var testRunner = {
     },
 
     executeSubRunsWithWarmUp(benchmarkConfig) {
-        error("warming up: " + benchmarkConfig.name);
+        error(`warming up: ${benchmarkConfig.name}`);
         if (options.heapSnapShot == "true") {
             setTimeout(() => {
-                ProcessManager.takeHeapSnapShot(Date.now() + "start" + benchmarkConfig.name);
+                ProcessManager.takeHeapSnapShot(`${Date.now()}start${benchmarkConfig.name}`);
             }, 500);
         }
         return testRunner
@@ -119,6 +116,9 @@ var testRunner = {
         const providerMemory = [];
         const latency = [];
 
+        const startCcCpu = Number(child_process.execFileSync(getCpuScript, [ccPId]).toString());
+        console.log(`startCpu: ${startCcCpu}`);
+
         return dummyArray
             .reduce(accumulator => {
                 return accumulator.then(() => {
@@ -138,6 +138,8 @@ var testRunner = {
                 });
             }, Promise.resolve())
             .then(() => {
+                const stopCCCpu = Number(child_process.execFileSync(getCpuScript, [ccPId]).toString());
+
                 error("summary started");
                 totalLatency = latency.reduce((acc, curr) => acc + curr);
                 let averageMsgPerSecond = totalRuns / (totalLatency / 1000);
@@ -168,10 +170,12 @@ var testRunner = {
                 result.time.totalProxySystemTime = proxySystemTime.reduce((acc, curr) => acc + curr) / 1000.0;
                 result.time.totalProviderTime = result.time.totalProviderUserTime + result.time.totalProviderSystemTime;
                 result.time.totalProxyTime = result.time.totalProxyUserTime + result.time.totalProxySystemTime;
+                result.time.totalCCTime = (stopCCCpu - startCcCpu) * 10; // cctime is in number of ticks which is 10 ms long each
                 result.time.totalTime = result.time.totalProviderTime + result.time.totalProxyTime;
 
                 result.percentage.providerPercentage = result.time.totalProviderTime / totalLatency;
                 result.percentage.proxyPercentage = result.time.totalProxyTime / totalLatency;
+                result.percentage.totalCCPercentage = result.time.totalCCTime / totalLatency;
 
                 result.memory = {};
                 if (measureMemory) {
@@ -186,26 +190,26 @@ var testRunner = {
     },
     logResults(result) {
         error("");
-        error("Benchmark    : " + result.other.benchmarkName);
-        error("total latency: " + result.other.totalLatency + " ms ");
-        error("speed average: " + result.other.averageTime + " +/- " + result.other.deviation + " msgs/s: ");
-        error("speed highest: " + result.other.highestMsgPerSecond + " msg/s");
+        error(`Benchmark    : ${result.other.benchmarkName}`);
+        error(`total latency: ${result.other.totalLatency} ms `);
+        error(`speed average: ${result.other.averageTime} +/- ${result.other.deviation} msgs/s: `);
+        error(`speed highest: ${result.other.highestMsgPerSecond} msg/s`);
 
         for (const key in result.time) {
             if (Object.prototype.hasOwnProperty.call(result.time, key)) {
-                error(key + ": " + result.time[key].toFixed(0) + "ms");
+                error(`${key}: ${result.time[key].toFixed(0)}ms`);
             }
         }
 
         for (const key in result.percentage) {
             if (Object.prototype.hasOwnProperty.call(result.percentage, key)) {
-                error(key + ": " + (result.percentage[key] * 100).toFixed(1) + "%");
+                error(`${key}: ${(result.percentage[key] * 100).toFixed(1)}% of one cpu`);
             }
         }
 
         for (const key in result.memory) {
             if (Object.prototype.hasOwnProperty.call(result.memory, key)) {
-                error(key + ": " + (result.memory[key] / 1048576.0).toFixed(2) + "MB");
+                error(`${key}: ${(result.memory[key] / 1048576.0).toFixed(2)}MB`);
             }
         }
     }
