@@ -2,6 +2,19 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.5.0-SNAPSHOT
+
+## API relevant changes
+None.
+
+## Other changes
+None.
+
+## Configuration property changes
+None.
+
+# joynr 1.4.0
+
 ## API relevant changes
 * **[JS]** Registration of global providers can be made waiting until registration has been
   propagated to GlobalCapabilitiesDirectory by passing an optional boolean flag `awaitGlobalRegistration`
