@@ -152,7 +152,7 @@ private:
     bool isParentMessageRouterSet();
     void addNextHopToParent(std::string participantId,
                             bool isGloballyVisible,
-                            std::function<void(void)> callbackFct = nullptr,
+                            std::function<void(void)> onSuccess = nullptr,
                             std::function<void(const joynr::exceptions::ProviderRuntimeException&)>
                                     onError = nullptr);
 
