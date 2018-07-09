@@ -133,7 +133,11 @@ public:
     /*
      * Method specific to LibJoynrMessageRouter
      */
-    void setParentRouter(std::shared_ptr<joynr::system::RoutingProxy> parentRouter);
+    void setParentRouter(std::shared_ptr<joynr::system::RoutingProxy> parentRouter,
+                         std::function<void()> onSuccess = nullptr,
+                         std::function<void(const joynr::exceptions::ProviderRuntimeException&)>
+                                 onError = nullptr);
+
     bool publishToGlobal(const ImmutableMessage& message) final;
 
     /*

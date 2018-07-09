@@ -91,7 +91,10 @@ void LibJoynrMessageRouter::setParentAddress(
     addProvisionedNextHop(parentParticipantId, this->parentAddress, DEFAULT_IS_GLOBALLY_VISIBLE);
 }
 
-void LibJoynrMessageRouter::setParentRouter(std::shared_ptr<system::RoutingProxy> parentRouter)
+void LibJoynrMessageRouter::setParentRouter(
+        std::shared_ptr<system::RoutingProxy> parentRouter,
+        std::function<void(void)> onSuccess,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     assert(parentAddress);
     this->parentRouter = std::move(parentRouter);
@@ -100,7 +103,10 @@ void LibJoynrMessageRouter::setParentRouter(std::shared_ptr<system::RoutingProxy
     // this is necessary because during normal registration, the parent proxy is not yet set
     // because the routing provider is local, therefore isGloballyVisible is false
     const bool isGloballyVisible = false;
-    addNextHopToParent(this->parentRouter->getProxyParticipantId(), isGloballyVisible);
+    addNextHopToParent(this->parentRouter->getProxyParticipantId(),
+                       isGloballyVisible,
+                       std::move(onSuccess),
+                       std::move(onError));
 }
 
 /**
