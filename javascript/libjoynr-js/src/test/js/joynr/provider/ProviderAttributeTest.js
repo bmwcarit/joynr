@@ -371,7 +371,7 @@ describe("libjoynr-js.joynr.provider.ProviderAttribute", () => {
             .catch(fail);
     });
 
-    function setSameValueDoesNotCallValueChangedObserver(attribute, promiseChain) {
+    async function setSameValueDoesNotCallValueChangedObserver(attribute) {
         const spy1 = jasmine.createSpy("spy1");
         const spy2 = jasmine.createSpy("spy2");
 
@@ -391,39 +391,28 @@ describe("libjoynr-js.joynr.provider.ProviderAttribute", () => {
         });
 
         // expect 2 observers to be called
-        return promiseChain
-            .then(() => {
-                return attribute.set(value);
-            })
-            .then(() => {
-                expect(spy1).toHaveBeenCalled();
-                expect(spy1).toHaveBeenCalledWith([value]);
-                expect(spy2).toHaveBeenCalled();
-                expect(spy2).toHaveBeenCalledWith([value]);
-                return attribute.set(value);
-            })
-            .then(() => {
-                expect(spy1.calls.count()).toEqual(1);
-                expect(spy2.calls.count()).toEqual(1);
-            });
+
+        await attribute.set(value);
+
+        expect(spy1).toHaveBeenCalled();
+        expect(spy1).toHaveBeenCalledWith([value]);
+        expect(spy2).toHaveBeenCalled();
+        expect(spy2).toHaveBeenCalledWith([value]);
+        await attribute.set(value);
+
+        expect(spy1.calls.count()).toEqual(1);
+        expect(spy2.calls.count()).toEqual(1);
     }
 
-    it("doesn't notify observer when calling set with same values", done => {
+    it("doesn't notify observer when calling set with same values", async () => {
         let i, attribute;
-        let promiseChain = Promise.resolve();
 
         for (i = 0; i < allNotifyAttributes.length; ++i) {
             attribute = allNotifyAttributes[i];
             if (attribute.set) {
-                promiseChain = setSameValueDoesNotCallValueChangedObserver(attribute, promiseChain);
+                await setSameValueDoesNotCallValueChangedObserver(attribute);
             }
         }
-        promiseChain
-            .then(() => {
-                done();
-                return null;
-            })
-            .catch(fail);
     });
 
     it("calls provided setter implementation with enum as operation argument", done => {

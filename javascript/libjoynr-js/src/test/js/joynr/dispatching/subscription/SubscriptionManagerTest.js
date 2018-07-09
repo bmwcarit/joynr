@@ -210,6 +210,29 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", () =>
             .catch(fail);
     });
 
+    it("rejects broadcast subscription requests with ttl expired when no reply arrives", done => {
+        const ttl = 250;
+        const parameters = {
+            proxyId: "subscriber",
+            providerDiscoveryEntry,
+            broadcastName: "broadcastName",
+            subscriptionQos: new OnChangeSubscriptionQos({
+                expiryDateMs: Date.now() + ttl
+            })
+        };
+
+        dispatcherSpy.sendBroadcastSubscriptionRequest.and.returnValue(Promise.resolve());
+
+        subscriptionManager
+            .registerBroadcastSubscription(parameters)
+            .then(fail)
+            .catch(e => {
+                expect(e).toBeDefined();
+                done();
+            });
+        increaseFakeTime(ttl + 1);
+    });
+
     it("alerts on missed publication and stops", done => {
         const publicationReceivedSpy = jasmine.createSpy("publicationReceivedSpy");
         const publicationMissedSpy = jasmine.createSpy("publicationMissedSpy");
@@ -246,7 +269,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", () =>
                 return null;
             })
             .catch(error => {
-                log.error("Error in sendSubscriptionRequest :" + error);
+                log.error(`Error in sendSubscriptionRequest :${error}`);
                 fail();
             });
 
@@ -270,7 +293,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", () =>
 
         dispatcherSpy.sendSubscriptionRequest.calls.reset();
         subscriptionManager.registerSubscription(subscriptionSettings).catch(error => {
-            expect("Error in sendSubscriptionRequest :" + error).toBeTruthy();
+            expect(`Error in sendSubscriptionRequest :${error}`).toBeTruthy();
         });
         increaseFakeTime(1);
 
@@ -285,7 +308,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", () =>
                 expect(dispatcherSpy.sendSubscriptionRequest.calls.argsFor(0)[0].messagingQos.ttl).toEqual(ttl);
                 subscriptionSettings.qos.expiryDateMs = SubscriptionQos.NO_EXPIRY_DATE;
                 subscriptionManager.registerSubscription(subscriptionSettings).catch(error => {
-                    expect("Error in sendSubscriptionRequest :" + error).toBeTruthy();
+                    expect(`Error in sendSubscriptionRequest :${error}`).toBeTruthy();
                 });
                 increaseFakeTime(1);
                 return waitsFor(
@@ -681,7 +704,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", () =>
                 return null;
             })
             .catch(error => {
-                log.error("Error in sendSubscriptionRequest :" + error);
+                log.error(`Error in sendSubscriptionRequest :${error}`);
                 fail();
             });
         increaseFakeTime(1);
@@ -728,7 +751,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", () =>
                 return null;
             })
             .catch(error => {
-                fail("caught error: " + error);
+                fail(`caught error: ${error}`);
             });
     });
 
@@ -796,6 +819,30 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", () =>
         increaseFakeTime(1);
     });
 
+    it("rejects subscription requests with ttl expired when no reply arrives", done => {
+        const ttl = 250;
+        const parameters = {
+            proxyId: "subscriber",
+            providerDiscoveryEntry,
+            attributeName: "testAttribute",
+            attributeType: "String",
+            qos: new OnChangeSubscriptionQos({
+                expiryDateMs: Date.now() + ttl
+            })
+        };
+
+        dispatcherSpy.sendSubscriptionRequest.and.returnValue(Promise.resolve());
+
+        subscriptionManager
+            .registerSubscription(parameters)
+            .then(fail)
+            .catch(e => {
+                expect(e).toBeDefined();
+                done();
+            });
+        increaseFakeTime(ttl + 1);
+    });
+
     it("registers broadcast subscription, resolves with subscriptionId and calls onSubscribed callback", done => {
         const publicationReceivedSpy = jasmine.createSpy("publicationReceivedSpy");
         const publicationErrorSpy = jasmine.createSpy("publicationErrorSpy");
@@ -852,7 +899,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", () =>
                 onSubscribed: publicationSubscribedSpy
             })
             .then(subscriptionId => {
-                fail("unexpected success: " + subscriptionId);
+                fail(`unexpected success: ${subscriptionId}`);
             })
             .catch(error => {
                 expect(error instanceof SubscriptionException);
@@ -897,7 +944,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", () =>
                 onSubscribed: publicationSubscribedSpy
             })
             .then(subscriptionId => {
-                fail("unexpected success: " + subscriptionId);
+                fail(`unexpected success: ${subscriptionId}`);
             })
             .catch(error => {
                 expect(error instanceof SubscriptionException);
@@ -943,7 +990,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", () =>
             });
     });
 
-    it(" it unsubscribes all Subscriptions when terminateSubscriptions is being called", function(done) {
+    it(" it unsubscribes all Subscriptions when terminateSubscriptions is being called", async () => {
         const subscriptionSettings = createDummySubscriptionRequest();
         const broadcastSettings = createDummyBroadcastSubscriptionRequest({
             broadcastName: "broadcastName",
@@ -951,23 +998,19 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", () =>
         });
         const clearSubscriptionsTimeoutMs = 1000;
 
-        subscriptionManager
-            .registerSubscription(subscriptionSettings)
-            .then(subscriptionManager.registerBroadcastSubscription.bind(this, broadcastSettings))
-            .then(subscriptionManager.terminateSubscriptions.bind(subscriptionManager, clearSubscriptionsTimeoutMs))
-            .then(subscriptionManager.shutdown)
-            .then(() => {
-                expect(dispatcherSpy.sendSubscriptionStop).toHaveBeenCalled();
-                expect(dispatcherSpy.sendSubscriptionStop.calls.count()).toEqual(1);
-                expect(dispatcherSpy.sendSubscriptionStop.calls.argsFor(0)[0].messagingQos).toEqual(
-                    new MessagingQos({ ttl: clearSubscriptionsTimeoutMs })
-                );
-                expect(dispatcherSpy.sendMulticastSubscriptionStop.calls.argsFor(0)[0].messagingQos).toEqual(
-                    new MessagingQos({ ttl: clearSubscriptionsTimeoutMs })
-                );
-                expect(dispatcherSpy.sendMulticastSubscriptionStop.calls.count()).toEqual(1);
-                done();
-            })
-            .catch(fail);
+        await subscriptionManager.registerSubscription(subscriptionSettings);
+        await subscriptionManager.registerBroadcastSubscription(broadcastSettings);
+        await subscriptionManager.terminateSubscriptions(clearSubscriptionsTimeoutMs);
+        subscriptionManager.shutdown();
+
+        expect(dispatcherSpy.sendSubscriptionStop).toHaveBeenCalled();
+        expect(dispatcherSpy.sendSubscriptionStop.calls.count()).toEqual(1);
+        expect(dispatcherSpy.sendSubscriptionStop.calls.argsFor(0)[0].messagingQos).toEqual(
+            new MessagingQos({ ttl: clearSubscriptionsTimeoutMs })
+        );
+        expect(dispatcherSpy.sendMulticastSubscriptionStop.calls.argsFor(0)[0].messagingQos).toEqual(
+            new MessagingQos({ ttl: clearSubscriptionsTimeoutMs })
+        );
+        expect(dispatcherSpy.sendMulticastSubscriptionStop.calls.count()).toEqual(1);
     });
 });

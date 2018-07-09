@@ -292,7 +292,6 @@ if(${BUILD_UNIT_TESTS} OR ${BUILD_INTEGRATION_TESTS} OR ${BUILD_SYSTEM_INTEGRATI
         mock/MockRunnableWithAccuracy.cpp
         mock/MockRunnableWithAccuracy.h
         mock/MockRunnableBlocking.h
-        mock/MockInProcessConnectorFactory.h
         mock/MockKeychain.h
         mock/MockMessageSender.h
         mock/MockReplyCaller.h

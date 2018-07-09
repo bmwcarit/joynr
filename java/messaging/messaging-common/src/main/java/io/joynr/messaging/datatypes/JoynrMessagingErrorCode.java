@@ -35,8 +35,9 @@ public enum JoynrMessagingErrorCode implements JoynrErrorCode {
     JOYNRMESSAGINGERROR_TRACKINGIDNOTSET(6, "Atmosphere Tracking Id not set"), //
     JOYNRMESSAGINGERROR_SESSIONIDSET(7, "Session Id set"), //
     JOYNRMESSAGINGERROR_SESSIONIDNOTSET(8, "Session Id not set"), //
-    JOYNRMESSAGINGERROR_DESERIALIZATIONFAILED(9, "Message deserialization failed"), JOYNRMESSAGINGERROR_RELATIVE_TTL_UNSPORTED(
-            10, "Relative TTL is not supported"), JOYNRMESSAGINGERROR_UNDEFINED(0, "Undefined error");
+    JOYNRMESSAGINGERROR_DESERIALIZATIONFAILED(9,
+            "Message deserialization failed"), JOYNRMESSAGINGERROR_RELATIVE_TTL_UNSPORTED(10,
+                    "Relative TTL is not supported"), JOYNRMESSAGINGERROR_UNDEFINED(0, "Undefined error");
 
     private static final int OFFSET = 10000;
 

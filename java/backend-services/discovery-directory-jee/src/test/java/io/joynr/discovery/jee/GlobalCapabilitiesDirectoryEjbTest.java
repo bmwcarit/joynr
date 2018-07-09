@@ -140,7 +140,7 @@ public class GlobalCapabilitiesDirectoryEjbTest {
     @Test
     public void testAddAndLookupMultiDomain() throws Exception {
         GlobalDiscoveryEntry[] resultBeforeAdd = subject.lookup(new String[]{ testGlobalDiscoveryEntry.getDomain() },
-                                                       testGlobalDiscoveryEntry.getInterfaceName());
+                                                                testGlobalDiscoveryEntry.getInterfaceName());
         assertNotNull(resultBeforeAdd);
         assertEquals(0, resultBeforeAdd.length);
 
@@ -154,7 +154,8 @@ public class GlobalCapabilitiesDirectoryEjbTest {
         assertTrue(result[0] instanceof GlobalDiscoveryEntry);
         assertFalse(result[0] instanceof GlobalDiscoveryEntryPersisted);
         assertEquals(testGlobalDiscoveryEntry.getDomain(), ((GlobalDiscoveryEntry) result[0]).getDomain());
-        assertEquals(testGlobalDiscoveryEntry.getInterfaceName(), ((GlobalDiscoveryEntry) result[0]).getInterfaceName());
+        assertEquals(testGlobalDiscoveryEntry.getInterfaceName(),
+                     ((GlobalDiscoveryEntry) result[0]).getInterfaceName());
     }
 
     @Test
@@ -177,7 +178,8 @@ public class GlobalCapabilitiesDirectoryEjbTest {
         entityManager.flush();
         entityManager.clear();
 
-        persisted = entityManager.find(GlobalDiscoveryEntryPersisted.class, testGlobalDiscoveryEntry.getParticipantId());
+        persisted = entityManager.find(GlobalDiscoveryEntryPersisted.class,
+                                       testGlobalDiscoveryEntry.getParticipantId());
         assertNotNull(persisted);
         assertTrue(initialLastSeen < persisted.getLastSeenDateMs());
     }

@@ -70,7 +70,9 @@ public class DummyCapabilitiesDirectory extends AbstractLocalCapabilitiesDirecto
     }
 
     @Override
-    public Promise<Lookup1Deferred> lookup(String[] domains, String interfaceName, joynr.types.DiscoveryQos discoveryQos) {
+    public Promise<Lookup1Deferred> lookup(String[] domains,
+                                           String interfaceName,
+                                           joynr.types.DiscoveryQos discoveryQos) {
         final Lookup1Deferred deferred = new Lookup1Deferred();
         CapabilitiesCallback callback = new CapabilitiesCallback() {
             @Override

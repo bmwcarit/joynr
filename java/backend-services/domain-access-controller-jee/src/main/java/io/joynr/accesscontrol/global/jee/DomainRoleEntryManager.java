@@ -72,7 +72,8 @@ public class DomainRoleEntryManager {
     }
 
     public DomainRoleEntry[] findByUserId(String userId) {
-        Query query = entityManager.createQuery("select dre from DomainRoleEntryEntity dre where dre.userId = :userId", DomainRoleEntryEntity.class);
+        Query query = entityManager.createQuery("select dre from DomainRoleEntryEntity dre where dre.userId = :userId",
+                                                DomainRoleEntryEntity.class);
         query.setParameter("userId", userId);
         List<DomainRoleEntryEntity> entities = query.getResultList();
         Set<DomainRoleEntry> resultSet = entities.stream().map(this::mapEntityToJoynrType).collect(toSet());

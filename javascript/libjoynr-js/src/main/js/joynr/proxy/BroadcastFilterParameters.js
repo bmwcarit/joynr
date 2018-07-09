@@ -69,7 +69,7 @@ function BroadcastFilterParameters(filterParameterProperties) {
     } else {
         for (parameterName in filterParameterProperties) {
             if (filterParameterProperties.hasOwnProperty(parameterName)) {
-                funcName = "set" + parameterName.charAt(0).toUpperCase() + parameterName.substring(1);
+                funcName = `set${parameterName.charAt(0).toUpperCase()}${parameterName.substring(1)}`;
                 //filter[funcName] = makeSetterFunction(filter, parameterName);
                 Object.defineProperty(this, funcName, {
                     configurable: false,

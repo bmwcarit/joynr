@@ -26,7 +26,6 @@
 #include "joynr/CapabilityUtils.h"
 #include "joynr/ClusterControllerSettings.h"
 #include "joynr/IMessageRouter.h"
-#include "joynr/InProcessPublicationSender.h"
 #include "joynr/IPlatformSecurityManager.h"
 #include "joynr/JoynrRuntimeImpl.h"
 #include "joynr/SingleThreadedIOService.h"
@@ -210,12 +209,10 @@ private:
     std::shared_ptr<joynr::system::IDiscoveryAsync> discoveryProxy;
     std::shared_ptr<IMessageSender> messageSender;
     std::shared_ptr<IDispatcher> joynrDispatcher;
-    std::shared_ptr<IDispatcher> inProcessDispatcher;
     std::shared_ptr<InProcessMessagingSkeleton> dispatcherMessagingSkeleton;
     std::shared_ptr<joynr::system::RoutingTypes::Address> dispatcherAddress;
     std::shared_ptr<PublicationManager> publicationManager;
     std::shared_ptr<SubscriptionManager> subscriptionManager;
-    std::shared_ptr<InProcessPublicationSender> inProcessPublicationSender;
     std::unique_ptr<ProxyFactory> proxyFactory;
     std::shared_ptr<ParticipantIdStorage> participantIdStorage;
     std::unique_ptr<CapabilitiesRegistrar> capabilitiesRegistrar;

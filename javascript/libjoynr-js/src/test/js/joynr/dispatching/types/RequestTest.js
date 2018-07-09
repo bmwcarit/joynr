@@ -18,7 +18,6 @@
  */
 require("../../../node-unit-test-helper");
 const Request = require("../../../../../main/js/joynr/dispatching/types/Request");
-const RadioStation = require("../../../../generated/joynr/vehicle/radiotypes/RadioStation");
 
 describe("libjoynr-js.joynr.dispatching.types.Request", () => {
     it("is instantiable", () => {
@@ -45,6 +44,5 @@ describe("libjoynr-js.joynr.dispatching.types.Request", () => {
         });
         expect(request).toBeDefined();
         expect(request._typeName).toBe("joynr.Request");
-        expect(request.params[0] instanceof RadioStation).toBeTruthy();
     });
 });

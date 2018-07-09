@@ -30,7 +30,7 @@ function increaseFakeTime(time_ms) {
 
 describe("libjoynr-js.joynr.messaging.routing.ParticipantQueue", () => {
     let participantQueue;
-    const receiverParticipantId = "TestparticipantQueue_participantId_" + Date.now();
+    const receiverParticipantId = `TestparticipantQueue_participantId_${Date.now()}`;
     const joynrMessage = new JoynrMessage({
         type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
         payload: "hello"

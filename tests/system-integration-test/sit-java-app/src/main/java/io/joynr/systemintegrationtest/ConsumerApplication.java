@@ -83,8 +83,8 @@ public class ConsumerApplication extends AbstractJoynrApplication {
         Properties appConfig = new Properties();
         appConfig.setProperty(SYSTEMINTEGRATIONTEST_PROVIDER_DOMAIN, providerDomain);
 
-        JoynrApplication myConsumerApp = new JoynrInjectorFactory(joynrConfig, runtimeModule).createApplication(new JoynrApplicationModule(ConsumerApplication.class,
-                                                                                                                                           appConfig));
+        JoynrApplication myConsumerApp = new JoynrInjectorFactory(joynrConfig,
+                                                                  runtimeModule).createApplication(new JoynrApplicationModule(ConsumerApplication.class, appConfig));
         myConsumerApp.run();
 
         myConsumerApp.shutdown();
@@ -154,8 +154,8 @@ public class ConsumerApplication extends AbstractJoynrApplication {
                 int addendB = 4444444;
                 Integer sum = systemIntegrationTestProxy.add(addendA, addendB);
                 if (sum != null && sum == (addendA + addendB)) {
-                    LOG.info("SIT RESULT success: Java consumer -> " + providerDomain + " (" + addendA + " + "
-                            + addendB + " =  " + sum + ")");
+                    LOG.info("SIT RESULT success: Java consumer -> " + providerDomain + " (" + addendA + " + " + addendB
+                            + " =  " + sum + ")");
                     success = true;
                 }
             } catch (Exception e) {

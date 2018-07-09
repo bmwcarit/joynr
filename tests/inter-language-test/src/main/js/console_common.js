@@ -19,29 +19,29 @@
  * #L%
  */
 
-var testbase = require("test-base");
-var log = testbase.logging.log;
-var prettyLog = testbase.logging.prettyLog;
+const testbase = require("test-base");
+const log = testbase.logging.log;
+const prettyLog = testbase.logging.prettyLog;
 
-var showHelp = function(modes) {
-    var optionsText;
-    var modeKey;
-    var optionKey;
+const showHelp = function(modes) {
+    let optionsText;
+    let modeKey;
+    let optionKey;
     prettyLog("The following options are available: ");
     for (modeKey in modes) {
         if (modes.hasOwnProperty(modeKey)) {
-            var mode = modes[modeKey];
+            const mode = modes[modeKey];
             optionsText = "";
             for (optionKey in mode.options) {
                 if (mode.options.hasOwnProperty(optionKey)) {
-                    optionsText += mode.options[optionKey] + "/";
+                    optionsText += `${mode.options[optionKey]}/`;
                 }
             }
             if (optionsText !== "") {
                 optionsText = optionsText.substr(0, optionsText.length - 1);
-                optionsText = "[" + optionsText + "]";
+                optionsText = `[${optionsText}]`;
             }
-            log(mode.value + " " + optionsText + "    " + mode.description);
+            log(`${mode.value} ${optionsText}    ${mode.description}`);
         }
     }
     log("");

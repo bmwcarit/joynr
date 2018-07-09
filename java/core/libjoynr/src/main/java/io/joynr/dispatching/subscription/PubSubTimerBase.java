@@ -66,10 +66,10 @@ public abstract class PubSubTimerBase {
                 logger.trace("Rescheduling PubSubTimer with delay {}.", delay);
                 timer.schedule(getTimerTask(), delay);
             } else {
-                logger.trace("Will not reschedule PubSubTimer: "
-                        + (isExpiredNow ? "endDate is reached"
-                                : (isExpiredBeforeNextPublication ? "endDate will be reached before next publication"
-                                        : "publication stopped")) + ".");
+                logger.trace("Will not reschedule PubSubTimer: " + (isExpiredNow ? "endDate is reached"
+                        : (isExpiredBeforeNextPublication ? "endDate will be reached before next publication"
+                                : "publication stopped"))
+                        + ".");
                 logger.trace("SubscriptionEndDate: "
                         + (expiryDate == SubscriptionQos.NO_EXPIRY_DATE ? "never" : expiryDate));
                 logger.trace("CurrentSystemTime: " + System.currentTimeMillis());

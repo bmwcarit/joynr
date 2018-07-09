@@ -156,7 +156,7 @@ public class RoutingTableImpl implements RoutingTable {
                 hashMap.put(participantId, routingEntry);
             } else {
                 logger.warn("unable to update(participantId={}, address={}, isGloballyVisible={}, expiryDateMs={}, sticky={}) into routing table,"
-                                    + " since the participant ID is already associated with routing entry address={}, isGloballyVisible={}",
+                        + " since the participant ID is already associated with routing entry address={}, isGloballyVisible={}",
                             participantId,
                             address,
                             isGloballyVisible,

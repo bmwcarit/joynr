@@ -102,7 +102,7 @@ public class PushingPublicationTest {
 
     @Before
     public void setUp() throws JoynrSendBufferFullException, JoynrMessageNotSentException, JsonGenerationException,
-                       JsonMappingException, IOException {
+                        JsonMappingException, IOException {
         provider = new SubscriptionTestsProviderImpl();
 
         publicationManager = new PublicationManagerImpl(attributePollInterpreter,
@@ -142,13 +142,12 @@ public class PushingPublicationTest {
 
     @SuppressWarnings("unchecked")
     void setupMocks() throws JoynrSendBufferFullException, JoynrMessageNotSentException, JsonGenerationException,
-                     JsonMappingException, IOException {
+                      JsonMappingException, IOException {
         Deferred<Integer> testAttributeDeferred = new Deferred<Integer>();
         testAttributeDeferred.resolve(testAttribute);
         Promise<Deferred<Integer>> testAttributePromise = new Promise<Deferred<Integer>>(testAttributeDeferred);
-        Mockito.doReturn(testAttributePromise)
-               .when(attributePollInterpreter)
-               .execute(any(ProviderContainer.class), any(Method.class));
+        Mockito.doReturn(testAttributePromise).when(attributePollInterpreter).execute(any(ProviderContainer.class),
+                                                                                      any(Method.class));
 
         doAnswer(new Answer<Object>() {
             @Override
@@ -179,8 +178,8 @@ public class PushingPublicationTest {
     @SuppressWarnings("unchecked")
     @Test
     public void settingAttributeSendsPublication() throws InterruptedException, JoynrSendBufferFullException,
-                                                  JoynrMessageNotSentException, JsonGenerationException,
-                                                  JsonMappingException, IOException {
+                                                   JoynrMessageNotSentException, JsonGenerationException,
+                                                   JsonMappingException, IOException {
         setupMixedQos();
 
         publicationManager.addSubscriptionRequest(proxyId, providerId, subscriptionRequest);
@@ -199,10 +198,10 @@ public class PushingPublicationTest {
     @SuppressWarnings("unchecked")
     @Test
     public void settingAttributeSendsPublicationOnPureOnChangedSubscription() throws InterruptedException,
-                                                                             JoynrSendBufferFullException,
-                                                                             JoynrMessageNotSentException,
-                                                                             JsonGenerationException,
-                                                                             JsonMappingException, IOException {
+                                                                              JoynrSendBufferFullException,
+                                                                              JoynrMessageNotSentException,
+                                                                              JsonGenerationException,
+                                                                              JsonMappingException, IOException {
         setupPureOnChangedQos();
 
         publicationManager.addSubscriptionRequest(proxyId, providerId, subscriptionRequest);

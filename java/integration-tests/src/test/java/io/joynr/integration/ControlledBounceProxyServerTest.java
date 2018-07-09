@@ -83,8 +83,8 @@ public class ControlledBounceProxyServerTest extends AbstractBounceProxyServerTe
 
         // create channel on bounce proxy
         /* @formatter:off */
-        Response responseCreateChannel = given().header(X_ATMOSPHERE_TRACKING_ID, trackingId).post("channels?ccid="
-                + channelId);
+        Response responseCreateChannel = given().header(X_ATMOSPHERE_TRACKING_ID, trackingId)
+                                                .post("channels?ccid=" + channelId);
         /* @formatter:on */
 
         assertEquals(201 /* Created */, responseCreateChannel.getStatusCode());
@@ -125,8 +125,8 @@ public class ControlledBounceProxyServerTest extends AbstractBounceProxyServerTe
 
         // create channel on bounce proxy
         /* @formatter:off */
-        Response responseCreateChannel = given().header(X_ATMOSPHERE_TRACKING_ID, trackingId).post("channels?ccid="
-                + channelId);
+        Response responseCreateChannel = given().header(X_ATMOSPHERE_TRACKING_ID, trackingId)
+                                                .post("channels?ccid=" + channelId);
         /* @formatter:on */
 
         assertEquals(201 /* Created */, responseCreateChannel.getStatusCode());
@@ -180,8 +180,8 @@ public class ControlledBounceProxyServerTest extends AbstractBounceProxyServerTe
 
         // create channel on bounce proxy
         /* @formatter:off */
-        Response responseCreateChannel = given().header(X_ATMOSPHERE_TRACKING_ID, trackingId).post("channels?ccid="
-                + channelId);
+        Response responseCreateChannel = given().header(X_ATMOSPHERE_TRACKING_ID, trackingId)
+                                                .post("channels?ccid=" + channelId);
         /* @formatter:on */
 
         assertEquals(201 /* Created */, responseCreateChannel.getStatusCode());
@@ -243,8 +243,8 @@ public class ControlledBounceProxyServerTest extends AbstractBounceProxyServerTe
 
         // create channel on bounce proxy
         /* @formatter:off */
-        Response responseCreateChannel = given().header(X_ATMOSPHERE_TRACKING_ID, trackingId).post("channels?ccid="
-                + channelId);
+        Response responseCreateChannel = given().header(X_ATMOSPHERE_TRACKING_ID, trackingId)
+                                                .post("channels?ccid=" + channelId);
         /* @formatter:on */
 
         assertEquals(201 /* Created */, responseCreateChannel.getStatusCode());

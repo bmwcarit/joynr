@@ -37,4 +37,12 @@ LocalStorageMock.prototype.clear = function() {
     this.map = {};
 };
 
+LocalStorageMock.prototype.init = function() {
+    return Promise.resolve();
+};
+
+LocalStorageMock.prototype.shutdown = function() {
+    return Promise.resolve();
+};
+
 module.exports = LocalStorageMock;

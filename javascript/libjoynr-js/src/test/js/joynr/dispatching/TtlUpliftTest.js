@@ -54,26 +54,26 @@ const customMatchers = {
                 const result = {};
                 if (expected === undefined || expected === null) {
                     result.pass = false;
-                    result.message = "Expected expectation not to be " + expected;
+                    result.message = `Expected expectation not to be ${expected}`;
                     return result;
                 }
                 if (actual === undefined || actual === null) {
                     result.pass = false;
-                    result.message = "Expected value not to be " + actual;
+                    result.message = `Expected value not to be ${actual}`;
                     return result;
                 }
 
                 const diff = actual - expected;
                 result.pass = diff >= 0;
                 if (!result.pass) {
-                    result.message = "Expected " + actual + " to be greater or equal than " + expected;
+                    result.message = `Expected ${actual} to be greater or equal than ${expected}`;
                     return result;
                 }
                 result.pass = diff < toleranceMs;
                 if (result.pass) {
-                    result.message = actual + " differs less than " + toleranceMs + " from " + expected;
+                    result.message = `${actual} differs less than ${toleranceMs} from ${expected}`;
                 } else {
-                    result.message = "Expected " + actual + " to differ less than " + toleranceMs + " from " + expected;
+                    result.message = `Expected ${actual} to differ less than ${toleranceMs} from ${expected}`;
                 }
                 return result;
             }
@@ -85,8 +85,8 @@ describe("libjoynr-js.joynr.ttlUpliftTest", () => {
     let dispatcher, dispatcherWithTtlUplift;
     let clusterControllerMessagingStub, securityManager;
     let requestReplyManager, subscriptionManager, publicationManager, messageRouter;
-    const subscriptionId = "mySubscriptionId-" + uuid();
-    const multicastId = "multicastId-" + uuid();
+    const subscriptionId = `mySubscriptionId-${uuid()}`;
+    const multicastId = `multicastId-${uuid()}`;
 
     let ttl, messagingQos, expiryDateMs, expiryDateWithTtlUplift;
     let publicationTtlMs, subscriptionQos;

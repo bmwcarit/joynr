@@ -26,6 +26,6 @@ describe("libjoynr-js.joynr.JSONSerializer.ensureCorrectSerialization", () => {
 
         const actual = JSONSerializer.stringify(fixture);
 
-        expect(actual).toBe('"' + fixture.name + '"');
+        expect(actual).toBe(`"${fixture.name}"`);
     });
 });

@@ -201,6 +201,7 @@ log "Scenario A finished"
 sleep $PAUSE_DURATION
 
 check_log_file 1
+stop_consumer
 
 # Scenario B
 #################################
@@ -225,6 +226,43 @@ log "Scenario B finished"
 sleep $PAUSE_DURATION
 
 check_log_file 2
+stop_consumer
+
+# Scenario C (Mixed)
+#################################
+#INIT
+start_consumer
+
+log "Scenario C (killing the connection between CC and MQTT and the MQTT process) started"
+
+sleep 1
+
+#RUN
+#stop the communication between MQTT broker and cc by sending POSIX signal to the cc
+log "stop External Communication"
+stopExternalCommunication $CONSUMER_PID
+sleep 1
+
+#stop the MQTT/Mosquitto service
+stop_mosquitto
+sleep 1
+
+#restart the communication between MQTT broker and cc by sending POSIX signal to the cc
+log "start External Communication"
+startExternalCommunication $CONSUMER_PID
+sleep 1
+
+#restart the MQTT/Mosquitto service
+start_mosquitto
+log "start services"
+sleep $PAUSE_DURATION
+
+#END
+log "Scenario C finished"
+sleep $PAUSE_DURATION
+
+check_log_file 3
+stop_consumer
 
 # FINISH
 #################################

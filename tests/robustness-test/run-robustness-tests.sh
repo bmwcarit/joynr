@@ -187,6 +187,8 @@ rm -fr localStorageStorage
 rm -fr reports
 rm -f npm-debug.log
 rm -f joynr_participantIds.properties
+cd $TEST_BUILD_DIR/bin
+rm -f *.persist
 
 export JOYNR_LOG_LEVEL=TRACE
 

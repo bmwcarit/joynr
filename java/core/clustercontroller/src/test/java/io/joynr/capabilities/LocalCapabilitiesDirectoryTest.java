@@ -27,6 +27,7 @@ import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.after;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -140,8 +141,8 @@ public class LocalCapabilitiesDirectoryTest {
         public static final String INTERFACE_NAME = "interfaceName";
     }
 
-    private static class DiscoveryEntryStoreVarargMatcher extends ArgumentMatcher<DiscoveryEntryStore[]> implements
-            VarargMatcher {
+    private static class DiscoveryEntryStoreVarargMatcher extends ArgumentMatcher<DiscoveryEntryStore[]>
+            implements VarargMatcher {
         private final DiscoveryEntryStore[] matchAgainst;
 
         private DiscoveryEntryStoreVarargMatcher(DiscoveryEntryStore... matchAgainst) {
@@ -262,7 +263,8 @@ public class LocalCapabilitiesDirectoryTest {
     public void addCapability() throws InterruptedException {
         when(globalAddressProvider.get()).thenReturn(channelAddress);
 
-        localCapabilitiesDirectory.add(discoveryEntry);
+        final boolean awaitGlobalRegistration = true;
+        localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration);
 
         ArgumentCaptor<GlobalDiscoveryEntry> argumentCaptor = ArgumentCaptor.forClass(GlobalDiscoveryEntry.class);
         verify(globalCapabilitiesClient, timeout(200)).add(any(Callback.class), argumentCaptor.capture());
@@ -322,7 +324,8 @@ public class LocalCapabilitiesDirectoryTest {
                                                         publicKeyId,
                                                         channelAddressSerialized);
 
-        Promise<DeferredVoid> promise = localCapabilitiesDirectory.add(discoveryEntry);
+        final boolean awaitGlobalRegistration = true;
+        Promise<DeferredVoid> promise = localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration);
         promise.then(new PromiseListener() {
             @Override
             public void onFulfillment(Object... values) {
@@ -333,9 +336,8 @@ public class LocalCapabilitiesDirectoryTest {
                 verify(globalDiscoveryEntryCacheMock).add(eq(globalDiscoveryEntry));
                 verify(globalCapabilitiesClient).add(any(Callback.class), eq(globalDiscoveryEntry));
                 reset(globalCapabilitiesClient);
-                localCapabilitiesDirectory.add(discoveryEntry);
-                verify(globalCapabilitiesClient, timeout(200).never()).add(any(Callback.class),
-                                                                           eq(globalDiscoveryEntry));
+                localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration);
+                verify(globalCapabilitiesClient, after(200).never()).add(any(Callback.class), eq(globalDiscoveryEntry));
             }
 
             @Override
@@ -373,18 +375,18 @@ public class LocalCapabilitiesDirectoryTest {
                                                         publicKeyId,
                                                         channelAddressSerialized);
 
-        Mockito.doAnswer(createAddAnswerWithError())
-               .when(globalCapabilitiesClient)
-               .add(any(Callback.class), eq(globalDiscoveryEntry));
+        Mockito.doAnswer(createAddAnswerWithError()).when(globalCapabilitiesClient).add(any(Callback.class),
+                                                                                        eq(globalDiscoveryEntry));
 
-        Promise<DeferredVoid> promise = localCapabilitiesDirectory.add(discoveryEntry);
+        final boolean awaitGlobalRegistration = true;
+        Promise<DeferredVoid> promise = localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration);
         promise.then(new PromiseListener() {
             @Override
             public void onFulfillment(Object... values) {
                 verify(globalDiscoveryEntryCacheMock, never()).add(eq(globalDiscoveryEntry));
                 verify(globalCapabilitiesClient).add(any(Callback.class), eq(globalDiscoveryEntry));
                 reset(globalCapabilitiesClient);
-                localCapabilitiesDirectory.add(discoveryEntry);
+                localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration);
                 verify(globalCapabilitiesClient, timeout(200)).add(any(Callback.class), eq(globalDiscoveryEntry));
 
             }
@@ -454,9 +456,9 @@ public class LocalCapabilitiesDirectoryTest {
                                                      DiscoveryScope.GLOBAL_ONLY);
         CapabilitiesCallback capabilitiesCallback = mock(CapabilitiesCallback.class);
 
-        when(globalDiscoveryEntryCacheMock.lookup(eq(new String[]{ domain1 }),
-                                                  eq(interfaceName1),
-                                                  eq(discoveryQos.getCacheMaxAgeMs()))).thenReturn(new ArrayList<DiscoveryEntry>());
+        when(globalDiscoveryEntryCacheMock.lookup(eq(new String[]{
+                domain1 }), eq(interfaceName1), eq(discoveryQos.getCacheMaxAgeMs())))
+                                                                                     .thenReturn(new ArrayList<DiscoveryEntry>());
         doAnswer(createAnswer(caps)).when(globalCapabilitiesClient).lookup(any(Callback.class),
                                                                            eq(new String[]{ domain1 }),
                                                                            eq(interfaceName1),
@@ -481,7 +483,8 @@ public class LocalCapabilitiesDirectoryTest {
                                                            System.currentTimeMillis(),
                                                            expiryDateMs,
                                                            publicKeyId);
-        localCapabilitiesDirectory.add(discoveryEntry);
+        final boolean awaitGlobalRegistration = true;
+        localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration);
         localCapabilitiesDirectory.lookup(new String[]{ domain1 }, interfaceName1, discoveryQos, capabilitiesCallback);
         verify(globalCapabilitiesClient, times(2)).lookup(any(Callback.class),
                                                           eq(new String[]{ domain1 }),
@@ -529,9 +532,9 @@ public class LocalCapabilitiesDirectoryTest {
         // now, another lookup call shall take the cached for the global cap call, and no longer call the global cap dir
         // (as long as the cache is not expired)
         reset(globalDiscoveryEntryCacheMock);
-        when(globalDiscoveryEntryCacheMock.lookup(eq(new String[]{ domain1 }),
-                                                  eq(interfaceName1),
-                                                  eq(discoveryQos.getCacheMaxAgeMs()))).thenReturn(Lists.newArrayList((DiscoveryEntry) capInfo));
+        when(globalDiscoveryEntryCacheMock.lookup(eq(new String[]{
+                domain1 }), eq(interfaceName1), eq(discoveryQos.getCacheMaxAgeMs())))
+                                                                                     .thenReturn(Lists.newArrayList((DiscoveryEntry) capInfo));
 
         localCapabilitiesDirectory.lookup(new String[]{ domain1 }, interfaceName1, discoveryQos, capabilitiesCallback);
         verify(globalCapabilitiesClient, times(4)).lookup(any(Callback.class),
@@ -597,7 +600,8 @@ public class LocalCapabilitiesDirectoryTest {
                                                            expiryDateMs,
                                                            publicKeyId);
         reset(localDiscoveryEntryStoreMock);
-        when(localDiscoveryEntryStoreMock.lookup(eq(new String[]{ domain1 }), eq(interfaceName1))).thenReturn(Lists.newArrayList(discoveryEntry));
+        when(localDiscoveryEntryStoreMock.lookup(eq(new String[]{ domain1 }),
+                                                 eq(interfaceName1))).thenReturn(Lists.newArrayList(discoveryEntry));
         localCapabilitiesDirectory.lookup(new String[]{ domain1 }, interfaceName1, discoveryQos, capabilitiesCallback);
         verify(globalCapabilitiesClient, times(1)).lookup(any(Callback.class),
                                                           eq(new String[]{ domain1 }),
@@ -640,9 +644,9 @@ public class LocalCapabilitiesDirectoryTest {
 
         // now, another lookup call shall take the cached for the global cap call, and no longer call the global cap dir
         // (as long as the cache is not expired)
-        when(globalDiscoveryEntryCacheMock.lookup(eq(new String[]{ domain1 }),
-                                                  eq(interfaceName1),
-                                                  eq(discoveryQos.getCacheMaxAgeMs()))).thenReturn(Lists.newArrayList((DiscoveryEntry) capInfo));
+        when(globalDiscoveryEntryCacheMock.lookup(eq(new String[]{
+                domain1 }), eq(interfaceName1), eq(discoveryQos.getCacheMaxAgeMs())))
+                                                                                     .thenReturn(Lists.newArrayList((DiscoveryEntry) capInfo));
         localCapabilitiesDirectory.lookup(new String[]{ domain1 }, interfaceName1, discoveryQos, capabilitiesCallback);
         verify(globalCapabilitiesClient, times(2)).lookup(any(Callback.class),
                                                           eq(new String[]{ domain1 }),
@@ -688,7 +692,8 @@ public class LocalCapabilitiesDirectoryTest {
                                                            publicKeyId);
         DiscoveryEntryWithMetaInfo expectedDiscoveryEntry = CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(true,
                                                                                                                 discoveryEntry);
-        when(localDiscoveryEntryStoreMock.lookup(eq(participantId1), eq(discoveryQos.getCacheMaxAgeMs()))).thenReturn(discoveryEntry);
+        when(localDiscoveryEntryStoreMock.lookup(eq(participantId1),
+                                                 eq(discoveryQos.getCacheMaxAgeMs()))).thenReturn(discoveryEntry);
         DiscoveryEntry retrievedCapabilityEntry = localCapabilitiesDirectory.lookup(participantId1, discoveryQos);
         assertEquals(expectedDiscoveryEntry, retrievedCapabilityEntry);
     }
@@ -730,7 +735,8 @@ public class LocalCapabilitiesDirectoryTest {
                                                            System.currentTimeMillis(),
                                                            expiryDateMs,
                                                            publicKeyId);
-        when(localDiscoveryEntryStoreMock.lookup(eq(new String[]{ domain1 }), eq(interfaceName1))).thenReturn(Lists.newArrayList(discoveryEntry));
+        when(localDiscoveryEntryStoreMock.lookup(eq(new String[]{ domain1 }),
+                                                 eq(interfaceName1))).thenReturn(Lists.newArrayList(discoveryEntry));
         localCapabilitiesDirectory.lookup(new String[]{ domain1 }, interfaceName1, discoveryQos, capabilitiesCallback);
         verify(globalCapabilitiesClient, times(2)).lookup(any(Callback.class),
                                                           eq(new String[]{ domain1 }),
@@ -764,9 +770,9 @@ public class LocalCapabilitiesDirectoryTest {
 
         // now, another lookup call shall take the cached for the global cap call, and no longer call the global cap dir
         // (as long as the cache is not expired)
-        when(globalDiscoveryEntryCacheMock.lookup(eq(new String[]{ domain1 }),
-                                                  eq(interfaceName1),
-                                                  eq(discoveryQos.getCacheMaxAgeMs()))).thenReturn(Lists.newArrayList((DiscoveryEntry) capInfo));
+        when(globalDiscoveryEntryCacheMock.lookup(eq(new String[]{
+                domain1 }), eq(interfaceName1), eq(discoveryQos.getCacheMaxAgeMs())))
+                                                                                     .thenReturn(Lists.newArrayList((DiscoveryEntry) capInfo));
         localCapabilitiesDirectory.lookup(new String[]{ domain1 }, interfaceName1, discoveryQos, capabilitiesCallback);
         verify(globalCapabilitiesClient, times(3)).lookup(any(Callback.class),
                                                           eq(new String[]{ domain1 }),
@@ -784,6 +790,59 @@ public class LocalCapabilitiesDirectoryTest {
                                                           eq(new String[]{ domain1 }),
                                                           eq(interfaceName1),
                                                           eq(discoveryQos.getDiscoveryTimeoutMs()));
+        reset(globalCapabilitiesClient);
+        reset(capabilitiesCallback);
+    }
+
+    @Test(timeout = 1000)
+    public void lookupLocalAndGlobalFiltersDuplicates() throws InterruptedException {
+        String domain = "domain";
+        String interfaceName = "interfaceName";
+        String participant = "participant";
+        DiscoveryQos discoveryQos = new DiscoveryQos(30000,
+                                                     ArbitrationStrategy.HighestPriority,
+                                                     500,
+                                                     DiscoveryScope.LOCAL_AND_GLOBAL);
+
+        // add same discovery entry to localCapabilitiesDirectory and cached GlobalCapabilitiesDirectory
+        ProviderQos providerQos = new ProviderQos();
+        long currentTime = System.currentTimeMillis();
+        DiscoveryEntry discoveryEntry = new DiscoveryEntry(new Version(47, 11),
+                                                           domain,
+                                                           interfaceName,
+                                                           participant,
+                                                           providerQos,
+                                                           currentTime,
+                                                           expiryDateMs,
+                                                           publicKeyId);
+
+        when(localDiscoveryEntryStoreMock.lookup(eq(new String[]{ domain }),
+                                                 eq(interfaceName))).thenReturn(Lists.newArrayList(discoveryEntry));
+
+        GlobalDiscoveryEntry capInfo = new GlobalDiscoveryEntry(new Version(47, 11),
+                                                                domain,
+                                                                interfaceName,
+                                                                participant,
+                                                                providerQos,
+                                                                currentTime,
+                                                                expiryDateMs,
+                                                                publicKeyId,
+                                                                channelAddressSerialized);
+
+        when(globalDiscoveryEntryCacheMock.lookup(eq(new String[]{
+                domain }), eq(interfaceName), eq(discoveryQos.getCacheMaxAgeMs())))
+                                                                                   .thenReturn(Lists.newArrayList((DiscoveryEntry) capInfo));
+
+        CapabilitiesCallback capabilitiesCallback = Mockito.mock(CapabilitiesCallback.class);
+        localCapabilitiesDirectory.lookup(new String[]{ domain }, interfaceName, discoveryQos, capabilitiesCallback);
+
+        verify(capabilitiesCallback, times(1)).processCapabilitiesReceived(argThat(hasNEntries(1)));
+
+        verify(capabilitiesCallback).processCapabilitiesReceived(capabilitiesCaptor.capture());
+        Collection<DiscoveryEntryWithMetaInfo> discoveredEntries = capabilitiesCaptor.getValue();
+        assertTrue(discoveredEntries.contains(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(true,
+                                                                                                  discoveryEntry)));
+
         reset(globalCapabilitiesClient);
         reset(capabilitiesCallback);
     }
@@ -831,7 +890,9 @@ public class LocalCapabilitiesDirectoryTest {
         discoveryQos.setDiscoveryScope(DiscoveryScope.GLOBAL_ONLY);
         CapabilitiesCallback capabilitiesCallback = mock(CapabilitiesCallback.class);
 
-        when(globalDiscoveryEntryCacheMock.lookup(eq(domains), eq(interfaceName), eq(discoveryQos.getCacheMaxAgeMs()))).thenReturn(Lists.<DiscoveryEntry> newArrayList());
+        when(globalDiscoveryEntryCacheMock.lookup(eq(domains),
+                                                  eq(interfaceName),
+                                                  eq(discoveryQos.getCacheMaxAgeMs()))).thenReturn(Lists.<DiscoveryEntry> newArrayList());
 
         localCapabilitiesDirectory.lookup(domains, interfaceName, discoveryQos, capabilitiesCallback);
 
@@ -857,7 +918,9 @@ public class LocalCapabilitiesDirectoryTest {
             entries.add(entry);
         }
 
-        when(globalDiscoveryEntryCacheMock.lookup(eq(domains), eq(interfaceName), eq(discoveryQos.getCacheMaxAgeMs()))).thenReturn(entries);
+        when(globalDiscoveryEntryCacheMock.lookup(eq(domains),
+                                                  eq(interfaceName),
+                                                  eq(discoveryQos.getCacheMaxAgeMs()))).thenReturn(entries);
 
         localCapabilitiesDirectory.lookup(domains, interfaceName, discoveryQos, capabilitiesCallback);
 
@@ -880,7 +943,9 @@ public class LocalCapabilitiesDirectoryTest {
         GlobalDiscoveryEntry entry = new GlobalDiscoveryEntry();
         entry.setDomain("domain1");
         Collection<DiscoveryEntry> entries = Lists.newArrayList((DiscoveryEntry) entry);
-        when(globalDiscoveryEntryCacheMock.lookup(eq(domains), eq(interfaceName), eq(discoveryQos.getCacheMaxAgeMs()))).thenReturn(entries);
+        when(globalDiscoveryEntryCacheMock.lookup(eq(domains),
+                                                  eq(interfaceName),
+                                                  eq(discoveryQos.getCacheMaxAgeMs()))).thenReturn(entries);
 
         localCapabilitiesDirectory.lookup(domains, interfaceName, discoveryQos, capabilitiesCallback);
 
@@ -902,12 +967,15 @@ public class LocalCapabilitiesDirectoryTest {
 
         DiscoveryEntry localEntry = new DiscoveryEntry();
         localEntry.setDomain("domain1");
-        when(localDiscoveryEntryStoreMock.lookup(eq(domains), eq(interfaceName))).thenReturn(Lists.newArrayList(localEntry));
+        when(localDiscoveryEntryStoreMock.lookup(eq(domains),
+                                                 eq(interfaceName))).thenReturn(Lists.newArrayList(localEntry));
 
         GlobalDiscoveryEntry globalEntry = new GlobalDiscoveryEntry();
         globalEntry.setDomain("domain2");
         Collection<DiscoveryEntry> entries = Lists.newArrayList((DiscoveryEntry) globalEntry);
-        when(globalDiscoveryEntryCacheMock.lookup(eq(domains), eq(interfaceName), eq(discoveryQos.getCacheMaxAgeMs()))).thenReturn(entries);
+        when(globalDiscoveryEntryCacheMock.lookup(eq(domains),
+                                                  eq(interfaceName),
+                                                  eq(discoveryQos.getCacheMaxAgeMs()))).thenReturn(entries);
 
         final GlobalDiscoveryEntry remoteGlobalEntry = new GlobalDiscoveryEntry(new Version(0, 0),
                                                                                 "domain3",
@@ -956,7 +1024,8 @@ public class LocalCapabilitiesDirectoryTest {
         localEntry.setDomain(localDomain);
         localEntry.setInterfaceName(interfaceName);
         localEntry.setParticipantId(participantId);
-        when(localDiscoveryEntryStoreMock.lookup(eq(participantId), eq(discoveryQos.getCacheMaxAgeMs()))).thenReturn(localEntry);
+        when(localDiscoveryEntryStoreMock.lookup(eq(participantId),
+                                                 eq(discoveryQos.getCacheMaxAgeMs()))).thenReturn(localEntry);
 
         DiscoveryEntryWithMetaInfo capturedLocalEntry = localCapabilitiesDirectory.lookup(participantId, discoveryQos);
         DiscoveryEntryWithMetaInfo localEntryWithMetaInfo = CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(true,
@@ -977,7 +1046,8 @@ public class LocalCapabilitiesDirectoryTest {
         cachedGlobalEntry.setDomain(globalDomain);
         cachedGlobalEntry.setInterfaceName(interfaceName);
         cachedGlobalEntry.setParticipantId(participantId);
-        when(globalDiscoveryEntryCacheMock.lookup(eq(participantId), eq(discoveryQos.getCacheMaxAgeMs()))).thenReturn(cachedGlobalEntry);
+        when(globalDiscoveryEntryCacheMock.lookup(eq(participantId),
+                                                  eq(discoveryQos.getCacheMaxAgeMs()))).thenReturn(cachedGlobalEntry);
 
         DiscoveryEntryWithMetaInfo capturedCachedGlobalEntry = localCapabilitiesDirectory.lookup(participantId,
                                                                                                  discoveryQos);
@@ -1007,11 +1077,13 @@ public class LocalCapabilitiesDirectoryTest {
         doAnswer(new Answer<Void>() {
             @Override
             public Void answer(InvocationOnMock invocation) throws Throwable {
+                @SuppressWarnings("unchecked")
                 Callback<GlobalDiscoveryEntry> callback = (Callback<GlobalDiscoveryEntry>) invocation.getArguments()[0];
                 callback.onSuccess(remoteGlobalEntry);
                 return null;
             }
-        }).when(globalCapabilitiesClient).lookup(any(Callback.class), eq(participantId), anyLong());
+        }).when(globalCapabilitiesClient)
+          .lookup(org.mockito.Matchers.<Callback<GlobalDiscoveryEntry>> any(), eq(participantId), anyLong());
 
         DiscoveryEntryWithMetaInfo capturedRemoteGlobalEntry = localCapabilitiesDirectory.lookup(participantId,
                                                                                                  discoveryQos);
@@ -1033,13 +1105,16 @@ public class LocalCapabilitiesDirectoryTest {
         // local DiscoveryEntry
         DiscoveryEntry localEntry = new DiscoveryEntry();
         localEntry.setDomain(domains[0]);
-        when(localDiscoveryEntryStoreMock.lookup(eq(domains), eq(interfaceName))).thenReturn(Lists.newArrayList(localEntry));
+        when(localDiscoveryEntryStoreMock.lookup(eq(domains),
+                                                 eq(interfaceName))).thenReturn(Lists.newArrayList(localEntry));
 
         // cached global DiscoveryEntry
         GlobalDiscoveryEntry cachedGlobalEntry = new GlobalDiscoveryEntry();
         cachedGlobalEntry.setDomain(globalDomain);
         Collection<DiscoveryEntry> cachedEntries = Lists.newArrayList((DiscoveryEntry) cachedGlobalEntry);
-        when(globalDiscoveryEntryCacheMock.lookup(eq(domains), eq(interfaceName), eq(discoveryQos.getCacheMaxAgeMs()))).thenReturn(cachedEntries);
+        when(globalDiscoveryEntryCacheMock.lookup(eq(domains),
+                                                  eq(interfaceName),
+                                                  eq(discoveryQos.getCacheMaxAgeMs()))).thenReturn(cachedEntries);
 
         // remote global DiscoveryEntry
         final GlobalDiscoveryEntry remoteGlobalEntry = new GlobalDiscoveryEntry(new Version(0, 0),
@@ -1054,11 +1129,12 @@ public class LocalCapabilitiesDirectoryTest {
         doAnswer(new Answer<Void>() {
             @Override
             public Void answer(InvocationOnMock invocation) throws Throwable {
+                @SuppressWarnings("unchecked")
                 Callback<List<GlobalDiscoveryEntry>> callback = (Callback<List<GlobalDiscoveryEntry>>) invocation.getArguments()[0];
                 callback.onSuccess(Lists.newArrayList(remoteGlobalEntry));
                 return null;
             }
-        }).when(globalCapabilitiesClient).lookup(any(Callback.class),
+        }).when(globalCapabilitiesClient).lookup(org.mockito.Matchers.<Callback<List<GlobalDiscoveryEntry>>> any(),
                                                  eq(new String[]{ remoteGlobalDomain }),
                                                  eq(interfaceName),
                                                  anyLong());
@@ -1112,8 +1188,8 @@ public class LocalCapabilitiesDirectoryTest {
     public void removeCapabilities() throws InterruptedException {
         localCapabilitiesDirectory.remove(discoveryEntry);
 
-        verify(globalCapabilitiesClient, timeout(1000)).remove(any(Callback.class),
-                                                               eq(Arrays.asList(globalDiscoveryEntry.getParticipantId())));
+        verify(globalCapabilitiesClient,
+               timeout(1000)).remove(any(Callback.class), eq(Arrays.asList(globalDiscoveryEntry.getParticipantId())));
     }
 
     @Test

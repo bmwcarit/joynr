@@ -156,14 +156,9 @@ function ProxyBuilder(proxyDependencies, dependencies) {
                 .addNextHop(proxy.proxyParticipantId, dependencies.libjoynrMessagingAddress, isGloballyVisible)
                 .catch(error => {
                     log.debug(
-                        "Exception occured while registering the address for interface " +
-                            proxy.interfaceName +
-                            ", domain " +
-                            proxy.domain +
-                            ", proxyParticipantId " +
-                            proxy.proxyParticipantId +
-                            " to message router. Error: " +
-                            error.stack
+                        `Exception occured while registering the address for interface ${proxy.interfaceName}, domain ${
+                            proxy.domain
+                        }, proxyParticipantId ${proxy.proxyParticipantId} to message router. Error: ${error.stack}`
                     );
                 });
             dependencies.messageRouter.setToKnown(proxy.providerDiscoveryEntry.participantId);
@@ -175,10 +170,9 @@ function ProxyBuilder(proxyDependencies, dependencies) {
             }
 
             log.info(
-                "Proxy created, proxy participantId: " +
-                    proxy.proxyParticipantId +
-                    ", provider discoveryEntry: " +
-                    JSON.stringify(proxy.providerDiscoveryEntry)
+                `Proxy created, proxy participantId: ${
+                    proxy.proxyParticipantId
+                }, provider discoveryEntry: ${JSON.stringify(proxy.providerDiscoveryEntry)}`
             );
 
             return proxy;

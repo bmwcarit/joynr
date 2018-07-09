@@ -123,7 +123,7 @@ SubscriptionUtil.checkFilterParameters = function(expectedFilterParameters, actu
     for (let i = 0; i < targetKeys.length; i++) {
         if (sourceKeys.indexOf(targetKeys[i]) === -1) {
             result.caughtErrors.push(
-                "Filter parameter " + targetKeys[i] + ' for broadcast "' + broadcastName + '" is not provided'
+                `Filter parameter ${targetKeys[i]} for broadcast "${broadcastName}" is not provided`
             );
         }
     }
@@ -137,10 +137,10 @@ SubscriptionUtil.checkFilterParameters = function(expectedFilterParameters, actu
  */
 SubscriptionUtil.createMulticastId = function(providerParticipantId, multicastName, partitions) {
     let i,
-        multicastId = providerParticipantId + "/" + multicastName;
+        multicastId = `${providerParticipantId}/${multicastName}`;
     if (partitions !== undefined) {
         for (i = 0; i < partitions.length; i++) {
-            multicastId += "/" + partitions[i];
+            multicastId += `/${partitions[i]}`;
         }
     }
     return multicastId;
@@ -163,11 +163,9 @@ SubscriptionUtil.validatePartitions = function(partitions) {
                 !(i + 1 === partitions.length && partition === SubscriptionUtil.MULTI_LEVEL_WILDCARD)
             ) {
                 throw new Error(
-                    "Partition " +
-                        partitions[i] +
-                        " contains invalid characters.%n" +
-                        "Must only contain a-z A-Z 0-9, or by a single position wildcard (+),%n" +
-                        "or the last partition may be a multi-level wildcard (*)."
+                    `Partition ${partitions[i]} contains invalid characters.%n` +
+                        `Must only contain a-z A-Z 0-9, or by a single position wildcard (+),%n` +
+                        `or the last partition may be a multi-level wildcard (*).`
                 );
             }
         }

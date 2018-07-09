@@ -49,13 +49,19 @@ describe("libjoynr-js.joynr.util.LoggingManager", () => {
         LoggingManager.configure({ configuration: { appenders: {} } });
         expectNoCalls();
 
-        LoggingManager.configure({ configuration: { appenders: { appender: [] } } });
+        LoggingManager.configure({
+            configuration: { appenders: { appender: [] } }
+        });
         expectNoCalls();
 
-        LoggingManager.configure({ configuration: { appenders: { appender: [{}] } } });
+        LoggingManager.configure({
+            configuration: { appenders: { appender: [{}] } }
+        });
         expectNoCalls();
 
-        LoggingManager.configure({ configuration: { appenders: { appender: [{ PatternLayout: {} }] } } });
+        LoggingManager.configure({
+            configuration: { appenders: { appender: [{ PatternLayout: {} }] } }
+        });
         expectNoCalls();
 
         LoggingManager.configure({ appenderClasses: {} });
@@ -63,21 +69,29 @@ describe("libjoynr-js.joynr.util.LoggingManager", () => {
     });
 
     it("sets the loglevel of JoynrLogger when loglevel of the root logger is set", () => {
-        LoggingManager.configure({ configuration: { loggers: { root: { level: JoynrLogger.LogLevel.DEBUG } } } });
+        LoggingManager.configure({
+            configuration: {
+                loggers: { root: { level: JoynrLogger.LogLevel.DEBUG } }
+            }
+        });
         expect(JoynrLogger.setLogLevel).toHaveBeenCalledWith(JoynrLogger.LogLevel.DEBUG);
     });
 
     it("sets the formatting of JoynrLogger when a patternLayout is set", () => {
         const pattern = "some pattern %m";
         LoggingManager.configure({
-            configuration: { appenders: { appender: [{ PatternLayout: { pattern } }] } }
+            configuration: {
+                appenders: { appender: [{ PatternLayout: { pattern } }] }
+            }
         });
         expect(JoynrLogger.setFormatting).toHaveBeenCalledWith(pattern);
     });
 
     it("won't set the formatting of JoynrLogger when the patternLayout is %m", () => {
         const pattern = "%m";
-        LoggingManager.configure({ configuration: { appenders: [{ PatternLayout: { pattern } }] } });
+        LoggingManager.configure({
+            configuration: { appenders: [{ PatternLayout: { pattern } }] }
+        });
         expect(JoynrLogger.setFormatting).not.toHaveBeenCalled();
     });
 

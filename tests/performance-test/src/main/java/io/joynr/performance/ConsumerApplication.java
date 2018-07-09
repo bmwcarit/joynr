@@ -73,8 +73,10 @@ public class ConsumerApplication extends AbstractJoynrApplication {
         Module backendTransportModules = Modules.EMPTY_MODULE;
 
         if (invocationParameters.getRuntimeMode() == RuntimeConfig.WEBSOCKET) {
-            joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_HOST, invocationParameters.getCcHost());
-            joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PORT, invocationParameters.getCcPort());
+            joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_HOST,
+                                    invocationParameters.getCcHost());
+            joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PORT,
+                                    invocationParameters.getCcPort());
             joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PROTOCOL, "ws");
             joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PATH, "");
             joynrConfig.setProperty(MessagingPropertyKeys.PERSISTENCE_FILE, STATIC_PERSISTENCE_FILE);
@@ -146,8 +148,7 @@ public class ConsumerApplication extends AbstractJoynrApplication {
                                                                        EchoProxy.class);
 
         return proxyBuilder.setMessagingQos(new MessagingQos(3600000)). // 1 hour
-                           setDiscoveryQos(discoveryQos)
-                           .build();
+                           setDiscoveryQos(discoveryQos).build();
     }
 
     private void performSyncSendStringTest(EchoProxy proxy) {

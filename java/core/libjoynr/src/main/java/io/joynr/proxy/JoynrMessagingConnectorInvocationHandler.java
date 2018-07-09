@@ -223,7 +223,7 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
         }
 
         logger.debug("SUBSCRIPTION call proxy: subscriptionId: {}, attribute: {}, qos: {},"
-                             + " proxy participantId: {}, provider discovery entries: {}",
+                + " proxy participantId: {}, provider discovery entries: {}",
                      attributeSubscription.getSubscriptionId(),
                      attributeSubscription.getSubscriptionName(),
                      attributeSubscription.getQos(),
@@ -240,7 +240,7 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
         }
 
         logger.debug("SUBSCRIPTION call proxy: subscriptionId: {}, broadcast: {}, qos: {},"
-                             + " proxy participantId: {}, provider discovery entries: {}",
+                + " proxy participantId: {}, provider discovery entries: {}",
                      broadcastSubscription.getSubscriptionId(),
                      broadcastSubscription.getBroadcastName(),
                      broadcastSubscription.getQos(),

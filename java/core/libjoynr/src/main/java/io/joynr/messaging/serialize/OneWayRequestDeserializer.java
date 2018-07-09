@@ -52,7 +52,7 @@ public class OneWayRequestDeserializer extends JsonDeserializer<OneWayRequest> {
      */
     @Override
     public OneWayRequest deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException,
-                                                                                JsonProcessingException {
+                                                                                 JsonProcessingException {
         JsonNode node = jp.getCodec().readTree(jp);
         String methodName = node.get("methodName").asText();
 

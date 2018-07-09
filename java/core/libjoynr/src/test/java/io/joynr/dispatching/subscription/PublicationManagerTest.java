@@ -335,10 +335,11 @@ public class PublicationManagerTest {
 
         publicationManager.attributeValueChanged(SUBSCRIPTION_ID, valueToPublish);
 
-        verify(dispatcher, timeout(300).times(0)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                              (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
-                                                                              any(SubscriptionPublication.class),
-                                                                              any(MessagingQos.class));
+        verify(dispatcher,
+               timeout(300).times(0)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
+                                                                  (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
+                                                                  any(SubscriptionPublication.class),
+                                                                  any(MessagingQos.class));
     }
 
     @SuppressWarnings("unchecked")
@@ -356,18 +357,20 @@ public class PublicationManagerTest {
 
         publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest);
 
-        verify(dispatcher, timeout(period * 5).times(6)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                                     (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
-                                                                                     any(SubscriptionPublication.class),
-                                                                                     any(MessagingQos.class));
+        verify(dispatcher,
+               timeout(period * 5).times(6)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
+                                                                         (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
+                                                                         any(SubscriptionPublication.class),
+                                                                         any(MessagingQos.class));
 
         reset(dispatcher);
         publicationManager.stopPublication(SUBSCRIPTION_ID);
 
-        verify(dispatcher, timeout(300).times(0)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                              (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
-                                                                              any(SubscriptionPublication.class),
-                                                                              any(MessagingQos.class));
+        verify(dispatcher,
+               timeout(300).times(0)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
+                                                                  (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
+                                                                  any(SubscriptionPublication.class),
+                                                                  any(MessagingQos.class));
     }
 
     @SuppressWarnings("unchecked")
@@ -384,18 +387,20 @@ public class PublicationManagerTest {
 
         publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest);
 
-        verify(dispatcher, timeout(period * 5).times(6)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                                     (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
-                                                                                     any(SubscriptionPublication.class),
-                                                                                     any(MessagingQos.class));
+        verify(dispatcher,
+               timeout(period * 5).times(6)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
+                                                                         (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
+                                                                         any(SubscriptionPublication.class),
+                                                                         any(MessagingQos.class));
 
         reset(dispatcher);
         publicationManager.stopPublication(SUBSCRIPTION_ID);
 
-        verify(dispatcher, timeout(testLengthMax).times(0)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                                        (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
-                                                                                        any(SubscriptionPublication.class),
-                                                                                        any(MessagingQos.class));
+        verify(dispatcher,
+               timeout(testLengthMax).times(0)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
+                                                                            (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
+                                                                            any(SubscriptionPublication.class),
+                                                                            any(MessagingQos.class));
     }
 
     @SuppressWarnings("unchecked")
@@ -430,10 +435,11 @@ public class PublicationManagerTest {
         publicationManager.attributeValueChanged(subscriptionId1, valueToPublish);
         publicationManager.attributeValueChanged(subscriptionId2, valueToPublish);
 
-        verify(dispatcher, timeout(300).times(0)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                              (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
-                                                                              any(SubscriptionPublication.class),
-                                                                              any(MessagingQos.class));
+        verify(dispatcher,
+               timeout(300).times(0)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
+                                                                  (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
+                                                                  any(SubscriptionPublication.class),
+                                                                  any(MessagingQos.class));
     }
 
     @SuppressWarnings("unchecked")
@@ -466,10 +472,11 @@ public class PublicationManagerTest {
 
         publicationManager.entryAdded(PROVIDER_PARTICIPANT_ID, providerContainer);
 
-        verify(dispatcher, timeout(period * 5).times(12)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                                      (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
-                                                                                      any(SubscriptionPublication.class),
-                                                                                      any(MessagingQos.class));
+        verify(dispatcher,
+               timeout(period * 5).times(12)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
+                                                                          (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
+                                                                          any(SubscriptionPublication.class),
+                                                                          any(MessagingQos.class));
     }
 
     @SuppressWarnings("unchecked")
@@ -732,10 +739,11 @@ public class PublicationManagerTest {
 
         publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest);
 
-        verify(dispatcher, timeout(period * 5).times(6)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                                     (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
-                                                                                     any(SubscriptionPublication.class),
-                                                                                     any(MessagingQos.class));
+        verify(dispatcher,
+               timeout(period * 5).times(6)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
+                                                                         (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
+                                                                         any(SubscriptionPublication.class),
+                                                                         any(MessagingQos.class));
 
         qos = new OnChangeSubscriptionQos().setMinIntervalMs(0)
                                            .setValidityMs(validityMs)
@@ -750,10 +758,11 @@ public class PublicationManagerTest {
         reset(dispatcher);
         publicationManager.attributeValueChanged(SUBSCRIPTION_ID, valueToPublish);
 
-        verify(dispatcher, timeout(testLengthMax).times(1)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                                        (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
-                                                                                        any(SubscriptionPublication.class),
-                                                                                        any(MessagingQos.class));
+        verify(dispatcher,
+               timeout(testLengthMax).times(1)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
+                                                                            (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
+                                                                            any(SubscriptionPublication.class),
+                                                                            any(MessagingQos.class));
     }
 
     @Test
@@ -819,10 +828,11 @@ public class PublicationManagerTest {
         // when the provider is registered, persisted subscription requests should be activated
         myProviderDirectory.add(providerParticipantId, providerContainer);
 
-        verify(dispatcher, timeout(validityMs).atLeast(times)).sendSubscriptionPublication(any(String.class),
-                                                                                           any(Set.class),
-                                                                                           any(SubscriptionPublication.class),
-                                                                                           any(MessagingQos.class));
+        verify(dispatcher,
+               timeout(validityMs).atLeast(times)).sendSubscriptionPublication(any(String.class),
+                                                                               any(Set.class),
+                                                                               any(SubscriptionPublication.class),
+                                                                               any(MessagingQos.class));
         ;
 
         Thread.sleep(validityMs + 1000);

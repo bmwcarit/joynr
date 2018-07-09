@@ -151,7 +151,7 @@ function privateOperationOnError(exceptionOrErrorEnumValue) {
         });
     } else if (exceptionOrErrorEnumValue instanceof Error) {
         exception = new ProviderRuntimeException({
-            detailMessage: "Implementation causes unknown error: " + exceptionOrErrorEnumValue.message
+            detailMessage: `Implementation causes unknown error: ${exceptionOrErrorEnumValue.message}`
         });
     } else {
         exception = new ProviderRuntimeException({
@@ -211,13 +211,11 @@ ProviderOperation.prototype.callOperation = function callOperation(operationArgu
 
     // TODO: proper error handling
     throw new Error(
-        "Could not find a valid operation signature in '" +
-            JSON.stringify(this._operationSignatures) +
-            "' for a call to operation '" +
-            this._operationName +
-            "' with the arguments: '" +
-            JSON.stringify(operationArguments) +
-            "'"
+        `Could not find a valid operation signature in '${JSON.stringify(
+            this._operationSignatures
+        )}' for a call to operation '${this._operationName}' with the arguments: '${JSON.stringify(
+            operationArguments
+        )}'`
     );
 };
 

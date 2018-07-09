@@ -1,13 +1,13 @@
 {
   "name": "radio-node",
-  "version": "1.3.2",
+  "version": "1.4.0",
   "license": "Apache-2.0",
   "description": "simple app to demonstrate usage of joynr",
   "main": "src/main/js/radioConsumer.js",
   "private": true,
   "dependencies": {
     "joynr": "file:../../javascript/libjoynr-js/src/main/js",
-    "node-localstorage": "1.3.2"
+    "node-localstorage": "1.3.0"
   },
   "config": {
     "runtime": "websocket",

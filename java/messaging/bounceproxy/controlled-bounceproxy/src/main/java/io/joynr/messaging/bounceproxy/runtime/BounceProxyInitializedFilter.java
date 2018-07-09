@@ -55,7 +55,7 @@ public class BounceProxyInitializedFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException,
-                                                                                             ServletException {
+                                                                                              ServletException {
 
         // first check whether we are ready to accept events
         if (lifecycleMonitor.isInitialized()) {
@@ -63,7 +63,8 @@ public class BounceProxyInitializedFilter implements Filter {
             chain.doFilter(request, response);
         } else {
             // block request
-            throw new JoynrHttpException(Status.FORBIDDEN, JoynrBounceProxyControlErrorCode.BOUNCEPROXY_NOT_INITIALIZED);
+            throw new JoynrHttpException(Status.FORBIDDEN,
+                                         JoynrBounceProxyControlErrorCode.BOUNCEPROXY_NOT_INITIALIZED);
         }
     }
 

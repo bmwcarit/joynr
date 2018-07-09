@@ -32,7 +32,7 @@ function increaseFakeTime(time_ms) {
 
 describe("libjoynr-js.joynr.messaging.routing.MessageQueue", () => {
     let messageQueue;
-    const receiverParticipantId = "TestMessageQueue_participantId_" + Date.now();
+    const receiverParticipantId = `TestMessageQueue_participantId_${Date.now()}`;
     const joynrMessage = new JoynrMessage({
         type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
         payload: "hello"
@@ -69,7 +69,7 @@ describe("libjoynr-js.joynr.messaging.routing.MessageQueue", () => {
         const payload = "hello";
         let oldQueueSize;
         const maxIterations = Math.floor(
-            messageQueue.maxQueueSizeInKBytes * 1024 / UtilInternal.getLengthInBytes(payload)
+            (messageQueue.maxQueueSizeInKBytes * 1024) / UtilInternal.getLengthInBytes(payload)
         );
         const newJoynrMessage = new JoynrMessage({
             type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
@@ -78,7 +78,7 @@ describe("libjoynr-js.joynr.messaging.routing.MessageQueue", () => {
         newJoynrMessage.expiryDate = Date.now() + 1000;
 
         while (i < maxIterations) {
-            newJoynrMessage.to = receiverParticipantId + "i";
+            newJoynrMessage.to = `${receiverParticipantId}i`;
             newJoynrMessage.from = "senderParticipantId" + "i";
             oldQueueSize = messageQueue.currentQueueSize;
             messageQueue.putMessage(joynrMessage);
@@ -89,7 +89,7 @@ describe("libjoynr-js.joynr.messaging.routing.MessageQueue", () => {
         //now, the next message shall lead to a queue overflow
         const ExceedsBufferSuffix = "ExceedsQueueBuffer";
         newJoynrMessage.to = receiverParticipantId + ExceedsBufferSuffix;
-        newJoynrMessage.from = "senderParticipantId" + ExceedsBufferSuffix;
+        newJoynrMessage.from = `senderParticipantId${ExceedsBufferSuffix}`;
         oldQueueSize = messageQueue.currentQueueSize;
         i = 0;
         while (i < 10) {

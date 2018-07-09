@@ -134,7 +134,7 @@ describe("libjoynr-js.joynr.UtilInternal.transform", () => {
         });
 
         expect(transformed.length).toEqual(1);
-        expect(transformed[0].a).toEqual("a" + postFix);
+        expect(transformed[0].a).toEqual(`a${postFix}`);
     });
 });
 
@@ -149,7 +149,7 @@ describe("libjoynr-js.joynr.UtilInternal.firstLower", () => {
         expect(UtilInternal.firstLower("FsDfAsDf")).toEqual("fsDfAsDf");
         const rettyLongString =
             "RETTYLONGSTRINGprettylongstringPRETTYLONGSTRINGprettylongstringPRETTYLONGSTRINGprettylongstringPRETTYLONGSTRINGprettylongstringPRETTYLONGSTRINGprettylongstringPRETTYLONGSTRINGprettylongstringPRETTYLONGSTRING";
-        expect(UtilInternal.firstLower("P" + rettyLongString)).toEqual("p" + rettyLongString);
+        expect(UtilInternal.firstLower(`P${rettyLongString}`)).toEqual(`p${rettyLongString}`);
     });
 
     it("throws on nullable input", () => {
@@ -173,7 +173,7 @@ describe("libjoynr-js.joynr.UtilInternal.firstUpper", () => {
         expect(UtilInternal.firstUpper("fSdFaSdF")).toEqual("FSdFaSdF");
         const rettyLongString =
             "rettylongstringPRETTYLONGSTRINGprettylongstringPRETTYLONGSTRINGprettylongstringPRETTYLONGSTRINGprettylongstringPRETTYLONGSTRINGprettylongstringPRETTYLONGSTRINGprettylongstringPRETTYLONGSTRINGprettylongstring";
-        expect(UtilInternal.firstUpper("p" + rettyLongString)).toEqual("P" + rettyLongString);
+        expect(UtilInternal.firstUpper(`p${rettyLongString}`)).toEqual(`P${rettyLongString}`);
     });
 
     it("throws on nullable input", () => {
@@ -200,11 +200,11 @@ describe("libjoynr-js.joynr.Util.ensureTypedValues", () => {
         let returnValue = null;
         const untypedValue = {
             name: "radioStationName",
-            _typeName: "joynr.vehicle.radiotypes.RadioStation"
+            _typeName: "joynr.vehicle.radiotypes.RadioStation",
+            byteBuffer: []
         };
 
         returnValue = Util.ensureTypedValues(untypedValue);
-        expect(returnValue instanceof RadioStation).toBe(true);
         expect(returnValue.name === untypedValue.name).toBe(true);
     });
 
@@ -213,17 +213,17 @@ describe("libjoynr-js.joynr.Util.ensureTypedValues", () => {
         const untypedArray = [
             {
                 name: "radioStationName1",
-                _typeName: "joynr.vehicle.radiotypes.RadioStation"
+                _typeName: "joynr.vehicle.radiotypes.RadioStation",
+                byteBuffer: []
             },
             {
                 name: "radioStationName2",
-                _typeName: "joynr.vehicle.radiotypes.RadioStation"
+                _typeName: "joynr.vehicle.radiotypes.RadioStation",
+                byteBuffer: []
             }
         ];
 
         returnValue = Util.ensureTypedValues(untypedArray);
-        expect(returnValue[0] instanceof RadioStation).toBe(true);
-        expect(returnValue[1] instanceof RadioStation).toBe(true);
         expect(returnValue[0].name === untypedArray[0].name).toBe(true);
         expect(returnValue[1].name === untypedArray[1].name).toBe(true);
     });
@@ -260,7 +260,6 @@ describe("libjoynr-js.joynr.UtilInternal.timeoutPromise", () => {
             .then(done)
             .catch(fail);
         jasmine.clock().tick(101);
-        jasmine.clock().tick(100);
     });
 
     it("timeouts after before the promise resolves", done => {
@@ -271,7 +270,6 @@ describe("libjoynr-js.joynr.UtilInternal.timeoutPromise", () => {
             .then(fail)
             .catch(done);
         jasmine.clock().tick(101);
-        jasmine.clock().tick(100);
     });
 });
 

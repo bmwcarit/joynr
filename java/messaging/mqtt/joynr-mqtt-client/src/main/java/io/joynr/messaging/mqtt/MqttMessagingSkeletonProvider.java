@@ -98,8 +98,8 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
         this.channelId = channelId;
         this.mqttTopicPrefixProvider = mqttTopicPrefixProvider;
         this.mqttStatusReceiver = mqttStatusReceiver;
-        logger.debug("Created with sharedSubscriptionsEnabled: {} ownAddress: {} channelId: {}", new Object[]{
-                sharedSubscriptionsEnabled, this.ownAddress, this.channelId });
+        logger.debug("Created with sharedSubscriptionsEnabled: {} ownAddress: {} channelId: {}",
+                     new Object[]{ sharedSubscriptionsEnabled, this.ownAddress, this.channelId });
     }
 
     @Override

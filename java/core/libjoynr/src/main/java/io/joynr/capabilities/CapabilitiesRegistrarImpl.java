@@ -81,10 +81,13 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
      * (non-Javadoc)
      *
      * @see io.joynr.capabilities.CapabilitiesRegistrar# registerProvider(java.lang.String,
-     * io.joynr.provider.JoynrProvider, java.lang.Class)
+     * io.joynr.provider.JoynrProvider, java.lang.Class, boolean)
      */
     @Override
-    public Future<Void> registerProvider(final String domain, Object provider, ProviderQos providerQos) {
+    public Future<Void> registerProvider(final String domain,
+                                         Object provider,
+                                         ProviderQos providerQos,
+                                         boolean awaitGlobalRegistration) {
         if (providerQos == null) {
             throw new JoynrRuntimeException("providerQos == null. It must not be null");
         }
@@ -116,7 +119,7 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
 
             }
         };
-        return localDiscoveryAggregator.add(callback, discoveryEntry);
+        return localDiscoveryAggregator.add(callback, discoveryEntry, awaitGlobalRegistration);
     }
 
     @Override

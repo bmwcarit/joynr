@@ -17,45 +17,42 @@
  * #L%
  */
 
-define(
-    [
-        "joynr/messaging/MessagingSkeletonFactory",
-        "joynr/system/RoutingTypes/BrowserAddress",
-        "joynr/system/RoutingTypes/MqttAddress",
-        "joynr/messaging/inprocess/InProcessAddress"
-    ],
-    (MessagingSkeletonFactory, BrowserAddress, MqttAddress, InProcessAddress) => {
-        describe("libjoynr-js.joynr.messaging.MessagingSkeletonFactory", () => {
-            let messagingSkeletonFactory;
-            let mqttMessagingSkeleton, inProcessMessagingSkeleton;
+define([
+    "joynr/messaging/MessagingSkeletonFactory",
+    "joynr/system/RoutingTypes/BrowserAddress",
+    "joynr/system/RoutingTypes/MqttAddress",
+    "joynr/messaging/inprocess/InProcessAddress"
+], (MessagingSkeletonFactory, BrowserAddress, MqttAddress, InProcessAddress) => {
+    describe("libjoynr-js.joynr.messaging.MessagingSkeletonFactory", () => {
+        let messagingSkeletonFactory;
+        let mqttMessagingSkeleton, inProcessMessagingSkeleton;
 
-            beforeEach(() => {
-                mqttMessagingSkeleton = jasmine.createSpyObj("mqttMessagingSkeleton", ["shutdown"]);
-                inProcessMessagingSkeleton = jasmine.createSpyObj("inProcessMessagingSkeleton", ["shutdown"]);
-                messagingSkeletonFactory = new MessagingSkeletonFactory();
-                const messagingSkeletons = {};
-                messagingSkeletons[InProcessAddress._typeName] = inProcessMessagingSkeleton;
-                messagingSkeletons[MqttAddress._typeName] = mqttMessagingSkeleton;
-                messagingSkeletonFactory.setSkeletons(messagingSkeletons);
-            });
-
-            it("provides expected API", () => {
-                expect(MessagingSkeletonFactory).toBeDefined();
-                expect(messagingSkeletonFactory).toBeDefined();
-                expect(messagingSkeletonFactory instanceof MessagingSkeletonFactory).toBeTruthy();
-                expect(messagingSkeletonFactory.getSkeleton).toBeDefined();
-            });
-
-            it("returns the appropriate messaging skeleton depending on object type", () => {
-                expect(messagingSkeletonFactory.getSkeleton(new MqttAddress())).toBe(mqttMessagingSkeleton);
-                expect(messagingSkeletonFactory.getSkeleton(new InProcessAddress())).toBe(inProcessMessagingSkeleton);
-            });
-
-            it("throws exception if address type is unknown", () => {
-                expect(() => {
-                    messagingSkeletonFactory.getSkeleton(new BrowserAddress());
-                }).toThrow();
-            });
+        beforeEach(() => {
+            mqttMessagingSkeleton = jasmine.createSpyObj("mqttMessagingSkeleton", ["shutdown"]);
+            inProcessMessagingSkeleton = jasmine.createSpyObj("inProcessMessagingSkeleton", ["shutdown"]);
+            messagingSkeletonFactory = new MessagingSkeletonFactory();
+            const messagingSkeletons = {};
+            messagingSkeletons[InProcessAddress._typeName] = inProcessMessagingSkeleton;
+            messagingSkeletons[MqttAddress._typeName] = mqttMessagingSkeleton;
+            messagingSkeletonFactory.setSkeletons(messagingSkeletons);
         });
-    }
-);
+
+        it("provides expected API", () => {
+            expect(MessagingSkeletonFactory).toBeDefined();
+            expect(messagingSkeletonFactory).toBeDefined();
+            expect(messagingSkeletonFactory instanceof MessagingSkeletonFactory).toBeTruthy();
+            expect(messagingSkeletonFactory.getSkeleton).toBeDefined();
+        });
+
+        it("returns the appropriate messaging skeleton depending on object type", () => {
+            expect(messagingSkeletonFactory.getSkeleton(new MqttAddress())).toBe(mqttMessagingSkeleton);
+            expect(messagingSkeletonFactory.getSkeleton(new InProcessAddress())).toBe(inProcessMessagingSkeleton);
+        });
+
+        it("throws exception if address type is unknown", () => {
+            expect(() => {
+                messagingSkeletonFactory.getSkeleton(new BrowserAddress());
+            }).toThrow();
+        });
+    });
+});

@@ -20,5 +20,7 @@ package io.joynr.messaging.mqtt;
 
 public interface MqttClientFactory {
 
-    JoynrMqttClient create();
+    JoynrMqttClient createSender();
+
+    JoynrMqttClient createReceiver();
 }

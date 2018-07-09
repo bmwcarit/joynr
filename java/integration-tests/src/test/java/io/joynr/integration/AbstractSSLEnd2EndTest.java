@@ -85,16 +85,16 @@ public abstract class AbstractSSLEnd2EndTest extends JoynrEnd2EndTest {
                 + "-end2endConsumer";
 
         Properties joynrConfigProvider = PropertyLoader.loadProperties("testMessaging.properties");
-        joynrConfigProvider.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, "localdomain."
-                + UUID.randomUUID().toString());
+        joynrConfigProvider.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL,
+                                "localdomain." + UUID.randomUUID().toString());
         joynrConfigProvider.put(MessagingPropertyKeys.CHANNELID, channelIdProvider);
         joynrConfigProvider.put(MessagingPropertyKeys.RECEIVERID, UUID.randomUUID().toString());
 
         providerRuntime = getRuntime(joynrConfigProvider, new StaticDomainAccessControlProvisioningModule());
 
         Properties joynrConfigConsumer = PropertyLoader.loadProperties("testMessaging.properties");
-        joynrConfigConsumer.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, "localdomain."
-                + UUID.randomUUID().toString());
+        joynrConfigConsumer.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL,
+                                "localdomain." + UUID.randomUUID().toString());
         joynrConfigConsumer.put(MessagingPropertyKeys.CHANNELID, channelIdConsumer);
         joynrConfigConsumer.put(MessagingPropertyKeys.RECEIVERID, UUID.randomUUID().toString());
 

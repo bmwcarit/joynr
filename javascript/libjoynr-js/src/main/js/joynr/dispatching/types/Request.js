@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-const Util = require("../../util/Util");
+
 const uuid = require("uuid/v4");
 
 const rrBase = uuid();
@@ -42,14 +42,8 @@ let rrIndex = 0;
  *            settings.params.array
  */
 function Request(settings) {
-    let i;
-    settings.requestReplyId = settings.requestReplyId || rrBase + "_" + rrIndex++;
+    settings.requestReplyId = settings.requestReplyId || `${rrBase}_${rrIndex++}`;
 
-    if (settings.params) {
-        for (i = 0; i < settings.params.length; i++) {
-            settings.params[i] = Util.ensureTypedValues(settings.params[i]);
-        }
-    }
     if (!settings.paramDatatypes) {
         settings.paramDatatypes = [];
     }

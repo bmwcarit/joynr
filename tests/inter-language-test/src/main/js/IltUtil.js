@@ -17,22 +17,22 @@
  * #L%
  */
 
-var useBrowserify = process.env.browserify;
-var joynr = useBrowserify === "true"? require("joynr-bundle") : require("joynr");
+const useBrowserify = process.env.browserify;
+const joynr = useBrowserify === "true" ? require("joynr-bundle") : require("joynr");
 
 // generated joynr Types call require("joynr") to register themselves in the type registry
 // make sure that they use the bundled joynr if necessary
 const mod = require("module");
-let req = mod.prototype.require;
+const req = mod.prototype.require;
 
 mod.prototype.require = function(md) {
-  if (md === "joynr") {
-    return joynr;
-  }
-  return req.call(this, md);
+    if (md === "joynr") {
+        return joynr;
+    }
+    return req.call(this, md);
 };
 
-var log = require("test-base").logging.log;
+const log = require("test-base").logging.log;
 
 // imports
 joynr.interlanguagetest = {};
@@ -64,23 +64,21 @@ joynr.interlanguagetest.namedTypeCollection1.BaseStruct = require("../generated-
 joynr.interlanguagetest.namedTypeCollection1.StructWithStringArray = require("../generated-javascript/joynr/interlanguagetest/namedTypeCollection1/StructWithStringArray.js");
 joynr.interlanguagetest.namedTypeCollection1.Enumeration = require("../generated-javascript/joynr/interlanguagetest/namedTypeCollection1/Enumeration.js").Enumeration;
 
-var useRestricted64BitRange = true;
-var useRestrictedUnsignedRange = true;
+const useRestrictedUnsignedRange = true;
 
-IltUtil = {};
-
+const IltUtil = {};
 
 IltUtil.checkBoolean = function(booleanValue) {
-    log("IltUtil.checkBoolean called with " + booleanValue);
+    log(`IltUtil.checkBoolean called with ${booleanValue}`);
     expect(booleanValue).toBeTruthy();
-    if (booleanValue === true){
+    if (booleanValue === true) {
         log("IltUtil.checkBoolean returning true");
         return true;
     } else {
         log("IltUtil.checkBoolean returning false");
         return false;
     }
-}
+};
 
 // String Array
 
@@ -94,17 +92,17 @@ IltUtil.fillStringArray = function(stringArray) {
 };
 
 IltUtil.createStringArray = function() {
-    stringArray = [];
+    let stringArray = [];
     stringArray = IltUtil.fillStringArray(stringArray);
     return stringArray;
 };
 
 IltUtil.checkStringArray = function(stringArray) {
-    if (stringArray.length != 2) {
+    if (stringArray.length !== 2) {
         log("checkStringArray: invalid array length");
         return false;
     }
-    if (stringArray[0] != "Hello" || stringArray[1] != "World") {
+    if (stringArray[0] !== "Hello" || stringArray[1] !== "World") {
         log("checkStringArray: invalid array content");
         return false;
     }
@@ -124,22 +122,22 @@ IltUtil.fillByteArray = function(byteArray) {
 };
 
 IltUtil.createByteArray = function() {
-    byteArray = [];
+    let byteArray = [];
     byteArray = IltUtil.fillByteArray(byteArray);
     return byteArray;
 };
 
 IltUtil.checkByteArray = function(byteArray) {
-    if (byteArray.length != 2) {
+    if (byteArray.length !== 2) {
         log("checkByteArray: invalid array length");
         return false;
     }
-    if (byteArray[0] != 1 || byteArray[1] != 127) {
+    if (byteArray[0] !== 1 || byteArray[1] !== 127) {
         log("checkByteArray: invalid array content");
         return false;
     }
     return true;
-}
+};
 
 // uInt64Array
 
@@ -153,17 +151,17 @@ IltUtil.fillUInt64Array = function(uInt64Array) {
 };
 
 IltUtil.createUInt64Array = function() {
-    uInt64Array = [];
+    let uInt64Array = [];
     uInt64Array = IltUtil.fillUInt64Array(uInt64Array);
     return uInt64Array;
 };
 
 IltUtil.checkUInt64Array = function(uInt64Array) {
-    if (uInt64Array.length != 2) {
+    if (uInt64Array.length !== 2) {
         log("checkUInt64Array: invalid array length");
         return false;
     }
-    if (uInt64Array[0] != 1 || uInt64Array[1] != 127) {
+    if (uInt64Array[0] !== 1 || uInt64Array[1] !== 127) {
         log("checkUInt64Array: invalid array content");
         return false;
     }
@@ -183,17 +181,21 @@ IltUtil.fillDoubleArray = function(doubleArray) {
 };
 
 IltUtil.createDoubleArray = function() {
-    doubleArray = [];
+    let doubleArray = [];
     doubleArray = IltUtil.fillDoubleArray(doubleArray);
     return doubleArray;
 };
 
 IltUtil.checkDoubleArray = function(doubleArray) {
-    if (doubleArray.length != 3) {
+    if (doubleArray.length !== 3) {
         log("checkDoubleArray: invalid array length");
         return false;
     }
-    if (!IltUtil.cmpDouble(doubleArray[0], 1.1) || !IltUtil.cmpDouble(doubleArray[1], 2.2) || !IltUtil.cmpDouble(doubleArray[2], 3.3)) {
+    if (
+        !IltUtil.cmpDouble(doubleArray[0], 1.1) ||
+        !IltUtil.cmpDouble(doubleArray[1], 2.2) ||
+        !IltUtil.cmpDouble(doubleArray[2], 3.3)
+    ) {
         log("checkDoubleArray: invalid array content");
         return false;
     }
@@ -202,28 +204,50 @@ IltUtil.checkDoubleArray = function(doubleArray) {
 
 // ExtendedInterfaceEnumerationInTypeCollectionArray
 
-IltUtil.fillExtendedInterfaceEnumerationInTypeCollectionArray = function(extendedInterfaceEnumerationInTypeCollectionArray) {
-    extendedInterfaceEnumerationInTypeCollectionArray.push(joynr.interlanguagetest.namedTypeCollection2.ExtendedInterfaceEnumerationInTypeCollection.ENUM_2_VALUE_EXTENSION_FOR_INTERFACE);
-    extendedInterfaceEnumerationInTypeCollectionArray.push(joynr.interlanguagetest.namedTypeCollection2.ExtendedInterfaceEnumerationInTypeCollection.ENUM_I1_VALUE_3);
-    if (!IltUtil.checkExtendedInterfaceEnumerationInTypeCollectionArray(extendedInterfaceEnumerationInTypeCollectionArray)) {
-        throw new joynr.exceptions.JoynrRuntimeException("Internal error in fillExtendedInterfaceEnumerationInTypeCollectionArray");
+IltUtil.fillExtendedInterfaceEnumerationInTypeCollectionArray = function(
+    extendedInterfaceEnumerationInTypeCollectionArray
+) {
+    extendedInterfaceEnumerationInTypeCollectionArray.push(
+        joynr.interlanguagetest.namedTypeCollection2.ExtendedInterfaceEnumerationInTypeCollection
+            .ENUM_2_VALUE_EXTENSION_FOR_INTERFACE
+    );
+    extendedInterfaceEnumerationInTypeCollectionArray.push(
+        joynr.interlanguagetest.namedTypeCollection2.ExtendedInterfaceEnumerationInTypeCollection.ENUM_I1_VALUE_3
+    );
+    if (
+        !IltUtil.checkExtendedInterfaceEnumerationInTypeCollectionArray(
+            extendedInterfaceEnumerationInTypeCollectionArray
+        )
+    ) {
+        throw new joynr.exceptions.JoynrRuntimeException(
+            "Internal error in fillExtendedInterfaceEnumerationInTypeCollectionArray"
+        );
     }
     return extendedInterfaceEnumerationInTypeCollectionArray;
 };
 
 IltUtil.createExtendedInterfaceEnumerationInTypeCollectionArray = function() {
-    extendedInterfaceEnumerationInTypeCollectionArray = [];
-    extendedInterfaceEnumerationInTypeCollectionArray = IltUtil.fillExtendedInterfaceEnumerationInTypeCollectionArray(extendedInterfaceEnumerationInTypeCollectionArray);
+    let extendedInterfaceEnumerationInTypeCollectionArray = [];
+    extendedInterfaceEnumerationInTypeCollectionArray = IltUtil.fillExtendedInterfaceEnumerationInTypeCollectionArray(
+        extendedInterfaceEnumerationInTypeCollectionArray
+    );
     return extendedInterfaceEnumerationInTypeCollectionArray;
 };
 
-IltUtil.checkExtendedInterfaceEnumerationInTypeCollectionArray = function(extendedInterfaceEnumerationInTypeCollectionArray) {
-    if (extendedInterfaceEnumerationInTypeCollectionArray.length != 2) {
+IltUtil.checkExtendedInterfaceEnumerationInTypeCollectionArray = function(
+    extendedInterfaceEnumerationInTypeCollectionArray
+) {
+    if (extendedInterfaceEnumerationInTypeCollectionArray.length !== 2) {
         log("checkExtendedInterfaceEnumerationInTypeCollectionArray: invalid array length");
         return false;
     }
-    if (extendedInterfaceEnumerationInTypeCollectionArray[0] != joynr.interlanguagetest.namedTypeCollection2.ExtendedInterfaceEnumerationInTypeCollection.ENUM_2_VALUE_EXTENSION_FOR_INTERFACE ||
-        extendedInterfaceEnumerationInTypeCollectionArray[1] != joynr.interlanguagetest.namedTypeCollection2.ExtendedInterfaceEnumerationInTypeCollection.ENUM_I1_VALUE_3) {
+    if (
+        extendedInterfaceEnumerationInTypeCollectionArray[0] !==
+            joynr.interlanguagetest.namedTypeCollection2.ExtendedInterfaceEnumerationInTypeCollection
+                .ENUM_2_VALUE_EXTENSION_FOR_INTERFACE ||
+        extendedInterfaceEnumerationInTypeCollectionArray[1] !==
+            joynr.interlanguagetest.namedTypeCollection2.ExtendedInterfaceEnumerationInTypeCollection.ENUM_I1_VALUE_3
+    ) {
         log("checkExtendedInterfaceEnumerationInTypeCollectionArray: invalid array content");
         return false;
     }
@@ -233,8 +257,10 @@ IltUtil.checkExtendedInterfaceEnumerationInTypeCollectionArray = function(extend
 // ExtendedExtendedEnumerationArray
 
 IltUtil.fillExtendedExtendedEnumerationArray = function(extendedExtendedEnumerationArray) {
-    extendedExtendedEnumerationArray[0] = joynr.interlanguagetest.namedTypeCollection2.ExtendedExtendedEnumeration.ENUM_2_VALUE_EXTENSION_EXTENDED;
-    extendedExtendedEnumerationArray[1] = joynr.interlanguagetest.namedTypeCollection2.ExtendedExtendedEnumeration.ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION;
+    extendedExtendedEnumerationArray[0] =
+        joynr.interlanguagetest.namedTypeCollection2.ExtendedExtendedEnumeration.ENUM_2_VALUE_EXTENSION_EXTENDED;
+    extendedExtendedEnumerationArray[1] =
+        joynr.interlanguagetest.namedTypeCollection2.ExtendedExtendedEnumeration.ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION;
     if (!IltUtil.checkExtendedExtendedEnumerationArray(extendedExtendedEnumerationArray)) {
         throw new joynr.exceptions.JoynrRuntimeException("Internal error in fillExtendedExtendedEnumerationArray");
     }
@@ -242,18 +268,23 @@ IltUtil.fillExtendedExtendedEnumerationArray = function(extendedExtendedEnumerat
 };
 
 IltUtil.createExtendedExtendedEnumerationArray = function() {
-    extendedExtendedEnumerationArray = [];
+    let extendedExtendedEnumerationArray = [];
     extendedExtendedEnumerationArray = IltUtil.fillExtendedExtendedEnumerationArray(extendedExtendedEnumerationArray);
     return extendedExtendedEnumerationArray;
 };
 
 IltUtil.checkExtendedExtendedEnumerationArray = function(extendedExtendedEnumerationArray) {
-    if (extendedExtendedEnumerationArray.length != 2) {
+    if (extendedExtendedEnumerationArray.length !== 2) {
         log("checkExtendedExtendedEnumerationArray: invalid array length");
         return false;
     }
-    if (extendedExtendedEnumerationArray[0] != joynr.interlanguagetest.namedTypeCollection2.ExtendedExtendedEnumeration.ENUM_2_VALUE_EXTENSION_EXTENDED ||
-        extendedExtendedEnumerationArray[1] != joynr.interlanguagetest.namedTypeCollection2.ExtendedExtendedEnumeration.ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION) {
+    if (
+        extendedExtendedEnumerationArray[0] !==
+            joynr.interlanguagetest.namedTypeCollection2.ExtendedExtendedEnumeration.ENUM_2_VALUE_EXTENSION_EXTENDED ||
+        extendedExtendedEnumerationArray[1] !==
+            joynr.interlanguagetest.namedTypeCollection2.ExtendedExtendedEnumeration
+                .ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION
+    ) {
         log("checkExtendedExtendedEnumerationArray: invalid array content");
         return false;
     }
@@ -263,7 +294,7 @@ IltUtil.checkExtendedExtendedEnumerationArray = function(extendedExtendedEnumera
 // StructWithStringArray
 
 IltUtil.fillStructWithStringArray = function(structWithStringArray) {
-    stringArray = [];
+    const stringArray = [];
     stringArray.push("Hello");
     stringArray.push("World");
     structWithStringArray.stringArrayElement = stringArray;
@@ -274,23 +305,22 @@ IltUtil.fillStructWithStringArray = function(structWithStringArray) {
 };
 
 IltUtil.createStructWithStringArray = function() {
-    structWithStringArray = new joynr.interlanguagetest.namedTypeCollection1.StructWithStringArray();
+    let structWithStringArray = new joynr.interlanguagetest.namedTypeCollection1.StructWithStringArray();
     structWithStringArray = IltUtil.fillStructWithStringArray(structWithStringArray);
     return structWithStringArray;
 };
 
 IltUtil.checkStructWithStringArray = function(structWithStringArray) {
-    var stringArray = structWithStringArray.stringArrayElement;
+    const stringArray = structWithStringArray.stringArrayElement;
     if (!stringArray) {
         log("checkStructWithStringArray: array not set");
         return false;
     }
-    if (stringArray.length != 2) {
+    if (stringArray.length !== 2) {
         log("checkStructWithStringArray: invalid array length");
         return false;
     }
-    if (stringArray[0] != "Hello" ||
-        stringArray[1] != "World") {
+    if (stringArray[0] !== "Hello" || stringArray[1] !== "World") {
         log("checkStructWithStringArray: invalid array content");
         return false;
     }
@@ -309,7 +339,7 @@ IltUtil.fillStructWithStringArrayArray = function(structWithStringArrayArray) {
 };
 
 IltUtil.createStructWithStringArrayArray = function() {
-    structWithStringArrayArray = [];
+    let structWithStringArrayArray = [];
     structWithStringArrayArray = IltUtil.fillStructWithStringArrayArray(structWithStringArrayArray);
     return structWithStringArrayArray;
 };
@@ -319,12 +349,14 @@ IltUtil.checkStructWithStringArrayArray = function(structWithStringArrayArray) {
         log("checkStructWithStringArrayArray: array not set");
         return false;
     }
-    if (structWithStringArrayArray.length != 2) {
+    if (structWithStringArrayArray.length !== 2) {
         log("checkStructWithStringArrayArray: invalid array length");
         return false;
     }
-    if (!IltUtil.checkStructWithStringArray(structWithStringArrayArray[0]) ||
-        !IltUtil.checkStructWithStringArray(structWithStringArrayArray[1])) {
+    if (
+        !IltUtil.checkStructWithStringArray(structWithStringArrayArray[0]) ||
+        !IltUtil.checkStructWithStringArray(structWithStringArrayArray[1])
+    ) {
         log("checkStructWithStringArrayArray: invalid array content");
         return false;
     }
@@ -334,7 +366,7 @@ IltUtil.checkStructWithStringArrayArray = function(structWithStringArrayArray) {
 // BaseStructWithoutElements
 
 IltUtil.createBaseStructWithoutElements = function() {
-    var baseStructWithoutElements = new joynr.interlanguagetest.namedTypeCollection2.BaseStructWithoutElements();
+    const baseStructWithoutElements = new joynr.interlanguagetest.namedTypeCollection2.BaseStructWithoutElements();
     // nothing required, since this is an empty struct
     //
     // it was intended to be used for typecasts of some other struct
@@ -342,7 +374,7 @@ IltUtil.createBaseStructWithoutElements = function() {
     return baseStructWithoutElements;
 };
 
-IltUtil.checkBaseStructWithoutElements = function(baseStructWithoutElements) {
+IltUtil.checkBaseStructWithoutElements = function() {
     // nothing required, since this is an empty struct
     return true;
 };
@@ -358,7 +390,7 @@ IltUtil.fillBaseStruct = function(baseStruct) {
 };
 
 IltUtil.createBaseStruct = function() {
-    var baseStruct = new joynr.interlanguagetest.namedTypeCollection2.BaseStruct();
+    let baseStruct = new joynr.interlanguagetest.namedTypeCollection2.BaseStruct();
     baseStruct = IltUtil.fillBaseStruct(baseStruct);
     return baseStruct;
 };
@@ -372,7 +404,7 @@ IltUtil.checkBaseStruct = function(baseStruct) {
         log("checkBaseStruct: baseStructString not set");
         return false;
     }
-    if (baseStruct.baseStructString != "Hiya") {
+    if (baseStruct.baseStructString !== "Hiya") {
         log("checkBaseStruct: invalid content of baseStructString");
         return false;
     }
@@ -392,7 +424,7 @@ IltUtil.fillExtendedBaseStruct = function(extendedBaseStruct) {
 };
 
 IltUtil.createExtendedBaseStruct = function() {
-    var extendedBaseStruct = new joynr.interlanguagetest.namedTypeCollection2.ExtendedBaseStruct();
+    const extendedBaseStruct = new joynr.interlanguagetest.namedTypeCollection2.ExtendedBaseStruct();
     IltUtil.fillExtendedBaseStruct(extendedBaseStruct);
     return extendedBaseStruct;
 };
@@ -406,7 +438,7 @@ IltUtil.checkExtendedBaseStruct = function(extendedBaseStruct) {
         log("checkBaseStruct: enumElement not set");
         return false;
     }
-    if (extendedBaseStruct.enumElement != joynr.interlanguagetest.Enumeration.ENUM_0_VALUE_3) {
+    if (extendedBaseStruct.enumElement !== joynr.interlanguagetest.Enumeration.ENUM_0_VALUE_3) {
         log("checkBaseStruct: invalid content of enumElement");
         return false;
     }
@@ -416,7 +448,8 @@ IltUtil.checkExtendedBaseStruct = function(extendedBaseStruct) {
 // ExtendedExtendedBaseStruct
 
 IltUtil.fillExtendedExtendedBaseStruct = function(extendedExtendedBaseStruct) {
-    extendedExtendedBaseStruct.enumWithoutDefinedValuesElement = joynr.interlanguagetest.EnumerationWithoutDefinedValues.ENUM_0_VALUE_1;
+    extendedExtendedBaseStruct.enumWithoutDefinedValuesElement =
+        joynr.interlanguagetest.EnumerationWithoutDefinedValues.ENUM_0_VALUE_1;
     // fill inherited stuff
     IltUtil.fillExtendedBaseStruct(extendedExtendedBaseStruct);
     if (!IltUtil.checkExtendedExtendedBaseStruct(extendedExtendedBaseStruct)) {
@@ -426,7 +459,7 @@ IltUtil.fillExtendedExtendedBaseStruct = function(extendedExtendedBaseStruct) {
 };
 
 IltUtil.createExtendedExtendedBaseStruct = function() {
-    var extendedExtendedBaseStruct = new joynr.interlanguagetest.namedTypeCollection2.ExtendedExtendedBaseStruct();
+    let extendedExtendedBaseStruct = new joynr.interlanguagetest.namedTypeCollection2.ExtendedExtendedBaseStruct();
     extendedExtendedBaseStruct = IltUtil.fillExtendedExtendedBaseStruct(extendedExtendedBaseStruct);
     return extendedExtendedBaseStruct;
 };
@@ -435,12 +468,17 @@ IltUtil.checkExtendedExtendedBaseStruct = function(extendedExtendedBaseStruct) {
     if (!extendedExtendedBaseStruct) {
         return false;
     }
-    if (extendedExtendedBaseStruct.enumWithoutDefinedValuesElement === null ||
-        extendedExtendedBaseStruct.enumWithoutDefinedValuesElement === undefined) {
+    if (
+        extendedExtendedBaseStruct.enumWithoutDefinedValuesElement === null ||
+        extendedExtendedBaseStruct.enumWithoutDefinedValuesElement === undefined
+    ) {
         log("checkExtendedExtendedBaseStruct: enumWithoutDefinedValuesElement not set");
         return false;
     }
-    if (extendedExtendedBaseStruct.enumWithoutDefinedValuesElement != joynr.interlanguagetest.EnumerationWithoutDefinedValues.ENUM_0_VALUE_1) {
+    if (
+        extendedExtendedBaseStruct.enumWithoutDefinedValuesElement !==
+        joynr.interlanguagetest.EnumerationWithoutDefinedValues.ENUM_0_VALUE_1
+    ) {
         log("checkExtendedExtendedBaseStruct: invalid content of enumWithoutDefinedValuesElement");
         return false;
     }
@@ -547,7 +585,7 @@ IltUtil.checkStructOfPrimitives = function(structOfPrimitives) {
         log("checkStructOfPrimitives: not set");
         return false;
     }
-    if (structOfPrimitives.booleanElement != true) {
+    if (structOfPrimitives.booleanElement !== true) {
         log("checkStructOfPrimitives: invalid content of booleanElement");
         return false;
     }
@@ -559,27 +597,27 @@ IltUtil.checkStructOfPrimitives = function(structOfPrimitives) {
         log("checkStructOfPrimitives: invalid content of floatElement");
         return false;
     }
-    if (structOfPrimitives.int8MinElement != -128) {
+    if (structOfPrimitives.int8MinElement !== -128) {
         log("checkStructOfPrimitives: invalid content of int8MinElement");
         return false;
     }
-    if (structOfPrimitives.int8MaxElement != 127) {
+    if (structOfPrimitives.int8MaxElement !== 127) {
         log("checkStructOfPrimitives: invalid content of int8MaxElement");
         return false;
     }
-    if (structOfPrimitives.int16MinElement != -32768) {
+    if (structOfPrimitives.int16MinElement !== -32768) {
         log("checkStructOfPrimitives: invalid content of int16MinElement");
         return false;
     }
-    if (structOfPrimitives.int16MaxElement != 32767) {
+    if (structOfPrimitives.int16MaxElement !== 32767) {
         log("checkStructOfPrimitives: invalid content of int16MaxElement");
         return false;
     }
-    if (structOfPrimitives.int32MinElement != -2147483648) {
+    if (structOfPrimitives.int32MinElement !== -2147483648) {
         log("checkStructOfPrimitives: invalid content of int32MinElement");
         return false;
     }
-    if (structOfPrimitives.int32MaxElement != 2147483647) {
+    if (structOfPrimitives.int32MaxElement !== 2147483647) {
         log("checkStructOfPrimitives: invalid content of int32MaxElement");
         return false;
     }
@@ -592,80 +630,74 @@ IltUtil.checkStructOfPrimitives = function(structOfPrimitives) {
     // However, the values the get rounded up and will not match expectations
     // on Java or C++ side.
     //
-    //if (structOfPrimitives.int64MinElement != -9223372036854775808) {
+    //if (structOfPrimitives.int64MinElement !== -9223372036854775808) {
     //    log("checkStructOfPrimitives: invalid content of int64MinElement");
     //    return false;
     //}
-    //if (structOfPrimitives.int64MaxElement != 9223372036854775807) {
+    //if (structOfPrimitives.int64MaxElement !== 9223372036854775807) {
     //    log("checkStructOfPrimitives: invalid content of int64MaxElement");
     //    return false;
     //}
-    if (structOfPrimitives.int64MinElement != -9007199254740991) {
+    if (structOfPrimitives.int64MinElement !== -9007199254740991) {
         log("checkStructOfPrimitives: invalid content of int64MinElement");
         return false;
     }
-    if (structOfPrimitives.int64MaxElement != 9007199254740991) {
+    if (structOfPrimitives.int64MaxElement !== 9007199254740991) {
         log("checkStructOfPrimitives: invalid content of int64MaxElement");
         return false;
     }
 
-    if (structOfPrimitives.constString != "Hiya") {
+    if (structOfPrimitives.constString !== "Hiya") {
         log("checkStructOfPrimitives: invalid content of constString");
         return false;
     }
-    if (structOfPrimitives.uInt8MinElement != 0) {
+    if (structOfPrimitives.uInt8MinElement !== 0) {
         log("checkStructOfPrimitives: invalid content of uInt8MinElement");
         return false;
     }
     if (useRestrictedUnsignedRange) {
-        if (structOfPrimitives.uInt8MaxElement != 127) {
+        if (structOfPrimitives.uInt8MaxElement !== 127) {
             log("checkStructOfPrimitives: invalid content of uInt8MaxElement");
             return false;
         }
-    } else {
-        if (structOfPrimitives.uInt8MaxElement != 255) {
-            log("checkStructOfPrimitives: invalid content of uInt8MaxElement");
-            return false;
-        }
+    } else if (structOfPrimitives.uInt8MaxElement !== 255) {
+        log("checkStructOfPrimitives: invalid content of uInt8MaxElement");
+        return false;
     }
-    if (structOfPrimitives.uInt16MinElement != 0) {
+    if (structOfPrimitives.uInt16MinElement !== 0) {
         log("checkStructOfPrimitives: invalid content of uInt16MinElement");
         return false;
     }
     if (useRestrictedUnsignedRange) {
-        if (structOfPrimitives.uInt16MaxElement != 32767) {
+        if (structOfPrimitives.uInt16MaxElement !== 32767) {
             log("checkStructOfPrimitives: invalid content of uInt16MaxElement");
             return false;
         }
-    } else {
-        if (structOfPrimitives.uInt16MaxElement != 65535) {
-            log("checkStructOfPrimitives: invalid content of uInt16MaxElement");
-            return false;
-        }
+    } else if (structOfPrimitives.uInt16MaxElement !== 65535) {
+        log("checkStructOfPrimitives: invalid content of uInt16MaxElement");
+        return false;
     }
-    if (structOfPrimitives.uInt32MinElement != 0) {
+    if (structOfPrimitives.uInt32MinElement !== 0) {
         log("checkStructOfPrimitives: invalid content of uInt32MinElement");
         return false;
     }
     if (useRestrictedUnsignedRange) {
-        if (structOfPrimitives.uInt32MaxElement != 2147483647) {
+        if (structOfPrimitives.uInt32MaxElement !== 2147483647) {
             log("checkStructOfPrimitives: invalid content of uInt32MaxElement");
             return false;
         }
-    } else {
-        if (structOfPrimitives.uInt32MaxElement != 4294967295) {
-            log("checkStructOfPrimitives: invalid content of uInt32MaxElement");
-            return false;
-        }
+    } else if (structOfPrimitives.uInt32MaxElement !== 4294967295) {
+        log("checkStructOfPrimitives: invalid content of uInt32MaxElement");
+        return false;
     }
-    if (structOfPrimitives.uInt64MinElement != 0) {
+    if (structOfPrimitives.uInt64MinElement !== 0) {
         log("checkStructOfPrimitives: invalid content of uInt64MinElement");
         return false;
     }
 
     // If there were no limitations, the check would make sense with
-    // structOfPrimitives.uInt64MaxElement != 18446744073709551615
-    if (structOfPrimitives.uInt64MaxElement != 9007199254740991) {
+    // structOfPrimitives.uInt64MaxElement !== 18446744073709551615
+    if (structOfPrimitives.uInt64MaxElement !== 9007199254740991) {
         log("checkStructOfPrimitives: invalid content of uInt64MaxElement");
         return false;
     }
@@ -674,15 +706,15 @@ IltUtil.checkStructOfPrimitives = function(structOfPrimitives) {
         log("checkStructOfPrimitives: booleanArray not set");
         return false;
     }
-    if (structOfPrimitives.booleanArray.length != 2) {
+    if (structOfPrimitives.booleanArray.length !== 2) {
         log("checkStructOfPrimitives: booleanArray has invalid length");
         return false;
     }
-    if (structOfPrimitives.booleanArray[0] != true) {
+    if (structOfPrimitives.booleanArray[0] !== true) {
         log("checkStructOfPrimitives: booleanArray has invalid content");
         return false;
     }
-    if (structOfPrimitives.booleanArray[1] != false) {
+    if (structOfPrimitives.booleanArray[1] !== false) {
         log("checkStructOfPrimitives: booleanArray has invalid content");
         return false;
     }
@@ -690,7 +722,7 @@ IltUtil.checkStructOfPrimitives = function(structOfPrimitives) {
         log("checkStructOfPrimitives: doubleArray not set");
         return false;
     }
-    if (structOfPrimitives.doubleArray.length != 2) {
+    if (structOfPrimitives.doubleArray.length !== 2) {
         log("checkStructOfPrimitives: doubleArray has invalid length");
         return false;
     }
@@ -706,7 +738,7 @@ IltUtil.checkStructOfPrimitives = function(structOfPrimitives) {
         log("checkStructOfPrimitives: floatArray not set");
         return false;
     }
-    if (structOfPrimitives.floatArray.length != 2) {
+    if (structOfPrimitives.floatArray.length !== 2) {
         log("checkStructOfPrimitives: floatArray has invalid length");
         return false;
     }
@@ -722,15 +754,15 @@ IltUtil.checkStructOfPrimitives = function(structOfPrimitives) {
         log("checkStructOfPrimitives: int8Array not set");
         return false;
     }
-    if (structOfPrimitives.int8Array.length != 2) {
+    if (structOfPrimitives.int8Array.length !== 2) {
         log("checkStructOfPrimitives: int8Array has invalid length");
         return false;
     }
-    if (structOfPrimitives.int8Array[0] != 1) {
+    if (structOfPrimitives.int8Array[0] !== 1) {
         log("checkStructOfPrimitives: int8Array has invalid content");
         return false;
     }
-    if (structOfPrimitives.int8Array[1] != 2) {
+    if (structOfPrimitives.int8Array[1] !== 2) {
         log("checkStructOfPrimitives: int8Array has invalid content");
         return false;
     }
@@ -738,15 +770,15 @@ IltUtil.checkStructOfPrimitives = function(structOfPrimitives) {
         log("checkStructOfPrimitives: int16Array not set");
         return false;
     }
-    if (structOfPrimitives.int16Array.length != 2) {
+    if (structOfPrimitives.int16Array.length !== 2) {
         log("checkStructOfPrimitives: int16Array has invalid length");
         return false;
     }
-    if (structOfPrimitives.int16Array[0] != 1) {
+    if (structOfPrimitives.int16Array[0] !== 1) {
         log("checkStructOfPrimitives: int16Array has invalid content");
         return false;
     }
-    if (structOfPrimitives.int16Array[1] != 2) {
+    if (structOfPrimitives.int16Array[1] !== 2) {
         log("checkStructOfPrimitives: int16Array has invalid content");
         return false;
     }
@@ -754,15 +786,15 @@ IltUtil.checkStructOfPrimitives = function(structOfPrimitives) {
         log("checkStructOfPrimitives: int32Array not set");
         return false;
     }
-    if (structOfPrimitives.int32Array.length != 2) {
+    if (structOfPrimitives.int32Array.length !== 2) {
         log("checkStructOfPrimitives: int32Array has invalid length");
         return false;
     }
-    if (structOfPrimitives.int32Array[0] != 1) {
+    if (structOfPrimitives.int32Array[0] !== 1) {
         log("checkStructOfPrimitives: int32Array has invalid content");
         return false;
     }
-    if (structOfPrimitives.int32Array[1] != 2) {
+    if (structOfPrimitives.int32Array[1] !== 2) {
         log("checkStructOfPrimitives: int32Array has invalid content");
         return false;
     }
@@ -770,15 +802,15 @@ IltUtil.checkStructOfPrimitives = function(structOfPrimitives) {
         log("checkStructOfPrimitives: int64Array not set");
         return false;
     }
-    if (structOfPrimitives.int64Array.length != 2) {
+    if (structOfPrimitives.int64Array.length !== 2) {
         log("checkStructOfPrimitives: int64Array has invalid length");
         return false;
     }
-    if (structOfPrimitives.int64Array[0] != 1) {
+    if (structOfPrimitives.int64Array[0] !== 1) {
         log("checkStructOfPrimitives: int64Array has invalid content");
         return false;
     }
-    if (structOfPrimitives.int64Array[1] != 2) {
+    if (structOfPrimitives.int64Array[1] !== 2) {
         log("checkStructOfPrimitives: int64Array has invalid content");
         return false;
     }
@@ -786,15 +818,15 @@ IltUtil.checkStructOfPrimitives = function(structOfPrimitives) {
         log("checkStructOfPrimitives: stringArray not set");
         return false;
     }
-    if (structOfPrimitives.stringArray.length != 2) {
+    if (structOfPrimitives.stringArray.length !== 2) {
         log("checkStructOfPrimitives: stringArray has invalid length");
         return false;
     }
-    if (structOfPrimitives.stringArray[0] != "Hello") {
+    if (structOfPrimitives.stringArray[0] !== "Hello") {
         log("checkStructOfPrimitives: stringArray has invalid content");
         return false;
     }
-    if (structOfPrimitives.stringArray[1] != "World") {
+    if (structOfPrimitives.stringArray[1] !== "World") {
         log("checkStructOfPrimitives: stringArray has invalid content");
         return false;
     }
@@ -802,15 +834,15 @@ IltUtil.checkStructOfPrimitives = function(structOfPrimitives) {
         log("checkStructOfPrimitives: uInt8Array not set");
         return false;
     }
-    if (structOfPrimitives.uInt8Array.length != 2) {
+    if (structOfPrimitives.uInt8Array.length !== 2) {
         log("checkStructOfPrimitives: uInt8Array has invalid length");
         return false;
     }
-    if (structOfPrimitives.uInt8Array[0] != 1) {
+    if (structOfPrimitives.uInt8Array[0] !== 1) {
         log("checkStructOfPrimitives: uInt8Array has invalid content");
         return false;
     }
-    if (structOfPrimitives.uInt8Array[1] != 2) {
+    if (structOfPrimitives.uInt8Array[1] !== 2) {
         log("checkStructOfPrimitives: uInt8Array has invalid content");
         return false;
     }
@@ -818,15 +850,15 @@ IltUtil.checkStructOfPrimitives = function(structOfPrimitives) {
         log("checkStructOfPrimitives: uInt16Array not set");
         return false;
     }
-    if (structOfPrimitives.uInt16Array.length != 2) {
+    if (structOfPrimitives.uInt16Array.length !== 2) {
         log("checkStructOfPrimitives: uInt16Array has invalid length");
         return false;
     }
-    if (structOfPrimitives.uInt16Array[0] != 1) {
+    if (structOfPrimitives.uInt16Array[0] !== 1) {
         log("checkStructOfPrimitives: uInt16Array has invalid content");
         return false;
     }
-    if (structOfPrimitives.uInt16Array[1] != 2) {
+    if (structOfPrimitives.uInt16Array[1] !== 2) {
         log("checkStructOfPrimitives: uInt16Array has invalid content");
         return false;
     }
@@ -834,15 +866,15 @@ IltUtil.checkStructOfPrimitives = function(structOfPrimitives) {
         log("checkStructOfPrimitives: uInt32Array not set");
         return false;
     }
-    if (structOfPrimitives.uInt32Array.length != 2) {
+    if (structOfPrimitives.uInt32Array.length !== 2) {
         log("checkStructOfPrimitives: uInt32Array has invalid length");
         return false;
     }
-    if (structOfPrimitives.uInt32Array[0] != 1) {
+    if (structOfPrimitives.uInt32Array[0] !== 1) {
         log("checkStructOfPrimitives: uInt32Array has invalid content");
         return false;
     }
-    if (structOfPrimitives.uInt32Array[1] != 2) {
+    if (structOfPrimitives.uInt32Array[1] !== 2) {
         log("checkStructOfPrimitives: uInt32Array has invalid content");
         return false;
     }
@@ -850,15 +882,15 @@ IltUtil.checkStructOfPrimitives = function(structOfPrimitives) {
         log("checkStructOfPrimitives: uInt64Array not set");
         return false;
     }
-    if (structOfPrimitives.uInt64Array.length != 2) {
+    if (structOfPrimitives.uInt64Array.length !== 2) {
         log("checkStructOfPrimitives: uInt64Array has invalid length");
         return false;
     }
-    if (structOfPrimitives.uInt64Array[0] != 1) {
+    if (structOfPrimitives.uInt64Array[0] !== 1) {
         log("checkStructOfPrimitives: uInt64Array has invalid content");
         return false;
     }
-    if (structOfPrimitives.uInt64Array[1] != 2) {
+    if (structOfPrimitives.uInt64Array[1] !== 2) {
         log("checkStructOfPrimitives: uInt64Array has invalid content");
         return false;
     }
@@ -866,7 +898,7 @@ IltUtil.checkStructOfPrimitives = function(structOfPrimitives) {
 };
 
 IltUtil.createStructOfPrimitives = function() {
-    var structOfPrimitives = new joynr.interlanguagetest.namedTypeCollection2.StructOfPrimitives();
+    let structOfPrimitives = new joynr.interlanguagetest.namedTypeCollection2.StructOfPrimitives();
     structOfPrimitives = IltUtil.fillStructOfPrimitives(structOfPrimitives);
     return structOfPrimitives;
 };
@@ -874,7 +906,8 @@ IltUtil.createStructOfPrimitives = function() {
 // ExtendedStructOfPrimitives
 
 IltUtil.fillExtendedStructOfPrimitives = function(extendedStructOfPrimitives) {
-    extendedStructOfPrimitives.extendedEnumElement = joynr.interlanguagetest.namedTypeCollection2.ExtendedTypeCollectionEnumerationInTypeCollection.ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION;
+    extendedStructOfPrimitives.extendedEnumElement =
+        joynr.interlanguagetest.namedTypeCollection2.ExtendedTypeCollectionEnumerationInTypeCollection.ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION;
     extendedStructOfPrimitives.extendedStructElement = IltUtil.createExtendedBaseStruct();
     IltUtil.fillStructOfPrimitives(extendedStructOfPrimitives);
     if (!IltUtil.checkExtendedStructOfPrimitives(extendedStructOfPrimitives)) {
@@ -884,7 +917,7 @@ IltUtil.fillExtendedStructOfPrimitives = function(extendedStructOfPrimitives) {
 };
 
 IltUtil.createExtendedStructOfPrimitives = function() {
-    var extendedStructOfPrimitives = new joynr.interlanguagetest.namedTypeCollection2.ExtendedStructOfPrimitives();
+    const extendedStructOfPrimitives = new joynr.interlanguagetest.namedTypeCollection2.ExtendedStructOfPrimitives();
     IltUtil.fillExtendedStructOfPrimitives(extendedStructOfPrimitives);
     return extendedStructOfPrimitives;
 };
@@ -894,7 +927,11 @@ IltUtil.checkExtendedStructOfPrimitives = function(extendedStructOfPrimitives) {
         log("checkExtendedStructOfPrimitives: extendedStructOfPrimitives not set");
         return false;
     }
-    if (extendedStructOfPrimitives.extendedEnumElement != joynr.interlanguagetest.namedTypeCollection2.ExtendedTypeCollectionEnumerationInTypeCollection.ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION) {
+    if (
+        extendedStructOfPrimitives.extendedEnumElement !==
+        joynr.interlanguagetest.namedTypeCollection2.ExtendedTypeCollectionEnumerationInTypeCollection
+            .ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION
+    ) {
         log("checkExtendedStructOfPrimitives: extendedEnumElement has invalid content");
         return false;
     }
@@ -921,15 +958,28 @@ IltUtil.cmpDouble = function(a, b) {
 
 // Compares two ByteBuffers componentwise.
 IltUtil.cmpByteBuffers = function(a, b) {
-    if (a.length != b.length) {
+    if (a.length !== b.length) {
         return false;
     }
-    for (var i = 0; i < a.length; ++i) {
-        if (a[i] != b[i]) {
+    for (let i = 0; i < a.length; ++i) {
+        if (a[i] !== b[i]) {
             return false;
         }
     }
     return true;
+};
+
+function defer(resolve, reject) {
+    this.resolve = resolve;
+    this.reject = reject;
+}
+
+IltUtil.createDeferred = function() {
+    const deferred = {};
+    /*eslint-disable promise/avoid-new */
+    deferred.promise = new Promise(defer.bind(deferred));
+    /*eslint-enable promise/avoid-new */
+    return deferred;
 };
 
 module.exports = IltUtil;

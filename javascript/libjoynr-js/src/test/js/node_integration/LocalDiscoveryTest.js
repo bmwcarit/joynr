@@ -44,7 +44,7 @@ describe("libjoynr-js.integration.localDiscoveryTest", () => {
     });
 
     beforeEach(done => {
-        provisioningSuffix = "LocalDiscoveryTest-" + Date.now();
+        provisioningSuffix = `LocalDiscoveryTest-${Date.now()}`;
         domain = provisioningSuffix;
 
         provisioning.channelId = provisioningSuffix;
@@ -61,9 +61,9 @@ describe("libjoynr-js.integration.localDiscoveryTest", () => {
             })
             .catch(error => {
                 if (error instanceof JoynrException) {
-                    done.fail("error in beforeEach: " + error.detailMessage);
+                    done.fail(`error in beforeEach: ${error.detailMessage}`);
                 } else {
-                    done.fail("error in beforeEach: " + error);
+                    done.fail(`error in beforeEach: ${error}`);
                 }
             });
     });

@@ -1,4 +1,3 @@
-/*eslint global-require: "off"*/
 /*
  * #%L
  * %%
@@ -28,48 +27,45 @@ const UtilInternal = require("../joynr/util/UtilInternal.js");
 const MessageSerializer = require("../joynr/messaging/MessageSerializer");
 const ws = require("ws");
 
-function useWebSocketNode() {
-    if (typeof Buffer !== "function") {
-        throw new JoynrRuntimeException("Decoding of binary websocket messages not possible. Buffer not available.");
-    }
-
-    function WebSocketNodeWrapper(remoteUrl, keychain, useUnencryptedTls) {
-        const clientOptions = {};
-        if (keychain) {
-            clientOptions.cert = keychain.tlsCert;
-            clientOptions.key = keychain.tlsKey;
-            clientOptions.ca = keychain.tlsCa;
-            clientOptions.rejectUnauthorized = true;
-        }
-        if (useUnencryptedTls) {
-            clientOptions.ciphers = "eNULL";
-        }
-
-        const webSocketObj = new ws(remoteUrl, clientOptions);
-
-        webSocketObj.encodeString = function(string) {
-            return Buffer.from(string);
-        };
-        webSocketObj.decodeEventData = function(data) {
-            return data;
-        };
-
-        webSocketObj.marshalJoynrMessage = function(data) {
-            return MessageSerializer.stringify(data);
-        };
-        webSocketObj.unmarshalJoynrMessage = function(event, callback) {
-            const joynrMessage = MessageSerializer.parse(event.data);
-            if (joynrMessage) {
-                callback(joynrMessage);
-            }
-        };
-
-        return webSocketObj;
-    }
-
-    UtilInternal.extend(WebSocketNodeWrapper, ws);
-
-    return WebSocketNodeWrapper;
+if (typeof Buffer !== "function") {
+    throw new JoynrRuntimeException("Decoding of binary websocket messages not possible. Buffer not available.");
 }
 
-module.exports = global.window !== undefined ? require("./WebSocket") : useWebSocketNode();
+function WebSocketNodeWrapper(remoteUrl, keychain, useUnencryptedTls) {
+    const clientOptions = {};
+    if (keychain) {
+        clientOptions.cert = keychain.tlsCert;
+        clientOptions.key = keychain.tlsKey;
+        clientOptions.ca = keychain.tlsCa;
+        clientOptions.rejectUnauthorized = true;
+        clientOptions.checkServerIdentity = keychain.checkServerIdentity;
+    }
+    if (useUnencryptedTls) {
+        clientOptions.ciphers = "eNULL";
+    }
+
+    const webSocketObj = new ws(remoteUrl, clientOptions);
+
+    webSocketObj.encodeString = function(string) {
+        return Buffer.from(string);
+    };
+    webSocketObj.decodeEventData = function(data) {
+        return data;
+    };
+
+    webSocketObj.marshalJoynrMessage = function(data) {
+        return MessageSerializer.stringify(data);
+    };
+    webSocketObj.unmarshalJoynrMessage = function(event, callback) {
+        const joynrMessage = MessageSerializer.parse(event.data);
+        if (joynrMessage) {
+            callback(joynrMessage);
+        }
+    };
+
+    return webSocketObj;
+}
+
+UtilInternal.extend(WebSocketNodeWrapper, ws);
+
+module.exports = WebSocketNodeWrapper;

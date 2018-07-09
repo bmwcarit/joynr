@@ -67,8 +67,8 @@ import joynr.types.GlobalDiscoveryEntry;
 import joynr.types.ProviderScope;
 
 @Singleton
-public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDirectory implements
-        TransportReadyListener {
+public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDirectory
+        implements TransportReadyListener {
 
     private static final Logger logger = LoggerFactory.getLogger(LocalCapabilitiesDirectoryImpl.class);
 
@@ -105,10 +105,14 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
     static class QueuedDiscoveryEntry {
         private DiscoveryEntry discoveryEntry;
         private DeferredVoid deferred;
+        private boolean awaitGlobalRegistration;
 
-        public QueuedDiscoveryEntry(DiscoveryEntry discoveryEntry, DeferredVoid deferred) {
+        public QueuedDiscoveryEntry(DiscoveryEntry discoveryEntry,
+                                    DeferredVoid deferred,
+                                    boolean awaitGlobalRegistration) {
             this.discoveryEntry = discoveryEntry;
             this.deferred = deferred;
+            this.awaitGlobalRegistration = awaitGlobalRegistration;
         }
 
         public DiscoveryEntry getDiscoveryEntry() {
@@ -117,6 +121,10 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
         public DeferredVoid getDeferred() {
             return deferred;
+        }
+
+        public boolean getAwaitGlobalRegistration() {
+            return awaitGlobalRegistration;
         }
     }
 
@@ -142,15 +150,13 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         this.globalCapabilitiesDirectoryClient = globalCapabilitiesDirectoryClient;
         this.globalDiscoveryEntryCache.add(capabilitiesProvisioning.getDiscoveryEntries());
         expiredDiscoveryEntryCacheCleaner.scheduleCleanUpForCaches(new ExpiredDiscoveryEntryCacheCleaner.CleanupAction() {
-                                                                       @Override
-                                                                       public void cleanup(Set<DiscoveryEntry> expiredDiscoveryEntries) {
-                                                                           for (DiscoveryEntry discoveryEntry : expiredDiscoveryEntries) {
-                                                                               remove(discoveryEntry);
-                                                                           }
-                                                                       }
-                                                                   },
-                                                                   globalDiscoveryEntryCache,
-                                                                   localDiscoveryEntryStore);
+            @Override
+            public void cleanup(Set<DiscoveryEntry> expiredDiscoveryEntries) {
+                for (DiscoveryEntry discoveryEntry : expiredDiscoveryEntries) {
+                    remove(discoveryEntry);
+                }
+            }
+        }, globalDiscoveryEntryCache, localDiscoveryEntryStore);
         this.freshnessUpdateScheduler = freshnessUpdateScheduler;
         setUpPeriodicFreshnessUpdate(freshnessUpdateIntervalMs);
         shutdownNotifier.registerForShutdown(this);
@@ -180,11 +186,18 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
      */
     @Override
     public Promise<DeferredVoid> add(final DiscoveryEntry discoveryEntry) {
+        boolean awaitGlobalRegistration = false;
+        return add(discoveryEntry, awaitGlobalRegistration);
+    }
+
+    @Override
+    public Promise<DeferredVoid> add(final DiscoveryEntry discoveryEntry, final Boolean awaitGlobalRegistration) {
         final DeferredVoid deferred = new DeferredVoid();
 
         if (localDiscoveryEntryStore.hasDiscoveryEntry(discoveryEntry)) {
             if (discoveryEntry.getQos().getScope().equals(ProviderScope.LOCAL)
-                    || globalDiscoveryEntryCache.lookup(discoveryEntry.getParticipantId(), DiscoveryQos.NO_MAX_AGE) != null) {
+                    || globalDiscoveryEntryCache.lookup(discoveryEntry.getParticipantId(),
+                                                        DiscoveryQos.NO_MAX_AGE) != null) {
                 // in this case, no further need for global registration is required. Registration completed.
                 deferred.resolve();
                 return new Promise<>(deferred);
@@ -195,21 +208,34 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             notifyCapabilityAdded(discoveryEntry);
         }
 
+        /*
+         * In case awaitGlobalRegistration is true, a result for this 'add' call will not be returned before the call to
+         * the globalDiscovery has either succeeded, failed or timed out. In case of failure or timeout the already
+         * created discoveryEntry will also be removed again from localDiscoveryStore.
+         *
+         * If awaitGlobalRegistration is false, the call to the globalDiscovery will just be triggered, but it is not
+         * being waited for results or timeout. Also, in case it does not succeed, the entry remains in
+         * localDiscoveryStore.
+         */
         if (discoveryEntry.getQos().getScope().equals(ProviderScope.GLOBAL)) {
-            registerGlobal(discoveryEntry, deferred);
+            DeferredVoid deferredForRegisterGlobal;
+            if (awaitGlobalRegistration == true) {
+                deferredForRegisterGlobal = deferred;
+            } else {
+                // use an independent DeferredVoid not used for waiting
+                deferredForRegisterGlobal = new DeferredVoid();
+                deferred.resolve();
+            }
+            registerGlobal(discoveryEntry, deferredForRegisterGlobal, awaitGlobalRegistration);
         } else {
             deferred.resolve();
         }
         return new Promise<>(deferred);
     }
 
-    @Override
-    public Promise<DeferredVoid> add(final DiscoveryEntry discoveryEntry, final Boolean awaitGlobalRegistration) {
-        // awaitGlobalRegistration is currently ignored in Java
-        return add(discoveryEntry);
-    }
-
-    private void registerGlobal(final DiscoveryEntry discoveryEntry, final DeferredVoid deferred) {
+    private void registerGlobal(final DiscoveryEntry discoveryEntry,
+                                final DeferredVoid deferred,
+                                final boolean awaitGlobalRegistration) {
         synchronized (globalAddressLock) {
             try {
                 globalAddress = globalAddressProvider.get();
@@ -219,7 +245,16 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             }
 
             if (globalAddress == null) {
-                queuedDiscoveryEntries.add(new QueuedDiscoveryEntry(discoveryEntry, deferred));
+                DeferredVoid deferredForQueueDiscoveryEntry;
+                if (awaitGlobalRegistration == true) {
+                    deferredForQueueDiscoveryEntry = deferred;
+                } else {
+                    // use an independent DeferredVoid we do not wait for
+                    deferredForQueueDiscoveryEntry = new DeferredVoid();
+                }
+                queuedDiscoveryEntries.add(new QueuedDiscoveryEntry(discoveryEntry,
+                                                                    deferredForQueueDiscoveryEntry,
+                                                                    awaitGlobalRegistration));
                 globalAddressProvider.registerGlobalAddressesReadyListener(this);
                 return;
             }
@@ -236,15 +271,21 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
                 @Override
                 public void onSuccess(Void nothing) {
-                    logger.info("global registration for " + globalDiscoveryEntry.getDomain() + " : "
-                            + globalDiscoveryEntry.getInterfaceName() + " completed");
+                    logger.info("global registration for " + globalDiscoveryEntry.getParticipantId() + ", "
+                            + globalDiscoveryEntry.getDomain() + " : " + globalDiscoveryEntry.getInterfaceName()
+                            + " completed");
+                    globalDiscoveryEntryCache.add(globalDiscoveryEntry);
                     deferred.resolve();
-                    globalDiscoveryEntryCache.add(CapabilityUtils.discoveryEntry2GlobalDiscoveryEntry(discoveryEntry,
-                                                                                                      globalAddress));
                 }
 
                 @Override
                 public void onFailure(JoynrRuntimeException exception) {
+                    logger.info("global registration for " + globalDiscoveryEntry.getParticipantId() + ", "
+                            + globalDiscoveryEntry.getDomain() + " : " + globalDiscoveryEntry.getInterfaceName()
+                            + " failed");
+                    if (awaitGlobalRegistration == true) {
+                        localDiscoveryEntryStore.remove(globalDiscoveryEntry.getParticipantId());
+                    }
                     deferred.reject(new ProviderRuntimeException(exception.toString()));
                 }
             }, globalDiscoveryEntry);
@@ -267,7 +308,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
                 @Override
                 public void onFailure(JoynrRuntimeException error) {
-                    //do nothing
+                    // do nothing
                 }
             };
             globalCapabilitiesDirectoryClient.remove(callback, Arrays.asList(discoveryEntry.getParticipantId()));
@@ -309,7 +350,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                  interfaceName,
                                  discoveryQos,
                                  capabilitiesCallback,
-                                 CapabilityUtils.convertToDiscoveryEntryWithMetaInfoSet(true, localDiscoveryEntries),
+                                 localDiscoveryEntries,
                                  globalDiscoveryEntries);
             break;
         default:
@@ -344,13 +385,19 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                       String interfaceName,
                                       DiscoveryQos discoveryQos,
                                       CapabilitiesCallback capabilitiesCallback,
-                                      Set<DiscoveryEntryWithMetaInfo> localDiscoveryEntries,
+                                      Set<DiscoveryEntry> localDiscoveryEntries,
                                       Set<DiscoveryEntryWithMetaInfo> globalDiscoveryEntries) {
+        Set<DiscoveryEntryWithMetaInfo> localDiscoveryEntriesWithMetaInfo = CapabilityUtils.convertToDiscoveryEntryWithMetaInfoSet(true,
+                                                                                                                                   localDiscoveryEntries);
+
         Set<String> domainsForGlobalLookup = new HashSet<>();
         Set<DiscoveryEntryWithMetaInfo> matchedDiscoveryEntries = new HashSet<>();
         for (String domainToMatch : domains) {
-            addEntriesForDomain(localDiscoveryEntries, matchedDiscoveryEntries, domainToMatch);
-            if (!addEntriesForDomain(globalDiscoveryEntries, matchedDiscoveryEntries, domainToMatch)) {
+            addEntriesForDomain(localDiscoveryEntriesWithMetaInfo, matchedDiscoveryEntries, domainToMatch);
+            if (!addNonDuplicatedEntriesForDomain(globalDiscoveryEntries,
+                                                  matchedDiscoveryEntries,
+                                                  domainToMatch,
+                                                  localDiscoveryEntries)) {
                 domainsForGlobalLookup.add(domainToMatch);
             }
         }
@@ -400,6 +447,24 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         for (DiscoveryEntryWithMetaInfo discoveryEntry : discoveryEntries) {
             if (discoveryEntry.getDomain().equals(domain)) {
                 addTo.add(discoveryEntry);
+                domainMatched = true;
+            }
+        }
+        return domainMatched;
+    }
+
+    private boolean addNonDuplicatedEntriesForDomain(Collection<DiscoveryEntryWithMetaInfo> discoveryEntries,
+                                                     Collection<DiscoveryEntryWithMetaInfo> addTo,
+                                                     String domain,
+                                                     Collection<DiscoveryEntry> possibleDuplicateEntries) {
+
+        boolean domainMatched = false;
+        for (DiscoveryEntryWithMetaInfo discoveryEntry : discoveryEntries) {
+            if (discoveryEntry.getDomain().equals(domain)) {
+                DiscoveryEntry foundDiscoveryEntry = new DiscoveryEntry(discoveryEntry);
+                if (!possibleDuplicateEntries.contains(foundDiscoveryEntry)) {
+                    addTo.add(discoveryEntry);
+                }
                 domainMatched = true;
             }
         }
@@ -543,9 +608,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                     capabilitiesCallback.onError(exception);
 
                 }
-            },
-                                                     participantId,
-                                                     discoveryQos.getDiscoveryTimeoutMs());
+            }, participantId, discoveryQos.getDiscoveryTimeoutMs());
         }
 
     }
@@ -559,7 +622,8 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                               long discoveryTimeout,
                                               final CapabilitiesCallback capabilitiesCallback) {
 
-        final Collection<DiscoveryEntryWithMetaInfo> localDiscoveryEntries = localDiscoveryEntries2 == null ? new LinkedList<DiscoveryEntryWithMetaInfo>()
+        final Collection<DiscoveryEntryWithMetaInfo> localDiscoveryEntries = localDiscoveryEntries2 == null
+                ? new LinkedList<DiscoveryEntryWithMetaInfo>()
                 : localDiscoveryEntries2;
 
         globalCapabilitiesDirectoryClient.lookup(new Callback<List<GlobalDiscoveryEntry>>() {
@@ -584,10 +648,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             public void onFailure(JoynrRuntimeException exception) {
                 capabilitiesCallback.onError(exception);
             }
-        },
-                                                 domains,
-                                                 interfaceName,
-                                                 discoveryTimeout);
+        }, domains, interfaceName, discoveryTimeout);
     }
 
     @Override
@@ -635,7 +696,9 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
     }
 
     @Override
-    public Promise<Lookup1Deferred> lookup(String[] domains, String interfaceName, joynr.types.DiscoveryQos discoveryQos) {
+    public Promise<Lookup1Deferred> lookup(String[] domains,
+                                           String interfaceName,
+                                           joynr.types.DiscoveryQos discoveryQos) {
         final Lookup1Deferred deferred = new Lookup1Deferred();
         CapabilitiesCallback callback = new CapabilitiesCallback() {
             @Override
@@ -653,11 +716,14 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             }
         };
         DiscoveryScope discoveryScope = DiscoveryScope.valueOf(discoveryQos.getDiscoveryScope().name());
-        lookup(domains, interfaceName, new DiscoveryQos(discoveryQos.getDiscoveryTimeout(),
-                                                        defaultDiscoveryRetryInterval,
-                                                        ArbitrationStrategy.NotSet,
-                                                        discoveryQos.getCacheMaxAge(),
-                                                        discoveryScope), callback);
+        lookup(domains,
+               interfaceName,
+               new DiscoveryQos(discoveryQos.getDiscoveryTimeout(),
+                                defaultDiscoveryRetryInterval,
+                                ArbitrationStrategy.NotSet,
+                                discoveryQos.getCacheMaxAge(),
+                                discoveryScope),
+               callback);
 
         return new Promise<>(deferred);
     }
@@ -694,7 +760,9 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             globalAddress = address;
         }
         for (QueuedDiscoveryEntry queuedDiscoveryEntry : queuedDiscoveryEntries) {
-            registerGlobal(queuedDiscoveryEntry.getDiscoveryEntry(), queuedDiscoveryEntry.getDeferred());
+            registerGlobal(queuedDiscoveryEntry.getDiscoveryEntry(),
+                           queuedDiscoveryEntry.getDeferred(),
+                           queuedDiscoveryEntry.getAwaitGlobalRegistration());
         }
     }
 }

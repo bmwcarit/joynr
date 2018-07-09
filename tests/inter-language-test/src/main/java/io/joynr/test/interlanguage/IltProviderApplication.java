@@ -85,8 +85,7 @@ public class IltProviderApplication extends AbstractJoynrApplication {
         provisionAccessControl(joynrConfig, localDomain);
         JoynrApplication joynrApplication = new JoynrInjectorFactory(joynrConfig,
                                                                      runtimeModule,
-                                                                     new StaticDomainAccessControlProvisioningModule()).createApplication(new JoynrApplicationModule(IltProviderApplication.class,
-                                                                                                                                                                     appConfig));
+                                                                     new StaticDomainAccessControlProvisioningModule()).createApplication(new JoynrApplicationModule(IltProviderApplication.class, appConfig));
         joynrApplication.run();
         joynrApplication.shutdown();
     }
@@ -175,12 +174,15 @@ public class IltProviderApplication extends AbstractJoynrApplication {
                                                                                             domain,
                                                                                             ProviderAnnotations.getInterfaceName(IltProvider.class),
                                                                                             TrustLevel.LOW,
-                                                                                            new TrustLevel[]{ TrustLevel.LOW },
+                                                                                            new TrustLevel[]{
+                                                                                                    TrustLevel.LOW },
                                                                                             TrustLevel.LOW,
-                                                                                            new TrustLevel[]{ TrustLevel.LOW },
+                                                                                            new TrustLevel[]{
+                                                                                                    TrustLevel.LOW },
                                                                                             "*",
                                                                                             Permission.YES,
-                                                                                            new Permission[]{ Permission.YES });
+                                                                                            new Permission[]{
+                                                                                                    Permission.YES });
 
         MasterAccessControlEntry[] provisionedAccessControlEntries = { newMasterAccessControlEntry };
         String provisionedAccessControlEntriesAsJson = objectMapper.writeValueAsString(provisionedAccessControlEntries);

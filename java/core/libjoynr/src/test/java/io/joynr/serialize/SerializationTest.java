@@ -415,7 +415,7 @@ public class SerializationTest {
 
     @Test
     public void serialzeAndDeserializeTestGpsLocation() throws JsonGenerationException, JsonMappingException,
-                                                       IOException {
+                                                        IOException {
         GpsLocation gps1 = new GpsLocation();
         gps1.setGpsFix(GpsFixEnum.MODE3D);
         gps1.setLongitude(1.1);
@@ -451,7 +451,7 @@ public class SerializationTest {
 
     @Test
     public void serializeBroadcastSubscriptionRequest() throws JsonGenerationException, JsonMappingException,
-                                                       IOException {
+                                                        IOException {
 
         String subscriptionId = "1234";
         String subscribedToName = "myEvent";
@@ -506,7 +506,7 @@ public class SerializationTest {
 
     @Test
     public void serializePublicationWithJoynrRuntimeException() throws JsonGenerationException, JsonMappingException,
-                                                               IOException {
+                                                                IOException {
 
         JoynrRuntimeException error = new JoynrRuntimeException("detail message: JoynrRuntimeException");
         String subscriptionId = "12345";
@@ -562,7 +562,7 @@ public class SerializationTest {
 
     @Test
     public void serializeReplyWithCapabilityInfoArray() throws JsonGenerationException, JsonMappingException,
-                                                       IOException {
+                                                        IOException {
 
         Object response = new GlobalDiscoveryEntry[]{ new GlobalDiscoveryEntry(new Version(47, 11),
                                                                                "domain",
@@ -896,7 +896,8 @@ public class SerializationTest {
 
         GlobalDiscoveryEntry receivedDiscoveryEntry = objectMapper.readValue(serializedGlobalDiscoveryEntry,
                                                                              GlobalDiscoveryEntry.class);
-        Assert.assertTrue(objectMapper.readValue(receivedDiscoveryEntry.getAddress(), Address.class) instanceof MqttAddress);
+        Assert.assertTrue(objectMapper.readValue(receivedDiscoveryEntry.getAddress(),
+                                                 Address.class) instanceof MqttAddress);
         Assert.assertEquals(globalDiscoveryEntry, receivedDiscoveryEntry);
     }
 }

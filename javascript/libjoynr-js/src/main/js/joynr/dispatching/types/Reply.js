@@ -16,7 +16,6 @@
  * limitations under the License.
  * #L%
  */
-const Util = require("../../util/Util");
 
 /**
  * @name Reply
@@ -32,12 +31,6 @@ const Util = require("../../util/Util");
  *            [settings.error] The exception object in case of request failure
  */
 function Reply(settings) {
-    let i;
-    if (settings.response) {
-        for (i = 0; i < settings.response.length; i++) {
-            settings.response[i] = Util.ensureTypedValues(settings.response[i]);
-        }
-    }
     // must contain exactly one of the two alternatives
     if (!settings.response && !settings.error) {
         throw new Error("Reply object does neither contain response nor error");
@@ -47,35 +40,17 @@ function Reply(settings) {
     }
 
     /**
-     * @name Reply#requestReplyId
-     * @type String
-     */
-    this.requestReplyId = settings.requestReplyId;
-    /**
-     * @name Reply#response
-     * @type Array
-     */
-    this.response = settings.response;
-    /**
-     * @name Reply#error
-     * @type Object
-     */
-    this.error = settings.error;
-
-    /**
      * The joynr type name
      *
      * @name Reply#_typeName
      * @type String
      */
-    Object.defineProperty(this, "_typeName", {
+    Object.defineProperty(settings, "_typeName", {
         value: "joynr.Reply",
-        writable: false,
-        enumerable: true,
-        configurable: false
+        enumerable: true
     });
 
-    return Object.freeze(this);
+    return settings;
 }
 
 module.exports = Reply;

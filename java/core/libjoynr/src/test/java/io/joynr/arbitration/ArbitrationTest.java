@@ -186,7 +186,8 @@ public class ArbitrationTest {
                                                                                            true);
         capabilitiesList.add(expectedDiscoveryEntry);
         ProviderQos providerQos2 = new ProviderQos();
-        CustomParameter[] qosParameters2 = { new CustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, "otherKeyword") };
+        CustomParameter[] qosParameters2 = {
+                new CustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, "otherKeyword") };
         providerQos2.setCustomParameters(qosParameters2);
 
         capabilitiesList.add(new DiscoveryEntryWithMetaInfo(new Version(47, 11),
@@ -223,7 +224,8 @@ public class ArbitrationTest {
     public void keyWordArbitratorMissingKeywordTest() throws InterruptedException {
 
         ProviderQos providerQos = new ProviderQos();
-        CustomParameter[] qosParameters = { new CustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, "wrongkeyword") };
+        CustomParameter[] qosParameters = {
+                new CustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, "wrongkeyword") };
         providerQos.setCustomParameters(qosParameters);
 
         expectedEndpointAddress = new ChannelAddress("http://testUrl", "testChannelId");
@@ -237,7 +239,8 @@ public class ArbitrationTest {
                                                             publicKeyId,
                                                             true));
         ProviderQos providerQos2 = new ProviderQos();
-        CustomParameter[] qosParameters2 = { new CustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, "otherKeyword") };
+        CustomParameter[] qosParameters2 = {
+                new CustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, "otherKeyword") };
         providerQos2.setCustomParameters(qosParameters2);
 
         capabilitiesList.add(new DiscoveryEntryWithMetaInfo(new Version(47, 11),
@@ -611,7 +614,8 @@ public class ArbitrationTest {
         capabilitiesList.add(discoveryEntry);
 
         ArbitrationStrategyFunction arbitrationStrategyFunction = mock(ArbitrationStrategyFunction.class);
-        when(arbitrationStrategyFunction.select(any(Map.class), any(Collection.class))).thenReturn(Sets.newHashSet(discoveryEntry));
+        when(arbitrationStrategyFunction.select(any(Map.class),
+                                                any(Collection.class))).thenReturn(Sets.newHashSet(discoveryEntry));
         discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, arbitrationStrategyFunction, Long.MAX_VALUE);
 
         Arbitrator arbitrator = ArbitratorFactory.create(Sets.newHashSet(domain),
@@ -624,8 +628,9 @@ public class ArbitrationTest {
 
         assertTrue(localDiscoveryAggregatorSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
 
-        verify(arbitrationStrategyFunction, times(1)).select(eq(discoveryQos.getCustomParameters()),
-                                                             eq(new HashSet<DiscoveryEntryWithMetaInfo>(capabilitiesList)));
+        verify(arbitrationStrategyFunction,
+               times(1)).select(eq(discoveryQos.getCustomParameters()),
+                                eq(new HashSet<DiscoveryEntryWithMetaInfo>(capabilitiesList)));
 
         ArbitrationResult expectedArbitrationResult = new ArbitrationResult(discoveryEntry);
         verify(arbitrationCallback, times(1)).onSuccess(eq(expectedArbitrationResult));
@@ -656,7 +661,8 @@ public class ArbitrationTest {
         }
 
         ArbitrationStrategyFunction arbitrationStrategyFunction = mock(ArbitrationStrategyFunction.class);
-        when(arbitrationStrategyFunction.select(any(Map.class), any(Collection.class))).thenReturn(new HashSet<DiscoveryEntryWithMetaInfo>(capabilitiesList));
+        when(arbitrationStrategyFunction.select(any(Map.class),
+                                                any(Collection.class))).thenReturn(new HashSet<DiscoveryEntryWithMetaInfo>(capabilitiesList));
         discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, arbitrationStrategyFunction, Long.MAX_VALUE);
 
         Arbitrator arbitrator = ArbitratorFactory.create(Sets.newHashSet(domain),
@@ -669,8 +675,9 @@ public class ArbitrationTest {
 
         assertTrue(localDiscoveryAggregatorSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
 
-        verify(arbitrationStrategyFunction, times(1)).select(eq(discoveryQos.getCustomParameters()),
-                                                             eq(new HashSet<DiscoveryEntryWithMetaInfo>(capabilitiesList)));
+        verify(arbitrationStrategyFunction,
+               times(1)).select(eq(discoveryQos.getCustomParameters()),
+                                eq(new HashSet<DiscoveryEntryWithMetaInfo>(capabilitiesList)));
 
         DiscoveryEntryWithMetaInfo[] expectedDiscoveryEntries = new DiscoveryEntryWithMetaInfo[capabilitiesList.size()];
         ArbitrationResult expectedArbitrationResult = new ArbitrationResult(capabilitiesList.toArray(expectedDiscoveryEntries));
@@ -698,7 +705,8 @@ public class ArbitrationTest {
         }
 
         ArbitrationStrategyFunction arbitrationStrategyFunction = mock(ArbitrationStrategyFunction.class);
-        when(arbitrationStrategyFunction.select(any(Map.class), any(Collection.class))).thenReturn(new HashSet<DiscoveryEntryWithMetaInfo>(capabilitiesList));
+        when(arbitrationStrategyFunction.select(any(Map.class),
+                                                any(Collection.class))).thenReturn(new HashSet<DiscoveryEntryWithMetaInfo>(capabilitiesList));
         discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, arbitrationStrategyFunction, Long.MAX_VALUE);
 
         Arbitrator arbitrator = ArbitratorFactory.create(Sets.newHashSet(domain),

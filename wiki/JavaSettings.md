@@ -42,6 +42,15 @@ well as an appropriate routing table entry.
 * **User property**: `joynr.messaging.capabilitiesdirectoryparticipantid`
 * **Default value**: `capabilitiesdirectory_participantid`
 
+### `PROPERTY_KEY_MQTT_SEPARATE_CONNECTIONS`
+This property allows establishing two mqtt connections in parallel. One is used
+for publishing and one for subscribing. This can be used to enhance throughput.
+
+* **OPTIONAL**
+* **Type**: String
+* **User property**: `joynr.messaging.mqtt.separateconnections`
+* **Default value**: `false`
+
 ### `PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN`
 The domain of the discovery services (backend). To be able to connect to the global discovery
 directories (capability directory, channel url directory, access controller) a disovery entry is

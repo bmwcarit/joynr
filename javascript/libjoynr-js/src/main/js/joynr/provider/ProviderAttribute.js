@@ -113,27 +113,19 @@ const asWrite = (function() {
      *
      * @see ProviderAttribute#registerSetter
      */
-    function set(value) {
-        let originalValue;
-        const that = this;
+    async function set(value) {
         if (!this.privateSetterFunc) {
             throw new Error("no setter function registered for provider attribute");
         }
 
-        const setterParams = Typing.augmentTypes(value, that.attributeType);
-        return Promise.resolve(this.privateGetterFunc())
-            .then(
-                (getterValue) => {
-                    originalValue = getterValue;
-                    return that.privateSetterFunc(setterParams);
-                }
-            )
-            .then(() => {
-                if (originalValue !== value && that.valueChanged instanceof Function) {
-                    that.valueChanged(value);
-                }
-                return [];
-            });
+        const setterParams = Typing.augmentTypes(value, this.attributeType);
+        const originalValue = await Promise.resolve(this.privateGetterFunc());
+        await this.privateSetterFunc(setterParams);
+
+        if (originalValue !== value && this.valueChanged instanceof Function) {
+            this.valueChanged(value);
+        }
+        return [];
     }
 
     return function() {
@@ -170,7 +162,7 @@ const asRead = (function() {
                 throw error;
             }
             throw new ProviderRuntimeException({
-                detailMessage: "getter method for attribute " + context.attributeName + " reported an error"
+                detailMessage: `getter method for attribute ${  context.attributeName  } reported an error`
             });
         };
     }
@@ -192,7 +184,7 @@ const asRead = (function() {
     function get() {
         try{
             if (!this.privateGetterFunc) {
-                return Promise.reject(new Error("no getter function registered for provider attribute: " + this.attributeName));
+                return Promise.reject(new Error(`no getter function registered for provider attribute: ${  this.attributeName}`));
             }
             return Promise.resolve(this.privateGetterFunc()).then(toArray).catch(this._createError);
 

@@ -135,11 +135,11 @@ public class MessagingTest extends AbstractServiceInterfaceTest {
         byte[] serializedMessage = message.getSerializedMessage();
 
         Response response = //
-        given(). //
-        contentType(ContentType.BINARY)
-               .when()
-               .body(serializedMessage)
-               .post(serverUrl + "/channels/channel-123/message");
+                given(). //
+                       contentType(ContentType.BINARY)
+                       .when()
+                       .body(serializedMessage)
+                       .post(serverUrl + "/channels/channel-123/message");
 
         assertEquals(400 /* Bad Request */, response.getStatusCode());
 
@@ -156,11 +156,11 @@ public class MessagingTest extends AbstractServiceInterfaceTest {
         byte[] serializedMessage = message.getSerializedMessage();
 
         Response response = //
-        given(). //
-        contentType(ContentType.BINARY)
-               .when()
-               .body(serializedMessage)
-               .post(serverUrl + "/channels/channel-123/message");
+                given(). //
+                       contentType(ContentType.BINARY)
+                       .when()
+                       .body(serializedMessage)
+                       .post(serverUrl + "/channels/channel-123/message");
 
         assertEquals(400 /* Bad Request */, response.getStatusCode());
 
@@ -181,11 +181,11 @@ public class MessagingTest extends AbstractServiceInterfaceTest {
         byte[] serializedMessage = message.getSerializedMessage();
 
         Response response = //
-        given(). //
-        contentType(ContentType.BINARY)
-               .when()
-               .body(serializedMessage)
-               .post(serverUrl + "/channels/channel-123/message");
+                given(). //
+                       contentType(ContentType.BINARY)
+                       .when()
+                       .body(serializedMessage)
+                       .post(serverUrl + "/channels/channel-123/message");
 
         assertEquals(204 /* No Content */, response.getStatusCode());
         Mockito.verify(mock).hasMessageReceiver("channel-123");
@@ -201,11 +201,11 @@ public class MessagingTest extends AbstractServiceInterfaceTest {
         byte[] serializedMessage = message.getSerializedMessage();
 
         Response response = //
-        given(). //
-        contentType(ContentType.BINARY)
-               .when()
-               .body(serializedMessage)
-               .post(serverUrl + "/channels/channel-123/message");
+                given(). //
+                       contentType(ContentType.BINARY)
+                       .when()
+                       .body(serializedMessage)
+                       .post(serverUrl + "/channels/channel-123/message");
 
         assertEquals(201 /* Created */, response.getStatusCode());
         assertEquals(serverUrl + "/messages/" + message.getId(), response.getHeader("Location"));
@@ -222,11 +222,11 @@ public class MessagingTest extends AbstractServiceInterfaceTest {
         byte[] serializedMessage = message.getSerializedMessage();
 
         Response response = //
-        given(). //
-        contentType(ContentType.BINARY)
-               .when()
-               .body(serializedMessage)
-               .post(serverUrl + "/channels/channel-123/message");
+                given(). //
+                       contentType(ContentType.BINARY)
+                       .when()
+                       .body(serializedMessage)
+                       .post(serverUrl + "/channels/channel-123/message");
 
         assertEquals(410 /* Gone */, response.getStatusCode());
         assertNull(response.getHeader("Location"));
@@ -243,11 +243,11 @@ public class MessagingTest extends AbstractServiceInterfaceTest {
         byte[] serializedMessage = message.getSerializedMessage();
 
         Response response = //
-        given(). //
-        contentType(ContentType.BINARY)
-               .when()
-               .body(serializedMessage)
-               .post(serverUrl + "/channels/channel-123/message");
+                given(). //
+                       contentType(ContentType.BINARY)
+                       .when()
+                       .body(serializedMessage)
+                       .post(serverUrl + "/channels/channel-123/message");
 
         assertEquals(404 /* Not Found */, response.getStatusCode());
         assertNull(response.getHeader("Location"));

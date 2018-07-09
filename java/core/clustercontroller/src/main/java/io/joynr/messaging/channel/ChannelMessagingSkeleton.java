@@ -89,20 +89,19 @@ public class ChannelMessagingSkeleton implements IMessagingSkeleton, IMessagingM
             public void error(ImmutableMessage message, Throwable error) {
                 logger.error("error receiving incoming message: {} error: {}", message.getId(), error.getMessage());
             }
-        },
-                              new ReceiverStatusListener() {
+        }, new ReceiverStatusListener() {
 
-                                  @Override
-                                  public void receiverStarted() {
+            @Override
+            public void receiverStarted() {
 
-                                  }
+            }
 
-                                  @Override
-                                  public void receiverException(Throwable e) {
-                                      logger.error("error in long polling message receiver error: {}", e.getMessage());
-                                      shutdown();
-                                  }
-                              });
+            @Override
+            public void receiverException(Throwable e) {
+                logger.error("error in long polling message receiver error: {}", e.getMessage());
+                shutdown();
+            }
+        });
     }
 
     @Override

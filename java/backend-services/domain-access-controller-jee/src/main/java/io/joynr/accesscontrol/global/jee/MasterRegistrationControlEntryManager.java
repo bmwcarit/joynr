@@ -57,8 +57,9 @@ public class MasterRegistrationControlEntryManager {
 
     private MasterRegistrationControlEntry[] executeAndConvert(Query query) {
         List<MasterRegistrationControlEntryEntity> resultList = query.getResultList();
-        Set<MasterRegistrationControlEntry> resultSet = resultList.stream().map(this::mapEntityToJoynrType).collect(
-            Collectors.toSet());
+        Set<MasterRegistrationControlEntry> resultSet = resultList.stream()
+                                                                  .map(this::mapEntityToJoynrType)
+                                                                  .collect(Collectors.toSet());
         return resultSet.toArray(new MasterRegistrationControlEntry[resultSet.size()]);
     }
 
@@ -101,7 +102,7 @@ public class MasterRegistrationControlEntryManager {
                                                                                                  String interfaceName,
                                                                                                  ControlEntryType type) {
         Query query = entityManager.createQuery("select mrce from MasterRegistrationControlEntryEntity mrce "
-                                                        + "where mrce.userId = :userId and mrce.domain = :domain and mrce.interfaceName = :interfaceName and mrce.type = :type",
+                + "where mrce.userId = :userId and mrce.domain = :domain and mrce.interfaceName = :interfaceName and mrce.type = :type",
                                                 MasterRegistrationControlEntryEntity.class);
         query.setParameter("userId", userId);
         query.setParameter("domain", domain);
@@ -122,7 +123,8 @@ public class MasterRegistrationControlEntryManager {
         return entity;
     }
 
-    public CreateOrUpdateResult<MasterRegistrationControlEntry> createOrUpdate(MasterRegistrationControlEntry updatedMasterRce, ControlEntryType type) {
+    public CreateOrUpdateResult<MasterRegistrationControlEntry> createOrUpdate(MasterRegistrationControlEntry updatedMasterRce,
+                                                                               ControlEntryType type) {
         if (!domainRoleEntryManager.hasCurrentUserGotRoleForDomain(Role.MASTER, updatedMasterRce.getDomain())) {
             return null;
         }

@@ -30,7 +30,7 @@ const log = LoggingManager.getLogger("joynr.messaging.websocket.SharedWebSocket"
  * @returns {String} a url
  */
 function webSocketAddressToUrl(address) {
-    let url = address.protocol + "://" + address.host + ":" + address.port;
+    let url = `${address.protocol}://${address.host}:${address.port}`;
     if (address.path) {
         url += address.path;
     }
@@ -60,7 +60,7 @@ const SharedWebSocket = function SharedWebSocket(settings) {
     let websocket = null;
     const provisioning = settings.provisioning || {};
     const reconnectSleepTimeMs = provisioning.reconnectSleepTimeMs || 1000; // default value = 1000ms
-    const useUnencryptedTls = provisioning.useUnencryptedTls || true; // default to unencrypted Tls communication
+    const useUnencryptedTls = provisioning.useUnencryptedTls !== false; // default to unencrypted Tls communication
     const localAddress = settings.localAddress;
     const remoteUrl = webSocketAddressToUrl(settings.remoteAddress);
     let onmessageCallback = null;
@@ -76,7 +76,9 @@ const SharedWebSocket = function SharedWebSocket(settings) {
      *            libjoynr
      */
     function initializeConnection() {
-        websocket.send(websocket.encodeString(JSON.stringify(localAddress)), { binary: true });
+        websocket.send(websocket.encodeString(JSON.stringify(localAddress)), {
+            binary: true
+        });
     }
 
     function sendMessage(joynrMessage) {
@@ -84,7 +86,7 @@ const SharedWebSocket = function SharedWebSocket(settings) {
         try {
             marshaledMessage = websocket.marshalJoynrMessage(joynrMessage);
         } catch (e) {
-            log.error("could not marshal joynrMessage: " + joynrMessage.msgId + " " + e);
+            log.error(`could not marshal joynrMessage: ${joynrMessage.msgId} ${e}`);
             return Promise.resolve();
         }
 
@@ -94,8 +96,8 @@ const SharedWebSocket = function SharedWebSocket(settings) {
                 // Error is thrown if the socket is no longer open, so requeue to the front
             } catch (e) {
                 // add the message back to the front of the queue
-                queuedMessages.unshift(joynrMessage);
-                log.error("could not send joynrMessage: " + joynrMessage.msgId + " requeuing message. Error: " + e);
+                queuedMessages.unshift(marshaledMessage);
+                log.error(`could not send joynrMessage: ${joynrMessage.msgId} requeuing message. Error: ${e}`);
             }
         } else {
             // push new messages onto the back of the queue
@@ -144,11 +146,9 @@ const SharedWebSocket = function SharedWebSocket(settings) {
             return;
         }
         log.error(
-            "error in websocket: " +
-                (event.code !== undefined ? " code: " + event.code : "") +
-                (event.reason !== undefined ? " reason: " + event.reason : "") +
-                (event.message !== undefined ? " message: " + event.message : "") +
-                ". Resetting connection"
+            `error in websocket: ${event.code !== undefined ? ` code: ${event.code}` : ""}${
+                event.reason !== undefined ? ` reason: ${event.reason}` : ""
+            }${event.message !== undefined ? ` message: ${event.message}` : ""}. Resetting connection`
         );
         if (reconnectTimer !== undefined) {
             LongTimer.clearTimeout(reconnectTimer);
@@ -166,11 +166,7 @@ const SharedWebSocket = function SharedWebSocket(settings) {
         }
         if (event.code !== SharedWebSocket.EVENT_CODE_SHUTDOWN) {
             log.info(
-                "connection closed unexpectedly. code: " +
-                    event.code +
-                    " reason: " +
-                    event.reason +
-                    ". Trying to reconnect..."
+                `connection closed unexpectedly. code: ${event.code} reason: ${event.reason}. Trying to reconnect...`
             );
             if (reconnectTimer !== undefined) {
                 LongTimer.clearTimeout(reconnectTimer);
@@ -181,7 +177,7 @@ const SharedWebSocket = function SharedWebSocket(settings) {
             }
             reconnectTimer = LongTimer.setTimeout(resetConnection, reconnectSleepTimeMs);
         } else {
-            log.info("connection closed. reason: " + event.reason);
+            log.info(`connection closed. reason: ${event.reason}`);
             if (websocket) {
                 websocket.close(SharedWebSocket.EVENT_CODE_SHUTDOWN, "shutdown");
                 websocket = null;
@@ -209,7 +205,7 @@ const SharedWebSocket = function SharedWebSocket(settings) {
      *            joynrMessage the joynr message to transmit
      */
     this.send = function send(joynrMessage) {
-        log.debug(">>> OUTGOING >>> message with ID " + joynrMessage.msgId);
+        log.debug(`>>> OUTGOING >>> message with ID ${joynrMessage.msgId}`);
         return sendMessage(joynrMessage);
     };
 
@@ -239,12 +235,12 @@ const SharedWebSocket = function SharedWebSocket(settings) {
                     try {
                         websocket.unmarshalJoynrMessage(data, newCallback);
                     } catch (e) {
-                        log.error("could not unmarshal joynrMessage: " + e);
+                        log.error(`could not unmarshal joynrMessage: ${e}`);
                     }
                 };
                 websocket.onmessage = onmessageCallback;
             } else {
-                throw new Error("onmessage callback must be a function, but instead was of type " + typeof newCallback);
+                throw new Error(`onmessage callback must be a function, but instead was of type ${typeof newCallback}`);
             }
         },
         get() {

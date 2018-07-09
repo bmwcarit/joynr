@@ -228,6 +228,16 @@ function WebSocketLibjoynrRuntime(provisioning) {
 
         bufferedOwnerId = Buffer.from(keychain.ownerId);
         JoynrMessage.setSigningCallback(signingCallback);
+
+        keychain.checkServerIdentity = function(server) {
+            if (provisioning.ccAddress.host === server) {
+                return undefined;
+            } else {
+                throw new Error(
+                    `message from unknown host: ${server} on accepted host is cc: ${provisioning.ccAddress.host}.`
+                );
+            }
+        };
     }
 
     /**
@@ -242,7 +252,7 @@ function WebSocketLibjoynrRuntime(provisioning) {
      */
     this.start = function start() {
         if (joynrState !== JoynrStates.SHUTDOWN) {
-            throw new Error("Cannot start libjoynr because it's currently \"" + joynrState + '"');
+            throw new Error(`Cannot start libjoynr because it's currently "${joynrState}"`);
         }
         joynrState = JoynrStates.STARTING;
 
@@ -262,20 +272,21 @@ function WebSocketLibjoynrRuntime(provisioning) {
             provisioning.persistency
         );
 
+        let persistencyPromise;
         if (
             persistencyProvisioning.routingTable ||
             persistencyProvisioning.capabilities ||
             persistencyProvisioning.publications
         ) {
-            try {
-                persistency = new LocalStorage({
-                    clearPersistency: persistencyProvisioning.clearPersistency,
-                    location: persistencyProvisioning.location
-                });
-            } catch (e) {
-                return Promise.reject(e);
-            }
+            persistency = new LocalStorage({
+                clearPersistency: persistencyProvisioning.clearPersistency,
+                location: persistencyProvisioning.location
+            });
+            persistencyPromise = persistency.init();
+        } else {
+            persistencyPromise = Promise.resolve();
         }
+
         const routingTablePersistency = persistencyProvisioning.routingTable ? persistency : undefined;
         const capabilitiesPersistency = persistencyProvisioning.capabilities ? persistency : new MemoryStorage();
         const publicationsPersistency = persistencyProvisioning.publications ? persistency : undefined;
@@ -404,6 +415,16 @@ function WebSocketLibjoynrRuntime(provisioning) {
             )
         );
 
+        /*
+         * if no internalMessagingQos is provided, extend the default ttl by 10 seconds in order
+         * to allow the cluster controller to handle timeout for global discovery requests and
+         * send back the response to discoveryProxy
+         */
+        if (provisioning.internalMessagingQos === undefined || provisioning.internalMessagingQos === null) {
+            provisioning.internalMessagingQos = {};
+            provisioning.internalMessagingQos.ttl = MessagingQos.DEFAULT_TTL + 10000;
+        }
+
         const internalMessagingQos = new MessagingQos(provisioning.internalMessagingQos);
 
         function buildDiscoveryProxyOnSuccess(newDiscoveryProxy) {
@@ -420,9 +441,10 @@ function WebSocketLibjoynrRuntime(provisioning) {
                                 return opArgs.result;
                             });
                     },
-                    add: function add(discoveryEntry) {
+                    add: function add(discoveryEntry, awaitGlobalRegistration) {
                         return newDiscoveryProxy.add({
-                            discoveryEntry
+                            discoveryEntry,
+                            awaitGlobalRegistration
                         });
                     },
                     remove: function remove(participantId) {
@@ -436,14 +458,14 @@ function WebSocketLibjoynrRuntime(provisioning) {
         }
 
         function buildDiscoveryProxyOnError(error) {
-            throw new Error("Failed to create discovery proxy: " + error);
+            throw new Error(`Failed to create discovery proxy: ${error}`);
         }
 
         function buildRoutingProxyOnError(error) {
             throw new Error(
-                "Failed to create routing proxy: " +
-                    error +
-                    (error instanceof JoynrException ? " " + error.detailMessage : "")
+                `Failed to create routing proxy: ${error}${
+                    error instanceof JoynrException ? ` ${error.detailMessage}` : ""
+                }`
             );
         }
 
@@ -483,7 +505,7 @@ function WebSocketLibjoynrRuntime(provisioning) {
         }
 
         function startOnFailure(error) {
-            log.error("error starting up joynr: " + error);
+            log.error(`error starting up joynr: ${error}`);
 
             internalShutdown();
 
@@ -491,7 +513,7 @@ function WebSocketLibjoynrRuntime(provisioning) {
         }
 
         // when everything's ready we can trigger the app
-        return Promise.all([discoveryProxyPromise, routingProxyPromise])
+        return Promise.all([discoveryProxyPromise, routingProxyPromise, persistencyPromise])
             .then(startOnSuccess)
             .catch(startOnFailure);
     };
@@ -506,7 +528,7 @@ function WebSocketLibjoynrRuntime(provisioning) {
      */
     internalShutdown = function shutdown(settings) {
         if (joynrState !== JoynrStates.STARTED && joynrState !== JoynrStates.STARTING) {
-            throw new Error("Cannot shutdown libjoynr because it's currently \"" + joynrState + '"');
+            throw new Error(`Cannot shutdown libjoynr because it's currently "${joynrState}"`);
         }
         joynrState = JoynrStates.SHUTTINGDOWN;
 
@@ -559,9 +581,11 @@ function WebSocketLibjoynrRuntime(provisioning) {
             typeRegistry.shutdown();
         }
 
+        const persistencyPromise = persistency !== undefined ? persistency.shutdown() : Promise.resolve();
+
         joynrState = JoynrStates.SHUTDOWN;
         log.debug("joynr shut down");
-        return Promise.resolve();
+        return persistencyPromise;
     };
 
     this.shutdown = internalShutdown;

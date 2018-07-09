@@ -44,7 +44,7 @@ public class JoynrListSerializer extends StdSerializer<List<?>> {
 
     @Override
     public void serialize(List<?> value, JsonGenerator jgen, SerializerProvider provider) throws IOException,
-                                                                                         JsonGenerationException {
+                                                                                          JsonGenerationException {
 
         jgen.writeStartArray();
         for (Object elem : value) {
@@ -64,9 +64,10 @@ public class JoynrListSerializer extends StdSerializer<List<?>> {
     }
 
     @Override
-    public void serializeWithType(List<?> value, JsonGenerator jgen, SerializerProvider provider, TypeSerializer typeSer)
-                                                                                                                         throws IOException,
-                                                                                                                         JsonProcessingException {
+    public void serializeWithType(List<?> value,
+                                  JsonGenerator jgen,
+                                  SerializerProvider provider,
+                                  TypeSerializer typeSer) throws IOException, JsonProcessingException {
         serialize(value, jgen, provider);
     }
 

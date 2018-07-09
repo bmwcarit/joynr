@@ -16,16 +16,14 @@
  * limitations under the License.
  * #L%
  */
-var isDocker = true;
 
 module.exports = function(config) {
-    var flags = ["--headless", "--disable-gpu", "--remote-debugging-port=9222"];
-    if (isDocker) flags.push("--no-sandbox");
+    const flags = ["--headless", "--disable-gpu", "--remote-debugging-port=9222", "--no-sandbox"];
     config.set({
         customLaunchers: {
             ChromeCustom: {
                 base: "Chrome",
-                flags: flags
+                flags
             }
         },
         plugins: [
@@ -34,7 +32,7 @@ module.exports = function(config) {
             "karma-chrome-launcher",
             "karma-junit-reporter",
             "karma-verbose-reporter",
-            require("./karma.preprocessor.browserify")()
+            "karma-browserify"
         ],
 
         // base path that will be used to resolve all patterns (eg. files, exclude)
@@ -43,7 +41,7 @@ module.exports = function(config) {
 
         // frameworks to use
         // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
-        frameworks: ["jasmine"],
+        frameworks: ["browserify", "jasmine"],
 
         // list of files / patterns to load in the browser
         // in other words load nothing but the InProcessRuntimeTest.js
@@ -108,12 +106,33 @@ module.exports = function(config) {
         // outputDir is already located in 'target'
         junitReporter: {
             outputDir: "../target/test-results",
-            outputFile: "TestIntegration.xml",
+            outputFile: "Test-karma-Integration.xml",
             suite: "",
             useBrowserName: false,
             nameFormatter: undefined,
             classNameFormatter: undefined,
             properties: {}
+        },
+        browserify: {
+            debug: true,
+            configure(bundle) {
+                bundle.on("prebundle", () => {
+                    [
+                        "start/InProcessRuntime",
+                        "start/InterTabClusterControllerRuntime",
+                        "start/InterTabLibjoynrRuntime"
+                    ].map(module => {
+                        bundle.ignore(`./${module}.js`, { basedir: "../../../src/main/js/" });
+                    });
+
+                    bundle
+                        .exclude("smrf-native-cpp.node")
+                        .exclude("wscpp")
+                        .exclude("bufferutil")
+                        .exclude("utf-8-validate")
+                        .exclude("node-persist");
+                });
+            }
         }
     });
 };

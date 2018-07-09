@@ -56,6 +56,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
     private static final Logger logger = LoggerFactory.getLogger(MqttPahoClient.class);
 
     private MqttClient mqttClient;
+    private boolean isReceiver;
     private IMqttMessagingSkeleton messagingSkeleton;
     private int reconnectSleepMs;
     private int keepAliveTimerSec;
@@ -71,6 +72,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
     private String keyStorePWD;
     private String trustStorePWD;
     private MqttStatusReceiver mqttStatusReceiver;
+    private boolean separateConnections;
     private boolean isSecureConnection;
     private boolean disconnecting = false;
 
@@ -87,6 +89,8 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
                           int maxMsgsInflight,
                           int maxMsgSizeBytes,
                           boolean cleanSession,
+                          boolean isReceiver,
+                          boolean separateConnections,
                           String keyStorePath,
                           String trustStorePath,
                           String keyStoreType,
@@ -102,6 +106,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
         this.maxMsgsInflight = maxMsgsInflight;
         this.maxMsgSizeBytes = maxMsgSizeBytes;
         this.cleanSession = cleanSession;
+        this.isReceiver = isReceiver;
         this.keyStorePath = keyStorePath;
         this.trustStorePath = trustStorePath;
         this.keyStoreType = keyStoreType;
@@ -109,6 +114,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
         this.keyStorePWD = keyStorePWD;
         this.trustStorePWD = trustStorePWD;
         this.mqttStatusReceiver = mqttStatusReceiver;
+        this.separateConnections = separateConnections;
 
         String srvURI = mqttClient.getServerURI();
         URI vURI;
@@ -140,8 +146,8 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
                 case MqttException.REASON_CODE_CLIENT_EXCEPTION:
                     if (isSecureConnection) {
                         logger.error("Failed to establish TLS connection, error: " + mqttError);
-                        if (mqttError instanceof MqttSecurityException
-                                || (mqttError.getCause() != null && mqttError.getCause() instanceof SSLHandshakeException)) {
+                        if (mqttError instanceof MqttSecurityException || (mqttError.getCause() != null
+                                && mqttError.getCause() instanceof SSLHandshakeException)) {
                             throw new JoynrIllegalStateException("Unable to create TLS MqttPahoClient: " + mqttError);
                         }
                     }
@@ -275,7 +281,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
     }
 
     @Override
-    @SuppressFBWarnings("NN-NN_NAKED_NOTIFY")
+    @SuppressFBWarnings(value = "NN_NAKED_NOTIFY", justification = "required to control shutdown of this instance")
     public void shutdown() {
         shutdown.set(true);
         synchronized (this) {
@@ -299,7 +305,9 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
 
     @Override
     public void publishMessage(String topic, byte[] serializedMessage, int qosLevel) {
-        if (messagingSkeleton == null) {
+        assert !separateConnections || (separateConnections && !isReceiver);
+
+        if (!separateConnections && messagingSkeleton == null) {
             throw new JoynrDelayMessageException("MQTT Publish failed: messagingSkeleton has not been set yet");
         }
         if (maxMsgSizeBytes != 0 && serializedMessage.length > maxMsgSizeBytes) {

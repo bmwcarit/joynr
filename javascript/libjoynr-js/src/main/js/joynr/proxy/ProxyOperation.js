@@ -80,29 +80,24 @@ function checkSignatureMatch(operationSignature, operationArguments) {
 }
 
 function checkArguments(operationArguments) {
-    const errors = [];
     let argumentName;
-    let argumentValue;
+
     for (argumentName in operationArguments) {
         if (operationArguments.hasOwnProperty(argumentName)) {
-            argumentValue = operationArguments[argumentName];
+            const argumentValue = operationArguments[argumentName];
             // make sure types of complex type members are also ok
             if (!UtilInternal.checkNullUndefined(argumentValue)) {
                 const Constructor = typeRegistry.getConstructor(argumentValue._typeName);
 
-                try {
-                    if (Constructor && Constructor.checkMembers) {
-                        Constructor.checkMembers(argumentValue, Typing.checkProperty);
-                    }
-                } catch (error) {
-                    errors.push(error.message);
+                if (Constructor && Constructor.checkMembers) {
+                    Constructor.checkMembers(argumentValue, Typing.checkPropertyAllowObject);
                 }
             } else {
-                errors.push('Argument "' + argumentName + '" undefined.');
+                throw new Error(`Argument ${argumentName} is undefined`);
             }
         }
     }
-    return errors;
+    return operationArguments;
 }
 
 function operationFunctionOnSuccess(settings) {
@@ -120,7 +115,7 @@ function operationFunctionOnSuccess(settings) {
                     );
                 } else {
                     return Promise.reject(
-                        new Error("Unexpected response: " + JSONSerializer.stringify(response[responseKey]))
+                        new Error(`Unexpected response: ${JSONSerializer.stringify(response[responseKey])}`)
                     );
                 }
             }
@@ -169,12 +164,10 @@ function operationFunctionOnSuccess(settings) {
  *            in A+ promise style instead of using the function parameters
  */
 function operationFunction(operationArguments) {
-    // ensure operationArguments variable holds a valid object and initialize promise object
-    const argumentErrors = checkArguments(operationArguments);
-    if (argumentErrors.length > 0) {
-        return Promise.reject(
-            new Error("error calling operation: " + this.operationName + ": " + argumentErrors.toString())
-        );
+    try {
+        operationArguments = checkArguments(operationArguments);
+    } catch (e) {
+        return Promise.reject(new Error(`error calling operation: ${this.operationName}: ${e}`));
     }
 
     try {
@@ -200,14 +193,11 @@ function operationFunction(operationArguments) {
         if (foundValidOperationSignature === undefined) {
             return Promise.reject(
                 new Error(
-                    "Could not find a valid operation signature in '" +
-                        JSON.stringify(this.operationSignatures) +
-                        "' for a call to operation '" +
-                        this.operationName +
-                        "' with the arguments: '" +
-                        JSON.stringify(operationArguments) +
-                        "'. The following errors occured during signature check: " +
-                        JSON.stringify(caughtErrors)
+                    `Could not find a valid operation signature in '${JSON.stringify(
+                        this.operationSignatures
+                    )}' for a call to operation '${this.operationName}' with the arguments: '${JSON.stringify(
+                        operationArguments
+                    )}'. The following errors occured during signature check: ${JSON.stringify(caughtErrors)}`
                 )
             );
         }
@@ -249,7 +239,7 @@ function operationFunction(operationArguments) {
                 .then(operationFunctionOnSuccess);
         }
     } catch (e) {
-        return Promise.reject(new Error("error calling operation: " + e.toString()));
+        return Promise.reject(new Error(`error calling operation: ${e.toString()}`));
     }
 }
 

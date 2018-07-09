@@ -32,9 +32,9 @@ function End2EndAbstractTest(provisioningSuffix, providerChildProcessName, proce
     let testIdentifier = 0;
 
     this.beforeEach = function() {
-        const provisioningSuffixForTest = provisioningSuffix + "-" + testIdentifier++;
+        const provisioningSuffixForTest = `${provisioningSuffix}-${testIdentifier++}`;
         const domain = provisioningSuffixForTest;
-        provisioning.channelId = "abstract-test-base" + provisioningSuffixForTest;
+        provisioning.channelId = `abstract-test-base${provisioningSuffixForTest}`;
         const testProvisioning = provisioning;
         joynr.loaded = false;
         joynr.selectRuntime("inprocess");
@@ -154,14 +154,12 @@ function End2EndAbstractTest(provisioningSuffix, providerChildProcessName, proce
                         return null;
                     })
                     .catch(error => {
-                        reject(
-                            new Error("Failed to retrieve attribute value (recursion index " + index + "): " + error)
-                        );
+                        reject(new Error(`Failed to retrieve attribute value (recursion index ${index}): ${error}`));
                     });
                 return null;
             })
             .catch(error => {
-                reject(new Error("Failed to set attribute value (recursion index " + index + "): " + error));
+                reject(new Error(`Failed to set attribute value (recursion index ${index}): ${error}`));
             });
         return null;
     }
@@ -203,7 +201,7 @@ function End2EndAbstractTest(provisioningSuffix, providerChildProcessName, proce
                     })
                     .catch(error => {
                         return IntegrationUtils.outputPromiseError(
-                            new Error("End2EndAbstractTest.getAttribute. Error while getting: " + error.message)
+                            new Error(`End2EndAbstractTest.getAttribute. Error while getting: ${error.message}`)
                         );
                     });
 
@@ -211,7 +209,7 @@ function End2EndAbstractTest(provisioningSuffix, providerChildProcessName, proce
                     () => {
                         return onFulfilledSpy.calls.count() > 0;
                     },
-                    "attribute " + attributeName + " is received",
+                    `attribute ${attributeName} is received`,
                     provisioning.ttl
                 );
             })
@@ -245,7 +243,7 @@ function End2EndAbstractTest(provisioningSuffix, providerChildProcessName, proce
                     () => {
                         return catchSpy.calls.count() > 0;
                     },
-                    "getter for attribute " + attributeName + " returns exception",
+                    `getter for attribute ${attributeName} returns exception`,
                     provisioning.ttl
                 );
             })
@@ -266,7 +264,7 @@ function End2EndAbstractTest(provisioningSuffix, providerChildProcessName, proce
             .then(onFulfilledSpy)
             .catch(error => {
                 return IntegrationUtils.outputPromiseError(
-                    new Error("End2EndAbstractTest.setAttribute. Error while setting: " + error.message)
+                    new Error(`End2EndAbstractTest.setAttribute. Error while setting: ${error.message}`)
                 );
             });
 
@@ -288,7 +286,7 @@ function End2EndAbstractTest(provisioningSuffix, providerChildProcessName, proce
             .then(onFulfilledSpy)
             .catch(error => {
                 return IntegrationUtils.outputPromiseError(
-                    new Error("End2EndAbstractTest.callOperation. Error while calling operation: " + error.message)
+                    new Error(`End2EndAbstractTest.callOperation. Error while calling operation: ${error.message}`)
                 );
             });
 
@@ -330,7 +328,7 @@ function End2EndAbstractTest(provisioningSuffix, providerChildProcessName, proce
             .catch(error => {
                 return IntegrationUtils.outputPromiseError(
                     new Error(
-                        "End2EndAbstractTest.setupSubscriptionAndReturnSpy. Error while subscribing: " + error.message
+                        `End2EndAbstractTest.setupSubscriptionAndReturnSpy. Error while subscribing: ${error.message}`
                     )
                 );
             });
@@ -378,7 +376,7 @@ function End2EndAbstractTest(provisioningSuffix, providerChildProcessName, proce
                 done();
             })
             .catch(e => {
-                throw new Error("shutdown Child and Libjoynr failed: " + e);
+                throw new Error(`shutdown Child and Libjoynr failed: ${e}`);
             });
     };
 }

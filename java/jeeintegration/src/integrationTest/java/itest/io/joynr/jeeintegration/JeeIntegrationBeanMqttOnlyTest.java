@@ -45,26 +45,29 @@ import io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys;
 @RunWith(Arquillian.class)
 public class JeeIntegrationBeanMqttOnlyTest {
 
-	@Deployment
-	public static JavaArchive createTestArchive() {
-		// @formatter:off
-		return ShrinkWrap.create(JavaArchive.class)
-				.addClasses(ServiceProviderDiscovery.class, DefaultJoynrRuntimeFactory.class,
-						MqttOnlyJoynrConfigurationProvider.class, JoynrIntegrationBean.class,
-						TestResult.class, JoynrStatusMetricsAggregator.class)
-				.addAsManifestResource(new File("src/main/resources/META-INF/beans.xml"));
-		// @formatter:on
-	}
+    @Deployment
+    public static JavaArchive createTestArchive() {
+        // @formatter:off
+        return ShrinkWrap.create(JavaArchive.class)
+                         .addClasses(ServiceProviderDiscovery.class,
+                                     DefaultJoynrRuntimeFactory.class,
+                                     MqttOnlyJoynrConfigurationProvider.class,
+                                     JoynrIntegrationBean.class,
+                                     TestResult.class,
+                                     JoynrStatusMetricsAggregator.class)
+                         .addAsManifestResource(new File("src/main/resources/META-INF/beans.xml"));
+        // @formatter:on
+    }
 
-	@Inject
-	private JoynrIntegrationBean joynrIntegrationBean;
+    @Inject
+    private JoynrIntegrationBean joynrIntegrationBean;
 
-	@Resource(name = JeeIntegrationPropertyKeys.JEE_MESSAGING_SCHEDULED_EXECUTOR_RESOURCE)
-	private ScheduledExecutorService scheduledExecutorService;
+    @Resource(name = JeeIntegrationPropertyKeys.JEE_MESSAGING_SCHEDULED_EXECUTOR_RESOURCE)
+    private ScheduledExecutorService scheduledExecutorService;
 
-	@Test
-	public void testJoynrRuntimeAvailable() {
-		Assert.assertNotNull(joynrIntegrationBean.getRuntime());
-	}
+    @Test
+    public void testJoynrRuntimeAvailable() {
+        Assert.assertNotNull(joynrIntegrationBean.getRuntime());
+    }
 
 }

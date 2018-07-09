@@ -2,6 +2,33 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+## API relevant changes
+* **[JS]** Registration of global providers can be made waiting until registration has been
+  propagated to GlobalCapabilitiesDirectory by passing an optional boolean flag `awaitGlobalRegistration`
+  with value `true` to `registerProvider` or `settings.awaitGlobalRegistration` to `register` APIs of
+  joynr.registration.
+
+* **[Java]** Registration of global providers can be made waiting until registration has been
+  propagated to GlobalCapabilitiesDirectory by passing a boolean flag `awaitGlobalRegistration`
+  with value `true` to overloaded `registerProvider`. The `registerProvider` without the flag
+  parameter will still trigger but no longer wait for registration at GlobalCapabilitiesDirectory.
+  The default timeout for calls to the GlobalCapabilitiesDirectory has been shortened to
+  60 seconds in order to be able to return result / timeout to the caller of `registerProvider`,
+  automatically internally undo the local registration as well and allow for a later retry by
+  the application.
+  The JEE case where `registerProvider` is called internally based on annotations continues
+  to use a very long default timeout for the call to GlobalCapabilitiesDirectory as before.
+
+## Other changes
+* **[C++,Generator]** Deleted InProcess bypass. Every message has to be now routed
+  through message router.
+* **[C++]** The application thread will not return immediately if persistency is ON. Persistency of subscriptions
+  is being loaded in the same thread as registerProvider.
+
+## Configuration property changes
+* **[Java]** Introduced `PROPERTY_KEY_MQTT_SEPARATE_CONNECTIONS` to use separate MQTT connections.
+  See [Java Configuration Reference](JavaSettings.md) for more details.
+
 # joynr 1.3.2
 
 ## API relevant changes
@@ -43,6 +70,8 @@ specifying the keystore/truststore type. See [Java Configuration Reference](Java
 ## Other changes
 * **[JS]** Removed the dependency to wscpp. Joynr uses the ws npm module for websocket
   communication instead.
+* **[JS]** The minimum required node version changes to 8.0.0. to allow the usage of
+  async await and util.promisify.
 
 * **[C++]** Added a CMake flag `USE_PLATFORM_MOCOCRW` to download mococrw at build time.
 

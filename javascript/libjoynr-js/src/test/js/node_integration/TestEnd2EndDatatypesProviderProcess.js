@@ -60,7 +60,7 @@ function setter(value) {
 function initializeTest(provisioningSuffix, providedDomain) {
     providerDomain = providedDomain;
     provisioning.persistency = "localStorage";
-    provisioning.channelId = "End2EndDatatypesTestParticipantId" + provisioningSuffix;
+    provisioning.channelId = `End2EndDatatypesTestParticipantId${provisioningSuffix}`;
     provisioning.logging = {
         configuration: {
             appenders: {

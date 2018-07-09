@@ -24,6 +24,7 @@
  * @returns constructor for a localStorage object
  */
 const Typing = require("../joynr/util/Typing");
+const Promise = require("./Promise");
 
 /**
  * constructor for a localStorage object
@@ -40,7 +41,27 @@ const LocalStorage = function(settings) {
     if (settings.clearPersistency) {
         localStorage.clear();
     }
-    return localStorage;
+};
+
+LocalStorage.prototype = {
+    setItem: (key, value) => {
+        localStorage.setItem(key, value);
+    },
+    getItem(key) {
+        return localStorage.getItem(key);
+    },
+    removeItem(key) {
+        localStorage.removeItem(key);
+    },
+    clear() {
+        localStorage.clear();
+    },
+    init() {
+        return Promise.resolve();
+    },
+    shutdown() {
+        return Promise.resolve();
+    }
 };
 
 module.exports = LocalStorage;

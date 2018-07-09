@@ -72,7 +72,8 @@ public class ProvisionedDomainAccessControlStoreTest {
                                                                                 TrustLevel.LOW },
                                                                         OPERATION1,
                                                                         Permission.NO,
-                                                                        new Permission[]{ Permission.ASK, Permission.NO });
+                                                                        new Permission[]{ Permission.ASK,
+                                                                                Permission.NO });
         MasterAccessControlEntry[] provisionedMasterAccessControlEntries = { expectedMasterAccessControlEntry };
         masterAccessControlEntryString = objectMapper.writeValueAsString(provisionedMasterAccessControlEntries);
     }

@@ -43,8 +43,8 @@ import com.google.inject.Singleton;
  */
 //TODO this will be redundant when we use the provider directly
 @Singleton
-public class GlobalDomainAccessStoreAdminEhCache extends DomainAccessControlStoreEhCache implements
-        GlobalDomainAccessStoreAdmin {
+public class GlobalDomainAccessStoreAdminEhCache extends DomainAccessControlStoreEhCache
+        implements GlobalDomainAccessStoreAdmin {
 
     @Inject
     public GlobalDomainAccessStoreAdminEhCache(CacheManager ehCacheManager,

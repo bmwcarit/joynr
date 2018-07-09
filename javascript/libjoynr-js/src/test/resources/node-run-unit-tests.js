@@ -20,6 +20,7 @@
  */
 
 // run Jasmine 2.x unit tests via node
+console.log("joynr Jasmine 2.x unit tests");
 
 require("../js/node-unit-test-helper");
 
@@ -44,6 +45,7 @@ let InProcessMessagingStubTest = require("../../test/js/joynr/messaging/inproces
 let InProcessStubAndSkeletonTest = require("../../test/js/joynr/util/InProcessStubAndSkeletonTest");
 let JoynrMessageTest = require("../../test/js/joynr/messaging/JoynrMessageTest");
 let JoynrLoggerTest = require("../../test/js/joynr/system/JoynrLoggerTest");
+let JoynrPersistTest = require("../../test/js/global/JoynrPersistTest");
 let JsonSerializerTest = require("../../test/js/joynr/util/JSONSerializerTest");
 let LocalStorageNodeTest = require("../../test/js/global/LocalStorageNodeTest");
 let LongTimerTest = require("../../test/js/joynr/util/LongTimerTest");

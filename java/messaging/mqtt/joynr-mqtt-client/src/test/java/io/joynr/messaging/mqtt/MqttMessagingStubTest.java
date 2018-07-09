@@ -72,9 +72,8 @@ public class MqttMessagingStubTest {
 
         subject.transmit(joynrMessage, successAction, failureAction);
 
-        Mockito.verify(mqttClient).publishMessage(anyString(),
-                                                  any(byte[].class),
-                                                  eq(MqttMessagingStub.DEFAULT_QOS_LEVEL));
+        Mockito.verify(mqttClient)
+               .publishMessage(anyString(), any(byte[].class), eq(MqttMessagingStub.DEFAULT_QOS_LEVEL));
     }
 
     @Test
@@ -83,9 +82,8 @@ public class MqttMessagingStubTest {
 
         subject.transmit(joynrMessage, successAction, failureAction);
 
-        Mockito.verify(mqttClient).publishMessage(anyString(),
-                                                  any(byte[].class),
-                                                  eq(MqttMessagingStub.BEST_EFFORT_QOS_LEVEL));
+        Mockito.verify(mqttClient)
+               .publishMessage(anyString(), any(byte[].class), eq(MqttMessagingStub.BEST_EFFORT_QOS_LEVEL));
     }
 
     @Test

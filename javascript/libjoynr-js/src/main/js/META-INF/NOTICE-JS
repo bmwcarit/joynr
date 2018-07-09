@@ -80,14 +80,6 @@ This project has following dependencies:
    │     └─ ws (3.3.3) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/websocket-stream ~ ws/package.json
    │        ├─ async-limiter (1.0.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/async-limiter/package.json
    │        └─ ultron (1.1.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/ultron/package.json
-   ├─ node-persist (2.1.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/node-persist/package.json
-   │  ├─ is-absolute (0.2.6) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/node-persist ~ is-absolute/package.json
-   │  │  ├─ is-relative (0.2.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/node-persist ~ is-relative/package.json
-   │  │  │  └─ is-unc-path (0.1.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/node-persist ~ is-unc-path/package.json
-   │  │  └─ is-windows (0.2.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/node-persist ~ is-windows/package.json
-   │  ├─ mkdirp (0.5.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mkdirp/package.json
-   │  │  └─ minimist (0.0.8) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mkdirp ~ minimist/package.json
-   │  └─ q (1.1.2) ── MIT (http://github.com/kriskowal/q/raw/master/LICENSE) ── node_modules/q/package.json
    ├─ smrf-native (0.2.2) ── Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0, http://www.opensource.org/licenses/Apache-2.0) ── node_modules/smrf-native/package.json
    │  ├─ bindings (1.2.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/bindings/package.json
    │  └─ nan (2.6.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/nan/package.json

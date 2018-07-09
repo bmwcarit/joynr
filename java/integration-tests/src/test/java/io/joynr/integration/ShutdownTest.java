@@ -78,7 +78,8 @@ public class ShutdownTest {
 
         MockitoAnnotations.initMocks(this);
         Module runtimeModule = Modules.override(new CCInProcessRuntimeModule()).with(new TestGlobalAddressModule());
-        dummyApplication = (DummyJoynrApplication) new JoynrInjectorFactory(factoryPropertiesProvider, runtimeModule).createApplication(DummyJoynrApplication.class);
+        dummyApplication = (DummyJoynrApplication) new JoynrInjectorFactory(factoryPropertiesProvider,
+                                                                            runtimeModule).createApplication(DummyJoynrApplication.class);
 
         provider = new DefaulttestProvider();
         providerQos = new ProviderQos();
@@ -101,7 +102,7 @@ public class ShutdownTest {
 
     @Test
     public void unregisterMultibleProvidersBeforeShutdown() throws JoynrWaitExpiredException, JoynrRuntimeException,
-                                                           InterruptedException, ApplicationException {
+                                                            InterruptedException, ApplicationException {
         int providercount = 10;
         JoynrProvider[] providers = new JoynrProvider[providercount];
         for (int i = 0; i < providers.length; i++) {
@@ -124,7 +125,7 @@ public class ShutdownTest {
     @Ignore
     // test is taking too long because it is attempting to send deregister requests that are not implemented in the mocks
     public void testProxyCallAfterShutdown() throws DiscoveryException, JoynrIllegalStateException,
-                                            InterruptedException {
+                                             InterruptedException {
         Mockito.when(messageReceiverMock.getChannelId()).thenReturn("ShutdownTestChannelId");
         dummyApplication.getRuntime().registerProvider("ShutdownTestdomain", provider, providerQos);
         ProxyBuilder<testProxy> proxyBuilder = dummyApplication.getRuntime().getProxyBuilder("ShutdownTestdomain",
@@ -139,7 +140,7 @@ public class ShutdownTest {
     @Ignore
     @Test(expected = JoynrShutdownException.class)
     public void testProxyCreationAfterShutdown() throws DiscoveryException, JoynrIllegalStateException,
-                                                InterruptedException {
+                                                 InterruptedException {
         // TODO
         // Arbitration does not check if the runtime is already shutting down. A test like this would fail.
         ProxyBuilder<testProxy> proxyBuilder = dummyApplication.getRuntime().getProxyBuilder("ShutdownTestdomain",

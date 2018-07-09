@@ -70,10 +70,10 @@ public class SplitSMRFTest {
         assertTrue(Arrays.equals(message2.getUnencryptedBody(), retrievedMessage2.getUnencryptedBody()));
     }
 
-    private ImmutableMessage createImmutableMessage(String type, String sender, String recipient)
-                                                                                                 throws SecurityException,
-                                                                                                 EncodingException,
-                                                                                                 UnsuppportedVersionException {
+    private ImmutableMessage createImmutableMessage(String type,
+                                                    String sender,
+                                                    String recipient) throws SecurityException, EncodingException,
+                                                                      UnsuppportedVersionException {
         MutableMessage message = new MutableMessage();
 
         message.setType(type);

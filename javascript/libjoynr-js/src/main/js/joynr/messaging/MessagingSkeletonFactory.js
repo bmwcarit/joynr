@@ -44,12 +44,9 @@ MessagingSkeletonFactory.prototype.getSkeleton = function getSkeleton(address) {
     const skeleton = this._messagingSkeletons[className];
 
     if (UtilInternal.checkNullUndefined(skeleton)) {
-        const errorMsg =
-            'Could not find a messaging skeleton for "' +
-            className +
-            '" within messagingSkeletons [' +
-            Object.keys(this._messagingSkeletons).join(",") +
-            "]";
+        const errorMsg = `Could not find a messaging skeleton for "${className}" within messagingSkeletons [${Object.keys(
+            this._messagingSkeletons
+        ).join(",")}]`;
         log.debug(errorMsg);
         throw new Error(errorMsg);
     }

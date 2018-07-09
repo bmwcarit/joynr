@@ -89,7 +89,8 @@ public class DefaultMqttClientIdProviderTest {
         clientIdProviderWithLongReceiverId = injectorWithLongReceiverId.getInstance(MqttClientIdProvider.class);
 
         properties.put(MessagingPropertyKeys.RECEIVERID, standardReceiverId);
-        Injector injectorWithoutClientIdPrefix = Guice.createInjector(testModule, new JoynrPropertiesModule(properties));
+        Injector injectorWithoutClientIdPrefix = Guice.createInjector(testModule,
+                                                                      new JoynrPropertiesModule(properties));
         clientIdProviderWithoutClientIdPrefix = injectorWithoutClientIdPrefix.getInstance(MqttClientIdProvider.class);
 
         properties.put(MqttModule.PROPERTY_KEY_MQTT_CLIENT_ID_PREFIX, clientIdPrefix);

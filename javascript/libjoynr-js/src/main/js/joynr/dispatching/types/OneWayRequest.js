@@ -16,7 +16,6 @@
  * limitations under the License.
  * #L%
  */
-const Util = require("../../util/Util");
 
 /**
  * @name OneWayRequest
@@ -36,48 +35,17 @@ const Util = require("../../util/Util");
  *            settings.params.array
  */
 function OneWayRequest(settings) {
-    if (!(this instanceof OneWayRequest)) {
-        // in case someone calls constructor without new keyword (e.g. var c
-        // = Constructor({..}))
-        return new OneWayRequest(settings);
-    }
-    let i;
-
-    if (settings.params) {
-        for (i = 0; i < settings.params.length; i++) {
-            settings.params[i] = Util.ensureTypedValues(settings.params[i]);
-        }
-    }
-
-    /**
-     * @name OneWayRequest#methodName
-     * @type String
-     */
-    this.methodName = settings.methodName;
-    /**
-     * @name OneWayRequest#paramDatatypes
-     * @type Array
-     */
-    this.paramDatatypes = settings.paramDatatypes;
-    /**
-     * @name OneWayRequest#params
-     * @type Array
-     */
-    this.params = settings.params;
-
     /**
      * The joynr type name
      *
      * @name OneWayRequest#_typeName
      * @type String
      */
-    Object.defineProperty(this, "_typeName", {
+    Object.defineProperty(settings, "_typeName", {
         value: "joynr.OneWayRequest",
-        writable: false,
-        enumerable: true,
-        configurable: false
+        enumerable: true
     });
-    return Object.freeze(this);
+    return settings;
 }
 
 module.exports = OneWayRequest;

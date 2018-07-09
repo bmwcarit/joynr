@@ -50,8 +50,8 @@ RUN dnf update -y \
     xz \
     maven \
     hostname.x86_64 \
-        clang \
-        libcxx-devel \
+    clang \
+    libcxx-devel \
     && dnf groupinstall -y 'Development Tools' \
     && dnf clean all
 

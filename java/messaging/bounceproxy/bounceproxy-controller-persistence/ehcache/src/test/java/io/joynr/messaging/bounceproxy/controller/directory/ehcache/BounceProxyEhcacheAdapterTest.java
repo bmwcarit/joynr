@@ -60,8 +60,7 @@ public class BounceProxyEhcacheAdapterTest {
                 bindConstant().annotatedWith(Names.named("joynr.bounceproxy.controller.bp_cache_config_file"))
                               .to("ehcache.xml");
             }
-        },
-                                                 new EhcacheModule());
+        }, new EhcacheModule());
         cache = injector.getInstance(BounceProxyEhcacheAdapter.class);
     }
 

@@ -23,6 +23,7 @@ const Version = require("../../generated/joynr/types/Version");
 let defaultExpiryIntervalMs = 6 * 7 * 24 * 60 * 60 * 1000; // 6 Weeks
 const loggingManager = require("../system/LoggingManager");
 const log = loggingManager.getLogger("joynr.capabilities.CapabilitiesRegistrar");
+const UtilInternal = require("../util/UtilInternal");
 
 /**
  * The Capabilities Registrar
@@ -91,6 +92,9 @@ CapabilitiesRegistrar.prototype._checkIfReady = function() {
  *            [settings.participantId] optional. If not set, a globally unique UUID participantId will be generated, and persisted to
  *            localStorage. If set, the participantId must be unique in the context of the provider's scope, as set in the ProviderQos;
  *            The application setting the participantId is responsible for guaranteeing uniqueness.
+ * @param {Boolean}
+ *            [settings.awaitGlobalRegistration] optional. If provided and set to true registerProvider will wait until local and global
+ *            registration succeeds or timeout is reached: otherwise registerProvider only waits for local registration.
  *
  * @returns {Object} an A+ promise
  */
@@ -101,7 +105,8 @@ CapabilitiesRegistrar.prototype.register = function register(settings) {
         settings.providerQos,
         settings.expiryDateMs,
         settings.loggingContext,
-        settings.participantId
+        settings.participantId,
+        settings.awaitGlobalRegistration
     );
 };
 
@@ -127,16 +132,20 @@ CapabilitiesRegistrar.prototype.register = function register(settings) {
  *            [loggingContext] optional logging context will be appended to logging messages created in the name of this proxy
  * @param {String}
  *            [participantId] optional. If not set, a globally unique UUID participantId will be generated, and persisted to localStorage.
+ * @param {Boolean}
+ *            [awaitGlobalRegistration] optional. If provided and set to true registerProvider will wait until local and global
+ *            registration succeeds or timeout is reached: otherwise registerProvider only waits for local registration.
  *
  * @returns {Object} an A+ promise
  */
-CapabilitiesRegistrar.prototype.registerProvider = function registerProvider(
+CapabilitiesRegistrar.prototype.registerProvider = async function registerProvider(
     domain,
     provider,
     providerQos,
     expiryDateMs,
     loggingContext,
-    participantId
+    participantId,
+    awaitGlobalRegistration
 ) {
     this._checkIfReady();
 
@@ -144,7 +153,7 @@ CapabilitiesRegistrar.prototype.registerProvider = function registerProvider(
 
     if (missingImplementations.length > 0) {
         throw new Error(
-            "provider: " + domain + "/" + provider.interfaceName + " is missing: " + missingImplementations.toString()
+            `provider: ${domain}/${provider.interfaceName} is missing: ${missingImplementations.toString()}`
         );
     }
 
@@ -157,52 +166,57 @@ CapabilitiesRegistrar.prototype.registerProvider = function registerProvider(
         log.warn("loggingContext is currently not supported");
     }
 
+    if (awaitGlobalRegistration === undefined) {
+        awaitGlobalRegistration = false;
+    }
+
+    if (typeof awaitGlobalRegistration !== "boolean") {
+        const errText = "awaitGlobalRegistration must be boolean";
+        log.warn(errText);
+        return Promise.reject(new Error(errText));
+    }
+
     // register provider at RequestReplyManager
     this._requestReplyManager.addRequestCaller(participantId, provider);
-
-    // register routing address at routingTable
-    const isGloballyVisible = providerQos.scope === ProviderScope.GLOBAL;
-    const messageRouterPromise = this._messageRouter.addNextHop(
-        participantId,
-        this._libjoynrMessagingAddress,
-        isGloballyVisible
-    );
 
     // if provider has at least one attribute, add it as publication provider
     this._publicationManager.addPublicationProvider(participantId, provider);
 
+    // register routing address at routingTable
+    const isGloballyVisible = providerQos.scope === ProviderScope.GLOBAL;
+    await this._messageRouter.addNextHop(participantId, this._libjoynrMessagingAddress, isGloballyVisible);
+
     // TODO: Must be later provided by the user or retrieved from somewhere
     const defaultPublicKeyId = "";
 
-    const discoveryStubPromise = this._discoveryStub.add(
-        new DiscoveryEntry({
-            providerVersion: new Version({
-                majorVersion: provider.constructor.MAJOR_VERSION,
-                minorVersion: provider.constructor.MINOR_VERSION
+    try {
+        await this._discoveryStub.add(
+            new DiscoveryEntry({
+                providerVersion: new Version({
+                    majorVersion: provider.constructor.MAJOR_VERSION,
+                    minorVersion: provider.constructor.MINOR_VERSION
+                }),
+                domain,
+                interfaceName: provider.interfaceName,
+                participantId,
+                qos: providerQos,
+                publicKeyId: defaultPublicKeyId,
+                expiryDateMs: expiryDateMs || Date.now() + defaultExpiryIntervalMs,
+                lastSeenDateMs: Date.now()
             }),
-            domain,
-            interfaceName: provider.interfaceName,
-            participantId,
-            qos: providerQos,
-            publicKeyId: defaultPublicKeyId,
-            expiryDateMs: expiryDateMs || Date.now() + defaultExpiryIntervalMs,
-            lastSeenDateMs: Date.now()
-        })
-    );
-
-    function registerProviderFinished() {
-        log.info(
-            "Provider registered: participantId: " +
-                participantId +
-                ", domain: " +
-                domain +
-                ", interfaceName: " +
-                provider.interfaceName
+            awaitGlobalRegistration
         );
-        return participantId;
+    } catch (e) {
+        this._messageRouter.removeNextHop(participantId).catch(UtilInternal.emptyFunction);
+        throw e;
     }
 
-    return Promise.all([messageRouterPromise, discoveryStubPromise]).then(registerProviderFinished);
+    log.info(
+        `Provider registered: participantId: ${participantId}, domain: ${domain}, interfaceName: ${
+            provider.interfaceName
+        }`
+    );
+    return participantId;
 };
 
 /**
@@ -218,33 +232,28 @@ CapabilitiesRegistrar.prototype.registerProvider = function registerProvider(
  *            provider.interfaceName
  * @returns {Object} an A+ promise
  */
-CapabilitiesRegistrar.prototype.unregisterProvider = function unregisterProvider(domain, provider) {
+CapabilitiesRegistrar.prototype.unregisterProvider = async function unregisterProvider(domain, provider) {
     this._checkIfReady();
     // retrieve participantId
     const participantId = this._participantIdStorage.getParticipantId(domain, provider);
 
-    const discoveryStubPromise = this._discoveryStub.remove(participantId);
+    await this._discoveryStub.remove(participantId);
+
+    // unregister routing address at routingTable
+    await this._messageRouter.removeNextHop(participantId);
 
     // if provider has at least one attribute, remove it as publication
     // provider
     this._publicationManager.removePublicationProvider(participantId, provider);
 
-    // unregister routing address at routingTable
-    const messageRouterPromise = this._messageRouter.removeNextHop(participantId);
-
     // unregister provider at RequestReplyManager
     this._requestReplyManager.removeRequestCaller(participantId);
 
-    return Promise.all([discoveryStubPromise, messageRouterPromise]).then(() => {
-        log.info(
-            "Provider unregistered: participantId: " +
-                participantId +
-                ", domain: " +
-                domain +
-                ", interfaceName: " +
-                provider.interfaceName
-        );
-    });
+    log.info(
+        `Provider unregistered: participantId: ${participantId}, domain: ${domain}, interfaceName: ${
+            provider.interfaceName
+        }`
+    );
 };
 
 /**

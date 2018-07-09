@@ -145,7 +145,8 @@ public class CapabilityUtils {
         return entries;
     }
 
-    public static DiscoveryEntryWithMetaInfo convertToDiscoveryEntryWithMetaInfo(boolean isLocal, DiscoveryEntry entry) {
+    public static DiscoveryEntryWithMetaInfo convertToDiscoveryEntryWithMetaInfo(boolean isLocal,
+                                                                                 DiscoveryEntry entry) {
         return new DiscoveryEntryWithMetaInfo(entry.getProviderVersion(),
                                               entry.getDomain(),
                                               entry.getInterfaceName(),

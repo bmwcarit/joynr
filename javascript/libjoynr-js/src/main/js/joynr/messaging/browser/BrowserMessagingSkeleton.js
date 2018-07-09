@@ -42,7 +42,7 @@ function BrowserMessagingSkeleton(settings) {
 
             UtilInternal.fire(that.receiverCallbacks, joynrMessage);
         } else {
-            log.warn('message with content "' + JSONSerializer.stringify(message) + '" could not be processed');
+            log.warn(`message with content "${JSONSerializer.stringify(message)}" could not be processed`);
         }
     }
 

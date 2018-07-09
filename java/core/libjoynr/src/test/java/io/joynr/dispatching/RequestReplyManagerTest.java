@@ -257,10 +257,12 @@ public class RequestReplyManagerTest {
         assertTrue(exceptionCapture.getValue() instanceof MethodInvocationException);
         assertEquals(((MethodInvocationException) (exceptionCapture.getValue())).getProviderVersion()
                                                                                 .getMajorVersion()
-                                                                                .intValue(), 47);
+                                                                                .intValue(),
+                     47);
         assertEquals(((MethodInvocationException) (exceptionCapture.getValue())).getProviderVersion()
                                                                                 .getMinorVersion()
-                                                                                .intValue(), 11);
+                                                                                .intValue(),
+                     11);
     }
 
     @Test
@@ -319,7 +321,7 @@ public class RequestReplyManagerTest {
 
     @Test
     public void sendOneWayTtl() throws JoynrMessageNotSentException, JoynrSendBufferFullException,
-                               JsonGenerationException, JsonMappingException, IOException {
+                                JsonGenerationException, JsonMappingException, IOException {
         testOneWay(1, TIME_TO_LIVE);
     }
 

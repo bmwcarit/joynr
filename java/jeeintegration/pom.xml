@@ -30,7 +30,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>java</artifactId>
-		<version>1.3.2</version>
+		<version>1.4.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -114,6 +114,17 @@
 							</includes>
 						</fileset>
 					</filesets>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>net.revelc.code.formatter</groupId>
+				<artifactId>formatter-maven-plugin</artifactId>
+				<configuration>
+					<directories>
+						<directory>${basedir}/src/integrationTest/java</directory>
+						<directory>${project.build.sourceDirectory}</directory>
+						<directory>${project.build.testSourceDirectory}</directory>
+					</directories>
 				</configuration>
 			</plugin>
 			<plugin>

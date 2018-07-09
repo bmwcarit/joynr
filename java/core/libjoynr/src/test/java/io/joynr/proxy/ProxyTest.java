@@ -278,12 +278,10 @@ public class ProxyTest {
                 ((Callback) args[0]).resolve((Object) fakeCapabilitiesResult);
                 return null;
             }
-        })
-               .when(localDiscoveryAggregator)
-               .lookup(Mockito.<Callback> any(),
-                       Mockito.<String[]> any(),
-                       Mockito.<String> any(),
-                       Mockito.<joynr.types.DiscoveryQos> any());
+        }).when(localDiscoveryAggregator).lookup(Mockito.<Callback> any(),
+                                                 Mockito.<String[]> any(),
+                                                 Mockito.<String> any(),
+                                                 Mockito.<joynr.types.DiscoveryQos> any());
 
         Mockito.doAnswer(new Answer<Object>() {
             @Override
@@ -296,11 +294,9 @@ public class ProxyTest {
                 request.getFuture().resolve(request.getSubscriptionId());
                 return null;
             }
-        })
-               .when(subscriptionManager)
-               .registerAttributeSubscription(any(String.class),
-                                              eq(Sets.newHashSet(toDiscoveryEntry)),
-                                              Mockito.any(AttributeSubscribeInvocation.class));
+        }).when(subscriptionManager).registerAttributeSubscription(any(String.class),
+                                                                   eq(Sets.newHashSet(toDiscoveryEntry)),
+                                                                   Mockito.any(AttributeSubscribeInvocation.class));
 
         Mockito.doAnswer(new Answer<Object>() { //TODO simulate resolve here ! subscription reply bastern ... handle subscriptionreply ausführen.. 
             @Override
@@ -314,11 +310,9 @@ public class ProxyTest {
                 request.getFuture().resolve(request.getSubscriptionId());
                 return null;
             }
-        })
-               .when(subscriptionManager)
-               .registerBroadcastSubscription(any(String.class),
-                                              eq(Sets.newHashSet(toDiscoveryEntry)),
-                                              Mockito.any(BroadcastSubscribeInvocation.class));
+        }).when(subscriptionManager).registerBroadcastSubscription(any(String.class),
+                                                                   eq(Sets.newHashSet(toDiscoveryEntry)),
+                                                                   Mockito.any(BroadcastSubscribeInvocation.class));
 
         Mockito.doAnswer(new Answer<Object>() {
             @Override
@@ -332,11 +326,9 @@ public class ProxyTest {
                 request.getFuture().resolve(request.getSubscriptionId());
                 return null;
             }
-        })
-               .when(subscriptionManager)
-               .registerMulticastSubscription(any(String.class),
-                                              eq(Sets.newHashSet(toDiscoveryEntry)),
-                                              Mockito.any(MulticastSubscribeInvocation.class));
+        }).when(subscriptionManager).registerMulticastSubscription(any(String.class),
+                                                                   eq(Sets.newHashSet(toDiscoveryEntry)),
+                                                                   Mockito.any(MulticastSubscribeInvocation.class));
 
         discoveryQos = new DiscoveryQos(10000, ArbitrationStrategy.HighestPriority, Long.MAX_VALUE);
         messagingQos = new MessagingQos();
@@ -463,8 +455,9 @@ public class ProxyTest {
                                                          Mockito.<Request> any(),
                                                          Mockito.<SynchronizedReplyCaller> any(),
                                                          Mockito.<MessagingQos> any()))
-               .thenReturn(new Reply(requestReplyId, new ApplicationException(ApplicationErrors.ERROR_VALUE_2,
-                                                                              "syncMethodCallApplicationException")));
+               .thenReturn(new Reply(requestReplyId,
+                                     new ApplicationException(ApplicationErrors.ERROR_VALUE_2,
+                                                              "syncMethodCallApplicationException")));
 
         ProxyBuilder<TestInterface> proxyBuilder = getProxyBuilder(TestInterface.class);
         TestInterface proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
@@ -476,7 +469,8 @@ public class ProxyTest {
             exception = e;
         }
         Assert.assertEquals(new ApplicationException(ApplicationErrors.ERROR_VALUE_2,
-                                                     "syncMethodCallApplicationException"), exception);
+                                                     "syncMethodCallApplicationException"),
+                            exception);
     }
 
     @Test
@@ -488,7 +482,7 @@ public class ProxyTest {
         Mockito.doAnswer(new Answer<Object>() {
             @Override
             public Object answer(InvocationOnMock invocation) throws JsonParseException, JsonMappingException,
-                                                             IOException {
+                                                              IOException {
                 // capture the replyCaller passed into the dispatcher for calling later
                 ArgumentCaptor<ReplyCaller> replyCallerCaptor = ArgumentCaptor.forClass(ReplyCaller.class);
                 verify(replyCallerDirectory).addReplyCaller(anyString(),
@@ -500,12 +494,10 @@ public class ProxyTest {
                 replyCallerCaptor.getValue().messageCallBack(new Reply(requestReplyId, new TextNode(asyncReplyText)));
                 return null;
             }
-        })
-               .when(requestReplyManager)
-               .sendRequest(Mockito.<String> any(),
-                            Mockito.<DiscoveryEntryWithMetaInfo> any(),
-                            Mockito.<Request> any(),
-                            Mockito.<MessagingQos> any());
+        }).when(requestReplyManager).sendRequest(Mockito.<String> any(),
+                                                 Mockito.<DiscoveryEntryWithMetaInfo> any(),
+                                                 Mockito.<Request> any(),
+                                                 Mockito.<MessagingQos> any());
         final Future<String> future = proxy.asyncMethod(callback);
 
         // the test usually takes only 200 ms, so if we wait 1 sec, something has gone wrong
@@ -528,7 +520,7 @@ public class ProxyTest {
         Mockito.doAnswer(new Answer<Object>() {
             @Override
             public Object answer(InvocationOnMock invocation) throws JsonParseException, JsonMappingException,
-                                                             IOException {
+                                                              IOException {
                 // capture the replyCaller passed into the dispatcher for calling later
                 ArgumentCaptor<ReplyCaller> replyCallerCaptor = ArgumentCaptor.forClass(ReplyCaller.class);
                 verify(replyCallerDirectory).addReplyCaller(anyString(),
@@ -540,12 +532,10 @@ public class ProxyTest {
                 replyCallerCaptor.getValue().messageCallBack(new Reply(requestReplyId, expected));
                 return null;
             }
-        })
-               .when(requestReplyManager)
-               .sendRequest(Mockito.<String> any(),
-                            Mockito.<DiscoveryEntryWithMetaInfo> any(),
-                            Mockito.<Request> any(),
-                            Mockito.<MessagingQos> any());
+        }).when(requestReplyManager).sendRequest(Mockito.<String> any(),
+                                                 Mockito.<DiscoveryEntryWithMetaInfo> any(),
+                                                 Mockito.<Request> any(),
+                                                 Mockito.<MessagingQos> any());
 
         CallbackWithModeledError<String, Enum<?>> callbackWithApplicationException = Mockito.mock(CallbackWithModeledError.class);
         final Future<String> future = proxy.asyncMethodWithApplicationError(callbackWithApplicationException);
@@ -576,7 +566,7 @@ public class ProxyTest {
         Mockito.doAnswer(new Answer<Object>() {
             @Override
             public Object answer(InvocationOnMock invocation) throws JsonParseException, JsonMappingException,
-                                                             IOException {
+                                                              IOException {
                 // capture the replyCaller passed into the dispatcher for calling later
                 ArgumentCaptor<ReplyCaller> replyCallerCaptor = ArgumentCaptor.forClass(ReplyCaller.class);
                 verify(replyCallerDirectory).addReplyCaller(anyString(),
@@ -587,12 +577,10 @@ public class ProxyTest {
                 replyCallerCaptor.getValue().error(expectedException);
                 return null;
             }
-        })
-               .when(requestReplyManager)
-               .sendRequest(Mockito.<String> any(),
-                            Mockito.<DiscoveryEntryWithMetaInfo> any(),
-                            Mockito.<Request> any(),
-                            Mockito.<MessagingQos> any());
+        }).when(requestReplyManager).sendRequest(Mockito.<String> any(),
+                                                 Mockito.<DiscoveryEntryWithMetaInfo> any(),
+                                                 Mockito.<Request> any(),
+                                                 Mockito.<MessagingQos> any());
 
         boolean exceptionThrown = false;
         String reply = "";

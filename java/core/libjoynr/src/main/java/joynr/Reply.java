@@ -46,8 +46,7 @@ public class Reply implements JoynrMessageType {
         this.response = null;
     }
 
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings(
-                                                      value = "EI_EXPOSE_REP",
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "EI_EXPOSE_REP",
                                                       justification = "response is just a data container and only accessed by trusted code.")
     public Object[] getResponse() {
         return response;

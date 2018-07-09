@@ -29,7 +29,7 @@ public class MqttMessagingStubFactory extends AbstractMiddlewareMessagingStubFac
 
     @Inject
     public MqttMessagingStubFactory(MqttClientFactory mqttClientFactory) {
-        this.mqttClient = mqttClientFactory.create();
+        this.mqttClient = mqttClientFactory.createSender();
     }
 
     @Override

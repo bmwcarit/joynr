@@ -19,21 +19,21 @@
 
 console.log("Running addReporter.js");
 
-var reporters = require('jasmine-reporters');
+const reporters = require("jasmine-reporters");
+const date = new Date();
 
 // JUnit reporter
 var junitReporter = new reporters.JUnitXmlReporter({
-    savePath: 'jstd-test-results',
+    savePath: '../../../target/test-results',
     consolidateAll: true,
-    filePrefix: 'TEST-unit-node'
+    filePrefix: 'Test-node-' + date.toISOString()
 });
 
 jasmine.getEnv().addReporter(junitReporter);
 
-
 // Terminal reporter
-var terminalReporter = new reporters.TerminalReporter({
-    verbosity: 3,   // max 3, only 3 provides info about passed tests
+const terminalReporter = new reporters.TerminalReporter({
+    verbosity: 3, // max 3, only 3 provides info about passed tests
     color: true,
     showStack: true
 });

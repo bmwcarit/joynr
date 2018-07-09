@@ -66,7 +66,7 @@ describe("libjoynr-js.joynr.messaging.mqtt.MqttMessagingStub", () => {
     });
 
     it("transmits a message", done => {
-        const expectedTopic = topic + "/low/" + joynrMessage.to;
+        const expectedTopic = `${topic}/low/${joynrMessage.to}`;
         mqttMessagingStub.transmit(joynrMessage);
         expect(mqttClient.send).toHaveBeenCalledWith(expectedTopic, joynrMessage);
         done();

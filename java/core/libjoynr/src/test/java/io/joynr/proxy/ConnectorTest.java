@@ -182,8 +182,9 @@ public class ConnectorTest {
             Future<String> future = new Future<String>();
             connector.executeAsyncMethod(TestAsyncInterface.class.getDeclaredMethod("someMethodwithoutAnnotations",
                                                                                     Integer.class,
-                                                                                    String.class), new Object[]{ 1,
-                    "test" }, future);
+                                                                                    String.class),
+                                         new Object[]{ 1, "test" },
+                                         future);
             fail("Calling a method with missing callback annotation did not throw an exception.");
         } catch (Exception e) {
             // This is what is supposed to happen -> no error handling
@@ -353,8 +354,10 @@ public class ConnectorTest {
             Method method = TestSubscriptionInterface.class.getDeclaredMethod("subscribeToTestAttribute",
                                                                               AttributeSubscriptionListener.class,
                                                                               SubscriptionQos.class);
-            AttributeSubscribeInvocation invocation = new AttributeSubscribeInvocation(method, new Object[]{ listener,
-                    subscriptionQos }, null);
+            AttributeSubscribeInvocation invocation = new AttributeSubscribeInvocation(method,
+                                                                                       new Object[]{ listener,
+                                                                                               subscriptionQos },
+                                                                                       null);
             connector.executeSubscriptionMethod(invocation);
             verify(subscriptionManager, times(1)).registerAttributeSubscription(fromParticipantId,
                                                                                 toDiscoveryEntries,
@@ -376,8 +379,11 @@ public class ConnectorTest {
                                                                            TestBroadcastListener.class,
                                                                            OnChangeSubscriptionQos.class,
                                                                            BroadcastFilterParameters.class);
-            BroadcastSubscribeInvocation invocation = new BroadcastSubscribeInvocation(method, new Object[]{ listener,
-                    subscriptionQos, new BroadcastFilterParameters() }, null);
+            BroadcastSubscribeInvocation invocation = new BroadcastSubscribeInvocation(method,
+                                                                                       new Object[]{ listener,
+                                                                                               subscriptionQos,
+                                                                                               new BroadcastFilterParameters() },
+                                                                                       null);
             connector.executeSubscriptionMethod(invocation);
             verify(subscriptionManager, times(1)).registerBroadcastSubscription(fromParticipantId,
                                                                                 toDiscoveryEntries,
@@ -400,8 +406,11 @@ public class ConnectorTest {
                                                                            TestBroadcastListener.class,
                                                                            OnChangeSubscriptionQos.class,
                                                                            String[].class);
-            MulticastSubscribeInvocation invocation = new MulticastSubscribeInvocation(method, new Object[]{ listener,
-                    subscriptionQos, partitions }, null);
+            MulticastSubscribeInvocation invocation = new MulticastSubscribeInvocation(method,
+                                                                                       new Object[]{ listener,
+                                                                                               subscriptionQos,
+                                                                                               partitions },
+                                                                                       null);
             connector.executeSubscriptionMethod(invocation);
             verify(subscriptionManager, times(1)).registerMulticastSubscription(fromParticipantId,
                                                                                 toDiscoveryEntries,

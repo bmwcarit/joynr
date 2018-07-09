@@ -45,7 +45,7 @@ MethodUtil.transformParameterMapToArray = function transformParameterMapToArray(
         // if argument value is not given by the application
         if (UtilInternal.checkNullUndefined(argumentValue)) {
             throw new Error(
-                'Cannot call operation with nullable value "' + argumentValue + '" of argument "' + argument.name + '"'
+                `Cannot call operation with nullable value "${argumentValue}" of argument "${argument.name}"`
             );
         }
         // check if the parameter type matches the type of the argument value
@@ -54,13 +54,9 @@ MethodUtil.transformParameterMapToArray = function transformParameterMapToArray(
         if (argument.javascriptType !== objectType) {
             // signature does not match
             throw new Error(
-                'Signature does not match: type "' +
-                    objectType +
-                    '" of argument "' +
-                    argument.name +
-                    '" does not match with expected type "' +
-                    argument.javascriptType +
-                    '"'
+                `Signature does not match: type "${objectType}" of argument "${
+                    argument.name
+                }" does not match with expected type "${argument.javascriptType}"`
             );
         }
 

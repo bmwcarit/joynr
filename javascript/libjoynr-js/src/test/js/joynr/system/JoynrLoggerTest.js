@@ -65,7 +65,10 @@ describe("libjoynr-js.joynr.system.JoynrLogger", () => {
 
     function logEventHelper(level) {
         loggerInstance[level](message);
-        expect(loggingSpy).toHaveBeenCalledWith({ level: { name: level }, messages: [message] });
+        expect(loggingSpy).toHaveBeenCalledWith({
+            level: { name: level },
+            messages: [message]
+        });
         loggingSpy.calls.reset();
     }
 
@@ -81,23 +84,29 @@ describe("libjoynr-js.joynr.system.JoynrLogger", () => {
 
     function getDateString() {
         const date = new Date();
-        return date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds() + "," + date.getMilliseconds();
+        return `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()},${date.getMilliseconds()}`;
     }
 
     it("works with simple formatting", () => {
         JoynrLogger.setLogLevel("trace");
         JoynrLogger.setFormatting("%d%c%p%m");
         loggerInstance.debug(message);
-        const formattedMessage = getDateString() + loggerName + "debug" + message;
-        expect(loggingSpy).toHaveBeenCalledWith({ level: { name: "debug" }, messages: [formattedMessage] });
+        const formattedMessage = `${getDateString() + loggerName}debug${message}`;
+        expect(loggingSpy).toHaveBeenCalledWith({
+            level: { name: "debug" },
+            messages: [formattedMessage]
+        });
     });
 
     it("works with complicated formatting", () => {
         JoynrLogger.setLogLevel("trace");
         JoynrLogger.setFormatting("[%d{HH:mm:ss,SSS}][%c][%p] %m{2}");
         loggerInstance.debug(message);
-        const formattedMessage = "[" + getDateString() + "][" + loggerName + "][debug] " + message;
-        expect(loggingSpy).toHaveBeenCalledWith({ level: { name: "debug" }, messages: [formattedMessage] });
+        const formattedMessage = `[${getDateString()}][${loggerName}][debug] ${message}`;
+        expect(loggingSpy).toHaveBeenCalledWith({
+            level: { name: "debug" },
+            messages: [formattedMessage]
+        });
     });
 });
 

@@ -487,18 +487,6 @@ bin/asadmin deploy <RADIO_HOME>/target/discovery-jee.war
 bin/asadmin deploy <RADIO_HOME>/target/accesscontrol-jee.war
 ```
 
->**Note:**
->Instead of communicating via MQTT (default), joynr can also be configured to use **HTTP**
->(longpolling). However, **(non selective) broadcasts are not working when using HTTP**.
->Instead of a MQTT broker, a HTTP bounceproxy is used. The following Maven command will start a
->[Jetty Server](http://eclipse.org/jetty/) on `localhost:8080` and automatically deploy
->the whole joynr http backend, i.e. Domain Access Controller as well as
->[Http Bounceproxy and Discovery services](using_joynr.md#discovery-directories):
->```bash
-><RADIO_HOME>$ mvn jetty:run \
->  -Djoynr.messaging.discoverydirectoryurl=http://localhost:8080/discovery/channels/discoverydirectory_channelid/
->```
-
 ### Java
 
 After importing `<RADIO_HOME>/pom.xml` into Eclipse using the M2E plugin, Eclipse will automatically
@@ -522,7 +510,7 @@ Alternatively, run the provider from the command line by executing the following
 
 Now run the **MyRadioConsumerApplication** class and right click and select **Run as Java
 Application**. Add the same provider domain to the run configuration. This consumer will make a call
-to the joynr runtime to find a provider with the domain.  If there are several providers of the same
+to the joynr runtime to find a provider with the domain. If there are several providers of the same
 type registered on the same domain, then the ArbitrationStrategy (see in the run method of
 MyRadioConsumerApplication class) is used to work out which provider to take. In the console, you
 should be able to see log output.
@@ -532,19 +520,6 @@ Alternatively, run the consumer from the command line by executing the following
 ```bash
 <RADIO_HOME>$ mvn exec:java -Dexec.mainClass="io.joynr.demo.MyRadioConsumerApplication" -Dexec.args="-d <my provider domain>"
 ```
-
->When using HTTP/Jetty, an additional argument is necessary to run the provider and consumer
->applications:
->```bash
-><RADIO_HOME>$ mvn exec:java -Dexec.mainClass="io.joynr.demo.MyRadioProviderApplication" \
->  -Dexec.args="-d <my provider domain> -t http" \
->  -Djoynr.messaging.discoverydirectoryurl=http://localhost:8080/discovery/channels/discoverydirectory_channelid/ \
->  -Djoynr.messaging.domainaccesscontrollerurl=http://localhost:8080/discovery/channels/domainaccesscontroller_channelid/
-><RADIO_HOME>$ mvn exec:java -Dexec.mainClass="io.joynr.demo.MyRadioConsumerApplication" \
->  -Dexec.args="-d <my provider domain> -t http" \
->  -Djoynr.messaging.discoverydirectoryurl=http://localhost:8080/discovery/channels/discoverydirectory_channelid/ \
->  -Djoynr.messaging.domainaccesscontrollerurl=http://localhost:8080/discovery/channels/domainaccesscontroller_channelid/
->```
 
 ### C++
 Pick a domain that will be used to identify the provider and run the example:
@@ -563,12 +538,11 @@ In another terminal window execute:
 <CPP_BUILD_DIRECTORY>/radio/bin$ ./radio-app-consumer-cc <my provider domain>
 ```
 
->To use HTTP instead of MQTT (see [Starting the backend](#starting-the-backend)), start a
->cluster controller with the provided http settings file:
+>To use a standalone cluster-controller start
 >```bash
-><CPP_BUILD_DIRECTORY>/radio/bin$ ./cluster-controller resources/cc.messaging.settings
+><CPP_BUILD_DIRECTORY>/radio/bin$ ./cluster-controller
 >```
->Then you can start provider-ws and consumer-ws which establish a websocket connection to a
+>Then you can start provider-ws and consumer-ws which establish a websocket connection to that
 >standalone cluster controller (instead of the cc variants which use an embedded cluster controller):
 >```bash
 ><CPP_BUILD_DIRECTORY>/radio/bin$ ./radio-app-provider-ws <my provider domain>
@@ -594,12 +568,11 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:<BUILD_DIRECTORY>/joynr/bin
 
 ## Summary
 In this tutorial, you have seen a communication interface, generated joynr code from it, adapted a
-provider and consumer, and seen the communication between the two in action.  The next step is to
-create your own interface entirely and create more providers and consumers yourself.  Use this
+provider and consumer, and seen the communication between the two in action. The next step is to
+create your own interface entirely and create more providers and consumers yourself. Use this
 project as a template for your further investigations!
 
 # Further Reading
 * **[Using selective broadcast to implement a geocast](Broadcast-Tutorial.md):**
 In this tutorial RadioApp example is extended by a selective broadcast and filter
 logics that implements a [geocast](http://en.wikipedia.org/wiki/Geocast).
-

@@ -143,7 +143,7 @@ else
 		--projects io.joynr:basemodel,io.joynr.tools.generator:dependency-libs,io.joynr.tools.generator:generator-framework,io.joynr.tools.generator:joynr-generator-maven-plugin,io.joynr.tools.generator:cpp-generator,io.joynr.cpp:libjoynr,io.joynr.tools.generator:joynr-generator-standalone"'
 	fi
 
-	execute_in_docker '"echo \"Building and packaging MoCOCrW\" && /data/src/docker/joynr-cpp-base/scripts/build/cpp-build-MoCOCrW-rpm-package.sh 2>&1"'
+	execute_in_docker '"echo \"Building and packaging MoCOCrW\" && /data/src/docker/joynr-cpp-base/scripts/build/cpp-build-MoCOCrW-package.sh 2>&1"'
 
 	execute_in_docker '"echo \"Building and packaging smrf\" && /data/src/docker/joynr-cpp-base/scripts/build/cpp-build-smrf-rpm-package.sh 2>&1"'
 
@@ -189,7 +189,7 @@ find  ../../../../build/joynr/package/RPM/x86_64/ -iregex ".*joynr-[0-9].*rpm" -
 # Find a file with a name which matches 'smrf-[version].rpm'
 find  ../../../../build/smrf/package/RPM/x86_64/ -iregex ".*smrf-[0-9].*rpm" -exec cp {} $BUILDDIR/smrf.rpm \;
 
-cp ../../../../build/MoCOCrW.tar.gz $BUILDDIR/MoCOCrW.tar.gz
+cp ../../../../docker/build/MoCOCrW.tar.gz $BUILDDIR/MoCOCrW.tar.gz
 
 CURRENTDATE=`date`
 cp onboard-cc-messaging.settings ${BUILDDIR}
@@ -208,13 +208,18 @@ cat > $BUILDDIR/Dockerfile <<-EOF
         openssl
 
     ###################################################
-    # Install joynr and smrf and MoCOCrW
+    # Install MoCOCrW
+    ###################################################
+    COPY MoCOCrW.tar.gz /tmp/MoCOCrW.tar.gz
+    RUN cd / && \
+        tar xvf /tmp/MoCOCrW.tar.gz
+
+    ###################################################
+    # Install joynr and smrf
     ###################################################
     COPY joynr.rpm /tmp/joynr.rpm
     COPY smrf.rpm /tmp/smrf.rpm
-    COPY MoCOCrW.rpm /tmp/MoCOCrW.rpm
     RUN rpm -i --nodeps \
-        /tmp/MoCOCrW.rpm \
         /tmp/smrf.rpm \
         /tmp/joynr.rpm \
         && rm /tmp/joynr.rpm

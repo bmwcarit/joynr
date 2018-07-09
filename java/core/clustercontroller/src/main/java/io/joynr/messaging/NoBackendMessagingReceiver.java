@@ -65,7 +65,8 @@ public class NoBackendMessagingReceiver implements MessageReceiver {
     }
 
     @Override
-    public Future<Void> start(MessageArrivedListener messageArrivedListener, ReceiverStatusListener... statusListeners) {
+    public Future<Void> start(MessageArrivedListener messageArrivedListener,
+                              ReceiverStatusListener... statusListeners) {
         return Futures.immediateFuture(null);
     }
 }

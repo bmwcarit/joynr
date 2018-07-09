@@ -76,7 +76,8 @@ echo "start cluster controller + providers with domain prefix $DOMAIN_PREFIX"
 	./jsit-provider-ws $DOMAIN_PREFIX.cpp --runForever true & CPP_PROVIDER_PID=$!
 
 	cd ${NODE_APP_HOME}
-	npm run-script startprovider --sit-node-app:domain=$DOMAIN_PREFIX.node --sit-node-app:cc:host=127.0.0.1 --sit-node-app:cc:port=4242 & NODE_PROVIDER_PID=$!
+	npm run-script startprovider --sit-node-app:domain=$DOMAIN_PREFIX.node & NODE_PROVIDER_PID=$!
+	npm run-script startprovidertls --sit-node-app:domain=$DOMAIN_PREFIX.nodeTls & NODE_TLS_PROVIDER_PID=$!
 
 	cd ${JAVA_APP_HOME}
 	java -cp *.jar io.joynr.systemintegrationtest.ProviderApplication $DOMAIN_PREFIX.java runForever & JAVA_PROVIDER_PID=$!
@@ -212,7 +213,10 @@ do
 		npm run-script startconsumer --sit-node-app:domain=$domainprefix.java --sit-node-app:cc:host=127.0.0.1 --sit-node-app:cc:port=4242
 
 		# node - run the test against node provider
-		npm run-script startconsumer --sit-node-app:domain=$domainprefix.node --sit-node-app:cc:host=127.0.0.1 --sit-node-app:cc:port=4242
+		npm run-script startconsumer --sit-node-app:domain=$domainprefix.node
+
+		# node - run the test against node provider
+		npm run-script startconsumertls --sit-node-app:domain=$domainprefix.nodeTls
 
 		# node - run the test against jee provider
 		npm run-script startconsumer --sit-node-app:domain=$domainprefix.jee --sit-node-app:cc:host=127.0.0.1 --sit-node-app:cc:port=4242
@@ -227,4 +231,5 @@ done
 # kill $NODE_PROVIDER_PID
 # kill $CLUSTER_CONTROLLER_PID
 # kill $MOSQUITTO_PID
+kill NODE_TLS_PROVIDER_PID
 wait

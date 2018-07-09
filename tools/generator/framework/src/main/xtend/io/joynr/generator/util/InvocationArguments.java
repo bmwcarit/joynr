@@ -250,8 +250,8 @@ public class InvocationArguments {
                     + dumpRootGeneratorDefinition() + " OR " + dumpGenerationLanguageDefinition());
             errorMessages.append(newLine);
         }
-        if (addVersionTo != null
-                && !(addVersionTo.equalsIgnoreCase("package") || addVersionTo.equalsIgnoreCase("name") || addVersionTo.equalsIgnoreCase("none"))) {
+        if (addVersionTo != null && !(addVersionTo.equalsIgnoreCase("package") || addVersionTo.equalsIgnoreCase("name")
+                || addVersionTo.equalsIgnoreCase("none"))) {
             errorMessages.append("- Version inclusion specifier was invalid. Please invoke the generator with the following argument: "
                     + dumpVersionDefinition());
             errorMessages.append(newLine);
@@ -283,8 +283,7 @@ public class InvocationArguments {
         if (rootGenerator == null && generationLanguage != null) {
             rootGenerator = languages.get(generationLanguage);
             if (rootGenerator == null) {
-                throw new IllegalArgumentException("The generation language \""
-                        + generationLanguage
+                throw new IllegalArgumentException("The generation language \"" + generationLanguage
                         + "\" could not be found in the configuration. The following languages have been found: "
                         + getLanguages(", ")
                         + ". Be sure to have the respective generation templates included in your dependencies. The package of generator templates shall start with \"io\", \"com\", \"org\" or \"de\""

@@ -63,7 +63,8 @@ public class AttachmentSenderService {
     HttpServletRequest request;
 
     @Inject
-    public AttachmentSenderService(AttachmentStorage attachmentStorage, LongPollingMessagingDelegate longPollingDelegate) {
+    public AttachmentSenderService(AttachmentStorage attachmentStorage,
+                                   LongPollingMessagingDelegate longPollingDelegate) {
         this.attachmentStorage = attachmentStorage;
         this.longPollingDelegate = longPollingDelegate;
     }

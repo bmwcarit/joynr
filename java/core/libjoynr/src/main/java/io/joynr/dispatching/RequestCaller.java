@@ -50,7 +50,7 @@ public class RequestCaller implements JoynrProvider {
     }
 
     public Object invoke(Method method, Object[] params) throws IllegalAccessException, IllegalArgumentException,
-                                                        InvocationTargetException {
+                                                         InvocationTargetException {
         return method.invoke(proxy, params);
     }
 

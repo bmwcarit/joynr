@@ -93,12 +93,6 @@ public abstract class AbstractJoynGeneratorMojo extends AbstractMojo {
      */
     protected String skip;
 
-    /**
-     * Properties default resourceEncoding.
-     * @parameter expression="${project.build.resourceEncoding}"
-     */
-    protected String defaultEncoding;
-
     protected int getParameterHashCode() {
         StringBuilder sb = new StringBuilder();
         sb.append(model);
@@ -109,9 +103,9 @@ public abstract class AbstractJoynGeneratorMojo extends AbstractMojo {
         sb.append(outputPath);
         sb.append(getSupportedGoal());
         if (parameter != null) {
-            for (String paramKey : parameter.keySet()) {
-                sb.append(paramKey);
-                sb.append(parameter.get(paramKey));
+            for (Map.Entry<String, String> entry : parameter.entrySet()) {
+                sb.append(entry.getKey());
+                sb.append(entry.getValue());
             }
         }
         sb.append(skip);
@@ -137,8 +131,8 @@ public abstract class AbstractJoynGeneratorMojo extends AbstractMojo {
         getLog().info("addVersionTo " + (addVersionTo == null ? "not specified" : addVersionTo));
         getLog().info("parameter " + (parameter == null ? "not specified" : ":"));
         if (parameter != null) {
-            for (String key : parameter.keySet()) {
-                getLog().info("   " + key + ": " + parameter.get(key));
+            for (Map.Entry<String, String> entry : parameter.entrySet()) {
+                getLog().info("   " + entry.getKey() + ": " + entry.getValue());
             }
         }
         getLog().info("----------------------------------------------------------------------");
@@ -156,7 +150,7 @@ public abstract class AbstractJoynGeneratorMojo extends AbstractMojo {
     }
 
     protected abstract void invokeGenerator(GeneratorTask task) throws IOException, ClassNotFoundException,
-                                                               InstantiationException, IllegalAccessException;
+                                                                InstantiationException, IllegalAccessException;
 
     protected InvocationArguments createInvocationArguments() {
         InvocationArguments arguments = new InvocationArguments();

@@ -55,10 +55,10 @@ public class GlobalDomainAccessControlListEditorBean implements GlobalDomainAcce
 
     @Inject
     public GlobalDomainAccessControlListEditorBean(MasterAccessControlEntryManager masterAccessControlEntryManager,
-                                            OwnerAccessControlEntryManager ownerAccessControlEntryManager,
-                                            MasterRegistrationControlEntryManager masterRegistrationControlEntryManager,
-                                            OwnerRegistrationControlEntryManager ownerRegistrationControlEntryManager,
-                                            GlobalDomainAccessControllerLocal globalDomainAccessControllerBean) {
+                                                   OwnerAccessControlEntryManager ownerAccessControlEntryManager,
+                                                   MasterRegistrationControlEntryManager masterRegistrationControlEntryManager,
+                                                   OwnerRegistrationControlEntryManager ownerRegistrationControlEntryManager,
+                                                   GlobalDomainAccessControllerLocal globalDomainAccessControllerBean) {
         this.masterAccessControlEntryManager = masterAccessControlEntryManager;
         this.ownerAccessControlEntryManager = ownerAccessControlEntryManager;
         this.masterRegistrationControlEntryManager = masterRegistrationControlEntryManager;
@@ -77,7 +77,8 @@ public class GlobalDomainAccessControlListEditorBean implements GlobalDomainAcce
                                                                                                                MASTER);
         if (result != null) {
             MasterAccessControlEntry persistedAce = result.getEntry();
-            globalDomainAccessControllerBean.doFireMasterAccessControlEntryChanged(result.getChangeType(), persistedAce);
+            globalDomainAccessControllerBean.doFireMasterAccessControlEntryChanged(result.getChangeType(),
+                                                                                   persistedAce);
             return true;
         }
         return false;
@@ -108,7 +109,8 @@ public class GlobalDomainAccessControlListEditorBean implements GlobalDomainAcce
                                                                                                                MEDIATOR);
         if (result != null) {
             MasterAccessControlEntry persistedEntry = result.getEntry();
-            globalDomainAccessControllerBean.doFireMediatorAccessControlEntryChanged(result.getChangeType(), persistedEntry);
+            globalDomainAccessControllerBean.doFireMediatorAccessControlEntryChanged(result.getChangeType(),
+                                                                                     persistedEntry);
             return true;
         }
         return false;
@@ -181,7 +183,8 @@ public class GlobalDomainAccessControlListEditorBean implements GlobalDomainAcce
                                                                                                                                      interfaceName,
                                                                                                                                      ControlEntryType.MASTER);
         if (removedEntry != null) {
-            globalDomainAccessControllerBean.doFireMasterRegistrationControlEntryChanged(ChangeType.REMOVE, removedEntry);
+            globalDomainAccessControllerBean.doFireMasterRegistrationControlEntryChanged(ChangeType.REMOVE,
+                                                                                         removedEntry);
             return true;
         }
         return false;
@@ -198,7 +201,8 @@ public class GlobalDomainAccessControlListEditorBean implements GlobalDomainAcce
                                                                                                                            ControlEntryType.MEDIATOR);
         if (result != null) {
             MasterRegistrationControlEntry entry = result.getEntry();
-            globalDomainAccessControllerBean.doFireMediatorRegistrationControlEntryChanged(result.getChangeType(), entry);
+            globalDomainAccessControllerBean.doFireMediatorRegistrationControlEntryChanged(result.getChangeType(),
+                                                                                           entry);
             return true;
         }
         return false;
@@ -211,7 +215,8 @@ public class GlobalDomainAccessControlListEditorBean implements GlobalDomainAcce
                                                                                                                                      interfaceName,
                                                                                                                                      ControlEntryType.MEDIATOR);
         if (removedEntry != null) {
-            globalDomainAccessControllerBean.doFireMediatorRegistrationControlEntryChanged(ChangeType.REMOVE, removedEntry);
+            globalDomainAccessControllerBean.doFireMediatorRegistrationControlEntryChanged(ChangeType.REMOVE,
+                                                                                           removedEntry);
             return true;
         }
         return false;
@@ -239,7 +244,8 @@ public class GlobalDomainAccessControlListEditorBean implements GlobalDomainAcce
                                                                                                                                domain,
                                                                                                                                interfaceName);
         if (removedEntry != null) {
-            globalDomainAccessControllerBean.doFireOwnerRegistrationControlEntryChanged(ChangeType.REMOVE, removedEntry);
+            globalDomainAccessControllerBean.doFireOwnerRegistrationControlEntryChanged(ChangeType.REMOVE,
+                                                                                        removedEntry);
             return true;
         }
         return false;

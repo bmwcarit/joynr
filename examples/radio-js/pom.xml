@@ -11,7 +11,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>examples</artifactId>
-		<version>1.3.2</version>
+		<version>1.4.0</version>
 	</parent>
 
 	<dependencies>
@@ -251,12 +251,12 @@
 				<version>1.2.0</version>
 				<inherited>false</inherited>
 				<executions>
- 					<execution>
- 						<goals>
- 							<goal>jsdoc3</goal>
- 						</goals>
- 						<phase>install</phase>
- 					</execution>
+					<execution>
+						<goals>
+							<goal>jsdoc3</goal>
+						</goals>
+						<phase>install</phase>
+					</execution>
 				</executions>
 				<configuration>
 					<directoryRoots>

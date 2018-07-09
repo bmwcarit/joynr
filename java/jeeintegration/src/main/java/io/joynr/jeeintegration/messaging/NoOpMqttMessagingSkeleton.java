@@ -51,7 +51,7 @@ public class NoOpMqttMessagingSkeleton implements IMqttMessagingSkeleton {
 
     @Override
     public void init() {
-        mqttClient = mqttClientFactory.create();
+        mqttClient = mqttClientFactory.createReceiver();
         mqttClient.setMessageListener(this);
         mqttClient.start();
     }
