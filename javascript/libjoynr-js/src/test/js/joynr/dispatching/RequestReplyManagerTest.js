@@ -32,6 +32,7 @@ const ProviderQos = require("../../../../main/js/generated/joynr/types/ProviderQ
 const MessagingQos = require("../../../../main/js/joynr/messaging/MessagingQos");
 const Promise = require("../../../../main/js/global/Promise");
 const waitsFor = require("../../../../test/js/global/WaitsFor");
+const testUtil = require("../../../js/testUtil");
 describe("libjoynr-js.joynr.dispatching.RequestReplyManager", () => {
     let dispatcherSpy;
     let requestReplyManager;
@@ -763,37 +764,39 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", () => {
             .catch(fail);
     });
 
-    it("throws exception when called while shut down", done => {
+    it("throws exception when called while shut down", async () => {
         requestReplyManager.shutdown();
         expect(() => {
             requestReplyManager.removeRequestCaller("providerParticipantId");
         }).toThrow();
-        requestReplyManager.handleRequest(
+
+        const replySettings = {};
+
+        await requestReplyManager.handleRequest(
             "providerParticipantId",
             {
                 requestReplyId
             },
-            reply => {
-                expect(reply instanceof Reply);
+            (settings, reply) => {
+                expect(settings).toBe(replySettings);
+                expect(reply._typeName).toEqual("joynr.Reply");
                 expect(reply.error instanceof MethodInvocationException);
-                expect(() => {
-                    const replyCallerSpy = jasmine.createSpyObj("promise", ["resolve", "reject"]);
-
-                    requestReplyManager.addReplyCaller(requestReplyId, replyCallerSpy);
-                }).toThrow();
-                expect(() => {
-                    requestReplyManager.addRequestCaller("providerParticipantId", {});
-                }).toThrow();
-                expect(() => {
-                    requestReplyManager.sendOneWayRequest({});
-                }).toThrow();
-                requestReplyManager
-                    .sendRequest({}, {})
-                    .then(fail)
-                    .catch(done);
             },
             replySettings
         );
+
+        expect(() => {
+            const replyCallerSpy = jasmine.createSpyObj("promise", ["resolve", "reject"]);
+
+            requestReplyManager.addReplyCaller(requestReplyId, replyCallerSpy);
+        }).toThrow();
+        expect(() => {
+            requestReplyManager.addRequestCaller("providerParticipantId", {});
+        }).toThrow();
+        expect(() => {
+            requestReplyManager.sendOneWayRequest({});
+        }).toThrow();
+        await testUtil.reversePromise(requestReplyManager.sendRequest({}, {}));
     });
     it("rejects reply callers when shut down", done => {
         const replyCallerSpy = jasmine.createSpyObj("promise", ["callback"]);
