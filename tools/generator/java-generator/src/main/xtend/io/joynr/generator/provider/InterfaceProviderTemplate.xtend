@@ -177,7 +177,7 @@ public interface «className» {
 				}
 			«ENDIF»
 			«IF method.hasErrorEnum()»
-				«IF method.errors != null»
+				«IF method.errors !== null»
 					public synchronized boolean reject(«packagePath».«interfaceName».«methodToErrorEnumName.get(method)» error) {
 				«ELSE»
 					public synchronized boolean reject(«method.errorEnum.buildPackagePath(".", true)».«method.errorEnum.joynrName»«» error) {

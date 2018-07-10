@@ -384,7 +384,7 @@
 		<timestamp>${maven.build.timestamp}</timestamp>
 		<maven.build.timestamp.format>yyyyMMdd-HHmmss</maven.build.timestamp.format>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<licenseConfigurationVersion>1.0.11</licenseConfigurationVersion>
+		<licenseConfigurationVersion>1.0.13</licenseConfigurationVersion>
 		<!--
 			Those versions should not be used outside of the superpom. All dependencies
 			that need those version numbers should be defined in the dependencyManagement
@@ -399,13 +399,13 @@
 		<hibernate.version>4.3.8.Final</hibernate.version>
 		<android.platform.version>5.0.1_r2</android.platform.version>
 		<android.platform.level>21</android.platform.level>
-		<javaassist.version>3.12.1.GA</javaassist.version>
+		<javassist.version>3.22.0-GA</javassist.version>
 		<skipTests>true</skipTests>
-		<franca.version>0.10.0</franca.version>
-		<xtend.version>2.8.4</xtend.version>
-		<xtext.version>2.8.4</xtext.version>
-		<maven.compiler.source>1.7</maven.compiler.source>
-		<maven.compiler.target>1.7</maven.compiler.target>
+		<franca.version>0.13.0</franca.version>
+		<xtend.version>2.11.0</xtend.version>
+		<xtext.version>2.11.0</xtext.version>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
 		<slf4j.version>1.7.25</slf4j.version>
 		<smrf.version>0.2.2</smrf.version>
 	</properties>
@@ -432,15 +432,15 @@
 				</exclusions>
 			</dependency>
 			<dependency>
-				<groupId>javassist</groupId>
+				<groupId>org.javassist</groupId>
 				<artifactId>javassist</artifactId>
-				<version>${javaassist.version}</version>
+				<version>${javassist.version}</version>
 				<classifier>sources</classifier>
 			</dependency>
 			<dependency>
-				<groupId>javassist</groupId>
+				<groupId>org.javassist</groupId>
 				<artifactId>javassist</artifactId>
-				<version>${javaassist.version}</version>
+				<version>${javassist.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>junit</groupId>
@@ -456,12 +456,12 @@
 			<dependency>
 				<groupId>com.google.code.findbugs</groupId>
 				<artifactId>jsr305</artifactId>
-				<version>2.0.1</version>
+				<version>3.0.2</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.code.findbugs</groupId>
 				<artifactId>annotations</artifactId>
-				<version>2.0.1</version>
+				<version>3.0.1</version>
 			</dependency>
 			<dependency>
 				<groupId>commons-logging</groupId>
@@ -511,24 +511,12 @@
 			<dependency>
 				<groupId>com.google.guava</groupId>
 				<artifactId>guava</artifactId>
-				<version>11.0.2</version>
+				<version>24.1-android</version>
 			</dependency>
 			<dependency>
-				<groupId>com.sun.jersey</groupId>
-				<artifactId>jersey-json</artifactId>
-				<version>${jersey.version}</version>
-				<scope>compile</scope>
-			</dependency>
-			<dependency>
-				<groupId>com.sun.jersey</groupId>
-				<artifactId>jersey-bundle</artifactId>
-				<version>${jersey.version}</version>
-				<scope>compile</scope>
-			</dependency>
-			<dependency>
-				<groupId>com.sun.jersey</groupId>
+				<groupId>org.glassfish.jersey.core</groupId>
 				<artifactId>jersey-server</artifactId>
-				<version>${jersey.version}</version>
+				<version>2.26-b02</version>
 				<scope>compile</scope>
 			</dependency>
 			<dependency>
@@ -566,36 +554,6 @@
 				<groupId>com.sun.jersey.contribs</groupId>
 				<artifactId>jersey-multipart</artifactId>
 				<version>${jersey.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.sun.jersey</groupId>
-				<artifactId>jersey-servlet</artifactId>
-				<version>${jersey.version}</version>
-				<scope>compile</scope>
-			</dependency>
-			<dependency>
-				<groupId>com.sun.jersey</groupId>
-				<artifactId>jersey-client</artifactId>
-				<version>${jersey.version}</version>
-				<scope>compile</scope>
-			</dependency>
-			<dependency>
-				<groupId>com.sun.jersey.contribs</groupId>
-				<artifactId>jersey-apache-client</artifactId>
-				<version>${jersey.version}</version>
-				<scope>compile</scope>
-			</dependency>
-			<dependency>
-				<groupId>com.sun.jersey.jersey-test-framework</groupId>
-				<artifactId>jersey-test-framework-grizzly</artifactId>
-				<version>${jersey.version}</version>
-				<scope>test</scope>
-			</dependency>
-			<dependency>
-				<groupId>com.sun.jersey.jersey-test-framework</groupId>
-				<artifactId>jersey-test-framework-grizzly2</artifactId>
-				<version>${jersey.version}</version>
-				<scope>test</scope>
 			</dependency>
 			<dependency>
 				<groupId>com.sun.jersey.contribs</groupId>
@@ -677,23 +635,35 @@
 			<dependency>
 				<groupId>org.jboss.shrinkwrap.resolver</groupId>
 				<artifactId>shrinkwrap-resolver-bom</artifactId>
-				<version>2.0.0-alpha-2</version>
+				<version>3.1.3</version>
 				<scope>test</scope>
 				<type>pom</type>
 			</dependency>
 			<dependency>
 				<groupId>org.jboss.arquillian</groupId>
 				<artifactId>arquillian-bom</artifactId>
-				<version>1.1.11.Final</version>
+				<version>1.1.15.Final</version>
 				<scope>import</scope>
 				<type>pom</type>
 			</dependency>
 			<dependency>
 				<groupId>org.jboss.arquillian.extension</groupId>
 				<artifactId>arquillian-transaction-bom</artifactId>
-				<version>1.0.3.Final</version>
+				<version>1.0.5</version>
 				<type>pom</type>
 				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.jboss.arquillian.extension</groupId>
+				<artifactId>arquillian-transaction-jta</artifactId>
+				<version>1.0.5</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.jboss.arquillian.junit</groupId>
+				<artifactId>arquillian-junit-container</artifactId>
+				<version>1.1.15.Final</version>
+				<scope>test</scope>
 			</dependency>
 			<dependency>
 				<groupId>com.fasterxml.jackson.jaxrs</groupId>
@@ -738,7 +708,7 @@
 			<dependency>
 				<groupId>org.reflections</groupId>
 				<artifactId>reflections</artifactId>
-				<version>0.9.8</version>
+				<version>0.9.10</version>
 			</dependency>
 			<dependency>
 				<groupId>commons-codec</groupId>
@@ -1149,6 +1119,13 @@
 					<groupId>org.eclipse.xtend</groupId>
 					<artifactId>xtend-maven-plugin</artifactId>
 					<version>${xtend.version}</version>
+					<dependencies>
+						<dependency>
+							<groupId>org.eclipse.platform</groupId>
+							<artifactId>org.eclipse.equinox.common</artifactId>
+							<version>3.10.0</version>
+						</dependency>
+					</dependencies>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>

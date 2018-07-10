@@ -275,15 +275,8 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		<!--
-			The sources of javassist must be added to the WAR due to its LGPL-2.1 license.
-			It is pulled in as transitive dependency:
-			io.joynr.java.messaging:messaging-servlet:jar:classes
-			+- org.reflections:reflections:jar
-			|  +- javassist:javassist:jar
-		-->
 		<dependency>
-			<groupId>javassist</groupId>
+			<groupId>org.javassist</groupId>
 			<artifactId>javassist</artifactId>
 			<classifier>sources</classifier>
 		</dependency>

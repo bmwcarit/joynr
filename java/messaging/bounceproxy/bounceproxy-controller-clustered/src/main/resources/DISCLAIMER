@@ -15,7 +15,6 @@ The software listed below included in some products is licensed under the "Apach
   Notice file: WEB-INF/lib/jackson-module-jaxb-annotations-2.8.8.jar:META-INF/NOTICE
   License file: WEB-INF/lib/jackson-module-jaxb-annotations-2.8.8.jar:META-INF/LICENSE
 - com.github.davidmoten:flatbuffers-java:1.6.0.3
-- com.google.guava:guava:11.0.2
 - com.google.inject.extensions:guice-multibindings:3.0
   Notice file: WEB-INF/lib/guice-multibindings-3.0.jar:META-INF/NOTICE
   License file: WEB-INF/lib/guice-multibindings-3.0.jar:META-INF/LICENSE
@@ -63,8 +62,8 @@ The software listed below included in some products is licensed under the "Commo
 - com.sun.jersey:jersey-servlet:1.17
 
 Software libraries listed below included in some products are free software that is licensed under "GNU Lesser General Public License (LGPL) v3.0". A copy of that license in the English original version with a disclaimer of warranty and an exclusion of liability is included in this document "META-INF/licenses/LGPL-3.txt". This free software has been developed by third parties and is copyrighted. It is provided for free, and you are permitted to use it according to the mentioned license. LGPL v 3.0 supersedes other licenses. The complete corresponding source code is included in the files listed below.
-- com.google.code.findbugs:annotations:2.0.1
-  Sources: WEB-INF/lib/annotations-2.0.1.jar
+- com.google.code.findbugs:annotations:3.0.1
+  Sources: WEB-INF/lib/annotations-3.0.1.jar
 
 The software listed below included in some products is licensed under the "MIT/X11 license". A copy of that license in the English original version with a copyright notice, a disclaimer of warranty, and an exclusion of liability is included in the documents listed below.
 - org.slf4j:slf4j-api:1.7.25

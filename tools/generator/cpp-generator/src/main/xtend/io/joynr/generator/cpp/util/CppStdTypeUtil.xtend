@@ -135,7 +135,7 @@ class CppStdTypeUtil extends CppTypeUtil {
 
 	def FStructType getRootType(FStructType datatype)
 	{
-		if (datatype.base != null) {
+		if (datatype.base !== null) {
 			return datatype.base.rootType
 		}
 		return datatype
@@ -143,7 +143,7 @@ class CppStdTypeUtil extends CppTypeUtil {
 
 	def FUnionType getRootType(FUnionType datatype)
 	{
-		if (datatype.base != null) {
+		if (datatype.base !== null) {
 			return datatype.base.rootType
 		}
 		return datatype

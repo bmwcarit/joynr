@@ -132,7 +132,7 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 
 		for(datatype : getAllComplexTypes(serviceInterface, selector)) {
 			val include = getIncludeOf(datatype);
-			if (include != null) {
+			if (include !== null) {
 				includeSet.add(include);
 			}
 		}
@@ -153,7 +153,7 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 
 	// for classes and methods
 	def appendJavadocSummaryAndWriteSeeAndDescription(FModelElement element, String prefixForNewLines)'''
-		«IF element.comment != null»
+		«IF element.comment !== null»
 			«FOR comment : element.comment.elements»
 				«IF comment.type == FAnnotationType::DESCRIPTION»
 					«prefixForNewLines» «ReformatComment(comment, prefixForNewLines)»
@@ -173,7 +173,7 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 
 	// for parts
 	def appendJavadocComment(FModelElement element, String prefixForNewLines)'''
-		«IF element.comment != null»
+		«IF element.comment !== null»
 			«FOR comment : element.comment.elements»
 				«IF comment.type == FAnnotationType::DESCRIPTION»
 					«ReformatComment(comment, prefixForNewLines)»
@@ -184,7 +184,7 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 
 	def appendJavadocParameter(FTypedElement element, String prefixForNewLines) {
 		var description = prefixForNewLines + " @param " + element.joynrName + " ";
-		if (element.comment != null) {
+		if (element.comment !== null) {
 			for (comment : element.comment.elements) {
 				if (comment.type == FAnnotationType::DESCRIPTION) {
 					description += ReformatComment(comment, prefixForNewLines)

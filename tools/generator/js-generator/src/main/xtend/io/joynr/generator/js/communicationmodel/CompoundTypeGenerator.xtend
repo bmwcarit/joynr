@@ -73,7 +73,7 @@ class CompoundTypeGenerator extends CompoundTypeTemplate {
 			 * @param {Object} members - an object containing the individual member elements
 			 «val members = getMembersRecursive(type)»
 			 «FOR member : members»
-			 * @param {«member.jsdocTypeName»} members.«member.joynrName» - «IF member.comment != null»«FOR comment : member.comment.elements»«comment.
+			 * @param {«member.jsdocTypeName»} members.«member.joynrName» - «IF member.comment !== null»«FOR comment : member.comment.elements»«comment.
 				comment.replaceAll("\n", "\n" + "* ")»«ENDFOR»«ENDIF»
 			 «ENDFOR»
 			 * @returns {«type.joynrName»} a new instance of a «type.joynrName»
@@ -94,7 +94,7 @@ class CompoundTypeGenerator extends CompoundTypeTemplate {
 					enumerable : true,
 					value : «type.joynrName»._typeName
 				});
-				«IF type.base != null»
+				«IF type.base !== null»
 
 				/**
 				 * Parent class.
@@ -109,7 +109,7 @@ class CompoundTypeGenerator extends CompoundTypeTemplate {
 
 				«FOR member : members»
 					/**
-					 * «IF member.comment != null»«FOR comment : member.comment.elements»«comment.
+					 * «IF member.comment !== null»«FOR comment : member.comment.elements»«comment.
 						comment.replaceAll("\n", "\n" + "* ")»«ENDFOR»«ENDIF»
 					 * @name «type.joynrName»#«member.joynrName»
 					 * @type «member.jsdocTypeName»

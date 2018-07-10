@@ -40,86 +40,44 @@
 				<inherited>false</inherited>
 				<executions>
 					<execution>
-						<id>install-franca-core-0.8.8</id>
+						<id>install-franca-core-0.13.0</id>
 						<phase>validate</phase>
 						<goals>
 							<goal>install-file</goal>
 						</goals>
 						<configuration>
-							<file>${basedir}/libs/org/franca/0.8.8/org.franca.core_0.8.8.jar</file>
+							<file>${basedir}/libs/org/franca/0.13.0/org.franca.core_0.13.0.jar</file>
 							<groupId>org.franca</groupId>
 							<artifactId>org.franca.core</artifactId>
-							<version>0.8.8</version>
+							<version>0.13.0</version>
 							<packaging>jar</packaging>
 						</configuration>
 					</execution>
 					<execution>
-						<id>install-franca-dsl-0.8.8</id>
+						<id>install-franca-dsl-0.13.0</id>
 						<phase>validate</phase>
 						<goals>
 							<goal>install-file</goal>
 						</goals>
 						<configuration>
-							<file>${basedir}/libs/org/franca/0.8.8/org.franca.core.dsl_0.8.8.jar</file>
+							<file>${basedir}/libs/org/franca/0.13.0/org.franca.core.dsl_0.13.0.jar</file>
 							<groupId>org.franca</groupId>
 							<artifactId>org.franca.core.dsl</artifactId>
-							<version>0.8.8</version>
+							<version>0.13.0</version>
 							<packaging>jar</packaging>
 						</configuration>
 					</execution>
 					<execution>
-						<id>install-franca-deploymodel-dsl-0.8.8</id>
+						<id>install-franca-deploymodel-dsl-0.13.0</id>
 						<phase>validate</phase>
 						<goals>
 							<goal>install-file</goal>
 						</goals>
 						<configuration>
-							<file>${basedir}/libs/org/franca/0.8.8/org.franca.deploymodel.dsl_0.8.8.jar</file>
+							<file>${basedir}/libs/org/franca/0.13.0/org.franca.deploymodel.dsl_0.13.0.jar</file>
 							<groupId>org.franca</groupId>
 							<artifactId>org.franca.deploymodel.dsl</artifactId>
-							<version>0.8.8</version>
-							<packaging>jar</packaging>
-						</configuration>
-					</execution>
-					<execution>
-						<id>install-franca-core-0.10.0</id>
-						<phase>validate</phase>
-						<goals>
-							<goal>install-file</goal>
-						</goals>
-						<configuration>
-							<file>${basedir}/libs/org/franca/0.10.0/org.franca.core_0.10.0.jar</file>
-							<groupId>org.franca</groupId>
-							<artifactId>org.franca.core</artifactId>
-							<version>0.10.0</version>
-							<packaging>jar</packaging>
-						</configuration>
-					</execution>
-					<execution>
-						<id>install-franca-dsl-0.10.0</id>
-						<phase>validate</phase>
-						<goals>
-							<goal>install-file</goal>
-						</goals>
-						<configuration>
-							<file>${basedir}/libs/org/franca/0.10.0/org.franca.core.dsl_0.10.0.jar</file>
-							<groupId>org.franca</groupId>
-							<artifactId>org.franca.core.dsl</artifactId>
-							<version>0.10.0</version>
-							<packaging>jar</packaging>
-						</configuration>
-					</execution>
-					<execution>
-						<id>install-franca-deploymodel-dsl-0.10.0</id>
-						<phase>validate</phase>
-						<goals>
-							<goal>install-file</goal>
-						</goals>
-						<configuration>
-							<file>${basedir}/libs/org/franca/0.10.0/org.franca.deploymodel.dsl_0.10.0.jar</file>
-							<groupId>org.franca</groupId>
-							<artifactId>org.franca.deploymodel.dsl</artifactId>
-							<version>0.10.0</version>
+							<version>0.13.0</version>
 							<packaging>jar</packaging>
 						</configuration>
 					</execution>

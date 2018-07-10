@@ -123,7 +123,7 @@ class JoynrJavaGenerator implements IJoynrGenerator {
 		if (parameter.keySet.contains("jee")) {
 			activateJeeExtension
 		}
-		if (parameter.get("ignoreInvalidNullClassMembers") != null &&
+		if (parameter.get("ignoreInvalidNullClassMembers") !== null &&
 			parameter.get("ignoreInvalidNullClassMembers").equals("true")) {
 			activateIgnoreInvalidNullClassMembersExtension
 		}

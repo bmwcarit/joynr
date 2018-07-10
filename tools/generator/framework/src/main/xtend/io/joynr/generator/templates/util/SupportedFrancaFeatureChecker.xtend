@@ -30,7 +30,7 @@ class SupportedFrancaFeatureChecker {
 	def private static checkIntegerDatatypeIsNotUsed(FModel model) {
 		val allTypeRefs = EcoreUtil2::getAllContentsOfType(model, typeof(FTypeRef))
 
-		if (allTypeRefs.exists[it.interval != null]) {
+		if (allTypeRefs.exists[it.interval !== null]) {
 			throw new Exception("Franca's datatype 'Integer' is not supported. Use Int8, Int16, Int32 or Int64 instead")
 		}
 	}

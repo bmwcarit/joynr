@@ -275,11 +275,11 @@ class ProviderGenerator extends InterfaceJsTemplate {
 
 	def determErrorTypeName(FMethod method, String errorEnumName) {
 		var enumType = method.errors;
-		if (enumType != null) {
+		if (enumType !== null) {
 			enumType.name = errorEnumName;
 			return getTypeNameForErrorEnumType(method, enumType);
 		}
-		else if (method.errorEnum != null){
+		else if (method.errorEnum !== null){
 			return method.errorEnum.joynrTypeName;
 		}
 		else {

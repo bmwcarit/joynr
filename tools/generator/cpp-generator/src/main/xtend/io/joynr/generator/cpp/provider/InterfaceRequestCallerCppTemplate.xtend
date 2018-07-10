@@ -204,7 +204,7 @@ std::shared_ptr<IJoynrProvider> «interfaceName»RequestCaller::getProvider()
 '''
 
 def getErrorTypeName(FMethod method, Map<FMethod, String> methodToErrorEnumName) {
-	if (method.errors != null) {
+	if (method.errors !== null) {
 		val packagePath = getPackagePathWithJoynrPrefix(method.errors, "::")
 		packagePath + "::" + methodToErrorEnumName.get(method)
 	} else{
