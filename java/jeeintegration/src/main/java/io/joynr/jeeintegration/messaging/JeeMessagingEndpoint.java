@@ -123,7 +123,9 @@ public class JeeMessagingEndpoint {
     @POST
     @Path("/{channelId: [A-Z,a-z,0-9,_,\\-,\\.]+}/message")
     @Produces({ MediaType.APPLICATION_OCTET_STREAM })
-    public Response postMessage(@PathParam("channelId") String channelId, byte[] serializedMessage, @Context UriInfo uriInfo) {
+    public Response postMessage(@PathParam("channelId") String channelId,
+                                byte[] serializedMessage,
+                                @Context UriInfo uriInfo) {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Incoming message:\n" + new String(serializedMessage, Charsets.UTF_8));
         }
@@ -142,7 +144,8 @@ public class JeeMessagingEndpoint {
             }
 
             if (channelId == null) {
-                LOG.error("POST message to channel: NULL. message: {} dropped because: channel Id was not set", message);
+                LOG.error("POST message to channel: NULL. message: {} dropped because: channel Id was not set",
+                          message);
                 throw new JoynrHttpException(Status.BAD_REQUEST, JOYNRMESSAGINGERROR_CHANNELNOTSET);
             }
 

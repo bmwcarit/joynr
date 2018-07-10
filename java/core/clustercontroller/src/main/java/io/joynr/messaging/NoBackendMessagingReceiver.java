@@ -67,7 +67,8 @@ public class NoBackendMessagingReceiver implements MessageReceiver {
 
     @Override
     @SuppressFBWarnings(value = "NP_NONNULL_PARAM_VIOLATION", justification = "Deal with NullableDecl & Java 8")
-    public Future<Void> start(MessageArrivedListener messageArrivedListener, ReceiverStatusListener... statusListeners) {
+    public Future<Void> start(MessageArrivedListener messageArrivedListener,
+                              ReceiverStatusListener... statusListeners) {
         return Futures.immediateFuture(null);
     }
 }

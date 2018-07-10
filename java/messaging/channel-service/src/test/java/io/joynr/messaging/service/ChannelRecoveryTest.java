@@ -78,14 +78,12 @@ public class ChannelRecoveryTest extends AbstractChannelSetUpTest {
     public void testErrorHandlingBpRejectingLongPollsButBpcDoesntKnowChannelId() {
 
         Mockito.when(mock.getChannel("channel-123")).thenReturn(null);
-        Mockito.when(mock.createChannel("channel-123", null)).thenReturn(createChannel("0.0",
-                                                                                       "http://joyn-bp0.muc/bp",
-                                                                                       "channel-123"));
+        Mockito.when(mock.createChannel("channel-123", null))
+               .thenReturn(createChannel("0.0", "http://joyn-bp0.muc/bp", "channel-123"));
 
         Response response = //
-        given(). //
-        when()
-               .put(serverUrl + "/channel-123?bp=0.0&status=rejecting_long_polls");
+                given(). //
+                       when().put(serverUrl + "/channel-123?bp=0.0&status=rejecting_long_polls");
 
         assertEquals(201 /* Created */, response.getStatusCode());
         assertEquals("http://joyn-bp0.muc/bp/channels/channel-123", response.getHeader("Location"));
@@ -98,14 +96,12 @@ public class ChannelRecoveryTest extends AbstractChannelSetUpTest {
     @Test
     public void testErrorHandlingBpRejectingLongPollsBecauseItWasMigrated() {
 
-        Mockito.when(mock.getChannel("channel-123")).thenReturn(createChannel("X.Y",
-                                                                              "http://joyn-bpX.muc/bp",
-                                                                              "channel-123"));
+        Mockito.when(mock.getChannel("channel-123"))
+               .thenReturn(createChannel("X.Y", "http://joyn-bpX.muc/bp", "channel-123"));
 
         Response response = //
-        given(). //
-        when()
-               .put(serverUrl + "/channel-123?bp=A.B&status=rejecting_long_polls");
+                given(). //
+                       when().put(serverUrl + "/channel-123?bp=A.B&status=rejecting_long_polls");
 
         assertEquals(200 /* OK */, response.getStatusCode());
         assertEquals("http://joyn-bpX.muc/bp/channels/channel-123", response.getHeader("Location"));
@@ -117,19 +113,16 @@ public class ChannelRecoveryTest extends AbstractChannelSetUpTest {
     @Test
     public void testErrorHandlingBpRejectingLongPollsBecauseItLostData() {
 
-        Mockito.when(mock.getChannel("channel-123")).thenReturn(createChannel("A.B",
-                                                                              "http://joyn-bpA.muc/bp",
-                                                                              "channel-123"));
+        Mockito.when(mock.getChannel("channel-123"))
+               .thenReturn(createChannel("A.B", "http://joyn-bpA.muc/bp", "channel-123"));
         Mockito.when(mock.recoverChannel("channel-123", "trackingId-xyz"))
                .thenReturn(createChannel("A.B", "http://joyn-bpA.muc/bp", "channel-123"));
 
         Response response = //
-        given(). //
-        when()
-               . //
-               header(ChannelServiceConstants.X_ATMOSPHERE_TRACKING_ID, "trackingId-xyz")
-               . //
-               put(serverUrl + "/channel-123?bp=A.B&status=rejecting_long_polls");
+                given(). //
+                       when(). //
+                       header(ChannelServiceConstants.X_ATMOSPHERE_TRACKING_ID, "trackingId-xyz"). //
+                       put(serverUrl + "/channel-123?bp=A.B&status=rejecting_long_polls");
 
         assertEquals(204 /* No Content */, response.getStatusCode());
         assertNull(response.getHeader("Location"));
@@ -143,14 +136,12 @@ public class ChannelRecoveryTest extends AbstractChannelSetUpTest {
     public void testErrorHandlingBpUnreachableAndBpcDoesntKnowTheChannel() {
 
         Mockito.when(mock.getChannel("channel-123")).thenReturn(null);
-        Mockito.when(mock.createChannel("channel-123", null)).thenReturn(createChannel("X.Y",
-                                                                                       "http://joyn-bpX.muc/bp",
-                                                                                       "channel-123"));
+        Mockito.when(mock.createChannel("channel-123", null))
+               .thenReturn(createChannel("X.Y", "http://joyn-bpX.muc/bp", "channel-123"));
 
         Response response = //
-        given(). //
-        when()
-               .put(serverUrl + "/channel-123?bp=X.Y&status=unreachable");
+                given(). //
+                       when().put(serverUrl + "/channel-123?bp=X.Y&status=unreachable");
 
         assertEquals(201 /* Created */, response.getStatusCode());
         assertEquals("http://joyn-bpX.muc/bp/channels/channel-123", response.getHeader("Location"));
@@ -163,14 +154,12 @@ public class ChannelRecoveryTest extends AbstractChannelSetUpTest {
     @Test
     public void testErrorHandlingBpUnreachableBecauseItWasMigrated() {
 
-        Mockito.when(mock.getChannel("channel-123")).thenReturn(createChannel("X.Y",
-                                                                              "http://joyn-bpX.muc/bp",
-                                                                              "channel-123"));
+        Mockito.when(mock.getChannel("channel-123"))
+               .thenReturn(createChannel("X.Y", "http://joyn-bpX.muc/bp", "channel-123"));
 
         Response response = //
-        given(). //
-        when()
-               .put(serverUrl + "/channel-123?bp=A.B&status=unreachable");
+                given(). //
+                       when().put(serverUrl + "/channel-123?bp=A.B&status=unreachable");
 
         assertEquals(200 /* OK */, response.getStatusCode());
         assertEquals("http://joyn-bpX.muc/bp/channels/channel-123", response.getHeader("Location"));
@@ -182,18 +171,14 @@ public class ChannelRecoveryTest extends AbstractChannelSetUpTest {
     @Test
     public void testErrorHandlingBpUnreachableForClusterControllersOnly() {
 
-        Mockito.when(mock.getChannel("channel-123")).thenReturn(createChannel("X.Y",
-                                                                              "http://joyn-bpX.muc/bp",
-                                                                              "channel-123"));
+        Mockito.when(mock.getChannel("channel-123"))
+               .thenReturn(createChannel("X.Y", "http://joyn-bpX.muc/bp", "channel-123"));
         Mockito.when(mock.isBounceProxyForChannelResponding("channel-123")).thenReturn(true);
 
         Response response = //
-        given(). //
-        queryParam("bp", "X.Y")
-               .and()
-               .queryParam("status", "unreachable")
-               .when()
-               .put(serverUrl + "/channel-123");
+                given(). //
+                       queryParam("bp", "X.Y").and().queryParam("status", "unreachable").when().put(serverUrl
+                               + "/channel-123");
 
         assertEquals(204 /* No Content */, response.getStatusCode());
         assertNull(response.getHeader("Location"));
@@ -210,21 +195,16 @@ public class ChannelRecoveryTest extends AbstractChannelSetUpTest {
     @Test
     public void testErrorHandlingBpUnreachable() {
 
-        Mockito.when(mock.getChannel("channel-123")).thenReturn(createChannel("X.Y",
-                                                                              "http://joyn-bpX.muc/bp",
-                                                                              "channel-123"));
+        Mockito.when(mock.getChannel("channel-123"))
+               .thenReturn(createChannel("X.Y", "http://joyn-bpX.muc/bp", "channel-123"));
         Mockito.when(mock.isBounceProxyForChannelResponding("channel-123")).thenReturn(false);
-        Mockito.when(mock.createChannel("channel-123", null)).thenReturn(createChannel("1.1",
-                                                                                       "http://joyn-bp1.muc/bp",
-                                                                                       "channel-123"));
+        Mockito.when(mock.createChannel("channel-123", null))
+               .thenReturn(createChannel("1.1", "http://joyn-bp1.muc/bp", "channel-123"));
 
         Response response = //
-        given(). //
-        queryParam("bp", "X.Y")
-               .and()
-               .queryParam("status", "unreachable")
-               .when()
-               .put(serverUrl + "/channel-123");
+                given(). //
+                       queryParam("bp", "X.Y").and().queryParam("status", "unreachable").when().put(serverUrl
+                               + "/channel-123");
 
         assertEquals(201 /* Created */, response.getStatusCode());
         assertEquals("http://joyn-bp1.muc/bp/channels/channel-123", response.getHeader("Location"));

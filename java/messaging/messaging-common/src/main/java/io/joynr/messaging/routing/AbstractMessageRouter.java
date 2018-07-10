@@ -328,13 +328,13 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
                     logger.warn("{}", error.getMessage());
                     return;
                 } else if (error instanceof JoynrMessageNotSentException) {
-                    logger.error(" ERROR SENDING:  aborting send of messageId: {}. Error: {}", new Object[]{ messageId,
-                            error.getMessage() });
+                    logger.error(" ERROR SENDING:  aborting send of messageId: {}. Error: {}",
+                                 new Object[]{ messageId, error.getMessage() });
                     callMessageProcessedListeners(messageId);
                     return;
                 }
-                logger.warn("PROBLEM SENDING, will retry. messageId: {}. Error: {} Message: {}", new Object[]{
-                        messageId, error.getClass().getName(), error.getMessage() });
+                logger.warn("PROBLEM SENDING, will retry. messageId: {}. Error: {} Message: {}",
+                            new Object[]{ messageId, error.getClass().getName(), error.getMessage() });
 
                 long delayMs;
                 if (error instanceof JoynrDelayMessageException) {
@@ -417,12 +417,19 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
         private void checkFoundAddresses(Set<Address> foundAddresses, ImmutableMessage message) {
             if (foundAddresses.isEmpty()) {
                 if (Message.VALUE_MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
-                    throw new JoynrMessageNotSentException("Failed to send Request: No address for given message: "
+                    // discard msg
+                    throw new JoynrMessageNotSentException("Failed to route multicast publication: No address found for given message: "
+                            + message);
+                } else if (Message.VALUE_MESSAGE_TYPE_PUBLICATION.equals(message.getType())) {
+                    // discard msg
+                    throw new JoynrMessageNotSentException("Failed to route publication: No address found for given message: "
                             + message);
                 } else if (message.isReply()) {
-                    throw new JoynrMessageNotSentException("Failed to send Reply: No address found for given message: "
+                    // discard msg
+                    throw new JoynrMessageNotSentException("Failed to route reply: No address found for given message: "
                             + message);
                 } else {
+                    // any kind of request; retry routing
                     throw new JoynrIllegalStateException("Unable to find address for recipient with participant ID "
                             + message.getRecipient());
                 }
@@ -456,10 +463,6 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
                         Set<Address> addresses = getAddresses(message);
                         checkFoundAddresses(addresses, message);
 
-                        if (addresses.isEmpty()) {
-                            throw new JoynrMessageNotSentException("Failed to send Message: No route for given participantId: "
-                                    + message.getRecipient());
-                        }
                         SuccessAction messageProcessedAction = createMessageProcessedAction(message.getId(),
                                                                                             addresses.size());
                         // If multiple stub calls for a multicast to multiple destination addresses fail, the failure

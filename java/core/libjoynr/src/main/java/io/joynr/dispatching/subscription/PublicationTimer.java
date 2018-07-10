@@ -102,7 +102,8 @@ public class PublicationTimer extends PubSubTimerBase {
                 long delayUntilNextPublication;
 
                 if (timeSinceLast < period) {
-                    logger.debug("no publication necessary. MaxInterval: " + period + "TimeSinceLast: " + timeSinceLast);
+                    logger.debug("no publication necessary. MaxInterval: " + period + "TimeSinceLast: "
+                            + timeSinceLast);
                     delayUntilNextPublication = period - timeSinceLast;
                     assert (delayUntilNextPublication >= 0);
 

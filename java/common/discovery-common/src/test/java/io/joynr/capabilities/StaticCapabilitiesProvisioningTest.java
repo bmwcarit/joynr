@@ -239,8 +239,7 @@ public class StaticCapabilitiesProvisioningTest {
     }
 
     private Injector createInjectorForJsonValue(final String jsonValue,
-                                                final LegacyCapabilitiesProvisioning.LegacyProvisioningPropertiesHolder provisioningProperties)
-                                                                                                                                               throws IOException {
+                                                final LegacyCapabilitiesProvisioning.LegacyProvisioningPropertiesHolder provisioningProperties) throws IOException {
         final File tmpFile = File.createTempFile("capprovtest", "json");
         logger.trace("Writing serialised JSON {} to file {}", jsonValue, tmpFile);
         tmpFile.deleteOnExit();
@@ -275,8 +274,7 @@ public class StaticCapabilitiesProvisioningTest {
                                   .toInstance(tmpFile.getAbsolutePath());
                 requestStaticInjection(CapabilityUtils.class);
             }
-        },
-                                                 new StaticCapabilitiesProvisioningModule());
+        }, new StaticCapabilitiesProvisioningModule());
         return injector;
     }
 }

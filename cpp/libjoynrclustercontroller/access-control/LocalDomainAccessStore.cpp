@@ -57,6 +57,38 @@ LocalDomainAccessStore::LocalDomainAccessStore(std::string fileName)
     applyForAllTables([this](auto& entry) { addToWildcardStorage(entry); });
 }
 
+void LocalDomainAccessStore::logContent()
+{
+    JOYNR_LOG_DEBUG(logger(), "printing full content");
+
+    JOYNR_LOG_DEBUG(
+            logger(), "masterAccessTable: {}", serializer::serializeToJson(masterAccessTable));
+
+    JOYNR_LOG_DEBUG(
+            logger(), "mediatorAccessTable: {}", serializer::serializeToJson(mediatorAccessTable));
+
+    JOYNR_LOG_DEBUG(
+            logger(), "ownerAccessTable: {}", serializer::serializeToJson(ownerAccessTable));
+
+    JOYNR_LOG_DEBUG(logger(),
+                    "masterRegistrationTable: {}",
+                    serializer::serializeToJson(masterRegistrationTable));
+
+    JOYNR_LOG_DEBUG(logger(),
+                    "mediatorRegistrationTable: {}",
+                    serializer::serializeToJson(mediatorRegistrationTable));
+
+    JOYNR_LOG_DEBUG(logger(),
+                    "ownerRegistrationTable: {}",
+                    serializer::serializeToJson(ownerRegistrationTable));
+
+    JOYNR_LOG_DEBUG(logger(), "domainRoleTable: {}", serializer::serializeToJson(domainRoleTable));
+
+    JOYNR_LOG_DEBUG(logger(), "domainWildcardStorage: {}", domainWildcardStorage.toString());
+
+    JOYNR_LOG_DEBUG(logger(), "interfaceWildcardStorage: {}", interfaceWildcardStorage.toString());
+}
+
 bool LocalDomainAccessStore::mergeDomainAccessStore(const LocalDomainAccessStore& other)
 {
     if (!mergeTable(other.domainRoleTable, domainRoleTable)) {

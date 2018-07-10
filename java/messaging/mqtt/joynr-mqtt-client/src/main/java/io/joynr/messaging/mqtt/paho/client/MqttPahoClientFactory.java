@@ -36,14 +36,17 @@ import io.joynr.messaging.mqtt.MqttClientIdProvider;
 import io.joynr.messaging.mqtt.MqttModule;
 import io.joynr.messaging.mqtt.statusmetrics.MqttStatusReceiver;
 import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.runtime.ShutdownListener;
+import io.joynr.runtime.ShutdownNotifier;
 import joynr.system.RoutingTypes.MqttAddress;
 
 @Singleton
-public class MqttPahoClientFactory implements MqttClientFactory {
+public class MqttPahoClientFactory implements MqttClientFactory, ShutdownListener {
 
     private static final Logger logger = LoggerFactory.getLogger(MqttPahoClientFactory.class);
     private MqttAddress ownAddress;
-    private JoynrMqttClient mqttClient = null;
+    private JoynrMqttClient mqttClient1 = null; // primary connection
+    private JoynrMqttClient mqttClient2 = null; // secondary connection (sender) in case there are two connections
     private int reconnectSleepMs;
     private int keepAliveTimerSec;
     private int connectionTimeoutSec;
@@ -54,6 +57,7 @@ public class MqttPahoClientFactory implements MqttClientFactory {
     private MqttClientIdProvider clientIdProvider;
     private MqttStatusReceiver mqttStatusReceiver;
     private boolean cleanSession;
+    private boolean separateConnections;
 
     @Inject(optional = true)
     @Named(MqttModule.PROPERTY_KEY_MQTT_KEYSTORE_PATH)
@@ -89,9 +93,11 @@ public class MqttPahoClientFactory implements MqttClientFactory {
                                  @Named(MqttModule.PROPERTY_KEY_MQTT_MAX_MSGS_INFLIGHT) int maxMsgsInflight,
                                  @Named(MqttModule.PROPERTY_KEY_MQTT_MAX_MESSAGE_SIZE_BYTES) int maxMsgSizeBytes,
                                  @Named(MqttModule.PROPERTY_MQTT_CLEAN_SESSION) boolean cleanSession,
+                                 @Named(MqttModule.PROPERTY_KEY_MQTT_SEPARATE_CONNECTIONS) boolean separateConnections,
                                  @Named(MessageRouter.SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduledExecutorService,
                                  MqttClientIdProvider mqttClientIdProvider,
-                                 MqttStatusReceiver mqttStatusReceiver) {
+                                 MqttStatusReceiver mqttStatusReceiver,
+                                 ShutdownNotifier shutdownNotifier) {
         this.ownAddress = ownAddress;
         this.reconnectSleepMs = reconnectSleepMs;
         this.scheduledExecutorService = scheduledExecutorService;
@@ -103,23 +109,54 @@ public class MqttPahoClientFactory implements MqttClientFactory {
         this.maxMsgsInflight = maxMsgsInflight;
         this.maxMsgSizeBytes = maxMsgSizeBytes;
         this.cleanSession = cleanSession;
+        this.separateConnections = separateConnections;
+        shutdownNotifier.registerForShutdown(this);
     }
 
     @Override
-    public synchronized JoynrMqttClient create() {
-        if (mqttClient == null) {
-            mqttClient = createInternal();
+    public synchronized JoynrMqttClient createReceiver() {
+        if (mqttClient1 == null) {
+            if (separateConnections) {
+                mqttClient1 = createInternal(true, "Sub");
+            } else {
+                createCombinedClient();
+            }
         }
-        return mqttClient;
+        return mqttClient1;
     }
 
-    private JoynrMqttClient createInternal() {
+    @Override
+    public synchronized JoynrMqttClient createSender() {
+        if (mqttClient2 == null) {
+            if (separateConnections) {
+                mqttClient2 = createInternal(false, "Pub");
+            } else {
+                createCombinedClient();
+            }
+        }
+        return mqttClient2;
+    }
+
+    @Override
+    public synchronized void shutdown() {
+        mqttClient1.shutdown();
+        if (separateConnections) {
+            mqttClient2.shutdown();
+        }
+    }
+
+    private void createCombinedClient() {
+        mqttClient2 = createInternal(true, "");
+        mqttClient1 = mqttClient2;
+    }
+
+    private JoynrMqttClient createInternal(boolean isReceiver, String clientIdSuffix) {
 
         MqttPahoClient pahoClient = null;
         try {
             logger.debug("Create Mqtt Client. Address: {}", ownAddress);
 
-            String clientId = clientIdProvider.getClientId();
+            String clientId = clientIdProvider.getClientId() + clientIdSuffix;
             MqttClient mqttClient = new MqttClient(ownAddress.getBrokerUri(),
                                                    clientId,
                                                    new MemoryPersistence(),
@@ -133,6 +170,8 @@ public class MqttPahoClientFactory implements MqttClientFactory {
                                             maxMsgsInflight,
                                             maxMsgSizeBytes,
                                             cleanSession,
+                                            isReceiver,
+                                            separateConnections,
                                             keyStorePath,
                                             trustStorePath,
                                             keyStoreType,

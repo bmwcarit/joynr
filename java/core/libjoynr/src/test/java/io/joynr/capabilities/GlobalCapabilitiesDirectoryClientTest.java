@@ -92,7 +92,8 @@ public class GlobalCapabilitiesDirectoryClientTest {
         when(capabilitiesDirectoryEntryMock.getDomain()).thenReturn(domainMock);
 
         Properties properties = new Properties();
-        properties.put(PROPERTY_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS, String.valueOf(FRESHNESS_UPDATE_INTERVAL_MS));
+        properties.put(PROPERTY_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS,
+                       String.valueOf(FRESHNESS_UPDATE_INTERVAL_MS));
 
         Injector injector = Guice.createInjector(new AbstractModule() {
             @Override
@@ -101,11 +102,11 @@ public class GlobalCapabilitiesDirectoryClientTest {
                 bind(GlobalDiscoveryEntry.class).annotatedWith(Names.named(MessagingPropertyKeys.CAPABILITIES_DIRECTORY_DISCOVERY_ENTRY))
                                                 .toInstance(capabilitiesDirectoryEntryMock);
             }
-        },
-                                                 new JoynrPropertiesModule(properties));
+        }, new JoynrPropertiesModule(properties));
         subject = injector.getInstance(GlobalCapabilitiesDirectoryClient.class);
 
-        when(proxyBuilderFactoryMock.get(domainMock, GlobalCapabilitiesDirectoryProxy.class)).thenReturn(capabilitiesProxyBuilderMock);
+        when(proxyBuilderFactoryMock.get(domainMock,
+                                         GlobalCapabilitiesDirectoryProxy.class)).thenReturn(capabilitiesProxyBuilderMock);
         when(capabilitiesProxyBuilderMock.setDiscoveryQos(any(DiscoveryQos.class))).thenReturn(capabilitiesProxyBuilderMock);
         when(capabilitiesProxyBuilderMock.setMessagingQos(any(MessagingQos.class))).thenReturn(capabilitiesProxyBuilderMock);
         when(capabilitiesProxyBuilderMock.build()).thenReturn(globalCapabilitiesDirectoryProxyMock);
@@ -144,8 +145,7 @@ public class GlobalCapabilitiesDirectoryClientTest {
                 bind(GlobalDiscoveryEntry.class).annotatedWith(Names.named(MessagingPropertyKeys.CAPABILITIES_DIRECTORY_DISCOVERY_ENTRY))
                                                 .toInstance(capabilitiesDirectoryEntryMock);
             }
-        },
-                                                 new JoynrPropertiesModule(properties));
+        }, new JoynrPropertiesModule(properties));
 
         return injector.getInstance(GlobalCapabilitiesDirectoryClient.class);
     }
@@ -181,7 +181,8 @@ public class GlobalCapabilitiesDirectoryClientTest {
         final String testParticipantId = "testParticipantId";
         subject.lookup(callbackGlobalDiscoveryEntryMock, testParticipantId, CUSTOM_TTL);
         verify(capabilitiesProxyBuilderMock).setMessagingQos(eq(messagingQos));
-        verify(globalCapabilitiesDirectoryProxyMock).lookup(eq(callbackGlobalDiscoveryEntryMock), eq(testParticipantId));
+        verify(globalCapabilitiesDirectoryProxyMock).lookup(eq(callbackGlobalDiscoveryEntryMock),
+                                                            eq(testParticipantId));
     }
 
     private Callback<GlobalDiscoveryEntry[]> lookupDomainsHelper(Callback<List<GlobalDiscoveryEntry>> callbackListOfGlobalDiscoveryEntriesMock) {
@@ -190,9 +191,10 @@ public class GlobalCapabilitiesDirectoryClientTest {
         messagingQos.setTtl_ms(CUSTOM_TTL);
         subject.lookup(callbackListOfGlobalDiscoveryEntriesMock, domainsStrArrayDummy, interfaceNameDummy, CUSTOM_TTL);
         verify(capabilitiesProxyBuilderMock).setMessagingQos(eq(messagingQos));
-        verify(globalCapabilitiesDirectoryProxyMock, times(1)).lookup(callbackArrayOfGlobalDiscoveryEntryCaptor.capture(),
-                                                                      eq(domainsStrArrayDummy),
-                                                                      eq(interfaceNameDummy));
+        verify(globalCapabilitiesDirectoryProxyMock,
+               times(1)).lookup(callbackArrayOfGlobalDiscoveryEntryCaptor.capture(),
+                                eq(domainsStrArrayDummy),
+                                eq(interfaceNameDummy));
         Callback<GlobalDiscoveryEntry[]> callback = callbackArrayOfGlobalDiscoveryEntryCaptor.getValue();
         return callback;
     }

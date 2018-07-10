@@ -567,6 +567,12 @@ The abstract class ```SubscriptionQos``` has the following members:
   The API will be changed in the future: proxy subscribe calls will no longer take a
   subscriptionQos; instead the publication TTL will be settable on the provider side.
 
+### MulticastSubscriptionQos
+
+The class ```MulticastSubscriptionQos``` inherits from ```SubscriptionQos```.
+
+This class should be used for subscriptions to non-selective broadcasts.
+
 ### PeriodicSubscriptionQos
 
 The class ```PeriodicSubscriptionQos``` inherits from ```SubscriptionQos``` and has the following
@@ -583,13 +589,16 @@ attribute.
 
 ### OnChangeSubscriptionQos
 
-The class ```OnChangeSubscriptionQos``` inherits from ```SubscriptionQos``` and has the following
-additional members:
+The class ```OnChangeSubscriptionQos``` inherits from ```UnicastSubscriptionQos``` which inherits
+from ```SubscriptionQos```. It has the following additional members:
 
 * **minIntervalMs** Minimum time to wait between successive notifications (milliseconds)
+* **publicationTtlMs** Notification messages will be sent with this time-to-live. If a notification
+  message can not be delivered within its time to live, it will be deleted from the system. This
+  value is provided in milliseconds.
 
-This class should be used for subscriptions to broadcasts. It can also be used for subscriptions
-to attributes if no periodic update is required.
+This class should be used for subscriptions to selective broadcasts.
+It can also be used for subscriptions to attributes if no periodic update is required.
 
 ### OnchangeWithKeepAliveSubscriptionQos
 
@@ -774,7 +783,7 @@ should not be blocked, wait for user interaction, or do larger computation. The 
 (onReceive, onSubscribed, onError) are optional. Only the required methods have to be implemented.
 
 ```java
-import joynr.OnChangeSubscriptionQos;
+import joynr.MulticastSubscriptionQos;
 ...
 // for any Franca broadcast named "<Broadcast>" used
 import joynr.<Package>.<Interface>BroadcastInterface.<Broadcast>BroadcastAdapter;
@@ -788,16 +797,17 @@ public void run() {
     private Future<String> subscriptionIdFuture;
     ...
     try {
-        int minIntervalMs;
         long expiryDateMs;
         int publicationTtlMs;
         String partitionLevel1;
         String partitionLevel2;
         ...
-        // provide values for minIntervalMs, expiryDateMs, publicationTtlMs here
+        // provide values for expiryDateMs, publicationTtlMs here
         ...
-        OnChangeSubscriptionQos qos =
-            new OnChangeSubscriptionQos(minIntervalMs, expiryDateMs, publicationTtlMs);
+        MulticastSubscriptionQos qos =
+            new MulticastSubscriptionQos()
+                .setExpiryDateMs(expiryDateMs)
+                .setPublicationTtlMs(publicationTtlMs);
         ...
         subscriptionIdFuture = <interface>Proxy.subscribeTo<Broadcast>Broadcast(
             new <Broadcast>BroadcastAdapter() {
@@ -912,14 +922,19 @@ public void run() {
     private Future<String> subscriptionIdFuture;
     ...
     try {
-        int minIntervalMs;
+        long minIntervalMs;
         long expiryDateMs;
-        int publicationTtlMs;
+        long publicationTtlMs;
+        long validityMs;
         ...
-        // provide values for minIntervalMs, expiryDateMs, publicationTtlMs here
+        // provide values for minIntervalMs, expiryDateMs, publicationTtlMs, validityMs here
         ...
         OnChangeSubscriptionQos qos =
-            new OnChangeSubscriptionQos(minIntervalMs, expiryDateMs, publicationTtlMs);
+            new OnChangeSubscriptionQos()
+                .setMinIntervalMs(minIntervalMs)
+                .setExpiryDateMs(expiryDateMs)
+                .setPublicationTtlMs(publicationTtlMs)
+                .setValidityMs(validityMs);
 
         <Broadcast>FilterParameters filter = new <Broadcast>FilterParameters();
         // foreach BroadcastFilterAttribute of that filter

@@ -71,7 +71,7 @@ public class SingleControlledBounceProxyTest {
         // create channel on bounce proxy
         /* @formatter:off */
         Response responseCreateChannel = //
-        given().header(X_ATMOSPHERE_TRACKING_ID, "test-trackingId").post("channels?ccid=test-channel");
+                given().header(X_ATMOSPHERE_TRACKING_ID, "test-trackingId").post("channels?ccid=test-channel");
         /* @formatter:on */
         assertEquals(201 /* Created */, responseCreateChannel.getStatusCode());
         assertEquals(SingleControlledBounceProxy.ID, responseCreateChannel.getHeader(HEADER_BOUNCEPROXY_ID));
@@ -94,9 +94,10 @@ public class SingleControlledBounceProxyTest {
         assertThat(listBpChannels, containsChannel("test-channel"));
         assertThat(listBpChannels, containsChannel("/*"));
 
-        assertEquals(200 /* OK */, given().delete("channels/test-channel" + SESSIONID_APPENDIX + sessionId + "/")
-                                           .thenReturn()
-                                           .statusCode());
+        assertEquals(200 /* OK */,
+                     given().delete("channels/test-channel" + SESSIONID_APPENDIX + sessionId + "/")
+                            .thenReturn()
+                            .statusCode());
         JsonPath listBpChannelsAfterDelete = given().get("channels" + SESSIONID_APPENDIX + sessionId)
                                                     .getBody()
                                                     .jsonPath();

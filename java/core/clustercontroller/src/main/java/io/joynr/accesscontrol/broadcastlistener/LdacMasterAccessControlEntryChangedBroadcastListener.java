@@ -27,8 +27,8 @@ import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class LdacMasterAccessControlEntryChangedBroadcastListener extends
-        MasterAccessControlEntryChangedBroadcastAdapter {
+public class LdacMasterAccessControlEntryChangedBroadcastListener
+        extends MasterAccessControlEntryChangedBroadcastAdapter {
     private static final Logger LOG = LoggerFactory.getLogger(LdacMasterAccessControlEntryChangedBroadcastListener.class);
 
     private DomainAccessControlStore localDomainAccessStore;

@@ -66,7 +66,8 @@ public class ShortCircuitTest {
     public void setup() throws Exception {
         Module runtimeModule = Modules.override(new CCInProcessRuntimeModule()).with(new TestGlobalAddressModule());
         Properties joynrConfig = new Properties();
-        DummyJoynrApplication application = (DummyJoynrApplication) new JoynrInjectorFactory(joynrConfig, runtimeModule).createApplication(DummyJoynrApplication.class);
+        DummyJoynrApplication application = (DummyJoynrApplication) new JoynrInjectorFactory(joynrConfig,
+                                                                                             runtimeModule).createApplication(DummyJoynrApplication.class);
 
         runtime = application.getRuntime();
         DiscoveryQos discoveryQos = new DiscoveryQos(CONST_DEFAULT_TEST_TIMEOUT,

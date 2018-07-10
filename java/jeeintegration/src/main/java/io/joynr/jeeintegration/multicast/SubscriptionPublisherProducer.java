@@ -52,13 +52,13 @@ public class SubscriptionPublisherProducer {
         if (!subscriptionPublishers.containsKey(beanClass)) {
             Class subscriptionPublisherClass = (Class) injectionPoint.getAnnotated().getBaseType();
             SubscriptionPublisher newSubscriptionPublisher = (SubscriptionPublisher) Proxy.newProxyInstance(subscriptionPublisherClass.getClassLoader(),
-                                                                                                            new Class[]{ subscriptionPublisherClass },
+                                                                                                            new Class[]{
+                                                                                                                    subscriptionPublisherClass },
                                                                                                             new InvocationHandler() {
                                                                                                                 @Override
                                                                                                                 public Object invoke(Object proxy,
                                                                                                                                      Method method,
-                                                                                                                                     Object[] args)
-                                                                                                                                                   throws Throwable {
+                                                                                                                                     Object[] args) throws Throwable {
                                                                                                                     throw new IllegalStateException("No subscription publisher set for "
                                                                                                                             + subscriptionPublisherClass
                                                                                                                             + " on "

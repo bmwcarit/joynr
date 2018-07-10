@@ -30,9 +30,16 @@ import javax.ejb.Local;
 @Local
 public interface GlobalDomainAccessControllerLocal extends GlobalDomainAccessControllerSync {
     void doFireMasterAccessControlEntryChanged(ChangeType changeType, MasterAccessControlEntry persistedAce);
+
     void doFireMediatorAccessControlEntryChanged(ChangeType changeType, MasterAccessControlEntry persistedAce);
+
     void doFireOwnerAccessControlEntryChanged(ChangeType changeType, OwnerAccessControlEntry persistedAce);
-    void doFireMasterRegistrationControlEntryChanged(ChangeType changeType, MasterRegistrationControlEntry persistedAce);
-    void doFireMediatorRegistrationControlEntryChanged(ChangeType changeType, MasterRegistrationControlEntry persistedAce);
+
+    void doFireMasterRegistrationControlEntryChanged(ChangeType changeType,
+                                                     MasterRegistrationControlEntry persistedAce);
+
+    void doFireMediatorRegistrationControlEntryChanged(ChangeType changeType,
+                                                       MasterRegistrationControlEntry persistedAce);
+
     void doFireOwnerRegistrationControlEntryChanged(ChangeType changeType, OwnerRegistrationControlEntry persistedAce);
 }

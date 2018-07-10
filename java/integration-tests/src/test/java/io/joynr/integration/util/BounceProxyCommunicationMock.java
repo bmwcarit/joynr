@@ -98,9 +98,10 @@ public class BounceProxyCommunicationMock {
         return given().contentType(ContentType.BINARY)
                       .log()
                       .everything()
-                      .config(RestAssuredConfig.config().httpClient(HttpClientConfig.httpClientConfig()
-                                                                                    .setParam("http.socket.timeout",
-                                                                                              timeout_ms)));
+                      .config(RestAssuredConfig.config()
+                                               .httpClient(HttpClientConfig.httpClientConfig()
+                                                                           .setParam("http.socket.timeout",
+                                                                                     timeout_ms)));
     }
 
     /**
@@ -137,8 +138,8 @@ public class BounceProxyCommunicationMock {
     public ScheduledFuture<Response> postMessageInOwnThread(final String myChannelId,
                                                             final long relativeTtlMs,
                                                             final byte[] postPayload) throws EncodingException,
-                                                                                     UnsuppportedVersionException,
-                                                                                     IOException {
+                                                                                      UnsuppportedVersionException,
+                                                                                      IOException {
         ScheduledFuture<Response> scheduledFuture = scheduler.schedule(new Callable<Response>() {
 
             @Override
@@ -161,9 +162,9 @@ public class BounceProxyCommunicationMock {
      * @throws UnsuppportedVersionException
      * @throws EncodingException
      */
-    public Response postMessage(final String myChannelId, final long relativeTtlMs, final byte[] postPayload)
-                                                                                                             throws EncodingException,
-                                                                                                             UnsuppportedVersionException {
+    public Response postMessage(final String myChannelId,
+                                final long relativeTtlMs,
+                                final byte[] postPayload) throws EncodingException, UnsuppportedVersionException {
 
         return postMessage(myChannelId, relativeTtlMs, postPayload, 201);
     }
@@ -207,8 +208,8 @@ public class BounceProxyCommunicationMock {
      * @return
      * @throws SocketTimeoutException
      */
-    public ScheduledFuture<Response> longPollInOwnThread(String myChannelId, int timeout_ms)
-                                                                                            throws SocketTimeoutException {
+    public ScheduledFuture<Response> longPollInOwnThread(String myChannelId,
+                                                         int timeout_ms) throws SocketTimeoutException {
         return longPollInOwnThread(myChannelId, timeout_ms, 200);
     }
 
@@ -233,8 +234,9 @@ public class BounceProxyCommunicationMock {
         return scheduledFuture;
     }
 
-    public Response longPoll(final String myChannelId, final int timeout_ms, final int statusCode)
-                                                                                                  throws SocketTimeoutException {
+    public Response longPoll(final String myChannelId,
+                             final int timeout_ms,
+                             final int statusCode) throws SocketTimeoutException {
         return onrequest(timeout_ms).with()
                                     .header("X-Atmosphere-tracking-id", receiverId)
                                     .expect()
@@ -248,7 +250,7 @@ public class BounceProxyCommunicationMock {
     public void deleteChannel(final String myChannelId, final int timeout_ms, final int statusCode) {
         onrequest(timeout_ms)// .expect()
                              // .statusCode(statusCode)
-        .log()
+                             .log()
                              .all()
                              .when()
                              .delete("/channels/" + myChannelId + "/");
@@ -265,9 +267,9 @@ public class BounceProxyCommunicationMock {
      * @return
      * @throws JsonProcessingException
      */
-    public ImmutableMessage createImmutableMessage(final long relativeTtlMs, final byte[] postPayload)
-                                                                                                      throws EncodingException,
-                                                                                                      UnsuppportedVersionException {
+    public ImmutableMessage createImmutableMessage(final long relativeTtlMs,
+                                                   final byte[] postPayload) throws EncodingException,
+                                                                             UnsuppportedVersionException {
         MutableMessage message = new MutableMessage();
 
         message.setType(Message.VALUE_MESSAGE_TYPE_REQUEST);
@@ -450,9 +452,8 @@ public class BounceProxyCommunicationMock {
         }
     }
 
-    public List<ImmutableMessage> getJoynrMessagesFromResponse(Response longPoll) throws IOException,
-                                                                                 EncodingException,
-                                                                                 UnsuppportedVersionException {
+    public List<ImmutableMessage> getJoynrMessagesFromResponse(Response longPoll) throws IOException, EncodingException,
+                                                                                  UnsuppportedVersionException {
         byte[] combinedSMRFMessages = longPoll.getBody().asByteArray();
         return Utilities.splitSMRF(combinedSMRFMessages);
     }

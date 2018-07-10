@@ -41,7 +41,8 @@ public class DefaultMqttClientIdProvider implements MqttClientIdProvider {
     private String clientId;
 
     @Inject
-    public DefaultMqttClientIdProvider(@Named(RECEIVERID) String receiverId, ClientIdPrefixHolder clientIdPrefixHolder) {
+    public DefaultMqttClientIdProvider(@Named(RECEIVERID) String receiverId,
+                                       ClientIdPrefixHolder clientIdPrefixHolder) {
         String clientIdPrefix = clientIdPrefixHolder.clientIdPrefix;
         if (receiverId.length() != 16) {
             LOG.warn("ReceiverId " + receiverId + " is not a UUID of expected length 16");

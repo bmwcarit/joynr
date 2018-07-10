@@ -34,8 +34,8 @@ public class MessagingTestsUtil {
 
     public static InterfaceAddress randomInterface(String domainPrefix, String interfacePrefix) {
         String randomSuffix = Integer.toString(random.nextInt());
-        InterfaceAddress interfaceAddress = new InterfaceAddress(domainPrefix + randomSuffix, interfacePrefix
-                + randomSuffix);
+        InterfaceAddress interfaceAddress = new InterfaceAddress(domainPrefix + randomSuffix,
+                                                                 interfacePrefix + randomSuffix);
         return interfaceAddress;
     }
 

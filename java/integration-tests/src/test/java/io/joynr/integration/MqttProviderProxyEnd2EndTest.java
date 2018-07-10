@@ -64,20 +64,8 @@ public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTe
         joynrConfig.putAll(mqttConfig);
         joynrConfig.putAll(baseTestConfig);
         Module runtimeModule = Modules.override(new CCInProcessRuntimeModule()).with(modules);
-        Module modulesWithRuntime = Modules.override(runtimeModule).with(new MqttPahoModule(), new AbstractModule() {
+        Module modulesWithRuntime = Modules.override(runtimeModule).with(new MqttPahoModule());
 
-            @Override
-            protected void configure() {
-                bind(RawMessagingPreprocessor.class).toInstance(new RawMessagingPreprocessor() {
-
-                    @Override
-                    public byte[] process(byte[] rawMessage, Map<String, Serializable> context) {
-                        return rawMessage;
-                    }
-                });
-            }
-
-        });
         DummyJoynrApplication application = (DummyJoynrApplication) new JoynrInjectorFactory(joynrConfig,
                                                                                              modulesWithRuntime).createApplication(DummyJoynrApplication.class);
 
@@ -163,24 +151,17 @@ public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTe
                                              .build();
         final List<String> errors = new ArrayList<>();
         Future<String> subscriptionIdOfWildCard = testProxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
-                                                                                                   @Override
-                                                                                                   public void onReceive() {
-                                                                                                       semaphore.release();
-                                                                                                   }
-                                                                                               },
-                                                                                               new MulticastSubscriptionQos(),
-                                                                                               "one",
-                                                                                               "*");
+            @Override
+            public void onReceive() {
+                semaphore.release();
+            }
+        }, new MulticastSubscriptionQos(), "one", "*");
         Future<String> subscriptionIdOfOtherTopics = testProxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
-                                                                                                      @Override
-                                                                                                      public void onReceive() {
-                                                                                                          errors.add("Received multicast on partition which wasn't published to: four/five/six");
-                                                                                                      }
-                                                                                                  },
-                                                                                                  new MulticastSubscriptionQos(),
-                                                                                                  "four",
-                                                                                                  "five",
-                                                                                                  "six");
+            @Override
+            public void onReceive() {
+                errors.add("Received multicast on partition which wasn't published to: four/five/six");
+            }
+        }, new MulticastSubscriptionQos(), "four", "five", "six");
 
         // wait to allow the subscription request to arrive at the provider
         Thread.sleep(500);
@@ -208,15 +189,11 @@ public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTe
                                              .build();
         final List<String> errors = new ArrayList<>();
         Future<String> futureOfWildCard = testProxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
-                                                                                           @Override
-                                                                                           public void onReceive() {
-                                                                                               semaphore.release();
-                                                                                           }
-                                                                                       },
-                                                                                       new MulticastSubscriptionQos(),
-                                                                                       "one",
-                                                                                       "+",
-                                                                                       "three");
+            @Override
+            public void onReceive() {
+                semaphore.release();
+            }
+        }, new MulticastSubscriptionQos(), "one", "+", "three");
 
         // wait to allow the subscription request to arrive at the provider
         Thread.sleep(500);
@@ -242,14 +219,11 @@ public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTe
                                              .build();
         final List<String> errors = new ArrayList<>();
         Future<String> subscriptionIdOfWildCard = testProxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
-                                                                                                   @Override
-                                                                                                   public void onReceive() {
-                                                                                                       semaphore.release();
-                                                                                                   }
-                                                                                               },
-                                                                                               new MulticastSubscriptionQos(),
-                                                                                               "one",
-                                                                                               "+");
+            @Override
+            public void onReceive() {
+                semaphore.release();
+            }
+        }, new MulticastSubscriptionQos(), "one", "+");
 
         // wait to allow the subscription request to arrive at the provider
         Thread.sleep(500);

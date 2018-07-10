@@ -92,13 +92,15 @@ public class JeeMqttMessageSendingModule extends AbstractModule {
         Multibinder<GlobalAddressFactory<? extends Address>> globalAddresses;
         globalAddresses = Multibinder.newSetBinder(binder(),
                                                    new TypeLiteral<GlobalAddressFactory<? extends Address>>() {
-                                                   }, Names.named(GlobalAddressProvider.GLOBAL_ADDRESS_PROVIDER));
+                                                   },
+                                                   Names.named(GlobalAddressProvider.GLOBAL_ADDRESS_FACTORIES));
         globalAddresses.addBinding().to(MqttGlobalAddressFactory.class);
 
         Multibinder<GlobalAddressFactory<? extends Address>> replyToAddresses;
         replyToAddresses = Multibinder.newSetBinder(binder(),
-                                                   new TypeLiteral<GlobalAddressFactory<? extends Address>>() {
-                                                   }, Names.named(ReplyToAddressProvider.REPLY_TO_ADDRESS_PROVIDER));
+                                                    new TypeLiteral<GlobalAddressFactory<? extends Address>>() {
+                                                    },
+                                                    Names.named(ReplyToAddressProvider.REPLY_TO_ADDRESS_FACTORIES));
         replyToAddresses.addBinding().to(MqttReplyToAddressFactory.class);
 
         bind(MqttClientFactory.class).to(MqttPahoClientFactory.class);

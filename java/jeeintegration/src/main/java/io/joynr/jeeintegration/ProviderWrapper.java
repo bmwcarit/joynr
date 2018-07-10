@@ -177,11 +177,14 @@ public class ProviderWrapper implements InvocationHandler {
                       joynrException);
             if (joynrException instanceof ApplicationException) {
                 try {
-                    Method rejectMethod = AbstractDeferred.class.getDeclaredMethod("reject", new Class[] { JoynrException.class });
+                    Method rejectMethod = AbstractDeferred.class.getDeclaredMethod("reject",
+                                                                                   new Class[]{ JoynrException.class });
                     rejectMethod.setAccessible(true);
-                    rejectMethod.invoke(deferred, new Object[] { joynrException });
+                    rejectMethod.invoke(deferred, new Object[]{ joynrException });
                 } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
-                    LOG.warn("Unable to set {} as rejection reason on {}. Wrapping in ProviderRuntimeException instead.", joynrException, deferred);
+                    LOG.warn("Unable to set {} as rejection reason on {}. Wrapping in ProviderRuntimeException instead.",
+                             joynrException,
+                             deferred);
                     deferred.reject(new ProviderRuntimeException(((ApplicationException) joynrException).getMessage()));
                 }
             } else if (joynrException instanceof ProviderRuntimeException) {
@@ -191,19 +194,23 @@ public class ProviderWrapper implements InvocationHandler {
         return deferred;
     }
 
-    private JoynrException getJoynrExceptionFromInvocationException(InvocationTargetException e)
-                                                                                                throws InvocationTargetException {
+    private JoynrException getJoynrExceptionFromInvocationException(InvocationTargetException e) throws InvocationTargetException {
         JoynrException joynrException = null;
-        if (e.getCause() != null) {
-            if (e.getCause() instanceof EJBException) {
-                Exception exception = ((EJBException) e.getCause()).getCausedByException();
-                if (exception instanceof ProviderRuntimeException) {
-                    joynrException = (ProviderRuntimeException) exception;
-                }
-            } else if (e.getCause() instanceof ProviderRuntimeException || e.getCause() instanceof ApplicationException) {
-                joynrException = (JoynrException) e.getCause();
+        if (e.getCause() instanceof EJBException) {
+            // an EJBException is only thrown when the exception is not in the throws declaration
+            // ApplicationExceptions are always declared with throw and thus EJBExceptions won't be caused by them.
+            Exception exception = ((EJBException) e.getCause()).getCausedByException();
+            if (exception instanceof ProviderRuntimeException) {
+                joynrException = (ProviderRuntimeException) exception;
+            } else {
+                joynrException = new ProviderRuntimeException("Unexpected exception from provider: " + exception == null
+                        ? e.getCause().toString()
+                        : exception.toString());
             }
+        } else if (e.getCause() instanceof ProviderRuntimeException || e.getCause() instanceof ApplicationException) {
+            joynrException = (JoynrException) e.getCause();
         }
+
         if (joynrException == null) {
             throw e;
         }
@@ -236,11 +243,11 @@ public class ProviderWrapper implements InvocationHandler {
         jeeMessageContext.setMessageContext(joynrMessageContext.getMessageContext());
     }
 
-    private <T> T getUniqueBeanReference(Class<T> beanClass)
-    {
+    private <T> T getUniqueBeanReference(Class<T> beanClass) {
         Set<Bean<?>> beans = beanManager.getBeans(beanClass);
         if (beans.size() != 1) {
-            throw new IllegalStateException("There must be exactly one EJB of type " + beanClass.getName() + ". Found " + beans.size());
+            throw new IllegalStateException("There must be exactly one EJB of type " + beanClass.getName() + ". Found "
+                    + beans.size());
         }
 
         @SuppressWarnings("unchecked")

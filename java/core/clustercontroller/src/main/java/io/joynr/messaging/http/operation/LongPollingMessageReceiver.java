@@ -115,8 +115,7 @@ public class LongPollingMessageReceiver implements MessageReceiver {
     }
 
     @Override
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings(
-                                                      value = "IS2_INCONSISTENT_SYNC",
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "IS2_INCONSISTENT_SYNC",
                                                       justification = "shutdown is locked using the shutdownSynchronizer object")
     public void shutdown(boolean clear) {
         logger.info("SHUTTING DOWN long polling message receiver");

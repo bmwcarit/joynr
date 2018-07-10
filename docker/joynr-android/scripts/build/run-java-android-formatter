@@ -15,4 +15,4 @@ set -e
   mvn install -P no-license-and-notice,no-java-formatter,no-checkstyle -DskipTests
 )
 
-mvn java-formatter:format
+mvn formatter:format

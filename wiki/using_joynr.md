@@ -4,7 +4,7 @@ A variable number of **Provider** applications can be registered to provide serv
 
 Joynr supports several programming languages (Java, C\+\+, JavaScript) within the same system, i.e. a Java Consumer can interact with a C\+\+ Provider etc.
 
-Data serialisation and transfer is transparent to the application. The current implementation supports a number of different transport mechanisms (Web Sockets, HTTP Long Polling), and serialises to JSON.
+Data serialisation and transfer is transparent to the application. The current implementation supports a number of different transport mechanisms (Web Sockets, MQTT), and serialises to JSON.
 
 
 ## Provider
@@ -35,7 +35,7 @@ Arbitration is concerned with the rules in determining the preferred provider to
 
 A capability states the domain and interface name for which a provider is registered.
 
- These information entries contain access information as well as supported Qos (Quality of Service). This
+These information entries contain access information as well as supported Qos (Quality of Service). This
 information is used in the arbitration process to pick a provider for a proxy.
 
 A capabilities directory is a list of capabilities for providers currently registered in a joynr network, and is available globally and locally.
@@ -121,80 +121,17 @@ then used to implement the Application modelled by the corresponding Franca file
 >*If you build joynr yourself using the provided docker and / or Maven infrastructure, the Franca
 >dependencies are installed to your local Maven repository during the build.*
 
-
 ## Runtime Environment
 joynr requires the following components to run:
 
-### MQTT Broker / HTTP Bounceproxy
+### MQTT Broker
 The default configuration communicates via MQTT and needs a MQTT broker (e.g.
 [Mosquitto](http://mosquitto.org)) listening on port 1883.
-If you configure your application to communicate via HTTP, the HTTP bounceproxy is required
-instead of the MQTT broker.
-
-#### HTTP bounceproxy
-joynr can also be configured to communicate via HTTP using Comet (currently long poll), based on the
-Atmosphere Framework. Instead of the MQTT broker, the HTTP bounceproxy is responsible for message
-store and forward in this case.
-
-After joynr has been built (see [Building joynr Java and common components](java_building_joynr.md)),
-you can run the bounceproxy directly within Maven (for test purposes). Just go into the bounceproxy
-project and run
-```bash
-<JOYNR>$ cd java/messaging/bounceproxy/single-bounceproxy
-<JOYNR>/java/messaging/bounceproxy/single-bounceproxy$ mvn jetty:run
-```
-The bounceproxy is also tested with glassfish 3.1.2.2. See [Glassfish settings]
-(Glassfish-settings.md) for configuration details.
-
->*Note: This is only for test purposes. You need to have Maven installed. Joynr is built and tested
->with Maven 3.3.3, but more recent versions of Maven might also work.*
 
 ### Global Discovery Directory
 Centralized directory to discover providers for a given domain and interface.
-There are two variant of the discovery directory, one using MQTT communication (default) and one
-using HTTP communication.
-
-#### MQTT (default)
+The discovery directory is using MQTT communication.
 See [Infrastructure](infrastructure.md).
-
-#### HTTP
-Run the discovery directories locally along with the bounceproxy:
-
-1. Build and install the whole joynr project from the root directory (see [Building joynr Java and
-common components](java_building_joynr.md))
-1. start directories **and** bounceproxy on default jetty port 8080:
-```bash
-<JOYNR>$ cd java/backend-services/discovery-directory-servlet
-<JOYNR>/java/backend-services/discovery-directory-servlet$ mvn jetty:run
-```
-
->*Note: This is only for test purposes. You need to have Maven installed. Joynr is built and tested
->with Maven 3.3.3, but more recent versions of Maven might also work.*
-
-Use the following links to check whether all components are running:
-
-| Service Link | Description |
-| ------------ | ----------- |
-| <http://localhost:8080/bounceproxy/time/> | Returns the current time in current milliseconds since Unix Epoch. This can be used to test whether the bounceproxy is up and running. |
-| <http://localhost:8080/bounceproxy/channels.html> | Lists all channels (message queues) that are currently registered on the bounceproxy instance |
-| <http://localhost:8080/discovery/capabilities.html> | Lists all capabilities (providers) currently registered with joynr. Note: After starting the discovery directories and the bounceproxy only, there must be two capabilities registered (channel URL directory and global capabilities directory). |
-
-You can also deploy one or more joynr applications to a servlet engine without reconfiguring the
-applications themselves:
-
-1. Simply create a WAR maven project
-1. include your application(s) as dependency in the pom.xml
-1. include messaging-servlet as a dependency in the pom.xml.
-1. create the war file (mvn package)
-1. The war created should contain JARs for each of your applications plus the messaging-servlet
-   (and other transitive dependencies).
-1. Set the JVM properties etc for your servlet engine as described on [Glassfish settings]
-   (Glassfish-settings.md).
-1. deploy this war to your servlet engine.
-
-All applications deployed should then register themselves with the discovery directory. Messages
-will be sent directly to the url registered in hostPath.
-
 
 ## Further Reading
 

@@ -113,8 +113,7 @@ public class IltConsumerFilteredBroadcastSubscriptionTest extends IltConsumerTes
             try {
                 json = objectMapper.writeValueAsString(structWithStringArrayOfInterest);
             } catch (JsonProcessingException je) {
-                fail(name.getMethodName()
-                        + " - FAILED - got exception when serializing structWithStringArrayOfInterest"
+                fail(name.getMethodName() + " - FAILED - got exception when serializing structWithStringArrayOfInterest"
                         + je.getMessage());
                 return;
             }
@@ -132,48 +131,40 @@ public class IltConsumerFilteredBroadcastSubscriptionTest extends IltConsumerTes
             filterParameters.setStructWithStringArrayArrayOfInterest(json);
 
             subscriptionIdFuture = testInterfaceProxy.subscribeToBroadcastWithFilteringBroadcast(new BroadcastWithFilteringBroadcastAdapter() {
-                                                                                                     @Override
-                                                                                                     public void onReceive(String stringOut,
-                                                                                                                           String[] stringArrayOut,
-                                                                                                                           ExtendedTypeCollectionEnumerationInTypeCollection enumerationOut,
-                                                                                                                           StructWithStringArray structWithStringArrayOut,
-                                                                                                                           StructWithStringArray[] structWithStringArrayArrayOut) {
+                @Override
+                public void onReceive(String stringOut,
+                                      String[] stringArrayOut,
+                                      ExtendedTypeCollectionEnumerationInTypeCollection enumerationOut,
+                                      StructWithStringArray structWithStringArrayOut,
+                                      StructWithStringArray[] structWithStringArrayArrayOut) {
 
-                                                                                                         LOG.info(name.getMethodName()
-                                                                                                                 + " - callback - got broadcast");
+                    LOG.info(name.getMethodName() + " - callback - got broadcast");
 
-                                                                                                         if (!IltUtil.checkStringArray(stringArrayOut)) {
-                                                                                                             subscribeBroadcastWithFilteringCallbackResult = false;
-                                                                                                         } else if (enumerationOut != ExtendedTypeCollectionEnumerationInTypeCollection.ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION) {
-                                                                                                             LOG.info(name.getMethodName()
-                                                                                                                     + " - callback - invalid content");
-                                                                                                             subscribeBroadcastWithFilteringCallbackResult = false;
-                                                                                                         } else if (!IltUtil.checkStructWithStringArray(structWithStringArrayOut)) {
-                                                                                                             LOG.info(name.getMethodName()
-                                                                                                                     + " - callback - invalid content");
-                                                                                                             subscribeBroadcastWithFilteringCallbackResult = false;
-                                                                                                         } else if (!IltUtil.checkStructWithStringArrayArray(structWithStringArrayArrayOut)) {
-                                                                                                             LOG.info(name.getMethodName()
-                                                                                                                     + " - callback - invalid content");
-                                                                                                             subscribeBroadcastWithFilteringCallbackResult = false;
-                                                                                                         } else {
-                                                                                                             LOG.info(name.getMethodName()
-                                                                                                                     + " - callback - content OK");
-                                                                                                             subscribeBroadcastWithFilteringCallbackResult = true;
-                                                                                                         }
-                                                                                                         subscribeBroadcastWithFilteringCallbackDone = true;
-                                                                                                     }
+                    if (!IltUtil.checkStringArray(stringArrayOut)) {
+                        subscribeBroadcastWithFilteringCallbackResult = false;
+                    } else if (enumerationOut != ExtendedTypeCollectionEnumerationInTypeCollection.ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION) {
+                        LOG.info(name.getMethodName() + " - callback - invalid content");
+                        subscribeBroadcastWithFilteringCallbackResult = false;
+                    } else if (!IltUtil.checkStructWithStringArray(structWithStringArrayOut)) {
+                        LOG.info(name.getMethodName() + " - callback - invalid content");
+                        subscribeBroadcastWithFilteringCallbackResult = false;
+                    } else if (!IltUtil.checkStructWithStringArrayArray(structWithStringArrayArrayOut)) {
+                        LOG.info(name.getMethodName() + " - callback - invalid content");
+                        subscribeBroadcastWithFilteringCallbackResult = false;
+                    } else {
+                        LOG.info(name.getMethodName() + " - callback - content OK");
+                        subscribeBroadcastWithFilteringCallbackResult = true;
+                    }
+                    subscribeBroadcastWithFilteringCallbackDone = true;
+                }
 
-                                                                                                     @Override
-                                                                                                     public void onError(SubscriptionException error) {
-                                                                                                         LOG.info(name.getMethodName()
-                                                                                                                 + " - callback - error");
-                                                                                                         subscribeBroadcastWithFilteringCallbackResult = false;
-                                                                                                         subscribeBroadcastWithFilteringCallbackDone = true;
-                                                                                                     }
-                                                                                                 },
-                                                                                                 subscriptionQos,
-                                                                                                 filterParameters);
+                @Override
+                public void onError(SubscriptionException error) {
+                    LOG.info(name.getMethodName() + " - callback - error");
+                    subscribeBroadcastWithFilteringCallbackResult = false;
+                    subscribeBroadcastWithFilteringCallbackDone = true;
+                }
+            }, subscriptionQos, filterParameters);
             subscriptionId = subscriptionIdFuture.get(10000);
             LOG.info(name.getMethodName() + " - subscription successful, subscriptionId = " + subscriptionId);
             LOG.info(name.getMethodName() + " - Waiting one second");
@@ -240,7 +231,8 @@ public class IltConsumerFilteredBroadcastSubscriptionTest extends IltConsumerTes
                 testInterfaceProxy.unsubscribeFromBroadcastWithFilteringBroadcast(subscriptionId);
                 LOG.info(name.getMethodName() + " - unsubscribe successful");
             } catch (Exception e) {
-                fail(name.getMethodName() + " - FAILED - caught unexpected exception on unsubscribe: " + e.getMessage());
+                fail(name.getMethodName() + " - FAILED - caught unexpected exception on unsubscribe: "
+                        + e.getMessage());
                 result = false;
             }
 

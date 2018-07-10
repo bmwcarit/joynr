@@ -47,6 +47,7 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", () => {
 
         publicationManagerSpy = jasmine.createSpyObj("PublicationManager", [
             "addPublicationProvider",
+            "removePublicationProvider",
             "registerOnChangedProvider"
         ]);
 
@@ -84,10 +85,14 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", () => {
         participantId = "myParticipantId";
         participantIdStorageSpy = jasmine.createSpyObj("participantIdStorage", ["getParticipantId"]);
         participantIdStorageSpy.getParticipantId.and.returnValue(participantId);
-        requestReplyManagerSpy = jasmine.createSpyObj("RequestReplyManager", ["addRequestCaller"]);
-        discoveryStubSpy = jasmine.createSpyObj("discoveryStub", ["add"]);
+        requestReplyManagerSpy = jasmine.createSpyObj("RequestReplyManager", [
+            "addRequestCaller",
+            "removeRequestCaller"
+        ]);
+        discoveryStubSpy = jasmine.createSpyObj("discoveryStub", ["add", "remove"]);
         discoveryStubSpy.add.and.returnValue(Promise.resolve());
-        messageRouterSpy = jasmine.createSpyObj("messageRouter", ["addNextHop"]);
+        discoveryStubSpy.remove.and.returnValue(Promise.resolve());
+        messageRouterSpy = jasmine.createSpyObj("messageRouter", ["addNextHop", "removeNextHop"]);
 
         messageRouterSpy.addNextHop.and.returnValue(Promise.resolve());
         libjoynrMessagingAddress = {
@@ -95,6 +100,7 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", () => {
             toBe: "a",
             object: {}
         };
+        messageRouterSpy.removeNextHop.and.returnValue(Promise.resolve());
 
         capabilitiesRegistrar = new CapabilitiesRegistrar({
             discoveryStub: discoveryStubSpy,
@@ -155,15 +161,20 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", () => {
         jasmine.clock().uninstall();
     });
 
-    it("checks the provider's implementation, and throws if incomplete", done => {
+    it("checks the provider's implementation, and rejects if incomplete", done => {
         provider.checkImplementation = function() {
             return ["Operation:addFavoriteStation"];
         };
 
-        expect(() => {
-            capabilitiesRegistrar.registerProvider(domain, provider, providerQos);
-        }).toThrow(new Error(`provider: ${domain}/${provider.interfaceName} is missing: Operation:addFavoriteStation`));
-        done();
+        capabilitiesRegistrar
+            .registerProvider(domain, provider, providerQos)
+            .then(fail)
+            .catch(e => {
+                expect(e).toEqual(
+                    new Error(`provider: ${domain}/${provider.interfaceName} is missing: Operation:addFavoriteStation`)
+                );
+                done();
+            });
     });
 
     it("fetches participantId from the participantIdStorage", done => {
@@ -265,16 +276,9 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", () => {
         done();
     });
 
-    it("registers capability at capabilities stub", done => {
+    it("registers capability at capabilities stub", async () => {
         const lowerBound = Date.now();
-        capabilitiesRegistrar
-            .registerProvider(domain, provider, providerQos)
-            .then(() => {
-                return null;
-            })
-            .catch(() => {
-                return null;
-            });
+        await capabilitiesRegistrar.registerProvider(domain, provider, providerQos);
         const upperBound = Date.now();
         expect(discoveryStubSpy.add).toHaveBeenCalled();
         const actualDiscoveryEntry = discoveryStubSpy.add.calls.argsFor(0)[0];
@@ -286,7 +290,6 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", () => {
         expect(actualDiscoveryEntry.lastSeenDateMs).not.toBeGreaterThan(upperBound);
         expect(actualDiscoveryEntry.providerVersion.majorVersion).toEqual(provider.constructor.MAJOR_VERSION);
         expect(actualDiscoveryEntry.providerVersion.minorVersion).toEqual(provider.constructor.MINOR_VERSION);
-        done();
     });
 
     async function testAwaitGlobalRegistrationScenario(awaitGlobalRegistration) {
@@ -354,14 +357,30 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", () => {
             });
     });
 
-    it("throws exception when called while shutting down", done => {
+    function reversePromise(promise) {
+        return promise.then(suc => Promise.reject(suc)).catch(e => e);
+    }
+
+    it("rejects with an exception when called while shutting down", async () => {
         capabilitiesRegistrar.shutdown();
-        expect(() => {
-            capabilitiesRegistrar.registerProvider(domain, provider, providerQos);
-        }).toThrow();
-        expect(() => {
-            capabilitiesRegistrar.unregisterProvider(domain, provider);
-        }).toThrow();
-        done();
+        await reversePromise(capabilitiesRegistrar.registerProvider(domain, provider, providerQos));
+        await reversePromise(capabilitiesRegistrar.unregisterProvider(domain, provider));
+    });
+
+    it("deletes the next hop when discoveryStub.add fails", async () => {
+        const error = new Error("some Error");
+        discoveryStubSpy.add.and.returnValue(Promise.reject(error));
+        const e = await reversePromise(capabilitiesRegistrar.registerProvider(domain, provider, providerQos));
+        expect(e).toEqual(error);
+        expect(messageRouterSpy.removeNextHop).toHaveBeenCalled();
+    });
+
+    it("removes capability at discoveryStub and removes next hop in routing table when unregistering provider", async () => {
+        await capabilitiesRegistrar.registerProvider(domain, provider, providerQos);
+
+        await capabilitiesRegistrar.unregisterProvider(domain, provider);
+
+        expect(messageRouterSpy.removeNextHop).toHaveBeenCalled();
+        expect(discoveryStubSpy.remove).toHaveBeenCalled();
     });
 });

@@ -91,7 +91,8 @@ public class MqttMessagingSkeletonTest {
                                             new NoOpRawMessagingPreprocessor(),
                                             new HashSet<JoynrMessageProcessor>(),
                                             mqttStatusReceiver);
-        when(mqttClientFactory.create()).thenReturn(mqttClient);
+        when(mqttClientFactory.createReceiver()).thenReturn(mqttClient);
+        when(mqttClientFactory.createSender()).thenReturn(mqttClient);
         subject.init();
         verify(mqttClient).subscribe(anyString());
         reset(mqttClient);
@@ -239,7 +240,8 @@ public class MqttMessagingSkeletonTest {
         verify(messageRouter, times(maxIncomingMqttRequests)).route(any(ImmutableMessage.class));
 
         // Further non-request messages should still be accepted
-        subject.transmit(createTestMessage(Message.VALUE_MESSAGE_TYPE_REPLY).getSerializedMessage(), failIfCalledAction);
+        subject.transmit(createTestMessage(Message.VALUE_MESSAGE_TYPE_REPLY).getSerializedMessage(),
+                         failIfCalledAction);
         subject.transmit(createTestMessage(Message.VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST).getSerializedMessage(),
                          failIfCalledAction);
         subject.transmit(createTestMessage(Message.VALUE_MESSAGE_TYPE_MULTICAST).getSerializedMessage(),

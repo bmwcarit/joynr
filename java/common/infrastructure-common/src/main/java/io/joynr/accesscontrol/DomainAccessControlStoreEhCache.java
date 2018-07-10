@@ -60,8 +60,8 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
 
     public enum CacheId {
 
-        MASTER_ACL("io.joynr.MasterACL"), OWNER_ACL("io.joynr.OwnerACL"), MEDIATOR_ACL("io.joynr.MediatorACL"), DOMAIN_ROLES(
-                "io.joynr.DomainRoleTable");
+        MASTER_ACL("io.joynr.MasterACL"), OWNER_ACL("io.joynr.OwnerACL"), MEDIATOR_ACL(
+                "io.joynr.MediatorACL"), DOMAIN_ROLES("io.joynr.DomainRoleTable");
 
         private final String idAsString;
 
@@ -166,7 +166,9 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
     }
 
     @Override
-    public List<MasterAccessControlEntry> getMasterAccessControlEntries(String uid, String domain, String interfaceName) {
+    public List<MasterAccessControlEntry> getMasterAccessControlEntries(String uid,
+                                                                        String domain,
+                                                                        String interfaceName) {
         return getAces(CacheId.MASTER_ACL, uid, domain, interfaceName);
     }
 
@@ -370,8 +372,9 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
         // here search on uid take place
         Attribute<String> uidAttribute = cache.getSearchAttribute(UserDomainInterfaceOperationKey.USER_ID);
         // query is the fastest if you search for keys and if you need value then call Cache.get(key)
-        Query queryRequestedUid = cache.createQuery().addCriteria(uidAttribute.eq(uid).or(uidAttribute.eq(WILDCARD)))
-        // have specific user ids appear before wildcards
+        Query queryRequestedUid = cache.createQuery()
+                                       .addCriteria(uidAttribute.eq(uid).or(uidAttribute.eq(WILDCARD)))
+                                       // have specific user ids appear before wildcards
                                        .addOrderBy(uidAttribute, Direction.DESCENDING)
                                        .includeKeys()
                                        .end();

@@ -18,4 +18,3 @@
  * #L%
  */
 package io.joynr.messaging.bounceproxy.controller;
-

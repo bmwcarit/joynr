@@ -101,16 +101,15 @@ public class PublicationTimersTest {
         Deferred<String> testAttributeDeferred = new Deferred<String>();
         testAttributeDeferred.resolve("testAttributeValue");
         Promise<Deferred<String>> testAttributePromise = new Promise<Deferred<String>>(testAttributeDeferred);
-        Mockito.doReturn(testAttributePromise)
-               .when(attributePollInterpreter)
-               .execute(any(ProviderContainer.class), any(Method.class));
+        Mockito.doReturn(testAttributePromise).when(attributePollInterpreter).execute(any(ProviderContainer.class),
+                                                                                      any(Method.class));
     }
 
     @SuppressWarnings("unchecked")
     @Test(timeout = 4000)
     public void publicationsSentUntilExpiryDate() throws InterruptedException, JoynrSendBufferFullException,
-                                                 JoynrMessageNotSentException, JsonGenerationException,
-                                                 JsonMappingException, IOException {
+                                                  JoynrMessageNotSentException, JsonGenerationException,
+                                                  JsonMappingException, IOException {
         LOG.debug("Starting PublicationTimersTest.timerIsStoppedWhenEnddateIsReached test");
         int period = 500;
         int subscriptionLength = 1100;
@@ -137,10 +136,11 @@ public class PublicationTimersTest {
         Thread.sleep(subscriptionLength + period / 2);
 
         int publicationTimes = 1 + (subscriptionLength / period);
-        verify(dispatcher, times(publicationTimes)).sendSubscriptionPublication(eq(providerId),
-                                                                                (Set<String>) argThat(contains(proxyId)),
-                                                                                any(SubscriptionPublication.class),
-                                                                                any(MessagingQos.class));
+        verify(dispatcher,
+               times(publicationTimes)).sendSubscriptionPublication(eq(providerId),
+                                                                    (Set<String>) argThat(contains(proxyId)),
+                                                                    any(SubscriptionPublication.class),
+                                                                    any(MessagingQos.class));
 
         Thread.sleep(subscriptionLength);
         verify(dispatcher).sendSubscriptionReply(eq(providerId),

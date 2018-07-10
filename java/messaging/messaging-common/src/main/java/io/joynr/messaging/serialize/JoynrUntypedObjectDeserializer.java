@@ -40,9 +40,10 @@ public class JoynrUntypedObjectDeserializer extends UntypedObjectDeserializer {
     /**
      * Arrays are not serialized with type information, so also need to deserialize them without
      */
-    public Object deserializeWithType(JsonParser jp, DeserializationContext ctxt, TypeDeserializer withTypeDeserializer)
-                                                                                                                        throws IOException,
-                                                                                                                        JsonProcessingException {
+    public Object deserializeWithType(JsonParser jp,
+                                      DeserializationContext ctxt,
+                                      TypeDeserializer withTypeDeserializer) throws IOException,
+                                                                             JsonProcessingException {
         JsonToken t = jp.getCurrentToken();
         if (t == JsonToken.START_ARRAY) {
             return super.deserialize(jp, ctxt);

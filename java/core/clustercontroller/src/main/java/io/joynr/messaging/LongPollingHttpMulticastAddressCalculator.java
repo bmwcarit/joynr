@@ -58,7 +58,8 @@ public class LongPollingHttpMulticastAddressCalculator implements MulticastAddre
         ChannelAddress multicastAddress = null;
         if (globalAddress != null) {
             try {
-                String multicastChannelId = URLEncoder.encode(message.getSender() + "/" + message.getRecipient(), UTF_8);
+                String multicastChannelId = URLEncoder.encode(message.getSender() + "/" + message.getRecipient(),
+                                                              UTF_8);
                 multicastAddress = new ChannelAddress(globalAddress.getMessagingEndpointUrl(), multicastChannelId);
             } catch (UnsupportedEncodingException e) {
                 logger.error("Unable to encode multicast channel from message {}", message, e);

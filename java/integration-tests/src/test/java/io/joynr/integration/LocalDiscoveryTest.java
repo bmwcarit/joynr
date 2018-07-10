@@ -275,7 +275,9 @@ public class LocalDiscoveryTest {
         Set<DiscoveryEntryWithMetaInfo> discoveryEntriesWithMetaInfo = CapabilityUtils.convertToDiscoveryEntryWithMetaInfoSet(false,
                                                                                                                               discoveryEntries);
 
-        when(globalDiscoveryEntryCacheMock.lookup(any(String[].class), eq(interfaceName), anyLong())).thenReturn(discoveryEntries);
+        when(globalDiscoveryEntryCacheMock.lookup(any(String[].class),
+                                                  eq(interfaceName),
+                                                  anyLong())).thenReturn(discoveryEntries);
 
         ProxyBuilder<testProxy> proxyBuilder = runtime.getProxyBuilder(testDomain, testProxy.class);
         final Future<Void> future = new Future<Void>();
@@ -323,7 +325,9 @@ public class LocalDiscoveryTest {
         globalDiscoveryEntries.add(CapabilityUtils.discoveryEntry2GlobalDiscoveryEntry(discoveryEntry,
                                                                                        new MqttAddress()));
 
-        when(globalDiscoveryEntryCacheMock.lookup(any(String[].class), eq(interfaceName), anyLong())).thenReturn(new HashSet<DiscoveryEntry>());
+        when(globalDiscoveryEntryCacheMock.lookup(any(String[].class),
+                                                  eq(interfaceName),
+                                                  anyLong())).thenReturn(new HashSet<DiscoveryEntry>());
         Mockito.doAnswer(new Answer<Object>() {
 
             @SuppressWarnings("rawtypes")
@@ -402,7 +406,8 @@ public class LocalDiscoveryTest {
                                                                                                                            "participantIdRemote",
                                                                                                                            new ProviderQos(),
                                                                                                                            System.currentTimeMillis(),
-                                                                                                                           System.currentTimeMillis() + 100000,
+                                                                                                                           System.currentTimeMillis()
+                                                                                                                                   + 100000,
                                                                                                                            "publicKeyId"),
                                                                                                         new MqttAddress());
         localDiscoveryEntries.add(discoveryEntry);
@@ -415,8 +420,11 @@ public class LocalDiscoveryTest {
         discoveryEntriesWithMetaInfo.add(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false,
                                                                                              remoteDiscoveryEntry));
 
-        when(localDiscoveryEntryStoreMock.lookup(any(String[].class), eq(interfaceName))).thenReturn(localDiscoveryEntries);
-        when(globalDiscoveryEntryCacheMock.lookup(any(String[].class), eq(interfaceName), anyLong())).thenReturn(cachedDiscoveryEntries);
+        when(localDiscoveryEntryStoreMock.lookup(any(String[].class),
+                                                 eq(interfaceName))).thenReturn(localDiscoveryEntries);
+        when(globalDiscoveryEntryCacheMock.lookup(any(String[].class),
+                                                  eq(interfaceName),
+                                                  anyLong())).thenReturn(cachedDiscoveryEntries);
         Mockito.doAnswer(new Answer<Object>() {
 
             @SuppressWarnings("rawtypes")

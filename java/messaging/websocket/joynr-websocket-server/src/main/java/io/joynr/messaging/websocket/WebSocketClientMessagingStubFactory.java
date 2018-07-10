@@ -27,8 +27,8 @@ import joynr.system.RoutingTypes.WebSocketAddress;
 import joynr.system.RoutingTypes.WebSocketClientAddress;
 
 @Singleton
-public class WebSocketClientMessagingStubFactory extends
-        AbstractMiddlewareMessagingStubFactory<WebSocketMessagingStub, WebSocketClientAddress> {
+public class WebSocketClientMessagingStubFactory
+        extends AbstractMiddlewareMessagingStubFactory<WebSocketMessagingStub, WebSocketClientAddress> {
 
     private WebSocketEndpointFactory webSocketEndpointFactory;
     private WebSocketAddress serverAddress;

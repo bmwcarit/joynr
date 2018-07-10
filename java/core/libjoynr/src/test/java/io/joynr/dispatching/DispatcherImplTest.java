@@ -47,6 +47,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Captor;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
@@ -67,6 +68,7 @@ import io.joynr.messaging.JsonMessageSerializerModule;
 import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.messaging.MessagingQosEffort;
 import io.joynr.messaging.ReceiverStatusListener;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.sender.MessageSender;
@@ -170,10 +172,11 @@ public class DispatcherImplTest {
                      *
                      */
                     messageReceiverMock.setBlockOnInitialisation(true);
-                    requestCallerDirectory.add(requestReplyId, new ProviderContainer("interfaceName",
-                                                                                     DispatcherImplTest.class,
-                                                                                     requestCaller,
-                                                                                     subscriptionPublisher));
+                    requestCallerDirectory.add(requestReplyId,
+                                               new ProviderContainer("interfaceName",
+                                                                     DispatcherImplTest.class,
+                                                                     requestCaller,
+                                                                     subscriptionPublisher));
                 } finally {
                     messageReceiverMock.setBlockOnInitialisation(false);
                 }
@@ -259,8 +262,7 @@ public class DispatcherImplTest {
     }
 
     private void testPropagateCompressFlagFromRequestToRepliesImpl(final boolean compress,
-                                                                   final boolean compressAllOutgoingReplies)
-                                                                                                            throws Exception {
+                                                                   final boolean compressAllOutgoingReplies) throws Exception {
         MessagingQos messagingQos = new MessagingQos(1000L);
         messagingQos.setCompress(compress);
 
@@ -333,6 +335,75 @@ public class DispatcherImplTest {
         testPropagateCompressFlagFromRequestToRepliesImpl(compress, compressAllOutgoingReplies);
     }
 
+    private void testPropagateEffortFromRequestToRepliesImpl(final MessagingQosEffort effort) throws Exception {
+        Mockito.reset(messageSenderMock);
+        MessagingQos messagingQos = new MessagingQos(1000L, effort);
+
+        String requestReplyId = UUID.randomUUID().toString();
+        Request request = new Request("methodName", new Object[]{}, new String[]{}, requestReplyId);
+        final String providerParticipantId = "toParticipantId";
+
+        MutableMessage joynrMessage = messageFactory.createRequest("fromParticipantId",
+                                                                   providerParticipantId,
+                                                                   request,
+                                                                   messagingQos);
+
+        ImmutableMessage outgoingMessage = joynrMessage.getImmutableMessage();
+
+        fixture.messageArrived(outgoingMessage);
+        verify(requestReplyManagerMock).handleRequest(providerCallbackReply.capture(),
+                                                      eq(providerParticipantId),
+                                                      eq(request),
+                                                      eq(joynrMessage.getTtlMs()));
+        providerCallbackReply.getValue().onSuccess(new Reply(requestReplyId));
+        ArgumentCaptor<MutableMessage> captor = ArgumentCaptor.forClass(MutableMessage.class);
+        verify(messageSenderMock).sendMessage(captor.capture());
+        ImmutableMessage immutableMessage = captor.getValue().getImmutableMessage();
+        if (effort == MessagingQosEffort.NORMAL || effort == null) {
+            assertEquals(null, immutableMessage.getEffort());
+        } else {
+            assertEquals(effort.name(), immutableMessage.getEffort());
+        }
+    }
+
+    @Test
+    public void testPropagateEffortFromRequestToReplies() throws Exception {
+        MessagingQosEffort effort = MessagingQosEffort.NORMAL;
+        testPropagateEffortFromRequestToRepliesImpl(effort);
+        effort = MessagingQosEffort.BEST_EFFORT;
+        testPropagateEffortFromRequestToRepliesImpl(effort);
+        effort = null;
+        testPropagateEffortFromRequestToRepliesImpl(effort);
+    }
+
+    @Test
+    public void testRequestWithInvalidEffort_replyUsesDefaultEffort() throws Exception {
+        MessagingQos messagingQos = new MessagingQos(1000L);
+
+        String requestReplyId = UUID.randomUUID().toString();
+        Request request = new Request("methodName", new Object[]{}, new String[]{}, requestReplyId);
+        final String providerParticipantId = "toParticipantId";
+
+        MutableMessage joynrMessage = messageFactory.createRequest("fromParticipantId",
+                                                                   providerParticipantId,
+                                                                   request,
+                                                                   messagingQos);
+
+        joynrMessage.setEffort("INVALID_EFFORT");
+        ImmutableMessage outgoingMessage = joynrMessage.getImmutableMessage();
+
+        fixture.messageArrived(outgoingMessage);
+        verify(requestReplyManagerMock).handleRequest(providerCallbackReply.capture(),
+                                                      eq(providerParticipantId),
+                                                      eq(request),
+                                                      eq(joynrMessage.getTtlMs()));
+        providerCallbackReply.getValue().onSuccess(new Reply(requestReplyId));
+        ArgumentCaptor<MutableMessage> captor = ArgumentCaptor.forClass(MutableMessage.class);
+        verify(messageSenderMock).sendMessage(captor.capture());
+        ImmutableMessage immutableMessage = captor.getValue().getImmutableMessage();
+        assertEquals(null, immutableMessage.getEffort());
+    }
+
     private static class MessageIsCompressedMatcher extends ArgumentMatcher<MutableMessage> {
         private final boolean shouldMessageBeCompressed;
 
@@ -354,4 +425,5 @@ public class DispatcherImplTest {
             }
         }
     }
+
 }

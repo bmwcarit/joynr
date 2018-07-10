@@ -142,7 +142,7 @@ public class MutableMessageFactoryTest {
 
         assertTrue(message.isTtlAbsolute());
         assertTrue("ExpiryDate=" + message.getTtlMs() + " differs " + diff + "ms (more than "
-                           + MAX_ALLOWED_EXPIRY_DATE_DIFF_MS + "ms) from expected value=" + expectedValue,
+                + MAX_ALLOWED_EXPIRY_DATE_DIFF_MS + "ms) from expected value=" + expectedValue,
                    diff <= MAX_ALLOWED_EXPIRY_DATE_DIFF_MS);
     }
 
@@ -300,7 +300,8 @@ public class MutableMessageFactoryTest {
         assertEquals(fromParticipantId, joynrMessage.getSender());
         assertEquals(multicastId, joynrMessage.getRecipient());
         assertEquals(Message.VALUE_MESSAGE_TYPE_MULTICAST, joynrMessage.getType());
-        assertTrue(new String(joynrMessage.getPayload(), Charsets.UTF_8).contains(MulticastPublication.class.getName()));
+        assertTrue(new String(joynrMessage.getPayload(),
+                              Charsets.UTF_8).contains(MulticastPublication.class.getName()));
     }
 
     @Test

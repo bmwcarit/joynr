@@ -3,7 +3,7 @@ message(STATUS "Configuring JoynrClusterController...")
 message(STATUS "#############################################\n")
 
 ### Add mosquitto mqtt ###########################################################
-set(JOYNR_REQUIRED_MOSQUITTO_VERSION 1.4.7)
+set(JOYNR_REQUIRED_MOSQUITTO_VERSION 1.4.14)
 if(USE_PLATFORM_MOSQUITTO)
     find_package(mosquitto ${JOYNR_REQUIRED_MOSQUITTO_VERSION} REQUIRED)
 
@@ -14,7 +14,7 @@ if(USE_PLATFORM_MOSQUITTO)
     message(STATUS "variable MOSQUITTO_LIBRARIES=${MOSQUITTO_LIBRARIES}")
 else(USE_PLATFORM_MOSQUITTO)
     message(STATUS "############ Download: mosquitto ############")
-    set(MOSQUITTO_SOURCE_URL "https://git.eclipse.org/r/mosquitto/org.eclipse.mosquitto.git")
+    set(MOSQUITTO_SOURCE_URL "https://github.com/eclipse/mosquitto")
     set(MOSQUITTO_SOURCE_TYPE "GIT_REPOSITORY")
     set(MOSQUITTO_LIBRARY_NAME ${CMAKE_SHARED_LIBRARY_PREFIX}mosquittopp${CMAKE_SHARED_LIBRARY_SUFFIX})
 

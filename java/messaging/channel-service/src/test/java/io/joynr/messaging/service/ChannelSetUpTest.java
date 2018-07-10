@@ -66,14 +66,12 @@ public class ChannelSetUpTest extends AbstractChannelSetUpTest {
     @Test
     public void testCreateChannelThatIsAlreadyKnown() {
 
-        Mockito.when(mock.getChannel("channel-123")).thenReturn(createChannel("X.Y",
-                                                                              "http://joyn-bpX.de/bp",
-                                                                              "channel-123"));
+        Mockito.when(mock.getChannel("channel-123"))
+               .thenReturn(createChannel("X.Y", "http://joyn-bpX.de/bp", "channel-123"));
 
         Response response = //
-        given(). //
-        when()
-               .post(serverUrl + "?ccid=channel-123");
+                given(). //
+                       when().post(serverUrl + "?ccid=channel-123");
 
         assertEquals(200 /* OK */, response.getStatusCode());
         assertEquals("http://joyn-bpX.de/bp/channels/channel-123", response.getHeader("Location"));
@@ -87,14 +85,12 @@ public class ChannelSetUpTest extends AbstractChannelSetUpTest {
     public void testCreateNewChannel() {
 
         Mockito.when(mock.getChannel("channel-123")).thenReturn(null);
-        Mockito.when(mock.createChannel("channel-123", null)).thenReturn(createChannel("0.0",
-                                                                                       "http://joyn-bp0.de/bp",
-                                                                                       "channel-123"));
+        Mockito.when(mock.createChannel("channel-123", null))
+               .thenReturn(createChannel("0.0", "http://joyn-bp0.de/bp", "channel-123"));
 
         Response response = //
-        given(). //
-        when()
-               .post(serverUrl + "?ccid=channel-123");
+                given(). //
+                       when().post(serverUrl + "?ccid=channel-123");
 
         assertEquals(201 /* Created */, response.getStatusCode());
         assertEquals("http://joyn-bp0.de/bp/channels/channel-123", response.getHeader("Location"));

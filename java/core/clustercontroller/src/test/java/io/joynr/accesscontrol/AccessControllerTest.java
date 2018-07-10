@@ -115,9 +115,8 @@ public class AccessControllerTest {
                 callback.processCapabilityReceived(discoveryEntry);
                 return null;
             }
-        }).when(localCapabilitiesDirectory).lookup(eq(toParticipantId),
-                                                   any(DiscoveryQos.class),
-                                                   any(CapabilityCallback.class));
+        }).when(localCapabilitiesDirectory)
+          .lookup(eq(toParticipantId), any(DiscoveryQos.class), any(CapabilityCallback.class));
 
     }
 

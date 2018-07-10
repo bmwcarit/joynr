@@ -56,8 +56,8 @@ import org.slf4j.LoggerFactory;
  */
 @Stateless
 @ServiceProvider(serviceInterface = TestInterfaceSync.class)
-public class IltProviderBean implements TestInterfaceSync,
-        SubscriptionPublisherInjection<TestInterfaceSubscriptionPublisher> {
+public class IltProviderBean
+        implements TestInterfaceSync, SubscriptionPublisherInjection<TestInterfaceSubscriptionPublisher> {
     private Byte attributeUInt8;
     private Double attributeDouble;
     private Boolean attributeBooleanReadonly;

@@ -74,8 +74,8 @@ public class ProxyErrorsTest {
 
     // Dummy interface with a major version incompatible to the provider's version
     @JoynrVersion(major = 2, minor = 0)
-    public interface TestProxyWrongVersion extends testAsync, testSync, testSubscriptionInterface,
-            testBroadcastInterface {
+    public interface TestProxyWrongVersion
+            extends testAsync, testSync, testSubscriptionInterface, testBroadcastInterface {
         public static String INTERFACE_NAME = "tests/test";
     }
 

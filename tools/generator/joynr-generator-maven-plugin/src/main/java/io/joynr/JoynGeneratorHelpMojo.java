@@ -33,7 +33,7 @@ public class JoynGeneratorHelpMojo extends AbstractJoynGeneratorMojo {
 
     @Override
     protected void invokeGenerator(GeneratorTask task) throws IOException, ClassNotFoundException,
-                                                      InstantiationException, IllegalAccessException {
+                                                       InstantiationException, IllegalAccessException {
         task.printHelp(getLog());
     }
 

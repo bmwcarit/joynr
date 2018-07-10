@@ -38,6 +38,7 @@ function WebSocketNodeWrapper(remoteUrl, keychain, useUnencryptedTls) {
         clientOptions.key = keychain.tlsKey;
         clientOptions.ca = keychain.tlsCa;
         clientOptions.rejectUnauthorized = true;
+        clientOptions.checkServerIdentity = keychain.checkServerIdentity;
     }
     if (useUnencryptedTls) {
         clientOptions.ciphers = "eNULL";

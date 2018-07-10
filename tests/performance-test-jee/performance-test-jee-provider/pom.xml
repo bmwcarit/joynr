@@ -26,7 +26,7 @@
 	<parent>
 		<groupId>io.joynr.performance</groupId>
 		<artifactId>performance-test-jee</artifactId>
-		<version>1.4.0-SNAPSHOT</version>
+		<version>1.5.0-SNAPSHOT</version>
 	</parent>
 
 	<dependencies>
@@ -59,8 +59,8 @@
 				</configuration>
 			</plugin>
 			<plugin>
-				<groupId>com.googlecode.maven-java-formatter-plugin</groupId>
-				<artifactId>maven-java-formatter-plugin</artifactId>
+				<groupId>net.revelc.code.formatter</groupId>
+				<artifactId>formatter-maven-plugin</artifactId>
 			</plugin>
 		</plugins>
 	</build>

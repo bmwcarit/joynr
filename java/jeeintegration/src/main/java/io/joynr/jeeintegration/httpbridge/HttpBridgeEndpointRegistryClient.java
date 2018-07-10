@@ -136,34 +136,28 @@ public class HttpBridgeEndpointRegistryClient implements HttpBridgeRegistryClien
                       endpointUrl,
                       channelId);
             scheduledExecutorService.schedule(() -> {
-                                                  String topic = channelId;
-                                                  HttpPost message = new HttpPost(endpointRegistryUri);
-                                                  message.addHeader("Content-Type", MediaType.APPLICATION_JSON);
-                                                  try {
-                                                      HttpEntity entity = new StringEntity(format("{\"endpointUrl\": \"%s\", \"topic\": \"%s\"}",
-                                                                                                  endpointUrl,
-                                                                                                  topic));
-                                                      message.setEntity(entity);
-                                                      boolean executionResult = executeRequest(message);
-                                                      if (executionResult) {
-                                                          result.complete(null);
-                                                          return;
-                                                      }
-                                                  } catch (IOException e) {
-                                                      LOG.error(format("Unable to register endpoint %s / channel ID %s with broker at %s.",
-                                                                       endpointUrl,
-                                                                       channelId,
-                                                                       endpointRegistryUri),
-                                                                e);
-                                                  }
-                                                  scheduleWithRetries(result,
-                                                                      10L,
-                                                                      remainingRetries - 1,
-                                                                      endpointUrl,
-                                                                      channelId);
-                                              },
-                                              delay,
-                                              TimeUnit.SECONDS);
+                String topic = channelId;
+                HttpPost message = new HttpPost(endpointRegistryUri);
+                message.addHeader("Content-Type", MediaType.APPLICATION_JSON);
+                try {
+                    HttpEntity entity = new StringEntity(format("{\"endpointUrl\": \"%s\", \"topic\": \"%s\"}",
+                                                                endpointUrl,
+                                                                topic));
+                    message.setEntity(entity);
+                    boolean executionResult = executeRequest(message);
+                    if (executionResult) {
+                        result.complete(null);
+                        return;
+                    }
+                } catch (IOException e) {
+                    LOG.error(format("Unable to register endpoint %s / channel ID %s with broker at %s.",
+                                     endpointUrl,
+                                     channelId,
+                                     endpointRegistryUri),
+                              e);
+                }
+                scheduleWithRetries(result, 10L, remainingRetries - 1, endpointUrl, channelId);
+            }, delay, TimeUnit.SECONDS);
         }
     }
 

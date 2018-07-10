@@ -142,7 +142,9 @@ public class ProxyInvocationHandlerTest {
     @Test
     public void testCallFireAndForgetMethod() throws Throwable {
         ConnectorInvocationHandler connectorInvocationHandler = mock(ConnectorInvocationHandler.class);
-        when(connectorFactory.create(Mockito.anyString(), Mockito.<ArbitrationResult> any(), Mockito.eq(messagingQos))).thenReturn(connectorInvocationHandler);
+        when(connectorFactory.create(Mockito.anyString(),
+                                     Mockito.<ArbitrationResult> any(),
+                                     Mockito.eq(messagingQos))).thenReturn(connectorInvocationHandler);
         Method fireAndForgetMethod = TestServiceSync.class.getMethod("callMe", new Class<?>[]{ String.class });
         Object[] args = new Object[]{ "test" };
 
@@ -187,7 +189,9 @@ public class ProxyInvocationHandlerTest {
     @Test
     public void testPartitionsPassedToMulticastSubscription() throws NoSuchMethodException, ApplicationException {
         ConnectorInvocationHandler connectorInvocationHandler = mock(ConnectorInvocationHandler.class);
-        when(connectorFactory.create(Mockito.anyString(), Mockito.<ArbitrationResult> any(), Mockito.eq(messagingQos))).thenReturn(connectorInvocationHandler);
+        when(connectorFactory.create(Mockito.anyString(),
+                                     Mockito.<ArbitrationResult> any(),
+                                     Mockito.eq(messagingQos))).thenReturn(connectorInvocationHandler);
         MyBroadcastSubscriptionListener broadcastSubscriptionListener = mock(MyBroadcastSubscriptionListener.class);
         SubscriptionQos subscriptionQos = mock(SubscriptionQos.class);
 

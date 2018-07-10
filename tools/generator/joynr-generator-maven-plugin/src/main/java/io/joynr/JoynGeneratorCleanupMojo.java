@@ -50,7 +50,7 @@ public class JoynGeneratorCleanupMojo extends AbstractJoynGeneratorMojo {
 
     @Override
     protected void invokeGenerator(GeneratorTask task) throws IOException, ClassNotFoundException,
-                                                      InstantiationException, IllegalAccessException {
+                                                       InstantiationException, IllegalAccessException {
         task.generate(getLog());
     }
 

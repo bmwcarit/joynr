@@ -71,7 +71,8 @@ public class DomainAccessControlStoreTest {
                                                                                 TrustLevel.LOW },
                                                                         OPERATION1,
                                                                         Permission.NO,
-                                                                        new Permission[]{ Permission.ASK, Permission.NO });
+                                                                        new Permission[]{ Permission.ASK,
+                                                                                Permission.NO });
         expectedOwnerAccessControlEntry = new OwnerAccessControlEntry(UID1,
                                                                       DOMAIN1,
                                                                       INTERFACE1,
@@ -204,8 +205,8 @@ public class DomainAccessControlStoreTest {
                      store.removeMasterAccessControlEntry(UID1, DOMAIN1, INTERFACE1, OPERATION1));
         assertTrue("In Master ACL no master ACE for given domain, interface should remain",
                    store.getMasterAccessControlEntries(DOMAIN1, INTERFACE1).isEmpty());
-        assertTrue("In Master ACL no master ACE for UID1 should remain", store.getMasterAccessControlEntries(UID1)
-                                                                              .isEmpty());
+        assertTrue("In Master ACL no master ACE for UID1 should remain",
+                   store.getMasterAccessControlEntries(UID1).isEmpty());
     }
 
     @Test
@@ -256,10 +257,8 @@ public class DomainAccessControlStoreTest {
         expectedOwnerAccessControlEntry.setConsumerPermission(Permission.YES);
         store.updateOwnerAccessControlEntry(expectedOwnerAccessControlEntry);
 
-        assertTrue("Owner ACE for UID1 should have Permission.YES", store.getOwnerAccessControlEntries(UID1)
-                                                                         .get(0)
-                                                                         .getConsumerPermission()
-                                                                         .equals(Permission.YES));
+        assertTrue("Owner ACE for UID1 should have Permission.YES",
+                   store.getOwnerAccessControlEntries(UID1).get(0).getConsumerPermission().equals(Permission.YES));
     }
 
     @Test
@@ -272,8 +271,8 @@ public class DomainAccessControlStoreTest {
                      store.removeOwnerAccessControlEntry(UID1, DOMAIN1, INTERFACE1, OPERATION1));
         assertTrue("In Owner ACL no owner ACE for given domain, interface should remain",
                    store.getOwnerAccessControlEntries(DOMAIN1, INTERFACE1).isEmpty());
-        assertTrue("In Owner ACL no owner ACE for UID1 should remain", store.getOwnerAccessControlEntries(UID1)
-                                                                            .isEmpty());
+        assertTrue("In Owner ACL no owner ACE for UID1 should remain",
+                   store.getOwnerAccessControlEntries(UID1).isEmpty());
     }
 
     @Test

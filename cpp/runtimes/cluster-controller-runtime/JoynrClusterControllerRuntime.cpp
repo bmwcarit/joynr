@@ -268,8 +268,7 @@ void JoynrClusterControllerRuntime::init()
 
     MessagingPropertiesPersistence persist(
             messagingSettings.getMessagingPropertiesPersistenceFilename());
-    std::string clusterControllerId = persist.getChannelId();
-    std::string receiverId = persist.getReceiverId();
+    const std::string clusterControllerId = persist.getChannelId();
 
     std::vector<std::shared_ptr<ITransportStatus>> transportStatuses;
 
@@ -279,6 +278,7 @@ void JoynrClusterControllerRuntime::init()
                             "The http message receiver supplied is NULL, creating the default "
                             "http MessageReceiver");
 
+            const std::string receiverId = persist.getReceiverId();
             httpMessageReceiver = std::make_shared<HttpReceiver>(
                     messagingSettings, clusterControllerId, receiverId);
 
@@ -291,8 +291,9 @@ void JoynrClusterControllerRuntime::init()
 
     if (doMqttMessaging) {
         if (!mqttMessageReceiver || !mqttMessageSender) {
-            std::string ccMqttClientIdPrefix = clusterControllerSettings.getMqttClientIdPrefix();
-            std::string mqttCliendId = ccMqttClientIdPrefix + receiverId;
+            const std::string ccMqttClientIdPrefix =
+                    clusterControllerSettings.getMqttClientIdPrefix();
+            const std::string mqttCliendId = ccMqttClientIdPrefix + clusterControllerId;
 
             mosquittoConnection = std::make_shared<MosquittoConnection>(
                     messagingSettings, clusterControllerSettings, mqttCliendId);
@@ -690,12 +691,15 @@ void JoynrClusterControllerRuntime::enableAccessController(
 
     ccMessageRouter->setAccessController(std::move(util::as_weak_ptr(accessController)));
 
-    aclEditor = std::make_shared<AccessControlListEditor>(std::move(localDomainAccessStore),
+    aclEditor = std::make_shared<AccessControlListEditor>(localDomainAccessStore,
                                                           localDomainAccessController,
                                                           clusterControllerSettings.aclAudit());
 
     // Set accessController also in LocalCapabilitiesDirectory
     localCapabilitiesDirectory->setAccessController(std::move(util::as_weak_ptr(accessController)));
+
+    // Log entries
+    localDomainAccessStore->logContent();
 }
 
 std::shared_ptr<infrastructure::GlobalDomainAccessControllerProxy> JoynrClusterControllerRuntime::
@@ -772,7 +776,8 @@ void JoynrClusterControllerRuntime::registerInternalSystemServiceProviders()
 void JoynrClusterControllerRuntime::unregisterInternalSystemServiceProvider(
         const std::string& participantId)
 {
-    localCapabilitiesDirectory->remove(participantId, true);
+    const bool isProviderGlobal = false;
+    localCapabilitiesDirectory->remove(participantId, isProviderGlobal);
     for (std::shared_ptr<IDispatcher> currentDispatcher : dispatcherList) {
         currentDispatcher->removeRequestCaller(participantId);
     }
@@ -962,8 +967,8 @@ std::shared_ptr<JoynrClusterControllerRuntime> JoynrClusterControllerRuntime::cr
 void JoynrClusterControllerRuntime::start()
 {
     singleThreadIOService->start();
-    startExternalCommunication();
     startLocalCommunication();
+    startExternalCommunication();
 }
 
 void JoynrClusterControllerRuntime::stop(bool deleteHttpChannel)

@@ -18,11 +18,16 @@
  */
 
 const baseConfig = require("./config");
+baseConfig.global.cc.port = "4243";
 baseConfig.tls = {
     certPath: "/data/ssl-data/certs/client.cert.pem",
     keyPath: "/data/ssl-data/private/client.key.pem",
     caPath: "/data/ssl-data/certs/ca.cert.pem",
     ownerId: "client"
 };
+
+for (let i = 0; i < baseConfig.benchmarks.length; i++) {
+    baseConfig.benchmarks[i].numRuns /= 12;
+}
 
 module.exports = baseConfig;

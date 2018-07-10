@@ -69,7 +69,7 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
         providerQos.setScope(ProviderScope.LOCAL);
         String defaultPublicKeyId = "";
         provisionedDiscoveryEntries.put(systemServicesDomain
-                                                + ProviderAnnotations.getInterfaceName(DiscoveryProvider.class),
+                + ProviderAnnotations.getInterfaceName(DiscoveryProvider.class),
                                         new DiscoveryEntryWithMetaInfo(getVersionFromAnnotation(DiscoveryProvider.class),
                                                                        systemServicesDomain,
                                                                        ProviderAnnotations.getInterfaceName(DiscoveryProvider.class),
@@ -163,7 +163,8 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
     }
 
     @Override
-    public Future<DiscoveryEntryWithMetaInfo> lookup(Callback<DiscoveryEntryWithMetaInfo> callback, String participantId) {
+    public Future<DiscoveryEntryWithMetaInfo> lookup(Callback<DiscoveryEntryWithMetaInfo> callback,
+                                                     String participantId) {
         return getDefaultDiscoveryProxy().lookup(callback, participantId);
     }
 

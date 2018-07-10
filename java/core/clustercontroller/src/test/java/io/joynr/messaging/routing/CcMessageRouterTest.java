@@ -175,9 +175,8 @@ public class CcMessageRouterTest {
                 bind(StatusReceiver.class).toInstance(statusReceiver);
 
                 MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessagingStub, ? extends Address>> messagingStubFactory;
-                messagingStubFactory = MapBinder.newMapBinder(binder(),
-                                                              new TypeLiteral<Class<? extends Address>>() {
-                                                              },
+                messagingStubFactory = MapBinder.newMapBinder(binder(), new TypeLiteral<Class<? extends Address>>() {
+                },
                                                               new TypeLiteral<AbstractMiddlewareMessagingStubFactory<? extends IMessagingStub, ? extends Address>>() {
                                                               },
                                                               Names.named(MessagingStubFactory.MIDDLEWARE_MESSAGING_STUB_FACTORIES));
@@ -351,10 +350,9 @@ public class CcMessageRouterTest {
     }
 
     private ImmutableMessage retryRoutingWith1msDelay(MessageRouter messageRouter, int ttlMs) throws Exception {
-        doThrow(new JoynrDelayMessageException(1, "test")).when(messagingStubMock)
-                                                          .transmit(any(ImmutableMessage.class),
-                                                                    any(SuccessAction.class),
-                                                                    any(FailureAction.class));
+        doThrow(new JoynrDelayMessageException(1, "test")).when(messagingStubMock).transmit(any(ImmutableMessage.class),
+                                                                                            any(SuccessAction.class),
+                                                                                            any(FailureAction.class));
         joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(ttlMs).getValue());
         joynrMessage.setTtlAbsolute(true);
 
@@ -437,9 +435,9 @@ public class CcMessageRouterTest {
 
                 return null;
             }
-        })
-               .when(messagingStubMock)
-               .transmit(any(ImmutableMessage.class), any(SuccessAction.class), any(FailureAction.class));
+        }).when(messagingStubMock).transmit(any(ImmutableMessage.class),
+                                            any(SuccessAction.class),
+                                            any(FailureAction.class));
 
         joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(100000000).getValue());
         joynrMessage.setTtlAbsolute(true);
@@ -483,9 +481,9 @@ public class CcMessageRouterTest {
                 invocation.getArgumentAt(2, FailureAction.class).execute(new Exception());
                 return null;
             }
-        })
-               .when(messagingStubMock)
-               .transmit(any(ImmutableMessage.class), any(SuccessAction.class), any(FailureAction.class));
+        }).when(messagingStubMock).transmit(any(ImmutableMessage.class),
+                                            any(SuccessAction.class),
+                                            any(FailureAction.class));
 
         joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(100000000).getValue());
         joynrMessage.setTtlAbsolute(true);
@@ -524,9 +522,8 @@ public class CcMessageRouterTest {
                 semaphore.release();
                 return null;
             }
-        }).when(messagingStubMock).transmit(any(ImmutableMessage.class),
-                                            any(SuccessAction.class),
-                                            any(FailureAction.class));
+        }).when(messagingStubMock)
+          .transmit(any(ImmutableMessage.class), any(SuccessAction.class), any(FailureAction.class));
 
         messageRouter.route(immutableMessage);
 
@@ -597,10 +594,9 @@ public class CcMessageRouterTest {
         final long routingMaxRetryCount = 0;
         MessageRouter messageRouterWithMaxRetryCount = getMessageRouterWithMaxRetryCount(routingMaxRetryCount);
 
-        doThrow(new JoynrDelayMessageException(1, "test")).when(messagingStubMock)
-                                                          .transmit(any(ImmutableMessage.class),
-                                                                    any(SuccessAction.class),
-                                                                    any(FailureAction.class));
+        doThrow(new JoynrDelayMessageException(1, "test")).when(messagingStubMock).transmit(any(ImmutableMessage.class),
+                                                                                            any(SuccessAction.class),
+                                                                                            any(FailureAction.class));
 
         joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(100000000).getValue());
         joynrMessage.setTtlAbsolute(true);

@@ -151,10 +151,10 @@ public class AccessControllerEnd2EndTest {
                 bindConstant().annotatedWith(Names.named(ClusterControllerRuntimeModule.PROPERTY_ACCESSCONTROL_ENABLE))
                               .to(true);
             }
-        },
-                                                                              new MqttPahoModule());
+        }, new MqttPahoModule());
 
-        DummyJoynrApplication app = (DummyJoynrApplication) new JoynrInjectorFactory(properties, module).createApplication(DummyJoynrApplication.class);
+        DummyJoynrApplication app = (DummyJoynrApplication) new JoynrInjectorFactory(properties,
+                                                                                     module).createApplication(DummyJoynrApplication.class);
 
         return app.getRuntime();
     }

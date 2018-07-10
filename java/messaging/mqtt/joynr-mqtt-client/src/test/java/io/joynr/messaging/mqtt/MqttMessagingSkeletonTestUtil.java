@@ -53,8 +53,9 @@ final class MqttMessagingSkeletonTestUtil {
         return feedMqttSkeletonWithMessages(skeleton, Message.VALUE_MESSAGE_TYPE_REQUEST, numRequests);
     }
 
-    static List<String> feedMqttSkeletonWithMessages(MqttMessagingSkeleton skeleton, String messageType, int numMessages)
-                                                                                                                         throws Exception {
+    static List<String> feedMqttSkeletonWithMessages(MqttMessagingSkeleton skeleton,
+                                                     String messageType,
+                                                     int numMessages) throws Exception {
         List<String> messageIds = new LinkedList<>();
 
         for (int i = 0; i < numMessages; i++) {

@@ -25,7 +25,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>joynr</artifactId>
-		<version>1.4.0-SNAPSHOT</version>
+		<version>1.5.0-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -63,6 +63,7 @@
 							<root>.</root>
 						</roots>
 					<excludes>
+						<exclude>tests/resources/LDAS_checkPermissionToAdd.json</exclude>
 						<exclude>tests/resources/ListOfCapabilitiesToInject.json</exclude>
 						<exclude>tests/resources/MasterAccessTable.json</exclude>
 						<exclude>tests/resources/MasterRegistrationTable.json</exclude>
@@ -70,6 +71,9 @@
 						<exclude>tests/resources/OwnerRegistrationTable.json</exclude>
 						<exclude>tests/resources/application1_ACL_RCL_Permissions.json</exclude>
 						<exclude>tests/resources/application2_ACL_RCL_Permissions.json</exclude>
+						<exclude>tests/resources/application3_ACL_RCL_Permissions.json</exclude>
+						<exclude>tests/resources/application4_ACL_RCL_Permissions.json</exclude>
+						<exclude>tests/resources/application5_ACL_RCL_Permissions.json</exclude>
 					</excludes>
 					</configuration>
 				</plugin>

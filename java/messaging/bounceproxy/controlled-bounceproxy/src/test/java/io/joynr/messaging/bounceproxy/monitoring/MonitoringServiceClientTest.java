@@ -137,7 +137,8 @@ public class MonitoringServiceClientTest {
             Thread.sleep(100);
         }
 
-        verify(handler, Mockito.times(1)).handle(Mockito.argThat(new IsAnyStartupHttpRequest("X.Y",
+        verify(handler, Mockito.times(1)).handle(
+                                                 Mockito.argThat(new IsAnyStartupHttpRequest("X.Y",
                                                                                              "http://joyn-bpX.de/bp/",
                                                                                              "http://joyn-bpX.muc/bp/")),
                                                  any(HttpResponse.class),
@@ -159,7 +160,8 @@ public class MonitoringServiceClientTest {
             Thread.sleep(100);
         }
 
-        verify(handler, Mockito.times(1)).handle(Mockito.argThat(new IsAnyStartupHttpRequest("X.Y",
+        verify(handler, Mockito.times(1)).handle(
+                                                 Mockito.argThat(new IsAnyStartupHttpRequest("X.Y",
                                                                                              "http://joyn-bpX.de/bp/",
                                                                                              "http://joyn-bpX.muc/bp/")),
                                                  any(HttpResponse.class),
@@ -182,7 +184,8 @@ public class MonitoringServiceClientTest {
             Thread.sleep(100);
         }
 
-        verify(handler, Mockito.times(1)).handle(Mockito.argThat(new IsAnyStartupHttpRequest("X.Y",
+        verify(handler, Mockito.times(1)).handle(
+                                                 Mockito.argThat(new IsAnyStartupHttpRequest("X.Y",
                                                                                              "http://joyn-bpX.de/bp/",
                                                                                              "http://joyn-bpX.muc/bp/")),
                                                  any(HttpResponse.class),
@@ -287,7 +290,9 @@ public class MonitoringServiceClientTest {
         // sending report every 100ms in 1 second. For robustness, we test for
         // at least 5 invocations
         ArgumentCaptor<HttpRequest> argument1 = ArgumentCaptor.forClass(HttpRequest.class);
-        verify(handler, Mockito.atLeast(5)).handle(argument1.capture(), any(HttpResponse.class), any(HttpContext.class));
+        verify(handler, Mockito.atLeast(5)).handle(argument1.capture(),
+                                                   any(HttpResponse.class),
+                                                   any(HttpContext.class));
         Assert.assertThat(argument1.getValue(), MockitoTestUtils.isAnyPerformanceHttpRequest("X.Y", 0, 0));
 
         // Shutdown all threads at the end. If we shutdown before test, the
@@ -317,9 +322,9 @@ public class MonitoringServiceClientTest {
         // HttpResponse is set as out parameter of the handle method. The way to
         // set out parameters with Mockito is to use doAnswer
         Answer<Void> answerForHttpResponse = MockitoTestUtils.createAnswerForHttpResponse(httpStatus);
-        Mockito.doAnswer(answerForHttpResponse)
-               .when(handler)
-               .handle(any(HttpRequest.class), any(HttpResponse.class), any(HttpContext.class));
+        Mockito.doAnswer(answerForHttpResponse).when(handler).handle(any(HttpRequest.class),
+                                                                     any(HttpResponse.class),
+                                                                     any(HttpContext.class));
     }
 
     /**

@@ -2,14 +2,72 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.5.0-SNAPSHOT
+
+## API relevant changes
+None.
+
+## Other changes
+None.
+
+## Configuration property changes
+None.
+
+# joynr 1.4.0
+
 ## API relevant changes
 * **[JS]** Registration of global providers can be made waiting until registration has been
   propagated to GlobalCapabilitiesDirectory by passing an optional boolean flag `awaitGlobalRegistration`
-  to `registerProvider` or `settings.awaitGlobalRegistration` to `register` APIs of joynr.registration.
+  with value `true` to `registerProvider` or `settings.awaitGlobalRegistration` to `register` APIs of
+  joynr.registration.
+
+* **[Java]** Registration of global providers can be made waiting until registration has been
+  propagated to GlobalCapabilitiesDirectory by passing a boolean flag `awaitGlobalRegistration`
+  with value `true` to overloaded `registerProvider`. The `registerProvider` without the flag
+  parameter will still trigger but no longer wait for registration at GlobalCapabilitiesDirectory.
+  The default timeout for calls to the GlobalCapabilitiesDirectory has been shortened to
+  60 seconds in order to be able to return result / timeout to the caller of `registerProvider`,
+  automatically internally undo the local registration as well and allow for a later retry by
+  the application.
+  The JEE case where `registerProvider` is called internally based on annotations continues
+  to use a very long default timeout for the call to GlobalCapabilitiesDirectory as before.
 
 ## Other changes
 * **[C++,Generator]** Deleted InProcess bypass. Every message has to be now routed
   through message router.
+* **[C++]** The application thread will not return immediately if persistency is ON. Persistency of subscriptions
+  is being loaded in the same thread as registerProvider.
+
+## Configuration property changes
+* **[Java]** Introduced `PROPERTY_KEY_MQTT_SEPARATE_CONNECTIONS` to use separate MQTT connections.
+  See [Java Configuration Reference](JavaSettings.md) for more details.
+
+# joynr 1.3.2
+
+## API relevant changes
+None.
+
+## Configuration property changes
+None.
+
+## Other changes
+* **[C++]** Additional fix for wildcard storage structure.
+* **[C++]** Use cluster-controller ID instead of receiverID in mqttClientID
+* **[C++]** Allow local communication before initializing global communication
+
+# joynr 1.3.1
+
+## API relevant changes
+None.
+
+## Configuration property changes
+None.
+
+## Other changes
+* **[C++]** Reduce lookups of subscriptionRequest via subscriptionId.
+* **[C++]** Fixed race condition on parentResolveMutex in LibJoynrMessageRouter.
+* **[C++]** Fix initialization sequence of libjoynr by calling addRequestCaller before addNextHop.
+* **[C++]** Access control: build wildcard storage tree correctly and always return entire branch for lookups.
 
 # joynr 1.3.0
 

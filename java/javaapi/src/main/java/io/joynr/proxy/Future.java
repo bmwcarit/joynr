@@ -54,7 +54,7 @@ public class Future<T> {
      * @throws JoynrRuntimeException if the request failed with a JoynrRuntimeException
      */
     public T get(long timeoutMs) throws InterruptedException, JoynrWaitExpiredException, ApplicationException,
-                                JoynrRuntimeException {
+                                 JoynrRuntimeException {
         try {
             statusLock.lock();
             if (this.status.getCode() == RequestStatusCode.OK) {

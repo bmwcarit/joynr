@@ -26,7 +26,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>cpp</artifactId>
-		<version>1.4.0-SNAPSHOT</version>
+		<version>1.5.0-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -232,6 +232,7 @@
 						<root>.</root>
 					</roots>
 					<excludes>
+						<exclude>resources/LDAS_checkPermissionToAdd.json</exclude>
 						<exclude>resources/ListOfCapabilitiesToInject.json</exclude>
 						<exclude>resources/MasterAccessTable.json</exclude>
 						<exclude>resources/MasterRegistrationTable.json</exclude>
@@ -239,6 +240,9 @@
 						<exclude>resources/OwnerRegistrationTable.json</exclude>
 						<exclude>resources/application1_ACL_RCL_Permissions.json</exclude>
 						<exclude>resources/application2_ACL_RCL_Permissions.json</exclude>
+						<exclude>resources/application3_ACL_RCL_Permissions.json</exclude>
+						<exclude>resources/application4_ACL_RCL_Permissions.json</exclude>
+						<exclude>resources/application5_ACL_RCL_Permissions.json</exclude>
 					</excludes>
 				</configuration>
 			</plugin>

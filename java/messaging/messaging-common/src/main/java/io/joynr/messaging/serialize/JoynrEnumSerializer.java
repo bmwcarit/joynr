@@ -33,7 +33,7 @@ public class JoynrEnumSerializer extends NonTypedScalarSerializerBase<Enum> {
 
     @Override
     public void serialize(Enum value, JsonGenerator jgen, SerializerProvider provider) throws IOException,
-                                                                                      JsonGenerationException {
+                                                                                       JsonGenerationException {
         jgen.writeString(value.name());
 
     }

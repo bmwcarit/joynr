@@ -36,6 +36,9 @@ macro(CONFIGURE_TEST_FILES targetDirectory)
         "AclRclJoynrClusterControllerRuntimeTest.settings"
         "application1_ACL_RCL_Permissions.json"
         "application2_ACL_RCL_Permissions.json"
+        "application3_ACL_RCL_Permissions.json"
+        "application4_ACL_RCL_Permissions.json"
+        "application5_ACL_RCL_Permissions.json"
         "integrationtest.settings"
         "websocket-cc-tls.settings"
         "websocket-libjoynr-tls.settings"
@@ -64,6 +67,7 @@ macro(CONFIGURE_TEST_FILES targetDirectory)
         "persistency-cc-enabled.settings"
         "ca.crt"
         "testclient.pem"
+        "LDAS_checkPermissionToAdd.json"
     )
 
     foreach(testFile ${TEST_FILES})
@@ -399,6 +403,8 @@ if(${BUILD_INTEGRATION_TESTS})
        "../runtimes/libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.h"
        "../runtimes/libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.cpp"
        "../runtimes/libjoynr-runtime/LibJoynrRuntime.cpp"
+       # Allow unit-testing of private header WildcardStorage.h
+       "../libjoynrclustercontroller/access-control/WildcardStorage.h"
     )
 
     target_link_libraries(

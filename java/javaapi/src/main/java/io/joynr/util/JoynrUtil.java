@@ -173,8 +173,8 @@ public class JoynrUtil {
         return loadProperties(configInputStream, null);
     }
 
-    public static Properties loadProperties(InputStream configInputStream, @CheckForNull Properties properties)
-                                                                                                               throws IOException {
+    public static Properties loadProperties(InputStream configInputStream,
+                                            @CheckForNull Properties properties) throws IOException {
         if (configInputStream != null) {
             if (properties == null) {
                 properties = new Properties();

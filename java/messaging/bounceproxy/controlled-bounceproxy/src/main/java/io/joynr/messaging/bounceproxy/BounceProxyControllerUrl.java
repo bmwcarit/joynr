@@ -71,8 +71,7 @@ public class BounceProxyControllerUrl {
      *             if urls passed as query parameters could not be encoded
      *             correctly.
      */
-    public String buildReportStartupUrl(ControlledBounceProxyUrl controlledBounceProxyUrl)
-                                                                                          throws UnsupportedEncodingException {
+    public String buildReportStartupUrl(ControlledBounceProxyUrl controlledBounceProxyUrl) throws UnsupportedEncodingException {
         String url4cc = URLEncoder.encode(controlledBounceProxyUrl.getOwnUrlForClusterControllers(), "UTF-8");
         String url4bpc = URLEncoder.encode(controlledBounceProxyUrl.getOwnUrlForBounceProxyController(), "UTF-8");
 

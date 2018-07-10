@@ -113,6 +113,31 @@ protected:
         EXPECT_EQ(expectedEntry, *result);
     }
 
+    void queryAccessStoreAndVerifyOutputForTwoIdenticalTemplatesWithDifferentUserIdTests(std::string localDomainAccessFile) {
+        localDomainAccessStore.mergeDomainAccessStore(LocalDomainAccessStore(localDomainAccessFile));
+        localDomainAccessStore.logContent();
+
+        auto result = localDomainAccessStore.getMasterAccessControlEntry("application_1",
+                                                           "same.prefix.domain.domain1",
+                                                           "same/prefix/with/different/interface1",
+                                                           joynr::access_control::WILDCARD);
+        ASSERT_TRUE(result);
+        EXPECT_EQ(result->getUid(), "application_1");
+        EXPECT_EQ(result->getDomain(), "same.prefix.domain.*");
+        EXPECT_EQ(result->getInterfaceName(), "same/prefix/with/different/interface1");
+        EXPECT_EQ(result->getDefaultConsumerPermission(), joynr::infrastructure::DacTypes::Permission::YES);
+
+        auto result2 = localDomainAccessStore.getMasterAccessControlEntry("application_1",
+                                                           "same.prefix.domain.domain1",
+                                                           "same/prefix/with/different/interface2",
+                                                           joynr::access_control::WILDCARD);
+        ASSERT_TRUE(result2);
+        EXPECT_EQ(result2->getUid(), "application_1");
+        EXPECT_EQ(result2->getDomain(), "same.prefix.domain.*");
+        EXPECT_EQ(result2->getInterfaceName(), "same/prefix/with/different/interface2");
+        EXPECT_EQ(result2->getDefaultConsumerPermission(), joynr::infrastructure::DacTypes::Permission::YES);
+    }
+
 private:
     DISALLOW_COPY_AND_ASSIGN(LocalDomainAccessStoreTest);
 };
@@ -955,4 +980,37 @@ TEST_F(LocalDomainAccessStoreTest, loadTwoIdenticalTemplatesWithDifferentUserId)
     EXPECT_EQ(result->getDomain(), "*");
     EXPECT_EQ(result->getInterfaceName(), "*");
     EXPECT_EQ(result->getDefaultConsumerPermission(), joynr::infrastructure::DacTypes::Permission::YES);
+}
+
+TEST_F(LocalDomainAccessStoreTest, loadTwoIdenticalTemplatesWithDifferentInterfacesWithDomainAndInterfaceWildcardEntries) {
+    queryAccessStoreAndVerifyOutputForTwoIdenticalTemplatesWithDifferentUserIdTests("test-resources/application3_ACL_RCL_Permissions.json");
+}
+
+TEST_F(LocalDomainAccessStoreTest, loadTwoIdenticalTemplatesWithDifferentInterfacesWithDomainWildcardEntries) {
+    queryAccessStoreAndVerifyOutputForTwoIdenticalTemplatesWithDifferentUserIdTests("test-resources/application4_ACL_RCL_Permissions.json");
+}
+
+TEST_F(LocalDomainAccessStoreTest, loadTwoIdenticalTemplatesWithDifferentDomainsWithoutDomainWildcardEntries) {
+    localDomainAccessStore.mergeDomainAccessStore(LocalDomainAccessStore("test-resources/application5_ACL_RCL_Permissions.json"));
+    localDomainAccessStore.logContent();
+
+    auto result = localDomainAccessStore.getMasterAccessControlEntry("application_1",
+                                                       "common.prefix.domain1",
+                                                       "same/interface/prefix/value",
+                                                       joynr::access_control::WILDCARD);
+    ASSERT_TRUE(result);
+    EXPECT_EQ(result->getUid(), "application_1");
+    EXPECT_EQ(result->getDomain(), "common.prefix.domain1");
+    EXPECT_EQ(result->getInterfaceName(), "same/interface/prefix/*");
+    EXPECT_EQ(result->getDefaultConsumerPermission(), joynr::infrastructure::DacTypes::Permission::YES);
+
+    auto result2 = localDomainAccessStore.getMasterAccessControlEntry("application_1",
+                                                       "common.prefix.domain2",
+                                                       "same/interface/prefix/value",
+                                                       joynr::access_control::WILDCARD);
+    ASSERT_TRUE(result2);
+    EXPECT_EQ(result2->getUid(), "application_1");
+    EXPECT_EQ(result2->getDomain(), "common.prefix.domain2");
+    EXPECT_EQ(result2->getInterfaceName(), "same/interface/prefix/*");
+    EXPECT_EQ(result2->getDefaultConsumerPermission(), joynr::infrastructure::DacTypes::Permission::YES);
 }

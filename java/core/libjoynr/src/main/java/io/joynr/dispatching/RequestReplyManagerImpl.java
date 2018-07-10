@@ -62,8 +62,8 @@ import joynr.Request;
 import joynr.types.DiscoveryEntryWithMetaInfo;
 
 @Singleton
-public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryListener<ProviderContainer>,
-        ShutdownListener {
+public class RequestReplyManagerImpl
+        implements RequestReplyManager, DirectoryListener<ProviderContainer>, ShutdownListener {
     private static final Logger logger = LoggerFactory.getLogger(RequestReplyManagerImpl.class);
     private boolean running = true;
 
@@ -123,7 +123,7 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
         message.setLocalMessage(toDiscoveryEntry.getIsLocal());
 
         logger.debug("REQUEST call proxy: method: {}, requestReplyId: {}, messageId: {}, proxy participantId: {}, "
-                             + "provider participantId: {}, params: {}",
+                + "provider participantId: {}, params: {}",
                      request.getMethodName(),
                      request.getRequestReplyId(),
                      message.getId(),

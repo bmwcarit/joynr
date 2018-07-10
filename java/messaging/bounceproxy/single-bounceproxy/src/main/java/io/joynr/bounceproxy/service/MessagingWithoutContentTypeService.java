@@ -85,8 +85,8 @@ public class MessagingWithoutContentTypeService {
      */
     @POST
     @Consumes({ MediaType.APPLICATION_OCTET_STREAM })
-    public Response postMessageWithoutContentType(@PathParam("ccid") String ccid, byte[] serializedMessage)
-                                                                                                           throws IOException {
+    public Response postMessageWithoutContentType(@PathParam("ccid") String ccid,
+                                                  byte[] serializedMessage) throws IOException {
         ImmutableMessage message;
 
         try {

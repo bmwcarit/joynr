@@ -267,7 +267,8 @@ public class MasterRegistrationControlEntryManagerTest {
                                                                                         TrustLevel.HIGH,
                                                                                         new TrustLevel[0],
                                                                                         Permission.ASK,
-                                                                                        new Permission[]{ Permission.NO });
+                                                                                        new Permission[]{
+                                                                                                Permission.NO });
 
         CreateOrUpdateResult<MasterRegistrationControlEntry> result = subject.createOrUpdate(updatedData,
                                                                                              ControlEntryType.MASTER);

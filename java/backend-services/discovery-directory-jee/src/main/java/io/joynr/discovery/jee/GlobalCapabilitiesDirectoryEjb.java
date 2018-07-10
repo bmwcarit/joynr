@@ -90,7 +90,9 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
 
     @Override
     public GlobalDiscoveryEntry[] lookup(String[] domains, String interfaceName) {
-        logger.debug("Looking up global discovery entries for domains {} and interface name {}", domains, interfaceName);
+        logger.debug("Looking up global discovery entries for domains {} and interface name {}",
+                     domains,
+                     interfaceName);
         String queryString = "from GlobalDiscoveryEntryPersisted gdep where gdep.domain in :domains and gdep.interfaceName = :interfaceName";
         List<GlobalDiscoveryEntryPersisted> queryResult = entityManager.createQuery(queryString,
                                                                                     GlobalDiscoveryEntryPersisted.class)
@@ -99,7 +101,9 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
                                                                        .setParameter("interfaceName", interfaceName)
                                                                        .getResultList();
         logger.debug("Found discovery entries: {}", queryResult);
-        return queryResult.stream().map(entry -> { return new GlobalDiscoveryEntry(entry); }).collect(Collectors.toSet()).toArray(new GlobalDiscoveryEntry[queryResult.size()]);
+        return queryResult.stream().map(entry -> {
+            return new GlobalDiscoveryEntry(entry);
+        }).collect(Collectors.toSet()).toArray(new GlobalDiscoveryEntry[queryResult.size()]);
     }
 
     @Override
@@ -128,7 +132,8 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
 
     @Override
     public void touch(String clusterControllerId) {
-        logger.debug("Touch called. Updating discovery entries from cluster controller with id: " + clusterControllerId);
+        logger.debug("Touch called. Updating discovery entries from cluster controller with id: "
+                + clusterControllerId);
         String queryString = "select gdep from GlobalDiscoveryEntryPersisted gdep where gdep.clusterControllerId = :clusterControllerId";
         long now = System.currentTimeMillis();
         TypedQuery<GlobalDiscoveryEntryPersisted> query = entityManager.createQuery(queryString,

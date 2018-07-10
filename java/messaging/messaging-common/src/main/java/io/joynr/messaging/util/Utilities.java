@@ -92,7 +92,7 @@ public class Utilities {
     }
 
     public static List<ImmutableMessage> splitSMRF(byte[] combinedSMRFMessages) throws EncodingException,
-                                                                               UnsuppportedVersionException {
+                                                                                UnsuppportedVersionException {
         List<ImmutableMessage> result = Lists.newArrayList();
         byte[] remainingData = combinedSMRFMessages;
 

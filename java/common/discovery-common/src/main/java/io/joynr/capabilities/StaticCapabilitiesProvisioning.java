@@ -72,7 +72,9 @@ public class StaticCapabilitiesProvisioning implements CapabilitiesProvisioning 
         discoveryEntries = new HashSet<DiscoveryEntry>();
         this.resourceContentProvider = resourceContentProvider;
         addEntriesFromJson(provisionedCapabilitiesFile, objectMapper, localChannelId);
-        logger.trace("{} provisioned discovery entries loaded from JSON: {}", discoveryEntries.size(), discoveryEntries);
+        logger.trace("{} provisioned discovery entries loaded from JSON: {}",
+                     discoveryEntries.size(),
+                     discoveryEntries);
         overrideEntriesFromLegacySettings(legacyCapabilitiesProvisioning);
         logger.trace("{} provisioned discovery entries after adding legacy entries: {}",
                      discoveryEntries.size(),

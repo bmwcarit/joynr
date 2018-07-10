@@ -225,10 +225,8 @@ public class LocalDiscoveryAggregatorTest {
                 callback.onSuccess(discoveryProviderEntries);
                 return null;
             }
-        }).when(discoveryProxyMock).lookup(any(Callback.class),
-                                           any(String[].class),
-                                           anyString(),
-                                           any(DiscoveryQos.class));
+        }).when(discoveryProxyMock)
+          .lookup(any(Callback.class), any(String[].class), anyString(), any(DiscoveryQos.class));
 
         Future<DiscoveryEntryWithMetaInfo[]> discoveryEntriesFuture = localDiscoveryAggregator.lookup(lookupCallback,
                                                                                                       allDomains,

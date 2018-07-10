@@ -23,9 +23,12 @@
 #include <cassert>
 
 #include <algorithm>
+#include <functional>
+
 #include <map>
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/optional.hpp>
@@ -105,6 +108,17 @@ public:
 
     RadixTreeNode() : parent(nullptr)
     {
+    }
+
+    Key getFullKey() const
+    {
+        auto currentNode = this;
+        Key fullKey = currentNode->key;
+        while (!currentNode->isRoot()) {
+            currentNode = currentNode->parent;
+            fullKey = currentNode->key + fullKey;
+        }
+        return fullKey;
     }
 
     bool isLeaf() const
@@ -266,10 +280,10 @@ private:
         for (auto& childIt : *children) {
             const ChildPtr& child = childIt.second;
             if (child->key.front() == key.front()) {
-                if (child->key.size() <= key.size()) {
+                if (child->key.size() <= key.size() &&
+                    key.compare(0, child->key.size(), child->key) == 0) {
                     return child->find(Key(key.begin() + child->key.size(), key.end()));
                 }
-                return child.get();
             }
         }
         return const_cast<RadixTreeNode*>(this);
@@ -283,6 +297,26 @@ private:
     bool isInternal() const
     {
         return !value;
+    }
+
+    template <typename Fun>
+    void visit(const Fun& fun, std::vector<std::reference_wrapper<Key>>& parentKeys)
+    {
+        parentKeys.push_back(key);
+        if (!isInternal()) {
+            fun(*this, parentKeys);
+        }
+
+        if (isLeaf()) {
+            parentKeys.pop_back();
+            return;
+        }
+
+        for (auto& childIt : *children) {
+            const ChildPtr& child = childIt.second;
+            child->visit(fun, parentKeys);
+        }
+        parentKeys.pop_back();
     }
 
     RadixTreeNode* parent;
@@ -322,6 +356,13 @@ public:
             return nullptr;
         }
         return node;
+    }
+
+    template <typename Fun>
+    void visit(const Fun& fun)
+    {
+        std::vector<std::reference_wrapper<Key>> keys;
+        root.visit(fun, keys);
     }
 
 private:

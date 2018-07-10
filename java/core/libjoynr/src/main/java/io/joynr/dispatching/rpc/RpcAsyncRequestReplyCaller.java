@@ -123,7 +123,8 @@ public class RpcAsyncRequestReplyCaller<T> implements ReplyCaller {
                             + "but none was expected. Is the provider version incompatible with the consumer?"));
                 }
             } else {
-                callback.onFailure(new JoynrRuntimeException("unexpected exception type received: ", (Throwable) error));
+                callback.onFailure(new JoynrRuntimeException("unexpected exception type received: ",
+                                                             (Throwable) error));
             }
         }
     }

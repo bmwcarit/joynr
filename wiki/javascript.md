@@ -288,16 +288,10 @@ changes. The following sections cover the 4 quality of service objects available
 ```SubscriptionQos``` has the following members:
 
 * **expiryDateMs** Absolute Time until notifications will be send (in milliseconds)
-* **publicationTtlMs** Lifespan of a notification (in milliseconds), the notification will be
-  deleted afterwards
-  Known Issue: subscriptionQos passed when subscribing to a non-selective broadcast are ignored.
-  The API will be changed in the future: proxy subscribe calls will no longer take a
-  subscriptionQos; instead the publication TTL will be settable on the provider side.
 
 ```javascript
 var subscriptionQos = new joynr.proxy.SubscriptionQos({
     expiryDateMs : 0,
-    publicationTtlMs : 10000
 });
 ```
 
@@ -310,6 +304,34 @@ The default values are as follows:
 }
 ```
 
+### MulticastSubscriptionQos
+
+The object ```MulticastSubscriptionQos``` inherits from ```SubscriptionQos```.
+
+This object should be used for subscriptions to non-selective broadcasts.
+
+Example:
+```javascript
+var multicastSubscriptionQos = new joynr.proxy.MulticastSubscriptionQos({
+    validityMs : 3000000
+});
+```
+
+or alternatively
+
+```javascript
+var multicastSubscriptionQos = new joynr.proxy.MulticastSubscriptionQos({
+    expiryDateMs : Date.now() + 3000000
+});
+```
+
+The default is as follows:
+```
+{
+    expiryDateMs: SubscriptionQos.NO_EXPIRY_DATE // 0
+}
+```
+
 ### PeriodicSubscriptionQos
 
 ```PeriodicSubscriptionQos``` has the following additional members:
@@ -317,6 +339,10 @@ The default values are as follows:
 * **periodMs** defines how long to wait before sending an update even if the value did not change
 * **alertAfterIntervalMs** Timeout for notifications, afterwards a missed publication notification
   will be sent (milliseconds)
+* **publicationTtlMs** Lifespan of a notification (in milliseconds), the notification will be
+  deleted afterwards
+  The API will be changed in the future: proxy subscribe calls will no longer take a
+  subscriptionQos; instead the publication TTL will be settable on the provider side.
 
 This object can be used for subscriptions to attributes.
 
@@ -326,14 +352,16 @@ attribute change.
 ```javascript
 var subscriptionQosPeriodic = new joynr.proxy.PeriodicSubscriptionQos({
     periodMs : 60000,
-    alertAfterIntervalMs : 0
+    alertAfterIntervalMs : 0,
+    publicationTtlMs : 10000
 });
 ```
 The default values are as follows:
 ```
 {
-    periodMs: PeriodicSubscriptionQos.DEFAULT_PERIOD_MS // 60000
-    alertAfterIntervalMs: PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL // 0
+    periodMs: PeriodicSubscriptionQos.DEFAULT_PERIOD_MS, // 60000
+    alertAfterIntervalMs: PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL, // 0
+    publicationTtlMs : SubscriptionQos.DEFAULT_PUBLICATION_TTL // 10000
 }
 ```
 
@@ -343,20 +371,26 @@ The object ```OnChangeSubscriptionQos``` inherits from ```SubscriptionQos``` and
 additional members:
 
 * **minIntervalMs** Minimum time to wait between successive notifications (milliseconds)
+* **publicationTtlMs** Lifespan of a notification (in milliseconds), the notification will be
+  deleted afterwards
+  The API will be changed in the future: proxy subscribe calls will no longer take a
+  subscriptionQos; instead the publication TTL will be settable on the provider side.
 
-This object should be used for subscriptions to broadcasts. It can also be used for subscriptions
-to attributes if no periodic update is required.
+This object should be used for subscriptions to selective broadcasts. It can also be used for
+subscriptions to attributes if no periodic update is required.
 
 Example:
 ```javascript
 var subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({
-    minIntervalMs : 1000
+    minIntervalMs : 1000,
+    publicationTtlMs : 10000
 });
 ```
 The default is as follows:
 ```
 {
-    minIntervalMs: OnChangeSubscriptionQos.DEFAULT_MIN_INTERVAL_MS // 1000
+    minIntervalMs: OnChangeSubscriptionQos.DEFAULT_MIN_INTERVAL_MS, // 1000
+    publicationTtlMs : SubscriptionQos.DEFAULT_PUBLICATION_TTL // 10000
 }
 ```
 
@@ -503,7 +537,7 @@ provided as outlined below.
 
 ```javascript
 <interface>Proxy.<Broadcast>.subscribe({
-    subscriptionQos : subscriptionQosOnChange,
+    subscriptionQos : multicastSubscriptionQos,
     // Gets called on every received publication
     onReceive : function(value) {
         // handle subscription publication
@@ -538,7 +572,7 @@ The ```subscribe()``` method can also be used to update an existing subscription
 **subscriptionId** is passed as an additional parameter as follows:
 ```javascript
 <interface>Proxy.<Broadcast>.subscribe({
-    subscriptionQos : subscriptionQosOnChange,
+    subscriptionQos : multicastSubscriptionQos,
     subscriptionId: subscriptionId,
     // Gets called on every received publication
     onReceive : function(value) {
@@ -570,7 +604,7 @@ The ```subscribe()``` method can also be used to update an existing subscription
 
 ## Subscribing to a broadcast with filter parameters
 
-Broadcast subscription with a **filter** informs the application in case a **selected broadcast
+Broadcast subscription with a **filter** informs the application in case a **selective broadcast
 which matches filter criteria** is fired from the provider side. The output values are returned
 via callback.
 

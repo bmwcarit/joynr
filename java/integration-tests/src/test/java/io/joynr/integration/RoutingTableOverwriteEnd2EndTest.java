@@ -71,7 +71,8 @@ public class RoutingTableOverwriteEnd2EndTest {
         }
 
         Module module = Modules.override(new CCInProcessRuntimeModule()).with(new MqttPahoModule());
-        DummyJoynrApplication application = (DummyJoynrApplication) new JoynrInjectorFactory(properties, module).createApplication(DummyJoynrApplication.class);
+        DummyJoynrApplication application = (DummyJoynrApplication) new JoynrInjectorFactory(properties,
+                                                                                             module).createApplication(DummyJoynrApplication.class);
 
         return application.getRuntime();
     }
@@ -110,7 +111,9 @@ public class RoutingTableOverwriteEnd2EndTest {
 
         JoynrRuntime runtimeProvider1 = createRuntime("provider_initial", fixedParticipantIdProperty);
         DefaulttestProvider provider1 = Mockito.spy(DefaulttestProvider.class);
-        runtimeProvider1.registerProvider(providerDomain, provider1, createProviderQos()).get();
+        boolean awaitGlobalRegistration = true;
+        runtimeProvider1.registerProvider(providerDomain, provider1, createProviderQos(), awaitGlobalRegistration)
+                        .get();
 
         testProxy proxy1 = runtimeProxy.getProxyBuilder(providerDomain, testProxy.class)
                                        .setMessagingQos(new MessagingQos(2000))
@@ -123,7 +126,8 @@ public class RoutingTableOverwriteEnd2EndTest {
 
         JoynrRuntime runtimeProvider2 = createRuntime("provider_override", fixedParticipantIdProperty);
         DefaulttestProvider provider2 = Mockito.spy(DefaulttestProvider.class);
-        runtimeProvider2.registerProvider(providerDomain, provider2, createProviderQos()).get();
+        runtimeProvider2.registerProvider(providerDomain, provider2, createProviderQos(), awaitGlobalRegistration)
+                        .get();
 
         testProxy proxy2 = runtimeProxy.getProxyBuilder(providerDomain, testProxy.class)
                                        .setMessagingQos(new MessagingQos(2000))

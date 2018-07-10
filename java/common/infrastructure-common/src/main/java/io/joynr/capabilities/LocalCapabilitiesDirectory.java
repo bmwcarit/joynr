@@ -44,6 +44,17 @@ public interface LocalCapabilitiesDirectory extends DiscoveryProvider, ShutdownL
     Promise<DeferredVoid> add(DiscoveryEntry discoveryEntry);
 
     /**
+     * Adds a capability to the list of registered local capabilities. May also transmit the updated list to the
+     * capabilities directory.
+     *
+     * @param discoveryEntry The capability to be added.
+     * @param awaitGlobalRegistration True, if add should wait for global registration to complete
+     * @return future to get the async result of the call
+     */
+    @Override
+    Promise<DeferredVoid> add(DiscoveryEntry discoveryEntry, Boolean awaitGlobalRegistration);
+
+    /**
      * Removes capabilities from the list of local capabilities and at the capabilities directory.
      *
      * @param discoveryEntry entry to remove
