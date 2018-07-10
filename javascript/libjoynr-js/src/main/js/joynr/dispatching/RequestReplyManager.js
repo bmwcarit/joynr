@@ -66,6 +66,7 @@ function RequestReplyManager(dispatcher) {
             checkIfReady();
         } catch (e) {
             callback(e);
+            return;
         }
 
         this.addReplyCaller(

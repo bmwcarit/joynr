@@ -797,6 +797,7 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", () => {
             requestReplyManager.sendOneWayRequest({});
         }).toThrow();
         await testUtil.reversePromise(requestReplyManager.sendRequest({}, {}));
+        expect(dispatcherSpy.sendRequest).not.toHaveBeenCalled();
     });
     it("rejects reply callers when shut down", done => {
         const replyCallerSpy = jasmine.createSpyObj("promise", ["callback"]);
