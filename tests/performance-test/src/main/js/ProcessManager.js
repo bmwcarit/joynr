@@ -25,6 +25,7 @@ const PerformanceUtilities = require("./performanceutilities");
 
 const options = PerformanceUtilities.getCommandLineOptionsOrDefaults();
 const measureMemory = options.measureMemory == "true";
+const path = require("path");
 
 const ProcessManager = {};
 
@@ -34,8 +35,8 @@ function ChildProcessStuff(type) {
 ChildProcessStuff.prototype.initialize = function() {
     const config = PerformanceUtilities.createChildProcessConfig();
     config.env = Object.create(process.env);
-
-    this.process = child_process.fork(`src/main/js/${this.file}`, [], config);
+    const fileLocation = path.join(__dirname, this.file);
+    this.process = child_process.fork(fileLocation, [], config);
     this.ready = PerformanceUtilities.createPromise();
     const that = this;
 
