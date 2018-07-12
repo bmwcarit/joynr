@@ -92,7 +92,7 @@ public class RoutingTableImpl implements RoutingTable {
         if (routingEntry == null) {
             return null;
         }
-        logger.trace("leaving get(participantId={}) = {}", routingEntry.getAddress());
+        logger.trace("leaving get(participantId={}) = {}", participantId, routingEntry.getAddress());
         return routingEntry.getAddress();
     }
 
