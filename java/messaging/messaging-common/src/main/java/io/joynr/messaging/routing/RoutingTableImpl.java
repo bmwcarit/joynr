@@ -90,6 +90,7 @@ public class RoutingTableImpl implements RoutingTable {
         dumpRoutingTableEntry();
         RoutingEntry routingEntry = hashMap.get(participantId);
         if (routingEntry == null) {
+            logger.trace("leaving get(participantId={}) = null", participantId);
             return null;
         }
         logger.trace("leaving get(participantId={}) = {}", participantId, routingEntry.getAddress());
