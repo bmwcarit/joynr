@@ -210,6 +210,99 @@ describe("Consumer test", () => {
             log("callMethodWithMultipleByteBufferParameters - OK");
         });
 
+        async function callProxyMethodWithParameter(testMethod, testValue) {
+            log(`callProxyMethodWithParameter called with testValue = ${JSON.stringify(testValue)}`);
+            const retObj = await testMethod(testValue);
+
+            expect(retObj).toBeDefined();
+            expect(Object.values(retObj)[0]).toBeDefined();
+            log(`returned value: ${JSON.stringify(Object.values(retObj)[0])}`);
+            expect(Object.values(retObj)[0]).toEqual(Object.values(testValue)[0]);
+            return retObj;
+        }
+
+        it("callMethodWithInt64TypeDefParameter", async () => {
+            log("callMethodWithInt64TypeDefParameter");
+            const args = {
+                int64TypeDefIn: 1
+            };
+
+            await callProxyMethodWithParameter(testInterfaceProxy.methodWithInt64TypeDefParameter, args);
+            log("callMethodWithInt64TypeDefParameter - OK");
+        });
+
+        it("callMethodWithStringTypeDefParameter", async () => {
+            log("callMethodWithStringTypeDefParameter");
+            const args = {
+                stringTypeDefIn: "TypeDefTestString"
+            };
+
+            await callProxyMethodWithParameter(testInterfaceProxy.methodWithStringTypeDefParameter, args);
+            log("callMethodWithStringTypeDefParameter - OK");
+        });
+
+        it("callMethodWithStructTypeDefParameter", async () => {
+            log("callMethodWithStructTypeDefParameter");
+            const args = {
+                structTypeDefIn: IltUtil.createBaseStruct()
+            };
+
+            await callProxyMethodWithParameter(testInterfaceProxy.methodWithStructTypeDefParameter, args);
+            log("callMethodWithStructTypeDefParameter - OK");
+        });
+
+        it("callMethodWithMapTypeDefParameter", async () => {
+            log("callMethodWithMapTypeDefParameter");
+            const value = new MapStringString();
+            for (let i = 1; i <= 3; i++) {
+                value.put(`keyString${i}`, `valueString${i}`);
+            }
+            const args = {
+                mapTypeDefIn: value
+            };
+
+            await callProxyMethodWithParameter(testInterfaceProxy.methodWithMapTypeDefParameter, args);
+            log("callMethodWithMapTypeDefParameter - OK");
+        });
+
+        it("callMethodWithEnumTypeDefParameter", async () => {
+            log("callMethodWithEnumTypeDefParameter");
+            const args = {
+                enumTypeDefIn: Enumeration.ENUM_0_VALUE_1
+            };
+
+            await callProxyMethodWithParameter(testInterfaceProxy.methodWithEnumTypeDefParameter, args);
+            log("callMethodWithEnumTypeDefParameter - OK");
+        });
+
+        it("callMethodWithByteBufferTypeDefParameter", async () => {
+            log("callMethodWithByteBufferTypeDefParameter");
+            const value = new MapStringString();
+            for (let i = 1; i <= 3; i++) {
+                value.put(`keyString${i}`, `valueString${i}`);
+            }
+            const args = {
+                byteBufferTypeDefIn: IltUtil.createByteArray()
+            };
+
+            await callProxyMethodWithParameter(testInterfaceProxy.methodWithByteBufferTypeDefParameter, args);
+            log("callMethodWithByteBufferTypeDefParameter - OK");
+        });
+
+        it("callMethodWithArrayTypeDefParameter", async () => {
+            log("callMethodWithArrayTypeDefParameter");
+            const stringArray = {
+                typeDefStringArray: IltUtil.createStringArray()
+            };
+            const arrayTypeDefArg = new ArrayTypeDefStruct(stringArray);
+            const args = {
+                arrayTypeDefIn: arrayTypeDefArg
+            };
+
+            await callProxyMethodWithParameter(testInterfaceProxy.methodWithArrayTypeDefParameter, args);
+            log("callMethodWithArrayTypeDefParameter - OK");
+        });
+
         it("callMethodWithSingleEnumParameters", async () => {
             log("callMethodWithSingleEnumParameters");
             const args = {
