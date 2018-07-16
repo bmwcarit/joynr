@@ -67,6 +67,13 @@ class InterfaceGenerator {
 			interfaceFireAndForgetTemplate
 		);
 
+		var interfaceStatelessAsyncTemplate = templateFactory.createInterfaceStatelessAsyncTemplate(serviceInterface)
+		generateFile(
+			fsa,
+			path + serviceName + "StatelessAsync.java",
+			interfaceStatelessAsyncTemplate
+		)
+
 		if (serviceInterface.attributes.size>0){
 			var interfaceSubscriptionTemplate = templateFactory.createInterfaceSubscriptionTemplate(serviceInterface)
 			generateFile(
