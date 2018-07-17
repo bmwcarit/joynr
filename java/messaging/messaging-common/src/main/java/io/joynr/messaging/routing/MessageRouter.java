@@ -50,4 +50,6 @@ public interface MessageRouter {
     void registerMessageProcessedListener(MessageProcessedListener messageProcessedListener);
 
     void unregisterMessageProcessedListener(MessageProcessedListener messageProcessedListener);
+
+    void registerProxy(Object proxy, String proxyParticipantId);
 }

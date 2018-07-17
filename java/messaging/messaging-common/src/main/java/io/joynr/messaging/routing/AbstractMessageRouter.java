@@ -18,11 +18,14 @@
  */
 package io.joynr.messaging.routing;
 
+import java.lang.ref.WeakReference;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -82,6 +85,8 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
 
     private List<MessageProcessedListener> messageProcessedListeners;
     private List<MessageWorker> messageWorkers;
+    // Map weak reference to proxy object -> proxyParticipantId
+    private final ConcurrentHashMap<WeakReference<Object>, String> proxyMap;
 
     @Inject
     @Singleton
@@ -111,6 +116,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
         this.multicastReceiverRegistry = multicastReceiverRegistry;
         this.messageQueue = messageQueue;
         this.statusReceiver = statusReceiver;
+        this.proxyMap = new ConcurrentHashMap<WeakReference<Object>, String>();
         shutdownNotifier.registerForShutdown(this);
         messageProcessedListeners = new ArrayList<MessageProcessedListener>();
         startMessageWorkerThreads(maxParallelSends);
@@ -131,6 +137,16 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
             @Override
             public void run() {
                 routingTable.purge();
+
+                // remove Routing table entries for proxies which have been garbage collected
+                for (Map.Entry<WeakReference<Object>, String> entry : proxyMap.entrySet()) {
+                    if (entry.getKey().get() == null) {
+                        String proxyParticipantId = entry.getValue();
+                        logger.debug("removing garbage collected proxy participantId {}", proxyParticipantId);
+                        removeNextHop(proxyParticipantId);
+                        proxyMap.remove(entry.getKey());
+                    }
+                }
             }
         }, routingTableCleanupIntervalMs, routingTableCleanupIntervalMs, TimeUnit.MILLISECONDS);
     }
@@ -387,6 +403,11 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
         for (MessageWorker worker : messageWorkers) {
             worker.stopWorker();
         }
+    }
+
+    @Override
+    public void registerProxy(Object proxy, String proxyParticipantId) {
+        proxyMap.putIfAbsent(new WeakReference<Object>(proxy), proxyParticipantId);
     }
 
     private long createDelayWithExponentialBackoff(long sendMsgRetryIntervalMs, int retries) {
