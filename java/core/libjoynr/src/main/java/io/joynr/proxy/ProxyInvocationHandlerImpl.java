@@ -491,4 +491,9 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
             subscriptionAction.fail(exception);
         }
     }
+
+    @Override
+    public void registerProxy(Object proxy) {
+        messageRouter.registerProxy(proxy, proxyParticipantId);
+    }
 }

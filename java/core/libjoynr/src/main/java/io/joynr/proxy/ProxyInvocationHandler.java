@@ -69,4 +69,6 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
             }
         }
     }
+
+    abstract public void registerProxy(Object proxy);
 }
