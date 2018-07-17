@@ -40,6 +40,7 @@ import io.joynr.dispatcher.rpc.JoynrBroadcastSubscriptionInterface;
 import io.joynr.dispatcher.rpc.annotation.FireAndForget;
 import io.joynr.dispatcher.rpc.annotation.JoynrMulticast;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.proxy.invocation.MulticastSubscribeInvocation;
 import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
@@ -65,6 +66,9 @@ public class ProxyInvocationHandlerTest {
     @Mock
     private ConnectorFactory connectorFactory;
 
+    @Mock
+    private MessageRouter mockMessageRouter;
+
     private ProxyInvocationHandlerImpl proxyInvocationHandler;
 
     private final ExecutorService threadPool = new ScheduledThreadPoolExecutor(2);
@@ -85,12 +89,14 @@ public class ProxyInvocationHandlerTest {
     @Before
     public void setup() {
         connectorFactory = Mockito.mock(ConnectorFactory.class);
+        mockMessageRouter = Mockito.mock(MessageRouter.class);
         proxyInvocationHandler = new ProxyInvocationHandlerImpl(Sets.newHashSet(domain),
                                                                 interfaceName,
                                                                 proxyParticipantId,
                                                                 discoveryQos,
                                                                 messagingQos,
-                                                                connectorFactory);
+                                                                connectorFactory,
+                                                                mockMessageRouter);
 
     }
 

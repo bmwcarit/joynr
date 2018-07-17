@@ -46,6 +46,7 @@ import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
 import io.joynr.proxy.invocation.BroadcastSubscribeInvocation;
 import io.joynr.proxy.invocation.Invocation;
@@ -71,6 +72,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
     private ConcurrentLinkedQueue<SubscriptionAction> queuedSubscriptionInvocationList = new ConcurrentLinkedQueue<SubscriptionAction>();
     private ConcurrentLinkedQueue<UnsubscribeInvocation> queuedUnsubscripeInvocationList = new ConcurrentLinkedQueue<UnsubscribeInvocation>();
     private String interfaceName;
+    private MessageRouter messageRouter;
     private Set<String> domains;
 
     private static final Logger logger = LoggerFactory.getLogger(ProxyInvocationHandlerImpl.class);
@@ -81,7 +83,8 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
                                       @Assisted("proxyParticipantId") String proxyParticipantId,
                                       @Assisted DiscoveryQos discoveryQos,
                                       @Assisted MessagingQos messagingQos,
-                                      ConnectorFactory connectorFactory) {
+                                      ConnectorFactory connectorFactory,
+                                      MessageRouter messageRouter) {
         this.domains = domains;
         this.proxyParticipantId = proxyParticipantId;
         this.interfaceName = interfaceName;
@@ -89,6 +92,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
         this.qosSettings = messagingQos;
         this.connectorFactory = connectorFactory;
         this.connectorStatus = ConnectorStatus.ConnectorNotAvailabe;
+        this.messageRouter = messageRouter;
     }
 
     private static interface ConnectorCaller {

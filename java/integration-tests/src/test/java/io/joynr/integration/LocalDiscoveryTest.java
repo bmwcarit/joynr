@@ -105,6 +105,7 @@ class ProxyInvocationHandlerFactoryImpl implements ProxyInvocationHandlerFactory
 
     private ConnectorFactory connectorFactory;
     private ConnectorFactory connectorFactoryMock;
+    private MessageRouter messageRouter;
 
     @Inject
     public ProxyInvocationHandlerFactoryImpl(ConnectorFactory connectorFactory,
@@ -112,6 +113,7 @@ class ProxyInvocationHandlerFactoryImpl implements ProxyInvocationHandlerFactory
                                              MessageRouter messageRouter,
                                              @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) Address dispatcherAddress) {
         super();
+        this.messageRouter = messageRouter;
         this.connectorFactory = connectorFactory;
         this.connectorFactoryMock = new ConnectorFactory(connectorFactoryMock, messageRouter, dispatcherAddress);
     }
@@ -128,14 +130,16 @@ class ProxyInvocationHandlerFactoryImpl implements ProxyInvocationHandlerFactory
                                                   proxyParticipantId,
                                                   discoveryQos,
                                                   messagingQos,
-                                                  connectorFactory);
+                                                  connectorFactory,
+                                                  messageRouter);
         }
         return new ProxyInvocationHandlerImpl(domains,
                                               interfaceName,
                                               proxyParticipantId,
                                               discoveryQos,
                                               messagingQos,
-                                              connectorFactoryMock);
+                                              connectorFactoryMock,
+                                              messageRouter);
     }
 
 }
