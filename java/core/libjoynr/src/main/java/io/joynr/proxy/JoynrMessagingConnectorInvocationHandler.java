@@ -130,6 +130,44 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
         System.arraycopy(fromArray, removeIndex + 1, toArray, removeIndex, toArray.length - removeIndex);
     }
 
+    @Override
+    public void executeStatelessAsyncMethod(Method method,
+                                            Object[] args,
+                                            StatelessAsyncCallback statelessAsyncCallback) {
+        if (method == null) {
+            throw new IllegalArgumentException("Method cannot be null");
+        }
+        if (toDiscoveryEntries.size() > 1) {
+            throw new JoynrIllegalStateException("You can't execute stateless async methods for multiple participants.");
+        }
+        if (toDiscoveryEntries.isEmpty()) {
+            throw new JoynrIllegalStateException("You must have exactly one participant to be able to execute a stateless async method.");
+        }
+
+        MessageIdCallback messageIdCallback = null;
+        int messageIdCallbackIndex = -1;
+        for (int index = 0; index < args.length; index++) {
+            if (args[index] instanceof MessageIdCallback) {
+                messageIdCallback = (MessageIdCallback) args[index];
+                messageIdCallbackIndex = index;
+            }
+        }
+        if (messageIdCallback == null) {
+            throw new JoynrIllegalStateException("Stateless async method calls must have a MessageIdCallback as one of their arguments.");
+        }
+        Object[] paramsWithoutMessageIdCallback = new Object[args.length - 1];
+        copyArrayWithoutElement(args, paramsWithoutMessageIdCallback, messageIdCallbackIndex);
+        Class<?>[] paramDatatypes = method.getParameterTypes();
+        Class<?>[] paramDatatypesWithoutMessageIdCallback = new Class<?>[paramDatatypes.length - 1];
+        copyArrayWithoutElement(paramDatatypes, paramDatatypesWithoutMessageIdCallback, messageIdCallbackIndex);
+
+        Request request = new Request(method.getName(),
+                                      paramsWithoutMessageIdCallback,
+                                      paramDatatypesWithoutMessageIdCallback);
+        requestReplyManager.sendRequest(fromParticipantId, toDiscoveryEntries.iterator().next(), request, qosSettings);
+        messageIdCallback.accept(request.getRequestReplyId());
+    }
+
     @CheckForNull
     @Override
     public Object executeSyncMethod(Method method, Object[] args) throws ApplicationException {

@@ -30,6 +30,8 @@ public interface ConnectorInvocationHandler {
 
     Object executeAsyncMethod(Object proxy, Method method, Object[] args, Future<?> future);
 
+    void executeStatelessAsyncMethod(Method method, Object[] args, StatelessAsyncCallback statelessAsyncCallback);
+
     Object executeSyncMethod(Method method, Object[] args) throws ApplicationException;
 
     void executeOneWayMethod(Method method, Object[] args);
