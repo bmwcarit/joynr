@@ -97,9 +97,9 @@ public class ProxyInvocationHandlerTest {
                                                                 proxyParticipantId,
                                                                 discoveryQos,
                                                                 messagingQos,
+                                                                mock(StatelessAsyncCallback.class),
                                                                 connectorFactory,
                                                                 mockMessageRouter);
-
     }
 
     @Test(timeout = 3000)

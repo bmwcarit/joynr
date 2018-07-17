@@ -22,6 +22,7 @@ import static org.junit.Assert.assertTrue;
 
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -35,6 +36,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import io.joynr.exceptions.JoynrIllegalStateException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -85,6 +87,9 @@ public class ProxyBuilderDefaultImplTest {
     private ProxyInvocationHandlerFactory proxyInvocationHandlerFactory;
 
     @Mock
+    private StatelessAsyncCallbackDirectory statelessAsyncCallbackDirectory;
+
+    @Mock
     private ProxyInvocationHandler proxyInvocationHandler;
 
     @Captor
@@ -103,6 +108,7 @@ public class ProxyBuilderDefaultImplTest {
                                                              domains,
                                                              TestInterface.class,
                                                              proxyInvocationHandlerFactory,
+                                                             statelessAsyncCallbackDirectory,
                                                              MAX_MESSAGE_TTL,
                                                              DISCOVERY_TIMEOUT_MS,
                                                              RETRY_INTERVAL_MS);
@@ -113,7 +119,8 @@ public class ProxyBuilderDefaultImplTest {
                                                   eq(TestInterface.INTERFACE_NAME),
                                                   Mockito.<String> any(),
                                                   Mockito.<DiscoveryQos> any(),
-                                                  Mockito.<MessagingQos> any())).thenReturn(proxyInvocationHandler);
+                                                  Mockito.<MessagingQos> any(),
+                                                  Mockito.<StatelessAsyncCallback> any())).thenReturn(proxyInvocationHandler);
     }
 
     @Test
@@ -188,5 +195,23 @@ public class ProxyBuilderDefaultImplTest {
         verify(proxyCreatedCallback).onProxyCreationError(exceptionCaptor.capture());
         JoynrRuntimeException capturedException = exceptionCaptor.getValue();
         assertTrue(capturedException instanceof MultiDomainNoCompatibleProviderFoundException);
+    }
+
+    @Test(expected = JoynrIllegalStateException.class)
+    public void cantBuildForMissingStatelessAsyncCallback() throws Exception {
+        setup(Sets.newHashSet("domain"));
+        subject.setStatelessAsyncCallbackUseCase("invalid");
+        subject.build();
+    }
+
+    @Test
+    public void fetchesStatelessAsyncCallbackIfUseCaseSet() throws Exception {
+        setup(Sets.newHashSet("domain"));
+        final String useCase = "useCase";
+        StatelessAsyncCallback callbackMock = mock(StatelessAsyncCallback.class);
+        when(statelessAsyncCallbackDirectory.get(eq(useCase))).thenReturn(callbackMock);
+        subject.setStatelessAsyncCallbackUseCase(useCase);
+        subject.build();
+        verify(statelessAsyncCallbackDirectory).get(eq(useCase));
     }
 }

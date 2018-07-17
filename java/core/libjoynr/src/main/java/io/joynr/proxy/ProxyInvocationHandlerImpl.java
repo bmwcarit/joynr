@@ -29,6 +29,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
@@ -74,17 +75,21 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
     private String interfaceName;
     private MessageRouter messageRouter;
     private Set<String> domains;
+    private StatelessAsyncCallback statelessAsyncCallback;
 
     private static final Logger logger = LoggerFactory.getLogger(ProxyInvocationHandlerImpl.class);
 
+    // CHECKSTYLE:OFF
     @Inject
     public ProxyInvocationHandlerImpl(@Assisted("domains") Set<String> domains,
                                       @Assisted("interfaceName") String interfaceName,
                                       @Assisted("proxyParticipantId") String proxyParticipantId,
                                       @Assisted DiscoveryQos discoveryQos,
                                       @Assisted MessagingQos messagingQos,
+                                      @Nullable @Assisted StatelessAsyncCallback statelessAsyncCallback,
                                       ConnectorFactory connectorFactory,
                                       MessageRouter messageRouter) {
+        // CHECKSTYLE:ON
         this.domains = domains;
         this.proxyParticipantId = proxyParticipantId;
         this.interfaceName = interfaceName;
@@ -93,6 +98,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
         this.connectorFactory = connectorFactory;
         this.connectorStatus = ConnectorStatus.ConnectorNotAvailabe;
         this.messageRouter = messageRouter;
+        this.statelessAsyncCallback = statelessAsyncCallback;
     }
 
     private static interface ConnectorCaller {

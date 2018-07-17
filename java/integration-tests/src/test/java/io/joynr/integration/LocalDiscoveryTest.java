@@ -36,6 +36,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 
+import io.joynr.proxy.StatelessAsyncCallback;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -123,13 +124,15 @@ class ProxyInvocationHandlerFactoryImpl implements ProxyInvocationHandlerFactory
                                          String interfaceName,
                                          String proxyParticipantId,
                                          DiscoveryQos discoveryQos,
-                                         MessagingQos messagingQos) {
+                                         MessagingQos messagingQos,
+                                         StatelessAsyncCallback statelessAsyncCallback) {
         if (domains.contains("io.joynr.system")) {
             return new ProxyInvocationHandlerImpl(domains,
                                                   interfaceName,
                                                   proxyParticipantId,
                                                   discoveryQos,
                                                   messagingQos,
+                                                  statelessAsyncCallback,
                                                   connectorFactory,
                                                   messageRouter);
         }
@@ -138,6 +141,7 @@ class ProxyInvocationHandlerFactoryImpl implements ProxyInvocationHandlerFactory
                                               proxyParticipantId,
                                               discoveryQos,
                                               messagingQos,
+                                              statelessAsyncCallback,
                                               connectorFactoryMock,
                                               messageRouter);
     }
