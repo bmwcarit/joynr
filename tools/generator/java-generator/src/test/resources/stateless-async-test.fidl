@@ -18,6 +18,19 @@
  */
 package statelessasync
 
+typeCollection testTypeCollection {
+
+    version {major 0 minor 1}
+
+    struct TestTypeInput {
+        String testMemberIn
+    }
+
+    struct TestTypeOutput {
+        String testMemberOut
+    }
+}
+
 interface StatelessAsyncTest {
 
 	version {major 0 minor 1}
@@ -25,10 +38,17 @@ interface StatelessAsyncTest {
 	attribute String testAttribute
 	attribute Int32 testReadOnlyAttribute readonly
 
-	method oneInNoOutMethod {
+	method noOutMethod {
 		in {
 			String noOutInData
 		}
+	}
+
+	method noOutMethod {
+	    in {
+	        String noOutInDataOne
+	        String noOutInDataTwo
+	    }
 	}
 
 	method noInOneOutMethod {
@@ -75,6 +95,18 @@ interface StatelessAsyncTest {
 	    }
 	    error {
 	        TEST_ERROR
+	    }
+	}
+
+	method withInputOnlyType {
+	    in {
+	        testTypeCollection.TestTypeInput inData
+	    }
+	}
+
+	method withOutputType {
+	    out {
+	        testTypeCollection.TestTypeOutput outData
 	    }
 	}
 }

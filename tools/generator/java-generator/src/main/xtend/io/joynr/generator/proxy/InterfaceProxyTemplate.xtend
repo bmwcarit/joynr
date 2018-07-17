@@ -33,6 +33,7 @@ class InterfaceProxyTemplate extends InterfaceTemplate {
 		val className = francaIntf.proxyClassName
 		val asyncClassName = interfaceName + "Async"
 		val statelessAsyncClassName = interfaceName + "StatelessAsync"
+		val statelessAsyncCallbackClassName = interfaceName + "StatelessAsyncCallback"
 		val syncClassName = interfaceName + "Sync"
 		val subscriptionClassName = interfaceName + "SubscriptionInterface"
 		val broadcastClassName = interfaceName + "BroadcastInterface"

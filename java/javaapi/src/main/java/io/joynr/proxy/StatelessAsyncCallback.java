@@ -16,16 +16,14 @@
  * limitations under the License.
  * #L%
  */
-package io.joynr;
+package io.joynr.proxy;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-public @interface StatelessAsyncCallback {
+public interface StatelessAsyncCallback {
+    /**
+     * Return the unique name of the use case for which this callback instance will be used. This is required so that
+     * multiple proxies can be used for the same provider call, and the replies can be routed to the correct
+     * callback.
+     * @return see method description
+     */
+    String getUseCaseName();
 }

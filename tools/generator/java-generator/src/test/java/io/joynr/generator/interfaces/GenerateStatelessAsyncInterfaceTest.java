@@ -42,8 +42,9 @@ public class GenerateStatelessAsyncInterfaceTest extends AbstractJoynrJavaGenera
                 testResult.setStatelessAsyncInterfaceFound(true);
                 testResult.setStatelessAsyncAnnotationAdded(fileContent.contains("import io.joynr.StatelessAsync;")
                         && fileContent.contains("@StatelessAsync"));
-                testResult.setOneInNoOutMethodFound(fileContent.contains("void oneInNoOutMethod(")
-                        && fileContent.contains("String noOutInData"));
+                testResult.setOneInNoOutMethodFound(fileContent.contains("void noOutMethod(")
+                        && fileContent.contains("String noOutInData") && fileContent.contains("noOutInDataOne")
+                        && fileContent.contains("noOutInDataTwo"));
                 testResult.setNoInOneOutMethodFound(fileContent.contains("void noInOneOutMethod("));
                 testResult.setOneInOneOutMethodFound(fileContent.contains("void oneInOneOutMethod(")
                         && fileContent.contains("String oneInData"));

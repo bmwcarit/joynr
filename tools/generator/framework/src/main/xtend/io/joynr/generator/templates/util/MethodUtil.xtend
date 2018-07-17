@@ -54,14 +54,18 @@ public class MethodUtil {
 	}
 
 
-	def getAllRequiredTypes(FMethod method, String methodErrorEnumName, boolean errorTypes) {
+	def getAllRequiredTypes(FMethod method, String methodErrorEnumName, boolean includeInput, boolean includeOutput, boolean errorTypes) {
 		var Object datatype = null
 		var typeList = new HashSet<Object>();
-		for(returnParameter : getOutputParameters(method).filterNull){
-			typeList.addAll(getRequiredTypes(returnParameter.type));
+		if (includeOutput) {
+			for(returnParameter : getOutputParameters(method).filterNull) {
+				typeList.addAll(getRequiredTypes(returnParameter.type));
+			}
 		}
-		for (inputParameter : getInputParameters(method).filterNull) {
-			typeList.addAll(getRequiredTypes(inputParameter.type));
+		if (includeInput) {
+			for(inputParameter : getInputParameters(method).filterNull) {
+				typeList.addAll(getRequiredTypes(inputParameter.type));
+			}
 		}
 		if (errorTypes) {
 			if (method.errors !== null) {

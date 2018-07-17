@@ -147,6 +147,17 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 		return includeSet;
 	}
 
+	def Iterable<String> getRequiredCallbackIncludesFor(FInterface serviceInterface) {
+		val includeSet = new TreeSet<String>()
+		for (datatype : getAllComplexCallbackTypes(serviceInterface)) {
+			val include = getIncludeOf(datatype)
+			if (include != null) {
+				includeSet.add(include)
+			}
+		}
+		includeSet
+	}
+
 	def ReformatComment(FAnnotation comment, String prefixForNewLines) {
 		return comment.comment.replaceAll("\\s+", " ").replaceAll("\n", "\n" + prefixForNewLines)
 	}

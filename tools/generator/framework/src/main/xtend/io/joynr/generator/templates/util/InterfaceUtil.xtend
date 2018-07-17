@@ -168,11 +168,30 @@ public class InterfaceUtil {
 	def addTypesFromMethod(FInterface fInterface,
 		boolean fireAndForget,
 		boolean errorTypes,
+        boolean includeInput,
+        boolean includeOutput,
 		Set<Object> typeList
 	) {
 		val methodToErrorEnumName = fInterface.methodToErrorEnumName
 		for (method : fInterface.methods.filter[method | method.fireAndForget == fireAndForget]) {
-			typeList.addAll(getAllRequiredTypes(method, methodToErrorEnumName.get(method), errorTypes))
+			typeList.addAll(getAllRequiredTypes(method, methodToErrorEnumName.get(method), includeInput, includeOutput, errorTypes))
+		}
+	}
+
+	def addTypesFromAttributes(
+			FInterface fInterface,
+            boolean readAttributes,
+            boolean writeAttributes,
+            boolean notifyAttributes,
+            Set<Object> typeList
+	) {
+		for (attribute : getAttributes(fInterface)) {
+			if ((readAttributes && attribute.readable)
+					|| (writeAttributes && attribute.writable)
+					|| (notifyAttributes && attribute.notifiable)
+			) {
+				typeList.addAll(getRequiredTypes(attribute.type));
+			}
 		}
 	}
 
@@ -182,20 +201,13 @@ public class InterfaceUtil {
 	) {
 		val typeList = new HashSet<Object>();
 		if (selector.methods){
-			addTypesFromMethod(fInterface, false, selector.errorTypes, typeList)
+			addTypesFromMethod(fInterface, false, selector.errorTypes, true, true, typeList)
 		}
 		if (selector.fireAndForget) {
-			addTypesFromMethod(fInterface, true, selector.errorTypes, typeList)
+			addTypesFromMethod(fInterface, true, selector.errorTypes, true, true, typeList)
 		}
 
-		for (attribute : getAttributes(fInterface)) {
-			if ((selector.readAttributes && attribute.readable)
-					|| (selector.writeAttributes && attribute.writable)
-					|| (selector.notifyAttributes && attribute.notifiable)
-			) {
-				typeList.addAll(getRequiredTypes(attribute.type));
-			}
-		}
+		addTypesFromAttributes(fInterface, selector.readAttributes, selector.writeAttributes, selector.notifyAttributes, typeList);
 
 		if (selector.broadcasts) {
 			for (broadcast : fInterface.broadcasts) {
@@ -224,6 +236,15 @@ public class InterfaceUtil {
 			TypeSelector selector
 	) {
 		getAllRequiredTypes(fInterface, selector).filterComplex(selector.typeDefs)
+	}
+
+	def getAllComplexCallbackTypes(
+			FInterface fInterface
+	) {
+		val typeList = new HashSet<Object>()
+		addTypesFromAttributes(fInterface, true, true, false, typeList)
+		addTypesFromMethod(fInterface, false, true, false, true, typeList)
+		typeList.filterComplex(false)
 	}
 
 	def private void getAllReferredDatatypes(Iterable<Object> list, HashSet<Object> cache) {
