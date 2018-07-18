@@ -167,7 +167,10 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
 
         Request request = new Request(method.getName(),
                                       paramsWithoutMessageIdCallback,
-                                      paramDatatypesWithoutMessageIdCallback);
+                                      paramDatatypesWithoutMessageIdCallback,
+                                      statelessAsyncIdCalculator.calculateStatelessCallbackRequestReplyId(method),
+                                      statelessAsyncIdCalculator.calculateStatelessCallbackId(interfaceName,
+                                                                                              statelessAsyncCallback));
         requestReplyManager.sendRequest(statelessAsyncIdCalculator.calculateParticipantId(interfaceName,
                                                                                           statelessAsyncCallback),
                                         toDiscoveryEntries.iterator().next(),
