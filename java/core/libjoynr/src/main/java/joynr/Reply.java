@@ -30,6 +30,7 @@ public class Reply implements JoynrMessageType {
     private Object[] response;
     private JoynrException error;
     private String requestReplyId;
+    private transient String statelessCallback;
 
     public Reply() {
     }
@@ -60,11 +61,20 @@ public class Reply implements JoynrMessageType {
         return requestReplyId;
     }
 
+    public String getStatelessCallback() {
+        return statelessCallback;
+    }
+
+    public void setStatelessCallback(String statelessCallback) {
+        this.statelessCallback = statelessCallback;
+    }
+
     @Override
     public String toString() {
         return "Reply: " + "requestReplyId: " + requestReplyId
                 + (response == null ? "" : ", response: " + Arrays.toString(response))
-                + (error == null ? "" : ", error: " + error);
+                + (error == null ? "" : ", error: " + error)
+                + (statelessCallback == null ? "" : ", statelessCallback: " + statelessCallback);
     }
 
     @Override
