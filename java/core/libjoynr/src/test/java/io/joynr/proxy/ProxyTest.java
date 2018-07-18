@@ -251,6 +251,7 @@ public class ProxyTest {
                 bind(MessageRouter.class).toInstance(messageRouter);
                 bind(RoutingTable.class).toInstance(routingTable);
                 bind(StatelessAsyncCallbackDirectory.class).toInstance(statelessAsyncCallbackDirectory);
+                bind(StatelessAsyncIdCalculator.class).toInstance(new DefaultStatelessAsyncIdCalculatorImpl("channel"));
                 install(new FactoryModuleBuilder().implement(ProxyInvocationHandler.class,
                                                              ProxyInvocationHandlerImpl.class)
                                                   .build(ProxyInvocationHandlerFactory.class));

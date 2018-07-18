@@ -61,13 +61,15 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
     private final ReplyCallerDirectory replyCallerDirectory;
 
     private final SubscriptionManager subscriptionManager;
+    private final StatelessAsyncIdCalculator statelessAsyncIdCalculator;
 
     JoynrMessagingConnectorInvocationHandler(Set<DiscoveryEntryWithMetaInfo> toDiscoveryEntries,
                                              String fromParticipantId,
                                              MessagingQos qosSettings,
                                              RequestReplyManager requestReplyManager,
                                              ReplyCallerDirectory replyCallerDirectory,
-                                             SubscriptionManager subscriptionManager) {
+                                             SubscriptionManager subscriptionManager,
+                                             StatelessAsyncIdCalculator statelessAsyncIdCalculator) {
         this.toDiscoveryEntries = toDiscoveryEntries;
         this.fromParticipantId = fromParticipantId;
 
@@ -77,6 +79,7 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
         this.replyCallerDirectory = replyCallerDirectory;
         this.subscriptionManager = subscriptionManager;
 
+        this.statelessAsyncIdCalculator = statelessAsyncIdCalculator;
     }
 
     @SuppressWarnings("unchecked")
@@ -133,6 +136,7 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
     @Override
     public void executeStatelessAsyncMethod(Method method,
                                             Object[] args,
+                                            String interfaceName,
                                             StatelessAsyncCallback statelessAsyncCallback) {
         if (method == null) {
             throw new IllegalArgumentException("Method cannot be null");
@@ -164,7 +168,11 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
         Request request = new Request(method.getName(),
                                       paramsWithoutMessageIdCallback,
                                       paramDatatypesWithoutMessageIdCallback);
-        requestReplyManager.sendRequest(fromParticipantId, toDiscoveryEntries.iterator().next(), request, qosSettings);
+        requestReplyManager.sendRequest(statelessAsyncIdCalculator.calculateParticipantId(interfaceName,
+                                                                                          statelessAsyncCallback),
+                                        toDiscoveryEntries.iterator().next(),
+                                        request,
+                                        qosSettings);
         messageIdCallback.accept(request.getRequestReplyId());
     }
 

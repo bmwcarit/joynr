@@ -283,6 +283,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
             try {
                 connector.executeStatelessAsyncMethod(invocation.getMethod(),
                                                       invocation.getArgs(),
+                                                      interfaceName,
                                                       statelessAsyncCallback);
             } catch (Exception e) {
                 logger.error("Unable to perform stateless async call {}", invocation, e);
@@ -445,7 +446,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
         } finally {
             connectorStatusLock.unlock();
         }
-        connector.executeStatelessAsyncMethod(method, args, statelessAsyncCallback);
+        connector.executeStatelessAsyncMethod(method, args, interfaceName, statelessAsyncCallback);
     }
 
     private UnsubscribeInvocation unsubscribe(UnsubscribeInvocation unsubscribeInvocation) {

@@ -46,6 +46,7 @@ public class JoynrMessagingConnectorFactory {
 
     // use for caching because creation of MethodMetaInformation is expensive
     private static final ConcurrentMap<Method, MethodMetaInformation> metaInformationMap = new ConcurrentHashMap<Method, MethodMetaInformation>();
+    private final StatelessAsyncIdCalculator statelessAsyncIdCalculator;
 
     private RequestReplyManager requestReplyManager;
     private SubscriptionManager subscriptionManager;
@@ -55,10 +56,12 @@ public class JoynrMessagingConnectorFactory {
     @Inject
     public JoynrMessagingConnectorFactory(RequestReplyManager requestReplyManager,
                                           ReplyCallerDirectory replyCallerDirectory,
-                                          SubscriptionManager subscriptionManager) {
+                                          SubscriptionManager subscriptionManager,
+                                          StatelessAsyncIdCalculator statelessAsyncIdCalculator) {
         this.requestReplyManager = requestReplyManager;
         this.replyCallerDirectory = replyCallerDirectory;
         this.subscriptionManager = subscriptionManager;
+        this.statelessAsyncIdCalculator = statelessAsyncIdCalculator;
     }
 
     /**
@@ -67,8 +70,8 @@ public class JoynrMessagingConnectorFactory {
      *
      * @param fromParticipantId
      *            Participant Id of the created stub.
-     * @param toParticipantId
-     *            Participant of the Provider/Receiver.
+     * @param toDiscoveryEntries
+     *            Discovery entries for receivers.
      * @param qosSettings
      *            MessagingQos settings
      * @return connector to execute remote procedure calls
@@ -82,7 +85,8 @@ public class JoynrMessagingConnectorFactory {
                                                             qosSettings,
                                                             requestReplyManager,
                                                             replyCallerDirectory,
-                                                            subscriptionManager);
+                                                            subscriptionManager,
+                                                            statelessAsyncIdCalculator);
     }
 
     public static MethodMetaInformation ensureMethodMetaInformationPresent(Method method) {

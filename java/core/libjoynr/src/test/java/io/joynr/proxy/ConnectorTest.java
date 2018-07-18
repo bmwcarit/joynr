@@ -85,6 +85,8 @@ public class ConnectorTest {
     @Mock
     private RequestReplyManager requestReplyManager;
     @Mock
+    private StatelessAsyncIdCalculator statelessAsyncIdCalculator;
+    @Mock
     private MessageRouter messageRouter;
     @Mock
     private Address libJoynrMessagingAddress;
@@ -427,7 +429,8 @@ public class ConnectorTest {
         arbitrationResult.setDiscoveryEntries(toDiscoveryEntries);
         JoynrMessagingConnectorFactory joynrMessagingConnectorFactory = new JoynrMessagingConnectorFactory(requestReplyManager,
                                                                                                            replyCallerDirectory,
-                                                                                                           subscriptionManager);
+                                                                                                           subscriptionManager,
+                                                                                                           statelessAsyncIdCalculator);
         ConnectorFactory connectorFactory = new ConnectorFactory(joynrMessagingConnectorFactory,
                                                                  messageRouter,
                                                                  libJoynrMessagingAddress);
