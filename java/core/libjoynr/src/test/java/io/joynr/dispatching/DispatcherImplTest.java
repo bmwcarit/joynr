@@ -40,6 +40,8 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import io.joynr.proxy.DefaultStatelessAsyncIdCalculatorImpl;
+import io.joynr.proxy.StatelessAsyncIdCalculator;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -101,6 +103,8 @@ public class DispatcherImplTest {
     private MessageRouter messageRouterMock;
     @Mock
     private MessageSender messageSenderMock;
+    @Mock
+    private StatelessAsyncIdCalculator statelessAsyncIdCalculator;
     @Spy
     private MessageReceiverMock messageReceiverMock = new MessageReceiverMock();
 
@@ -136,6 +140,8 @@ public class DispatcherImplTest {
                 ScheduledExecutorService cleanupExecutor = Executors.newSingleThreadScheduledExecutor(namedThreadFactory);
                 bind(ScheduledExecutorService.class).annotatedWith(Names.named(JOYNR_SCHEDULER_CLEANUP))
                                                     .toInstance(cleanupExecutor);
+                bind(StatelessAsyncIdCalculator.class).to(DefaultStatelessAsyncIdCalculatorImpl.class);
+                bind(String.class).annotatedWith(Names.named(MessagingPropertyKeys.CHANNELID)).toInstance("channelid");
             }
 
         });
@@ -219,7 +225,8 @@ public class DispatcherImplTest {
                                      messageSenderMock,
                                      messageFactoryMock,
                                      objectMapperMock,
-                                     compress);
+                                     compress,
+                                     statelessAsyncIdCalculator);
 
         String fromParticipantId = "fromParticipantId";
         MulticastPublication multicastPublication = mock(MulticastPublication.class);
@@ -254,7 +261,8 @@ public class DispatcherImplTest {
                                      messageSenderMock,
                                      messageFactoryMock,
                                      objectMapperMock,
-                                     compress);
+                                     compress,
+                                     statelessAsyncIdCalculator);
 
         fixture.messageArrived(joynrMessage.getImmutableMessage());
 
@@ -298,7 +306,8 @@ public class DispatcherImplTest {
                                          messageSenderMock,
                                          messageFactoryMock,
                                          objectMapperMock,
-                                         compressAllOutgoingReplies);
+                                         compressAllOutgoingReplies,
+                                         statelessAsyncIdCalculator);
 
             fixture.messageArrived(outgoingMessage);
             verify(requestReplyManagerMock).handleRequest(providerCallbackReply.capture(),
