@@ -32,7 +32,7 @@ const providerImplementation = require("./MultipleVersionsInterfaceProviderImple
 
 let loadedJoynr, providerDomain, multipleVersionsInterfaceProvider, MultipleVersionsInterfaceProvider;
 
-function initializeTest(provisioningSuffix, providedDomain, versioning) {
+function initializeTest(provisioningSuffix, providedDomain, settings) {
     providerDomain = providedDomain;
 
     joynr.selectRuntime("inprocess");
@@ -45,7 +45,7 @@ function initializeTest(provisioningSuffix, providedDomain, versioning) {
             supportsOnChangeSubscriptions: false
         });
 
-        switch (versioning) {
+        switch (settings.versioning) {
             case "nameVersion2":
                 MultipleVersionsInterfaceProvider = MultipleVersionsInterfaceProviderNameVersion;
                 break;
