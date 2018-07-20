@@ -256,7 +256,7 @@ void LibJoynrRuntime::init(
         }
     };
 
-    routingProxy->getReplyToAddressAsync(std::move(onSuccessWrapper), std::move(onError));
+    routingProxy->getReplyToAddressAsync(std::move(onSuccessWrapper), onError);
 
     // setup discovery
     std::string discoveryProviderParticipantId =
