@@ -24,15 +24,20 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.runners.MockitoJUnitRunner;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Charsets;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -58,10 +63,6 @@ import joynr.Reply;
 import joynr.Request;
 import joynr.SubscriptionPublication;
 import joynr.SubscriptionRequest;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MutableMessageFactoryTest {
@@ -301,7 +302,7 @@ public class MutableMessageFactoryTest {
         assertEquals(multicastId, joynrMessage.getRecipient());
         assertEquals(Message.VALUE_MESSAGE_TYPE_MULTICAST, joynrMessage.getType());
         assertTrue(new String(joynrMessage.getPayload(),
-                              Charsets.UTF_8).contains(MulticastPublication.class.getName()));
+                              StandardCharsets.UTF_8).contains(MulticastPublication.class.getName()));
     }
 
     @Test

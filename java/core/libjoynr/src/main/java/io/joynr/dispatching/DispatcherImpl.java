@@ -19,6 +19,7 @@
 package io.joynr.dispatching;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +32,6 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Charsets;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
@@ -225,7 +225,7 @@ public class DispatcherImpl implements Dispatcher {
         String payload;
 
         try {
-            payload = new String(message.getUnencryptedBody(), Charsets.UTF_8);
+            payload = new String(message.getUnencryptedBody(), StandardCharsets.UTF_8);
         } catch (EncodingException e) {
             logger.error("Error reading SMRF message. msgId: {}. from: {} to: {}. Reason: {}. Discarding joynr message.",
                          new Object[]{ message.getSender(), message.getRecipient(), message.getId(), e.getMessage() });
@@ -364,7 +364,7 @@ public class DispatcherImpl implements Dispatcher {
         String payload;
 
         try {
-            payload = new String(message.getUnencryptedBody(), Charsets.UTF_8);
+            payload = new String(message.getUnencryptedBody(), StandardCharsets.UTF_8);
         } catch (EncodingException e) {
             logger.error("Error extracting payload for message {}. Reason: {}",
                          new Object[]{ message.getId(), e.getMessage() });

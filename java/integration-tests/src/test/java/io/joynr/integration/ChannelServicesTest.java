@@ -23,21 +23,13 @@ import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assert.assertEquals;
 
-import io.joynr.integration.setup.BounceProxyServerSetup;
-import io.joynr.integration.setup.SingleBounceProxy;
-import io.joynr.integration.setup.testrunner.BounceProxyServerContext;
-import io.joynr.integration.setup.testrunner.BounceProxyServerSetups;
-import io.joynr.integration.setup.testrunner.MultipleBounceProxySetupsTestRunner;
-import io.joynr.integration.util.BounceProxyCommunicationMock;
-
 import java.net.SocketTimeoutException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-
-import joynr.ImmutableMessage;
 
 import org.junit.Before;
 import org.junit.Ignore;
@@ -46,8 +38,15 @@ import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Charsets;
 import com.jayway.restassured.response.Response;
+
+import io.joynr.integration.setup.BounceProxyServerSetup;
+import io.joynr.integration.setup.SingleBounceProxy;
+import io.joynr.integration.setup.testrunner.BounceProxyServerContext;
+import io.joynr.integration.setup.testrunner.BounceProxyServerSetups;
+import io.joynr.integration.setup.testrunner.MultipleBounceProxySetupsTestRunner;
+import io.joynr.integration.util.BounceProxyCommunicationMock;
+import joynr.ImmutableMessage;
 
 @Ignore("HTTP not supported at the moment")
 @RunWith(MultipleBounceProxySetupsTestRunner.class)
@@ -110,8 +109,8 @@ public class ChannelServicesTest {
         String channelId = UUID.randomUUID().toString();
         bpMock.createChannel(channelId);
         // generate a random payload
-        byte[] payload1 = ("payload-" + UUID.randomUUID().toString()).getBytes(Charsets.UTF_8);
-        byte[] payload2 = ("payload-" + UUID.randomUUID().toString()).getBytes(Charsets.UTF_8);
+        byte[] payload1 = ("payload-" + UUID.randomUUID().toString()).getBytes(StandardCharsets.UTF_8);
+        byte[] payload2 = ("payload-" + UUID.randomUUID().toString()).getBytes(StandardCharsets.UTF_8);
         long messageRelativeTtlMs = 1000000L;
         bpMock.postMessage(channelId, messageRelativeTtlMs, payload1);
         bpMock.postMessage(channelId, messageRelativeTtlMs, payload2);
@@ -148,8 +147,8 @@ public class ChannelServicesTest {
         longPoll.get(100L, TimeUnit.MILLISECONDS);
 
         // generate a random payload
-        byte[] payload1 = ("payload-" + UUID.randomUUID().toString()).getBytes(Charsets.UTF_8);
-        byte[] payload2 = ("payload-" + UUID.randomUUID().toString()).getBytes(Charsets.UTF_8);
+        byte[] payload1 = ("payload-" + UUID.randomUUID().toString()).getBytes(StandardCharsets.UTF_8);
+        byte[] payload2 = ("payload-" + UUID.randomUUID().toString()).getBytes(StandardCharsets.UTF_8);
         long messageRelativeTtlMs = 1000000L;
         // expect the messages not to be postable since the channel does not exist (get 400 back from server)
         bpMock.postMessage(channelId, messageRelativeTtlMs, payload1, 400);

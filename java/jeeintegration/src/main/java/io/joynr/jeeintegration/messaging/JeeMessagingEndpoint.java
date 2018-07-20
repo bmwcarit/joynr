@@ -18,18 +18,14 @@
  */
 package io.joynr.jeeintegration.messaging;
 
-import com.google.common.base.Charsets;
-import com.google.inject.Injector;
+import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_CHANNELNOTSET;
+import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_DESERIALIZATIONFAILED;
+import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_EXPIRYDATENOTSET;
+import static java.lang.String.format;
 
-import io.joynr.communications.exceptions.JoynrHttpException;
-import io.joynr.dispatcher.ServletMessageReceiver;
-import io.joynr.jeeintegration.JoynrIntegrationBean;
-import io.joynr.smrf.EncodingException;
-import io.joynr.smrf.UnsuppportedVersionException;
-import joynr.ImmutableMessage;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.io.IOException;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
 
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
@@ -45,13 +41,17 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
-import java.io.IOException;
-import java.net.URI;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_CHANNELNOTSET;
-import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_EXPIRYDATENOTSET;
-import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_DESERIALIZATIONFAILED;
-import static java.lang.String.format;
+import com.google.inject.Injector;
+
+import io.joynr.communications.exceptions.JoynrHttpException;
+import io.joynr.dispatcher.ServletMessageReceiver;
+import io.joynr.jeeintegration.JoynrIntegrationBean;
+import io.joynr.smrf.EncodingException;
+import io.joynr.smrf.UnsuppportedVersionException;
+import joynr.ImmutableMessage;
 
 /**
  * The <code>JeeMessagingEndpoint</code> is a JAX-RS endpoint which receives joynr messages to be processed.
@@ -94,10 +94,6 @@ public class JeeMessagingEndpoint {
      * @return Response the endpoint where the status of the message can be queried.
      * @throws IOException
      *             in case of IO error occurred.
-     * @throws JsonParseException
-     *             in case JSON could not be parsed.
-     * @throws JsonMappingException
-     *             in case JSON could not be mapped.
      */
     @POST
     @Consumes({ MediaType.APPLICATION_OCTET_STREAM })
@@ -127,7 +123,7 @@ public class JeeMessagingEndpoint {
                                 byte[] serializedMessage,
                                 @Context UriInfo uriInfo) {
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Incoming message:\n" + new String(serializedMessage, Charsets.UTF_8));
+            LOG.debug("Incoming message:\n" + new String(serializedMessage, StandardCharsets.UTF_8));
         }
         try {
             ImmutableMessage message;
