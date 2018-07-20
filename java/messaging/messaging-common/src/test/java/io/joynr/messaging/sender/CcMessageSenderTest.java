@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,11 +20,13 @@ package io.joynr.messaging.sender;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.hamcrest.CoreMatchers.instanceOf;
 
+import io.joynr.runtime.GlobalAddressProvider;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -43,31 +45,55 @@ import joynr.system.RoutingTypes.MqttAddress;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CcMessageSenderTest extends MessageSenderTestBase {
+
+    private ObjectMapper objectMapper = new ObjectMapper();
+    private MqttAddress replyToAddress = new MqttAddress("testBrokerUri", "testTopic");
+    private MqttAddress globalAddress = new MqttAddress("testBrokerUri", "globalTopic");
+
     @Test
     public void testReplyToIsSet() throws Exception {
         MutableMessage message = createTestRequestMessage();
-        final MqttAddress replyToAddress = new MqttAddress("testBrokerUri", "testTopic");
-        ObjectMapper objectMapper = new ObjectMapper();
         String serializedReplyToAddress = objectMapper.writeValueAsString(replyToAddress);
 
-        ReplyToAddressProvider replyToAddressProviderMock = Mockito.mock(ReplyToAddressProvider.class);
-        doAnswer(new Answer<Object>() {
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
-                assertEquals(1, invocation.getArguments().length);
-                assertThat(invocation.getArguments()[0], instanceOf(TransportReadyListener.class));
+        testCorrectReplyToSetOnMessage(message, serializedReplyToAddress);
+    }
 
-                TransportReadyListener listener = (TransportReadyListener) invocation.getArguments()[0];
-                listener.transportReady(replyToAddress);
-                return null;
-            }
-        }).when(replyToAddressProviderMock).registerGlobalAddressesReadyListener(any(TransportReadyListener.class));
+    @Test
+    public void testGlobalSetForStatelessAsync() throws Exception {
+        MutableMessage message = createTestRequestMessage();
+        message.setStatelessAsync(true);
+        String globalSerialized = objectMapper.writeValueAsString(globalAddress);
 
-        CcMessageSender subject = new CcMessageSender(messageRouterMock, replyToAddressProviderMock);
+        testCorrectReplyToSetOnMessage(message, globalSerialized);
+    }
+
+    private void testCorrectReplyToSetOnMessage(MutableMessage message, String expectedAddress) throws Exception {
+        ReplyToAddressProvider replyToAddressProviderMock = mock(ReplyToAddressProvider.class);
+        doAnswer(createTransportReadyCallback(replyToAddress)).when(replyToAddressProviderMock)
+                                                              .registerGlobalAddressesReadyListener(any(TransportReadyListener.class));
+
+        GlobalAddressProvider globalAddressProviderMock = mock(GlobalAddressProvider.class);
+        doAnswer(createTransportReadyCallback(globalAddress)).when(globalAddressProviderMock)
+                                                             .registerGlobalAddressesReadyListener(any(TransportReadyListener.class));
+
+        CcMessageSender subject = new CcMessageSender(messageRouterMock,
+                                                      replyToAddressProviderMock,
+                                                      globalAddressProviderMock);
         subject.sendMessage(message);
 
         ArgumentCaptor<ImmutableMessage> argCaptor = ArgumentCaptor.forClass(ImmutableMessage.class);
         verify(messageRouterMock).route(argCaptor.capture());
-        assertEquals(serializedReplyToAddress, argCaptor.getValue().getReplyTo());
+        assertEquals(expectedAddress, argCaptor.getValue().getReplyTo());
+    }
+
+    private Answer<Object> createTransportReadyCallback(MqttAddress address) {
+        return (invocation) -> {
+            assertEquals(1, invocation.getArguments().length);
+            assertThat(invocation.getArguments()[0], instanceOf(TransportReadyListener.class));
+
+            TransportReadyListener listener = (TransportReadyListener) invocation.getArguments()[0];
+            listener.transportReady(address);
+            return null;
+        };
     }
 }

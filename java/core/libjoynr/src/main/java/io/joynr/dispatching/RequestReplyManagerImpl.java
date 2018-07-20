@@ -127,6 +127,7 @@ public class RequestReplyManagerImpl
                                                               request,
                                                               messagingQos);
         message.setLocalMessage(toDiscoveryEntry.getIsLocal());
+        message.setStatelessAsync(request.getStatelessCallback() != null);
 
         logger.debug("REQUEST call proxy: method: {}, requestReplyId: {}, messageId: {}, proxy participantId: {}, "
                 + "provider participantId: {}, params: {}",

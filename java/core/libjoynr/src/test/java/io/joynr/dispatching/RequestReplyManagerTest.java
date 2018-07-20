@@ -20,6 +20,7 @@ package io.joynr.dispatching;
 
 import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -107,6 +108,7 @@ public class RequestReplyManagerTest {
     private Request request1;
     private Request request2;
     private Request request3;
+    private Request request4;
     private OneWayRequest oneWay1;
 
     private ObjectMapper objectMapper;
@@ -182,6 +184,11 @@ public class RequestReplyManagerTest {
         request1 = new Request(method.getName(), params1, method.getParameterTypes());
         request2 = new Request(method.getName(), params2, method.getParameterTypes());
         request3 = new Request("unknownMethodName", params2, method.getParameterTypes());
+        request4 = new Request(method.getName(),
+                               params1,
+                               method.getParameterTypes(),
+                               "requestReplyId",
+                               "stateless-callback");
 
         Method fireAndForgetMethod = TestOneWayRecipient.class.getMethod("fireAndForgetMethod",
                                                                          new Class[]{ String.class });
@@ -225,6 +232,20 @@ public class RequestReplyManagerTest {
 
         assertEquals(new String(messageCapture.getValue().getPayload(), StandardCharsets.UTF_8),
                      objectMapper.writeValueAsString(request1));
+    }
+
+    @Test
+    public void statelessAsyncFlagSetCorrectly() throws Exception {
+        requestReplyManager.sendRequest(testSenderParticipantId,
+                                        testMessageResponderDiscoveryEntry,
+                                        request4,
+                                        new MessagingQos(TIME_TO_LIVE));
+
+        ArgumentCaptor<MutableMessage> messageCaptor = ArgumentCaptor.forClass(MutableMessage.class);
+        verify(messageSenderMock).sendMessage(messageCaptor.capture());
+        MutableMessage message = messageCaptor.getValue();
+        assertNotNull(message);
+        assertTrue(message.isStatelessAsync());
     }
 
     private abstract class ReplyCallback extends ProviderCallback<Reply> {
