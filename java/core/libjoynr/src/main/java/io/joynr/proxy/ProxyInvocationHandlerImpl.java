@@ -79,6 +79,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
     private MessageRouter messageRouter;
     private Set<String> domains;
     private StatelessAsyncCallback statelessAsyncCallback;
+    private String statelessAsyncParticipantId;
 
     private static final Logger logger = LoggerFactory.getLogger(ProxyInvocationHandlerImpl.class);
 
@@ -91,7 +92,8 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
                                       @Assisted MessagingQos messagingQos,
                                       @Nullable @Assisted StatelessAsyncCallback statelessAsyncCallback,
                                       ConnectorFactory connectorFactory,
-                                      MessageRouter messageRouter) {
+                                      MessageRouter messageRouter,
+                                      StatelessAsyncIdCalculator statelessAsyncIdCalculator) {
         // CHECKSTYLE:ON
         this.domains = domains;
         this.proxyParticipantId = proxyParticipantId;
@@ -102,6 +104,10 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
         this.connectorStatus = ConnectorStatus.ConnectorNotAvailabe;
         this.messageRouter = messageRouter;
         this.statelessAsyncCallback = statelessAsyncCallback;
+        if (statelessAsyncCallback != null) {
+            statelessAsyncParticipantId = statelessAsyncIdCalculator.calculateParticipantId(interfaceName,
+                                                                                            statelessAsyncCallback);
+        }
     }
 
     private static interface ConnectorCaller {
@@ -300,7 +306,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
      */
     @Override
     public void createConnector(ArbitrationResult result) {
-        connector = connectorFactory.create(proxyParticipantId, result, qosSettings);
+        connector = connectorFactory.create(proxyParticipantId, result, qosSettings, statelessAsyncParticipantId);
         connectorStatusLock.lock();
         try {
             connectorStatus = ConnectorStatus.ConnectorSuccesful;

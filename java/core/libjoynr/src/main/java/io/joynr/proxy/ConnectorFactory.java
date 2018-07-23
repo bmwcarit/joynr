@@ -32,9 +32,13 @@ import javax.inject.Named;
 import io.joynr.runtime.SystemServicesSettings;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Singleton
 public class ConnectorFactory {
+
+    private static final Logger logger = LoggerFactory.getLogger(ConnectorFactory.class);
 
     JoynrMessagingConnectorFactory joynrMessagingConnectorFactory;
 
@@ -57,12 +61,14 @@ public class ConnectorFactory {
      * @param fromParticipantId origin participant id
      * @param arbitrationResult result of arbitration
      * @param qosSettings QOS settings
+     * @param statelessAsyncCallbackId
      * @return connector object
      */
     @CheckForNull
     public ConnectorInvocationHandler create(final String fromParticipantId,
                                              final ArbitrationResult arbitrationResult,
-                                             final MessagingQos qosSettings) {
+                                             final MessagingQos qosSettings,
+                                             String statelessAsyncCallbackId) {
         // iterate through  arbitrationResult.getDiscoveryEntries()
         // check if there is at least one Globally visible
         // set isGloballyVisible = true. otherwise = false
@@ -75,6 +81,13 @@ public class ConnectorFactory {
             }
         }
         messageRouter.addNextHop(fromParticipantId, libjoynrMessagingAddress, isGloballyVisible);
+        if (statelessAsyncCallbackId != null) {
+            logger.info("Adding route for stateless callback {} / {} / {}",
+                        statelessAsyncCallbackId,
+                        libjoynrMessagingAddress,
+                        isGloballyVisible);
+            messageRouter.addNextHop(statelessAsyncCallbackId, libjoynrMessagingAddress, isGloballyVisible);
+        }
         return joynrMessagingConnectorFactory.create(fromParticipantId,
                                                      arbitrationResult.getDiscoveryEntries(),
                                                      qosSettings);

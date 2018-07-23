@@ -436,7 +436,8 @@ public class ConnectorTest {
                                                                  libJoynrMessagingAddress);
         ConnectorInvocationHandler connector = connectorFactory.create(fromParticipantId,
                                                                        arbitrationResult,
-                                                                       qosSettings);
+                                                                       qosSettings,
+                                                                       null);
         return connector;
     }
 }

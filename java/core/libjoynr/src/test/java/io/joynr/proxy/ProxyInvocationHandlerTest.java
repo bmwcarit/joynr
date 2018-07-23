@@ -70,6 +70,9 @@ public class ProxyInvocationHandlerTest {
     @Mock
     private MessageRouter mockMessageRouter;
 
+    @Mock
+    private StatelessAsyncIdCalculator statelessAsyncIdCalculator;
+
     private ProxyInvocationHandlerImpl proxyInvocationHandler;
 
     private final ExecutorService threadPool = new ScheduledThreadPoolExecutor(2);
@@ -99,7 +102,8 @@ public class ProxyInvocationHandlerTest {
                                                                 messagingQos,
                                                                 mock(StatelessAsyncCallback.class),
                                                                 connectorFactory,
-                                                                mockMessageRouter);
+                                                                mockMessageRouter,
+                                                                statelessAsyncIdCalculator);
     }
 
     @Test(timeout = 3000)
@@ -154,7 +158,8 @@ public class ProxyInvocationHandlerTest {
         ConnectorInvocationHandler connectorInvocationHandler = mock(ConnectorInvocationHandler.class);
         when(connectorFactory.create(Mockito.anyString(),
                                      Mockito.<ArbitrationResult> any(),
-                                     Mockito.eq(messagingQos))).thenReturn(connectorInvocationHandler);
+                                     Mockito.eq(messagingQos),
+                                     Mockito.eq(null))).thenReturn(connectorInvocationHandler);
         Method fireAndForgetMethod = TestServiceSync.class.getMethod("callMe", new Class<?>[]{ String.class });
         Object[] args = new Object[]{ "test" };
 
@@ -201,7 +206,8 @@ public class ProxyInvocationHandlerTest {
         ConnectorInvocationHandler connectorInvocationHandler = mock(ConnectorInvocationHandler.class);
         when(connectorFactory.create(Mockito.anyString(),
                                      Mockito.<ArbitrationResult> any(),
-                                     Mockito.eq(messagingQos))).thenReturn(connectorInvocationHandler);
+                                     Mockito.eq(messagingQos),
+                                     Mockito.eq(null))).thenReturn(connectorInvocationHandler);
         MyBroadcastSubscriptionListener broadcastSubscriptionListener = mock(MyBroadcastSubscriptionListener.class);
         SubscriptionQos subscriptionQos = mock(SubscriptionQos.class);
 

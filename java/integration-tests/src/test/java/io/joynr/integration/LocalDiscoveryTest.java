@@ -36,7 +36,9 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 
+import io.joynr.proxy.DefaultStatelessAsyncIdCalculatorImpl;
 import io.joynr.proxy.StatelessAsyncCallback;
+import io.joynr.proxy.StatelessAsyncIdCalculator;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -107,16 +109,19 @@ class ProxyInvocationHandlerFactoryImpl implements ProxyInvocationHandlerFactory
     private ConnectorFactory connectorFactory;
     private ConnectorFactory connectorFactoryMock;
     private MessageRouter messageRouter;
+    private StatelessAsyncIdCalculator statelessAsyncIdCalculator;
 
     @Inject
     public ProxyInvocationHandlerFactoryImpl(ConnectorFactory connectorFactory,
                                              @Named("connectorFactoryMock") JoynrMessagingConnectorFactory connectorFactoryMock,
                                              MessageRouter messageRouter,
-                                             @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) Address dispatcherAddress) {
+                                             @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) Address dispatcherAddress,
+                                             StatelessAsyncIdCalculator statelessAsyncIdCalculator) {
         super();
         this.messageRouter = messageRouter;
         this.connectorFactory = connectorFactory;
         this.connectorFactoryMock = new ConnectorFactory(connectorFactoryMock, messageRouter, dispatcherAddress);
+        this.statelessAsyncIdCalculator = statelessAsyncIdCalculator;
     }
 
     @Override
@@ -134,7 +139,8 @@ class ProxyInvocationHandlerFactoryImpl implements ProxyInvocationHandlerFactory
                                                   messagingQos,
                                                   statelessAsyncCallback,
                                                   connectorFactory,
-                                                  messageRouter);
+                                                  messageRouter,
+                                                  statelessAsyncIdCalculator);
         }
         return new ProxyInvocationHandlerImpl(domains,
                                               interfaceName,
@@ -143,7 +149,8 @@ class ProxyInvocationHandlerFactoryImpl implements ProxyInvocationHandlerFactory
                                               messagingQos,
                                               statelessAsyncCallback,
                                               connectorFactoryMock,
-                                              messageRouter);
+                                              messageRouter,
+                                              statelessAsyncIdCalculator);
     }
 
 }
@@ -212,6 +219,7 @@ public class LocalDiscoveryTest {
                                                                                           bind(LocalCapabilitiesDirectory.class).toInstance(localCapabilitiesDirectory);
                                                                                           bind(LocalCapabilitiesDirectoryImpl.class).toInstance(localCapabilitiesDirectory);
                                                                                           bind(ProxyInvocationHandlerFactory.class).to(ProxyInvocationHandlerFactoryImpl.class);
+                                                                                          bind(StatelessAsyncIdCalculator.class).to(DefaultStatelessAsyncIdCalculatorImpl.class);
                                                                                       }
                                                                                   });
         Properties joynrProperties = new Properties();
