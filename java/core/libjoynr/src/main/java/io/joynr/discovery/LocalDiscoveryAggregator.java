@@ -21,6 +21,7 @@ package io.joynr.discovery;
 import static io.joynr.util.VersionUtil.getVersionFromAnnotation;
 
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -124,29 +125,36 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
         final Future<DiscoveryEntryWithMetaInfo[]> discoveryEntryFuture = new Future<>();
         if (!missingDomains.isEmpty()) {
             logger.trace("Did not find entries for the following domains: {}", missingDomains);
+            // discoveryProxy must not be garbage collected before the callback has been invoked
+            // because otherwise the routingEntry might get removed early and the response from
+            // CC cannot be routed anymore
+            final DiscoveryProxy discoveryProxy = getDiscoveryProxy(discoveryQos.getDiscoveryTimeout());
+            final ArrayList<DiscoveryProxy> keepReferenceArrayList = new ArrayList<DiscoveryProxy>();
+            keepReferenceArrayList.add(discoveryProxy);
 
             Callback<DiscoveryEntryWithMetaInfo[]> newCallback = new Callback<DiscoveryEntryWithMetaInfo[]>() {
 
                 @Override
                 public void onFailure(JoynrRuntimeException error) {
+                    keepReferenceArrayList.clear();
+                    logger.trace("discoveryProxy.lookup onFailure: {}", error);
                     callback.onFailure(error);
                     discoveryEntryFuture.onFailure(error);
                 }
 
                 @Override
                 public void onSuccess(DiscoveryEntryWithMetaInfo[] entries) {
+                    keepReferenceArrayList.clear();
                     assert entries != null : "Entries must not be null.";
                     logger.trace("Globally found entries for missing domains: {}", Arrays.toString(entries));
+
                     Collections.addAll(discoveryEntries, entries);
                     resolveDiscoveryEntriesFutureWithEntries(discoveryEntryFuture, discoveryEntries, callback);
                 }
             };
             String[] missingDomainsArray = new String[missingDomains.size()];
             missingDomains.toArray(missingDomainsArray);
-            getDiscoveryProxy(discoveryQos.getDiscoveryTimeout()).lookup(newCallback,
-                                                                         missingDomainsArray,
-                                                                         interfaceName,
-                                                                         discoveryQos);
+            discoveryProxy.lookup(newCallback, missingDomainsArray, interfaceName, discoveryQos);
         } else {
             resolveDiscoveryEntriesFutureWithEntries(discoveryEntryFuture, discoveryEntries, callback);
         }
