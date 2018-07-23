@@ -73,143 +73,127 @@ function genericSetterGetter(attributeName) {
 const IltProvider = {
     // attribute getter and setter
     attributeUInt8: {
-        get() {
+        get: async () => {
             prettyLog("IltProvider.attributeUInt8.get() called");
-            return Promise.resolve(attributeUInt8);
+            return attributeUInt8;
         },
-        set(value) {
+        set: async value => {
             prettyLog(`IltProvider.attributeUInt8.set(${value}) called`);
             attributeUInt8 = value;
-            IltProvider.attributeUInt8.valueChanged(attributeUInt8);
-            return Promise.resolve();
         }
     },
 
     attributeDouble: {
-        get() {
+        get: async () => {
             prettyLog("IltProvider.attributeDouble.get() called");
-            return Promise.resolve(attributeDouble);
+            return attributeDouble;
         },
-        set(value) {
+        set: async value => {
             prettyLog(`IltProvider.attributeDouble.set(${value}) called`);
             attributeDouble = value;
-            IltProvider.attributeDouble.valueChanged(attributeDouble);
-            return Promise.resolve();
         }
     },
 
     attributeBooleanReadonly: {
-        get() {
+        get: async () => {
             prettyLog("IltProvider.attributeBooleanReadonly.get() called");
             attributeBooleanReadonly = true;
-            return Promise.resolve(attributeBooleanReadonly);
+            return attributeBooleanReadonly;
         }
     },
 
     attributeStringNoSubscriptions: {
-        get() {
+        get: async () => {
             prettyLog("IltProvider.attributeStringNoSubscriptions.get() called");
-            return Promise.resolve(attributeStringNoSubscriptions);
+            return attributeStringNoSubscriptions;
         },
-        set(value) {
+        set: async value => {
             prettyLog(`IltProvider.attributeStringNoSubscriptions.set(${value}) called`);
             attributeStringNoSubscriptions = value;
-            return Promise.resolve();
         }
     },
 
     attributeInt8readonlyNoSubscriptions: {
-        get() {
+        get: async () => {
             prettyLog("IltProvider.attributeInt8readonlyNoSubscriptions.get() called");
             attributeInt8readonlyNoSubscriptions = -128;
-            return Promise.resolve(attributeInt8readonlyNoSubscriptions);
+            return attributeInt8readonlyNoSubscriptions;
         }
     },
 
     attributeArrayOfStringImplicit: {
-        get() {
+        get: async () => {
             prettyLog("IltProvider.attributeArrayOfStringImplicit.get() called");
-            return Promise.resolve(attributeArrayOfStringImplicit);
+            return attributeArrayOfStringImplicit;
         },
-        set(value) {
+        set: async value => {
             prettyLog(`IltProvider.attributeArrayOfStringImplicit.set(${value}) called`);
             attributeArrayOfStringImplicit = value;
-            IltProvider.attributeArrayOfStringImplicit.valueChanged(attributeArrayOfStringImplicit);
-            return Promise.resolve();
         }
     },
 
     attributeByteBuffer: {
-        get() {
+        get: async () => {
             prettyLog("IltProvider.attributeByteBuffer.get() called");
-            return Promise.resolve(attributeByteBuffer);
+            return attributeByteBuffer;
         },
-        set(value) {
+        set: async value => {
             prettyLog(`IltProvider.attributeByteBuffer.set(${value}) called`);
             attributeByteBuffer = value;
             IltProvider.attributeByteBuffer.valueChanged(attributeByteBuffer);
-            return Promise.resolve();
         }
     },
 
     attributeEnumeration: {
-        get() {
+        get: async () => {
             prettyLog("IltProvider.attributeEnumeration.get() called");
-            return Promise.resolve(attributeEnumeration);
+            return attributeEnumeration;
         },
-        set(value) {
+        set: async value => {
             prettyLog(`IltProvider.attributeEnumeration.set(${value}) called`);
             attributeEnumeration = value;
-            IltProvider.attributeEnumeration.valueChanged(attributeEnumeration);
-            return Promise.resolve();
         }
     },
 
     attributeExtendedEnumerationReadonly: {
-        get() {
+        get: async () => {
             prettyLog("IltProvider.attributeExtendedEnumerationReadonly.get() called");
             attributeExtendedEnumerationReadonly =
                 ExtendedEnumerationWithPartlyDefinedValues.ENUM_2_VALUE_EXTENSION_FOR_ENUM_WITHOUT_DEFINED_VALUES;
-            return Promise.resolve(attributeExtendedEnumerationReadonly);
+            return attributeExtendedEnumerationReadonly;
         }
     },
 
     attributeBaseStruct: {
-        get() {
+        get: async () => {
             prettyLog("IltProvider.attributeBaseStruct.get() called");
-            return Promise.resolve(attributeBaseStruct);
+            return attributeBaseStruct;
         },
-        set(value) {
+        set: async value => {
             prettyLog(`IltProvider.attributeBaseStruct.set(${value}) called`);
             attributeBaseStruct = value;
-            IltProvider.attributeBaseStruct.valueChanged(attributeBaseStruct);
-            return Promise.resolve();
         }
     },
 
     attributeExtendedExtendedBaseStruct: {
-        get() {
+        get: async () => {
             prettyLog("IltProvider.attributeExtendedExtendedBaseStruct.get() called");
-            return Promise.resolve(attributeExtendedExtendedBaseStruct);
+            return attributeExtendedExtendedBaseStruct;
         },
-        set(value) {
+        set: async value => {
             prettyLog(`IltProvider.attributeExtendedExtendedBaseStruct.set(${value}) called`);
             attributeExtendedExtendedBaseStruct = value;
-            IltProvider.attributeExtendedExtendedBaseStruct.valueChanged(attributeExtendedExtendedBaseStruct);
-            return Promise.resolve();
         }
     },
 
     attributeMapStringString: {
-        get() {
+        get: async () => {
             prettyLog("IltProvider.attributeMapStringString.get() called");
-            return Promise.resolve(attributeMapStringString);
+            return attributeMapStringString;
         },
-        set(value) {
+        set: async value => {
             prettyLog(`IltProvider.attributeMapStringString.set(${JSON.stringify(value)}) called`);
             attributeMapStringString = value;
-            IltProvider.attributeMapStringString.valueChanged(attributeMapStringString);
-            return Promise.resolve();
         }
     },
 
@@ -228,40 +212,37 @@ const IltProvider = {
     attributeArrayTypeDef: genericSetterGetter("attributeArray"),
 
     attributeFireAndForget: {
-        get() {
+        get: async () => {
             prettyLog("IltProvider.attributeFireAndForget.get() called");
-            return Promise.resolve(attributeFireAndForget);
+            return attributeFireAndForget;
         },
-        set(value) {
+        set: async value => {
             prettyLog(`IltProvider.attributeFireAndForget.set(${value}) called`);
-
             attributeFireAndForget = value;
-            IltProvider.attributeFireAndForget.valueChanged(attributeFireAndForget);
-            return Promise.resolve();
         }
     },
 
     attributeWithExceptionFromGetter: {
-        get() {
+        get: async () => {
             prettyLog("IltProvider.attributeWithExceptionFromGetter.get() called");
 
             const settings = {};
             settings.detailMessage = "Exception from getAttributeWithExceptionFromGetter";
-            return Promise.reject(new joynr.exceptions.ProviderRuntimeException(settings));
+            throw new joynr.exceptions.ProviderRuntimeException(settings);
         }
     },
 
     attributeWithExceptionFromSetter: {
-        get() {
+        get: async () => {
             prettyLog("IltProvider.attributeWithExceptionFromSetter.get() called");
             return Promise.resolve(false);
         },
-        set(value) {
+        set: async value => {
             prettyLog(`IltProvider.attributeWithExceptionFromSetter.set(${value}) called`);
 
             const settings = {};
             settings.detailMessage = "Exception from setAttributeWithExceptionFromSetter";
-            return Promise.reject(new joynr.exceptions.ProviderRuntimeException(settings));
+            throw new joynr.exceptions.ProviderRuntimeException(settings);
         }
     },
 
