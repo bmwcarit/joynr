@@ -59,14 +59,12 @@ void ParticipantIdStorage::loadEntriesFromFile()
             auto retVal = storage.insert(std::move(item));
             assert(retVal.second);
         }
-    } catch (const boost::property_tree::ini_parser_error& ex) {
-        JOYNR_LOG_WARN(logger(),
-                       "The specified participantId file {} is not valid. Exception: ",
-                       ex.what());
-        return;
     } catch (const std::exception& ex) {
-        JOYNR_LOG_WARN(logger(), "Cannot read participantId storage file. Exception: ", ex.what());
-        return;
+        JOYNR_LOG_WARN(logger(),
+                       "Cannot read participantId storage file {}. Removing file. Exception: {}",
+                       fileName,
+                       ex.what());
+        std::remove(fileName.c_str());
     }
 
     JOYNR_LOG_TRACE(
