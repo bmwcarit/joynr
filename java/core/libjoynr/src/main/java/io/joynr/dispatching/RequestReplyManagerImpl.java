@@ -33,7 +33,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import io.joynr.proxy.StatelessAsyncIdCalculator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,7 +65,7 @@ import joynr.types.DiscoveryEntryWithMetaInfo;
 public class RequestReplyManagerImpl
         implements RequestReplyManager, DirectoryListener<ProviderContainer>, ShutdownListener {
     private static final Logger logger = LoggerFactory.getLogger(RequestReplyManagerImpl.class);
-    private final StatelessAsyncIdCalculator statelessAsyncIdCalculator;
+    private final StatelessAsyncRequestReplyIdManager statelessAsyncRequestReplyIdManager;
     private boolean running = true;
 
     private List<Thread> outstandingRequestThreads = Collections.synchronizedList(new ArrayList<Thread>());
@@ -93,7 +92,7 @@ public class RequestReplyManagerImpl
                                    RequestInterpreter requestInterpreter,
                                    @Named(JOYNR_SCHEDULER_CLEANUP) ScheduledExecutorService cleanupScheduler,
                                    ShutdownNotifier shutdownNotifier,
-                                   StatelessAsyncIdCalculator statelessAsyncIdCalculator) {
+                                   StatelessAsyncRequestReplyIdManager statelessAsyncRequestReplyIdManager) {
         // CHECKSTYLE:ON
         this.messageFactory = messageFactory;
         this.replyCallerDirectory = replyCallerDirectory;
@@ -104,7 +103,7 @@ public class RequestReplyManagerImpl
         this.cleanupSchedulerFuturesMap = new ConcurrentHashMap<>();
         providerDirectory.addListener(this);
         shutdownNotifier.registerForShutdown(this);
-        this.statelessAsyncIdCalculator = statelessAsyncIdCalculator;
+        this.statelessAsyncRequestReplyIdManager = statelessAsyncRequestReplyIdManager;
     }
 
     /*
@@ -287,9 +286,8 @@ public class RequestReplyManagerImpl
 
     @Override
     public void handleReply(final Reply reply) {
-        boolean stateless = reply.getStatelessCallback() != null;
-        String callbackId = stateless ? statelessAsyncIdCalculator.withoutMethod(reply.getStatelessCallback())
-                : reply.getRequestReplyId();
+        String callbackId = statelessAsyncRequestReplyIdManager.getCallbackId(reply);
+        boolean stateless = !reply.getRequestReplyId().equals(callbackId);
         final ReplyCaller callBack = stateless ? replyCallerDirectory.get(callbackId)
                 : replyCallerDirectory.remove(callbackId);
         if (callBack == null) {

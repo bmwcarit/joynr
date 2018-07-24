@@ -42,10 +42,12 @@ import io.joynr.capabilities.PropertiesFileParticipantIdStorage;
 import io.joynr.capabilities.StaticCapabilitiesProvisioningModule;
 import io.joynr.context.JoynrMessageScopeModule;
 import io.joynr.discovery.LocalDiscoveryAggregator;
+import io.joynr.dispatching.DefaultStatelessAsyncRequestReplyIdManagerImpl;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.dispatching.DispatcherImpl;
 import io.joynr.dispatching.RequestReplyManager;
 import io.joynr.dispatching.RequestReplyManagerImpl;
+import io.joynr.dispatching.StatelessAsyncRequestReplyIdManager;
 import io.joynr.dispatching.rpc.RpcUtils;
 import io.joynr.dispatching.subscription.FileSubscriptionRequestStorage;
 import io.joynr.dispatching.subscription.PublicationManager;
@@ -146,6 +148,7 @@ abstract class AbstractRuntimeModule extends AbstractModule {
                                             .toProvider(DefaultScheduledExecutorServiceProvider.class);
         bind(StatusReceiver.class).to(DefaultStatusReceiver.class);
         bind(StatelessAsyncIdCalculator.class).to(DefaultStatelessAsyncIdCalculatorImpl.class);
+        bind(StatelessAsyncRequestReplyIdManager.class).to(DefaultStatelessAsyncRequestReplyIdManagerImpl.class);
 
         install(new StaticCapabilitiesProvisioningModule());
 
