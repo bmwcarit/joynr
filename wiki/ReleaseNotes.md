@@ -109,6 +109,16 @@ the versioning scheme [here](JoynrVersioning.md).
 ## Other changes
 * **[Java,C++,JS]** Introduced Franca 0.13.0, joynr continues to support
   Franca features that were already supported in previous joynr versions.
+* **[Java]** Orphaned routing entries containing addresses for proxy participantIds
+  related to no longer referenced proxy instances are now removed by the Routing Table cleanup
+  background job, provided the related proxy instances have already been collected by the Java
+  garbage collector.
+  See also [Java Configuration Reference](JavaSettings.md) for more details about property
+  `PROPERTY_ROUTING_TABLE_CLEANUP_INTERVAL_MS`.
+  Note that the application is responsible for keeping a reference to the proxy instance until
+  method calls have ended with either success or error and broadcasts / attribute subscriptions
+  have been terminated since otherwise a potential reply or publication cannot be routed anymore
+  once the routing entry has been removed.
 
 ## Configuration property changes
 None.
