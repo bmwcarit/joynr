@@ -73,10 +73,19 @@ void Arbitrator::startArbitration(
         std::function<void(const exceptions::DiscoveryException& exception)> onError)
 {
     if (arbitrationRunning) {
+        JOYNR_LOG_ERROR(logger(),
+                        "Arbitration already running for domain = {} and interface = {}. A second "
+                        "arbitration will not be started.",
+                        domains.at(0),
+                        interfaceName);
         return;
     }
 
     startTimePoint = std::chrono::system_clock::now();
+    JOYNR_LOG_INFO(logger(),
+                   "Arbitration started for domain = {} and interface = {}.",
+                   domains.at(0),
+                   interfaceName);
 
     arbitrationRunning = true;
     keepArbitrationRunning = true;
