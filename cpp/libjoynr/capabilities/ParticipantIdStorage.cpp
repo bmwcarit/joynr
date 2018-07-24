@@ -67,8 +67,9 @@ void ParticipantIdStorage::loadEntriesFromFile()
         std::remove(fileName.c_str());
     }
 
-    JOYNR_LOG_TRACE(
-            logger(), "Loaded {} entries.", storage.get<participantIdStorageTags::write>().size());
+    // set entriesWrittenToDisk to the size of the storage
+    entriesWrittenToDisk = storage.get<participantIdStorageTags::write>().size();
+    JOYNR_LOG_TRACE(logger(), "Loaded {} entries.", entriesWrittenToDisk);
 }
 
 void ParticipantIdStorage::setProviderParticipantId(const std::string& domain,
