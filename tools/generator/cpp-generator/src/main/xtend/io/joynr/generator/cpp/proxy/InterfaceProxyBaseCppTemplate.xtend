@@ -178,7 +178,7 @@ void «className»::handleArbitrationFinished(
 		«IF !broadcast.selective»
 			try {
 				util::validatePartitions(partitions, true);
-			} catch (std::invalid_argument exception) {
+			} catch (const std::invalid_argument& exception) {
 				errorMsg = "invalid argument:\n" + std::string(exception.what());
 			}
 		«ENDIF»
@@ -226,7 +226,7 @@ void «className»::handleArbitrationFinished(
 		«IF !broadcast.selective»
 			try {
 				util::validatePartitions(partitions, true);
-			} catch (std::invalid_argument exception) {
+			} catch (const std::invalid_argument& exception) {
 				errorMsg = "invalid argument:\n" + std::string(exception.what());
 			}
 		«ENDIF»
