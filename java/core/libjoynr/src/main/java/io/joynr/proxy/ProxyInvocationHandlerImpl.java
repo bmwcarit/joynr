@@ -434,7 +434,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
 
     @Override
     @CheckForNull
-    public Object invoke(@Nonnull Method method, Object[] args) throws ApplicationException {
+    public Object invokeInternal(Object proxy, @Nonnull Method method, Object[] args) throws ApplicationException {
         logger.trace("calling proxy.{}({}) on domain: {} and interface {}, proxy participant ID: {}",
                      method.getName(),
                      args,

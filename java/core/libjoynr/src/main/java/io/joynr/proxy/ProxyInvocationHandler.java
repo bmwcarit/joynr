@@ -32,7 +32,7 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
     private static final Logger logger = LoggerFactory.getLogger(ProxyInvocationHandler.class);
     protected Throwable throwable;
 
-    abstract Object invoke(Method method, Object[] args) throws ApplicationException;
+    abstract Object invokeInternal(Object proxy, Method method, Object[] args) throws ApplicationException;
 
     public abstract void abort(JoynrRuntimeException exception);
 
@@ -50,8 +50,7 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
     }
 
     /**
-     * The InvocationHandler invoke method is mapped to the ProxyInvocationHandler.invoke which does not need the proxy
-     * object (as the object upon which the method is actually called is the remote provider.
+     * The InvocationHandler invoke method is mapped to the ProxyInvocationHandler.invokeInternal
      */
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
@@ -59,7 +58,7 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
             throw throwable;
         }
         try {
-            return invoke(method, args);
+            return invokeInternal(proxy, method, args);
         } catch (Exception e) {
             if (this.throwable != null) {
                 logger.debug("exception caught: {} overridden by: {}", e.getMessage(), throwable.getMessage());
