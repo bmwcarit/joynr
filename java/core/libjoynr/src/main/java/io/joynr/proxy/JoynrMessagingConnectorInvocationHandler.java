@@ -111,7 +111,8 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
         String requestReplyId = request.getRequestReplyId();
 
         @SuppressWarnings("rawtypes")
-        RpcAsyncRequestReplyCaller<?> callbackWrappingReplyCaller = new RpcAsyncRequestReplyCaller(requestReplyId,
+        RpcAsyncRequestReplyCaller<?> callbackWrappingReplyCaller = new RpcAsyncRequestReplyCaller(proxy,
+                                                                                                   requestReplyId,
                                                                                                    callback,
                                                                                                    future,
                                                                                                    method,
