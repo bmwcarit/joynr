@@ -44,6 +44,7 @@ import io.joynr.jeeintegration.DefaultJoynrRuntimeFactory;
 import io.joynr.jeeintegration.JoynrIntegrationBean;
 import io.joynr.jeeintegration.JoynrStatusMetricsAggregator;
 import io.joynr.jeeintegration.ServiceProviderDiscovery;
+import io.joynr.jeeintegration.CallbackHandlerDiscovery;
 import io.joynr.jeeintegration.messaging.JeeMessagingApplication;
 import io.joynr.jeeintegration.messaging.JeeMessagingEndpoint;
 
@@ -61,6 +62,7 @@ public class JeeMessagingEndpointTest {
         // @formatter:off
         JavaArchive javaArchive = ShrinkWrap.create(JavaArchive.class)
                                             .addClasses(ServiceProviderDiscovery.class,
+                                                        CallbackHandlerDiscovery.class,
                                                         DefaultJoynrRuntimeFactory.class,
                                                         JeeIntegrationJoynrTestConfigurationProvider.class,
                                                         JoynrIntegrationBean.class,
