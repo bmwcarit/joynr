@@ -81,7 +81,7 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
 
     @SuppressWarnings("unchecked")
     @Override
-    public Future<?> executeAsyncMethod(Method method, Object[] params, Future<?> future) {
+    public Future<?> executeAsyncMethod(Object proxy, Method method, Object[] params, Future<?> future) {
 
         if (method == null) {
             throw new IllegalArgumentException("Method cannot be null");

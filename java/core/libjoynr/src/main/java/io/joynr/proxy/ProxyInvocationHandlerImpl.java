@@ -251,7 +251,10 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
             }
 
             try {
-                connector.executeAsyncMethod(currentRPC.getMethod(), currentRPC.getArgs(), currentRPC.getFuture());
+                connector.executeAsyncMethod(currentRPC.getProxy(),
+                                             currentRPC.getMethod(),
+                                             currentRPC.getArgs(),
+                                             currentRPC.getFuture());
             } catch (JoynrRuntimeException e) {
                 currentRPC.getFuture().onFailure(e);
             } catch (Exception e) {
@@ -386,7 +389,8 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
         }
     }
 
-    private <T> Object executeAsyncMethod(Method method, Object[] args) throws IllegalAccessException, Exception {
+    private <T> Object executeAsyncMethod(Object proxy, Method method, Object[] args) throws IllegalAccessException,
+                                                                                      Exception {
         @SuppressWarnings("unchecked")
         Future<T> future = (Future<T>) method.getReturnType().getConstructor().newInstance();
 
@@ -394,7 +398,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
         try {
             if (!isConnectorReady()) {
                 // waiting for arbitration -> queue invocation
-                queuedRpcList.offer(new MethodInvocation<T>(method, args, future));
+                queuedRpcList.offer(new MethodInvocation<T>(proxy, method, args, future));
                 return future;
             }
         } finally {
@@ -402,7 +406,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
         }
 
         // arbitration already successfully finished -> send invocation
-        return connector.executeAsyncMethod(method, args, future);
+        return connector.executeAsyncMethod(proxy, method, args, future);
     }
 
     private UnsubscribeInvocation unsubscribe(UnsubscribeInvocation unsubscribeInvocation) {
@@ -451,7 +455,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
             } else if (methodInterfaceClass.getAnnotation(Sync.class) != null) {
                 return executeSyncMethod(method, args);
             } else if (methodInterfaceClass.getAnnotation(Async.class) != null) {
-                return executeAsyncMethod(method, args);
+                return executeAsyncMethod(proxy, method, args);
             } else {
                 throw new JoynrIllegalStateException("Method is not part of sync, async or subscription interface");
             }
