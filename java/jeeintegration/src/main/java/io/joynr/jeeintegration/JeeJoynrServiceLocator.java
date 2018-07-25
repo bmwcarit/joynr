@@ -27,8 +27,11 @@ import java.lang.reflect.Proxy;
 import java.util.Set;
 
 import javax.ejb.Singleton;
+import javax.enterprise.inject.spi.BeanManager;
 import javax.inject.Inject;
 
+import io.joynr.StatelessAsync;
+import io.joynr.proxy.ProxyBuilder;
 import joynr.exceptions.ApplicationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,9 +58,12 @@ public class JeeJoynrServiceLocator implements ServiceLocator {
 
     private final JoynrIntegrationBean joynrIntegrationBean;
 
+    private final BeanManager beanManager;
+
     @Inject
-    public JeeJoynrServiceLocator(JoynrIntegrationBean joynrIntegrationBean) {
+    public JeeJoynrServiceLocator(JoynrIntegrationBean joynrIntegrationBean, BeanManager beanManager) {
         this.joynrIntegrationBean = joynrIntegrationBean;
+        this.beanManager = beanManager;
     }
 
     @Override
@@ -91,15 +97,33 @@ public class JeeJoynrServiceLocator implements ServiceLocator {
                      Set<String> domains,
                      MessagingQos messagingQos,
                      DiscoveryQos discoveryQos) {
+        return get(serviceInterface, domains, messagingQos, discoveryQos, null);
+    }
+
+    @Override
+    public <I> I get(Class<I> serviceInterface,
+                     Set<String> domains,
+                     MessagingQos messagingQos,
+                     DiscoveryQos discoveryQos,
+                     String useCase) {
         if (joynrIntegrationBean.getRuntime() == null) {
             throw new IllegalStateException("You can't get service proxies until the joynr runtime has been initialised.");
         }
         final Class<?> joynrProxyInterface = findJoynrProxyInterface(serviceInterface);
-        final Object joynrProxy = joynrIntegrationBean.getRuntime()
-                                                      .getProxyBuilder(domains, joynrProxyInterface)
-                                                      .setMessagingQos(messagingQos)
-                                                      .setDiscoveryQos(discoveryQos)
-                                                      .build();
+        ProxyBuilder proxyBuilder = joynrIntegrationBean.getRuntime()
+                                                        .getProxyBuilder(domains, joynrProxyInterface)
+                                                        .setMessagingQos(messagingQos)
+                                                        .setDiscoveryQos(discoveryQos);
+
+        if (useCase != null) {
+            if (serviceInterface.getAnnotation(StatelessAsync.class) == null) {
+                throw new IllegalArgumentException("Service interface " + serviceInterface
+                        + " is not @StatelessAsync, but you provided a use case for a callback handler.");
+            }
+            proxyBuilder.setStatelessAsyncCallbackUseCase(useCase);
+        }
+
+        final Object joynrProxy = proxyBuilder.build();
         return (I) Proxy.newProxyInstance(serviceInterface.getClassLoader(),
                                           new Class<?>[]{ serviceInterface },
                                           new InvocationHandler() {
@@ -129,6 +153,58 @@ public class JeeJoynrServiceLocator implements ServiceLocator {
                                                   }
                                               }
                                           });
+    }
+
+    public class JeeJoynrServiceProxyBuilder<T> implements ServiceProxyBuilder<T> {
+
+        private Class<T> serviceInterface;
+        private Set<String> domains;
+        private MessagingQos messagingQos = new MessagingQos();
+        private DiscoveryQos discoveryQos = new DiscoveryQos();
+        private String useCase;
+
+        private JeeJoynrServiceProxyBuilder(Class<T> serviceInterface, Set<String> domains) {
+            this.serviceInterface = serviceInterface;
+            this.domains = domains;
+        }
+
+        @Override
+        public ServiceProxyBuilder withTtl(long ttl) {
+            messagingQos.setTtl_ms(ttl);
+            return this;
+        }
+
+        @Override
+        public ServiceProxyBuilder withMessagingQos(MessagingQos messagingQos) {
+            this.messagingQos = messagingQos;
+            return this;
+        }
+
+        @Override
+        public ServiceProxyBuilder withDicoveryQos(DiscoveryQos discoveryQos) {
+            this.discoveryQos = discoveryQos;
+            return this;
+        }
+
+        @Override
+        public ServiceProxyBuilder withUseCase(String useCase) {
+            this.useCase = useCase;
+            return this;
+        }
+
+        @Override
+        public T build() {
+            return get(serviceInterface, domains, messagingQos, discoveryQos, useCase);
+        }
+    }
+
+    @Override
+    public <I> ServiceProxyBuilder<I> builder(Class<I> serviceInterface, String... domains) {
+        if (domains == null || domains.length == 0) {
+            throw new JoynrRuntimeException("You must provide at least one domain.");
+        }
+        Set<String> domainSet = Sets.newHashSet(domains);
+        return new JeeJoynrServiceProxyBuilder<>(serviceInterface, domainSet);
     }
 
     private <I> Class<?> findJoynrProxyInterface(Class<I> serviceInterface) {

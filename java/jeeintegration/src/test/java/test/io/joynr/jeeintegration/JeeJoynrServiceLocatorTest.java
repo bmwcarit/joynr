@@ -18,9 +18,14 @@
  */
 package test.io.joynr.jeeintegration;
 
+import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
@@ -37,12 +42,14 @@ import io.joynr.exceptions.JoynrTimeoutException;
 import io.joynr.jeeintegration.JeeJoynrServiceLocator;
 import io.joynr.jeeintegration.JoynrIntegrationBean;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.proxy.MessageIdCallback;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.runtime.JoynrRuntime;
 import joynr.exceptions.ApplicationException;
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.jeeintegration.servicelocator.MyService;
 import joynr.jeeintegration.servicelocator.MyServiceProxy;
+import joynr.jeeintegration.servicelocator.MyServiceStatelessAsync;
 import joynr.jeeintegration.servicelocator.MyServiceSync;
 import org.junit.Before;
 import org.junit.Test;
@@ -52,6 +59,10 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import test.io.joynr.jeeintegration.servicelocator.MyInvalidServiceSync;
+import test.io.joynr.jeeintegration.servicelocator.MyServiceCallbackHandler;
+
+import javax.enterprise.inject.spi.Bean;
+import javax.enterprise.inject.spi.BeanManager;
 
 /**
  * Unit tests for {@link JeeJoynrServiceLocator}.
@@ -71,6 +82,9 @@ public class JeeJoynrServiceLocatorTest {
     @Mock
     private JoynrIntegrationBean joynrIntegrationBean;
 
+    @Mock
+    private BeanManager beanManager;
+
     private JeeJoynrServiceLocator subject;
 
     @Before
@@ -78,10 +92,11 @@ public class JeeJoynrServiceLocatorTest {
         when(myJoynrProxy.callMe("one")).thenReturn("two");
         when(proxyBuilder.setMessagingQos(Mockito.any())).thenReturn(proxyBuilder);
         when(proxyBuilder.setDiscoveryQos(Mockito.any())).thenReturn(proxyBuilder);
+        when(proxyBuilder.setStatelessAsyncCallbackUseCase(Mockito.anyString())).thenReturn(proxyBuilder);
         when(proxyBuilder.build()).thenReturn(myJoynrProxy);
         when(joynrRuntime.getProxyBuilder(Sets.newHashSet("local"), MyServiceProxy.class)).thenReturn(proxyBuilder);
         when(joynrIntegrationBean.getRuntime()).thenReturn(joynrRuntime);
-        subject = new JeeJoynrServiceLocator(joynrIntegrationBean);
+        subject = new JeeJoynrServiceLocator(joynrIntegrationBean, beanManager);
     }
 
     @Test
@@ -191,15 +206,43 @@ public class JeeJoynrServiceLocatorTest {
         JoynrRuntime joynrRuntime = mock(JoynrRuntime.class);
         JoynrIntegrationBean joynrIntegrationBean = mock(JoynrIntegrationBean.class);
         when(joynrIntegrationBean.getRuntime()).thenReturn(joynrRuntime);
-        JeeJoynrServiceLocator subject = new JeeJoynrServiceLocator(joynrIntegrationBean);
+        JeeJoynrServiceLocator subject = new JeeJoynrServiceLocator(joynrIntegrationBean, beanManager);
 
         subject.get(MyInvalidServiceSync.class, "local");
     }
 
     @Test(expected = IllegalStateException.class)
     public void testGetNoRuntime() {
-        JeeJoynrServiceLocator subject = new JeeJoynrServiceLocator(mock(JoynrIntegrationBean.class));
+        JeeJoynrServiceLocator subject = new JeeJoynrServiceLocator(mock(JoynrIntegrationBean.class), beanManager);
         subject.get(MyServiceSync.class, "local");
+    }
+
+    @Test
+    public void testGetWithStatelessCallbackHandler() {
+        doAnswer(invocation -> {
+            invocation.getArgumentAt(1, MessageIdCallback.class).accept("messageId");
+            return null;
+        }).when(myJoynrProxy).callMe(eq("one"), any(MessageIdCallback.class));
+        Bean mockBean = mock(Bean.class);
+        when(mockBean.getBeanClass()).thenReturn(MyServiceCallbackHandler.class);
+        MyServiceStatelessAsync result = subject.builder(MyServiceStatelessAsync.class, "local")
+                                                .withUseCase(MyServiceCallbackHandler.USE_CASE)
+                                                .build();
+
+        assertNotNull(result);
+
+        Boolean[] resultContainer = new Boolean[]{ Boolean.FALSE };
+        result.callMe("one", messageId -> {
+            assertEquals("messageId", messageId);
+            resultContainer[0] = Boolean.TRUE;
+        });
+        assertTrue(resultContainer[0]);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetWithSyncAndUseCaseFails() {
+        subject.builder(MyServiceSync.class, "local").withUseCase("useCase").build();
+        fail("Should not be able to build a service proxy with a use case and a non @StatelessAsync service interface");
     }
 
 }
