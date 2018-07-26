@@ -118,6 +118,7 @@ class InterfaceAsyncTemplate extends InterfaceTemplate {
 «warning()»
 package «packagePath»;
 
+import io.joynr.messaging.MessagingQos;
 «IF getMethods(francaIntf).size > 0 || hasReadAttribute»
 import io.joynr.proxy.Callback;
 «IF francaIntf.hasMethodWithErrorEnum»
@@ -162,9 +163,15 @@ public interface «asyncClassName» extends «interfaceName»«IF hasFireAndForg
 		«var setAttribute = "set" + attributeName.toFirstUpper»
 		«IF isReadable(attribute)»
 			public Future<«attributeType»> «getAttribute»(@JoynrRpcCallback(deserializationType = «attributeType»«IF isArray(attribute)»[]«ENDIF».class) Callback<«attributeType»> callback);
+			default public Future<«attributeType»> «getAttribute»(@JoynrRpcCallback(deserializationType = «attributeType»«IF isArray(attribute)»[]«ENDIF».class) Callback<«attributeType»> callback, MessagingQos messagingQos) {
+				return «getAttribute»(callback);
+			}
 		«ENDIF»
 		«IF isWritable(attribute)»
 			Future<Void> «setAttribute»(@JoynrRpcCallback(deserializationType = Void.class) Callback<Void> callback, «attributeType» «attributeName») throws DiscoveryException;
+			default Future<Void> «setAttribute»(@JoynrRpcCallback(deserializationType = Void.class) Callback<Void> callback, «attributeType» «attributeName», MessagingQos messagingQos) throws DiscoveryException {
+				return «setAttribute»(callback, «attributeName»);
+			}
 		«ENDIF»
 	«ENDFOR»
 
@@ -229,6 +236,19 @@ public interface «asyncClassName» extends «interfaceName»«IF hasFireAndForg
 				«callbackParameter»«IF !method.inputParameters.empty»,«ENDIF»
 				«params»
 		);
+		default public «methodToFutureName.get(method)» «methodName»(
+				«callbackParameter»«IF !method.inputParameters.empty»,«ENDIF»
+				«params»,
+				MessagingQos messagingQos
+		) {
+			return «methodName»(
+				callback«IF !method.inputParameters.empty»,«ENDIF»
+				«FOR inParameter : method.inputParameters SEPARATOR ","»
+				«inParameter.name»
+				«ENDFOR»
+			);
+		}
+
 	«ENDFOR»
 }
 		'''

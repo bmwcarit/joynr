@@ -43,6 +43,8 @@ class InterfaceFireAndForgetTemplate extends InterfaceTemplate {
 
 package «packagePath»;
 
+import io.joynr.messaging.MessagingQos;
+
 «FOR datatype: getRequiredIncludesFor(francaIntf, false, false, false, false, false, true)»
 	import «datatype»;
 «ENDFOR»
@@ -58,6 +60,11 @@ public interface «francaIntf.joynrName + "FireAndForget"» {
 	void «methodName»(
 			«method.inputParameters.typedParameterList»
 	);
+	default void «methodName»(
+			«method.inputParameters.typedParameterList»«IF !method.inputParameters.empty»,«ENDIF»
+			MessagingQos messagingQos
+	) {
+	};
 «ENDFOR»
 }
 '''
