@@ -290,8 +290,8 @@ In case no suitable provider can be found during discovery, a ```DiscoveryExcept
         runtime->createProxyBuilder<<Package>::<Interface>Proxy>(providerDomain);
 
     try {
-        std::shared_ptr<<Package>::<Interface>Proxy> proxy = proxyBuilder->setMessagingQos(messagingQos)
-            ->setCached(false) // optional
+        std::shared_ptr<<Package>::<Interface>Proxy> proxy = proxyBuilder
+            ->setMessagingQos(messagingQos) // optional
             ->setDiscoveryQos(discoveryQos) // optional
             ->build();
 
@@ -314,8 +314,8 @@ Use the buildAsync method of ProxyBuilder to create a proxy asynchronously:
     }
 
     proxyBuilder->setMessagingQos(messagingQos) // optional
-        ->setDiscoveryQos(discoveryQos) // optional
-        ->buildAsync(onSuccess, onError);
+                ->setDiscoveryQos(discoveryQos) // optional
+                ->buildAsync(onSuccess, onError);
 ```
 
 ## Synchronous Remote procedure calls

@@ -242,3 +242,49 @@ TEST_F(End2EndProxyBuilderRobustnessTest, buildProxyBeforeProviderRegistration_G
     discoveryQos.setDiscoveryScope(types::DiscoveryScope::GLOBAL_ONLY);
     buildProxyBeforeProviderRegistration(expectedSuccess);
 }
+
+class End2EndProxyBuild : public End2EndProxyBuilderRobustnessTest {
+protected:
+    void SetUp() override {
+        End2EndProxyBuilderRobustnessTest::SetUp();
+
+        auto mockProvider = std::make_shared<MockGpsProvider>();
+        types::ProviderQos providerQos;
+        std::chrono::milliseconds millisSinceEpoch =
+            std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::system_clock::now().time_since_epoch());
+        providerQos.setPriority(millisSinceEpoch.count());
+        providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
+
+        providerParticipantId = providerRuntime->registerProvider<vehicle::GpsProvider>(domain, mockProvider, providerQos);
+        gpsProxyBuilder = consumerRuntime->createProxyBuilder<vehicle::GpsProxy>(domain);
+    }
+
+    void TearDown() override {
+        providerRuntime->unregisterProvider(providerParticipantId);
+    }
+
+    std::string providerParticipantId;
+    std::shared_ptr<ProxyBuilder<vehicle::GpsProxy>> gpsProxyBuilder;
+};
+
+TEST_F(End2EndProxyBuild, buildProxyWithoutSetMessagingQos) {
+    std::shared_ptr<vehicle::GpsProxy> gpsProxy;
+    JOYNR_EXPECT_NO_THROW(gpsProxy = gpsProxyBuilder->setDiscoveryQos(discoveryQos)
+                                                    ->build());
+    ASSERT_TRUE(gpsProxy);
+}
+
+TEST_F(End2EndProxyBuild, buildProxyWithoutSetDiscoveryQos) {
+    const std::int64_t qosRoundTripTTL = 10000;
+    std::shared_ptr<vehicle::GpsProxy> gpsProxy;
+    JOYNR_EXPECT_NO_THROW(gpsProxy = gpsProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
+                                                    ->build());
+    ASSERT_TRUE(gpsProxy);
+}
+
+TEST_F(End2EndProxyBuild, buildProxyWithoutSetMessagingQosAndWithoutSetDiscoveryQos) {
+    std::shared_ptr<vehicle::GpsProxy> gpsProxy;
+    JOYNR_EXPECT_NO_THROW(gpsProxy = gpsProxyBuilder->build());
+    ASSERT_TRUE(gpsProxy);
+}
