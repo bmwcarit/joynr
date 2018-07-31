@@ -119,7 +119,6 @@ This project has dependencies to:
   ehcache under The Apache Software License, Version 2.0
   EJB 3.1 API under lgpl
   Embedded GlassFish All-In-One under CDDL + GPLv2 with classpath exception
-  Embedded Payara All-In-One under CDDL + GPLv2 with classpath exception
   Equinox Application Container under Eclipse Public License
   error-prone annotations under Apache 2.0
   Expression Language under Eclipse Public License
@@ -361,6 +360,7 @@ This project has dependencies to:
   org.franca.deploymodel.dsl under Eclipse Public License - v 1.0
   OSGi resource locator bundle - used by various API providers that rely on META-INF/services mechanism to locate providers. under CDDL + GPLv2 with classpath exception
   OSGi System Bundle under Eclipse Public License
+  Payara Embedded-All under CDDL + GPLv2 with classpath exception
   Plexus :: Component Annotations under The Apache Software License, Version 2.0
   Plexus :: Default Container under The Apache Software License, Version 2.0
   Plexus Cipher: encryption/decryption Component under Apache Public License 2.0

@@ -94,7 +94,6 @@ This project has dependencies to:
   ehcache under The Apache Software License, Version 2.0
   EJB 3.1 API under lgpl
   Embedded GlassFish All-In-One under CDDL + GPLv2 with classpath exception
-  Embedded Payara All-In-One under CDDL + GPLv2 with classpath exception
   error-prone annotations under Apache 2.0
   Expression Language 2.2 API under lgpl
   FindBugs-Annotations under GNU Lesser Public License
@@ -252,6 +251,7 @@ This project has dependencies to:
   OpenJPA Persistence JDBC under Apache Software License 2.0
   OpenJPA Utilities Library under Apache Software License 2.0
   OSGi resource locator bundle - used by various API providers that rely on META-INF/services mechanism to locate providers. under CDDL + GPLv2 with classpath exception
+  Payara Embedded-All under CDDL + GPLv2 with classpath exception
   Plexus :: Component Annotations under The Apache Software License, Version 2.0
   Plexus Cipher: encryption/decryption Component under Apache Public License 2.0
   Plexus Common Utilities under The Apache Software License, Version 2.0

@@ -69,7 +69,6 @@ This project has dependencies to:
   Core Hibernate O/RM functionality under GNU Lesser General Public License
   dom4j under BSD License
   ehcache under The Apache Software License, Version 2.0
-  Embedded Payara All-In-One under CDDL + GPLv2 with classpath exception
   error-prone annotations under Apache 2.0
   FindBugs-Annotations under GNU Lesser Public License
   FindBugs-jsr305 under The Apache Software License, Version 2.0
@@ -130,6 +129,7 @@ This project has dependencies to:
   Maven Settings under Apache License, Version 2.0
   Maven Settings Builder under Apache License, Version 2.0
   Mockito under The MIT License
+  Payara Embedded-All under CDDL + GPLv2 with classpath exception
   Plexus :: Component Annotations under The Apache Software License, Version 2.0
   Plexus Cipher: encryption/decryption Component under Apache Public License 2.0
   Plexus Common Utilities under The Apache Software License, Version 2.0

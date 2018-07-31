@@ -64,7 +64,6 @@ This project has dependencies to:
   Commons IO under The Apache Software License, Version 2.0
   Commons Lang under The Apache Software License, Version 2.0
   ehcache under The Apache Software License, Version 2.0
-  Embedded Payara All-In-One under CDDL + GPLv2 with classpath exception
   error-prone annotations under Apache 2.0
   FindBugs-Annotations under GNU Lesser Public License
   FindBugs-jsr305 under The Apache Software License, Version 2.0
@@ -114,6 +113,7 @@ This project has dependencies to:
   Maven Repository Metadata Model under Apache License, Version 2.0
   Maven Settings under Apache License, Version 2.0
   Maven Settings Builder under Apache License, Version 2.0
+  Payara Embedded-All under CDDL + GPLv2 with classpath exception
   Plexus :: Component Annotations under The Apache Software License, Version 2.0
   Plexus Cipher: encryption/decryption Component under Apache Public License 2.0
   Plexus Common Utilities under The Apache Software License, Version 2.0
