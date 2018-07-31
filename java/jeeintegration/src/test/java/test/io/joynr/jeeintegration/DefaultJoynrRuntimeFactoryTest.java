@@ -53,12 +53,14 @@ import io.joynr.messaging.NoOpRawMessagingPreprocessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.MqttClientIdProvider;
 import io.joynr.messaging.mqtt.statusmetrics.MqttStatusReceiver;
+import io.joynr.provider.ProviderAnnotations;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.statusmetrics.StatusReceiver;
 import joynr.ImmutableMessage;
 import joynr.MutableMessage;
 import joynr.Request;
 import joynr.jeeintegration.servicelocator.MyService;
+import joynr.jeeintegration.servicelocator.MyServiceProvider;
 import joynr.jeeintegration.servicelocator.MyServiceSync;
 
 import org.junit.Rule;
@@ -199,8 +201,8 @@ public class DefaultJoynrRuntimeFactoryTest {
                                        .getInstance(Key.get(Properties.class,
                                                             Names.named(MessagingPropertyKeys.JOYNR_PROPERTIES)));
         assertNotNull(properties);
-        String key = (ParticipantIdKeyUtil.JOYNR_PARTICIPANT_PREFIX + LOCAL_DOMAIN + "."
-                + MyService.INTERFACE_NAME).toLowerCase().replace("/", ".");
+        String key = (ParticipantIdKeyUtil.JOYNR_PARTICIPANT_PREFIX + LOCAL_DOMAIN + "." + MyService.INTERFACE_NAME
+                + ".v" + ProviderAnnotations.getMajorVersion(MyServiceProvider.class)).toLowerCase().replace("/", ".");
         assertTrue(properties.containsKey(key));
         String value = properties.getProperty(key);
         assertNotNull(value);

@@ -93,7 +93,8 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
         }
         ProviderContainer providerContainer = providerContainerFactory.create(provider);
         String participantId = participantIdStorage.getProviderParticipantId(domain,
-                                                                             providerContainer.getInterfaceName());
+                                                                             providerContainer.getInterfaceName(),
+                                                                             providerContainer.getMajorVersion());
         String defaultPublicKeyId = "";
         DiscoveryEntry discoveryEntry = new DiscoveryEntry(getVersionFromAnnotation(provider.getClass()),
                                                            domain,
@@ -126,7 +127,8 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
     public Future<Void> unregisterProvider(String domain, Object provider) {
 
         final String participantId = participantIdStorage.getProviderParticipantId(domain,
-                                                                                   ProviderAnnotations.getInterfaceName(provider));
+                                                                                   ProviderAnnotations.getInterfaceName(provider),
+                                                                                   ProviderAnnotations.getMajorVersion(provider));
         Callback<Void> callback = new Callback<Void>() {
             @Override
             public void onSuccess(@CheckForNull Void result) {

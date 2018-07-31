@@ -89,7 +89,9 @@ public class RoutingTableOverwriteEnd2EndTest {
                                                             String participantId) {
         Properties result = new Properties();
         String interfaceName = ProviderAnnotations.getInterfaceName(clazz);
-        result.put(ParticipantIdKeyUtil.getProviderParticipantIdKey(domain, interfaceName), participantId);
+        int majorVersion = ProviderAnnotations.getMajorVersion(clazz);
+        result.put(ParticipantIdKeyUtil.getProviderParticipantIdKey(domain, interfaceName, majorVersion),
+                   participantId);
         return result;
     }
 

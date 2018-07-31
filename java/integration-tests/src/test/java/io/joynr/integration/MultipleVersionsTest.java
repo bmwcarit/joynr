@@ -28,7 +28,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.google.inject.Module;
@@ -179,7 +178,6 @@ public class MultipleVersionsTest {
      * and 2 proxies can communicate with those without mutual interference.
      */
     @Test
-    @Ignore
     public void twoNameVersionedProvidersInSingleRuntime() {
         // register providers
         DefaultMultipleVersionsInterface1Provider provider1 = new DefaultMultipleVersionsInterface1Provider();
