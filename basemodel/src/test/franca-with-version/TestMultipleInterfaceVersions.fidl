@@ -27,6 +27,8 @@ interface MultipleVersionsInterface {
                         Boolean result
                 }
         }
+
+        attribute UInt8 uInt8Attribute1
 }
 
 interface MultipleVersionsInterface {
@@ -37,5 +39,8 @@ interface MultipleVersionsInterface {
                         Boolean result
                 }
         }
-}
 
+        attribute UInt8 uInt8Attribute1
+
+        attribute UInt8 uInt8Attribute2
+}
