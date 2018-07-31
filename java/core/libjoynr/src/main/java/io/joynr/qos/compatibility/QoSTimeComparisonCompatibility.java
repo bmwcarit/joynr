@@ -27,7 +27,7 @@ public abstract class QoSTimeComparisonCompatibility implements Predicate<TimeCo
 
     protected final QualityOfService qos;
 
-    public QoSTimeComparisonCompatibility(QualityOfService qos) {
+    protected QoSTimeComparisonCompatibility(QualityOfService qos) {
         this.qos = qos;
     }
 
