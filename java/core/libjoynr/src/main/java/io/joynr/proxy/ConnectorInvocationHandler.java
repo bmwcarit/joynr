@@ -28,7 +28,7 @@ import joynr.exceptions.ApplicationException;
 
 public interface ConnectorInvocationHandler {
 
-    Object executeAsyncMethod(Method method, Object[] args, Future<?> future);
+    Object executeAsyncMethod(Object proxy, Method method, Object[] args, Future<?> future);
 
     Object executeSyncMethod(Method method, Object[] args) throws ApplicationException;
 

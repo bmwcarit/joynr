@@ -167,9 +167,9 @@ void LibJoynrRuntime::init(
             singleThreadIOService->getIOService(), libJoynrMessageRouter);
 
     auto joynrMessagingConnectorFactory =
-            std::make_unique<JoynrMessagingConnectorFactory>(messageSender, subscriptionManager);
+            std::make_shared<JoynrMessagingConnectorFactory>(messageSender, subscriptionManager);
 
-    proxyFactory = std::make_unique<ProxyFactory>(std::move(joynrMessagingConnectorFactory));
+    proxyFactory = std::make_unique<ProxyFactory>(joynrMessagingConnectorFactory);
 
     // Set up the persistence file for storing provider participant ids
     std::string persistenceFilename = libjoynrSettings->getParticipantIdsPersistenceFilename();
@@ -181,50 +181,19 @@ void LibJoynrRuntime::init(
 
     discoveryProxy = std::make_shared<LocalDiscoveryAggregator>(getProvisionedEntries());
 
-    std::string systemServicesDomain = systemServicesSettings.getDomain();
+    buildInternalProxies(joynrMessagingConnectorFactory);
 
-    DiscoveryQos routingProviderDiscoveryQos;
-    routingProviderDiscoveryQos.setCacheMaxAgeMs(1000);
-    routingProviderDiscoveryQos.setArbitrationStrategy(
-            DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
-    routingProviderDiscoveryQos.addCustomParameter(
-            "fixedParticipantId", routingProviderParticipantId);
-    routingProviderDiscoveryQos.setDiscoveryTimeoutMs(1000);
-
-    std::shared_ptr<ProxyBuilder<joynr::system::RoutingProxy>> routingProxyBuilder =
-            createProxyBuilder<joynr::system::RoutingProxy>(systemServicesDomain);
-
-    std::uint64_t routingProxyTtl = 60000;
-    std::shared_ptr<joynr::system::RoutingProxy> routingProxy;
-
-    try {
-        routingProxy = routingProxyBuilder->setMessagingQos(MessagingQos(routingProxyTtl))
-                               ->setDiscoveryQos(routingProviderDiscoveryQos)
-                               ->build();
-    } catch (const exceptions::JoynrRuntimeException& error) {
-        const std::string errorMessage = "Failed to build routingProxy: " + error.getMessage();
-        JOYNR_LOG_FATAL(logger(), errorMessage);
-        exceptions::JoynrRuntimeException wrappedError(errorMessage);
-        if (onError) {
-            onError(wrappedError);
-        }
-        return;
-    }
-
-    libJoynrMessageRouter->setParentRouter(routingProxy);
-
-    auto globalAddressFuture = routingProxy->getGlobalAddressAsync();
+    auto globalAddressFuture = ccRoutingProxy->getGlobalAddressAsync();
     auto onSuccessWrapper = [
         this,
         onSuccess = std::move(onSuccess),
         onError,
-        globalAddressFuture = std::move(globalAddressFuture),
-        routingProxyTtl
+        globalAddressFuture = std::move(globalAddressFuture)
     ](const std::string& replyAddress)
     {
         std::string globalAddress;
         try {
-            globalAddressFuture->get(routingProxyTtl, globalAddress);
+            globalAddressFuture->get(globalAddress);
         } catch (const exceptions::JoynrRuntimeException& error) {
             const std::string errorMessage =
                     "Failed to retrieve global address from cluster controller: " +
@@ -256,39 +225,49 @@ void LibJoynrRuntime::init(
         }
     };
 
-    routingProxy->getReplyToAddressAsync(std::move(onSuccessWrapper), onError);
+    ccRoutingProxy->getReplyToAddressAsync(std::move(onSuccessWrapper), std::move(onError));
+}
 
-    // setup discovery
-    std::string discoveryProviderParticipantId =
+void LibJoynrRuntime::buildInternalProxies(
+        std::shared_ptr<JoynrMessagingConnectorFactory> connectorFactory)
+{
+    const std::uint64_t messagingTtl = 60000;
+    const MessagingQos joynrInternalMessagingQos(messagingTtl);
+    const bool isGloballyVisible = false;
+    constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+    const bool isSticky = false;
+    const bool allowUpdate = true;
+    const std::string systemServicesDomain = systemServicesSettings.getDomain();
+
+    ccRoutingProxy = std::make_shared<joynr::system::RoutingProxy>(
+            shared_from_this(), connectorFactory, systemServicesDomain, joynrInternalMessagingQos);
+    const std::string ccRoutingProviderParticipantId =
+            systemServicesSettings.getCcRoutingProviderParticipantId();
+    const joynr::types::DiscoveryEntryWithMetaInfo ccRoutingDiscoveryEntry =
+            getProvisionedEntries()[ccRoutingProviderParticipantId];
+    ccRoutingProxy->handleArbitrationFinished(ccRoutingDiscoveryEntry);
+    libJoynrMessageRouter->addNextHop(ccRoutingProxy->getProxyParticipantId(),
+                                      dispatcherAddress,
+                                      isGloballyVisible,
+                                      expiryDateMs,
+                                      isSticky,
+                                      allowUpdate);
+    libJoynrMessageRouter->setParentRouter(ccRoutingProxy);
+
+    auto clusterControllerDiscovery = std::make_shared<joynr::system::DiscoveryProxy>(
+            shared_from_this(), connectorFactory, systemServicesDomain, joynrInternalMessagingQos);
+    const std::string ccDiscoveryProviderParticipantId =
             systemServicesSettings.getCcDiscoveryProviderParticipantId();
-    DiscoveryQos discoveryProviderDiscoveryQos;
-    discoveryProviderDiscoveryQos.setCacheMaxAgeMs(1000);
-    discoveryProviderDiscoveryQos.setArbitrationStrategy(
-            DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
-    discoveryProviderDiscoveryQos.addCustomParameter(
-            "fixedParticipantId", discoveryProviderParticipantId);
-    discoveryProviderDiscoveryQos.setDiscoveryTimeoutMs(1000);
-
-    std::shared_ptr<ProxyBuilder<joynr::system::DiscoveryProxy>> discoveryProxyBuilder =
-            createProxyBuilder<joynr::system::DiscoveryProxy>(systemServicesDomain);
-
-    std::uint64_t discoveryProxyTtl = 60000;
-    std::shared_ptr<joynr::system::DiscoveryProxy> proxy;
-    try {
-        proxy = discoveryProxyBuilder->setMessagingQos(MessagingQos(discoveryProxyTtl))
-                        ->setDiscoveryQos(discoveryProviderDiscoveryQos)
-                        ->build();
-    } catch (const exceptions::JoynrRuntimeException& error) {
-        const std::string errorMessage = "Failed to build discoveryProxy: " + error.getMessage();
-        JOYNR_LOG_FATAL(logger(), errorMessage);
-        exceptions::JoynrRuntimeException wrappedError(errorMessage);
-        if (onError) {
-            onError(wrappedError);
-        }
-        return;
-    }
-
-    discoveryProxy->setDiscoveryProxy(std::move(proxy));
+    const joynr::types::DiscoveryEntryWithMetaInfo ccDiscoveryEntry =
+            getProvisionedEntries()[ccDiscoveryProviderParticipantId];
+    clusterControllerDiscovery->handleArbitrationFinished(ccDiscoveryEntry);
+    libJoynrMessageRouter->addNextHop(clusterControllerDiscovery->getProxyParticipantId(),
+                                      dispatcherAddress,
+                                      isGloballyVisible,
+                                      expiryDateMs,
+                                      isSticky,
+                                      allowUpdate);
+    discoveryProxy->setDiscoveryProxy(std::move(clusterControllerDiscovery));
 }
 
 std::shared_ptr<IMessageRouter> LibJoynrRuntime::getMessageRouter()

@@ -30,13 +30,19 @@ import java.lang.reflect.Method;
                                                   justification = "MethodInvocation is just a data container and only accessed by trusted code. So exposing internal representation is by design.")
 public class MethodInvocation<T> extends Invocation<T> {
 
+    private final Object proxy;
     private final Method method;
     private final Object[] args;
 
-    public MethodInvocation(Method method, Object[] args, Future<T> future) {
+    public MethodInvocation(Object proxy, Method method, Object[] args, Future<T> future) {
         super(future);
+        this.proxy = proxy;
         this.method = method;
         this.args = args;
+    }
+
+    public Object getProxy() {
+        return proxy;
     }
 
     public Method getMethod() {

@@ -170,6 +170,41 @@ TEST(ParticipantIdStorageTest, writeIniFile) {
     EXPECT_EQ(entriesToWrite, numberOfEntriesInFile);
 }
 
+TEST(ParticipantIdStorageTest, deleteCorruptedFile) {
+
+    const std::string wrongParticipantID = "WRONG_PARTICIPANT_ID";
+    const std::string expectedParticipantId = "EXPECTED_PARTICIPANT_ID";
+
+    {
+        std::ofstream file (storageFile, std::ios_base::out | std::ios_base::app);
+        const std::string header = "joynr.participant";
+        const std::string domain = ".domain";
+        const std::string interface = ".interface";
+        // add twice the same line to make the file an invalid INI file
+        file << header << domain << interface << "=" << wrongParticipantID << std::endl;
+        file << header << domain << interface << "=" << wrongParticipantID << std::endl;
+    }
+
+    {
+        ParticipantIdStorage store(storageFile);
+        store.setProviderParticipantId("domain", "interface", expectedParticipantId);
+
+        const std::string defaultValue = "NOT_EXPECTED_DEFAULT";
+        const std::string result = store.getProviderParticipantId("domain", "interface", defaultValue);
+        // if the INI file would be reused, then getProviderParticipantId would return NOT_EXPECTED_DEFAULT instead of EXPECTED_PARTICIPANT_ID
+        EXPECT_NE(result, defaultValue);
+        EXPECT_NE(result, wrongParticipantID);
+        EXPECT_EQ(result, expectedParticipantId);
+    }
+
+    {
+        // Check it a second time
+        ParticipantIdStorage store(storageFile);
+        const std::string result = store.getProviderParticipantId("domain", "interface");
+        EXPECT_EQ(result, expectedParticipantId);
+    }
+}
+
 /*
  * Scope of the test is to cause a crash if the underlying storage
  * is accessed simultaneously for reading and writing.

@@ -102,7 +102,8 @@ private:
     DISALLOW_COPY_AND_ASSIGN(LocalDiscoveryAggregator);
 
     std::shared_ptr<joynr::system::IDiscoveryAsync> discoveryProxy;
-    std::map<std::string, joynr::types::DiscoveryEntryWithMetaInfo> provisionedDiscoveryEntries;
+    const std::map<std::string, joynr::types::DiscoveryEntryWithMetaInfo>
+            provisionedDiscoveryEntries;
 };
 } // namespace joynr
 #endif // LOCALDISCOVERYAGGREGATOR_H

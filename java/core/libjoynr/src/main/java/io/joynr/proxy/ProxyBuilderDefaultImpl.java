@@ -190,6 +190,7 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
         try {
             ProxyInvocationHandler proxyInvocationHandler = createProxyInvocationHandler(callback);
             proxy = ProxyFactory.createProxy(myClass, messagingQos, proxyInvocationHandler);
+            proxyInvocationHandler.registerProxy(proxy);
             arbitrator.scheduleArbitration();
             return proxy;
         } catch (JoynrRuntimeException e) {

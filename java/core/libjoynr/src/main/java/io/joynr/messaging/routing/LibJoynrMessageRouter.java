@@ -133,6 +133,14 @@ public class LibJoynrMessageRouter extends AbstractMessageRouter {
         }
     }
 
+    @Override
+    public void removeNextHop(final String participantId) {
+        super.removeNextHop(participantId);
+        if (parentRouter != null) {
+            removeNextHopFromParent(participantId);
+        }
+    }
+
     private void addNextHopToParent(String participantId, boolean isGloballyVisible) {
         logger.trace("Adding next hop with participant id " + participantId + " to parent router");
         if (incomingAddress instanceof ChannelAddress) {
@@ -147,6 +155,11 @@ public class LibJoynrMessageRouter extends AbstractMessageRouter {
             throw new ProviderRuntimeException("Failed to add next hop to parent: unknown address type"
                     + incomingAddress.getClass().getSimpleName());
         }
+    }
+
+    private void removeNextHopFromParent(String participantId) {
+        logger.trace("Removing next hop with participant id " + participantId + " from parent router");
+        parentRouter.removeNextHop(participantId);
     }
 
     @Override

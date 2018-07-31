@@ -44,12 +44,15 @@ public class RpcAsyncRequestReplyCaller<T> implements ReplyCaller {
     private Future<T> future;
     private static final Logger logger = LoggerFactory.getLogger(RpcAsyncRequestReplyCaller.class);
     private String requestReplyId;
+    private Object proxy;
 
-    public RpcAsyncRequestReplyCaller(String requestReplyId,
+    public RpcAsyncRequestReplyCaller(Object proxy,
+                                      String requestReplyId,
                                       @CheckForNull ICallback callback,
                                       Future<T> future,
                                       Method method,
                                       MethodMetaInformation methodMetaInformation) {
+        this.proxy = proxy;
         this.requestReplyId = requestReplyId;
         this.callback = callback;
         this.future = future;
@@ -132,5 +135,9 @@ public class RpcAsyncRequestReplyCaller<T> implements ReplyCaller {
     @Override
     public String getRequestReplyId() {
         return requestReplyId;
+    }
+
+    public Object getProxy() {
+        return proxy;
     }
 }
