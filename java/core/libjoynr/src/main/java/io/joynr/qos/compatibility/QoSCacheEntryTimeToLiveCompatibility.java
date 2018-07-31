@@ -27,13 +27,8 @@ public class QoSCacheEntryTimeToLiveCompatibility extends QoSTimeComparisonCompa
     }
 
     @Override
-    protected Long getQoSTimeInMillis() {
-        return qos.getCacheTimeToLiveMs();
-    }
-
-    @Override
-    protected boolean condition(long delta, long qosCacheEntryTimeToLiveMs) {
-        return delta < qosCacheEntryTimeToLiveMs;
+    protected boolean condition(long delta) {
+        return delta < qos.getCacheTimeToLiveMs();
     }
 
 }

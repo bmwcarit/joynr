@@ -75,7 +75,8 @@ public class ClientHashMapCache implements ClientCache {
         Predicate<TimeComparisonCompatibility> qoSCacheEntryTimeToLive = new QoSCacheEntryTimeToLiveCompatibility(qos);
 
         cache.forEach((String k, CachedValue v) -> {
-            if (qoSCacheEntryTimeToLive.test(v)) {
+            // remove if expired
+            if (!qoSCacheEntryTimeToLive.test(v)) {
                 cache.remove(k);
             }
         });

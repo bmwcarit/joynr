@@ -33,13 +33,10 @@ public abstract class QoSTimeComparisonCompatibility implements Predicate<TimeCo
 
     @Override
     public boolean test(TimeComparisonCompatibility input) {
-        Long ttl = getQoSTimeInMillis();
         long currentTime = System.currentTimeMillis();
         long delta = currentTime - input.getTimeInMilliSec();
-        return condition(ttl, delta);
+        return condition(delta);
     }
 
-    protected abstract boolean condition(long delta, long qosTimeConstraint);
-
-    protected abstract Long getQoSTimeInMillis();
+    protected abstract boolean condition(long delta);
 }
