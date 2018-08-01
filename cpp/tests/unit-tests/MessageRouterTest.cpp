@@ -64,11 +64,15 @@ TYPED_TEST_CASE(MessageRouterTest, MessageRouterTypes);
 TYPED_TEST(MessageRouterTest, addMessageToQueue){
     std::shared_ptr<ImmutableMessage> immutableMessage = this->mutableMessage.getImmutableMessage();
 
+    EXPECT_EQ(this->messageRouter->getNumberOfRoutedMessages(), 0);
+
     this->messageRouter->route(immutableMessage);
     EXPECT_EQ(this->messageQueue->getQueueLength(), 1);
 
     this->messageRouter->route(immutableMessage);
     EXPECT_EQ(this->messageQueue->getQueueLength(), 2);
+
+    EXPECT_EQ(this->messageRouter->getNumberOfRoutedMessages(), 2);
 }
 
 TYPED_TEST(MessageRouterTest, multicastMessageWillNotBeQueued) {
