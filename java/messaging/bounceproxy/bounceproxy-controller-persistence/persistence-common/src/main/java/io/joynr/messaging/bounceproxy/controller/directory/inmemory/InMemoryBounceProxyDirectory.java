@@ -28,7 +28,7 @@ import io.joynr.messaging.system.TimestampProvider;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.function.Predicate;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.google.inject.Inject;
@@ -60,16 +60,11 @@ public class InMemoryBounceProxyDirectory implements BounceProxyDirectory {
      */
     @Override
     public List<BounceProxyRecord> getAssignableBounceProxies() {
-        Predicate<BounceProxyRecord> statusIsAssignablePredicate = new Predicate<BounceProxyRecord>() {
-            @Override
-            public boolean test(BounceProxyRecord record) {
-                if (record == null)
-                    return false;
-                return record.getStatus().isAssignable();
-            }
-        };
-
-        return directory.values().stream().filter(statusIsAssignablePredicate).collect(Collectors.toList());
+        return directory.values()
+                        .stream()
+                        .filter(Objects::nonNull)
+                        .filter(r -> r.getStatus().isAssignable())
+                        .collect(Collectors.toList());
     }
 
     @Override
