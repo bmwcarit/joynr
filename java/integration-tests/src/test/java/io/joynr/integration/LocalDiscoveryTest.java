@@ -185,7 +185,7 @@ public class LocalDiscoveryTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        when(localDiscoveryEntryStoreMock.hasDiscoveryEntry(any(DiscoveryEntry.class))).thenReturn(true);
+        Mockito.doReturn(true).when(localDiscoveryEntryStoreMock).hasDiscoveryEntry(any(DiscoveryEntry.class));
         // use default freshnessUpdateIntervalMs: 3600000ms (1h)
         final LocalCapabilitiesDirectoryImpl localCapabilitiesDirectory = new LocalCapabilitiesDirectoryImpl(capabilitiesProvisioningMock,
                                                                                                              globalAddressProviderMock,
@@ -231,7 +231,8 @@ public class LocalDiscoveryTest {
                                                            "publicKeyId");
         discoveryEntries.add(discoveryEntry);
 
-        when(localDiscoveryEntryStoreMock.lookup(any(String[].class), eq(interfaceName))).thenReturn(discoveryEntries);
+        Mockito.doReturn(discoveryEntries).when(localDiscoveryEntryStoreMock).lookup(any(String[].class),
+                                                                                     eq(interfaceName));
 
         ProxyBuilder<testProxy> proxyBuilder = runtime.getProxyBuilder(testDomain, testProxy.class);
         final Future<Void> future = new Future<Void>();
@@ -279,9 +280,9 @@ public class LocalDiscoveryTest {
         Set<DiscoveryEntryWithMetaInfo> discoveryEntriesWithMetaInfo = CapabilityUtils.convertToDiscoveryEntryWithMetaInfoSet(false,
                                                                                                                               discoveryEntries);
 
-        when(globalDiscoveryEntryCacheMock.lookup(any(String[].class),
-                                                  eq(interfaceName),
-                                                  anyLong())).thenReturn(discoveryEntries);
+        Mockito.doReturn(discoveryEntries).when(globalDiscoveryEntryCacheMock).lookup(any(String[].class),
+                                                                                      eq(interfaceName),
+                                                                                      anyLong());
 
         ProxyBuilder<testProxy> proxyBuilder = runtime.getProxyBuilder(testDomain, testProxy.class);
         final Future<Void> future = new Future<Void>();
@@ -329,9 +330,9 @@ public class LocalDiscoveryTest {
         globalDiscoveryEntries.add(CapabilityUtils.discoveryEntry2GlobalDiscoveryEntry(discoveryEntry,
                                                                                        new MqttAddress()));
 
-        when(globalDiscoveryEntryCacheMock.lookup(any(String[].class),
-                                                  eq(interfaceName),
-                                                  anyLong())).thenReturn(new HashSet<DiscoveryEntry>());
+        Mockito.doReturn(new HashSet<DiscoveryEntry>()).when(globalDiscoveryEntryCacheMock).lookup(any(String[].class),
+                                                                                                   eq(interfaceName),
+                                                                                                   anyLong());
         Mockito.doAnswer(new Answer<Object>() {
 
             @SuppressWarnings("rawtypes")
@@ -424,11 +425,11 @@ public class LocalDiscoveryTest {
         discoveryEntriesWithMetaInfo.add(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false,
                                                                                              remoteDiscoveryEntry));
 
-        when(localDiscoveryEntryStoreMock.lookup(any(String[].class),
-                                                 eq(interfaceName))).thenReturn(localDiscoveryEntries);
-        when(globalDiscoveryEntryCacheMock.lookup(any(String[].class),
-                                                  eq(interfaceName),
-                                                  anyLong())).thenReturn(cachedDiscoveryEntries);
+        Mockito.doReturn(localDiscoveryEntries).when(localDiscoveryEntryStoreMock).lookup(any(String[].class),
+                                                                                          eq(interfaceName));
+        Mockito.doReturn(cachedDiscoveryEntries).when(globalDiscoveryEntryCacheMock).lookup(any(String[].class),
+                                                                                            eq(interfaceName),
+                                                                                            anyLong());
         Mockito.doAnswer(new Answer<Object>() {
 
             @SuppressWarnings("rawtypes")
