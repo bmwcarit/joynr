@@ -39,8 +39,8 @@ import com.google.inject.Singleton;
  * Manages the Access Control Lists for all providers.
  */
 @Singleton
-public class GlobalDomainAccessControlListEditorProviderImpl extends
-        GlobalDomainAccessControlListEditorAbstractProvider {
+public class GlobalDomainAccessControlListEditorProviderImpl
+        extends GlobalDomainAccessControlListEditorAbstractProvider {
 
     private static final String DUMMY_USERID = "dummyUserId";
 

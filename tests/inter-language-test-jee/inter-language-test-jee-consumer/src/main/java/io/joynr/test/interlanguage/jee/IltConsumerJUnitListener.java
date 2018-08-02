@@ -225,7 +225,8 @@ public class IltConsumerJUnitListener extends RunListener {
             TestCaseResult testCaseResult = new TestCaseResult(getTestCaseName(description),
                                                                getTestSuiteClassName(description),
                                                                //new Long(endTimeTestCase - startTimeTestCase).toString(),
-                                                               getFormattedDuration(endTimeTestCase - startTimeTestCase),
+                                                               getFormattedDuration(endTimeTestCase
+                                                                       - startTimeTestCase),
                                                                "ok", // status
                                                                null, // no failure
                                                                null // no systemOut

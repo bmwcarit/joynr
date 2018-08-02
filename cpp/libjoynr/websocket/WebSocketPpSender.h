@@ -81,7 +81,7 @@ public:
                         endpoint.get_con_from_hdl(connectionHandle)) {
                 return connection->get_state() == websocketpp::session::state::open;
             }
-        } catch (websocketpp::exception e) {
+        } catch (const websocketpp::exception& e) {
             JOYNR_LOG_ERROR(
                     logger(), "websocket not connected (websocketpp error message: {})", e.what());
         }

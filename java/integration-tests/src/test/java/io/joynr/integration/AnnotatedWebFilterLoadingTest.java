@@ -104,7 +104,7 @@ public class AnnotatedWebFilterLoadingTest {
 
         @Override
         public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException,
-                                                                                                 ServletException {
+                                                                                                  ServletException {
 
             if (response instanceof HttpServletResponse) {
                 HttpServletResponse httpServletResponse = (HttpServletResponse) response;

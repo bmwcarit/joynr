@@ -69,9 +69,8 @@ public class BounceProxyMigrationTest extends AbstractServiceInterfaceTest {
     public void testClusterMigration() {
 
         Response response = //
-        given(). //
-        when()
-               .delete(serverUrl + "/clusters/cluster0");
+                given(). //
+                       when().delete(serverUrl + "/clusters/cluster0");
 
         assertEquals(202 /* Accepted */, response.getStatusCode());
         Mockito.verify(mock).startClusterMigration("cluster0");
@@ -81,9 +80,8 @@ public class BounceProxyMigrationTest extends AbstractServiceInterfaceTest {
     public void testBounceProxyMigration() {
 
         Response response = //
-        given(). //
-        when()
-               .delete(serverUrl + "/bps/cluster0.instance0");
+                given(). //
+                       when().delete(serverUrl + "/bps/cluster0.instance0");
 
         assertEquals(501 /* Not Implemented */, response.getStatusCode());
         Mockito.verifyZeroInteractions(mock);
@@ -93,9 +91,8 @@ public class BounceProxyMigrationTest extends AbstractServiceInterfaceTest {
     public void testChannelMigration() {
 
         Response response = //
-        given(). //
-        when()
-               .delete(serverUrl + "/channels/channel-123");
+                given(). //
+                       when().delete(serverUrl + "/channels/channel-123");
 
         assertEquals(501 /* Not Implemented */, response.getStatusCode());
         Mockito.verifyZeroInteractions(mock);

@@ -96,6 +96,7 @@ public class ConnectorTest {
     private DiscoveryEntryWithMetaInfo toDiscoveryEntry;
     private Set<DiscoveryEntryWithMetaInfo> toDiscoveryEntries;
     private MessagingQos qosSettings;
+    private Object proxy;
 
     @Before
     public void setUp() {
@@ -106,7 +107,7 @@ public class ConnectorTest {
         toDiscoveryEntry.setParticipantId(toParticipantId);
         toDiscoveryEntries = Sets.newHashSet(toDiscoveryEntry);
         qosSettings = new MessagingQos();
-
+        proxy = new Object();
     }
 
     interface TestProxyInterface extends TestSyncInterface, TestAsyncInterface {
@@ -180,10 +181,12 @@ public class ConnectorTest {
         assertNotNull(connector);
         try {
             Future<String> future = new Future<String>();
-            connector.executeAsyncMethod(TestAsyncInterface.class.getDeclaredMethod("someMethodwithoutAnnotations",
+            connector.executeAsyncMethod(proxy,
+                                         TestAsyncInterface.class.getDeclaredMethod("someMethodwithoutAnnotations",
                                                                                     Integer.class,
-                                                                                    String.class), new Object[]{ 1,
-                    "test" }, future);
+                                                                                    String.class),
+                                         new Object[]{ 1, "test" },
+                                         future);
             fail("Calling a method with missing callback annotation did not throw an exception.");
         } catch (Exception e) {
             // This is what is supposed to happen -> no error handling
@@ -252,7 +255,7 @@ public class ConnectorTest {
         Future<Void> future = new Future<Void>();
         try {
             Method method = TestAsyncInterface.class.getDeclaredMethod("methodWithoutParameters", Callback.class);
-            connector.executeAsyncMethod(method, new Object[]{ voidCallback }, future);
+            connector.executeAsyncMethod(proxy, method, new Object[]{ voidCallback }, future);
             verify(requestReplyManager, times(1)).sendRequest(eq(fromParticipantId),
                                                               eq(toDiscoveryEntry),
                                                               requestCaptor.capture(),
@@ -353,8 +356,10 @@ public class ConnectorTest {
             Method method = TestSubscriptionInterface.class.getDeclaredMethod("subscribeToTestAttribute",
                                                                               AttributeSubscriptionListener.class,
                                                                               SubscriptionQos.class);
-            AttributeSubscribeInvocation invocation = new AttributeSubscribeInvocation(method, new Object[]{ listener,
-                    subscriptionQos }, null);
+            AttributeSubscribeInvocation invocation = new AttributeSubscribeInvocation(method,
+                                                                                       new Object[]{ listener,
+                                                                                               subscriptionQos },
+                                                                                       null);
             connector.executeSubscriptionMethod(invocation);
             verify(subscriptionManager, times(1)).registerAttributeSubscription(fromParticipantId,
                                                                                 toDiscoveryEntries,
@@ -376,8 +381,11 @@ public class ConnectorTest {
                                                                            TestBroadcastListener.class,
                                                                            OnChangeSubscriptionQos.class,
                                                                            BroadcastFilterParameters.class);
-            BroadcastSubscribeInvocation invocation = new BroadcastSubscribeInvocation(method, new Object[]{ listener,
-                    subscriptionQos, new BroadcastFilterParameters() }, null);
+            BroadcastSubscribeInvocation invocation = new BroadcastSubscribeInvocation(method,
+                                                                                       new Object[]{ listener,
+                                                                                               subscriptionQos,
+                                                                                               new BroadcastFilterParameters() },
+                                                                                       null);
             connector.executeSubscriptionMethod(invocation);
             verify(subscriptionManager, times(1)).registerBroadcastSubscription(fromParticipantId,
                                                                                 toDiscoveryEntries,
@@ -400,8 +408,11 @@ public class ConnectorTest {
                                                                            TestBroadcastListener.class,
                                                                            OnChangeSubscriptionQos.class,
                                                                            String[].class);
-            MulticastSubscribeInvocation invocation = new MulticastSubscribeInvocation(method, new Object[]{ listener,
-                    subscriptionQos, partitions }, null);
+            MulticastSubscribeInvocation invocation = new MulticastSubscribeInvocation(method,
+                                                                                       new Object[]{ listener,
+                                                                                               subscriptionQos,
+                                                                                               partitions },
+                                                                                       null);
             connector.executeSubscriptionMethod(invocation);
             verify(subscriptionManager, times(1)).registerMulticastSubscription(fromParticipantId,
                                                                                 toDiscoveryEntries,

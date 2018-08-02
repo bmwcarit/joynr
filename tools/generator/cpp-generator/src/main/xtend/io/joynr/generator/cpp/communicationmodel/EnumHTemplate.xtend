@@ -93,7 +93,7 @@ struct «getDllExportMacro()»«typeName» : public joynr::exceptions::Applicati
 			 * @brief «appendDoxygenComment(enumtype, "* ")»
 			 */
 			«{
-				ordinal = if (enumtype.value.enumeratorValue == null)
+				ordinal = if (enumtype.value.enumeratorValue === null)
 							ordinal+1
 						else
 							Integer::valueOf(enumtype.value.enumeratorValue);

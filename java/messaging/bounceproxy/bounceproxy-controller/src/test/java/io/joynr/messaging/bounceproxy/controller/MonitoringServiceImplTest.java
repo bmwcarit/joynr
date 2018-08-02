@@ -113,10 +113,8 @@ public class MonitoringServiceImplTest {
         Mockito.verify(bpDirectoryMock).updateBounceProxy(argument.capture());
         Assert.assertEquals("X.Y", argument.getValue().getBounceProxyId());
         Assert.assertEquals("http://www.joynX.de/bp", argument.getValue().getInfo().getLocation().toString());
-        Assert.assertEquals("http://joyn.some-internal-server.de/bpX", argument.getValue()
-                                                                               .getInfo()
-                                                                               .getLocationForBpc()
-                                                                               .toString());
+        Assert.assertEquals("http://joyn.some-internal-server.de/bpX",
+                            argument.getValue().getInfo().getLocationForBpc().toString());
         Assert.assertEquals(BounceProxyStatus.ALIVE, argument.getValue().getStatus());
     }
 

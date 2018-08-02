@@ -46,8 +46,8 @@ public class Executor {
     private final IFileSystemAccess outputFileSystem;
 
     public Executor(final InvocationArguments arguments) throws ClassNotFoundException,
-                                                        InstantiationException,
-                                                        IllegalAccessException {
+                                                         InstantiationException,
+                                                         IllegalAccessException {
         arguments.checkArguments();
         this.arguments = arguments;
 
@@ -81,9 +81,11 @@ public class Executor {
     }
 
     private IGenerator createGenerator(Injector injector) throws ClassNotFoundException, InstantiationException,
-                                                         IllegalAccessException {
+                                                          IllegalAccessException {
         String rootGenerator = arguments.getRootGenerator();
-        Class<?> rootGeneratorClass = Class.forName(rootGenerator, true, Thread.currentThread().getContextClassLoader());
+        Class<?> rootGeneratorClass = Class.forName(rootGenerator,
+                                                    true,
+                                                    Thread.currentThread().getContextClassLoader());
         Object templateRootInstance = rootGeneratorClass.newInstance();
 
         if (templateRootInstance instanceof IGenerator) {
@@ -139,7 +141,7 @@ public class Executor {
     }
 
     public static void main(String[] args) throws ClassNotFoundException, InstantiationException,
-                                          IllegalAccessException {
+                                           IllegalAccessException {
         if (args.length == 1 && (args[0].equals("-help") || args[0].equals("-?"))) {
             System.out.println(InvocationArguments.usageString());
             System.exit(0);

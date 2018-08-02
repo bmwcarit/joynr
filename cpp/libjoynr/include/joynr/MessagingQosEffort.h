@@ -40,6 +40,19 @@ struct MessagingQosEffort
             throw exceptions::JoynrRuntimeException("Invalid messaging QoS effort value");
         }
     }
+
+    static MessagingQosEffort::Enum getEnum(const std::string& effortString)
+    {
+        if (effortString == std::string("BEST_EFFORT")) {
+            return Enum::BEST_EFFORT;
+        }
+        if (effortString == "NORMAL") {
+            return Enum::NORMAL;
+        }
+        std::stringstream errorMessage(effortString);
+        errorMessage << " is unknown literal for MessagingQosEffort";
+        throw std::invalid_argument(errorMessage.str());
+    }
 };
 
 } // namespace joynr

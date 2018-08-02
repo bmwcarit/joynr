@@ -46,7 +46,8 @@ public class SSLEnd2EndTest extends AbstractSSLEnd2EndTest {
 
     @Override
     protected JoynrRuntime getRuntime(Properties joynrConfig, Module... modules) {
-        DummyJoynrApplication application = (DummyJoynrApplication) new JoynrInjectorFactory(joynrConfig, modules).createApplication(DummyJoynrApplication.class);
+        DummyJoynrApplication application = (DummyJoynrApplication) new JoynrInjectorFactory(joynrConfig,
+                                                                                             modules).createApplication(DummyJoynrApplication.class);
 
         dummyApplications.add(application);
         return application.getRuntime();

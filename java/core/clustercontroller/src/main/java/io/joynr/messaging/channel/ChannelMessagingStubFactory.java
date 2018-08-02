@@ -27,8 +27,8 @@ import joynr.system.RoutingTypes.ChannelAddress;
 /**
  *  Message stub factory for joynr channel addresses
  */
-public class ChannelMessagingStubFactory extends
-        AbstractMiddlewareMessagingStubFactory<ChannelMessagingStub, ChannelAddress> {
+public class ChannelMessagingStubFactory
+        extends AbstractMiddlewareMessagingStubFactory<ChannelMessagingStub, ChannelAddress> {
     private HttpMessageSender httpMessageSender;
 
     @Inject

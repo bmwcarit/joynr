@@ -58,8 +58,7 @@ public class RpcUtils {
             } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
                     | InvocationTargetException | NoSuchMethodException | SecurityException e) {
                 logger.error("error calling multi-out method: {}. Unable to recreate return object. Returning NULL instead: "
-                                     + method.getName(),
-                             e);
+                        + method.getName(), e);
 
             }
         }
@@ -88,8 +87,7 @@ public class RpcUtils {
                                                                                     .deserializationType());
             } catch (IllegalArgumentException e) {
                 logger.error("error calling method: {}. Unable to recreate response for callback. Returning NULL instead"
-                                     + method.getName(),
-                             e);
+                        + method.getName(), e);
             }
         } else if (response.getResponse().length > 1) {
             convertMultioutResponseToCorrectTypes(method, response.getResponse());

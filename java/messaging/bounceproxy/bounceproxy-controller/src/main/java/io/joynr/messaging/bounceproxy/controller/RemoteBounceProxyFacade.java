@@ -75,8 +75,9 @@ public class RemoteBounceProxyFacade {
      * @throws JoynrProtocolException
      *             if the bounce proxy rejects channel creation
      */
-    public URI createChannel(ControlledBounceProxyInformation bpInfo, String ccid, String trackingId)
-                                                                                                     throws JoynrProtocolException {
+    public URI createChannel(ControlledBounceProxyInformation bpInfo,
+                             String ccid,
+                             String trackingId) throws JoynrProtocolException {
 
         try {
             // Try to create a channel on a bounce proxy with maximum number of
@@ -113,8 +114,10 @@ public class RemoteBounceProxyFacade {
      * @throws JoynrProtocolException
      *             if the bounce proxy rejects channel creation
      */
-    private URI createChannelLoop(ControlledBounceProxyInformation bpInfo, String ccid, String trackingId, int retries)
-                                                                                                                       throws JoynrProtocolException {
+    private URI createChannelLoop(ControlledBounceProxyInformation bpInfo,
+                                  String ccid,
+                                  String trackingId,
+                                  int retries) throws JoynrProtocolException {
 
         while (retries > 0) {
             retries--;
@@ -139,9 +142,9 @@ public class RemoteBounceProxyFacade {
         throw new JoynrRuntimeException("creating a channel on bounce proxy " + bpInfo.getId() + " failed.");
     }
 
-    private URI sendCreateChannelHttpRequest(ControlledBounceProxyInformation bpInfo, String ccid, String trackingId)
-                                                                                                                     throws IOException,
-                                                                                                                     JoynrProtocolException {
+    private URI sendCreateChannelHttpRequest(ControlledBounceProxyInformation bpInfo,
+                                             String ccid,
+                                             String trackingId) throws IOException, JoynrProtocolException {
 
         // TODO jsessionid handling
         final String url = bpInfo.getLocationForBpc().toString() + "channels/?ccid=" + ccid;
@@ -198,8 +201,8 @@ public class RemoteBounceProxyFacade {
             // the bounce proxy is not excepted to reject this call as it was
             // chosen based on performance measurements sent by it
             logger.error("Failed to create channel on bounce proxy '{}'. Response: {}", bpInfo.getId(), response);
-            throw new JoynrProtocolException("Bounce Proxy " + bpInfo.getId()
-                    + " rejected channel creation (Response: " + response + ")");
+            throw new JoynrProtocolException("Bounce Proxy " + bpInfo.getId() + " rejected channel creation (Response: "
+                    + response + ")");
 
         } finally {
             if (response != null) {

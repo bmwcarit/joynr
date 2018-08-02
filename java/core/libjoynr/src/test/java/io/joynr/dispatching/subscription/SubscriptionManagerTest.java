@@ -182,7 +182,7 @@ public class SubscriptionManagerTest {
     @SuppressWarnings("unchecked")
     @Test
     public void registerSubscription() throws JoynrSendBufferFullException, JoynrMessageNotSentException,
-                                      JsonGenerationException, JsonMappingException, IOException {
+                                       JsonGenerationException, JsonMappingException, IOException {
         class IntegerReference extends TypeReference<Integer> {
         }
 
@@ -214,7 +214,7 @@ public class SubscriptionManagerTest {
 
     @Test
     public void registerBroadcastSubscription() throws JoynrSendBufferFullException, JoynrMessageNotSentException,
-                                               JsonGenerationException, JsonMappingException, IOException {
+                                                JsonGenerationException, JsonMappingException, IOException {
         String broadcastName = "broadcastName";
         BroadcastSubscriptionListener broadcastSubscriptionListener = mock(LocationUpdateBroadcastListener.class);
         BroadcastSubscribeInvocation subscriptionRequest = new BroadcastSubscribeInvocation(broadcastName,
@@ -243,8 +243,8 @@ public class SubscriptionManagerTest {
 
     @Test
     public void registerSubscriptionWithoutExpiryDate() throws JoynrSendBufferFullException,
-                                                       JoynrMessageNotSentException, JsonGenerationException,
-                                                       JsonMappingException, IOException {
+                                                        JoynrMessageNotSentException, JsonGenerationException,
+                                                        JsonMappingException, IOException {
         class IntegerReference extends TypeReference<Integer> {
         }
 
@@ -254,7 +254,9 @@ public class SubscriptionManagerTest {
                                                                                 qosWithoutExpiryDate,
                                                                                 future);
         subscriptionId = request.getSubscriptionId();
-        subscriptionManager.registerAttributeSubscription(fromParticipantId, Sets.newHashSet(toDiscoveryEntry), request);
+        subscriptionManager.registerAttributeSubscription(fromParticipantId,
+                                                          Sets.newHashSet(toDiscoveryEntry),
+                                                          request);
 
         verify(attributeSubscriptionDirectory).put(Mockito.anyString(), Mockito.eq(attributeSubscriptionCallback));
         verify(subscriptionStates).put(Mockito.anyString(), Mockito.any(PubSubState.class));
@@ -341,7 +343,7 @@ public class SubscriptionManagerTest {
 
     @Test
     public void unregisterSubscription() throws JoynrSendBufferFullException, JoynrMessageNotSentException,
-                                        JsonGenerationException, JsonMappingException, IOException {
+                                         JsonGenerationException, JsonMappingException, IOException {
 
         when(subscriptionStates.get(subscriptionId)).thenReturn(subscriptionState);
         when(missedPublicationTimers.containsKey(subscriptionId)).thenReturn(true);

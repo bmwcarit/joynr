@@ -67,8 +67,9 @@ public class ReflectionUtils {
         return methodsList;
     }
 
-    public static Method findMethodByParamTypes(Class<?> clazz, String methodName, Class<?>[] parameterTypes)
-                                                                                                             throws NoSuchMethodException {
+    public static Method findMethodByParamTypes(Class<?> clazz,
+                                                String methodName,
+                                                Class<?>[] parameterTypes) throws NoSuchMethodException {
         Method[] methods = clazz.getDeclaredMethods();
         for (Method method : methods) {
             if (method.getName().equals(methodName)) {
@@ -94,8 +95,9 @@ public class ReflectionUtils {
         return true;
     }
 
-    public static Method findMethodByParamTypeNames(Class<?> clazz, String methodName, List<String> paramTypeNames)
-                                                                                                                   throws NoSuchMethodException {
+    public static Method findMethodByParamTypeNames(Class<?> clazz,
+                                                    String methodName,
+                                                    List<String> paramTypeNames) throws NoSuchMethodException {
         Method[] methods = clazz.getDeclaredMethods();
         for (Method method : methods) {
             if (method.getName().equals(methodName)) {

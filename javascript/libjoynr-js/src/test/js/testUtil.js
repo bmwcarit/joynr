@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2018 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,11 @@
  * limitations under the License.
  * #L%
  */
-package io.joynr.capabilities;
 
-/**
- * lOCALONLY: capability is registered locally, and is not to be forwarded to the global capdir
- * LOCALGLOBAL: capability is registered locally, and WILL be forwraded to the global capdir
- * REMOTE: capability is NOT registered locally, came from the global capdir
- *
- */
-public enum CapabilityScope {
-    LOCALONLY, LOCALGLOBAL, REMOTE, NOTSET
+const testUtil = {
+    reversePromise(promise) {
+        return promise.then(suc => Promise.reject(suc)).catch(e => e);
+    }
 };
+
+module.exports = testUtil;

@@ -248,7 +248,8 @@ public class ServersUtil {
         logger.info("HOST PATH: {}", System.getProperty(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH));
 
         final Server jettyServer = new Server();
-        ServerConnector connector = new ServerConnector(jettyServer, new HttpConnectionFactory(new HttpConfiguration()));
+        ServerConnector connector = new ServerConnector(jettyServer,
+                                                        new HttpConnectionFactory(new HttpConfiguration()));
         connector.setPort(port);
         connector.setAcceptQueueSize(1);
         jettyServer.setConnectors(new Connector[]{ connector });
@@ -261,9 +262,9 @@ public class ServersUtil {
         return jettyServer;
     }
 
-    private static Server startSSLServer(ContextHandlerCollection contexts, SSLSettings settings, int port)
-                                                                                                           throws IOException,
-                                                                                                           Exception {
+    private static Server startSSLServer(ContextHandlerCollection contexts,
+                                         SSLSettings settings,
+                                         int port) throws IOException, Exception {
 
         System.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH, "http://localhost:" + port);
         logger.info("PORT: {}", System.getProperty(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH));

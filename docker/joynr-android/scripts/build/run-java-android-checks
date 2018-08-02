@@ -26,9 +26,6 @@ mvn install -N
 )
 
 mvn install checkstyle:checkstyle \
--P findbugs,no-license-and-notice,no-java-formatter,android \
+-P findbugs,no-license-and-notice,no-java-formatter \
 -DskipTests
 
-(
-  mvn javadoc:jar -P android
-)

@@ -54,36 +54,35 @@ import io.joynr.jeeintegration.messaging.JeeMessagingEndpoint;
 @RunAsClient
 public class JeeMessagingEndpointTest {
 
-	private static final Logger LOG = LoggerFactory.getLogger(JeeMessagingEndpointTest.class);
+    private static final Logger LOG = LoggerFactory.getLogger(JeeMessagingEndpointTest.class);
 
-	@Deployment
-	public static WebArchive createTestArchive() {
-		// @formatter:off
-		JavaArchive javaArchive = ShrinkWrap.create(JavaArchive.class)
-				.addClasses(ServiceProviderDiscovery.class,
-						DefaultJoynrRuntimeFactory.class,
-						JeeIntegrationJoynrTestConfigurationProvider.class,
-						JoynrIntegrationBean.class,
-						JeeMessagingApplication.class,
-						JeeMessagingEndpoint.class,
-						JoynrStatusMetricsAggregator.class
-						)
-				.addAsManifestResource(new File("src/main/resources/META-INF/beans.xml"));
-		// @formatter:on
-		return ShrinkWrap.create(WebArchive.class).addAsLibraries(javaArchive);
-	}
+    @Deployment
+    public static WebArchive createTestArchive() {
+        // @formatter:off
+        JavaArchive javaArchive = ShrinkWrap.create(JavaArchive.class)
+                                            .addClasses(ServiceProviderDiscovery.class,
+                                                        DefaultJoynrRuntimeFactory.class,
+                                                        JeeIntegrationJoynrTestConfigurationProvider.class,
+                                                        JoynrIntegrationBean.class,
+                                                        JeeMessagingApplication.class,
+                                                        JeeMessagingEndpoint.class,
+                                                        JoynrStatusMetricsAggregator.class)
+                                            .addAsManifestResource(new File("src/main/resources/META-INF/beans.xml"));
+        // @formatter:on
+        return ShrinkWrap.create(WebArchive.class).addAsLibraries(javaArchive);
+    }
 
-	@ArquillianResource
-	private URL baseUrl;
+    @ArquillianResource
+    private URL baseUrl;
 
-	@Test
-	public void testEndpointAvailable() throws Throwable {
-		assertNotNull(baseUrl);
-		WebTarget webTarget = ClientBuilder.newClient().target(baseUrl.toURI()).path("/messaging/channels");
-		LOG.info("Trying to access: " + webTarget.getUri().toString());
-		Response response = webTarget.request().get();
-		assertNotNull(response);
-		assertEquals(200, response.getStatus());
-	}
+    @Test
+    public void testEndpointAvailable() throws Throwable {
+        assertNotNull(baseUrl);
+        WebTarget webTarget = ClientBuilder.newClient().target(baseUrl.toURI()).path("/messaging/channels");
+        LOG.info("Trying to access: " + webTarget.getUri().toString());
+        Response response = webTarget.request().get();
+        assertNotNull(response);
+        assertEquals(200, response.getStatus());
+    }
 
 }

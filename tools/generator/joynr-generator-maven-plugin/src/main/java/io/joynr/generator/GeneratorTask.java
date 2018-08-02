@@ -30,8 +30,8 @@ public class GeneratorTask {
     private final Executor executor;
 
     public GeneratorTask(InvocationArguments arguments) throws ClassNotFoundException,
-                                                       InstantiationException,
-                                                       IllegalAccessException {
+                                                        InstantiationException,
+                                                        IllegalAccessException {
         this.executor = new Executor(arguments);
     }
 
@@ -59,5 +59,4 @@ public class GeneratorTask {
             log.info("no additional information available for the provider generator");
         }
     }
-
 }

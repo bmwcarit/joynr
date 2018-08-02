@@ -250,11 +250,9 @@ void ProxyBuilder<T>::buildAsync(
             return;
         }
 
-        bool useInProcessConnector =
-                requestCallerDirectory->containsRequestCaller(discoverEntry.getParticipantId());
         std::shared_ptr<T> proxy =
                 proxyFactory.createProxy<T>(runtimeSharedPtr, domain, messagingQos);
-        proxy->handleArbitrationFinished(discoverEntry, useInProcessConnector);
+        proxy->handleArbitrationFinished(discoverEntry);
 
         JOYNR_LOG_INFO(logger(),
                        "DISCOVERY proxy: participantId {} created for provider participantId: {}, "

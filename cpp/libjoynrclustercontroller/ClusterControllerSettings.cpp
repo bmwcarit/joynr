@@ -959,6 +959,10 @@ void ClusterControllerSettings::printSettings() const
                     settings.get<std::string>(SETTING_ACCESS_CONTROL_ENABLE()));
     JOYNR_LOG_DEBUG(logger(),
                     "SETTING: {} = {})",
+                    SETTING_ACCESS_CONTROL_AUDIT(),
+                    settings.get<std::string>(SETTING_ACCESS_CONTROL_AUDIT()));
+    JOYNR_LOG_DEBUG(logger(),
+                    "SETTING: {} = {})",
                     SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS(),
                     getCapabilitiesFreshnessUpdateIntervalMs().count());
     JOYNR_LOG_DEBUG(logger(),

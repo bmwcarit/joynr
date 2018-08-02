@@ -26,7 +26,7 @@ describe("libjoynr-js.joynr.dispatching.types.SubscriptionPublication", () => {
 
     it("is instantiable", () => {
         const response = "response";
-        const publication = new SubscriptionPublication({
+        const publication = SubscriptionPublication.create({
             subscriptionId: "testSubscriptionId",
             response
         });
@@ -39,7 +39,7 @@ describe("libjoynr-js.joynr.dispatching.types.SubscriptionPublication", () => {
         const subscriptionId = "testSubscriptionId";
         const response = "response";
 
-        const publication = new SubscriptionPublication({
+        const publication = SubscriptionPublication.create({
             subscriptionId,
             response
         });

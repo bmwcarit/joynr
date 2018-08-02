@@ -271,7 +271,7 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", () => {
             payload
         });
         expect(subscriptionManager.handlePublication).toHaveBeenCalled();
-        expect(subscriptionManager.handlePublication).toHaveBeenCalledWith(new SubscriptionPublication(payload));
+        expect(subscriptionManager.handlePublication).toHaveBeenCalledWith(SubscriptionPublication.create(payload));
         done();
     });
 
@@ -285,12 +285,14 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", () => {
             payload
         });
         expect(subscriptionManager.handleMulticastPublication).toHaveBeenCalled();
-        expect(subscriptionManager.handleMulticastPublication).toHaveBeenCalledWith(new MulticastPublication(payload));
+        expect(subscriptionManager.handleMulticastPublication).toHaveBeenCalledWith(
+            MulticastPublication.create(payload)
+        );
         done();
     });
 
     it("forwards request to RequestReply Manager", done => {
-        const request = new Request({
+        const request = Request.create({
             methodName: "methodName"
         });
         const joynrMessage = new JoynrMessage({
@@ -307,7 +309,7 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", () => {
     });
 
     it("forwards one-way request to RequestReply Manager", done => {
-        const oneWayRequest = new OneWayRequest({
+        const oneWayRequest = OneWayRequest.create({
             methodName: "methodName"
         });
         const joynrMessage = new JoynrMessage({
@@ -324,7 +326,7 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", () => {
     });
 
     it("forwards reply to RequestReply Manager", done => {
-        const reply = new Reply({
+        const reply = Reply.create({
             requestReplyId,
             response: []
         });
@@ -452,7 +454,7 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", () => {
         let sentMessage;
         const messagingQos = new MessagingQos();
 
-        const request = new Request({
+        const request = Request.create({
             methodName: "methodName"
         });
         dispatcher.sendRequest({
@@ -508,7 +510,7 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", () => {
         const messagingQos = new MessagingQos();
         messagingQos.compress = true;
 
-        const request = new Request({
+        const request = Request.create({
             methodName: "methodName"
         });
         dispatcher.sendRequest({
@@ -534,8 +536,52 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", () => {
         done();
     });
 
+    function verifyEffortForReply(request, expectedEffort) {
+        expect(requestReplyManager.handleRequest).toHaveBeenCalled();
+        expect(requestReplyManager.handleRequest.calls.mostRecent().args[0]).toEqual(providerId);
+        expect(requestReplyManager.handleRequest.calls.mostRecent().args[1]).toEqual(request);
+        expect(clusterControllerMessagingStub.transmit.calls.mostRecent().args[0].effort).toEqual(expectedEffort);
+
+        requestReplyManager.handleRequest.calls.reset();
+        clusterControllerMessagingStub.transmit.calls.reset();
+    }
+
+    it("sets the correct effort for replies if the effort was set in the corresponding request", async () => {
+        const request = Request.create({
+            methodName: "methodName"
+        });
+        const joynrMessage = new JoynrMessage({
+            type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
+            payload: JSON.stringify(request)
+        });
+        joynrMessage.to = providerId;
+        joynrMessage.from = proxyId;
+        joynrMessage.compress = true;
+
+        requestReplyManager.handleRequest.and.callFake((to, request, cb, replySettings) => {
+            cb(replySettings, request);
+            return Promise.resolve();
+        });
+
+        joynrMessage.effort = undefined; // default
+        await dispatcher.receive(joynrMessage);
+        verifyEffortForReply(request, undefined);
+
+        joynrMessage.effort = MessagingQosEffort.NORMAL.value;
+        await dispatcher.receive(joynrMessage);
+        verifyEffortForReply(request, undefined);
+
+        joynrMessage.effort = MessagingQosEffort.BEST_EFFORT.value;
+        await dispatcher.receive(joynrMessage);
+        verifyEffortForReply(request, MessagingQosEffort.BEST_EFFORT.value);
+
+        joynrMessage.effort = "INVALID_EFFORT";
+        await dispatcher.receive(joynrMessage);
+        verifyEffortForReply(request, undefined);
+    });
+
     it("sets the compressed flag for replies if the request was compressed", done => {
-        const request = new Request({
+        const request = Request.create({
             methodName: "methodName"
         });
         const joynrMessage = new JoynrMessage({
@@ -561,7 +607,7 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", () => {
     });
 
     it("enriches requests with custom headers", done => {
-        const request = new Request({
+        const request = Request.create({
             methodName: "methodName"
         });
         const messagingQos = new MessagingQos();
@@ -581,7 +627,7 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", () => {
     });
 
     it("enriches requests with effort header", done => {
-        const request = new Request({
+        const request = Request.create({
             methodName: "methodName"
         });
         const messagingQos = new MessagingQos();
@@ -599,7 +645,7 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", () => {
     });
 
     it("enriches one way requests with custom headers", done => {
-        const request = new OneWayRequest({
+        const request = OneWayRequest.create({
             methodName: "methodName"
         });
         const messagingQos = new MessagingQos();
@@ -620,7 +666,7 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", () => {
 
     it("enriches replies with custom headers from request", done => {
         let sentReplyMessage;
-        const request = new Request({
+        const request = Request.create({
             methodName: "methodName"
         });
         const messagingQos = new MessagingQos();

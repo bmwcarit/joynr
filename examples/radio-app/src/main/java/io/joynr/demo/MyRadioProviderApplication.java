@@ -26,6 +26,7 @@ import io.joynr.messaging.AtmosphereMessagingModule;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
 import io.joynr.messaging.websocket.WebsocketModule;
+import io.joynr.proxy.Future;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.CCWebSocketRuntimeModule;
@@ -38,6 +39,7 @@ import java.io.IOException;
 import java.util.Properties;
 
 import jline.console.ConsoleReader;
+import joynr.exceptions.ApplicationException;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.TrustLevel;
@@ -208,14 +210,13 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
         provisionAccessControl(joynrConfig, localDomain);
         JoynrApplication joynrApplication = new JoynrInjectorFactory(joynrConfig,
                                                                      runtimeModule,
-                                                                     new StaticDomainAccessControlProvisioningModule()).createApplication(new JoynrApplicationModule(MyRadioProviderApplication.class,
-                                                                                                                                                                     appConfig) {
-            @Override
-            protected void configure() {
-                super.configure();
-                bind(ProviderScope.class).toInstance(providerScope);
-            }
-        });
+                                                                     new StaticDomainAccessControlProvisioningModule()).createApplication(new JoynrApplicationModule(MyRadioProviderApplication.class, appConfig) {
+                                                                         @Override
+                                                                         protected void configure() {
+                                                                             super.configure();
+                                                                             bind(ProviderScope.class).toInstance(providerScope);
+                                                                         }
+                                                                     });
         joynrApplication.run();
 
         joynrApplication.shutdown();
@@ -327,7 +328,14 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
         ProviderQos providerQos = new ProviderQos();
         providerQos.setPriority(System.currentTimeMillis());
         providerQos.setScope(providerScope);
-        runtime.registerProvider(localDomain, provider, providerQos);
+        boolean awaitGlobalRegistration = true;
+        Future<Void> future = runtime.registerProvider(localDomain, provider, providerQos, awaitGlobalRegistration);
+        try {
+            future.get();
+        } catch (JoynrRuntimeException | ApplicationException | InterruptedException e) {
+            LOG.error("runtime.registerProvider failed: ", e);
+            return;
+        }
 
         ConsoleReader console;
         try {
@@ -389,12 +397,15 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
                                                                                             domain,
                                                                                             ProviderAnnotations.getInterfaceName(MyRadioProvider.class),
                                                                                             TrustLevel.LOW,
-                                                                                            new TrustLevel[]{ TrustLevel.LOW },
+                                                                                            new TrustLevel[]{
+                                                                                                    TrustLevel.LOW },
                                                                                             TrustLevel.LOW,
-                                                                                            new TrustLevel[]{ TrustLevel.LOW },
+                                                                                            new TrustLevel[]{
+                                                                                                    TrustLevel.LOW },
                                                                                             "*",
                                                                                             Permission.YES,
-                                                                                            new Permission[]{ Permission.YES });
+                                                                                            new Permission[]{
+                                                                                                    Permission.YES });
 
         MasterAccessControlEntry[] provisionedAccessControlEntries = { newMasterAccessControlEntry };
         String provisionedAccessControlEntriesAsJson = objectMapper.writeValueAsString(provisionedAccessControlEntries);

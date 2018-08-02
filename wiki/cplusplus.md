@@ -394,13 +394,17 @@ try {
 The abstract class ```SubscriptionQos``` has the following members:
 
 * **expiryDateMs** Absolute Time until notifications will be send (milliseconds)
-* **publicationTtlMs** Lifespan of a notification (milliseconds), the notification will be deleted
+* **validityMs** Lifespan of a notification (milliseconds), the notification will be deleted
   afterwards
   Known Issue: subscriptionQos passed when subscribing to a non-selective broadcast are ignored.
   The API will be changed in the future: proxy subscribe calls will no longer take a
   subscriptionQos; instead the publication TTL will be settable on the provider side.
 
+### MulticastSubscriptionQos
 
+The class ```MulticastSubscriptionQos``` inherits from ```SubscriptionQos```.
+
+This class should be used for subscriptions to non-selective broadcasts.
 
 ### PeriodicSubscriptionQos
 
@@ -421,9 +425,12 @@ attribute.
 The class ```OnChangeSubscriptionQos``` inherits from ```SubscriptionQos``` and has the following additional members:
 
 * **minIntervalMs** Minimum time to wait between successive notifications (milliseconds)
+* **publicationTtlMs** Notification messages will be sent with this time-to-live. If a notification
+  message can not be delivered within its time to live, it will be deleted from the system. This
+  value is provided in milliseconds.
 
-This class should be used for subscriptions to broadcasts. It can also be used for subscriptions
-to attributes if no periodic update is required.
+This class should be used for subscriptions to selective broadcasts.
+It can also be used for subscriptions to attributes if no periodic update is required.
 
 ### OnchangeWithKeepAliveSubscriptionQos
 
@@ -439,7 +446,6 @@ and ```OnChangeSubscriptionQos```).
 
 Using it for subscriptions to broadcasts is theoretically possible because of inheritance but makes
 no sense (in this case the additional members will be ignored).
-
 
 ## Subscribing to an attribute
 
@@ -618,7 +624,7 @@ class <Broadcast>Listener : public SubscriptionListener<<OutputType1>[, ... <Out
 
 auto listener = std::make_shared<ISubscriptionListener<OutputType1>[, ... <OutputTypeN>]>();
 
-auto qos = std::make_shared<OnChangeSubscriptionQos>();
+auto qos = std::make_shared<MulticastSubscriptionQos>();
 // define details of qos by calling its setters here
 
 // optionally specifiy partitions here

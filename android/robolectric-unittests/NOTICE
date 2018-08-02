@@ -16,8 +16,10 @@ specific language governing permissions and limitations
 under the License.
 
 This project has dependencies to:
+  "Java Concurrency in Practice" book annotations under Creative Commons Attribution License
   Accessibility Test Framework under Apache License, Version 2.0
   android under Apache License, Version 2.0
+  Animal Sniffer Annotations under MIT license
   ant-launcher under Apache License, Version 2.0
   AOP alliance under Public Domain
   ASM Analysis under BSD
@@ -27,10 +29,11 @@ This project has dependencies to:
   ASM Util under BSD
   Backport of JSR 166 under Public Domain
   Bouncy Castle Provider under Bouncy Castle Licence
+  Checker Qual under GNU General Public License, version 2 (GPL2), with the classpath exception or The MIT License
   classworlds under BSD Style License
   Commons Lang under The Apache Software License, Version 2.0
   Default Plexus Container under Apache License, Version 2.0
-  dom4j under BSD License
+  error-prone annotations under Apache 2.0
   FindBugs-Annotations under GNU Lesser Public License
   FindBugs-jsr305 under The Apache Software License, Version 2.0
   flatbuffers-java under Apache License V2.0
@@ -54,10 +57,11 @@ This project has dependencies to:
   io.joynr.java:javaapi under The Apache Software License, Version 2.0
   io.joynr.smrf.java:smrf under The Apache Software License, Version 2.0
   io.joynr.smrf.java:smrf-api under The Apache Software License, Version 2.0
+  J2ObjC Annotations under The Apache Software License, Version 2.0
   Jackson-annotations under The Apache Software License, Version 2.0
   Jackson-core under The Apache Software License, Version 2.0
   jackson-databind under The Apache Software License, Version 2.0
-  Javassist under MPL 1.1 or LGPL 2.1
+  Javassist under MPL 1.1 or LGPL 2.1 or Apache License 2.0
   javax.inject under The Apache Software License, Version 2.0
   Jetty :: IO Utility under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: Utilities under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
@@ -86,7 +90,7 @@ This project has dependencies to:
   org.apache.tools.ant under Apache License, Version 2.0
   Plexus Common Utilities under The Apache Software License, Version 2.0
   Plexus Interpolation API under The Apache Software License, Version 2.0
-  Reflections under WTFPL
+  Reflections under WTFPL or The New BSD License
   robolectric under MIT license
   robolectric-annotations under MIT license
   robolectric-resources under MIT license

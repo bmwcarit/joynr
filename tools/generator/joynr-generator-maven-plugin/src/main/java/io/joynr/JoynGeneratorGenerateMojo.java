@@ -37,7 +37,7 @@ public class JoynGeneratorGenerateMojo extends AbstractJoynGeneratorMojo {
         int executionHashCode = getParameterHashCode();
         String generationDonePropertyName = "generation.done.id[" + executionHashCode + "]";
         String generationAlreadyDone = project.getProperties().getProperty(generationDonePropertyName);
-        if (new Boolean(generationAlreadyDone)) {
+        if (Boolean.valueOf(generationAlreadyDone)) {
             getLog().info("----------------------------------------------------------------------");
             getLog().info("JOYNR GENERATOR for parameter hash \"" + executionHashCode + "\" already executed.");
             getLog().info("Sources are up-to-date, skipping code generation...");
@@ -50,7 +50,7 @@ public class JoynGeneratorGenerateMojo extends AbstractJoynGeneratorMojo {
 
     @Override
     protected void invokeGenerator(GeneratorTask task) throws IOException, ClassNotFoundException,
-                                                      InstantiationException, IllegalAccessException {
+                                                       InstantiationException, IllegalAccessException {
         task.generate(getLog());
     }
 

@@ -78,38 +78,52 @@ public class GlobalDomainAccessControlListEditorBeanTest {
 
     @Test
     public void testCreateMasterAccessControlEntry() {
-        MasterAccessControlEntry mace = new MasterAccessControlEntry(USER_ID, DOMAIN, INTERFACE_NAME, TrustLevel.LOW,
-            new TrustLevel[0], TrustLevel.HIGH, new TrustLevel[0], OPERATION,
-            Permission.ASK, new Permission[0]);
+        MasterAccessControlEntry mace = new MasterAccessControlEntry(USER_ID,
+                                                                     DOMAIN,
+                                                                     INTERFACE_NAME,
+                                                                     TrustLevel.LOW,
+                                                                     new TrustLevel[0],
+                                                                     TrustLevel.HIGH,
+                                                                     new TrustLevel[0],
+                                                                     OPERATION,
+                                                                     Permission.ASK,
+                                                                     new Permission[0]);
         CreateOrUpdateResult<MasterAccessControlEntry> createResult = new CreateOrUpdateResult<>(mace, ChangeType.ADD);
-        when(masterAccessControlEntryManagerMock.createOrUpdate(mace, ControlEntryType.MASTER)).thenReturn(
-            createResult);
+        when(masterAccessControlEntryManagerMock.createOrUpdate(mace,
+                                                                ControlEntryType.MASTER)).thenReturn(createResult);
 
         Boolean result = globalDomainAccessControlListEditorSubject.updateMasterAccessControlEntry(mace);
 
         assertEquals(Boolean.TRUE, result);
 
         verify(masterAccessControlEntryManagerMock).createOrUpdate(eq(mace), eq(ControlEntryType.MASTER));
-        verify(globalDomainAccessControllerBeanMock).doFireMasterAccessControlEntryChanged(
-            eq(ChangeType.ADD), eq(mace));
+        verify(globalDomainAccessControllerBeanMock).doFireMasterAccessControlEntryChanged(eq(ChangeType.ADD),
+                                                                                           eq(mace));
     }
 
     @Test
     public void testUpdateMasterAccessControlEntry() {
-        MasterAccessControlEntry mace = new MasterAccessControlEntry(USER_ID, DOMAIN, INTERFACE_NAME, TrustLevel.LOW,
-            new TrustLevel[0], TrustLevel.HIGH, new TrustLevel[0], OPERATION, Permission.ASK, new Permission[0]);
+        MasterAccessControlEntry mace = new MasterAccessControlEntry(USER_ID,
+                                                                     DOMAIN,
+                                                                     INTERFACE_NAME,
+                                                                     TrustLevel.LOW,
+                                                                     new TrustLevel[0],
+                                                                     TrustLevel.HIGH,
+                                                                     new TrustLevel[0],
+                                                                     OPERATION,
+                                                                     Permission.ASK,
+                                                                     new Permission[0]);
         CreateOrUpdateResult<MasterAccessControlEntry> updateResult = new CreateOrUpdateResult<>(mace,
-            ChangeType.UPDATE);
-        when(masterAccessControlEntryManagerMock.createOrUpdate(mace, ControlEntryType.MASTER)).thenReturn(
-            updateResult);
+                                                                                                 ChangeType.UPDATE);
+        when(masterAccessControlEntryManagerMock.createOrUpdate(mace,
+                                                                ControlEntryType.MASTER)).thenReturn(updateResult);
 
         Boolean result = globalDomainAccessControlListEditorSubject.updateMasterAccessControlEntry(mace);
 
         assertEquals(Boolean.TRUE, result);
 
         verify(masterAccessControlEntryManagerMock).createOrUpdate(mace, ControlEntryType.MASTER);
-        verify(globalDomainAccessControllerBeanMock).doFireMasterAccessControlEntryChanged(
-            ChangeType.UPDATE, mace);
+        verify(globalDomainAccessControllerBeanMock).doFireMasterAccessControlEntryChanged(ChangeType.UPDATE, mace);
     }
 
     @Test
@@ -129,7 +143,10 @@ public class GlobalDomainAccessControlListEditorBeanTest {
                                                                                                INTERFACE_NAME,
                                                                                                OPERATION,
                                                                                                ControlEntryType.MASTER)).thenReturn(mace);
-        Boolean result = globalDomainAccessControlListEditorSubject.removeMasterAccessControlEntry(USER_ID, DOMAIN, INTERFACE_NAME, OPERATION);
+        Boolean result = globalDomainAccessControlListEditorSubject.removeMasterAccessControlEntry(USER_ID,
+                                                                                                   DOMAIN,
+                                                                                                   INTERFACE_NAME,
+                                                                                                   OPERATION);
 
         assertEquals(Boolean.TRUE, result);
 
@@ -139,43 +156,57 @@ public class GlobalDomainAccessControlListEditorBeanTest {
                                                                                                   eq(OPERATION),
                                                                                                   eq(ControlEntryType.MASTER));
         verify(globalDomainAccessControllerBeanMock).doFireMasterAccessControlEntryChanged(eq(ChangeType.REMOVE),
-                                                                                                          eq(mace));
+                                                                                           eq(mace));
     }
 
     @Test
     public void testCreateMediatorAccessControlEntry() {
-        MasterAccessControlEntry mace = new MasterAccessControlEntry(USER_ID, DOMAIN, INTERFACE_NAME, TrustLevel.LOW,
-            new TrustLevel[0], TrustLevel.HIGH, new TrustLevel[0], OPERATION,
-            Permission.ASK, new Permission[0]);
+        MasterAccessControlEntry mace = new MasterAccessControlEntry(USER_ID,
+                                                                     DOMAIN,
+                                                                     INTERFACE_NAME,
+                                                                     TrustLevel.LOW,
+                                                                     new TrustLevel[0],
+                                                                     TrustLevel.HIGH,
+                                                                     new TrustLevel[0],
+                                                                     OPERATION,
+                                                                     Permission.ASK,
+                                                                     new Permission[0]);
         CreateOrUpdateResult<MasterAccessControlEntry> createResult = new CreateOrUpdateResult<>(mace, ChangeType.ADD);
-        when(masterAccessControlEntryManagerMock.createOrUpdate(mace, ControlEntryType.MEDIATOR)).thenReturn(
-            createResult);
+        when(masterAccessControlEntryManagerMock.createOrUpdate(mace,
+                                                                ControlEntryType.MEDIATOR)).thenReturn(createResult);
 
         Boolean result = globalDomainAccessControlListEditorSubject.updateMediatorAccessControlEntry(mace);
 
         assertEquals(Boolean.TRUE, result);
 
         verify(masterAccessControlEntryManagerMock).createOrUpdate(eq(mace), eq(ControlEntryType.MEDIATOR));
-        verify(globalDomainAccessControllerBeanMock).doFireMediatorAccessControlEntryChanged(
-            eq(ChangeType.ADD), eq(mace));
+        verify(globalDomainAccessControllerBeanMock).doFireMediatorAccessControlEntryChanged(eq(ChangeType.ADD),
+                                                                                             eq(mace));
     }
 
     @Test
     public void testUpdateMediatorAccessControlEntry() {
-        MasterAccessControlEntry mace = new MasterAccessControlEntry(USER_ID, DOMAIN, INTERFACE_NAME, TrustLevel.LOW,
-            new TrustLevel[0], TrustLevel.HIGH, new TrustLevel[0], OPERATION, Permission.ASK, new Permission[0]);
+        MasterAccessControlEntry mace = new MasterAccessControlEntry(USER_ID,
+                                                                     DOMAIN,
+                                                                     INTERFACE_NAME,
+                                                                     TrustLevel.LOW,
+                                                                     new TrustLevel[0],
+                                                                     TrustLevel.HIGH,
+                                                                     new TrustLevel[0],
+                                                                     OPERATION,
+                                                                     Permission.ASK,
+                                                                     new Permission[0]);
         CreateOrUpdateResult<MasterAccessControlEntry> updateResult = new CreateOrUpdateResult<>(mace,
-            ChangeType.UPDATE);
-        when(masterAccessControlEntryManagerMock.createOrUpdate(mace, ControlEntryType.MEDIATOR)).thenReturn(
-            updateResult);
+                                                                                                 ChangeType.UPDATE);
+        when(masterAccessControlEntryManagerMock.createOrUpdate(mace,
+                                                                ControlEntryType.MEDIATOR)).thenReturn(updateResult);
 
         Boolean result = globalDomainAccessControlListEditorSubject.updateMediatorAccessControlEntry(mace);
 
         assertEquals(Boolean.TRUE, result);
 
         verify(masterAccessControlEntryManagerMock).createOrUpdate(mace, ControlEntryType.MEDIATOR);
-        verify(globalDomainAccessControllerBeanMock).doFireMediatorAccessControlEntryChanged(
-            ChangeType.UPDATE, mace);
+        verify(globalDomainAccessControllerBeanMock).doFireMediatorAccessControlEntryChanged(ChangeType.UPDATE, mace);
     }
 
     @Test
@@ -195,7 +226,10 @@ public class GlobalDomainAccessControlListEditorBeanTest {
                                                                                                INTERFACE_NAME,
                                                                                                OPERATION,
                                                                                                ControlEntryType.MEDIATOR)).thenReturn(mace);
-        Boolean result = globalDomainAccessControlListEditorSubject.removeMediatorAccessControlEntry(USER_ID, DOMAIN, INTERFACE_NAME, OPERATION);
+        Boolean result = globalDomainAccessControlListEditorSubject.removeMediatorAccessControlEntry(USER_ID,
+                                                                                                     DOMAIN,
+                                                                                                     INTERFACE_NAME,
+                                                                                                     OPERATION);
 
         assertEquals(Boolean.TRUE, result);
 
@@ -205,7 +239,7 @@ public class GlobalDomainAccessControlListEditorBeanTest {
                                                                                                   eq(OPERATION),
                                                                                                   eq(ControlEntryType.MEDIATOR));
         verify(globalDomainAccessControllerBeanMock).doFireMediatorAccessControlEntryChanged(eq(ChangeType.REMOVE),
-                                                                                                            eq(mace));
+                                                                                             eq(mace));
     }
 
     @Test
@@ -219,7 +253,13 @@ public class GlobalDomainAccessControlListEditorBeanTest {
 
     @Test
     public void testCreateOwnerAccessControlEntry() {
-        OwnerAccessControlEntry oace = new OwnerAccessControlEntry(USER_ID, DOMAIN, INTERFACE_NAME, TrustLevel.HIGH, TrustLevel.LOW, OPERATION, Permission.YES);
+        OwnerAccessControlEntry oace = new OwnerAccessControlEntry(USER_ID,
+                                                                   DOMAIN,
+                                                                   INTERFACE_NAME,
+                                                                   TrustLevel.HIGH,
+                                                                   TrustLevel.LOW,
+                                                                   OPERATION,
+                                                                   Permission.YES);
         CreateOrUpdateResult<OwnerAccessControlEntry> createResult = new CreateOrUpdateResult<>(oace, ChangeType.ADD);
         when(ownerAccessControlEntryManagerMock.createOrUpdate(oace)).thenReturn(createResult);
         Boolean result = globalDomainAccessControlListEditorSubject.updateOwnerAccessControlEntry(oace);
@@ -230,34 +270,45 @@ public class GlobalDomainAccessControlListEditorBeanTest {
 
     @Test
     public void testUpdateOwnerAccessControlEntry() {
-        OwnerAccessControlEntry oace = new OwnerAccessControlEntry(USER_ID, DOMAIN, INTERFACE_NAME, TrustLevel.HIGH, TrustLevel.LOW, OPERATION, Permission.YES);
-        CreateOrUpdateResult<OwnerAccessControlEntry> createResult = new CreateOrUpdateResult<>(oace, ChangeType.UPDATE);
+        OwnerAccessControlEntry oace = new OwnerAccessControlEntry(USER_ID,
+                                                                   DOMAIN,
+                                                                   INTERFACE_NAME,
+                                                                   TrustLevel.HIGH,
+                                                                   TrustLevel.LOW,
+                                                                   OPERATION,
+                                                                   Permission.YES);
+        CreateOrUpdateResult<OwnerAccessControlEntry> createResult = new CreateOrUpdateResult<>(oace,
+                                                                                                ChangeType.UPDATE);
         when(ownerAccessControlEntryManagerMock.createOrUpdate(oace)).thenReturn(createResult);
         Boolean result = globalDomainAccessControlListEditorSubject.updateOwnerAccessControlEntry(oace);
         assertEquals(Boolean.TRUE, result);
         verify(ownerAccessControlEntryManagerMock).createOrUpdate(eq(oace));
-        verify(globalDomainAccessControllerBeanMock).doFireOwnerAccessControlEntryChanged(eq(ChangeType.UPDATE), eq(oace));
+        verify(globalDomainAccessControllerBeanMock).doFireOwnerAccessControlEntryChanged(eq(ChangeType.UPDATE),
+                                                                                          eq(oace));
     }
 
     @Test
     public void testFindEditableMasterAndMediatorRegistrationControlEntryByUserId() {
         Map<ControlEntryType, Function<String, MasterRegistrationControlEntry[]>> getters = new HashMap<>();
-        getters.put(ControlEntryType.MASTER, (String userId) -> { return globalDomainAccessControlListEditorSubject.getEditableMasterRegistrationControlEntries(userId);});
-        getters.put(ControlEntryType.MEDIATOR, (String userId) -> { return globalDomainAccessControlListEditorSubject.getEditableMediatorRegistrationControlEntries(userId);});
-        for (ControlEntryType type : new ControlEntryType[] { ControlEntryType.MASTER, ControlEntryType.MEDIATOR}) {
+        getters.put(ControlEntryType.MASTER, (String userId) -> {
+            return globalDomainAccessControlListEditorSubject.getEditableMasterRegistrationControlEntries(userId);
+        });
+        getters.put(ControlEntryType.MEDIATOR, (String userId) -> {
+            return globalDomainAccessControlListEditorSubject.getEditableMediatorRegistrationControlEntries(userId);
+        });
+        for (ControlEntryType type : new ControlEntryType[]{ ControlEntryType.MASTER, ControlEntryType.MEDIATOR }) {
             when(masterRegistrationControlEntryManagerMock.findByUserIdAndThatAreEditable(USER_ID,
-                type)).thenReturn(new MasterRegistrationControlEntry[0]);
+                                                                                          type)).thenReturn(new MasterRegistrationControlEntry[0]);
             MasterRegistrationControlEntry[] result = getters.get(type).apply(USER_ID);
             assertNotNull(result);
             assertEquals(0, result.length);
-            verify(masterRegistrationControlEntryManagerMock).findByUserIdAndThatAreEditable(eq(USER_ID),
-                eq(type));
+            verify(masterRegistrationControlEntryManagerMock).findByUserIdAndThatAreEditable(eq(USER_ID), eq(type));
         }
     }
 
     @Test
     public void testCreateAndUpdateMasterAndMediatorRegistrationControlEntry() {
-        for (ChangeType changeType : new ChangeType[] { ChangeType.ADD, ChangeType.UPDATE}) {
+        for (ChangeType changeType : new ChangeType[]{ ChangeType.ADD, ChangeType.UPDATE }) {
             Map<ControlEntryType, Function<MasterRegistrationControlEntry, Boolean>> globalDomainAccessControllerSubjectCalls = new HashMap<>();
             globalDomainAccessControllerSubjectCalls.put(ControlEntryType.MASTER, (updatedEntry) -> {
                 return globalDomainAccessControlListEditorSubject.updateMasterRegistrationControlEntry(updatedEntry);
@@ -268,24 +319,29 @@ public class GlobalDomainAccessControlListEditorBeanTest {
 
             Map<ControlEntryType, Consumer<MasterRegistrationControlEntry>> multicastVerifiers = new HashMap<>();
             multicastVerifiers.put(ControlEntryType.MASTER, (mrce) -> {
-                verify(globalDomainAccessControllerBeanMock).doFireMasterRegistrationControlEntryChanged(
-                    eq(changeType), eq(mrce));
+                verify(globalDomainAccessControllerBeanMock).doFireMasterRegistrationControlEntryChanged(eq(changeType),
+                                                                                                         eq(mrce));
             });
             multicastVerifiers.put(ControlEntryType.MEDIATOR, (mrce) -> {
-                verify(
-                    globalDomainAccessControllerBeanMock).doFireMediatorRegistrationControlEntryChanged(
-                    eq(changeType), eq(mrce));
+                verify(globalDomainAccessControllerBeanMock).doFireMediatorRegistrationControlEntryChanged(eq(changeType),
+                                                                                                           eq(mrce));
             });
 
-            for (ControlEntryType type : new ControlEntryType[]{ControlEntryType.MASTER, ControlEntryType.MEDIATOR}) {
+            for (ControlEntryType type : new ControlEntryType[]{ ControlEntryType.MASTER, ControlEntryType.MEDIATOR }) {
                 reset(masterRegistrationControlEntryManagerMock);
                 //reset(globalDomainAccessControllerSubscriptionPublisherMock);
-                MasterRegistrationControlEntry mrce = new MasterRegistrationControlEntry(USER_ID, DOMAIN,
-                    INTERFACE_NAME,
-                    TrustLevel.LOW, new TrustLevel[0], TrustLevel.HIGH, new TrustLevel[0], Permission.ASK,
-                    new Permission[0]);
-                when(masterRegistrationControlEntryManagerMock.createOrUpdate(mrce, type)).thenReturn(
-                    new CreateOrUpdateResult<MasterRegistrationControlEntry>(mrce, changeType));
+                MasterRegistrationControlEntry mrce = new MasterRegistrationControlEntry(USER_ID,
+                                                                                         DOMAIN,
+                                                                                         INTERFACE_NAME,
+                                                                                         TrustLevel.LOW,
+                                                                                         new TrustLevel[0],
+                                                                                         TrustLevel.HIGH,
+                                                                                         new TrustLevel[0],
+                                                                                         Permission.ASK,
+                                                                                         new Permission[0]);
+                when(masterRegistrationControlEntryManagerMock.createOrUpdate(mrce,
+                                                                              type)).thenReturn(new CreateOrUpdateResult<MasterRegistrationControlEntry>(mrce,
+                                                                                                                                                         changeType));
                 assertTrue(globalDomainAccessControllerSubjectCalls.get(type).apply(mrce));
                 verify(masterRegistrationControlEntryManagerMock).createOrUpdate(mrce, type);
                 multicastVerifiers.get(type).accept(mrce);
@@ -296,22 +352,46 @@ public class GlobalDomainAccessControlListEditorBeanTest {
     @Test
     public void testRemoveMasterAndMediatorRegistrationControlEntry() {
         Map<ControlEntryType, Supplier<Boolean>> globalDomainAccessControllerSubjectCalls = new HashMap<>();
-        globalDomainAccessControllerSubjectCalls.put(ControlEntryType.MASTER, () -> { return globalDomainAccessControlListEditorSubject.removeMasterRegistrationControlEntry(USER_ID, DOMAIN, INTERFACE_NAME);});
-        globalDomainAccessControllerSubjectCalls.put(ControlEntryType.MEDIATOR, () -> { return globalDomainAccessControlListEditorSubject.removeMediatorRegistrationControlEntry(USER_ID, DOMAIN, INTERFACE_NAME);});
+        globalDomainAccessControllerSubjectCalls.put(ControlEntryType.MASTER, () -> {
+            return globalDomainAccessControlListEditorSubject.removeMasterRegistrationControlEntry(USER_ID,
+                                                                                                   DOMAIN,
+                                                                                                   INTERFACE_NAME);
+        });
+        globalDomainAccessControllerSubjectCalls.put(ControlEntryType.MEDIATOR, () -> {
+            return globalDomainAccessControlListEditorSubject.removeMediatorRegistrationControlEntry(USER_ID,
+                                                                                                     DOMAIN,
+                                                                                                     INTERFACE_NAME);
+        });
 
         Map<ControlEntryType, Consumer<MasterRegistrationControlEntry>> multicastVerifiers = new HashMap<>();
         multicastVerifiers.put(ControlEntryType.MASTER, (mrce) -> {
-            verify(globalDomainAccessControllerBeanMock).doFireMasterRegistrationControlEntryChanged(eq(ChangeType.REMOVE), eq(mrce));
+            verify(globalDomainAccessControllerBeanMock).doFireMasterRegistrationControlEntryChanged(eq(ChangeType.REMOVE),
+                                                                                                     eq(mrce));
         });
         multicastVerifiers.put(ControlEntryType.MEDIATOR, (mrce) -> {
-            verify(globalDomainAccessControllerBeanMock).doFireMediatorRegistrationControlEntryChanged(eq(ChangeType.REMOVE), eq(mrce));
+            verify(globalDomainAccessControllerBeanMock).doFireMediatorRegistrationControlEntryChanged(eq(ChangeType.REMOVE),
+                                                                                                       eq(mrce));
         });
 
-        for (ControlEntryType type : new ControlEntryType[] { ControlEntryType.MASTER, ControlEntryType.MEDIATOR}) {
-            MasterRegistrationControlEntry mrce = new MasterRegistrationControlEntry(USER_ID, DOMAIN, INTERFACE_NAME, TrustLevel.LOW, new TrustLevel[0], TrustLevel.HIGH, new TrustLevel[0], Permission.ASK, new Permission[0]);
-            when(masterRegistrationControlEntryManagerMock.removeByUserIdDomainInterfaceNameAndType(USER_ID, DOMAIN, INTERFACE_NAME, type)).thenReturn(mrce);
+        for (ControlEntryType type : new ControlEntryType[]{ ControlEntryType.MASTER, ControlEntryType.MEDIATOR }) {
+            MasterRegistrationControlEntry mrce = new MasterRegistrationControlEntry(USER_ID,
+                                                                                     DOMAIN,
+                                                                                     INTERFACE_NAME,
+                                                                                     TrustLevel.LOW,
+                                                                                     new TrustLevel[0],
+                                                                                     TrustLevel.HIGH,
+                                                                                     new TrustLevel[0],
+                                                                                     Permission.ASK,
+                                                                                     new Permission[0]);
+            when(masterRegistrationControlEntryManagerMock.removeByUserIdDomainInterfaceNameAndType(USER_ID,
+                                                                                                    DOMAIN,
+                                                                                                    INTERFACE_NAME,
+                                                                                                    type)).thenReturn(mrce);
             assertTrue(globalDomainAccessControllerSubjectCalls.get(type).get());
-            verify(masterRegistrationControlEntryManagerMock).removeByUserIdDomainInterfaceNameAndType(eq(USER_ID), eq(DOMAIN), eq(INTERFACE_NAME), eq(type));
+            verify(masterRegistrationControlEntryManagerMock).removeByUserIdDomainInterfaceNameAndType(eq(USER_ID),
+                                                                                                       eq(DOMAIN),
+                                                                                                       eq(INTERFACE_NAME),
+                                                                                                       eq(type));
             multicastVerifiers.get(type).accept(mrce);
         }
     }
@@ -340,7 +420,7 @@ public class GlobalDomainAccessControlListEditorBeanTest {
             assertTrue(globalDomainAccessControlListEditorSubject.updateOwnerRegistrationControlEntry(orce));
             verify(ownerRegistrationControlEntryManagerMock).createOrUpdate(eq(orce));
             verify(globalDomainAccessControllerBeanMock).doFireOwnerRegistrationControlEntryChanged(eq(changeType),
-                                                                                                                   eq(orce));
+                                                                                                    eq(orce));
         }
     }
 
@@ -355,11 +435,13 @@ public class GlobalDomainAccessControlListEditorBeanTest {
         when(ownerRegistrationControlEntryManagerMock.removeByUserIdDomainAndInterfaceName(USER_ID,
                                                                                            DOMAIN,
                                                                                            INTERFACE_NAME)).thenReturn(orce);
-        assertTrue(globalDomainAccessControlListEditorSubject.removeOwnerRegistrationControlEntry(USER_ID, DOMAIN, INTERFACE_NAME));
+        assertTrue(globalDomainAccessControlListEditorSubject.removeOwnerRegistrationControlEntry(USER_ID,
+                                                                                                  DOMAIN,
+                                                                                                  INTERFACE_NAME));
         verify(ownerRegistrationControlEntryManagerMock).removeByUserIdDomainAndInterfaceName(eq(USER_ID),
                                                                                               eq(DOMAIN),
                                                                                               eq(INTERFACE_NAME));
         verify(globalDomainAccessControllerBeanMock).doFireOwnerRegistrationControlEntryChanged(eq(ChangeType.REMOVE),
-                                                                                                               eq(orce));
+                                                                                                eq(orce));
     }
 }

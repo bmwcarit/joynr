@@ -146,15 +146,15 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
     }
 
     private void setupConsumerRuntime(String methodName) throws DiscoveryException, JoynrIllegalStateException,
-                                                        InterruptedException {
+                                                         InterruptedException {
         String channelIdConsumer = "JavaTest-" + UUID.randomUUID().getLeastSignificantBits()
                 + "-Consumer-SubscriptionEnd2EndTest-" + methodName;
 
         Properties factoryPropertiesB = PropertyLoader.loadProperties("testMessaging.properties");
         factoryPropertiesB.put(MessagingPropertyKeys.CHANNELID, channelIdConsumer);
         factoryPropertiesB.put(MessagingPropertyKeys.RECEIVERID, UUID.randomUUID().toString());
-        factoryPropertiesB.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, "ClientDomain-" + methodName + "-"
-                + UUID.randomUUID().toString());
+        factoryPropertiesB.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL,
+                               "ClientDomain-" + methodName + "-" + UUID.randomUUID().toString());
 
         consumerRuntime = getRuntime(factoryPropertiesB, getSubscriptionPublisherFactoryModule());
 
@@ -418,7 +418,8 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
 
     @Ignore
     @Test
-    public void testOnChangeWithKeepAliveSubscriptionSendsKeepAlive() throws InterruptedException, ApplicationException {
+    public void testOnChangeWithKeepAliveSubscriptionSendsKeepAlive() throws InterruptedException,
+                                                                      ApplicationException {
         Semaphore onReceiveSemaphore = new Semaphore(0);
         AttributeSubscriptionListener<Integer> integerListener = prepareOnReceiveListenerMock(onReceiveSemaphore);
 

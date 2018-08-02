@@ -66,6 +66,7 @@ public class MqttModule extends AbstractModule {
     public static final String PROPERTY_KEY_MQTT_TRUSTSTORE_TYPE = "joynr.messaging.mqtt.ssl.truststoretype";
     public static final String PROPERTY_KEY_MQTT_KEYSTORE_PWD = "joynr.messaging.mqtt.ssl.keystorepassword";
     public static final String PROPERTY_KEY_MQTT_TRUSTSTORE_PWD = "joynr.messaging.mqtt.ssl.truststorepassword";
+    public static final String PROPERTY_KEY_MQTT_SEPARATE_CONNECTIONS = "joynr.messaging.mqtt.separateconnections";
 
     /**
      * Use this key to activate shared subscription support by setting the property's value to <code>true</code>. Shared
@@ -109,14 +110,14 @@ public class MqttModule extends AbstractModule {
         globalAddresses = Multibinder.newSetBinder(binder(),
                                                    new TypeLiteral<GlobalAddressFactory<? extends Address>>() {
                                                    },
-                                                   Names.named(GlobalAddressProvider.GLOBAL_ADDRESS_PROVIDER));
+                                                   Names.named(GlobalAddressProvider.GLOBAL_ADDRESS_FACTORIES));
         globalAddresses.addBinding().to(MqttGlobalAddressFactory.class);
 
         Multibinder<GlobalAddressFactory<? extends Address>> replyToAddresses;
         replyToAddresses = Multibinder.newSetBinder(binder(),
                                                     new TypeLiteral<GlobalAddressFactory<? extends Address>>() {
                                                     },
-                                                    Names.named(ReplyToAddressProvider.REPLY_TO_ADDRESS_PROVIDER));
+                                                    Names.named(ReplyToAddressProvider.REPLY_TO_ADDRESS_FACTORIES));
         replyToAddresses.addBinding().to(MqttReplyToAddressFactory.class);
 
         Multibinder<MulticastAddressCalculator> multicastAddressCalculators = Multibinder.newSetBinder(binder(),

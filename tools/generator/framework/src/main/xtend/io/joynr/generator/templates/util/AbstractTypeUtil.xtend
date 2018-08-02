@@ -36,7 +36,7 @@ abstract class AbstractTypeUtil extends TypeUtil{
 	def String getTypeNameForList(FType datatype)
 
 	def String getTypeName(FTypeRef type) {
-		if (type.derived != null) {
+		if (type.derived !== null) {
 			type.derived.typeName
 		} else {
 			type.predefined.typeName
@@ -44,7 +44,7 @@ abstract class AbstractTypeUtil extends TypeUtil{
 	}
 
 	def String getTypeNameForList(FTypeRef type) {
-		if (type.derived != null) {
+		if (type.derived !== null) {
 			type.derived.typeNameForList
 		} else {
 			type.predefined.typeNameForList
@@ -57,7 +57,7 @@ abstract class AbstractTypeUtil extends TypeUtil{
 					typedElement.type.typeNameForList
 				else
 					typedElement.type.typeName
-		if (result == null) {
+		if (result === null) {
 			throw new IllegalStateException ("Datatype for element " + typedElement.name + " could not be found");
 		}
 		return result;
@@ -83,7 +83,7 @@ abstract class AbstractTypeUtil extends TypeUtil{
 	def getTypeNamesForOutputParameter (FMethod method) {
 		val result = new ArrayList<String>();
 		val types = method.outArgs;
-		if (types == null || types.empty) {
+		if (types === null || types.empty) {
 			result.add("void");
 		}
 		for (FArgument argument : types) {

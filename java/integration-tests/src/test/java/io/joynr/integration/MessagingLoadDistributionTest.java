@@ -101,12 +101,16 @@ public class MessagingLoadDistributionTest {
 
         assertEquals(3, messages1.size());
         assertThat(messages1,
-                   allOf(containsPayload("message-1_1"), containsPayload("message-1_2"), containsPayload("message-1_3")));
+                   allOf(containsPayload("message-1_1"),
+                         containsPayload("message-1_2"),
+                         containsPayload("message-1_3")));
 
         List<ImmutableMessage> messages2 = getMessagesFromBounceProxy(bpMock2, channelUrl2, channelId2);
         assertEquals(3, messages2.size());
         assertThat(messages2,
-                   allOf(containsPayload("message-2_1"), containsPayload("message-2_2"), containsPayload("message-2_3")));
+                   allOf(containsPayload("message-2_1"),
+                         containsPayload("message-2_2"),
+                         containsPayload("message-2_3")));
     }
 
     @Test
@@ -145,13 +149,8 @@ public class MessagingLoadDistributionTest {
 
         byte[] serializedMessage = bpMock.createImmutableMessage(relativeTtlMs, payload).getSerializedMessage();
         /* @formatter:off */
-        bpMock.onrequest()
-              .with()
-              .body(serializedMessage)
-              .expect()
-              .statusCode(201)
-              .when()
-              .post("message;jsessionid=" + sessionId);
+        bpMock.onrequest().with().body(serializedMessage).expect().statusCode(201).when().post("message;jsessionid="
+                + sessionId);
         /* @formatter:on */
         RestAssured.baseURI = previousBaseUri;
     }
@@ -159,7 +158,7 @@ public class MessagingLoadDistributionTest {
     private List<ImmutableMessage> getMessagesFromBounceProxy(BounceProxyCommunicationMock bpMock,
                                                               String channelUrl,
                                                               String channelId) throws IOException, EncodingException,
-                                                                               UnsuppportedVersionException {
+                                                                                UnsuppportedVersionException {
 
         String previousBaseUri = RestAssured.baseURI;
         RestAssured.baseURI = Utilities.getUrlWithoutSessionId(channelUrl, "jsessionid");

@@ -361,7 +361,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", () => 
                             to: proxyId,
                             expiryDate: Date.now() + onChangeSubscriptionRequest.qos.publicationTtlMs
                         },
-                        new SubscriptionPublication({
+                        SubscriptionPublication.create({
                             response: [value],
                             subscriptionId: onChangeSubscriptionRequest.subscriptionId
                         })

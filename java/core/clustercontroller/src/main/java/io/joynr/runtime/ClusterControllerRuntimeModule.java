@@ -36,10 +36,8 @@ import io.joynr.messaging.routing.RoutingProviderImpl;
 import io.joynr.messaging.sender.CcMessageSender;
 import io.joynr.messaging.sender.MessageSender;
 import joynr.system.RoutingProvider;
-import joynr.system.RoutingTypes.Address;
 
 public abstract class ClusterControllerRuntimeModule extends AbstractRuntimeModule {
-    public static final String GLOBAL_ADDRESS = "clustercontroller_global_address";
     public static final String PROPERTY_ACCESSCONTROL_ENABLE = "joynr.accesscontrol.enable";
 
     @Override
@@ -50,7 +48,6 @@ public abstract class ClusterControllerRuntimeModule extends AbstractRuntimeModu
         install(new AccessControlClientModule());
         bind(RoutingProvider.class).to(RoutingProviderImpl.class);
 
-        bind(Address.class).annotatedWith(Names.named(GLOBAL_ADDRESS)).toProvider(GlobalAddressProvider.class);
         bind(MessageSender.class).to(CcMessageSender.class);
         bind(MessageRouter.class).to(CcMessageRouter.class).in(Singleton.class);
 

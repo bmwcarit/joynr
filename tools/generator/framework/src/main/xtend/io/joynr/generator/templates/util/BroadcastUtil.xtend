@@ -36,7 +36,7 @@ public class BroadcastUtil {
 	private extension NamingUtil
 
 	def Iterable<FArgument> getOutputParameters(FBroadcast event) {
-		if (event == null || event.outArgs.size() == 0){
+		if (event === null || event.outArgs.size() == 0){
 			return new HashSet<FArgument>
 		}
 		else{
@@ -58,7 +58,7 @@ public class BroadcastUtil {
 
 	def getFilterParameters(FBroadcast broadcast) {
 		val paramList = new ArrayList<String>();
-		if (broadcast.comment != null) {
+		if (broadcast.comment !== null) {
 			for(annotation: broadcast.comment.elements) {
 				if(annotation.type == FAnnotationType::PARAM) {
 					val comment = annotation.comment

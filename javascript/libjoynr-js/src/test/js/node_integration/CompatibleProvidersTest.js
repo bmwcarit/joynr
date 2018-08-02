@@ -27,7 +27,7 @@ describe("Compatibility tests for providers created by new generator", () => {
         const abstractTest = new End2EndAbstractTest(
             "ProviderWithVersionedPackageNameTest",
             "TestMultipleVersionsInterfaceProcess",
-            "packageVersion2"
+            { versioning: "packageVersion2" }
         );
 
         abstractTest
@@ -41,7 +41,7 @@ describe("Compatibility tests for providers created by new generator", () => {
         const abstractTest = new End2EndAbstractTest(
             "ProviderWithVersionedNameTest",
             "TestMultipleVersionsInterfaceProcess",
-            "nameVersion2"
+            { versioning: "nameVersion2" }
         );
 
         abstractTest

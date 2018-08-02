@@ -27,3 +27,5 @@ build-*/
 !build-resources
 generated-cpp
 cpp/common/include/joynr/JoynrVersion.h
+.vscode/
+.sts4-cache/

@@ -77,7 +77,7 @@ public:
 	 */
 	«className»(
 			std::weak_ptr<joynr::JoynrRuntimeImpl> runtime,
-			joynr::ConnectorFactory* connectorFactory,
+			std::shared_ptr<joynr::JoynrMessagingConnectorFactory> connectorFactory,
 			const std::string& domain,
 			const joynr::MessagingQos& qosSettings
 	);
@@ -88,8 +88,7 @@ public:
 	 * @param connection The kind of connection
 	 */
 	void handleArbitrationFinished(
-			const joynr::types::DiscoveryEntryWithMetaInfo& providerDiscoveryEntry,
-			bool useInProcessConnector
+			const joynr::types::DiscoveryEntryWithMetaInfo& providerDiscoveryEntry
 	) override;
 
 	«produceSubscribeUnsubscribeMethodDeclarations(francaIntf, false)»

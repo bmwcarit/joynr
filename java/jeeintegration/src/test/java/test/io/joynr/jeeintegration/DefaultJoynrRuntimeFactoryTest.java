@@ -77,7 +77,8 @@ public class DefaultJoynrRuntimeFactoryTest {
     private ScheduledExecutorService scheduledExecutorService;
 
     private DefaultJoynrRuntimeFactory fixture;
-    @Rule public ExpectedException expectedException = ExpectedException.none();
+    @Rule
+    public ExpectedException expectedException = ExpectedException.none();
 
     @Stateless
     private class JoynrMessageProcessorTest implements JoynrMessageProcessor {
@@ -86,6 +87,7 @@ public class DefaultJoynrRuntimeFactoryTest {
             joynrMessage.getCustomHeaders().put("test", "test");
             return joynrMessage;
         }
+
         @Override
         public ImmutableMessage processIncoming(ImmutableMessage joynrMessage) {
             return joynrMessage;
@@ -130,13 +132,15 @@ public class DefaultJoynrRuntimeFactoryTest {
     }
 
     @SuppressWarnings("unchecked")
-    private void createFixture(Instance<Properties> joynrProperties, Instance<String> joynrLocalDomain) throws Exception {
+    private void createFixture(Instance<Properties> joynrProperties,
+                               Instance<String> joynrLocalDomain) throws Exception {
         Instance<RawMessagingPreprocessor> rawMessageProcessor = mock(Instance.class);
         when(rawMessageProcessor.get()).thenReturn(new NoOpRawMessagingPreprocessor());
         BeanManager beanManager = mock(BeanManager.class);
         Bean<JoynrMessageProcessor> bean = mock(Bean.class);
         when(bean.create(Mockito.any())).thenReturn(new JoynrMessageProcessorTest());
-        when(beanManager.getBeans(Mockito.<Type> eq(JoynrMessageProcessor.class), Mockito.<Annotation> any())).thenReturn(Sets.newHashSet(bean));
+        when(beanManager.getBeans(Mockito.<Type> eq(JoynrMessageProcessor.class),
+                                  Mockito.<Annotation> any())).thenReturn(Sets.newHashSet(bean));
 
         final String mqttClientId = "someTestMqttClientId";
         MqttClientIdProvider mqttClientIdProvider = mock(MqttClientIdProvider.class);
@@ -144,8 +148,10 @@ public class DefaultJoynrRuntimeFactoryTest {
         Instance<MqttClientIdProvider> mqttClientIdProviderInstance = mock(Instance.class);
         when(mqttClientIdProviderInstance.get()).thenReturn(mqttClientIdProvider);
 
-        fixture = new DefaultJoynrRuntimeFactory(joynrProperties, joynrLocalDomain,
-                                                 rawMessageProcessor, mqttClientIdProviderInstance,
+        fixture = new DefaultJoynrRuntimeFactory(joynrProperties,
+                                                 joynrLocalDomain,
+                                                 rawMessageProcessor,
+                                                 mqttClientIdProviderInstance,
                                                  beanManager,
                                                  mock(StatusReceiver.class),
                                                  mock(MqttStatusReceiver.class));
@@ -178,9 +184,9 @@ public class DefaultJoynrRuntimeFactoryTest {
         Injector injector = fixture.getInjector();
         MutableMessageFactory messageFactory = injector.getInstance(MutableMessageFactory.class);
         MutableMessage request = messageFactory.createRequest("from",
-                                                                 "to",
-                                                                 new Request("name", new Object[0], new Class[0]),
-                                                                 new MessagingQos());
+                                                              "to",
+                                                              new Request("name", new Object[0], new Class[0]),
+                                                              new MessagingQos());
         assertEquals("test", request.getCustomHeaders().get("test"));
     }
 
@@ -193,9 +199,8 @@ public class DefaultJoynrRuntimeFactoryTest {
                                        .getInstance(Key.get(Properties.class,
                                                             Names.named(MessagingPropertyKeys.JOYNR_PROPERTIES)));
         assertNotNull(properties);
-        String key = (ParticipantIdKeyUtil.JOYNR_PARTICIPANT_PREFIX + LOCAL_DOMAIN + "." + MyService.INTERFACE_NAME).toLowerCase()
-                                                                                                                    .replace("/",
-                                                                                                                             ".");
+        String key = (ParticipantIdKeyUtil.JOYNR_PARTICIPANT_PREFIX + LOCAL_DOMAIN + "."
+                + MyService.INTERFACE_NAME).toLowerCase().replace("/", ".");
         assertTrue(properties.containsKey(key));
         String value = properties.getProperty(key);
         assertNotNull(value);
@@ -205,9 +210,8 @@ public class DefaultJoynrRuntimeFactoryTest {
     @Test
     public void testNoOverrideForManuallyAddedParticipantIds() throws Exception {
         Properties joynrProperties = new Properties();
-        String key = (ParticipantIdKeyUtil.JOYNR_PARTICIPANT_PREFIX + LOCAL_DOMAIN + "." + MyService.INTERFACE_NAME).toLowerCase()
-                                                                                                                    .replace("/",
-                                                                                                                             ".");
+        String key = (ParticipantIdKeyUtil.JOYNR_PARTICIPANT_PREFIX + LOCAL_DOMAIN + "."
+                + MyService.INTERFACE_NAME).toLowerCase().replace("/", ".");
         joynrProperties.setProperty(key, "myvalue");
         createFixture(joynrProperties);
 

@@ -187,7 +187,8 @@ public class LongPollingChannelLifecycle {
             }
 
             long diff = Math.abs(serverTime - localTime);
-            logger.debug("############ Server Time: " + serverTime + " vs. Local Time: " + localTime + " diff: " + diff);
+            logger.debug("############ Server Time: " + serverTime + " vs. Local Time: " + localTime + " diff: "
+                    + diff);
             if (Math.abs(diff) > 500) {
                 logger.error("CheckServerTime: TIME DIFFERENCE TOO LARGE. PLEASE SYNC CLOCKS: diff=" + diff);
             } else {
@@ -207,8 +208,8 @@ public class LongPollingChannelLifecycle {
 
     }
 
-    private int longPollLoop(final MessageArrivedListener messageArrivedListener, int retries)
-                                                                                              throws JoynrShutdownException {
+    private int longPollLoop(final MessageArrivedListener messageArrivedListener,
+                             int retries) throws JoynrShutdownException {
         while (retries > 0) {
             logger.info("LONG POLL LOOP: Start: retries: {}", retries);
             retries--;
@@ -306,8 +307,7 @@ public class LongPollingChannelLifecycle {
         }
     }
 
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings(
-                                                      value = "IS2_INCONSISTENT_SYNC",
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "IS2_INCONSISTENT_SYNC",
                                                       justification = "Shutdown doesn't have to synchronize the access to channelMonitorExecutorService")
     public void shutdown() {
         started = false;
@@ -392,8 +392,7 @@ public class LongPollingChannelLifecycle {
         return created;
     }
 
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings(
-                                                      value = "SWL_SLEEP_WITH_LOCK_HELD",
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "SWL_SLEEP_WITH_LOCK_HELD",
                                                       justification = "Other synchronized methods should block while deleting a channel")
     synchronized boolean deleteChannel(int retries) {
 

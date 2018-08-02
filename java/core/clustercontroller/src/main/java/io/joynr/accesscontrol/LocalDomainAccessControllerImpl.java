@@ -94,17 +94,17 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
         }
 
         public String getMasterSubscriptionId() throws JoynrWaitExpiredException, JoynrRuntimeException,
-                                               InterruptedException, ApplicationException {
+                                                InterruptedException, ApplicationException {
             return masterSubscriptionFuture.get(1337);
         }
 
         public String getMediatorSubscriptionId() throws JoynrWaitExpiredException, JoynrRuntimeException,
-                                                 InterruptedException, ApplicationException {
+                                                  InterruptedException, ApplicationException {
             return mediatorSubscriptionFuture.get(1337);
         }
 
         public String getOwnerSubscriptionId() throws JoynrWaitExpiredException, JoynrRuntimeException,
-                                              InterruptedException, ApplicationException {
+                                               InterruptedException, ApplicationException {
             return ownerSubscriptionFuture.get(1337);
         }
     }
@@ -235,7 +235,10 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
 
         synchronized (localDomainAccessStore) {
             masterAce = localDomainAccessStore.getMasterAccessControlEntry(userId, domain, interfaceName, operation);
-            mediatorAce = localDomainAccessStore.getMediatorAccessControlEntry(userId, domain, interfaceName, operation);
+            mediatorAce = localDomainAccessStore.getMediatorAccessControlEntry(userId,
+                                                                               domain,
+                                                                               interfaceName,
+                                                                               operation);
             ownerAce = localDomainAccessStore.getOwnerAccessControlEntry(userId, domain, interfaceName, operation);
         }
 

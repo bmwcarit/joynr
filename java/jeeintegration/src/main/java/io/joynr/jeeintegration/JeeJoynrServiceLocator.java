@@ -105,8 +105,9 @@ public class JeeJoynrServiceLocator implements ServiceLocator {
                                           new InvocationHandler() {
 
                                               @Override
-                                              public Object invoke(Object proxy, Method method, Object[] args)
-                                                                                                              throws Throwable {
+                                              public Object invoke(Object proxy,
+                                                                   Method method,
+                                                                   Object[] args) throws Throwable {
                                                   if (LOG.isTraceEnabled()) {
                                                       LOG.trace(format("Forwarding call to %s from service interface %s to joynr proxy %s",
                                                                        method,

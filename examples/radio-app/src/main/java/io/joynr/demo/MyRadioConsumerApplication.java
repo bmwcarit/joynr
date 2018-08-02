@@ -211,14 +211,14 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
         appConfig.setProperty(APP_CONFIG_PROVIDER_DOMAIN, providerDomain);
         final DiscoveryScope discoveryScope = tmpDiscoveryScope;
 
-        JoynrApplication myRadioConsumerApp = new JoynrInjectorFactory(joynrConfig, runtimeModule).createApplication(new JoynrApplicationModule(MyRadioConsumerApplication.class,
-                                                                                                                                                appConfig) {
-            @Override
-            protected void configure() {
-                super.configure();
-                bind(DiscoveryScope.class).toInstance(discoveryScope);
-            }
-        });
+        JoynrApplication myRadioConsumerApp = new JoynrInjectorFactory(joynrConfig,
+                                                                       runtimeModule).createApplication(new JoynrApplicationModule(MyRadioConsumerApplication.class, appConfig) {
+                                                                           @Override
+                                                                           protected void configure() {
+                                                                               super.configure();
+                                                                               bind(DiscoveryScope.class).toInstance(discoveryScope);
+                                                                           }
+                                                                       });
         myRadioConsumerApp.run();
 
         myRadioConsumerApp.shutdown();
@@ -429,23 +429,16 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
             // subscribe to an attribute
             subscriptionFutureCurrentStation = radioProxy.subscribeToCurrentStation(new AttributeSubscriptionAdapter<RadioStation>() {
 
-                                                                                        @Override
-                                                                                        public void onReceive(RadioStation value) {
-                                                                                            LOG.info(PRINT_BORDER
-                                                                                                    + "ATTRIBUTE SUBSCRIPTION: current station: "
-                                                                                                    + value
-                                                                                                    + PRINT_BORDER);
-                                                                                        }
+                @Override
+                public void onReceive(RadioStation value) {
+                    LOG.info(PRINT_BORDER + "ATTRIBUTE SUBSCRIPTION: current station: " + value + PRINT_BORDER);
+                }
 
-                                                                                        @Override
-                                                                                        public void onError(JoynrRuntimeException error) {
-                                                                                            LOG.info(PRINT_BORDER
-                                                                                                    + "ATTRIBUTE SUBSCRIPTION: "
-                                                                                                    + error
-                                                                                                    + PRINT_BORDER);
-                                                                                        }
-                                                                                    },
-                                                                                    subscriptionQos);
+                @Override
+                public void onError(JoynrRuntimeException error) {
+                    LOG.info(PRINT_BORDER + "ATTRIBUTE SUBSCRIPTION: " + error + PRINT_BORDER);
+                }
+            }, subscriptionQos);
 
             // broadcast subscription
             // The provider will send a notification whenever the value changes.
@@ -483,19 +476,12 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
             newStationDiscoveredBroadcastFilterParams.setPositionOfInterest(positionOfInterestJson);
             newStationDiscoveredBroadcastFilterParams.setRadiusOfInterestArea("200000"); // 200 km
             newStationDiscoveredFuture = radioProxy.subscribeToNewStationDiscoveredBroadcast(new RadioBroadcastInterface.NewStationDiscoveredBroadcastAdapter() {
-                                                                                                 @Override
-                                                                                                 public void onReceive(RadioStation discoveredStation,
-                                                                                                                       GeoPosition geoPosition) {
-                                                                                                     LOG.info(PRINT_BORDER
-                                                                                                             + "BROADCAST SUBSCRIPTION: new station discovered: "
-                                                                                                             + discoveredStation
-                                                                                                             + " at "
-                                                                                                             + geoPosition
-                                                                                                             + PRINT_BORDER);
-                                                                                                 }
-                                                                                             },
-                                                                                             newStationDiscoveredBroadcastSubscriptionQos,
-                                                                                             newStationDiscoveredBroadcastFilterParams);
+                @Override
+                public void onReceive(RadioStation discoveredStation, GeoPosition geoPosition) {
+                    LOG.info(PRINT_BORDER + "BROADCAST SUBSCRIPTION: new station discovered: " + discoveredStation
+                            + " at " + geoPosition + PRINT_BORDER);
+                }
+            }, newStationDiscoveredBroadcastSubscriptionQos, newStationDiscoveredBroadcastFilterParams);
 
             boolean success;
 
@@ -545,41 +531,34 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
             // add favorite radio station async
             RadioStation radioStation = new RadioStation("99.4 AFN", false, Country.GERMANY);
             Future<Boolean> future = radioProxy.addFavoriteStation(new CallbackWithModeledError<Boolean, AddFavoriteStationErrorEnum>() {
-                                                                       @Override
-                                                                       public void onSuccess(Boolean result) {
-                                                                           LOG.info(PRINT_BORDER
-                                                                                   + "ASYNC METHOD: added favorite station: callback onSuccess"
-                                                                                   + PRINT_BORDER);
-                                                                       }
+                @Override
+                public void onSuccess(Boolean result) {
+                    LOG.info(PRINT_BORDER + "ASYNC METHOD: added favorite station: callback onSuccess" + PRINT_BORDER);
+                }
 
-                                                                       @Override
-                                                                       public void onFailure(JoynrRuntimeException error) {
-                                                                           LOG.info(PRINT_BORDER
-                                                                                   + "ASYNC METHOD: added favorite station: callback onFailure: "
-                                                                                   + error.getMessage() + PRINT_BORDER);
-                                                                       }
+                @Override
+                public void onFailure(JoynrRuntimeException error) {
+                    LOG.info(PRINT_BORDER + "ASYNC METHOD: added favorite station: callback onFailure: "
+                            + error.getMessage() + PRINT_BORDER);
+                }
 
-                                                                       @Override
-                                                                       public void onFailure(AddFavoriteStationErrorEnum errorEnum) {
-                                                                           switch (errorEnum) {
-                                                                           case DUPLICATE_RADIOSTATION:
-                                                                               LOG.info(PRINT_BORDER
-                                                                                       + "ASYNC METHOD: added favorite station failed: Duplicate Station!"
-                                                                                       + PRINT_BORDER);
-                                                                               break;
+                @Override
+                public void onFailure(AddFavoriteStationErrorEnum errorEnum) {
+                    switch (errorEnum) {
+                    case DUPLICATE_RADIOSTATION:
+                        LOG.info(PRINT_BORDER + "ASYNC METHOD: added favorite station failed: Duplicate Station!"
+                                + PRINT_BORDER);
+                        break;
 
-                                                                           default:
-                                                                               LOG.error(PRINT_BORDER
-                                                                                       + "ASYNC METHOD: added favorite station failed: unknown errorEnum:"
-                                                                                       + errorEnum + PRINT_BORDER);
-                                                                               break;
-                                                                           }
-                                                                           LOG.info(PRINT_BORDER
-                                                                                   + "ASYNC METHOD: added favorite station: callback onFailure: "
-                                                                                   + errorEnum + PRINT_BORDER);
-                                                                       }
-                                                                   },
-                                                                   radioStation);
+                    default:
+                        LOG.error(PRINT_BORDER + "ASYNC METHOD: added favorite station failed: unknown errorEnum:"
+                                + errorEnum + PRINT_BORDER);
+                        break;
+                    }
+                    LOG.info(PRINT_BORDER + "ASYNC METHOD: added favorite station: callback onFailure: " + errorEnum
+                            + PRINT_BORDER);
+                }
+            }, radioStation);
 
             try {
                 long timeoutInMilliseconds = 8000;

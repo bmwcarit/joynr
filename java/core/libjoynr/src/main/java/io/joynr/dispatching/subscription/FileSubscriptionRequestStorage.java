@@ -59,9 +59,8 @@ public class FileSubscriptionRequestStorage implements SubscriptionRequestStorag
     public synchronized void persistSubscriptionRequest(String proxyId,
                                                         String providerId,
                                                         SubscriptionRequest subscriptionRequest) {
-        persistedSubscriptionRequests.put(providerId, new PersistedSubscriptionRequest(proxyId,
-                                                                                       providerId,
-                                                                                       subscriptionRequest));
+        persistedSubscriptionRequests.put(providerId,
+                                          new PersistedSubscriptionRequest(proxyId, providerId, subscriptionRequest));
         persistSubscriptionRequestsToFile();
     }
 

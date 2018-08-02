@@ -104,7 +104,8 @@ public class MessageReceiverMock implements MessageReceiver {
     }
 
     @Override
-    public Future<Void> start(MessageArrivedListener messageArrivedListener, ReceiverStatusListener... statusListeners) {
+    public Future<Void> start(MessageArrivedListener messageArrivedListener,
+                              ReceiverStatusListener... statusListeners) {
         this.messageArrivedListener = messageArrivedListener;
         started = true;
 

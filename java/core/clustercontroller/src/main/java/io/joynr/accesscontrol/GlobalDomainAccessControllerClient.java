@@ -96,25 +96,24 @@ public class GlobalDomainAccessControllerClient {
         final Future<List<MasterAccessControlEntry>> future = new Future<List<MasterAccessControlEntry>>();
 
         getGlobalDomainAccessControllerProxy(TTL_30_DAYS_IN_MS).getMasterAccessControlEntries(new Callback<MasterAccessControlEntry[]>() {
-                                                                                                  @Override
-                                                                                                  public void onFailure(JoynrRuntimeException error) {
-                                                                                                      callback.onFailure(error);
-                                                                                                      future.onFailure(error);
-                                                                                                  }
+            @Override
+            public void onFailure(JoynrRuntimeException error) {
+                callback.onFailure(error);
+                future.onFailure(error);
+            }
 
-                                                                                                  @Override
-                                                                                                  public void onSuccess(MasterAccessControlEntry[] result) {
-                                                                                                      List<MasterAccessControlEntry> masterAccessContolEntry;
-                                                                                                      if (result == null) {
-                                                                                                          masterAccessContolEntry = new ArrayList<MasterAccessControlEntry>();
-                                                                                                      } else {
-                                                                                                          masterAccessContolEntry = Arrays.asList(result);
-                                                                                                      }
-                                                                                                      callback.onSuccess(masterAccessContolEntry);
-                                                                                                      future.onSuccess(masterAccessContolEntry);
-                                                                                                  }
-                                                                                              },
-                                                                                              userId);
+            @Override
+            public void onSuccess(MasterAccessControlEntry[] result) {
+                List<MasterAccessControlEntry> masterAccessContolEntry;
+                if (result == null) {
+                    masterAccessContolEntry = new ArrayList<MasterAccessControlEntry>();
+                } else {
+                    masterAccessContolEntry = Arrays.asList(result);
+                }
+                callback.onSuccess(masterAccessContolEntry);
+                future.onSuccess(masterAccessContolEntry);
+            }
+        }, userId);
         return future;
     }
 
@@ -128,7 +127,10 @@ public class GlobalDomainAccessControllerClient {
                                                                                                              updatedMasterAce);
     }
 
-    public boolean removeMasterAccessControlEntry(String userId, String domain, String interfaceName, String operation) {
+    public boolean removeMasterAccessControlEntry(String userId,
+                                                  String domain,
+                                                  String interfaceName,
+                                                  String operation) {
         return getGlobalDomainAccessControlListEditorProxy(TTL_30_DAYS_IN_MS).removeMasterAccessControlEntry(userId,
                                                                                                              domain,
                                                                                                              interfaceName,
@@ -161,7 +163,10 @@ public class GlobalDomainAccessControllerClient {
                                                                                                                updatedMediatorAce);
     }
 
-    public boolean removeMediatorAccessControlEntry(String userId, String domain, String interfaceName, String operation) {
+    public boolean removeMediatorAccessControlEntry(String userId,
+                                                    String domain,
+                                                    String interfaceName,
+                                                    String operation) {
         return getGlobalDomainAccessControlListEditorProxy(TTL_30_DAYS_IN_MS).removeMediatorAccessControlEntry(userId,
                                                                                                                domain,
                                                                                                                interfaceName,
@@ -222,25 +227,24 @@ public class GlobalDomainAccessControllerClient {
         final Future<List<MasterRegistrationControlEntry>> future = new Future<List<MasterRegistrationControlEntry>>();
 
         getGlobalDomainAccessControllerProxy(TTL_30_DAYS_IN_MS).getMasterRegistrationControlEntries(new Callback<MasterRegistrationControlEntry[]>() {
-                                                                                                        @Override
-                                                                                                        public void onFailure(JoynrRuntimeException error) {
-                                                                                                            callback.onFailure(error);
-                                                                                                            future.onFailure(error);
-                                                                                                        }
+            @Override
+            public void onFailure(JoynrRuntimeException error) {
+                callback.onFailure(error);
+                future.onFailure(error);
+            }
 
-                                                                                                        @Override
-                                                                                                        public void onSuccess(MasterRegistrationControlEntry[] result) {
-                                                                                                            List<MasterRegistrationControlEntry> masterRegistrationControlEntryList;
-                                                                                                            if (result == null) {
-                                                                                                                masterRegistrationControlEntryList = new ArrayList<MasterRegistrationControlEntry>();
-                                                                                                            } else {
-                                                                                                                masterRegistrationControlEntryList = Arrays.asList(result);
-                                                                                                            }
-                                                                                                            callback.onSuccess(masterRegistrationControlEntryList);
-                                                                                                            future.onSuccess(masterRegistrationControlEntryList);
-                                                                                                        }
-                                                                                                    },
-                                                                                                    userId);
+            @Override
+            public void onSuccess(MasterRegistrationControlEntry[] result) {
+                List<MasterRegistrationControlEntry> masterRegistrationControlEntryList;
+                if (result == null) {
+                    masterRegistrationControlEntryList = new ArrayList<MasterRegistrationControlEntry>();
+                } else {
+                    masterRegistrationControlEntryList = Arrays.asList(result);
+                }
+                callback.onSuccess(masterRegistrationControlEntryList);
+                future.onSuccess(masterRegistrationControlEntryList);
+            }
+        }, userId);
         return future;
 
     }
@@ -254,25 +258,24 @@ public class GlobalDomainAccessControllerClient {
         final Future<List<MasterRegistrationControlEntry>> future = new Future<List<MasterRegistrationControlEntry>>();
 
         getGlobalDomainAccessControlListEditorProxy(TTL_30_DAYS_IN_MS).getEditableMasterRegistrationControlEntries(new Callback<MasterRegistrationControlEntry[]>() {
-                                                                                                                       @Override
-                                                                                                                       public void onFailure(JoynrRuntimeException error) {
-                                                                                                                           callback.onFailure(error);
-                                                                                                                           future.onFailure(error);
-                                                                                                                       }
+            @Override
+            public void onFailure(JoynrRuntimeException error) {
+                callback.onFailure(error);
+                future.onFailure(error);
+            }
 
-                                                                                                                       @Override
-                                                                                                                       public void onSuccess(MasterRegistrationControlEntry[] result) {
-                                                                                                                           List<MasterRegistrationControlEntry> masterRegistrationControlEntryList;
-                                                                                                                           if (result == null) {
-                                                                                                                               masterRegistrationControlEntryList = new ArrayList<MasterRegistrationControlEntry>();
-                                                                                                                           } else {
-                                                                                                                               masterRegistrationControlEntryList = Arrays.asList(result);
-                                                                                                                           }
-                                                                                                                           callback.onSuccess(masterRegistrationControlEntryList);
-                                                                                                                           future.onSuccess(masterRegistrationControlEntryList);
-                                                                                                                       }
-                                                                                                                   },
-                                                                                                                   userId);
+            @Override
+            public void onSuccess(MasterRegistrationControlEntry[] result) {
+                List<MasterRegistrationControlEntry> masterRegistrationControlEntryList;
+                if (result == null) {
+                    masterRegistrationControlEntryList = new ArrayList<MasterRegistrationControlEntry>();
+                } else {
+                    masterRegistrationControlEntryList = Arrays.asList(result);
+                }
+                callback.onSuccess(masterRegistrationControlEntryList);
+                future.onSuccess(masterRegistrationControlEntryList);
+            }
+        }, userId);
         return future;
 
     }
@@ -286,25 +289,24 @@ public class GlobalDomainAccessControllerClient {
         final Future<List<MasterRegistrationControlEntry>> future = new Future<List<MasterRegistrationControlEntry>>();
 
         getGlobalDomainAccessControllerProxy(TTL_30_DAYS_IN_MS).getMediatorRegistrationControlEntries(new Callback<MasterRegistrationControlEntry[]>() {
-                                                                                                          @Override
-                                                                                                          public void onFailure(JoynrRuntimeException error) {
-                                                                                                              callback.onFailure(error);
-                                                                                                              future.onFailure(error);
-                                                                                                          }
+            @Override
+            public void onFailure(JoynrRuntimeException error) {
+                callback.onFailure(error);
+                future.onFailure(error);
+            }
 
-                                                                                                          @Override
-                                                                                                          public void onSuccess(MasterRegistrationControlEntry[] result) {
-                                                                                                              List<MasterRegistrationControlEntry> masterRegistrationControlEntryList;
-                                                                                                              if (result == null) {
-                                                                                                                  masterRegistrationControlEntryList = new ArrayList<MasterRegistrationControlEntry>();
-                                                                                                              } else {
-                                                                                                                  masterRegistrationControlEntryList = Arrays.asList(result);
-                                                                                                              }
-                                                                                                              callback.onSuccess(masterRegistrationControlEntryList);
-                                                                                                              future.onSuccess(masterRegistrationControlEntryList);
-                                                                                                          }
-                                                                                                      },
-                                                                                                      userId);
+            @Override
+            public void onSuccess(MasterRegistrationControlEntry[] result) {
+                List<MasterRegistrationControlEntry> masterRegistrationControlEntryList;
+                if (result == null) {
+                    masterRegistrationControlEntryList = new ArrayList<MasterRegistrationControlEntry>();
+                } else {
+                    masterRegistrationControlEntryList = Arrays.asList(result);
+                }
+                callback.onSuccess(masterRegistrationControlEntryList);
+                future.onSuccess(masterRegistrationControlEntryList);
+            }
+        }, userId);
         return future;
     }
 
@@ -321,25 +323,24 @@ public class GlobalDomainAccessControllerClient {
         final Future<List<OwnerRegistrationControlEntry>> future = new Future<List<OwnerRegistrationControlEntry>>();
 
         getGlobalDomainAccessControllerProxy(TTL_30_DAYS_IN_MS).getOwnerRegistrationControlEntries(new Callback<OwnerRegistrationControlEntry[]>() {
-                                                                                                       @Override
-                                                                                                       public void onFailure(JoynrRuntimeException error) {
-                                                                                                           callback.onFailure(error);
-                                                                                                           future.onFailure(error);
-                                                                                                       }
+            @Override
+            public void onFailure(JoynrRuntimeException error) {
+                callback.onFailure(error);
+                future.onFailure(error);
+            }
 
-                                                                                                       @Override
-                                                                                                       public void onSuccess(OwnerRegistrationControlEntry[] result) {
-                                                                                                           List<OwnerRegistrationControlEntry> ownerRegistrationControlEntryList;
-                                                                                                           if (result == null) {
-                                                                                                               ownerRegistrationControlEntryList = new ArrayList<OwnerRegistrationControlEntry>();
-                                                                                                           } else {
-                                                                                                               ownerRegistrationControlEntryList = Arrays.asList(result);
-                                                                                                           }
-                                                                                                           callback.onSuccess(ownerRegistrationControlEntryList);
-                                                                                                           future.onSuccess(ownerRegistrationControlEntryList);
-                                                                                                       }
-                                                                                                   },
-                                                                                                   userId);
+            @Override
+            public void onSuccess(OwnerRegistrationControlEntry[] result) {
+                List<OwnerRegistrationControlEntry> ownerRegistrationControlEntryList;
+                if (result == null) {
+                    ownerRegistrationControlEntryList = new ArrayList<OwnerRegistrationControlEntry>();
+                } else {
+                    ownerRegistrationControlEntryList = Arrays.asList(result);
+                }
+                callback.onSuccess(ownerRegistrationControlEntryList);
+                future.onSuccess(ownerRegistrationControlEntryList);
+            }
+        }, userId);
         return future;
 
     }
@@ -353,25 +354,24 @@ public class GlobalDomainAccessControllerClient {
         final Future<List<OwnerRegistrationControlEntry>> future = new Future<List<OwnerRegistrationControlEntry>>();
 
         getGlobalDomainAccessControlListEditorProxy(TTL_30_DAYS_IN_MS).getEditableOwnerRegistrationControlEntries(new Callback<OwnerRegistrationControlEntry[]>() {
-                                                                                                                      @Override
-                                                                                                                      public void onFailure(JoynrRuntimeException error) {
-                                                                                                                          callback.onFailure(error);
-                                                                                                                          future.onFailure(error);
-                                                                                                                      }
+            @Override
+            public void onFailure(JoynrRuntimeException error) {
+                callback.onFailure(error);
+                future.onFailure(error);
+            }
 
-                                                                                                                      @Override
-                                                                                                                      public void onSuccess(OwnerRegistrationControlEntry[] result) {
-                                                                                                                          List<OwnerRegistrationControlEntry> ownerRegistrationControlEntryList;
-                                                                                                                          if (result == null) {
-                                                                                                                              ownerRegistrationControlEntryList = new ArrayList<OwnerRegistrationControlEntry>();
-                                                                                                                          } else {
-                                                                                                                              ownerRegistrationControlEntryList = Arrays.asList(result);
-                                                                                                                          }
-                                                                                                                          callback.onSuccess(ownerRegistrationControlEntryList);
-                                                                                                                          future.onSuccess(ownerRegistrationControlEntryList);
-                                                                                                                      }
-                                                                                                                  },
-                                                                                                                  userId);
+            @Override
+            public void onSuccess(OwnerRegistrationControlEntry[] result) {
+                List<OwnerRegistrationControlEntry> ownerRegistrationControlEntryList;
+                if (result == null) {
+                    ownerRegistrationControlEntryList = new ArrayList<OwnerRegistrationControlEntry>();
+                } else {
+                    ownerRegistrationControlEntryList = Arrays.asList(result);
+                }
+                callback.onSuccess(ownerRegistrationControlEntryList);
+                future.onSuccess(ownerRegistrationControlEntryList);
+            }
+        }, userId);
         return future;
     }
 

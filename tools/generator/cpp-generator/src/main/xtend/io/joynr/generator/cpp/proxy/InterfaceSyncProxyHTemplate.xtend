@@ -78,7 +78,7 @@ public:
 	 */
 	«syncClassName»(
 			std::weak_ptr<joynr::JoynrRuntimeImpl> runtime,
-			joynr::ConnectorFactory* connectorFactory,
+			std::shared_ptr<joynr::JoynrMessagingConnectorFactory> connectorFactory,
 			const std::string& domain,
 			const joynr::MessagingQos& qosSettings
 	);

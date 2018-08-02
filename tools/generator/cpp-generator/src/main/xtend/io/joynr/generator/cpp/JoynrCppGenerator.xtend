@@ -24,7 +24,6 @@ import io.joynr.generator.IJoynrGenerator
 import io.joynr.generator.cpp.communicationmodel.CommunicationModelGenerator
 import io.joynr.generator.cpp.defaultProvider.DefaultInterfaceProviderGenerator
 import io.joynr.generator.cpp.filter.FilterGenerator
-import io.joynr.generator.cpp.inprocess.InProcessGenerator
 import io.joynr.generator.cpp.joynrmessaging.JoynrMessagingGenerator
 import io.joynr.generator.cpp.provider.ProviderGenerator
 import io.joynr.generator.cpp.proxy.ProxyGenerator
@@ -49,7 +48,6 @@ class JoynrCppGenerator implements IJoynrGenerator{
 	@Inject ProxyGenerator proxyGenerator
 	@Inject ProviderGenerator providerGenerator
 	@Inject FilterGenerator filterGenerator;
-	@Inject InProcessGenerator inProcessGenerator
 	@Inject JoynrMessagingGenerator joynrMessagingGenerator
 	@Inject DefaultInterfaceProviderGenerator defaultProviderGenerator
 
@@ -123,14 +121,6 @@ class JoynrCppGenerator implements IJoynrGenerator{
 			getHeaderContainerPath(sourceFileSystem, headerFileSystem, "joynr-messaging")
 		);
 
-		inProcessGenerator.doGenerate(
-			fModel,
-			sourceFileSystem,
-			headerFileSystem,
-			getSourceContainerPath(sourceFileSystem, "in-process"),
-			getHeaderContainerPath(sourceFileSystem, headerFileSystem, "in-process")
-		);
-
 		communicationModelGenerator.doGenerate(
 			fModel,
 			sourceFileSystem,
@@ -163,10 +153,10 @@ class JoynrCppGenerator implements IJoynrGenerator{
 
 	def getOutputHeaderPath() {
 		var String result = null;
-		if (parameters != null) {
-			if (parameters.get(OUTPUT_HEADER_PATH) != null) {
+		if (parameters !== null) {
+			if (parameters.get(OUTPUT_HEADER_PATH) !== null) {
 				result = parameters.get(OUTPUT_HEADER_PATH);
-			} else if (parameters.get(InvocationArguments::OUTPUT_PATH) != null) {
+			} else if (parameters.get(InvocationArguments::OUTPUT_PATH) !== null) {
 				result = parameters.get(InvocationArguments::OUTPUT_PATH) + File::separator + "include"
 			}
 		}
@@ -175,7 +165,7 @@ class JoynrCppGenerator implements IJoynrGenerator{
 
 	def getHeaderFileSystemAccess(IFileSystemAccess fsa) {
 		var headerFSA = fsa;
-		if (outputHeaderPath != null) {
+		if (outputHeaderPath !== null) {
 			FileSystemAccessUtil::createFileSystemAccess(outputHeaderFileSystem, outputHeaderPath);
 			headerFSA = outputHeaderFileSystem;
 		}

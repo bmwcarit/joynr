@@ -185,7 +185,7 @@ abstract class CppTypeUtil extends AbstractTypeUtil {
 
 	def getDefaultValue(FTypedElement element) {
 		//default values are not supported (currently) by the Franca IDL 
-		/*if (member.getDEFAULTVALUE()!=null && !member.getDEFAULTVALUE().isEmpty()){
+		/*if (member.getDEFAULTVALUE()!==null && !member.getDEFAULTVALUE().isEmpty()){
 			if (isEnum(member)){
 				val ENUMDATATYPETYPE enumDatatype = getDatatype(id) as ENUMDATATYPETYPE
 				for (ENUMELEMENTTYPE element : getEnumElements(enumDatatype)){
@@ -287,7 +287,7 @@ abstract class CppTypeUtil extends AbstractTypeUtil {
 		}
 
 		includeSet.addAll(serviceInterface.allPrimitiveTypes.includesFor)
-		if (serviceInterface.hasArray && includeForArray != null){
+		if (serviceInterface.hasArray && includeForArray !== null){
 			includeSet.add(includeForArray)
 		}
 		if (!serviceInterface.broadcasts.filter[!selective].empty) {

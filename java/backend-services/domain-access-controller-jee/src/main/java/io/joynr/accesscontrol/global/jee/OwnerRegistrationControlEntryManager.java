@@ -55,8 +55,9 @@ public class OwnerRegistrationControlEntryManager {
 
     private OwnerRegistrationControlEntry[] executeAndCovert(Query query) {
         List<OwnerRegistrationControlEntryEntity> resultList = query.getResultList();
-        Set<OwnerRegistrationControlEntry> resultSet = resultList.stream().map(this::mapEntityToJoynrType).collect(
-            toSet());
+        Set<OwnerRegistrationControlEntry> resultSet = resultList.stream()
+                                                                 .map(this::mapEntityToJoynrType)
+                                                                 .collect(toSet());
         return resultSet.toArray(new OwnerRegistrationControlEntry[resultSet.size()]);
     }
 
@@ -78,8 +79,8 @@ public class OwnerRegistrationControlEntryManager {
 
     public OwnerRegistrationControlEntry[] findByUserIdAndThatIsEditable(String userId) {
         Query query = entityManager.createQuery("select orce from OwnerRegistrationControlEntryEntity orce, "
-                                                        + "DomainRoleEntryEntity dre, in(dre.domains) dds where orce.userId = :userId "
-                                                        + "and dre.userId = :userId and dre.role = :role and orce.domain = dds",
+                + "DomainRoleEntryEntity dre, in(dre.domains) dds where orce.userId = :userId "
+                + "and dre.userId = :userId and dre.role = :role and orce.domain = dds",
                                                 OwnerRegistrationControlEntryEntity.class);
         query.setParameter("userId", userId);
         query.setParameter("role", Role.OWNER);
@@ -90,7 +91,7 @@ public class OwnerRegistrationControlEntryManager {
                                                                                    String domain,
                                                                                    String interfaceName) {
         Query query = entityManager.createQuery("select orce from OwnerRegistrationControlEntryEntity orce "
-                                                        + "where orce.userId = :userId and orce.domain = :domain and orce.interfaceName = :interfaceName",
+                + "where orce.userId = :userId and orce.domain = :domain and orce.interfaceName = :interfaceName",
                                                 OwnerRegistrationControlEntryEntity.class);
         query.setParameter("userId", userId);
         query.setParameter("domain", domain);

@@ -26,7 +26,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>cpp</artifactId>
-		<version>1.4.0-SNAPSHOT</version>
+		<version>1.5.0-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -63,7 +63,7 @@
 							<model>${basedir}/../../basemodel/src/test/franca</model>
 						</configuration>
 					</execution>
-                                        <execution>
+					<execution>
 						<id>generate-common-test-classes-with-package-version</id>
 						<phase>generate-test-sources</phase>
 						<goals>
@@ -71,11 +71,11 @@
 						</goals>
 						<configuration>
 							<model>${basedir}/../../basemodel/src/test/franca-with-version</model>
-                                                        <outputPath>${basedir}/gen-with-version</outputPath>
+							<outputPath>${basedir}/gen-with-version</outputPath>
 							<addVersionTo>package</addVersionTo>
 						</configuration>
 					</execution>
-                                        <execution>
+					<execution>
 						<id>generate-common-test-classes-with-none-version</id>
 						<phase>generate-test-sources</phase>
 						<goals>
@@ -83,11 +83,11 @@
 						</goals>
 						<configuration>
 							<model>${basedir}/../../basemodel/src/test/franca-with-version</model>
-                                                        <outputPath>${basedir}/gen-with-version</outputPath>
+							<outputPath>${basedir}/gen-with-version</outputPath>
 							<addVersionTo>none</addVersionTo>
 						</configuration>
 					</execution>
-                                        <execution>
+					<execution>
 						<id>generate-common-test-classes-with-name-version</id>
 						<phase>generate-test-sources</phase>
 						<goals>
@@ -95,7 +95,7 @@
 						</goals>
 						<configuration>
 							<model>${basedir}/../../basemodel/src/test/franca-with-version</model>
-                                                        <outputPath>${basedir}/gen-with-version</outputPath>
+							<outputPath>${basedir}/gen-with-version</outputPath>
 							<addVersionTo>name</addVersionTo>
 						</configuration>
 					</execution>
@@ -231,13 +231,19 @@
 					<roots>
 						<root>.</root>
 					</roots>
-                        		<excludes>
-        		                    <exclude>resources/ListOfCapabilitiesToInject.json</exclude>
-                                            <exclude>resources/MasterAccessTable.json</exclude>
-                                            <exclude>resources/MasterRegistrationTable.json</exclude>
-                                            <exclude>resources/OwnerAccessTable.json</exclude>
-                                            <exclude>resources/OwnerRegistrationTable.json</exclude>
-	                       		</excludes>
+					<excludes>
+						<exclude>resources/LDAS_checkPermissionToAdd.json</exclude>
+						<exclude>resources/ListOfCapabilitiesToInject.json</exclude>
+						<exclude>resources/MasterAccessTable.json</exclude>
+						<exclude>resources/MasterRegistrationTable.json</exclude>
+						<exclude>resources/OwnerAccessTable.json</exclude>
+						<exclude>resources/OwnerRegistrationTable.json</exclude>
+						<exclude>resources/application1_ACL_RCL_Permissions.json</exclude>
+						<exclude>resources/application2_ACL_RCL_Permissions.json</exclude>
+						<exclude>resources/application3_ACL_RCL_Permissions.json</exclude>
+						<exclude>resources/application4_ACL_RCL_Permissions.json</exclude>
+						<exclude>resources/application5_ACL_RCL_Permissions.json</exclude>
+					</excludes>
 				</configuration>
 			</plugin>
 		</plugins>

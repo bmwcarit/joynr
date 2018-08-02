@@ -81,7 +81,7 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
 
     @SuppressWarnings("unchecked")
     @Override
-    public Future<?> executeAsyncMethod(Method method, Object[] params, Future<?> future) {
+    public Future<?> executeAsyncMethod(Object proxy, Method method, Object[] params, Future<?> future) {
 
         if (method == null) {
             throw new IllegalArgumentException("Method cannot be null");
@@ -111,7 +111,8 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
         String requestReplyId = request.getRequestReplyId();
 
         @SuppressWarnings("rawtypes")
-        RpcAsyncRequestReplyCaller<?> callbackWrappingReplyCaller = new RpcAsyncRequestReplyCaller(requestReplyId,
+        RpcAsyncRequestReplyCaller<?> callbackWrappingReplyCaller = new RpcAsyncRequestReplyCaller(proxy,
+                                                                                                   requestReplyId,
                                                                                                    callback,
                                                                                                    future,
                                                                                                    method,
@@ -223,7 +224,7 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
         }
 
         logger.debug("SUBSCRIPTION call proxy: subscriptionId: {}, attribute: {}, qos: {},"
-                             + " proxy participantId: {}, provider discovery entries: {}",
+                + " proxy participantId: {}, provider discovery entries: {}",
                      attributeSubscription.getSubscriptionId(),
                      attributeSubscription.getSubscriptionName(),
                      attributeSubscription.getQos(),
@@ -240,7 +241,7 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
         }
 
         logger.debug("SUBSCRIPTION call proxy: subscriptionId: {}, broadcast: {}, qos: {},"
-                             + " proxy participantId: {}, provider discovery entries: {}",
+                + " proxy participantId: {}, provider discovery entries: {}",
                      broadcastSubscription.getSubscriptionId(),
                      broadcastSubscription.getBroadcastName(),
                      broadcastSubscription.getQos(),

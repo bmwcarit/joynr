@@ -150,8 +150,8 @@ public abstract class IltConsumerTest {
     }
 
     protected static void setupConsumerRuntime(boolean msgQosCompressed) throws DiscoveryException,
-                                                                        JoynrIllegalStateException,
-                                                                        InterruptedException {
+                                                                         JoynrIllegalStateException,
+                                                                         InterruptedException {
         LOG.info("setupConsumerRuntime: Entering");
         final String configFileName = "ilt-consumer-test.settings";
 

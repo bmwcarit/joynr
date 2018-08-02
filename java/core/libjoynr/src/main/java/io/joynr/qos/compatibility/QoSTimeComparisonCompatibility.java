@@ -18,27 +18,25 @@
  */
 package io.joynr.qos.compatibility;
 
+import java.util.function.Predicate;
+
 import io.joynr.qos.QualityOfService;
 import io.joynr.qos.TimeComparisonCompatibility;
-
-import com.google.common.base.Predicate;
 
 public abstract class QoSTimeComparisonCompatibility implements Predicate<TimeComparisonCompatibility> {
 
     protected final QualityOfService qos;
 
-    public QoSTimeComparisonCompatibility(QualityOfService qos) {
+    protected QoSTimeComparisonCompatibility(QualityOfService qos) {
         this.qos = qos;
     }
 
-    public boolean apply(TimeComparisonCompatibility input) {
-        Long ttl = getQoSTimeInMillis();
+    @Override
+    public boolean test(TimeComparisonCompatibility input) {
         long currentTime = System.currentTimeMillis();
         long delta = currentTime - input.getTimeInMilliSec();
-        return condition(ttl, delta);
+        return condition(delta);
     }
 
-    protected abstract boolean condition(long delta, long qosTimeConstraint);
-
-    protected abstract Long getQoSTimeInMillis();
+    protected abstract boolean condition(long delta);
 }

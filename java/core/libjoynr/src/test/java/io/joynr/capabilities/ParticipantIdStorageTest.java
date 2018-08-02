@@ -59,8 +59,7 @@ public class ParticipantIdStorageTest {
                                                 .toInstance(domainAccessControllerEntry);
                 bind(ParticipantIdStorage.class).to(PropertiesFileParticipantIdStorage.class);
             }
-        },
-                                                 new JoynrPropertiesModule(new Properties()));
+        }, new JoynrPropertiesModule(new Properties()));
         storage = injector.getInstance(ParticipantIdStorage.class);
     }
 

@@ -26,7 +26,7 @@ describe("libjoynr-js.joynr.dispatching.types.MulticastPublication", () => {
 
     it("is instantiable", () => {
         const response = "response";
-        const publication = new MulticastPublication({
+        const publication = MulticastPublication.create({
             multicastId: "testMulticastId",
             response
         });
@@ -39,7 +39,7 @@ describe("libjoynr-js.joynr.dispatching.types.MulticastPublication", () => {
         const multicastId = "testMulticastId";
         const response = "response";
 
-        const publication = new MulticastPublication({
+        const publication = MulticastPublication.create({
             multicastId,
             response
         });

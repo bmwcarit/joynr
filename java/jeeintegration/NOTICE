@@ -16,6 +16,8 @@ specific language governing permissions and limitations
 under the License.
 
 This project has dependencies to:
+  "Java Concurrency in Practice" book annotations under Creative Commons Attribution License
+  Animal Sniffer Annotations under MIT license
   AOP alliance under Public Domain
   aopalliance version 1.0 repackaged as a module under CDDL + GPLv2 with classpath exception
   Apache Groovy under The Apache Software License, Version 2.0
@@ -45,12 +47,13 @@ This project has dependencies to:
   Arquillian TestRunner JUnit Container under Apache License, Version 2.0
   Arquillian TestRunner JUnit Core under Apache License, Version 2.0
   Bean Validation API under The Apache Software License, Version 2.0
+  Checker Qual under GNU General Public License, version 2 (GPL2), with the classpath exception or The MIT License
   clustercontroller-inprocess-runtime under The Apache Software License, Version 2.0
   Commons Codec under The Apache Software License, Version 2.0
   Commons Lang under The Apache Software License, Version 2.0
-  dom4j under BSD License
   ehcache under The Apache Software License, Version 2.0
   Embedded GlassFish All-In-One under CDDL + GPLv2 with classpath exception
+  error-prone annotations under Apache 2.0
   FindBugs-Annotations under GNU Lesser Public License
   FindBugs-jsr305 under The Apache Software License, Version 2.0
   flatbuffers-java under Apache License V2.0
@@ -77,6 +80,7 @@ This project has dependencies to:
   io.joynr.mqtt:mqtt-client under Eclipse Public License - Version 1.0
   io.joynr.smrf.java:smrf under The Apache Software License, Version 2.0
   io.joynr.smrf.java:smrf-api under The Apache Software License, Version 2.0
+  J2ObjC Annotations under The Apache Software License, Version 2.0
   Jackson module: JAXB-annotations under The Apache Software License, Version 2.0
   Jackson-annotations under The Apache Software License, Version 2.0
   Jackson-core under The Apache Software License, Version 2.0
@@ -102,7 +106,7 @@ This project has dependencies to:
   Logging under The Apache Software License, Version 2.0
   Mockito under The MIT License
   OSGi resource locator bundle - used by various API providers that rely on META-INF/services mechanism to locate providers. under CDDL + GPLv2 with classpath exception
-  Reflections under WTFPL
+  Reflections under WTFPL or The New BSD License
   ServiceLocator Default Implementation under CDDL + GPLv2 with classpath exception
   ShrinkWrap API under Apache License, Version 2.0
   ShrinkWrap Descriptors API Base under Apache License, Version 2.0
@@ -110,5 +114,4 @@ This project has dependencies to:
   ShrinkWrap Implementation Base under Apache License, Version 2.0
   ShrinkWrap SPI under Apache License, Version 2.0
   SLF4J API Module under MIT License
-  XML Commons External Components XML APIs under The Apache Software License, Version 2.0 or The SAX License or The W3C License
 

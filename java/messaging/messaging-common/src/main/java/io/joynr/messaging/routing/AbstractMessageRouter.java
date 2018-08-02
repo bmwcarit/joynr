@@ -18,11 +18,15 @@
  */
 package io.joynr.messaging.routing;
 
+import java.lang.ref.WeakReference;
+import java.lang.ref.ReferenceQueue;
+import java.lang.ref.Reference;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.TimeZone;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -82,6 +86,9 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
 
     private List<MessageProcessedListener> messageProcessedListeners;
     private List<MessageWorker> messageWorkers;
+    // Map weak reference to proxy object -> proxyParticipantId
+    private final ConcurrentHashMap<WeakReference<Object>, String> proxyMap;
+    private final ReferenceQueue<Object> garbageCollectedProxiesQueue;
 
     @Inject
     @Singleton
@@ -111,6 +118,8 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
         this.multicastReceiverRegistry = multicastReceiverRegistry;
         this.messageQueue = messageQueue;
         this.statusReceiver = statusReceiver;
+        this.proxyMap = new ConcurrentHashMap<WeakReference<Object>, String>();
+        this.garbageCollectedProxiesQueue = new ReferenceQueue<Object>();
         shutdownNotifier.registerForShutdown(this);
         messageProcessedListeners = new ArrayList<MessageProcessedListener>();
         startMessageWorkerThreads(maxParallelSends);
@@ -131,6 +140,21 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
             @Override
             public void run() {
                 routingTable.purge();
+
+                // remove Routing table entries for proxies which have been garbage collected
+                Reference r;
+                synchronized (garbageCollectedProxiesQueue) {
+                    r = garbageCollectedProxiesQueue.poll();
+                }
+                while (r != null) {
+                    String proxyParticipantId = proxyMap.get(r);
+                    logger.debug("removing garbage collected proxy participantId {}", proxyParticipantId);
+                    removeNextHop(proxyParticipantId);
+                    proxyMap.remove(r);
+                    synchronized (garbageCollectedProxiesQueue) {
+                        r = garbageCollectedProxiesQueue.poll();
+                    }
+                }
             }
         }, routingTableCleanupIntervalMs, routingTableCleanupIntervalMs, TimeUnit.MILLISECONDS);
     }
@@ -328,13 +352,13 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
                     logger.warn("{}", error.getMessage());
                     return;
                 } else if (error instanceof JoynrMessageNotSentException) {
-                    logger.error(" ERROR SENDING:  aborting send of messageId: {}. Error: {}", new Object[]{ messageId,
-                            error.getMessage() });
+                    logger.error(" ERROR SENDING:  aborting send of messageId: {}. Error: {}",
+                                 new Object[]{ messageId, error.getMessage() });
                     callMessageProcessedListeners(messageId);
                     return;
                 }
-                logger.warn("PROBLEM SENDING, will retry. messageId: {}. Error: {} Message: {}", new Object[]{
-                        messageId, error.getClass().getName(), error.getMessage() });
+                logger.warn("PROBLEM SENDING, will retry. messageId: {}. Error: {} Message: {}",
+                            new Object[]{ messageId, error.getClass().getName(), error.getMessage() });
 
                 long delayMs;
                 if (error instanceof JoynrDelayMessageException) {
@@ -389,6 +413,13 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
         }
     }
 
+    @Override
+    public void registerProxy(Object proxy, String proxyParticipantId) {
+        synchronized (garbageCollectedProxiesQueue) {
+            proxyMap.putIfAbsent(new WeakReference<Object>(proxy, garbageCollectedProxiesQueue), proxyParticipantId);
+        }
+    }
+
     private long createDelayWithExponentialBackoff(long sendMsgRetryIntervalMs, int retries) {
         logger.trace("TRIES: " + retries);
         long millis = sendMsgRetryIntervalMs + (long) ((2 ^ (retries)) * sendMsgRetryIntervalMs * Math.random());
@@ -417,12 +448,19 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
         private void checkFoundAddresses(Set<Address> foundAddresses, ImmutableMessage message) {
             if (foundAddresses.isEmpty()) {
                 if (Message.VALUE_MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
-                    throw new JoynrMessageNotSentException("Failed to send Request: No address for given message: "
+                    // discard msg
+                    throw new JoynrMessageNotSentException("Failed to route multicast publication: No address found for given message: "
+                            + message);
+                } else if (Message.VALUE_MESSAGE_TYPE_PUBLICATION.equals(message.getType())) {
+                    // discard msg
+                    throw new JoynrMessageNotSentException("Failed to route publication: No address found for given message: "
                             + message);
                 } else if (message.isReply()) {
-                    throw new JoynrMessageNotSentException("Failed to send Reply: No address found for given message: "
+                    // discard msg
+                    throw new JoynrMessageNotSentException("Failed to route reply: No address found for given message: "
                             + message);
                 } else {
+                    // any kind of request; retry routing
                     throw new JoynrIllegalStateException("Unable to find address for recipient with participant ID "
                             + message.getRecipient());
                 }
@@ -456,10 +494,6 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
                         Set<Address> addresses = getAddresses(message);
                         checkFoundAddresses(addresses, message);
 
-                        if (addresses.isEmpty()) {
-                            throw new JoynrMessageNotSentException("Failed to send Message: No route for given participantId: "
-                                    + message.getRecipient());
-                        }
                         SuccessAction messageProcessedAction = createMessageProcessedAction(message.getId(),
                                                                                             addresses.size());
                         // If multiple stub calls for a multicast to multiple destination addresses fail, the failure

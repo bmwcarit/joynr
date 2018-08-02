@@ -90,9 +90,10 @@ public class RoutingTableImpl implements RoutingTable {
         dumpRoutingTableEntry();
         RoutingEntry routingEntry = hashMap.get(participantId);
         if (routingEntry == null) {
+            logger.trace("leaving get(participantId={}) = null", participantId);
             return null;
         }
-        logger.trace("leaving get(participantId={}) = {}", routingEntry.getAddress());
+        logger.trace("leaving get(participantId={}) = {}", participantId, routingEntry.getAddress());
         return routingEntry.getAddress();
     }
 
@@ -156,7 +157,7 @@ public class RoutingTableImpl implements RoutingTable {
                 hashMap.put(participantId, routingEntry);
             } else {
                 logger.warn("unable to update(participantId={}, address={}, isGloballyVisible={}, expiryDateMs={}, sticky={}) into routing table,"
-                                    + " since the participant ID is already associated with routing entry address={}, isGloballyVisible={}",
+                        + " since the participant ID is already associated with routing entry address={}, isGloballyVisible={}",
                             participantId,
                             address,
                             isGloballyVisible,

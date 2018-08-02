@@ -89,7 +89,18 @@ protected:
             break;
         }
         DltContext& dltContext = getInstance().dltContext;
-        DLT_LOG_STRING(dltContext, dltLogLevel, msg.formatted.c_str());
+        constexpr std::size_t maxLength = 2048;
+        const std::size_t length = msg.formatted.size();
+        if (length < maxLength) {
+            DLT_LOG_STRING(dltContext, dltLogLevel, msg.formatted.c_str());
+        } else {
+            const std::string fullLog = msg.formatted.str();
+            DLT_LOG_STRING(dltContext, dltLogLevel, "----START OF SPLITTED LOG");
+            for (std::size_t i = 0; i < length; i += maxLength) {
+                DLT_LOG_STRING(dltContext, dltLogLevel, fullLog.substr(i, maxLength).c_str());
+            }
+            DLT_LOG_STRING(dltContext, dltLogLevel, "----END OF SPLITTED LOG");
+        }
     }
 };
 } // namespace joynr

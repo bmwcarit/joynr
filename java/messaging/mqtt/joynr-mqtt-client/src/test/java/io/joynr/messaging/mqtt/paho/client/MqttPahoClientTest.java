@@ -19,7 +19,9 @@
 package io.joynr.messaging.mqtt.paho.client;
 
 import static com.google.inject.util.Modules.override;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
@@ -181,6 +183,15 @@ public class MqttPahoClientTest {
     }
 
     private JoynrMqttClient createMqttClientInternal(final MqttStatusReceiver mqttStatusReceiver) {
+        // always create a new Factory because the factory caches its client.
+        createMqttClientFactory(mqttStatusReceiver);
+
+        JoynrMqttClient client = mqttClientFactory.createSender();
+        client.setMessageListener(mockReceiver);
+        return client;
+    }
+
+    private void createMqttClientFactory(final MqttStatusReceiver mqttStatusReceiver) {
         injector = Guice.createInjector(override(new MqttPahoModule()).with(new AbstractModule() {
             @Override
             protected void configure() {
@@ -199,12 +210,60 @@ public class MqttPahoClientTest {
                 });
             }
         });
-        // create a new Factory because the factory caches its client.
-        mqttClientFactory = injector.getInstance(MqttClientFactory.class);
 
-        JoynrMqttClient client = mqttClientFactory.create();
-        client.setMessageListener(mockReceiver);
-        return client;
+        mqttClientFactory = injector.getInstance(MqttClientFactory.class);
+    }
+
+    @Test
+    public void mqttClientTestWithTwoConnections() throws Exception {
+        final boolean separateConnections = true;
+        final MqttStatusReceiver mqttStatusReceiver = mock(MqttStatusReceiver.class);
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_SEPARATE_CONNECTIONS, String.valueOf(separateConnections));
+        properties.put(MqttModule.PROPERTY_MQTT_CLEAN_SESSION, "true");
+        createMqttClientFactory(mqttStatusReceiver);
+        ownTopic = injector.getInstance((Key.get(MqttAddress.class,
+                                                 Names.named(MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS))));
+        JoynrMqttClient clientSender = mqttClientFactory.createSender();
+        JoynrMqttClient clientReceiver = mqttClientFactory.createReceiver();
+        assertNotEquals(clientSender, clientReceiver);
+
+        clientReceiver.setMessageListener(mockReceiver);
+
+        clientSender.start();
+        clientReceiver.start();
+        verify(mqttStatusReceiver,
+               times(2)).notifyConnectionStatusChanged(MqttStatusReceiver.ConnectionStatus.CONNECTED);
+
+        clientReceiver.subscribe(ownTopic.getTopic());
+
+        clientSender.publishMessage(ownTopic.getTopic(), serializedMessage);
+        verify(mockReceiver, timeout(500).times(1)).transmit(eq(serializedMessage), any(FailureAction.class));
+
+        clientReceiver.shutdown();
+        clientSender.shutdown();
+        verify(mqttStatusReceiver,
+               timeout(500).times(2)).notifyConnectionStatusChanged(MqttStatusReceiver.ConnectionStatus.NOT_CONNECTED);
+    }
+
+    @Test
+    public void mqttClientTestWithOneConnection() throws Exception {
+        final MqttStatusReceiver mqttStatusReceiver = mock(MqttStatusReceiver.class);
+        createMqttClientFactory(mqttStatusReceiver);
+
+        JoynrMqttClient clientSender = mqttClientFactory.createSender();
+        JoynrMqttClient clientReceiver = mqttClientFactory.createReceiver();
+
+        assertEquals(clientSender, clientReceiver);
+
+        clientSender.start();
+        clientReceiver.start();
+        verify(mqttStatusReceiver,
+               times(1)).notifyConnectionStatusChanged(MqttStatusReceiver.ConnectionStatus.CONNECTED);
+
+        clientReceiver.shutdown();
+        clientSender.shutdown();
+        verify(mqttStatusReceiver,
+               timeout(500).times(1)).notifyConnectionStatusChanged(MqttStatusReceiver.ConnectionStatus.NOT_CONNECTED);
     }
 
     private void joynrMqttClientPublishAndVerifyReceivedMessage(byte[] serializedMessage) {
@@ -446,6 +505,8 @@ public class MqttPahoClientTest {
         int maxMsgsInflight = 100;
         int maxMsgSizeBytes = 0;
         boolean cleanSession = true;
+        final boolean isReceiver = true;
+        final boolean separateConnections = false;
 
         MqttClient mqttClient = new MqttClient(brokerUri, clientId, new MemoryPersistence(), scheduledExecutorService);
         joynrMqttClient = new MqttPahoClient(mqttClient,
@@ -456,6 +517,8 @@ public class MqttPahoClientTest {
                                              maxMsgsInflight,
                                              maxMsgSizeBytes,
                                              cleanSession,
+                                             isReceiver,
+                                             separateConnections,
                                              "",
                                              "",
                                              "",
@@ -494,7 +557,8 @@ public class MqttPahoClientTest {
 
         startBroker();
         Thread.sleep(2000);
-        verify(mqttStatusReceiver, times(2)).notifyConnectionStatusChanged(MqttStatusReceiver.ConnectionStatus.CONNECTED);
+        verify(mqttStatusReceiver,
+               times(2)).notifyConnectionStatusChanged(MqttStatusReceiver.ConnectionStatus.CONNECTED);
     }
 
     @Test

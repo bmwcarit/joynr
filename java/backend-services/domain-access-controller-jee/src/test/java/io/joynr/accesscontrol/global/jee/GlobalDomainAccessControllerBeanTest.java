@@ -67,7 +67,8 @@ public class GlobalDomainAccessControllerBeanTest {
 
     @Test
     public void testFindMasterAccessControlEntriesByUserId() {
-        when(masterAccessControlEntryManagerMock.findByUserId(USER_ID, ControlEntryType.MASTER)).thenReturn(new MasterAccessControlEntry[0]);
+        when(masterAccessControlEntryManagerMock.findByUserId(USER_ID,
+                                                              ControlEntryType.MASTER)).thenReturn(new MasterAccessControlEntry[0]);
         MasterAccessControlEntry[] result = globalDomainAccessControllerSubject.getMasterAccessControlEntries(USER_ID);
         assertNotNull(result);
         assertEquals(0, result.length);
@@ -79,7 +80,8 @@ public class GlobalDomainAccessControllerBeanTest {
         when(masterAccessControlEntryManagerMock.findByDomainAndInterfaceName(DOMAIN,
                                                                               INTERFACE_NAME,
                                                                               ControlEntryType.MASTER)).thenReturn(new MasterAccessControlEntry[0]);
-        MasterAccessControlEntry[] result = globalDomainAccessControllerSubject.getMasterAccessControlEntries(DOMAIN, INTERFACE_NAME);
+        MasterAccessControlEntry[] result = globalDomainAccessControllerSubject.getMasterAccessControlEntries(DOMAIN,
+                                                                                                              INTERFACE_NAME);
         assertNotNull(result);
         assertEquals(0, result.length);
         verify(masterAccessControlEntryManagerMock).findByDomainAndInterfaceName(DOMAIN,
@@ -89,7 +91,8 @@ public class GlobalDomainAccessControllerBeanTest {
 
     @Test
     public void testFindMediatorAccessControlEntriesByUserId() {
-        when(masterAccessControlEntryManagerMock.findByUserId(USER_ID, ControlEntryType.MEDIATOR)).thenReturn(new MasterAccessControlEntry[0]);
+        when(masterAccessControlEntryManagerMock.findByUserId(USER_ID,
+                                                              ControlEntryType.MEDIATOR)).thenReturn(new MasterAccessControlEntry[0]);
         MasterAccessControlEntry[] result = globalDomainAccessControllerSubject.getMediatorAccessControlEntries(USER_ID);
         assertNotNull(result);
         assertEquals(0, result.length);
@@ -101,7 +104,8 @@ public class GlobalDomainAccessControllerBeanTest {
         when(masterAccessControlEntryManagerMock.findByDomainAndInterfaceName(DOMAIN,
                                                                               INTERFACE_NAME,
                                                                               ControlEntryType.MEDIATOR)).thenReturn(new MasterAccessControlEntry[0]);
-        MasterAccessControlEntry[] result = globalDomainAccessControllerSubject.getMediatorAccessControlEntries(DOMAIN, INTERFACE_NAME);
+        MasterAccessControlEntry[] result = globalDomainAccessControllerSubject.getMediatorAccessControlEntries(DOMAIN,
+                                                                                                                INTERFACE_NAME);
         assertNotNull(result);
         assertEquals(0, result.length);
         verify(masterAccessControlEntryManagerMock).findByDomainAndInterfaceName(DOMAIN,
@@ -120,8 +124,10 @@ public class GlobalDomainAccessControllerBeanTest {
 
     @Test
     public void testFindOwnerAccessControlEntryByDomainAndInterfaceName() {
-        when(ownerAccessControlEntryManagerMock.findByDomainAndInterfaceName(DOMAIN, INTERFACE_NAME)).thenReturn(new OwnerAccessControlEntry[0]);
-        OwnerAccessControlEntry[] result = globalDomainAccessControllerSubject.getOwnerAccessControlEntries(DOMAIN, INTERFACE_NAME);
+        when(ownerAccessControlEntryManagerMock.findByDomainAndInterfaceName(DOMAIN,
+                                                                             INTERFACE_NAME)).thenReturn(new OwnerAccessControlEntry[0]);
+        OwnerAccessControlEntry[] result = globalDomainAccessControllerSubject.getOwnerAccessControlEntries(DOMAIN,
+                                                                                                            INTERFACE_NAME);
         assertNotNull(result);
         assertEquals(0, result.length);
         verify(ownerAccessControlEntryManagerMock).findByDomainAndInterfaceName(eq(DOMAIN), eq(INTERFACE_NAME));
@@ -130,16 +136,19 @@ public class GlobalDomainAccessControllerBeanTest {
     @Test
     public void testFindMasterAndMediatorRegistrationControlEntryByUserId() {
         Map<ControlEntryType, Function<String, MasterRegistrationControlEntry[]>> getters = new HashMap<>();
-        getters.put(ControlEntryType.MASTER, (String userId) -> { return globalDomainAccessControllerSubject.getMasterRegistrationControlEntries(userId);});
-        getters.put(ControlEntryType.MEDIATOR, (String userId) -> { return globalDomainAccessControllerSubject.getMediatorRegistrationControlEntries(userId);});
-        for (ControlEntryType type : new ControlEntryType[] { ControlEntryType.MASTER, ControlEntryType.MEDIATOR}) {
+        getters.put(ControlEntryType.MASTER, (String userId) -> {
+            return globalDomainAccessControllerSubject.getMasterRegistrationControlEntries(userId);
+        });
+        getters.put(ControlEntryType.MEDIATOR, (String userId) -> {
+            return globalDomainAccessControllerSubject.getMediatorRegistrationControlEntries(userId);
+        });
+        for (ControlEntryType type : new ControlEntryType[]{ ControlEntryType.MASTER, ControlEntryType.MEDIATOR }) {
             when(masterRegistrationControlEntryManagerMock.findByUserIdAndType(USER_ID,
-                type)).thenReturn(new MasterRegistrationControlEntry[0]);
+                                                                               type)).thenReturn(new MasterRegistrationControlEntry[0]);
             MasterRegistrationControlEntry[] result = getters.get(type).apply(USER_ID);
             assertNotNull(result);
             assertEquals(0, result.length);
-            verify(masterRegistrationControlEntryManagerMock).findByUserIdAndType(eq(USER_ID),
-                eq(type));
+            verify(masterRegistrationControlEntryManagerMock).findByUserIdAndType(eq(USER_ID), eq(type));
         }
     }
 

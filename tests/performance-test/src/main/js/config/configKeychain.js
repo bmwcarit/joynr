@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2018 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,17 +16,20 @@
  * limitations under the License.
  * #L%
  */
-#include "joynr/ConnectorFactory.h"
 
-namespace joynr
-{
+const fs = require("fs");
+const baseConfig = require("./config");
+baseConfig.global.cc.port = "4243";
+baseConfig.global.testType = "immediate";
 
-ConnectorFactory::ConnectorFactory(
-        std::shared_ptr<InProcessConnectorFactory> inProcessConnectorFactory,
-        std::unique_ptr<JoynrMessagingConnectorFactory> joynrMessagingConnectorFactory)
-        : inProcessConnectorFactory(std::move(inProcessConnectorFactory)),
-          joynrMessagingConnectorFactory(std::move(joynrMessagingConnectorFactory))
-{
+if (!process.env.keychainName) {
+    throw new Error("environment variable keychainName is not set");
 }
 
-} // namespace joynr
+baseConfig.keychain = JSON.parse(fs.readFileSync(process.env.keychainName, "utf8"));
+
+for (let i = 0; i < baseConfig.benchmarks.length; i++) {
+    baseConfig.benchmarks[i].numRuns /= 10;
+}
+
+module.exports = baseConfig;

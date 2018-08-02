@@ -67,15 +67,16 @@ public class HttpBridgeEndpointRegistryClientTest {
         String endpointRegistryUri = "http://localhost";
         EndpointRegistryUriHolder endpointRegistryUriHolder = new EndpointRegistryUriHolder(endpointRegistryUri);
         ScheduledExecutorService scheduledExecutorService = mock(ScheduledExecutorService.class);
-        when(scheduledExecutorService.schedule(any(Runnable.class), anyLong(), eq(TimeUnit.SECONDS))).thenAnswer(new Answer<Object>() {
-                                                                                                         @Override
-                                                                                                         public Object answer(InvocationOnMock invocationOnMock)
-                                                                                                                                                                throws Throwable {
-                                                                                                             LOG.info("About to call scheduled task.");
-                                                                                                             ((Runnable) invocationOnMock.getArguments()[0]).run();
-                                                                                                             return null;
-                                                                                                         }
-                                                                                                     });
+        when(scheduledExecutorService.schedule(any(Runnable.class),
+                                               anyLong(),
+                                               eq(TimeUnit.SECONDS))).thenAnswer(new Answer<Object>() {
+                                                   @Override
+                                                   public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
+                                                       LOG.info("About to call scheduled task.");
+                                                       ((Runnable) invocationOnMock.getArguments()[0]).run();
+                                                       return null;
+                                                   }
+                                               });
 
         HttpBridgeEndpointRegistryClient subject = new HttpBridgeEndpointRegistryClient(httpClient,
                                                                                         endpointRegistryUriHolder,

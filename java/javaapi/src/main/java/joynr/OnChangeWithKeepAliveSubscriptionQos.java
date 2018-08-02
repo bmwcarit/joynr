@@ -39,8 +39,8 @@ import org.slf4j.LoggerFactory;
  * <br>
  * minInterval can be used to prevent too many messages being sent.
  */
-public class OnChangeWithKeepAliveSubscriptionQos extends OnChangeSubscriptionQos implements
-        HeartbeatSubscriptionInformation {
+public class OnChangeWithKeepAliveSubscriptionQos extends OnChangeSubscriptionQos
+        implements HeartbeatSubscriptionInformation {
     private static final long serialVersionUID = 1L;
 
     private static final Logger logger = LoggerFactory.getLogger(OnChangeWithKeepAliveSubscriptionQos.class);

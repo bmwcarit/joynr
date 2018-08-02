@@ -58,58 +58,64 @@ import io.joynr.statusmetrics.StatusReceiver;
 @RunWith(Arquillian.class)
 public class JeeIntegrationBeanTest {
 
-	@Deployment
-	public static JavaArchive createTestArchive() {
-		// @formatter:off
-		return ShrinkWrap.create(JavaArchive.class)
-				.addClasses(ServiceProviderDiscovery.class, DefaultJoynrRuntimeFactory.class,
-						JeeIntegrationJoynrTestConfigurationProvider.class, JoynrIntegrationBean.class,
-						TestResult.class, JoynrStatusMetricsAggregator.class)
-				.addAsManifestResource(new File("src/main/resources/META-INF/beans.xml"));
-		// @formatter:on
-	}
+    @Deployment
+    public static JavaArchive createTestArchive() {
+        // @formatter:off
+        return ShrinkWrap.create(JavaArchive.class)
+                         .addClasses(ServiceProviderDiscovery.class,
+                                     DefaultJoynrRuntimeFactory.class,
+                                     JeeIntegrationJoynrTestConfigurationProvider.class,
+                                     JoynrIntegrationBean.class,
+                                     TestResult.class,
+                                     JoynrStatusMetricsAggregator.class)
+                         .addAsManifestResource(new File("src/main/resources/META-INF/beans.xml"));
+        // @formatter:on
+    }
 
-	@Inject
-	private JoynrIntegrationBean joynrIntegrationBean;
+    @Inject
+    private JoynrIntegrationBean joynrIntegrationBean;
 
-	@Inject
-	private JoynrStatusMetrics joynrStatusMetrics;
+    @Inject
+    private JoynrStatusMetrics joynrStatusMetrics;
 
-	@Resource(name = JeeIntegrationPropertyKeys.JEE_MESSAGING_SCHEDULED_EXECUTOR_RESOURCE)
-	private ScheduledExecutorService scheduledExecutorService;
+    @Resource(name = JeeIntegrationPropertyKeys.JEE_MESSAGING_SCHEDULED_EXECUTOR_RESOURCE)
+    private ScheduledExecutorService scheduledExecutorService;
 
-	@Test
-	public void testJoynrRuntimeAvailable() {
-		Assert.assertNotNull(joynrIntegrationBean.getRuntime());
-	}
+    @Test
+    public void testJoynrRuntimeAvailable() {
+        Assert.assertNotNull(joynrIntegrationBean.getRuntime());
+    }
 
-	@Test
-	public void testManagedScheduledExecutorServiceUsed() {
-		assertNotNull(scheduledExecutorService);
-		assertNotNull(joynrIntegrationBean);
-		Injector joynrInjector = joynrIntegrationBean.getJoynrInjector();
-		assertNotNull(joynrInjector);
-		assertEquals(scheduledExecutorService, joynrInjector.getInstance(
-				Key.get(ScheduledExecutorService.class, Names.named(JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP))));
-		assertEquals(scheduledExecutorService, joynrInjector
-				.getInstance(Key.get(ScheduledExecutorService.class, Names.named(MessageRouter.SCHEDULEDTHREADPOOL))));
-		assertEquals(scheduledExecutorService, joynrInjector
-		             .getInstance(Key.get(ScheduledExecutorService.class, Names.named(LocalCapabilitiesDirectory.JOYNR_SCHEDULER_CAPABILITIES_FRESHNESS))));
-	}
+    @Test
+    public void testManagedScheduledExecutorServiceUsed() {
+        assertNotNull(scheduledExecutorService);
+        assertNotNull(joynrIntegrationBean);
+        Injector joynrInjector = joynrIntegrationBean.getJoynrInjector();
+        assertNotNull(joynrInjector);
+        assertEquals(scheduledExecutorService,
+                     joynrInjector.getInstance(Key.get(ScheduledExecutorService.class,
+                                                       Names.named(JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP))));
+        assertEquals(scheduledExecutorService,
+                     joynrInjector.getInstance(Key.get(ScheduledExecutorService.class,
+                                                       Names.named(MessageRouter.SCHEDULEDTHREADPOOL))));
+        assertEquals(scheduledExecutorService,
+                     joynrInjector.getInstance(Key.get(ScheduledExecutorService.class,
+                                                       Names.named(LocalCapabilitiesDirectory.JOYNR_SCHEDULER_CAPABILITIES_FRESHNESS))));
+    }
 
-	@Test
-	public void testJoynrStatusMetricsObjectIsUsedAsJoynrStatusReceiver() {
-		Injector joynrInjector = joynrIntegrationBean.getJoynrInjector();
+    @Test
+    public void testJoynrStatusMetricsObjectIsUsedAsJoynrStatusReceiver() {
+        Injector joynrInjector = joynrIntegrationBean.getJoynrInjector();
 
-		MqttStatusReceiver mqttStatusReceiver = joynrInjector.getInstance(MqttStatusReceiver.class);
-		StatusReceiver statusReceiver = joynrInjector.getInstance(StatusReceiver.class);
+        MqttStatusReceiver mqttStatusReceiver = joynrInjector.getInstance(MqttStatusReceiver.class);
+        StatusReceiver statusReceiver = joynrInjector.getInstance(StatusReceiver.class);
 
-		assertNotNull(joynrStatusMetrics);
+        assertNotNull(joynrStatusMetrics);
 
-		// We cannot compare these objects directly using the == operator. The reason is that the joynrStatusMetrics object is
-		// wrapped by a java proxy. Therefore the objects are different. However, the toString() method is called on the
-		// underlying object.
-		assertEquals(mqttStatusReceiver.toString(), joynrStatusMetrics.toString());
-		assertEquals(statusReceiver.toString(), joynrStatusMetrics.toString());
-	}
+        // We cannot compare these objects directly using the == operator. The reason is that the joynrStatusMetrics object is
+        // wrapped by a java proxy. Therefore the objects are different. However, the toString() method is called on the
+        // underlying object.
+        assertEquals(mqttStatusReceiver.toString(), joynrStatusMetrics.toString());
+        assertEquals(statusReceiver.toString(), joynrStatusMetrics.toString());
+    }
 }

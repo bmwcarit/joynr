@@ -424,6 +424,12 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
      *            settings.expiryDate time-to-live
      * @param {Object}
      *            settings.customHeaders custom headers from request
+     * @param {String}
+     *            settings.messageType
+     * @param {String}
+     *            settings.effort
+     * @param {boolean}
+     *            settings.compress
      * @param {Reply|SubscriptionReply}
      *            settings.reply the reply to be transmitted. It can either be a Reply or a SubscriptionReply object
      * @returns {Object} A+ promise object
@@ -441,6 +447,10 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
 
         // set custom headers
         joynrMessage.setCustomHeaders(settings.customHeaders);
+
+        if (settings.effort && settings.effort !== MessagingQosEffort.NORMAL) {
+            joynrMessage.effort = settings.effort.value;
+        }
 
         if (settings.compress) {
             joynrMessage.compress = true;
@@ -464,8 +474,15 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
      *            settings.expiryDate time-to-live
      * @param {Object}
      *            settings.customHeaders custom headers from request
+     * @param {String}
+     *            settings.messageType
+     * @param {String}
+     *            settings.effort
+     * @param {boolean}
+     *            settings.compress
      * @param {Reply}
      *            reply
+     * @returns {Object} A+ promise object
      */
     function sendRequestReply(settings, reply) {
         const toParticipantId = settings.to;
@@ -650,7 +667,7 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
         switch (joynrMessage.type) {
             case JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST:
                 try {
-                    const request = new Request(payload);
+                    const request = Request.create(payload);
                     log.info(
                         `received request for ${request.methodName}.`,
                         DiagnosticTags.forRequest({
@@ -662,6 +679,10 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
 
                     const handleReplySettings = createReplySettings(joynrMessage);
 
+                    const effort = joynrMessage.effort;
+                    if (effort && MessagingQosEffort[effort]) {
+                        handleReplySettings.effort = MessagingQosEffort[effort];
+                    }
                     if (joynrMessage.compress) {
                         handleReplySettings.compress = true;
                     }
@@ -680,7 +701,7 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
 
             case JoynrMessage.JOYNRMESSAGE_TYPE_REPLY:
                 try {
-                    const reply = new Reply(payload);
+                    const reply = Reply.create(payload);
                     log.info(
                         "received reply ",
                         DiagnosticTags.forReply({
@@ -698,7 +719,7 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
 
             case JoynrMessage.JOYNRMESSAGE_TYPE_ONE_WAY:
                 try {
-                    const oneWayRequest = new OneWayRequest(payload);
+                    const oneWayRequest = OneWayRequest.create(payload);
                     log.info(
                         `received one way request for ${oneWayRequest.methodName}.`,
                         DiagnosticTags.forOneWayRequest({
@@ -830,7 +851,7 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
 
             case JoynrMessage.JOYNRMESSAGE_TYPE_PUBLICATION:
                 try {
-                    const subscriptionPublication = new SubscriptionPublication(payload);
+                    const subscriptionPublication = SubscriptionPublication.create(payload);
                     log.info(
                         "received publication",
                         DiagnosticTags.forPublication({
@@ -848,7 +869,7 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
 
             case JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST:
                 try {
-                    const multicastPublication = new MulticastPublication(payload);
+                    const multicastPublication = MulticastPublication.create(payload);
                     log.info(
                         "received publication",
                         DiagnosticTags.forMulticastPublication({

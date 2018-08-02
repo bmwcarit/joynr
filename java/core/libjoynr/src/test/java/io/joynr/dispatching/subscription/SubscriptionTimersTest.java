@@ -110,8 +110,8 @@ public class SubscriptionTimersTest {
 
     @Test(timeout = 3000)
     public void missedPublicationRunnableIsStopped() throws InterruptedException, JoynrSendBufferFullException,
-                                                    JoynrMessageNotSentException, JsonGenerationException,
-                                                    JsonMappingException, IOException {
+                                                     JoynrMessageNotSentException, JsonGenerationException,
+                                                     JsonMappingException, IOException {
         LOG.debug("Starting missedPublicationRunnableIsStopped test");
 
         PeriodicSubscriptionQos qos = new PeriodicSubscriptionQos().setPeriodMs(period)
@@ -130,7 +130,8 @@ public class SubscriptionTimersTest {
                                                           subscriptionRequest);
         subscriptionId = subscriptionRequest.getSubscriptionId();
         Thread.sleep(subscriptionLength);
-        verify(attributeSubscriptionCallback, times(numberOfPublications)).onError(new PublicationMissedException(subscriptionId));
+        verify(attributeSubscriptionCallback,
+               times(numberOfPublications)).onError(new PublicationMissedException(subscriptionId));
 
         // wait some additional time to see whether there are unwanted publications
         Thread.sleep(2 * period);
@@ -141,10 +142,10 @@ public class SubscriptionTimersTest {
 
     @Test(timeout = 3000)
     public void noMissedPublicationWarningWhenPublicationIsReceived() throws InterruptedException,
-                                                                     JoynrSendBufferFullException,
-                                                                     JoynrMessageNotSentException,
-                                                                     JsonGenerationException, JsonMappingException,
-                                                                     IOException {
+                                                                      JoynrSendBufferFullException,
+                                                                      JoynrMessageNotSentException,
+                                                                      JsonGenerationException, JsonMappingException,
+                                                                      IOException {
         LOG.debug("Starting noMissedPublicationWarningWhenPublicationIsReceived test");
 
         // there should be at least one successful publication, so (numberOfPublications-1)
@@ -206,8 +207,10 @@ public class SubscriptionTimersTest {
 
         int missedPublicationAlerts = (lastPublicationIsMissedPublication) ? missedPublicationsCounter - 1
                 : missedPublicationsCounter;
-        verify(attributeSubscriptionCallback, atLeast(missedPublicationAlerts)).onError(new PublicationMissedException(subscriptionId));
-        verify(attributeSubscriptionCallback, atMost(missedPublicationsCounter)).onError(new PublicationMissedException(subscriptionId));
+        verify(attributeSubscriptionCallback,
+               atLeast(missedPublicationAlerts)).onError(new PublicationMissedException(subscriptionId));
+        verify(attributeSubscriptionCallback,
+               atMost(missedPublicationsCounter)).onError(new PublicationMissedException(subscriptionId));
         // verify callback is not called
         verifyNoMoreInteractions(attributeSubscriptionCallback);
         LOG.trace("finishing test.");

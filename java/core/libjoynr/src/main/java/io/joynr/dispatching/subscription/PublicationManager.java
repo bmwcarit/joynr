@@ -57,8 +57,8 @@ public interface PublicationManager {
 
     void multicastOccurred(String providerParticipantId, String multicastName, String[] partitions, Object... values);
 
-    void sendSubscriptionPublication(SubscriptionPublication publication, PublicationInformation information)
-                                                                                                             throws IOException;
+    void sendSubscriptionPublication(SubscriptionPublication publication,
+                                     PublicationInformation information) throws IOException;
 
     void shutdown();
 

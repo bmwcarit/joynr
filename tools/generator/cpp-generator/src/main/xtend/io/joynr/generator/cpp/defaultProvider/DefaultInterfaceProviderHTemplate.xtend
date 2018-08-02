@@ -122,7 +122,7 @@ public:
 						)> onSuccess,
 					«ENDIF»
 					«IF method.hasErrorEnum»
-						«IF method.errors != null»
+						«IF method.errors !== null»
 							«val packagePath = getPackagePathWithJoynrPrefix(method.errors, "::")»
 							std::function<void (const «packagePath»::«methodToErrorEnumName.get(method)»::«nestedEnumName»& errorEnum)> onError
 						«ELSE»

@@ -136,7 +136,8 @@ public class LocalDomainAccessControllerTest {
     public void testHasRole() throws Throwable {
         domainAccessControlStore.updateDomainRole(userDre);
 
-        assertTrue("UID1 should have role OWNER in DRT", localDomainAccessController.hasRole(UID1, DOMAIN1, Role.OWNER));
+        assertTrue("UID1 should have role OWNER in DRT",
+                   localDomainAccessController.hasRole(UID1, DOMAIN1, Role.OWNER));
         assertFalse("UID1 should not have role MASTER in DRT",
                     localDomainAccessController.hasRole(UID1, DOMAIN1, Role.MASTER));
 

@@ -41,7 +41,7 @@ import joynr.infrastructure.GlobalCapabilitiesDirectoryProxy;
 import joynr.types.GlobalDiscoveryEntry;
 
 public class GlobalCapabilitiesDirectoryClient {
-    private static final long DEFAULT_TTL_ADD_AND_REMOVE = 30L * 24L * 60L * 60L * 1000L;
+    private static final long DEFAULT_TTL_ADD_AND_REMOVE = 60L * 1000L;
     private final String domain;
     private final DiscoveryQos discoveryQos;
     private final ProxyBuilderFactory proxyBuilderFactory;

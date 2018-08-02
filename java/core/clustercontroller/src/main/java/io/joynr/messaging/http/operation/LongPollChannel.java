@@ -243,9 +243,9 @@ public class LongPollChannel {
 
                 @Override
                 public void run() {
-                    logger.info("ARRIVED {} messageId: {} type: {} from: {} to: {} header: {}", new Object[]{
-                            httpget.getURI().toString(), message.getId(), message.getType(), message.getSender(),
-                            message.getRecipient(), message.getHeaders().toString() });
+                    logger.info("ARRIVED {} messageId: {} type: {} from: {} to: {} header: {}",
+                                new Object[]{ httpget.getURI().toString(), message.getId(), message.getType(),
+                                        message.getSender(), message.getRecipient(), message.getHeaders().toString() });
                     logger.debug("\r\n<<<<<<<<<<<<<<<<<\r\n:{}", message);
                     messageArrivedListener.messageArrived(message);
                 }

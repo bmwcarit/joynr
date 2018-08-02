@@ -25,6 +25,7 @@
 #include <memory>
 #include <string>
 
+#include "joynr/JoynrMessagingConnectorFactory.h"
 #include "joynr/JoynrRuntimeImpl.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/Logger.h"
@@ -43,6 +44,11 @@ class Settings;
 class SubscriptionManager;
 class IKeychain;
 
+namespace system
+{
+class RoutingProxy;
+} // namespace system
+
 class LibJoynrRuntime : public JoynrRuntimeImpl
 {
 
@@ -54,13 +60,14 @@ public:
     void shutdown() override;
 
 protected:
+    void buildInternalProxies(std::shared_ptr<JoynrMessagingConnectorFactory> connectorFactory);
+
     std::shared_ptr<IMessageRouter> getMessageRouter() final;
 
     std::shared_ptr<SubscriptionManager> subscriptionManager;
-    std::shared_ptr<InProcessPublicationSender> inProcessPublicationSender;
     std::shared_ptr<IMessageSender> messageSender;
     std::shared_ptr<IDispatcher> joynrDispatcher;
-    std::shared_ptr<IDispatcher> inProcessDispatcher;
+    std::shared_ptr<joynr::system::RoutingProxy> ccRoutingProxy;
 
     // take ownership, so a pointer is used
     std::unique_ptr<Settings> settings;

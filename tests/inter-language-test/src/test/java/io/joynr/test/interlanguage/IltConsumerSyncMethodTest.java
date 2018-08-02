@@ -457,7 +457,8 @@ public class IltConsumerSyncMethodTest extends IltConsumerTest {
             ExtendedStructOfPrimitives extendedStructOfPrimitivesOut = IltUtil.createExtendedStructOfPrimitives();
             BaseStruct baseStructOut = IltUtil.createBaseStruct();
 
-            result = testInterfaceProxy.methodWithMultipleStructParameters(extendedStructOfPrimitivesOut, baseStructOut);
+            result = testInterfaceProxy.methodWithMultipleStructParameters(extendedStructOfPrimitivesOut,
+                                                                           baseStructOut);
             if (result == null) {
                 fail(name.getMethodName() + " - FAILED - got no result");
                 return;

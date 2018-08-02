@@ -21,6 +21,7 @@ package io.joynr.discovery;
 import static io.joynr.util.VersionUtil.getVersionFromAnnotation;
 
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -69,7 +70,7 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
         providerQos.setScope(ProviderScope.LOCAL);
         String defaultPublicKeyId = "";
         provisionedDiscoveryEntries.put(systemServicesDomain
-                                                + ProviderAnnotations.getInterfaceName(DiscoveryProvider.class),
+                + ProviderAnnotations.getInterfaceName(DiscoveryProvider.class),
                                         new DiscoveryEntryWithMetaInfo(getVersionFromAnnotation(DiscoveryProvider.class),
                                                                        systemServicesDomain,
                                                                        ProviderAnnotations.getInterfaceName(DiscoveryProvider.class),
@@ -97,7 +98,7 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
 
     @Override
     public Future<Void> add(Callback<Void> callback, DiscoveryEntry discoveryEntry) {
-        return getDefaultDiscoveryProxy().add(callback, discoveryEntry);
+        return getDefaultDiscoveryProxy().add(callback, discoveryEntry, false);
     }
 
     @Override
@@ -124,29 +125,36 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
         final Future<DiscoveryEntryWithMetaInfo[]> discoveryEntryFuture = new Future<>();
         if (!missingDomains.isEmpty()) {
             logger.trace("Did not find entries for the following domains: {}", missingDomains);
+            // discoveryProxy must not be garbage collected before the callback has been invoked
+            // because otherwise the routingEntry might get removed early and the response from
+            // CC cannot be routed anymore
+            final DiscoveryProxy discoveryProxy = getDiscoveryProxy(discoveryQos.getDiscoveryTimeout());
+            final ArrayList<DiscoveryProxy> keepReferenceArrayList = new ArrayList<DiscoveryProxy>();
+            keepReferenceArrayList.add(discoveryProxy);
 
             Callback<DiscoveryEntryWithMetaInfo[]> newCallback = new Callback<DiscoveryEntryWithMetaInfo[]>() {
 
                 @Override
                 public void onFailure(JoynrRuntimeException error) {
+                    keepReferenceArrayList.clear();
+                    logger.trace("discoveryProxy.lookup onFailure: {}", error);
                     callback.onFailure(error);
                     discoveryEntryFuture.onFailure(error);
                 }
 
                 @Override
                 public void onSuccess(DiscoveryEntryWithMetaInfo[] entries) {
+                    keepReferenceArrayList.clear();
                     assert entries != null : "Entries must not be null.";
                     logger.trace("Globally found entries for missing domains: {}", Arrays.toString(entries));
+
                     Collections.addAll(discoveryEntries, entries);
                     resolveDiscoveryEntriesFutureWithEntries(discoveryEntryFuture, discoveryEntries, callback);
                 }
             };
             String[] missingDomainsArray = new String[missingDomains.size()];
             missingDomains.toArray(missingDomainsArray);
-            getDiscoveryProxy(discoveryQos.getDiscoveryTimeout()).lookup(newCallback,
-                                                                         missingDomainsArray,
-                                                                         interfaceName,
-                                                                         discoveryQos);
+            discoveryProxy.lookup(newCallback, missingDomainsArray, interfaceName, discoveryQos);
         } else {
             resolveDiscoveryEntriesFutureWithEntries(discoveryEntryFuture, discoveryEntries, callback);
         }
@@ -163,7 +171,8 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
     }
 
     @Override
-    public Future<DiscoveryEntryWithMetaInfo> lookup(Callback<DiscoveryEntryWithMetaInfo> callback, String participantId) {
+    public Future<DiscoveryEntryWithMetaInfo> lookup(Callback<DiscoveryEntryWithMetaInfo> callback,
+                                                     String participantId) {
         return getDefaultDiscoveryProxy().lookup(callback, participantId);
     }
 
@@ -178,7 +187,15 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
 
     private DiscoveryProxy getDefaultDiscoveryProxy() {
         if (defaultDiscoveryProxy == null) {
-            defaultDiscoveryProxy = proxyBuilderFactory.get(systemServiceDomain, DiscoveryProxy.class).build();
+            // extend default ttl by 10 seconds to allow the cluster controller to handle timeout for
+            // global discovery requests and send back the response to discoveryProxy.
+            // Note that ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_TTL_MS must be
+            // larger than the resulting value here.
+            MessagingQos internalMessagingQos = new MessagingQos();
+            internalMessagingQos.setTtl_ms(internalMessagingQos.getRoundTripTtl_ms() + 10000);
+            defaultDiscoveryProxy = proxyBuilderFactory.get(systemServiceDomain, DiscoveryProxy.class)
+                                                       .setMessagingQos(internalMessagingQos)
+                                                       .build();
         }
 
         return defaultDiscoveryProxy;

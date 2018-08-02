@@ -20,11 +20,14 @@
 #ifndef WILDCARDSTORAGE_H
 #define WILDCARDSTORAGE_H
 
+#include <numeric>
 #include <string>
 #include <tuple>
 #include <unordered_set>
 
 #include <boost/optional.hpp>
+
+#include "joynr/serializer/Serializer.h"
 
 #include "libjoynrclustercontroller/access-control/AccessControlUtils.h"
 #include "libjoynrclustercontroller/access-control/RadixTree.h"
@@ -55,32 +58,38 @@ public:
     void insert(const std::string& inputKey, const ACEntry& entry)
     {
         assert(!inputKey.empty());
+        assert(inputKey.back() == *joynr::access_control::WILDCARD);
 
         std::string key = inputKey;
         // remove wildcard symbol at the end
         key.pop_back();
 
         RadixTreeNode* longestMatch = storage.longestMatch(key);
-        if (longestMatch == nullptr) {
-            // if not found then create StorageEntry and insert in radix_tree
-            OptionalSet<ACEntry> newSet = Set<ACEntry>();
-            newSet->insert(entry);
-            StorageEntry newStorageEntry;
-            setStorageEntry<ACEntry>(newStorageEntry, newSet);
-            storage.insert(std::move(key), std::move(newStorageEntry));
-        } else {
-            StorageEntry& foundStorageEntry = longestMatch->getValue();
-            OptionalSet<ACEntry>& setOfACEntries = getStorageEntry<ACEntry>(foundStorageEntry);
-            // does the set exist in the storageEntry?
-            if (setOfACEntries) {
-                setOfACEntries->insert(entry);
-            } else {
-                // update entry into the set and then set into the tree
-                OptionalSet<ACEntry> newSet = Set<ACEntry>();
-                newSet->insert(entry);
-                setStorageEntry<ACEntry>(foundStorageEntry, std::move(newSet));
+        if (longestMatch != nullptr) {
+            // node with exact key already in tree
+            if (longestMatch->getFullKey() == key) {
+                StorageEntry& foundStorageEntry = longestMatch->getValue();
+                OptionalSet<ACEntry>& setOfACEntries = getStorageEntry<ACEntry>(foundStorageEntry);
+                // does the set exist in the storageEntry?
+                if (setOfACEntries) {
+                    setOfACEntries->insert(entry);
+                    return;
+                } else {
+                    // update entry into the set and then set into the tree
+                    OptionalSet<ACEntry> newSet = Set<ACEntry>();
+                    newSet->insert(entry);
+                    setStorageEntry<ACEntry>(foundStorageEntry, std::move(newSet));
+                    return;
+                }
             }
         }
+
+        // if not found then create StorageEntry and insert in radix_tree
+        OptionalSet<ACEntry> newSet = Set<ACEntry>();
+        newSet->insert(entry);
+        StorageEntry newStorageEntry;
+        setStorageEntry<ACEntry>(newStorageEntry, newSet);
+        storage.insert(std::move(key), std::move(newStorageEntry));
     }
 
     template <typename ACEntry>
@@ -93,27 +102,43 @@ public:
             return boost::none;
         }
 
-        // if there is a set in the StorageEntry for this ACEntry -> return it
+        // if there is a set in the StorageEntry for this ACEntry -> add it to the result set
+        Set<ACEntry> resultSet;
+
         StorageEntry& storageEntry = longestMatch->getValue();
-        OptionalSet<ACEntry> result = getStorageEntry<ACEntry>(storageEntry);
-        if (result) {
-            return result;
+        auto longestMatchEntry = getStorageEntry<ACEntry>(storageEntry);
+        if (longestMatchEntry) {
+            resultSet.insert(longestMatchEntry->begin(), longestMatchEntry->end());
         }
 
-        // otherwise try to get an entry from one of the parents in the tree
+        // also add all parents (need to add the entire branch of the radix-tree)
         auto parents = longestMatch->parents();
         for (auto parentIt = parents.begin(); parentIt != parents.end(); ++parentIt) {
             // if there is a set in the StorageEntry of the parent -> return it
-            result = getStorageEntry<ACEntry>((*parentIt)->getValue());
-            if (result) {
-                return result;
+            auto parentSet = getStorageEntry<ACEntry>((*parentIt)->getValue());
+            if (parentSet) {
+                resultSet.insert(parentSet->begin(), parentSet->end());
             }
         }
 
-        // otherwise return none
-        // longest match exists but no ACE/RCE entry was set for it
-        // is this a configuration error?
-        return boost::none;
+        if (resultSet.empty()) {
+            return boost::none;
+        }
+        return resultSet;
+    }
+
+    std::string toString()
+    {
+        std::stringstream stream;
+        auto visitor = [&stream](const auto& node, const auto& keys) {
+            const std::string key = std::accumulate(
+                    keys.begin(), keys.end(), std::string(), [](std::string& s, const auto& i) {
+                        return s + i.get();
+                    });
+            stream << key << "->" << serializer::serializeToJson(node.getValue()) << std::endl;
+        };
+        storage.visit(visitor);
+        return stream.str();
     }
 
 private:

@@ -51,6 +51,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -147,6 +148,7 @@ public class HttpCommunicationManagerTest {
     }
 
     @Test
+    @Ignore
     public void testCreateOpenAndDeleteChannel() throws Exception {
 
         MutableMessage mutableMessage = new MutableMessage();
@@ -180,12 +182,8 @@ public class HttpCommunicationManagerTest {
 
         // post to the channel to see if it exists
 
-        onrequest(1000).with()
-                       .body(serializedMessage)
-                       .expect()
-                       .statusCode(201)
-                       .when()
-                       .post("channels/" + testChannelId + "/message/");
+        onrequest(1000).with().body(serializedMessage).expect().statusCode(201).when().post("channels/" + testChannelId
+                + "/message/");
 
         longpollingMessageReceiver.shutdown(true);
 
@@ -214,9 +212,10 @@ public class HttpCommunicationManagerTest {
         return given().contentType(ContentType.BINARY)
                       .log()
                       .everything()
-                      .config(RestAssuredConfig.config().httpClient(HttpClientConfig.httpClientConfig()
-                                                                                    .setParam("http.socket.timeout",
-                                                                                              timeout_ms)));
+                      .config(RestAssuredConfig.config()
+                                               .httpClient(HttpClientConfig.httpClientConfig()
+                                                                           .setParam("http.socket.timeout",
+                                                                                     timeout_ms)));
     }
 
 }

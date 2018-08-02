@@ -39,4 +39,4 @@ function MulticastPublication(settings) {
     return settings;
 }
 
-module.exports = MulticastPublication;
+exports.create = MulticastPublication;

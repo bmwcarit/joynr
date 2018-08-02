@@ -60,7 +60,7 @@ const SharedWebSocket = function SharedWebSocket(settings) {
     let websocket = null;
     const provisioning = settings.provisioning || {};
     const reconnectSleepTimeMs = provisioning.reconnectSleepTimeMs || 1000; // default value = 1000ms
-    const useUnencryptedTls = provisioning.useUnencryptedTls || true; // default to unencrypted Tls communication
+    const useUnencryptedTls = provisioning.useUnencryptedTls !== false; // default to unencrypted Tls communication
     const localAddress = settings.localAddress;
     const remoteUrl = webSocketAddressToUrl(settings.remoteAddress);
     let onmessageCallback = null;
@@ -96,7 +96,7 @@ const SharedWebSocket = function SharedWebSocket(settings) {
                 // Error is thrown if the socket is no longer open, so requeue to the front
             } catch (e) {
                 // add the message back to the front of the queue
-                queuedMessages.unshift(joynrMessage);
+                queuedMessages.unshift(marshaledMessage);
                 log.error(`could not send joynrMessage: ${joynrMessage.msgId} requeuing message. Error: ${e}`);
             }
         } else {

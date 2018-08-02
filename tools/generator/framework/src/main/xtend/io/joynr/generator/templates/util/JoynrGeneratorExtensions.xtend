@@ -78,12 +78,12 @@ class JoynrGeneratorExtensions {
 	}
 
 	def String getPackageNameInternal(FModelElement fModelElement, boolean useOwnName) {
-		if (fModelElement == null) {
+		if (fModelElement === null) {
 			throw new IllegalStateException(
 				"Generator could not proceed with code generation, since JoynGeneratorExtensions.getPackageNameInternal has been invoked with an empty model element");
-		} else if (fModelElement.eContainer == null) {
+		} else if (fModelElement.eContainer === null) {
 			val errorMsg = "Generator could not proceed with code generation, since " +
-				if (fModelElement.joynrName != null)
+				if (fModelElement.joynrName !== null)
 					"the container of model element " + fModelElement.joynrName + " is not known"
 				else
 					"the resource " + (if (fModelElement instanceof BasicEObjectImpl)
@@ -96,7 +96,7 @@ class JoynrGeneratorExtensions {
 		} else if (fModelElement instanceof FMethod) {
 			// include interface name for unnamed error enums (defined or extended inside method definition)
 			val finterface = fModelElement.eContainer as FModelElement
-			if (finterface == null || !(finterface instanceof FInterface)) {
+			if (finterface === null || !(finterface instanceof FInterface)) {
 				val errorMsg = "Generator could not proceed with code generation, since " +
 					"JoynGeneratorExtensions.getPackageNameInternal has been invoked " +
 					"with a FMethod element which is not defined inside an interface"
@@ -309,7 +309,7 @@ class JoynrGeneratorExtensions {
 	}
 
 	def buildPackagePath(FType datatype, String separator, boolean includeTypeCollection) {
-		if (datatype == null) {
+		if (datatype === null) {
 			return "";
 		}
 		var packagepath = "";

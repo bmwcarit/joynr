@@ -208,7 +208,7 @@ describe("libjoynr-js.joynr.proxy.ProxyAttribute", () => {
                         toDiscoveryEntry: providerDiscoveryEntry,
                         from: proxyParticipantId,
                         messagingQos,
-                        request: new Request({
+                        request: Request.create({
                             methodName: "getIsOn",
                             requestReplyId
                         })
@@ -324,7 +324,7 @@ describe("libjoynr-js.joynr.proxy.ProxyAttribute", () => {
                         toDiscoveryEntry: providerDiscoveryEntry,
                         from: proxyParticipantId,
                         messagingQos,
-                        request: new Request({
+                        request: Request.create({
                             methodName: "setIsOn",
                             requestReplyId,
                             paramDatatypes: ["Boolean"],

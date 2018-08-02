@@ -16,15 +16,18 @@ specific language governing permissions and limitations
 under the License.
 
 This project has dependencies to:
+  "Java Concurrency in Practice" book annotations under Creative Commons Attribution License
+  Animal Sniffer Annotations under MIT license
   AOP alliance under Public Domain
   Apache Groovy under The Apache Software License, Version 2.0
   Apache HttpClient under Apache License
   Apache HttpCore under Apache License
+  Checker Qual under GNU General Public License, version 2 (GPL2), with the classpath exception or The MIT License
   clustercontroller-inprocess-runtime under The Apache Software License, Version 2.0
   Commons Codec under The Apache Software License, Version 2.0
   Commons Lang under The Apache Software License, Version 2.0
-  dom4j under BSD License
   ehcache under The Apache Software License, Version 2.0
+  error-prone annotations under Apache 2.0
   FindBugs-Annotations under GNU Lesser Public License
   FindBugs-jsr305 under The Apache Software License, Version 2.0
   flatbuffers-java under Apache License V2.0
@@ -49,6 +52,7 @@ This project has dependencies to:
   io.joynr.smrf.java:smrf under The Apache Software License, Version 2.0
   io.joynr.smrf.java:smrf-api under The Apache Software License, Version 2.0
   io.joynr.tests.system-integration-test:sit-jee-app under The Apache Software License, Version 2.0
+  J2ObjC Annotations under The Apache Software License, Version 2.0
   Jackson module: JAXB-annotations under The Apache Software License, Version 2.0
   Jackson-annotations under The Apache Software License, Version 2.0
   Jackson-core under The Apache Software License, Version 2.0
@@ -58,15 +62,14 @@ This project has dependencies to:
   Java(TM) EE 7 Specification APIs under CDDL + GPLv2 with classpath exception
   JavaBeans Activation Framework (JAF) under Common Development and Distribution License (CDDL) v1.0
   JavaMail API under CDDL/GPLv2+CE
-  Javassist under MPL 1.1 or LGPL 2.1
+  Javassist under MPL 1.1 or LGPL 2.1 or Apache License 2.0
   javax.inject under The Apache Software License, Version 2.0
   JUnit under Eclipse Public License 1.0
   Logback Classic Module under Eclipse Public License - v 1.0 or GNU Lesser General Public License
   Logback Core Module under Eclipse Public License - v 1.0 or GNU Lesser General Public License
   Logging under The Apache Software License, Version 2.0
   Mockito under The MIT License
-  Reflections under WTFPL
+  Reflections under WTFPL or The New BSD License
   SLF4J API Module under MIT License
   SLF4J JDK14 Binding under MIT License
-  XML Commons External Components XML APIs under The Apache Software License, Version 2.0 or The SAX License or The W3C License
 

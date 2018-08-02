@@ -149,8 +149,7 @@ public class MyGpsProviderApplication extends AbstractJoynrApplication {
 
         JoynrApplication joynrApplication = new JoynrInjectorFactory(joynrConfig,
                                                                      new StaticDomainAccessControlProvisioningModule(),
-                                                                     runtimeModule).createApplication(new JoynrApplicationModule(MyGpsProviderApplication.class,
-                                                                                                                                 appConfig));
+                                                                     runtimeModule).createApplication(new JoynrApplicationModule(MyGpsProviderApplication.class, appConfig));
         joynrApplication.run();
 
         joynrApplication.shutdown();
@@ -211,12 +210,15 @@ public class MyGpsProviderApplication extends AbstractJoynrApplication {
                                                                                             domain,
                                                                                             ProviderAnnotations.getInterfaceName(MyGpsProvider.class),
                                                                                             TrustLevel.LOW,
-                                                                                            new TrustLevel[]{ TrustLevel.LOW },
+                                                                                            new TrustLevel[]{
+                                                                                                    TrustLevel.LOW },
                                                                                             TrustLevel.LOW,
-                                                                                            new TrustLevel[]{ TrustLevel.LOW },
+                                                                                            new TrustLevel[]{
+                                                                                                    TrustLevel.LOW },
                                                                                             "*",
                                                                                             Permission.YES,
-                                                                                            new Permission[]{ Permission.YES });
+                                                                                            new Permission[]{
+                                                                                                    Permission.YES });
 
         MasterAccessControlEntry[] provisionedAccessControlEntries = { newMasterAccessControlEntry };
         String provisionedAccessControlEntriesAsJson = objectMapper.writeValueAsString(provisionedAccessControlEntries);

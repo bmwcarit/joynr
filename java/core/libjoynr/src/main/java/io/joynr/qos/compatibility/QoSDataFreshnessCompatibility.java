@@ -27,13 +27,8 @@ public class QoSDataFreshnessCompatibility extends QoSTimeComparisonCompatibilit
     }
 
     @Override
-    protected Long getQoSTimeInMillis() {
-        return qos.getDataFreshnessMs();
-    }
-
-    @Override
-    protected boolean condition(long delta, long qosDataFreshnessMs) {
-        return delta > qosDataFreshnessMs;
+    protected boolean condition(long delta) {
+        return delta < qos.getDataFreshnessMs();
     }
 
 }

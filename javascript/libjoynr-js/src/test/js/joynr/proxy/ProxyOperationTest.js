@@ -572,7 +572,7 @@ describe("libjoynr-js.joynr.proxy.ProxyOperation", () => {
                         toDiscoveryEntry: providerDiscoveryEntry,
                         from: proxyParticipantId,
                         messagingQos: new MessagingQos(),
-                        request: new Request({
+                        request: Request.create({
                             methodName: operationName,
                             paramDatatypes: testData.paramDatatypes,
                             params: testData.params,
@@ -619,7 +619,7 @@ describe("libjoynr-js.joynr.proxy.ProxyOperation", () => {
                     toDiscoveryEntry: providerDiscoveryEntry,
                     from: proxyParticipantId,
                     messagingQos: new MessagingQos(),
-                    request: new OneWayRequest({
+                    request: OneWayRequest.create({
                         methodName: operationName,
                         paramDatatypes: testData.paramDatatypes,
                         params: testData.params

@@ -35,12 +35,12 @@ import com.google.inject.Singleton;
 public class CorsFilter implements Filter {
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException,
-                                                                                             ServletException {
+                                                                                              ServletException {
         HttpServletRequest req = (HttpServletRequest) request;
         HttpServletResponse res = (HttpServletResponse) response;
 
-        if (req.getHeader("Origin") != null
-                && ("POST".equals(req.getMethod()) || "OPTIONS".equals(req.getMethod()) || "DELETE".equals(req.getMethod()))) {
+        if (req.getHeader("Origin") != null && ("POST".equals(req.getMethod()) || "OPTIONS".equals(req.getMethod())
+                || "DELETE".equals(req.getMethod()))) {
             res.addHeader("Access-Control-Allow-Origin", "*");
         }
 
