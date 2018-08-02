@@ -48,6 +48,7 @@ class InterfaceStatelessAsyncCallbackTemplate extends InterfaceTemplate {
 package «packagePath»;
 
 import io.joynr.proxy.StatelessAsyncCallback;
+import io.joynr.dispatcher.rpc.annotation.StatelessCallbackCorrelation;
 import io.joynr.UsedBy;
 
 «FOR datatype: getRequiredCallbackIncludesFor(francaIntf)»
@@ -66,6 +67,7 @@ public interface «statelessAsyncClassName» extends StatelessAsyncCallback {
 		/*
 		* «attributeName» getter
 		*/
+		@StatelessCallbackCorrelation("«getAttribute.hashCode»")
 		default void «getAttribute»Success(«attributeType» «attributeName», String messageId)
 		{ throw new UnsupportedOperationException("«getAttribute»Success not implemented for callback instance"); }
 		«ENDIF»
@@ -73,6 +75,7 @@ public interface «statelessAsyncClassName» extends StatelessAsyncCallback {
 		/*
 		* «attributeName» setter
 		*/
+		@StatelessCallbackCorrelation("«setAttribute.hashCode»")
 		default void «setAttribute»Success(String messageId)
 		{ throw new UnsupportedOperationException("«setAttribute»Success not implemented for callback instance"); }
 		«ENDIF»
@@ -87,6 +90,7 @@ public interface «statelessAsyncClassName» extends StatelessAsyncCallback {
 		/*
 		* «methodName»
 		*/
+		@StatelessCallbackCorrelation("«methodSignature.hashCode»")
 		default void «methodName»Success(
 				«IF method.outputParameters.size()>0»
 				«method.outputParameters.typedParameterList»,
@@ -95,6 +99,7 @@ public interface «statelessAsyncClassName» extends StatelessAsyncCallback {
 		) { throw new UnsupportedOperationException("«methodName»Success not implemented for callback instance"); }
 		«ENDIF»
 		«IF method.hasErrorEnum && failedMethodsGenerated.add(methodSignature)»
+		@StatelessCallbackCorrelation("«methodSignature.hashCode»")
 		default void «methodName»Failed(
 			«IF method.errors !== null»
 				«val errorEnumType = packagePath + "." + interfaceName + "." + methodToErrorEnumName.get(method)»

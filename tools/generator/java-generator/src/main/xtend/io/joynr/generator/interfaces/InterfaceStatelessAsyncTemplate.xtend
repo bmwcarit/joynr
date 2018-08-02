@@ -46,6 +46,7 @@ class InterfaceStatelessAsyncTemplate extends InterfaceTemplate {
 package «packagePath»;
 
 import io.joynr.StatelessAsync;
+import io.joynr.dispatcher.rpc.annotation.StatelessCallbackCorrelation;
 import io.joynr.proxy.MessageIdCallback;
 «IF jeeExtension»
 import io.joynr.UsedBy;
@@ -70,12 +71,14 @@ public interface «statelessAsyncClassName» extends «interfaceName» {
 		/*
 		* «attributeName» getter
 		*/
+		@StatelessCallbackCorrelation("«getAttribute.hashCode»")
 		void «getAttribute»(MessageIdCallback messageIdCallback);
 		«ENDIF»
 		«IF isWritable(attribute)»
 		/*
 		* «attributeName» setter
 		*/
+		@StatelessCallbackCorrelation("«setAttribute.hashCode»")
 		void «setAttribute»(«attributeType» «attributeName», MessageIdCallback messageIdCallback);
 		«ENDIF»
 «ENDFOR»
@@ -85,6 +88,7 @@ public interface «statelessAsyncClassName» extends «interfaceName» {
 		/*
 		* «methodName»
 		*/
+		@StatelessCallbackCorrelation("«method.createMethodSignatureFromOutParameters.hashCode»")
 		void «methodName»(
 				«IF method.inputParameters.size()>0»
 				«method.inputParameters.typedParameterList»,
