@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,6 +24,16 @@ class IltConsumerAsyncMethodTest : public IltAbstractConsumerTest<::testing::Tes
 {
 public:
     IltConsumerAsyncMethodTest() = default;
+
+    template <typename AttributeType>
+    void callProxyMethodWithParameterAsyncAndAssertResult(
+            std::function<std::shared_ptr<joynr::Future<AttributeType>>(
+                    joynr::interlanguagetest::TestInterfaceAsyncProxy*,
+                    const AttributeType&,
+                    std::function<void(const AttributeType&)>,
+                    std::function<void(const joynr::exceptions::JoynrRuntimeException&)>,
+                    boost::optional<joynr::MessagingQos>)> testMethod,
+            const AttributeType& testValue);
 
     static volatile bool methodWithMultipleByteBufferParametersAsyncCallbackDone;
     static volatile bool methodWithMultipleByteBufferParametersAsyncCallbackResult;
@@ -61,6 +71,56 @@ volatile bool IltConsumerAsyncMethodTest::methodWithSinglePrimitiveParametersAsy
         false;
 volatile bool IltConsumerAsyncMethodTest::methodWithExtendedErrorEnumAsyncCallbackDone = false;
 volatile bool IltConsumerAsyncMethodTest::methodWithExtendedErrorEnumAsyncCallbackResult = false;
+
+template <typename AttributeType>
+void IltConsumerAsyncMethodTest::callProxyMethodWithParameterAsyncAndAssertResult(
+        std::function<std::shared_ptr<joynr::Future<AttributeType>>(
+                joynr::interlanguagetest::TestInterfaceAsyncProxy*,
+                const AttributeType&,
+                std::function<void(const AttributeType&)>,
+                std::function<void(const joynr::exceptions::JoynrRuntimeException&)>,
+                boost::optional<joynr::MessagingQos>)> testMethod,
+        const AttributeType& testValue)
+{
+    std::function<void(const AttributeType result)> onSuccess =
+            [&testValue](const AttributeType result) {
+        // check result
+        if (result != testValue) {
+            JOYNR_LOG_ERROR(logger(),
+                            "callProxyMethodWithParameterAsyncAndAssertResult FAILED - "
+                            "invalid result from callback");
+            return;
+        }
+        JOYNR_LOG_DEBUG(logger(),
+                        " - callback - "
+                        "got correct value");
+    };
+
+    std::function<void(const joynr::exceptions::JoynrException& error)> onError =
+            [](const joynr::exceptions::JoynrException& error) {
+        JOYNR_LOG_ERROR(logger(),
+                        "callProxyMethodWithParameterAsyncAndAssertResult FAILED - "
+                        "caught exception");
+        JOYNR_LOG_ERROR(logger(), error.getTypeName());
+        JOYNR_LOG_ERROR(logger(), error.getMessage());
+    };
+
+    std::shared_ptr<joynr::Future<AttributeType>> future =
+            testMethod(testInterfaceProxy.get(), testValue, onSuccess, onError, {});
+
+    long timeoutInMilliseconds = 8000;
+    JOYNR_ASSERT_NO_THROW(future->wait(timeoutInMilliseconds));
+    ASSERT_TRUE(future->isOk());
+
+    AttributeType result;
+
+    // the following call would throw an exception, in case the request status
+    // is negative, however we have already returned here
+    future->get(result);
+
+    // check results from future
+    ASSERT_EQ(result, testValue);
+}
 
 TEST_F(IltConsumerAsyncMethodTest, callMethodWithMultipleStructParametersAsync)
 {
@@ -392,6 +452,68 @@ TEST_F(IltConsumerAsyncMethodTest, callMethodWithMultipleByteBufferParameters)
     waitForChange(methodWithMultipleByteBufferParametersAsyncCallbackDone, 1000);
     ASSERT_TRUE(methodWithMultipleByteBufferParametersAsyncCallbackDone);
     ASSERT_TRUE(methodWithMultipleByteBufferParametersAsyncCallbackResult);
+}
+
+TEST_F(IltConsumerAsyncMethodTest, callMethodWithInt64TypeDefParameter)
+{
+    callProxyMethodWithParameterAsyncAndAssertResult<std::int64_t>(
+            &joynr::interlanguagetest::TestInterfaceProxy::methodWithInt64TypeDefParameterAsync,
+            1L);
+}
+
+TEST_F(IltConsumerAsyncMethodTest, callMethodWithStringTypeDefParameter)
+{
+    callProxyMethodWithParameterAsyncAndAssertResult<std::string>(
+            &joynr::interlanguagetest::TestInterfaceProxy::methodWithStringTypeDefParameterAsync,
+            "TypeDefTestString");
+}
+
+TEST_F(IltConsumerAsyncMethodTest, callMethodWithStructTypeDefParameter)
+{
+    callProxyMethodWithParameterAsyncAndAssertResult<
+            joynr::interlanguagetest::namedTypeCollection2::BaseStruct>(
+            &joynr::interlanguagetest::TestInterfaceProxy::methodWithStructTypeDefParameterAsync,
+            IltUtil::createBaseStruct());
+}
+
+TEST_F(IltConsumerAsyncMethodTest, callMethodWithMapTypeDefParameter)
+{
+    joynr::interlanguagetest::namedTypeCollection2::MapStringString mapTypeDefArg;
+    mapTypeDefArg.insert(std::pair<std::string, std::string>("keyString1", "valueString1"));
+    mapTypeDefArg.insert(std::pair<std::string, std::string>("keyString2", "valueString2"));
+    mapTypeDefArg.insert(std::pair<std::string, std::string>("keyString3", "valueString3"));
+
+    callProxyMethodWithParameterAsyncAndAssertResult<
+            joynr::interlanguagetest::namedTypeCollection2::MapStringString>(
+            &joynr::interlanguagetest::TestInterfaceProxy::methodWithMapTypeDefParameterAsync,
+            mapTypeDefArg);
+}
+
+TEST_F(IltConsumerAsyncMethodTest, callMethodWithEnumTypeDefParameter)
+{
+    callProxyMethodWithParameterAsyncAndAssertResult<joynr::interlanguagetest::Enumeration::Enum>(
+            &joynr::interlanguagetest::TestInterfaceProxy::methodWithEnumTypeDefParameterAsync,
+            joynr::interlanguagetest::Enumeration::ENUM_0_VALUE_1);
+}
+
+TEST_F(IltConsumerAsyncMethodTest, callMethodWithByteBufferTypeDefParameter)
+{
+    callProxyMethodWithParameterAsyncAndAssertResult<joynr::ByteBuffer>(
+            &joynr::interlanguagetest::TestInterfaceProxy::
+                    methodWithByteBufferTypeDefParameterAsync,
+            joynr::ByteBuffer{0x00, 0x64, 0xFF});
+}
+
+TEST_F(IltConsumerAsyncMethodTest, callMethodWithArrayTypeDefParameter)
+{
+    std::vector<std::string> stringArray = IltUtil::createStringArray();
+    joynr::interlanguagetest::typeDefCollection::ArrayTypeDefStruct arrayTypeDefArg;
+    arrayTypeDefArg.setTypeDefStringArray(stringArray);
+
+    callProxyMethodWithParameterAsyncAndAssertResult<
+            joynr::interlanguagetest::typeDefCollection::ArrayTypeDefStruct>(
+            &joynr::interlanguagetest::TestInterfaceProxy::methodWithArrayTypeDefParameterAsync,
+            arrayTypeDefArg);
 }
 
 TEST_F(IltConsumerAsyncMethodTest, callMethodWithExtendedErrorEnumAsync)

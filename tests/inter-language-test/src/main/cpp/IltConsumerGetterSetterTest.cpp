@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -29,7 +29,33 @@ class IltConsumerGetterSetterTest : public IltAbstractConsumerTest<::testing::Te
 {
 public:
     IltConsumerGetterSetterTest() = default;
+
+    template <typename AttributeType>
+    void genericSetGetTestMethod(
+            std::function<void(joynr::interlanguagetest::TestInterfaceSyncProxy*,
+                               AttributeType&,
+                               boost::optional<joynr::MessagingQos>)> getter,
+            std::function<void(joynr::interlanguagetest::TestInterfaceSyncProxy*,
+                               const AttributeType,
+                               boost::optional<joynr::MessagingQos>)> setter,
+            AttributeType expectedResult);
 };
+
+template <typename AttributeType>
+void IltConsumerGetterSetterTest::genericSetGetTestMethod(
+        std::function<void(joynr::interlanguagetest::TestInterfaceSyncProxy*,
+                           AttributeType&,
+                           boost::optional<joynr::MessagingQos>)> getter,
+        std::function<void(joynr::interlanguagetest::TestInterfaceSyncProxy*,
+                           const AttributeType,
+                           boost::optional<joynr::MessagingQos>)> setter,
+        AttributeType expectedResult)
+{
+    AttributeType result;
+    JOYNR_ASSERT_NO_THROW(setter(testInterfaceProxy.get(), expectedResult, {}));
+    JOYNR_ASSERT_NO_THROW(getter(testInterfaceProxy.get(), result, {}));
+    ASSERT_EQ(result, expectedResult);
+}
 
 TEST_F(IltConsumerGetterSetterTest, callSetAttributeUInt8)
 {
@@ -101,6 +127,76 @@ TEST_F(IltConsumerGetterSetterTest, callGetAttributeByteBuffer)
     JOYNR_ASSERT_NO_THROW(testInterfaceProxy->setAttributeByteBuffer(expectedResult));
     JOYNR_ASSERT_NO_THROW(testInterfaceProxy->getAttributeByteBuffer(result));
     ASSERT_EQ(result, expectedResult);
+}
+
+TEST_F(IltConsumerGetterSetterTest, callGetAttributeInt64TypeDef)
+{
+    genericSetGetTestMethod<std::int64_t>(
+            &joynr::interlanguagetest::TestInterfaceProxy::getAttributeInt64TypeDef,
+            &joynr::interlanguagetest::TestInterfaceProxy::setAttributeInt64TypeDef,
+            1L);
+}
+
+TEST_F(IltConsumerGetterSetterTest, callGetAttributeStringTypeDef)
+{
+    genericSetGetTestMethod<joynr::interlanguagetest::typeDefCollection::TypeDefForString>(
+            &joynr::interlanguagetest::TestInterfaceProxy::getAttributeStringTypeDef,
+            &joynr::interlanguagetest::TestInterfaceProxy::setAttributeStringTypeDef,
+            "TypeDefTestString");
+}
+
+TEST_F(IltConsumerGetterSetterTest, callGetAttributeStructTypeDef)
+{
+    genericSetGetTestMethod<joynr::interlanguagetest::typeDefCollection::TypeDefForStruct>(
+            &joynr::interlanguagetest::TestInterfaceProxy::getAttributeStructTypeDef,
+            &joynr::interlanguagetest::TestInterfaceProxy::setAttributeStructTypeDef,
+            IltUtil::createBaseStruct());
+}
+
+TEST_F(IltConsumerGetterSetterTest, callGetAttributeMapTypeDef)
+{
+    using testType = joynr::interlanguagetest::typeDefCollection::TypeDefForMap;
+    testType expectedResult;
+    expectedResult.insert(std::pair<std::string, std::string>("keyString1", "valueString1"));
+    expectedResult.insert(std::pair<std::string, std::string>("keyString2", "valueString2"));
+    expectedResult.insert(std::pair<std::string, std::string>("keyString3", "valueString3"));
+    genericSetGetTestMethod<testType>(
+            &joynr::interlanguagetest::TestInterfaceProxy::getAttributeMapTypeDef,
+            &joynr::interlanguagetest::TestInterfaceProxy::setAttributeMapTypeDef,
+            expectedResult);
+}
+
+TEST_F(IltConsumerGetterSetterTest, callGetAttributeEnumTypeDef)
+{
+    using testType = joynr::interlanguagetest::typeDefCollection::TypeDefForEnum::Enum;
+    testType expectedResult =
+            joynr::interlanguagetest::typeDefCollection::TypeDefForEnum::ENUM_0_VALUE_1;
+    genericSetGetTestMethod<testType>(
+            &joynr::interlanguagetest::TestInterfaceProxy::getAttributeEnumTypeDef,
+            &joynr::interlanguagetest::TestInterfaceProxy::setAttributeEnumTypeDef,
+            expectedResult);
+}
+
+TEST_F(IltConsumerGetterSetterTest, callGetAttributeByteBufferTypeDef)
+{
+    using testType = joynr::interlanguagetest::typeDefCollection::TypeDefForByteBuffer;
+    testType expectedResult = {0x00, 0x64, 0xFF};
+    genericSetGetTestMethod<testType>(
+            &joynr::interlanguagetest::TestInterfaceProxy::getAttributeByteBufferTypeDef,
+            &joynr::interlanguagetest::TestInterfaceProxy::setAttributeByteBufferTypeDef,
+            expectedResult);
+}
+
+TEST_F(IltConsumerGetterSetterTest, callGetAttributeArrayTypeDef)
+{
+    using testType = joynr::interlanguagetest::typeDefCollection::ArrayTypeDefStruct;
+    std::vector<std::string> stringArray = IltUtil::createStringArray();
+    testType expectedResult;
+    expectedResult.setTypeDefStringArray(stringArray);
+    genericSetGetTestMethod<testType>(
+            &joynr::interlanguagetest::TestInterfaceProxy::getAttributeArrayTypeDef,
+            &joynr::interlanguagetest::TestInterfaceProxy::setAttributeArrayTypeDef,
+            expectedResult);
 }
 
 TEST_F(IltConsumerGetterSetterTest, callSetAttributeArrayOfStringImplicit)

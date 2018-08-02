@@ -118,9 +118,6 @@ typeCollection namedTypeCollection2 {
 
 	const EnumerationWithoutDefinedValues constEnumerationWithoutDefinedValues = EnumerationWithoutDefinedValues.ENUM_0_VALUE_2
 
-	// TYPE DEFINITIONS (ALIASES)
-	// not supported
-
 	// ARRAYS
 	// only implicit, one-dimensional array types are supported
 
@@ -247,6 +244,22 @@ typeCollection namedTypeCollection2 {
 	}
 }
 
+typeCollection typeDefCollection {
+	version { major 1 minor 0 }
+
+	// TYPE DEFINITIONS (ALIASES)
+	typedef TypeDefForInt64      is Int64
+	typedef TypeDefForString     is String
+	typedef TypeDefForStruct     is namedTypeCollection2.BaseStruct
+	typedef TypeDefForMap        is namedTypeCollection2.MapStringString
+	typedef TypeDefForEnum       is Enumeration
+	typedef TypeDefForByteBuffer is ByteBuffer
+
+	struct ArrayTypeDefStruct {
+		TypeDefForString[] typeDefStringArray
+	}
+}
+
 
 // interface inheritance is not supported (ignored by the generator)
 <**
@@ -291,8 +304,22 @@ interface TestInterface {
 	// ATTRIBUTE where getter / setter throws exception
 
 	attribute Boolean attributeWithExceptionFromGetter readonly
-	
+
 	attribute Boolean attributeWithExceptionFromSetter
+
+	attribute typeDefCollection.TypeDefForInt64 attributeInt64TypeDef
+
+	attribute typeDefCollection.TypeDefForString attributeStringTypeDef
+
+	attribute typeDefCollection.TypeDefForStruct attributeStructTypeDef
+
+	attribute typeDefCollection.TypeDefForMap attributeMapTypeDef
+
+	attribute typeDefCollection.TypeDefForEnum attributeEnumTypeDef
+
+	attribute typeDefCollection.TypeDefForByteBuffer attributeByteBufferTypeDef
+
+	attribute typeDefCollection.ArrayTypeDefStruct attributeArrayTypeDef
 
 	// METHODS WITHOUT ERROR DEFINITIONS
 
@@ -370,6 +397,70 @@ interface TestInterface {
 		}
 		out {
 			ByteBuffer byteBufferOut
+		}
+	}
+
+	// METHODS WITH TYPEDEF PARAMETERS
+	method methodWithInt64TypeDefParameter {
+		in {
+			typeDefCollection.TypeDefForInt64 int64TypeDefIn
+		}
+		out {
+			typeDefCollection.TypeDefForInt64 int64TypeDefOut
+		}
+	}
+
+	method methodWithStringTypeDefParameter {
+		in {
+			typeDefCollection.TypeDefForString stringTypeDefIn
+		}
+		out {
+			typeDefCollection.TypeDefForString stringTypeDefOut
+		}
+	}
+
+	method methodWithStructTypeDefParameter {
+		in {
+			typeDefCollection.TypeDefForStruct structTypeDefIn
+		}
+		out {
+			typeDefCollection.TypeDefForStruct structTypeDefOut
+		}
+	}
+
+	method methodWithMapTypeDefParameter {
+		in {
+			typeDefCollection.TypeDefForMap mapTypeDefIn
+		}
+		out {
+			typeDefCollection.TypeDefForMap mapTypeDefOut
+		}
+	}
+
+	method methodWithEnumTypeDefParameter {
+		in {
+			typeDefCollection.TypeDefForEnum enumTypeDefIn
+		}
+		out {
+			typeDefCollection.TypeDefForEnum enumTypeDefOut
+		}
+	}
+
+	method methodWithByteBufferTypeDefParameter {
+		in {
+			typeDefCollection.TypeDefForByteBuffer byteBufferTypeDefIn
+		}
+		out {
+			typeDefCollection.TypeDefForByteBuffer byteBufferTypeDefOut
+		}
+	}
+
+	method methodWithArrayTypeDefParameter {
+		in {
+			typeDefCollection.ArrayTypeDefStruct arrayTypeDefIn
+		}
+		out {
+			typeDefCollection.ArrayTypeDefStruct arrayTypeDefOut
 		}
 	}
 
