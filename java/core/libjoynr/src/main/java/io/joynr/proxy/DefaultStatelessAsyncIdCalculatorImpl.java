@@ -19,6 +19,7 @@
 package io.joynr.proxy;
 
 import io.joynr.dispatcher.rpc.annotation.StatelessCallbackCorrelation;
+import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +31,7 @@ import com.google.inject.name.Named;
 import io.joynr.messaging.MessagingPropertyKeys;
 
 import java.lang.reflect.Method;
+import java.util.Random;
 
 @Singleton
 public class DefaultStatelessAsyncIdCalculatorImpl implements StatelessAsyncIdCalculator {
@@ -37,8 +39,10 @@ public class DefaultStatelessAsyncIdCalculatorImpl implements StatelessAsyncIdCa
     private static final Logger logger = LoggerFactory.getLogger(DefaultStatelessAsyncIdCalculatorImpl.class);
     public static final String METHOD_SEPARATOR = ":#:";
     public static final String CHANNEL_SEPARATOR = ":>:";
+    public static final String REQUEST_REPLY_ID_SEPARATOR = "#";
 
     private final String channelId;
+    private final Random random = new Random();
 
     @Inject
     public DefaultStatelessAsyncIdCalculatorImpl(@Named(MessagingPropertyKeys.CHANNELID) String channelId) {
@@ -65,6 +69,24 @@ public class DefaultStatelessAsyncIdCalculatorImpl implements StatelessAsyncIdCa
             throw new JoynrRuntimeException("No StatelessCallbackCorrelation found on method " + method);
         }
         return callbackCorrelation.value();
+    }
+
+    @Override
+    public String calculateStatelessCallbackRequestReplyId(Method method) {
+        String requestReplyId = String.valueOf(random.nextLong());
+        String methodId = calculateStatelessCallbackMethodId(method);
+        return requestReplyId + REQUEST_REPLY_ID_SEPARATOR + methodId;
+    }
+
+    @Override
+    public String extractMethodIdFromRequestReplyId(String requestReplyId) {
+        if (requestReplyId == null || requestReplyId.trim().isEmpty()
+                || !requestReplyId.contains(REQUEST_REPLY_ID_SEPARATOR)) {
+            throw new JoynrIllegalStateException("Unable to extract method ID from invalid request/reply ID: "
+                    + requestReplyId);
+        }
+        int index = requestReplyId.indexOf(REQUEST_REPLY_ID_SEPARATOR);
+        return requestReplyId.substring(index + REQUEST_REPLY_ID_SEPARATOR.length());
     }
 
     @Override

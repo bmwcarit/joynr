@@ -62,6 +62,27 @@ public interface StatelessAsyncIdCalculator {
     String calculateStatelessCallbackMethodId(Method method);
 
     /**
+     * Calculates a random request/reply ID with the method ID from the callback appended to it.
+     * The two will be concatenated using the '#' character.
+     *
+     * In order to be able to transmit the method ID without changing the joynr message format or request / reply
+     * payload objects, we use the request/reply ID in order to convey the required information.
+     *
+     * @param method the method from which to read the correlation ID (see also {@link #calculateStatelessCallbackMethodId(Method)})
+     * @return the request/reply ID with the callback method ID appended
+     */
+    String calculateStatelessCallbackRequestReplyId(Method method);
+
+    /**
+     * Extracts the callback method ID from a request/reply ID previously generated with
+     * {@link #calculateStatelessCallbackRequestReplyId(Method)}.
+     *
+     * @param requestReplyId the request/reply ID from which to extract the callback method ID
+     * @return the method ID
+     */
+    String extractMethodIdFromRequestReplyId(String requestReplyId);
+
+    /**
      * Utility method to strip the method-specific information from an ID generated with
      * {@link #calculateStatelessCallbackMethodId(Method)}
      * in order to derive the {@link #calculateStatelessCallbackId(String, StatelessAsyncCallback)} ID so that the

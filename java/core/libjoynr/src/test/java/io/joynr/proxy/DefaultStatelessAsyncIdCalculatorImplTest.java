@@ -19,8 +19,10 @@
 package io.joynr.proxy;
 
 import static io.joynr.proxy.DefaultStatelessAsyncIdCalculatorImpl.CHANNEL_SEPARATOR;
+import static io.joynr.proxy.DefaultStatelessAsyncIdCalculatorImpl.REQUEST_REPLY_ID_SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -91,6 +93,22 @@ public class DefaultStatelessAsyncIdCalculatorImplTest {
     public void testCalculateCallbackWithMethod() throws Exception {
         Method method = TestInterface.class.getMethod("test");
         String result = subject.calculateStatelessCallbackMethodId(method);
+        assertNotNull(result);
+        assertEquals(CORRELATION_ID, result);
+    }
+
+    @Test
+    public void testCalculateRequestReplyId() throws Exception {
+        Method method = TestInterface.class.getMethod("test");
+        String result = subject.calculateStatelessCallbackRequestReplyId(method);
+        assertNotNull(result);
+        assertTrue(result.endsWith(REQUEST_REPLY_ID_SEPARATOR + CORRELATION_ID));
+    }
+
+    @Test
+    public void testExtractMethodIdFromRequestReplyId() {
+        String requestReplyId = "random here" + REQUEST_REPLY_ID_SEPARATOR + CORRELATION_ID;
+        String result = subject.extractMethodIdFromRequestReplyId(requestReplyId);
         assertNotNull(result);
         assertEquals(CORRELATION_ID, result);
     }
