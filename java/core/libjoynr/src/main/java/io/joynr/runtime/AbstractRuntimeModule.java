@@ -76,11 +76,13 @@ import io.joynr.messaging.routing.MulticastAddressCalculator;
 import io.joynr.messaging.routing.MulticastReceiverRegistry;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.messaging.routing.RoutingTableImpl;
+import io.joynr.proxy.DefaultStatelessAsyncIdCalculatorImpl;
 import io.joynr.proxy.ProxyBuilderFactory;
 import io.joynr.proxy.ProxyBuilderFactoryImpl;
 import io.joynr.proxy.ProxyInvocationHandler;
 import io.joynr.proxy.ProxyInvocationHandlerFactory;
 import io.joynr.proxy.ProxyInvocationHandlerImpl;
+import io.joynr.proxy.StatelessAsyncIdCalculator;
 import io.joynr.statusmetrics.DefaultStatusReceiver;
 import io.joynr.statusmetrics.StatusReceiver;
 import joynr.system.DiscoveryAsync;
@@ -143,6 +145,7 @@ abstract class AbstractRuntimeModule extends AbstractModule {
         bind(ScheduledExecutorService.class).annotatedWith(Names.named(MessageRouter.SCHEDULEDTHREADPOOL))
                                             .toProvider(DefaultScheduledExecutorServiceProvider.class);
         bind(StatusReceiver.class).to(DefaultStatusReceiver.class);
+        bind(StatelessAsyncIdCalculator.class).to(DefaultStatelessAsyncIdCalculatorImpl.class);
 
         install(new StaticCapabilitiesProvisioningModule());
 

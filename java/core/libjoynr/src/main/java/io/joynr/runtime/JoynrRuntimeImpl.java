@@ -23,6 +23,8 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import io.joynr.proxy.StatelessAsyncCallback;
+import io.joynr.proxy.StatelessAsyncCallbackDirectory;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,6 +61,8 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
 
     private static final Logger logger = LoggerFactory.getLogger(JoynrRuntimeImpl.class);
 
+    private final StatelessAsyncCallbackDirectory statelessAsyncCallbackDirectory;
+
     @Inject
     private CapabilitiesRegistrar capabilitiesRegistrar;
 
@@ -82,12 +86,14 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
                             MessagingSkeletonFactory messagingSkeletonFactory,
                             LocalDiscoveryAggregator localDiscoveryAggregator,
                             RoutingTable routingTable,
+                            StatelessAsyncCallbackDirectory statelessAsyncCallbackDirectory,
                             @Named(SystemServicesSettings.PROPERTY_SYSTEM_SERVICES_DOMAIN) String systemServicesDomain,
                             @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) Address dispatcherAddress,
                             @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS) Address discoveryProviderAddress) {
         // CHECKSTYLE:ON
         this.dispatcher = dispatcher;
         this.objectMapper = objectMapper;
+        this.statelessAsyncCallbackDirectory = statelessAsyncCallbackDirectory;
 
         Reflections reflections = new Reflections("joynr");
         Set<Class<? extends JoynrType>> subClasses = reflections.getSubTypesOf(JoynrType.class);
@@ -183,6 +189,11 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
         synchronized (unregisterProviderQueue) {
             unregisterProviderQueue.add(capabilitiesRegistrar.unregisterProvider(domain, provider));
         }
+    }
+
+    @Override
+    public void registerStatelessAsyncCallback(StatelessAsyncCallback statelessAsyncCallback) {
+        statelessAsyncCallbackDirectory.register(statelessAsyncCallback);
     }
 
     @Override
