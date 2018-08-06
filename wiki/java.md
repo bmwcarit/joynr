@@ -1110,7 +1110,7 @@ import joynr.<Package>.<TypeCollection>.<Type>;
 public class MyProviderApplication extends AbstractJoynrApplication {
     private static final String AUTH_TOKEN = "MyProvider_authToken";
     public static final String STATIC_PERSISTENCE_FILE = "provider-joynr.properties";
-    private My<Interface>Provider <interface>provider = null;
+    private My<Interface>Provider <interface>Provider = null;
 
     public static void main(String[] args) {
         // ...
@@ -1184,10 +1184,10 @@ Any specific broadcast filters must be added prior to registry.
 ```java
 @Override
 public void run() {
-    <interface>provider = new My<Interface>Provider();
+    <interface>Provider = new My<Interface>Provider();
 
     // for any filter of a broadcast with filter
-    <interface>provider.addBroadcastFilter(new <Filter>BroadcastFilter());
+    <interface>Provider.addBroadcastFilter(new <Filter>BroadcastFilter());
     ProviderQos providerQos = new ProviderQos();
     // use setters on providerQos as required
     // set the priority, used for arbitration by highest priority
@@ -1195,11 +1195,43 @@ public void run() {
     // set priorityValue
     providerQos.setPriority(priorityValue);
 
-    runtime.registerProvider(localDomain, <interface>provider, providerQos);
+    runtime.registerProvider(localDomain, <interface>Provider, providerQos);
 
     // loop here
 }
 ```
+
+### Register provider with fixed (custom) participantId
+
+By default, joynr generates a participantID for the provider instance. This participantID is
+persisted (see PROPERTY_PARTICIPANTIDS_PERSISISTENCE_FILE in [Joynr Java Settings](JavaSettings.md))
+and reused when a provider for the same interface is registered again on the same domain
+(e.g. after a restart).
+
+A provider can also be registered with a fixed (predefined) participantID by adding a property to
+the joynrConfig, see [The main method](#the-main-method), before the runtimeModule is created.
+
+```java
+import io.joynr.capabilities.ParticipantIdKeyUtil;
+...
+public static void main(String[] args) {
+...
+    joynrConfig.setProperty(
+            ParticipantIdKeyUtil.getProviderParticipantIdKey(localDomain, <interface>Provider.class),
+            <customProviderParticipantID>);
+...
+}
+```
+
+The property key is also used as key in the persistence file. It is created as follows:
+`<JOYNR_PARTICIPANT_PREFIX><DOMAIN>.<INTERFACE_NAME>.v<MAJOR_VERSION>`
+It is strongly recommended to use the ParticipantIdKeyUtil to create the key as the key format might
+change again in the future.
+
+> Note:
+> The provided fixed participantId is only used if there is no entry in the persistence file.
+> If the provider has already been registered with a generated (default) participantId before, the
+> persistence file or the entry for the provider has to be deleted to enable the fixed participantId.
 
 ### The shutdown method
 The ```shutdown``` method should be called on exit of the application. It should cleanly unregister
@@ -1209,9 +1241,9 @@ any providers the application had registered earlier.
 @Override
 @SuppressWarnings(value = "DM_EXIT", justification = "WORKAROUND to be removed")
 public void shutdown() {
-    if (<interface>provider != null) {
+    if (<interface>Provider != null) {
         try {
-            runtime.unregisterProvider(localDomain, <interface>provider);
+            runtime.unregisterProvider(localDomain, <interface>Provider);
         } catch (JoynrRuntimeException e) {
             // handle error
         }

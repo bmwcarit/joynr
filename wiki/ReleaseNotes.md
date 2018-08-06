@@ -7,10 +7,17 @@ the versioning scheme [here](JoynrVersioning.md).
 ## API relevant changes
 * **[Java]** Android support has been disabled until further notice.
 * **[Java]** joynr now **requires Java 8** and the plain Java part is no longer compatible with Java 7 (which was previously required for Android).
+* **[Java]** The key format of persisted provider participantIDs changed. It now includes the major
+ version of the Franca interface implemented by the provider.
+ * All providers which do not use a fixed participantID will be registered with a newly generated
+   participantID. Existing proxies have to be rebuilt (the provider has to be discovered again).
+ * Providers with a fixed participantId might have to be updated in order to use the new key format,
+   see [Joynr Java Developer Guide](java.md#register-provider-with-fixed-%28custom%29-participantId)
+   for the recommended way of registering providers with fixed participantID.
 * **[Java]** Several dependencies have been upgraded. Please make sure to
   upgrade any applications / JEE server accordingly to avoid possible
-  version conflicts.  
-  `mvn dependency:tree` from top-level pom.xml reports the following changes:  
+  version conflicts.
+  `mvn dependency:tree` from top-level pom.xml reports the following changes:
  * com.google.code.findbugs:annotations updated from version 2.0.1 to 3.0.1
  * com.google.code.findbugs:jsr305 updated from version 2.0.1 to 3.0.2
  * com.google.errorprone:error_prone_annotations added version 2.1.3
