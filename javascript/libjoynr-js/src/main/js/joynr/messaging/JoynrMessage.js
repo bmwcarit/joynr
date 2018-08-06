@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-const MESSAGE_CUSTOM_HEADER_PREFIX = "custom-";
+const MESSAGE_CUSTOM_HEADER_PREFIX = "c-";
 const uuid = require("uuid/v4");
 
 const jmBase = uuid();

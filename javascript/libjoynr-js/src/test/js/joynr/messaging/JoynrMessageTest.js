@@ -84,7 +84,7 @@ describe("libjoynr-js.joynr.messaging.JoynrMessage", () => {
             type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
         });
         const headerKey = "headerKey";
-        const customHeaderKey = `custom-${headerKey}`;
+        const customHeaderKey = `c-${headerKey}`;
         const customHeaders = {};
         customHeaders[headerKey] = "customHeaderValue";
 
@@ -95,7 +95,7 @@ describe("libjoynr-js.joynr.messaging.JoynrMessage", () => {
 
     it("allows getting custom headers", done => {
         const headerKey = "headerKey";
-        const customHeaderKey = `custom-${headerKey}`;
+        const customHeaderKey = `c-${headerKey}`;
         const headerValue = "headerValue";
         const myCustomHeaders = {};
         myCustomHeaders[headerKey] = "customHeaderValue";
