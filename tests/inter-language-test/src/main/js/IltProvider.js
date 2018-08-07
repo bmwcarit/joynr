@@ -640,6 +640,7 @@ const IltProvider = {
     methodFireAndForgetWithoutParameter(opArgs) {
         prettyLog(`IltProvider.methodFireAndForgetWithoutParameter(${JSON.stringify(opArgs)}) called`);
         IltProvider.attributeFireAndForget.set(attributeFireAndForget + 1);
+        IltProvider.attributeFireAndForget.valueChanged(attributeFireAndForget);
     },
 
     methodFireAndForgetWithInputParameter(opArgs) {
@@ -650,6 +651,7 @@ const IltProvider = {
         } else {
             IltProvider.attributeFireAndForget.set(opArgs.int32Arg);
         }
+        IltProvider.attributeFireAndForget.valueChanged(attributeFireAndForget);
     },
 
     // OVERLOADED METHODS
