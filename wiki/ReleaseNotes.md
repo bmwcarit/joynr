@@ -105,6 +105,9 @@ the versioning scheme [here](JoynrVersioning.md).
  * org.jboss.shrinkwrap:shrinkwrap-impl-base updated from version 1.2.3 to 1.2.6
  * org.jboss.shrinkwrap:shrinkwrap-spi updated from version 1.2.3 to 1.2.6
  * org.reflections:reflections updated from version 0.9.8 to 0.9.10
+* **[Java]** Proxy methods can now be passed an optional `io.joynr.messaging.MessagingQos` parameter.
+  This allows to overwrite the `MessagingQos` which was specified during proxy building
+  for each proxy method call separately.
 
 ## Other changes
 * **[Java,C++,JS]** Introduced Franca 0.13.0, joynr continues to support
