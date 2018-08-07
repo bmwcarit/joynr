@@ -51,7 +51,7 @@ public class PropertiesFileParticipantIdStorage implements ParticipantIdStorage 
     private String persistenceFileName;
     private Properties joynrProperties;
     private String discoveryProviderParticipantId;
-    private String routingProviderParticipantId;;
+    private String routingProviderParticipantId;
 
     @Inject
     public PropertiesFileParticipantIdStorage(@Named(MessagingPropertyKeys.JOYNR_PROPERTIES) Properties joynrProperties,
