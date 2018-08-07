@@ -77,11 +77,12 @@ public class StatelessAsyncReplyCallerTest {
     }
 
     private void testCall(String methodName, Function<String, Reply> replyGenerator) {
-        String statelessAsyncCallbackId = buildStatelessAsyncCallbackId(methodName);
+        String statelessAsyncCallbackId = Navigation.INTERFACE_NAME + ":~:test";
         StatelessAsyncReplyCaller subject = new StatelessAsyncReplyCaller(statelessAsyncCallbackId, callback);
         String requestReplyId = UUID.randomUUID().toString();
         Reply reply = replyGenerator.apply(requestReplyId);
         reply.setStatelessCallback(statelessAsyncCallbackId);
+        reply.setStatelessCallbackMethodId(getStatelessCallbackCorrelation(methodName).value());
         subject.messageCallBack(reply);
         assertTrue(resultHolder.containsKey(requestReplyId));
         assertTrue(resultHolder.get(requestReplyId));
@@ -96,9 +97,4 @@ public class StatelessAsyncReplyCallerTest {
                      .getAnnotation(StatelessCallbackCorrelation.class);
     }
 
-    private String buildStatelessAsyncCallbackId(String methodName) {
-        StatelessCallbackCorrelation callbackCorrelation = getStatelessCallbackCorrelation(methodName);
-        assertNotNull(callbackCorrelation);
-        return Navigation.INTERFACE_NAME + ":~:test:#:" + callbackCorrelation.value();
-    }
 }

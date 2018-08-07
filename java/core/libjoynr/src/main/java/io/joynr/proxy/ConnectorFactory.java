@@ -61,14 +61,14 @@ public class ConnectorFactory {
      * @param fromParticipantId origin participant id
      * @param arbitrationResult result of arbitration
      * @param qosSettings QOS settings
-     * @param statelessAsyncCallbackId
+     * @param statelessAsyncParticipantId
      * @return connector object
      */
     @CheckForNull
     public ConnectorInvocationHandler create(final String fromParticipantId,
                                              final ArbitrationResult arbitrationResult,
                                              final MessagingQos qosSettings,
-                                             String statelessAsyncCallbackId) {
+                                             String statelessAsyncParticipantId) {
         // iterate through  arbitrationResult.getDiscoveryEntries()
         // check if there is at least one Globally visible
         // set isGloballyVisible = true. otherwise = false
@@ -81,16 +81,17 @@ public class ConnectorFactory {
             }
         }
         messageRouter.addNextHop(fromParticipantId, libjoynrMessagingAddress, isGloballyVisible);
-        if (statelessAsyncCallbackId != null) {
+        if (statelessAsyncParticipantId != null) {
             logger.info("Adding route for stateless callback {} / {} / {}",
-                        statelessAsyncCallbackId,
+                        statelessAsyncParticipantId,
                         libjoynrMessagingAddress,
                         isGloballyVisible);
-            messageRouter.addNextHop(statelessAsyncCallbackId, libjoynrMessagingAddress, isGloballyVisible);
+            messageRouter.addNextHop(statelessAsyncParticipantId, libjoynrMessagingAddress, isGloballyVisible);
         }
         return joynrMessagingConnectorFactory.create(fromParticipantId,
                                                      arbitrationResult.getDiscoveryEntries(),
-                                                     qosSettings);
+                                                     qosSettings,
+                                                     statelessAsyncParticipantId);
 
     }
 }

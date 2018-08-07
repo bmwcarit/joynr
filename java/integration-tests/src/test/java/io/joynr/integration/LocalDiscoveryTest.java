@@ -266,7 +266,8 @@ public class LocalDiscoveryTest {
             future.get(5000);
             verify(joynrMessagingConnectorFactoryMock).create(anyString(),
                                                               discoveryEntryWithMetaInfoArgumentCaptor.capture(),
-                                                              any(MessagingQos.class));
+                                                              any(MessagingQos.class),
+                                                              eq(null));
 
             assertDiscoveryEntryEqualsCaptured(discoveryEntry);
 
@@ -316,7 +317,8 @@ public class LocalDiscoveryTest {
             future.get(5000);
             verify(joynrMessagingConnectorFactoryMock).create(anyString(),
                                                               eq(discoveryEntriesWithMetaInfo),
-                                                              any(MessagingQos.class));
+                                                              any(MessagingQos.class),
+                                                              eq(null));
         } catch (Exception e) {
             Assert.fail("Unexpected exception from ProxyCreatedCallback: " + e);
         }
@@ -380,7 +382,8 @@ public class LocalDiscoveryTest {
 
             verify(joynrMessagingConnectorFactoryMock).create(anyString(),
                                                               discoveryEntryWithMetaInfoArgumentCaptor.capture(),
-                                                              any(MessagingQos.class));
+                                                              any(MessagingQos.class),
+                                                              eq(null));
 
             assertDiscoveryEntryEqualsCaptured(discoveryEntry);
         } catch (Exception e) {
@@ -485,7 +488,8 @@ public class LocalDiscoveryTest {
             future.get(5000);
             verify(joynrMessagingConnectorFactoryMock).create(anyString(),
                                                               eq(discoveryEntriesWithMetaInfo),
-                                                              any(MessagingQos.class));
+                                                              any(MessagingQos.class),
+                                                              eq(null));
         } catch (Exception e) {
             Assert.fail("Unexpected exception from ProxyCreatedCallback: " + e);
         }

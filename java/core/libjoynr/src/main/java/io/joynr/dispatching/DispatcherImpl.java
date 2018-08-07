@@ -301,9 +301,9 @@ public class DispatcherImpl implements Dispatcher {
 
     private void addStatelessCallback(ImmutableMessage message, Reply reply) {
         String methodId = statelessAsyncIdCalculator.extractMethodIdFromRequestReplyId(reply.getRequestReplyId());
+        reply.setStatelessCallbackMethodId(methodId);
         String statelessParticipantId = message.getRecipient();
-        reply.setStatelessCallback(statelessAsyncIdCalculator.fromParticpantAndMethod(statelessParticipantId,
-                                                                                      methodId));
+        reply.setStatelessCallback(statelessAsyncIdCalculator.fromParticipantUuid(statelessParticipantId));
     }
 
     private void handle(final Request request,

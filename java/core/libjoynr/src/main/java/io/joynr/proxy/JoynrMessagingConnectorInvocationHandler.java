@@ -62,16 +62,21 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
 
     private final SubscriptionManager subscriptionManager;
     private final StatelessAsyncIdCalculator statelessAsyncIdCalculator;
+    private final String statelessAsyncParticipantId;
 
+    // CHECKSTYLE:OFF
     JoynrMessagingConnectorInvocationHandler(Set<DiscoveryEntryWithMetaInfo> toDiscoveryEntries,
                                              String fromParticipantId,
                                              MessagingQos qosSettings,
                                              RequestReplyManager requestReplyManager,
                                              ReplyCallerDirectory replyCallerDirectory,
                                              SubscriptionManager subscriptionManager,
-                                             StatelessAsyncIdCalculator statelessAsyncIdCalculator) {
+                                             StatelessAsyncIdCalculator statelessAsyncIdCalculator,
+                                             String statelessAsyncParticipantId) {
+        // CHECKSTYLE:ON
         this.toDiscoveryEntries = toDiscoveryEntries;
         this.fromParticipantId = fromParticipantId;
+        this.statelessAsyncParticipantId = statelessAsyncParticipantId;
 
         this.qosSettings = qosSettings;
 
@@ -170,8 +175,7 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
                                       paramDatatypesWithoutMessageIdCallback,
                                       statelessAsyncIdCalculator.calculateStatelessCallbackRequestReplyId(method),
                                       statelessAsyncIdCalculator.calculateStatelessCallbackMethodId(method));
-        requestReplyManager.sendRequest(statelessAsyncIdCalculator.calculateParticipantId(interfaceName,
-                                                                                          statelessAsyncCallback),
+        requestReplyManager.sendRequest(statelessAsyncParticipantId,
                                         toDiscoveryEntries.iterator().next(),
                                         request,
                                         qosSettings);

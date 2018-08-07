@@ -27,12 +27,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Method;
+import java.util.UUID;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import io.joynr.dispatcher.rpc.annotation.StatelessCallbackCorrelation;
-import io.joynr.exceptions.JoynrRuntimeException;
 
 public class DefaultStatelessAsyncIdCalculatorImplTest {
 
@@ -53,33 +53,17 @@ public class DefaultStatelessAsyncIdCalculatorImplTest {
     }
 
     @Test
-    public void testWithoutMethod() {
-        String id = String.format("%s:~:%s:#:%s", INTERFACE, USE_CASE, "method");
-        String result = subject.withoutMethod(id);
-        assertNotNull(result);
-        assertEquals(String.format("%s:~:%s", INTERFACE, USE_CASE), result);
-    }
-
-    @Test(expected = JoynrRuntimeException.class)
-    public void testWithoutMethodFailsForNull() {
-        subject.withoutMethod(null);
-    }
-
-    @Test(expected = JoynrRuntimeException.class)
-    public void testWithoutMethodFailsForEmpty() {
-        subject.withoutMethod("");
-    }
-
-    @Test(expected = JoynrRuntimeException.class)
-    public void testWithoutMethodFailsForNoMethod() {
-        subject.withoutMethod("test:~:test");
-    }
-
-    @Test
     public void testCalculateParticipantId() {
         String result = subject.calculateParticipantId(INTERFACE, callback);
         assertNotNull(result);
-        assertEquals(String.format("%s%s%s:~:%s", CHANNEL_ID, CHANNEL_SEPARATOR, INTERFACE, USE_CASE), result);
+        String expectedUuid = UUID.nameUUIDFromBytes(String.format("%s%s%s:~:%s",
+                                                                   CHANNEL_ID,
+                                                                   CHANNEL_SEPARATOR,
+                                                                   INTERFACE,
+                                                                   USE_CASE)
+                                                           .getBytes())
+                                  .toString();
+        assertEquals(expectedUuid, result);
     }
 
     @Test

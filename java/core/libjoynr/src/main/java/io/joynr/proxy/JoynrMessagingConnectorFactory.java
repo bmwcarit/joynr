@@ -74,11 +74,14 @@ public class JoynrMessagingConnectorFactory {
      *            Discovery entries for receivers.
      * @param qosSettings
      *            MessagingQos settings
+     * @param statelessAsyncParticipantId
+     * the participant ID to use for stateless async requests.
      * @return connector to execute remote procedure calls
      */
     public JoynrMessagingConnectorInvocationHandler create(final String fromParticipantId,
                                                            final Set<DiscoveryEntryWithMetaInfo> toDiscoveryEntries,
-                                                           final MessagingQos qosSettings) {
+                                                           final MessagingQos qosSettings,
+                                                           final String statelessAsyncParticipantId) {
 
         return new JoynrMessagingConnectorInvocationHandler(toDiscoveryEntries,
                                                             fromParticipantId,
@@ -86,7 +89,8 @@ public class JoynrMessagingConnectorFactory {
                                                             requestReplyManager,
                                                             replyCallerDirectory,
                                                             subscriptionManager,
-                                                            statelessAsyncIdCalculator);
+                                                            statelessAsyncIdCalculator,
+                                                            statelessAsyncParticipantId);
     }
 
     public static MethodMetaInformation ensureMethodMetaInformationPresent(Method method) {

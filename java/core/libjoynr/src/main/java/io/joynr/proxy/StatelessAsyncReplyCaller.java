@@ -31,7 +31,6 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class StatelessAsyncReplyCaller implements ReplyCaller {
@@ -50,12 +49,7 @@ public class StatelessAsyncReplyCaller implements ReplyCaller {
 
     @Override
     public void messageCallBack(Reply payload) {
-        Matcher matcher = CALLBACK_ID_REGEX.matcher(payload.getStatelessCallback());
-        if (!matcher.matches()) {
-            throw new JoynrRuntimeException("Unable to discern method callback correlation for "
-                    + payload.getStatelessCallback());
-        }
-        String methodCorrelationId = matcher.group(1);
+        String methodCorrelationId = payload.getStatelessCallbackMethodId();
         boolean success = payload.getError() == null;
         Method callbackMethod = Arrays.stream(statelessAsyncCallback.getClass().getMethods()).filter(method -> {
             StatelessCallbackCorrelation callbackCorrelation = AnnotationUtil.getAnnotation(method,

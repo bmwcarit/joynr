@@ -77,6 +77,8 @@ public class StatelessAsyncCallbackDirectory {
         }
         try {
             String interfaceName = (String) usedBy.value().getField("INTERFACE_NAME").get(null);
+            // Trigger calculation of the participant ID, so that the hashed UUID is registered at startup
+            statelessAsyncIdCalculator.calculateParticipantId(interfaceName, statelessAsyncCallback);
             return statelessAsyncIdCalculator.calculateStatelessCallbackId(interfaceName, statelessAsyncCallback);
         } catch (IllegalAccessException | NoSuchFieldException e) {
             throw new JoynrIllegalStateException("Unable to get interface name from " + usedBy, e);

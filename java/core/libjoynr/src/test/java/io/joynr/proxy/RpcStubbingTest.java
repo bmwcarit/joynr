@@ -245,7 +245,8 @@ public class RpcStubbingTest {
                                                                                                            statelessAsyncIdCalculator);
         connector = joynrMessagingConnectorFactory.create(fromParticipantId,
                                                           Sets.newHashSet(toDiscoveryEntry),
-                                                          messagingQos);
+                                                          messagingQos,
+                                                          null);
 
     }
 
