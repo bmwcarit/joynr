@@ -206,7 +206,8 @@ public class LocalDiscoveryAggregatorTest {
         verify(discoveryProxyMock, never()).lookup(any(Callback.class),
                                                    any(String[].class),
                                                    anyString(),
-                                                   any(DiscoveryQos.class));
+                                                   any(DiscoveryQos.class),
+                                                   any(MessagingQos.class));
     }
 
     @SuppressWarnings("unchecked")
@@ -225,8 +226,11 @@ public class LocalDiscoveryAggregatorTest {
                 callback.onSuccess(discoveryProviderEntries);
                 return null;
             }
-        }).when(discoveryProxyMock)
-          .lookup(any(Callback.class), any(String[].class), anyString(), any(DiscoveryQos.class));
+        }).when(discoveryProxyMock).lookup(any(Callback.class),
+                                           any(String[].class),
+                                           anyString(),
+                                           any(DiscoveryQos.class),
+                                           any(MessagingQos.class));
 
         Future<DiscoveryEntryWithMetaInfo[]> discoveryEntriesFuture = localDiscoveryAggregator.lookup(lookupCallback,
                                                                                                       allDomains,
@@ -247,7 +251,8 @@ public class LocalDiscoveryAggregatorTest {
         verify(discoveryProxyMock).lookup(any(Callback.class),
                                           eq(missingDomains),
                                           eq(Discovery.INTERFACE_NAME),
-                                          eq(discoveryQos));
+                                          eq(discoveryQos),
+                                          any(MessagingQos.class));
     }
 
     private boolean containsByInterfaceDomain(DiscoveryEntry[] discoveryEntries, String interfaceName, String domain) {
@@ -270,6 +275,7 @@ public class LocalDiscoveryAggregatorTest {
         verify(discoveryProxyMock, never()).lookup(any(Callback.class),
                                                    any(String[].class),
                                                    anyString(),
-                                                   any(DiscoveryQos.class));
+                                                   any(DiscoveryQos.class),
+                                                   any(MessagingQos.class));
     }
 }
