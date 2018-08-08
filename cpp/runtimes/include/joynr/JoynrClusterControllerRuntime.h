@@ -194,6 +194,7 @@ private:
     void startLocalCommunication();
     std::shared_ptr<joynr::infrastructure::GlobalDomainAccessControllerProxy>
     createGlobalDomainAccessControllerProxy();
+    std::string getSerializedGlobalClusterControllerAddress();
 
     DISALLOW_COPY_AND_ASSIGN(JoynrClusterControllerRuntime);
     std::shared_ptr<MulticastMessagingSkeletonDirectory> multicastMessagingSkeletonDirectory;
