@@ -383,6 +383,36 @@ __IMPORTANT__: if you intend to have your logic make multiple calls to the same
 provider, then you should locally cache the proxy instance returned by the
 ServiceLocator, as the operation of creating a proxy is expensive.
 
+#### Stateless Async
+
+If you want to call a service in a stateless fashion, that is any node in a cluster
+can handle the reply, then you need to provide a `@CallbackHandler` bean and
+request the `*StatelessAsync` instead of the `@Sync` interface from the
+`ServiceLocator`.
+
+The methods in the `*StatelessAsync` interface have a `MessageIdCallaback` as the
+last parameter, which is a consumer of a String value. This value is the unique
+ID of the request being sent out, and when the reply arrives, that same ID will
+accompany the result data. This way, your application can persist or otherwise
+share context information between nodes in a cluster, so that any node can process
+the replies.  
+__IMPORTANT__: it is not guaranteed that the message has actually left the system
+when the `MessageIdCallback` is called. It is possible that the message gets stuck
+in the lower layers due to, e.g., infrastructure issues. If the application persists
+data for the message IDs returned, it may also want to run periodic clean-up jobs
+to see if there are any stale entries due to messages not being transmitted
+successfully.
+
+The handling of the replies is done be a bean implementing the `*StatelessAsyncCallback`
+interface corresponding to the `*StatelessAsync` interface which is called for
+making the request, and which is additionally annotated with `@CallbackHandler`.  
+These are automatically discovered at startup time, and registered as stateless async
+callback handlers with the joynr runtime.
+
+In order to allow the same service to be called from multiple parts of an application
+in different ways, you must also provide a unique 'use case' name for each of the
+proxy / callback pairs.
+
 ## Clustering
 
 The joynr JEE integration currently supports two forms of enabling clustering.
