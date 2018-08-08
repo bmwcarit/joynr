@@ -17,7 +17,7 @@
  * limitations under the License.
  * #L%
  */
-const Mqtt = require("../../../global/Mqtt");
+const mqtt = require("mqtt");
 const MessagingQosEffort = require("../MessagingQosEffort");
 const Typing = require("../../util/Typing");
 const MessageSerializer = require("../MessageSerializer");
@@ -147,7 +147,7 @@ SharedMqttClient.prototype._resetConnection = function resetConnection() {
     if (this._closed) {
         return;
     }
-    this._client = new Mqtt.connect(this._address.brokerUri);
+    this._client = new mqtt.connect(this._address.brokerUri);
     this._client.on("connect", this._onOpen.bind(this));
     this._client.on("message", this._onMessage.bind(this));
 };
