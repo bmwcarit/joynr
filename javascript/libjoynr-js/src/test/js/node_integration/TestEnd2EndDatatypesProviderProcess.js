@@ -60,31 +60,6 @@ function initializeTest(provisioningSuffix, providedDomain) {
     providerDomain = providedDomain;
     provisioning.persistency = "localStorage";
     provisioning.channelId = `End2EndDatatypesTestParticipantId${provisioningSuffix}`;
-    provisioning.logging = {
-        configuration: {
-            appenders: {
-                appender: [
-                    {
-                        type: "Console",
-                        name: "STDOUT",
-                        PatternLayout: {
-                            pattern: "[%d{HH:mm:ss,SSS}][%c][%p] %m{2}"
-                        }
-                    }
-                ]
-            },
-            loggers: {
-                root: {
-                    level: "debug",
-                    AppenderRef: [
-                        {
-                            ref: "STDOUT"
-                        }
-                    ]
-                }
-            }
-        }
-    };
 
     joynr.selectRuntime("inprocess");
     return joynr
