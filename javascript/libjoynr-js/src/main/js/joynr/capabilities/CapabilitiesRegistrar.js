@@ -16,7 +16,6 @@
  * limitations under the License.
  * #L%
  */
-const Promise = require("../../global/Promise");
 const DiscoveryEntry = require("../../generated/joynr/types/DiscoveryEntry");
 const ProviderScope = require("../../generated/joynr/types/ProviderScope");
 const Version = require("../../generated/joynr/types/Version");

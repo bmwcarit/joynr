@@ -17,7 +17,6 @@
  * #L%
  */
 require("../../../node-unit-test-helper");
-const Promise = require("../../../../../main/js/global/Promise");
 const MqttAddress = require("../../../../../main/js/generated/joynr/system/RoutingTypes/MqttAddress");
 const MqttMessagingStub = require("../../../../../main/js/joynr/messaging/mqtt/MqttMessagingStub");
 const JoynrMessage = require("../../../../../main/js/joynr/messaging/JoynrMessage");

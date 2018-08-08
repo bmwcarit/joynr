@@ -18,7 +18,6 @@
  * #L%
  */
 require("../../../node-unit-test-helper");
-const Promise = require("../../../../../main/js/global/Promise");
 const PublicationManager = require("../../../../../main/js/joynr/dispatching/subscription/PublicationManager");
 const SubscriptionReply = require("../../../../../main/js/joynr/dispatching/types/SubscriptionReply");
 const SubscriptionRequest = require("../../../../../main/js/joynr/dispatching/types/SubscriptionRequest");

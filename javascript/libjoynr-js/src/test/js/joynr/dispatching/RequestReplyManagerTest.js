@@ -30,7 +30,6 @@ const Version = require("../../../../main/js/generated/joynr/types/Version");
 const DiscoveryEntryWithMetaInfo = require("../../../../main/js/generated/joynr/types/DiscoveryEntryWithMetaInfo");
 const ProviderQos = require("../../../../main/js/generated/joynr/types/ProviderQos");
 const MessagingQos = require("../../../../main/js/joynr/messaging/MessagingQos");
-const Promise = require("../../../../main/js/global/Promise");
 const waitsFor = require("../../../../test/js/global/WaitsFor");
 const testUtil = require("../../../js/testUtil");
 describe("libjoynr-js.joynr.dispatching.RequestReplyManager", () => {

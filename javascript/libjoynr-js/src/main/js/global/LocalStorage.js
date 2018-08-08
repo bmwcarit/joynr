@@ -24,7 +24,6 @@
  * @returns constructor for a localStorage object
  */
 const Typing = require("../joynr/util/Typing");
-const Promise = require("./Promise");
 
 /**
  * constructor for a localStorage object

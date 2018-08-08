@@ -16,7 +16,6 @@
  * limitations under the License.
  * #L%
  */
-const Promise = require("../../../global/Promise");
 const MessagingQos = require("../../messaging/MessagingQos");
 const MulticastWildcardRegexFactory = require("../../messaging/util/MulticastWildcardRegexFactory");
 const defaultMessagingSettings = require("../../start/settings/defaultMessagingSettings");

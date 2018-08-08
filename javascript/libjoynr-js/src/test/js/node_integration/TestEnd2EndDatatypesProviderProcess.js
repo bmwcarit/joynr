@@ -22,7 +22,6 @@
 const ChildProcessUtils = require("./ChildProcessUtils");
 ChildProcessUtils.overrideRequirePaths();
 
-const Promise = require("../../../main/js/global/Promise");
 // anything that you load here is served through the jsTestDriverServer, if you add an entry you
 // have to make it available through the jsTestDriverIntegrationTests.conf
 const joynr = require("joynr");

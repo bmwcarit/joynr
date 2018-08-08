@@ -16,7 +16,6 @@
  * limitations under the License.
  * #L%
  */
-const Promise = require("../../global/Promise");
 const UtilInternal = require("../util/UtilInternal");
 
 /**

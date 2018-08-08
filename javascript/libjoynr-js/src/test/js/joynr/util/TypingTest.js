@@ -29,7 +29,6 @@ const ComplexRadioStation = require("../../../generated/joynr/datatypes/exampleT
 const ComplexStruct = require("../../../generated/joynr/datatypes/exampleTypes/ComplexStruct");
 const Country = require("../../../generated/joynr/datatypes/exampleTypes/Country");
 const TestEnum = require("../../../generated/joynr/tests/testTypes/TestEnum");
-const Promise = require("../../../../main/js/global/Promise");
 
 function MyCustomObj() {}
 function _TestConstructor123_() {}

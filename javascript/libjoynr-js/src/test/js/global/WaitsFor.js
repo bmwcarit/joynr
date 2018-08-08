@@ -19,7 +19,6 @@
 /**
  * waitsFor helper function for jasmine 2.x
  */
-const Promise = require("../../../main/js/global/Promise");
 const originalSetInterval = setInterval;
 const originalClearInterval = clearInterval;
 function waitsFor(checker, message, delayMs, checkIntervalMs) {

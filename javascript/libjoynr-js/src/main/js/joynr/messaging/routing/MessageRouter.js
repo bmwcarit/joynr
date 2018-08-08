@@ -16,7 +16,6 @@
  * limitations under the License.
  * #L%
  */
-const Promise = require("../../../global/Promise");
 const MulticastWildcardRegexFactory = require("../util/MulticastWildcardRegexFactory");
 const DiagnosticTags = require("../../system/DiagnosticTags");
 const LoggingManager = require("../../system/LoggingManager");

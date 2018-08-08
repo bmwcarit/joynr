@@ -17,7 +17,6 @@
  * #L%
  */
 
-const Promise = require("../../../main/js/global/Promise");
 const RadioProxy = require("../../generated/joynr/vehicle/RadioProxy");
 const DatatypesProxy = require("../../generated/joynr/datatypes/DatatypesProxy");
 const MultipleVersionsInterfaceProxy = require("../../generated/joynr/tests/MultipleVersionsInterfaceProxy");

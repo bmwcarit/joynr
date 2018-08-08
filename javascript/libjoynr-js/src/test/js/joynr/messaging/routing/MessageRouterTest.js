@@ -23,7 +23,6 @@ const ChannelAddress = require("../../../../../main/js/generated/joynr/system/Ro
 const InProcessAddress = require("../../../../../main/js/joynr/messaging/inprocess/InProcessAddress");
 const JoynrMessage = require("../../../../../main/js/joynr/messaging/JoynrMessage");
 const TypeRegistry = require("../../../../../main/js/joynr/start/TypeRegistry");
-const Promise = require("../../../../../main/js/global/Promise");
 const Date = require("../../../../../test/js/global/Date");
 const waitsFor = require("../../../../../test/js/global/WaitsFor");
 const UtilInternal = require("../../../../../main/js/joynr/util/UtilInternal");

@@ -17,7 +17,6 @@
  * #L%
  */
 
-const Promise = require("../../global/Promise");
 const UtilInternal = require("../util/UtilInternal");
 const Request = require("../dispatching/types/Request");
 const MessagingQos = require("../messaging/MessagingQos");

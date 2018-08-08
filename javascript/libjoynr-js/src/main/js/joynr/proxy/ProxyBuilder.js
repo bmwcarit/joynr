@@ -16,7 +16,6 @@
  * limitations under the License.
  * #L%
  */
-const Promise = require("../../global/Promise");
 const ProxyAttribute = require("./ProxyAttribute");
 const ProxyOperation = require("./ProxyOperation");
 const ProxyEvent = require("./ProxyEvent");

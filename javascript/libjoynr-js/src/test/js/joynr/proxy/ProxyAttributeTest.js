@@ -23,7 +23,6 @@ const OnChangeWithKeepAliveSubscriptionQos = require("../../../../main/js/joynr/
 const Request = require("../../../../main/js/joynr/dispatching/types/Request");
 const TestEnum = require("../../../generated/joynr/tests/testTypes/TestEnum");
 const TypeRegistrySingleton = require("../../../../main/js/joynr/types/TypeRegistrySingleton");
-const Promise = require("../../../../main/js/global/Promise");
 const DiscoveryEntryWithMetaInfo = require("../../../../main/js/generated/joynr/types/DiscoveryEntryWithMetaInfo");
 const Version = require("../../../../main/js/generated/joynr/types/Version");
 const ProviderQos = require("../../../../main/js/generated/joynr/types/ProviderQos");
