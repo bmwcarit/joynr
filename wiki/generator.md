@@ -94,6 +94,62 @@ have to be provided in the Maven configuration:
 </plugin>
 ```
 
+## Gradle configuration
+To include the plugin in your `build.gradle` use
+
+```java
+buildscript {
+    ...
+    dependencies {
+        classpath 'io.joynr.tools.generator:joynr-generator-gradle-plugin:<JOYNR_VERSION>'
+        // Choose from the following depending on your target language
+        classpath 'io.joynr.tools.generator:java-generator:<JOYNR_VERSION>'
+        classpath 'io.joynr.tools.generator:cpp-generator:<JOYNR_VERSION>'
+        classpath 'io.joynr.tools.generator:js-generator:<JOYNR_VERSION>'
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'io.joynr.tools.generator.joynr-generator-gradle-plugin'
+```
+
+Note: The Joynr Generator Plugin has to be applied after the *Java* or *Kotlin* plugin,
+as it attaches itself to the corresponding *clean* task.
+
+The following parameters can be configured:
+
+* **modelPath**
+* **outputPath**
+* **generationLanguage**
+* rootGenerator
+* generationId
+* skip
+* addVersionTo
+* extraParameters
+
+**Highlighted parameters are required**, the rest is optional.
+
+Example configuration:
+
+```java
+joynrGenerator {
+    modelPath = "src/main/model/"
+    outputPath = "src/main/generated-java/"
+    generationLanguage = "java"
+}
+```
+
+The plugin can now be invoked with
+
+```bash
+gradle joynr-generate
+```
+
+To remove the generated sources again, invoke
+
+```bash
+gradle clean
+```
 
 ## Choosing the generation language
 The **&lt;GENERATION_LANGUAGE&gt;** can be either ```java```, ```cpp```, or ```javascript```.
