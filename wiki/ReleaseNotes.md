@@ -129,6 +129,11 @@ the versioning scheme [here](JoynrVersioning.md).
   method calls have ended with either success or error and broadcasts / attribute subscriptions
   have been terminated since otherwise a potential reply or publication cannot be routed anymore
   once the routing entry has been removed.
+* **[JS]** Replaced the joynr dependency smrf-native with smrf, which is a javascript only implementation
+  of joynr's secure messaging format. This offers the following benefits.
+    * simpler usage of joynr, as no native dependencies are remaining
+    * improved performance for serialization and deserialization of messages.
+    * prepares future browser support. Rewriting of the websocket related browser part still necessary.
 
 ## Configuration property changes
 None.
