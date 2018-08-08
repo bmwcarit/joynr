@@ -25,7 +25,7 @@ const log = LoggingManager.getLogger("joynr.messaging.MessageSerializer");
 const MessageSerializer = {};
 
 function useSmrf() {
-    const smrf = require("../../global/SmrfNode");
+    const smrf = require("smrf");
 
     function serializeSmrfMessage(smrfMsg) {
         try {
