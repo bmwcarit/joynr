@@ -18,7 +18,6 @@ under the License.
 This project has following dependencies:
 
 └─ joynr ── Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0, http://www.opensource.org/licenses/Apache-2.0) ── package.json
-   ├─ bluebird (3.3.5) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/bluebird/package.json
    ├─ mqtt (2.15.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt/package.json
    │  ├─ commist (1.0.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/commist/package.json
    │  │  ├─ leven (1.0.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/leven/package.json

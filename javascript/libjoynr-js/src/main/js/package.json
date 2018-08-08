@@ -7,7 +7,6 @@
   "bugs": "https://github.com/bmwcarit/joynr/issues",
   "main": "joynr.js",
   "dependencies": {
-    "bluebird": "3.3.5",
     "mqtt": "2.15.0",
     "smrf": "0.3.0",
     "uuid": "3.2.1",
