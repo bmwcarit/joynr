@@ -102,22 +102,26 @@ MosquittoConnection::MosquittoConnection(const MessagingSettings& messagingSetti
                          mqttPrivateKeyPemFilename_cstr);
 
         if (rc != MOSQ_ERR_SUCCESS) {
-            const std::string errorString(getErrorString(rc));
             mosqpp::lib_cleanup();
-            JOYNR_LOG_FATAL(
-                    logger(), "fatal failure to initialize TLS connection - {}", errorString);
-            return;
+            const std::string message = "Mqtt TLS enabled, but TLS certificates are incorrectly "
+                                        "specified or inaccessible: " +
+                                        getErrorString(rc);
+            JOYNR_LOG_FATAL(logger(), message);
+            throw joynr::exceptions::JoynrRuntimeException(message);
         }
 
         const std::string tlsCiphers = ccSettings.getMqttTlsCiphers();
         rc = tls_opts_set(SSL_VERIFY_PEER,
                           ccSettings.getMqttTlsVersion().c_str(),
                           tlsCiphers.empty() ? nullptr : tlsCiphers.c_str());
+
         if (rc != MOSQ_ERR_SUCCESS) {
-            const std::string errorString(getErrorString(rc));
             mosqpp::lib_cleanup();
-            JOYNR_LOG_FATAL(logger(), "Failed to configure TLS connection - {}", errorString);
-            return;
+            const std::string message =
+                    "fatal failure to initialize TLS connection, error settings TLS options: " +
+                    getErrorString(rc);
+            JOYNR_LOG_FATAL(logger(), message);
+            throw joynr::exceptions::JoynrRuntimeException(message);
         }
     } else {
         JOYNR_LOG_DEBUG(logger(), "MQTT connection not encrypted");
