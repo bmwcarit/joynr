@@ -14,6 +14,8 @@ the versioning scheme [here](JoynrVersioning.md).
 * **[Java, JEE]** Provided an example for the usage of the message persistence feature. Check the
   `examples/message-persistence/` folder.
 * **[Java]** Update jackson to version 2.9.7
+* **[C++]** MQTT connection will not be attempted if MQTT TLS is enabled, but TLS certificates
+  do not exist or are inaccessible or TLS options cannot be set.
 
 ## Configuration property changes
 None.
