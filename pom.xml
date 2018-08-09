@@ -76,6 +76,7 @@
 			</modules>
 		</profile>
 		<profile>
+			<!-- see comments of profile deploy-artifacts-to-sonatype -->
 			<id>deploy-artifacts-to-other-repository</id>
 			<properties>
 				<assembly.skipAssembly>true</assembly.skipAssembly>
@@ -83,9 +84,10 @@
 		</profile>
 		<profile>
 			<!--
-				This profile is extended in several submodules with packaging type WAR
-				to disable deployment of WAR files containing third-party software to
-				Sonatype repositories.
+				This profile can be extended in submodules to disable deployment of JAR/WAR
+				files containing third-party software to Sonatype repositories for this profile.
+				The deployment can also be disabled generally by skipping the deployment in the
+				maven-deploy-plugin configuration.
 			-->
 			<id>deploy-artifacts-to-sonatype</id>
 			<activation>
@@ -113,11 +115,24 @@
 					including third-party software that should not be deployed by this project.
 
 					Following jar-with-dependencies are created during build:
-					java/backend-services/channelurldirectory/target/deploy/channelurldirectory-jar-with-dependencies.jar
-					java/backend-services/capabilitiesdirectory/target/deploy/capabilitiesdirectory-jar-with-dependencies.jar
-					java/backend-services/discovery/target/deploy/discovery-jar-with-dependencies.jar
+
+					java/backend-services/capabilities-directory/target/deploy/capabilities-directory-jar-with-dependencies.jar
+					java/backend-services/domain-access-controller/target/deploy/domain-access-controller-jar-with-dependencies.jar
+					java/core/clustercontroller-standalone/target/clustercontroller-standalone-<version>-jar-with-dependencies.jar
+					tests/system-integration-test/sit-java-app/target/sit-java-app-<version>-jar-with-dependencies.jar
 				-->
 				<assembly.skipAssembly>true</assembly.skipAssembly>
+
+				<!--
+					Some projects use the maven-shade-plugin which cannot be disbled with a property:
+
+					android/joynr-android/target/joynr-android-<version>-all.jar
+					tests/performance-test (disabled by default)
+
+					Some projects use the maven-dependency-plugin and the maven-jar-pluging to
+					create a jar file including third-party software, e.g.:
+					tools/generator/joynr-generator-standalone/joynr-generator-standalone-<version>.jar
+				-->
 			</properties>
 			<distributionManagement>
 				<snapshotRepository>
