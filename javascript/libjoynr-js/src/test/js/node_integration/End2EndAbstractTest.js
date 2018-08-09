@@ -360,8 +360,8 @@ function End2EndAbstractTest(provisioningSuffix, providerChildProcessName, proce
         });
     };
 
-    this.afterEach = function(done) {
-        IntegrationUtils.shutdownChildProcess(childId)
+    this.afterEach = async function() {
+        return IntegrationUtils.shutdownChildProcess(childId)
             .then(() => {
                 return IntegrationUtils.shutdownLibjoynr();
             })
@@ -372,7 +372,6 @@ function End2EndAbstractTest(provisioningSuffix, providerChildProcessName, proce
                 /*eslint-disable */
                 joynr = require("joynr");
                 /*eslint-enable */
-                done();
             })
             .catch(e => {
                 throw new Error(`shutdown Child and Libjoynr failed: ${e}`);
