@@ -31,15 +31,6 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
-	<profiles>
-		<profile>
-			<id>deployStandalone</id>
-			<properties>
-				<assembly.skipAssembly>false</assembly.skipAssembly>
-			</properties>
-		</profile>
-	</profiles>
-
 	<properties>
 		<joynr.generator.standalone.jar>${project.build.directory}/joynr-generator-standalone-${project.version}.jar</joynr.generator.standalone.jar>
 		<joynr.generator.config.cmake.path>${project.build.directory}/scripts</joynr.generator.config.cmake.path>
