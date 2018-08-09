@@ -128,7 +128,16 @@
 
 	<build>
 		<finalName>${project.artifactId}</finalName>
-		<plugins>
+        <plugins>
+			<!-- Skip deployment of war with third-party software -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-deploy-plugin</artifactId>
+				<configuration>
+					<skip>true</skip>
+				</configuration>
+			</plugin>
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-war-plugin</artifactId>
