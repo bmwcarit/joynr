@@ -81,19 +81,6 @@
 				<artifactId>maven-jar-plugin</artifactId>
 				<executions>
 					<execution>
-						<id>build-templates-jar</id>
-						<phase>package</phase>
-						<goals>
-							<goal>jar</goal>
-						</goals>
-						<configuration>
-							<classifier>templates</classifier>
-							<includes>
-								<include>${basedir}/src/main/xtend/*</include>
-							</includes>
-						</configuration>
-					</execution>
-					<execution>
 						<id>build-test-jar</id>
 						<goals>
 							<goal>test-jar</goal>
