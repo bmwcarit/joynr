@@ -145,9 +145,12 @@ public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkele
 
     @Override
     protected void subscribe() {
+        LOG.info("Subscribing to shared topic: {}", sharedSubscriptionsTopic);
         getClient().subscribe(sharedSubscriptionsTopic);
         subscribedToSharedSubscriptionsTopic.set(true);
-        getClient().subscribe(replyToAddress.getTopic() + "/#");
+        String topic = replyToAddress.getTopic() + "/#";
+        LOG.info("Subscribing to reply-to topic: {}", topic);
+        getClient().subscribe(topic);
     }
 
     @Override
