@@ -181,55 +181,81 @@ void LibJoynrRuntime::init(
 
     discoveryProxy = std::make_shared<LocalDiscoveryAggregator>(getProvisionedEntries());
 
-    buildInternalProxies(joynrMessagingConnectorFactory);
-
-    auto globalAddressFuture = ccRoutingProxy->getGlobalAddressAsync();
-    auto onSuccessWrapper = [
-        this,
-        onSuccess = std::move(onSuccess),
-        onError,
-        globalAddressFuture = std::move(globalAddressFuture)
-    ](const std::string& replyAddress)
+    auto onSuccessBuildInternalProxies =
+            [ thisSharedPtr = shared_from_this(), this, onSuccess, onError ]()
     {
-        std::string globalAddress;
-        try {
-            globalAddressFuture->get(globalAddress);
-        } catch (const exceptions::JoynrRuntimeException& error) {
-            const std::string errorMessage =
-                    "Failed to retrieve global address from cluster controller: " +
-                    error.getMessage();
-            JOYNR_LOG_FATAL(logger(), errorMessage);
-            exceptions::JoynrRuntimeException wrappedError(errorMessage);
+        auto onSuccessGetGlobalAddress =
+                [thisSharedPtr, this, onSuccess, onError](const std::string& globalAddress) {
+            const std::string savedGlobalAddress(globalAddress);
+
+            auto onSuccessGetReplyToAddress = [thisSharedPtr, this, onSuccess, savedGlobalAddress](
+                    const std::string& replyAddress) {
+
+                messageSender->setReplyToAddress(replyAddress);
+
+                std::vector<std::shared_ptr<IDispatcher>> dispatcherList;
+                dispatcherList.push_back(joynrDispatcher);
+
+                capabilitiesRegistrar = std::make_unique<CapabilitiesRegistrar>(
+                        dispatcherList,
+                        discoveryProxy,
+                        participantIdStorage,
+                        dispatcherAddress,
+                        libJoynrMessageRouter,
+                        messagingSettings.getDiscoveryEntryExpiryIntervalMs(),
+                        publicationManager,
+                        savedGlobalAddress);
+
+                if (onSuccess) {
+                    onSuccess();
+                }
+            };
+
+            auto onErrorGetReplyToAddress =
+                    [onError](const joynr::exceptions::JoynrRuntimeException& error) {
+                JOYNR_LOG_FATAL(logger(),
+                                "onErrorGetReplyToAddress: got exception: {}",
+                                error.getMessage());
+                if (onError) {
+                    onError(error);
+                }
+            };
+
+            ccRoutingProxy->getReplyToAddressAsync(
+                    std::move(onSuccessGetReplyToAddress), std::move(onErrorGetReplyToAddress));
+        };
+
+        auto onErrorGetGlobalAddress =
+                [onError](const joynr::exceptions::JoynrRuntimeException& error) {
+            JOYNR_LOG_FATAL(
+                    logger(), "onErrorGetGlobalAddress: got exception: {}", error.getMessage());
             if (onError) {
-                onError(wrappedError);
+                onError(error);
             }
-            return;
-        }
-        messageSender->setReplyToAddress(replyAddress);
+        };
 
-        std::vector<std::shared_ptr<IDispatcher>> dispatcherList;
-        dispatcherList.push_back(joynrDispatcher);
+        ccRoutingProxy->getGlobalAddressAsync(
+                std::move(onSuccessGetGlobalAddress), std::move(onErrorGetGlobalAddress));
+    };
 
-        capabilitiesRegistrar = std::make_unique<CapabilitiesRegistrar>(
-                dispatcherList,
-                discoveryProxy,
-                participantIdStorage,
-                dispatcherAddress,
-                libJoynrMessageRouter,
-                messagingSettings.getDiscoveryEntryExpiryIntervalMs(),
-                publicationManager,
-                globalAddress);
-
-        if (onSuccess) {
-            onSuccess();
+    auto onErrorBuildInternalProxies =
+            [onError](const joynr::exceptions::JoynrRuntimeException& error) {
+        JOYNR_LOG_FATAL(
+                logger(), "onErrorBuildInternalProxies: got exception: {}", error.getMessage());
+        if (onError) {
+            onError(error);
         }
     };
 
-    ccRoutingProxy->getReplyToAddressAsync(std::move(onSuccessWrapper), std::move(onError));
+    buildInternalProxies(joynrMessagingConnectorFactory,
+                         onSuccessBuildInternalProxies,
+                         onErrorBuildInternalProxies);
 }
 
 void LibJoynrRuntime::buildInternalProxies(
-        std::shared_ptr<JoynrMessagingConnectorFactory> connectorFactory)
+        std::shared_ptr<JoynrMessagingConnectorFactory> connectorFactory,
+        std::function<void()> onSuccess,
+        std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError)
 {
     const std::uint64_t messagingTtl = 60000;
     const MessagingQos joynrInternalMessagingQos(messagingTtl);
@@ -246,28 +272,98 @@ void LibJoynrRuntime::buildInternalProxies(
     const joynr::types::DiscoveryEntryWithMetaInfo ccRoutingDiscoveryEntry =
             getProvisionedEntries()[ccRoutingProviderParticipantId];
     ccRoutingProxy->handleArbitrationFinished(ccRoutingDiscoveryEntry);
+
+    // the following adds a RoutingEntry only to local RoutingTable since parentRouter is not set
+    // yet
+    auto onSuccessAddNextHopRoutingProxy = [
+        onSuccess,
+        onError,
+        connectorFactory,
+        systemServicesDomain,
+        joynrInternalMessagingQos,
+        thisSharedPtr = shared_from_this(),
+        this
+    ]()
+    {
+
+        // the following call invokes another addNextHopToParent after setting the parentRouter
+        // this results in async call to cluster controller; we need to wait for it to finish
+        // since without an entry in the RoutingTable of the cluster controller any further
+        // responses to requests over the routingProxy could be discarded
+
+        auto onSuccessSetParentRouter = [
+            onSuccess,
+            onError,
+            connectorFactory,
+            systemServicesDomain,
+            joynrInternalMessagingQos,
+            thisSharedPtr = shared_from_this(),
+            this // need to capture this as well because shared_ptr does not allow to access
+                 // protected / private members
+        ]()
+        {
+            auto clusterControllerDiscovery =
+                    std::make_shared<joynr::system::DiscoveryProxy>(thisSharedPtr,
+                                                                    connectorFactory,
+                                                                    systemServicesDomain,
+                                                                    joynrInternalMessagingQos);
+            const std::string ccDiscoveryProviderParticipantId =
+                    systemServicesSettings.getCcDiscoveryProviderParticipantId();
+            const joynr::types::DiscoveryEntryWithMetaInfo ccDiscoveryEntry =
+                    getProvisionedEntries()[ccDiscoveryProviderParticipantId];
+            clusterControllerDiscovery->handleArbitrationFinished(ccDiscoveryEntry);
+
+            auto onSuccessAddNextHopDiscoveryProxy =
+                    [onSuccess, clusterControllerDiscovery, thisSharedPtr, this]() {
+                discoveryProxy->setDiscoveryProxy(clusterControllerDiscovery);
+                onSuccess();
+            };
+
+            auto onErrorAddNextHopDiscoveryProxy =
+                    [onError](const joynr::exceptions::ProviderRuntimeException& error) {
+                JOYNR_LOG_FATAL(logger(),
+                                "Failed to call add next hop for "
+                                "clusterControllerDiscovery: {}",
+                                error.getMessage());
+                onError(error);
+            };
+
+            libJoynrMessageRouter->addNextHop(clusterControllerDiscovery->getProxyParticipantId(),
+                                              dispatcherAddress,
+                                              isGloballyVisible,
+                                              expiryDateMs,
+                                              isSticky,
+                                              allowUpdate,
+                                              onSuccessAddNextHopDiscoveryProxy,
+                                              onErrorAddNextHopDiscoveryProxy);
+        };
+
+        auto onErrorSetParentRouter =
+                [onError](const joynr::exceptions::ProviderRuntimeException& error) {
+            JOYNR_LOG_FATAL(logger(),
+                            "Failed to call setParentRouter for RoutingProxy: {}",
+                            error.getMessage());
+            onError(error);
+        };
+
+        libJoynrMessageRouter->setParentRouter(
+                ccRoutingProxy, onSuccessSetParentRouter, onErrorSetParentRouter);
+    };
+
+    auto onErrorAddNextHopRoutingProxy =
+            [onError](const joynr::exceptions::ProviderRuntimeException& error) {
+        JOYNR_LOG_FATAL(logger(), "Failed to call setParentRouter: {}", error.getMessage());
+        onError(error);
+    };
+
     libJoynrMessageRouter->addNextHop(ccRoutingProxy->getProxyParticipantId(),
                                       dispatcherAddress,
                                       isGloballyVisible,
                                       expiryDateMs,
                                       isSticky,
-                                      allowUpdate);
-    libJoynrMessageRouter->setParentRouter(ccRoutingProxy);
-
-    auto clusterControllerDiscovery = std::make_shared<joynr::system::DiscoveryProxy>(
-            shared_from_this(), connectorFactory, systemServicesDomain, joynrInternalMessagingQos);
-    const std::string ccDiscoveryProviderParticipantId =
-            systemServicesSettings.getCcDiscoveryProviderParticipantId();
-    const joynr::types::DiscoveryEntryWithMetaInfo ccDiscoveryEntry =
-            getProvisionedEntries()[ccDiscoveryProviderParticipantId];
-    clusterControllerDiscovery->handleArbitrationFinished(ccDiscoveryEntry);
-    libJoynrMessageRouter->addNextHop(clusterControllerDiscovery->getProxyParticipantId(),
-                                      dispatcherAddress,
-                                      isGloballyVisible,
-                                      expiryDateMs,
-                                      isSticky,
-                                      allowUpdate);
-    discoveryProxy->setDiscoveryProxy(std::move(clusterControllerDiscovery));
+                                      allowUpdate,
+                                      onSuccessAddNextHopRoutingProxy,
+                                      onErrorAddNextHopRoutingProxy);
 }
 
 std::shared_ptr<IMessageRouter> LibJoynrRuntime::getMessageRouter()
