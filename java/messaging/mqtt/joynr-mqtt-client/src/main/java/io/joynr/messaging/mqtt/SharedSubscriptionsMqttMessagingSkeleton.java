@@ -181,9 +181,9 @@ public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkele
     }
 
     private String createSharedSubscriptionsTopic() {
-        StringBuilder sb = new StringBuilder("$share:");
+        StringBuilder sb = new StringBuilder("$share/");
         sb.append(sanitiseChannelIdForUseAsTopic());
-        sb.append(":");
+        sb.append("/");
         sb.append(getOwnAddress().getTopic());
         sb.append("/#");
         return sb.toString();

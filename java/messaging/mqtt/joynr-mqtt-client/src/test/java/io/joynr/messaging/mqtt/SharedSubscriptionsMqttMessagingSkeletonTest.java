@@ -102,13 +102,13 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
                                                                new HashSet<JoynrMessageProcessor>(),
                                                                mqttStatusReceiver);
         subject.init();
-        verify(mqttClient).subscribe(startsWith("$share:"));
+        verify(mqttClient).subscribe(startsWith("$share/"));
     }
 
     private void triggerAndVerifySharedSubscriptionsTopicUnsubscribeAndSubscribeCycle(String expectedChannelId,
                                                                                       int expectedTotalUnsubscribeCallCount,
                                                                                       int expectedTotalSubscribeCallCount) throws Exception {
-        final String expectedSharedSubscriptionsTopicPrefix = "$share:" + expectedChannelId + ":";
+        final String expectedSharedSubscriptionsTopicPrefix = "$share/" + expectedChannelId + "/";
 
         final int mqttRequestsToHitUpperThreshold = (maxMqttMessagesInQueue
                 * backpressureIncomingMqttRequestsUpperThreshold) / 100;
@@ -143,14 +143,14 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
         when(replyToAddress.getTopic()).thenReturn(replyToAddressTopic);
 
         createAndInitSkeleton("channelId");
-        verify(mqttClient).subscribe(eq("$share:channelId:ownTopic/#"));
+        verify(mqttClient).subscribe(eq("$share/channelId/ownTopic/#"));
         verify(mqttClient).subscribe(eq(replyToAddressTopic + "/#"));
     }
 
     @Test
     public void testChannelIdStrippedOfNonAlphaChars() {
         createAndInitSkeleton("channel@123_bling$$");
-        verify(mqttClient).subscribe(startsWith("$share:channelbling:"));
+        verify(mqttClient).subscribe(startsWith("$share/channelbling/"));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -213,7 +213,7 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
         // a further request should hit the threshold value and trigger an unsubscribe
         subject.transmit(createTestMessage(Message.VALUE_MESSAGE_TYPE_REQUEST).getSerializedMessage(),
                          failIfCalledAction);
-        verify(mqttClient).unsubscribe(startsWith("$share:channelIdBackpressure:"));
+        verify(mqttClient).unsubscribe(startsWith("$share/channelIdBackpressure/"));
     }
 
     @Test
