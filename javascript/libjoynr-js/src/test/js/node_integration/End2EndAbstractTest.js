@@ -26,87 +26,73 @@ const waitsFor = require("../global/WaitsFor");
 let joynr = require("joynr");
 
 function End2EndAbstractTest(provisioningSuffix, providerChildProcessName, processSpecialization) {
-    let radioProxy, dataProxy, multipleVersionsInterfaceProxy, loadedJoynr;
+    let radioProxy, dataProxy, multipleVersionsInterfaceProxy;
     let childId;
     let testIdentifier = 0;
 
-    this.beforeEach = function() {
+    this.beforeEach = async function() {
         const provisioningSuffixForTest = `${provisioningSuffix}-${testIdentifier++}`;
         const domain = provisioningSuffixForTest;
         provisioning.channelId = `abstract-test-base${provisioningSuffixForTest}`;
         const testProvisioning = provisioning;
         joynr.loaded = false;
         joynr.selectRuntime("inprocess");
-        return joynr
-            .load(testProvisioning)
-            .then(newJoynr => {
-                loadedJoynr = newJoynr;
-                IntegrationUtils.initialize(loadedJoynr);
-                return IntegrationUtils.initializeChildProcess(
-                    providerChildProcessName,
-                    provisioningSuffixForTest,
-                    domain,
-                    processSpecialization
-                );
-            })
-            .then(newChildId => {
-                childId = newChildId;
-                switch (providerChildProcessName) {
-                    case "TestEnd2EndDatatypesProviderProcess":
-                        return IntegrationUtils.buildProxy(DatatypesProxy, domain).then(newDataProxy => {
-                            dataProxy = newDataProxy;
-                        });
-                    case "TestEnd2EndCommProviderProcess":
-                        // Prevent freezing of object through proxy build
-                        // since we need to add faked attribute below
-                        spyOn(Object, "freeze").and.callFake(obj => {
-                            return obj;
-                        });
-                        return IntegrationUtils.buildProxy(RadioProxy, domain).then(newRadioProxy => {
-                            radioProxy = newRadioProxy;
 
-                            // Add an attribute that does not exist on provider side
-                            // for special subscription test
-                            radioProxy.nonExistingAttributeOnProviderSide = new radioProxy.settings.proxyElementTypes.ProxyAttribute(
-                                radioProxy,
-                                radioProxy.settings,
-                                "nonExistingAttributeOnProviderSide",
-                                "Integer",
-                                "NOTIFYREADWRITE"
-                            );
+        await joynr.load(testProvisioning);
+        IntegrationUtils.initialize(joynr);
+        childId = await IntegrationUtils.initializeChildProcess(
+            providerChildProcessName,
+            provisioningSuffixForTest,
+            domain,
+            processSpecialization
+        );
 
-                            // restore freeze behavior
-                            Object.freeze.and.callThrough();
-                            radioProxy = Object.freeze(radioProxy);
-                        });
-                    case "TestMultipleVersionsInterfaceProcess": {
-                        const discoveryQos = new joynr.proxy.DiscoveryQos({
-                            discoveryTimeoutMs: 1000
-                        });
-                        return joynr.proxyBuilder
-                            .build(MultipleVersionsInterfaceProxy, {
-                                domain,
-                                discoveryQos
-                            })
-                            .then(newProxy => {
-                                multipleVersionsInterfaceProxy = newProxy;
-                            });
-                    }
-                    default:
-                        throw new Error("Please specify the process to invoke!");
-                }
-            })
-            .then(() => {
-                return IntegrationUtils.startChildProcess(childId);
-            })
-            .then(() => {
-                return Promise.resolve({
-                    joynr: loadedJoynr,
-                    radioProxy,
-                    dataProxy,
-                    multipleVersionsInterfaceProxy
+        switch (providerChildProcessName) {
+            case "TestEnd2EndDatatypesProviderProcess":
+                dataProxy = await IntegrationUtils.buildProxy(DatatypesProxy, domain);
+                break;
+            case "TestEnd2EndCommProviderProcess":
+                // Prevent freezing of object through proxy build
+                // since we need to add faked attribute below
+                spyOn(Object, "freeze").and.callFake(obj => {
+                    return obj;
                 });
-            });
+                radioProxy = await IntegrationUtils.buildProxy(RadioProxy, domain);
+                // Add an attribute that does not exist on provider side
+                // for special subscription test
+                radioProxy.nonExistingAttributeOnProviderSide = new radioProxy.settings.proxyElementTypes.ProxyAttribute(
+                    radioProxy,
+                    radioProxy.settings,
+                    "nonExistingAttributeOnProviderSide",
+                    "Integer",
+                    "NOTIFYREADWRITE"
+                );
+
+                // restore freeze behavior
+                Object.freeze.and.callThrough();
+                radioProxy = Object.freeze(radioProxy);
+                break;
+            case "TestMultipleVersionsInterfaceProcess": {
+                const discoveryQos = new joynr.proxy.DiscoveryQos({
+                    discoveryTimeoutMs: 1000
+                });
+                multipleVersionsInterfaceProxy = await joynr.proxyBuilder.build(MultipleVersionsInterfaceProxy, {
+                    domain,
+                    discoveryQos
+                });
+                break;
+            }
+            default:
+                throw new Error("Please specify the process to invoke!");
+        }
+
+        await IntegrationUtils.startChildProcess(childId);
+        return {
+            joynr,
+            radioProxy,
+            dataProxy,
+            multipleVersionsInterfaceProxy
+        };
     };
 
     /**
