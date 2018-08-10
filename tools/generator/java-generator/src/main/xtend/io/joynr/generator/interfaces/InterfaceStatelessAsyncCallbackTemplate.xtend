@@ -47,6 +47,7 @@ class InterfaceStatelessAsyncCallbackTemplate extends InterfaceTemplate {
 
 package «packagePath»;
 
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.proxy.ReplyContext;
 import io.joynr.proxy.StatelessAsyncCallback;
 import io.joynr.dispatcher.rpc.annotation.StatelessCallbackCorrelation;
@@ -71,6 +72,11 @@ public interface «statelessAsyncClassName» extends StatelessAsyncCallback {
 		@StatelessCallbackCorrelation("«getAttribute.hashCode»")
 		default void «getAttribute»Success(«attributeType» «attributeName», ReplyContext replyContext)
 		{ throw new UnsupportedOperationException("«getAttribute»Success not implemented for callback instance"); }
+		@StatelessCallbackCorrelation("«getAttribute.hashCode»")
+		default void «getAttribute»Failed(
+				JoynrRuntimeException runtimeException,
+				ReplyContext replyContext
+		) { throw new UnsupportedOperationException("«getAttribute»Failed not implemented for callback instance"); }
 		«ENDIF»
 		«IF isWritable(attribute)»
 		/*
@@ -79,11 +85,17 @@ public interface «statelessAsyncClassName» extends StatelessAsyncCallback {
 		@StatelessCallbackCorrelation("«setAttribute.hashCode»")
 		default void «setAttribute»Success(ReplyContext replyContext)
 		{ throw new UnsupportedOperationException("«setAttribute»Success not implemented for callback instance"); }
+		@StatelessCallbackCorrelation("«setAttribute.hashCode»")
+		default void «setAttribute»Failed(
+				JoynrRuntimeException runtimeException,
+				ReplyContext replyContext
+		) { throw new UnsupportedOperationException("«setAttribute»Failed not implemented for callback instance"); }
 		«ENDIF»
 «ENDFOR»
 
 «var successMethodsGenerated = new HashSet<String>()»
-«var failedMethodsGenerated = new HashSet<String>()»
+«var failedWithExceptionMethodsGenerated = new HashSet<String>()»
+«var failedWithErrorMethodsGenerated = new HashSet<String>()»
 «FOR method: getMethods(francaIntf).filter[!fireAndForget] SEPARATOR "\n"»
 	«var methodSignature = method.createMethodSignatureFromOutParameters»
 	«var methodName = method.joynrName»
@@ -99,7 +111,7 @@ public interface «statelessAsyncClassName» extends StatelessAsyncCallback {
 				ReplyContext replyContext
 		) { throw new UnsupportedOperationException("«methodName»Success not implemented for callback instance"); }
 		«ENDIF»
-		«IF method.hasErrorEnum && failedMethodsGenerated.add(methodSignature)»
+		«IF method.hasErrorEnum && failedWithErrorMethodsGenerated.add(methodSignature)»
 		@StatelessCallbackCorrelation("«methodSignature.hashCode»")
 		default void «methodName»Failed(
 			«IF method.errors !== null»
@@ -110,7 +122,13 @@ public interface «statelessAsyncClassName» extends StatelessAsyncCallback {
 				«errorEnumType» error,
 			«ENDIF»
 				ReplyContext replyContext
-		) { throw new UnsupportedOperationException("«methodName»Failed not implemented for callback instance"); }
+		) { throw new UnsupportedOperationException("«methodName»Failed with error not implemented for callback instance"); }
+		«ENDIF»
+		«IF failedWithExceptionMethodsGenerated.add(methodName)»
+		default void «methodName»Failed(
+				JoynrRuntimeException runtimeException,
+				ReplyContext replyContext
+		) { throw new UnsupportedOperationException("«methodName»Failed with exception not implemented for callback instance"); }
 		«ENDIF»
 «ENDFOR»
 }

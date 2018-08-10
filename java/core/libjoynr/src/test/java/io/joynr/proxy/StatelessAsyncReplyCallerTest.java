@@ -21,12 +21,18 @@ package io.joynr.proxy;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Function;
 
+import io.joynr.exceptions.JoynrRuntimeException;
+import joynr.exceptions.ApplicationException;
+import joynr.exceptions.ProviderRuntimeException;
+import joynr.types.Localisation.Trip;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -57,6 +63,21 @@ public class StatelessAsyncReplyCallerTest {
         public void addTripSuccess(ReplyContext replyContext) {
             resultHolder.put(replyContext.getMessageId(), true);
         }
+
+        @Override
+        public void updateTripFailed(Navigation.UpdateTripErrorEnum error, ReplyContext replyContext) {
+            resultHolder.put(replyContext.getMessageId() + "_error", true);
+        }
+
+        @Override
+        public void updateTripFailed(JoynrRuntimeException runtimeException, ReplyContext replyContext) {
+            resultHolder.put(replyContext.getMessageId() + "_exception", true);
+        }
+
+        @Override
+        public void deleteTripFailed(JoynrRuntimeException runtimeException, ReplyContext replyContext) {
+            resultHolder.put(replyContext.getMessageId(), true);
+        }
     }
 
     private NavigationCallback callback = new NavigationCallback();
@@ -76,16 +97,53 @@ public class StatelessAsyncReplyCallerTest {
         testCall("requestGuidance", requestReplyId -> new Reply(requestReplyId, Boolean.TRUE));
     }
 
+    @Test
+    public void testUpdateTripWithError() throws Exception {
+        testCall("updateTrip",
+                 requestReplyId -> new Reply(requestReplyId,
+                                             new ApplicationException(Navigation.UpdateTripErrorEnum.UNKNOWN_TRIP)),
+                 requestReplyId -> requestReplyId + "_error");
+    }
+
+    @Test
+    public void testUpdateTripWithException() throws Exception {
+        testCall("updateTrip",
+                 requestReplyId -> new Reply(requestReplyId, new ProviderRuntimeException("test")),
+                 requestReplyId -> requestReplyId + "_exception");
+    }
+
+    @Test
+    public void testOverriddenDeleteTripFailedWithException() throws Exception {
+        Method method = NavigationStatelessAsync.class.getMethod("deleteTrip", Trip.class, MessageIdCallback.class);
+        StatelessCallbackCorrelation statelessCallbackCorrelation = method.getAnnotation(StatelessCallbackCorrelation.class);
+        testCall(statelessCallbackCorrelation,
+                 requestReplyId -> new Reply(requestReplyId, new ProviderRuntimeException("test overloaded methods")),
+                 Function.identity());
+    }
+
     private void testCall(String methodName, Function<String, Reply> replyGenerator) {
+        testCall(methodName, replyGenerator, Function.identity());
+    }
+
+    private void testCall(String methodName,
+                          Function<String, Reply> replyGenerator,
+                          Function<String, String> requestReplyIdKeyMapper) {
+        testCall(getStatelessCallbackCorrelation(methodName), replyGenerator, requestReplyIdKeyMapper);
+    }
+
+    private void testCall(StatelessCallbackCorrelation statelessCallbackCorrelation,
+                          Function<String, Reply> replyGenerator,
+                          Function<String, String> requestReplyIdKeyMapper) {
         String statelessAsyncCallbackId = Navigation.INTERFACE_NAME + ":~:test";
         StatelessAsyncReplyCaller subject = new StatelessAsyncReplyCaller(statelessAsyncCallbackId, callback);
         String requestReplyId = UUID.randomUUID().toString();
         Reply reply = replyGenerator.apply(requestReplyId);
         reply.setStatelessCallback(statelessAsyncCallbackId);
-        reply.setStatelessCallbackMethodId(getStatelessCallbackCorrelation(methodName).value());
+        reply.setStatelessCallbackMethodId(statelessCallbackCorrelation.value());
         subject.messageCallBack(reply);
-        assertTrue(resultHolder.containsKey(requestReplyId));
-        assertTrue(resultHolder.get(requestReplyId));
+        String resultHolderKey = requestReplyIdKeyMapper.apply(requestReplyId);
+        assertTrue(resultHolder.containsKey(resultHolderKey));
+        assertTrue(resultHolder.get(resultHolderKey));
     }
 
     private StatelessCallbackCorrelation getStatelessCallbackCorrelation(String methodName) {

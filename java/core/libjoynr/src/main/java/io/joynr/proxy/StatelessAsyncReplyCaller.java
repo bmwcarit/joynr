@@ -51,15 +51,37 @@ public class StatelessAsyncReplyCaller implements ReplyCaller {
     public void messageCallBack(Reply payload) {
         String methodCorrelationId = payload.getStatelessCallbackMethodId();
         boolean success = payload.getError() == null;
+        boolean withApplicationError = payload.getError() != null && payload.getError() instanceof ApplicationException;
+        boolean withException = payload.getError() != null && !(payload.getError() instanceof ApplicationException);
+        // Filter chain:
+        // - all methods where the correlation ID matches the one we're looking for
+        // - if success or withException, then method name must end in Success, otherwise end in Failed
+        // - if we're looking for a failure callback and the error payload is an application error, the first
+        //   parameter must be an enum
         Method callbackMethod = Arrays.stream(statelessAsyncCallback.getClass().getMethods()).filter(method -> {
             StatelessCallbackCorrelation callbackCorrelation = AnnotationUtil.getAnnotation(method,
                                                                                             StatelessCallbackCorrelation.class);
             return callbackCorrelation != null && callbackCorrelation.value().equals(methodCorrelationId);
         })
-                                      .filter(method -> method.getName().endsWith(success ? "Success" : "Failed"))
+                                      .filter(method -> method.getName()
+                                                              .endsWith((success || withException) ? "Success"
+                                                                      : "Failed"))
+                                      .filter(method -> success || withException
+                                              || (withApplicationError && method.getParameterTypes()[0].isEnum()))
                                       .findFirst()
                                       .orElseThrow(() -> new JoynrRuntimeException("No suitable callback method found for callback ID "
                                               + payload.getStatelessCallback() + " on " + statelessAsyncCallback));
+        if (withException) {
+            String methodName = callbackMethod.getName().replaceFirst("Success$", "Failed");
+            try {
+                callbackMethod = statelessAsyncCallback.getClass().getMethod(methodName,
+                                                                             new Class[]{ JoynrRuntimeException.class,
+                                                                                     ReplyContext.class });
+            } catch (NoSuchMethodException e) {
+                throw new JoynrRuntimeException("No suitable failure callback method named " + methodName
+                        + " found for callback ID " + payload.getStatelessCallback() + " on " + statelessAsyncCallback);
+            }
+        }
         try {
             if (success) {
                 callbackMethod.invoke(statelessAsyncCallback,
@@ -77,8 +99,12 @@ public class StatelessAsyncReplyCaller implements ReplyCaller {
         JoynrException exception = payload.getError();
         if (exception instanceof ApplicationException) {
             return new Object[]{ ((ApplicationException) exception).getError() };
+        } else if (exception instanceof JoynrRuntimeException) {
+            return new Object[]{ payload.getError() };
         }
-        return new Object[]{ payload.getError() };
+        return new Object[]{
+                new JoynrRuntimeException("Unexpected error payload, neither JoynrRuntimeException nor ApplicationException: "
+                        + exception) };
     }
 
     private Object[] addReplyContext(Object[] parameters, String requestReplyId) {
