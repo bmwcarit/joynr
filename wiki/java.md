@@ -567,7 +567,8 @@ reply data is routed to that callback.
 In order to be able to logically match the request with the reply, a unique ID is provided
 when sending the request, via the `MessageIdCallback`, which the application can use to
 persist any relevant context information. When the reply arrives, the same ID is provided to
-the callback, and the application can then use this to load the context information.  
+the callback as part of the `ReplyContext` as the last parameter, and the application can
+then use this to load the context information.  
 __IMPORTANT__: it is not guaranteed that the message has actually left the system
 when the `MessageIdCallback` is called. It is possible that the message gets stuck
 in the lower layers due to, e.g., infrastructure issues. If the application persists

@@ -47,6 +47,7 @@ class InterfaceStatelessAsyncCallbackTemplate extends InterfaceTemplate {
 
 package «packagePath»;
 
+import io.joynr.proxy.ReplyContext;
 import io.joynr.proxy.StatelessAsyncCallback;
 import io.joynr.dispatcher.rpc.annotation.StatelessCallbackCorrelation;
 import io.joynr.UsedBy;
@@ -68,7 +69,7 @@ public interface «statelessAsyncClassName» extends StatelessAsyncCallback {
 		* «attributeName» getter
 		*/
 		@StatelessCallbackCorrelation("«getAttribute.hashCode»")
-		default void «getAttribute»Success(«attributeType» «attributeName», String messageId)
+		default void «getAttribute»Success(«attributeType» «attributeName», ReplyContext replyContext)
 		{ throw new UnsupportedOperationException("«getAttribute»Success not implemented for callback instance"); }
 		«ENDIF»
 		«IF isWritable(attribute)»
@@ -76,7 +77,7 @@ public interface «statelessAsyncClassName» extends StatelessAsyncCallback {
 		* «attributeName» setter
 		*/
 		@StatelessCallbackCorrelation("«setAttribute.hashCode»")
-		default void «setAttribute»Success(String messageId)
+		default void «setAttribute»Success(ReplyContext replyContext)
 		{ throw new UnsupportedOperationException("«setAttribute»Success not implemented for callback instance"); }
 		«ENDIF»
 «ENDFOR»
@@ -95,7 +96,7 @@ public interface «statelessAsyncClassName» extends StatelessAsyncCallback {
 				«IF method.outputParameters.size()>0»
 				«method.outputParameters.typedParameterList»,
 				«ENDIF»
-				String messageId
+				ReplyContext replyContext
 		) { throw new UnsupportedOperationException("«methodName»Success not implemented for callback instance"); }
 		«ENDIF»
 		«IF method.hasErrorEnum && failedMethodsGenerated.add(methodSignature)»
@@ -103,12 +104,12 @@ public interface «statelessAsyncClassName» extends StatelessAsyncCallback {
 		default void «methodName»Failed(
 			«IF method.errors !== null»
 				«val errorEnumType = packagePath + "." + interfaceName + "." + methodToErrorEnumName.get(method)»
-				«errorEnumType» error,
+					«errorEnumType» error,
 			«ELSE»
 				«val errorEnumType = method.errorEnum.buildPackagePath(".", true) + "." + method.errorEnum.joynrName»
 				«errorEnumType» error,
 			«ENDIF»
-				String messageId
+				ReplyContext replyContext
 		) { throw new UnsupportedOperationException("«methodName»Failed not implemented for callback instance"); }
 		«ENDIF»
 «ENDFOR»

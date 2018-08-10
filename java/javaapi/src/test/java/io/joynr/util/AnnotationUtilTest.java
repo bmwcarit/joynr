@@ -25,6 +25,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
+
 import io.joynr.JoynrVersion;
 import io.joynr.dispatcher.rpc.annotation.StatelessCallbackCorrelation;
 import io.joynr.provider.JoynrInterface;
@@ -41,6 +42,7 @@ import java.lang.reflect.Proxy;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
+import io.joynr.proxy.ReplyContext;
 import joynr.tests.DefaulttestProvider;
 import joynr.tests.test;
 import joynr.tests.testProvider;
@@ -129,7 +131,7 @@ public class AnnotationUtilTest {
     class MyTestStatelessAsyncCallback implements testStatelessAsyncCallback {
         @Override
         @DirectAnnotation
-        public void getEnumAttributeSuccess(TestEnum enumAttribute, String messageId) {
+        public void getEnumAttributeSuccess(TestEnum enumAttribute, ReplyContext replyContext) {
             // noop
         }
 
@@ -160,19 +162,21 @@ public class AnnotationUtilTest {
 
     class MyChildClass extends MyTestStatelessAsyncCallback {
         @Override
-        public void getEnumAttributeSuccess(TestEnum enumAttribute, String messageId) {
+        public void getEnumAttributeSuccess(TestEnum enumAttribute, ReplyContext replyContext) {
             //noop
         }
     }
 
     @Test
     public void testGetAnnotationFromSuperclassMethod() throws Exception {
-        Method method = MyChildClass.class.getMethod("getEnumAttributeSuccess", TestEnum.class, String.class);
+        Method method = MyChildClass.class.getMethod("getEnumAttributeSuccess", TestEnum.class, ReplyContext.class);
         DirectAnnotation result = AnnotationUtil.getAnnotation(method, DirectAnnotation.class);
         assertNotNull(result);
     }
 
     private Method getMethodWithAnnotation() throws NoSuchMethodException {
-        return MyTestStatelessAsyncCallback.class.getMethod("getEnumAttributeSuccess", TestEnum.class, String.class);
+        return MyTestStatelessAsyncCallback.class.getMethod("getEnumAttributeSuccess",
+                                                            TestEnum.class,
+                                                            ReplyContext.class);
     }
 }

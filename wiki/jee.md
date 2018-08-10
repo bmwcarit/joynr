@@ -393,9 +393,9 @@ request the `*StatelessAsync` instead of the `@Sync` interface from the
 The methods in the `*StatelessAsync` interface have a `MessageIdCallaback` as the
 last parameter, which is a consumer of a String value. This value is the unique
 ID of the request being sent out, and when the reply arrives, that same ID will
-accompany the result data. This way, your application can persist or otherwise
-share context information between nodes in a cluster, so that any node can process
-the replies.  
+accompany the result data as part of the `ReplyContext` passed in as last parameter.
+This way, your application can persist or otherwise share context information between
+nodes in a cluster, so that any node can process the replies.  
 __IMPORTANT__: it is not guaranteed that the message has actually left the system
 when the `MessageIdCallback` is called. It is possible that the message gets stuck
 in the lower layers due to, e.g., infrastructure issues. If the application persists

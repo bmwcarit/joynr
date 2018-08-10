@@ -63,10 +63,10 @@ public class StatelessAsyncReplyCaller implements ReplyCaller {
         try {
             if (success) {
                 callbackMethod.invoke(statelessAsyncCallback,
-                                      addMessageId(payload.getResponse(), payload.getRequestReplyId()));
+                                      addReplyContext(payload.getResponse(), payload.getRequestReplyId()));
             } else {
                 callbackMethod.invoke(statelessAsyncCallback,
-                                      addMessageId(extractErrorEnum(payload), payload.getRequestReplyId()));
+                                      addReplyContext(extractErrorEnum(payload), payload.getRequestReplyId()));
             }
         } catch (IllegalAccessException | InvocationTargetException e) {
             logger.error("Error calling callback method {} with reply {}", callbackMethod, payload, e);
@@ -81,9 +81,9 @@ public class StatelessAsyncReplyCaller implements ReplyCaller {
         return new Object[]{ payload.getError() };
     }
 
-    private Object[] addMessageId(Object[] parameters, String requestReplyId) {
+    private Object[] addReplyContext(Object[] parameters, String requestReplyId) {
         Object[] parametersWithMessageId = Arrays.copyOf(parameters, parameters.length + 1);
-        parametersWithMessageId[parametersWithMessageId.length - 1] = requestReplyId;
+        parametersWithMessageId[parametersWithMessageId.length - 1] = new ReplyContext(requestReplyId);
         return parametersWithMessageId;
     }
 

@@ -48,14 +48,14 @@ public class StatelessAsyncReplyCallerTest {
         }
 
         @Override
-        public void requestGuidanceSuccess(Boolean result, String messageId) {
+        public void requestGuidanceSuccess(Boolean result, ReplyContext replyContext) {
             assertTrue(result);
-            resultHolder.put(messageId, true);
+            resultHolder.put(replyContext.getMessageId(), true);
         }
 
         @Override
-        public void addTripSuccess(String messageId) {
-            resultHolder.put(messageId, true);
+        public void addTripSuccess(ReplyContext replyContext) {
+            resultHolder.put(replyContext.getMessageId(), true);
         }
     }
 
