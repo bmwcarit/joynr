@@ -280,7 +280,7 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
         expect(MessagingQos.prototype.constructor).toHaveBeenCalledWith({ ttl });
     });
 
-    it("will set the signingCallback to the joynrMessage.prototype", () => {
+    it("will set the signingCallback to the joynrMessage.prototype", async () => {
         provisioning.keychain = {
             tlsCert: "tlsCert",
             tlsKey: "tlsKey",
@@ -289,6 +289,8 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
         };
         spyOn(JoynrMessage, "setSigningCallback").and.callThrough();
         runtime = new WebSocketLibjoynrRuntime(provisioning);
+        await runtime.start();
+        await runtime.shutdown();
         expect(JoynrMessage.setSigningCallback).toHaveBeenCalled();
         const joynrMessage = new JoynrMessage({ payload: "payload", type: "type" });
         expect(joynrMessage.signingCallback()).toEqual(Buffer.from(provisioning.keychain.ownerId));

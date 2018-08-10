@@ -65,6 +65,8 @@ const JoynrStates = {
     SHUTTINGDOWN: "shutting down"
 };
 
+const log = loggingManager.getLogger("joynr.start.WebSocketLibjoynrRuntime");
+
 /**
  * The WebSocketLibjoynrRuntime is the version of the libjoynr-js runtime that communicates with
  * a cluster controller via a WebSocket. The cluster controller is the WebSocket Server, and the
@@ -74,169 +76,86 @@ const JoynrStates = {
  * @constructor
  * @param {Object} provisioning
  */
-function WebSocketLibjoynrRuntime(provisioning) {
-    let log;
-    let initialRoutingTable;
-    let untypedCapabilities;
-    let typedCapabilities;
-    let messagingSkeletonFactory;
-    let messagingStubFactory;
-    let messageRouter;
-    let libjoynrMessagingSkeleton;
-    let dispatcher;
-    let requestReplyManager;
-    let subscriptionManager;
-    let publicationManager;
-    let participantIdStorage;
-    let arbitrator;
-    let providerBuilder;
-    let proxyBuilder;
-    let capabilitiesRegistrar;
-    let discovery;
-    let messageQueueSettings;
-    let sharedWebSocket;
-    let webSocketMessagingSkeleton;
-    let messageRouterSkeleton;
-    let messageRouterStub;
-    let persistency;
-    let localAddress;
-    const keychain = provisioning.keychain;
-    /*eslint-disable prefer-const*/
-    let internalShutdown;
-    /*eslint-enable prefer-const*/
-    let bufferedOwnerId;
+class WebSocketLibjoynrRuntime {
+    constructor(provisioning) {
+        this.shutdown = this.shutdown.bind(this);
+        this._signingCallback = this._signingCallback.bind(this);
 
-    // this is required at load time of libjoynr
-    const typeRegistry = Object.freeze(TypeRegistrySingleton.getInstance());
+        /**
+         * @name WebSocketLibjoynrRuntime#typeRegistry
+         * @type TypeRegistry
+         */
+        this.typeRegistry = TypeRegistrySingleton.getInstance();
 
-    /**
-     * @name WebSocketLibjoynrRuntime#typeRegistry
-     * @type TypeRegistry
-     */
-    Object.defineProperty(this, "typeRegistry", {
-        get() {
-            return typeRegistry;
-        },
-        enumerable: true
-    });
+        /**
+         * @name WebSocketLibjoynrRuntime#registration
+         * @type CapabilitiesRegistrar
+         */
+        this.registration = null;
 
-    /**
-     * @name WebSocketLibjoynrRuntime#registration
-     * @type CapabilitiesRegistrar
-     */
-    Object.defineProperty(this, "registration", {
-        get() {
-            return capabilitiesRegistrar;
-        },
-        enumerable: true
-    });
+        /**
+         * @name WebSocketLibjoynrRuntime#providerBuilder
+         * @type ProviderBuilder
+         */
+        this.providerBuilder = null;
 
-    /**
-     * @name WebSocketLibjoynrRuntime#providerBuilder
-     * @type ProviderBuilder
-     */
-    Object.defineProperty(this, "providerBuilder", {
-        get() {
-            return providerBuilder;
-        },
-        enumerable: true
-    });
+        /**
+         * @name WebSocketLibjoynrRuntime#proxyBuilder
+         * @type ProxyBuilder
+         */
+        this.proxyBuilder = null;
 
-    /**
-     * @name WebSocketLibjoynrRuntime#proxyBuilder
-     * @type ProxyBuilder
-     */
-    Object.defineProperty(this, "proxyBuilder", {
-        get() {
-            return proxyBuilder;
-        },
-        enumerable: true
-    });
+        /**
+         * @name WebSocketLibjoynrRuntime#participantIdStorage
+         * @type ParticipantIdStorage
+         */
+        this.participantIdStorage = null;
 
-    /**
-     * @name WebSocketLibjoynrRuntime#participantIdStorage
-     * @type ParticipantIdStorage
-     */
-    Object.defineProperty(this, "participantIdStorage", {
-        get() {
-            return participantIdStorage;
-        },
-        enumerable: true
-    });
+        /**
+         * @name WebSocketLibjoynrRuntime#logging
+         * @type LoggingManager
+         */
+        this.logging = loggingManager;
 
-    /**
-     * @name WebSocketLibjoynrRuntime#logging
-     * @type LoggingManager
-     */
-    Object.defineProperty(this, "logging", {
-        get() {
-            return loggingManager;
-        },
-        enumerable: true
-    });
+        this._joynrState = JoynrStates.SHUTDOWN;
+        this._provisioning = provisioning;
+        this._webSocketMessagingSkeleton = null;
+        this._arbitrator = null;
+        this._messageRouter = null;
+        this._requestReplyManager = null;
+        this._publicationManager = null;
+        this._subscriptionManager = null;
+        this._dispatcher = null;
+        this._bufferedOwnerId = null;
 
-    if (UtilInternal.checkNullUndefined(provisioning.ccAddress)) {
-        throw new Error("ccAddress not set in provisioning.ccAddress");
-    }
-
-    const ccAddress = new WebSocketAddress({
-        protocol: provisioning.ccAddress.protocol || defaultWebSocketSettings.protocol,
-        host: provisioning.ccAddress.host,
-        port: provisioning.ccAddress.port,
-        path: provisioning.ccAddress.path || defaultWebSocketSettings.path
-    });
-
-    let joynrState = JoynrStates.SHUTDOWN;
-
-    if (provisioning.capabilities && provisioning.capabilities.discoveryQos) {
-        const discoveryQos = provisioning.capabilities.discoveryQos;
-
-        if (discoveryQos.discoveryExpiryIntervalMs) {
-            CapabilitiesRegistrar.setDefaultExpiryIntervalMs(discoveryQos.discoveryExpiryIntervalMs);
+        if (UtilInternal.checkNullUndefined(provisioning.ccAddress)) {
+            throw new Error("ccAddress not set in provisioning.ccAddress");
         }
 
-        const discoveryQosSettings = {};
+        this._joynrState = JoynrStates.SHUTDOWN;
 
-        if (discoveryQos.discoveryRetryDelayMs) {
-            discoveryQosSettings.discoveryRetryDelayMs = discoveryQos.discoveryRetryDelayMs;
-        }
-        if (discoveryQos.discoveryTimeoutMs) {
-            discoveryQosSettings.discoveryTimeoutMs = discoveryQos.discoveryTimeoutMs;
-        }
+        if (provisioning.capabilities && provisioning.capabilities.discoveryQos) {
+            const discoveryQos = provisioning.capabilities.discoveryQos;
 
-        DiscoveryQos.setDefaultSettings(discoveryQosSettings);
-    }
-
-    function signingCallback() {
-        return bufferedOwnerId;
-    }
-
-    if (keychain) {
-        if (UtilInternal.checkNullUndefined(keychain.tlsCert)) {
-            throw new Error("tlsCert not set in keychain.tlsCert");
-        }
-        if (UtilInternal.checkNullUndefined(keychain.tlsKey)) {
-            throw new Error("tlsKey not set in keychain.tlsKey");
-        }
-        if (UtilInternal.checkNullUndefined(keychain.tlsCa)) {
-            throw new Error("tlsCa not set in keychain.tlsCa");
-        }
-        if (UtilInternal.checkNullUndefined(keychain.ownerId)) {
-            throw new Error("ownerId not set in keychain.ownerId");
-        }
-
-        bufferedOwnerId = Buffer.from(keychain.ownerId);
-        JoynrMessage.setSigningCallback(signingCallback);
-
-        keychain.checkServerIdentity = function(server) {
-            if (provisioning.ccAddress.host === server) {
-                return undefined;
-            } else {
-                throw new Error(
-                    `message from unknown host: ${server} on accepted host is cc: ${provisioning.ccAddress.host}.`
-                );
+            if (discoveryQos.discoveryExpiryIntervalMs) {
+                CapabilitiesRegistrar.setDefaultExpiryIntervalMs(discoveryQos.discoveryExpiryIntervalMs);
             }
-        };
+
+            const discoveryQosSettings = {};
+
+            if (discoveryQos.discoveryRetryDelayMs) {
+                discoveryQosSettings.discoveryRetryDelayMs = discoveryQos.discoveryRetryDelayMs;
+            }
+            if (discoveryQos.discoveryTimeoutMs) {
+                discoveryQosSettings.discoveryTimeoutMs = discoveryQos.discoveryTimeoutMs;
+            }
+
+            DiscoveryQos.setDefaultSettings(discoveryQosSettings);
+        }
+    }
+
+    _signingCallback() {
+        return this._bufferedOwnerId;
     }
 
     /**
@@ -249,26 +168,57 @@ function WebSocketLibjoynrRuntime(provisioning) {
      * @throws {Error}
      *             if libjoynr is not in SHUTDOWN state
      */
-    this.start = function start() {
-        if (joynrState !== JoynrStates.SHUTDOWN) {
-            throw new Error(`Cannot start libjoynr because it's currently "${joynrState}"`);
-        }
-        joynrState = JoynrStates.STARTING;
+    start() {
+        let persistency;
+        const keychain = this._provisioning.keychain;
 
-        if (!provisioning) {
+        if (this._joynrState !== JoynrStates.SHUTDOWN) {
+            throw new Error(`Cannot start libjoynr because it's currently "${this._joynrState}"`);
+        }
+        this._joynrState = JoynrStates.STARTING;
+
+        if (!this._provisioning) {
             throw new Error("Constructor has been invoked without provisioning");
         }
 
-        if (provisioning.logging) {
-            loggingManager.configure(provisioning.logging);
+        if (this._provisioning.logging) {
+            this.logging.configure(this._provisioning.logging);
         }
 
-        log = loggingManager.getLogger("joynr.start.WebSocketLibjoynrRuntime");
+        if (keychain) {
+            if (UtilInternal.checkNullUndefined(keychain.tlsCert)) {
+                throw new Error("tlsCert not set in keychain.tlsCert");
+            }
+            if (UtilInternal.checkNullUndefined(keychain.tlsKey)) {
+                throw new Error("tlsKey not set in keychain.tlsKey");
+            }
+            if (UtilInternal.checkNullUndefined(keychain.tlsCa)) {
+                throw new Error("tlsCa not set in keychain.tlsCa");
+            }
+            if (UtilInternal.checkNullUndefined(keychain.ownerId)) {
+                throw new Error("ownerId not set in keychain.ownerId");
+            }
+
+            this._bufferedOwnerId = Buffer.from(keychain.ownerId);
+            JoynrMessage.setSigningCallback(this._signingCallback);
+
+            keychain.checkServerIdentity = function(server) {
+                if (this._provisioning.ccAddress.host === server) {
+                    return undefined;
+                } else {
+                    throw new Error(
+                        `message from unknown host: ${server} on accepted host is cc: ${
+                            this._provisioning.ccAddress.host
+                        }.`
+                    );
+                }
+            };
+        }
 
         const persistencyProvisioning = UtilInternal.extend(
             {},
             defaultLibjoynrSettings.persistencySettings,
-            provisioning.persistency
+            this._provisioning.persistency
         );
 
         let persistencyPromise;
@@ -290,41 +240,51 @@ function WebSocketLibjoynrRuntime(provisioning) {
         const capabilitiesPersistency = persistencyProvisioning.capabilities ? persistency : new MemoryStorage();
         const publicationsPersistency = persistencyProvisioning.publications ? persistency : undefined;
 
-        initialRoutingTable = {};
-        untypedCapabilities = provisioning.capabilities || [];
+        const initialRoutingTable = {};
+        let untypedCapabilities = this._provisioning.capabilities || [];
         const defaultCapabilities = defaultLibjoynrSettings.capabilities || [];
 
         untypedCapabilities = untypedCapabilities.concat(defaultCapabilities);
 
-        typedCapabilities = [];
+        const ccAddress = new WebSocketAddress({
+            protocol: this._provisioning.ccAddress.protocol || defaultWebSocketSettings.protocol,
+            host: this._provisioning.ccAddress.host,
+            port: this._provisioning.ccAddress.port,
+            path: this._provisioning.ccAddress.path || defaultWebSocketSettings.path
+        });
+
+        const typedCapabilities = [];
         for (let i = 0; i < untypedCapabilities.length; i++) {
             const capability = new DiscoveryEntryWithMetaInfo(untypedCapabilities[i]);
             initialRoutingTable[capability.participantId] = ccAddress;
             typedCapabilities.push(capability);
         }
 
-        messageQueueSettings = {};
-        if (provisioning.messaging !== undefined && provisioning.messaging.maxQueueSizeInKBytes !== undefined) {
-            messageQueueSettings.maxQueueSizeInKBytes = provisioning.messaging.maxQueueSizeInKBytes;
+        const messageQueueSettings = {};
+        if (
+            this._provisioning.messaging !== undefined &&
+            this._provisioning.messaging.maxQueueSizeInKBytes !== undefined
+        ) {
+            messageQueueSettings.maxQueueSizeInKBytes = this._provisioning.messaging.maxQueueSizeInKBytes;
         }
 
-        localAddress = new WebSocketClientAddress({
+        const localAddress = new WebSocketClientAddress({
             id: uuid()
         });
 
-        sharedWebSocket = new SharedWebSocket({
+        const sharedWebSocket = new SharedWebSocket({
             remoteAddress: ccAddress,
             localAddress,
-            provisioning: provisioning.websocket || {},
+            provisioning: this._provisioning.websocket || {},
             keychain
         });
 
-        webSocketMessagingSkeleton = new WebSocketMessagingSkeleton({
+        this._webSocketMessagingSkeleton = new WebSocketMessagingSkeleton({
             sharedWebSocket,
             mainTransport: true
         });
 
-        messagingSkeletonFactory = new MessagingSkeletonFactory();
+        const messagingSkeletonFactory = new MessagingSkeletonFactory();
 
         const messagingStubFactories = {};
         messagingStubFactories[InProcessAddress._typeName] = new InProcessMessagingStubFactory();
@@ -333,11 +293,11 @@ function WebSocketLibjoynrRuntime(provisioning) {
             sharedWebSocket
         });
 
-        messagingStubFactory = new MessagingStubFactory({
+        const messagingStubFactory = new MessagingStubFactory({
             messagingStubFactories
         });
 
-        messageRouter = new MessageRouter({
+        this._messageRouter = new MessageRouter({
             initialRoutingTable,
             persistency: routingTablePersistency,
             joynrInstanceId: uuid(),
@@ -351,64 +311,66 @@ function WebSocketLibjoynrRuntime(provisioning) {
             incomingAddress: localAddress
         });
 
-        webSocketMessagingSkeleton.registerListener(messageRouter.route);
+        this._webSocketMessagingSkeleton.registerListener(this._messageRouter.route);
 
         // link up clustercontroller messaging to dispatcher
-        messageRouterSkeleton = new InProcessMessagingSkeleton();
-        messageRouterStub = new InProcessMessagingStub(messageRouterSkeleton);
+        const messageRouterSkeleton = new InProcessMessagingSkeleton();
+        const messageRouterStub = new InProcessMessagingStub(messageRouterSkeleton);
 
         // clustercontroller messaging handled by the messageRouter
-        messageRouterSkeleton.registerListener(messageRouter.route);
+        messageRouterSkeleton.registerListener(this._messageRouter.route);
         const ttlUpLiftMs =
-            provisioning.messaging && provisioning.messaging.TTL_UPLIFT ? provisioning.messaging.TTL_UPLIFT : undefined;
-        dispatcher = new Dispatcher(messageRouterStub, new PlatformSecurityManager(), ttlUpLiftMs);
+            this._provisioning.messaging && this._provisioning.messaging.TTL_UPLIFT
+                ? this._provisioning.messaging.TTL_UPLIFT
+                : undefined;
+        this._dispatcher = new Dispatcher(messageRouterStub, new PlatformSecurityManager(), ttlUpLiftMs);
 
-        libjoynrMessagingSkeleton = new InProcessMessagingSkeleton();
-        libjoynrMessagingSkeleton.registerListener(dispatcher.receive);
+        const libjoynrMessagingSkeleton = new InProcessMessagingSkeleton();
+        libjoynrMessagingSkeleton.registerListener(this._dispatcher.receive);
 
         const messagingSkeletons = {};
         messagingSkeletons[InProcessAddress._typeName] = libjoynrMessagingSkeleton;
-        messagingSkeletons[WebSocketAddress._typeName] = webSocketMessagingSkeleton;
+        messagingSkeletons[WebSocketAddress._typeName] = this._webSocketMessagingSkeleton;
         messagingSkeletonFactory.setSkeletons(messagingSkeletons);
 
-        requestReplyManager = new RequestReplyManager(dispatcher);
-        subscriptionManager = new SubscriptionManager(dispatcher);
-        publicationManager = new PublicationManager(dispatcher, publicationsPersistency, "joynrInstanceId"); //TODO: create joynrInstanceId
+        this._requestReplyManager = new RequestReplyManager(this._dispatcher);
+        this._subscriptionManager = new SubscriptionManager(this._dispatcher);
+        this._publicationManager = new PublicationManager(this._dispatcher, publicationsPersistency, "joynrInstanceId"); //TODO: create joynrInstanceId
 
-        dispatcher.registerRequestReplyManager(requestReplyManager);
-        dispatcher.registerSubscriptionManager(subscriptionManager);
-        dispatcher.registerPublicationManager(publicationManager);
-        dispatcher.registerMessageRouter(messageRouter);
+        this._dispatcher.registerRequestReplyManager(this._requestReplyManager);
+        this._dispatcher.registerSubscriptionManager(this._subscriptionManager);
+        this._dispatcher.registerPublicationManager(this._publicationManager);
+        this._dispatcher.registerMessageRouter(this._messageRouter);
 
-        participantIdStorage = new ParticipantIdStorage(capabilitiesPersistency, uuid);
-        discovery = new InProcessStub();
+        this.participantIdStorage = new ParticipantIdStorage(capabilitiesPersistency, uuid);
+        const discovery = new InProcessStub();
 
-        capabilitiesRegistrar = Object.freeze(
+        this.registration = Object.freeze(
             new CapabilitiesRegistrar({
                 discoveryStub: discovery,
-                messageRouter,
-                requestReplyManager,
-                publicationManager,
+                messageRouter: this._messageRouter,
+                requestReplyManager: this._requestReplyManager,
+                publicationManager: this._publicationManager,
                 libjoynrMessagingAddress: new InProcessAddress(libjoynrMessagingSkeleton),
-                participantIdStorage
+                participantIdStorage: this.participantIdStorage
             })
         );
 
-        arbitrator = new Arbitrator(discovery, typedCapabilities);
+        this._arbitrator = new Arbitrator(discovery, typedCapabilities);
 
-        providerBuilder = Object.freeze(new ProviderBuilder());
+        this.providerBuilder = Object.freeze(new ProviderBuilder());
 
-        proxyBuilder = Object.freeze(
+        this.proxyBuilder = Object.freeze(
             new ProxyBuilder(
                 {
-                    arbitrator,
-                    typeRegistry,
-                    requestReplyManager,
-                    subscriptionManager,
-                    publicationManager
+                    arbitrator: this._arbitrator,
+                    typeRegistry: this.typeRegistry,
+                    requestReplyManager: this._requestReplyManager,
+                    subscriptionManager: this._subscriptionManager,
+                    publicationManager: this._publicationManager
                 },
                 {
-                    messageRouter,
+                    messageRouter: this._messageRouter,
                     libjoynrMessagingAddress: new InProcessAddress(libjoynrMessagingSkeleton)
                 }
             )
@@ -419,12 +381,12 @@ function WebSocketLibjoynrRuntime(provisioning) {
          * to allow the cluster controller to handle timeout for global discovery requests and
          * send back the response to discoveryProxy
          */
-        if (provisioning.internalMessagingQos === undefined || provisioning.internalMessagingQos === null) {
-            provisioning.internalMessagingQos = {};
-            provisioning.internalMessagingQos.ttl = MessagingQos.DEFAULT_TTL + 10000;
+        if (this._provisioning.internalMessagingQos === undefined || this._provisioning.internalMessagingQos === null) {
+            this._provisioning.internalMessagingQos = {};
+            this._provisioning.internalMessagingQos.ttl = MessagingQos.DEFAULT_TTL + 10000;
         }
 
-        const internalMessagingQos = new MessagingQos(provisioning.internalMessagingQos);
+        const internalMessagingQos = new MessagingQos(this._provisioning.internalMessagingQos);
 
         function buildDiscoveryProxyOnSuccess(newDiscoveryProxy) {
             discovery.setSkeleton(
@@ -468,11 +430,7 @@ function WebSocketLibjoynrRuntime(provisioning) {
             );
         }
 
-        function buildRoutingProxyOnSuccess(newRoutingProxy) {
-            return messageRouter.setRoutingProxy(newRoutingProxy);
-        }
-
-        const internalProxiesPromise = proxyBuilder
+        const internalProxiesPromise = this.proxyBuilder
             .build(RoutingProxy, {
                 domain: "io.joynr",
                 messagingQos: internalMessagingQos,
@@ -481,10 +439,12 @@ function WebSocketLibjoynrRuntime(provisioning) {
                 }),
                 staticArbitration: true
             })
-            .then(buildRoutingProxyOnSuccess)
+            .then(newRoutingProxy => {
+                return this._messageRouter.setRoutingProxy(newRoutingProxy);
+            })
             .catch(buildRoutingProxyOnError)
             .then(() => {
-                return proxyBuilder.build(DiscoveryProxy, {
+                return this.proxyBuilder.build(DiscoveryProxy, {
                     domain: "io.joynr",
                     messagingQos: internalMessagingQos,
                     discoveryQos: new DiscoveryQos({
@@ -496,26 +456,20 @@ function WebSocketLibjoynrRuntime(provisioning) {
             .then(buildDiscoveryProxyOnSuccess)
             .catch(buildDiscoveryProxyOnError);
 
-        function startOnSuccess() {
-            joynrState = JoynrStates.STARTED;
-            publicationManager.restore();
-            log.debug("joynr web socket initialized");
-            return;
-        }
-
-        function startOnFailure(error) {
-            log.error(`error starting up joynr: ${error}`);
-
-            internalShutdown();
-
-            throw error;
-        }
-
         // when everything's ready we can trigger the app
         return Promise.all([internalProxiesPromise, persistencyPromise])
-            .then(startOnSuccess)
-            .catch(startOnFailure);
-    };
+            .then(() => {
+                this._joynrState = JoynrStates.STARTED;
+                this._publicationManager.restore();
+                log.debug("joynr web socket initialized");
+            })
+            .catch(error => {
+                log.error(`error starting up joynr: ${error}`);
+
+                this.shutdown();
+                throw error;
+            });
+    }
 
     /**
      * Shuts down libjoynr
@@ -525,72 +479,67 @@ function WebSocketLibjoynrRuntime(provisioning) {
      * @throws {Error}
      *             if libjoynr is not in the STARTED state
      */
-    internalShutdown = function shutdown(settings) {
-        if (joynrState !== JoynrStates.STARTED && joynrState !== JoynrStates.STARTING) {
-            throw new Error(`Cannot shutdown libjoynr because it's currently "${joynrState}"`);
+    shutdown(settings) {
+        if (this._joynrState !== JoynrStates.STARTED && this._joynrState !== JoynrStates.STARTING) {
+            throw new Error(`Cannot shutdown libjoynr because it's currently "${this._joynrState}"`);
         }
-        joynrState = JoynrStates.SHUTTINGDOWN;
+        this._joynrState = JoynrStates.SHUTTINGDOWN;
 
         settings = settings || {};
 
         const shutdownSettings = UtilInternal.extend(
             {},
             defaultLibjoynrSettings.shutdownSettings,
-            provisioning.shutdownSettings,
+            this._provisioning.shutdownSettings,
             settings
         );
 
         if (shutdownSettings.clearSubscriptionsEnabled) {
-            subscriptionManager.terminateSubscriptions(shutdownSettings.clearSubscriptionsTimeoutMs);
+            this._subscriptionManager.terminateSubscriptions(shutdownSettings.clearSubscriptionsTimeoutMs);
         }
 
-        if (webSocketMessagingSkeleton !== undefined) {
-            webSocketMessagingSkeleton.shutdown();
+        if (this._webSocketMessagingSkeleton !== undefined) {
+            this._webSocketMessagingSkeleton.shutdown();
         }
 
-        if (capabilitiesRegistrar !== undefined) {
-            capabilitiesRegistrar.shutdown();
+        if (this.registration !== undefined) {
+            this.registration.shutdown();
         }
 
-        if (arbitrator !== undefined) {
-            arbitrator.shutdown();
+        if (this._arbitrator !== undefined) {
+            this._arbitrator.shutdown();
         }
 
-        if (messageRouter !== undefined) {
-            messageRouter.shutdown();
+        if (this._messageRouter !== undefined) {
+            this._messageRouter.shutdown();
         }
 
-        if (requestReplyManager !== undefined) {
-            requestReplyManager.shutdown();
+        if (this._requestReplyManager !== undefined) {
+            this._requestReplyManager.shutdown();
         }
 
-        if (publicationManager !== undefined) {
-            publicationManager.shutdown();
+        if (this._publicationManager !== undefined) {
+            this._publicationManager.shutdown();
         }
 
-        if (subscriptionManager !== undefined) {
-            subscriptionManager.shutdown();
+        if (this._subscriptionManager !== undefined) {
+            this._subscriptionManager.shutdown();
         }
 
-        if (dispatcher !== undefined) {
-            dispatcher.shutdown();
+        if (this._dispatcher !== undefined) {
+            this._dispatcher.shutdown();
         }
 
-        if (typeRegistry !== undefined) {
-            typeRegistry.shutdown();
+        if (this.typeRegistry !== undefined) {
+            this.typeRegistry.shutdown();
         }
 
-        const persistencyPromise = persistency !== undefined ? persistency.shutdown() : Promise.resolve();
+        const persistencyPromise = this._persistency !== undefined ? this._persistency.shutdown() : Promise.resolve();
 
-        joynrState = JoynrStates.SHUTDOWN;
+        this._joynrState = JoynrStates.SHUTDOWN;
         log.debug("joynr shut down");
         return persistencyPromise;
-    };
-
-    this.shutdown = internalShutdown;
-
-    // make every instance immutable
-    return Object.freeze(this);
+    }
 }
 
 module.exports = WebSocketLibjoynrRuntime;
