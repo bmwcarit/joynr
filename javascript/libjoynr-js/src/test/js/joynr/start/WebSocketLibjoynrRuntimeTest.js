@@ -146,13 +146,15 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
         done();
     });
 
-    it("won't override settings unnecessarily", () => {
-        runtime = new WebSocketLibjoynrRuntime(provisioning);
+    it("won't override settings unnecessarily", async () => {
+        runtime = new WebSocketLibjoynrRuntime();
+        await runtime.start(provisioning);
+        await runtime.shutdown();
         expect(DiscoveryQos.setDefaultSettings).not.toHaveBeenCalled();
         expect(CapabilitiesRegistrar.setDefaultExpiryIntervalMs).not.toHaveBeenCalled();
     });
 
-    it("will set the default discoveryQos settings correctly", () => {
+    it("will set the default discoveryQos settings correctly", async () => {
         const discoveryRetryDelayMs = 100;
         const discoveryTimeoutMs = 200;
         const discoveryExpiryIntervalMs = 100;
@@ -162,7 +164,10 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
             discoveryExpiryIntervalMs
         };
         provisioning.capabilities = { discoveryQos };
-        runtime = new WebSocketLibjoynrRuntime(provisioning);
+        runtime = new WebSocketLibjoynrRuntime();
+        await runtime.start(provisioning);
+        await runtime.shutdown();
+
         expect(DiscoveryQos.setDefaultSettings).toHaveBeenCalledWith({
             discoveryRetryDelayMs,
             discoveryTimeoutMs
@@ -171,9 +176,9 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
     });
 
     it("will initialize SharedWebSocket correctly", done => {
-        runtime = new WebSocketLibjoynrRuntime(provisioning);
+        runtime = new WebSocketLibjoynrRuntime();
         runtime
-            .start()
+            .start(provisioning)
             .then(done)
             .catch(fail);
 
@@ -194,9 +199,9 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
     });
 
     it("will use the default persistency settings", done => {
-        runtime = new WebSocketLibjoynrRuntime(provisioning);
+        runtime = new WebSocketLibjoynrRuntime();
         runtime
-            .start()
+            .start(provisioning)
             .then(done)
             .catch(fail);
         expect(MessageRouter.prototype.constructor.calls.count()).toEqual(1);
@@ -209,9 +214,9 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
 
     it("enables MessageRouter Persistency if configured", done => {
         provisioning.persistency = { routingTable: true };
-        runtime = new WebSocketLibjoynrRuntime(provisioning);
+        runtime = new WebSocketLibjoynrRuntime();
         runtime
-            .start()
+            .start(provisioning)
             .then(done)
             .catch(fail);
         expect(MessageRouter.prototype.constructor.calls.count()).toEqual(1);
@@ -223,9 +228,9 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
 
     it("enables ParticipantIdStorage persistency if configured", done => {
         provisioning.persistency = { capabilities: true };
-        runtime = new WebSocketLibjoynrRuntime(provisioning);
+        runtime = new WebSocketLibjoynrRuntime();
         runtime
-            .start()
+            .start(provisioning)
             .then(done)
             .catch(fail);
         expect(ParticipantIdStorage.prototype.constructor.calls.count()).toEqual(1);
@@ -234,9 +239,9 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
 
     it("disables PublicationManager persistency if configured", done => {
         provisioning.persistency = { publications: false };
-        runtime = new WebSocketLibjoynrRuntime(provisioning);
+        runtime = new WebSocketLibjoynrRuntime();
         runtime
-            .start()
+            .start(provisioning)
             .then(done)
             .catch(fail);
         expect(PublicationManager.prototype.constructor.calls.count()).toEqual(1);
@@ -246,9 +251,9 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
     it("will call MessageQueue with the settings from the provisioning", done => {
         const maxQueueSizeInKBytes = 100;
         provisioning.messaging = { maxQueueSizeInKBytes };
-        runtime = new WebSocketLibjoynrRuntime(provisioning);
+        runtime = new WebSocketLibjoynrRuntime();
         runtime
-            .start()
+            .start(provisioning)
             .then(done)
             .catch(fail);
         expect(MessageQueue.prototype.constructor.calls.count()).toEqual(1);
@@ -260,9 +265,9 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
     it("will call Dispatcher with the settings from the provisioning", done => {
         const ttlUpLiftMs = 1000;
         provisioning.messaging = { TTL_UPLIFT: ttlUpLiftMs };
-        runtime = new WebSocketLibjoynrRuntime(provisioning);
+        runtime = new WebSocketLibjoynrRuntime();
         runtime
-            .start()
+            .start(provisioning)
             .then(done)
             .catch(fail);
         expect(Dispatcher.prototype.constructor.calls.count()).toEqual(1);
@@ -272,9 +277,9 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
     it("will call MessagingQos with the settings from the provisioning", done => {
         const ttl = 1000;
         provisioning.internalMessagingQos = { ttl };
-        runtime = new WebSocketLibjoynrRuntime(provisioning);
+        runtime = new WebSocketLibjoynrRuntime();
         runtime
-            .start()
+            .start(provisioning)
             .then(done)
             .catch(fail);
         expect(MessagingQos.prototype.constructor).toHaveBeenCalledWith({ ttl });
@@ -288,8 +293,8 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
             ownerId: "ownerID"
         };
         spyOn(JoynrMessage, "setSigningCallback").and.callThrough();
-        runtime = new WebSocketLibjoynrRuntime(provisioning);
-        await runtime.start();
+        runtime = new WebSocketLibjoynrRuntime();
+        await runtime.start(provisioning);
         await runtime.shutdown();
         expect(JoynrMessage.setSigningCallback).toHaveBeenCalled();
         const joynrMessage = new JoynrMessage({ payload: "payload", type: "type" });
@@ -297,9 +302,9 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
     });
 
     it("terminates Subscriptions upon shutdown with default timeout", done => {
-        runtime = new WebSocketLibjoynrRuntime(provisioning);
+        runtime = new WebSocketLibjoynrRuntime();
         runtime
-            .start()
+            .start(provisioning)
             .then(runtime.shutdown)
             .then(() => {
                 expect(terminateSubscriptionsSpy).toHaveBeenCalledWith(1000);
@@ -309,11 +314,11 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
     });
 
     it("won't terminate Subscriptions upon shutdown when specified by provisioning", done => {
-        runtime = new WebSocketLibjoynrRuntime(provisioning);
+        runtime = new WebSocketLibjoynrRuntime();
 
         provisioning.shutdownSettings = { clearSubscriptionsEnabled: false };
         runtime
-            .start()
+            .start(provisioning)
             .then(() => {
                 runtime.shutdown();
             })
@@ -325,11 +330,11 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
     });
 
     it("won't terminate Subscriptions when explicitly called with shutdown", done => {
-        runtime = new WebSocketLibjoynrRuntime(provisioning);
+        runtime = new WebSocketLibjoynrRuntime();
 
         provisioning.shutdownSettings = { clearSubscriptionsEnabled: false };
         runtime
-            .start()
+            .start(provisioning)
             .then(() => {
                 runtime.shutdown({ clearSubscriptionsEnabled: false });
             })

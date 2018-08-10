@@ -77,7 +77,7 @@ const log = loggingManager.getLogger("joynr.start.WebSocketLibjoynrRuntime");
  * @param {Object} provisioning
  */
 class WebSocketLibjoynrRuntime {
-    constructor(provisioning) {
+    constructor() {
         this.shutdown = this.shutdown.bind(this);
         this._signingCallback = this._signingCallback.bind(this);
 
@@ -118,7 +118,6 @@ class WebSocketLibjoynrRuntime {
         this.logging = loggingManager;
 
         this._joynrState = JoynrStates.SHUTDOWN;
-        this._provisioning = provisioning;
         this._webSocketMessagingSkeleton = null;
         this._arbitrator = null;
         this._messageRouter = null;
@@ -128,11 +127,30 @@ class WebSocketLibjoynrRuntime {
         this._dispatcher = null;
         this._bufferedOwnerId = null;
 
+        this._joynrState = JoynrStates.SHUTDOWN;
+    }
+
+    _signingCallback() {
+        return this._bufferedOwnerId;
+    }
+
+    /**
+     * Starts up the libjoynr instance
+     *
+     * @name WebSocketLibjoynrRuntime#start
+     * @function
+     * @returns {Object} an A+ promise object, reporting when libjoynr startup is
+     *          completed or has failed
+     * @throws {Error}
+     *             if libjoynr is not in SHUTDOWN state
+     */
+    start(provisioning) {
+        let persistency;
+        this._shutdownSettings = provisioning.shutdownSettings;
+
         if (UtilInternal.checkNullUndefined(provisioning.ccAddress)) {
             throw new Error("ccAddress not set in provisioning.ccAddress");
         }
-
-        this._joynrState = JoynrStates.SHUTDOWN;
 
         if (provisioning.capabilities && provisioning.capabilities.discoveryQos) {
             const discoveryQos = provisioning.capabilities.discoveryQos;
@@ -152,37 +170,20 @@ class WebSocketLibjoynrRuntime {
 
             DiscoveryQos.setDefaultSettings(discoveryQosSettings);
         }
-    }
 
-    _signingCallback() {
-        return this._bufferedOwnerId;
-    }
-
-    /**
-     * Starts up the libjoynr instance
-     *
-     * @name WebSocketLibjoynrRuntime#start
-     * @function
-     * @returns {Object} an A+ promise object, reporting when libjoynr startup is
-     *          completed or has failed
-     * @throws {Error}
-     *             if libjoynr is not in SHUTDOWN state
-     */
-    start() {
-        let persistency;
-        const keychain = this._provisioning.keychain;
+        const keychain = provisioning.keychain;
 
         if (this._joynrState !== JoynrStates.SHUTDOWN) {
             throw new Error(`Cannot start libjoynr because it's currently "${this._joynrState}"`);
         }
         this._joynrState = JoynrStates.STARTING;
 
-        if (!this._provisioning) {
+        if (!provisioning) {
             throw new Error("Constructor has been invoked without provisioning");
         }
 
-        if (this._provisioning.logging) {
-            this.logging.configure(this._provisioning.logging);
+        if (provisioning.logging) {
+            this.logging.configure(provisioning.logging);
         }
 
         if (keychain) {
@@ -203,13 +204,11 @@ class WebSocketLibjoynrRuntime {
             JoynrMessage.setSigningCallback(this._signingCallback);
 
             keychain.checkServerIdentity = function(server) {
-                if (this._provisioning.ccAddress.host === server) {
+                if (provisioning.ccAddress.host === server) {
                     return undefined;
                 } else {
                     throw new Error(
-                        `message from unknown host: ${server} on accepted host is cc: ${
-                            this._provisioning.ccAddress.host
-                        }.`
+                        `message from unknown host: ${server} on accepted host is cc: ${provisioning.ccAddress.host}.`
                     );
                 }
             };
@@ -218,7 +217,7 @@ class WebSocketLibjoynrRuntime {
         const persistencyProvisioning = UtilInternal.extend(
             {},
             defaultLibjoynrSettings.persistencySettings,
-            this._provisioning.persistency
+            provisioning.persistency
         );
 
         let persistencyPromise;
@@ -241,16 +240,16 @@ class WebSocketLibjoynrRuntime {
         const publicationsPersistency = persistencyProvisioning.publications ? persistency : undefined;
 
         const initialRoutingTable = {};
-        let untypedCapabilities = this._provisioning.capabilities || [];
+        let untypedCapabilities = provisioning.capabilities || [];
         const defaultCapabilities = defaultLibjoynrSettings.capabilities || [];
 
         untypedCapabilities = untypedCapabilities.concat(defaultCapabilities);
 
         const ccAddress = new WebSocketAddress({
-            protocol: this._provisioning.ccAddress.protocol || defaultWebSocketSettings.protocol,
-            host: this._provisioning.ccAddress.host,
-            port: this._provisioning.ccAddress.port,
-            path: this._provisioning.ccAddress.path || defaultWebSocketSettings.path
+            protocol: provisioning.ccAddress.protocol || defaultWebSocketSettings.protocol,
+            host: provisioning.ccAddress.host,
+            port: provisioning.ccAddress.port,
+            path: provisioning.ccAddress.path || defaultWebSocketSettings.path
         });
 
         const typedCapabilities = [];
@@ -261,11 +260,8 @@ class WebSocketLibjoynrRuntime {
         }
 
         const messageQueueSettings = {};
-        if (
-            this._provisioning.messaging !== undefined &&
-            this._provisioning.messaging.maxQueueSizeInKBytes !== undefined
-        ) {
-            messageQueueSettings.maxQueueSizeInKBytes = this._provisioning.messaging.maxQueueSizeInKBytes;
+        if (provisioning.messaging !== undefined && provisioning.messaging.maxQueueSizeInKBytes !== undefined) {
+            messageQueueSettings.maxQueueSizeInKBytes = provisioning.messaging.maxQueueSizeInKBytes;
         }
 
         const localAddress = new WebSocketClientAddress({
@@ -275,7 +271,7 @@ class WebSocketLibjoynrRuntime {
         const sharedWebSocket = new SharedWebSocket({
             remoteAddress: ccAddress,
             localAddress,
-            provisioning: this._provisioning.websocket || {},
+            provisioning: provisioning.websocket || {},
             keychain
         });
 
@@ -320,9 +316,7 @@ class WebSocketLibjoynrRuntime {
         // clustercontroller messaging handled by the messageRouter
         messageRouterSkeleton.registerListener(this._messageRouter.route);
         const ttlUpLiftMs =
-            this._provisioning.messaging && this._provisioning.messaging.TTL_UPLIFT
-                ? this._provisioning.messaging.TTL_UPLIFT
-                : undefined;
+            provisioning.messaging && provisioning.messaging.TTL_UPLIFT ? provisioning.messaging.TTL_UPLIFT : undefined;
         this._dispatcher = new Dispatcher(messageRouterStub, new PlatformSecurityManager(), ttlUpLiftMs);
 
         const libjoynrMessagingSkeleton = new InProcessMessagingSkeleton();
@@ -381,12 +375,12 @@ class WebSocketLibjoynrRuntime {
          * to allow the cluster controller to handle timeout for global discovery requests and
          * send back the response to discoveryProxy
          */
-        if (this._provisioning.internalMessagingQos === undefined || this._provisioning.internalMessagingQos === null) {
-            this._provisioning.internalMessagingQos = {};
-            this._provisioning.internalMessagingQos.ttl = MessagingQos.DEFAULT_TTL + 10000;
+        if (provisioning.internalMessagingQos === undefined || provisioning.internalMessagingQos === null) {
+            provisioning.internalMessagingQos = {};
+            provisioning.internalMessagingQos.ttl = MessagingQos.DEFAULT_TTL + 10000;
         }
 
-        const internalMessagingQos = new MessagingQos(this._provisioning.internalMessagingQos);
+        const internalMessagingQos = new MessagingQos(provisioning.internalMessagingQos);
 
         function buildDiscoveryProxyOnSuccess(newDiscoveryProxy) {
             discovery.setSkeleton(
@@ -490,7 +484,7 @@ class WebSocketLibjoynrRuntime {
         const shutdownSettings = UtilInternal.extend(
             {},
             defaultLibjoynrSettings.shutdownSettings,
-            this._provisioning.shutdownSettings,
+            this._shutdownSettings,
             settings
         );
 

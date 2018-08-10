@@ -27,7 +27,7 @@ describe("libjoynr-js.joynr.start.TestInProcessRuntime", () => {
     let runtime;
 
     function startInProcessRuntime() {
-        return runtime.start().catch(outputPromiseError);
+        return runtime.start(provisioning).catch(outputPromiseError);
     }
 
     function shutdownInProcessRuntime() {
@@ -35,7 +35,7 @@ describe("libjoynr-js.joynr.start.TestInProcessRuntime", () => {
     }
 
     beforeEach(done => {
-        runtime = new InProcessRuntime(provisioning);
+        runtime = new InProcessRuntime();
         done();
     });
 

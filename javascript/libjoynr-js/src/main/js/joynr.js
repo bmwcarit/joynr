@@ -77,9 +77,9 @@ const joynr = {
     load: function load(provisioning, capabilitiesWritable) {
         joynr.loaded = true;
         const joynrapi = require("./libjoynr-deps");
-        const runtime = new joynrapi.Runtime(provisioning);
+        const runtime = new joynrapi.Runtime();
         return runtime
-            .start()
+            .start(provisioning)
             .then(() => {
                 populateJoynrApi(joynr, joynrapi);
                 //remove Runtime, as it is not required for the end user
