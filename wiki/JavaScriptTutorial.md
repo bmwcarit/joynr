@@ -136,15 +136,16 @@ var capabilitiesValue = [ // untyped list of provisioned capabilities
             priority: <priority>,
             supportsOnChangeSubscriptions: <true|false>
         },
-        discoveryQos: {
-            discoveryTimeoutMs: <number>
-            discoveryRetryDelayMs: <number>
-            discoveryExpiryIntervalMs: <number> // discoveryExpiryIntervalMs + Date.now() = expiryDateMs
-        },
         participantId: <participantId>
     },
     ...
 ];
+
+var discoveryQosValue = {
+    discoveryTimeoutMs: <number>
+    discoveryRetryDelayMs: <number>
+    discoveryExpiryIntervalMs: <number> // discoveryExpiryIntervalMs + Date.now() = expiryDateMs
+};
 
 var loggingValue = {
     ttl: <ttl>, //default value: 172800000, two days in milliseconds
@@ -190,6 +191,7 @@ var shutdownSettingsValue = {
 
 var websocketLibJoynrProvisioning = {
     capabilities: capabilitiesValue, //optional
+    discoveryQos: discoveryQosValue, //optional
     logging: loggingValue, //optional
     internalMessagingQos: internalMessagingQosValue, //optional
     messaging: messagingValue, //optional

@@ -252,8 +252,8 @@ class JoynrRuntime {
         this._shutdownSettings = provisioning.shutdownSettings;
         this._provisioning = provisioning;
 
-        if (provisioning.capabilities && provisioning.capabilities.discoveryQos) {
-            const discoveryQos = provisioning.capabilities.discoveryQos;
+        if (provisioning.discoveryQos) {
+            const discoveryQos = provisioning.discoveryQos;
 
             if (discoveryQos.discoveryExpiryIntervalMs) {
                 CapabilitiesRegistrar.setDefaultExpiryIntervalMs(discoveryQos.discoveryExpiryIntervalMs);

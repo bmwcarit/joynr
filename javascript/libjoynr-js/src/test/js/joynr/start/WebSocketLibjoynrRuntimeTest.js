@@ -163,7 +163,7 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
             discoveryTimeoutMs,
             discoveryExpiryIntervalMs
         };
-        provisioning.capabilities = { discoveryQos };
+        provisioning.discoveryQos = discoveryQos;
         runtime = new WebSocketLibjoynrRuntime();
         await runtime.start(provisioning);
         await runtime.shutdown();
