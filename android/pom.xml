@@ -37,6 +37,18 @@
 		<module>robolectric-integration-tests</module>
 	</modules>
 
-
-
+	<build>
+		<pluginManagement>
+			<plugins>
+				<!-- Skip deploy -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-deploy-plugin</artifactId>
+					<configuration>
+						<skip>true</skip>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
 </project>
