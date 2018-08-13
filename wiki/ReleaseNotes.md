@@ -134,6 +134,7 @@ the versioning scheme [here](JoynrVersioning.md).
     * simpler usage of joynr, as no native dependencies are remaining
     * improved performance for serialization and deserialization of messages.
     * prepares future browser support. Rewriting of the websocket related browser part still necessary.
+* **[Java]**  Use `/` instead of `:` in shared subscription topic
 
 ## Configuration property changes
 None.
