@@ -413,6 +413,63 @@ In order to allow the same service to be called from multiple parts of an applic
 in different ways, you must also provide a unique 'use case' name for each of the
 proxy / callback pairs.
 
+##### Example
+
+	@Stateless
+	@CallbackHandler
+	public class MyServiceCallbackBean implements MyServiceStatelessAsyncCallback {
+
+		private final static String MY_USE_CASE = "get-stuff-done";
+
+		@Inject
+		private MyContextService myContextService;
+
+		@Override
+		public String getUseCaseName() {
+			return MY_USE_CASE;
+		}
+
+		// This method is called in response to receiving a reply for calls to the provider
+		// method 'myServiceMethod', and the reply context will contain the same message ID
+		// which the request was sent with. This is then used to retrieve some persisted
+		// context, which was created at the time of sending the request - potentially by
+		// a different node in the cluster.
+		@Override
+		public void myServiceMethodSuccess(String someParameter, ReplyContext replyContext) {
+			myContextService.handleReplyFor(replyContext.getMessageId(), someParameter);
+		}
+
+	}
+	
+	@Singleton
+	public class MyServiceBean {
+
+		private MyServiceStatelessAsync proxy;
+
+		@Inject
+		private ServiceLocator serviceLocator;
+
+		@Inject
+		private MyContextService myContextService;
+
+		@PostConstruct
+		public void initialise() {
+			proxy = serviceLocator.builder(MyServiceStatelessAsync.class, "my-provider-domain")
+						.withUseCase(MyServiceCallbackBean.MY_USE_CASE)
+						.build();
+		}
+
+		// Called by the application to trigger a call to the provider, persisting some
+		// context information for the given messageId, which can then be retrieved in the
+		// callback handler and used to process the reply.
+		public void trigger() {
+			proxy.myServiceMethod("some input value",
+									messageId -> myContextService.persistContext(messageId)
+			);
+		}
+
+	}
+
 ## Clustering
 
 The joynr JEE integration currently supports two forms of enabling clustering.
