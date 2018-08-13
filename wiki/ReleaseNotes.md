@@ -14,6 +14,8 @@ None.
 ## Configuration property changes
 * **[Java]** Introduced `PROPERTY_KEY_MQTT_USERNAME` and `PROPERTY_KEY_MQTT_PASSWORD`.
   See [Java Configuration Reference](JavaSettings.md) for more details.
+* **[JS]** Moved default settings for discoveryQos from `capabilities.discoveryQos` to `discoveryQos`
+    because capabilities was used as an array.
 
 # joynr 1.5.0
 
