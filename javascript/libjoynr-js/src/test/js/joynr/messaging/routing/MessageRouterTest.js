@@ -213,36 +213,56 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
         increaseFakeTime(1);
     });
 
-    it("queue Message with unknown destinationParticipant", done => {
-        joynrMessage2.expiryDate = Date.now() + 2000;
-
-        const onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
-
-        // avoid unhandled rejection warning by providing catch block
-        messageRouter
-            .route(joynrMessage2)
-            .then(onFulfilledSpy)
-            .catch(() => {
-                return null;
+    it("does not queue Reply and Publication Messages with unknown destinationParticipant", async () => {
+        const msgTypes = [
+            JoynrMessage.JOYNRMESSAGE_TYPE_REPLY,
+            JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REPLY,
+            JoynrMessage.JOYNRMESSAGE_TYPE_PUBLICATION
+        ];
+        for (let i = 0; i < msgTypes.length; i++) {
+            joynrMessage2 = new JoynrMessage({
+                type: msgTypes[i]
             });
-        increaseFakeTime(1);
+            joynrMessage2.expiryDate = Date.now() + 2000;
+            joynrMessage2.to = receiverParticipantId2;
+            joynrMessage2.from = "senderParticipantId";
+            joynrMessage2.payload = "hello2";
 
-        waitsFor(
-            () => {
-                return messageQueueSpy.putMessage.calls.count() > 0;
-            },
-            "messageQueueSpy to be invoked",
-            1000
-        )
-            .then(() => {
-                expect(messageQueueSpy.putMessage).toHaveBeenCalledWith(joynrMessage2);
-                expect(messageQueueSpy.getAndRemoveMessages).not.toHaveBeenCalled();
-                expect(messagingStubFactorySpy.createMessagingStub).not.toHaveBeenCalled();
-                expect(messagingStubSpy.transmit).not.toHaveBeenCalled();
-                done();
-                return null;
-            })
-            .catch(fail);
+            await messageRouter.route(joynrMessage2);
+            expect(messageQueueSpy.putMessage).not.toHaveBeenCalledWith(joynrMessage2);
+            expect(messageQueueSpy.getAndRemoveMessages).not.toHaveBeenCalled();
+            expect(messagingStubFactorySpy.createMessagingStub).not.toHaveBeenCalled();
+            expect(messagingStubSpy.transmit).not.toHaveBeenCalled();
+        }
+    });
+
+    it("queues Messages with unknown destinationParticipant which are not of type Reply or Publication", async () => {
+        const msgTypes = [
+            JoynrMessage.JOYNRMESSAGE_TYPE_ONE_WAY,
+            JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
+            JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REQUEST,
+            JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST,
+            JoynrMessage.JOYNRMESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST,
+            JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_STOP
+        ];
+
+        for (let i = 0; i < msgTypes.length; i++) {
+            joynrMessage2 = new JoynrMessage({
+                type: msgTypes[i]
+            });
+            joynrMessage2.expiryDate = Date.now() + 2000;
+            joynrMessage2.to = receiverParticipantId2;
+            joynrMessage2.from = "senderParticipantId";
+            joynrMessage2.payload = "hello2";
+
+            await messageRouter.route(joynrMessage2);
+            expect(messageQueueSpy.putMessage).toHaveBeenCalledWith(joynrMessage2);
+            expect(messageQueueSpy.getAndRemoveMessages).not.toHaveBeenCalled();
+            expect(messagingStubFactorySpy.createMessagingStub).not.toHaveBeenCalled();
+            expect(messagingStubSpy.transmit).not.toHaveBeenCalled();
+
+            messageQueueSpy.putMessage.calls.reset();
+        }
     });
 
     it("routes previously queued message once respective participant gets registered", done => {

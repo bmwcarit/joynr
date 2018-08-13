@@ -560,6 +560,16 @@ function MessageRouter(settings) {
                 return routeInternal(address, joynrMessage);
             }
 
+            if (
+                joynrMessage.type === JoynrMessage.JOYNRMESSAGE_TYPE_REPLY ||
+                joynrMessage.type === JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REPLY ||
+                joynrMessage.type === JoynrMessage.JOYNRMESSAGE_TYPE_PUBLICATION
+            ) {
+                const errorMsg = `Received message for unknown proxy. Dropping the message. ID: ${joynrMessage.msgId}`;
+                log.warn(`${errorMsg}, expiryDate: ${joynrMessage.expiryDate}, now: ${now}`);
+                return Promise.resolve();
+            }
+
             return resolveNextHopAndRoute(participantId, joynrMessage);
         } catch (e) {
             log.error(`MessageRouter.route failed: ${e.message}`);
