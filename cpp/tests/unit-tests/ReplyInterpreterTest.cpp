@@ -117,7 +117,7 @@ TEST_F(ReplyInterpreterTest, execute_calls_caller_void) {
 
 TEST_F(ReplyInterpreterTest, execute_calls_caller_with_error) {
     // Create a reply
-    exceptions::ProviderRuntimeException error("ReplyInterpreterTestProviderRuntimeExeption");
+    exceptions::ProviderRuntimeException error("ReplyInterpreterTestProviderRuntimeException");
     Reply reply;
     reply.setError(std::make_shared<exceptions::ProviderRuntimeException>(error));
 
@@ -145,7 +145,7 @@ TEST_F(ReplyInterpreterTest, execute_calls_caller_with_error) {
 
 TEST_F(ReplyInterpreterTest, execute_calls_caller_void_with_error) {
     // Create a reply
-    exceptions::ProviderRuntimeException error("ReplyInterpreterTestProviderRuntimeExeption");
+    exceptions::ProviderRuntimeException error("ReplyInterpreterTestProviderRuntimeException");
     Reply reply;
     reply.setError(std::make_shared<exceptions::ProviderRuntimeException>(error));
 
