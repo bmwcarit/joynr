@@ -65,6 +65,7 @@ public:
     }
 protected:
     void multicastMsgIsSentToAllMulticastReceivers(const bool isGloballyVisible);
+    void routeMessageAndCheckQueue(const std::string& type, bool expectedToBeQueued);
     const bool DEFAULT_IS_GLOBALLY_VISIBLE;
 };
 
@@ -562,4 +563,89 @@ TEST_F(CcMessageRouterTest, checkAllowUpdateFalse){
     const bool allowUpdate = false;
     const bool updateExpected = false;
     this->checkAllowUpdate(allowUpdate, updateExpected);
+}
+
+void CcMessageRouterTest::routeMessageAndCheckQueue(const std::string& msgType, bool msgShouldBeQueued)
+{
+    // setup the message
+    auto mutableMessage = std::make_shared<MutableMessage>();
+    mutableMessage->setType(msgType);
+    mutableMessage->setSender("sender");
+    std::string recipient = "unknownRecipient";
+    mutableMessage->setRecipient(recipient);
+    const TimePoint now = TimePoint::now();
+    mutableMessage->setExpiryDate(now + std::chrono::milliseconds(60000));
+    std::shared_ptr<ImmutableMessage> immutableMessage = mutableMessage->getImmutableMessage();
+
+    // verify that the recipient is unknown
+    Semaphore successCallbackCalled;
+    this->messageRouter->resolveNextHop(recipient,
+        [&successCallbackCalled](const bool& resolved) {
+            if(resolved) {
+                FAIL() << "resolve should not succeed.";
+                successCallbackCalled.notify();
+            } else {
+                successCallbackCalled.notify();
+            }
+        },
+        [&successCallbackCalled](const joynr::exceptions::ProviderRuntimeException&){
+            FAIL() << "resolveNextHop did not succeed.";
+            successCallbackCalled.notify();
+        }
+    );
+
+    this->messageRouter->route(immutableMessage);
+    EXPECT_TRUE(successCallbackCalled.waitFor(std::chrono::milliseconds(2000)));
+    EXPECT_EQ(this->messageQueue->getQueueLength(), msgShouldBeQueued ? 1 : 0);
+    EXPECT_EQ(this->messageRouter->getNumberOfRoutedMessages(), 1);
+}
+
+TEST_F(CcMessageRouterTest, checkReplyToNonExistingProxyIsDiscarded) {
+    bool msgShouldBeQueued = false;
+    routeMessageAndCheckQueue(Message::VALUE_MESSAGE_TYPE_REPLY(), msgShouldBeQueued);
+}
+
+TEST_F(CcMessageRouterTest, checkSubscriptionReplyToNonExistingRecipientIsDiscarded) {
+    bool msgShouldBeQueued = false;
+    routeMessageAndCheckQueue(Message::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY(), msgShouldBeQueued);
+}
+
+TEST_F(CcMessageRouterTest, checkPublicationToNonExistingRecipientIsDiscarded) {
+    bool msgShouldBeQueued = false;
+    routeMessageAndCheckQueue(Message::VALUE_MESSAGE_TYPE_PUBLICATION(), msgShouldBeQueued);
+}
+
+TEST_F(CcMessageRouterTest, checkMulticastToNonExistingRecipientIsDiscarded) {
+    bool msgShouldBeQueued = false;
+    routeMessageAndCheckQueue(Message::VALUE_MESSAGE_TYPE_MULTICAST(), msgShouldBeQueued);
+}
+
+TEST_F(CcMessageRouterTest, checkRequestToNonExistingRecipientIsQueued) {
+    bool msgShouldBeQueued = true;
+    routeMessageAndCheckQueue(Message::VALUE_MESSAGE_TYPE_REQUEST(), msgShouldBeQueued);
+}
+
+TEST_F(CcMessageRouterTest, checkOneWayToNonExistingRecipientIsQueued) {
+    bool msgShouldBeQueued = true;
+    routeMessageAndCheckQueue(Message::VALUE_MESSAGE_TYPE_ONE_WAY(), msgShouldBeQueued);
+}
+
+TEST_F(CcMessageRouterTest, checkSubscriptionRequestToNonExistingRecipientIsQueued) {
+    bool msgShouldBeQueued = true;
+    routeMessageAndCheckQueue(Message::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST(), msgShouldBeQueued);
+}
+
+TEST_F(CcMessageRouterTest, checkMulticastSubscriptionRequestToNonExistingRecipientIsQueued) {
+    bool msgShouldBeQueued = true;
+    routeMessageAndCheckQueue(Message::VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST(), msgShouldBeQueued);
+}
+
+TEST_F(CcMessageRouterTest, checkBroadcastSubscriptionRequestToNonExistingRecipientIsQueued) {
+    bool msgShouldBeQueued = true;
+    routeMessageAndCheckQueue(Message::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST(), msgShouldBeQueued);
+}
+
+TEST_F(CcMessageRouterTest, checkSubscriptionStopToNonExistingRecipientIsQueued) {
+    bool msgShouldBeQueued = true;
+    routeMessageAndCheckQueue(Message::VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP(), msgShouldBeQueued);
 }
