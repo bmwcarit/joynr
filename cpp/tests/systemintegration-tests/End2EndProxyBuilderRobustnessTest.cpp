@@ -130,21 +130,19 @@ void End2EndProxyBuilderRobustnessTest::buildProxyBeforeProviderRegistration(con
     std::shared_ptr<ProxyBuilder<vehicle::GpsProxy>> gpsProxyBuilder =
             consumerRuntime->createProxyBuilder<vehicle::GpsProxy>(domain);
 
-    auto onSuccess = [&semaphore, expectSuccess] (std::shared_ptr<vehicle::GpsProxy> gpsProxy) {
+    auto onSuccess = [&semaphore, expectSuccess](std::shared_ptr<vehicle::GpsProxy> gpsProxy) {
         if (!expectSuccess) {
             ADD_FAILURE() << "proxy building succeeded unexpectedly";
             semaphore.notify();
             return;
         }
         // call proxy method
-        std::shared_ptr<Future<int> >gpsFuture (gpsProxy->calculateAvailableSatellitesAsync());
-        gpsFuture->wait();
-        const int expectedValue = 42; // as defined in MockGpsProvider
-        int actualValue;
-        gpsFuture->get(actualValue);
-        EXPECT_EQ(expectedValue, actualValue);
-
-        semaphore.notify();
+        auto calculateOnSuccess = [&semaphore](int value) {
+            const int expectedValue = 42; // as defined in MockGpsProvider
+            EXPECT_EQ(expectedValue, value);
+            semaphore.notify();
+        };
+        gpsProxy->calculateAvailableSatellitesAsync(calculateOnSuccess);
     };
 
     auto onError = [&semaphore, expectSuccess] (const exceptions::DiscoveryException& exception) {
