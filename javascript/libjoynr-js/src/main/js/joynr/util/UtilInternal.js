@@ -282,5 +282,43 @@ UtilInternal.createDeferred = function() {
     return deferred;
 };
 
+/**
+ *
+ * Create an ES6 Proxy Object to facilitate access of nested properties.
+ *
+ * @param {Object} config
+ * @returns {Proxy} an ES6 Proxy object
+ */
+UtilInternal.augmentConfig = function(config) {
+    let parts = [];
+    const proxy = new Proxy(
+        () => {
+            let level = config;
+            for (let i = 0; i < parts.length; i++) {
+                if (level === undefined) {
+                    parts = [];
+                    return undefined;
+                }
+                level = level[parts[i]];
+            }
+            parts = [];
+            return level;
+        },
+        {
+            has() {
+                return true;
+            },
+
+            get(object, prop) {
+                parts.push(prop);
+                return proxy;
+            },
+
+            set() {}
+        }
+    );
+    return proxy;
+};
+
 UtilInternal.emptyFunction = function() {};
 module.exports = UtilInternal;
