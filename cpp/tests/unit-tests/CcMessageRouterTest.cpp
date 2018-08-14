@@ -64,7 +64,7 @@ public:
         DEFAULT_IS_GLOBALLY_VISIBLE(true) {
     }
 protected:
-    void multicastMsgIsSentToAllMulticastRecivers(const bool isGloballyVisible);
+    void multicastMsgIsSentToAllMulticastReceivers(const bool isGloballyVisible);
     const bool DEFAULT_IS_GLOBALLY_VISIBLE;
 };
 
@@ -97,7 +97,7 @@ TEST_F(CcMessageRouterTest, removeMulticastReceiver_failsIfProviderAddressNotAva
     EXPECT_TRUE(errorCallbackCalled.waitFor(std::chrono::milliseconds(5000)));
 }
 
-void CcMessageRouterTest::multicastMsgIsSentToAllMulticastRecivers(const bool isProviderGloballyVisible)
+void CcMessageRouterTest::multicastMsgIsSentToAllMulticastReceivers(const bool isProviderGloballyVisible)
 {
     const std::string subscriberParticipantId1("subscriberPartId1");
     const std::string subscriberParticipantId2("subscriberPartId2");
@@ -188,12 +188,12 @@ void CcMessageRouterTest::multicastMsgIsSentToAllMulticastRecivers(const bool is
 }
 
 TEST_F(CcMessageRouterTest,
-       routeMulticastMessageFromWebSocketProvider_withoutAccessController_multicastMsgIsSentToAllMulticastRecivers)
+       routeMulticastMessageFromWebSocketProvider_withoutAccessController_multicastMsgIsSentToAllMulticastReceivers)
 {
     bool isGloballyVisible = true;
-    multicastMsgIsSentToAllMulticastRecivers(isGloballyVisible);
+    multicastMsgIsSentToAllMulticastReceivers(isGloballyVisible);
     isGloballyVisible = false;
-    multicastMsgIsSentToAllMulticastRecivers(isGloballyVisible);
+    multicastMsgIsSentToAllMulticastReceivers(isGloballyVisible);
 }
 
 void invokeConsumerPermissionCallback(std::shared_ptr<ImmutableMessage> message,
@@ -203,7 +203,7 @@ void invokeConsumerPermissionCallback(std::shared_ptr<ImmutableMessage> message,
 }
 
 TEST_F(CcMessageRouterTest,
-       routeMulticastMessageFromWebSocketProvider_withAccessController_multicastMsgIsSentToAllMulticastRecivers)
+       routeMulticastMessageFromWebSocketProvider_withAccessController_multicastMsgIsSentToAllMulticastReceivers)
 {
     auto mockAccessController = std::make_shared<MockAccessController>();
     ON_CALL(*mockAccessController, hasConsumerPermission(_,_))
@@ -211,9 +211,9 @@ TEST_F(CcMessageRouterTest,
     messageRouter->setAccessController(util::as_weak_ptr(mockAccessController));
 
     bool isGloballyVisible = true;
-    multicastMsgIsSentToAllMulticastRecivers(isGloballyVisible);
+    multicastMsgIsSentToAllMulticastReceivers(isGloballyVisible);
     isGloballyVisible = false;
-    multicastMsgIsSentToAllMulticastRecivers(isGloballyVisible);
+    multicastMsgIsSentToAllMulticastReceivers(isGloballyVisible);
 }
 
 TEST_F(CcMessageRouterTest, removeMulticastReceiver_NonChildRouter_succeedsIfSkeletonNotAvailable) {
