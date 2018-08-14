@@ -514,6 +514,11 @@
 				<artifactId>websocket-server</artifactId>
 				<version>${jetty.version}</version>
 			</dependency>
+            <dependency>
+                <groupId>org.mqttbee</groupId>
+                <artifactId>mqtt-bee</artifactId>
+                <version>1.0.0</version>
+            </dependency>
 			<dependency>
 				<groupId>io.joynr.mqtt</groupId>
 				<artifactId>mqtt-client</artifactId>
