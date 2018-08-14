@@ -33,37 +33,44 @@ var MyRadioProvider = function() {
     var currentStationIndex = 0;
     var countryGeoPositionMap = {
         // Melbourne
-        "AUSTRALIA": new GeoPosition({ latitude: -37.8141070, longitude: 144.9632800 }),
+        "AUSTRALIA" : new GeoPosition({
+            latitude : -37.8141070,
+            longitude : 144.9632800
+        }),
         // Bolzano
-        "ITALY": new GeoPosition({ latitude: 46.4982950, longitude: 11.3547580 }),
+        "ITALY" : new GeoPosition({
+            latitude : 46.4982950,
+            longitude : 11.3547580
+        }),
         // Edmonton
-        "CANADA": new GeoPosition({ latitude: 53.5443890, longitude: -113.4909270 }),
+        "CANADA" : new GeoPosition({
+            latitude : 53.5443890,
+            longitude : -113.4909270
+        }),
         // Munich
-        "GERMANY": new GeoPosition({ latitude: 48.1351250, longitude: 11.5819810 })
+        "GERMANY" : new GeoPosition({
+            latitude : 48.1351250,
+            longitude : 11.5819810
+        })
     };
     var myRadioProvider;
-    var stationsList = [
-                        new RadioStation({
-                            name : "ABC Trible J",
-                            trafficService : false,
-                            country : Country.AUSTRALIA
-                        }),
-                        new RadioStation({
-                            name : "Radio Popolare",
-                            trafficService : true,
-                            country : Country.ITALY
-                        }),
-                        new RadioStation({
-                            name : "JAZZ.FM91",
-                            trafficService : false,
-                            country : Country.CANADA
-                        }),
-                        new RadioStation({
-                            name : "Bayern 3",
-                            trafficService : true,
-                            country : Country.GERMANY
-                        })
-                    ];
+    var stationsList = [ new RadioStation({
+        name : "ABC Trible J",
+        trafficService : false,
+        country : Country.AUSTRALIA
+    }), new RadioStation({
+        name : "Radio Popolare",
+        trafficService : true,
+        country : Country.ITALY
+    }), new RadioStation({
+        name : "JAZZ.FM91",
+        trafficService : false,
+        country : Country.CANADA
+    }), new RadioStation({
+        name : "Bayern 3",
+        trafficService : true,
+        country : Country.GERMANY
+    }) ];
     this.setProvider = function(radioProvider) {
         myRadioProvider = radioProvider;
     };
@@ -74,8 +81,7 @@ var MyRadioProvider = function() {
         }
     };
     this.addFavoriteStation = function(opArgs) {
-        prettyLog("radioProvider.addFavoriteStation(" + JSON.stringify(opArgs)
-                + ") called");
+        prettyLog("radioProvider.addFavoriteStation(" + JSON.stringify(opArgs) + ") called");
 
         if (opArgs === undefined) {
             prettyLog("operation arguments is undefined!");
@@ -91,7 +97,7 @@ var MyRadioProvider = function() {
         }
         if (opArgs.newFavoriteStation.name === "") {
             throw new joynr.exceptions.ProviderRuntimeException({
-               detailMessage: "MISSING_NAME"
+                detailMessage : "MISSING_NAME"
             });
         }
 
@@ -112,14 +118,12 @@ var MyRadioProvider = function() {
     };
 
     this.addFavoriteStationList = function(opArgs) {
-        prettyLog("radioProvider.addFavoriteStationList(" + JSON.stringify(opArgs)
-                + ") called");
+        prettyLog("radioProvider.addFavoriteStationList(" + JSON.stringify(opArgs) + ") called");
         return false;
     };
 
     this.shuffleStations = function(opArgs) {
-        prettyLog("radioProvider.shuffleStations(" + JSON.stringify(opArgs)
-                + ") called");
+        prettyLog("radioProvider.shuffleStations(" + JSON.stringify(opArgs) + ") called");
         currentStationIndex++;
         currentStationIndex %= stationsList.length;
 
@@ -143,8 +147,7 @@ var MyRadioProvider = function() {
     };
 
     this.getLocationOfCurrentStation = function() {
-        prettyLog("radioProvider.getLocationOfCurrentStation",
-                  "called");
+        prettyLog("radioProvider.getLocationOfCurrentStation", "called");
         return {
             country : stationsList[currentStationIndex].country,
             location : countryGeoPositionMap[stationsList[currentStationIndex].country.name]

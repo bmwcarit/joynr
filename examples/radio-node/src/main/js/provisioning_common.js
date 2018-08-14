@@ -33,29 +33,26 @@ provisioning.logging = {
     },
     configuration : {
         appenders : {
-            appender : [
-                {
-                    type : "Custom",
-                    name : "CUSTOM",
-                    PatternLayout : {
-                        pattern : "[%d{HH:mm:ss,SSS}][%c][%p] %m{2}"
-                    }
-                },
-                {
-                    type : "Console",
-                    name : "STDOUT",
-                    PatternLayout : {
-                        pattern : "[%d{HH:mm:ss,SSS}][%c][%p] %m{2}"
-                    }
+            appender : [ {
+                type : "Custom",
+                name : "CUSTOM",
+                PatternLayout : {
+                    pattern : "[%d{HH:mm:ss,SSS}][%c][%p] %m{2}"
                 }
-            ]
+            }, {
+                type : "Console",
+                name : "STDOUT",
+                PatternLayout : {
+                    pattern : "[%d{HH:mm:ss,SSS}][%c][%p] %m{2}"
+                }
+            } ]
         },
         loggers : {
             root : {
                 level : "debug",
-                AppenderRef : [{
+                AppenderRef : [ {
                     ref : "CUSTOM"
-                }]
+                } ]
             }
         }
     }
