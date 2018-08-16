@@ -21,15 +21,13 @@
 
 using namespace joynr::tests;
 
-Configuration &Configuration::getInstance()
+Configuration& Configuration::getInstance()
 {
     static Configuration* instance = new Configuration();
     return *instance;
 }
 
-Configuration::Configuration() :
-    defaultSystemSettingsFile(),
-    defaultWebsocketSettingsFile()
+Configuration::Configuration() : defaultSystemSettingsFile(), defaultWebsocketSettingsFile()
 {
 }
 
@@ -37,22 +35,22 @@ Configuration::~Configuration()
 {
 }
 
-void Configuration::setDefaultSystemSettingsFile(const std::string &filename)
+void Configuration::setDefaultSystemSettingsFile(const std::string& filename)
 {
     defaultSystemSettingsFile = filename;
 }
 
-void Configuration::setDefaultWebsocketSettingsFile(const std::string &filename)
+void Configuration::setDefaultWebsocketSettingsFile(const std::string& filename)
 {
     defaultWebsocketSettingsFile = filename;
 }
 
-const std::string &Configuration::getDefaultSystemSettingsFile() const
+const std::string& Configuration::getDefaultSystemSettingsFile() const
 {
     return defaultSystemSettingsFile;
 }
 
-const std::string &Configuration::getDefaultWebsocketSettingsFile() const
+const std::string& Configuration::getDefaultWebsocketSettingsFile() const
 {
     return defaultWebsocketSettingsFile;
 }

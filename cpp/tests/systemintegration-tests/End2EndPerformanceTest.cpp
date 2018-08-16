@@ -39,13 +39,13 @@ using namespace ::testing;
 
 using namespace joynr;
 
-
 /*
   * This test tries to create two combined Runtimes and will test communication
   * between the two Runtimes via HttpReceiver
   *
   */
-class End2EndPerformanceTest : public TestWithParam< std::tuple<std::string, std::string> > {
+class End2EndPerformanceTest : public TestWithParam<std::tuple<std::string, std::string>>
+{
 public:
     ADD_LOGGER(End2EndPerformanceTest)
     std::shared_ptr<JoynrClusterControllerRuntime> runtime1;
@@ -56,14 +56,14 @@ public:
     std::string uuid;
     std::string domain;
 
-    End2EndPerformanceTest() :
-        runtime1(),
-        runtime2(),
-        settings1(std::make_unique<Settings>(std::get<0>(GetParam()))),
-        settings2(std::make_unique<Settings>(std::get<1>(GetParam()))),
-        baseUuid(util::createUuid()),
-        uuid( "_" + baseUuid.substr(1, baseUuid.length()-2)),
-        domain("cppEnd2EndPerformancesTestDomain" + uuid)
+    End2EndPerformanceTest()
+            : runtime1(),
+              runtime2(),
+              settings1(std::make_unique<Settings>(std::get<0>(GetParam()))),
+              settings2(std::make_unique<Settings>(std::get<1>(GetParam()))),
+              baseUuid(util::createUuid()),
+              uuid("_" + baseUuid.substr(1, baseUuid.length() - 2)),
+              domain("cppEnd2EndPerformancesTestDomain" + uuid)
     {
 
         Settings integration1Settings{"test-resources/libjoynrSystemIntegration1.settings"};
@@ -78,7 +78,8 @@ public:
         runtime2->start();
     }
 
-    ~End2EndPerformanceTest() override {
+    ~End2EndPerformanceTest() override
+    {
         runtime1->shutdown();
         runtime2->shutdown();
 
@@ -91,19 +92,19 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(End2EndPerformanceTest);
-
 };
 
-TEST_P(End2EndPerformanceTest, sendManyRequests) {
+TEST_P(End2EndPerformanceTest, sendManyRequests)
+{
 
     types::ProviderQos providerQos;
     providerQos.setPriority(2);
     auto testProvider = std::make_shared<MockTestProvider>();
 
-    std::string participantId = runtime1->registerProvider<tests::testProvider>(domain, testProvider, providerQos);
+    std::string participantId =
+            runtime1->registerProvider<tests::testProvider>(domain, testProvider, providerQos);
 
     std::this_thread::sleep_for(std::chrono::seconds(2));
-
 
     std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
             runtime2->createProxyBuilder<tests::testProxy>(domain);
@@ -114,15 +115,15 @@ TEST_P(End2EndPerformanceTest, sendManyRequests) {
     std::int64_t qosRoundTripTTL = 50000;
 
     // Send a message and expect to get a result
-    std::shared_ptr<tests::testProxy> testProxy = testProxyBuilder
-                     ->setMessagingQos(MessagingQos(qosRoundTripTTL))
-                     ->setDiscoveryQos(discoveryQos)
-                     ->build();
+    std::shared_ptr<tests::testProxy> testProxy =
+            testProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
+                    ->setDiscoveryQos(discoveryQos)
+                    ->build();
     TimePoint startTime = TimePoint::now();
-    std::vector<std::shared_ptr<Future<int> > >testFutureList;
+    std::vector<std::shared_ptr<Future<int>>> testFutureList;
     int numberOfRequests = 150;
     int successfulRequests = 0;
-    for (int i=0; i<numberOfRequests; i++){
+    for (int i = 0; i < numberOfRequests; i++) {
         std::vector<int> list;
         list.push_back(2);
         list.push_back(4);
@@ -131,9 +132,9 @@ TEST_P(End2EndPerformanceTest, sendManyRequests) {
         testFutureList.push_back(testProxy->sumIntsAsync(list));
     }
 
-    for (int i=0; i<numberOfRequests; i++){
+    for (int i = 0; i < numberOfRequests; i++) {
         testFutureList.at(i)->wait();
-        int expectedValue = 2+4+8+i;
+        int expectedValue = 2 + 4 + 8 + i;
         if (testFutureList.at(i)->isOk()) {
             successfulRequests++;
             int actualValue;
@@ -142,7 +143,7 @@ TEST_P(End2EndPerformanceTest, sendManyRequests) {
         }
     }
     TimePoint stopTime = TimePoint::now();
-    //check if all Requests were successful
+    // check if all Requests were successful
     EXPECT_EQ(numberOfRequests, successfulRequests);
     JOYNR_LOG_INFO(logger(), "Required Time for 1000 Requests: {}", (stopTime - startTime).count());
 
@@ -156,16 +157,14 @@ TEST_P(End2EndPerformanceTest, sendManyRequests) {
 
 using namespace std::string_literals;
 
-INSTANTIATE_TEST_CASE_P(DISABLED_Http,
+INSTANTIATE_TEST_CASE_P(
+        DISABLED_Http,
         End2EndPerformanceTest,
-        testing::Values(
-            std::make_tuple("test-resources/HttpSystemIntegrationTest1.settings"s, "test-resources/HttpSystemIntegrationTest2.settings"s)
-        )
-);
+        testing::Values(std::make_tuple("test-resources/HttpSystemIntegrationTest1.settings"s,
+                                        "test-resources/HttpSystemIntegrationTest2.settings"s)));
 
-INSTANTIATE_TEST_CASE_P(Mqtt,
+INSTANTIATE_TEST_CASE_P(
+        Mqtt,
         End2EndPerformanceTest,
-        testing::Values(
-            std::make_tuple("test-resources/MqttSystemIntegrationTest1.settings"s, "test-resources/MqttSystemIntegrationTest2.settings"s)
-        )
-);
+        testing::Values(std::make_tuple("test-resources/MqttSystemIntegrationTest1.settings"s,
+                                        "test-resources/MqttSystemIntegrationTest2.settings"s)));

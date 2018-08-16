@@ -43,7 +43,8 @@ public:
     {
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
         discoveryQos.setDiscoveryTimeoutMs(100);
-        auto integrationSettings = std::make_unique<Settings>("test-resources/libjoynrSystemIntegration1.settings");
+        auto integrationSettings =
+                std::make_unique<Settings>("test-resources/libjoynrSystemIntegration1.settings");
         Settings settings("test-resources/MqttSystemIntegrationTest1.settings");
         Settings::merge(settings, *integrationSettings, false);
         runtime = std::make_shared<JoynrClusterControllerRuntime>(std::move(integrationSettings));
@@ -74,7 +75,8 @@ TEST_F(AsyncProxyBuilderTest, createProxyAsync_succeeds)
     providerQos.setPriority(2);
     providerQos.setScope(types::ProviderScope::LOCAL);
 
-    std::string participantId = runtime->registerProvider<tests::testProvider>(domain, testProvider, providerQos);
+    std::string participantId =
+            runtime->registerProvider<tests::testProvider>(domain, testProvider, providerQos);
 
     std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
             runtime->createProxyBuilder<tests::testProxy>(domain);
@@ -86,13 +88,11 @@ TEST_F(AsyncProxyBuilderTest, createProxyAsync_succeeds)
         EXPECT_NE(nullptr, proxy);
     };
 
-    auto onFailure = [](const joynr::exceptions::DiscoveryException&) {
-        FAIL();
-    };
+    auto onFailure = [](const joynr::exceptions::DiscoveryException&) { FAIL(); };
 
     testProxyBuilder->setMessagingQos(MessagingQos(50000))
-                    ->setDiscoveryQos(discoveryQos)
-                    ->buildAsync(onSuccess, onFailure);
+            ->setDiscoveryQos(discoveryQos)
+            ->buildAsync(onSuccess, onFailure);
 
     EXPECT_TRUE(onSuccessCalledSemaphore.waitFor(std::chrono::seconds(10)));
     runtime->unregisterProvider(participantId);
@@ -105,17 +105,15 @@ TEST_F(AsyncProxyBuilderTest, createProxyAsync_exceptionThrown)
 
     Semaphore onErrorCalledSemaphore;
 
-    auto onSuccess = [](std::shared_ptr<tests::testProxy>) {
-        FAIL();
-    };
+    auto onSuccess = [](std::shared_ptr<tests::testProxy>) { FAIL(); };
 
     auto onFailure = [&onErrorCalledSemaphore](const joynr::exceptions::DiscoveryException&) {
         onErrorCalledSemaphore.notify();
     };
 
     testProxyBuilder->setMessagingQos(MessagingQos(50000))
-                    ->setDiscoveryQos(discoveryQos)
-                    ->buildAsync(onSuccess, onFailure);
+            ->setDiscoveryQos(discoveryQos)
+            ->buildAsync(onSuccess, onFailure);
 
     EXPECT_TRUE(onErrorCalledSemaphore.waitFor(std::chrono::seconds(10)));
 }

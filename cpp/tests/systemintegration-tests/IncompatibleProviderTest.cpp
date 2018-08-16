@@ -32,17 +32,15 @@ using namespace joynr;
 class IncompatibleProviderTest : public Test
 {
 public:
-
-    IncompatibleProviderTest() :
-        runtime(),
-        testDomain("testDomain")
+    IncompatibleProviderTest() : runtime(), testDomain("testDomain")
     {
         runtime = JoynrRuntime::createRuntime(std::make_unique<Settings>());
         discoveryQos.setDiscoveryTimeoutMs(100);
         discoveryQos.setDiscoveryScope(joynr::types::DiscoveryScope::LOCAL_ONLY);
     }
 
-    ~IncompatibleProviderTest() override {
+    ~IncompatibleProviderTest() override
+    {
         test::util::removeAllCreatedSettingsAndPersistencyFiles();
     }
 
@@ -56,18 +54,18 @@ private:
     DISALLOW_COPY_AND_ASSIGN(IncompatibleProviderTest);
 };
 
-TEST_F(IncompatibleProviderTest, proxyCreationFails) {
+TEST_F(IncompatibleProviderTest, proxyCreationFails)
+{
     auto testProvider = std::make_shared<tests::v1::DefaultMultipleVersionsInterfaceProvider>();
     joynr::types::ProviderQos providerQos;
     providerQos.setScope(joynr::types::ProviderScope::LOCAL);
-    runtime->registerProvider<tests::v1::MultipleVersionsInterfaceProvider>(testDomain, testProvider, providerQos);
+    runtime->registerProvider<tests::v1::MultipleVersionsInterfaceProvider>(
+            testDomain, testProvider, providerQos);
 
     std::shared_ptr<ProxyBuilder<tests::v2::MultipleVersionsInterfaceProxy>> testProxyBuilder(
-        runtime->createProxyBuilder<tests::v2::MultipleVersionsInterfaceProxy>(testDomain)
-    );
+            runtime->createProxyBuilder<tests::v2::MultipleVersionsInterfaceProxy>(testDomain));
 
-    EXPECT_THROW(testProxyBuilder
-       ->setMessagingQos(messagingQos)
-       ->setDiscoveryQos(discoveryQos)
-       ->build(), joynr::exceptions::DiscoveryException);
+    EXPECT_THROW(
+            testProxyBuilder->setMessagingQos(messagingQos)->setDiscoveryQos(discoveryQos)->build(),
+            joynr::exceptions::DiscoveryException);
 }

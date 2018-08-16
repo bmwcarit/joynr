@@ -131,10 +131,10 @@ TEST_P(CombinedEnd2EndTest, surviveDestructionOfRuntime)
 
         // try to build a proxy, it must not run into SIGSEGV
         EXPECT_THROW(std::shared_ptr<tests::testProxy> testProxy(
-            testProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
-                    ->setDiscoveryQos(discoveryQos)
-                    ->build()),
-             exceptions::DiscoveryException);
+                             testProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
+                                     ->setDiscoveryQos(discoveryQos)
+                                     ->build()),
+                     exceptions::DiscoveryException);
     }
 }
 
@@ -148,7 +148,8 @@ TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply)
 
     std::this_thread::sleep_for(std::chrono::seconds(1));
 
-    std::string participantId = runtime1->registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
+    std::string participantId =
+            runtime1->registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
 
     // consumer for testinterface
     // Testing Lists
@@ -576,7 +577,8 @@ TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply)
 
         // Check that the operation overloading worked and the result is of the correct type
         testProxy->overloadedOperation(derivedStructResult, tests::testTypes::DerivedStruct());
-        testProxy->overloadedOperation(anotherDerivedStructResult, tests::testTypes::AnotherDerivedStruct());
+        testProxy->overloadedOperation(
+                anotherDerivedStructResult, tests::testTypes::AnotherDerivedStruct());
         EXPECT_EQ(derivedStructResult, "DerivedStruct");
         EXPECT_EQ(anotherDerivedStructResult, "AnotherDerivedStruct");
     }
@@ -602,7 +604,8 @@ TEST_P(CombinedEnd2EndTest, subscribeViaHttpReceiverAndReceiveReply)
     providerQos.setPriority(millisSinceEpoch.count());
     providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
     providerQos.setSupportsOnChangeSubscriptions(true);
-    std::string participantId = runtime1->registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
+    std::string participantId =
+            runtime1->registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
 
     std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
             runtime2->createProxyBuilder<tests::testProxy>(domainName);
@@ -620,7 +623,7 @@ TEST_P(CombinedEnd2EndTest, subscribeViaHttpReceiverAndReceiveReply)
 
     auto subscriptionQos =
             std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(10000, // validity_ms
-                                                                   1000, // publication ttl
+                                                                   1000,  // publication ttl
                                                                    minInterval_ms,
                                                                    maxInterval_ms,
                                                                    3000); // alertInterval_ms
@@ -655,7 +658,8 @@ TEST_P(CombinedEnd2EndTest, callFireAndForgetMethod)
     providerQos.setPriority(millisSinceEpoch.count());
     providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
     providerQos.setSupportsOnChangeSubscriptions(true);
-    std::string participantId = runtime1->registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
+    std::string participantId =
+            runtime1->registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
 
     std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
             runtime2->createProxyBuilder<tests::testProxy>(domainName);
@@ -693,7 +697,8 @@ TEST_P(CombinedEnd2EndTest, subscribeToOnChange)
     providerQos.setPriority(millisSinceEpoch.count());
     providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
     providerQos.setSupportsOnChangeSubscriptions(true);
-    std::string participantId = runtime1->registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
+    std::string participantId =
+            runtime1->registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
 
     std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
             runtime2->createProxyBuilder<tests::testProxy>(domainName);
@@ -721,7 +726,7 @@ TEST_P(CombinedEnd2EndTest, subscribeToOnChange)
     JOYNR_ASSERT_NO_THROW({ future->get(5000, subscriptionId); });
 
     auto invokeSetter = [testProvider](std::int64_t value) {
-        auto onSuccess = [](){};
+        auto onSuccess = []() {};
         types::Localisation::GpsLocation location;
         location.setDeviceTime(value);
         testProvider->setLocation(location, onSuccess, nullptr);
@@ -738,11 +743,11 @@ TEST_P(CombinedEnd2EndTest, subscribeToOnChange)
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms + 50));
     for (int i = 0; i < 5; ++i) {
-        invokeSetter(i+5);
+        invokeSetter(i + 5);
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms + 50));
     for (int i = 0; i < 5; ++i) {
-        invokeSetter(i+10);
+        invokeSetter(i + 10);
     }
 
     // Wait for 3 subscription messages to arrive
@@ -787,7 +792,7 @@ TEST_P(CombinedEnd2EndTest, subscribeToListAttribute)
 
     auto subscriptionQos =
             std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(500000, // validity_ms
-                                                                   1000, // publication ttl
+                                                                   1000,   // publication ttl
                                                                    1000,   // minInterval_ms
                                                                    2000,   // maxInterval_ms
                                                                    3000);  // alertInterval_ms
@@ -816,7 +821,8 @@ TEST_P(CombinedEnd2EndTest, subscribeToNonExistentDomain)
     std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
             runtime2->createProxyBuilder<tests::testProxy>(nonexistentDomain);
     DiscoveryQos discoveryQosOtherTimeout;
-    discoveryQosOtherTimeout.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
+    discoveryQosOtherTimeout.setArbitrationStrategy(
+            DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
 
     const int arbitrationTimeout = 5000;
 
@@ -837,7 +843,7 @@ TEST_P(CombinedEnd2EndTest, subscribeToNonExistentDomain)
                         ->build());
         auto subscriptionQos =
                 std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(500000, // validity_ms
-                                                                       1000, // publication ttl
+                                                                       1000,   // publication ttl
                                                                        1000,   // minInterval_ms
                                                                        2000,   //  maxInterval_ms
                                                                        3000);  // alertInterval_ms
@@ -884,7 +890,8 @@ TEST_P(CombinedEnd2EndTest, unsubscribeViaHttpReceiver)
     providerQos.setPriority(millisSinceEpoch.count());
     providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
     providerQos.setSupportsOnChangeSubscriptions(true);
-    std::string participantId = runtime1->registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
+    std::string participantId =
+            runtime1->registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
 
     std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
             runtime2->createProxyBuilder<tests::testProxy>(domainName);
@@ -898,7 +905,7 @@ TEST_P(CombinedEnd2EndTest, unsubscribeViaHttpReceiver)
                     ->build());
     auto subscriptionQos =
             std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(9000,   // validity_ms
-                                                                   1000, // publication ttl
+                                                                   1000,   // publication ttl
                                                                    1000,   // minInterval_ms
                                                                    2000,   //  maxInterval_ms
                                                                    10000); // alertInterval_ms
@@ -936,7 +943,8 @@ TEST_P(CombinedEnd2EndTest, deleteChannelViaReceiver)
     providerQos.setPriority(millisSinceEpoch.count());
     providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
     providerQos.setSupportsOnChangeSubscriptions(true);
-    std::string participantId = runtime1->registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
+    std::string participantId =
+            runtime1->registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
 
     std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
             runtime2->createProxyBuilder<tests::testProxy>(domainName);
@@ -985,7 +993,7 @@ void subscribeToLocation(
 {
     auto subscriptionQos =
             std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(500000, // validity_ms
-                                                                   1000, // publication ttl
+                                                                   1000,   // publication ttl
                                                                    1000,   // minInterval_ms
                                                                    2000,   //  maxInterval_ms
                                                                    3000);  // alertInterval_ms
@@ -1023,7 +1031,8 @@ TEST_P(CombinedEnd2EndTest, subscribeInBackgroundThread)
     std::string providerParticipantId =
             runtime1->registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
 
-    std::shared_ptr<tests::testProxy> testProxy = createTestProxy(*runtime2, domainName, discoveryQos);
+    std::shared_ptr<tests::testProxy> testProxy =
+            createTestProxy(*runtime2, domainName, discoveryQos);
     // Subscribe in a background thread
     // subscribeToLocation(subscriptionListener, testProxy, this);
     std::async(std::launch::async, subscribeToLocation, subscriptionListener, testProxy, this);
@@ -1045,7 +1054,8 @@ TEST_P(CombinedEnd2EndTest, call_async_void_operation)
 
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
-    std::string participantId = runtime1->registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
+    std::string participantId =
+            runtime1->registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
 
     std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
             runtime2->createProxyBuilder<tests::testProxy>(domainName);
@@ -1131,13 +1141,11 @@ INSTANTIATE_TEST_CASE_P(
 INSTANTIATE_TEST_CASE_P(
         Mqtt,
         CombinedEnd2EndTest,
-        testing::Values(std::make_tuple(
-                "test-resources/MqttSystemIntegrationTest1.settings"s,
-                "test-resources/MqttSystemIntegrationTest2.settings"s)));
+        testing::Values(std::make_tuple("test-resources/MqttSystemIntegrationTest1.settings"s,
+                                        "test-resources/MqttSystemIntegrationTest2.settings"s)));
 
-INSTANTIATE_TEST_CASE_P(
-        MqttOverTLS,
-        CombinedEnd2EndTest,
-        testing::Values(std::make_tuple(
-                "test-resources/MqttOverTLSSystemIntegrationTest1.settings"s,
-                "test-resources/MqttOverTLSSystemIntegrationTest2.settings"s)));
+INSTANTIATE_TEST_CASE_P(MqttOverTLS,
+                        CombinedEnd2EndTest,
+                        testing::Values(std::make_tuple(
+                                "test-resources/MqttOverTLSSystemIntegrationTest1.settings"s,
+                                "test-resources/MqttOverTLSSystemIntegrationTest2.settings"s)));

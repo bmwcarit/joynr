@@ -33,12 +33,13 @@
 #include "joynr/Semaphore.h"
 #include "joynr/Settings.h"
 
- /*
-  * This test creates two Runtimes and will test communication
-  * between the two Runtimes via HttpReceiver
-  *
-  */
-class CombinedEnd2EndTest : public testing::TestWithParam< std::tuple<std::string, std::string> >{
+/*
+ * This test creates two Runtimes and will test communication
+ * between the two Runtimes via HttpReceiver
+ *
+ */
+class CombinedEnd2EndTest : public testing::TestWithParam<std::tuple<std::string, std::string>>
+{
 public:
     CombinedEnd2EndTest();
     ~CombinedEnd2EndTest() override = default;
@@ -64,8 +65,6 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(CombinedEnd2EndTest);
-
 };
 
 #endif // COMBINEDEND2ENDTEST_H
-

@@ -41,25 +41,28 @@ using namespace joynr;
 class MessageNotificationTest : public ::testing::Test
 {
 public:
-
-    MessageNotificationTest() :
-        clusterControllerRuntime(),
-        libjoynrProviderRuntime(),
-        libjoynrProxyRuntime(),
-        testDomain("testDomain"),
-        settingsPath("test-resources/websocket-cc-tls.settings"),
-        semaphore()
+    MessageNotificationTest()
+            : clusterControllerRuntime(),
+              libjoynrProviderRuntime(),
+              libjoynrProxyRuntime(),
+              testDomain("testDomain"),
+              settingsPath("test-resources/websocket-cc-tls.settings"),
+              semaphore()
     {
-        clusterControllerRuntime = std::make_shared<JoynrClusterControllerRuntime>(std::make_unique<Settings>(settingsPath));
+        clusterControllerRuntime = std::make_shared<JoynrClusterControllerRuntime>(
+                std::make_unique<Settings>(settingsPath));
         clusterControllerRuntime->init();
         clusterControllerRuntime->start();
     }
 
-    void SetUp() override {
-        libjoynrProviderRuntime = std::make_shared<TestLibJoynrWebSocketRuntime>(std::make_unique<Settings>("test-resources/libjoynrSystemIntegration1.settings"));
+    void SetUp() override
+    {
+        libjoynrProviderRuntime = std::make_shared<TestLibJoynrWebSocketRuntime>(
+                std::make_unique<Settings>("test-resources/libjoynrSystemIntegration1.settings"));
         ASSERT_TRUE(libjoynrProviderRuntime->connect(std::chrono::milliseconds(2000)));
 
-        libjoynrProxyRuntime = std::make_shared<TestLibJoynrWebSocketRuntime>(std::make_unique<Settings>("test-resources/libjoynrSystemIntegration2.settings"));
+        libjoynrProxyRuntime = std::make_shared<TestLibJoynrWebSocketRuntime>(
+                std::make_unique<Settings>("test-resources/libjoynrSystemIntegration2.settings"));
         ASSERT_TRUE(libjoynrProxyRuntime->connect(std::chrono::milliseconds(2000)));
     }
 
@@ -78,7 +81,8 @@ public:
         clusterControllerRuntime.reset();
 
         // Delete persisted files
-        std::remove(ClusterControllerSettings::DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME().c_str());
+        std::remove(ClusterControllerSettings::
+                            DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME().c_str());
         std::remove(LibjoynrSettings::DEFAULT_MESSAGE_ROUTER_PERSISTENCE_FILENAME().c_str());
         std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str());
         std::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
@@ -94,7 +98,8 @@ protected:
     Semaphore semaphore;
 };
 
-class MockSubscriptionListener : public joynr::ISubscriptionListener<std::string, std::string> {
+class MockSubscriptionListener : public joynr::ISubscriptionListener<std::string, std::string>
+{
 public:
     ~MockSubscriptionListener() override = default;
     MOCK_METHOD1(onSubscribed, void(const std::string& subscriptionId));
@@ -102,13 +107,16 @@ public:
     MOCK_METHOD1(onError, void(const joynr::exceptions::JoynrRuntimeException&));
 };
 
-TEST_F(MessageNotificationTest, messageToDisconnectedProviderCausesBroadcast) {
+TEST_F(MessageNotificationTest, messageToDisconnectedProviderCausesBroadcast)
+{
 
     // 1. register provider
     auto testProvider = std::make_shared<tests::DefaulttestProvider>();
     joynr::types::ProviderQos providerQos;
     providerQos.setScope(joynr::types::ProviderScope::LOCAL);
-    std::string providerParticipantId = libjoynrProviderRuntime->registerProvider<tests::testProvider>(testDomain, testProvider, providerQos);
+    std::string providerParticipantId =
+            libjoynrProviderRuntime->registerProvider<tests::testProvider>(
+                    testDomain, testProvider, providerQos);
 
     // 2. create proxy
     DiscoveryQos discoveryQos;
@@ -119,38 +127,37 @@ TEST_F(MessageNotificationTest, messageToDisconnectedProviderCausesBroadcast) {
 
     auto testProxyBuilder = libjoynrProxyRuntime->createProxyBuilder<tests::testProxy>(testDomain);
 
-    auto testProxy = testProxyBuilder
-            ->setMessagingQos(messagingQos)
-            ->setDiscoveryQos(discoveryQos)
-            ->build();
+    auto testProxy =
+            testProxyBuilder->setMessagingQos(messagingQos)->setDiscoveryQos(discoveryQos)->build();
 
     Settings settings(settingsPath);
     SystemServicesSettings systemSettings(settings);
-    auto messageNotificationProxyBuilder = libjoynrProxyRuntime->createProxyBuilder<joynr::system::MessageNotificationProxy>( systemSettings.getDomain());
+    auto messageNotificationProxyBuilder =
+            libjoynrProxyRuntime->createProxyBuilder<joynr::system::MessageNotificationProxy>(
+                    systemSettings.getDomain());
 
     DiscoveryQos messagingNotificationDiscoveryQos;
-    messagingNotificationDiscoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
+    messagingNotificationDiscoveryQos.setArbitrationStrategy(
+            DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
     messagingNotificationDiscoveryQos.addCustomParameter(
             "fixedParticipantId", systemSettings.getCcMessageNotificationProviderParticipantId());
     messagingNotificationDiscoveryQos.setDiscoveryScope(joynr::types::DiscoveryScope::LOCAL_ONLY);
 
-    auto messageNotificationProxy = messageNotificationProxyBuilder
-            ->setMessagingQos(messagingQos)
-            ->setDiscoveryQos(messagingNotificationDiscoveryQos)
-            ->build();
+    auto messageNotificationProxy = messageNotificationProxyBuilder->setMessagingQos(messagingQos)
+                                            ->setDiscoveryQos(messagingNotificationDiscoveryQos)
+                                            ->build();
 
     // 3. subscribe to message notification broadcast
     auto mockListener = std::make_shared<MockSubscriptionListener>();
     EXPECT_CALL(*mockListener, onSubscribed(_)).Times(1);
     EXPECT_CALL(*mockListener, onError(_)).Times(0);
 
-    joynr::system::MessageNotificationMessageQueuedForDeliveryBroadcastFilterParameters filterParameters;
+    joynr::system::MessageNotificationMessageQueuedForDeliveryBroadcastFilterParameters
+            filterParameters;
     filterParameters.setParticipantId(providerParticipantId);
 
     auto future = messageNotificationProxy->subscribeToMessageQueuedForDeliveryBroadcast(
-                filterParameters,
-                mockListener,
-                std::make_shared<OnChangeSubscriptionQos>());
+            filterParameters, mockListener, std::make_shared<OnChangeSubscriptionQos>());
     std::string subscriptionId;
     future->get(subscriptionId);
 
@@ -160,15 +167,12 @@ TEST_F(MessageNotificationTest, messageToDisconnectedProviderCausesBroadcast) {
 
     // 5. execute call on proxy while provider is not connected to cluster-controller
 
-    auto onSuccess = [](const std::int32_t&){
-        FAIL();
-    };
+    auto onSuccess = [](const std::int32_t&) { FAIL(); };
 
-    auto onError = [](const joynr::exceptions::JoynrRuntimeException&){
-    };
+    auto onError = [](const joynr::exceptions::JoynrRuntimeException&) {};
 
     EXPECT_CALL(*mockListener, onReceive(Eq(providerParticipantId), _))
-               .WillOnce(ReleaseSemaphore(&semaphore));
+            .WillOnce(ReleaseSemaphore(&semaphore));
 
     testProxy->addNumbersAsync(1, 2, 3, onSuccess, onError);
 
