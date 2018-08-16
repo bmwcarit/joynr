@@ -1,20 +1,36 @@
-add_executable(performance-consumer-app
+add_executable(performance-consumer-app-ws
     ../common/Enum.h
     PerformanceConsumerApplication.cpp
     PerformanceConsumer.h
 )
 
-target_link_libraries(performance-consumer-app
+add_executable(performance-consumer-app-cc
+    ../common/Enum.h
+    PerformanceConsumerApplication.cpp
+    PerformanceConsumer.h
+)
+
+target_link_libraries(performance-consumer-app-ws
     performance-generated
     ${Joynr_LIB_WS_LIBRARIES}
     ${Boost_LIBRARIES}
     dummyKeychain
 )
 
+target_link_libraries(performance-consumer-app-cc
+    performance-generated
+    ${Joynr_LIB_INPROCESS_LIBRARIES}
+    ${Boost_LIBRARIES}
+    dummyKeychain
+)
+
 install(
-    TARGETS performance-consumer-app
+    TARGETS
+        performance-consumer-app-ws
+        performance-consumer-app-cc
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
-AddClangFormat(performance-consumer-app)
+AddClangFormat(performance-consumer-app-ws)
+AddClangFormat(performance-consumer-app-cc)
 

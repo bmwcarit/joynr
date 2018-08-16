@@ -244,7 +244,7 @@ function startCppPerformanceTestProvider {
     PROVIDER_STDERR=$PERFORMANCETESTS_RESULTS_DIR/provider_stderr.txt
 
     cd $PERFORMANCETESTS_BIN_DIR
-    ./performance-provider-app --globalscope on --domain $DOMAINNAME 1>$PROVIDER_STDOUT 2>$PROVIDER_STDERR & PROVIDER_PID=$!
+    ./performance-provider-app-ws --globalscope on --domain $DOMAINNAME 1>$PROVIDER_STDOUT 2>$PROVIDER_STDERR & PROVIDER_PID=$!
     PROVIDER_CPU_TIME_1=$(getCpuTime $PROVIDER_PID)
 
     # Wait long enough in order to allow the provider to finish the registration procedure
@@ -364,7 +364,7 @@ function performCppConsumerTest {
     else
         CONSUMERARGS+=" -d $DOMAINNAME -s $MODE_PARAM -l $INPUTDATA_STRINGLENGTH \
                        -b $INPUTDATA_BYTEARRAYSIZE"
-        PERFORMCPPBINARY="performance-consumer-app"
+        PERFORMCPPBINARY="performance-consumer-app-ws"
     fi
 
     TEST_PIDS=()
