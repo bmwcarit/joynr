@@ -42,20 +42,27 @@ using namespace joynr;
 class SubscriptionManagerMulticastTest : public testing::Test
 {
 public:
-    SubscriptionManagerMulticastTest() :
-        singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
-        subscribeToName("subscribeToName"),
-        subscriberParticipantId("subscriberParticipantId"),
-        providerParticipantId1("providerParticipantId"),
-        partitions({ "partition1", "partition2" }),
-        multicastId1("providerParticipantId/subscribeToName/partition1/partition2"),
-        mockMessageRouter(std::make_shared<MockMessageRouter>(singleThreadedIOService->getIOService())),
-        mockGpsSubscriptionListener(std::make_shared<MockSubscriptionListenerOneType<types::Localisation::GpsLocation>>()),
-        qos(std::make_shared<MulticastSubscriptionQos>()),
-        future(std::make_shared<Future<std::string>>()),
-        subscriptionManager(std::make_shared<SubscriptionManager>(singleThreadedIOService->getIOService(), mockMessageRouter)),
-        subscriptionCallback(std::make_shared<MulticastSubscriptionCallback<types::Localisation::GpsLocation>>(
-            "testSubscriptionId", future, subscriptionManager))
+    SubscriptionManagerMulticastTest()
+            : singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
+              subscribeToName("subscribeToName"),
+              subscriberParticipantId("subscriberParticipantId"),
+              providerParticipantId1("providerParticipantId"),
+              partitions({"partition1", "partition2"}),
+              multicastId1("providerParticipantId/subscribeToName/partition1/partition2"),
+              mockMessageRouter(
+                      std::make_shared<MockMessageRouter>(singleThreadedIOService->getIOService())),
+              mockGpsSubscriptionListener(std::make_shared<
+                      MockSubscriptionListenerOneType<types::Localisation::GpsLocation>>()),
+              qos(std::make_shared<MulticastSubscriptionQos>()),
+              future(std::make_shared<Future<std::string>>()),
+              subscriptionManager(
+                      std::make_shared<SubscriptionManager>(singleThreadedIOService->getIOService(),
+                                                            mockMessageRouter)),
+              subscriptionCallback(std::make_shared<
+                      MulticastSubscriptionCallback<types::Localisation::GpsLocation>>(
+                      "testSubscriptionId",
+                      future,
+                      subscriptionManager))
     {
     }
 
@@ -69,7 +76,8 @@ protected:
     const std::string multicastId1;
 
     std::shared_ptr<MockMessageRouter> mockMessageRouter;
-    std::shared_ptr<MockSubscriptionListenerOneType<types::Localisation::GpsLocation>> mockGpsSubscriptionListener;
+    std::shared_ptr<MockSubscriptionListenerOneType<types::Localisation::GpsLocation>>
+            mockGpsSubscriptionListener;
     std::shared_ptr<SubscriptionQos> qos;
     std::shared_ptr<Future<std::string>> future;
 
@@ -77,55 +85,65 @@ protected:
     std::shared_ptr<ISubscriptionCallback> subscriptionCallback;
 };
 
-TEST_F(SubscriptionManagerMulticastTest, registerMulticastSubscription_registrationSucceeds) {
+TEST_F(SubscriptionManagerMulticastTest, registerMulticastSubscription_registrationSucceeds)
+{
     MulticastSubscriptionRequest subscriptionRequest;
 
-    EXPECT_CALL(*mockMessageRouter, addMulticastReceiver(
-        multicastId1, subscriberParticipantId, providerParticipantId1, _, _)).Times(1);
+    EXPECT_CALL(*mockMessageRouter,
+                addMulticastReceiver(
+                        multicastId1, subscriberParticipantId, providerParticipantId1, _, _))
+            .Times(1);
 
     subscriptionManager->registerSubscription(
-        subscribeToName,
-        subscriberParticipantId,
-        providerParticipantId1,
-        partitions,
-        subscriptionCallback,
-        mockGpsSubscriptionListener,
-        qos,
-        subscriptionRequest,
-        [](){},
-        [](const joynr::exceptions::ProviderRuntimeException&){});
+            subscribeToName,
+            subscriberParticipantId,
+            providerParticipantId1,
+            partitions,
+            subscriptionCallback,
+            mockGpsSubscriptionListener,
+            qos,
+            subscriptionRequest,
+            []() {},
+            [](const joynr::exceptions::ProviderRuntimeException&) {});
 
-    auto registeredSubscriptionCallback = subscriptionManager->getMulticastSubscriptionCallback(multicastId1);
+    auto registeredSubscriptionCallback =
+            subscriptionManager->getMulticastSubscriptionCallback(multicastId1);
 
     ASSERT_EQ(subscriptionCallback, registeredSubscriptionCallback);
 }
 
-TEST_F(SubscriptionManagerMulticastTest, unregisterMulticastSubscription_unregisterSucceeds) {
+TEST_F(SubscriptionManagerMulticastTest, unregisterMulticastSubscription_unregisterSucceeds)
+{
     MulticastSubscriptionRequest subscriptionRequest;
 
-    EXPECT_CALL(*mockMessageRouter, removeMulticastReceiver(
-        multicastId1, subscriberParticipantId, providerParticipantId1, _, _)).Times(1);
+    EXPECT_CALL(*mockMessageRouter,
+                removeMulticastReceiver(
+                        multicastId1, subscriberParticipantId, providerParticipantId1, _, _))
+            .Times(1);
 
     subscriptionManager->registerSubscription(
-        subscribeToName,
-        subscriberParticipantId,
-        providerParticipantId1,
-        partitions,
-        subscriptionCallback,
-        mockGpsSubscriptionListener,
-        qos,
-        subscriptionRequest,
-        [](){},
-        [](const joynr::exceptions::ProviderRuntimeException&){});
+            subscribeToName,
+            subscriberParticipantId,
+            providerParticipantId1,
+            partitions,
+            subscriptionCallback,
+            mockGpsSubscriptionListener,
+            qos,
+            subscriptionRequest,
+            []() {},
+            [](const joynr::exceptions::ProviderRuntimeException&) {});
 
     subscriptionManager->unregisterSubscription(subscriptionRequest.getSubscriptionId());
 
-    auto registeredSubscriptionCallback = subscriptionManager->getMulticastSubscriptionCallback(multicastId1);
+    auto registeredSubscriptionCallback =
+            subscriptionManager->getMulticastSubscriptionCallback(multicastId1);
 
     ASSERT_EQ(nullptr, registeredSubscriptionCallback);
 }
 
-TEST_F(SubscriptionManagerMulticastTest, registerMultipleMulticastSubscription_correctCallbacksAreReturned) {
+TEST_F(SubscriptionManagerMulticastTest,
+       registerMultipleMulticastSubscription_correctCallbacksAreReturned)
+{
     const std::string providerParticipantId2("providerParticipantId2");
     const std::string providerParticipantId3("providerParticipantId3");
 
@@ -137,83 +155,90 @@ TEST_F(SubscriptionManagerMulticastTest, registerMultipleMulticastSubscription_c
     MulticastSubscriptionRequest subscriptionRequest_Provider2;
     MulticastSubscriptionRequest subscriptionRequest_Provider3;
 
-    auto subscriptionCallback1_1 = std::make_shared<MulticastSubscriptionCallback<types::Localisation::GpsLocation>>(
-        subscriptionRequest_Provider1_1.getSubscriptionId(), future, subscriptionManager);
+    auto subscriptionCallback1_1 =
+            std::make_shared<MulticastSubscriptionCallback<types::Localisation::GpsLocation>>(
+                    subscriptionRequest_Provider1_1.getSubscriptionId(),
+                    future,
+                    subscriptionManager);
 
-    auto subscriptionCallback1_2 = std::make_shared<MulticastSubscriptionCallback<types::Localisation::GpsLocation>>(
-        subscriptionRequest_Provider1_2.getSubscriptionId(), future, subscriptionManager);
+    auto subscriptionCallback1_2 =
+            std::make_shared<MulticastSubscriptionCallback<types::Localisation::GpsLocation>>(
+                    subscriptionRequest_Provider1_2.getSubscriptionId(),
+                    future,
+                    subscriptionManager);
 
-    auto subscriptionCallback2 = std::make_shared<MulticastSubscriptionCallback<types::Localisation::GpsLocation>>(
-        subscriptionRequest_Provider2.getSubscriptionId(),  future, subscriptionManager);
+    auto subscriptionCallback2 =
+            std::make_shared<MulticastSubscriptionCallback<types::Localisation::GpsLocation>>(
+                    subscriptionRequest_Provider2.getSubscriptionId(), future, subscriptionManager);
 
-    auto subscriptionCallback3 = std::make_shared<MulticastSubscriptionCallback<types::Localisation::GpsLocation>>(
-        subscriptionRequest_Provider3.getSubscriptionId(), future, subscriptionManager);
-
-    subscriptionManager->registerSubscription(
-        subscribeToName,
-        subscriberParticipantId,
-        providerParticipantId1,
-        partitions,
-        subscriptionCallback1_1,
-        mockGpsSubscriptionListener,
-        qos,
-        subscriptionRequest_Provider1_1,
-        [](){},
-        [](const joynr::exceptions::ProviderRuntimeException&){});
+    auto subscriptionCallback3 =
+            std::make_shared<MulticastSubscriptionCallback<types::Localisation::GpsLocation>>(
+                    subscriptionRequest_Provider3.getSubscriptionId(), future, subscriptionManager);
 
     subscriptionManager->registerSubscription(
-        subscribeToName,
-        subscriberParticipantId,
-        providerParticipantId1,
-        partitions,
-        subscriptionCallback1_2,
-        mockGpsSubscriptionListener,
-        qos,
-        subscriptionRequest_Provider1_2,
-        [](){},
-        [](const joynr::exceptions::ProviderRuntimeException&){});
+            subscribeToName,
+            subscriberParticipantId,
+            providerParticipantId1,
+            partitions,
+            subscriptionCallback1_1,
+            mockGpsSubscriptionListener,
+            qos,
+            subscriptionRequest_Provider1_1,
+            []() {},
+            [](const joynr::exceptions::ProviderRuntimeException&) {});
 
     subscriptionManager->registerSubscription(
-        subscribeToName,
-        subscriberParticipantId,
-        providerParticipantId2,
-        partitions,
-        subscriptionCallback2,
-        mockGpsSubscriptionListener,
-        qos,
-        subscriptionRequest_Provider2,
-        [](){},
-        [](const joynr::exceptions::ProviderRuntimeException&){});
+            subscribeToName,
+            subscriberParticipantId,
+            providerParticipantId1,
+            partitions,
+            subscriptionCallback1_2,
+            mockGpsSubscriptionListener,
+            qos,
+            subscriptionRequest_Provider1_2,
+            []() {},
+            [](const joynr::exceptions::ProviderRuntimeException&) {});
 
     subscriptionManager->registerSubscription(
-        subscribeToName,
-        subscriberParticipantId,
-        providerParticipantId3,
-        partitions,
-        subscriptionCallback3,
-        mockGpsSubscriptionListener,
-        qos,
-        subscriptionRequest_Provider3,
-        [](){},
-        [](const joynr::exceptions::ProviderRuntimeException&){});
+            subscribeToName,
+            subscriberParticipantId,
+            providerParticipantId2,
+            partitions,
+            subscriptionCallback2,
+            mockGpsSubscriptionListener,
+            qos,
+            subscriptionRequest_Provider2,
+            []() {},
+            [](const joynr::exceptions::ProviderRuntimeException&) {});
+
+    subscriptionManager->registerSubscription(
+            subscribeToName,
+            subscriberParticipantId,
+            providerParticipantId3,
+            partitions,
+            subscriptionCallback3,
+            mockGpsSubscriptionListener,
+            qos,
+            subscriptionRequest_Provider3,
+            []() {},
+            [](const joynr::exceptions::ProviderRuntimeException&) {});
 
     auto registeredSubscriptionCallback_multicast1 =
-        subscriptionManager->getMulticastSubscriptionCallback(multicastId1);
+            subscriptionManager->getMulticastSubscriptionCallback(multicastId1);
     auto registeredSubscriptionCallback_multicast2 =
-        subscriptionManager->getMulticastSubscriptionCallback(multicastId2);
+            subscriptionManager->getMulticastSubscriptionCallback(multicastId2);
     auto registeredSubscriptionCallback_multicast3 =
-        subscriptionManager->getMulticastSubscriptionCallback(multicastId3);
+            subscriptionManager->getMulticastSubscriptionCallback(multicastId3);
 
-    ASSERT_TRUE(
-                registeredSubscriptionCallback_multicast1 == subscriptionCallback1_1
-                || registeredSubscriptionCallback_multicast1 == subscriptionCallback1_2
-    );
+    ASSERT_TRUE(registeredSubscriptionCallback_multicast1 == subscriptionCallback1_1 ||
+                registeredSubscriptionCallback_multicast1 == subscriptionCallback1_2);
     ASSERT_EQ(subscriptionCallback2, registeredSubscriptionCallback_multicast2);
 
     ASSERT_EQ(subscriptionCallback3, registeredSubscriptionCallback_multicast3);
 }
 
-TEST_F(SubscriptionManagerMulticastTest, updateMulticastSubscription_changedPartitions_callsMessageRouter)
+TEST_F(SubscriptionManagerMulticastTest,
+       updateMulticastSubscription_changedPartitions_callsMessageRouter)
 {
     std::string partition1 = "partition1";
     std::string partition2 = "partition2";
@@ -221,20 +246,22 @@ TEST_F(SubscriptionManagerMulticastTest, updateMulticastSubscription_changedPart
     std::string multicastId1 = providerParticipantId1 + "/" + subscribeToName + "/" + partition1;
     MulticastSubscriptionRequest subscriptionRequest1;
 
-    EXPECT_CALL(*mockMessageRouter, addMulticastReceiver(
-        multicastId1, subscriberParticipantId, providerParticipantId1, _, _)).Times(1);
+    EXPECT_CALL(*mockMessageRouter,
+                addMulticastReceiver(
+                        multicastId1, subscriberParticipantId, providerParticipantId1, _, _))
+            .Times(1);
 
     subscriptionManager->registerSubscription(
-        subscribeToName,
-        subscriberParticipantId,
-        providerParticipantId1,
-        partitions1,
-        subscriptionCallback,
-        mockGpsSubscriptionListener,
-        qos,
-        subscriptionRequest1,
-        [](){},
-        [](const joynr::exceptions::ProviderRuntimeException&){});
+            subscribeToName,
+            subscriberParticipantId,
+            providerParticipantId1,
+            partitions1,
+            subscriptionCallback,
+            mockGpsSubscriptionListener,
+            qos,
+            subscriptionRequest1,
+            []() {},
+            [](const joynr::exceptions::ProviderRuntimeException&) {});
 
     testing::Mock::VerifyAndClearExpectations(mockMessageRouter.get());
 
@@ -243,42 +270,49 @@ TEST_F(SubscriptionManagerMulticastTest, updateMulticastSubscription_changedPart
     MulticastSubscriptionRequest subscriptionRequest2;
     subscriptionRequest2.setSubscriptionId(subscriptionRequest1.getSubscriptionId());
 
-    EXPECT_CALL(*mockMessageRouter, removeMulticastReceiver(
-        multicastId1, subscriberParticipantId, providerParticipantId1, _, _)).Times(1);
-    EXPECT_CALL(*mockMessageRouter, addMulticastReceiver(
-        multicastId2, subscriberParticipantId, providerParticipantId1, _, _)).Times(1);
+    EXPECT_CALL(*mockMessageRouter,
+                removeMulticastReceiver(
+                        multicastId1, subscriberParticipantId, providerParticipantId1, _, _))
+            .Times(1);
+    EXPECT_CALL(*mockMessageRouter,
+                addMulticastReceiver(
+                        multicastId2, subscriberParticipantId, providerParticipantId1, _, _))
+            .Times(1);
 
     subscriptionManager->registerSubscription(
-        subscribeToName,
-        subscriberParticipantId,
-        providerParticipantId1,
-        partitions2,
-        subscriptionCallback,
-        mockGpsSubscriptionListener,
-        qos,
-        subscriptionRequest2,
-        [](){},
-        [](const joynr::exceptions::ProviderRuntimeException&){});
+            subscribeToName,
+            subscriberParticipantId,
+            providerParticipantId1,
+            partitions2,
+            subscriptionCallback,
+            mockGpsSubscriptionListener,
+            qos,
+            subscriptionRequest2,
+            []() {},
+            [](const joynr::exceptions::ProviderRuntimeException&) {});
 }
 
-TEST_F(SubscriptionManagerMulticastTest, updateMulticastSubscription_samePartitions_doesNotCallMessageRouter)
+TEST_F(SubscriptionManagerMulticastTest,
+       updateMulticastSubscription_samePartitions_doesNotCallMessageRouter)
 {
     MulticastSubscriptionRequest subscriptionRequest1;
 
-    EXPECT_CALL(*mockMessageRouter, addMulticastReceiver(
-        multicastId1, subscriberParticipantId, providerParticipantId1, _, _)).Times(1);
+    EXPECT_CALL(*mockMessageRouter,
+                addMulticastReceiver(
+                        multicastId1, subscriberParticipantId, providerParticipantId1, _, _))
+            .Times(1);
 
     subscriptionManager->registerSubscription(
-        subscribeToName,
-        subscriberParticipantId,
-        providerParticipantId1,
-        partitions,
-        subscriptionCallback,
-        mockGpsSubscriptionListener,
-        qos,
-        subscriptionRequest1,
-        [](){},
-        [](const joynr::exceptions::ProviderRuntimeException&){});
+            subscribeToName,
+            subscriberParticipantId,
+            providerParticipantId1,
+            partitions,
+            subscriptionCallback,
+            mockGpsSubscriptionListener,
+            qos,
+            subscriptionRequest1,
+            []() {},
+            [](const joynr::exceptions::ProviderRuntimeException&) {});
 
     testing::Mock::VerifyAndClearExpectations(mockMessageRouter.get());
 
@@ -289,14 +323,14 @@ TEST_F(SubscriptionManagerMulticastTest, updateMulticastSubscription_samePartiti
     EXPECT_CALL(*mockMessageRouter, addMulticastReceiver(_, _, _, _, _)).Times(0);
 
     subscriptionManager->registerSubscription(
-        subscribeToName,
-        subscriberParticipantId,
-        providerParticipantId1,
-        partitions,
-        subscriptionCallback,
-        mockGpsSubscriptionListener,
-        qos,
-        subscriptionRequest2,
-        [](){},
-        [](const joynr::exceptions::ProviderRuntimeException&){});
+            subscribeToName,
+            subscriberParticipantId,
+            providerParticipantId1,
+            partitions,
+            subscriptionCallback,
+            mockGpsSubscriptionListener,
+            qos,
+            subscriptionRequest2,
+            []() {},
+            [](const joynr::exceptions::ProviderRuntimeException&) {});
 }

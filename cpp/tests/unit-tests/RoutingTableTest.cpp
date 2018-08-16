@@ -34,16 +34,17 @@ class RoutingTableTest : public ::testing::Test
 {
 public:
     RoutingTableTest()
-        : routingTable(),
-          testValue(nullptr),
-          secondTestValue(nullptr),
-          firstKey(""),
-          secondKey(""),
-          thirdKey("")
+            : routingTable(),
+              testValue(nullptr),
+              secondTestValue(nullptr),
+              firstKey(""),
+              secondKey(""),
+              thirdKey("")
     {
     }
 
-    void SetUp(){
+    void SetUp()
+    {
         testValue = std::make_shared<WebSocketClientAddress>("testValue");
         secondTestValue = std::make_shared<WebSocketClientAddress>("secondTestValue");
         firstKey = std::string("firstKey");
@@ -60,6 +61,7 @@ protected:
     std::string thirdKey;
     static constexpr std::int64_t expiryDateMaxMs = std::numeric_limits<std::int64_t>::max();
     static const bool isStickyFalse = false;
+
 private:
     DISALLOW_COPY_AND_ASSIGN(RoutingTableTest);
 };
@@ -86,15 +88,22 @@ TEST_F(RoutingTableTest, lookupRoutingEntryByParticipantId)
     const bool expectedIsSticky1 = isStickyFalse;
     const bool expectedExpiryDateMs1 = expiryDateMaxMs;
     const bool expectedIsSticky2 = !isStickyFalse;
-    const bool expectedExpiryDateMs2 = expiryDateMaxMs -1;
-    routingTable.add(firstKey, firstIsGloballyVisible, testValue, expectedExpiryDateMs1, expectedIsSticky1);
-    routingTable.add(secondKey,secondIsGloballyVisible, secondTestValue, expectedExpiryDateMs2, expectedIsSticky2);
-    boost::optional<routingtable::RoutingEntry> result1 = routingTable.lookupRoutingEntryByParticipantId(firstKey);
-    boost::optional<routingtable::RoutingEntry> result2 = routingTable.lookupRoutingEntryByParticipantId(secondKey);
+    const bool expectedExpiryDateMs2 = expiryDateMaxMs - 1;
+    routingTable.add(
+            firstKey, firstIsGloballyVisible, testValue, expectedExpiryDateMs1, expectedIsSticky1);
+    routingTable.add(secondKey,
+                     secondIsGloballyVisible,
+                     secondTestValue,
+                     expectedExpiryDateMs2,
+                     expectedIsSticky2);
+    boost::optional<routingtable::RoutingEntry> result1 =
+            routingTable.lookupRoutingEntryByParticipantId(firstKey);
+    boost::optional<routingtable::RoutingEntry> result2 =
+            routingTable.lookupRoutingEntryByParticipantId(secondKey);
     ASSERT_EQ(*(result1->address), *testValue);
     ASSERT_EQ(result1->isGloballyVisible, firstIsGloballyVisible);
     ASSERT_EQ(result1->expiryDateMs, expectedExpiryDateMs1);
-    //ASSERT_EQ(result1->isSticky, RoutingTableTest::isStickyFalse);
+    // ASSERT_EQ(result1->isSticky, RoutingTableTest::isStickyFalse);
     ASSERT_EQ(result1->isSticky, expectedIsSticky1);
     ASSERT_EQ(*(result2->address), *secondTestValue);
     ASSERT_EQ(result2->isGloballyVisible, secondIsGloballyVisible);
@@ -106,7 +115,7 @@ TEST_F(RoutingTableTest, lookupParticipantIdsByAddress)
 {
     const bool isGloballyVisible = true;
     routingTable.add(firstKey, isGloballyVisible, testValue, expiryDateMaxMs, isStickyFalse);
-    routingTable.add(secondKey,isGloballyVisible, secondTestValue, expiryDateMaxMs, isStickyFalse);
+    routingTable.add(secondKey, isGloballyVisible, secondTestValue, expiryDateMaxMs, isStickyFalse);
     routingTable.add(thirdKey, isGloballyVisible, testValue, expiryDateMaxMs, isStickyFalse);
     std::unordered_set<std::string> result1 = routingTable.lookupParticipantIdsByAddress(testValue);
     bool found1 = (result1.find(firstKey) != result1.end());
@@ -117,7 +126,8 @@ TEST_F(RoutingTableTest, lookupParticipantIdsByAddress)
     ASSERT_EQ(found3, true);
     ASSERT_EQ(result1.size(), 2);
 
-    std::unordered_set<std::string> result2 = routingTable.lookupParticipantIdsByAddress(secondTestValue);
+    std::unordered_set<std::string> result2 =
+            routingTable.lookupParticipantIdsByAddress(secondTestValue);
     bool found4 = (result2.find(secondKey) != result2.end());
     ASSERT_EQ(found4, true);
     ASSERT_EQ(result2.size(), 1);
@@ -144,7 +154,7 @@ TEST_F(RoutingTableTest, purge)
 {
     const bool isGloballyVisible = true;
     auto now = std::chrono::duration_cast<std::chrono::milliseconds>(
-            std::chrono::system_clock::now().time_since_epoch()).count();
+                       std::chrono::system_clock::now().time_since_epoch()).count();
     const std::int64_t offsetMs = 2000;
     const bool isStickyTrue = true;
     auto expiryDateMs = now + offsetMs;

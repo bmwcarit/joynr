@@ -17,7 +17,6 @@
  * #L%
  */
 
-
 #include <gtest/gtest.h>
 #include "libjoynrclustercontroller/messaging/MessagingPropertiesPersistence.h"
 
@@ -27,15 +26,17 @@ using namespace joynr;
 
 static const std::string persistenceFilename("test-messagingPropertiesPersistenceTest.persist");
 
-class MessagingPropertiesPersistenceTest : public ::testing::Test {
+class MessagingPropertiesPersistenceTest : public ::testing::Test
+{
 public:
-    MessagingPropertiesPersistenceTest(){}
+    MessagingPropertiesPersistenceTest()
+    {
+    }
 
     void SetUp()
     {
         std::remove(persistenceFilename.c_str());
     }
-
 };
 
 // Test that a channelId is created if none exists
@@ -51,7 +52,8 @@ TEST_F(MessagingPropertiesPersistenceTest, createChannelId)
 // Test that the channelId is persisted
 TEST_F(MessagingPropertiesPersistenceTest, persistChannelId)
 {
-    MessagingPropertiesPersistence *persist = new MessagingPropertiesPersistence(persistenceFilename);
+    MessagingPropertiesPersistence* persist =
+            new MessagingPropertiesPersistence(persistenceFilename);
     std::string firstChannelId = persist->getChannelId();
 
     // Remove the persistence object and then create a new one
@@ -62,5 +64,4 @@ TEST_F(MessagingPropertiesPersistenceTest, persistChannelId)
     std::string secondChannelId = persist->getChannelId();
     ASSERT_EQ(firstChannelId, secondChannelId);
     delete persist;
-
 }

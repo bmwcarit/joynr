@@ -28,20 +28,20 @@
 
 using namespace joynr;
 
-class SubscriptionQosTest : public ::testing::Test {
+class SubscriptionQosTest : public ::testing::Test
+{
 public:
     SubscriptionQosTest()
     {
-
     }
 
-    std::int64_t nowPlusTimeSpan(const std::int64_t& timeSpan) {
+    std::int64_t nowPlusTimeSpan(const std::int64_t& timeSpan)
+    {
         std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
                                    std::chrono::system_clock::now().time_since_epoch()).count();
         return now + timeSpan;
     }
 };
-
 
 TEST_F(SubscriptionQosTest, createOnChangeSubscriptionQos)
 {
@@ -66,7 +66,8 @@ TEST_F(SubscriptionQosTest, createOnChangeSubscriptionQosWithValidity)
 
     {
         std::int64_t expiryDateLowerBound = nowPlusTimeSpan(validityMs);
-        OnChangeSubscriptionQos onChangeSubscriptionQos(validityMs, publicationTtlMs, minIntervalMs);
+        OnChangeSubscriptionQos onChangeSubscriptionQos(
+                validityMs, publicationTtlMs, minIntervalMs);
         std::int64_t expiryDateUpperBound = nowPlusTimeSpan(validityMs);
         onChangeSubscriptionQos.setPublicationTtlMs(publicationTtlMs);
 
@@ -118,10 +119,7 @@ TEST_F(SubscriptionQosTest, createPeriodicSubscriptionQosWithValidity)
     {
         std::int64_t expiryDateLowerBound = nowPlusTimeSpan(validityMs);
         PeriodicSubscriptionQos periodicSubscriptionQos(
-                    validityMs,
-                    publicationTtlMs,
-                    periodMs,
-                    alertAfterIntervalMs);
+                validityMs, publicationTtlMs, periodMs, alertAfterIntervalMs);
         std::int64_t expiryDateUpperBound = nowPlusTimeSpan(validityMs);
 
         EXPECT_LE(expiryDateLowerBound, periodicSubscriptionQos.getExpiryDateMs());

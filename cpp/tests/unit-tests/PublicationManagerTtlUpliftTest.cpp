@@ -24,7 +24,6 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-
 #include "joynr/IMessageSender.h"
 #include "joynr/InterfaceRegistrar.h"
 #include "joynr/LibjoynrSettings.h"
@@ -56,68 +55,76 @@ using ::testing::Eq;
 
 using namespace joynr;
 
-MATCHER_P3(messagingQosWithTtl, expectedTtlMs, toleranceMs, logger, "") {
+MATCHER_P3(messagingQosWithTtl, expectedTtlMs, toleranceMs, logger, "")
+{
     std::int64_t actual = arg.getTtl();
     std::int64_t diff = expectedTtlMs - actual;
     if (diff <= toleranceMs) {
         return true;
     }
-    JOYNR_LOG_ERROR(logger, "TTL={} differs {}ms (more than {}ms) from the expected value={}", actual, diff, toleranceMs, expectedTtlMs);
+    JOYNR_LOG_ERROR(logger,
+                    "TTL={} differs {}ms (more than {}ms) from the expected value={}",
+                    actual,
+                    diff,
+                    toleranceMs,
+                    expectedTtlMs);
     return false;
 }
 
-class PublicationManagerTtlUpliftTest : public testing::Test {
+class PublicationManagerTtlUpliftTest : public testing::Test
+{
 public:
-    PublicationManagerTtlUpliftTest() :
-        singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
-        messageSender(std::make_shared<MockMessageSender>()),
-        proxyId("ProxyId"),
-        providerId("ProviderId"),
-        mockPublicationSender(std::make_shared<MockPublicationSender>()),
-        ttlUpliftMs(300),
-        minInterval_ms(0),
-        publicationTtlMs(1024),
-        toleranceMs(50),
-        enablePersistency(true)
+    PublicationManagerTtlUpliftTest()
+            : singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
+              messageSender(std::make_shared<MockMessageSender>()),
+              proxyId("ProxyId"),
+              providerId("ProviderId"),
+              mockPublicationSender(std::make_shared<MockPublicationSender>()),
+              ttlUpliftMs(300),
+              minInterval_ms(0),
+              publicationTtlMs(1024),
+              toleranceMs(50),
+              enablePersistency(true)
     {
         singleThreadedIOService->start();
-        onChangeSubscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
-                        0,
-                        publicationTtlMs,
-                        minInterval_ms
-                    );
+        onChangeSubscriptionQos =
+                std::make_shared<OnChangeSubscriptionQos>(0, publicationTtlMs, minInterval_ms);
         onChangeSubscriptionQos->setPublicationTtlMs(publicationTtlMs);
     }
 
-    ~PublicationManagerTtlUpliftTest() {
+    ~PublicationManagerTtlUpliftTest()
+    {
         singleThreadedIOService->stop();
-        //remove stored subscriptions;
+        // remove stored subscriptions;
         std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str());
-        //remove stored broadcastsubscriptions
-        std::remove(LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str());
+        // remove stored broadcastsubscriptions
+        std::remove(LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME()
+                            .c_str());
         messageSender.reset();
     }
 
 protected:
+    void testSubscriptionWithoutTtlUplift(
+            const std::string& proxyId,
+            const std::string& providerId,
+            std::shared_ptr<MockPublicationSender> mockPublicationSender,
+            std::shared_ptr<PublicationManager> publicationManager,
+            SubscriptionRequest& subscriptionRequest,
+            bool isBroadcastSubscription,
+            std::int64_t sleepDurationMs,
+            std::int64_t expectedSubscriptionReplyTtlMs,
+            std::int64_t expectedPublicationTtlMs,
+            std::function<void()> triggerPublication);
 
-    void testSubscriptionWithoutTtlUplift(const std::string& proxyId,
-                                          const std::string& providerId,
-                                          std::shared_ptr<MockPublicationSender> mockPublicationSender,
-                                          std::shared_ptr<PublicationManager> publicationManager,
-                                          SubscriptionRequest& subscriptionRequest,
-                                          bool isBroadcastSubscription,
-                                          std::int64_t sleepDurationMs,
-                                          std::int64_t expectedSubscriptionReplyTtlMs,
-                                          std::int64_t expectedPublicationTtlMs,
-                                          std::function<void()> triggerPublication);
-
-    void expectNoMoreSubscriptionPublications(std::shared_ptr<MockPublicationSender> mockPublicationSender,
-                                              std::function<void()> triggerPublication);
-    void expectAdditionalSubscriptionPublication(const std::string& proxyId,
-                                                                const std::string& providerId,
-                                                                std::shared_ptr<MockPublicationSender> mockPublicationSender,
-                                                                std::int64_t expectedPublicationTtlMs,
-                                                                std::function<void()> triggerPublication);
+    void expectNoMoreSubscriptionPublications(
+            std::shared_ptr<MockPublicationSender> mockPublicationSender,
+            std::function<void()> triggerPublication);
+    void expectAdditionalSubscriptionPublication(
+            const std::string& proxyId,
+            const std::string& providerId,
+            std::shared_ptr<MockPublicationSender> mockPublicationSender,
+            std::int64_t expectedPublicationTtlMs,
+            std::function<void()> triggerPublication);
     void testSubscriptionWithTtlUplift(const std::string& proxyId,
                                        const std::string& providerId,
                                        std::shared_ptr<PublicationManager> publicationManager,
@@ -147,54 +154,58 @@ protected:
 };
 
 void PublicationManagerTtlUpliftTest::testSubscriptionWithoutTtlUplift(
-                                      const std::string& proxyId,
-                                      const std::string& providerId,
-                                      std::shared_ptr<MockPublicationSender> mockPublicationSender,
-                                      std::shared_ptr<PublicationManager> publicationManager,
-                                      SubscriptionRequest& subscriptionRequest,
-                                      bool isBroadcastSubscription,
-                                      std::int64_t sleepDurationMs,
-                                      std::int64_t expectedSubscriptionReplyTtlMs,
-                                      std::int64_t expectedPublicationTtlMs,
-                                      std::function<void()> triggerPublication) {
+        const std::string& proxyId,
+        const std::string& providerId,
+        std::shared_ptr<MockPublicationSender> mockPublicationSender,
+        std::shared_ptr<PublicationManager> publicationManager,
+        SubscriptionRequest& subscriptionRequest,
+        bool isBroadcastSubscription,
+        std::int64_t sleepDurationMs,
+        std::int64_t expectedSubscriptionReplyTtlMs,
+        std::int64_t expectedPublicationTtlMs,
+        std::function<void()> triggerPublication)
+{
     joynr::Semaphore semaphore(0);
     // Register the request interpreter that calls the request caller
-    InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>("tests/Test");
+    InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>(
+            "tests/Test");
 
     auto requestCaller = std::make_shared<MockTestRequestCaller>();
 
-    EXPECT_CALL(
-                *mockPublicationSender,
-                sendSubscriptionReply(
-                    Eq(providerId), // sender participant ID
-                    Eq(proxyId), // receiver participant ID
-                    messagingQosWithTtl(expectedSubscriptionReplyTtlMs, toleranceMs, logger()), // messaging QoS
-                    _ // subscription reply
-                )
-    )
-            .Times(1);
+    EXPECT_CALL(*mockPublicationSender,
+                sendSubscriptionReply(Eq(providerId), // sender participant ID
+                                      Eq(proxyId),    // receiver participant ID
+                                      messagingQosWithTtl(expectedSubscriptionReplyTtlMs,
+                                                          toleranceMs,
+                                                          logger()), // messaging QoS
+                                      _                              // subscription reply
+                                      )).Times(1);
 
     // sending initial value plus the attributeValueChanged
     EXPECT_CALL(
-                *mockPublicationSender,
-                sendSubscriptionPublicationMock(
+            *mockPublicationSender,
+            sendSubscriptionPublicationMock(
                     Eq(providerId), // sender participant ID
-                    Eq(proxyId), // receiver participant ID
+                    Eq(proxyId),    // receiver participant ID
                     messagingQosWithTtl(expectedPublicationTtlMs, 0l, logger()), // messaging QoS
                     _ // subscription publication
-                )
-    )
+                    ))
             .Times(2)
             .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
     JOYNR_LOG_DEBUG(logger(), "adding request");
 
     if (isBroadcastSubscription) {
-        publicationManager->add(proxyId, providerId, requestCaller, static_cast<BroadcastSubscriptionRequest&>(subscriptionRequest), mockPublicationSender);
+        publicationManager->add(proxyId,
+                                providerId,
+                                requestCaller,
+                                static_cast<BroadcastSubscriptionRequest&>(subscriptionRequest),
+                                mockPublicationSender);
         // fire initial broadcast
         triggerPublication();
     } else {
-        publicationManager->add(proxyId, providerId, requestCaller, subscriptionRequest, mockPublicationSender);
+        publicationManager->add(
+                proxyId, providerId, requestCaller, subscriptionRequest, mockPublicationSender);
     }
 
     // wait for initial publication
@@ -204,23 +215,21 @@ void PublicationManagerTtlUpliftTest::testSubscriptionWithoutTtlUplift(
 
     std::this_thread::sleep_for(std::chrono::milliseconds(sleepDurationMs + toleranceMs));
     EXPECT_EQ(1, semaphore.getStatus());
-
 }
 
-void PublicationManagerTtlUpliftTest::expectNoMoreSubscriptionPublications(std::shared_ptr<MockPublicationSender> mockPublicationSender,
-                                                                  std::function<void()> triggerPublication) {
+void PublicationManagerTtlUpliftTest::expectNoMoreSubscriptionPublications(
+        std::shared_ptr<MockPublicationSender> mockPublicationSender,
+        std::function<void()> triggerPublication)
+{
     Mock::VerifyAndClearExpectations(mockPublicationSender.get());
 
     joynr::Semaphore semaphore(0);
-    EXPECT_CALL(
-                *mockPublicationSender,
-                sendSubscriptionPublicationMock(
-                    _, // sender participant ID
-                    _, // receiver participant ID
-                    _, // messaging QoS
-                    _ // subscription publication
-                )
-    )
+    EXPECT_CALL(*mockPublicationSender,
+                sendSubscriptionPublicationMock(_, // sender participant ID
+                                                _, // receiver participant ID
+                                                _, // messaging QoS
+                                                _  // subscription publication
+                                                ))
             .Times(0)
             .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
@@ -228,23 +237,24 @@ void PublicationManagerTtlUpliftTest::expectNoMoreSubscriptionPublications(std::
     EXPECT_FALSE(semaphore.waitFor(std::chrono::milliseconds(200)));
 }
 
-void PublicationManagerTtlUpliftTest::expectAdditionalSubscriptionPublication(const std::string& proxyId,
-                                                                                    const std::string& providerId,
-                                                                                    std::shared_ptr<MockPublicationSender> mockPublicationSender,
-                                                                                    std::int64_t expectedPublicationTtlMs,
-                                                                                    std::function<void()> triggerPublication) {
+void PublicationManagerTtlUpliftTest::expectAdditionalSubscriptionPublication(
+        const std::string& proxyId,
+        const std::string& providerId,
+        std::shared_ptr<MockPublicationSender> mockPublicationSender,
+        std::int64_t expectedPublicationTtlMs,
+        std::function<void()> triggerPublication)
+{
     Mock::VerifyAndClearExpectations(mockPublicationSender.get());
 
     joynr::Semaphore semaphore(0);
     EXPECT_CALL(
-                *mockPublicationSender,
-                sendSubscriptionPublicationMock(
+            *mockPublicationSender,
+            sendSubscriptionPublicationMock(
                     Eq(providerId), // sender participant ID
-                    Eq(proxyId), // receiver participant ID
+                    Eq(proxyId),    // receiver participant ID
                     messagingQosWithTtl(expectedPublicationTtlMs, 0l, logger()), // messaging QoS
                     _ // subscription publication
-                )
-    )
+                    ))
             .Times(1)
             .WillOnce(ReleaseSemaphore(&semaphore));
 
@@ -252,32 +262,44 @@ void PublicationManagerTtlUpliftTest::expectAdditionalSubscriptionPublication(co
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(200)));
 }
 
-void PublicationManagerTtlUpliftTest::testSubscriptionWithTtlUplift(const std::string& proxyId,
-                                                           const std::string& providerId,
-                                                           std::shared_ptr<PublicationManager> publicationManager,
-                                                           std::shared_ptr<MockPublicationSender> mockPublicationSender,
-                                                           SubscriptionRequest& subscriptionRequest,
-                                                           bool isBroadcastSubscription,
-                                                           std::int64_t sleepDurationMs,
-                                                           std::int64_t expectedSubscriptionReplyTtlMs,
-                                                           std::int64_t expectedPublicationTtlMs,
-                                                           std::function<void()> triggerPublication) {
-    testSubscriptionWithoutTtlUplift(proxyId, providerId, mockPublicationSender,
-                                     publicationManager, subscriptionRequest,
-                                     isBroadcastSubscription, sleepDurationMs,
-                                     expectedSubscriptionReplyTtlMs, expectedPublicationTtlMs,
+void PublicationManagerTtlUpliftTest::testSubscriptionWithTtlUplift(
+        const std::string& proxyId,
+        const std::string& providerId,
+        std::shared_ptr<PublicationManager> publicationManager,
+        std::shared_ptr<MockPublicationSender> mockPublicationSender,
+        SubscriptionRequest& subscriptionRequest,
+        bool isBroadcastSubscription,
+        std::int64_t sleepDurationMs,
+        std::int64_t expectedSubscriptionReplyTtlMs,
+        std::int64_t expectedPublicationTtlMs,
+        std::function<void()> triggerPublication)
+{
+    testSubscriptionWithoutTtlUplift(proxyId,
+                                     providerId,
+                                     mockPublicationSender,
+                                     publicationManager,
+                                     subscriptionRequest,
+                                     isBroadcastSubscription,
+                                     sleepDurationMs,
+                                     expectedSubscriptionReplyTtlMs,
+                                     expectedPublicationTtlMs,
                                      triggerPublication);
 
-    expectAdditionalSubscriptionPublication(proxyId, providerId, mockPublicationSender,
-                                                           expectedPublicationTtlMs, triggerPublication);
+    expectAdditionalSubscriptionPublication(proxyId,
+                                            providerId,
+                                            mockPublicationSender,
+                                            expectedPublicationTtlMs,
+                                            triggerPublication);
 
     std::this_thread::sleep_for(std::chrono::milliseconds(ttlUpliftMs));
 }
 
-TEST_F(PublicationManagerTtlUpliftTest, testAttributeSubscriptionWithoutTtlUplift) {
-    auto publicationManager = std::make_shared<PublicationManager>(singleThreadedIOService->getIOService(), messageSender, enablePersistency, 0);
+TEST_F(PublicationManagerTtlUpliftTest, testAttributeSubscriptionWithoutTtlUplift)
+{
+    auto publicationManager = std::make_shared<PublicationManager>(
+            singleThreadedIOService->getIOService(), messageSender, enablePersistency, 0);
 
-    //SubscriptionRequest
+    // SubscriptionRequest
     std::string attributeName("Location");
     std::int64_t validity_ms = 300;
     onChangeSubscriptionQos->setValidityMs(validity_ms);
@@ -307,16 +329,17 @@ TEST_F(PublicationManagerTtlUpliftTest, testAttributeSubscriptionWithoutTtlUplif
                                      expectedPublicationTtlMs,
                                      triggerPublication);
 
-    expectNoMoreSubscriptionPublications(mockPublicationSender,
-                                         triggerPublication);
+    expectNoMoreSubscriptionPublications(mockPublicationSender, triggerPublication);
     publicationManager->shutdown();
 }
 
-TEST_F(PublicationManagerTtlUpliftTest, testBroadcastSubscriptionWithoutTtlUplift) {
+TEST_F(PublicationManagerTtlUpliftTest, testBroadcastSubscriptionWithoutTtlUplift)
+{
 
-    auto publicationManager = std::make_shared<PublicationManager>(singleThreadedIOService->getIOService(), messageSender, enablePersistency, 0);
+    auto publicationManager = std::make_shared<PublicationManager>(
+            singleThreadedIOService->getIOService(), messageSender, enablePersistency, 0);
 
-    //SubscriptionRequest
+    // SubscriptionRequest
     std::string broadcastName("Location");
     std::int64_t validity_ms = 300;
     onChangeSubscriptionQos->setValidityMs(validity_ms);
@@ -346,16 +369,17 @@ TEST_F(PublicationManagerTtlUpliftTest, testBroadcastSubscriptionWithoutTtlUplif
                                      expectedPublicationTtlMs,
                                      triggerPublication);
 
-    expectNoMoreSubscriptionPublications(mockPublicationSender,
-                                         triggerPublication);
+    expectNoMoreSubscriptionPublications(mockPublicationSender, triggerPublication);
     publicationManager->shutdown();
 }
 
-TEST_F(PublicationManagerTtlUpliftTest, testAttributeSubscriptionWithTtlUplift) {
+TEST_F(PublicationManagerTtlUpliftTest, testAttributeSubscriptionWithTtlUplift)
+{
 
-    auto publicationManager = std::make_shared<PublicationManager>(singleThreadedIOService->getIOService(), messageSender, enablePersistency, ttlUpliftMs);
+    auto publicationManager = std::make_shared<PublicationManager>(
+            singleThreadedIOService->getIOService(), messageSender, enablePersistency, ttlUpliftMs);
 
-    //SubscriptionRequest
+    // SubscriptionRequest
     std::string attributeName("Location");
     std::int64_t validity_ms = 300;
     onChangeSubscriptionQos->setValidityMs(validity_ms);
@@ -389,11 +413,13 @@ TEST_F(PublicationManagerTtlUpliftTest, testAttributeSubscriptionWithTtlUplift) 
     publicationManager->shutdown();
 }
 
-TEST_F(PublicationManagerTtlUpliftTest, testBroadcastSubscriptionWithTtlUplift) {
+TEST_F(PublicationManagerTtlUpliftTest, testBroadcastSubscriptionWithTtlUplift)
+{
 
-    auto publicationManager = std::make_shared<PublicationManager>(singleThreadedIOService->getIOService(), messageSender, enablePersistency, ttlUpliftMs);
+    auto publicationManager = std::make_shared<PublicationManager>(
+            singleThreadedIOService->getIOService(), messageSender, enablePersistency, ttlUpliftMs);
 
-    //SubscriptionRequest
+    // SubscriptionRequest
     std::string broadcastName("Location");
     std::int64_t validity_ms = 300;
     onChangeSubscriptionQos->setValidityMs(validity_ms);
@@ -427,11 +453,13 @@ TEST_F(PublicationManagerTtlUpliftTest, testBroadcastSubscriptionWithTtlUplift) 
     publicationManager->shutdown();
 }
 
-TEST_F(PublicationManagerTtlUpliftTest, testAttributeSubscriptionWithTtlUpliftWithNoExpiryDate) {
+TEST_F(PublicationManagerTtlUpliftTest, testAttributeSubscriptionWithTtlUpliftWithNoExpiryDate)
+{
 
-    auto publicationManager = std::make_shared<PublicationManager>(singleThreadedIOService->getIOService(), messageSender, enablePersistency, ttlUpliftMs);
+    auto publicationManager = std::make_shared<PublicationManager>(
+            singleThreadedIOService->getIOService(), messageSender, enablePersistency, ttlUpliftMs);
 
-    //SubscriptionRequest
+    // SubscriptionRequest
     std::string attributeName("Location");
     onChangeSubscriptionQos->setExpiryDateMs(SubscriptionQos::NO_EXPIRY_DATE());
     SubscriptionRequest subscriptionRequest;
@@ -460,16 +488,21 @@ TEST_F(PublicationManagerTtlUpliftTest, testAttributeSubscriptionWithTtlUpliftWi
                                   expectedPublicationTtlMs,
                                   triggerPublication);
 
-    expectAdditionalSubscriptionPublication(proxyId, providerId, mockPublicationSender,
-                                                           expectedPublicationTtlMs, triggerPublication);
+    expectAdditionalSubscriptionPublication(proxyId,
+                                            providerId,
+                                            mockPublicationSender,
+                                            expectedPublicationTtlMs,
+                                            triggerPublication);
     publicationManager->shutdown();
 }
 
-TEST_F(PublicationManagerTtlUpliftTest, testBroadcastSubscriptionWithTtlUpliftWithNoExpiryDate) {
+TEST_F(PublicationManagerTtlUpliftTest, testBroadcastSubscriptionWithTtlUpliftWithNoExpiryDate)
+{
 
-    auto publicationManager = std::make_shared<PublicationManager>(singleThreadedIOService->getIOService(), messageSender, enablePersistency, ttlUpliftMs);
+    auto publicationManager = std::make_shared<PublicationManager>(
+            singleThreadedIOService->getIOService(), messageSender, enablePersistency, ttlUpliftMs);
 
-    //SubscriptionRequest
+    // SubscriptionRequest
     std::string broadcastName("Location");
     onChangeSubscriptionQos->setExpiryDateMs(SubscriptionQos::NO_EXPIRY_DATE());
     BroadcastSubscriptionRequest subscriptionRequest;
@@ -498,16 +531,22 @@ TEST_F(PublicationManagerTtlUpliftTest, testBroadcastSubscriptionWithTtlUpliftWi
                                   expectedPublicationTtlMs,
                                   triggerPublication);
 
-    expectAdditionalSubscriptionPublication(proxyId, providerId, mockPublicationSender,
-                                                           expectedPublicationTtlMs, triggerPublication);
+    expectAdditionalSubscriptionPublication(proxyId,
+                                            providerId,
+                                            mockPublicationSender,
+                                            expectedPublicationTtlMs,
+                                            triggerPublication);
     publicationManager->shutdown();
 }
 
-TEST_F(PublicationManagerTtlUpliftTest, DISABLED_testAttributeSubscriptionWithTtlUpliftWithLargeExpiryDate) {
+TEST_F(PublicationManagerTtlUpliftTest,
+       DISABLED_testAttributeSubscriptionWithTtlUpliftWithLargeExpiryDate)
+{
 
-    auto publicationManager = std::make_shared<PublicationManager>(singleThreadedIOService->getIOService(), messageSender, enablePersistency, ttlUpliftMs);
+    auto publicationManager = std::make_shared<PublicationManager>(
+            singleThreadedIOService->getIOService(), messageSender, enablePersistency, ttlUpliftMs);
 
-    //SubscriptionRequest
+    // SubscriptionRequest
     std::string attributeName("Location");
     std::int64_t expiryDateMs = INT64_MAX - ttlUpliftMs + 1;
     onChangeSubscriptionQos->setExpiryDateMs(expiryDateMs);
@@ -518,7 +557,8 @@ TEST_F(PublicationManagerTtlUpliftTest, DISABLED_testAttributeSubscriptionWithTt
     std::string subscriptionId = subscriptionRequest.getSubscriptionId();
 
     std::int64_t sleepDurationMs = 300;
-    std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+    std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
+                               std::chrono::system_clock::now().time_since_epoch()).count();
     std::int64_t expectedSubscriptionReplyTtlMs = expiryDateMs - now;
     std::int64_t expectedPublicationTtlMs = publicationTtlMs;
 
@@ -538,16 +578,22 @@ TEST_F(PublicationManagerTtlUpliftTest, DISABLED_testAttributeSubscriptionWithTt
                                   expectedPublicationTtlMs,
                                   triggerPublication);
 
-    expectAdditionalSubscriptionPublication(proxyId, providerId, mockPublicationSender,
-                                                           expectedPublicationTtlMs, triggerPublication);
+    expectAdditionalSubscriptionPublication(proxyId,
+                                            providerId,
+                                            mockPublicationSender,
+                                            expectedPublicationTtlMs,
+                                            triggerPublication);
     publicationManager->shutdown();
 }
 
-TEST_F(PublicationManagerTtlUpliftTest, DISABLED_testBroadcastSubscriptionWithTtlUpliftWithLargeExpiryDate) {
+TEST_F(PublicationManagerTtlUpliftTest,
+       DISABLED_testBroadcastSubscriptionWithTtlUpliftWithLargeExpiryDate)
+{
 
-    auto publicationManager = std::make_shared<PublicationManager>(singleThreadedIOService->getIOService(), messageSender, enablePersistency, ttlUpliftMs);
+    auto publicationManager = std::make_shared<PublicationManager>(
+            singleThreadedIOService->getIOService(), messageSender, enablePersistency, ttlUpliftMs);
 
-    //SubscriptionRequest
+    // SubscriptionRequest
     std::string broadcastName("Location");
     std::int64_t expiryDateMs = INT64_MAX - ttlUpliftMs + 1;
     onChangeSubscriptionQos->setExpiryDateMs(expiryDateMs);
@@ -558,7 +604,8 @@ TEST_F(PublicationManagerTtlUpliftTest, DISABLED_testBroadcastSubscriptionWithTt
     std::string subscriptionId = subscriptionRequest.getSubscriptionId();
 
     std::int64_t sleepDurationMs = 300;
-    std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+    std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
+                               std::chrono::system_clock::now().time_since_epoch()).count();
     std::int64_t expectedSubscriptionReplyTtlMs = expiryDateMs - now;
     std::int64_t expectedPublicationTtlMs = publicationTtlMs;
 
@@ -578,7 +625,10 @@ TEST_F(PublicationManagerTtlUpliftTest, DISABLED_testBroadcastSubscriptionWithTt
                                   expectedPublicationTtlMs,
                                   triggerPublication);
 
-    expectAdditionalSubscriptionPublication(proxyId, providerId, mockPublicationSender,
-                                                           expectedPublicationTtlMs, triggerPublication);
+    expectAdditionalSubscriptionPublication(proxyId,
+                                            providerId,
+                                            mockPublicationSender,
+                                            expectedPublicationTtlMs,
+                                            triggerPublication);
     publicationManager->shutdown();
 }

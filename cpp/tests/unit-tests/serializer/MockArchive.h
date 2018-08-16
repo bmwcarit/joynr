@@ -31,7 +31,10 @@
 
 using namespace testing;
 
-namespace tag { struct mock; }
+namespace tag
+{
+struct mock;
+}
 
 struct MockBase
 {
@@ -40,23 +43,33 @@ struct MockBase
 };
 
 template <typename Stream>
-struct MockInputArchive : MockBase, muesli::BaseArchive<muesli::tags::InputArchive, MockInputArchive<Stream>>
+struct MockInputArchive : MockBase,
+                          muesli::BaseArchive<muesli::tags::InputArchive, MockInputArchive<Stream>>
 {
     using Parent = muesli::BaseArchive<muesli::tags::InputArchive, MockInputArchive<Stream>>;
-    MockInputArchive() : Parent(this) {}
-    MockInputArchive(Stream&) : Parent(this) {}
+    MockInputArchive() : Parent(this)
+    {
+    }
+    MockInputArchive(Stream&) : Parent(this)
+    {
+    }
 };
 MUESLI_REGISTER_INPUT_ARCHIVE(MockInputArchive, tag::mock)
 
 template <typename Stream>
-struct MockOutputArchive : MockBase, muesli::BaseArchive<muesli::tags::OutputArchive, MockOutputArchive<Stream>>
+struct MockOutputArchive
+        : MockBase,
+          muesli::BaseArchive<muesli::tags::OutputArchive, MockOutputArchive<Stream>>
 {
     using Parent = muesli::BaseArchive<muesli::tags::OutputArchive, MockOutputArchive<Stream>>;
-    MockOutputArchive(Stream&) : Parent(this) {}
-    MockOutputArchive() : Parent(this) {}
+    MockOutputArchive(Stream&) : Parent(this)
+    {
+    }
+    MockOutputArchive() : Parent(this)
+    {
+    }
 };
 MUESLI_REGISTER_OUTPUT_ARCHIVE(MockOutputArchive, tag::mock)
-
 
 // only tuples of size one are supported in this test
 template <typename Archive, typename T>
@@ -83,16 +96,20 @@ void serialize(Archive& archive, std::nullptr_t& value)
 template <typename Archive, typename T>
 void serialize(Archive&, T&&)
 {
-  // no-op as fallback
+    // no-op as fallback
 }
 
 template <typename Archive>
 struct MockDeserializable
 {
-    MockDeserializable(Archive&){}
+    MockDeserializable(Archive&)
+    {
+    }
 
     template <typename T>
-    void get(T&&) {}
+    void get(T&&)
+    {
+    }
 };
 
 namespace joynr

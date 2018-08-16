@@ -36,15 +36,20 @@
 
 using namespace ::testing;
 
-namespace joynr {
+namespace joynr
+{
 
-class WebSocketMessagingStubFactoryTest : public testing::Test {
+class WebSocketMessagingStubFactoryTest : public testing::Test
+{
 public:
-    WebSocketMessagingStubFactoryTest() :
-        webSocketServerAddress(joynr::system::RoutingTypes::WebSocketProtocol::WS, "localhost", 42, "path"),
-        webSocketClientAddress("clientId"),
-        channelAddress("endPointUrl", "channelId"),
-        browserAddress("windowId")
+    WebSocketMessagingStubFactoryTest()
+            : webSocketServerAddress(joynr::system::RoutingTypes::WebSocketProtocol::WS,
+                                     "localhost",
+                                     42,
+                                     "path"),
+              webSocketClientAddress("clientId"),
+              channelAddress("endPointUrl", "channelId"),
+              browserAddress("windowId")
     {
     }
 
@@ -56,42 +61,50 @@ protected:
     joynr::system::RoutingTypes::BrowserAddress browserAddress;
 };
 
-TEST_F(WebSocketMessagingStubFactoryTest, canCreateWebSocketAddressses) {
+TEST_F(WebSocketMessagingStubFactoryTest, canCreateWebSocketAddressses)
+{
     WebSocketMessagingStubFactory factory;
 
     EXPECT_TRUE(factory.canCreate(webSocketClientAddress));
     EXPECT_TRUE(factory.canCreate(webSocketServerAddress));
 }
 
-TEST_F(WebSocketMessagingStubFactoryTest, canOnlyCreateWebSocketAddressses) {
+TEST_F(WebSocketMessagingStubFactoryTest, canOnlyCreateWebSocketAddressses)
+{
     WebSocketMessagingStubFactory factory;
 
     EXPECT_FALSE(factory.canCreate(channelAddress));
     EXPECT_FALSE(factory.canCreate(browserAddress));
 }
 
-TEST_F(WebSocketMessagingStubFactoryTest, createReturnsNullForUnknownClient) {
+TEST_F(WebSocketMessagingStubFactoryTest, createReturnsNullForUnknownClient)
+{
     WebSocketMessagingStubFactory factory;
 
     EXPECT_TRUE((factory.create(webSocketClientAddress)).get() == 0);
 }
 
-TEST_F(WebSocketMessagingStubFactoryTest, createReturnsMessagingStub) {
+TEST_F(WebSocketMessagingStubFactoryTest, createReturnsMessagingStub)
+{
     WebSocketMessagingStubFactory factory;
     auto clientWebsocket = std::make_shared<MockWebSocketClient>();
     auto wrapper = std::make_shared<MockWebSocketSendInterface>();
 
-    factory.addClient(joynr::system::RoutingTypes::WebSocketClientAddress(webSocketClientAddress), clientWebsocket->getSender());
+    factory.addClient(joynr::system::RoutingTypes::WebSocketClientAddress(webSocketClientAddress),
+                      clientWebsocket->getSender());
     factory.addServer(webSocketServerAddress, wrapper);
     EXPECT_TRUE(factory.create(webSocketClientAddress).get() != nullptr);
     EXPECT_TRUE(factory.create(webSocketServerAddress).get() != nullptr);
 }
 
-TEST_F(WebSocketMessagingStubFactoryTest, closedMessagingStubsAreRemovedFromWebSocketMessagingStubFactory) {
+TEST_F(WebSocketMessagingStubFactoryTest,
+       closedMessagingStubsAreRemovedFromWebSocketMessagingStubFactory)
+{
     WebSocketMessagingStubFactory factory;
     auto addressCopy = joynr::system::RoutingTypes::WebSocketClientAddress(webSocketClientAddress);
     auto websocket = std::make_shared<MockWebSocketClient>();
-    websocket->registerDisconnectCallback([&factory,&addressCopy](){ factory.onMessagingStubClosed(addressCopy); });
+    websocket->registerDisconnectCallback(
+            [&factory, &addressCopy]() { factory.onMessagingStubClosed(addressCopy); });
 
     factory.addClient(webSocketClientAddress, websocket->getSender());
 
@@ -107,14 +120,19 @@ TEST_F(WebSocketMessagingStubFactoryTest, closedMessagingStubsAreRemovedFromWebS
     EXPECT_TRUE((factory.create(webSocketClientAddress)).get() == nullptr);
 }
 
-TEST_F(WebSocketMessagingStubFactoryTest, closedMessagingStubsAreRemovedFromMessagingStubFactory) {
+TEST_F(WebSocketMessagingStubFactoryTest, closedMessagingStubsAreRemovedFromMessagingStubFactory)
+{
     auto factory = std::make_shared<WebSocketMessagingStubFactory>();
-    auto address = std::make_shared<system::RoutingTypes::WebSocketClientAddress>(webSocketClientAddress);
-    auto addressCopy = std::make_shared<system::RoutingTypes::WebSocketClientAddress>(webSocketClientAddress);
+    auto address =
+            std::make_shared<system::RoutingTypes::WebSocketClientAddress>(webSocketClientAddress);
+    auto addressCopy =
+            std::make_shared<system::RoutingTypes::WebSocketClientAddress>(webSocketClientAddress);
     auto websocket = std::make_shared<MockWebSocketClient>();
-    websocket->registerDisconnectCallback([factory,addressCopy](){ factory->onMessagingStubClosed(*addressCopy); });
+    websocket->registerDisconnectCallback(
+            [factory, addressCopy]() { factory->onMessagingStubClosed(*addressCopy); });
 
-    factory->addClient(joynr::system::RoutingTypes::WebSocketClientAddress(*address), websocket->getSender());
+    factory->addClient(
+            joynr::system::RoutingTypes::WebSocketClientAddress(*address), websocket->getSender());
 
     auto messagingStubFactory = std::make_shared<MessagingStubFactory>();
     factory->registerOnMessagingStubClosedCallback([messagingStubFactory](
@@ -138,13 +156,15 @@ TEST_F(WebSocketMessagingStubFactoryTest, closedMessagingStubsAreRemovedFromMess
     messagingStubFactory->shutdown();
 }
 
-TEST_F(WebSocketMessagingStubFactoryTest, removeClientRemovesMessagingStub) {
+TEST_F(WebSocketMessagingStubFactoryTest, removeClientRemovesMessagingStub)
+{
     WebSocketMessagingStubFactory factory;
     auto websocket = std::make_shared<MockWebSocketClient>();
 
-    websocket->registerDisconnectCallback([](){});
+    websocket->registerDisconnectCallback([]() {});
 
-    factory.addClient(joynr::system::RoutingTypes::WebSocketClientAddress(webSocketClientAddress), websocket->getSender());
+    factory.addClient(joynr::system::RoutingTypes::WebSocketClientAddress(webSocketClientAddress),
+                      websocket->getSender());
     EXPECT_TRUE(factory.create(webSocketClientAddress).get() != nullptr);
     EXPECT_CALL(*std::dynamic_pointer_cast<MockWebSocketClient>(websocket), dtorCalled());
     factory.removeClient(webSocketClientAddress);

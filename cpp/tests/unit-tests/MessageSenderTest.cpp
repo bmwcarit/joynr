@@ -55,30 +55,34 @@ using ::testing::AllOf;
 using ::testing::Property;
 using namespace joynr;
 
-class MessageSenderTest : public ::testing::Test {
+class MessageSenderTest : public ::testing::Test
+{
 public:
-    MessageSenderTest() :
-        messageFactory(),
-        postFix(),
-        senderID(),
-        receiverID(),
-        requestID(),
-        qosSettings(),
-        mockDispatcher(std::make_shared<MockDispatcher>()),
-        mockMessagingStub(),
-        callBack(),
-        singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
-        mockMessageRouter(std::make_shared<MockMessageRouter>(singleThreadedIOService->getIOService())),
-        isLocalMessage(true)
+    MessageSenderTest()
+            : messageFactory(),
+              postFix(),
+              senderID(),
+              receiverID(),
+              requestID(),
+              qosSettings(),
+              mockDispatcher(std::make_shared<MockDispatcher>()),
+              mockMessagingStub(),
+              callBack(),
+              singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
+              mockMessageRouter(
+                      std::make_shared<MockMessageRouter>(singleThreadedIOService->getIOService())),
+              isLocalMessage(true)
     {
         singleThreadedIOService->start();
     }
 
-    ~MessageSenderTest() {
+    ~MessageSenderTest()
+    {
         singleThreadedIOService->stop();
     }
 
-    void SetUp(){
+    void SetUp()
+    {
         postFix = "_" + util::createUuid();
         senderID = "senderId" + postFix;
         receiverID = "receiverID" + postFix;
@@ -88,15 +92,8 @@ public:
 
     void expectRoutedMessage(const std::string& type, const std::string& payload)
     {
-        EXPECT_CALL(
-                    *(mockMessageRouter.get()),
-                    route(
-                        AllOf(
-                            MessageHasType(type),
-                            ImmutableMessageHasPayload(payload)
-                            )
-                        ,_)
-                    );
+        EXPECT_CALL(*(mockMessageRouter.get()),
+                    route(AllOf(MessageHasType(type), ImmutableMessageHasPayload(payload)), _));
     }
 
 protected:
@@ -116,8 +113,8 @@ protected:
 
 typedef MessageSenderTest MessageSenderDeathTest;
 
-
-TEST_F(MessageSenderTest, sendRequest_normal){
+TEST_F(MessageSenderTest, sendRequest_normal)
+{
     Request request;
     request.setMethodName("methodName");
     request.setParams(42, std::string("value"));
@@ -127,12 +124,7 @@ TEST_F(MessageSenderTest, sendRequest_normal){
     request.setParamDatatypes(paramDatatypes);
 
     MutableMessage mutableMessage = messageFactory.createRequest(
-                senderID,
-                receiverID,
-                qosSettings,
-                request,
-                isLocalMessage
-    );
+            senderID, receiverID, qosSettings, request, isLocalMessage);
 
     expectRoutedMessage(Message::VALUE_MESSAGE_TYPE_REQUEST(), mutableMessage.getPayload());
 
@@ -141,7 +133,8 @@ TEST_F(MessageSenderTest, sendRequest_normal){
     messageSender.sendRequest(senderID, receiverID, qosSettings, request, callBack, isLocalMessage);
 }
 
-TEST_F(MessageSenderTest, sendOneWayRequest_normal){
+TEST_F(MessageSenderTest, sendOneWayRequest_normal)
+{
     OneWayRequest oneWayRequest;
     oneWayRequest.setMethodName("methodName");
     oneWayRequest.setParams(42, std::string("value"));
@@ -151,40 +144,34 @@ TEST_F(MessageSenderTest, sendOneWayRequest_normal){
     oneWayRequest.setParamDatatypes(paramDatatypes);
 
     MutableMessage mutableMessage = messageFactory.createOneWayRequest(
-                senderID,
-                receiverID,
-                qosSettings,
-                oneWayRequest,
-                isLocalMessage
-    );
+            senderID, receiverID, qosSettings, oneWayRequest, isLocalMessage);
 
     expectRoutedMessage(Message::VALUE_MESSAGE_TYPE_ONE_WAY(), mutableMessage.getPayload());
 
     MessageSender messageSender(mockMessageRouter, nullptr);
     messageSender.registerDispatcher(mockDispatcher);
-    messageSender.sendOneWayRequest(senderID, receiverID, qosSettings, oneWayRequest, isLocalMessage);
+    messageSender.sendOneWayRequest(
+            senderID, receiverID, qosSettings, oneWayRequest, isLocalMessage);
 }
 
-TEST_F(MessageSenderTest, sendReply_normal){
+TEST_F(MessageSenderTest, sendReply_normal)
+{
     MessageSender messageSender(mockMessageRouter, nullptr);
     messageSender.registerDispatcher(mockDispatcher);
     Reply reply;
     reply.setRequestReplyId(util::createUuid());
     reply.setResponse(std::string("response"));
 
-    MutableMessage mutableMessage = messageFactory.createReply(
-                senderID,
-                receiverID,
-                qosSettings,
-                {},
-                reply);
+    MutableMessage mutableMessage =
+            messageFactory.createReply(senderID, receiverID, qosSettings, {}, reply);
 
     expectRoutedMessage(Message::VALUE_MESSAGE_TYPE_REPLY(), mutableMessage.getPayload());
 
     messageSender.sendReply(senderID, receiverID, qosSettings, {}, reply);
 }
 
-TEST_F(MessageSenderTest, sendSubscriptionRequest_normal){
+TEST_F(MessageSenderTest, sendSubscriptionRequest_normal)
+{
     std::int64_t period = 2000;
     std::int64_t validity = 100000;
     std::int64_t publicationTtl = 1000;
@@ -197,21 +184,20 @@ TEST_F(MessageSenderTest, sendSubscriptionRequest_normal){
     subscriptionRequest.setQos(qos);
 
     MutableMessage mutableMessage = messageFactory.createSubscriptionRequest(
-                senderID,
-                receiverID,
-                qosSettings,
-                subscriptionRequest,
-                isLocalMessage);
+            senderID, receiverID, qosSettings, subscriptionRequest, isLocalMessage);
 
-    expectRoutedMessage(Message::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST(), mutableMessage.getPayload());
+    expectRoutedMessage(
+            Message::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST(), mutableMessage.getPayload());
 
     MessageSender messageSender(mockMessageRouter, nullptr);
     messageSender.registerDispatcher(mockDispatcher);
 
-    messageSender.sendSubscriptionRequest(senderID, receiverID, qosSettings, subscriptionRequest, isLocalMessage);
+    messageSender.sendSubscriptionRequest(
+            senderID, receiverID, qosSettings, subscriptionRequest, isLocalMessage);
 }
 
-TEST_F(MessageSenderTest, sendBroadcastSubscriptionRequest_normal){
+TEST_F(MessageSenderTest, sendBroadcastSubscriptionRequest_normal)
+{
     std::int64_t minInterval = 2000;
     std::int64_t validity = 100000;
     std::int64_t publicationTtl = 1000;
@@ -226,22 +212,21 @@ TEST_F(MessageSenderTest, sendBroadcastSubscriptionRequest_normal){
     subscriptionRequest.setQos(qos);
 
     MutableMessage mutableMessage = messageFactory.createBroadcastSubscriptionRequest(
-                senderID,
-                receiverID,
-                qosSettings,
-                subscriptionRequest,
-                isLocalMessage);
+            senderID, receiverID, qosSettings, subscriptionRequest, isLocalMessage);
 
-    expectRoutedMessage(Message::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST(), mutableMessage.getPayload());
+    expectRoutedMessage(Message::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST(),
+                        mutableMessage.getPayload());
 
     MessageSender messageSender(mockMessageRouter, nullptr);
     messageSender.registerDispatcher(mockDispatcher);
 
-    messageSender.sendBroadcastSubscriptionRequest(senderID, receiverID, qosSettings, subscriptionRequest, isLocalMessage);
+    messageSender.sendBroadcastSubscriptionRequest(
+            senderID, receiverID, qosSettings, subscriptionRequest, isLocalMessage);
 }
 
-//TODO implement sending a reply to a subscription request!
-TEST_F(MessageSenderTest, DISABLED_sendSubscriptionReply_normal){
+// TODO implement sending a reply to a subscription request!
+TEST_F(MessageSenderTest, DISABLED_sendSubscriptionReply_normal)
+{
     std::string payload("subscriptionReply");
 
     expectRoutedMessage(Message::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY(), payload);
@@ -249,10 +234,12 @@ TEST_F(MessageSenderTest, DISABLED_sendSubscriptionReply_normal){
     MessageSender messageSender(mockMessageRouter, nullptr);
     messageSender.registerDispatcher(mockDispatcher);
 
-//    messageSender.sendSubscriptionReply(util::createUuid(), payload, senderID, receiverID, qosSettings);
+    //    messageSender.sendSubscriptionReply(util::createUuid(), payload, senderID, receiverID,
+    //    qosSettings);
 }
 
-TEST_F(MessageSenderTest, sendPublication_normal){
+TEST_F(MessageSenderTest, sendPublication_normal)
+{
     MessageSender messageSender(mockMessageRouter, nullptr);
     messageSender.registerDispatcher(mockDispatcher);
     SubscriptionPublication publication;
@@ -260,17 +247,16 @@ TEST_F(MessageSenderTest, sendPublication_normal){
     publication.setResponse(std::string("publication"));
 
     MutableMessage mutableMessage = messageFactory.createSubscriptionPublication(
-                senderID,
-                receiverID,
-                qosSettings,
-                publication);
+            senderID, receiverID, qosSettings, publication);
 
     expectRoutedMessage(Message::VALUE_MESSAGE_TYPE_PUBLICATION(), mutableMessage.getPayload());
 
-    messageSender.sendSubscriptionPublication(senderID, receiverID, qosSettings, std::move(publication));
+    messageSender.sendSubscriptionPublication(
+            senderID, receiverID, qosSettings, std::move(publication));
 }
 
-TEST_F(MessageSenderTest, sendMulticastSubscriptionRequest) {
+TEST_F(MessageSenderTest, sendMulticastSubscriptionRequest)
+{
     const std::string senderParticipantId("senderParticipantId");
     const std::string receiverParticipantId("receiverParticipantId");
     MessagingQos messagingQos(1, MessagingQosEffort::Enum::BEST_EFFORT);
@@ -282,21 +268,21 @@ TEST_F(MessageSenderTest, sendMulticastSubscriptionRequest) {
     subscriptionRequest.setQos(subscriptionQos);
     subscriptionRequest.setMulticastId("multicastId");
 
-    MutableMessage mutableMessage = messageFactory.createMulticastSubscriptionRequest(
-            senderParticipantId,
-            receiverParticipantId,
-            messagingQos,
-            subscriptionRequest,
-            isLocalMessage);
+    MutableMessage mutableMessage =
+            messageFactory.createMulticastSubscriptionRequest(senderParticipantId,
+                                                              receiverParticipantId,
+                                                              messagingQos,
+                                                              subscriptionRequest,
+                                                              isLocalMessage);
 
-    expectRoutedMessage(Message::VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST(), mutableMessage.getPayload());
+    expectRoutedMessage(Message::VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST(),
+                        mutableMessage.getPayload());
 
     MessageSender messageSender(mockMessageRouter, nullptr);
 
-    messageSender.sendMulticastSubscriptionRequest(
-            senderParticipantId,
-            receiverParticipantId,
-            messagingQos,
-            subscriptionRequest,
-            isLocalMessage);
+    messageSender.sendMulticastSubscriptionRequest(senderParticipantId,
+                                                   receiverParticipantId,
+                                                   messagingQos,
+                                                   subscriptionRequest,
+                                                   isLocalMessage);
 }

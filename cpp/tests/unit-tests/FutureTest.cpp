@@ -28,11 +28,11 @@
 using namespace ::testing;
 using namespace joynr;
 
-class FutureTest : public ::testing::Test {
+class FutureTest : public ::testing::Test
+{
 public:
-    FutureTest()
-        : intFuture(),
-          voidFuture() {
+    FutureTest() : intFuture(), voidFuture()
+    {
     }
 
 protected:
@@ -40,7 +40,8 @@ protected:
     Future<void> voidFuture;
 };
 
-TEST_F(FutureTest, getValueAndStatusAfterResultReceived) {
+TEST_F(FutureTest, getValueAndStatusAfterResultReceived)
+{
     intFuture.onSuccess(10);
     int actualValue;
 
@@ -60,21 +61,24 @@ TEST_F(FutureTest, getValueAndStatusAfterResultReceived) {
     ASSERT_EQ(StatusCodeEnum::SUCCESS, intFuture.getStatus());
 }
 
-TEST_F(FutureTest, isOKReturnsTrueWhenStatusIsOk) {
+TEST_F(FutureTest, isOKReturnsTrueWhenStatusIsOk)
+{
     ASSERT_FALSE(intFuture.isOk());
     intFuture.onSuccess(10);
     ASSERT_TRUE(intFuture.isOk());
 }
 
-TEST_F(FutureTest, getStatusAndErrorAfterFailiureReceived) {
-    intFuture.onError(std::make_shared<exceptions::ProviderRuntimeException>("exceptionMessageIntFuture"));
+TEST_F(FutureTest, getStatusAndErrorAfterFailiureReceived)
+{
+    intFuture.onError(
+            std::make_shared<exceptions::ProviderRuntimeException>("exceptionMessageIntFuture"));
     ASSERT_EQ(StatusCodeEnum::ERROR, intFuture.getStatus());
     int actualValue;
 
     // get error without timeout
     try {
         intFuture.get(actualValue);
-        ADD_FAILURE()<< "expected ProviderRuntimeException";
+        ADD_FAILURE() << "expected ProviderRuntimeException";
     } catch (const exceptions::ProviderRuntimeException& e) {
         ASSERT_EQ(e.getMessage(), "exceptionMessageIntFuture");
     }
@@ -82,25 +86,27 @@ TEST_F(FutureTest, getStatusAndErrorAfterFailiureReceived) {
     // get error with timeout
     try {
         intFuture.get(1, actualValue);
-        ADD_FAILURE()<< "expected ProviderRuntimeException";
+        ADD_FAILURE() << "expected ProviderRuntimeException";
     } catch (const exceptions::ProviderRuntimeException& e) {
         ASSERT_EQ(e.getMessage(), "exceptionMessageIntFuture");
     }
 }
 
-TEST_F(FutureTest, getValueAndStatusBeforeOperationFinishes) {
+TEST_F(FutureTest, getValueAndStatusBeforeOperationFinishes)
+{
     ASSERT_EQ(StatusCodeEnum::IN_PROGRESS, intFuture.getStatus());
 
     int value;
     try {
         intFuture.get(1, value);
-        ADD_FAILURE()<< "expected JoynrTimeOutException";
+        ADD_FAILURE() << "expected JoynrTimeOutException";
     } catch (const exceptions::JoynrTimeOutException& e) {
         ASSERT_EQ(e.getMessage(), "Request did not finish in time");
     }
 }
 
-TEST_F(FutureTest, getValueAndStatusForVoidAfterResultReceived) {
+TEST_F(FutureTest, getValueAndStatusForVoidAfterResultReceived)
+{
     voidFuture.onSuccess();
     ASSERT_EQ(StatusCodeEnum::SUCCESS, voidFuture.getStatus());
 
@@ -117,14 +123,16 @@ TEST_F(FutureTest, getValueAndStatusForVoidAfterResultReceived) {
     ASSERT_EQ(StatusCodeEnum::SUCCESS, voidFuture.getStatus());
 }
 
-TEST_F(FutureTest, getStatusAndErrorForVoidAfterFailureReceived) {
-    voidFuture.onError(std::make_shared<exceptions::ProviderRuntimeException>("exceptionMessageVoidFuture"));
+TEST_F(FutureTest, getStatusAndErrorForVoidAfterFailureReceived)
+{
+    voidFuture.onError(
+            std::make_shared<exceptions::ProviderRuntimeException>("exceptionMessageVoidFuture"));
     ASSERT_EQ(StatusCodeEnum::ERROR, voidFuture.getStatus());
 
     // get error without timeout
     try {
         voidFuture.get();
-        ADD_FAILURE()<< "expected ProviderRuntimeException";
+        ADD_FAILURE() << "expected ProviderRuntimeException";
     } catch (const exceptions::ProviderRuntimeException& e) {
         ASSERT_EQ(e.getMessage(), "exceptionMessageVoidFuture");
     }
@@ -132,36 +140,39 @@ TEST_F(FutureTest, getStatusAndErrorForVoidAfterFailureReceived) {
     // get error with timeout
     try {
         voidFuture.get(1);
-        ADD_FAILURE()<< "expected ProviderRuntimeException";
+        ADD_FAILURE() << "expected ProviderRuntimeException";
     } catch (const exceptions::ProviderRuntimeException& e) {
         ASSERT_EQ(e.getMessage(), "exceptionMessageVoidFuture");
     }
 }
 
-TEST_F(FutureTest, getValueAndStatusForVoidBeforeOperationFinishes) {
+TEST_F(FutureTest, getValueAndStatusForVoidBeforeOperationFinishes)
+{
     ASSERT_EQ(StatusCodeEnum::IN_PROGRESS, voidFuture.getStatus());
 
     try {
-            voidFuture.get(1);
-            ADD_FAILURE()<< "expected JoynrTimeOutException";
-        } catch (const exceptions::JoynrTimeOutException& e) {
-            ASSERT_EQ(e.getMessage(), "Request did not finish in time");
-        }
+        voidFuture.get(1);
+        ADD_FAILURE() << "expected JoynrTimeOutException";
+    } catch (const exceptions::JoynrTimeOutException& e) {
+        ASSERT_EQ(e.getMessage(), "Request did not finish in time");
+    }
 }
 
-TEST_F(FutureTest, waitForFinishWithTimer) {
+TEST_F(FutureTest, waitForFinishWithTimer)
+{
     try {
         intFuture.wait(5);
-        FAIL()<< "expected JoynrTimeOutException";
+        FAIL() << "expected JoynrTimeOutException";
     } catch (const exceptions::JoynrTimeOutException& e) {
         EXPECT_EQ(StatusCodeEnum::WAIT_TIMED_OUT, intFuture.getStatus());
     }
 }
 
-TEST_F(FutureTest, waitForFinishWithTimerForVoid) {
+TEST_F(FutureTest, waitForFinishWithTimerForVoid)
+{
     try {
         voidFuture.wait(5);
-        FAIL()<< "expected JoynrTimeOutException";
+        FAIL() << "expected JoynrTimeOutException";
     } catch (const exceptions::JoynrTimeOutException& e) {
         EXPECT_EQ(StatusCodeEnum::WAIT_TIMED_OUT, voidFuture.getStatus());
     }

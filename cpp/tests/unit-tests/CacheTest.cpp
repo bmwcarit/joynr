@@ -37,17 +37,19 @@ using namespace joynr;
 static const std::string defaultCacheKey("greeting");
 static const std::string defaultCacheValue("Hello");
 
-class CacheTest : public ::testing::Test {
+class CacheTest : public ::testing::Test
+{
 public:
-
     CacheTest() = default;
 
-    void SetUp() {
+    void SetUp()
+    {
         std::string* strPtr = new std::string(defaultCacheValue);
         cache.insert(defaultCacheKey, strPtr);
     }
 
-    void TearDown() {
+    void TearDown()
+    {
         cache.clear();
         assert(cache.size() == 0);
     }
@@ -57,23 +59,27 @@ protected:
     Cache<std::string, std::string> cache;
 };
 
-TEST_F(CacheTest, checkContains) {
+TEST_F(CacheTest, checkContains)
+{
     EXPECT_TRUE(cache.contains(defaultCacheKey));
 }
 
-TEST_F(CacheTest, checkObject) {
+TEST_F(CacheTest, checkObject)
+{
     std::string* stringPtr = cache.object(defaultCacheKey);
     EXPECT_EQ(*stringPtr, defaultCacheValue);
 }
 
-TEST_F(CacheTest, checkInsert) {
+TEST_F(CacheTest, checkInsert)
+{
     cache.setCacheCapacity(2);
     cache.insert("who", new std::string("World"));
     ASSERT_EQ(cache.size(), 2);
     ASSERT_EQ(*cache.object("who"), "World");
 }
 
-TEST_F(CacheTest, checkInsertOverMaxCost) {
+TEST_F(CacheTest, checkInsertOverMaxCost)
+{
     cache.setCacheCapacity(2);
     cache.insert("who", new std::string("World"));
     cache.insert("who1", new std::string("CarIT"));
@@ -81,7 +87,8 @@ TEST_F(CacheTest, checkInsertOverMaxCost) {
     ASSERT_EQ(*(cache.object("who1")), "CarIT");
 }
 
-TEST_F(CacheTest, checkRemove) {
+TEST_F(CacheTest, checkRemove)
+{
     cache.setCacheCapacity(3);
     cache.insert("who", new std::string("World"));
     cache.insert("who1", new std::string("CarIT"));
@@ -91,7 +98,8 @@ TEST_F(CacheTest, checkRemove) {
     ASSERT_EQ(*cache.object("who"), "World");
 }
 
-TEST_F(CacheTest, checkKeys) {
+TEST_F(CacheTest, checkKeys)
+{
     cache.setCacheCapacity(2);
     cache.insert("who", new std::string("World"));
     ASSERT_EQ(cache.size(), 2);

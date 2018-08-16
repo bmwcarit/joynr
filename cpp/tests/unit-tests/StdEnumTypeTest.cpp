@@ -28,20 +28,21 @@
 
 using namespace joynr::tests::testTypes;
 
-class StdEnumTypeTest : public testing::Test {
+class StdEnumTypeTest : public testing::Test
+{
 public:
-    StdEnumTypeTest() :
-            testEnumZero(TestEnum::ZERO),
-            testEnumZeroOther(TestEnum::ZERO),
-            testEnumOne(TestEnum::ONE),
-            testEnumOneOther(TestEnum::ONE),
-            testEnumTwo(TestEnum::TWO)
-    {}
+    StdEnumTypeTest()
+            : testEnumZero(TestEnum::ZERO),
+              testEnumZeroOther(TestEnum::ZERO),
+              testEnumOne(TestEnum::ONE),
+              testEnumOneOther(TestEnum::ONE),
+              testEnumTwo(TestEnum::TWO)
+    {
+    }
 
     virtual ~StdEnumTypeTest() = default;
 
 protected:
-
     TestEnum::Enum testEnumZero;
     TestEnum::Enum testEnumZeroOther;
     TestEnum::Enum testEnumOne;
@@ -49,65 +50,77 @@ protected:
     TestEnum::Enum testEnumTwo;
 };
 
-TEST_F(StdEnumTypeTest, createEnum) {
+TEST_F(StdEnumTypeTest, createEnum)
+{
     TestEnum::Enum testEnum(TestEnum::ONE);
     EXPECT_EQ(testEnum, TestEnum::ONE);
     EXPECT_TRUE(testEnum == TestEnum::ONE);
 }
 
-TEST_F(StdEnumTypeTest, assignEnum) {
+TEST_F(StdEnumTypeTest, assignEnum)
+{
     TestEnum::Enum testEnum(TestEnum::ZERO);
     EXPECT_NE(testEnumOne, testEnum);
     testEnum = testEnumOne;
     EXPECT_EQ(testEnumOne, testEnum);
 }
 
-TEST_F(StdEnumTypeTest, assignEnumLiteral) {
+TEST_F(StdEnumTypeTest, assignEnumLiteral)
+{
     TestEnum::Enum testEnum(TestEnum::ZERO);
     EXPECT_NE(TestEnum::ONE, testEnum);
     testEnum = TestEnum::ONE;
     EXPECT_EQ(TestEnum::ONE, testEnum);
 }
 
-TEST_F(StdEnumTypeTest, equalsOperator) {
+TEST_F(StdEnumTypeTest, equalsOperator)
+{
     EXPECT_EQ(testEnumZero, testEnumZeroOther);
     EXPECT_EQ(testEnumOne, testEnumOneOther);
 }
 
-TEST_F(StdEnumTypeTest, notEqualsOperator) {
+TEST_F(StdEnumTypeTest, notEqualsOperator)
+{
     EXPECT_NE(testEnumZero, testEnumOne);
 }
 
-TEST_F(StdEnumTypeTest, greaterThanOperator) {
+TEST_F(StdEnumTypeTest, greaterThanOperator)
+{
     EXPECT_GT(testEnumOne, testEnumZero);
 }
 
-TEST_F(StdEnumTypeTest, greaterEqualOperator) {
+TEST_F(StdEnumTypeTest, greaterEqualOperator)
+{
     EXPECT_GE(testEnumOne, testEnumZero);
     EXPECT_GE(testEnumOne, testEnumOne);
 }
 
-TEST_F(StdEnumTypeTest, lessThanOperator) {
+TEST_F(StdEnumTypeTest, lessThanOperator)
+{
     EXPECT_LT(testEnumZero, testEnumOne);
 }
 
-TEST_F(StdEnumTypeTest, lessEqualOperator) {
+TEST_F(StdEnumTypeTest, lessEqualOperator)
+{
     EXPECT_LE(testEnumZero, testEnumOne);
     EXPECT_LE(testEnumOne, testEnumOne);
 }
 
-TEST_F(StdEnumTypeTest, getEnum) {
+TEST_F(StdEnumTypeTest, getEnum)
+{
     std::string literal = TestEnum::getLiteral(TestEnum::ZERO);
     EXPECT_EQ(TestEnum::ZERO, TestEnum::getEnum(literal));
     std::uint32_t ordinal = TestEnum::getOrdinal(TestEnum::ZERO);
     EXPECT_EQ(ordinal, TestEnum::getEnum(literal));
 }
 
-TEST_F(StdEnumTypeTest, getTypeName) {
+TEST_F(StdEnumTypeTest, getTypeName)
+{
     EXPECT_EQ("joynr.tests.testTypes.TestEnum", TestEnum::getTypeName());
 }
 
-TEST_F(StdEnumTypeTest, baseAndExtendedOrdinalsAreEqual) {
+TEST_F(StdEnumTypeTest, baseAndExtendedOrdinalsAreEqual)
+{
     EXPECT_EQ(TestEnum::ZERO, TestEnumExtended::ZERO);
     TestEnumExtended::Enum exZero(TestEnumExtended::ZERO);
     EXPECT_EQ(testEnumZero, exZero);
@@ -122,7 +135,8 @@ TEST_F(StdEnumTypeTest, baseAndExtendedOrdinalsAreEqual) {
 #pragma GCC diagnostic pop
 }
 
-TEST_F(StdEnumTypeTest, hash) {
+TEST_F(StdEnumTypeTest, hash)
+{
     std::hash<TestEnum::Enum> hashFunctionObj;
     EXPECT_EQ(hashFunctionObj(testEnumZero), hashFunctionObj(testEnumZeroOther));
     EXPECT_NE(hashFunctionObj(testEnumZero), hashFunctionObj(testEnumOne));
@@ -131,7 +145,8 @@ TEST_F(StdEnumTypeTest, hash) {
     EXPECT_NE(hashFunctionObj(testEnumOne), hashFunctionObj(testEnumTwo));
 }
 
-TEST_F(StdEnumTypeTest, versionIsSetInEnumInsideInterface) {
+TEST_F(StdEnumTypeTest, versionIsSetInEnumInsideInterface)
+{
     std::uint32_t expectedMajorVersion = 47;
     std::uint32_t expectedMinorVersion = 11;
 
@@ -139,7 +154,8 @@ TEST_F(StdEnumTypeTest, versionIsSetInEnumInsideInterface) {
     EXPECT_EQ(expectedMinorVersion, joynr::tests::EnumInsideInterface::MINOR_VERSION);
 }
 
-TEST_F(StdEnumTypeTest, defaultVersionIsSetInEnumInsideInterfaceWithoutVersion) {
+TEST_F(StdEnumTypeTest, defaultVersionIsSetInEnumInsideInterfaceWithoutVersion)
+{
     std::uint32_t expectedMajorVersion = 0;
     std::uint32_t expectedMinorVersion = 0;
 
@@ -147,7 +163,8 @@ TEST_F(StdEnumTypeTest, defaultVersionIsSetInEnumInsideInterfaceWithoutVersion) 
     EXPECT_EQ(expectedMinorVersion, joynr::tests::EnumInsideInterfaceWithoutVersion::MINOR_VERSION);
 }
 
-TEST_F(StdEnumTypeTest, versionIsSetInEnumInsideTypeCollection) {
+TEST_F(StdEnumTypeTest, versionIsSetInEnumInsideTypeCollection)
+{
     std::uint32_t expectedMajorVersion = 48;
     std::uint32_t expectedMinorVersion = 12;
 
@@ -155,10 +172,15 @@ TEST_F(StdEnumTypeTest, versionIsSetInEnumInsideTypeCollection) {
     EXPECT_EQ(expectedMinorVersion, joynr::tests::testTypes::TestEnum::MINOR_VERSION);
 }
 
-TEST_F(StdEnumTypeTest, defaultVersionIsSetInEnumInsideTypeCollectionWithoutVersion) {
+TEST_F(StdEnumTypeTest, defaultVersionIsSetInEnumInsideTypeCollectionWithoutVersion)
+{
     std::uint32_t expectedMajorVersion = 0;
     std::uint32_t expectedMinorVersion = 0;
 
-    EXPECT_EQ(expectedMajorVersion, joynr::types::TestTypesWithoutVersion::EnumInsideTypeCollectionWithoutVersion::MAJOR_VERSION);
-    EXPECT_EQ(expectedMinorVersion, joynr::types::TestTypesWithoutVersion::EnumInsideTypeCollectionWithoutVersion::MINOR_VERSION);
+    EXPECT_EQ(expectedMajorVersion,
+              joynr::types::TestTypesWithoutVersion::EnumInsideTypeCollectionWithoutVersion::
+                      MAJOR_VERSION);
+    EXPECT_EQ(expectedMinorVersion,
+              joynr::types::TestTypesWithoutVersion::EnumInsideTypeCollectionWithoutVersion::
+                      MINOR_VERSION);
 }

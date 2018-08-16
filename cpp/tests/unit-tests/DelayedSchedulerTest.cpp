@@ -39,15 +39,16 @@ using ::testing::StrictMock;
 // Expected accuracy of the timer in milliseconds
 static const std::uint64_t timerAccuracy_ms = 15U;
 
-class SimpleDelayedScheduler :
-    public DelayedScheduler
+class SimpleDelayedScheduler : public DelayedScheduler
 {
 
 public:
-
     SimpleDelayedScheduler(std::shared_ptr<SingleThreadedIOService> singleThreadedIOService)
-        : DelayedScheduler(std::bind(&SimpleDelayedScheduler::workAvailable, this, std::placeholders::_1), singleThreadedIOService->getIOService()),
-          est_ms(0)
+            : DelayedScheduler(std::bind(&SimpleDelayedScheduler::workAvailable,
+                                         this,
+                                         std::placeholders::_1),
+                               singleThreadedIOService->getIOService()),
+              est_ms(0)
     {
     }
 
@@ -55,12 +56,12 @@ public:
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-local-typedefs"
-    MOCK_CONST_METHOD1(workAvailableCalled, void (std::shared_ptr<Runnable>));
-    MOCK_CONST_METHOD0(workAvailableInTime, void ());
+    MOCK_CONST_METHOD1(workAvailableCalled, void(std::shared_ptr<Runnable>));
+    MOCK_CONST_METHOD0(workAvailableInTime, void());
 #pragma GCC diagnostic pop
 
     DelayedScheduler::RunnableHandle schedule(std::shared_ptr<Runnable> runnable,
-                  std::chrono::milliseconds delay)
+                                              std::chrono::milliseconds delay)
     {
         RunnableHandle currentHandle = DelayedScheduler::schedule(runnable, delay);
         est_ms = TimeUtils::getCurrentMillisSinceEpoch() + delay.count();
@@ -72,25 +73,21 @@ public:
         const std::uint64_t now_ms = TimeUtils::getCurrentMillisSinceEpoch();
         workAvailableCalled(runnable);
 
-        if(est_ms > 0)
-        {
+        if (est_ms > 0) {
             const std::uint64_t diff_ms = (now_ms > est_ms) ? now_ms - est_ms : est_ms - now_ms;
 
             JOYNR_LOG_TRACE(logger(), "Runnable is available");
-            JOYNR_LOG_TRACE(logger(), " ETA        : {}",est_ms);
-            JOYNR_LOG_TRACE(logger(), " current    : {}",now_ms);
-            JOYNR_LOG_TRACE(logger(), " difference : {}",diff_ms);
+            JOYNR_LOG_TRACE(logger(), " ETA        : {}", est_ms);
+            JOYNR_LOG_TRACE(logger(), " current    : {}", now_ms);
+            JOYNR_LOG_TRACE(logger(), " difference : {}", diff_ms);
 
-            if (diff_ms <= timerAccuracy_ms)
-            {
+            if (diff_ms <= timerAccuracy_ms) {
                 workAvailableInTime();
             }
-        }
-        else
-        {
+        } else {
             JOYNR_LOG_TRACE(logger(), "No delay given but work available called.");
         }
-        //if (runnable->isDeleteOnExit()) {
+        // if (runnable->isDeleteOnExit()) {
         //    delete runnable;
         //}
     }
@@ -144,7 +141,8 @@ TEST(DelayedSchedulerTest, testAccuracyOfDelayedScheduler)
     auto runnable1 = std::make_shared<StrictMock<MockRunnable>>();
     scheduler->schedule(runnable1, std::chrono::milliseconds(5));
 
-    EXPECT_CALL(*scheduler, workAvailableCalled(std::dynamic_pointer_cast<Runnable>(runnable1))).Times(1);
+    EXPECT_CALL(*scheduler, workAvailableCalled(std::dynamic_pointer_cast<Runnable>(runnable1)))
+            .Times(1);
     EXPECT_CALL(*scheduler, workAvailableInTime()).Times(1).WillOnce(ReleaseSemaphore(&semaphore));
 
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));
@@ -164,7 +162,9 @@ TEST(DelayedSchedulerTest, avoidCallingDtorOfRunnablesAfterSchedulerHasExpired)
     auto runnable1 = std::make_shared<StrictMock<MockRunnable>>();
     scheduler->schedule(runnable1, std::chrono::milliseconds(5));
 
-    EXPECT_CALL(*scheduler, workAvailableCalled(std::dynamic_pointer_cast<Runnable>(runnable1))).Times(1).WillOnce(ReleaseSemaphore(&semaphore));
+    EXPECT_CALL(*scheduler, workAvailableCalled(std::dynamic_pointer_cast<Runnable>(runnable1)))
+            .Times(1)
+            .WillOnce(ReleaseSemaphore(&semaphore));
 
     EXPECT_CALL(*runnable1, dtorCalled()).Times(1);
 
@@ -180,10 +180,12 @@ TEST(DelayedSchedulerTest, scheduleAndUnscheduleRunnable_NoCallToRunnable)
     singleThreadedIOService->start();
     auto scheduler = std::make_shared<SimpleDelayedScheduler>(singleThreadedIOService);
     auto runnable1 = std::make_shared<StrictMock<MockRunnable>>();
-    DelayedScheduler::RunnableHandle handle = scheduler->schedule(runnable1, std::chrono::milliseconds(50));
+    DelayedScheduler::RunnableHandle handle =
+            scheduler->schedule(runnable1, std::chrono::milliseconds(50));
 
     EXPECT_CALL(*runnable1, dtorCalled()).Times(1);
-    EXPECT_CALL(*scheduler, workAvailableCalled(std::dynamic_pointer_cast<Runnable>(runnable1))).Times(0);
+    EXPECT_CALL(*scheduler, workAvailableCalled(std::dynamic_pointer_cast<Runnable>(runnable1)))
+            .Times(0);
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
     scheduler->unschedule(handle);
 
@@ -200,7 +202,8 @@ TEST(DelayedSchedulerTest, scheduleAndUnscheduleRunnable_CallDtorOnUnschedule)
     singleThreadedIOService->start();
     auto scheduler = std::make_shared<SimpleDelayedScheduler>(singleThreadedIOService);
     auto runnable1 = std::make_shared<StrictMock<MockRunnable>>();
-    DelayedScheduler::RunnableHandle handle = scheduler->schedule(runnable1, std::chrono::milliseconds(50));
+    DelayedScheduler::RunnableHandle handle =
+            scheduler->schedule(runnable1, std::chrono::milliseconds(50));
 
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
 

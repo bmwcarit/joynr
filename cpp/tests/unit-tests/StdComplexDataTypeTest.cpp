@@ -38,85 +38,83 @@
 
 using namespace joynr::types;
 
-class StdComplexDataTypeTest : public testing::Test {
+class StdComplexDataTypeTest : public testing::Test
+{
 public:
-    StdComplexDataTypeTest() :
-            tInt8(-20),
-            tUInt8(0x42),
-            tInt16(-32768),
-            tUInt16(65535),
-            tInt32(-2147483648),
-            tUInt32(4294967295),
-            tInt64(6294967295),
-            tUInt64(-61474836480),
-            tDouble(0.00000000001),
-            tFloat(0.00001),
-            tString("München"),
-            tBoolean(true),
-            tByteBuffer({0x01, 0x02, 0x03, 0x04, 0x05}),
-            tUInt8Array({0xFF, 0xFE, 0xFD, 0xFC}),
-            tEnum(TestTypes::TEnum::TLITERALA),
-            tEnumArray({TestTypes::TEnum::TLITERALA, TestTypes::TEnum::TLITERALB}),
-            tStringArray({"New York", "London", "Berlin", "Tokio"}),
-            word(TestTypes::Word()),
-            wordArray({TestTypes::Word()}),
-            stringMap(),
-            typeDefForTStruct(),
-            tEverything1(
-                    tInt8,
-                    tUInt8,
-                    tInt16,
-                    tUInt16,
-                    tInt32,
-                    tUInt32,
-                    tInt64,
-                    tUInt64,
-                    tDouble,
-                    tFloat,
-                    tString,
-                    tBoolean,
-                    tByteBuffer,
-                    tUInt8Array,
-                    tEnum,
-                    tEnumArray,
-                    tStringArray,
-                    word,
-                    wordArray,
-                    stringMap,
-                    typeDefForTStruct
-                ),
-            tBooleanExtended(false),
-            tStringExtended("extended"),
-            tEverythingExtended1(
-                    tInt8,
-                    tUInt8,
-                    tInt16,
-                    tUInt16,
-                    tInt32,
-                    tUInt32,
-                    tInt64,
-                    tUInt64,
-                    tDouble,
-                    tFloat,
-                    tString,
-                    tBoolean,
-                    tByteBuffer,
-                    tUInt8Array,
-                    tEnum,
-                    tEnumArray,
-                    tStringArray,
-                    word,
-                    wordArray,
-                    stringMap,
-                    typeDefForTStruct,
-                    tBooleanExtended,
-                    tStringExtended)
-    {}
+    StdComplexDataTypeTest()
+            : tInt8(-20),
+              tUInt8(0x42),
+              tInt16(-32768),
+              tUInt16(65535),
+              tInt32(-2147483648),
+              tUInt32(4294967295),
+              tInt64(6294967295),
+              tUInt64(-61474836480),
+              tDouble(0.00000000001),
+              tFloat(0.00001),
+              tString("München"),
+              tBoolean(true),
+              tByteBuffer({0x01, 0x02, 0x03, 0x04, 0x05}),
+              tUInt8Array({0xFF, 0xFE, 0xFD, 0xFC}),
+              tEnum(TestTypes::TEnum::TLITERALA),
+              tEnumArray({TestTypes::TEnum::TLITERALA, TestTypes::TEnum::TLITERALB}),
+              tStringArray({"New York", "London", "Berlin", "Tokio"}),
+              word(TestTypes::Word()),
+              wordArray({TestTypes::Word()}),
+              stringMap(),
+              typeDefForTStruct(),
+              tEverything1(tInt8,
+                           tUInt8,
+                           tInt16,
+                           tUInt16,
+                           tInt32,
+                           tUInt32,
+                           tInt64,
+                           tUInt64,
+                           tDouble,
+                           tFloat,
+                           tString,
+                           tBoolean,
+                           tByteBuffer,
+                           tUInt8Array,
+                           tEnum,
+                           tEnumArray,
+                           tStringArray,
+                           word,
+                           wordArray,
+                           stringMap,
+                           typeDefForTStruct),
+              tBooleanExtended(false),
+              tStringExtended("extended"),
+              tEverythingExtended1(tInt8,
+                                   tUInt8,
+                                   tInt16,
+                                   tUInt16,
+                                   tInt32,
+                                   tUInt32,
+                                   tInt64,
+                                   tUInt64,
+                                   tDouble,
+                                   tFloat,
+                                   tString,
+                                   tBoolean,
+                                   tByteBuffer,
+                                   tUInt8Array,
+                                   tEnum,
+                                   tEnumArray,
+                                   tStringArray,
+                                   word,
+                                   wordArray,
+                                   stringMap,
+                                   typeDefForTStruct,
+                                   tBooleanExtended,
+                                   tStringExtended)
+    {
+    }
 
     virtual ~StdComplexDataTypeTest() = default;
 
 protected:
-
     std::int8_t tInt8;
     std::uint8_t tUInt8;
     std::int16_t tInt16;
@@ -130,12 +128,12 @@ protected:
     std::string tString;
     bool tBoolean;
     joynr::ByteBuffer tByteBuffer;
-    std::vector<std::uint8_t>  tUInt8Array;
+    std::vector<std::uint8_t> tUInt8Array;
     TestTypes::TEnum::Enum tEnum;
-    std::vector<joynr::types::TestTypes::TEnum::Enum>  tEnumArray;
-    std::vector<std::string>  tStringArray;
+    std::vector<joynr::types::TestTypes::TEnum::Enum> tEnumArray;
+    std::vector<std::string> tStringArray;
     TestTypes::Word word;
-    std::vector<TestTypes::Word>  wordArray;
+    std::vector<TestTypes::Word> wordArray;
     TestTypes::TStringKeyMap stringMap;
     TestTypes::TypeDefForTStruct typeDefForTStruct;
     TestTypes::TEverythingStruct tEverything1;
@@ -145,7 +143,8 @@ protected:
     TestTypes::TEverythingExtendedStruct tEverythingExtended1;
 };
 
-TEST_F(StdComplexDataTypeTest, createComplexDataType) {
+TEST_F(StdComplexDataTypeTest, createComplexDataType)
+{
     EXPECT_EQ(tEverything1.getTBoolean(), tBoolean);
     EXPECT_EQ(tEverything1.getTByteBuffer(), tByteBuffer);
     EXPECT_EQ(tEverything1.getTDouble(), tDouble);
@@ -168,7 +167,8 @@ TEST_F(StdComplexDataTypeTest, createComplexDataType) {
     EXPECT_EQ(tEverything1.getTUInt64(), tUInt64);
 }
 
-TEST_F(StdComplexDataTypeTest, assignComplexDataType) {
+TEST_F(StdComplexDataTypeTest, assignComplexDataType)
+{
     joynr::types::TestTypes::TEverythingStruct tEverything2 = tEverything1;
     EXPECT_EQ(tEverything2, tEverything1);
     EXPECT_EQ(tEverything2.getTBoolean(), tBoolean);
@@ -193,7 +193,8 @@ TEST_F(StdComplexDataTypeTest, assignComplexDataType) {
     EXPECT_EQ(tEverything2.getTUInt64(), tUInt64);
 }
 
-TEST_F(StdComplexDataTypeTest, copyConstructorComplexDataTypeCopiesValues) {
+TEST_F(StdComplexDataTypeTest, copyConstructorComplexDataTypeCopiesValues)
+{
     joynr::types::TestTypes::TEverythingStruct tEverything2(tEverything1);
     EXPECT_EQ(tEverything2, tEverything1);
     tEverything1.setTBoolean(!tEverything1.getTBoolean());
@@ -216,7 +217,8 @@ TEST_F(StdComplexDataTypeTest, copyConstructorComplexDataTypeCopiesValues) {
     EXPECT_NE(tEverything4, tEverything1);
 }
 
-TEST_F(StdComplexDataTypeTest, equalsOperator) {
+TEST_F(StdComplexDataTypeTest, equalsOperator)
+{
     EXPECT_EQ(tEverything1, tEverything1);
 
     joynr::types::TestTypes::TEverythingStruct tEverything2(tEverything1);
@@ -244,7 +246,8 @@ TEST_F(StdComplexDataTypeTest, equalsOperator) {
     EXPECT_EQ(tEverything2.getTUInt64(), tUInt64);
 }
 
-TEST_F(StdComplexDataTypeTest, notEqualsOperator) {
+TEST_F(StdComplexDataTypeTest, notEqualsOperator)
+{
     joynr::types::TestTypes::TEverythingStruct tEverything2;
     EXPECT_NE(tEverything1, tEverything2);
 
@@ -256,7 +259,8 @@ TEST_F(StdComplexDataTypeTest, notEqualsOperator) {
     EXPECT_NE(tEverything1, tEverything2);
 }
 
-TEST_F(StdComplexDataTypeTest, createExtendedComplexDataType) {
+TEST_F(StdComplexDataTypeTest, createExtendedComplexDataType)
+{
     EXPECT_EQ(tEverythingExtended1.getTBoolean(), tBoolean);
     EXPECT_EQ(tEverythingExtended1.getTByteBuffer(), tByteBuffer);
     EXPECT_EQ(tEverythingExtended1.getTDouble(), tDouble);
@@ -282,7 +286,8 @@ TEST_F(StdComplexDataTypeTest, createExtendedComplexDataType) {
     EXPECT_EQ(tEverythingExtended1.getTStringExtended(), tStringExtended);
 }
 
-TEST_F(StdComplexDataTypeTest, equalsOperatorExtended) {
+TEST_F(StdComplexDataTypeTest, equalsOperatorExtended)
+{
     EXPECT_EQ(tEverythingExtended1, tEverythingExtended1);
 
     joynr::types::TestTypes::TEverythingExtendedStruct tEverythingExtended2(tEverythingExtended1);
@@ -314,7 +319,8 @@ TEST_F(StdComplexDataTypeTest, equalsOperatorExtended) {
     EXPECT_NE(tEverythingExtended2, tEverythingExtended1);
 }
 
-TEST_F(StdComplexDataTypeTest, equalsOperatorCompareSameClass) {
+TEST_F(StdComplexDataTypeTest, equalsOperatorCompareSameClass)
+{
     TestTypes::TEverythingExtendedStruct rhs = tEverythingExtended1;
     TestTypes::TEverythingExtendedStruct lhs = rhs;
     EXPECT_TRUE(lhs == rhs);
@@ -325,7 +331,8 @@ TEST_F(StdComplexDataTypeTest, equalsOperatorCompareSameClass) {
     EXPECT_TRUE(lhs != rhs);
 }
 
-TEST_F(StdComplexDataTypeTest, equalsOperatorCompareWithReferenceToBase) {
+TEST_F(StdComplexDataTypeTest, equalsOperatorCompareWithReferenceToBase)
+{
     const TestTypes::TEverythingExtendedStruct& rhs = tEverythingExtended1;
     const TestTypes::TEverythingStruct& lhs1 = rhs;
     EXPECT_TRUE(lhs1 == rhs);
@@ -338,7 +345,8 @@ TEST_F(StdComplexDataTypeTest, equalsOperatorCompareWithReferenceToBase) {
     EXPECT_TRUE(lhs2 != rhs);
 }
 
-TEST_F(StdComplexDataTypeTest, equalsOperatorBaseCompareWithDerived) {
+TEST_F(StdComplexDataTypeTest, equalsOperatorBaseCompareWithDerived)
+{
     // intended object slicing:
     // only get those parts of TEverythingExtendedStruct which stem from TEverythingStruct
     TestTypes::TEverythingStruct rhs = tEverythingExtended1;
@@ -347,20 +355,23 @@ TEST_F(StdComplexDataTypeTest, equalsOperatorBaseCompareWithDerived) {
     EXPECT_TRUE(lhs != rhs);
 }
 
-TEST_F(StdComplexDataTypeTest, assignExtendedComplexDataType) {
+TEST_F(StdComplexDataTypeTest, assignExtendedComplexDataType)
+{
     TestTypes::TEverythingExtendedStruct tEverythingExtended2;
     tEverythingExtended2 = tEverythingExtended1;
     EXPECT_EQ(tEverythingExtended1, tEverythingExtended2);
 }
 
-TEST_F(StdComplexDataTypeTest, copyExtendedComplexDataType) {
+TEST_F(StdComplexDataTypeTest, copyExtendedComplexDataType)
+{
     TestTypes::TEverythingExtendedStruct tEverythingExtended2(tEverythingExtended1);
     TestTypes::TEverythingExtendedStruct tEverythingExtended3 = tEverythingExtended2;
     EXPECT_EQ(tEverythingExtended1, tEverythingExtended2);
     EXPECT_EQ(tEverythingExtended2, tEverythingExtended3);
 }
 
-TEST_F(StdComplexDataTypeTest, equalsExtendedComplexDataTypeNotEqualBaseType) {
+TEST_F(StdComplexDataTypeTest, equalsExtendedComplexDataTypeNotEqualBaseType)
+{
     std::string tStringExtendedExtended("extendedextended");
     TestTypes::TEverythingExtendedExtendedStruct tEverythingExtendedExtended(
             tInt8,
@@ -393,10 +404,10 @@ TEST_F(StdComplexDataTypeTest, equalsExtendedComplexDataTypeNotEqualBaseType) {
     EXPECT_NE(tEverythingExtended1, tEverythingExtendedExtended);
     // currently a compile error
     //    EXPECT_NE(tEverythingExtendedExtended, tEverythingExtended1);
-
 }
 
-TEST_F(StdComplexDataTypeTest, hashCodeImplementation) {
+TEST_F(StdComplexDataTypeTest, hashCodeImplementation)
+{
     std::unordered_set<TestTypes::TEverythingExtendedStruct> unorderedSet;
 
     auto returnedPair1 = unorderedSet.insert(tEverythingExtended1);
@@ -407,14 +418,16 @@ TEST_F(StdComplexDataTypeTest, hashCodeImplementation) {
     EXPECT_EQ(unorderedSet.size(), 1);
 }
 
-TEST_F(StdComplexDataTypeTest, mapTypeListInitialization) {
+TEST_F(StdComplexDataTypeTest, mapTypeListInitialization)
+{
     TestTypes::TStringKeyMap map = {{"lorem", "ipsum"}, {"dolor", "sit"}};
 
     EXPECT_EQ(map.size(), 2);
     EXPECT_EQ(map["lorem"], "ipsum");
 }
 
-TEST_F(StdComplexDataTypeTest, versionIsSetInStructInsideInterface) {
+TEST_F(StdComplexDataTypeTest, versionIsSetInStructInsideInterface)
+{
     std::uint32_t expectedMajorVersion = 47;
     std::uint32_t expectedMinorVersion = 11;
 
@@ -422,15 +435,19 @@ TEST_F(StdComplexDataTypeTest, versionIsSetInStructInsideInterface) {
     EXPECT_EQ(expectedMinorVersion, joynr::tests::StructInsideInterface::MINOR_VERSION);
 }
 
-TEST_F(StdComplexDataTypeTest, defaultVersionIsSetInStructInsideInterfaceWithoutVersion) {
+TEST_F(StdComplexDataTypeTest, defaultVersionIsSetInStructInsideInterfaceWithoutVersion)
+{
     std::uint32_t expectedMajorVersion = 0;
     std::uint32_t expectedMinorVersion = 0;
 
-    EXPECT_EQ(expectedMajorVersion, joynr::tests::StructInsideInterfaceWithoutVersion::MAJOR_VERSION);
-    EXPECT_EQ(expectedMinorVersion, joynr::tests::StructInsideInterfaceWithoutVersion::MINOR_VERSION);
+    EXPECT_EQ(
+            expectedMajorVersion, joynr::tests::StructInsideInterfaceWithoutVersion::MAJOR_VERSION);
+    EXPECT_EQ(
+            expectedMinorVersion, joynr::tests::StructInsideInterfaceWithoutVersion::MINOR_VERSION);
 }
 
-TEST_F(StdComplexDataTypeTest, versionIsSetInStructInsideTypeCollection) {
+TEST_F(StdComplexDataTypeTest, versionIsSetInStructInsideTypeCollection)
+{
     std::uint32_t expectedMajorVersion = 48;
     std::uint32_t expectedMinorVersion = 12;
 
@@ -438,16 +455,21 @@ TEST_F(StdComplexDataTypeTest, versionIsSetInStructInsideTypeCollection) {
     EXPECT_EQ(expectedMinorVersion, joynr::tests::testTypes::ComplexTestType::MINOR_VERSION);
 }
 
-TEST_F(StdComplexDataTypeTest, defaultVersionIsSetInStructInsideTypeCollectionWithoutVersion) {
+TEST_F(StdComplexDataTypeTest, defaultVersionIsSetInStructInsideTypeCollectionWithoutVersion)
+{
     std::uint32_t expectedMajorVersion = 0;
     std::uint32_t expectedMinorVersion = 0;
 
-    EXPECT_EQ(expectedMajorVersion, joynr::types::TestTypesWithoutVersion::StructInsideTypeCollectionWithoutVersion::MAJOR_VERSION);
-    EXPECT_EQ(expectedMinorVersion, joynr::types::TestTypesWithoutVersion::StructInsideTypeCollectionWithoutVersion::MINOR_VERSION);
+    EXPECT_EQ(expectedMajorVersion,
+              joynr::types::TestTypesWithoutVersion::StructInsideTypeCollectionWithoutVersion::
+                      MAJOR_VERSION);
+    EXPECT_EQ(expectedMinorVersion,
+              joynr::types::TestTypesWithoutVersion::StructInsideTypeCollectionWithoutVersion::
+                      MINOR_VERSION);
 }
 
-
-TEST_F(StdComplexDataTypeTest, compareFloatingPointValues) {
+TEST_F(StdComplexDataTypeTest, compareFloatingPointValues)
+{
     using namespace boost::math;
     TestTypes::TEverythingExtendedStruct struct1;
     const float floatValue1 = 1.0f;

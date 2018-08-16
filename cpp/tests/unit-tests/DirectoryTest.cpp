@@ -64,21 +64,23 @@ class DirectoryTest : public ::testing::Test
 {
 public:
     DirectoryTest()
-        : singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
-          directory("Directory", singleThreadedIOService->getIOService()),
-          testValue(nullptr),
-          secondTestValue(nullptr),
-          firstKey(""),
-          secondKey("")
+            : singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
+              directory("Directory", singleThreadedIOService->getIOService()),
+              testValue(nullptr),
+              secondTestValue(nullptr),
+              firstKey(""),
+              secondKey("")
     {
         singleThreadedIOService->start();
     }
 
-    ~DirectoryTest() {
+    ~DirectoryTest()
+    {
         singleThreadedIOService->stop();
     }
 
-    void SetUp(){
+    void SetUp()
+    {
         testValue = std::make_shared<std::string>("testValue");
         secondTestValue = std::make_shared<std::string>("secondTestValue");
         firstKey = std::string("firstKey");
@@ -92,6 +94,7 @@ protected:
     std::shared_ptr<std::string> secondTestValue;
     std::string firstKey;
     std::string secondKey;
+
 private:
     DISALLOW_COPY_AND_ASSIGN(DirectoryTest);
 };
@@ -112,7 +115,7 @@ TEST_F(DirectoryTest, containsNot)
 TEST_F(DirectoryTest, lookup)
 {
     directory.add(firstKey, testValue);
-    directory.add(secondKey,secondTestValue);
+    directory.add(secondKey, secondTestValue);
     std::shared_ptr<std::string> result1 = directory.lookup(firstKey);
     std::shared_ptr<std::string> result2 = directory.lookup(secondKey);
     ASSERT_EQ(result1, testValue);
@@ -140,7 +143,8 @@ TEST_F(DirectoryTest, scheduledRemove)
 
 TEST_F(DirectoryTest, ObjectsAreDeletedByDirectoryAfterTtl)
 {
-    Directory<std::string, TrackableObject> directory("Directory", singleThreadedIOService->getIOService());
+    Directory<std::string, TrackableObject> directory(
+            "Directory", singleThreadedIOService->getIOService());
     {
         auto tp = std::make_shared<TrackableObject>();
         ASSERT_EQ(TrackableObject::getInstances(), 1);
@@ -154,7 +158,8 @@ TEST_F(DirectoryTest, ObjectsAreDeletedByDirectoryAfterTtl)
 TEST_F(DirectoryTest, ObjectsAreDeletedIfDirectoryIsDeleted)
 {
     {
-        Directory<std::string, TrackableObject> directory("Directory", singleThreadedIOService->getIOService());
+        Directory<std::string, TrackableObject> directory(
+                "Directory", singleThreadedIOService->getIOService());
         auto tp = std::make_shared<TrackableObject>();
         ASSERT_EQ(TrackableObject::getInstances(), 1);
         directory.add("key", tp, 100);
@@ -166,7 +171,8 @@ TEST_F(DirectoryTest, useStdStringKeys)
 {
     std::string key = "key";
     auto value = std::make_shared<std::string>("value");
-    Directory<std::string, std::string> directory("Directory", singleThreadedIOService->getIOService());
+    Directory<std::string, std::string> directory(
+            "Directory", singleThreadedIOService->getIOService());
     ASSERT_FALSE(directory.contains(key)) << "Empty directory contains entry.";
     directory.add(key, value);
     ASSERT_TRUE(directory.contains(key));
@@ -196,7 +202,7 @@ TEST_F(DirectoryTest, useLastTTLForKey)
 TEST_F(DirectoryTest, take)
 {
     directory.add(firstKey, testValue);
-    directory.add(secondKey,secondTestValue);
+    directory.add(secondKey, secondTestValue);
 
     // both keys exist
     ASSERT_EQ(directory.lookup(firstKey), testValue);

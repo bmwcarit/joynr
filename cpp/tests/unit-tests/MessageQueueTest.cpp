@@ -33,11 +33,14 @@
 
 using namespace joynr;
 
-class MessageQueueTest : public ::testing::Test {
+class MessageQueueTest : public ::testing::Test
+{
 public:
     MessageQueueTest()
-        : messageQueue(),
-          expiryDate(std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now()) + std::chrono::milliseconds(100))
+            : messageQueue(),
+              expiryDate(std::chrono::time_point_cast<std::chrono::milliseconds>(
+                                 std::chrono::system_clock::now()) +
+                         std::chrono::milliseconds(100))
     {
     }
 
@@ -47,7 +50,8 @@ protected:
     MessageQueue<std::string> messageQueue;
     TimePoint expiryDate;
 
-    void createAndQueueMessage(const TimePoint& expiryDate) {
+    void createAndQueueMessage(const TimePoint& expiryDate)
+    {
         MutableMessage mutableMsg;
         mutableMsg.setExpiryDate(expiryDate);
         auto immutableMessage = mutableMsg.getImmutableMessage();
@@ -59,11 +63,13 @@ private:
     DISALLOW_COPY_AND_ASSIGN(MessageQueueTest);
 };
 
-TEST_F(MessageQueueTest, initialQueueIsEmpty) {
+TEST_F(MessageQueueTest, initialQueueIsEmpty)
+{
     EXPECT_EQ(messageQueue.getQueueLength(), 0);
 }
 
-TEST_F(MessageQueueTest, addMultipleMessages) {
+TEST_F(MessageQueueTest, addMultipleMessages)
+{
     createAndQueueMessage(expiryDate);
     EXPECT_EQ(1, messageQueue.getQueueLength());
 
@@ -77,7 +83,8 @@ TEST_F(MessageQueueTest, addMultipleMessages) {
     EXPECT_EQ(4, messageQueue.getQueueLength());
 }
 
-TEST_F(MessageQueueTest, removeExpiredMessages_AllMessagesExpired) {
+TEST_F(MessageQueueTest, removeExpiredMessages_AllMessagesExpired)
+{
     const auto zeroTimepoint = TimePoint::fromAbsoluteMs(0);
 
     createAndQueueMessage(zeroTimepoint);
@@ -88,7 +95,8 @@ TEST_F(MessageQueueTest, removeExpiredMessages_AllMessagesExpired) {
     EXPECT_EQ(0, messageQueue.getQueueLength());
 }
 
-TEST_F(MessageQueueTest, removeExpiredMessages_SomeMessagesExpired) {
+TEST_F(MessageQueueTest, removeExpiredMessages_SomeMessagesExpired)
+{
     const auto zeroTimepoint = TimePoint::fromAbsoluteMs(0);
 
     createAndQueueMessage(zeroTimepoint);
@@ -101,7 +109,8 @@ TEST_F(MessageQueueTest, removeExpiredMessages_SomeMessagesExpired) {
     EXPECT_EQ(2, messageQueue.getQueueLength());
 }
 
-TEST_F(MessageQueueTest, removeExpiredMessages_NoMessageExpired) {
+TEST_F(MessageQueueTest, removeExpiredMessages_NoMessageExpired)
+{
     createAndQueueMessage(expiryDate);
     createAndQueueMessage(expiryDate);
     EXPECT_EQ(2, messageQueue.getQueueLength());
@@ -110,7 +119,8 @@ TEST_F(MessageQueueTest, removeExpiredMessages_NoMessageExpired) {
     EXPECT_EQ(2, messageQueue.getQueueLength());
 }
 
-TEST_F(MessageQueueTest, queueDequeueMessages) {
+TEST_F(MessageQueueTest, queueDequeueMessages)
+{
     // add messages to the queue
     MutableMessage mutableMsg1;
     const std::string recipient1("TEST1");
@@ -137,7 +147,8 @@ TEST_F(MessageQueueTest, queueDequeueMessages) {
     EXPECT_EQ(messageQueue.getQueueLength(), 0);
 }
 
-TEST_F(MessageQueueTest, queueDequeueMultipleMessagesForOneParticipant) {
+TEST_F(MessageQueueTest, queueDequeueMultipleMessagesForOneParticipant)
+{
     // add messages to the queue
     MutableMessage mutableMessage;
     const std::string participantId("TEST");
@@ -157,18 +168,24 @@ TEST_F(MessageQueueTest, queueDequeueMultipleMessagesForOneParticipant) {
     EXPECT_EQ(messageQueue.getQueueLength(), 0);
 }
 
-TEST_F(MessageQueueTest, dequeueInvalidParticipantId) {
+TEST_F(MessageQueueTest, dequeueInvalidParticipantId)
+{
     EXPECT_EQ(messageQueue.getNextMessageFor("TEST"), nullptr);
 }
 
 class MessageQueueWithLimitTest : public ::testing::Test
 {
 public:
-    MessageQueueWithLimitTest() { }
+    MessageQueueWithLimitTest()
+    {
+    }
     ~MessageQueueWithLimitTest() = default;
 
 protected:
-    std::shared_ptr<ImmutableMessage> createMessage(const TimePoint& expiryDate, const std::string& recipient, const std::string& payload = "") {
+    std::shared_ptr<ImmutableMessage> createMessage(const TimePoint& expiryDate,
+                                                    const std::string& recipient,
+                                                    const std::string& payload = "")
+    {
         MutableMessage mutableMsg;
         mutableMsg.setExpiryDate(expiryDate);
         mutableMsg.setRecipient(recipient);
@@ -176,13 +193,19 @@ protected:
         return mutableMsg.getImmutableMessage();
     }
 
-    void createAndQueueMessage(MessageQueue<std::string>& queue, const TimePoint& expiryDate, const std::string& recipient, const std::string& payload = "") {
+    void createAndQueueMessage(MessageQueue<std::string>& queue,
+                               const TimePoint& expiryDate,
+                               const std::string& recipient,
+                               const std::string& payload = "")
+    {
         queue.queueMessage(recipient, createMessage(expiryDate, recipient, payload));
     }
 
-    std::string payloadAsString(std::shared_ptr<ImmutableMessage> message) {
+    std::string payloadAsString(std::shared_ptr<ImmutableMessage> message)
+    {
         const smrf::ByteArrayView& byteArrayView = message->getUnencryptedBody();
-        return std::string(reinterpret_cast<const char*>(byteArrayView.data()), byteArrayView.size());
+        return std::string(
+                reinterpret_cast<const char*>(byteArrayView.data()), byteArrayView.size());
     }
 
 private:
@@ -199,21 +222,11 @@ TEST_F(MessageQueueWithLimitTest, testAddingMessages)
     // if removal deletes the message with lowest ttl and not the first inserted message.
     auto now = TimePoint::now();
     const TimePoint expiryDate[messageCount] = {
-        now + 300,
-        now + 200,
-        now + 100,
-        now + 300,
-        now + 600
-    };
+            now + 300, now + 200, now + 100, now + 300, now + 600};
 
-    const std::string recipient[messageCount] = {
-        "TEST1",
-        "TEST2",
-        "TEST3",
-        "TEST4",
-        "TEST5"};
+    const std::string recipient[messageCount] = {"TEST1", "TEST2", "TEST3", "TEST4", "TEST5"};
 
-    for (int i=0; i < messageCount; i++) {
+    for (int i = 0; i < messageCount; i++) {
         this->createAndQueueMessage(messageQueue, expiryDate[i], recipient[i]);
     }
 
@@ -300,8 +313,9 @@ TEST_F(MessageQueueWithLimitTest, testMessageQueueLimitBytes)
     constexpr std::uint64_t perKeyQueueLimit = 0;
 
     std::string payload(1000, 'x');
-    const auto now = TimePoint::now();    
-    std::uint64_t sizeOfSingleMessage = createMessage(now + 1000, recipient1, payload)->getMessageSize();
+    const auto now = TimePoint::now();
+    std::uint64_t sizeOfSingleMessage =
+            createMessage(now + 1000, recipient1, payload)->getMessageSize();
 
     // set limit so that 2 messages safely fit into the queue, but 3 messages exceed it
     std::uint64_t messageQueueLimitBytes = sizeOfSingleMessage * 3 - 1;
@@ -344,8 +358,9 @@ TEST_F(MessageQueueWithLimitTest, testMessageQueueHandlesTooLargeMessage)
     constexpr std::uint64_t messageQueueLimit = 0;
     constexpr std::uint64_t perKeyQueueLimit = 0;
     std::string payload(1000, 'x');
-    const auto now = TimePoint::now();    
-    std::uint64_t sizeOfSingleMessage = createMessage(now + 1000, recipient1, payload)->getMessageSize();
+    const auto now = TimePoint::now();
+    std::uint64_t sizeOfSingleMessage =
+            createMessage(now + 1000, recipient1, payload)->getMessageSize();
     std::uint64_t messageQueueLimitBytes = sizeOfSingleMessage - 1;
 
     MessageQueue<std::string> queue(messageQueueLimit, perKeyQueueLimit, messageQueueLimitBytes);

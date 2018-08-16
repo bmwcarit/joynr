@@ -32,7 +32,6 @@
 
 using namespace testing;
 
-
 using InputArchive = MockInputArchive<muesli::StringIStream>;
 using OutputArchive = MockOutputArchive<muesli::StringOStream>;
 
@@ -66,7 +65,8 @@ TEST(SerializationPlaceholderTest, emptyPlaceholderSerializesAsNullptr)
     oarchive(placeholder);
 }
 
-// FIXME: test crashes since the wrong type is stored in the variant which leads to calling the wrong Deserializable's destructor
+// FIXME: test crashes since the wrong type is stored in the variant which leads to calling the
+// wrong Deserializable's destructor
 TEST(SerializationPlaceholderTest, DISABLED_inbound)
 {
     joynr::serializer::SerializationPlaceholder placeholder;

@@ -31,16 +31,21 @@
 
 using namespace ::testing;
 
-namespace joynr {
+namespace joynr
+{
 
-class MqttMessagingStubFactoryTest : public testing::Test {
+class MqttMessagingStubFactoryTest : public testing::Test
+{
 public:
-    MqttMessagingStubFactoryTest() :
-        mqttAddress("brokerUri", "clientId"),
-        webSocketServerAddress(joynr::system::RoutingTypes::WebSocketProtocol::WS, "localhost", 42, "path"),
-        webSocketClientAddress("clientId"),
-        channelAddress("endPointUrl", "channelId"),
-        browserAddress("windowId")
+    MqttMessagingStubFactoryTest()
+            : mqttAddress("brokerUri", "clientId"),
+              webSocketServerAddress(joynr::system::RoutingTypes::WebSocketProtocol::WS,
+                                     "localhost",
+                                     42,
+                                     "path"),
+              webSocketClientAddress("clientId"),
+              channelAddress("endPointUrl", "channelId"),
+              browserAddress("windowId")
     {
     }
 
@@ -53,14 +58,16 @@ protected:
     joynr::system::RoutingTypes::BrowserAddress browserAddress;
 };
 
-TEST_F(MqttMessagingStubFactoryTest, canCreateMqttAddressses) {
+TEST_F(MqttMessagingStubFactoryTest, canCreateMqttAddressses)
+{
     auto mockMessageSender = std::make_shared<MockTransportMessageSender>();
     MqttMessagingStubFactory factory(mockMessageSender);
 
     EXPECT_TRUE(factory.canCreate(mqttAddress));
 }
 
-TEST_F(MqttMessagingStubFactoryTest, canOnlyCreateMqttAddressses) {
+TEST_F(MqttMessagingStubFactoryTest, canOnlyCreateMqttAddressses)
+{
     auto mockMessageSender = std::make_shared<MockTransportMessageSender>();
     MqttMessagingStubFactory factory(mockMessageSender);
 
@@ -70,7 +77,8 @@ TEST_F(MqttMessagingStubFactoryTest, canOnlyCreateMqttAddressses) {
     EXPECT_FALSE(factory.canCreate(webSocketServerAddress));
 }
 
-TEST_F(MqttMessagingStubFactoryTest, createReturnsMessagingStub) {
+TEST_F(MqttMessagingStubFactoryTest, createReturnsMessagingStub)
+{
     auto mockMessageSender = std::make_shared<MockTransportMessageSender>();
     MqttMessagingStubFactory factory(mockMessageSender);
 
