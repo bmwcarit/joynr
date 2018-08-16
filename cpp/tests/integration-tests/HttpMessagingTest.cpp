@@ -23,32 +23,41 @@
 using namespace ::testing;
 using namespace joynr;
 
-class HttpMessagingTest : public AbstractMessagingTest {
+class HttpMessagingTest : public AbstractMessagingTest
+{
 public:
     ADD_LOGGER(HttpMessagingTest)
-    HttpMessagingTest() :
-        receiverChannelId("receiverChannelId"),
-        isLocalMessage(true)
+    HttpMessagingTest() : receiverChannelId("receiverChannelId"), isLocalMessage(true)
     {
         // provision global capabilities directory
         const bool isGloballyVisible = true;
-        auto addressCapabilitiesDirectory = std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>(
-                        messagingSettings.getCapabilitiesDirectoryUrl() + messagingSettings.getCapabilitiesDirectoryChannelId() + "/",
+        auto addressCapabilitiesDirectory =
+                std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>(
+                        messagingSettings.getCapabilitiesDirectoryUrl() +
+                                messagingSettings.getCapabilitiesDirectoryChannelId() + "/",
                         messagingSettings.getCapabilitiesDirectoryChannelId());
-        messageRouter->addProvisionedNextHop(messagingSettings.getCapabilitiesDirectoryParticipantId(), addressCapabilitiesDirectory, isGloballyVisible);
-        messagingStubFactory->registerStubFactory(std::make_shared<HttpMessagingStubFactory>(mockMessageSender));
+        messageRouter->addProvisionedNextHop(
+                messagingSettings.getCapabilitiesDirectoryParticipantId(),
+                addressCapabilitiesDirectory,
+                isGloballyVisible);
+        messagingStubFactory->registerStubFactory(
+                std::make_shared<HttpMessagingStubFactory>(mockMessageSender));
     }
 
-    ~HttpMessagingTest(){
+    ~HttpMessagingTest()
+    {
     }
+
 protected:
     const std::string receiverChannelId;
     const bool isLocalMessage;
+
 private:
     DISALLOW_COPY_AND_ASSIGN(HttpMessagingTest);
 };
 
-TEST_F(HttpMessagingTest, sendMsgFromMessageSenderViaInProcessMessagingAndMessageRouterToCommunicationManager)
+TEST_F(HttpMessagingTest,
+       sendMsgFromMessageSenderViaInProcessMessagingAndMessageRouterToCommunicationManager)
 {
     // Test Outline: send message from JoynrMessageSender to ICommunicationManager
     // - MessageSender.sendRequest (IMessageSender)
@@ -59,12 +68,13 @@ TEST_F(HttpMessagingTest, sendMsgFromMessageSenderViaInProcessMessagingAndMessag
     // - MessageRunnable.run
     // - HttpMessagingStub.transmit (IMessaging)
     // - MessageSender.send
-    auto joynrMessagingEndpointAddr = std::make_shared<joynr::system::RoutingTypes::ChannelAddress>();
+    auto joynrMessagingEndpointAddr =
+            std::make_shared<joynr::system::RoutingTypes::ChannelAddress>();
     joynrMessagingEndpointAddr->setChannelId(receiverChannelId);
 
-    sendMsgFromMessageSenderViaInProcessMessagingAndMessageRouterToCommunicationManager(joynrMessagingEndpointAddr);
+    sendMsgFromMessageSenderViaInProcessMessagingAndMessageRouterToCommunicationManager(
+            joynrMessagingEndpointAddr);
 }
-
 
 TEST_F(HttpMessagingTest, routeMsgWithInvalidParticipantId)
 {
@@ -78,16 +88,17 @@ TEST_F(HttpMessagingTest, routeMsgToInProcessMessagingSkeleton)
 
 TEST_F(HttpMessagingTest, routeMsgToHttpCommunicationMgr)
 {
-    auto joynrMessagingEndpointAddr = std::make_shared<joynr::system::RoutingTypes::ChannelAddress>();
+    auto joynrMessagingEndpointAddr =
+            std::make_shared<joynr::system::RoutingTypes::ChannelAddress>();
     joynrMessagingEndpointAddr->setChannelId(receiverChannelId);
 
     routeMsgToCommunicationManager(joynrMessagingEndpointAddr);
 }
 
-
 TEST_F(HttpMessagingTest, routeMultipleMessages)
 {
-    auto joynrMessagingEndpointAddr = std::make_shared<joynr::system::RoutingTypes::ChannelAddress>();
+    auto joynrMessagingEndpointAddr =
+            std::make_shared<joynr::system::RoutingTypes::ChannelAddress>();
     joynrMessagingEndpointAddr->setChannelId(receiverChannelId);
 
     routeMultipleMessages(joynrMessagingEndpointAddr);
