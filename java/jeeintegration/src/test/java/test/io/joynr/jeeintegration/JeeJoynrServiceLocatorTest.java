@@ -76,7 +76,9 @@ public class JeeJoynrServiceLocatorTest {
     private MyServiceProxy myJoynrProxy;
 
     @Mock
-    private ProxyBuilder<MyServiceProxy> proxyBuilder;
+    private ProxyBuilder<MyServiceSync> proxyBuilderSync;
+    @Mock
+    private ProxyBuilder<MyServiceStatelessAsync> proxyBuilderStatelessAsync;
 
     @Mock
     private JoynrRuntime joynrRuntime;
@@ -89,12 +91,12 @@ public class JeeJoynrServiceLocatorTest {
     @Before
     public void setupSubject() {
         when(myJoynrProxy.callMe("one")).thenReturn("two");
-        when(proxyBuilder.setMessagingQos(Mockito.any())).thenReturn(proxyBuilder);
-        when(proxyBuilder.setDiscoveryQos(Mockito.any())).thenReturn(proxyBuilder);
-        when(proxyBuilder.setStatelessAsyncCallbackUseCase(Mockito.anyString())).thenReturn(proxyBuilder);
-        when(proxyBuilder.build()).thenReturn(myJoynrProxy);
+        when(proxyBuilderSync.setMessagingQos(Mockito.any())).thenReturn(proxyBuilderSync);
+        when(proxyBuilderSync.setDiscoveryQos(Mockito.any())).thenReturn(proxyBuilderSync);
+        when(proxyBuilderSync.setStatelessAsyncCallbackUseCase(Mockito.anyString())).thenReturn(proxyBuilderSync);
+        when(proxyBuilderSync.build()).thenReturn(myJoynrProxy);
         when(joynrRuntime.getProxyBuilder(new HashSet<String>(Arrays.asList("local")),
-                                          MyServiceProxy.class)).thenReturn(proxyBuilder);
+                                          MyServiceSync.class)).thenReturn(proxyBuilderSync);
         when(joynrIntegrationBean.getRuntime()).thenReturn(joynrRuntime);
         subject = new JeeJoynrServiceLocator(joynrIntegrationBean);
     }
@@ -155,7 +157,7 @@ public class JeeJoynrServiceLocatorTest {
     @Test
     public void testGetMultiDomain() {
         Set<String> domains = new HashSet<>(Arrays.asList("one", "two", "three"));
-        when(joynrRuntime.getProxyBuilder(domains, MyServiceProxy.class)).thenReturn(proxyBuilder);
+        when(joynrRuntime.getProxyBuilder(domains, MyServiceSync.class)).thenReturn(proxyBuilderSync);
 
         MyServiceSync result = subject.get(MyServiceSync.class, domains);
 
@@ -164,7 +166,7 @@ public class JeeJoynrServiceLocatorTest {
         String callResult = result.callMe("one");
 
         assertEquals("two", callResult);
-        verify(joynrRuntime).getProxyBuilder(domains, MyServiceProxy.class);
+        verify(joynrRuntime).getProxyBuilder(domains, MyServiceSync.class);
     }
 
     @Test
@@ -179,7 +181,7 @@ public class JeeJoynrServiceLocatorTest {
         assertEquals("two", callResult);
         verify(myJoynrProxy).callMe("one");
         ArgumentCaptor<MessagingQos> messagingQosCaptor = ArgumentCaptor.forClass(MessagingQos.class);
-        verify(proxyBuilder).setMessagingQos(messagingQosCaptor.capture());
+        verify(proxyBuilderSync).setMessagingQos(messagingQosCaptor.capture());
         MessagingQos messagingQosParam = messagingQosCaptor.getValue();
         assertEquals(10000L, messagingQosParam.getRoundTripTtl_ms());
     }
@@ -197,19 +199,20 @@ public class JeeJoynrServiceLocatorTest {
         assertNotNull(callResult);
         assertEquals("two", callResult);
         verify(myJoynrProxy).callMe("one");
-        verify(proxyBuilder).setMessagingQos(messagingQos);
-        verify(proxyBuilder).setDiscoveryQos(discoveryQos);
+        verify(proxyBuilderSync).setMessagingQos(messagingQos);
+        verify(proxyBuilderSync).setDiscoveryQos(discoveryQos);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testGetNoProxyAvailable() {
-        JoynrRuntime joynrRuntime = mock(JoynrRuntime.class);
-        JoynrIntegrationBean joynrIntegrationBean = mock(JoynrIntegrationBean.class);
-        when(joynrIntegrationBean.getRuntime()).thenReturn(joynrRuntime);
-        JeeJoynrServiceLocator subject = new JeeJoynrServiceLocator(joynrIntegrationBean);
-
-        subject.get(MyInvalidServiceSync.class, "local");
-    }
+    // The method findJoynrProxyInterface has been removed
+    //    @Test(expected = IllegalArgumentException.class)
+    //    public void testGetNoProxyAvailable() {
+    //        JoynrRuntime joynrRuntime = mock(JoynrRuntime.class);
+    //        JoynrIntegrationBean joynrIntegrationBean = mock(JoynrIntegrationBean.class);
+    //        when(joynrIntegrationBean.getRuntime()).thenReturn(joynrRuntime);
+    //        JeeJoynrServiceLocator subject = new JeeJoynrServiceLocator(joynrIntegrationBean);
+    //
+    //        subject.get(MyInvalidServiceSync.class, "local");
+    //    }
 
     @Test(expected = IllegalStateException.class)
     public void testGetNoRuntime() {
@@ -219,10 +222,16 @@ public class JeeJoynrServiceLocatorTest {
 
     @Test
     public void testGetWithStatelessCallbackHandler() {
+        when(joynrRuntime.getProxyBuilder(new HashSet<String>(Arrays.asList("local")),
+                                          MyServiceStatelessAsync.class)).thenReturn(proxyBuilderStatelessAsync);
+        when(proxyBuilderStatelessAsync.setMessagingQos(Mockito.any())).thenReturn(proxyBuilderStatelessAsync);
+        when(proxyBuilderStatelessAsync.setDiscoveryQos(Mockito.any())).thenReturn(proxyBuilderStatelessAsync);
+        when(proxyBuilderStatelessAsync.build()).thenReturn(myJoynrProxy);
         doAnswer(invocation -> {
             invocation.getArgumentAt(1, MessageIdCallback.class).accept("messageId");
             return null;
         }).when(myJoynrProxy).callMe(eq("one"), any(MessageIdCallback.class));
+        @SuppressWarnings("rawtypes")
         Bean mockBean = mock(Bean.class);
         when(mockBean.getBeanClass()).thenReturn(MyServiceCallbackHandler.class);
         MyServiceStatelessAsync result = subject.builder(MyServiceStatelessAsync.class, "local")
@@ -231,9 +240,10 @@ public class JeeJoynrServiceLocatorTest {
 
         assertNotNull(result);
 
-        verify(joynrRuntime).getProxyBuilder(eq(new HashSet(Arrays.asList("local"))), eq(MyServiceProxy.class));
-        verify(proxyBuilder).setStatelessAsyncCallbackUseCase(eq(MyServiceCallbackHandler.USE_CASE));
-        verify(proxyBuilder).build();
+        verify(joynrRuntime).getProxyBuilder(eq(new HashSet<>(Arrays.asList("local"))),
+                                             eq(MyServiceStatelessAsync.class));
+        verify(proxyBuilderStatelessAsync).setStatelessAsyncCallbackUseCase(eq(MyServiceCallbackHandler.USE_CASE));
+        verify(proxyBuilderStatelessAsync).build();
 
         Boolean[] resultContainer = new Boolean[]{ Boolean.FALSE };
         result.callMe("one", messageId -> {
@@ -251,6 +261,10 @@ public class JeeJoynrServiceLocatorTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testGetStatelessAsyncWithoutUseCaseFails() {
+        when(joynrRuntime.getProxyBuilder(new HashSet<String>(Arrays.asList("local")),
+                                          MyServiceStatelessAsync.class)).thenReturn(proxyBuilderStatelessAsync);
+        when(proxyBuilderStatelessAsync.setMessagingQos(Mockito.any())).thenReturn(proxyBuilderStatelessAsync);
+        when(proxyBuilderStatelessAsync.setDiscoveryQos(Mockito.any())).thenReturn(proxyBuilderStatelessAsync);
         subject.builder(MyServiceStatelessAsync.class, "local").build();
         fail("Should not be able to build stateless async proxy without a use case specified.");
     }

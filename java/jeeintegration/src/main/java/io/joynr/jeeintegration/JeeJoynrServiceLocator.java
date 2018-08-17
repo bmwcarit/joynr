@@ -18,12 +18,6 @@
  */
 package io.joynr.jeeintegration;
 
-import static java.lang.String.format;
-
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -31,18 +25,12 @@ import java.util.Set;
 import javax.ejb.Singleton;
 import javax.inject.Inject;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.joynr.StatelessAsync;
-import io.joynr.UsedBy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.jeeintegration.api.ServiceLocator;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.ProxyBuilder;
-import io.joynr.util.AnnotationUtil;
-import joynr.exceptions.ApplicationException;
 
 /**
  * JEE integration joynr service locator which uses a joynr proxy to provide an implementation for a service interface.
@@ -52,8 +40,6 @@ import joynr.exceptions.ApplicationException;
  */
 @Singleton
 public class JeeJoynrServiceLocator implements ServiceLocator {
-
-    private static final Logger LOG = LoggerFactory.getLogger(JeeJoynrServiceLocator.class);
 
     private final JoynrIntegrationBean joynrIntegrationBean;
 
@@ -95,7 +81,6 @@ public class JeeJoynrServiceLocator implements ServiceLocator {
         return get(serviceInterface, domains, messagingQos, discoveryQos, null);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public <I> I get(Class<I> serviceInterface,
                      Set<String> domains,
@@ -105,9 +90,8 @@ public class JeeJoynrServiceLocator implements ServiceLocator {
         if (joynrIntegrationBean.getRuntime() == null) {
             throw new IllegalStateException("You can't get service proxies until the joynr runtime has been initialised.");
         }
-        final Class<?> joynrProxyInterface = findJoynrProxyInterface(serviceInterface);
-        ProxyBuilder<?> proxyBuilder = joynrIntegrationBean.getRuntime()
-                                                           .getProxyBuilder(domains, joynrProxyInterface)
+        ProxyBuilder<I> proxyBuilder = joynrIntegrationBean.getRuntime()
+                                                           .getProxyBuilder(domains, serviceInterface)
                                                            .setMessagingQos(messagingQos)
                                                            .setDiscoveryQos(discoveryQos);
 
@@ -121,37 +105,7 @@ public class JeeJoynrServiceLocator implements ServiceLocator {
             throw new IllegalArgumentException("Service interface " + serviceInterface
                     + " is @StatelessAsync, but you failed to provide a use case.");
         }
-
-        final Object joynrProxy = proxyBuilder.build();
-        return (I) Proxy.newProxyInstance(serviceInterface.getClassLoader(),
-                                          new Class<?>[]{ serviceInterface },
-                                          new InvocationHandler() {
-
-                                              @Override
-                                              public Object invoke(Object proxy,
-                                                                   Method method,
-                                                                   Object[] args) throws Throwable {
-                                                  if (LOG.isTraceEnabled()) {
-                                                      LOG.trace(format("Forwarding call to %s from service interface %s to joynr proxy %s",
-                                                                       method,
-                                                                       serviceInterface,
-                                                                       joynrProxyInterface));
-                                                  }
-                                                  try {
-                                                      return joynrProxy.getClass()
-                                                                       .getMethod(method.getName(),
-                                                                                  method.getParameterTypes())
-                                                                       .invoke(joynrProxy, args);
-                                                  } catch (InvocationTargetException e) {
-                                                      if (e.getTargetException() instanceof JoynrRuntimeException) {
-                                                          throw e.getTargetException();
-                                                      } else if (e.getTargetException() instanceof ApplicationException) {
-                                                          throw e.getTargetException();
-                                                      }
-                                                      throw e;
-                                                  }
-                                              }
-                                          });
+        return proxyBuilder.build();
     }
 
     public class JeeJoynrServiceProxyBuilder<T> implements ServiceProxyBuilder<T> {
@@ -204,15 +158,6 @@ public class JeeJoynrServiceLocator implements ServiceLocator {
         }
         Set<String> domainSet = new HashSet<>(Arrays.asList(domains));
         return new JeeJoynrServiceProxyBuilder<>(serviceInterface, domainSet);
-    }
-
-    private <I> Class<?> findJoynrProxyInterface(Class<I> serviceInterface) {
-        UsedBy usedByAnnotation = AnnotationUtil.getAnnotation(serviceInterface, UsedBy.class);
-        if (usedByAnnotation == null) {
-            throw new IllegalArgumentException(format("Unable to find suitable joynr proxy for interface %s",
-                                                      serviceInterface));
-        }
-        return usedByAnnotation.value();
     }
 
 }
