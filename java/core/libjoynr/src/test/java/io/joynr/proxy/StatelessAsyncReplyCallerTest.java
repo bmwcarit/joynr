@@ -18,14 +18,13 @@
  */
 package io.joynr.proxy;
 
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Function;
 
@@ -43,6 +42,9 @@ import joynr.vehicle.NavigationStatelessAsync;
 import joynr.vehicle.NavigationStatelessAsyncCallback;
 
 public class StatelessAsyncReplyCallerTest {
+
+    private static final String STATELESS_CALLBACK_ID = Navigation.INTERFACE_NAME + ":~:test";
+    private static final String INVALID = "invalid";
 
     private Map<String, Boolean> resultHolder = new HashMap<>();
 
@@ -77,6 +79,11 @@ public class StatelessAsyncReplyCallerTest {
         @Override
         public void deleteTripFailed(JoynrRuntimeException runtimeException, ReplyContext replyContext) {
             resultHolder.put(replyContext.getMessageId(), true);
+        }
+
+        @StatelessCallbackCorrelation(INVALID)
+        public void invalidMethod(ReplyContext replyContext) {
+            fail("Should never be called");
         }
     }
 
@@ -121,6 +128,24 @@ public class StatelessAsyncReplyCallerTest {
                  Function.identity());
     }
 
+    @Test(expected = JoynrRuntimeException.class)
+    public void testMethodNotFound() throws Exception {
+        StatelessAsyncReplyCaller subject = new StatelessAsyncReplyCaller(STATELESS_CALLBACK_ID, callback);
+        Reply reply = new Reply(UUID.randomUUID().toString());
+        reply.setStatelessCallback(STATELESS_CALLBACK_ID);
+        reply.setStatelessCallbackMethodId("0");
+        subject.messageCallBack(reply);
+    }
+
+    @Test(expected = JoynrRuntimeException.class)
+    public void testMethodNameWrong() throws Exception {
+        StatelessAsyncReplyCaller subject = new StatelessAsyncReplyCaller(STATELESS_CALLBACK_ID, callback);
+        Reply reply = new Reply(UUID.randomUUID().toString());
+        reply.setStatelessCallback(STATELESS_CALLBACK_ID);
+        reply.setStatelessCallbackMethodId(INVALID);
+        subject.messageCallBack(reply);
+    }
+
     private void testCall(String methodName, Function<String, Reply> replyGenerator) {
         testCall(methodName, replyGenerator, Function.identity());
     }
@@ -134,11 +159,10 @@ public class StatelessAsyncReplyCallerTest {
     private void testCall(StatelessCallbackCorrelation statelessCallbackCorrelation,
                           Function<String, Reply> replyGenerator,
                           Function<String, String> requestReplyIdKeyMapper) {
-        String statelessAsyncCallbackId = Navigation.INTERFACE_NAME + ":~:test";
-        StatelessAsyncReplyCaller subject = new StatelessAsyncReplyCaller(statelessAsyncCallbackId, callback);
+        StatelessAsyncReplyCaller subject = new StatelessAsyncReplyCaller(STATELESS_CALLBACK_ID, callback);
         String requestReplyId = UUID.randomUUID().toString();
         Reply reply = replyGenerator.apply(requestReplyId);
-        reply.setStatelessCallback(statelessAsyncCallbackId);
+        reply.setStatelessCallback(STATELESS_CALLBACK_ID);
         reply.setStatelessCallbackMethodId(statelessCallbackCorrelation.value());
         subject.messageCallBack(reply);
         String resultHolderKey = requestReplyIdKeyMapper.apply(requestReplyId);
