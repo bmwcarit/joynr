@@ -425,7 +425,7 @@ proxy / callback pairs.
 		private MyContextService myContextService;
 
 		@Override
-		public String getUseCaseName() {
+		public String getUseCase() {
 			return MY_USE_CASE;
 		}
 

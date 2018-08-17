@@ -136,7 +136,7 @@ public class AnnotationUtilTest {
         }
 
         @Override
-        public String getUseCaseName() {
+        public String getUseCase() {
             return "attribute test";
         }
     }

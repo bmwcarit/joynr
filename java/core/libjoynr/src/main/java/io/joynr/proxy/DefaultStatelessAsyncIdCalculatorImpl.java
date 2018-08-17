@@ -70,7 +70,7 @@ public class DefaultStatelessAsyncIdCalculatorImpl implements StatelessAsyncIdCa
 
     @Override
     public String calculateStatelessCallbackId(String interfaceName, StatelessAsyncCallback statelessAsyncCallback) {
-        return interfaceName + ":~:" + statelessAsyncCallback.getUseCaseName();
+        return interfaceName + ":~:" + statelessAsyncCallback.getUseCase();
     }
 
     @Override

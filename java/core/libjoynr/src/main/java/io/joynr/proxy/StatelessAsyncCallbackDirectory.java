@@ -50,7 +50,7 @@ public class StatelessAsyncCallbackDirectory {
     }
 
     public void register(StatelessAsyncCallback statelessAsyncCallback) {
-        String useCase = statelessAsyncCallback.getUseCaseName();
+        String useCase = statelessAsyncCallback.getUseCase();
         StatelessAsyncCallback oldValue = directory.putIfAbsent(useCase, statelessAsyncCallback);
         if (oldValue != null) {
             String message = String.format("Multiple registration attempts of stateless callback for use case %s. %s already registered. %s will not be registered.",

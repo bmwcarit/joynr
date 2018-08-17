@@ -49,7 +49,7 @@ public class DefaultStatelessAsyncIdCalculatorImplTest {
     public void setup() {
         subject = new DefaultStatelessAsyncIdCalculatorImpl(CHANNEL_ID);
         callback = mock(StatelessAsyncCallback.class);
-        when(callback.getUseCaseName()).thenReturn(USE_CASE);
+        when(callback.getUseCase()).thenReturn(USE_CASE);
     }
 
     @Test

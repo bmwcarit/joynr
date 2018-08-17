@@ -32,7 +32,6 @@ import javax.enterprise.inject.spi.BeanManager;
 
 import com.google.common.collect.Sets;
 import io.joynr.proxy.StatelessAsyncCallback;
-import joynr.jeeintegration.servicelocator.MyServiceProxy;
 import joynr.jeeintegration.servicelocator.MyServiceStatelessAsyncCallback;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -82,7 +81,7 @@ public class CallbackHandlerDiscoveryTest {
         subject.forEach(discovered::add);
 
         assertEquals(1, discovered.size());
-        assertEquals("useCase", discovered.iterator().next().getUseCaseName());
+        assertEquals("useCase", discovered.iterator().next().getUseCase());
 
         verify(nonCallbackHandlerBean).getBeanClass();
     }

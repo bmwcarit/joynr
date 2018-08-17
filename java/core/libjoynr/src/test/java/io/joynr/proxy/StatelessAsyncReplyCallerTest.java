@@ -49,7 +49,7 @@ public class StatelessAsyncReplyCallerTest {
     public class NavigationCallback implements NavigationStatelessAsyncCallback {
 
         @Override
-        public String getUseCaseName() {
+        public String getUseCase() {
             return "test";
         }
 

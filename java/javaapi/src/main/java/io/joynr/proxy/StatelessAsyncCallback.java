@@ -25,5 +25,5 @@ public interface StatelessAsyncCallback {
      * callback.
      * @return see method description
      */
-    String getUseCaseName();
+    String getUseCase();
 }

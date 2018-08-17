@@ -63,7 +63,7 @@ public class StatelessAsyncCallbackDirectoryTest {
     class MyTestCallback implements NavigationStatelessAsyncCallback {
 
         @Override
-        public String getUseCaseName() {
+        public String getUseCase() {
             return USE_CASE;
         }
 

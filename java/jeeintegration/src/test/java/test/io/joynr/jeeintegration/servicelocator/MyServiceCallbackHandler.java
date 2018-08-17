@@ -30,7 +30,7 @@ public class MyServiceCallbackHandler implements MyServiceStatelessAsyncCallback
     public static final String USE_CASE = "useCase";
 
     @Override
-    public String getUseCaseName() {
+    public String getUseCase() {
         return USE_CASE;
     }
 }

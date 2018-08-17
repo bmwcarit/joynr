@@ -79,7 +79,7 @@ public interface JoynrRuntime {
 
     /**
      * Registers the given stateless async callback instance for use with its
-     * {@link StatelessAsyncCallback#getUseCaseName() use case}.
+     * {@link StatelessAsyncCallback#getUseCase() use case}.
      * When you subsequently make stateless async calls using a proxy where you provide the same use case name when
      * building the proxy, and the proxy interface matches the callback interface, then this instance will be used for
      * Reply payloads arriving for it.

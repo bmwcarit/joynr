@@ -585,7 +585,7 @@ provided, matching the proxy to the callback.
     ...
     public MyStatelessAsyncCallback implements <interface>StatelessAsyncCallback {
         @Override
-        public String getUseCaseName() {
+        public String getUseCase() {
             return <usecase>;
         }
 
