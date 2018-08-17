@@ -49,7 +49,7 @@ public class StatelessAsyncReplyCaller implements ReplyCaller {
 
     @Override
     public void messageCallBack(Reply payload) {
-        String methodCorrelationId = payload.getStatelessCallbackMethodId();
+        String methodCorrelationId = payload.getStatelessAsyncCallbackMethodId();
         boolean success = payload.getError() == null;
         boolean withApplicationError = payload.getError() != null && payload.getError() instanceof ApplicationException;
         boolean withException = payload.getError() != null && !(payload.getError() instanceof ApplicationException);
@@ -70,7 +70,8 @@ public class StatelessAsyncReplyCaller implements ReplyCaller {
                                               || (withApplicationError && method.getParameterTypes()[0].isEnum()))
                                       .findFirst()
                                       .orElseThrow(() -> new JoynrRuntimeException("No suitable callback method found for callback ID "
-                                              + payload.getStatelessCallback() + " on " + statelessAsyncCallback));
+                                              + payload.getStatelessAsyncCallbackId() + " on "
+                                              + statelessAsyncCallback));
         if (withException) {
             String methodName = callbackMethod.getName().replaceFirst("Success$", "Failed");
             try {
@@ -79,7 +80,8 @@ public class StatelessAsyncReplyCaller implements ReplyCaller {
                                                                                      ReplyContext.class });
             } catch (NoSuchMethodException e) {
                 throw new JoynrRuntimeException("No suitable failure callback method named " + methodName
-                        + " found for callback ID " + payload.getStatelessCallback() + " on " + statelessAsyncCallback);
+                        + " found for callback ID " + payload.getStatelessAsyncCallbackId() + " on "
+                        + statelessAsyncCallback);
             }
         }
         try {

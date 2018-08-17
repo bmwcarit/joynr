@@ -30,8 +30,8 @@ public class Reply implements JoynrMessageType {
     private Object[] response;
     private JoynrException error;
     private String requestReplyId;
-    private transient String statelessCallback;
-    private transient String statelessCallbackMethodId;
+    private transient String statelessAsyncCallbackId;
+    private transient String statelessAsyncCallbackMethodId;
 
     public Reply() {
     }
@@ -62,20 +62,20 @@ public class Reply implements JoynrMessageType {
         return requestReplyId;
     }
 
-    public String getStatelessCallback() {
-        return statelessCallback;
+    public String getStatelessAsyncCallbackId() {
+        return statelessAsyncCallbackId;
     }
 
-    public void setStatelessCallback(String statelessCallback) {
-        this.statelessCallback = statelessCallback;
+    public void setStatelessAsyncCallbackId(String statelessAsyncCallbackId) {
+        this.statelessAsyncCallbackId = statelessAsyncCallbackId;
     }
 
-    public String getStatelessCallbackMethodId() {
-        return statelessCallbackMethodId;
+    public String getStatelessAsyncCallbackMethodId() {
+        return statelessAsyncCallbackMethodId;
     }
 
-    public void setStatelessCallbackMethodId(String statelessCallbackMethodId) {
-        this.statelessCallbackMethodId = statelessCallbackMethodId;
+    public void setStatelessAsyncCallbackMethodId(String statelessAsyncCallbackMethodId) {
+        this.statelessAsyncCallbackMethodId = statelessAsyncCallbackMethodId;
     }
 
     @Override
@@ -83,9 +83,9 @@ public class Reply implements JoynrMessageType {
         return "Reply: " + "requestReplyId: " + requestReplyId
                 + (response == null ? "" : ", response: " + Arrays.toString(response))
                 + (error == null ? "" : ", error: " + error)
-                + (statelessCallback == null ? "" : ", statelessCallback: " + statelessCallback)
-                + (statelessCallbackMethodId == null ? ""
-                        : ", statelessCallbackMethodId: " + statelessCallbackMethodId);
+                + (statelessAsyncCallbackId == null ? "" : ", statelessAsyncCallbackId: " + statelessAsyncCallbackId)
+                + (statelessAsyncCallbackMethodId == null ? ""
+                        : ", statelessAsyncCallbackMethodId: " + statelessAsyncCallbackMethodId);
     }
 
     @Override

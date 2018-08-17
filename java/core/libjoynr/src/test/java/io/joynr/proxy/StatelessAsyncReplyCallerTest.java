@@ -132,8 +132,8 @@ public class StatelessAsyncReplyCallerTest {
     public void testMethodNotFound() throws Exception {
         StatelessAsyncReplyCaller subject = new StatelessAsyncReplyCaller(STATELESS_CALLBACK_ID, callback);
         Reply reply = new Reply(UUID.randomUUID().toString());
-        reply.setStatelessCallback(STATELESS_CALLBACK_ID);
-        reply.setStatelessCallbackMethodId("0");
+        reply.setStatelessAsyncCallbackId(STATELESS_CALLBACK_ID);
+        reply.setStatelessAsyncCallbackMethodId("0");
         subject.messageCallBack(reply);
     }
 
@@ -141,8 +141,8 @@ public class StatelessAsyncReplyCallerTest {
     public void testMethodNameWrong() throws Exception {
         StatelessAsyncReplyCaller subject = new StatelessAsyncReplyCaller(STATELESS_CALLBACK_ID, callback);
         Reply reply = new Reply(UUID.randomUUID().toString());
-        reply.setStatelessCallback(STATELESS_CALLBACK_ID);
-        reply.setStatelessCallbackMethodId(INVALID);
+        reply.setStatelessAsyncCallbackId(STATELESS_CALLBACK_ID);
+        reply.setStatelessAsyncCallbackMethodId(INVALID);
         subject.messageCallBack(reply);
     }
 
@@ -162,8 +162,8 @@ public class StatelessAsyncReplyCallerTest {
         StatelessAsyncReplyCaller subject = new StatelessAsyncReplyCaller(STATELESS_CALLBACK_ID, callback);
         String requestReplyId = UUID.randomUUID().toString();
         Reply reply = replyGenerator.apply(requestReplyId);
-        reply.setStatelessCallback(STATELESS_CALLBACK_ID);
-        reply.setStatelessCallbackMethodId(statelessCallbackCorrelation.value());
+        reply.setStatelessAsyncCallbackId(STATELESS_CALLBACK_ID);
+        reply.setStatelessAsyncCallbackMethodId(statelessCallbackCorrelation.value());
         subject.messageCallBack(reply);
         String resultHolderKey = requestReplyIdKeyMapper.apply(requestReplyId);
         assertTrue(resultHolder.containsKey(resultHolderKey));

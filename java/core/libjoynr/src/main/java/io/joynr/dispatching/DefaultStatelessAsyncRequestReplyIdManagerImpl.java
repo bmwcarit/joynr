@@ -43,9 +43,9 @@ public class DefaultStatelessAsyncRequestReplyIdManagerImpl implements Stateless
 
     @Override
     public String getCallbackId(Reply reply) {
-        boolean stateless = reply.getStatelessCallback() != null;
+        boolean stateless = reply.getStatelessAsyncCallbackId() != null;
         if (stateless) {
-            return reply.getStatelessCallback();
+            return reply.getStatelessAsyncCallbackId();
         } else {
             return reply.getRequestReplyId();
         }
