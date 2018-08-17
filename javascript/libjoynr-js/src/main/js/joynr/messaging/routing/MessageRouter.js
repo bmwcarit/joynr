@@ -611,15 +611,6 @@ function MessageRouter(settings) {
         if (routingProxy !== undefined) {
             // register remotely
             promise = that.addNextHopToParentRoutingTable(participantId, isGloballyVisible);
-        } else if (parentMessageRouterAddress !== undefined) {
-            const deferred = UtilInternal.createDeferred();
-            queuedAddNextHopCalls.push({
-                participantId,
-                isGloballyVisible,
-                resolve: deferred.resolve,
-                reject: deferred.reject
-            });
-            promise = deferred.promise;
         } else {
             promise = Promise.resolve();
         }
