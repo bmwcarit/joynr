@@ -92,7 +92,7 @@ int main(int argc, char* argv[])
         std::string appDirectory =
                 boost::filesystem::system_complete(appFilename).parent_path().string();
         auto joynrSettings = std::make_unique<joynr::Settings>(
-                (appDirectory + "/resources/performancetest-consumer.settings"));
+                (appDirectory + "/resources/performancetest-provider.settings"));
 
         std::shared_ptr<joynr::IKeychain> keyChain;
 
