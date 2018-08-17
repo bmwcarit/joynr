@@ -72,6 +72,7 @@ public class LibJoynrMessageRouter extends AbstractMessageRouter {
     private Address incomingAddress;
     private Set<ParticipantIdAndIsGloballyVisibleHolder> deferredParentHopsParticipantIds = new HashSet<>();
     private Map<String, DeferrableRegistration> deferredMulticastRegistrations = new HashMap<>();
+    private boolean ready = false;
 
     @Inject
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
@@ -125,12 +126,14 @@ public class LibJoynrMessageRouter extends AbstractMessageRouter {
     @Override
     public void addNextHop(final String participantId, final Address address, final boolean isGloballyVisible) {
         super.addNextHop(participantId, address, isGloballyVisible);
-        if (parentRouter != null) {
-            addNextHopToParent(participantId, isGloballyVisible);
-        } else {
-            deferredParentHopsParticipantIds.add(new ParticipantIdAndIsGloballyVisibleHolder(participantId,
-                                                                                             isGloballyVisible));
+        synchronized (this) {
+            if (!ready) {
+                deferredParentHopsParticipantIds.add(new ParticipantIdAndIsGloballyVisibleHolder(participantId,
+                                                                                                 isGloballyVisible));
+                return;
+            }
         }
+        addNextHopToParent(participantId, isGloballyVisible);
     }
 
     @Override
@@ -176,14 +179,14 @@ public class LibJoynrMessageRouter extends AbstractMessageRouter {
                 }
             }
         };
-        if (parentRouter != null) {
-            registerWithParent.register();
-        } else {
-            synchronized (deferredMulticastRegistrations) {
+        synchronized (this) {
+            if (!ready) {
                 deferredMulticastRegistrations.put(multicastId + subscriberParticipantId + providerParticipantId,
                                                    registerWithParent);
+                return;
             }
         }
+        registerWithParent.register();
     }
 
     @Override
@@ -191,11 +194,11 @@ public class LibJoynrMessageRouter extends AbstractMessageRouter {
                                         String subscriberParticipantId,
                                         String providerParticipantId) {
         super.removeMulticastReceiver(multicastId, subscriberParticipantId, providerParticipantId);
-        if (parentRouter == null) {
-            synchronized (deferredMulticastRegistrations) {
+        synchronized (this) {
+            if (!ready) {
                 deferredMulticastRegistrations.remove(multicastId + subscriberParticipantId + providerParticipantId);
+                return;
             }
-            return;
         }
         Address providerAddress = routingTable.get(providerParticipantId);
         if (providerAddress == null || !(providerAddress instanceof InProcessAddress)) {
@@ -214,16 +217,17 @@ public class LibJoynrMessageRouter extends AbstractMessageRouter {
         final boolean isGloballyVisible = false;
         super.addNextHop(parentRoutingProviderParticipantId, parentRouterMessagingAddress, isGloballyVisible);
         addNextHopToParent(routingProxyParticipantId, isGloballyVisible);
-        for (ParticipantIdAndIsGloballyVisibleHolder participantIds : deferredParentHopsParticipantIds) {
-            addNextHopToParent(participantIds.participantId, participantIds.isGloballyVisible);
-        }
-        synchronized (deferredMulticastRegistrations) {
+        synchronized (this) {
+            for (ParticipantIdAndIsGloballyVisibleHolder participantIds : deferredParentHopsParticipantIds) {
+                addNextHopToParent(participantIds.participantId, participantIds.isGloballyVisible);
+            }
+            deferredParentHopsParticipantIds.clear();
             for (DeferrableRegistration registerWithParent : deferredMulticastRegistrations.values()) {
                 registerWithParent.register();
             }
             deferredMulticastRegistrations.clear();
+            ready = true;
         }
-        deferredParentHopsParticipantIds.clear();
     }
 
     /**
