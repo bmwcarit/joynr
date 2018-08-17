@@ -47,6 +47,10 @@ public class GenerateStatelessAsyncCallbackInterfaceTest extends AbstractJoynrJa
                 testResult.setStatelessAsyncCallbackInterfaceFound(true);
                 testResult.setExtendsStatelessAsyncCallback(fileContent.contains("import io.joynr.proxy.StatelessAsyncCallback;")
                         && fileContent.contains("extends StatelessAsyncCallback"));
+                testResult.setReadWriteAttributeFound(fileContent.contains("getTestAttributeSuccess")
+                        && fileContent.contains("setTestAttributeSuccess"));
+                testResult.setReadOnlyAttributeFound(fileContent.contains("getTestReadOnlyAttributeSuccess")
+                        && !fileContent.contains("setTestReadOnlyAttributeSuccess"));
                 Matcher noOutMethodMatcher = noOutMethodPattern.matcher(fileContent);
                 testResult.setNoOutMethodFound(noOutMethodMatcher.find()
                         && !noOutMethodMatcher.find(noOutMethodMatcher.end()));
@@ -55,7 +59,7 @@ public class GenerateStatelessAsyncCallbackInterfaceTest extends AbstractJoynrJa
                 testResult.setOneInOneOutMethodFound(fileContent.contains("default void oneInOneOutMethodSuccess(")
                         && fileContent.contains("String oneOutData"));
                 testResult.setTwoInOneOutMethodFound(fileContent.contains("default void twoInOneOutMethodSuccess(")
-                        && fileContent.contains("String twoOutDataOne"));
+                        && fileContent.contains("String twoOutData"));
                 testResult.setOneInTwoOutMethodFound(fileContent.contains("default void oneInOneOutMethodSuccess(")
                         && fileContent.contains("String threeOutDataOne")
                         && fileContent.contains("String threeOutDataTwo"));
@@ -63,16 +67,14 @@ public class GenerateStatelessAsyncCallbackInterfaceTest extends AbstractJoynrJa
                         && fileContent.contains("String outData"));
                 testResult.setWithErrorMethodFailedFound(fileContent.contains("default void withErrorFailed(")
                         && fileContent.contains("joynr.statelessasync.StatelessAsyncTest.WithErrorErrorEnum error,"));
-                testResult.setReadWriteAttributeFound(fileContent.contains("getTestAttributeSuccess")
-                        && fileContent.contains("setTestAttributeSuccess"));
-                testResult.setReadOnlyAttributeFound(fileContent.contains("getTestReadOnlyAttributeSuccess")
-                        && !fileContent.contains("setTestReadOnlyAttributeSuccess"));
                 testResult.setTestTypeInputImportNotFound(!fileContent.contains("import joynr.statelessasync.testTypeCollection.TestTypeInput;"));
                 testResult.setTestTypeOutputImportFound(fileContent.contains("import joynr.statelessasync.testTypeCollection.TestTypeOutput;"));
             }
         });
         assertTrue(testResult.isStatelessAsyncCallbackInterfaceFound());
         assertTrue(testResult.isExtendsStatelessAsyncCallback());
+        assertTrue(testResult.isReadWriteAttributeFound());
+        assertTrue(testResult.isReadOnlyAttributeFound());
         assertTrue(testResult.isNoOutMethodFound());
         assertTrue(testResult.isNoInOneOutMethodFound());
         assertTrue(testResult.isOneInOneOutMethodFound());
@@ -80,8 +82,6 @@ public class GenerateStatelessAsyncCallbackInterfaceTest extends AbstractJoynrJa
         assertTrue(testResult.isOneInTwoOutMethodFound());
         assertTrue(testResult.isWithErrorMethodFound());
         assertTrue(testResult.isWithErrorMethodFailedFound());
-        assertTrue(testResult.isReadWriteAttributeFound());
-        assertTrue(testResult.isReadOnlyAttributeFound());
         assertTrue(testResult.isTestTypeInputImportNotFound());
         assertTrue(testResult.isTestTypeOutputImportFound());
     }
@@ -89,6 +89,8 @@ public class GenerateStatelessAsyncCallbackInterfaceTest extends AbstractJoynrJa
     private static class TestResult {
         boolean statelessAsyncCallbackInterfaceFound;
         boolean extendsStatelessAsyncCallback;
+        boolean readWriteAttributeFound;
+        boolean readOnlyAttributeFound;
         boolean noOutMethodFound;
         boolean noInOneOutMethodFound;
         boolean oneInOneOutMethodFound;
@@ -96,8 +98,6 @@ public class GenerateStatelessAsyncCallbackInterfaceTest extends AbstractJoynrJa
         boolean oneInTwoOutMethodFound;
         boolean withErrorMethodFound;
         boolean withErrorMethodFailedFound;
-        boolean readWriteAttributeFound;
-        boolean readOnlyAttributeFound;
         boolean testTypeInputImportNotFound;
         boolean testTypeOutputImportFound;
 

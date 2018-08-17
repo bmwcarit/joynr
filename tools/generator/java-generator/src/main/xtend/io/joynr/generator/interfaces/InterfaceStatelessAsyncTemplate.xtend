@@ -52,7 +52,7 @@ import io.joynr.proxy.MessageIdCallback;
 import io.joynr.UsedBy;
 «ENDIF»
 
-«FOR datatype: getRequiredIncludesFor(francaIntf, true, true, true, false, false, false)»
+«FOR datatype: getRequiredStatelessAsyncIncludesFor(francaIntf)»
 	import «datatype»;
 «ENDFOR»
 

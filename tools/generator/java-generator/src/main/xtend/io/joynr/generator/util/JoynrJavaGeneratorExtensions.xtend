@@ -147,9 +147,20 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 		return includeSet;
 	}
 
-	def Iterable<String> getRequiredCallbackIncludesFor(FInterface serviceInterface) {
+	def Iterable<String> getRequiredStatelessAsyncIncludesFor(FInterface serviceInterface) {
 		val includeSet = new TreeSet<String>()
-		for (datatype : getAllComplexCallbackTypes(serviceInterface)) {
+		for (datatype : getAllComplexStatelessAsyncTypes(serviceInterface, true, false)) {
+			val include = getIncludeOf(datatype)
+			if (include != null) {
+				includeSet.add(include)
+			}
+		}
+		includeSet
+	}
+
+	def Iterable<String> getRequiredStatelessAsyncCallbackIncludesFor(FInterface serviceInterface) {
+		val includeSet = new TreeSet<String>()
+		for (datatype : getAllComplexStatelessAsyncTypes(serviceInterface, false, true)) {
 			val include = getIncludeOf(datatype)
 			if (include != null) {
 				includeSet.add(include)

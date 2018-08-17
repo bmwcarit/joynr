@@ -53,7 +53,7 @@ import io.joynr.proxy.StatelessAsyncCallback;
 import io.joynr.dispatcher.rpc.annotation.StatelessCallbackCorrelation;
 import io.joynr.UsedBy;
 
-«FOR datatype: getRequiredCallbackIncludesFor(francaIntf)»
+«FOR datatype: getRequiredStatelessAsyncCallbackIncludesFor(francaIntf)»
 	import «datatype»;
 «ENDFOR»
 

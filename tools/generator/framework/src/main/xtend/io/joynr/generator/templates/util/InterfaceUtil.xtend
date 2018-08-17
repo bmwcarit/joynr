@@ -180,10 +180,10 @@ public class InterfaceUtil {
 
 	def addTypesFromAttributes(
 			FInterface fInterface,
-            boolean readAttributes,
-            boolean writeAttributes,
-            boolean notifyAttributes,
-            Set<Object> typeList
+			boolean readAttributes,
+			boolean writeAttributes,
+			boolean notifyAttributes,
+			Set<Object> typeList
 	) {
 		for (attribute : getAttributes(fInterface)) {
 			if ((readAttributes && attribute.readable)
@@ -238,12 +238,14 @@ public class InterfaceUtil {
 		getAllRequiredTypes(fInterface, selector).filterComplex(selector.typeDefs)
 	}
 
-	def getAllComplexCallbackTypes(
-			FInterface fInterface
+	def getAllComplexStatelessAsyncTypes(
+			FInterface fInterface,
+			boolean includeMethodInput,
+			boolean includeMethodOutput
 	) {
 		val typeList = new HashSet<Object>()
 		addTypesFromAttributes(fInterface, true, true, false, typeList)
-		addTypesFromMethod(fInterface, false, true, false, true, typeList)
+		addTypesFromMethod(fInterface, false, true, includeMethodInput, includeMethodOutput, typeList)
 		typeList.filterComplex(false)
 	}
 

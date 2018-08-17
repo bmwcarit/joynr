@@ -20,15 +20,15 @@ package statelessasync
 
 typeCollection testTypeCollection {
 
-    version {major 0 minor 1}
+	version {major 0 minor 1}
 
-    struct TestTypeInput {
-        String testMemberIn
-    }
+	struct TestTypeInput {
+		String testMemberIn
+	}
 
-    struct TestTypeOutput {
-        String testMemberOut
-    }
+	struct TestTypeOutput {
+		String testMemberOut
+	}
 }
 
 interface StatelessAsyncTest {
@@ -45,16 +45,16 @@ interface StatelessAsyncTest {
 	}
 
 	method noOutMethod {
-	    in {
-	        String noOutInDataOne
-	        String noOutInDataTwo
-	    }
+		in {
+			String noOutInDataOne
+			String noOutInDataTwo
+		}
 	}
 
 	method noInOneOutMethod {
-	    out {
-	        String noInOutData
-	    }
+		out {
+			String noInOutData
+		}
 	}
 
 	method oneInOneOutMethod {
@@ -62,51 +62,51 @@ interface StatelessAsyncTest {
 			String oneInData
 		}
 		out {
-		    String oneOutData
+			String oneOutData
 		}
 	}
 
 	method twoInOneOutMethod {
-	    in {
-	        String twoInDataOne
-	        String twoInDataTwo
-	    }
-	    out {
-	        String twoOutDataOne
-	    }
+		in {
+			String twoInDataOne
+			String twoInDataTwo
+		}
+		out {
+			String twoOutData
+		}
 	}
 
 	method oneInTwoOutMethod {
-	    in {
-	        String threeInData
-	    }
-	    out {
-	        String threeOutDataOne
-	        String threeOutDataTwo
-	    }
+		in {
+			String threeInData
+		}
+		out {
+			String threeOutDataOne
+			String threeOutDataTwo
+		}
 	}
 
 	method withError {
-	    in {
-	        String inData
-	    }
-	    out {
-	        String outData
-	    }
-	    error {
-	        TEST_ERROR
-	    }
+		in {
+			String inData
+		}
+		out {
+			String outData
+		}
+		error {
+			TEST_ERROR
+		}
 	}
 
 	method withInputOnlyType {
-	    in {
-	        testTypeCollection.TestTypeInput inData
-	    }
+		in {
+			testTypeCollection.TestTypeInput inData
+		}
 	}
 
 	method withOutputType {
-	    out {
-	        testTypeCollection.TestTypeOutput outData
-	    }
+		out {
+			testTypeCollection.TestTypeOutput outData
+		}
 	}
 }

@@ -42,10 +42,15 @@ public class GenerateStatelessAsyncInterfaceTest extends AbstractJoynrJavaGenera
                 testResult.setStatelessAsyncInterfaceFound(true);
                 testResult.setStatelessAsyncAnnotationAdded(fileContent.contains("import io.joynr.StatelessAsync;")
                         && fileContent.contains("@StatelessAsync"));
+                testResult.setReadWriteAttributeFound(fileContent.contains("getTestAttribute(")
+                        && fileContent.contains("setTestAttribute("));
+                testResult.setReadOnlyAttributeFound(fileContent.contains("getTestReadOnlyAttribute(")
+                        && !fileContent.contains("setTestReadOnlyAttribute("));
                 testResult.setOneInNoOutMethodFound(fileContent.contains("void noOutMethod(")
                         && fileContent.contains("String noOutInData") && fileContent.contains("noOutInDataOne")
                         && fileContent.contains("noOutInDataTwo"));
-                testResult.setNoInOneOutMethodFound(fileContent.contains("void noInOneOutMethod("));
+                testResult.setNoInOneOutMethodFound(fileContent.contains("void noInOneOutMethod(")
+                        && !fileContent.contains("String noInOutData"));
                 testResult.setOneInOneOutMethodFound(fileContent.contains("void oneInOneOutMethod(")
                         && fileContent.contains("String oneInData"));
                 testResult.setTwoInOneOutMethodFound(fileContent.contains("void twoInOneOutMethod(")
@@ -54,32 +59,37 @@ public class GenerateStatelessAsyncInterfaceTest extends AbstractJoynrJavaGenera
                         && fileContent.contains("String threeInData"));
                 testResult.setWithErrorMethodFound(fileContent.contains("void withError(")
                         && fileContent.contains("String inData"));
-                testResult.setReadWriteAttributeFound(fileContent.contains("getTestAttribute(")
-                        && fileContent.contains("setTestAttribute("));
-                testResult.setReadOnlyAttributeFound(fileContent.contains("getTestReadOnlyAttribute(")
-                        && !fileContent.contains("setTestReadOnlyAttribute("));
+                testResult.setTestTypeInputImportFound(fileContent.contains("import joynr.statelessasync.testTypeCollection.TestTypeInput;"));
+                testResult.setTestTypeOutputImportNotFound(!fileContent.contains("import joynr.statelessasync.testTypeCollection.TestTypeOutput;"));
             }
         });
         assertTrue(testResult.isStatelessAsyncInterfaceFound());
         assertTrue(testResult.isStatelessAsyncAnnotationAdded());
+        assertTrue(testResult.isReadWriteAttributeFound());
+        assertTrue(testResult.isReadOnlyAttributeFound());
         assertTrue(testResult.isOneInNoOutMethodFound());
         assertTrue(testResult.isNoInOneOutMethodFound());
         assertTrue(testResult.isOneInOneOutMethodFound());
-        assertTrue(testResult.isOneInTwoOutMethodFound());
         assertTrue(testResult.isTwoInOneOutMethodFound());
+        assertTrue(testResult.isOneInTwoOutMethodFound());
+        assertTrue(testResult.isWithErrorMethodFound());
+        assertTrue(testResult.isTestTypeInputImportFound());
+        assertTrue(testResult.isTestTypeOutputImportNotFound());
     }
 
     private static class TestResult {
         boolean statelessAsyncInterfaceFound;
         boolean statelessAsyncAnnotationAdded;
+        boolean readWriteAttributeFound;
+        boolean readOnlyAttributeFound;
         boolean oneInNoOutMethodFound;
         boolean noInOneOutMethodFound;
         boolean oneInOneOutMethodFound;
-        boolean oneInTwoOutMethodFound;
         boolean twoInOneOutMethodFound;
+        boolean oneInTwoOutMethodFound;
         boolean withErrorMethodFound;
-        boolean readWriteAttributeFound;
-        boolean readOnlyAttributeFound;
+        boolean testTypeInputImportFound;
+        boolean testTypeOutputImportNotFound;
 
         public boolean isStatelessAsyncInterfaceFound() {
             return statelessAsyncInterfaceFound;
@@ -159,6 +169,22 @@ public class GenerateStatelessAsyncInterfaceTest extends AbstractJoynrJavaGenera
 
         public void setReadOnlyAttributeFound(boolean readOnlyAttributeFound) {
             this.readOnlyAttributeFound = readOnlyAttributeFound;
+        }
+
+        public boolean isTestTypeInputImportFound() {
+            return testTypeInputImportFound;
+        }
+
+        public void setTestTypeInputImportFound(boolean testTypeInputImportFound) {
+            this.testTypeInputImportFound = testTypeInputImportFound;
+        }
+
+        public boolean isTestTypeOutputImportNotFound() {
+            return testTypeOutputImportNotFound;
+        }
+
+        public void setTestTypeOutputImportNotFound(boolean testTypeOutputImportNotFound) {
+            this.testTypeOutputImportNotFound = testTypeOutputImportNotFound;
         }
     }
 }
