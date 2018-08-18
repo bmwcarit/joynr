@@ -24,6 +24,7 @@ import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -31,6 +32,8 @@ import static org.mockito.Mockito.when;
 import java.lang.reflect.Method;
 import java.util.Set;
 
+import io.joynr.StatelessAsync;
+import io.joynr.dispatcher.rpc.annotation.StatelessCallbackCorrelation;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -94,6 +97,7 @@ public class ConnectorTest {
     private Callback<Void> voidCallback;
 
     private String fromParticipantId;
+    private String statelessAsyncParticipantId;
     private String toParticipantId;
     private DiscoveryEntryWithMetaInfo toDiscoveryEntry;
     private Set<DiscoveryEntryWithMetaInfo> toDiscoveryEntries;
@@ -174,6 +178,12 @@ public class ConnectorTest {
         void someMethodwithoutAnnotations(Integer a, String b) throws JsonMappingException;
 
         Future<Void> methodWithoutParameters(@JoynrRpcCallback(deserializationType = Void.class) Callback<Void> callback);
+    }
+
+    @StatelessAsync
+    interface TestStatelessAsyncInterface {
+        @StatelessCallbackCorrelation("correlationId")
+        void testMethod(MessageIdCallback messageIdCallback);
     }
 
     @Test
@@ -424,6 +434,31 @@ public class ConnectorTest {
         }
     }
 
+    @Test
+    public void executeStatelessAsyncCallsRequestReplyManagerCorrectly() throws Exception {
+        statelessAsyncParticipantId = "statelessAsyncParticipantId";
+        ConnectorInvocationHandler connector = createConnector();
+        Method method = TestStatelessAsyncInterface.class.getMethod("testMethod",
+                                                                    new Class[]{ MessageIdCallback.class });
+        StatelessAsyncCallback statelessAsyncCallback = mock(StatelessAsyncCallback.class);
+        when(statelessAsyncCallback.getUseCase()).thenReturn("useCase");
+        MessageIdCallback messageIdCallback = mock(MessageIdCallback.class);
+        when(statelessAsyncIdCalculator.calculateStatelessCallbackRequestReplyId(eq(method))).thenReturn("requestReplyId");
+        when(statelessAsyncIdCalculator.calculateStatelessCallbackMethodId(eq(method))).thenReturn("correlationId");
+        connector.executeStatelessAsyncMethod(method,
+                                              new Object[]{ messageIdCallback },
+                                              "TestStatelessAsyncInterface",
+                                              statelessAsyncCallback);
+        ArgumentCaptor<Request> captor = ArgumentCaptor.forClass(Request.class);
+        verify(requestReplyManager).sendRequest(eq(statelessAsyncParticipantId),
+                                                eq(toDiscoveryEntry),
+                                                captor.capture(),
+                                                any());
+        Request request = captor.getValue();
+        assertEquals("correlationId", request.getStatelessCallback());
+        assertEquals("requestReplyId", request.getRequestReplyId());
+    }
+
     private ConnectorInvocationHandler createConnector() {
         ArbitrationResult arbitrationResult = new ArbitrationResult();
         arbitrationResult.setDiscoveryEntries(toDiscoveryEntries);
@@ -437,7 +472,7 @@ public class ConnectorTest {
         ConnectorInvocationHandler connector = connectorFactory.create(fromParticipantId,
                                                                        arbitrationResult,
                                                                        qosSettings,
-                                                                       null);
+                                                                       statelessAsyncParticipantId);
         return connector;
     }
 }
