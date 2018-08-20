@@ -27,12 +27,21 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
-import com.google.common.collect.Sets;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.runners.MockitoJUnitRunner;
+
 import io.joynr.Sync;
 import io.joynr.arbitration.ArbitrationResult;
 import io.joynr.arbitration.DiscoveryQos;
@@ -45,14 +54,6 @@ import io.joynr.proxy.invocation.MulticastSubscribeInvocation;
 import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
 import joynr.exceptions.ApplicationException;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
-
 import joynr.types.DiscoveryEntryWithMetaInfo;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -92,7 +93,7 @@ public class ProxyInvocationHandlerTest {
         proxy = new Object();
         connectorFactory = Mockito.mock(ConnectorFactory.class);
         mockMessageRouter = Mockito.mock(MessageRouter.class);
-        proxyInvocationHandler = new ProxyInvocationHandlerImpl(Sets.newHashSet(domain),
+        proxyInvocationHandler = new ProxyInvocationHandlerImpl(new HashSet(Arrays.asList(domain)),
                                                                 interfaceName,
                                                                 proxyParticipantId,
                                                                 discoveryQos,
@@ -139,7 +140,7 @@ public class ProxyInvocationHandlerTest {
         ArbitrationResult arbitrationResult = new ArbitrationResult();
         DiscoveryEntryWithMetaInfo discoveryEntry = new DiscoveryEntryWithMetaInfo();
         discoveryEntry.setParticipantId("participantId");
-        arbitrationResult.setDiscoveryEntries(Sets.newHashSet(discoveryEntry));
+        arbitrationResult.setDiscoveryEntries(new HashSet(Arrays.asList(discoveryEntry)));
         proxyInvocationHandler.createConnector(arbitrationResult);
 
         // if the bug that causes one thread to hang in arbitration exists, one
@@ -161,7 +162,7 @@ public class ProxyInvocationHandlerTest {
         ArbitrationResult arbitrationResult = new ArbitrationResult();
         DiscoveryEntryWithMetaInfo discoveryEntry = new DiscoveryEntryWithMetaInfo();
         discoveryEntry.setParticipantId("participantId");
-        arbitrationResult.setDiscoveryEntries(Sets.newHashSet(discoveryEntry));
+        arbitrationResult.setDiscoveryEntries(new HashSet(Arrays.asList(discoveryEntry)));
         proxyInvocationHandler.createConnector(arbitrationResult);
         proxyInvocationHandler.invokeInternal(proxy, fireAndForgetMethod, args);
 
@@ -215,7 +216,7 @@ public class ProxyInvocationHandlerTest {
         ArbitrationResult arbitrationResult = new ArbitrationResult();
         DiscoveryEntryWithMetaInfo discoveryEntry = new DiscoveryEntryWithMetaInfo();
         discoveryEntry.setParticipantId("participantId");
-        arbitrationResult.setDiscoveryEntries(Sets.newHashSet(discoveryEntry));
+        arbitrationResult.setDiscoveryEntries(new HashSet(Arrays.asList(discoveryEntry)));
         proxyInvocationHandler.createConnector(arbitrationResult);
         proxyInvocationHandler.invokeInternal(proxy, subscribeMethod, args);
 

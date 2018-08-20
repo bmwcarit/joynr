@@ -19,6 +19,7 @@
 package io.joynr.discovery.jee;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,8 +31,6 @@ import javax.transaction.Transactional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.Sets;
 
 import io.joynr.capabilities.CapabilityUtils;
 import io.joynr.capabilities.GlobalDiscoveryEntryPersisted;
@@ -99,7 +98,7 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
         List<GlobalDiscoveryEntryPersisted> queryResult = entityManager.createQuery(queryString,
                                                                                     GlobalDiscoveryEntryPersisted.class)
                                                                        .setParameter("domains",
-                                                                                     Sets.newHashSet(domains))
+                                                                                     new HashSet(Arrays.asList(domains)))
                                                                        .setParameter("interfaceName", interfaceName)
                                                                        .getResultList();
         logger.debug("Found discovery entries: {}", queryResult);
@@ -122,7 +121,7 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
         logger.debug("Removing global discovery entries with IDs {}", Arrays.toString(participantIds));
         String queryString = "delete from GlobalDiscoveryEntryPersisted gdep where gdep.participantId in :participantIds";
         int deletedCount = entityManager.createQuery(queryString, GlobalDiscoveryEntryPersisted.class)
-                                        .setParameter("participantIds", Sets.newHashSet(participantIds))
+                                        .setParameter("participantIds", new HashSet(Arrays.asList(participantIds)))
                                         .executeUpdate();
         logger.debug("Deleted {} entries (number of IDs passed in {})", deletedCount, participantIds.length);
     }

@@ -18,17 +18,12 @@
  */
 package io.joynr.common;
 
-import io.joynr.loading.FolderUriProvider;
-import io.joynr.loading.IUriProvider;
-import io.joynr.loading.ModelStore;
-
 import java.io.File;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
 import javax.inject.Inject;
-
-import junit.framework.TestCase;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
@@ -43,11 +38,15 @@ import org.franca.core.dsl.FrancaIDLTestsInjectorProvider;
 import org.junit.runner.RunWith;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.google.inject.Binder;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Module;
+
+import io.joynr.loading.FolderUriProvider;
+import io.joynr.loading.IUriProvider;
+import io.joynr.loading.ModelStore;
+import junit.framework.TestCase;
 
 @RunWith(XtextRunner.class)
 @InjectWith(FrancaIDLTestsInjectorProvider.class)
@@ -89,7 +88,7 @@ public abstract class AbstractGeneratorTest extends TestCase {
         File file = new File(fileName);
         IUriProvider uriProvider = null;
         if (file.isDirectory()) {
-            uriProvider = new FolderUriProvider(Sets.newHashSet("fidl"), file);
+            uriProvider = new FolderUriProvider(new HashSet(Arrays.asList("fidl")), file);
         } else {
             uriProvider = new IUriProvider() {
 

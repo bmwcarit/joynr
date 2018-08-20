@@ -31,8 +31,6 @@ import java.util.concurrent.Semaphore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Sets;
-
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrShutdownException;
@@ -358,7 +356,7 @@ public class Arbitrator {
                     }
                 }
             } else {
-                discoveryEntriesSet = Sets.newHashSet(discoveryEntries);
+                discoveryEntriesSet = new HashSet(Arrays.asList(discoveryEntries));
             }
             discoveryEntriesSet = discoveryEntryVersionFilter.filter(interfaceVersion,
                                                                      discoveryEntriesSet,

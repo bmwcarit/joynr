@@ -21,14 +21,15 @@ package io.joynr.generator.loading;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 
 import org.apache.log4j.Logger;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 
 public class ModelLoader {
 
@@ -43,7 +44,7 @@ public class ModelLoader {
             File file = modelFile;
 
             if (file.isDirectory()) {
-                uriProvider = new FolderUriProvider(Sets.newHashSet("fidl"), file);
+                uriProvider = new FolderUriProvider(new HashSet(Arrays.asList("fidl")), file);
             } else {
                 final URI uri = URI.createFileURI(modelFile.getAbsolutePath());
                 uriProvider = new IUriProvider() {

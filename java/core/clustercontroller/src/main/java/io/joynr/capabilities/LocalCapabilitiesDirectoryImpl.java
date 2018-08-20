@@ -39,7 +39,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -413,7 +412,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                   DiscoveryQos discoveryQos,
                                   CapabilitiesCallback capabilitiesCallback,
                                   Set<DiscoveryEntryWithMetaInfo> globalDiscoveryEntries) {
-        Set<String> domainsForGlobalLookup = Sets.newHashSet(domains);
+        Set<String> domainsForGlobalLookup = new HashSet(Arrays.asList(domains));
         for (DiscoveryEntry discoveryEntry : globalDiscoveryEntries) {
             domainsForGlobalLookup.remove(discoveryEntry.getDomain());
         }

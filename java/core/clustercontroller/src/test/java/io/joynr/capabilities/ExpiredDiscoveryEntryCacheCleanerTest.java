@@ -24,13 +24,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import com.google.common.collect.Sets;
-import joynr.types.DiscoveryEntry;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,6 +37,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import joynr.types.DiscoveryEntry;
 
 /**
  * Unit tests for the {@link ExpiredDiscoveryEntryCacheCleaner}.
@@ -95,6 +96,6 @@ public class ExpiredDiscoveryEntryCacheCleanerTest {
         Runnable cleanupTask = runnableArgumentCaptor.getValue();
         cleanupTask.run();
         verify(cache).getAllDiscoveryEntries();
-        verify(cleanupAction).cleanup(Sets.newHashSet(expiredEntry));
+        verify(cleanupAction).cleanup(new HashSet(Arrays.asList(expiredEntry)));
     }
 }

@@ -18,6 +18,9 @@
  */
 package io.joynr.accesscontrol.global.jee;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -27,7 +30,6 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 
-import com.google.common.collect.Sets;
 import io.joynr.accesscontrol.global.jee.persistence.ControlEntryType;
 import io.joynr.accesscontrol.global.jee.persistence.MasterRegistrationControlEntryEntity;
 import io.joynr.exceptions.JoynrIllegalStateException;
@@ -64,9 +66,9 @@ public class MasterRegistrationControlEntryManager {
     }
 
     private MasterRegistrationControlEntry mapEntityToJoynrType(MasterRegistrationControlEntryEntity entity) {
-        Set<TrustLevel> possibleRequiredTrustLevels = Sets.newHashSet(entity.getPossibleRequiredTrustLevels());
-        Set<TrustLevel> possibleRequiredControlEntryChangeTrustLevels = Sets.newHashSet(entity.getPossibleRequiredControlEntryChangeTrustLevels());
-        Set<Permission> possibleProviderPermissions = Sets.newHashSet(entity.getDefaultProviderPermission());
+        Set<TrustLevel> possibleRequiredTrustLevels = Collections.unmodifiableSet(entity.getPossibleRequiredTrustLevels());
+        Set<TrustLevel> possibleRequiredControlEntryChangeTrustLevels = Collections.unmodifiableSet(entity.getPossibleRequiredControlEntryChangeTrustLevels());
+        Set<Permission> possibleProviderPermissions = new HashSet(Arrays.asList(entity.getDefaultProviderPermission()));
         MasterRegistrationControlEntry entry = new MasterRegistrationControlEntry(entity.getUserId(),
                                                                                   entity.getDomain(),
                                                                                   entity.getInterfaceName(),
@@ -142,11 +144,11 @@ public class MasterRegistrationControlEntryManager {
             entityManager.persist(entity);
         }
         entity.setDefaultRequiredTrustLevel(updatedMasterRce.getDefaultRequiredTrustLevel());
-        entity.setPossibleRequiredTrustLevels(Sets.newHashSet(updatedMasterRce.getPossibleRequiredTrustLevels()));
+        entity.setPossibleRequiredTrustLevels(new HashSet(Arrays.asList(updatedMasterRce.getPossibleRequiredTrustLevels())));
         entity.setDefaultRequiredControlEntryChangeTrustLevel(updatedMasterRce.getDefaultRequiredControlEntryChangeTrustLevel());
-        entity.setPossibleRequiredControlEntryChangeTrustLevels(Sets.newHashSet(updatedMasterRce.getPossibleRequiredControlEntryChangeTrustLevels()));
+        entity.setPossibleRequiredControlEntryChangeTrustLevels(new HashSet(Arrays.asList(updatedMasterRce.getPossibleRequiredControlEntryChangeTrustLevels())));
         entity.setDefaultProviderPermission(updatedMasterRce.getDefaultProviderPermission());
-        entity.setPossibleProviderPermissions(Sets.newHashSet(updatedMasterRce.getPossibleProviderPermissions()));
+        entity.setPossibleProviderPermissions(new HashSet(Arrays.asList(updatedMasterRce.getPossibleProviderPermissions())));
         return new CreateOrUpdateResult<>(mapEntityToJoynrType(entity), created ? ChangeType.ADD : ChangeType.UPDATE);
     }
 

@@ -24,7 +24,6 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 
 import java.util.ArrayList;
@@ -35,6 +34,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -52,7 +52,6 @@ import org.mockito.stubbing.Answer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Sets;
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
@@ -72,9 +71,9 @@ import io.joynr.capabilities.GlobalCapabilitiesDirectoryClient;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.capabilities.LocalCapabilitiesDirectoryImpl;
 import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.messaging.routing.TestGlobalAddressModule;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.messaging.routing.TestGlobalAddressModule;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.ConnectorFactory;
 import io.joynr.proxy.Future;
@@ -450,7 +449,7 @@ public class LocalDiscoveryTest {
             @Override
             public Set<DiscoveryEntryWithMetaInfo> select(Map<String, String> parameters,
                                                           Collection<DiscoveryEntryWithMetaInfo> capabilities) {
-                return Sets.newHashSet(capabilities);
+                return capabilities.stream().collect(Collectors.toSet());
             }
         };
         DiscoveryQos discoveryQos = new DiscoveryQos(30000,

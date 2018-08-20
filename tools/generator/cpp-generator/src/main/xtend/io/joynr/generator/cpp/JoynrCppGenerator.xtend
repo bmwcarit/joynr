@@ -17,7 +17,6 @@ package io.joynr.generator.cpp
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import com.google.common.collect.Sets
 import com.google.inject.AbstractModule
 import com.google.inject.assistedinject.FactoryModuleBuilder
 import io.joynr.generator.IJoynrGenerator
@@ -33,6 +32,8 @@ import io.joynr.generator.util.FileSystemAccessUtil
 import io.joynr.generator.util.InvocationArguments
 import java.io.File
 import java.util.Map
+import java.util.Arrays
+import java.util.HashSet
 import javax.inject.Inject
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.IFileSystemAccess
@@ -148,7 +149,7 @@ class JoynrCppGenerator implements IJoynrGenerator{
 	}
 
 	override supportedParameters() {
-		Sets::newHashSet(OUTPUT_HEADER_PATH);
+		new HashSet(Arrays.asList(OUTPUT_HEADER_PATH));
 	}
 
 	def getOutputHeaderPath() {

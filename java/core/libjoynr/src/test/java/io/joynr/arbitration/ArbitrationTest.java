@@ -34,6 +34,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -55,7 +56,6 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 
 import io.joynr.discovery.LocalDiscoveryAggregator;
 import io.joynr.exceptions.DiscoveryException;
@@ -203,7 +203,7 @@ public class ArbitrationTest {
         discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, ArbitrationStrategy.Keyword, Long.MAX_VALUE);
         discoveryQos.addCustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, testKeyword);
         try {
-            Arbitrator arbitrator = ArbitratorFactory.create(Sets.newHashSet(domain),
+            Arbitrator arbitrator = ArbitratorFactory.create(new HashSet(Arrays.asList(domain)),
                                                              interfaceName,
                                                              interfaceVersion,
                                                              discoveryQos,
@@ -258,7 +258,7 @@ public class ArbitrationTest {
         discoveryQos.addCustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, testKeyword);
 
         try {
-            Arbitrator arbitrator = ArbitratorFactory.create(Sets.newHashSet(domain),
+            Arbitrator arbitrator = ArbitratorFactory.create(new HashSet(Arrays.asList(domain)),
                                                              interfaceName,
                                                              interfaceVersion,
                                                              discoveryQos,
@@ -317,7 +317,7 @@ public class ArbitrationTest {
         discoveryQos.addCustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, testKeyword);
         discoveryQos.setProviderMustSupportOnChange(true);
         try {
-            Arbitrator arbitrator = ArbitratorFactory.create(Sets.newHashSet(domain),
+            Arbitrator arbitrator = ArbitratorFactory.create(new HashSet(Arrays.asList(domain)),
                                                              interfaceName,
                                                              interfaceVersion,
                                                              discoveryQos,
@@ -372,7 +372,7 @@ public class ArbitrationTest {
         discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, ArbitrationStrategy.LastSeen, Long.MAX_VALUE);
 
         try {
-            Arbitrator arbitrator = ArbitratorFactory.create(Sets.newHashSet(domain),
+            Arbitrator arbitrator = ArbitratorFactory.create(new HashSet(Arrays.asList(domain)),
                                                              interfaceName,
                                                              interfaceVersion,
                                                              discoveryQos,
@@ -439,7 +439,7 @@ public class ArbitrationTest {
         discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, ArbitrationStrategy.HighestPriority, Long.MAX_VALUE);
 
         try {
-            Arbitrator arbitrator = ArbitratorFactory.create(Sets.newHashSet(domain),
+            Arbitrator arbitrator = ArbitratorFactory.create(new HashSet(Arrays.asList(domain)),
                                                              interfaceName,
                                                              interfaceVersion,
                                                              discoveryQos,
@@ -502,7 +502,7 @@ public class ArbitrationTest {
         discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, ArbitrationStrategy.HighestPriority, Long.MAX_VALUE);
 
         try {
-            Arbitrator arbitrator = ArbitratorFactory.create(Sets.newHashSet(domain),
+            Arbitrator arbitrator = ArbitratorFactory.create(new HashSet(Arrays.asList(domain)),
                                                              interfaceName,
                                                              interfaceVersion,
                                                              discoveryQos,
@@ -578,7 +578,7 @@ public class ArbitrationTest {
         discoveryQos.setProviderMustSupportOnChange(true);
 
         try {
-            Arbitrator arbitrator = ArbitratorFactory.create(Sets.newHashSet(domain),
+            Arbitrator arbitrator = ArbitratorFactory.create(new HashSet(Arrays.asList(domain)),
                                                              interfaceName,
                                                              interfaceVersion,
                                                              discoveryQos,
@@ -615,10 +615,10 @@ public class ArbitrationTest {
 
         ArbitrationStrategyFunction arbitrationStrategyFunction = mock(ArbitrationStrategyFunction.class);
         when(arbitrationStrategyFunction.select(any(Map.class),
-                                                any(Collection.class))).thenReturn(Sets.newHashSet(discoveryEntry));
+                                                any(Collection.class))).thenReturn(new HashSet(Arrays.asList(discoveryEntry)));
         discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, arbitrationStrategyFunction, Long.MAX_VALUE);
 
-        Arbitrator arbitrator = ArbitratorFactory.create(Sets.newHashSet(domain),
+        Arbitrator arbitrator = ArbitratorFactory.create(new HashSet(Arrays.asList(domain)),
                                                          interfaceName,
                                                          interfaceVersion,
                                                          discoveryQos,
@@ -665,7 +665,7 @@ public class ArbitrationTest {
                                                 any(Collection.class))).thenReturn(new HashSet<DiscoveryEntryWithMetaInfo>(capabilitiesList));
         discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, arbitrationStrategyFunction, Long.MAX_VALUE);
 
-        Arbitrator arbitrator = ArbitratorFactory.create(Sets.newHashSet(domain),
+        Arbitrator arbitrator = ArbitratorFactory.create(new HashSet(Arrays.asList(domain)),
                                                          interfaceName,
                                                          interfaceVersion,
                                                          discoveryQos,
@@ -709,7 +709,7 @@ public class ArbitrationTest {
                                                 any(Collection.class))).thenReturn(new HashSet<DiscoveryEntryWithMetaInfo>(capabilitiesList));
         discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, arbitrationStrategyFunction, Long.MAX_VALUE);
 
-        Arbitrator arbitrator = ArbitratorFactory.create(Sets.newHashSet(domain),
+        Arbitrator arbitrator = ArbitratorFactory.create(new HashSet(Arrays.asList(domain)),
                                                          interfaceName,
                                                          interfaceVersion,
                                                          discoveryQos,
@@ -745,7 +745,10 @@ public class ArbitrationTest {
             public Set<DiscoveryEntryWithMetaInfo> answer(InvocationOnMock invocation) throws Throwable {
                 Map<String, Set<Version>> filteredVersions = (Map<String, Set<Version>>) invocation.getArguments()[2];
                 Set<DiscoveryEntryWithMetaInfo> discoveryEntries = (Set<DiscoveryEntryWithMetaInfo>) invocation.getArguments()[1];
-                filteredVersions.put(domain, Sets.newHashSet(discoveryEntries.iterator().next().getProviderVersion()));
+                filteredVersions.put(domain,
+                                     new HashSet(Arrays.asList(discoveryEntries.iterator()
+                                                                               .next()
+                                                                               .getProviderVersion())));
                 discoveryEntries.clear();
                 return new HashSet<>();
             }
@@ -768,7 +771,7 @@ public class ArbitrationTest {
                                                  eq(interfaceName),
                                                  Mockito.<joynr.types.DiscoveryQos> any());
 
-        Arbitrator arbitrator = ArbitratorFactory.create(Sets.newHashSet(domain),
+        Arbitrator arbitrator = ArbitratorFactory.create(new HashSet(Arrays.asList(domain)),
                                                          interfaceName,
                                                          interfaceVersion,
                                                          discoveryQos,
@@ -778,7 +781,7 @@ public class ArbitrationTest {
 
         assertTrue(localDiscoveryAggregatorSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
 
-        Set<Version> discoveredVersions = Sets.newHashSet(incompatibleVersion);
+        Set<Version> discoveredVersions = new HashSet(Arrays.asList(incompatibleVersion));
         ArgumentCaptor<NoCompatibleProviderFoundException> noCompatibleProviderFoundExceptionCaptor = ArgumentCaptor.forClass(NoCompatibleProviderFoundException.class);
         verify(arbitrationCallback).onError(noCompatibleProviderFoundExceptionCaptor.capture());
         assertEquals(discoveredVersions, noCompatibleProviderFoundExceptionCaptor.getValue().getDiscoveredVersions());
@@ -820,8 +823,8 @@ public class ArbitrationTest {
             public Set<DiscoveryEntry> answer(InvocationOnMock invocation) throws Throwable {
                 Set<DiscoveryEntry> discoveryEntries = (Set<DiscoveryEntry>) invocation.getArguments()[1];
                 Map<String, Set<Version>> filteredVersions = (Map<String, Set<Version>>) invocation.getArguments()[2];
-                filteredVersions.put(domain1, Sets.newHashSet(discoveryEntry1.getProviderVersion()));
-                filteredVersions.put(domain2, Sets.newHashSet(discoveryEntry2.getProviderVersion()));
+                filteredVersions.put(domain1, new HashSet(Arrays.asList(discoveryEntry1.getProviderVersion())));
+                filteredVersions.put(domain2, new HashSet(Arrays.asList(discoveryEntry2.getProviderVersion())));
                 discoveryEntries.clear();
                 return new HashSet<>();
             }
@@ -844,7 +847,7 @@ public class ArbitrationTest {
                                                  eq(interfaceName),
                                                  Mockito.<joynr.types.DiscoveryQos> any());
 
-        Arbitrator arbitrator = ArbitratorFactory.create(Sets.newHashSet(domain1, domain2),
+        Arbitrator arbitrator = ArbitratorFactory.create(new HashSet(Arrays.asList(domain1, domain2)),
                                                          interfaceName,
                                                          interfaceVersion,
                                                          discoveryQos,
@@ -854,7 +857,7 @@ public class ArbitrationTest {
 
         assertTrue(localDiscoveryAggregatorSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
 
-        Set<Version> discoveredVersions = Sets.newHashSet(incompatibleVersion);
+        Set<Version> discoveredVersions = new HashSet(Arrays.asList(incompatibleVersion));
         ArgumentCaptor<MultiDomainNoCompatibleProviderFoundException> noCompatibleProviderFoundExceptionCaptor = ArgumentCaptor.forClass(MultiDomainNoCompatibleProviderFoundException.class);
         verify(arbitrationCallback).onError(noCompatibleProviderFoundExceptionCaptor.capture());
         assertEquals(discoveredVersions,

@@ -18,14 +18,15 @@
  */
 package io.joynr.proxy;
 
-import io.joynr.messaging.ConfigurableMessagingSettings;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.inject.Inject;
 
-import com.google.common.collect.Sets;
 import com.google.inject.name.Named;
 
+import io.joynr.messaging.ConfigurableMessagingSettings;
 import joynr.system.DiscoveryAsync;
 
 public class ProxyBuilderFactoryImpl implements ProxyBuilderFactory {
@@ -51,7 +52,7 @@ public class ProxyBuilderFactoryImpl implements ProxyBuilderFactory {
 
     @Override
     public <T> ProxyBuilder<T> get(String domain, Class<T> interfaceClass) {
-        return get(Sets.newHashSet(domain), interfaceClass);
+        return get(new HashSet(Arrays.asList(domain)), interfaceClass);
     }
 
     @Override

@@ -21,8 +21,6 @@ package io.joynr.android.test;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
-import com.google.common.collect.Sets;
-
 import android.util.Log;
 
 import io.joynr.joynrandroidruntime.AndroidProxyBuilder;
@@ -35,7 +33,7 @@ public class AndroidRobolectricProxyBuilder<T> extends AndroidProxyBuilder<T> {
                                           String providerDomain,
                                           Class<T> proxyInterface,
                                           UILogger uiLogger) {
-        super(runtimeInitTask, Sets.newHashSet(providerDomain), proxyInterface, uiLogger);
+        super(runtimeInitTask, new HashSet(Arrays.asList(providerDomain)), proxyInterface, uiLogger);
     }
 
     @Override
