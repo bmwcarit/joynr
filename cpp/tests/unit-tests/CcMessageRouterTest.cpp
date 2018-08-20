@@ -651,21 +651,21 @@ void CcMessageRouterTest::routeMessageAndCheckQueue(const std::string& msgType,
     EXPECT_EQ(this->messageRouter->getNumberOfRoutedMessages(), 1);
 }
 
-TEST_F(CcMessageRouterTest, checkReplyToNonExistingProxyIsDiscarded)
+TEST_F(CcMessageRouterTest, checkReplyToNonExistingProxyIsNotDiscardedWhenDisabled)
 {
-    bool msgShouldBeQueued = false;
+    bool msgShouldBeQueued = true;
     routeMessageAndCheckQueue(Message::VALUE_MESSAGE_TYPE_REPLY(), msgShouldBeQueued);
 }
 
-TEST_F(CcMessageRouterTest, checkSubscriptionReplyToNonExistingRecipientIsDiscarded)
+TEST_F(CcMessageRouterTest, checkSubscriptionReplyToNonExistingRecipientIsNotDiscardedWhenDisabled)
 {
-    bool msgShouldBeQueued = false;
+    bool msgShouldBeQueued = true;
     routeMessageAndCheckQueue(Message::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY(), msgShouldBeQueued);
 }
 
-TEST_F(CcMessageRouterTest, checkPublicationToNonExistingRecipientIsDiscarded)
+TEST_F(CcMessageRouterTest, checkPublicationToNonExistingRecipientIsNotDiscardedWhenDisabled)
 {
-    bool msgShouldBeQueued = false;
+    bool msgShouldBeQueued = true;
     routeMessageAndCheckQueue(Message::VALUE_MESSAGE_TYPE_PUBLICATION(), msgShouldBeQueued);
 }
 
@@ -712,4 +712,33 @@ TEST_F(CcMessageRouterTest, checkSubscriptionStopToNonExistingRecipientIsQueued)
 {
     bool msgShouldBeQueued = true;
     routeMessageAndCheckQueue(Message::VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP(), msgShouldBeQueued);
+}
+
+// special check if discarding is enabled
+
+TEST_F(CcMessageRouterTest, checkReplyToNonExistingProxyIsDiscardedWhenEnabled)
+{
+    messageRouter->shutdown();
+    messagingSettings.setDiscardUnroutableRepliesAndPublications(true);
+    messageRouter = createMessageRouter();
+    bool msgShouldBeQueued = false;
+    routeMessageAndCheckQueue(Message::VALUE_MESSAGE_TYPE_REPLY(), msgShouldBeQueued);
+}
+
+TEST_F(CcMessageRouterTest, checkSubscriptionReplyToNonExistingRecipientIsDiscardedWhenEnabled)
+{
+    messageRouter->shutdown();
+    messagingSettings.setDiscardUnroutableRepliesAndPublications(true);
+    messageRouter = createMessageRouter();
+    bool msgShouldBeQueued = false;
+    routeMessageAndCheckQueue(Message::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY(), msgShouldBeQueued);
+}
+
+TEST_F(CcMessageRouterTest, checkPublicationToNonExistingRecipientIsDiscardedWhenEnabled)
+{
+    messageRouter->shutdown();
+    messagingSettings.setDiscardUnroutableRepliesAndPublications(true);
+    messageRouter = createMessageRouter();
+    bool msgShouldBeQueued = false;
+    routeMessageAndCheckQueue(Message::VALUE_MESSAGE_TYPE_PUBLICATION(), msgShouldBeQueued);
 }

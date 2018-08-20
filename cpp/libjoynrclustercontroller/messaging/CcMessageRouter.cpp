@@ -312,9 +312,10 @@ void CcMessageRouter::routeInternal(std::shared_ptr<ImmutableMessage> message,
                 return;
             }
 
-            if ((message->getType() == Message::VALUE_MESSAGE_TYPE_REPLY()) ||
-                (message->getType() == Message::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY()) ||
-                (message->getType() == Message::VALUE_MESSAGE_TYPE_PUBLICATION())) {
+            if (messagingSettings.getDiscardUnroutableRepliesAndPublications() &&
+                ((message->getType() == Message::VALUE_MESSAGE_TYPE_REPLY()) ||
+                 (message->getType() == Message::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY()) ||
+                 (message->getType() == Message::VALUE_MESSAGE_TYPE_PUBLICATION()))) {
                 // Do not queue reply & publication messages if the proxy is not known.
                 // Prequisite is that for every proxy the associated routing entry has
                 // been added before any request is made.
