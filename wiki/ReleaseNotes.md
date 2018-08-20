@@ -135,6 +135,9 @@ the versioning scheme [here](JoynrVersioning.md).
     * improved performance for serialization and deserialization of messages.
     * prepares future browser support. Rewriting of the websocket related browser part still necessary.
 * **[Java]**  Use `/` instead of `:` in shared subscription topic
+* **[C++]** Added setting 'messaging/discard-unroutable-replies-and-publications'.
+  See default-messaging.settings for more details. Do not enable this setting before all local joynr
+  environments have been updated to joynr 1.5.0 or later.
 
 ## Configuration property changes
 None.
