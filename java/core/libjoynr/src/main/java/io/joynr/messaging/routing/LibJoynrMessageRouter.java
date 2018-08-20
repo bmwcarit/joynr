@@ -216,6 +216,7 @@ public class LibJoynrMessageRouter extends AbstractMessageRouter {
             for (DeferrableRegistration registerWithParent : deferredMulticastRegistrations.values()) {
                 registerWithParent.register();
             }
+            deferredMulticastRegistrations.clear();
         }
         deferredParentHopsParticipantIds.clear();
     }
