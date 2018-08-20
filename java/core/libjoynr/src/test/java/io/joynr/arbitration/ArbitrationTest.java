@@ -45,6 +45,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.junit.After;
 import org.junit.Before;
@@ -54,8 +56,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-
-import com.google.common.collect.Lists;
 
 import io.joynr.discovery.LocalDiscoveryAggregator;
 import io.joynr.exceptions.DiscoveryException;
@@ -727,15 +727,15 @@ public class ArbitrationTest {
     @Test
     public void testIncompatibleVersionsReported() throws InterruptedException {
         Version incompatibleVersion = new Version(100, 100);
-        final Collection<DiscoveryEntryWithMetaInfo> discoveryEntries = Lists.newArrayList(new DiscoveryEntryWithMetaInfo(incompatibleVersion,
-                                                                                                                          domain,
-                                                                                                                          interfaceName,
-                                                                                                                          "first-participant",
-                                                                                                                          new ProviderQos(),
-                                                                                                                          System.currentTimeMillis(),
-                                                                                                                          NO_EXPIRY,
-                                                                                                                          "public-key-1",
-                                                                                                                          true));
+        final Collection<DiscoveryEntryWithMetaInfo> discoveryEntries = new ArrayList(Arrays.asList((new DiscoveryEntryWithMetaInfo(incompatibleVersion,
+                                                                                                                                    domain,
+                                                                                                                                    interfaceName,
+                                                                                                                                    "first-participant",
+                                                                                                                                    new ProviderQos(),
+                                                                                                                                    System.currentTimeMillis(),
+                                                                                                                                    NO_EXPIRY,
+                                                                                                                                    "public-key-1",
+                                                                                                                                    true))));
         ArbitrationStrategyFunction arbitrationStrategyFunction = mock(ArbitrationStrategyFunction.class);
         when(arbitrationStrategyFunction.select(Mockito.<Map<String, String>> any(),
                                                 Mockito.<Collection<DiscoveryEntryWithMetaInfo>> any())).thenReturn(new HashSet<DiscoveryEntryWithMetaInfo>());
@@ -811,8 +811,8 @@ public class ArbitrationTest {
                                                                                           NO_EXPIRY,
                                                                                           "public-key-2",
                                                                                           true);
-        final Collection<DiscoveryEntryWithMetaInfo> discoveryEntries = Lists.newArrayList(discoveryEntry1,
-                                                                                           discoveryEntry2);
+        final Collection<DiscoveryEntryWithMetaInfo> discoveryEntries = Stream.of(discoveryEntry1, discoveryEntry2)
+                                                                              .collect(Collectors.toList());
 
         ArbitrationStrategyFunction arbitrationStrategyFunction = mock(ArbitrationStrategyFunction.class);
         when(arbitrationStrategyFunction.select(Mockito.<Map<String, String>> any(),

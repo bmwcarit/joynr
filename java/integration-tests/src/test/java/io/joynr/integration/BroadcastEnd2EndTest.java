@@ -42,7 +42,7 @@ import java.util.Properties;
 @Ignore("HTTP does not support binary messages (SMRF)")
 public class BroadcastEnd2EndTest extends AbstractBroadcastEnd2EndTest {
 
-    private List<DummyJoynrApplication> dummyApplications = new ArrayList<>();
+    private List<DummyJoynrApplication> dummyApplications = new ArrayList();
 
     private static Server jettyServer;
     private static Properties originalProperties;

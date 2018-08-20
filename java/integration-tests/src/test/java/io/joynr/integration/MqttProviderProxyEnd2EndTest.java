@@ -118,7 +118,7 @@ public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTe
                                              .setMessagingQos(messagingQos)
                                              .setDiscoveryQos(discoveryQos)
                                              .build();
-        final List<String> errors = new ArrayList<>();
+        final List<String> errors = new ArrayList();
         testProxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
             @Override
             public void onReceive() {
@@ -149,7 +149,7 @@ public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTe
                                              .setMessagingQos(messagingQos)
                                              .setDiscoveryQos(discoveryQos)
                                              .build();
-        final List<String> errors = new ArrayList<>();
+        final List<String> errors = new ArrayList();
         Future<String> subscriptionIdOfWildCard = testProxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
             @Override
             public void onReceive() {
@@ -187,7 +187,7 @@ public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTe
                                              .setMessagingQos(messagingQos)
                                              .setDiscoveryQos(discoveryQos)
                                              .build();
-        final List<String> errors = new ArrayList<>();
+        final List<String> errors = new ArrayList();
         Future<String> futureOfWildCard = testProxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
             @Override
             public void onReceive() {
@@ -217,7 +217,7 @@ public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTe
                                              .setMessagingQos(messagingQos)
                                              .setDiscoveryQos(discoveryQos)
                                              .build();
-        final List<String> errors = new ArrayList<>();
+        final List<String> errors = new ArrayList();
         Future<String> subscriptionIdOfWildCard = testProxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
             @Override
             public void onReceive() {

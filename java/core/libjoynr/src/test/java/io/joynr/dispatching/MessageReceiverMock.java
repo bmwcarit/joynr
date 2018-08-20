@@ -18,11 +18,11 @@
  */
 package io.joynr.dispatching;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
-import com.google.common.collect.Lists;
 import com.google.inject.Singleton;
 
 import io.joynr.messaging.MessageArrivedListener;
@@ -38,7 +38,7 @@ import joynr.ImmutableMessage;
 @Singleton
 public class MessageReceiverMock implements MessageReceiver {
 
-    private List<ImmutableMessage> receivedMessages = Lists.newArrayList();
+    private List<ImmutableMessage> receivedMessages = new ArrayList();
 
     private MessageArrivedListener messageArrivedListener;
     private boolean blockInitialisation = false;

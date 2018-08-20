@@ -294,7 +294,7 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
     private void provisionAccessControl(Properties properties, String domain, String[] interfaceNames) {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.enableDefaultTypingAsProperty(DefaultTyping.JAVA_LANG_OBJECT, "_typeName");
-        List<MasterAccessControlEntry> allEntries = new ArrayList<>();
+        List<MasterAccessControlEntry> allEntries = new ArrayList();
         for (String interfaceName : interfaceNames) {
             MasterAccessControlEntry newMasterAccessControlEntry = new MasterAccessControlEntry("*",
                                                                                                 domain,

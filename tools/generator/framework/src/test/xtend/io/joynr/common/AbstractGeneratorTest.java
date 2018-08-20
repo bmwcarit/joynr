@@ -19,6 +19,7 @@
 package io.joynr.common;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -37,7 +38,6 @@ import org.eclipse.xtext.junit4.XtextRunner;
 import org.franca.core.dsl.FrancaIDLTestsInjectorProvider;
 import org.junit.runner.RunWith;
 
-import com.google.common.collect.Lists;
 import com.google.inject.Binder;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -94,7 +94,7 @@ public abstract class AbstractGeneratorTest extends TestCase {
 
                 @Override
                 public Iterable<URI> allUris() {
-                    return Lists.newArrayList(uris);
+                    return new ArrayList(Arrays.asList(uris));
                 }
             };
         }

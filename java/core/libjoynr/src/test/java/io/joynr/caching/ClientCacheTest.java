@@ -21,17 +21,19 @@ package io.joynr.caching;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import io.joynr.qos.QualityOfService;
-import io.joynr.util.GuiceBasedTest;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.NoSuchElementException;
 
 import org.junit.Test;
 
-import com.google.common.collect.Lists;
 import com.google.inject.Binder;
 import com.google.inject.Inject;
 import com.google.inject.Module;
+
+import io.joynr.qos.QualityOfService;
+import io.joynr.util.GuiceBasedTest;
 
 public class ClientCacheTest extends GuiceBasedTest {
 
@@ -42,12 +44,12 @@ public class ClientCacheTest extends GuiceBasedTest {
 
     @Override
     public Iterable<Module> getModules() {
-        return Lists.<Module> newArrayList(new Module() {
+        return new ArrayList(Arrays.asList(new Module() {
             @Override
             public void configure(Binder binder) {
                 binder.bind(ClientCache.class).to(ClientHashMapCache.class);
             }
-        });
+        }));
     }
 
     @Test(expected = NoSuchElementException.class)

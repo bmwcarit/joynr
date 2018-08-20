@@ -42,7 +42,7 @@ public class SSLEnd2EndTest extends AbstractSSLEnd2EndTest {
     private static Server jettyServer;
     private static String resourcePath;
 
-    private List<DummyJoynrApplication> dummyApplications = new ArrayList<>();
+    private List<DummyJoynrApplication> dummyApplications = new ArrayList();
 
     @Override
     protected JoynrRuntime getRuntime(Properties joynrConfig, Module... modules) {

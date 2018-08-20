@@ -38,7 +38,6 @@ import javax.annotation.Nonnull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -593,7 +592,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                 @Override
                 public void onSuccess(@CheckForNull GlobalDiscoveryEntry newGlobalDiscoveryEntry) {
                     if (newGlobalDiscoveryEntry != null) {
-                        registerIncomingEndpoints(Lists.newArrayList(newGlobalDiscoveryEntry));
+                        registerIncomingEndpoints(new ArrayList(Arrays.asList(newGlobalDiscoveryEntry)));
                         globalDiscoveryEntryCache.add(newGlobalDiscoveryEntry);
                         capabilitiesCallback.processCapabilityReceived(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false,
                                                                                                                            newGlobalDiscoveryEntry));
@@ -656,7 +655,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         if (unregisterAllRegisteredCapabilities) {
             Set<DiscoveryEntry> allDiscoveryEntries = localDiscoveryEntryStore.getAllDiscoveryEntries();
 
-            List<DiscoveryEntry> discoveryEntries = new ArrayList<>(allDiscoveryEntries.size());
+            List<DiscoveryEntry> discoveryEntries = new ArrayList(allDiscoveryEntries.size());
 
             for (DiscoveryEntry capabilityEntry : allDiscoveryEntries) {
                 if (capabilityEntry.getQos().getScope() == ProviderScope.GLOBAL) {

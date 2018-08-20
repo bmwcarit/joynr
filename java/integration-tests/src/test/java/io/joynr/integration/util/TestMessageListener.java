@@ -18,19 +18,17 @@
  */
 package io.joynr.integration.util;
 
-import io.joynr.dispatching.WaitTillCondition;
-import io.joynr.messaging.MessageArrivedListener;
-
+import java.util.ArrayList;
 import java.util.List;
 
+import io.joynr.dispatching.WaitTillCondition;
+import io.joynr.messaging.MessageArrivedListener;
 import joynr.ImmutableMessage;
-
-import com.google.common.collect.Lists;
 
 public class TestMessageListener extends WaitTillCondition implements MessageArrivedListener {
 
-    private List<Object> receivedPayloads = Lists.newArrayList();
-    private List<Throwable> thrownErrors = Lists.newArrayList();
+    private List<Object> receivedPayloads = new ArrayList();
+    private List<Throwable> thrownErrors = new ArrayList();
 
     public TestMessageListener(int numberOfMessagesExpected) {
         super(numberOfMessagesExpected);
