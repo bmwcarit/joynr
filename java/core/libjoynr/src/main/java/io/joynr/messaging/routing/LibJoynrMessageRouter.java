@@ -195,6 +195,11 @@ public class LibJoynrMessageRouter extends AbstractMessageRouter {
             synchronized (deferredMulticastRegistrations) {
                 deferredMulticastRegistrations.remove(multicastId + subscriberParticipantId + providerParticipantId);
             }
+            return;
+        }
+        Address providerAddress = routingTable.get(providerParticipantId);
+        if (providerAddress == null || !(providerAddress instanceof InProcessAddress)) {
+            parentRouter.removeMulticastReceiver(multicastId, subscriberParticipantId, providerParticipantId);
         }
     }
 

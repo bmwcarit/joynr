@@ -208,4 +208,19 @@ public class LibJoynrMessageRouterTest {
                                                          eq(subscriberParticipantId),
                                                          eq(providerParticipantId));
     }
+
+    @Test
+    public void removeMulticastReceiverForNotInProcessProvider() {
+        WebSocketAddress mockWebSocketAddress = mock(WebSocketAddress.class);
+        final String multicastId = "multicastIdTest";
+        final String subscriberParticipantId = "subscriberParticipantIdTest";
+        final String providerParticipantId = "providerParticipantIdTest";
+        when(routingTable.get(providerParticipantId)).thenReturn(mockWebSocketAddress);
+
+        messageRouter.addMulticastReceiver(multicastId, subscriberParticipantId, providerParticipantId);
+        messageRouter.removeMulticastReceiver(multicastId, subscriberParticipantId, providerParticipantId);
+        verify(messageRouterParent).removeMulticastReceiver(eq(multicastId),
+                                                            eq(subscriberParticipantId),
+                                                            eq(providerParticipantId));
+    }
 }
