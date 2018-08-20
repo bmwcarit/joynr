@@ -518,10 +518,22 @@ function MessageRouter(settings) {
                     .then(resolveNextHopOnSuccess)
                     .catch(resolveNextHopOnError);
             }
+            if (
+                joynrMessage.type === JoynrMessage.JOYNRMESSAGE_TYPE_REPLY ||
+                joynrMessage.type === JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REPLY ||
+                joynrMessage.type === JoynrMessage.JOYNRMESSAGE_TYPE_PUBLICATION
+            ) {
+                const errorMsg = `Received message for unknown proxy. Dropping the message. ID: ${joynrMessage.msgId}`;
+                const now = Date.now();
+                log.warn(`${errorMsg}, expiryDate: ${joynrMessage.expiryDate}, now: ${now}`);
+                return Promise.resolve();
+            }
+
             log.warn(
                 `No message receiver found for participantId: ${joynrMessage.to}. Queuing message.`,
                 DiagnosticTags.forJoynrMessage(joynrMessage)
             );
+
             // message is queued until the participant is registered
             // TODO remove expired messages from queue
             settings.messageQueue.putMessage(joynrMessage);
@@ -558,16 +570,6 @@ function MessageRouter(settings) {
             const address = routingTable[participantId];
             if (address !== undefined) {
                 return routeInternal(address, joynrMessage);
-            }
-
-            if (
-                joynrMessage.type === JoynrMessage.JOYNRMESSAGE_TYPE_REPLY ||
-                joynrMessage.type === JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REPLY ||
-                joynrMessage.type === JoynrMessage.JOYNRMESSAGE_TYPE_PUBLICATION
-            ) {
-                const errorMsg = `Received message for unknown proxy. Dropping the message. ID: ${joynrMessage.msgId}`;
-                log.warn(`${errorMsg}, expiryDate: ${joynrMessage.expiryDate}, now: ${now}`);
-                return Promise.resolve();
             }
 
             return resolveNextHopAndRoute(participantId, joynrMessage);
