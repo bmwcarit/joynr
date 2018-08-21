@@ -88,5 +88,5 @@ if (($countFoundOldVersions > 0)); then
     echo "WARNING: a grep over your workspace emphasised that the oldVersion is still present in some of your resources. Please check manually!"
     git grep -F ${oldVersion} * | grep -v ReleaseNotes
 else
-    git add -A && git commit -m "[Release] set version to $newVersion"
+    git add -u && git commit -m "[Release] set version to $newVersion"
 fi
