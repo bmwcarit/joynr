@@ -139,10 +139,7 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
     }
 
     @Override
-    public void executeStatelessAsyncMethod(Method method,
-                                            Object[] args,
-                                            String interfaceName,
-                                            StatelessAsyncCallback statelessAsyncCallback) {
+    public void executeStatelessAsyncMethod(Method method, Object[] args) {
         if (method == null) {
             throw new IllegalArgumentException("Method cannot be null");
         }

@@ -75,7 +75,8 @@ public class JoynrMessagingConnectorFactory {
      * @param qosSettings
      *            MessagingQos settings
      * @param statelessAsyncParticipantId
-     * the participant ID to use for stateless async requests.
+     *            the participant ID to use for stateless async requests. Can be null. Only required when building
+     *            stateless async enabled proxies.
      * @return connector to execute remote procedure calls
      */
     public JoynrMessagingConnectorInvocationHandler create(final String fromParticipantId,

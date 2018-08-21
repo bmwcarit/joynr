@@ -78,7 +78,6 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
     private String interfaceName;
     private MessageRouter messageRouter;
     private Set<String> domains;
-    private StatelessAsyncCallback statelessAsyncCallback;
     private String statelessAsyncParticipantId;
 
     private static final Logger logger = LoggerFactory.getLogger(ProxyInvocationHandlerImpl.class);
@@ -103,7 +102,6 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
         this.connectorFactory = connectorFactory;
         this.connectorStatus = ConnectorStatus.ConnectorNotAvailabe;
         this.messageRouter = messageRouter;
-        this.statelessAsyncCallback = statelessAsyncCallback;
         if (statelessAsyncCallback != null) {
             statelessAsyncParticipantId = statelessAsyncIdCalculator.calculateParticipantId(interfaceName,
                                                                                             statelessAsyncCallback);
@@ -287,10 +285,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
                 return;
             }
             try {
-                connector.executeStatelessAsyncMethod(invocation.getMethod(),
-                                                      invocation.getArgs(),
-                                                      interfaceName,
-                                                      statelessAsyncCallback);
+                connector.executeStatelessAsyncMethod(invocation.getMethod(), invocation.getArgs());
             } catch (Exception e) {
                 logger.error("Unable to perform stateless async call {}", invocation, e);
             }
@@ -452,7 +447,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
         } finally {
             connectorStatusLock.unlock();
         }
-        connector.executeStatelessAsyncMethod(method, args, interfaceName, statelessAsyncCallback);
+        connector.executeStatelessAsyncMethod(method, args);
     }
 
     private UnsubscribeInvocation unsubscribe(UnsubscribeInvocation unsubscribeInvocation) {

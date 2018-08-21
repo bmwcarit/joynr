@@ -351,6 +351,11 @@ running in vehicles or providers of other JEE applications), inject the
 obtain a reference to a proxy of the business interface, and call the
 relevant methods on it.
 
+The service locator utility offers methods for obtaining service proxies
+for the most common use cases, along with a proxy builder for specifying
+the meta data to use in building the proxy in a fluent API style. See the
+stateless async section below for an example of how the builder is used.
+
 For example, if we wanted to call the `MyService` provider as implemented
 in the above example:
 

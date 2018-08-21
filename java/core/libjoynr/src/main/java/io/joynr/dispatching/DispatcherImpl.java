@@ -27,7 +27,6 @@ import java.util.Set;
 
 import javax.inject.Singleton;
 
-import io.joynr.proxy.DefaultStatelessAsyncIdCalculatorImpl;
 import io.joynr.proxy.StatelessAsyncIdCalculator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -241,8 +240,7 @@ public class DispatcherImpl implements Dispatcher {
         try {
             if (Message.VALUE_MESSAGE_TYPE_REPLY.equals(type)) {
                 Reply reply = objectMapper.readValue(payload, Reply.class);
-                if (reply.getRequestReplyId()
-                         .contains(DefaultStatelessAsyncIdCalculatorImpl.REQUEST_REPLY_ID_SEPARATOR)) {
+                if (reply.getRequestReplyId().contains(StatelessAsyncIdCalculator.REQUEST_REPLY_ID_SEPARATOR)) {
                     addStatelessCallback(message, reply);
                 }
                 logger.trace("Parsed reply from message payload :" + payload);

@@ -445,17 +445,14 @@ public class ConnectorTest {
         MessageIdCallback messageIdCallback = mock(MessageIdCallback.class);
         when(statelessAsyncIdCalculator.calculateStatelessCallbackRequestReplyId(eq(method))).thenReturn("requestReplyId");
         when(statelessAsyncIdCalculator.calculateStatelessCallbackMethodId(eq(method))).thenReturn("correlationId");
-        connector.executeStatelessAsyncMethod(method,
-                                              new Object[]{ messageIdCallback },
-                                              "TestStatelessAsyncInterface",
-                                              statelessAsyncCallback);
+        connector.executeStatelessAsyncMethod(method, new Object[]{ messageIdCallback });
         ArgumentCaptor<Request> captor = ArgumentCaptor.forClass(Request.class);
         verify(requestReplyManager).sendRequest(eq(statelessAsyncParticipantId),
                                                 eq(toDiscoveryEntry),
                                                 captor.capture(),
                                                 any());
         Request request = captor.getValue();
-        assertEquals("correlationId", request.getStatelessCallback());
+        assertEquals("correlationId", request.getStatelessAsyncCallbackMethodId());
         assertEquals("requestReplyId", request.getRequestReplyId());
     }
 

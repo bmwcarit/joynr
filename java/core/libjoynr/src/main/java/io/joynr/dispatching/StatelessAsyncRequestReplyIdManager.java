@@ -44,7 +44,7 @@ public interface StatelessAsyncRequestReplyIdManager {
      * See also {@link #register(Request)}.
      *
      * @param reply the incoming reply for which the {@link RequestReplyManager} needs to know the callback ID to use.
-     * @return the callback ID to use for the incodming reply. If not a stateless async reply, this must be the
+     * @return the callback ID to use for the incoming reply. If not a stateless async reply, this must be the
      * {@link Reply#getRequestReplyId()}, otherwise the relevant stateless async callback ID.
      */
     String getCallbackId(Reply reply);

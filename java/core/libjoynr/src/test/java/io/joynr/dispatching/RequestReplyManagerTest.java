@@ -20,6 +20,7 @@ package io.joynr.dispatching;
 
 import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
@@ -189,7 +190,7 @@ public class RequestReplyManagerTest {
                                params1,
                                method.getParameterTypes(),
                                "requestReplyId",
-                               "stateless-callback");
+                               "statelessAsyncCallbackMethodId");
 
         Method fireAndForgetMethod = TestOneWayRecipient.class.getMethod("fireAndForgetMethod",
                                                                          new Class[]{ String.class });
@@ -233,6 +234,7 @@ public class RequestReplyManagerTest {
 
         assertEquals(new String(messageCapture.getValue().getPayload(), StandardCharsets.UTF_8),
                      objectMapper.writeValueAsString(request1));
+        assertFalse(messageCapture.getValue().isStatelessAsync());
     }
 
     @Test

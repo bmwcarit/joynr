@@ -126,7 +126,7 @@ public class RequestReplyManagerImpl
                                                               request,
                                                               messagingQos);
         message.setLocalMessage(toDiscoveryEntry.getIsLocal());
-        message.setStatelessAsync(request.getStatelessCallback() != null);
+        message.setStatelessAsync(request.getStatelessAsyncCallbackMethodId() != null);
 
         logger.debug("REQUEST call proxy: method: {}, requestReplyId: {}, messageId: {}, proxy participantId: {}, "
                 + "provider participantId: {}, params: {}",
@@ -299,8 +299,8 @@ public class RequestReplyManagerImpl
 
     @Override
     public void handleError(Request request, Throwable error) {
-        boolean stateless = request.getStatelessCallback() != null;
-        String callbackId = stateless ? request.getStatelessCallback() : request.getRequestReplyId();
+        boolean stateless = request.getStatelessAsyncCallbackMethodId() != null;
+        String callbackId = stateless ? request.getStatelessAsyncCallbackMethodId() : request.getRequestReplyId();
         if (callbackId != null) {
             ReplyCaller replyCaller = stateless ? replyCallerDirectory.get(callbackId)
                     : replyCallerDirectory.remove(callbackId);

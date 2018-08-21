@@ -20,6 +20,7 @@ package test.io.joynr.jeeintegration;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
@@ -31,6 +32,7 @@ import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 
 import com.google.common.collect.Sets;
+import io.joynr.jeeintegration.api.CallbackHandler;
 import io.joynr.proxy.StatelessAsyncCallback;
 import joynr.jeeintegration.servicelocator.MyServiceStatelessAsyncCallback;
 import org.junit.Test;
@@ -84,5 +86,29 @@ public class CallbackHandlerDiscoveryTest {
         assertEquals("useCase", discovered.iterator().next().getUseCase());
 
         verify(nonCallbackHandlerBean).getBeanClass();
+    }
+
+    // no @UsedBy
+    public interface MyInvalidCallback extends StatelessAsyncCallback {
+    }
+
+    @SuppressWarnings("CdiManagedBeanInconsistencyInspection")
+    @Stateless
+    @CallbackHandler
+    public class MyInvalidCallbackHandler implements MyInvalidCallback {
+        @Override
+        public String getUseCase() {
+            return null;
+        }
+    }
+
+    @Test
+    public void testStatelessAsyncWithoutUsedByNotDiscovered() {
+        Bean callbackHandlerBean = mock(Bean.class);
+        when(callbackHandlerBean.getBeanClass()).thenReturn(MyInvalidCallbackHandler.class);
+        Set<Bean<?>> beans = Sets.newHashSet(callbackHandlerBean);
+        when(beanManager.getBeans(eq(Object.class), any())).thenReturn(beans);
+
+        subject.forEach(statelessAsyncCallback -> fail("Should not be discovered"));
     }
 }

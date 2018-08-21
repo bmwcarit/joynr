@@ -105,7 +105,6 @@ public class AbstractMessageSenderTest extends MessageSenderTestBase {
         MutableMessage message = createTestRequestMessage();
         message.setStatelessAsync(true);
 
-        subject.sendMessage(message);
         subject.setReplyToAddress("replyTo", "global");
         subject.sendMessage(message);
 

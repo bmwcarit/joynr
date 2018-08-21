@@ -29,8 +29,6 @@ import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.util.AnnotationLiteral;
 import javax.inject.Inject;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -41,8 +39,6 @@ public class CallbackHandlerDiscovery {
 
     @Inject
     private BeanManager beanManager;
-
-    private Map<String, Bean<?>> callbackHandlers = new HashMap<>();
 
     public void forEach(Consumer<StatelessAsyncCallback> consumer) {
         Set<Bean<?>> callbackHandlerBeans = beanManager.getBeans(Object.class,

@@ -18,8 +18,12 @@
  */
 package io.joynr.dispatching;
 
+import static io.joynr.proxy.StatelessAsyncIdCalculator.CHANNEL_SEPARATOR;
+import static io.joynr.proxy.StatelessAsyncIdCalculator.REQUEST_REPLY_ID_SEPARATOR;
+import static io.joynr.proxy.StatelessAsyncIdCalculator.USE_CASE_SEPARATOR;
 import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.argThat;
@@ -140,7 +144,7 @@ public class DispatcherImplTest {
                 ScheduledExecutorService cleanupExecutor = Executors.newSingleThreadScheduledExecutor(namedThreadFactory);
                 bind(ScheduledExecutorService.class).annotatedWith(Names.named(JOYNR_SCHEDULER_CLEANUP))
                                                     .toInstance(cleanupExecutor);
-                bind(StatelessAsyncIdCalculator.class).to(DefaultStatelessAsyncIdCalculatorImpl.class);
+                bind(StatelessAsyncIdCalculator.class).toInstance(statelessAsyncIdCalculator);
                 bind(String.class).annotatedWith(Names.named(MessagingPropertyKeys.CHANNELID)).toInstance("channelid");
             }
 
@@ -411,6 +415,32 @@ public class DispatcherImplTest {
         verify(messageSenderMock).sendMessage(captor.capture());
         ImmutableMessage immutableMessage = captor.getValue().getImmutableMessage();
         assertEquals(null, immutableMessage.getEffort());
+    }
+
+    @Test
+    public void testStatelessAsyncReplyInformationExtracted() throws Exception {
+        String methodId = "456";
+        String requestReplyId = String.format("123%s%s", REQUEST_REPLY_ID_SEPARATOR, methodId);
+        when(statelessAsyncIdCalculator.extractMethodIdFromRequestReplyId(eq(requestReplyId))).thenReturn(methodId);
+        Reply reply = new Reply(requestReplyId);
+        String statelessAsyncParticipantId = UUID.randomUUID().toString();
+        String statelessAsyncCallbackId = String.format("interface%suseCase", USE_CASE_SEPARATOR);
+        when(statelessAsyncIdCalculator.fromParticipantUuid(eq(statelessAsyncParticipantId))).thenReturn(statelessAsyncCallbackId);
+        MutableMessage mutableMessage = messageFactory.createReply(UUID.randomUUID().toString(),
+                                                                   statelessAsyncParticipantId,
+                                                                   reply,
+                                                                   new MessagingQos(1000L));
+
+        fixture.messageArrived(mutableMessage.getImmutableMessage());
+
+        verify(statelessAsyncIdCalculator).extractMethodIdFromRequestReplyId(eq(requestReplyId));
+        verify(statelessAsyncIdCalculator).fromParticipantUuid(eq(statelessAsyncParticipantId));
+        ArgumentCaptor<Reply> captor = ArgumentCaptor.forClass(Reply.class);
+        verify(requestReplyManagerMock).handleReply(captor.capture());
+        Reply capturedReply = captor.getValue();
+        assertNotNull(capturedReply);
+        assertEquals(methodId, capturedReply.getStatelessAsyncCallbackMethodId());
+        assertEquals(statelessAsyncCallbackId, capturedReply.getStatelessAsyncCallbackId());
     }
 
     private static class MessageIsCompressedMatcher extends ArgumentMatcher<MutableMessage> {

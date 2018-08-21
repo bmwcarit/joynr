@@ -18,6 +18,7 @@
  */
 package io.joynr.proxy;
 
+import static io.joynr.proxy.StatelessAsyncIdCalculator.USE_CASE_SEPARATOR;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -43,7 +44,7 @@ import joynr.vehicle.NavigationStatelessAsyncCallback;
 
 public class StatelessAsyncReplyCallerTest {
 
-    private static final String STATELESS_CALLBACK_ID = Navigation.INTERFACE_NAME + ":~:test";
+    private static final String STATELESS_CALLBACK_ID = Navigation.INTERFACE_NAME + USE_CASE_SEPARATOR + "test";
     private static final String INVALID = "invalid";
 
     private Map<String, Boolean> resultHolder = new HashMap<>();

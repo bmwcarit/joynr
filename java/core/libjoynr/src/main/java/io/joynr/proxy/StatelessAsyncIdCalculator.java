@@ -21,6 +21,11 @@ package io.joynr.proxy;
 import java.lang.reflect.Method;
 
 public interface StatelessAsyncIdCalculator {
+
+    String CHANNEL_SEPARATOR = ":>:";
+    String REQUEST_REPLY_ID_SEPARATOR = "#";
+    String USE_CASE_SEPARATOR = ":~:";
+
     /**
      * Use this method to calculate the participant ID to use for requests for stateless async methods, so that the
      * replies can be routed back to any participant in a cluster making stateless async calls, rather than just the

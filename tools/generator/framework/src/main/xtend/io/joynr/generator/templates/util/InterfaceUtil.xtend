@@ -245,7 +245,8 @@ public class InterfaceUtil {
 	) {
 		val typeList = new HashSet<Object>()
 		addTypesFromAttributes(fInterface, true, true, false, typeList)
-		addTypesFromMethod(fInterface, false, true, includeMethodInput, includeMethodOutput, typeList)
+		val includeErrorTypes = includeMethodOutput // Only needed for callback, hence only when output types included
+		addTypesFromMethod(fInterface, false, includeErrorTypes, includeMethodInput, includeMethodOutput, typeList)
 		typeList.filterComplex(false)
 	}
 

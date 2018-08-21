@@ -34,7 +34,7 @@ public class Request extends OneWayRequest implements JoynrMessageType {
     private static final long serialVersionUID = 1L;
     private String requestReplyId;
     @SuppressFBWarnings("SE_TRANSIENT_FIELD_NOT_RESTORED")
-    private transient String statelessCallback;
+    private transient String statelessAsyncCallbackMethodId;
 
     public Request() {
     }
@@ -44,14 +44,14 @@ public class Request extends OneWayRequest implements JoynrMessageType {
                    Object[] params,
                    String[] paramDatatypes,
                    String requestReplyId,
-                   String statelessCallback) {
+                   String statelessAsyncCallbackMethodId) {
         super(methodName, params, paramDatatypes);
         if (requestReplyId == null) {
             this.requestReplyId = UUID.randomUUID().toString();
         } else {
             this.requestReplyId = requestReplyId;
         }
-        this.statelessCallback = statelessCallback;
+        this.statelessAsyncCallbackMethodId = statelessAsyncCallbackMethodId;
     }
 
     @SuppressFBWarnings("EI_EXPOSE_REP2")
@@ -67,16 +67,20 @@ public class Request extends OneWayRequest implements JoynrMessageType {
                    Object[] params,
                    Class<?>[] parameterTypes,
                    String requestReplyId,
-                   String statelessCallback) {
-        this(name, params, ReflectionUtils.toDatatypeNames(parameterTypes), requestReplyId, statelessCallback);
+                   String statelessAsyncCallbackMethodId) {
+        this(name,
+             params,
+             ReflectionUtils.toDatatypeNames(parameterTypes),
+             requestReplyId,
+             statelessAsyncCallbackMethodId);
     }
 
     public String getRequestReplyId() {
         return requestReplyId;
     }
 
-    public String getStatelessCallback() {
-        return statelessCallback;
+    public String getStatelessAsyncCallbackMethodId() {
+        return statelessAsyncCallbackMethodId;
     }
 
     @Override

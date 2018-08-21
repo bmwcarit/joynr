@@ -46,7 +46,7 @@ public class GenerateStatelessAsyncInterfaceTest extends AbstractJoynrJavaGenera
                         && fileContent.contains("setTestAttribute("));
                 testResult.setReadOnlyAttributeFound(fileContent.contains("getTestReadOnlyAttribute(")
                         && !fileContent.contains("setTestReadOnlyAttribute("));
-                testResult.setOneInNoOutMethodFound(fileContent.contains("void noOutMethod(")
+                testResult.setNoOutMethodFound(fileContent.contains("void noOutMethod(")
                         && fileContent.contains("String noOutInData") && fileContent.contains("noOutInDataOne")
                         && fileContent.contains("noOutInDataTwo"));
                 testResult.setNoInOneOutMethodFound(fileContent.contains("void noInOneOutMethod(")
@@ -55,7 +55,7 @@ public class GenerateStatelessAsyncInterfaceTest extends AbstractJoynrJavaGenera
                         && fileContent.contains("String oneInData"));
                 testResult.setTwoInOneOutMethodFound(fileContent.contains("void twoInOneOutMethod(")
                         && fileContent.contains("String twoInDataOne") && fileContent.contains("String twoInDataTwo"));
-                testResult.setOneInTwoOutMethodFound(fileContent.contains("void oneInOneOutMethod(")
+                testResult.setOneInTwoOutMethodFound(fileContent.contains("void oneInTwoOutMethod(")
                         && fileContent.contains("String threeInData"));
                 testResult.setWithErrorMethodFound(fileContent.contains("void withError(")
                         && fileContent.contains("String inData"));
@@ -67,7 +67,7 @@ public class GenerateStatelessAsyncInterfaceTest extends AbstractJoynrJavaGenera
         assertTrue(testResult.isStatelessAsyncAnnotationAdded());
         assertTrue(testResult.isReadWriteAttributeFound());
         assertTrue(testResult.isReadOnlyAttributeFound());
-        assertTrue(testResult.isOneInNoOutMethodFound());
+        assertTrue(testResult.isNoOutMethodFound());
         assertTrue(testResult.isNoInOneOutMethodFound());
         assertTrue(testResult.isOneInOneOutMethodFound());
         assertTrue(testResult.isTwoInOneOutMethodFound());
@@ -82,7 +82,7 @@ public class GenerateStatelessAsyncInterfaceTest extends AbstractJoynrJavaGenera
         boolean statelessAsyncAnnotationAdded;
         boolean readWriteAttributeFound;
         boolean readOnlyAttributeFound;
-        boolean oneInNoOutMethodFound;
+        boolean noOutMethodFound;
         boolean noInOneOutMethodFound;
         boolean oneInOneOutMethodFound;
         boolean twoInOneOutMethodFound;
@@ -107,12 +107,12 @@ public class GenerateStatelessAsyncInterfaceTest extends AbstractJoynrJavaGenera
             this.statelessAsyncAnnotationAdded = statelessAsyncAnnotationAdded;
         }
 
-        public boolean isOneInNoOutMethodFound() {
-            return oneInNoOutMethodFound;
+        public boolean isNoOutMethodFound() {
+            return noOutMethodFound;
         }
 
-        public void setOneInNoOutMethodFound(boolean oneInNoOutMethodFound) {
-            this.oneInNoOutMethodFound = oneInNoOutMethodFound;
+        public void setNoOutMethodFound(boolean noOutMethodFound) {
+            this.noOutMethodFound = noOutMethodFound;
         }
 
         public boolean isNoInOneOutMethodFound() {

@@ -174,6 +174,9 @@ public interface ServiceLocator {
 
         /**
          * Set the time to live for messages being sent from the resulting proxy.
+         * Subsequent calls to {@link #withMessagingQos(MessagingQos)} will override any value you set via this
+         * method. If you want to set other messaging QoS values, then you should simply set the TTL on a
+         * messaging QoS instance and call {@link #withMessagingQos(MessagingQos)}.
          *
          * @param ttl the time to live to use when sending messages from the proxy.
          * @return the builder.

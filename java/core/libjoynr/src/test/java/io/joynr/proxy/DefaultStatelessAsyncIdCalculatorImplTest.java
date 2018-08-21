@@ -18,8 +18,9 @@
  */
 package io.joynr.proxy;
 
-import static io.joynr.proxy.DefaultStatelessAsyncIdCalculatorImpl.CHANNEL_SEPARATOR;
-import static io.joynr.proxy.DefaultStatelessAsyncIdCalculatorImpl.REQUEST_REPLY_ID_SEPARATOR;
+import static io.joynr.proxy.StatelessAsyncIdCalculator.CHANNEL_SEPARATOR;
+import static io.joynr.proxy.StatelessAsyncIdCalculator.REQUEST_REPLY_ID_SEPARATOR;
+import static io.joynr.proxy.StatelessAsyncIdCalculator.USE_CASE_SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -29,6 +30,7 @@ import static org.mockito.Mockito.when;
 import java.lang.reflect.Method;
 import java.util.UUID;
 
+import io.joynr.exceptions.JoynrIllegalStateException;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -56,10 +58,11 @@ public class DefaultStatelessAsyncIdCalculatorImplTest {
     public void testCalculateParticipantId() {
         String result = subject.calculateParticipantId(INTERFACE, callback);
         assertNotNull(result);
-        String expectedUuid = UUID.nameUUIDFromBytes(String.format("%s%s%s:~:%s",
+        String expectedUuid = UUID.nameUUIDFromBytes(String.format("%s%s%s%s%s",
                                                                    CHANNEL_ID,
                                                                    CHANNEL_SEPARATOR,
                                                                    INTERFACE,
+                                                                   USE_CASE_SEPARATOR,
                                                                    USE_CASE)
                                                            .getBytes())
                                   .toString();
@@ -70,7 +73,7 @@ public class DefaultStatelessAsyncIdCalculatorImplTest {
     public void testCalculateCallbackId() {
         String result = subject.calculateStatelessCallbackId(INTERFACE, callback);
         assertNotNull(result);
-        assertEquals(String.format("%s:~:%s", INTERFACE, USE_CASE), result);
+        assertEquals(String.format("%s%s%s", INTERFACE, USE_CASE_SEPARATOR, USE_CASE), result);
     }
 
     @Test
@@ -95,6 +98,20 @@ public class DefaultStatelessAsyncIdCalculatorImplTest {
         String result = subject.extractMethodIdFromRequestReplyId(requestReplyId);
         assertNotNull(result);
         assertEquals(CORRELATION_ID, result);
+    }
+
+    @Test
+    public void testCreateAndRetrieveStatelessCallbackIdForParticipant() {
+        String participantId = subject.calculateParticipantId(INTERFACE, callback);
+        assertNotNull(participantId);
+        String statelessCallbackId = subject.fromParticipantUuid(participantId);
+        assertNotNull(statelessCallbackId);
+        assertEquals(subject.calculateStatelessCallbackId(INTERFACE, callback), statelessCallbackId);
+    }
+
+    @Test(expected = JoynrIllegalStateException.class)
+    public void testCannotGetStatelessCallbackIdForUnknownParticipant() {
+        subject.fromParticipantUuid(UUID.randomUUID().toString());
     }
 
     private interface TestInterface extends StatelessAsyncCallback {

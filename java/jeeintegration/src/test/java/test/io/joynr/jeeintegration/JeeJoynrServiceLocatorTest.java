@@ -62,7 +62,6 @@ import test.io.joynr.jeeintegration.servicelocator.MyInvalidServiceSync;
 import test.io.joynr.jeeintegration.servicelocator.MyServiceCallbackHandler;
 
 import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.BeanManager;
 
 /**
  * Unit tests for {@link JeeJoynrServiceLocator}.
@@ -82,9 +81,6 @@ public class JeeJoynrServiceLocatorTest {
     @Mock
     private JoynrIntegrationBean joynrIntegrationBean;
 
-    @Mock
-    private BeanManager beanManager;
-
     private JeeJoynrServiceLocator subject;
 
     @Before
@@ -96,7 +92,7 @@ public class JeeJoynrServiceLocatorTest {
         when(proxyBuilder.build()).thenReturn(myJoynrProxy);
         when(joynrRuntime.getProxyBuilder(Sets.newHashSet("local"), MyServiceProxy.class)).thenReturn(proxyBuilder);
         when(joynrIntegrationBean.getRuntime()).thenReturn(joynrRuntime);
-        subject = new JeeJoynrServiceLocator(joynrIntegrationBean, beanManager);
+        subject = new JeeJoynrServiceLocator(joynrIntegrationBean);
     }
 
     @Test
@@ -206,14 +202,14 @@ public class JeeJoynrServiceLocatorTest {
         JoynrRuntime joynrRuntime = mock(JoynrRuntime.class);
         JoynrIntegrationBean joynrIntegrationBean = mock(JoynrIntegrationBean.class);
         when(joynrIntegrationBean.getRuntime()).thenReturn(joynrRuntime);
-        JeeJoynrServiceLocator subject = new JeeJoynrServiceLocator(joynrIntegrationBean, beanManager);
+        JeeJoynrServiceLocator subject = new JeeJoynrServiceLocator(joynrIntegrationBean);
 
         subject.get(MyInvalidServiceSync.class, "local");
     }
 
     @Test(expected = IllegalStateException.class)
     public void testGetNoRuntime() {
-        JeeJoynrServiceLocator subject = new JeeJoynrServiceLocator(mock(JoynrIntegrationBean.class), beanManager);
+        JeeJoynrServiceLocator subject = new JeeJoynrServiceLocator(mock(JoynrIntegrationBean.class));
         subject.get(MyServiceSync.class, "local");
     }
 
@@ -231,6 +227,10 @@ public class JeeJoynrServiceLocatorTest {
 
         assertNotNull(result);
 
+        verify(joynrRuntime).getProxyBuilder(eq(Sets.newHashSet("local")), eq(MyServiceProxy.class));
+        verify(proxyBuilder).setStatelessAsyncCallbackUseCase(eq(MyServiceCallbackHandler.USE_CASE));
+        verify(proxyBuilder).build();
+
         Boolean[] resultContainer = new Boolean[]{ Boolean.FALSE };
         result.callMe("one", messageId -> {
             assertEquals("messageId", messageId);
@@ -243,6 +243,12 @@ public class JeeJoynrServiceLocatorTest {
     public void testGetWithSyncAndUseCaseFails() {
         subject.builder(MyServiceSync.class, "local").withUseCase("useCase").build();
         fail("Should not be able to build a service proxy with a use case and a non @StatelessAsync service interface");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetStatelessAsyncWithoutUseCaseFails() {
+        subject.builder(MyServiceStatelessAsync.class, "local").build();
+        fail("Should not be able to build stateless async proxy without a use case specified.");
     }
 
 }

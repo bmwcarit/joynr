@@ -30,6 +30,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import static io.joynr.proxy.StatelessAsyncIdCalculator.USE_CASE_SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -44,7 +45,7 @@ public class StatelessAsyncCallbackDirectoryTest {
 
     private static final String USE_CASE = "test";
 
-    private static final String CALLBACK_ID = "callbackId:~:" + USE_CASE;
+    private static final String CALLBACK_ID = "callbackId" + USE_CASE_SEPARATOR + USE_CASE;
 
     @Mock
     private ReplyCallerDirectory replyCallerDirectoryMock;

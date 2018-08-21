@@ -90,14 +90,14 @@ public class StatelessAsyncReplyCaller implements ReplyCaller {
                                       addReplyContext(payload.getResponse(), payload.getRequestReplyId()));
             } else {
                 callbackMethod.invoke(statelessAsyncCallback,
-                                      addReplyContext(extractErrorEnum(payload), payload.getRequestReplyId()));
+                                      addReplyContext(extractError(payload), payload.getRequestReplyId()));
             }
         } catch (IllegalAccessException | InvocationTargetException e) {
             logger.error("Error calling callback method {} with reply {}", callbackMethod, payload, e);
         }
     }
 
-    private Object[] extractErrorEnum(Reply payload) {
+    private Object[] extractError(Reply payload) {
         JoynrException exception = payload.getError();
         if (exception instanceof ApplicationException) {
             return new Object[]{ ((ApplicationException) exception).getError() };
