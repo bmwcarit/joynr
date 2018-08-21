@@ -27,6 +27,8 @@ import io.joynr.runtime.JoynrThreadFactory;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Stream;
+import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
@@ -34,7 +36,6 @@ import java.util.concurrent.ThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.ObjectArrays;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -87,8 +88,7 @@ public class LongPollingMessageReceiver implements MessageReceiver {
         }
 
         final CompletableFuture<Void> channelCreatedFuture = new CompletableFuture();
-        ReceiverStatusListener[] statusListeners = ObjectArrays.concat(new ReceiverStatusListener() {
-
+        ReceiverStatusListener listener = new ReceiverStatusListener() {
             @Override
             @SuppressFBWarnings(value = "NP_NONNULL_PARAM_VIOLATION",
                                 justification = "HandleNullableDeclWithFindBugsAndJava8")
@@ -109,7 +109,10 @@ public class LongPollingMessageReceiver implements MessageReceiver {
                 channelCreatedFuture.completeExceptionally(e);
                 channelMonitor.shutdown();
             }
-        }, receiverStatusListeners);
+        };
+        ReceiverStatusListener[] statusListeners = Stream.concat(Stream.of(listener),
+                                                                 Arrays.stream(receiverStatusListeners))
+                                                         .toArray(ReceiverStatusListener[]::new);
 
         channelMonitor.startLongPolling(messageListener, statusListeners);
         return channelCreatedFuture;
