@@ -19,10 +19,10 @@
 package io.joynr.dispatching;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
 import com.google.common.collect.Lists;
-import com.google.common.util.concurrent.Futures;
 import com.google.inject.Singleton;
 
 import io.joynr.messaging.MessageArrivedListener;
@@ -122,7 +122,7 @@ public class MessageReceiverMock implements MessageReceiver {
             statusListener.receiverStarted();
         }
 
-        return Futures.immediateFuture(null);
+        return CompletableFuture.completedFuture(null);
 
     }
 }

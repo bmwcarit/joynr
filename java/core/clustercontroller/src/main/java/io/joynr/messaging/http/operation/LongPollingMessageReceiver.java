@@ -35,7 +35,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ObjectArrays;
-import com.google.common.util.concurrent.Futures;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -82,7 +81,9 @@ public class LongPollingMessageReceiver implements MessageReceiver {
         }
 
         if (isStarted()) {
-            return Futures.immediateFailedFuture(new IllegalStateException("receiver is already started"));
+            CompletableFuture<Void> future = new CompletableFuture();
+            future.completeExceptionally(new IllegalStateException("receiver is already started"));
+            return future;
         }
 
         final CompletableFuture<Void> channelCreatedFuture = new CompletableFuture();
