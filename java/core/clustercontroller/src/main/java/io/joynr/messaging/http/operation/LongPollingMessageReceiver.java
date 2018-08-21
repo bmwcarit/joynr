@@ -26,6 +26,7 @@ import io.joynr.messaging.ReceiverStatusListener;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 
@@ -34,7 +35,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ObjectArrays;
 import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.SettableFuture;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -85,7 +85,7 @@ public class LongPollingMessageReceiver implements MessageReceiver {
             return Futures.immediateFailedFuture(new IllegalStateException("receiver is already started"));
         }
 
-        final SettableFuture<Void> channelCreatedFuture = SettableFuture.create();
+        final CompletableFuture<Void> channelCreatedFuture = new CompletableFuture();
         ReceiverStatusListener[] statusListeners = ObjectArrays.concat(new ReceiverStatusListener() {
 
             @Override
@@ -98,14 +98,14 @@ public class LongPollingMessageReceiver implements MessageReceiver {
                         listener.channelCreated(channelMonitor.getChannelUrl());
                     }
                     // Signal that the channel is now created for anyone blocking on the future
-                    channelCreatedFuture.set(null);
+                    channelCreatedFuture.complete(null);
                 }
             }
 
             @Override
             // Shutdown the receiver if an exception is thrown
             public void receiverException(Throwable e) {
-                channelCreatedFuture.setException(e);
+                channelCreatedFuture.completeExceptionally(e);
                 channelMonitor.shutdown();
             }
         }, receiverStatusListeners);
