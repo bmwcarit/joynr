@@ -82,15 +82,24 @@ void «interfaceName»RequestInterpreter::execute(
 				«val attributeName = attribute.joynrName»
 				«IF attribute.readable»
 				if (methodName == "get«attributeName.toFirstUpper»" && paramTypes.size() == 0){
-					auto requestCallerOnSuccess =
-							[onSuccess = std::move(onSuccess)](«attribute.typeName» «attributeName»){
-								BaseReply reply;
-								reply.setResponse(std::move(«attributeName»));
-								onSuccess(std::move(reply));
-							};
-					«requestCallerName»->get«attributeName.toFirstUpper»(
-						std::move(requestCallerOnSuccess),
-						std::move(onError));
+					try {
+						auto requestCallerOnSuccess =
+								[onSuccess = std::move(onSuccess)](«attribute.typeName» «attributeName»){
+									BaseReply reply;
+									reply.setResponse(std::move(«attributeName»));
+									onSuccess(std::move(reply));
+								};
+						«requestCallerName»->get«attributeName.toFirstUpper»(
+																			std::move(requestCallerOnSuccess),
+																			onError);
+					} catch (const std::exception& exception) {
+						const std::string errorMessage = "Unexpected exception occurred in attribute getter get«attributeName.toFirstUpper» (): " + std::string(exception.what());
+						JOYNR_LOG_ERROR(logger(), errorMessage);
+						onError(
+							std::make_shared<exceptions::MethodInvocationException>(
+								errorMessage,
+								requestCaller->getProviderVersion()));
+					}
 					return;
 				}
 			«ENDIF»
@@ -109,10 +118,12 @@ void «interfaceName»RequestInterpreter::execute(
 																			typedInput«attributeName.toFirstUpper»,
 																			std::move(requestCallerOnSuccess),
 																			onError);
-					} catch (const std::exception&) {
+					} catch (const std::exception& exception) {
+						const std::string errorMessage = "Unexpected exception occurred in attribute setter set«attributeName.toFirstUpper» («getJoynrTypeName(attribute)»): " + std::string(exception.what());
+						JOYNR_LOG_ERROR(logger(), errorMessage);
 						onError(
 							std::make_shared<exceptions::MethodInvocationException>(
-								"Illegal argument for attribute setter set«attributeName.toFirstUpper» («getJoynrTypeName(attribute)»)",
+								errorMessage,
 								requestCaller->getProviderVersion()));
 					}
 					return;
@@ -160,7 +171,9 @@ void «interfaceName»RequestInterpreter::execute(
 							std::move(requestCallerOnSuccess),
 							onError);
 				} catch (const std::exception& exception) {
-					onError(std::make_shared<exceptions::MethodInvocationException>(exception.what(), requestCaller->getProviderVersion()));
+					const std::string errorMessage = "Unexpected exception occurred in method «methodName» (...): " + std::string(exception.what());
+					JOYNR_LOG_ERROR(logger(), errorMessage);
+					onError(std::make_shared<exceptions::MethodInvocationException>(errorMessage, requestCaller->getProviderVersion()));
 				}
 
 				return;
@@ -218,7 +231,8 @@ void «interfaceName»RequestInterpreter::execute(
 					«ENDIF»
 					«requestCallerName»->«methodName»(«IF !method.inputParameters.empty»«inputUntypedParamList»«ENDIF»);
 				} catch (const std::exception& exception) {
-					JOYNR_LOG_ERROR(logger(), exception.what());
+					const std::string errorMessage = "Unexpected exception occurred in method «methodName» (...): " + std::string(exception.what());
+					JOYNR_LOG_ERROR(logger(), errorMessage);
 				}
 				return;
 			}
