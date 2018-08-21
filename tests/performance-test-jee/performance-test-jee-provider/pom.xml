@@ -26,7 +26,7 @@
 	<parent>
 		<groupId>io.joynr.performance</groupId>
 		<artifactId>performance-test-jee</artifactId>
-		<version>1.4.0</version>
+		<version>1.5.0</version>
 	</parent>
 
 	<dependencies>
@@ -61,6 +61,15 @@
 			<plugin>
 				<groupId>net.revelc.code.formatter</groupId>
 				<artifactId>formatter-maven-plugin</artifactId>
+			</plugin>
+
+			<!-- Skip deployment of war with third-party software -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-deploy-plugin</artifactId>
+				<configuration>
+					<skip>true</skip>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>

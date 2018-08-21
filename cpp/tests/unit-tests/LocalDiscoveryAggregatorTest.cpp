@@ -37,12 +37,13 @@
 using namespace ::testing;
 using namespace joynr;
 
-class LocalDiscoveryAggregatorTest : public ::testing::Test {
+class LocalDiscoveryAggregatorTest : public ::testing::Test
+{
 public:
-    LocalDiscoveryAggregatorTest() :
-        provisionedDiscoveryEntries(),
-        localDiscoveryAggregator(provisionedDiscoveryEntries),
-        discoveryMock(std::make_shared<MockDiscovery>())
+    LocalDiscoveryAggregatorTest()
+            : provisionedDiscoveryEntries(),
+              localDiscoveryAggregator(provisionedDiscoveryEntries),
+              discoveryMock(std::make_shared<MockDiscovery>())
     {
     }
 
@@ -59,89 +60,82 @@ private:
     DISALLOW_COPY_AND_ASSIGN(LocalDiscoveryAggregatorTest);
 };
 
-TEST_F(LocalDiscoveryAggregatorTest, addAsync_proxyNotSet_doesNotThrow) {
+TEST_F(LocalDiscoveryAggregatorTest, addAsync_proxyNotSet_doesNotThrow)
+{
     const types::DiscoveryEntryWithMetaInfo discoveryEntry;
-    EXPECT_DEATH(localDiscoveryAggregator.addAsync(discoveryEntry, false, nullptr, nullptr), "Assertion.*");
-}
-
-TEST_F(LocalDiscoveryAggregatorTest, lookupAsyncDomainInterface_proxyNotSet_doesNotThrow) {
-    const std::vector<std::string> domains;
-    const std::string interfaceName;
-    const types::DiscoveryQos discoveryQos;
-    EXPECT_DEATH(localDiscoveryAggregator.lookupAsync(domains,
-                                                      interfaceName,
-                                                      discoveryQos,
-                                                      nullptr,
-                                                      nullptr),
+    EXPECT_DEATH(localDiscoveryAggregator.addAsync(discoveryEntry, false, nullptr, nullptr),
                  "Assertion.*");
 }
 
-TEST_F(LocalDiscoveryAggregatorTest, lookupAsyncParticipantId_proxyNotSet_doesNotThrow) {
-    const std::string participantId;
-    EXPECT_DEATH(localDiscoveryAggregator.lookupAsync(participantId, nullptr, nullptr), "Assertion.*");
+TEST_F(LocalDiscoveryAggregatorTest, lookupAsyncDomainInterface_proxyNotSet_doesNotThrow)
+{
+    const std::vector<std::string> domains;
+    const std::string interfaceName;
+    const types::DiscoveryQos discoveryQos;
+    EXPECT_DEATH(localDiscoveryAggregator.lookupAsync(
+                         domains, interfaceName, discoveryQos, nullptr, nullptr),
+                 "Assertion.*");
 }
 
-TEST_F(LocalDiscoveryAggregatorTest, removeAsync_proxyNotSet_doesNotThrow) {
+TEST_F(LocalDiscoveryAggregatorTest, lookupAsyncParticipantId_proxyNotSet_doesNotThrow)
+{
     const std::string participantId;
-    EXPECT_DEATH(localDiscoveryAggregator.removeAsync(participantId, nullptr, nullptr), "Assertion.*");
+    EXPECT_DEATH(
+            localDiscoveryAggregator.lookupAsync(participantId, nullptr, nullptr), "Assertion.*");
 }
 
-TEST_F(LocalDiscoveryAggregatorTest, addAsync_callsProxy) {
+TEST_F(LocalDiscoveryAggregatorTest, removeAsync_proxyNotSet_doesNotThrow)
+{
+    const std::string participantId;
+    EXPECT_DEATH(
+            localDiscoveryAggregator.removeAsync(participantId, nullptr, nullptr), "Assertion.*");
+}
+
+TEST_F(LocalDiscoveryAggregatorTest, addAsync_callsProxy)
+{
     localDiscoveryAggregator.setDiscoveryProxy(discoveryMock);
 
     types::DiscoveryEntryWithMetaInfo discoveryEntry;
     discoveryEntry.setParticipantId("testParticipantId");
-    EXPECT_CALL(*discoveryMock,
-                addAsyncMock(Eq(discoveryEntry),
-                             _,
-                             Eq(nullptr),
-                             Eq(nullptr),
-                             _));
+    EXPECT_CALL(*discoveryMock, addAsyncMock(Eq(discoveryEntry), _, Eq(nullptr), Eq(nullptr), _));
     localDiscoveryAggregator.addAsync(discoveryEntry, false, nullptr, nullptr);
 }
 
-TEST_F(LocalDiscoveryAggregatorTest, lookupAsyncDomainInterface_callsProxy) {
+TEST_F(LocalDiscoveryAggregatorTest, lookupAsyncDomainInterface_callsProxy)
+{
     localDiscoveryAggregator.setDiscoveryProxy(discoveryMock);
 
-    const std::vector<std::string> domains {"domain1", "domain2"};
+    const std::vector<std::string> domains{"domain1", "domain2"};
     const std::string interfaceName("testInterfaceName");
     types::DiscoveryQos discoveryQos;
     discoveryQos.setDiscoveryTimeout(42421);
-    EXPECT_CALL(*discoveryMock, lookupAsyncMock(Eq(domains),
-                                           Eq(interfaceName),
-                                           Eq(discoveryQos),
-                                           Eq(nullptr),
-                                           Eq(nullptr),
-                                           _)
-                );
+    EXPECT_CALL(
+            *discoveryMock,
+            lookupAsyncMock(
+                    Eq(domains), Eq(interfaceName), Eq(discoveryQos), Eq(nullptr), Eq(nullptr), _));
     localDiscoveryAggregator.lookupAsync(domains, interfaceName, discoveryQos, nullptr, nullptr);
 }
 
-TEST_F(LocalDiscoveryAggregatorTest, lookupAsyncParticipantId_callsProxy) {
+TEST_F(LocalDiscoveryAggregatorTest, lookupAsyncParticipantId_callsProxy)
+{
     localDiscoveryAggregator.setDiscoveryProxy(discoveryMock);
 
     const std::string participantId("testParticipantId");
-    EXPECT_CALL(*discoveryMock, lookupAsyncMock(Eq(participantId),
-                                            Eq(nullptr),
-                                            Eq(nullptr),
-                                            _)
-                );
+    EXPECT_CALL(*discoveryMock, lookupAsyncMock(Eq(participantId), Eq(nullptr), Eq(nullptr), _));
     localDiscoveryAggregator.lookupAsync(participantId, nullptr, nullptr);
 }
 
-TEST_F(LocalDiscoveryAggregatorTest, removeAsync_callsProxy) {
+TEST_F(LocalDiscoveryAggregatorTest, removeAsync_callsProxy)
+{
     localDiscoveryAggregator.setDiscoveryProxy(discoveryMock);
 
     const std::string participantId("testParticipantId");
-    EXPECT_CALL(*discoveryMock, removeAsyncMock(Eq(participantId),
-                                            Eq(nullptr),
-                                            Eq(nullptr),
-                                            _)
-                );
+    EXPECT_CALL(*discoveryMock, removeAsyncMock(Eq(participantId), Eq(nullptr), Eq(nullptr), _));
     localDiscoveryAggregator.removeAsync(participantId, nullptr, nullptr);
 }
 
-TEST_F(LocalDiscoveryAggregatorTest, lookupAsyncParticipantId_provisionedEntry_doesNotCallProxy) {
+TEST_F(LocalDiscoveryAggregatorTest, lookupAsyncParticipantId_provisionedEntry_doesNotCallProxy)
+{
     Semaphore semaphore(0);
     const std::string participantId("testProvisionedParticipantId");
 
@@ -151,10 +145,10 @@ TEST_F(LocalDiscoveryAggregatorTest, lookupAsyncParticipantId_provisionedEntry_d
     LocalDiscoveryAggregator localDiscoveryAggregator(provisionedDiscoveryEntries);
     localDiscoveryAggregator.setDiscoveryProxy(discoveryMock);
 
-    EXPECT_CALL(*discoveryMock, lookupAsyncMock(_,_,_,_)).Times(0);
+    EXPECT_CALL(*discoveryMock, lookupAsyncMock(_, _, _, _)).Times(0);
 
-    auto onSuccess = [&semaphore, &provisionedDiscoveryEntry]
-            (const types::DiscoveryEntryWithMetaInfo& entry) {
+    auto onSuccess = [&semaphore, &provisionedDiscoveryEntry](
+            const types::DiscoveryEntryWithMetaInfo& entry) {
         EXPECT_EQ(entry, provisionedDiscoveryEntry);
         semaphore.notify();
     };

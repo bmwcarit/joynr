@@ -20,8 +20,8 @@ package io.joynr.integration;
 
 import static com.jayway.restassured.RestAssured.given;
 import static io.joynr.integration.matchers.ChannelServiceResponseMatchers.isChannelUrlwithJsessionId;
-import static io.joynr.integration.matchers.MessagingServiceResponseMatchers.isMessageUrlwithJsessionId;
 import static io.joynr.integration.matchers.MessagingServiceResponseMatchers.containsPayload;
+import static io.joynr.integration.matchers.MessagingServiceResponseMatchers.isMessageUrlwithJsessionId;
 import static io.joynr.integration.util.BounceProxyTestConstants.HEADER_BOUNCEPROXY_ID;
 import static io.joynr.integration.util.BounceProxyTestConstants.HEADER_LOCATION;
 import static io.joynr.integration.util.BounceProxyTestConstants.HEADER_MSG_ID;
@@ -31,28 +31,28 @@ import static io.joynr.integration.util.BounceProxyTestConstants.X_ATMOSPHERE_TR
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
-import io.joynr.integration.setup.BounceProxyServerSetup;
-import io.joynr.integration.setup.testrunner.BounceProxyServerContext;
-import io.joynr.messaging.datatypes.JoynrMessagingError;
-import io.joynr.messaging.datatypes.JoynrMessagingErrorCode;
-import io.joynr.messaging.util.Utilities;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import joynr.ImmutableMessage;
-
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.google.common.base.Charsets;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.response.Response;
+
+import io.joynr.integration.setup.BounceProxyServerSetup;
+import io.joynr.integration.setup.testrunner.BounceProxyServerContext;
+import io.joynr.messaging.datatypes.JoynrMessagingError;
+import io.joynr.messaging.datatypes.JoynrMessagingErrorCode;
+import io.joynr.messaging.util.Utilities;
+import joynr.ImmutableMessage;
 
 //@RunWith(MultipleBounceProxySetupsTestRunner.class)
 //@BounceProxyServerSetups(value = { ControlledBounceProxyCluster.class, SingleControlledBounceProxy.class })
@@ -143,7 +143,7 @@ public class ControlledBounceProxyServerTest extends AbstractBounceProxyServerTe
         RestAssured.baseURI = Utilities.getUrlWithoutSessionId(channelUrl, SESSIONID_NAME);
 
         // post messages to long polling channel before opening channel
-        byte[] expectedPayload = "message-123".getBytes(Charsets.UTF_8);
+        byte[] expectedPayload = "message-123".getBytes(StandardCharsets.UTF_8);
         byte[] serializedMessage = bpMock.createImmutableMessage(100000l, expectedPayload).getSerializedMessage();
 
         /* @formatter:off */
@@ -198,7 +198,7 @@ public class ControlledBounceProxyServerTest extends AbstractBounceProxyServerTe
         // post messages to long polling channel before opening channel
         String msgIds[] = { "message-123", "message-456", "message-789" };
         for (String msgId : msgIds) {
-            byte[] serializedMessage = bpMock.createImmutableMessage(100000l, msgId.getBytes(Charsets.UTF_8))
+            byte[] serializedMessage = bpMock.createImmutableMessage(100000l, msgId.getBytes(StandardCharsets.UTF_8))
                                              .getSerializedMessage();
 
             /* @formatter:off */
@@ -276,7 +276,7 @@ public class ControlledBounceProxyServerTest extends AbstractBounceProxyServerTe
         // post messages to long polling channel after opening channel
         String msgIds[] = { "message-123", "message-456", "message-789" };
         for (String msgId : msgIds) {
-            byte[] serializedMessage = bpMock.createImmutableMessage(100000l, msgId.getBytes(Charsets.UTF_8))
+            byte[] serializedMessage = bpMock.createImmutableMessage(100000l, msgId.getBytes(StandardCharsets.UTF_8))
                                              .getSerializedMessage();
 
             /* @formatter:off */

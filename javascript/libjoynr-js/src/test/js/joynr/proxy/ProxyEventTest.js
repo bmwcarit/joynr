@@ -26,7 +26,6 @@ const DiscoveryEntryWithMetaInfo = require("../../../../main/js/generated/joynr/
 const Version = require("../../../../main/js/generated/joynr/types/Version");
 const ProviderQos = require("../../../../main/js/generated/joynr/types/ProviderQos");
 const UtilInternal = require("../../../../main/js/joynr/util/UtilInternal");
-const Promise = require("../../../../main/js/global/Promise");
 const waitsFor = require("../../../../test/js/global/WaitsFor");
 
 const asyncTimeout = 5000;

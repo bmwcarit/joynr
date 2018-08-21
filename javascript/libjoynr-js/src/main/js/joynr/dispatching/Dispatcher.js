@@ -16,7 +16,6 @@
  * limitations under the License.
  * #L%
  */
-const Promise = require("../../global/Promise");
 const Request = require("./types/Request");
 const Reply = require("./types/Reply");
 const OneWayRequest = require("./types/OneWayRequest");
@@ -667,7 +666,7 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
         switch (joynrMessage.type) {
             case JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST:
                 try {
-                    const request = new Request(payload);
+                    const request = Request.create(payload);
                     log.info(
                         `received request for ${request.methodName}.`,
                         DiagnosticTags.forRequest({
@@ -701,7 +700,7 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
 
             case JoynrMessage.JOYNRMESSAGE_TYPE_REPLY:
                 try {
-                    const reply = new Reply(payload);
+                    const reply = Reply.create(payload);
                     log.info(
                         "received reply ",
                         DiagnosticTags.forReply({
@@ -719,7 +718,7 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
 
             case JoynrMessage.JOYNRMESSAGE_TYPE_ONE_WAY:
                 try {
-                    const oneWayRequest = new OneWayRequest(payload);
+                    const oneWayRequest = OneWayRequest.create(payload);
                     log.info(
                         `received one way request for ${oneWayRequest.methodName}.`,
                         DiagnosticTags.forOneWayRequest({
@@ -851,7 +850,7 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
 
             case JoynrMessage.JOYNRMESSAGE_TYPE_PUBLICATION:
                 try {
-                    const subscriptionPublication = new SubscriptionPublication(payload);
+                    const subscriptionPublication = SubscriptionPublication.create(payload);
                     log.info(
                         "received publication",
                         DiagnosticTags.forPublication({
@@ -869,7 +868,7 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
 
             case JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST:
                 try {
-                    const multicastPublication = new MulticastPublication(payload);
+                    const multicastPublication = MulticastPublication.create(payload);
                     log.info(
                         "received publication",
                         DiagnosticTags.forMulticastPublication({

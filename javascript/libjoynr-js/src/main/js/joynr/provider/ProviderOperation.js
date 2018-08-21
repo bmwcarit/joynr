@@ -20,7 +20,6 @@ const Typing = require("../util/Typing");
 const MethodUtil = require("../util/MethodUtil");
 const ApplicationException = require("../exceptions/ApplicationException");
 const ProviderRuntimeException = require("../exceptions/ProviderRuntimeException");
-const Promise = require("../../global/Promise");
 
 /**
  * Checks if the given argumentDatatypes and arguments match the given operationSignature

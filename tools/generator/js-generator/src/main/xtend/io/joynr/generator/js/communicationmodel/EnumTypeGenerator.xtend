@@ -156,14 +156,14 @@ class EnumTypeGenerator extends EnumTemplate {
 		/**
 		 * @name «type.joynrName».«enumValue.joynrName»
 		 * @readonly
-		«IF enumValue.comment != null»
+		«IF enumValue.comment !== null»
 			 * @summary
 			 «appendJSDocSummaryAndWriteSeeAndDescription(enumValue, "* ")»
 		«ENDIF»
 		 */
 		«type.joynrName».«enumValue.joynrName» = new «type.joynrName»({
 			name: "«enumValue.joynrName»",
-			value: «IF enumValue.value==null»"«enumValue.joynrName»"«ELSE»«enumValue.value.enumeratorValue»«ENDIF»
+			value: «IF enumValue.value===null»"«enumValue.joynrName»"«ELSE»«enumValue.value.enumeratorValue»«ENDIF»
 		});
 	«ENDFOR»
 	'''

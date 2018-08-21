@@ -46,6 +46,7 @@ import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
 import io.joynr.proxy.invocation.BroadcastSubscribeInvocation;
 import io.joynr.proxy.invocation.Invocation;
@@ -71,6 +72,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
     private ConcurrentLinkedQueue<SubscriptionAction> queuedSubscriptionInvocationList = new ConcurrentLinkedQueue<SubscriptionAction>();
     private ConcurrentLinkedQueue<UnsubscribeInvocation> queuedUnsubscripeInvocationList = new ConcurrentLinkedQueue<UnsubscribeInvocation>();
     private String interfaceName;
+    private MessageRouter messageRouter;
     private Set<String> domains;
 
     private static final Logger logger = LoggerFactory.getLogger(ProxyInvocationHandlerImpl.class);
@@ -81,7 +83,8 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
                                       @Assisted("proxyParticipantId") String proxyParticipantId,
                                       @Assisted DiscoveryQos discoveryQos,
                                       @Assisted MessagingQos messagingQos,
-                                      ConnectorFactory connectorFactory) {
+                                      ConnectorFactory connectorFactory,
+                                      MessageRouter messageRouter) {
         this.domains = domains;
         this.proxyParticipantId = proxyParticipantId;
         this.interfaceName = interfaceName;
@@ -89,6 +92,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
         this.qosSettings = messagingQos;
         this.connectorFactory = connectorFactory;
         this.connectorStatus = ConnectorStatus.ConnectorNotAvailabe;
+        this.messageRouter = messageRouter;
     }
 
     private static interface ConnectorCaller {
@@ -247,7 +251,10 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
             }
 
             try {
-                connector.executeAsyncMethod(currentRPC.getMethod(), currentRPC.getArgs(), currentRPC.getFuture());
+                connector.executeAsyncMethod(currentRPC.getProxy(),
+                                             currentRPC.getMethod(),
+                                             currentRPC.getArgs(),
+                                             currentRPC.getFuture());
             } catch (JoynrRuntimeException e) {
                 currentRPC.getFuture().onFailure(e);
             } catch (Exception e) {
@@ -382,7 +389,8 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
         }
     }
 
-    private <T> Object executeAsyncMethod(Method method, Object[] args) throws IllegalAccessException, Exception {
+    private <T> Object executeAsyncMethod(Object proxy, Method method, Object[] args) throws IllegalAccessException,
+                                                                                      Exception {
         @SuppressWarnings("unchecked")
         Future<T> future = (Future<T>) method.getReturnType().getConstructor().newInstance();
 
@@ -390,7 +398,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
         try {
             if (!isConnectorReady()) {
                 // waiting for arbitration -> queue invocation
-                queuedRpcList.offer(new MethodInvocation<T>(method, args, future));
+                queuedRpcList.offer(new MethodInvocation<T>(proxy, method, args, future));
                 return future;
             }
         } finally {
@@ -398,7 +406,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
         }
 
         // arbitration already successfully finished -> send invocation
-        return connector.executeAsyncMethod(method, args, future);
+        return connector.executeAsyncMethod(proxy, method, args, future);
     }
 
     private UnsubscribeInvocation unsubscribe(UnsubscribeInvocation unsubscribeInvocation) {
@@ -430,7 +438,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
 
     @Override
     @CheckForNull
-    public Object invoke(@Nonnull Method method, Object[] args) throws ApplicationException {
+    public Object invokeInternal(Object proxy, @Nonnull Method method, Object[] args) throws ApplicationException {
         logger.trace("calling proxy.{}({}) on domain: {} and interface {}, proxy participant ID: {}",
                      method.getName(),
                      args,
@@ -447,7 +455,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
             } else if (methodInterfaceClass.getAnnotation(Sync.class) != null) {
                 return executeSyncMethod(method, args);
             } else if (methodInterfaceClass.getAnnotation(Async.class) != null) {
-                return executeAsyncMethod(method, args);
+                return executeAsyncMethod(proxy, method, args);
             } else {
                 throw new JoynrIllegalStateException("Method is not part of sync, async or subscription interface");
             }
@@ -486,5 +494,10 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
         for (SubscriptionAction subscriptionAction : queuedSubscriptionInvocationList) {
             subscriptionAction.fail(exception);
         }
+    }
+
+    @Override
+    public void registerProxy(Object proxy) {
+        messageRouter.registerProxy(proxy, proxyParticipantId);
     }
 }

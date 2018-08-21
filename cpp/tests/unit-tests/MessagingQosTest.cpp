@@ -129,7 +129,8 @@ TEST_F(MessagingQosTest, constructorWithCustomEffort)
 TEST_F(MessagingQosTest, constructorWithCustomEncrypt)
 {
     bool encrypt = true;
-    MessagingQos customEncryptInstance = MessagingQos(0L, MessagingQosEffort::Enum::BEST_EFFORT, encrypt);
+    MessagingQos customEncryptInstance =
+            MessagingQos(0L, MessagingQosEffort::Enum::BEST_EFFORT, encrypt);
     EXPECT_EQ(encrypt, customEncryptInstance.getEncrypt());
 
     customEncryptInstance = MessagingQos(MessagingQosEffort::Enum::BEST_EFFORT, encrypt);

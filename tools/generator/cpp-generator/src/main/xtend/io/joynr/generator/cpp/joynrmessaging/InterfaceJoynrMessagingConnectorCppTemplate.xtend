@@ -123,7 +123,7 @@ request.setParams(
 «FOR method : getMethods(francaIntf)»
 	«IF method.hasErrorEnum»
 		«var enumType = method.errors»
-		«IF enumType != null»
+		«IF enumType !== null»
 			«enumType.name = methodToErrorEnumName.get(method)»
 		«ELSE»
 			«{enumType = method.errorEnum; ""}»

@@ -38,16 +38,20 @@
 using namespace ::testing;
 using namespace joynr;
 
-static const std::string messagingPropertiesPersistenceFileName("CapabilitiesClientTest-joynr.settings");
-static const std::string libJoynrSettingsFilename("test-resources/libjoynrSystemIntegration1.settings");
+static const std::string messagingPropertiesPersistenceFileName(
+        "CapabilitiesClientTest-joynr.settings");
+static const std::string libJoynrSettingsFilename(
+        "test-resources/libjoynrSystemIntegration1.settings");
 
-class GlobalCapabilitiesMock {
+class GlobalCapabilitiesMock
+{
 public:
-    MOCK_METHOD1(capabilitiesReceived, void(const std::vector<joynr::types::GlobalDiscoveryEntry>& results));
+    MOCK_METHOD1(capabilitiesReceived,
+                 void(const std::vector<joynr::types::GlobalDiscoveryEntry>& results));
 };
 
-
-class CapabilitiesClientTest : public TestWithParam< std::string > {
+class CapabilitiesClientTest : public TestWithParam<std::string>
+{
 public:
     ADD_LOGGER(CapabilitiesClientTest)
     std::shared_ptr<JoynrClusterControllerRuntime> runtime;
@@ -55,14 +59,16 @@ public:
     MessagingSettings messagingSettings;
     ClusterControllerSettings clusterControllerSettings;
 
-    CapabilitiesClientTest() :
-        runtime(),
-        settings(std::make_unique<Settings>(GetParam())),
-        messagingSettings(*settings),
-        clusterControllerSettings(*settings)
+    CapabilitiesClientTest()
+            : runtime(),
+              settings(std::make_unique<Settings>(GetParam())),
+              messagingSettings(*settings),
+              clusterControllerSettings(*settings)
     {
-        messagingSettings.setMessagingPropertiesPersistenceFilename(messagingPropertiesPersistenceFileName);
-        MessagingPropertiesPersistence storage(messagingSettings.getMessagingPropertiesPersistenceFilename());
+        messagingSettings.setMessagingPropertiesPersistenceFilename(
+                messagingPropertiesPersistenceFileName);
+        MessagingPropertiesPersistence storage(
+                messagingSettings.getMessagingPropertiesPersistenceFilename());
         Settings libjoynrSettings{libJoynrSettingsFilename};
         Settings::merge(libjoynrSettings, *settings, false);
 
@@ -70,11 +76,13 @@ public:
         runtime->init();
     }
 
-    void SetUp() override {
+    void SetUp() override
+    {
         runtime->start();
     }
 
-    ~CapabilitiesClientTest() override {
+    ~CapabilitiesClientTest() override
+    {
         runtime->shutdown();
         test::util::resetAndWaitUntilDestroyed(runtime);
 
@@ -84,28 +92,27 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(CapabilitiesClientTest);
-
 };
 
-TEST_P(CapabilitiesClientTest, registerAndRetrieveCapability) {
-    std::shared_ptr<ProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>> capabilitiesProxyBuilder =
-            runtime->createProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>(
-                messagingSettings.getDiscoveryDirectoriesDomain()
-            );
+TEST_P(CapabilitiesClientTest, registerAndRetrieveCapability)
+{
+    std::shared_ptr<ProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>>
+            capabilitiesProxyBuilder =
+                    runtime->createProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>(
+                            messagingSettings.getDiscoveryDirectoriesDomain());
 
     DiscoveryQos discoveryQos(10000);
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
     discoveryQos.addCustomParameter(
             "fixedParticipantId", messagingSettings.getCapabilitiesDirectoryParticipantId());
     const MessagingQos messagingQos(10000);
-    std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> cabilitiesProxy (
-        capabilitiesProxyBuilder
-            ->setMessagingQos(messagingQos)
-            ->setDiscoveryQos(discoveryQos)
-            ->build()
-        );
+    std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> cabilitiesProxy(
+            capabilitiesProxyBuilder->setMessagingQos(messagingQos)
+                    ->setDiscoveryQos(discoveryQos)
+                    ->build());
 
-    std::unique_ptr<CapabilitiesClient> capabilitiesClient(std::make_unique<CapabilitiesClient>(clusterControllerSettings));
+    std::unique_ptr<CapabilitiesClient> capabilitiesClient(
+            std::make_unique<CapabilitiesClient>(clusterControllerSettings));
     capabilitiesClient->setProxy(cabilitiesProxy, messagingQos);
 
     std::string capDomain("testDomain");
@@ -118,35 +125,32 @@ TEST_P(CapabilitiesClientTest, registerAndRetrieveCapability) {
     std::int64_t capExpiryDateMs = 1000;
     std::string capSerializedChannelAddress("testChannelId");
     types::GlobalDiscoveryEntry globalDiscoveryEntry(providerVersion,
-                capDomain,
-                capInterface,
-                capParticipantId,
-                capProviderQos,
-                capLastSeenMs,
-                capExpiryDateMs,
-                capPublicKeyId,
-                capSerializedChannelAddress);
+                                                     capDomain,
+                                                     capInterface,
+                                                     capParticipantId,
+                                                     capProviderQos,
+                                                     capLastSeenMs,
+                                                     capExpiryDateMs,
+                                                     capPublicKeyId,
+                                                     capSerializedChannelAddress);
 
     JOYNR_LOG_DEBUG(logger(), "Registering capabilities");
     capabilitiesClient->add(globalDiscoveryEntry,
-                            [](){},
-                            [](const joynr::exceptions::JoynrRuntimeException& /*exception*/){});
+                            []() {},
+                            [](const joynr::exceptions::JoynrRuntimeException& /*exception*/) {});
     JOYNR_LOG_DEBUG(logger(), "Registered capabilities");
 
     auto callback = std::make_shared<GlobalCapabilitiesMock>();
 
     // use a semaphore to wait for capabilities to be received
     Semaphore semaphore(0);
-    EXPECT_CALL(*callback, capabilitiesReceived(A<const std::vector<types::GlobalDiscoveryEntry>&>()))
-           .WillRepeatedly(
-                DoAll(
-                    ReleaseSemaphore(&semaphore),
-                    Return()
-                ));
+    EXPECT_CALL(
+            *callback, capabilitiesReceived(A<const std::vector<types::GlobalDiscoveryEntry>&>()))
+            .WillRepeatedly(DoAll(ReleaseSemaphore(&semaphore), Return()));
     std::function<void(const std::vector<types::GlobalDiscoveryEntry>&)> onSuccess =
             [&](const std::vector<types::GlobalDiscoveryEntry>& capabilities) {
-                callback->capabilitiesReceived(capabilities);
-            };
+        callback->capabilitiesReceived(capabilities);
+    };
 
     JOYNR_LOG_DEBUG(logger(), "get capabilities");
     std::int64_t defaultDiscoveryMessageTtl = messagingSettings.getDiscoveryMessagesTtl();
@@ -158,15 +162,9 @@ TEST_P(CapabilitiesClientTest, registerAndRetrieveCapability) {
 using namespace std::string_literals;
 
 INSTANTIATE_TEST_CASE_P(DISABLED_Http,
-        CapabilitiesClientTest,
-        testing::Values(
-            "test-resources/HttpSystemIntegrationTest1.settings"s
-        )
-);
+                        CapabilitiesClientTest,
+                        testing::Values("test-resources/HttpSystemIntegrationTest1.settings"s));
 
 INSTANTIATE_TEST_CASE_P(Mqtt,
-        CapabilitiesClientTest,
-        testing::Values(
-            "test-resources/MqttSystemIntegrationTest1.settings"s
-        )
-);
+                        CapabilitiesClientTest,
+                        testing::Values("test-resources/MqttSystemIntegrationTest1.settings"s));

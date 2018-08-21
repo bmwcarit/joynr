@@ -16,6 +16,8 @@ specific language governing permissions and limitations
 under the License.
 
 This project has dependencies to:
+  "Java Concurrency in Practice" book annotations under Creative Commons Attribution License
+  Animal Sniffer Annotations under MIT license
   AOP alliance under Public Domain
   Apache Commons Lang under Apache License, Version 2.0
   Apache HttpClient under Apache License
@@ -25,6 +27,7 @@ This project has dependencies to:
   Apache Log4j API under The Apache Software License, Version 2.0
   Apache Log4j SLF4J Binding under The Apache Software License, Version 2.0
   ASM Core under BSD License
+  Checker Qual under GNU General Public License, version 2 (GPL2), with the classpath exception or The MIT License
   clustercontroller-inprocess-runtime under The Apache Software License, Version 2.0
   clustercontroller-websocket-runtime under The Apache Software License, Version 2.0
   Commons Codec under The Apache Software License, Version 2.0
@@ -33,8 +36,8 @@ This project has dependencies to:
   Commons Lang under The Apache Software License, Version 2.0
   CSS Parser under GNU Lesser General Public License
   Data Mapper for Jackson under The Apache Software License, Version 2.0
-  dom4j under BSD License
   ehcache under The Apache Software License, Version 2.0
+  error-prone annotations under Apache 2.0
   FindBugs-Annotations under GNU Lesser Public License
   FindBugs-jsr305 under The Apache Software License, Version 2.0
   flatbuffers-java under Apache License V2.0
@@ -72,6 +75,7 @@ This project has dependencies to:
   io.joynr.mqtt:mqtt-client under Eclipse Public License - Version 1.0
   io.joynr.smrf.java:smrf under The Apache Software License, Version 2.0
   io.joynr.smrf.java:smrf-api under The Apache Software License, Version 2.0
+  J2ObjC Annotations under The Apache Software License, Version 2.0
   Jackson under The Apache Software License, Version 2.0
   Jackson module: JAXB-annotations under The Apache Software License, Version 2.0
   Jackson-annotations under The Apache Software License, Version 2.0
@@ -80,7 +84,7 @@ This project has dependencies to:
   Jackson-JAXRS-base under The Apache Software License, Version 2.0
   Jackson-JAXRS-JSON under The Apache Software License, Version 2.0
   Java Servlet API under CDDL + GPLv2 with classpath exception
-  Javassist under MPL 1.1 or LGPL 2.1
+  Javassist under MPL 1.1 or LGPL 2.1 or Apache License 2.0
   javax.inject under The Apache Software License, Version 2.0
   javax.servlet API v.3.0 under CDDL + GPLv2 with classpath exception
   jersey-core under CDDL 1.1 or GPL2 w/ CPE
@@ -107,7 +111,7 @@ This project has dependencies to:
   Logging under The Apache Software License, Version 2.0
   Mockito under The MIT License
   Neko HTML under The Apache Software License, Version 2.0
-  Reflections under WTFPL
+  Reflections under WTFPL or The New BSD License
   REST Assured under Apache 2.0
   rest-assured-common under Apache 2.0
   Simple API for CSS under The W3C Software License

@@ -26,7 +26,6 @@ const OnChangeWithKeepAliveSubscriptionQos = require("../../../../../main/js/joy
 const OnChangeSubscriptionQos = require("../../../../../main/js/joynr/proxy/OnChangeSubscriptionQos");
 const SubscriptionQos = require("../../../../../main/js/joynr/proxy/SubscriptionQos");
 const SubscriptionPublication = require("../../../../../main/js/joynr/dispatching/types/SubscriptionPublication");
-const Promise = require("../../../../../main/js/global/Promise");
 const PublicationMissedException = require("../../../../../main/js/joynr/exceptions/PublicationMissedException");
 const SubscriptionException = require("../../../../../main/js/joynr/exceptions/SubscriptionException");
 const LoggingManager = require("../../../../../main/js/joynr/system/LoggingManager");
@@ -341,7 +340,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", () =>
                 // increase time by 50ms and see if alert was triggered
                 increaseFakeTime(alertAfterIntervalMs / 2);
                 expect(publicationMissedSpy).not.toHaveBeenCalled();
-                const publication = new SubscriptionPublication({
+                const publication = SubscriptionPublication.create({
                     response: ["test"],
                     subscriptionId
                 });
@@ -404,7 +403,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", () =>
                 // increase time by 50ms and see if alert was triggered
                 increaseFakeTime(50);
                 expect(publicationMissedSpy).not.toHaveBeenCalled();
-                const publication = new SubscriptionPublication({
+                const publication = SubscriptionPublication.create({
                     response: ["ZERO"],
                     subscriptionId
                 });
@@ -460,7 +459,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", () =>
                 const testInt = 2;
                 const testEnum = TestEnum.ZERO;
                 expect(onErrorSpy).not.toHaveBeenCalled();
-                const publication = new SubscriptionPublication({
+                const publication = SubscriptionPublication.create({
                     response: [testString, testInt, testEnum.name],
                     subscriptionId
                 });

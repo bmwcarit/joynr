@@ -16,12 +16,12 @@
  * limitations under the License.
  * #L%
  */
-const Promise = require("../../global/Promise");
 const ProxyAttribute = require("./ProxyAttribute");
 const ProxyOperation = require("./ProxyOperation");
 const ProxyEvent = require("./ProxyEvent");
 const uuid = require("uuid/v4");
 const DiscoveryQos = require("./DiscoveryQos");
+const JoynrRuntimeException = require("../exceptions/JoynrRuntimeException");
 const MessagingQos = require("../messaging/MessagingQos");
 const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
 const Version = require("../../generated/joynr/types/Version");
@@ -152,30 +152,33 @@ function ProxyBuilder(proxyDependencies, dependencies) {
                 }
             }
 
-            dependencies.messageRouter
+            return dependencies.messageRouter
                 .addNextHop(proxy.proxyParticipantId, dependencies.libjoynrMessagingAddress, isGloballyVisible)
-                .catch(error => {
-                    log.debug(
-                        `Exception occured while registering the address for interface ${proxy.interfaceName}, domain ${
-                            proxy.domain
-                        }, proxyParticipantId ${proxy.proxyParticipantId} to message router. Error: ${error.stack}`
+                .then(() => {
+                    dependencies.messageRouter.setToKnown(proxy.providerDiscoveryEntry.participantId);
+                    const freeze = settings.freeze === undefined || settings.freeze;
+                    if (freeze) {
+                        // make proxy object immutable and return asynchronously
+                        proxy = Object.freeze(proxy);
+                    }
+
+                    log.info(
+                        `Proxy created, proxy participantId: ${
+                            proxy.proxyParticipantId
+                        }, provider discoveryEntry: ${JSON.stringify(proxy.providerDiscoveryEntry)}`
                     );
+
+                    return proxy;
+                })
+                .catch(error => {
+                    const errorMsg = `Proxy creation for interface ${proxy.interfaceName}, domain ${
+                        proxy.domain
+                    }, proxyParticipantId ${
+                        proxy.proxyParticipantId
+                    } failed. Exception occurred while registering the address to MessageRouter. Error: ${error.stack}`;
+                    log.debug(errorMsg);
+                    throw new JoynrRuntimeException({ detailMessage: errorMsg });
                 });
-            dependencies.messageRouter.setToKnown(proxy.providerDiscoveryEntry.participantId);
-
-            const freeze = settings.freeze === undefined || settings.freeze;
-            if (freeze) {
-                // make proxy object immutable and return asynchronously
-                proxy = Object.freeze(proxy);
-            }
-
-            log.info(
-                `Proxy created, proxy participantId: ${
-                    proxy.proxyParticipantId
-                }, provider discoveryEntry: ${JSON.stringify(proxy.providerDiscoveryEntry)}`
-            );
-
-            return proxy;
         }
 
         return Promise.all(datatypePromises)

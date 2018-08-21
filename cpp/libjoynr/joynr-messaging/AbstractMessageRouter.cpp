@@ -20,6 +20,7 @@
 
 #include <cassert>
 #include <functional>
+#include <sstream>
 
 #include <boost/asio/io_service.hpp>
 #include <spdlog/fmt/fmt.h>
@@ -77,7 +78,8 @@ AbstractMessageRouter::AbstractMessageRouter(
           messageQueueCleanerTimerPeriodMs(std::chrono::milliseconds(1000)),
           routingTableCleanerTimer(ioService),
           transportStatuses(std::move(transportStatuses)),
-          isShuttingDown(false)
+          isShuttingDown(false),
+          numberOfRoutedMessages(0)
 {
 }
 
@@ -243,6 +245,7 @@ void AbstractMessageRouter::route(std::shared_ptr<ImmutableMessage> message, std
 {
     assert(messagingStubFactory);
     assert(message);
+    numberOfRoutedMessages++;
     checkExpiryDate(*message);
     routeInternal(std::move(message), tryCount);
 }
@@ -412,6 +415,12 @@ void AbstractMessageRouter::onMessageCleanerTimerExpired(
         const boost::system::error_code& errorCode)
 {
     if (!errorCode) {
+        std::stringstream thisAsHexString;
+        thisAsHexString << static_cast<void*>(thisSharedPtr.get());
+        JOYNR_LOG_INFO(logger(),
+                       "#routedMessages[this={}]: {}",
+                       thisAsHexString.str(),
+                       thisSharedPtr->numberOfRoutedMessages);
         WriteLocker lock(thisSharedPtr->messageQueueRetryLock);
         thisSharedPtr->messageQueue->removeOutdatedMessages();
         thisSharedPtr->transportNotAvailableQueue->removeOutdatedMessages();
@@ -539,6 +548,11 @@ void AbstractMessageRouter::addToRoutingTable(
     if (!inprocessAddress) {
         saveRoutingTable();
     }
+}
+
+std::uint64_t AbstractMessageRouter::getNumberOfRoutedMessages() const
+{
+    return numberOfRoutedMessages;
 }
 
 /**

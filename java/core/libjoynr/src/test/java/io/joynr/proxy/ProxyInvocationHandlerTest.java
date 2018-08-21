@@ -40,6 +40,7 @@ import io.joynr.dispatcher.rpc.JoynrBroadcastSubscriptionInterface;
 import io.joynr.dispatcher.rpc.annotation.FireAndForget;
 import io.joynr.dispatcher.rpc.annotation.JoynrMulticast;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.proxy.invocation.MulticastSubscribeInvocation;
 import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
@@ -61,9 +62,13 @@ public class ProxyInvocationHandlerTest {
     private String proxyParticipantId = "proxyParticipantId";
     private String interfaceName = "interfaceName";
     private String domain = "domain";
+    private Object proxy;
 
     @Mock
     private ConnectorFactory connectorFactory;
+
+    @Mock
+    private MessageRouter mockMessageRouter;
 
     private ProxyInvocationHandlerImpl proxyInvocationHandler;
 
@@ -84,13 +89,16 @@ public class ProxyInvocationHandlerTest {
 
     @Before
     public void setup() {
+        proxy = new Object();
         connectorFactory = Mockito.mock(ConnectorFactory.class);
+        mockMessageRouter = Mockito.mock(MessageRouter.class);
         proxyInvocationHandler = new ProxyInvocationHandlerImpl(Sets.newHashSet(domain),
                                                                 interfaceName,
                                                                 proxyParticipantId,
                                                                 discoveryQos,
                                                                 messagingQos,
-                                                                connectorFactory);
+                                                                connectorFactory,
+                                                                mockMessageRouter);
 
     }
 
@@ -102,9 +110,10 @@ public class ProxyInvocationHandlerTest {
             public Object call() throws Exception {
                 Object result = null;
                 try {
-                    result = proxyInvocationHandler.invoke(TestSyncInterface.class.getDeclaredMethod("testMethod",
-                                                                                                     new Class<?>[]{}),
-                                                           new Object[]{});
+                    result = proxyInvocationHandler.invokeInternal(proxy,
+                                                                   TestSyncInterface.class.getDeclaredMethod("testMethod",
+                                                                                                             new Class<?>[]{}),
+                                                                   new Object[]{});
                 } catch (Exception e) {
                 }
 
@@ -117,9 +126,10 @@ public class ProxyInvocationHandlerTest {
             public Object call() throws Exception {
                 Object result = null;
                 try {
-                    result = proxyInvocationHandler.invoke(TestSyncInterface.class.getDeclaredMethod("testMethod",
-                                                                                                     new Class<?>[]{}),
-                                                           new Object[]{});
+                    result = proxyInvocationHandler.invokeInternal(proxy,
+                                                                   TestSyncInterface.class.getDeclaredMethod("testMethod",
+                                                                                                             new Class<?>[]{}),
+                                                                   new Object[]{});
                 } catch (Exception e) {
                 }
                 return result;
@@ -153,7 +163,7 @@ public class ProxyInvocationHandlerTest {
         discoveryEntry.setParticipantId("participantId");
         arbitrationResult.setDiscoveryEntries(Sets.newHashSet(discoveryEntry));
         proxyInvocationHandler.createConnector(arbitrationResult);
-        proxyInvocationHandler.invoke(fireAndForgetMethod, args);
+        proxyInvocationHandler.invokeInternal(proxy, fireAndForgetMethod, args);
 
         verify(connectorInvocationHandler).executeOneWayMethod(fireAndForgetMethod, args);
     }
@@ -207,7 +217,7 @@ public class ProxyInvocationHandlerTest {
         discoveryEntry.setParticipantId("participantId");
         arbitrationResult.setDiscoveryEntries(Sets.newHashSet(discoveryEntry));
         proxyInvocationHandler.createConnector(arbitrationResult);
-        proxyInvocationHandler.invoke(subscribeMethod, args);
+        proxyInvocationHandler.invokeInternal(proxy, subscribeMethod, args);
 
         ArgumentCaptor<MulticastSubscribeInvocation> captor = ArgumentCaptor.forClass(MulticastSubscribeInvocation.class);
         verify(connectorInvocationHandler).executeSubscriptionMethod(captor.capture());

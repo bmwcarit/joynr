@@ -28,12 +28,14 @@
 
 using namespace joynr;
 
-class MessagingSettingsTest : public testing::Test {
+class MessagingSettingsTest : public testing::Test
+{
 public:
-    MessagingSettingsTest() :
-        testSettingsFileNameNonExistent("test-resources/MessagingSettingsTest-nonexistent.settings"),
-        testSettingsFileNameHttp("test-resources/HttpMessagingSettingsTest.settings"),
-        testSettingsFileNameMqtt("test-resources/MqttMessagingSettingsTest.settings")
+    MessagingSettingsTest()
+            : testSettingsFileNameNonExistent(
+                      "test-resources/MessagingSettingsTest-nonexistent.settings"),
+              testSettingsFileNameHttp("test-resources/HttpMessagingSettingsTest.settings"),
+              testSettingsFileNameMqtt("test-resources/MqttMessagingSettingsTest.settings")
     {
     }
 
@@ -44,7 +46,8 @@ protected:
     const std::string testSettingsFileNameMqtt;
 };
 
-TEST_F(MessagingSettingsTest, intializedWithDefaultSettings) {
+TEST_F(MessagingSettingsTest, intializedWithDefaultSettings)
+{
     Settings testSettings(testSettingsFileNameNonExistent);
 
     // file is not loaded because it intentionally does not exist
@@ -55,63 +58,86 @@ TEST_F(MessagingSettingsTest, intializedWithDefaultSettings) {
 
     EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_BROKER_URL()));
 
-    EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_DISCOVERY_DIRECTORIES_DOMAIN()));
+    EXPECT_TRUE(
+            messagingSettings.contains(MessagingSettings::SETTING_DISCOVERY_DIRECTORIES_DOMAIN()));
 
-    EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_CAPABILITIES_DIRECTORY_URL()));
-    EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_CAPABILITIES_DIRECTORY_CHANNELID()));
-    EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID()));
+    EXPECT_TRUE(
+            messagingSettings.contains(MessagingSettings::SETTING_CAPABILITIES_DIRECTORY_URL()));
+    EXPECT_TRUE(messagingSettings.contains(
+            MessagingSettings::SETTING_CAPABILITIES_DIRECTORY_CHANNELID()));
+    EXPECT_TRUE(messagingSettings.contains(
+            MessagingSettings::SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID()));
 
-    EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_MQTT_KEEP_ALIVE_TIME_SECONDS()));
-    EXPECT_EQ(messagingSettings.getMqttKeepAliveTimeSeconds().count(), MessagingSettings::DEFAULT_MQTT_KEEP_ALIVE_TIME_SECONDS().count());
-    EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_MQTT_RECONNECT_DELAY_TIME_SECONDS()));
-    EXPECT_EQ(messagingSettings.getMqttReconnectDelayTimeSeconds().count(), MessagingSettings::DEFAULT_MQTT_RECONNECT_DELAY_TIME_SECONDS().count());
-    EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_MQTT_CONNECTION_TIMEOUT_MS()));
-    EXPECT_EQ(messagingSettings.getMqttConnectionTimeoutMs().count(), MessagingSettings::DEFAULT_MQTT_CONNECTION_TIMEOUT_MS().count());
+    EXPECT_TRUE(
+            messagingSettings.contains(MessagingSettings::SETTING_MQTT_KEEP_ALIVE_TIME_SECONDS()));
+    EXPECT_EQ(messagingSettings.getMqttKeepAliveTimeSeconds().count(),
+              MessagingSettings::DEFAULT_MQTT_KEEP_ALIVE_TIME_SECONDS().count());
+    EXPECT_TRUE(messagingSettings.contains(
+            MessagingSettings::SETTING_MQTT_RECONNECT_DELAY_TIME_SECONDS()));
+    EXPECT_EQ(messagingSettings.getMqttReconnectDelayTimeSeconds().count(),
+              MessagingSettings::DEFAULT_MQTT_RECONNECT_DELAY_TIME_SECONDS().count());
+    EXPECT_TRUE(
+            messagingSettings.contains(MessagingSettings::SETTING_MQTT_CONNECTION_TIMEOUT_MS()));
+    EXPECT_EQ(messagingSettings.getMqttConnectionTimeoutMs().count(),
+              MessagingSettings::DEFAULT_MQTT_CONNECTION_TIMEOUT_MS().count());
     EXPECT_EQ(messagingSettings.getTtlUpliftMs(), MessagingSettings::DEFAULT_TTL_UPLIFT_MS());
-    EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_ROUTING_TABLE_GRACE_PERIOD_MS()));
-    EXPECT_EQ(messagingSettings.getRoutingTableGracePeriodMs(), MessagingSettings::DEFAULT_ROUTING_TABLE_GRACE_PERIOD_MS());
-    EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_ROUTING_TABLE_CLEANUP_INTERVAL_MS()));
-    EXPECT_EQ(messagingSettings.getRoutingTableCleanupIntervalMs(), MessagingSettings::DEFAULT_ROUTING_TABLE_CLEANUP_INTERVAL_MS());
+    EXPECT_TRUE(
+            messagingSettings.contains(MessagingSettings::SETTING_ROUTING_TABLE_GRACE_PERIOD_MS()));
+    EXPECT_EQ(messagingSettings.getRoutingTableGracePeriodMs(),
+              MessagingSettings::DEFAULT_ROUTING_TABLE_GRACE_PERIOD_MS());
+    EXPECT_TRUE(messagingSettings.contains(
+            MessagingSettings::SETTING_ROUTING_TABLE_CLEANUP_INTERVAL_MS()));
+    EXPECT_EQ(messagingSettings.getRoutingTableCleanupIntervalMs(),
+              MessagingSettings::DEFAULT_ROUTING_TABLE_CLEANUP_INTERVAL_MS());
+    EXPECT_EQ(messagingSettings.getDiscardUnroutableRepliesAndPublications(),
+              MessagingSettings::DEFAULT_DISCARD_UNROUTABLE_REPLIES_AND_PUBLICATIONS());
 }
 
-TEST_F(MessagingSettingsTest, overrideDefaultSettings) {
-    std::string expectedBrokerUrl("http://custom-bounceproxy-host:8080/bounceproxy/MessagingSettingsTest-overrideDefaultSettings/");
+TEST_F(MessagingSettingsTest, overrideDefaultSettings)
+{
+    std::string expectedBrokerUrl("http://custom-bounceproxy-host:8080/bounceproxy/"
+                                  "MessagingSettingsTest-overrideDefaultSettings/");
     std::int64_t expectedRoutingTableGracePeriodMs = 5000;
     std::int64_t expectedRoutingTableCleanupIntervalMs = 6000;
     Settings testSettings(testSettingsFileNameNonExistent);
 
     testSettings.set(MessagingSettings::SETTING_BROKER_URL(), expectedBrokerUrl);
-    testSettings.set(MessagingSettings::SETTING_ROUTING_TABLE_GRACE_PERIOD_MS(), expectedRoutingTableGracePeriodMs);
-    testSettings.set(MessagingSettings::SETTING_ROUTING_TABLE_CLEANUP_INTERVAL_MS(), expectedRoutingTableCleanupIntervalMs);
+    testSettings.set(MessagingSettings::SETTING_ROUTING_TABLE_GRACE_PERIOD_MS(),
+                     expectedRoutingTableGracePeriodMs);
+    testSettings.set(MessagingSettings::SETTING_ROUTING_TABLE_CLEANUP_INTERVAL_MS(),
+                     expectedRoutingTableCleanupIntervalMs);
     MessagingSettings messagingSettings(testSettings);
 
     std::string brokerUrl = messagingSettings.getBrokerUrlString();
     EXPECT_EQ(expectedBrokerUrl, brokerUrl);
     std::int64_t routingTableGracePeriodMs = messagingSettings.getRoutingTableGracePeriodMs();
     EXPECT_EQ(expectedRoutingTableGracePeriodMs, routingTableGracePeriodMs);
-    std::int64_t routingTableCleanupIntervalMs = messagingSettings.getRoutingTableCleanupIntervalMs();
+    std::int64_t routingTableCleanupIntervalMs =
+            messagingSettings.getRoutingTableCleanupIntervalMs();
     EXPECT_EQ(expectedRoutingTableCleanupIntervalMs, routingTableCleanupIntervalMs);
 }
 
-void checkBrokerSettings(
-        MessagingSettings messagingSettings,
-        std::string expectedBrokerUrl) {
+void checkBrokerSettings(MessagingSettings messagingSettings, std::string expectedBrokerUrl)
+{
     EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_BROKER_URL()));
 
     std::string brokerUrl = messagingSettings.getBrokerUrlString();
     EXPECT_EQ(expectedBrokerUrl, brokerUrl);
 }
 
-void checkDiscoveryDirectorySettings(
-        MessagingSettings messagingSettings,
-        std::string expectedCapabilitiesDirectoryChannelId) {
-    EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_CAPABILITIES_DIRECTORY_CHANNELID()));
+void checkDiscoveryDirectorySettings(MessagingSettings messagingSettings,
+                                     std::string expectedCapabilitiesDirectoryChannelId)
+{
+    EXPECT_TRUE(messagingSettings.contains(
+            MessagingSettings::SETTING_CAPABILITIES_DIRECTORY_CHANNELID()));
 
-    std::string capabilitiesDirectoryChannelId = messagingSettings.getCapabilitiesDirectoryChannelId();
+    std::string capabilitiesDirectoryChannelId =
+            messagingSettings.getCapabilitiesDirectoryChannelId();
     EXPECT_EQ(expectedCapabilitiesDirectoryChannelId, capabilitiesDirectoryChannelId);
 }
 
-TEST_F(MessagingSettingsTest, httpOnly) {
+TEST_F(MessagingSettingsTest, httpOnly)
+{
     std::string expectedBrokerUrl("http://custom-bounceproxy-host:8080/bounceproxy/");
     std::string expectedCapabilitiesDirectoryChannelId("discoverydirectory_channelid");
 
@@ -124,7 +150,8 @@ TEST_F(MessagingSettingsTest, httpOnly) {
     checkDiscoveryDirectorySettings(messagingSettings, expectedCapabilitiesDirectoryChannelId);
 }
 
-TEST_F(MessagingSettingsTest, mqttOnly) {
+TEST_F(MessagingSettingsTest, mqttOnly)
+{
     std::string expectedBrokerUrl("mqtt://custom-broker-host:1883/");
     std::string expectedCapabilitiesDirectoryChannelId("mqtt_discoverydirectory_channelid");
 
@@ -139,11 +166,31 @@ TEST_F(MessagingSettingsTest, mqttOnly) {
 
 TEST_F(MessagingSettingsTest, discoveryEntryExpiryIntervalMsStores64BitValue)
 {
-    const std::string fileName = "test-resources/MessagingSettingsDiscoveryEntryExpiryIntervalMs.settings";
+    const std::string fileName =
+            "test-resources/MessagingSettingsDiscoveryEntryExpiryIntervalMs.settings";
     Settings testSettings(fileName);
     EXPECT_TRUE(testSettings.isLoaded());
     MessagingSettings messagingSettings(testSettings);
 
     constexpr std::int64_t int64Max = std::numeric_limits<std::int64_t>::max();
     EXPECT_EQ(int64Max, messagingSettings.getDiscoveryEntryExpiryIntervalMs());
+}
+
+TEST_F(MessagingSettingsTest, discardUnroutableRepliesAndPublicationsValue)
+{
+    const std::string fileName =
+            "test-resources/MessagingSettingsDiscardUnroutableRepliesAndPublications.settings";
+    Settings testSettings(fileName);
+    EXPECT_TRUE(testSettings.isLoaded());
+    MessagingSettings messagingSettings(testSettings);
+
+    EXPECT_EQ(true, messagingSettings.getDiscardUnroutableRepliesAndPublications());
+
+    bool expectedValue = false;
+    messagingSettings.setDiscardUnroutableRepliesAndPublications(expectedValue);
+    EXPECT_EQ(expectedValue, messagingSettings.getDiscardUnroutableRepliesAndPublications());
+
+    expectedValue = true;
+    messagingSettings.setDiscardUnroutableRepliesAndPublications(expectedValue);
+    EXPECT_EQ(expectedValue, messagingSettings.getDiscardUnroutableRepliesAndPublications());
 }

@@ -49,6 +49,7 @@ private:
     std::shared_ptr<const mococrw::X509Certificate> tlsCertificate;
     std::shared_ptr<const mococrw::AsymmetricPrivateKey> tlsKey;
     std::shared_ptr<const mococrw::X509Certificate> tlsRootCertificate;
+    std::string ownerId;
 };
 } // namespace tests
 } // namespace joynr

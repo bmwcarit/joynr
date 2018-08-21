@@ -18,19 +18,17 @@
  */
 package io.joynr.integration.matchers;
 
-import io.joynr.messaging.util.Utilities;
-import io.joynr.smrf.EncodingException;
-
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
-
-import joynr.ImmutableMessage;
 
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 
-import com.google.common.base.Charsets;
+import io.joynr.messaging.util.Utilities;
+import io.joynr.smrf.EncodingException;
+import joynr.ImmutableMessage;
 
 public class MessagingServiceResponseMatchers {
 
@@ -40,7 +38,7 @@ public class MessagingServiceResponseMatchers {
             public boolean matches(Object item) {
                 @SuppressWarnings("unchecked")
                 List<ImmutableMessage> messages = (List<ImmutableMessage>) item;
-                byte[] binaryPayload = payload.getBytes(Charsets.UTF_8);
+                byte[] binaryPayload = payload.getBytes(StandardCharsets.UTF_8);
 
                 for (ImmutableMessage message : messages) {
                     try {

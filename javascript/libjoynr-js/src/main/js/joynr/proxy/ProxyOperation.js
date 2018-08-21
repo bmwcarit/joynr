@@ -16,7 +16,6 @@
  * limitations under the License.
  * #L%
  */
-const Promise = require("../../global/Promise");
 const UtilInternal = require("../util/UtilInternal");
 const JSONSerializer = require("../util/JSONSerializer");
 const Typing = require("../util/Typing");
@@ -205,7 +204,7 @@ function operationFunction(operationArguments) {
         // send it through request reply manager
         if (foundValidOperationSignature.fireAndForget === true) {
             // build outgoing request
-            const oneWayRequest = new OneWayRequest({
+            const oneWayRequest = OneWayRequest.create({
                 methodName: this.operationName,
                 paramDatatypes: foundValidOperationSignature.inputParameter.paramDatatypes,
                 params: foundValidOperationSignature.inputParameter.params
@@ -220,7 +219,7 @@ function operationFunction(operationArguments) {
         }
         if (foundValidOperationSignature.fireAndForget !== true) {
             // build outgoing request
-            const request = new Request({
+            const request = Request.create({
                 methodName: this.operationName,
                 paramDatatypes: foundValidOperationSignature.inputParameter.paramDatatypes,
                 params: foundValidOperationSignature.inputParameter.params

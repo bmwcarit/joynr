@@ -2,6 +2,148 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.5.0-SNAPSHOT
+
+## API relevant changes
+* **[Java]** Android support has been disabled until further notice.
+* **[Java]** joynr now **requires Java 8** and the plain Java part is no longer compatible with Java 7 (which was previously required for Android).
+* **[Java]** The key format of persisted provider participantIDs changed. It now includes the major
+ version of the Franca interface implemented by the provider.
+ * All providers which do not use a fixed participantID will be registered with a newly generated
+   participantID. Existing proxies have to be rebuilt (the provider has to be discovered again).
+ * Providers with a fixed participantId might have to be updated in order to use the new key format,
+   see [Joynr Java Developer Guide](java.md#register-provider-with-fixed-%28custom%29-participantId)
+   for the recommended way of registering providers with fixed participantID.
+* **[Java]** Several dependencies have been upgraded. Please make sure to
+  upgrade any applications / JEE server accordingly to avoid possible
+  version conflicts.
+  `mvn dependency:tree` from top-level pom.xml reports the following changes:
+ * com.google.code.findbugs:annotations updated from version 2.0.1 to 3.0.1
+ * com.google.code.findbugs:jsr305 updated from version 2.0.1 to 3.0.2
+ * com.google.errorprone:error_prone_annotations added version 2.1.3
+ * com.google.guava:guava updated from version 11.0.2 to 24.1-android
+ * com.google.j2objc:j2objc-annotations added version 1.1
+ * commons-pool:commons-pool updated from version 1.5.4 to 1.6
+ * fish.payara.extras:payara-embedded-all updated from version 4.1.1.161 to 4.1.153
+ * javassist:javassist removed version 3.12.1.GA
+ * javax.ws.rs:javax.ws.rs-api updated from version 2.0.1 to 2.1-m03
+ * net.jcip:jcip-annotations added version 1.0
+ * net.sourceforge.serp:serp updated from version 1.14.1 to 1.15.1
+ * org.apache.openjpa:openjpa-jdbc updated from version 2.3.0 to 2.4.2
+ * org.apache.openjpa:openjpa-kernel updated from version 2.3.0 to 2.4.2
+ * org.apache.openjpa:openjpa-lib updated from version 2.3.0 to 2.4.2
+ * org.apache.openjpa:openjpa-persistence updated from version 2.3.0 to 2.4.2
+ * org.apache.openjpa:openjpa-persistence-jdbc updated from version 2.3.0 to 2.4.2
+ * org.apache.xbean:xbean-asm4-shaded removed version 3.14
+ * org.apache.xbean:xbean-asm5-shaded added version 3.17
+ * org.checkerframework:checker-compat-qual added version 2.0.0
+ * org.codehaus.mojo:animal-sniffer-annotations added version 1.14
+ * org.eclipse.emf:org.eclipse.emf.codegen removed version 2.11.0-v20150806-0404
+ * org.eclipse.equinox:common removed version 3.6.200-v20130402-1505
+ * org.eclipse.jdt:org.eclipse.jdt.compiler.apt added version 1.2.100
+ * org.eclipse.jdt:org.eclipse.jdt.core added version 3.12.2
+ * org.eclipse.platform:org.eclipse.core.commands added version 3.9.100
+ * org.eclipse.platform:org.eclipse.core.contenttype added version 3.7.0
+ * org.eclipse.platform:org.eclipse.core.expressions added version 3.6.100
+ * org.eclipse.platform:org.eclipse.core.filesystem added version 1.7.100
+ * org.eclipse.platform:org.eclipse.core.jobs added version 3.10.0
+ * org.eclipse.platform:org.eclipse.core.resources added version 3.13.0
+ * org.eclipse.platform:org.eclipse.core.runtime added version 3.14.0
+ * org.eclipse.platform:org.eclipse.equinox.app added version 1.3.500
+ * org.eclipse.platform:org.eclipse.equinox.common added version 3.10.0
+ * org.eclipse.platform:org.eclipse.equinox.preferences added version 3.7.100
+ * org.eclipse.platform:org.eclipse.equinox.registry added version 3.8.0
+ * org.eclipse.platform:org.eclipse.osgi added version 3.13.0
+ * org.eclipse.platform:org.eclipse.text added version 3.6.300
+ * org.eclipse.tycho:org.eclipse.jdt.core removed version 3.10.0.v20140604-1726
+ * org.eclipse.xtend:org.eclipse.xtend.lib updated from version 2.8.4 to 2.11.0
+ * org.eclipse.xtend:org.eclipse.xtend.lib.macro updated from version 2.8.4 to 2.11.0
+ * org.eclipse.xtext:org.eclipse.xtext updated from version 2.8.4 to 2.11.0
+ * org.eclipse.xtext:org.eclipse.xtext.util updated from version 2.8.4 to 2.11.0
+ * org.eclipse.xtext:org.eclipse.xtext.xbase updated from version 2.8.4 to 2.11.0
+ * org.franca:org.franca.core updated from version 0.10.0 to 0.13.0
+ * org.franca:org.franca.core.dsl updated from version 0.10.0 to 0.13.0
+ * org.franca:org.franca.deploymodel.dsl updated from version 0.10.0 to 0.13.0
+ * org.glassfish.hk2.external:aopalliance-repackaged updated from version 2.4.0-b31 to 2.5.0-b32
+ * org.glassfish.hk2.external:javax.inject updated from version 2.4.0-b31 to 2.5.0-b32
+ * org.glassfish.hk2:hk2-api updated from version 2.4.0-b31 to 2.5.0-b32
+ * org.glassfish.hk2:hk2-locator updated from version 2.4.0-b31 to 2.5.0-b32
+ * org.glassfish.hk2:hk2-utils updated from version 2.4.0-b31 to 2.5.0-b32
+ * org.glassfish.jersey.bundles.repackaged:jersey-guava updated from version 2.21 to 2.26-b02
+ * org.glassfish.jersey.core:jersey-client updated from version 2.21 to 2.26-b02
+ * org.glassfish.jersey.core:jersey-common updated from version 2.21 to 2.26-b02
+ * org.glassfish.jersey.core:jersey-server updated from version 2.21 to 2.26-b02
+ * org.glassfish.jersey.media:jersey-media-jaxb updated from version 2.21 to 2.26-b02
+ * org.glassfish.main.extras:glassfish-embedded-all updated from version 4.1.1 to 4.1.2
+ * org.javassist:javassist updated from version 3.18.1-GA to 3.22.0-GA
+ * org.jboss.arquillian.config:arquillian-config-api updated from version 1.1.11.Final to 1.1.15.Final
+ * org.jboss.arquillian.config:arquillian-config-impl-base updated from version 1.1.11.Final to 1.1.15.Final
+ * org.jboss.arquillian.container:arquillian-container-impl-base updated from version 1.1.11.Final to 1.1.15.Final
+ * org.jboss.arquillian.container:arquillian-container-spi updated from version 1.1.11.Final to 1.1.15.Final
+ * org.jboss.arquillian.container:arquillian-container-test-api updated from version 1.1.11.Final to 1.1.15.Final
+ * org.jboss.arquillian.container:arquillian-container-test-impl-base updated from version 1.1.11.Final to 1.1.15.Final
+ * org.jboss.arquillian.container:arquillian-container-test-spi updated from version 1.1.11.Final to 1.1.15.Final
+ * org.jboss.arquillian.container:arquillian-glassfish-embedded-3.1 updated from version 1.0.0.CR4 to 1.0.2
+ * org.jboss.arquillian.core:arquillian-core-api updated from version 1.1.11.Final to 1.1.15.Final
+ * org.jboss.arquillian.core:arquillian-core-impl-base updated from version 1.1.11.Final to 1.1.15.Final
+ * org.jboss.arquillian.core:arquillian-core-spi updated from version 1.1.11.Final to 1.1.15.Final
+ * org.jboss.arquillian.extension:arquillian-transaction-api updated from version 1.0.3.Final to 1.0.5
+ * org.jboss.arquillian.extension:arquillian-transaction-impl-base updated from version 1.0.3.Final to 1.0.5
+ * org.jboss.arquillian.extension:arquillian-transaction-jta updated from version 1.0.3.Final to 1.0.5
+ * org.jboss.arquillian.extension:arquillian-transaction-spi updated from version 1.0.3.Final to 1.0.5
+ * org.jboss.arquillian.junit:arquillian-junit-container updated from version 1.1.11.Final to 1.1.15.Final
+ * org.jboss.arquillian.junit:arquillian-junit-core updated from version 1.1.11.Final to 1.1.15.Final
+ * org.jboss.arquillian.protocol:arquillian-protocol-servlet updated from version 1.1.11.Final to 1.1.15.Final
+ * org.jboss.arquillian.test:arquillian-test-api updated from version 1.1.11.Final to 1.1.15.Final
+ * org.jboss.arquillian.test:arquillian-test-impl-base updated from version 1.1.11.Final to 1.1.15.Final
+ * org.jboss.arquillian.test:arquillian-test-spi updated from version 1.1.11.Final to 1.1.15.Final
+ * org.jboss.arquillian.testenricher:arquillian-testenricher-cdi updated from version 1.1.11.Final to 1.1.15.Final
+ * org.jboss.arquillian.testenricher:arquillian-testenricher-ejb updated from version 1.1.11.Final to 1.1.15.Final
+ * org.jboss.arquillian.testenricher:arquillian-testenricher-initialcontext updated from version 1.1.11.Final to 1.1.15.Final
+ * org.jboss.arquillian.testenricher:arquillian-testenricher-resource updated from version 1.1.11.Final to 1.1.15.Final
+ * org.jboss.shrinkwrap.descriptors:shrinkwrap-descriptors-api-base updated from version 2.0.0-alpha-8 to 2.0.0
+ * org.jboss.shrinkwrap.descriptors:shrinkwrap-descriptors-spi updated from version 2.0.0-alpha-8 to 2.0.0
+ * org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-api updated from version 2.2.0 to 2.2.6
+ * org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-api-maven updated from version 2.2.0 to 2.2.6
+ * org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-impl-maven updated from version 2.2.0 to 2.2.6
+ * org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-spi updated from version 2.2.0 to 2.2.6
+ * org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-spi-maven updated from version 2.2.0 to 2.2.6
+ * org.jboss.shrinkwrap:shrinkwrap-api updated from version 1.2.3 to 1.2.6
+ * org.jboss.shrinkwrap:shrinkwrap-impl-base updated from version 1.2.3 to 1.2.6
+ * org.jboss.shrinkwrap:shrinkwrap-spi updated from version 1.2.3 to 1.2.6
+ * org.reflections:reflections updated from version 0.9.8 to 0.9.10
+* **[Java]** Proxy methods can now be passed an optional `io.joynr.messaging.MessagingQos` parameter.
+  This allows to overwrite the `MessagingQos` which was specified during proxy building
+  for each proxy method call separately.
+
+## Other changes
+* **[Java,C++,JS]** Introduced Franca 0.13.0, joynr continues to support
+  Franca features that were already supported in previous joynr versions.
+* **[Java]** Orphaned routing entries containing addresses for proxy participantIds
+  related to no longer referenced proxy instances are now removed by the Routing Table cleanup
+  background job, provided the related proxy instances have already been collected by the Java
+  garbage collector.
+  See also [Java Configuration Reference](JavaSettings.md) for more details about property
+  `PROPERTY_ROUTING_TABLE_CLEANUP_INTERVAL_MS`.
+  Note that the application is responsible for keeping a reference to the proxy instance until
+  method calls have ended with either success or error and broadcasts / attribute subscriptions
+  have been terminated since otherwise a potential reply or publication cannot be routed anymore
+  once the routing entry has been removed.
+* **[JS]** Replaced the joynr dependency smrf-native with smrf, which is a javascript only implementation
+  of joynr's secure messaging format. This offers the following benefits.
+    * simpler usage of joynr, as no native dependencies are remaining
+    * improved performance for serialization and deserialization of messages.
+    * prepares future browser support. Rewriting of the websocket related browser part still necessary.
+* **[Java]**  Use `/` instead of `:` in shared subscription topic
+* **[C++]** Added setting 'messaging/discard-unroutable-replies-and-publications'.
+  See default-messaging.settings for more details. Do not enable this setting before all local joynr
+  environments have been updated to joynr 1.5.0 or later.
+
+## Configuration property changes
+None.
+
+# joynr 1.4.0
+
 ## API relevant changes
 * **[JS]** Registration of global providers can be made waiting until registration has been
   propagated to GlobalCapabilitiesDirectory by passing an optional boolean flag `awaitGlobalRegistration`

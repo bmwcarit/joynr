@@ -20,7 +20,6 @@
  * The <code>CapabilityDiscovery</code> is a joynr internal interface. When the Arbitrator does a lookup for capabilities, this module is
  * queried. If a provider needs to be registered, this module selects the places to register at.
  */
-const Promise = require("../../../global/Promise");
 const GlobalDiscoveryEntry = require("../../../generated/joynr/types/GlobalDiscoveryEntry");
 const DiscoveryQos = require("../../proxy/DiscoveryQos");
 const DiscoveryScope = require("../../../generated/joynr/types/DiscoveryScope");

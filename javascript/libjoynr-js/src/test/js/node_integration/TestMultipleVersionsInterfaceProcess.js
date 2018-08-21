@@ -23,36 +23,34 @@ const ChildProcessUtils = require("./ChildProcessUtils");
 ChildProcessUtils.overrideRequirePaths();
 
 const joynr = require("joynr");
-const Promise = require("../../../main/js/global/Promise");
 const provisioning = require("../../resources/joynr/provisioning/provisioning_cc.js");
-const MultipleVersionsInterfaceProviderNameVersion = require("../../generated/joynr/tests/MultipleVersionsInterface2Provider");
+const MultipleVersionsInterfaceProviderNameVersion1 = require("../../generated/joynr/tests/MultipleVersionsInterface1Provider");
+const MultipleVersionsInterfaceProviderNameVersion2 = require("../../generated/joynr/tests/MultipleVersionsInterface2Provider");
 const MultipleVersionsInterfaceProviderPackageVersion1 = require("../../generated/joynr/tests/v1/MultipleVersionsInterfaceProvider");
 const MultipleVersionsInterfaceProviderPackageVersion2 = require("../../generated/joynr/tests/v2/MultipleVersionsInterfaceProvider");
+const providerImplementation = require("./MultipleVersionsInterfaceProviderImplementation");
 
-let loadedJoynr, providerDomain, multipleVersionsInterfaceProvider, MultipleVersionsInterfaceProvider;
+let multipleVersionsInterfaceProvider, MultipleVersionsInterfaceProvider, providerDomain, joynrShutdown;
 
-const providerImplementation = {
-    getTrue: () => {
-        return true;
-    }
-};
-
-function initializeTest(provisioningSuffix, providedDomain, versioning) {
+function initializeTest(provisioningSuffix, providedDomain, settings) {
     providerDomain = providedDomain;
+    joynrShutdown = !settings.noJoynrShutdown;
 
     joynr.selectRuntime("inprocess");
-    return joynr.load(provisioning).then(newJoynr => {
-        loadedJoynr = newJoynr;
+    return joynr.load(provisioning).then(() => {
         const providerQos = new joynr.types.ProviderQos({
             customParameters: [],
-            providerpriority: 5,
+            priority: 5,
             scope: joynr.types.ProviderScope.GLOBAL,
             supportsOnChangeSubscriptions: false
         });
 
-        switch (versioning) {
+        switch (settings.versioning) {
+            case "nameVersion1":
+                MultipleVersionsInterfaceProvider = MultipleVersionsInterfaceProviderNameVersion1;
+                break;
             case "nameVersion2":
-                MultipleVersionsInterfaceProvider = MultipleVersionsInterfaceProviderNameVersion;
+                MultipleVersionsInterfaceProvider = MultipleVersionsInterfaceProviderNameVersion2;
                 break;
             case "packageVersion1":
                 MultipleVersionsInterfaceProvider = MultipleVersionsInterfaceProviderPackageVersion1;
@@ -69,10 +67,10 @@ function initializeTest(provisioningSuffix, providedDomain, versioning) {
             providerImplementation
         );
 
-        return loadedJoynr.registration
+        return joynr.registration
             .registerProvider(providerDomain, multipleVersionsInterfaceProvider, providerQos)
             .then(() => {
-                return loadedJoynr;
+                return joynr;
             });
     });
 }
@@ -83,8 +81,10 @@ function startTest() {
 }
 
 function terminateTest() {
-    return loadedJoynr.registration.unregisterProvider(providerDomain, multipleVersionsInterfaceProvider).then(() => {
-        loadedJoynr.shutdown();
+    return joynr.registration.unregisterProvider(providerDomain, multipleVersionsInterfaceProvider).then(() => {
+        if (joynrShutdown) {
+            joynr.shutdown();
+        }
     });
 }
 

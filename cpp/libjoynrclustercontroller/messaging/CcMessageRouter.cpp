@@ -312,6 +312,23 @@ void CcMessageRouter::routeInternal(std::shared_ptr<ImmutableMessage> message,
                 return;
             }
 
+            if (messagingSettings.getDiscardUnroutableRepliesAndPublications() &&
+                ((message->getType() == Message::VALUE_MESSAGE_TYPE_REPLY()) ||
+                 (message->getType() == Message::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY()) ||
+                 (message->getType() == Message::VALUE_MESSAGE_TYPE_PUBLICATION()))) {
+                // Do not queue reply & publication messages if the proxy is not known.
+                // Prequisite is that for every proxy the associated routing entry has
+                // been added before any request is made.
+                JOYNR_LOG_WARN(
+                        logger(),
+                        "No routing information found for proxy destination participant ID \"{}\" "
+                        "of reply or publication message. "
+                        "Discarding message (ID : {})",
+                        message->getRecipient(),
+                        message->getId());
+                return;
+            }
+
             // save the message for later delivery
             JOYNR_LOG_WARN(logger(),
                            "No routing information found for destination participant ID \"{}\" "

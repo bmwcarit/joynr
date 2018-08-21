@@ -32,7 +32,7 @@ abstract class TypeTemplate {
 	new(FType type) {
 		if (type.eContainer instanceof FTypeCollection) {
 			val interface = type.eContainer as FTypeCollection
-			if (interface.version != null) {
+			if (interface.version !== null) {
 				majorVersion = interface.version.major
 				minorVersion = interface.version.minor
 			}

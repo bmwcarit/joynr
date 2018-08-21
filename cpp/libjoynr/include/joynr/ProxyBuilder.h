@@ -115,14 +115,16 @@ public:
             std::function<void(const exceptions::DiscoveryException&)> onError) noexcept override;
 
     /**
-     * @brief Sets the messaging qos settings
+     * @brief OPTIONAL - Sets the messaging Qos settings. If no messaging Qos is provided, a default
+     * one will be used (see MessagingQos.h).
      * @param messagingQos The message quality of service settings
      * @return The ProxyBuilder object
      */
     ProxyBuilder* setMessagingQos(const MessagingQos& messagingQos) noexcept override;
 
     /**
-     * @brief Sets the discovery qos settings
+     * @brief OPTIONAL - Sets the discovery Qos settings. If no discovery Qos is provided, a default
+     * one will be used based on the default-messaging.setting file.
      * @param discoveryQos The discovery quality of service settings
      * @return The ProxyBuilder object
      */
@@ -178,6 +180,8 @@ ProxyBuilder<T>::ProxyBuilder(
           discoveryDefaultRetryIntervalMs(messagingSettings.getDiscoveryDefaultRetryIntervalMs()),
           discoveryQos()
 {
+    discoveryQos.setDiscoveryTimeoutMs(discoveryDefaultTimeoutMs);
+    discoveryQos.setRetryIntervalMs(discoveryDefaultRetryIntervalMs);
 }
 
 template <class T>
@@ -266,13 +270,25 @@ void ProxyBuilder<T>::buildAsync(
         bool isGloballyVisible = !discoverEntry.getIsLocal();
         constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
         const bool isSticky = false;
+        const bool allowUpdate = false;
+        auto onSuccessAddNextHop = [onSuccess, proxy]() { onSuccess(std::move(proxy)); };
+        auto onErrorAddNextHop = [onError](
+                const joynr::exceptions::ProviderRuntimeException& providerRuntimeException) {
+            if (onError) {
+                onError(exceptions::DiscoveryException(
+                        "Proxy could not be added to parent router: " +
+                        providerRuntimeException.getMessage()));
+            }
+        };
+
         messageRouter->addNextHop(proxy->getProxyParticipantId(),
                                   dispatcherAddress,
                                   isGloballyVisible,
                                   expiryDateMs,
-                                  isSticky);
-
-        onSuccess(std::move(proxy));
+                                  isSticky,
+                                  allowUpdate,
+                                  onSuccessAddNextHop,
+                                  onErrorAddNextHop);
     };
 
     auto arbitrator = ArbitratorFactory::createArbitrator(

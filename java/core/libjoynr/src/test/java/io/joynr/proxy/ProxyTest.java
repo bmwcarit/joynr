@@ -89,6 +89,7 @@ import io.joynr.runtime.ShutdownNotifier;
 import io.joynr.runtime.SystemServicesSettings;
 import joynr.MulticastSubscriptionQos;
 import joynr.OnChangeSubscriptionQos;
+import joynr.OneWayRequest;
 import joynr.Reply;
 import joynr.Request;
 import joynr.exceptions.ApplicationException;
@@ -179,6 +180,8 @@ public class ProxyTest {
     public interface SyncTestInterface {
         String method1();
 
+        String method1(MessagingQos messagingQos);
+
         String methodWithApplicationError() throws ApplicationException;
     }
 
@@ -186,11 +189,21 @@ public class ProxyTest {
     public interface AsyncTestInterface {
         Future<String> asyncMethod(@JoynrRpcCallback(deserializationType = String.class) Callback<String> callback);
 
+        Future<String> asyncMethod(@JoynrRpcCallback(deserializationType = String.class) Callback<String> callback,
+                                   MessagingQos messagingQos);
+
         Future<String> asyncMethodWithApplicationError(@JoynrRpcCallback(deserializationType = String.class) Callback<String> callback);
     }
 
+    @io.joynr.dispatcher.rpc.annotation.FireAndForget
+    public interface FireAndForgetTestInterface {
+        void methodFireAndForget();
+
+        void methodFireAndForget(MessagingQos messagingQos);
+    }
+
     @JoynrVersion(major = 0, minor = 0)
-    public interface TestInterface extends SyncTestInterface, AsyncTestInterface {
+    public interface TestInterface extends SyncTestInterface, AsyncTestInterface, FireAndForgetTestInterface {
         public static final String INTERFACE_NAME = "TestInterface";
     }
 
@@ -430,8 +443,15 @@ public class ProxyTest {
         assertTrue(proxyBuilder.messagingQos.getRoundTripTtl_ms() == messageTtl);
     }
 
-    @Test
-    public void createProxyAndCallSyncMethodSuccess() throws Exception {
+    public void createProxyAndCallSyncMethodSuccess(MessagingQos privateMessagingQos) {
+        MessagingQos expectedMessagingQos;
+
+        if (privateMessagingQos != null) {
+            expectedMessagingQos = privateMessagingQos;
+        } else {
+            expectedMessagingQos = messagingQos;
+        }
+
         String requestReplyId = "createProxyAndCallSyncMethod_requestReplyId";
         Mockito.when(requestReplyManager.sendSyncRequest(Mockito.<String> any(),
                                                          Mockito.<DiscoveryEntryWithMetaInfo> any(),
@@ -442,9 +462,36 @@ public class ProxyTest {
 
         ProxyBuilder<TestInterface> proxyBuilder = getProxyBuilder(TestInterface.class);
         TestInterface proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
-        String result = proxy.method1();
+        String result;
+        if (privateMessagingQos != null) {
+            result = proxy.method1(privateMessagingQos);
+        } else {
+            result = proxy.method1();
+        }
+        ArgumentCaptor<MessagingQos> messagingQosCaptor = ArgumentCaptor.forClass(MessagingQos.class);
+        ArgumentCaptor<Request> requestCaptor = ArgumentCaptor.forClass(Request.class);
+        verify(requestReplyManager).sendSyncRequest(Mockito.<String> any(),
+                                                    Mockito.<DiscoveryEntryWithMetaInfo> any(),
+                                                    requestCaptor.capture(),
+                                                    Mockito.<SynchronizedReplyCaller> any(),
+                                                    messagingQosCaptor.capture());
+        Assert.assertEquals(expectedMessagingQos.getRoundTripTtl_ms(),
+                            messagingQosCaptor.getValue().getRoundTripTtl_ms());
+        Assert.assertFalse(requestCaptor.getValue().hasParams());
         Assert.assertEquals("Answer", result);
+    }
 
+    @Test
+    public void createProxyAndCallSyncMethodSuccessWithDefaultTtl() throws Exception {
+        MessagingQos privateMessagingQos = null;
+        createProxyAndCallSyncMethodSuccess(privateMessagingQos);
+    }
+
+    @Test
+    public void createProxyAndCallSyncMethodSuccessWithSpecialTtl() throws Exception {
+        MessagingQos privateMessagingQos = new MessagingQos(120000);
+        Assert.assertTrue(messagingQos.getRoundTripTtl_ms() != privateMessagingQos.getRoundTripTtl_ms());
+        createProxyAndCallSyncMethodSuccess(privateMessagingQos);
     }
 
     @Test
@@ -473,8 +520,15 @@ public class ProxyTest {
                             exception);
     }
 
-    @Test
-    public void createProxyAndCallAsyncMethodSuccess() throws Exception {
+    public void createProxyAndCallAsyncMethodSuccess(MessagingQos privateMessagingQos) throws Exception {
+        MessagingQos expectedMessagingQos;
+
+        if (privateMessagingQos != null) {
+            expectedMessagingQos = privateMessagingQos;
+        } else {
+            expectedMessagingQos = messagingQos;
+        }
+
         TestInterface proxy = getTestInterfaceProxy();
 
         // when joynrMessageSender1.sendRequest is called, get the replyCaller from the mock dispatcher and call
@@ -498,14 +552,42 @@ public class ProxyTest {
                                                  Mockito.<DiscoveryEntryWithMetaInfo> any(),
                                                  Mockito.<Request> any(),
                                                  Mockito.<MessagingQos> any());
-        final Future<String> future = proxy.asyncMethod(callback);
+
+        final Future<String> future;
+        if (privateMessagingQos != null) {
+            future = proxy.asyncMethod(callback, privateMessagingQos);
+        } else {
+            future = proxy.asyncMethod(callback);
+        }
 
         // the test usually takes only 200 ms, so if we wait 1 sec, something has gone wrong
         String reply = future.get(1000);
 
+        ArgumentCaptor<MessagingQos> messagingQosCaptor = ArgumentCaptor.forClass(MessagingQos.class);
+        ArgumentCaptor<Request> requestCaptor = ArgumentCaptor.forClass(Request.class);
+        verify(requestReplyManager).sendRequest(Mockito.<String> any(),
+                                                Mockito.<DiscoveryEntryWithMetaInfo> any(),
+                                                requestCaptor.capture(),
+                                                messagingQosCaptor.capture());
         verify(callback).resolve(asyncReplyText);
+        Assert.assertEquals(expectedMessagingQos.getRoundTripTtl_ms(),
+                            messagingQosCaptor.getValue().getRoundTripTtl_ms());
+        Assert.assertFalse(requestCaptor.getValue().hasParams());
         Assert.assertEquals(RequestStatusCode.OK, future.getStatus().getCode());
         Assert.assertEquals(asyncReplyText, reply);
+    }
+
+    @Test
+    public void createProxyAndCallAsyncMethodWithDefaultTtl() throws Exception {
+        MessagingQos privateMessagingQos = null;
+        createProxyAndCallAsyncMethodSuccess(privateMessagingQos);
+    }
+
+    @Test
+    public void createProxyAndCallAsyncMethodWithSpecialTtl() throws Exception {
+        MessagingQos privateMessagingQos = new MessagingQos(120000);
+        Assert.assertTrue(messagingQos.getRoundTripTtl_ms() != privateMessagingQos.getRoundTripTtl_ms());
+        createProxyAndCallAsyncMethodSuccess(privateMessagingQos);
     }
 
     @SuppressWarnings({ "unchecked" })
@@ -770,4 +852,43 @@ public class ProxyTest {
                                                                      any(MessagingQos.class));
     }
 
+    public void createProxyAndCallFireAndForgetMethod(MessagingQos privateMessagingQos) {
+        MessagingQos expectedMessagingQos;
+
+        if (privateMessagingQos != null) {
+            expectedMessagingQos = privateMessagingQos;
+        } else {
+            expectedMessagingQos = messagingQos;
+        }
+
+        ProxyBuilder<TestInterface> proxyBuilder = getProxyBuilder(TestInterface.class);
+        TestInterface proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+        if (privateMessagingQos != null) {
+            proxy.methodFireAndForget(privateMessagingQos);
+        } else {
+            proxy.methodFireAndForget();
+        }
+        ArgumentCaptor<MessagingQos> messagingQosCaptor = ArgumentCaptor.forClass(MessagingQos.class);
+        ArgumentCaptor<OneWayRequest> oneWayRequestCaptor = ArgumentCaptor.forClass(OneWayRequest.class);
+        verify(requestReplyManager).sendOneWayRequest(Mockito.<String> any(),
+                                                      Mockito.<Set<DiscoveryEntryWithMetaInfo>> any(),
+                                                      oneWayRequestCaptor.capture(),
+                                                      messagingQosCaptor.capture());
+        Assert.assertEquals(expectedMessagingQos.getRoundTripTtl_ms(),
+                            messagingQosCaptor.getValue().getRoundTripTtl_ms());
+        Assert.assertFalse(oneWayRequestCaptor.getValue().hasParams());
+    }
+
+    @Test
+    public void createProxyAndCallFireAndForgetMethodWithDefaultTtl() throws Exception {
+        MessagingQos privateMessagingQos = null;
+        createProxyAndCallFireAndForgetMethod(privateMessagingQos);
+    }
+
+    @Test
+    public void createProxyAndCallFireAndForgetMethodWithSpecialTtl() throws Exception {
+        MessagingQos privateMessagingQos = new MessagingQos(120000);
+        Assert.assertTrue(messagingQos.getRoundTripTtl_ms() != privateMessagingQos.getRoundTripTtl_ms());
+        createProxyAndCallFireAndForgetMethod(privateMessagingQos);
+    }
 }

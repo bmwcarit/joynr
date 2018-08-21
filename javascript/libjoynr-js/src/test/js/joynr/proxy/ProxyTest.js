@@ -17,7 +17,6 @@
  * #L%
  */
 require("../../node-unit-test-helper");
-const Promise = require("../../../../main/js/global/Promise");
 const RadioProxy = require("../../../generated/joynr/vehicle/RadioProxy");
 const ProxyAttribute = require("../../../../main/js/joynr/proxy/ProxyAttribute");
 const ProxyOperation = require("../../../../main/js/joynr/proxy/ProxyOperation");

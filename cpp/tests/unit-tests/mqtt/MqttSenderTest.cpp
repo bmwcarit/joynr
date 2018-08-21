@@ -30,14 +30,13 @@
 
 using namespace ::testing;
 
-namespace joynr {
+namespace joynr
+{
 
-class MqttSenderTest : public testing::Test {
+class MqttSenderTest : public testing::Test
+{
 public:
-    MqttSenderTest() :
-        mqttAddress("brokerUri", "clientId"),
-        mockMosquittoConnection(),
-        mqttSender()
+    MqttSenderTest() : mqttAddress("brokerUri", "clientId"), mockMosquittoConnection(), mqttSender()
     {
     }
 
@@ -48,7 +47,8 @@ protected:
         Settings testSettings(testSettingsFileNameMqtt);
         MessagingSettings messagingSettings(testSettings);
         ClusterControllerSettings ccSettings(testSettings);
-        mockMosquittoConnection = std::make_shared<MockMosquittoConnection>(messagingSettings, ccSettings, clientId);
+        mockMosquittoConnection =
+                std::make_shared<MockMosquittoConnection>(messagingSettings, ccSettings, clientId);
         mqttSender = std::make_shared<MqttSender>(mockMosquittoConnection, messagingSettings);
 
         ON_CALL(*mockMosquittoConnection, isSubscribedToChannelTopic()).WillByDefault(Return(true));
@@ -63,7 +63,8 @@ protected:
     std::shared_ptr<MqttSender> mqttSender;
 };
 
-TEST_F(MqttSenderTest, TestWithEnabledMessageSizeCheck) {
+TEST_F(MqttSenderTest, TestWithEnabledMessageSizeCheck)
+{
     MutableMessage mutableMessage;
     bool gotExpectedExceptionType;
     bool gotCalled;
@@ -75,23 +76,23 @@ TEST_F(MqttSenderTest, TestWithEnabledMessageSizeCheck) {
     mutableMessage.setRecipient("testMulticastId");
     mutableMessage.setPayload("shortMessage");
 
-    std::shared_ptr<joynr::ImmutableMessage> immutableMessage = mutableMessage.getImmutableMessage();
+    std::shared_ptr<joynr::ImmutableMessage> immutableMessage =
+            mutableMessage.getImmutableMessage();
 
     gotCalled = false;
-    mqttSender->sendMessage(
-            mqttAddress,
-            immutableMessage,
-            [&gotCalled, &gotExpectedExceptionType] (const exceptions::JoynrRuntimeException& exception) {
-                gotCalled = true;
-                try {
-                    const joynr::exceptions::JoynrMessageNotSentException& messageNotSentException =
-                        dynamic_cast<const joynr::exceptions::JoynrMessageNotSentException&>(exception);
-                    std::ignore = messageNotSentException;
-                } catch(std::bad_cast& bc) {
-                    // fallthrough
-                }
-            }
-    );
+    mqttSender->sendMessage(mqttAddress,
+                            immutableMessage,
+                            [&gotCalled, &gotExpectedExceptionType](
+                                    const exceptions::JoynrRuntimeException& exception) {
+        gotCalled = true;
+        try {
+            const joynr::exceptions::JoynrMessageNotSentException& messageNotSentException =
+                    dynamic_cast<const joynr::exceptions::JoynrMessageNotSentException&>(exception);
+            std::ignore = messageNotSentException;
+        } catch (std::bad_cast& bc) {
+            // fallthrough
+        }
+    });
     EXPECT_FALSE(gotCalled);
 
     std::string longMessagePayload(1000, 'x');
@@ -100,26 +101,26 @@ TEST_F(MqttSenderTest, TestWithEnabledMessageSizeCheck) {
 
     gotExpectedExceptionType = false;
     gotCalled = false;
-    mqttSender->sendMessage(
-            mqttAddress,
-            immutableMessage,
-            [&gotCalled, &gotExpectedExceptionType] (const exceptions::JoynrRuntimeException& exception) {
-                gotCalled = true;
-                try {
-                    const joynr::exceptions::JoynrMessageNotSentException& messageNotSentException =
-                        dynamic_cast<const joynr::exceptions::JoynrMessageNotSentException&>(exception);
-                    gotExpectedExceptionType = true;
-                    std::ignore = messageNotSentException;
-                } catch(std::bad_cast& bc) {
-                    // fallthrough
-                }
-            }
-    );
+    mqttSender->sendMessage(mqttAddress,
+                            immutableMessage,
+                            [&gotCalled, &gotExpectedExceptionType](
+                                    const exceptions::JoynrRuntimeException& exception) {
+        gotCalled = true;
+        try {
+            const joynr::exceptions::JoynrMessageNotSentException& messageNotSentException =
+                    dynamic_cast<const joynr::exceptions::JoynrMessageNotSentException&>(exception);
+            gotExpectedExceptionType = true;
+            std::ignore = messageNotSentException;
+        } catch (std::bad_cast& bc) {
+            // fallthrough
+        }
+    });
     EXPECT_TRUE(gotCalled);
     EXPECT_TRUE(gotExpectedExceptionType);
 }
 
-TEST_F(MqttSenderTest, TestWithDisabledMessageSizeCheck) {
+TEST_F(MqttSenderTest, TestWithDisabledMessageSizeCheck)
+{
     MutableMessage mutableMessage;
 
     createMqttSender("test-resources/MqttSenderTestWithMaxMessageSizeLimits2.settings");
@@ -129,16 +130,14 @@ TEST_F(MqttSenderTest, TestWithDisabledMessageSizeCheck) {
     mutableMessage.setRecipient("testMulticastId");
     mutableMessage.setPayload("shortMessage");
 
-    std::shared_ptr<joynr::ImmutableMessage> immutableMessage = mutableMessage.getImmutableMessage();
+    std::shared_ptr<joynr::ImmutableMessage> immutableMessage =
+            mutableMessage.getImmutableMessage();
 
     bool gotCalled = false;
     mqttSender->sendMessage(
             mqttAddress,
             immutableMessage,
-            [&gotCalled] (const exceptions::JoynrRuntimeException& exception) {
-                gotCalled = true;
-            }
-    );
+            [&gotCalled](const exceptions::JoynrRuntimeException& exception) { gotCalled = true; });
     EXPECT_FALSE(gotCalled);
 
     std::string longMessagePayload(1000, 'x');
@@ -149,10 +148,7 @@ TEST_F(MqttSenderTest, TestWithDisabledMessageSizeCheck) {
     mqttSender->sendMessage(
             mqttAddress,
             immutableMessage,
-            [&gotCalled] (const exceptions::JoynrRuntimeException& exception) {
-                gotCalled = true;
-            }
-    );
+            [&gotCalled](const exceptions::JoynrRuntimeException& exception) { gotCalled = true; });
     EXPECT_FALSE(gotCalled);
 }
 

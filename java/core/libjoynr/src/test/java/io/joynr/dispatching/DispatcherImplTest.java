@@ -165,6 +165,7 @@ public class DispatcherImplTest {
                     String requestReplyId = UUID.randomUUID().toString();
                     RequestCaller requestCaller = mock(RequestCaller.class);
                     AbstractSubscriptionPublisher subscriptionPublisher = mock(AbstractSubscriptionPublisher.class);
+                    int majorVersion = 42;
                     /* setBlockInitialisation to true causes the messageReceiver to block
                      * during startup
                      * The MessageReceiver is invoked by the dispatcher once a request caller
@@ -175,6 +176,7 @@ public class DispatcherImplTest {
                     requestCallerDirectory.add(requestReplyId,
                                                new ProviderContainer("interfaceName",
                                                                      DispatcherImplTest.class,
+                                                                     majorVersion,
                                                                      requestCaller,
                                                                      subscriptionPublisher));
                 } finally {

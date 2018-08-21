@@ -55,12 +55,14 @@
 
 using namespace joynr;
 
-class JsonSerializerTest : public testing::Test {
+class JsonSerializerTest : public testing::Test
+{
 protected:
     ADD_LOGGER(JsonSerializerTest)
 };
 
-TEST_F(JsonSerializerTest, serialize_deserialize_SubscriptionRequest) {
+TEST_F(JsonSerializerTest, serialize_deserialize_SubscriptionRequest)
+{
     SubscriptionRequest request;
     auto subscriptionQos = std::make_shared<SubscriptionQos>(5000);
     request.setQos(subscriptionQos);
@@ -71,7 +73,8 @@ TEST_F(JsonSerializerTest, serialize_deserialize_SubscriptionRequest) {
     EXPECT_TRUE(request == desRequest);
 }
 
-TEST_F(JsonSerializerTest, serialize_deserialize_BroadcastSubscriptionRequest) {
+TEST_F(JsonSerializerTest, serialize_deserialize_BroadcastSubscriptionRequest)
+{
     BroadcastSubscriptionRequest request;
     auto qos = std::make_shared<OnChangeSubscriptionQos>(5000, 1000, 2000);
     request.setQos(qos);
@@ -86,11 +89,12 @@ TEST_F(JsonSerializerTest, serialize_deserialize_BroadcastSubscriptionRequest) {
     EXPECT_TRUE(request == desRequest);
 }
 
-TEST_F(JsonSerializerTest, serialize_deserialize_byte_array) {
+TEST_F(JsonSerializerTest, serialize_deserialize_byte_array)
+{
 
     // Build a list to test with
     using Uint8Vec = std::vector<std::uint8_t>;
-    Uint8Vec expectedUint8Vector;//{0x01, 0x02, 0x03, 0xff, 0xfe, 0xfd};
+    Uint8Vec expectedUint8Vector; //{0x01, 0x02, 0x03, 0xff, 0xfe, 0xfd};
     expectedUint8Vector.push_back(1);
     expectedUint8Vector.push_back(2);
     expectedUint8Vector.push_back(3);
@@ -110,11 +114,15 @@ TEST_F(JsonSerializerTest, serialize_deserialize_byte_array) {
     std::string serializedRequestJson = joynr::serializer::serializeToJson(request);
 
     std::stringstream jsonStringStream;
-    jsonStringStream << R"({"_typeName":"joynr.Request",)" <<
-                R"("methodName":"serialize_deserialize_byte_array",)" <<
-                R"("paramDatatypes":["List"],)" <<
-                R"("params":[[1,2,3,255,254,253]],)" <<
-                R"("requestReplyId":")" << request.getRequestReplyId() << R"("})";
+    jsonStringStream << R"({"_typeName":"joynr.Request",)"
+                     <<
+            R"("methodName":"serialize_deserialize_byte_array",)"
+                     <<
+            R"("paramDatatypes":["List"],)"
+                     <<
+            R"("params":[[1,2,3,255,254,253]],)"
+                     <<
+            R"("requestReplyId":")" << request.getRequestReplyId() << R"("})";
     std::string expectedRequestJson = jsonStringStream.str();
 
     JOYNR_LOG_DEBUG(logger(), "expected: {}", expectedRequestJson);
@@ -129,7 +137,8 @@ TEST_F(JsonSerializerTest, serialize_deserialize_byte_array) {
     EXPECT_EQ(expectedUint8Vector, deserializedVector);
 }
 
-TEST_F(JsonSerializerTest, serialize_operation_with_multiple_params1) {
+TEST_F(JsonSerializerTest, serialize_operation_with_multiple_params1)
+{
     // Set the request method name
     joynr::Request request;
     request.setMethodName("methodEnumDoubleParameters");
@@ -154,17 +163,19 @@ TEST_F(JsonSerializerTest, serialize_operation_with_multiple_params1) {
     EXPECT_EQ(expected, serializedContent);
 }
 
-TEST_F(JsonSerializerTest, deserialize_operation_with_enum) {
+TEST_F(JsonSerializerTest, deserialize_operation_with_enum)
+{
 
     tests::testTypes::TestEnum::Enum expectedEnumParam = tests::testTypes::TestEnum::ONE;
     double expectedDoubleParam = 2.2;
 
     // Deserialize a request containing a Java style enum parameter
-    std::string serializedContent(R"({"_typeName":"joynr.Request",)"
-                                  R"("methodName":"methodEnumDoubleParameters",)"
-                                  R"("paramDatatypes":["joynr.tests.testTypes.TestEnum.Enum","Double"],)"
-                                  R"("params":["ONE",2.2],)"
-                                  R"("requestReplyId":"789eaj21312390"})");
+    std::string serializedContent(
+            R"({"_typeName":"joynr.Request",)"
+            R"("methodName":"methodEnumDoubleParameters",)"
+            R"("paramDatatypes":["joynr.tests.testTypes.TestEnum.Enum","Double"],)"
+            R"("params":["ONE",2.2],)"
+            R"("requestReplyId":"789eaj21312390"})");
 
     joynr::Request request;
     joynr::serializer::deserializeFromJson(request, serializedContent);
@@ -177,23 +188,24 @@ TEST_F(JsonSerializerTest, deserialize_operation_with_enum) {
     EXPECT_EQ(expectedDoubleParam, deserializedDoubleParam);
 }
 
-TEST_F(JsonSerializerTest, deserializeTypeWithEnumList) {
+TEST_F(JsonSerializerTest, deserializeTypeWithEnumList)
+{
 
     using namespace infrastructure::DacTypes;
 
     // Deserialize a type containing multiple enum lists
     std::string serializedContent(
-                R"({"_typeName":"joynr.infrastructure.DacTypes.MasterAccessControlEntry",)"
-                R"("defaultConsumerPermission": "NO",)"
-                R"("defaultRequiredControlEntryChangeTrustLevel": "LOW",)"
-                R"("defaultRequiredTrustLevel": "LOW",)"
-                R"("domain": "unittest",)"
-                R"("interfaceName": "vehicle/radio",)"
-                R"("operation": "*",)"
-                R"("possibleConsumerPermissions": ["YES","NO"],)"
-                R"("possibleRequiredControlEntryChangeTrustLevels": ["HIGH","MID","LOW"],)"
-                R"("possibleRequiredTrustLevels": ["HIGH","MID","LOW"],)"
-                R"("uid": "*"})");
+            R"({"_typeName":"joynr.infrastructure.DacTypes.MasterAccessControlEntry",)"
+            R"("defaultConsumerPermission": "NO",)"
+            R"("defaultRequiredControlEntryChangeTrustLevel": "LOW",)"
+            R"("defaultRequiredTrustLevel": "LOW",)"
+            R"("domain": "unittest",)"
+            R"("interfaceName": "vehicle/radio",)"
+            R"("operation": "*",)"
+            R"("possibleConsumerPermissions": ["YES","NO"],)"
+            R"("possibleRequiredControlEntryChangeTrustLevels": ["HIGH","MID","LOW"],)"
+            R"("possibleRequiredTrustLevels": ["HIGH","MID","LOW"],)"
+            R"("uid": "*"})");
 
     infrastructure::DacTypes::MasterAccessControlEntry mac;
     joynr::serializer::deserializeFromJson(mac, serializedContent);
@@ -215,7 +227,8 @@ TEST_F(JsonSerializerTest, deserializeTypeWithEnumList) {
     EXPECT_EQ(possibleRequiredTrustLevels, mac.getPossibleRequiredTrustLevels());
 }
 
-TEST_F(JsonSerializerTest, serializeDeserializeTypeWithEnumList) {
+TEST_F(JsonSerializerTest, serializeDeserializeTypeWithEnumList)
+{
 
     using namespace infrastructure::DacTypes;
 
@@ -229,15 +242,15 @@ TEST_F(JsonSerializerTest, serializeDeserializeTypeWithEnumList) {
     possiblePermissions.push_back(Permission::YES);
 
     infrastructure::DacTypes::MasterAccessControlEntry expectedMac(R"(*)",
-                                                                     R"(unittest)",
-                                                                     R"(vehicle/radio)",
-                                                                     TrustLevel::LOW,
-                                                                     possibleTrustLevels,
-                                                                     TrustLevel::HIGH,
-                                                                     possibleTrustLevels,
-                                                                     R"(*)",
-                                                                     Permission::YES,
-                                                                     possiblePermissions);
+                                                                   R"(unittest)",
+                                                                   R"(vehicle/radio)",
+                                                                   TrustLevel::LOW,
+                                                                   possibleTrustLevels,
+                                                                   TrustLevel::HIGH,
+                                                                   possibleTrustLevels,
+                                                                   R"(*)",
+                                                                   Permission::YES,
+                                                                   possiblePermissions);
 
     // Serialize
     std::string serializedContent = joynr::serializer::serializeToJson(expectedMac);
@@ -253,30 +266,39 @@ TEST_F(JsonSerializerTest, serializeDeserializeTypeWithEnumList) {
 
 using namespace infrastructure::DacTypes;
 
-void deserializePermission(const std::string& serializedPermission, const Permission::Enum& expectation) {
+void deserializePermission(const std::string& serializedPermission,
+                           const Permission::Enum& expectation)
+{
     // Deserialize the result and compare
     Permission::Enum deserializedEnum;
     joynr::serializer::deserializeFromJson(deserializedEnum, serializedPermission);
     EXPECT_EQ(expectation, deserializedEnum);
 }
 
-void serializeAndDeserializePermission(const Permission::Enum& input, const std::string& inputAsString, Logger& logger) {
+void serializeAndDeserializePermission(const Permission::Enum& input,
+                                       const std::string& inputAsString,
+                                       Logger& logger)
+{
     // Serialize
     std::string serializedContent = joynr::serializer::serializeToJson(input);
-    JOYNR_LOG_DEBUG(logger, "Serialized permission for input: {}, {}", inputAsString, serializedContent);
+    JOYNR_LOG_DEBUG(
+            logger, "Serialized permission for input: {}, {}", inputAsString, serializedContent);
 
     deserializePermission(serializedContent, input);
 }
 
-TEST_F(JsonSerializerTest, serializeDeserializeTypeEnum) {
+TEST_F(JsonSerializerTest, serializeDeserializeTypeEnum)
+{
     using namespace infrastructure::DacTypes;
 
     JOYNR_ASSERT_NO_THROW(serializeAndDeserializePermission(Permission::NO, R"("NO")", logger()));
 
-    ASSERT_ANY_THROW(serializeAndDeserializePermission(static_cast<Permission::Enum>(999), "999", logger()));
+    ASSERT_ANY_THROW(
+            serializeAndDeserializePermission(static_cast<Permission::Enum>(999), "999", logger()));
 }
 
-TEST_F(JsonSerializerTest, deserializeTypeEnum) {
+TEST_F(JsonSerializerTest, deserializeTypeEnum)
+{
     using namespace infrastructure::DacTypes;
 
     JOYNR_ASSERT_NO_THROW(deserializePermission(R"("NO")", Permission::NO));
@@ -284,7 +306,8 @@ TEST_F(JsonSerializerTest, deserializeTypeEnum) {
     ASSERT_ANY_THROW(deserializePermission("999", static_cast<Permission::Enum>(999)));
 }
 
-TEST_F(JsonSerializerTest, serialize_operation_with_multiple_params2) {
+TEST_F(JsonSerializerTest, serialize_operation_with_multiple_params2)
+{
 
     // Set the request method name
     Request request;
@@ -313,8 +336,8 @@ TEST_F(JsonSerializerTest, serialize_operation_with_multiple_params2) {
     EXPECT_EQ(expected, serializedContent);
 }
 
-
-TEST_F(JsonSerializerTest, serialize_deserialize_TStruct) {
+TEST_F(JsonSerializerTest, serialize_deserialize_TStruct)
+{
 
     types::TestTypes::TStruct tStruct;
     tStruct.setTDouble(0.123456789);
@@ -322,13 +345,12 @@ TEST_F(JsonSerializerTest, serialize_deserialize_TStruct) {
     tStruct.setTString("myTestString");
 
     std::string expectedTStruct(
-                R"({)"
-                R"("_typeName":"joynr.types.TestTypes.TStruct",)"
-                R"("tDouble":0.123456789,)"
-                R"("tInt64":64,)"
-                R"("tString":"myTestString")"
-                R"(})"
-                );
+            R"({)"
+            R"("_typeName":"joynr.types.TestTypes.TStruct",)"
+            R"("tDouble":0.123456789,)"
+            R"("tInt64":64,)"
+            R"("tString":"myTestString")"
+            R"(})");
 
     std::string serializedContent = joynr::serializer::serializeToJson(tStruct);
     JOYNR_LOG_DEBUG(logger(), serializedContent);
@@ -340,7 +362,8 @@ TEST_F(JsonSerializerTest, serialize_deserialize_TStruct) {
     EXPECT_EQ(tStruct, tStructDeserialized);
 }
 
-TEST_F(JsonSerializerTest, serialize_deserialize_TStructExtended) {
+TEST_F(JsonSerializerTest, serialize_deserialize_TStructExtended)
+{
 
     types::TestTypes::TStructExtended tStructExt;
     tStructExt.setTDouble(0.123456789);
@@ -350,15 +373,14 @@ TEST_F(JsonSerializerTest, serialize_deserialize_TStructExtended) {
     tStructExt.setTInt32(32);
 
     std::string expectedTStructExt(
-                R"({)"
-                R"("_typeName":"joynr.types.TestTypes.TStructExtended",)"
-                R"("tDouble":0.123456789,)"
-                R"("tInt64":64,)"
-                R"("tString":"myTestString",)"
-                R"("tEnum":"TLITERALA",)"
-                R"("tInt32":32)"
-                R"(})"
-                );
+            R"({)"
+            R"("_typeName":"joynr.types.TestTypes.TStructExtended",)"
+            R"("tDouble":0.123456789,)"
+            R"("tInt64":64,)"
+            R"("tString":"myTestString",)"
+            R"("tEnum":"TLITERALA",)"
+            R"("tInt32":32)"
+            R"(})");
 
     std::string serializedTStructExt = joynr::serializer::serializeToJson(tStructExt);
     JOYNR_LOG_DEBUG(logger(), serializedTStructExt);
@@ -370,8 +392,19 @@ TEST_F(JsonSerializerTest, serialize_deserialize_TStructExtended) {
     EXPECT_EQ(tStructExt, deserializedTStructExt);
 }
 
-TEST_F(JsonSerializerTest, serialize_deserialize_replyWithGpsLocation) {
-    types::Localisation::GpsLocation gps1(1.1, 1.2, 1.3, types::Localisation::GpsFixEnum::MODE3D, 1.4, 1.5, 1.6, 1.7, 18, 19, 110);
+TEST_F(JsonSerializerTest, serialize_deserialize_replyWithGpsLocation)
+{
+    types::Localisation::GpsLocation gps1(1.1,
+                                          1.2,
+                                          1.3,
+                                          types::Localisation::GpsFixEnum::MODE3D,
+                                          1.4,
+                                          1.5,
+                                          1.6,
+                                          1.7,
+                                          18,
+                                          19,
+                                          110);
 
     // Expected literal is:
     Reply reply;
@@ -415,7 +448,8 @@ TEST_F(JsonSerializerTest, serialize_deserialize_replyWithGpsLocation) {
     EXPECT_EQ(gps1, receivedGps);
 }
 
-TEST_F(JsonSerializerTest, deserialize_replyWithVoid) {
+TEST_F(JsonSerializerTest, deserialize_replyWithVoid)
+{
 
     joynr::Reply reply;
     reply.setRequestReplyId("TEST-requestReplyId");
@@ -439,12 +473,24 @@ TEST_F(JsonSerializerTest, deserialize_replyWithVoid) {
     EXPECT_EQ(reply, receivedReply);
 }
 
-TEST_F(JsonSerializerTest, serialize_deserialize_replyWithGpsLocationList) {
+TEST_F(JsonSerializerTest, serialize_deserialize_replyWithGpsLocationList)
+{
 
     using GpsLocationList = std::vector<types::Localisation::GpsLocation>;
     GpsLocationList locList;
-    locList.emplace_back(1.1, 2.2, 3.3, types::Localisation::GpsFixEnum::MODE3D, 0.0, 0.0, 0.0, 0.0, 0, 0, 17);
-    locList.emplace_back(4.4, 5.5, 6.6, types::Localisation::GpsFixEnum::MODENOFIX, 0.0, 0.0, 0.0, 0.0, 0, 0, 18);
+    locList.emplace_back(
+            1.1, 2.2, 3.3, types::Localisation::GpsFixEnum::MODE3D, 0.0, 0.0, 0.0, 0.0, 0, 0, 17);
+    locList.emplace_back(4.4,
+                         5.5,
+                         6.6,
+                         types::Localisation::GpsFixEnum::MODENOFIX,
+                         0.0,
+                         0.0,
+                         0.0,
+                         0.0,
+                         0,
+                         0,
+                         18);
 
     joynr::Reply reply;
     reply.setRequestReplyId("TEST-requestReplyId");
@@ -499,52 +545,64 @@ TEST_F(JsonSerializerTest, serialize_deserialize_replyWithGpsLocationList) {
     EXPECT_EQ(locList, receivedLocList);
 }
 
-TEST_F(JsonSerializerTest, serialize_deserialize_trip) {
+TEST_F(JsonSerializerTest, serialize_deserialize_trip)
+{
     std::vector<types::Localisation::GpsLocation> locations;
-    locations.push_back(types::Localisation::GpsLocation(1.1, 2.2, 3.3, types::Localisation::GpsFixEnum::MODE3D, 0.0, 0.0,0.0,0.0,0,0,17));
-    locations.push_back(types::Localisation::GpsLocation(4.4, 5.5, 6.6, types::Localisation::GpsFixEnum::MODE3D, 0.0, 0.0,0.0,0.0,0,0,317));
-    locations.push_back(types::Localisation::GpsLocation(7.7, 8.8, 9.9, types::Localisation::GpsFixEnum::MODE3D, 0.0, 0.0,0.0,0.0,0,0,3317));
+    locations.push_back(types::Localisation::GpsLocation(
+            1.1, 2.2, 3.3, types::Localisation::GpsFixEnum::MODE3D, 0.0, 0.0, 0.0, 0.0, 0, 0, 17));
+    locations.push_back(types::Localisation::GpsLocation(
+            4.4, 5.5, 6.6, types::Localisation::GpsFixEnum::MODE3D, 0.0, 0.0, 0.0, 0.0, 0, 0, 317));
+    locations.push_back(types::Localisation::GpsLocation(7.7,
+                                                         8.8,
+                                                         9.9,
+                                                         types::Localisation::GpsFixEnum::MODE3D,
+                                                         0.0,
+                                                         0.0,
+                                                         0.0,
+                                                         0.0,
+                                                         0,
+                                                         0,
+                                                         3317));
 
     std::string expected(
-                        R"({"_typeName":"joynr.types.Localisation.Trip",)"
-                        R"("locations":[{"_typeName":"joynr.types.Localisation.GpsLocation",)"
-                        R"("longitude":1.1,)"
-                        R"("latitude":2.2,)"
-                        R"("altitude":3.3,)"
-                        R"("gpsFix":"MODE3D",)"
-                        R"("heading":0.0,)"
-                        R"("quality":0.0,)"
-                        R"("elevation":0.0,)"
-                        R"("bearing":0.0,)"
-                        R"("gpsTime":0,)"
-                        R"("deviceTime":0,)"
-                        R"("time":17},)"
-                        R"({"_typeName":"joynr.types.Localisation.GpsLocation",)"
-                        R"("longitude":4.4,)"
-                        R"("latitude":5.5,)"
-                        R"("altitude":6.6,)"
-                        R"("gpsFix":"MODE3D",)"
-                        R"("heading":0.0,)"
-                        R"("quality":0.0,)"
-                        R"("elevation":0.0,)"
-                        R"("bearing":0.0,)"
-                        R"("gpsTime":0,)"
-                        R"("deviceTime":0,)"
-                        R"("time":317},)"
-                        R"({"_typeName":"joynr.types.Localisation.GpsLocation",)"
-                        R"("longitude":7.7,)"
-                        R"("latitude":8.8,)"
-                        R"("altitude":9.9,)"
-                        R"("gpsFix":"MODE3D",)"
-                        R"("heading":0.0,)"
-                        R"("quality":0.0,)"
-                        R"("elevation":0.0,)"
-                        R"("bearing":0.0,)"
-                        R"("gpsTime":0,)"
-                        R"("deviceTime":0,)"
-                        R"("time":3317}],)"
-                        R"("tripTitle":"trip1_name"})"
-                );
+            R"({"_typeName":"joynr.types.Localisation.Trip",)"
+            R"("locations":[{"_typeName":"joynr.types.Localisation.GpsLocation",)"
+            R"("longitude":1.1,)"
+            R"("latitude":2.2,)"
+            R"("altitude":3.3,)"
+            R"("gpsFix":"MODE3D",)"
+            R"("heading":0.0,)"
+            R"("quality":0.0,)"
+            R"("elevation":0.0,)"
+            R"("bearing":0.0,)"
+            R"("gpsTime":0,)"
+            R"("deviceTime":0,)"
+            R"("time":17},)"
+            R"({"_typeName":"joynr.types.Localisation.GpsLocation",)"
+            R"("longitude":4.4,)"
+            R"("latitude":5.5,)"
+            R"("altitude":6.6,)"
+            R"("gpsFix":"MODE3D",)"
+            R"("heading":0.0,)"
+            R"("quality":0.0,)"
+            R"("elevation":0.0,)"
+            R"("bearing":0.0,)"
+            R"("gpsTime":0,)"
+            R"("deviceTime":0,)"
+            R"("time":317},)"
+            R"({"_typeName":"joynr.types.Localisation.GpsLocation",)"
+            R"("longitude":7.7,)"
+            R"("latitude":8.8,)"
+            R"("altitude":9.9,)"
+            R"("gpsFix":"MODE3D",)"
+            R"("heading":0.0,)"
+            R"("quality":0.0,)"
+            R"("elevation":0.0,)"
+            R"("bearing":0.0,)"
+            R"("gpsTime":0,)"
+            R"("deviceTime":0,)"
+            R"("time":3317}],)"
+            R"("tripTitle":"trip1_name"})");
 
     // Expected literal is:
     types::Localisation::Trip trip1(locations, "trip1_name");
@@ -559,14 +617,28 @@ TEST_F(JsonSerializerTest, serialize_deserialize_trip) {
                             << "\n are not the same";
 }
 
-TEST_F(JsonSerializerTest, serialize_deserialize_JsonRequestWithLists) {
+TEST_F(JsonSerializerTest, serialize_deserialize_JsonRequestWithLists)
+{
 
-    //creating Request
+    // creating Request
     using GpsLocationList = std::vector<types::Localisation::GpsLocation>;
     GpsLocationList inputLocationList;
-    inputLocationList.push_back(types::Localisation::GpsLocation(1.1, 2.2, 3.3, types::Localisation::GpsFixEnum::MODE3D, 0.0, 0.0,0.0,0.0,0,0,17));
-    inputLocationList.push_back(types::Localisation::GpsLocation(4.4, 5.5, 6.6, types::Localisation::GpsFixEnum::MODE3D, 0.0, 0.0,0.0,0.0,0,0,317));
-    inputLocationList.push_back(types::Localisation::GpsLocation(7.7, 8.8, 9.9, types::Localisation::GpsFixEnum::MODE3D, 0.0, 0.0,0.0,0.0,0,0,3317));
+    inputLocationList.push_back(types::Localisation::GpsLocation(
+            1.1, 2.2, 3.3, types::Localisation::GpsFixEnum::MODE3D, 0.0, 0.0, 0.0, 0.0, 0, 0, 17));
+    inputLocationList.push_back(types::Localisation::GpsLocation(
+            4.4, 5.5, 6.6, types::Localisation::GpsFixEnum::MODE3D, 0.0, 0.0, 0.0, 0.0, 0, 0, 317));
+    inputLocationList.push_back(
+            types::Localisation::GpsLocation(7.7,
+                                             8.8,
+                                             9.9,
+                                             types::Localisation::GpsFixEnum::MODE3D,
+                                             0.0,
+                                             0.0,
+                                             0.0,
+                                             0.0,
+                                             0,
+                                             0,
+                                             3317));
 
     joynr::Request request1;
     request1.setMethodName("serialize_deserialize_JsonRequestTest_method");
@@ -574,54 +646,54 @@ TEST_F(JsonSerializerTest, serialize_deserialize_JsonRequestWithLists) {
     request1.setParamDatatypes({"List"});
 
     std::stringstream expectedStringStream;
-                expectedStringStream << R"({"_typeName":"joynr.Request",)";
-                expectedStringStream << R"("methodName":"serialize_deserialize_JsonRequestTest_method",)";
-                expectedStringStream << R"("paramDatatypes":["List"],)";
-                expectedStringStream << R"("params":[[{"_typeName":"joynr.types.Localisation.GpsLocation",)";
-                expectedStringStream << R"("longitude":1.1,)";
-                expectedStringStream << R"("latitude":2.2,)";
-                expectedStringStream << R"("altitude":3.3,)";
-                expectedStringStream << R"("gpsFix":"MODE3D",)";
-                expectedStringStream << R"("heading":0.0,)";
-                expectedStringStream << R"("quality":0.0,)";
-                expectedStringStream << R"("elevation":0.0,)";
-                expectedStringStream << R"("bearing":0.0,)";
-                expectedStringStream << R"("gpsTime":0,)";
-                expectedStringStream << R"("deviceTime":0,)";
-                expectedStringStream << R"("time":17},)";
-                expectedStringStream << R"({"_typeName":"joynr.types.Localisation.GpsLocation",)";
-                expectedStringStream << R"("longitude":4.4,)";
-                expectedStringStream << R"("latitude":5.5,)";
-                expectedStringStream << R"("altitude":6.6,)";
-                expectedStringStream << R"("gpsFix":"MODE3D",)";
-                expectedStringStream << R"("heading":0.0,)";
-                expectedStringStream << R"("quality":0.0,)";
-                expectedStringStream << R"("elevation":0.0,)";
-                expectedStringStream << R"("bearing":0.0,)";
-                expectedStringStream << R"("gpsTime":0,)";
-                expectedStringStream << R"("deviceTime":0,)";
-                expectedStringStream << R"("time":317},)";
-                expectedStringStream << R"({"_typeName":"joynr.types.Localisation.GpsLocation",)";
-                expectedStringStream << R"("longitude":7.7,)";
-                expectedStringStream << R"("latitude":8.8,)";
-                expectedStringStream << R"("altitude":9.9,)";
-                expectedStringStream << R"("gpsFix":"MODE3D",)";
-                expectedStringStream << R"("heading":0.0,)";
-                expectedStringStream << R"("quality":0.0,)";
-                expectedStringStream << R"("elevation":0.0,)";
-                expectedStringStream << R"("bearing":0.0,)";
-                expectedStringStream << R"("gpsTime":0,)";
-                expectedStringStream << R"("deviceTime":0,)";
-                expectedStringStream << R"("time":3317}]],)";
-                expectedStringStream << R"("requestReplyId":")" << request1.getRequestReplyId() << R"("})";
+    expectedStringStream << R"({"_typeName":"joynr.Request",)";
+    expectedStringStream << R"("methodName":"serialize_deserialize_JsonRequestTest_method",)";
+    expectedStringStream << R"("paramDatatypes":["List"],)";
+    expectedStringStream << R"("params":[[{"_typeName":"joynr.types.Localisation.GpsLocation",)";
+    expectedStringStream << R"("longitude":1.1,)";
+    expectedStringStream << R"("latitude":2.2,)";
+    expectedStringStream << R"("altitude":3.3,)";
+    expectedStringStream << R"("gpsFix":"MODE3D",)";
+    expectedStringStream << R"("heading":0.0,)";
+    expectedStringStream << R"("quality":0.0,)";
+    expectedStringStream << R"("elevation":0.0,)";
+    expectedStringStream << R"("bearing":0.0,)";
+    expectedStringStream << R"("gpsTime":0,)";
+    expectedStringStream << R"("deviceTime":0,)";
+    expectedStringStream << R"("time":17},)";
+    expectedStringStream << R"({"_typeName":"joynr.types.Localisation.GpsLocation",)";
+    expectedStringStream << R"("longitude":4.4,)";
+    expectedStringStream << R"("latitude":5.5,)";
+    expectedStringStream << R"("altitude":6.6,)";
+    expectedStringStream << R"("gpsFix":"MODE3D",)";
+    expectedStringStream << R"("heading":0.0,)";
+    expectedStringStream << R"("quality":0.0,)";
+    expectedStringStream << R"("elevation":0.0,)";
+    expectedStringStream << R"("bearing":0.0,)";
+    expectedStringStream << R"("gpsTime":0,)";
+    expectedStringStream << R"("deviceTime":0,)";
+    expectedStringStream << R"("time":317},)";
+    expectedStringStream << R"({"_typeName":"joynr.types.Localisation.GpsLocation",)";
+    expectedStringStream << R"("longitude":7.7,)";
+    expectedStringStream << R"("latitude":8.8,)";
+    expectedStringStream << R"("altitude":9.9,)";
+    expectedStringStream << R"("gpsFix":"MODE3D",)";
+    expectedStringStream << R"("heading":0.0,)";
+    expectedStringStream << R"("quality":0.0,)";
+    expectedStringStream << R"("elevation":0.0,)";
+    expectedStringStream << R"("bearing":0.0,)";
+    expectedStringStream << R"("gpsTime":0,)";
+    expectedStringStream << R"("deviceTime":0,)";
+    expectedStringStream << R"("time":3317}]],)";
+    expectedStringStream << R"("requestReplyId":")" << request1.getRequestReplyId() << R"("})";
 
     std::string expected = expectedStringStream.str();
 
-    //serializing Request
+    // serializing Request
     std::string serializedContent = joynr::serializer::serializeToJson(request1);
     EXPECT_EQ(expected, serializedContent);
 
-    //deserializing Request
+    // deserializing Request
     joynr::Request request2;
     joynr::serializer::deserializeFromJson(request2, serializedContent);
     GpsLocationList deserializedLocationList;
@@ -629,14 +701,12 @@ TEST_F(JsonSerializerTest, serialize_deserialize_JsonRequestWithLists) {
     EXPECT_EQ(inputLocationList, deserializedLocationList);
 }
 
-TEST_F(JsonSerializerTest, serialize_deserialize_EndpointAddress) {
-    joynr::system::RoutingTypes::ChannelAddress joynr("TEST_channelId", "TEST_messagingEndpointUrl");
+TEST_F(JsonSerializerTest, serialize_deserialize_EndpointAddress)
+{
+    joynr::system::RoutingTypes::ChannelAddress joynr(
+            "TEST_channelId", "TEST_messagingEndpointUrl");
     joynr::system::RoutingTypes::WebSocketAddress wsServer(
-                joynr::system::RoutingTypes::WebSocketProtocol::WS,
-                "localhost",
-                42,
-                "some/path"
-                );
+            joynr::system::RoutingTypes::WebSocketProtocol::WS, "localhost", 42, "some/path");
     joynr::system::RoutingTypes::WebSocketClientAddress wsClient("TEST_clientId");
 
     // serialize
@@ -661,25 +731,26 @@ TEST_F(JsonSerializerTest, serialize_deserialize_EndpointAddress) {
     EXPECT_EQ(wsClient, wsClientDeserialized);
 }
 
-TEST_F(JsonSerializerTest, serialize_deserialize_GlobalDiscoveryEntry) {
+TEST_F(JsonSerializerTest, serialize_deserialize_GlobalDiscoveryEntry)
+{
 
     std::string expected(
-                R"({"_typeName":"joynr.types.GlobalDiscoveryEntry",)"
-                R"("providerVersion":{"_typeName":"joynr.types.Version","majorVersion":-1,"minorVersion":-1},)"
-                R"("domain":"domain",)"
-                R"("interfaceName":"testInterface",)"
-                R"("participantId":"someParticipant",)"
-                R"("qos":{)"
-                R"("_typeName":"joynr.types.ProviderQos",)"
-                R"("customParameters":[],)"
-                R"("priority":2,)"
-                R"("scope":"GLOBAL",)"
-                R"("supportsOnChangeSubscriptions":false},)"
-                R"("lastSeenDateMs":123,)"
-                R"("expiryDateMs":1234,)"
-                R"("publicKeyId":"publicKeyId",)"
-                R"("address":"serialized_address"})"
-                );
+            R"({"_typeName":"joynr.types.GlobalDiscoveryEntry",)"
+            R"("providerVersion":{"_typeName":"joynr.types.Version","majorVersion":-1,")"
+            R"(minorVersion":-1},)"
+            R"("domain":"domain",)"
+            R"("interfaceName":"testInterface",)"
+            R"("participantId":"someParticipant",)"
+            R"("qos":{)"
+            R"("_typeName":"joynr.types.ProviderQos",)"
+            R"("customParameters":[],)"
+            R"("priority":2,)"
+            R"("scope":"GLOBAL",)"
+            R"("supportsOnChangeSubscriptions":false},)"
+            R"("lastSeenDateMs":123,)"
+            R"("expiryDateMs":1234,)"
+            R"("publicKeyId":"publicKeyId",)"
+            R"("address":"serialized_address"})");
 
     types::ProviderQos qos;
     qos.setPriority(2);
@@ -695,7 +766,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_GlobalDiscoveryEntry) {
     JOYNR_LOG_DEBUG(logger(), "GlobalDiscoveryEntry {}", globalDiscoveryEntry.toString());
 
     std::string serialized = joynr::serializer::serializeToJson(globalDiscoveryEntry);
-    JOYNR_LOG_DEBUG(logger(), "serialized GlobalDiscoveryEntry {} ",serialized);
+    JOYNR_LOG_DEBUG(logger(), "serialized GlobalDiscoveryEntry {} ", serialized);
     EXPECT_EQ(expected, serialized);
 
     types::GlobalDiscoveryEntry deserializedGDE;
@@ -705,10 +776,13 @@ TEST_F(JsonSerializerTest, serialize_deserialize_GlobalDiscoveryEntry) {
     JOYNR_LOG_DEBUG(logger(), "deserialized GlobalDiscoveryEntry {}", deserializedGDE.toString());
 }
 
-TEST_F(JsonSerializerTest, deserialize_ProviderQos) {
+TEST_F(JsonSerializerTest, deserialize_ProviderQos)
+{
     joynr::types::ProviderQos qos;
 
-    std::string jsonProviderQos("{\"_typeName\":\"joynr.types.ProviderQos\",\"customParameters\":[],\"priority\":5,\"scope\":\"LOCAL\",\"supportsOnChangeSubscriptions\":false}");
+    std::string jsonProviderQos("{\"_typeName\":\"joynr.types.ProviderQos\",\"customParameters\":[]"
+                                ",\"priority\":5,\"scope\":\"LOCAL\","
+                                "\"supportsOnChangeSubscriptions\":false}");
 
     joynr::types::ProviderQos providerQos;
     joynr::serializer::deserializeFromJson(providerQos, jsonProviderQos);
@@ -717,42 +791,45 @@ TEST_F(JsonSerializerTest, deserialize_ProviderQos) {
     EXPECT_EQ(providerQos.getPriority(), 5);
 }
 
-TEST_F(JsonSerializerTest, serialize_ProviderQos) {
+TEST_F(JsonSerializerTest, serialize_ProviderQos)
+{
     joynr::types::ProviderQos qos;
     qos.setScope(joynr::types::ProviderScope::LOCAL);
     qos.setPriority(5);
 
-    std::string jsonProviderQos("{\"_typeName\":\"joynr.types.ProviderQos\",\"customParameters\":[],\"priority\":5,\"scope\":\"LOCAL\",\"supportsOnChangeSubscriptions\":false}");
+    std::string jsonProviderQos("{\"_typeName\":\"joynr.types.ProviderQos\",\"customParameters\":[]"
+                                ",\"priority\":5,\"scope\":\"LOCAL\","
+                                "\"supportsOnChangeSubscriptions\":false}");
 
     std::string result = joynr::serializer::serializeToJson(qos);
 
     EXPECT_EQ(jsonProviderQos, result);
 }
 
-
-TEST_F(JsonSerializerTest, deserialize_GPSLocation) {
+TEST_F(JsonSerializerTest, deserialize_GPSLocation)
+{
 
     std::string jsonGPS(
-                R"({"_typeName":"joynr.types.Localisation.GpsLocation",)"
-                R"("longitude": 1.1,)"
-                R"("latitude": 2.2,)"
-                R"("altitude": 3.3,)"
-                R"("gpsFix": "MODE3D",)"
-                R"("heading": 0.0,)"
-                R"("quality": 0.0,)"
-                R"("elevation": 0.0,)"
-                R"("bearing": 0.0,)"
-                R"("gpsTime": 0,)"
-                R"("deviceTime": 0,)"
-                R"("time": 17})"
-                );
+            R"({"_typeName":"joynr.types.Localisation.GpsLocation",)"
+            R"("longitude": 1.1,)"
+            R"("latitude": 2.2,)"
+            R"("altitude": 3.3,)"
+            R"("gpsFix": "MODE3D",)"
+            R"("heading": 0.0,)"
+            R"("quality": 0.0,)"
+            R"("elevation": 0.0,)"
+            R"("bearing": 0.0,)"
+            R"("gpsTime": 0,)"
+            R"("deviceTime": 0,)"
+            R"("time": 17})");
 
     joynr::types::Localisation::GpsLocation receivedGps;
     joynr::serializer::deserializeFromJson(receivedGps, jsonGPS);
     EXPECT_EQ(3.3, receivedGps.getAltitude());
 }
 
-TEST_F(JsonSerializerTest, serialize_OnchangeWithKeepAliveSubscription) {
+TEST_F(JsonSerializerTest, serialize_OnchangeWithKeepAliveSubscription)
+{
 
     OnChangeWithKeepAliveSubscriptionQos qos(750, 1000, 100, 900, 1050);
 
@@ -768,26 +845,26 @@ TEST_F(JsonSerializerTest, serialize_OnchangeWithKeepAliveSubscription) {
     EXPECT_EQ(qos, desQos);
 }
 
- struct RoutingEntry
- {
-     RoutingEntry() : address(nullptr), isGloballyVisible(true)
-     {
-     }
-     explicit RoutingEntry(std::shared_ptr<const joynr::system::RoutingTypes::Address> address,
-                           bool isGloballyVisible)
-             : address(std::move(address)), isGloballyVisible(isGloballyVisible)
-     {
-     }
+struct RoutingEntry
+{
+    RoutingEntry() : address(nullptr), isGloballyVisible(true)
+    {
+    }
+    explicit RoutingEntry(std::shared_ptr<const joynr::system::RoutingTypes::Address> address,
+                          bool isGloballyVisible)
+            : address(std::move(address)), isGloballyVisible(isGloballyVisible)
+    {
+    }
 
-     template <typename Archive>
-     void serialize(Archive& archive)
-     {
-         archive(MUESLI_NVP(address), MUESLI_NVP(isGloballyVisible));
-     }
+    template <typename Archive>
+    void serialize(Archive& archive)
+    {
+        archive(MUESLI_NVP(address), MUESLI_NVP(isGloballyVisible));
+    }
 
-     std::shared_ptr<const joynr::system::RoutingTypes::Address> address;
-     bool isGloballyVisible;
- };
+    std::shared_ptr<const joynr::system::RoutingTypes::Address> address;
+    bool isGloballyVisible;
+};
 
 TEST_F(JsonSerializerTest, RoutingTypeAddressesSerializerTest)
 {
@@ -796,11 +873,17 @@ TEST_F(JsonSerializerTest, RoutingTypeAddressesSerializerTest)
     RoutingTable routingTable("routingTable", singleThreadedIoService->getIOService());
 
     bool isGloballyVisible = true;
-    auto ptrToRoutingWebSocketEntry = std::make_shared<RoutingEntry>(std::make_shared<joynr::system::RoutingTypes::WebSocketAddress>(), !isGloballyVisible);
-    auto ptrToRoutingChannelAddressEntry = std::make_shared<RoutingEntry>(std::make_shared<joynr::system::RoutingTypes::ChannelAddress>(), isGloballyVisible);
-    auto ptrToRoutingMqttAddressEntry = std::make_shared<RoutingEntry>(std::make_shared<joynr::system::RoutingTypes::MqttAddress>(), isGloballyVisible);
-    auto ptrToRoutingBrowserAddressEntry = std::make_shared<RoutingEntry>(std::make_shared<joynr::system::RoutingTypes::BrowserAddress>(), !isGloballyVisible);
-    auto ptrToRoutingWebSocketClientAddressEntry = std::make_shared<RoutingEntry>(std::make_shared<joynr::system::RoutingTypes::WebSocketClientAddress>(), !isGloballyVisible);
+    auto ptrToRoutingWebSocketEntry = std::make_shared<RoutingEntry>(
+            std::make_shared<joynr::system::RoutingTypes::WebSocketAddress>(), !isGloballyVisible);
+    auto ptrToRoutingChannelAddressEntry = std::make_shared<RoutingEntry>(
+            std::make_shared<joynr::system::RoutingTypes::ChannelAddress>(), isGloballyVisible);
+    auto ptrToRoutingMqttAddressEntry = std::make_shared<RoutingEntry>(
+            std::make_shared<joynr::system::RoutingTypes::MqttAddress>(), isGloballyVisible);
+    auto ptrToRoutingBrowserAddressEntry = std::make_shared<RoutingEntry>(
+            std::make_shared<joynr::system::RoutingTypes::BrowserAddress>(), !isGloballyVisible);
+    auto ptrToRoutingWebSocketClientAddressEntry = std::make_shared<RoutingEntry>(
+            std::make_shared<joynr::system::RoutingTypes::WebSocketClientAddress>(),
+            !isGloballyVisible);
 
     routingTable.add("WebSocketAddress", ptrToRoutingWebSocketEntry);
     routingTable.add("ChannelAddress", ptrToRoutingChannelAddressEntry);
@@ -808,23 +891,31 @@ TEST_F(JsonSerializerTest, RoutingTypeAddressesSerializerTest)
     routingTable.add("BrowserAddress", ptrToRoutingBrowserAddressEntry);
     routingTable.add("WebSocketClientAddress", ptrToRoutingWebSocketClientAddressEntry);
 
-
     const std::string serializedRoutingTable = joynr::serializer::serializeToJson(routingTable);
     JOYNR_LOG_TRACE(logger(), serializedRoutingTable);
 
-    RoutingTable deserializedRoutingTable("deserializedRoutingTable", singleThreadedIoService->getIOService());
+    RoutingTable deserializedRoutingTable(
+            "deserializedRoutingTable", singleThreadedIoService->getIOService());
     joynr::serializer::deserializeFromJson(deserializedRoutingTable, serializedRoutingTable);
 
-    EXPECT_TRUE(boost::starts_with(deserializedRoutingTable.lookup("WebSocketAddress")->address->toString(), "WebSocketAddress"));
-    EXPECT_TRUE(boost::starts_with(deserializedRoutingTable.lookup("ChannelAddress")->address->toString(), "ChannelAddress"));
-    EXPECT_TRUE(boost::starts_with(deserializedRoutingTable.lookup("MqttAddress")->address->toString(), "MqttAddress"));
-    EXPECT_TRUE(boost::starts_with(deserializedRoutingTable.lookup("BrowserAddress")->address->toString(), "BrowserAddress"));
-    EXPECT_TRUE(boost::starts_with(deserializedRoutingTable.lookup("WebSocketClientAddress")->address->toString(), "WebSocketClientAddress"));
+    EXPECT_TRUE(boost::starts_with(
+            deserializedRoutingTable.lookup("WebSocketAddress")->address->toString(),
+            "WebSocketAddress"));
+    EXPECT_TRUE(boost::starts_with(
+            deserializedRoutingTable.lookup("ChannelAddress")->address->toString(),
+            "ChannelAddress"));
+    EXPECT_TRUE(boost::starts_with(
+            deserializedRoutingTable.lookup("MqttAddress")->address->toString(), "MqttAddress"));
+    EXPECT_TRUE(boost::starts_with(
+            deserializedRoutingTable.lookup("BrowserAddress")->address->toString(),
+            "BrowserAddress"));
+    EXPECT_TRUE(boost::starts_with(
+            deserializedRoutingTable.lookup("WebSocketClientAddress")->address->toString(),
+            "WebSocketClientAddress"));
 
     EXPECT_FALSE(deserializedRoutingTable.lookup("WebSocketAddress")->isGloballyVisible);
     EXPECT_TRUE(deserializedRoutingTable.lookup("ChannelAddress")->isGloballyVisible);
     EXPECT_TRUE(deserializedRoutingTable.lookup("MqttAddress")->isGloballyVisible);
     EXPECT_FALSE(deserializedRoutingTable.lookup("BrowserAddress")->isGloballyVisible);
     EXPECT_FALSE(deserializedRoutingTable.lookup("WebSocketClientAddress")->isGloballyVisible);
-
 }

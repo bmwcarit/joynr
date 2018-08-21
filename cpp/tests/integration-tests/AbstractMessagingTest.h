@@ -48,7 +48,8 @@
 using namespace ::testing;
 using namespace joynr;
 
-class AbstractMessagingTest : public ::testing::Test {
+class AbstractMessagingTest : public ::testing::Test
+{
 public:
     std::string settingsFileName;
     Settings settings;
@@ -72,58 +73,63 @@ public:
     std::shared_ptr<MessagingStubFactory> messagingStubFactory;
     std::shared_ptr<SingleThreadedIOService> singleThreadedIOService;
     std::shared_ptr<CcMessageRouter> messageRouter;
-    AbstractMessagingTest() :
-        settingsFileName("MessagingTest.settings"),
-        settings(settingsFileName),
-        messagingSettings(settings),
-        clusterControllerSettings(settings),
-        senderId("senderParticipantId"),
-        globalClusterControllerAddress("senderChannelId"),
-        receiverId("receiverParticipantId"),
-        request(),
-        requestId("requestId"),
-        qos(),
-        dispatcher(),
-        inProcessMessagingSkeleton(std::make_shared<MockInProcessMessagingSkeleton>(dispatcher)),
-        semaphore(0),
-        isLocalMessage(false),
-        enablePersistency(true),
-        messageFactory(),
-        mockMessageReceiver(new MockTransportMessageReceiver()),
-        mockMessageSender(new MockTransportMessageSender()),
-        messagingStubFactory(std::make_shared<MessagingStubFactory>()),
-        singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
-        messageRouter()
+    AbstractMessagingTest()
+            : settingsFileName("MessagingTest.settings"),
+              settings(settingsFileName),
+              messagingSettings(settings),
+              clusterControllerSettings(settings),
+              senderId("senderParticipantId"),
+              globalClusterControllerAddress("senderChannelId"),
+              receiverId("receiverParticipantId"),
+              request(),
+              requestId("requestId"),
+              qos(),
+              dispatcher(),
+              inProcessMessagingSkeleton(
+                      std::make_shared<MockInProcessMessagingSkeleton>(dispatcher)),
+              semaphore(0),
+              isLocalMessage(false),
+              enablePersistency(true),
+              messageFactory(),
+              mockMessageReceiver(new MockTransportMessageReceiver()),
+              mockMessageSender(new MockTransportMessageSender()),
+              messagingStubFactory(std::make_shared<MessagingStubFactory>()),
+              singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
+              messageRouter()
     {
         const std::string globalCCAddress("globalAddress");
-        const std::string messageNotificationProviderParticipantId("messageNotificationProviderParticipantId");
+        const std::string messageNotificationProviderParticipantId(
+                "messageNotificationProviderParticipantId");
 
-        messagingStubFactory->registerStubFactory(std::make_unique<InProcessMessagingStubFactory>());
-        messageRouter = std::make_shared<CcMessageRouter>(messagingSettings,
-                                                          clusterControllerSettings,
-                                                          messagingStubFactory,
-                                                          std::make_shared<MulticastMessagingSkeletonDirectory>(),
-                                                          nullptr,
-                                                          singleThreadedIOService->getIOService(),
-                                                          nullptr,
-                                                          globalCCAddress,
-                                                          messageNotificationProviderParticipantId,
-                                                          enablePersistency,
-                                                          std::vector<std::shared_ptr<ITransportStatus>>{},
-                                                          std::make_unique<MessageQueue<std::string>>(),
-                                                          std::make_unique<MessageQueue<std::shared_ptr<ITransportStatus>>>());
+        messagingStubFactory->registerStubFactory(
+                std::make_unique<InProcessMessagingStubFactory>());
+        messageRouter = std::make_shared<CcMessageRouter>(
+                messagingSettings,
+                clusterControllerSettings,
+                messagingStubFactory,
+                std::make_shared<MulticastMessagingSkeletonDirectory>(),
+                nullptr,
+                singleThreadedIOService->getIOService(),
+                nullptr,
+                globalCCAddress,
+                messageNotificationProviderParticipantId,
+                enablePersistency,
+                std::vector<std::shared_ptr<ITransportStatus>>{},
+                std::make_unique<MessageQueue<std::string>>(),
+                std::make_unique<MessageQueue<std::shared_ptr<ITransportStatus>>>());
         messageRouter->init();
         qos.setTtl(10000);
     }
 
     void WaitXTimes(std::uint64_t x)
     {
-        for(std::uint64_t i = 0; i<x; ++i) {
+        for (std::uint64_t i = 0; i < x; ++i) {
             ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(1)));
         }
     }
 
-    ~AbstractMessagingTest(){
+    ~AbstractMessagingTest()
+    {
         messageRouter->shutdown();
         std::remove(settingsFileName.c_str());
     }
@@ -143,15 +149,14 @@ public:
 
         auto mockDispatcher = std::make_shared<MockDispatcher>();
         // InProcessMessagingSkeleton should receive the message
-        EXPECT_CALL(*inProcessMessagingSkeleton, transmit(_,_))
-                .Times(0);
+        EXPECT_CALL(*inProcessMessagingSkeleton, transmit(_, _)).Times(0);
 
         // MessageSender should receive the message
-        EXPECT_CALL(*mockMessageSender, sendMessage(_,_,_))
-                .Times(1).WillRepeatedly(ReleaseSemaphore(&semaphore));
+        EXPECT_CALL(*mockMessageSender, sendMessage(_, _, _)).Times(1).WillRepeatedly(
+                ReleaseSemaphore(&semaphore));
 
-        EXPECT_CALL(*mockDispatcher, addReplyCaller(_,_,_))
-                .Times(1).WillRepeatedly(ReleaseSemaphore(&semaphore));
+        EXPECT_CALL(*mockDispatcher, addReplyCaller(_, _, _)).Times(1).WillRepeatedly(
+                ReleaseSemaphore(&semaphore));
 
         MessageSender messageSender(messageRouter, nullptr);
         std::shared_ptr<IReplyCaller> replyCaller;
@@ -161,7 +166,8 @@ public:
         const bool isGloballyVisible = false;
         constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
         const bool isSticky = false;
-        messageRouter->addNextHop(receiverId, joynrMessagingEndpointAddr, isGloballyVisible, expiryDateMs, isSticky);
+        messageRouter->addNextHop(
+                receiverId, joynrMessagingEndpointAddr, isGloballyVisible, expiryDateMs, isSticky);
 
         messageSender.sendRequest(senderId, receiverId, qos, request, replyCaller, isLocalMessage);
 
@@ -172,11 +178,7 @@ public:
     {
         std::string invalidReceiverId("invalidReceiverId");
         MutableMessage mutableMessage = messageFactory.createRequest(
-                    senderId,
-                    invalidReceiverId,
-                    qos,
-                    request,
-                    isLocalMessage);
+                senderId, invalidReceiverId, qos, request, isLocalMessage);
 
         messageRouter->route(mutableMessage.getImmutableMessage());
         SUCCEED();
@@ -184,12 +186,8 @@ public:
 
     void routeMsgToInProcessMessagingSkeleton()
     {
-        MutableMessage mutableMessage = messageFactory.createRequest(
-                    senderId,
-                    receiverId,
-                    qos,
-                    request,
-                    isLocalMessage);
+        MutableMessage mutableMessage =
+                messageFactory.createRequest(senderId, receiverId, qos, request, isLocalMessage);
 
         // We must set the reply address here. Otherwise the message router will
         // set it and the message which was created will differ from the message
@@ -198,96 +196,99 @@ public:
 
         std::shared_ptr<ImmutableMessage> immutableMessage = mutableMessage.getImmutableMessage();
         // InProcessMessagingSkeleton should receive the message
-        EXPECT_CALL(*inProcessMessagingSkeleton, transmit(Eq(immutableMessage),_))
-                .Times(1).WillRepeatedly(ReleaseSemaphore(&semaphore));
+        EXPECT_CALL(*inProcessMessagingSkeleton, transmit(Eq(immutableMessage), _))
+                .Times(1)
+                .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
         // MessageSender should not receive the message
-        EXPECT_CALL(*mockMessageSender, sendMessage(_,_,_))
-                .Times(0);
+        EXPECT_CALL(*mockMessageSender, sendMessage(_, _, _)).Times(0);
 
-        EXPECT_CALL(*mockMessageReceiver, getGlobalClusterControllerAddress())
-                .Times(0);
+        EXPECT_CALL(*mockMessageReceiver, getGlobalClusterControllerAddress()).Times(0);
 
-        auto messagingSkeletonEndpointAddr = std::make_shared<InProcessMessagingAddress>(inProcessMessagingSkeleton);
+        auto messagingSkeletonEndpointAddr =
+                std::make_shared<InProcessMessagingAddress>(inProcessMessagingSkeleton);
         const bool isGloballyVisible = false;
         constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
         const bool isSticky = false;
 
-        messageRouter->addNextHop(receiverId, messagingSkeletonEndpointAddr, isGloballyVisible, expiryDateMs, isSticky);
+        messageRouter->addNextHop(receiverId,
+                                  messagingSkeletonEndpointAddr,
+                                  isGloballyVisible,
+                                  expiryDateMs,
+                                  isSticky);
 
         messageRouter->route(immutableMessage);
 
         WaitXTimes(1);
     }
 
-    void routeMsgToCommunicationManager(std::shared_ptr<system::RoutingTypes::Address> joynrMessagingEndpointAddr)
+    void routeMsgToCommunicationManager(
+            std::shared_ptr<system::RoutingTypes::Address> joynrMessagingEndpointAddr)
     {
-        MutableMessage mutableMessage = messageFactory.createRequest(
-                    senderId,
-                    receiverId,
-                    qos,
-                    request,
-                    isLocalMessage);
+        MutableMessage mutableMessage =
+                messageFactory.createRequest(senderId, receiverId, qos, request, isLocalMessage);
         mutableMessage.setReplyTo(globalClusterControllerAddress);
         std::shared_ptr<ImmutableMessage> immutableMessage = mutableMessage.getImmutableMessage();
         // InProcessMessagingSkeleton should not receive the message
-        EXPECT_CALL(*inProcessMessagingSkeleton, transmit(Eq(immutableMessage),_))
-                .Times(0);
+        EXPECT_CALL(*inProcessMessagingSkeleton, transmit(Eq(immutableMessage), _)).Times(0);
 
         // *CommunicationManager should receive the message
-        EXPECT_CALL(*mockMessageSender, sendMessage(_,Eq(immutableMessage),_))
-                .Times(1).WillRepeatedly(ReleaseSemaphore(&semaphore));
+        EXPECT_CALL(*mockMessageSender, sendMessage(_, Eq(immutableMessage), _))
+                .Times(1)
+                .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
         const bool isGloballyVisible = false;
         constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
         const bool isSticky = false;
-        messageRouter->addNextHop(receiverId, joynrMessagingEndpointAddr, isGloballyVisible, expiryDateMs, isSticky);
+        messageRouter->addNextHop(
+                receiverId, joynrMessagingEndpointAddr, isGloballyVisible, expiryDateMs, isSticky);
 
         messageRouter->route(immutableMessage);
 
         WaitXTimes(1);
     }
 
-    void routeMultipleMessages(std::shared_ptr<system::RoutingTypes::Address> joynrMessagingEndpointAddr)
+    void routeMultipleMessages(
+            std::shared_ptr<system::RoutingTypes::Address> joynrMessagingEndpointAddr)
     {
-        MutableMessage mutableMessage1 = messageFactory.createRequest(
-                    senderId,
-                    receiverId,
-                    qos,
-                    request,
-                    isLocalMessage);
+        MutableMessage mutableMessage1 =
+                messageFactory.createRequest(senderId, receiverId, qos, request, isLocalMessage);
         mutableMessage1.setReplyTo(globalClusterControllerAddress);
 
         std::string receiverId2("receiverId2");
-        MutableMessage mutableMessage2 = messageFactory.createRequest(
-                    senderId,
-                    receiverId2,
-                    qos,
-                    request,
-                    isLocalMessage);
+        MutableMessage mutableMessage2 =
+                messageFactory.createRequest(senderId, receiverId2, qos, request, isLocalMessage);
         mutableMessage2.setReplyTo(globalClusterControllerAddress);
 
         std::shared_ptr<ImmutableMessage> immutableMessage1 = mutableMessage1.getImmutableMessage();
         std::shared_ptr<ImmutableMessage> immutableMessage2 = mutableMessage2.getImmutableMessage();
 
         // MessageSender should receive message
-        EXPECT_CALL(*mockMessageSender, sendMessage(_, Eq(immutableMessage1),_))
-                .Times(1).WillRepeatedly(ReleaseSemaphore(&semaphore));
+        EXPECT_CALL(*mockMessageSender, sendMessage(_, Eq(immutableMessage1), _))
+                .Times(1)
+                .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
         // InProcessMessagingSkeleton should receive twice message2
-        EXPECT_CALL(*inProcessMessagingSkeleton, transmit(Eq(immutableMessage2),_))
-                .Times(2).WillRepeatedly(ReleaseSemaphore(&semaphore));
+        EXPECT_CALL(*inProcessMessagingSkeleton, transmit(Eq(immutableMessage2), _))
+                .Times(2)
+                .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
         EXPECT_CALL(*mockMessageReceiver, getGlobalClusterControllerAddress())
                 .WillRepeatedly(ReturnRefOfCopy(globalClusterControllerAddress));
 
-        auto messagingSkeletonEndpointAddr = std::make_shared<InProcessMessagingAddress>(inProcessMessagingSkeleton);
+        auto messagingSkeletonEndpointAddr =
+                std::make_shared<InProcessMessagingAddress>(inProcessMessagingSkeleton);
         const bool isGloballyVisible = false;
         constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
         const bool isSticky = false;
 
-        messageRouter->addNextHop(receiverId2, messagingSkeletonEndpointAddr, isGloballyVisible, expiryDateMs, isSticky);
-        messageRouter->addNextHop(receiverId, joynrMessagingEndpointAddr, isGloballyVisible, expiryDateMs, isSticky);
+        messageRouter->addNextHop(receiverId2,
+                                  messagingSkeletonEndpointAddr,
+                                  isGloballyVisible,
+                                  expiryDateMs,
+                                  isSticky);
+        messageRouter->addNextHop(
+                receiverId, joynrMessagingEndpointAddr, isGloballyVisible, expiryDateMs, isSticky);
 
         messageRouter->route(immutableMessage1);
         messageRouter->route(immutableMessage2);

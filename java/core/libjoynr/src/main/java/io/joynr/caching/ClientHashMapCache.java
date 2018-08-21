@@ -19,19 +19,20 @@
 package io.joynr.caching;
 
 import io.joynr.qos.QualityOfService;
+import io.joynr.qos.TimeComparisonCompatibility;
 import io.joynr.qos.compatibility.QoSCacheEntryTimeToLiveCompatibility;
 import io.joynr.qos.compatibility.QoSDataFreshnessCompatibility;
 
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.function.Predicate;
 
-import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 
 public class ClientHashMapCache implements ClientCache {
 
-    private Map<String, CachedValue> cache = new ConcurrentHashMap<String, CachedValue>();
+    private ConcurrentMap<String, CachedValue> cache = new ConcurrentHashMap<String, CachedValue>();
     private QualityOfService qos = new QualityOfService();
     private QoSDataFreshnessCompatibility dataFreshnessCompatibility = new QoSDataFreshnessCompatibility(qos);
 
@@ -49,7 +50,7 @@ public class ClientHashMapCache implements ClientCache {
         if (!cache.containsKey(attributeId)) {
             return false;
         }
-        return dataFreshnessCompatibility.apply(cache.get(attributeId));
+        return dataFreshnessCompatibility.test(cache.get(attributeId));
     }
 
     @Override
@@ -71,9 +72,13 @@ public class ClientHashMapCache implements ClientCache {
     }
 
     public void cleanUp() {
-        Map<String, CachedValue> result = Maps.filterValues(cache, new QoSCacheEntryTimeToLiveCompatibility(qos));
-        for (String attributeId : result.keySet()) {
-            cache.remove(attributeId);
-        }
+        Predicate<TimeComparisonCompatibility> qoSCacheEntryTimeToLive = new QoSCacheEntryTimeToLiveCompatibility(qos);
+
+        cache.forEach((String k, CachedValue v) -> {
+            // remove if expired
+            if (!qoSCacheEntryTimeToLive.test(v)) {
+                cache.remove(k);
+            }
+        });
     }
 }

@@ -29,6 +29,7 @@ var End2EndSubscriptionTest = require("../js/node_integration/End2EndSubscriptio
 var End2EndDatatypesTest = require("../js/node_integration/End2EndDatatypesTest.js");
 var IncompatibleProviderTest = require("../js/node_integration/IncompatibleProviderTest.js");
 var LocalDiscoveryTest = require("../js/node_integration/LocalDiscoveryTest");
+var MultipleVersionsTest = require("../js/node_integration/MultipleVersionsTest");
 
 console.log("all tests modules loaded");
 jasmine.execute();

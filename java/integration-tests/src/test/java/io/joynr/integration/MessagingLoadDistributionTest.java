@@ -22,27 +22,27 @@ import static io.joynr.integration.matchers.MessagingServiceResponseMatchers.con
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
-import io.joynr.integration.setup.BounceProxyServerSetup;
-import io.joynr.integration.setup.testrunner.BounceProxyServerContext;
-import io.joynr.integration.util.BounceProxyCommunicationMock;
-import io.joynr.messaging.util.Utilities;
-import io.joynr.smrf.EncodingException;
-import io.joynr.smrf.UnsuppportedVersionException;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.UUID;
-
-import joynr.ImmutableMessage;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.google.common.base.Charsets;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.response.Response;
+
+import io.joynr.integration.setup.BounceProxyServerSetup;
+import io.joynr.integration.setup.testrunner.BounceProxyServerContext;
+import io.joynr.integration.util.BounceProxyCommunicationMock;
+import io.joynr.messaging.util.Utilities;
+import io.joynr.smrf.EncodingException;
+import io.joynr.smrf.UnsuppportedVersionException;
+import joynr.ImmutableMessage;
 
 //@RunWith(MultipleBounceProxySetupsTestRunner.class)
 //@BounceProxyServerSetups(value = { /*ControlledBounceProxyCluster.class, */ClusteredBounceProxyWithDispatcher.class })
@@ -88,12 +88,20 @@ public class MessagingLoadDistributionTest {
         // post messages to long polling channel before opening channel
         String payloads1[] = { "message-1_1", "message-1_2", "message-1_3" };
         for (String payload : payloads1) {
-            postMessageToBounceProxy(bpMock1, channelUrl1, channelId1, 30000l, payload.getBytes(Charsets.UTF_8));
+            postMessageToBounceProxy(bpMock1,
+                                     channelUrl1,
+                                     channelId1,
+                                     30000l,
+                                     payload.getBytes(StandardCharsets.UTF_8));
         }
 
         String payloads2[] = { "message-2_1", "message-2_2", "message-2_3" };
         for (String payload : payloads2) {
-            postMessageToBounceProxy(bpMock2, channelUrl2, channelId2, 30000l, payload.getBytes(Charsets.UTF_8));
+            postMessageToBounceProxy(bpMock2,
+                                     channelUrl2,
+                                     channelId2,
+                                     30000l,
+                                     payload.getBytes(StandardCharsets.UTF_8));
         }
 
         // open long polling channel

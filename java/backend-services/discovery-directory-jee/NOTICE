@@ -16,12 +16,14 @@ specific language governing permissions and limitations
 under the License.
 
 This project has dependencies to:
+  "Java Concurrency in Practice" book annotations under Creative Commons Attribution License
   Aether API under Eclipse Public License, Version 1.0
   Aether Connector Basic under Eclipse Public License, Version 1.0
   Aether Implementation under Eclipse Public License, Version 1.0
   Aether SPI under Eclipse Public License, Version 1.0
   Aether Transport Wagon under Eclipse Public License, Version 1.0
   Aether Utilities under Eclipse Public License, Version 1.0
+  Animal Sniffer Annotations under MIT license
   AOP alliance under Public Domain
   Apache HttpClient under Apache License
   Apache HttpCore under Apache License
@@ -56,13 +58,13 @@ This project has dependencies to:
   Arquillian Transaction Extension: Implementation Base under Apache License, Version 2.0
   Arquillian Transaction Extension: JTA under Apache License, Version 2.0
   Arquillian Transaction Extension: SPI under Apache License, Version 2.0
+  Checker Qual under GNU General Public License, version 2 (GPL2), with the classpath exception or The MIT License
   clustercontroller-inprocess-runtime under The Apache Software License, Version 2.0
   Commons Codec under The Apache Software License, Version 2.0
   Commons IO under The Apache Software License, Version 2.0
   Commons Lang under The Apache Software License, Version 2.0
-  dom4j under BSD License
   ehcache under The Apache Software License, Version 2.0
-  Embedded Payara All-In-One under CDDL + GPLv2 with classpath exception
+  error-prone annotations under Apache 2.0
   FindBugs-Annotations under GNU Lesser Public License
   FindBugs-jsr305 under The Apache Software License, Version 2.0
   flatbuffers-java under Apache License V2.0
@@ -89,6 +91,7 @@ This project has dependencies to:
   io.joynr.mqtt:mqtt-client under Eclipse Public License - Version 1.0
   io.joynr.smrf.java:smrf under The Apache Software License, Version 2.0
   io.joynr.smrf.java:smrf-api under The Apache Software License, Version 2.0
+  J2ObjC Annotations under The Apache Software License, Version 2.0
   Jackson module: JAXB-annotations under The Apache Software License, Version 2.0
   Jackson-annotations under The Apache Software License, Version 2.0
   Jackson-core under The Apache Software License, Version 2.0
@@ -98,7 +101,7 @@ This project has dependencies to:
   Java(TM) EE 7 Specification APIs under CDDL + GPLv2 with classpath exception
   JavaBeans Activation Framework (JAF) under Common Development and Distribution License (CDDL) v1.0
   JavaMail API under CDDL/GPLv2+CE
-  Javassist under MPL 1.1 or LGPL 2.1
+  Javassist under MPL 1.1 or LGPL 2.1 or Apache License 2.0
   javax.inject under The Apache Software License, Version 2.0
   javax.interceptor API under CDDL + GPLv2 with classpath exception
   jsoup under The MIT License
@@ -110,12 +113,13 @@ This project has dependencies to:
   Maven Repository Metadata Model under Apache License, Version 2.0
   Maven Settings under Apache License, Version 2.0
   Maven Settings Builder under Apache License, Version 2.0
+  Payara Embedded-All under CDDL + GPLv2 with classpath exception
   Plexus :: Component Annotations under The Apache Software License, Version 2.0
   Plexus Cipher: encryption/decryption Component under Apache Public License 2.0
   Plexus Common Utilities under The Apache Software License, Version 2.0
   Plexus Interpolation API under The Apache Software License, Version 2.0
   Plexus Security Dispatcher Component under Apache Public License 2.0
-  Reflections under WTFPL
+  Reflections under WTFPL or The New BSD License
   ShrinkWrap API under Apache License, Version 2.0
   ShrinkWrap Descriptors API Base under Apache License, Version 2.0
   ShrinkWrap Descriptors SPI under Apache License, Version 2.0
@@ -128,5 +132,4 @@ This project has dependencies to:
   ShrinkWrap SPI under Apache License, Version 2.0
   SLF4J API Module under MIT License
   SLF4J JDK14 Binding under MIT License
-  XML Commons External Components XML APIs under The Apache Software License, Version 2.0 or The SAX License or The W3C License
 

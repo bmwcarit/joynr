@@ -52,7 +52,7 @@ class InterfaceHTemplate extends InterfaceTemplate{
 #define «headerGuard»
 
 «FOR datatype: IterableExtensions.sortWith(getAllComplexTypes(francaIntf, selector),new FMapTypeAsLastComparator())»
-	«IF isCompound(datatype) || isMap(datatype)»
+	«IF isCompound(datatype) || (isMap(datatype) && !isTypeDef(datatype))»
 		«datatype.forwardDeclaration»
 	«ELSE »
 		#include «datatype.includeOf»

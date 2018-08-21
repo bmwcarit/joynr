@@ -18,19 +18,9 @@
  */
 package io.joynr.messaging.http.operation;
 
-import io.joynr.exceptions.JoynrChannelMissingException;
-import io.joynr.exceptions.JoynrCommunicationException;
-import io.joynr.exceptions.JoynrShutdownException;
-import io.joynr.messaging.MessageArrivedListener;
-import io.joynr.messaging.MessagingSettings;
-import io.joynr.messaging.datatypes.JoynrMessagingError;
-import io.joynr.messaging.datatypes.JoynrMessagingErrorCode;
-import io.joynr.messaging.util.Utilities;
-import io.joynr.smrf.EncodingException;
-import io.joynr.smrf.UnsuppportedVersionException;
-
 import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -39,8 +29,6 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-
-import joynr.ImmutableMessage;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -54,8 +42,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Charsets;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
+import io.joynr.exceptions.JoynrChannelMissingException;
+import io.joynr.exceptions.JoynrCommunicationException;
+import io.joynr.exceptions.JoynrShutdownException;
+import io.joynr.messaging.MessageArrivedListener;
+import io.joynr.messaging.MessagingSettings;
+import io.joynr.messaging.datatypes.JoynrMessagingError;
+import io.joynr.messaging.datatypes.JoynrMessagingErrorCode;
+import io.joynr.messaging.util.Utilities;
+import io.joynr.smrf.EncodingException;
+import io.joynr.smrf.UnsuppportedVersionException;
+import joynr.ImmutableMessage;
 
 /**
  * Callable to keep a long polling channel alive and to process incoming messages.
@@ -230,7 +229,7 @@ public class LongPollChannel {
         // the response body could contain multiple SMRF messages
         List<ImmutableMessage> listOfMessages;
         try {
-            listOfMessages = Utilities.splitSMRF(responseBody.getBytes(Charsets.UTF_8));
+            listOfMessages = Utilities.splitSMRF(responseBody.getBytes(StandardCharsets.UTF_8));
         } catch (EncodingException | UnsuppportedVersionException e) {
             logger.error("Failed to split and deserialize SMRF messages: {}", e.getMessage());
             return;

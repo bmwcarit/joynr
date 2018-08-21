@@ -22,7 +22,6 @@
 const ChildProcessUtils = require("./ChildProcessUtils");
 ChildProcessUtils.overrideRequirePaths();
 
-const Promise = require("../../../main/js/global/Promise");
 // anything that you load here is served through the jsTestDriverServer, if you add an entry you
 // have to make it available through the jsTestDriverIntegrationTests.conf
 const joynr = require("joynr");
@@ -61,31 +60,6 @@ function initializeTest(provisioningSuffix, providedDomain) {
     providerDomain = providedDomain;
     provisioning.persistency = "localStorage";
     provisioning.channelId = `End2EndDatatypesTestParticipantId${provisioningSuffix}`;
-    provisioning.logging = {
-        configuration: {
-            appenders: {
-                appender: [
-                    {
-                        type: "Console",
-                        name: "STDOUT",
-                        PatternLayout: {
-                            pattern: "[%d{HH:mm:ss,SSS}][%c][%p] %m{2}"
-                        }
-                    }
-                ]
-            },
-            loggers: {
-                root: {
-                    level: "debug",
-                    AppenderRef: [
-                        {
-                            ref: "STDOUT"
-                        }
-                    ]
-                }
-            }
-        }
-    };
 
     joynr.selectRuntime("inprocess");
     return joynr

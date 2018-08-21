@@ -19,6 +19,7 @@
 package io.joynr.capabilities;
 
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -117,7 +118,8 @@ public class CapabilitiesRegistrarTest {
         when(providerContainer.getRequestCaller()).thenReturn(requestCallerMock);
         when(providerContainer.getSubscriptionPublisher()).thenReturn(subscriptionPublisher);
         when(participantIdStorage.getProviderParticipantId(eq(domain),
-                                                           eq(TestProvider.INTERFACE_NAME))).thenReturn(participantId);
+                                                           eq(TestProvider.INTERFACE_NAME),
+                                                           anyInt())).thenReturn(participantId);
         when(providerContainerFactory.create(testProvider)).thenReturn(providerContainer);
 
         discoveryEntryCaptor = ArgumentCaptor.forClass(DiscoveryEntry.class);

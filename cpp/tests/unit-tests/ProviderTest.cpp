@@ -32,47 +32,53 @@
 
 using namespace joynr;
 
-class DummyProvider : public AbstractJoynrProvider {
+class DummyProvider : public AbstractJoynrProvider
+{
 public:
-    types::ProviderQos getProviderQos() const {
+    types::ProviderQos getProviderQos() const
+    {
         types::ProviderQos ret;
         return ret;
     }
 
-    const std::string& getInterfaceName() const override {
+    const std::string& getInterfaceName() const override
+    {
         static const std::string interfaceName = "DummyProviderInterface";
         return interfaceName;
     }
 
     template <typename T>
-    void onAttributeValueChanged(const std::string& attributeName, const T& value) {
+    void onAttributeValueChanged(const std::string& attributeName, const T& value)
+    {
         AbstractJoynrProvider::onAttributeValueChanged(attributeName, value);
     }
 
     template <typename... Ts>
-    void fireBroadcast(const std::string& broadcastName, const Ts&... values) {
+    void fireBroadcast(const std::string& broadcastName, const Ts&... values)
+    {
         AbstractJoynrProvider::fireBroadcast(broadcastName, std::forward<Ts>(values)...);
     }
 };
 
-TEST(ProviderTest, versionIsSetCorrectly) {
+TEST(ProviderTest, versionIsSetCorrectly)
+{
     const std::uint32_t expectedMajorVersion = 47;
     const std::uint32_t expectedMinorVersion = 11;
     EXPECT_EQ(expectedMajorVersion, tests::testProvider::MAJOR_VERSION);
     EXPECT_EQ(expectedMinorVersion, tests::testProvider::MINOR_VERSION);
 }
 
-TEST(ProviderTest, defaultVersionIsSetCorrectly) {
+TEST(ProviderTest, defaultVersionIsSetCorrectly)
+{
     const std::uint32_t expectedDefaultMajorVersion = 0;
     const std::uint32_t expectedDefaultMinorVersion = 0;
     EXPECT_EQ(expectedDefaultMajorVersion, tests::TestWithoutVersionProvider::MAJOR_VERSION);
     EXPECT_EQ(expectedDefaultMinorVersion, tests::TestWithoutVersionProvider::MINOR_VERSION);
 }
 
-TEST(ProviderTest, fireBroadcastWithInvalidPartionsThrows) {
+TEST(ProviderTest, fireBroadcastWithInvalidPartionsThrows)
+{
     MyTestProvider provider;
-    EXPECT_THROW(
-            provider.fireLocation(types::Localisation::GpsLocation(), { "invalid / partition" }),
-            std::invalid_argument
-    );
+    EXPECT_THROW(provider.fireLocation(types::Localisation::GpsLocation(), {"invalid / partition"}),
+                 std::invalid_argument);
 }

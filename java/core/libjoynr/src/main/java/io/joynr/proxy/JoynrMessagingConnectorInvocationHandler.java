@@ -19,6 +19,7 @@
 package io.joynr.proxy;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Set;
 
 import javax.annotation.CheckForNull;
@@ -79,9 +80,30 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
 
     }
 
+    private class StrippedArguments {
+        public MessagingQos messagingQos;
+        public Object[] params;
+        public Class<?>[] paramDatatypes;
+    }
+
+    public StrippedArguments getStrippedArguments(Object[] params, Class<?>[] paramDatatypes) {
+        // If a MessagingQos is present as last argument then strip it off and extract the value
+        StrippedArguments strippedArguments = new StrippedArguments();
+        if (params != null && params.length > 0 && paramDatatypes[params.length - 1].equals(MessagingQos.class)) {
+            strippedArguments.messagingQos = (MessagingQos) params[params.length - 1];
+            strippedArguments.params = Arrays.copyOf(params, params.length - 1);
+            strippedArguments.paramDatatypes = Arrays.copyOf(paramDatatypes, paramDatatypes.length - 1);
+        } else {
+            strippedArguments.messagingQos = qosSettings;
+            strippedArguments.params = params;
+            strippedArguments.paramDatatypes = paramDatatypes;
+        }
+        return strippedArguments;
+    }
+
     @SuppressWarnings("unchecked")
     @Override
-    public Future<?> executeAsyncMethod(Method method, Object[] params, Future<?> future) {
+    public Future<?> executeAsyncMethod(Object proxy, Method method, Object[] params, Future<?> future) {
 
         if (method == null) {
             throw new IllegalArgumentException("Method cannot be null");
@@ -107,20 +129,26 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
         Class<?>[] paramDatatypesWithoutCallback = new Class<?>[paramDatatypes.length - 1];
         copyArrayWithoutElement(paramDatatypes, paramDatatypesWithoutCallback, callbackIndex);
 
-        Request request = new Request(method.getName(), paramsWithoutCallback, paramDatatypesWithoutCallback);
+        StrippedArguments strippedArguments = getStrippedArguments(paramsWithoutCallback,
+                                                                   paramDatatypesWithoutCallback);
+        Request request = new Request(method.getName(), strippedArguments.params, strippedArguments.paramDatatypes);
         String requestReplyId = request.getRequestReplyId();
 
         @SuppressWarnings("rawtypes")
-        RpcAsyncRequestReplyCaller<?> callbackWrappingReplyCaller = new RpcAsyncRequestReplyCaller(requestReplyId,
+        RpcAsyncRequestReplyCaller<?> callbackWrappingReplyCaller = new RpcAsyncRequestReplyCaller(proxy,
+                                                                                                   requestReplyId,
                                                                                                    callback,
                                                                                                    future,
                                                                                                    method,
                                                                                                    methodMetaInformation);
 
-        ExpiryDate expiryDate = DispatcherUtils.convertTtlToExpirationDate(qosSettings.getRoundTripTtl_ms());
+        ExpiryDate expiryDate = DispatcherUtils.convertTtlToExpirationDate(strippedArguments.messagingQos.getRoundTripTtl_ms());
 
         replyCallerDirectory.addReplyCaller(requestReplyId, callbackWrappingReplyCaller, expiryDate);
-        requestReplyManager.sendRequest(fromParticipantId, toDiscoveryEntries.iterator().next(), request, qosSettings);
+        requestReplyManager.sendRequest(fromParticipantId,
+                                        toDiscoveryEntries.iterator().next(),
+                                        request,
+                                        strippedArguments.messagingQos);
         return future;
     }
 
@@ -146,20 +174,22 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
 
         MethodMetaInformation methodMetaInformation = JoynrMessagingConnectorFactory.ensureMethodMetaInformationPresent(method);
 
-        Request request = new Request(method.getName(), args, method.getParameterTypes());
+        StrippedArguments strippedArguments = getStrippedArguments(args, method.getParameterTypes());
+
+        Request request = new Request(method.getName(), strippedArguments.params, strippedArguments.paramDatatypes);
         Reply reply;
         String requestReplyId = request.getRequestReplyId();
 
         SynchronizedReplyCaller synchronizedReplyCaller = new SynchronizedReplyCaller(fromParticipantId,
                                                                                       requestReplyId,
                                                                                       request);
-        ExpiryDate expiryDate = DispatcherUtils.convertTtlToExpirationDate(qosSettings.getRoundTripTtl_ms());
+        ExpiryDate expiryDate = DispatcherUtils.convertTtlToExpirationDate(strippedArguments.messagingQos.getRoundTripTtl_ms());
         replyCallerDirectory.addReplyCaller(requestReplyId, synchronizedReplyCaller, expiryDate);
         reply = (Reply) requestReplyManager.sendSyncRequest(fromParticipantId,
                                                             toDiscoveryEntries.iterator().next(),
                                                             request,
                                                             synchronizedReplyCaller,
-                                                            qosSettings);
+                                                            strippedArguments.messagingQos);
         if (reply.getError() == null) {
             if (method.getReturnType().equals(void.class)) {
                 return null;
@@ -196,11 +226,22 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
             throw new JoynrIllegalStateException("You must have at least one participant to be able to execute an oneWayMethod.");
         }
 
-        logger.debug("ONEWAYREQUEST call proxy: method: {}, params: {}, proxy participantId: {},"
-                + " provider discovery entries: {}", method.getName(), args, fromParticipantId, toDiscoveryEntries);
+        StrippedArguments strippedArguments = getStrippedArguments(args, method.getParameterTypes());
 
-        OneWayRequest request = new OneWayRequest(method.getName(), args, method.getParameterTypes());
-        requestReplyManager.sendOneWayRequest(fromParticipantId, toDiscoveryEntries, request, qosSettings);
+        logger.debug("ONEWAYREQUEST call proxy: method: {}, params: {}, proxy participantId: {},"
+                + " provider discovery entries: {}",
+                     method.getName(),
+                     strippedArguments.params,
+                     fromParticipantId,
+                     toDiscoveryEntries);
+
+        OneWayRequest request = new OneWayRequest(method.getName(),
+                                                  strippedArguments.params,
+                                                  strippedArguments.paramDatatypes);
+        requestReplyManager.sendOneWayRequest(fromParticipantId,
+                                              toDiscoveryEntries,
+                                              request,
+                                              strippedArguments.messagingQos);
     }
 
     @Override

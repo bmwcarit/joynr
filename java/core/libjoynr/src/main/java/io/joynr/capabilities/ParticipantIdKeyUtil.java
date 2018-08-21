@@ -21,6 +21,7 @@ package io.joynr.capabilities;
 import io.joynr.ProvidedBy;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.provider.JoynrInterface;
+import io.joynr.provider.ProviderAnnotations;
 
 public final class ParticipantIdKeyUtil {
 
@@ -29,13 +30,13 @@ public final class ParticipantIdKeyUtil {
     private ParticipantIdKeyUtil() {
     }
 
-    public static String getProviderParticipantIdKey(String domain, String interfaceName) {
-        String token = JOYNR_PARTICIPANT_PREFIX + domain + "." + interfaceName;
+    public static String getProviderParticipantIdKey(String domain, String interfaceName, int majorVersion) {
+        String token = JOYNR_PARTICIPANT_PREFIX + domain + "." + interfaceName + ".v" + majorVersion;
         return token.toLowerCase().replace('/', '.');
     }
 
-    public static String getProviderParticipantIdKey(String domain, Class interfaceClass) {
-        Class annotatedInterface;
+    public static String getProviderParticipantIdKey(String domain, Class<?> interfaceClass) {
+        Class<?> annotatedInterface;
         if (interfaceClass.getAnnotation(ProvidedBy.class) != null) {
             annotatedInterface = ((ProvidedBy) interfaceClass.getAnnotation(ProvidedBy.class)).value();
         } else {
@@ -47,7 +48,8 @@ public final class ParticipantIdKeyUtil {
                     + " not annotated with @JoynrInterface. Can't get interface name.");
         }
         String interfaceName = joynrInterface.name();
-        return getProviderParticipantIdKey(domain, interfaceName);
+        int majorVersion = ProviderAnnotations.getMajorVersion(annotatedInterface);
+        return getProviderParticipantIdKey(domain, interfaceName, majorVersion);
     }
 
 }

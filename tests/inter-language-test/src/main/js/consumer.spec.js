@@ -27,6 +27,7 @@ const ExtendedEnumerationWithPartlyDefinedValues = require("../generated-javascr
 const ExtendedTypeCollectionEnumerationInTypeCollection = require("../generated-javascript/joynr/interlanguagetest/namedTypeCollection2/ExtendedTypeCollectionEnumerationInTypeCollection.js");
 const Enumeration = require("../generated-javascript/joynr/interlanguagetest/Enumeration.js");
 const MapStringString = require("../generated-javascript/joynr/interlanguagetest/namedTypeCollection2/MapStringString.js");
+const ArrayTypeDefStruct = require("../generated-javascript/joynr/interlanguagetest/typeDefCollection/ArrayTypeDefStruct.js");
 
 jasmine.getEnv().addReporter(new testbase.TestReporter());
 
@@ -207,6 +208,99 @@ describe("Consumer test", () => {
             expect(retObj.byteBufferOut).toBeDefined();
             expect(IltUtil.cmpByteBuffers(retObj.byteBufferOut, byteBufferArg1.concat(byteBufferArg2))).toBeTruthy();
             log("callMethodWithMultipleByteBufferParameters - OK");
+        });
+
+        async function callProxyMethodWithParameter(testMethod, testValue) {
+            log(`callProxyMethodWithParameter called with testValue = ${JSON.stringify(testValue)}`);
+            const retObj = await testMethod(testValue);
+
+            expect(retObj).toBeDefined();
+            expect(Object.values(retObj)[0]).toBeDefined();
+            log(`returned value: ${JSON.stringify(Object.values(retObj)[0])}`);
+            expect(Object.values(retObj)[0]).toEqual(Object.values(testValue)[0]);
+            return retObj;
+        }
+
+        it("callMethodWithInt64TypeDefParameter", async () => {
+            log("callMethodWithInt64TypeDefParameter");
+            const args = {
+                int64TypeDefIn: 1
+            };
+
+            await callProxyMethodWithParameter(testInterfaceProxy.methodWithInt64TypeDefParameter, args);
+            log("callMethodWithInt64TypeDefParameter - OK");
+        });
+
+        it("callMethodWithStringTypeDefParameter", async () => {
+            log("callMethodWithStringTypeDefParameter");
+            const args = {
+                stringTypeDefIn: "TypeDefTestString"
+            };
+
+            await callProxyMethodWithParameter(testInterfaceProxy.methodWithStringTypeDefParameter, args);
+            log("callMethodWithStringTypeDefParameter - OK");
+        });
+
+        it("callMethodWithStructTypeDefParameter", async () => {
+            log("callMethodWithStructTypeDefParameter");
+            const args = {
+                structTypeDefIn: IltUtil.createBaseStruct()
+            };
+
+            await callProxyMethodWithParameter(testInterfaceProxy.methodWithStructTypeDefParameter, args);
+            log("callMethodWithStructTypeDefParameter - OK");
+        });
+
+        it("callMethodWithMapTypeDefParameter", async () => {
+            log("callMethodWithMapTypeDefParameter");
+            const value = new MapStringString();
+            for (let i = 1; i <= 3; i++) {
+                value.put(`keyString${i}`, `valueString${i}`);
+            }
+            const args = {
+                mapTypeDefIn: value
+            };
+
+            await callProxyMethodWithParameter(testInterfaceProxy.methodWithMapTypeDefParameter, args);
+            log("callMethodWithMapTypeDefParameter - OK");
+        });
+
+        it("callMethodWithEnumTypeDefParameter", async () => {
+            log("callMethodWithEnumTypeDefParameter");
+            const args = {
+                enumTypeDefIn: Enumeration.ENUM_0_VALUE_1
+            };
+
+            await callProxyMethodWithParameter(testInterfaceProxy.methodWithEnumTypeDefParameter, args);
+            log("callMethodWithEnumTypeDefParameter - OK");
+        });
+
+        it("callMethodWithByteBufferTypeDefParameter", async () => {
+            log("callMethodWithByteBufferTypeDefParameter");
+            const value = new MapStringString();
+            for (let i = 1; i <= 3; i++) {
+                value.put(`keyString${i}`, `valueString${i}`);
+            }
+            const args = {
+                byteBufferTypeDefIn: IltUtil.createByteArray()
+            };
+
+            await callProxyMethodWithParameter(testInterfaceProxy.methodWithByteBufferTypeDefParameter, args);
+            log("callMethodWithByteBufferTypeDefParameter - OK");
+        });
+
+        it("callMethodWithArrayTypeDefParameter", async () => {
+            log("callMethodWithArrayTypeDefParameter");
+            const stringArray = {
+                typeDefStringArray: IltUtil.createStringArray()
+            };
+            const arrayTypeDefArg = new ArrayTypeDefStruct(stringArray);
+            const args = {
+                arrayTypeDefIn: arrayTypeDefArg
+            };
+
+            await callProxyMethodWithParameter(testInterfaceProxy.methodWithArrayTypeDefParameter, args);
+            log("callMethodWithArrayTypeDefParameter - OK");
         });
 
         it("callMethodWithSingleEnumParameters", async () => {
@@ -881,6 +975,60 @@ describe("Consumer test", () => {
             const retObj = await testInterfaceProxy.attributeByteBuffer.get();
             expect(retObj).toBeDefined();
             expect(IltUtil.cmpByteBuffers(retObj, byteBufferArg)).toBeTruthy();
+        });
+
+        async function genericSetGet(testObj, testValue) {
+            log(`genericSetGet called with testValue = ${JSON.stringify(testValue)}`);
+            await testObj.set({ value: testValue });
+
+            const retObj = await testObj.get();
+            expect(retObj).toBeDefined();
+            expect(retObj).toEqual(testValue);
+        }
+
+        it("callSetandGetAttributeInt64TypeDef", async () => {
+            log("callSetandGetAttributeInt64TypeDef");
+            const testValue = 1;
+            return await genericSetGet(testInterfaceProxy.attributeInt64TypeDef, testValue);
+        });
+
+        it("callSetandGetAttributeStringTypeDef", async () => {
+            log("callSetandGetAttributeStringTypeDef");
+            return await genericSetGet(testInterfaceProxy.attributeStringTypeDef, "StringTypeDef");
+        });
+
+        it("callSetandGetAttributeStructTypeDef", async () => {
+            log("callSetandGetAttributeStructTypeDef");
+            return await genericSetGet(testInterfaceProxy.attributeStructTypeDef, IltUtil.createBaseStruct());
+        });
+
+        it("callSetandGetAttributeMapTypeDef", async () => {
+            log("callSetandGetAttributeMapTypeDef");
+            const value = new MapStringString();
+            for (let i = 1; i <= 3; i++) {
+                value.put(`keyString${i}`, `valueString${i}`);
+            }
+            return await genericSetGet(testInterfaceProxy.attributeMapTypeDef, value);
+        });
+
+        it("callSetandGetAttributeEnumTypeDef", async () => {
+            log("callSetandGetAttributeEnumTypeDef");
+            return await genericSetGet(testInterfaceProxy.attributeEnumTypeDef, Enumeration.ENUM_0_VALUE_1);
+        });
+
+        it("callSetandGetAttributeByteBufferTypeDef", async () => {
+            log("callSetandGetAttributeByteBufferTypeDef");
+            return await genericSetGet(testInterfaceProxy.attributeByteBufferTypeDef, IltUtil.createByteArray());
+        });
+
+        it("callSetandGetAttributeArrayTypeDef", async () => {
+            log("callSetandGetAttributeArrayTypeDef");
+            const args = {
+                typeDefStringArray: IltUtil.createStringArray()
+            };
+            const arrayTypeDefArg = new ArrayTypeDefStruct(args);
+
+            return await genericSetGet(testInterfaceProxy.attributeArrayTypeDef, arrayTypeDefArg);
         });
 
         it("callSetAttributeEnumeration", async () => {

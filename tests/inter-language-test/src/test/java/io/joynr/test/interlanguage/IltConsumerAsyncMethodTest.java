@@ -18,6 +18,8 @@
  */
 package io.joynr.test.interlanguage;
 
+import java.lang.reflect.Method;
+import java.util.Objects;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
@@ -28,6 +30,7 @@ import io.joynr.proxy.Future;
 
 import joynr.exceptions.ApplicationException;
 import joynr.exceptions.ProviderRuntimeException;
+import joynr.interlanguagetest.Enumeration;
 import joynr.interlanguagetest.TestInterface.MethodWithExtendedErrorEnumErrorEnum;
 import joynr.interlanguagetest.TestInterfaceAsync.MethodWithMultipleStructParametersCallback;
 import joynr.interlanguagetest.TestInterfaceAsync.MethodWithMultipleStructParametersFuture;
@@ -36,6 +39,8 @@ import joynr.interlanguagetest.namedTypeCollection2.BaseStruct;
 import joynr.interlanguagetest.namedTypeCollection2.BaseStructWithoutElements;
 import joynr.interlanguagetest.namedTypeCollection2.ExtendedExtendedBaseStruct;
 import joynr.interlanguagetest.namedTypeCollection2.ExtendedStructOfPrimitives;
+import joynr.interlanguagetest.namedTypeCollection2.MapStringString;
+import joynr.interlanguagetest.typeDefCollection.ArrayTypeDefStruct;
 
 import org.apache.commons.lang.ArrayUtils;
 
@@ -44,9 +49,11 @@ import org.slf4j.LoggerFactory;
 
 import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
@@ -66,6 +73,67 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
         LOG.info("tearDown: Entering");
         generalTearDown();
         LOG.info("tearDown: Leaving");
+    }
+
+    @Before
+    public void resetTestEnvironment() {
+        proxyMethodWithParameterCallbackResult = false;
+    }
+
+    // variables that are to be changed inside callbacks must be instance variables
+    volatile boolean proxyMethodWithParameterCallbackResult = false;
+
+    private <T> void callProxyMethodWithParameterAsyncAndAssertResult(String methodName, final T arg) {
+        try {
+
+            final Semaphore resultAvailable = new Semaphore(0);
+
+            Callback<T> callback = new Callback<T>() {
+                @Override
+                public void onSuccess(T out) {
+                    // check result
+                    if (!Objects.deepEquals(out, arg)) {
+                        LOG.info(name.getMethodName() + TEST_FAILED_CALLBACK_INVALID_RESULT);
+                        proxyMethodWithParameterCallbackResult = false;
+                        resultAvailable.release();
+                        return;
+                    }
+                    proxyMethodWithParameterCallbackResult = true;
+                    resultAvailable.release();
+                }
+
+                @Override
+                public void onFailure(JoynrRuntimeException error) {
+                    proxyMethodWithParameterCallbackResult = false;
+                    if (error instanceof JoynrRuntimeException) {
+                        LOG.info(name.getMethodName() + TEST_FAILED_CALLBACK_EXCEPTION
+                                + ((JoynrRuntimeException) error).getMessage());
+                    } else {
+                        LOG.info(name.getMethodName() + TEST_FAILED_CALLBACK_EXCEPTION);
+                    }
+                    LOG.info(name.getMethodName() + TEST_FAILED);
+                    resultAvailable.release();
+                }
+            };
+
+            Method asyncMethod = testInterfaceProxy.getClass().getMethod(methodName, Callback.class, arg.getClass());
+            asyncMethod.invoke(testInterfaceProxy, callback, arg);
+
+            try {
+                // wait for callback
+                LOG.info(name.getMethodName() + TEST_WAIT_FOR_CALLBACK);
+                assertTrue(name.getMethodName() + TEST_FAILED_CALLBACK_TIMEOUT,
+                           resultAvailable.tryAcquire(10, TimeUnit.SECONDS));
+
+                // check result from callback
+                LOG.info(name.getMethodName() + TEST_WAIT_FOR_CALLBACK_DONE);
+                assertTrue(name.getMethodName() + TEST_FAILED_CALLBACK_ERROR, proxyMethodWithParameterCallbackResult);
+            } catch (InterruptedException | JoynrRuntimeException e) {
+                fail(name.getMethodName() + TEST_FAILED_EXCEPTION + e.getMessage());
+            }
+        } catch (Exception e) {
+            fail(name.getMethodName() + TEST_FAILED_EXCEPTION + e.getMessage());
+        }
     }
 
     /*
@@ -489,6 +557,66 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
         }
         LOG.info(name.getMethodName() + " - OK");
+    }
+
+    @Test
+    public void callMethodWithInt64TypeDefParameterAsync() {
+        LOG.info(name.getMethodName());
+        final Long int64TypeDefArg = 1L;
+        callProxyMethodWithParameterAsyncAndAssertResult("methodWithInt64TypeDefParameter", int64TypeDefArg);
+        LOG.info(name.getMethodName() + TEST_SUCCEEDED);
+    }
+
+    @Test
+    public void callMethodWithStringTypeDefParameterAsync() {
+        LOG.info(name.getMethodName());
+        final String stringTypeDefArg = "StringTypeDef";
+        callProxyMethodWithParameterAsyncAndAssertResult("methodWithStringTypeDefParameter", stringTypeDefArg);
+        LOG.info(name.getMethodName() + TEST_SUCCEEDED);
+    }
+
+    @Test
+    public void callMethodWithStructTypeDefParameterAsync() {
+        LOG.info(name.getMethodName());
+        final BaseStruct structTypeDefArg = IltUtil.createBaseStruct();
+        callProxyMethodWithParameterAsyncAndAssertResult("methodWithStructTypeDefParameter", structTypeDefArg);
+        LOG.info(name.getMethodName() + TEST_SUCCEEDED);
+    }
+
+    @Test
+    public void callMethodWithMapTypeDefParameterAsync() {
+        LOG.info(name.getMethodName());
+        final MapStringString mapTypeDefArg = new MapStringString();
+        mapTypeDefArg.put("keyString1", "valueString1");
+        mapTypeDefArg.put("keyString2", "valueString2");
+        mapTypeDefArg.put("keyString3", "valueString3");
+        callProxyMethodWithParameterAsyncAndAssertResult("methodWithMapTypeDefParameter", mapTypeDefArg);
+        LOG.info(name.getMethodName() + TEST_SUCCEEDED);
+    }
+
+    @Test
+    public void callMethodWithEnumTypeDefParameterAsync() {
+        LOG.info(name.getMethodName());
+        final Enumeration enumTypeDefArg = Enumeration.ENUM_0_VALUE_1;
+        callProxyMethodWithParameterAsyncAndAssertResult("methodWithEnumTypeDefParameter", enumTypeDefArg);
+        LOG.info(name.getMethodName() + TEST_SUCCEEDED);
+    }
+
+    @Test
+    public void callMethodWithByteBufferTypeDefParameterAsync() {
+        LOG.info(name.getMethodName());
+        final Byte[] byteBufferTypeDefArg = { -128, 0, 127 };
+        callProxyMethodWithParameterAsyncAndAssertResult("methodWithByteBufferTypeDefParameter", byteBufferTypeDefArg);
+        LOG.info(name.getMethodName() + TEST_SUCCEEDED);
+    }
+
+    @Test
+    public void callMethodWithArrayTypeDefParameterAsync() {
+        LOG.info(name.getMethodName());
+        String[] stringArray = IltUtil.createStringArray();
+        final ArrayTypeDefStruct arrayTypeDefArg = new ArrayTypeDefStruct(stringArray);
+        callProxyMethodWithParameterAsyncAndAssertResult("methodWithArrayTypeDefParameter", arrayTypeDefArg);
+        LOG.info(name.getMethodName() + TEST_SUCCEEDED);
     }
 
     /*

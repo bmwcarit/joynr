@@ -49,36 +49,22 @@
 #include "joynr/serializer/Serializer.h"
 
 template <typename Serializer>
-class RequestReplySerializerTest : public ::testing::Test {
+class RequestReplySerializerTest : public ::testing::Test
+{
 public:
     RequestReplySerializerTest()
-        : Test(),
-          complexParametersDatatypes({
-            "joynr.types.TestTypes.TEverythingStruct",
-            "joynr.types.TestTypes.TEverythingExtendedStruct",
-            "joynr.types.TestTypes.TEnum"
-          }),
-          primitiveParametersDatatypes({
-              "String",
-              "Integer",
-              "Float",
-              "Bool"
-          }),
-          complexParametersValues(),
-          primitiveParametersValues(std::string("Hello World"),
-                                    101,
-                                    9.99f,
-                                    true),
-          responseValues(std::string("Hello World"),
-                         101,
-                         9.99f,
-                         true,
-                         {1,2,3,4})
+            : Test(),
+              complexParametersDatatypes({"joynr.types.TestTypes.TEverythingStruct",
+                                          "joynr.types.TestTypes.TEverythingExtendedStruct",
+                                          "joynr.types.TestTypes.TEnum"}),
+              primitiveParametersDatatypes({"String", "Integer", "Float", "Bool"}),
+              complexParametersValues(),
+              primitiveParametersValues(std::string("Hello World"), 101, 9.99f, true),
+              responseValues(std::string("Hello World"), 101, 9.99f, true, {1, 2, 3, 4})
     {
     }
 
 protected:
-
     using OutputStream = muesli::StringOStream;
     using InputStream = muesli::StringIStream;
 
@@ -104,7 +90,8 @@ protected:
         (*iarchive)(value);
     }
 
-    // we need to serialize, then deserialize the request/reply to get it in a state to get the data out again
+    // we need to serialize, then deserialize the request/reply to get it in a state to get the data
+    // out again
     template <typename T>
     T initOutgoingIncoming(const T& outgoingType)
     {
@@ -114,13 +101,17 @@ protected:
     }
 
     template <typename Tuple, std::size_t... Indices>
-    void setRequestParamsFromTuple(joynr::Request& request, Tuple tuple, std::index_sequence<Indices...>)
+    void setRequestParamsFromTuple(joynr::Request& request,
+                                   Tuple tuple,
+                                   std::index_sequence<Indices...>)
     {
         request.setParams(std::move(std::get<Indices>(tuple))...);
     }
 
     template <typename Tuple, std::size_t... Indices>
-    void setReplyResponseFromTuple(joynr::Reply& reply, Tuple tuple, std::index_sequence<Indices...>)
+    void setReplyResponseFromTuple(joynr::Reply& reply,
+                                   Tuple tuple,
+                                   std::index_sequence<Indices...>)
     {
         reply.setResponse(std::move(std::get<Indices>(tuple))...);
     }
@@ -141,8 +132,7 @@ protected:
     }
 
     template <typename T>
-    joynr::Reply initReply(std::string requestReplyId,
-                           std::shared_ptr<T> error)
+    joynr::Reply initReply(std::string requestReplyId, std::shared_ptr<T> error)
     {
         joynr::Reply outgoingReply;
         outgoingReply.setRequestReplyId(requestReplyId);
@@ -151,8 +141,7 @@ protected:
     }
 
     template <typename... Ts>
-    joynr::Reply initReply(std::string requestReplyId,
-                           std::tuple<Ts...> responseTuple)
+    joynr::Reply initReply(std::string requestReplyId, std::tuple<Ts...> responseTuple)
     {
         joynr::Reply outgoingReply;
         outgoingReply.setRequestReplyId(requestReplyId);
@@ -165,8 +154,7 @@ protected:
         return initRequest("methodWithComplexParameters",
                            "000-10000-01100",
                            complexParametersDatatypes,
-                           complexParametersValues
-                           );
+                           complexParametersValues);
     }
 
     joynr::Request initializeRequestWithPrimitiveValues()
@@ -174,12 +162,13 @@ protected:
         return initRequest("realMethod",
                            "000-10000-01011",
                            primitiveParametersDatatypes,
-                           primitiveParametersValues
-                           );
+                           primitiveParametersValues);
     }
 
     template <typename Tuple, std::size_t... Indices>
-    void compareRequestData(joynr::Request& request, Tuple expectedData, std::index_sequence<Indices...>)
+    void compareRequestData(joynr::Request& request,
+                            Tuple expectedData,
+                            std::index_sequence<Indices...>)
     {
         Tuple extractedData;
         request.getParams(std::get<Indices>(extractedData)...);
@@ -206,13 +195,15 @@ protected:
     void compareRequestWithComplexValues(joynr::Request& request)
     {
         EXPECT_EQ(complexParametersDatatypes, request.getParamDatatypes());
-        compareRequestData(request, complexParametersValues, getIndicesForTuple(complexParametersValues));
+        compareRequestData(
+                request, complexParametersValues, getIndicesForTuple(complexParametersValues));
     }
 
     void compareRequestWithPrimitiveValues(joynr::Request& request)
     {
         EXPECT_EQ(primitiveParametersDatatypes, request.getParamDatatypes());
-        compareRequestData(request, primitiveParametersValues, getIndicesForTuple(primitiveParametersValues));
+        compareRequestData(
+                request, primitiveParametersValues, getIndicesForTuple(primitiveParametersValues));
     }
 
     void compareReplyWithExpectedResponse(joynr::Reply& reply)
@@ -251,13 +242,14 @@ TYPED_TEST_CASE(RequestReplySerializerTest, Serializers);
 
 TYPED_TEST(RequestReplySerializerTest, exampleDeserializerJoynrReplyWithProviderRuntimeException)
 {
-    auto error = std::make_shared<joynr::exceptions::ProviderRuntimeException>("Message of ProviderRuntimeException");
+    auto error = std::make_shared<joynr::exceptions::ProviderRuntimeException>(
+            "Message of ProviderRuntimeException");
 
     joynr::Reply reply = this->initReply("does-not-matter", error);
     auto deserializedError = reply.getError();
 
-    const joynr::exceptions::ProviderRuntimeException * const errorPtr = error.get();
-    const joynr::exceptions::JoynrException * const deserializedErrorPtr = deserializedError.get();
+    const joynr::exceptions::ProviderRuntimeException* const errorPtr = error.get();
+    const joynr::exceptions::JoynrException* const deserializedErrorPtr = deserializedError.get();
     ASSERT_EQ(typeid(*errorPtr), typeid(*deserializedErrorPtr));
     ASSERT_EQ(deserializedError->getMessage(), error->getMessage());
 }
@@ -266,20 +258,20 @@ TYPED_TEST(RequestReplySerializerTest, exampleDeserializerJoynrReplyWithApplicat
 {
     using namespace joynr::tests;
     std::string literal = test::MethodWithErrorEnumExtendedErrorEnum::getLiteral(
-                test::MethodWithErrorEnumExtendedErrorEnum::BASE_ERROR_TYPECOLLECTION);
+            test::MethodWithErrorEnumExtendedErrorEnum::BASE_ERROR_TYPECOLLECTION);
     // Create a ApplicationException
     auto error = std::make_shared<joynr::exceptions::ApplicationException>(
-                literal,
-                std::make_shared<test::MethodWithErrorEnumExtendedErrorEnum>());
+            literal, std::make_shared<test::MethodWithErrorEnumExtendedErrorEnum>());
 
     joynr::Reply reply = this->initReply("does-not-matter", error);
     auto deserializedError = reply.getError();
 
-    const joynr::exceptions::ApplicationException * const errorPtr = error.get();
-    const joynr::exceptions::JoynrException * const deserializedErrorPtr = deserializedError.get();
+    const joynr::exceptions::ApplicationException* const errorPtr = error.get();
+    const joynr::exceptions::JoynrException* const deserializedErrorPtr = deserializedError.get();
     ASSERT_EQ(typeid(*errorPtr), typeid(*deserializedErrorPtr));
 
-    auto deserializedApplicationException = std::dynamic_pointer_cast<joynr::exceptions::ApplicationException>(deserializedError);
+    auto deserializedApplicationException =
+            std::dynamic_pointer_cast<joynr::exceptions::ApplicationException>(deserializedError);
     ASSERT_TRUE(deserializedApplicationException != nullptr);
     ASSERT_EQ(*deserializedApplicationException, *error);
 }
@@ -309,12 +301,10 @@ TYPED_TEST(RequestReplySerializerTest, serializeMessage)
     // Create a Request
     const bool isLocalMessage = true;
     joynr::Request outgoingRequest = this->initializeRequestWithPrimitiveValues();
-    joynr::MutableMessage outgoingMessage = joynr::MutableMessageFactory().createRequest("sender",
-                                                                                     "receiver",
-                                                                                     joynr::MessagingQos(),
-                                                                                     outgoingRequest,
-                                                                                     isLocalMessage);
-    std::unique_ptr<joynr::ImmutableMessage> incomingMessage = outgoingMessage.getImmutableMessage();
+    joynr::MutableMessage outgoingMessage = joynr::MutableMessageFactory().createRequest(
+            "sender", "receiver", joynr::MessagingQos(), outgoingRequest, isLocalMessage);
+    std::unique_ptr<joynr::ImmutableMessage> incomingMessage =
+            outgoingMessage.getImmutableMessage();
 
     joynr::Request incomingRequest;
     smrf::ByteArrayView bodyView = incomingMessage->getUnencryptedBody();
@@ -342,7 +332,8 @@ TYPED_TEST(RequestReplySerializerTest, serialize_deserialize_RequestWithGpsLocat
     auto requestParamTuple = std::make_tuple(stringParam, trip1, intParam);
 
     joynr::Request request = this->initRequest("", "", {}, requestParamTuple);
-    this->compareRequestData(request, requestParamTuple, this->getIndicesForTuple(requestParamTuple));
+    this->compareRequestData(
+            request, requestParamTuple, this->getIndicesForTuple(requestParamTuple));
 }
 
 TYPED_TEST(RequestReplySerializerTest, serialize_deserialize_ReplyWithArrayAsResponse)
@@ -360,13 +351,29 @@ TYPED_TEST(RequestReplySerializerTest, serialize_deserialize_ReplyWithArrayAsRes
     std::string serializedAddress2 = joynr::serializer::serializeToJson(channelAddress2);
 
     std::vector<GlobalDiscoveryEntry> globalDiscoveryEntries;
-    globalDiscoveryEntries.emplace_back(providerVersion, "domain1", "interface1", "participant1", ProviderQos(), lastSeenMs, expiryDateMs, publicKeyId, serializedAddress1);
-    globalDiscoveryEntries.emplace_back(providerVersion, "domain2", "interface2", "participant2", ProviderQos(), lastSeenMs, expiryDateMs, publicKeyId, serializedAddress2);
+    globalDiscoveryEntries.emplace_back(providerVersion,
+                                        "domain1",
+                                        "interface1",
+                                        "participant1",
+                                        ProviderQos(),
+                                        lastSeenMs,
+                                        expiryDateMs,
+                                        publicKeyId,
+                                        serializedAddress1);
+    globalDiscoveryEntries.emplace_back(providerVersion,
+                                        "domain2",
+                                        "interface2",
+                                        "participant2",
+                                        ProviderQos(),
+                                        lastSeenMs,
+                                        expiryDateMs,
+                                        publicKeyId,
+                                        serializedAddress2);
 
     const std::string requestReplyId("serialize_deserialize_Reply_with_Array_as_Response");
 
     using ResponseTuple = std::tuple<std::vector<GlobalDiscoveryEntry>>;
-    ResponseTuple responseTuple {globalDiscoveryEntries};
+    ResponseTuple responseTuple{globalDiscoveryEntries};
     joynr::Reply reply = this->initReply(requestReplyId, responseTuple);
     this->compareReplyData(reply, responseTuple, this->getIndicesForTuple(responseTuple));
 }

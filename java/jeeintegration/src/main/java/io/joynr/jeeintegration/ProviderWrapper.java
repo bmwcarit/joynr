@@ -203,9 +203,8 @@ public class ProviderWrapper implements InvocationHandler {
             if (exception instanceof ProviderRuntimeException) {
                 joynrException = (ProviderRuntimeException) exception;
             } else {
-                joynrException = new ProviderRuntimeException("Unexpected exception from provider: " + exception == null
-                        ? e.getCause().toString()
-                        : exception.toString());
+                joynrException = new ProviderRuntimeException("Unexpected exception from provider: "
+                        + (exception == null ? e.getCause().toString() : exception.toString()));
             }
         } else if (e.getCause() instanceof ProviderRuntimeException || e.getCause() instanceof ApplicationException) {
             joynrException = (JoynrException) e.getCause();

@@ -17,7 +17,6 @@
  * #L%
  */
 
-
 #include <chrono>
 #include <csignal>
 #include <memory>
@@ -35,12 +34,14 @@ class PosixSignalHandlerTest : public ::testing::Test
 {
 
 public:
-    PosixSignalHandlerTest() : mockSignalHandler(std::make_shared<MockClusterControllerSignalHandler>())
+    PosixSignalHandlerTest()
+            : mockSignalHandler(std::make_shared<MockClusterControllerSignalHandler>())
     {
         PosixSignalHandler::setHandleAndRegisterForSignals(mockSignalHandler);
     };
 
-    ~PosixSignalHandlerTest() {
+    ~PosixSignalHandlerTest()
+    {
         PosixSignalHandler::stopSignalHandling();
     }
 

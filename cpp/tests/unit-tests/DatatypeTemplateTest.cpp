@@ -39,43 +39,92 @@ using namespace joynr;
 //        vowels : Vowel[]
 //    }
 
-TEST(DatatypeTemplateTest, enterAndRetrieveListOfGpsLocationsFromTrip) {
+TEST(DatatypeTemplateTest, enterAndRetrieveListOfGpsLocationsFromTrip)
+{
 
-    types::Localisation::GpsLocation loc1 = types::Localisation::GpsLocation(1.1, 1.2, 1.3, types::Localisation::GpsFixEnum::MODE2D, 1.4, 1.5, 1.6, 1.7, 18, 19, 110);
-    types::Localisation::GpsLocation loc2 = types::Localisation::GpsLocation(2.1, 2.2, 2.3, types::Localisation::GpsFixEnum::MODE2D, 2.4, 2.5, 2.6, 2.7, 28, 29, 210);
-    std::vector<types::Localisation::GpsLocation> inputList = std::vector<types::Localisation::GpsLocation>();
+    types::Localisation::GpsLocation loc1 =
+            types::Localisation::GpsLocation(1.1,
+                                             1.2,
+                                             1.3,
+                                             types::Localisation::GpsFixEnum::MODE2D,
+                                             1.4,
+                                             1.5,
+                                             1.6,
+                                             1.7,
+                                             18,
+                                             19,
+                                             110);
+    types::Localisation::GpsLocation loc2 =
+            types::Localisation::GpsLocation(2.1,
+                                             2.2,
+                                             2.3,
+                                             types::Localisation::GpsFixEnum::MODE2D,
+                                             2.4,
+                                             2.5,
+                                             2.6,
+                                             2.7,
+                                             28,
+                                             29,
+                                             210);
+    std::vector<types::Localisation::GpsLocation> inputList =
+            std::vector<types::Localisation::GpsLocation>();
     std::vector<types::Localisation::GpsLocation> returnList;
     inputList.push_back(loc1);
     inputList.push_back(loc2);
     types::Localisation::Trip trip = types::Localisation::Trip(inputList, "myfirstTryp");
     returnList = trip.getLocations();
-    EXPECT_EQ( returnList, inputList);
-    EXPECT_EQ( returnList.at(1), loc2);
+    EXPECT_EQ(returnList, inputList);
+    EXPECT_EQ(returnList.at(1), loc2);
 }
 
+TEST(DatatypeTemplateTest, enterListOfGpsLocationsUsingSetter)
+{
 
-TEST(DatatypeTemplateTest, enterListOfGpsLocationsUsingSetter) {
-
-    types::Localisation::GpsLocation loc1 = types::Localisation::GpsLocation(1.1, 1.2, 1.3, types::Localisation::GpsFixEnum::MODE2D, 1.4, 1.5, 1.6, 1.7, 18, 19, 110);
-    types::Localisation::GpsLocation loc2 = types::Localisation::GpsLocation(2.1, 2.2, 2.3, types::Localisation::GpsFixEnum::MODE2D, 2.4, 2.5, 2.6, 2.7, 28, 29, 210);
-    std::vector<types::Localisation::GpsLocation> inputList = std::vector<types::Localisation::GpsLocation>();
+    types::Localisation::GpsLocation loc1 =
+            types::Localisation::GpsLocation(1.1,
+                                             1.2,
+                                             1.3,
+                                             types::Localisation::GpsFixEnum::MODE2D,
+                                             1.4,
+                                             1.5,
+                                             1.6,
+                                             1.7,
+                                             18,
+                                             19,
+                                             110);
+    types::Localisation::GpsLocation loc2 =
+            types::Localisation::GpsLocation(2.1,
+                                             2.2,
+                                             2.3,
+                                             types::Localisation::GpsFixEnum::MODE2D,
+                                             2.4,
+                                             2.5,
+                                             2.6,
+                                             2.7,
+                                             28,
+                                             29,
+                                             210);
+    std::vector<types::Localisation::GpsLocation> inputList =
+            std::vector<types::Localisation::GpsLocation>();
     std::vector<types::Localisation::GpsLocation> returnList;
     inputList.push_back(loc1);
     inputList.push_back(loc2);
     types::Localisation::Trip trip = types::Localisation::Trip();
     trip.setLocations(inputList);
     returnList = trip.getLocations();
-    EXPECT_EQ( returnList, inputList);
-    EXPECT_EQ( returnList.at(1), loc2);
+    EXPECT_EQ(returnList, inputList);
+    EXPECT_EQ(returnList.at(1), loc2);
 }
 
-TEST(DatatypeTemplateTest, enterAndRetrieveEnumList) {
+TEST(DatatypeTemplateTest, enterAndRetrieveEnumList)
+{
 
-    std::vector<types::TestTypes::Vowel::Enum> inputList = std::vector<types::TestTypes::Vowel::Enum>();
+    std::vector<types::TestTypes::Vowel::Enum> inputList =
+            std::vector<types::TestTypes::Vowel::Enum>();
     inputList.push_back(types::TestTypes::Vowel::A);
     inputList.push_back(types::TestTypes::Vowel::E);
     inputList.push_back(types::TestTypes::Vowel::E);
     inputList.push_back(types::TestTypes::Vowel::U);
     types::TestTypes::Word myword = types::TestTypes::Word(inputList);
-    EXPECT_EQ( myword.getVowels().at(1), types::TestTypes::Vowel::E);
+    EXPECT_EQ(myword.getVowels().at(1), types::TestTypes::Vowel::E);
 }

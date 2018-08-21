@@ -92,6 +92,7 @@ class InterfaceSyncTemplate extends InterfaceTemplate {
 
 package «packagePath»;
 
+import io.joynr.messaging.MessagingQos;
 import io.joynr.Sync;
 «IF jeeExtension»
 import io.joynr.ProvidedBy;
@@ -119,9 +120,14 @@ public interface «syncClassName» extends «interfaceName»«IF hasFireAndForge
 	«var setAttribute = "set" + attributeName.toFirstUpper»
 		«IF isReadable(attribute)»
 			public «attributeType» «getAttribute»();
+			default public «attributeType» «getAttribute»(MessagingQos messagingQos) {
+				return «getAttribute»();
+			}
 		«ENDIF»
 		«IF isWritable(attribute)»
 			void «setAttribute»(«attributeType» «attributeName»);
+			default void «setAttribute»(«attributeType» «attributeName», MessagingQos messagingQos) {
+			}
 		«ENDIF»
 «ENDFOR»
 
@@ -160,6 +166,20 @@ public interface «syncClassName» extends «interfaceName»«IF hasFireAndForge
 		public «methodToReturnTypeName.get(method)» «methodName»(
 				«method.inputParameters.typedParameterList»
 		)«IF method.hasErrorEnum» throws ApplicationException«ENDIF»;
+		default public «methodToReturnTypeName.get(method)» «methodName»(
+				«method.inputParameters.typedParameterList»«IF !method.inputParameters.empty»,«ENDIF»
+				MessagingQos messagingQos
+		)«IF method.hasErrorEnum» throws ApplicationException«ENDIF» {
+			«IF methodToReturnTypeName.get(method).equals("void")»
+			return;
+			«ELSE»
+			return «methodName»(
+				«FOR inParameter : method.inputParameters SEPARATOR ","»
+					«inParameter.name»
+				«ENDFOR»
+			);
+			«ENDIF»
+		}
 «ENDFOR»
 }
 		'''

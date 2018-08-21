@@ -25,6 +25,7 @@ import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGIN
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 import org.junit.Before;
@@ -41,7 +42,6 @@ import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.jsontype.TypeResolverBuilder;
 import com.fasterxml.jackson.databind.type.SimpleType;
-import com.google.common.base.Charsets;
 import com.google.inject.servlet.ServletModule;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.response.Response;
@@ -263,7 +263,7 @@ public class MessagingTest extends AbstractServiceInterfaceTest {
         MutableMessage message = new MutableMessage();
 
         message.setType(Message.VALUE_MESSAGE_TYPE_REQUEST);
-        message.setPayload(("payload-" + UUID.randomUUID().toString()).getBytes(Charsets.UTF_8));
+        message.setPayload(("payload-" + UUID.randomUUID().toString()).getBytes(StandardCharsets.UTF_8));
         message.setTtlAbsolute(true);
         message.setTtlMs(expiryDate.getValue());
         message.setSender("");

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2018 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,6 +43,7 @@ import joynr.interlanguagetest.namedTypeCollection2.ExtendedInterfaceEnumeration
 import joynr.interlanguagetest.namedTypeCollection2.ExtendedStructOfPrimitives;
 import joynr.interlanguagetest.namedTypeCollection2.ExtendedTypeCollectionEnumerationInTypeCollection;
 import joynr.interlanguagetest.namedTypeCollection2.MapStringString;
+import joynr.interlanguagetest.typeDefCollection.ArrayTypeDefStruct;
 
 import org.apache.commons.lang.ArrayUtils;
 
@@ -63,6 +64,13 @@ public class IltProvider extends TestInterfaceAbstractProvider {
     protected ExtendedExtendedBaseStruct attributeExtendedExtendedBaseStruct;
     protected MapStringString attributeMapStringString;
     protected Integer attributeFireAndForget;
+    protected Long attributeInt64TypeDef;
+    protected String attributeStringTypeDef;
+    protected BaseStruct attributeStructTypeDef;
+    protected MapStringString attributeMapTypeDef;
+    protected Enumeration attributeEnumTypeDef;
+    protected Byte[] attributeByteBufferTypeDef;
+    protected ArrayTypeDefStruct attributeArrayTypeDef;
 
     private static final Logger logger = LoggerFactory.getLogger(IltProvider.class);
 
@@ -241,6 +249,118 @@ public class IltProvider extends TestInterfaceAbstractProvider {
     public Promise<DeferredVoid> setAttributeWithExceptionFromSetter(Boolean attributeWithExceptionFromSetter) {
         DeferredVoid deferred = new DeferredVoid();
         deferred.reject(new ProviderRuntimeException("Exception from setAttributeWithExceptionFromSetter"));
+        return new Promise<DeferredVoid>(deferred);
+    }
+
+    @Override
+    public Promise<Deferred<Long>> getAttributeInt64TypeDef() {
+        Deferred<Long> deferred = new Deferred<Long>();
+        deferred.resolve(attributeInt64TypeDef);
+        return new Promise<Deferred<Long>>(deferred);
+    }
+
+    @Override
+    public Promise<DeferredVoid> setAttributeInt64TypeDef(Long attributeInt64TypeDef) {
+        DeferredVoid deferred = new DeferredVoid();
+        this.attributeInt64TypeDef = attributeInt64TypeDef;
+        attributeInt64TypeDefChanged(attributeInt64TypeDef);
+        deferred.resolve();
+        return new Promise<DeferredVoid>(deferred);
+    }
+
+    @Override
+    public Promise<Deferred<String>> getAttributeStringTypeDef() {
+        Deferred<String> deferred = new Deferred<String>();
+        deferred.resolve(attributeStringTypeDef);
+        return new Promise<Deferred<String>>(deferred);
+    }
+
+    @Override
+    public Promise<DeferredVoid> setAttributeStringTypeDef(String attributeStringTypeDef) {
+        DeferredVoid deferred = new DeferredVoid();
+        this.attributeStringTypeDef = attributeStringTypeDef;
+        attributeStringTypeDefChanged(attributeStringTypeDef);
+        deferred.resolve();
+        return new Promise<DeferredVoid>(deferred);
+    }
+
+    @Override
+    public Promise<Deferred<BaseStruct>> getAttributeStructTypeDef() {
+        Deferred<BaseStruct> deferred = new Deferred<BaseStruct>();
+        deferred.resolve(attributeStructTypeDef);
+        return new Promise<Deferred<BaseStruct>>(deferred);
+    }
+
+    @Override
+    public Promise<DeferredVoid> setAttributeStructTypeDef(BaseStruct attributeStructTypeDef) {
+        DeferredVoid deferred = new DeferredVoid();
+        this.attributeStructTypeDef = attributeStructTypeDef;
+        attributeStructTypeDefChanged(attributeStructTypeDef);
+        deferred.resolve();
+        return new Promise<DeferredVoid>(deferred);
+    }
+
+    @Override
+    public Promise<Deferred<MapStringString>> getAttributeMapTypeDef() {
+        Deferred<MapStringString> deferred = new Deferred<MapStringString>();
+        deferred.resolve(attributeMapTypeDef);
+        return new Promise<Deferred<MapStringString>>(deferred);
+    }
+
+    @Override
+    public Promise<DeferredVoid> setAttributeMapTypeDef(MapStringString attributeMapTypeDef) {
+        DeferredVoid deferred = new DeferredVoid();
+        this.attributeMapTypeDef = attributeMapTypeDef;
+        attributeMapTypeDefChanged(attributeMapTypeDef);
+        deferred.resolve();
+        return new Promise<DeferredVoid>(deferred);
+    }
+
+    @Override
+    public Promise<Deferred<Enumeration>> getAttributeEnumTypeDef() {
+        Deferred<Enumeration> deferred = new Deferred<Enumeration>();
+        deferred.resolve(attributeEnumTypeDef);
+        return new Promise<Deferred<Enumeration>>(deferred);
+    }
+
+    @Override
+    public Promise<DeferredVoid> setAttributeEnumTypeDef(Enumeration attributeEnumTypeDef) {
+        DeferredVoid deferred = new DeferredVoid();
+        this.attributeEnumTypeDef = attributeEnumTypeDef;
+        attributeEnumTypeDefChanged(attributeEnumTypeDef);
+        deferred.resolve();
+        return new Promise<DeferredVoid>(deferred);
+    }
+
+    @Override
+    public Promise<Deferred<Byte[]>> getAttributeByteBufferTypeDef() {
+        Deferred<Byte[]> deferred = new Deferred<Byte[]>();
+        deferred.resolve(attributeByteBufferTypeDef);
+        return new Promise<Deferred<Byte[]>>(deferred);
+    }
+
+    @Override
+    public Promise<DeferredVoid> setAttributeByteBufferTypeDef(Byte[] attributeByteBufferTypeDef) {
+        DeferredVoid deferred = new DeferredVoid();
+        this.attributeByteBufferTypeDef = attributeByteBufferTypeDef;
+        attributeByteBufferTypeDefChanged(attributeByteBufferTypeDef);
+        deferred.resolve();
+        return new Promise<DeferredVoid>(deferred);
+    }
+
+    @Override
+    public Promise<Deferred<ArrayTypeDefStruct>> getAttributeArrayTypeDef() {
+        Deferred<ArrayTypeDefStruct> deferred = new Deferred<ArrayTypeDefStruct>();
+        deferred.resolve(attributeArrayTypeDef);
+        return new Promise<Deferred<ArrayTypeDefStruct>>(deferred);
+    }
+
+    @Override
+    public Promise<DeferredVoid> setAttributeArrayTypeDef(ArrayTypeDefStruct attributeArrayTypeDef) {
+        DeferredVoid deferred = new DeferredVoid();
+        this.attributeArrayTypeDef = attributeArrayTypeDef;
+        attributeArrayTypeDefChanged(attributeArrayTypeDef);
+        deferred.resolve();
         return new Promise<DeferredVoid>(deferred);
     }
 
@@ -456,6 +576,125 @@ public class IltProvider extends TestInterfaceAbstractProvider {
         //prepare output parameter
         deferred.resolve(result);
         return new Promise<MethodWithMultipleByteBufferParametersDeferred>(deferred);
+    }
+
+    /*
+     *methodWithInt64TypeDefParameter
+     *
+     *Return the same TypeDefForInt64 that was put in as parameter
+     */
+    @Override
+    public Promise<MethodWithInt64TypeDefParameterDeferred> methodWithInt64TypeDefParameter(Long int64TypeDefIn) {
+        logger.info("****************************************************");
+        logger.info("* IltProvider.methodWithInt64TypeDefParameter called");
+        logger.info("****************************************************");
+        MethodWithInt64TypeDefParameterDeferred deferred = new MethodWithInt64TypeDefParameterDeferred();
+
+        // prepare output parameter
+        deferred.resolve(int64TypeDefIn);
+        return new Promise<MethodWithInt64TypeDefParameterDeferred>(deferred);
+    }
+
+    /*
+     *methodWithStringTypeDefParameter
+     *
+     *Return the same TypeDefForString that was put in as parameter
+     */
+    @Override
+    public Promise<MethodWithStringTypeDefParameterDeferred> methodWithStringTypeDefParameter(String stringTypeDefIn) {
+        logger.info("*****************************************************");
+        logger.info("* IltProvider.methodWithStringTypeDefParameter called");
+        logger.info("*****************************************************");
+        MethodWithStringTypeDefParameterDeferred deferred = new MethodWithStringTypeDefParameterDeferred();
+
+        // prepare output parameter
+        deferred.resolve(stringTypeDefIn);
+        return new Promise<MethodWithStringTypeDefParameterDeferred>(deferred);
+    }
+
+    /*
+     *methodWithStructTypeDefParameter
+     *
+     *Return the same TypeDefForStruct that was put in as parameter
+     */
+    @Override
+    public Promise<MethodWithStructTypeDefParameterDeferred> methodWithStructTypeDefParameter(BaseStruct structTypeDefIn) {
+        logger.info("****************************************************");
+        logger.info("* IltProvider.methodWithInt64TypeDefParameter called");
+        logger.info("****************************************************");
+        MethodWithStructTypeDefParameterDeferred deferred = new MethodWithStructTypeDefParameterDeferred();
+
+        // prepare output parameter
+        deferred.resolve(structTypeDefIn);
+        return new Promise<MethodWithStructTypeDefParameterDeferred>(deferred);
+    }
+
+    /*
+     *methodWithMapTypeDefParameter
+     *
+     *Return the same TypeDefForMap that was put in as parameter
+     */
+    @Override
+    public Promise<MethodWithMapTypeDefParameterDeferred> methodWithMapTypeDefParameter(MapStringString mapTypeDefIn) {
+        logger.info("****************************************************");
+        logger.info("* IltProvider.methodWithMapTypeDefParameter called");
+        logger.info("****************************************************");
+        MethodWithMapTypeDefParameterDeferred deferred = new MethodWithMapTypeDefParameterDeferred();
+
+        // prepare output parameter
+        deferred.resolve(mapTypeDefIn);
+        return new Promise<MethodWithMapTypeDefParameterDeferred>(deferred);
+    }
+
+    /*
+     *methodWithEnumTypeDefParameter
+     *
+     *Return the same TypeDefForEnum that was put in as parameter
+     */
+    @Override
+    public Promise<MethodWithEnumTypeDefParameterDeferred> methodWithEnumTypeDefParameter(Enumeration enumTypeDefIn) {
+        logger.info("***************************************************");
+        logger.info("* IltProvider.methodWithEnumTypeDefParameter called");
+        logger.info("***************************************************");
+        MethodWithEnumTypeDefParameterDeferred deferred = new MethodWithEnumTypeDefParameterDeferred();
+
+        // prepare output parameter
+        deferred.resolve(enumTypeDefIn);
+        return new Promise<MethodWithEnumTypeDefParameterDeferred>(deferred);
+    }
+
+    /*
+     *methodWithByteBufferTypeDefParameter
+     *
+     *Return the same TypeDefForByteBuffer that was put in as parameter
+     */
+    @Override
+    public Promise<MethodWithByteBufferTypeDefParameterDeferred> methodWithByteBufferTypeDefParameter(Byte[] byteBufferTypeDefIn) {
+        logger.info("*********************************************************");
+        logger.info("* IltProvider.methodWithByteBufferTypeDefParameter called");
+        logger.info("*********************************************************");
+        MethodWithByteBufferTypeDefParameterDeferred deferred = new MethodWithByteBufferTypeDefParameterDeferred();
+
+        // prepare output parameter
+        deferred.resolve(byteBufferTypeDefIn);
+        return new Promise<MethodWithByteBufferTypeDefParameterDeferred>(deferred);
+    }
+
+    /*
+     *methodWithArrayTypeDefParameter
+     *
+     *Return the same ArrayTypeDefStruct that was put in as parameter
+     */
+    @Override
+    public Promise<MethodWithArrayTypeDefParameterDeferred> methodWithArrayTypeDefParameter(ArrayTypeDefStruct arrayTypeDefIn) {
+        logger.info("****************************************************");
+        logger.info("* IltProvider.methodWithArrayTypeDefParameter called");
+        logger.info("****************************************************");
+        MethodWithArrayTypeDefParameterDeferred deferred = new MethodWithArrayTypeDefParameterDeferred();
+
+        // prepare output parameter
+        deferred.resolve(arrayTypeDefIn);
+        return new Promise<MethodWithArrayTypeDefParameterDeferred>(deferred);
     }
 
     /*

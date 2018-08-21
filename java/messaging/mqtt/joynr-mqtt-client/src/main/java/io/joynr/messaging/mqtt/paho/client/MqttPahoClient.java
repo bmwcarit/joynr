@@ -20,6 +20,7 @@ package io.joynr.messaging.mqtt.paho.client;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
@@ -37,8 +38,6 @@ import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 import org.eclipse.paho.client.mqttv3.internal.security.SSLSocketFactoryFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Charsets;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.joynr.exceptions.JoynrDelayMessageException;
@@ -351,7 +350,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
             throw new JoynrMessageNotSentException(e.getMessage(), e);
         }
 
-        logger.debug("Published message: " + new String(serializedMessage, Charsets.UTF_8));
+        logger.debug("Published message: " + new String(serializedMessage, StandardCharsets.UTF_8));
     }
 
     @Override
@@ -453,7 +452,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
         logger.debug("MQTT message received: id {}, topic {}, payload\n{}",
                      mqttMessage.getId(),
                      topic,
-                     new String(mqttMessage.getPayload(), Charsets.UTF_8));
+                     new String(mqttMessage.getPayload(), StandardCharsets.UTF_8));
         if (messagingSkeleton == null) {
             logger.error("MQTT message not processed: messagingSkeleton has not been set yet");
             return;

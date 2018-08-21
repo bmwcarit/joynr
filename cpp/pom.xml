@@ -25,7 +25,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>joynr</artifactId>
-		<version>1.4.0</version>
+		<version>1.5.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -75,6 +75,15 @@
 						<exclude>tests/resources/application4_ACL_RCL_Permissions.json</exclude>
 						<exclude>tests/resources/application5_ACL_RCL_Permissions.json</exclude>
 					</excludes>
+					</configuration>
+				</plugin>
+
+				<!-- Skip deploy -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-deploy-plugin</artifactId>
+					<configuration>
+						<skip>true</skip>
 					</configuration>
 				</plugin>
 			</plugins>

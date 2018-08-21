@@ -22,7 +22,7 @@ import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.eq;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -32,15 +32,23 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Charsets;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.AbstractModule;
@@ -49,6 +57,7 @@ import com.google.inject.Injector;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Names;
+
 import io.joynr.common.ExpiryDate;
 import io.joynr.context.JoynrMessageScopeModule;
 import io.joynr.dispatching.rpc.ReplyCaller;
@@ -71,14 +80,6 @@ import joynr.Reply;
 import joynr.Request;
 import joynr.exceptions.MethodInvocationException;
 import joynr.types.DiscoveryEntryWithMetaInfo;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 
 /**
  * This test mocks the Http Communication Manager out and tests only the functionality contained in the Dispatcher.
@@ -217,7 +218,7 @@ public class RequestReplyManagerTest {
         assertEquals(messageCapture.getValue().getSender(), testSenderParticipantId);
         assertEquals(messageCapture.getValue().getRecipient(), testMessageResponderParticipantId);
 
-        assertEquals(new String(messageCapture.getValue().getPayload(), Charsets.UTF_8),
+        assertEquals(new String(messageCapture.getValue().getPayload(), StandardCharsets.UTF_8),
                      objectMapper.writeValueAsString(request1));
     }
 

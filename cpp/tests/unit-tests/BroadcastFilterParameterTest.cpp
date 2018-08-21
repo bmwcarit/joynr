@@ -24,14 +24,13 @@
 
 using namespace joynr;
 
-class BroadcastFilterParametersTest : public ::testing::Test {
+class BroadcastFilterParametersTest : public ::testing::Test
+{
 public:
     BroadcastFilterParametersTest()
     {
-
     }
 };
-
 
 TEST_F(BroadcastFilterParametersTest, compareFilterParameters)
 {

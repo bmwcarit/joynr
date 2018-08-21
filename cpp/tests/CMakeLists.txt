@@ -61,6 +61,7 @@ macro(CONFIGURE_TEST_FILES targetDirectory)
         "HttpMessagingSettingsTest.settings"
         "MqttMessagingSettingsTest.settings"
         "MessagingSettingsDiscoveryEntryExpiryIntervalMs.settings"
+        "MessagingSettingsDiscardUnroutableRepliesAndPublications.settings"
         "libjoynrSystemIntegration1.settings"
         "libjoynrSystemIntegration2.settings"
         "persistency-cc-disabled.settings"

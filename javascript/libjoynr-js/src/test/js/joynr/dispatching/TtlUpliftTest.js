@@ -30,7 +30,6 @@ const SubscriptionReply = require("../../../../main/js/joynr/dispatching/types/S
 const SubscriptionStop = require("../../../../main/js/joynr/dispatching/types/SubscriptionStop");
 const MulticastPublication = require("../../../../main/js/joynr/dispatching/types/MulticastPublication");
 const uuid = require("uuid/v4");
-const Promise = require("../../../../main/js/global/Promise");
 
 const providerId = "providerId";
 const providerDiscoveryEntry = new DiscoveryEntryWithMetaInfo({
@@ -143,7 +142,7 @@ describe("libjoynr-js.joynr.ttlUpliftTest", () => {
         jasmine.addMatchers(customMatchers);
 
         const sendRequestReply = function(providerParticipantId, request, cb, replySettings) {
-            const reply = new Reply({
+            const reply = Reply.create({
                 response: "response",
                 requestReplyId: request.requestReplyId
             });
@@ -352,7 +351,7 @@ describe("libjoynr-js.joynr.ttlUpliftTest", () => {
                 expiryDate: expiryDateMs
             };
             const multicastId = "multicastId";
-            const publication = new MulticastPublication({
+            const publication = MulticastPublication.create({
                 multicastId
             });
 
@@ -628,7 +627,7 @@ describe("libjoynr-js.joynr.ttlUpliftTest", () => {
                 expiryDate: expiryDateMs
             };
             const multicastId = "multicastId";
-            const publication = new MulticastPublication({
+            const publication = MulticastPublication.create({
                 multicastId
             });
 

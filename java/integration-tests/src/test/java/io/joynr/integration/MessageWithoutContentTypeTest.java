@@ -19,18 +19,11 @@
 package io.joynr.integration;
 
 import static com.jayway.restassured.RestAssured.given;
-import io.joynr.integration.setup.BounceProxyServerSetup;
-import io.joynr.integration.setup.SingleBounceProxy;
-import io.joynr.integration.setup.testrunner.BounceProxyServerContext;
-import io.joynr.integration.setup.testrunner.BounceProxyServerSetups;
-import io.joynr.integration.setup.testrunner.MultipleBounceProxySetupsTestRunner;
-import io.joynr.integration.util.BounceProxyCommunicationMock;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ScheduledFuture;
-
-import joynr.ImmutableMessage;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -38,10 +31,17 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.google.common.base.Charsets;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.response.Response;
+
+import io.joynr.integration.setup.BounceProxyServerSetup;
+import io.joynr.integration.setup.SingleBounceProxy;
+import io.joynr.integration.setup.testrunner.BounceProxyServerContext;
+import io.joynr.integration.setup.testrunner.BounceProxyServerSetups;
+import io.joynr.integration.setup.testrunner.MultipleBounceProxySetupsTestRunner;
+import io.joynr.integration.util.BounceProxyCommunicationMock;
+import joynr.ImmutableMessage;
 
 @Ignore("Bounceproxy not supported at the moment")
 @RunWith(MultipleBounceProxySetupsTestRunner.class)
@@ -67,7 +67,7 @@ public class MessageWithoutContentTypeTest {
 
         bpMock.createChannel(channelId);
 
-        byte[] postPayload = ("payload-" + UUID.randomUUID().toString()).getBytes(Charsets.UTF_8);
+        byte[] postPayload = ("payload-" + UUID.randomUUID().toString()).getBytes(StandardCharsets.UTF_8);
         ImmutableMessage messageToSend = bpMock.createImmutableMessage(100000l, postPayload);
 
         given().contentType(ContentType.BINARY)
@@ -99,7 +99,7 @@ public class MessageWithoutContentTypeTest {
 
         bpMock.createChannel(channelId);
 
-        byte[] postPayload1 = ("payload-" + UUID.randomUUID().toString()).getBytes(Charsets.UTF_8);
+        byte[] postPayload1 = ("payload-" + UUID.randomUUID().toString()).getBytes(StandardCharsets.UTF_8);
         ImmutableMessage serializedMessage1 = bpMock.createImmutableMessage(100000l, postPayload1);
 
         given().contentType(ContentType.BINARY)
@@ -114,7 +114,7 @@ public class MessageWithoutContentTypeTest {
                .when()
                .post("/channels/" + channelId + "/messageWithoutContentType");
 
-        byte[] postPayload2 = ("payload-" + UUID.randomUUID().toString()).getBytes(Charsets.UTF_8);
+        byte[] postPayload2 = ("payload-" + UUID.randomUUID().toString()).getBytes(StandardCharsets.UTF_8);
         ImmutableMessage immutableMessage2 = bpMock.createImmutableMessage(100000l, postPayload2);
 
         given().contentType(ContentType.BINARY)

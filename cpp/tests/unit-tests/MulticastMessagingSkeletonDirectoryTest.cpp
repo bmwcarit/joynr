@@ -28,12 +28,14 @@
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "tests/mock/MockMessagingMulticastSubscriber.h"
 
-class MulticastMessagingSkeletonDirectoryTest : public ::testing::Test {
+class MulticastMessagingSkeletonDirectoryTest : public ::testing::Test
+{
 public:
-    MulticastMessagingSkeletonDirectoryTest() :
-        mockMessagingMulticastSubscriber(std::make_shared<MockMessagingMulticastSubscriber>())
+    MulticastMessagingSkeletonDirectoryTest()
+            : mockMessagingMulticastSubscriber(std::make_shared<MockMessagingMulticastSubscriber>())
     {
     }
+
 protected:
     std::shared_ptr<MockMessagingMulticastSubscriber> mockMessagingMulticastSubscriber;
     joynr::MulticastMessagingSkeletonDirectory multicastMessagingSkeletonDirectory;
@@ -61,22 +63,20 @@ TEST_F(MulticastMessagingSkeletonDirectoryTest, getSkeletonReturnsNullptrForNonE
 TEST_F(MulticastMessagingSkeletonDirectoryTest, unregisterNonExistingEntryDoesNotThrow)
 {
     EXPECT_NO_THROW(multicastMessagingSkeletonDirectory
-                    .unregisterSkeleton<joynr::system::RoutingTypes::MqttAddress>());
+                            .unregisterSkeleton<joynr::system::RoutingTypes::MqttAddress>());
 }
 
 TEST_F(MulticastMessagingSkeletonDirectoryTest, containsEntryAfterRegister)
 {
     auto mqttAddress = std::make_shared<joynr::system::RoutingTypes::MqttAddress>();
-    multicastMessagingSkeletonDirectory
-            .registerSkeleton<joynr::system::RoutingTypes::MqttAddress>(
-                mockMessagingMulticastSubscriber);
+    multicastMessagingSkeletonDirectory.registerSkeleton<joynr::system::RoutingTypes::MqttAddress>(
+            mockMessagingMulticastSubscriber);
 
     EXPECT_TRUE(multicastMessagingSkeletonDirectory.contains(mqttAddress));
 
     auto httpAddress = std::make_shared<joynr::system::RoutingTypes::ChannelAddress>();
-    multicastMessagingSkeletonDirectory
-            .registerSkeleton<joynr::system::RoutingTypes::ChannelAddress>(
-                mockMessagingMulticastSubscriber);
+    multicastMessagingSkeletonDirectory.registerSkeleton<
+            joynr::system::RoutingTypes::ChannelAddress>(mockMessagingMulticastSubscriber);
 
     EXPECT_TRUE(multicastMessagingSkeletonDirectory.contains(httpAddress));
 }
@@ -84,17 +84,15 @@ TEST_F(MulticastMessagingSkeletonDirectoryTest, containsEntryAfterRegister)
 TEST_F(MulticastMessagingSkeletonDirectoryTest, getsSkeletonAfterRegister)
 {
     auto mqttAddress = std::make_shared<joynr::system::RoutingTypes::MqttAddress>();
-    multicastMessagingSkeletonDirectory
-            .registerSkeleton<joynr::system::RoutingTypes::MqttAddress>(
-                mockMessagingMulticastSubscriber);
+    multicastMessagingSkeletonDirectory.registerSkeleton<joynr::system::RoutingTypes::MqttAddress>(
+            mockMessagingMulticastSubscriber);
 
     EXPECT_EQ(mockMessagingMulticastSubscriber,
               multicastMessagingSkeletonDirectory.getSkeleton(mqttAddress));
 
     auto httpAddress = std::make_shared<joynr::system::RoutingTypes::ChannelAddress>();
-    multicastMessagingSkeletonDirectory
-            .registerSkeleton<joynr::system::RoutingTypes::ChannelAddress>(
-                mockMessagingMulticastSubscriber);
+    multicastMessagingSkeletonDirectory.registerSkeleton<
+            joynr::system::RoutingTypes::ChannelAddress>(mockMessagingMulticastSubscriber);
 
     EXPECT_EQ(mockMessagingMulticastSubscriber,
               multicastMessagingSkeletonDirectory.getSkeleton(httpAddress));
@@ -103,18 +101,16 @@ TEST_F(MulticastMessagingSkeletonDirectoryTest, getsSkeletonAfterRegister)
 TEST_F(MulticastMessagingSkeletonDirectoryTest, unregisterRemovesSkeleton)
 {
     auto mqttAddress = std::make_shared<joynr::system::RoutingTypes::MqttAddress>();
-    multicastMessagingSkeletonDirectory
-            .registerSkeleton<joynr::system::RoutingTypes::MqttAddress>(
-                mockMessagingMulticastSubscriber);
+    multicastMessagingSkeletonDirectory.registerSkeleton<joynr::system::RoutingTypes::MqttAddress>(
+            mockMessagingMulticastSubscriber);
 
     multicastMessagingSkeletonDirectory
             .unregisterSkeleton<joynr::system::RoutingTypes::MqttAddress>();
     EXPECT_FALSE(multicastMessagingSkeletonDirectory.contains(mqttAddress));
 
     auto httpAddress = std::make_shared<joynr::system::RoutingTypes::ChannelAddress>();
-    multicastMessagingSkeletonDirectory
-            .registerSkeleton<joynr::system::RoutingTypes::ChannelAddress>(
-                mockMessagingMulticastSubscriber);
+    multicastMessagingSkeletonDirectory.registerSkeleton<
+            joynr::system::RoutingTypes::ChannelAddress>(mockMessagingMulticastSubscriber);
 
     multicastMessagingSkeletonDirectory
             .unregisterSkeleton<joynr::system::RoutingTypes::ChannelAddress>();

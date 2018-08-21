@@ -54,44 +54,66 @@ using namespace joynr;
 /**
   * Is an integration test. Tests from Dispatcher -> SubscriptionListener and RequestCaller
   */
-class BroadcastSubscriptionTest : public ::testing::Test {
+class BroadcastSubscriptionTest : public ::testing::Test
+{
 public:
-    BroadcastSubscriptionTest() :
-        singleThreadIOService(std::make_shared<SingleThreadedIOService>()),
-        mockMessageRouter(new MockMessageRouter(singleThreadIOService->getIOService())),
-        mockSubscriptionListenerOne(new MockSubscriptionListenerOneType<types::Localisation::GpsLocation>()),
-        mockSubscriptionListenerTwo(new MockSubscriptionListenerTwoTypes<types::Localisation::GpsLocation, double>()),
-        gpsLocation1(1.1, 2.2, 3.3, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 444),
-        speed1(100),
-        qos(2000),
-        providerParticipantId("providerParticipantId"),
-        proxyParticipantId("proxyParticipantId"),
-        messageFactory(),
-        messageSender(std::make_shared<MessageSender>(mockMessageRouter, nullptr)),
-        dispatcher(std::make_shared<Dispatcher>(messageSender, singleThreadIOService->getIOService())),
-        subscriptionManager(nullptr)
+    BroadcastSubscriptionTest()
+            : singleThreadIOService(std::make_shared<SingleThreadedIOService>()),
+              mockMessageRouter(new MockMessageRouter(singleThreadIOService->getIOService())),
+              mockSubscriptionListenerOne(
+                      new MockSubscriptionListenerOneType<types::Localisation::GpsLocation>()),
+              mockSubscriptionListenerTwo(
+                      new MockSubscriptionListenerTwoTypes<types::Localisation::GpsLocation,
+                                                           double>()),
+              gpsLocation1(1.1,
+                           2.2,
+                           3.3,
+                           types::Localisation::GpsFixEnum::MODE2D,
+                           0.0,
+                           0.0,
+                           0.0,
+                           0.0,
+                           444,
+                           444,
+                           444),
+              speed1(100),
+              qos(2000),
+              providerParticipantId("providerParticipantId"),
+              proxyParticipantId("proxyParticipantId"),
+              messageFactory(),
+              messageSender(std::make_shared<MessageSender>(mockMessageRouter, nullptr)),
+              dispatcher(std::make_shared<Dispatcher>(messageSender,
+                                                      singleThreadIOService->getIOService())),
+              subscriptionManager(nullptr)
     {
         singleThreadIOService->start();
     }
 
-    ~BroadcastSubscriptionTest() {
+    ~BroadcastSubscriptionTest()
+    {
         dispatcher->shutdown();
         singleThreadIOService->stop();
     }
 
-    void SetUp(){
-        //remove stored subscriptions
-        std::remove(LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str());
-        subscriptionManager = std::make_shared<SubscriptionManager>(singleThreadIOService->getIOService(), mockMessageRouter);
+    void SetUp()
+    {
+        // remove stored subscriptions
+        std::remove(LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME()
+                            .c_str());
+        subscriptionManager = std::make_shared<SubscriptionManager>(
+                singleThreadIOService->getIOService(), mockMessageRouter);
         dispatcher->registerSubscriptionManager(subscriptionManager);
-        InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>(tests::ItestBase::INTERFACE_NAME());
+        InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>(
+                tests::ItestBase::INTERFACE_NAME());
     }
 
 protected:
     std::shared_ptr<SingleThreadedIOService> singleThreadIOService;
     std::shared_ptr<MockMessageRouter> mockMessageRouter;
-    std::shared_ptr<MockSubscriptionListenerOneType<types::Localisation::GpsLocation> > mockSubscriptionListenerOne;
-    std::shared_ptr<MockSubscriptionListenerTwoTypes<types::Localisation::GpsLocation, double> > mockSubscriptionListenerTwo;
+    std::shared_ptr<MockSubscriptionListenerOneType<types::Localisation::GpsLocation>>
+            mockSubscriptionListenerOne;
+    std::shared_ptr<MockSubscriptionListenerTwoTypes<types::Localisation::GpsLocation, double>>
+            mockSubscriptionListenerTwo;
 
     types::Localisation::GpsLocation gpsLocation1;
     double speed1;
@@ -105,53 +127,53 @@ protected:
     std::shared_ptr<MessageSender> messageSender;
     std::shared_ptr<Dispatcher> dispatcher;
     std::shared_ptr<SubscriptionManager> subscriptionManager;
+
 private:
     DISALLOW_COPY_AND_ASSIGN(BroadcastSubscriptionTest);
 };
 
 /**
-  * Trigger:    The dispatcher receives a Publication from a broadcast with a single output parameter.
+  * Trigger:    The dispatcher receives a Publication from a broadcast with a single output
+ * parameter.
   * Expected:   The SubscriptionManager retrieves the correct SubscriptionCallback and the
   *             Interpreter executes it correctly
   */
-TEST_F(BroadcastSubscriptionTest, receive_publication_singleOutputParameter ) {
+TEST_F(BroadcastSubscriptionTest, receive_publication_singleOutputParameter)
+{
 
     // Use a semaphore to count and wait on calls to the mockSubscriptionListener
     Semaphore semaphore(0);
-    EXPECT_CALL(*mockSubscriptionListenerOne, onReceive(A<const types::Localisation::GpsLocation&>()))
+    EXPECT_CALL(
+            *mockSubscriptionListenerOne, onReceive(A<const types::Localisation::GpsLocation&>()))
             .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
-    //register the subscription on the consumer side
+    // register the subscription on the consumer side
     std::string subscribeToName = "locationUpdate";
-    auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
-                80, // validity_ms
-                1000, // publication ttl
-                100 // minInterval_ms
-    );
+    auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(80,   // validity_ms
+                                                                     1000, // publication ttl
+                                                                     100   // minInterval_ms
+                                                                     );
 
     BroadcastSubscriptionRequest subscriptionRequest;
-    //construct a reply containing a GpsLocation
+    // construct a reply containing a GpsLocation
     SubscriptionPublication subscriptionPublication;
     subscriptionPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
     subscriptionPublication.setResponse(gpsLocation1);
 
     auto future = std::make_shared<Future<std::string>>();
-    auto subscriptionCallback = std::make_shared<UnicastSubscriptionCallback<types::Localisation::GpsLocation>
-            >(subscriptionRequest.getSubscriptionId(), future, subscriptionManager);
+    auto subscriptionCallback =
+            std::make_shared<UnicastSubscriptionCallback<types::Localisation::GpsLocation>>(
+                    subscriptionRequest.getSubscriptionId(), future, subscriptionManager);
 
     // subscriptionRequest is an out param
-    subscriptionManager->registerSubscription(
-                subscribeToName,
-                subscriptionCallback,
-                mockSubscriptionListenerOne,
-                subscriptionQos,
-                subscriptionRequest);
+    subscriptionManager->registerSubscription(subscribeToName,
+                                              subscriptionCallback,
+                                              mockSubscriptionListenerOne,
+                                              subscriptionQos,
+                                              subscriptionRequest);
     // incoming publication from the provider
     MutableMessage mutableMessage = messageFactory.createSubscriptionPublication(
-                providerParticipantId,
-                proxyParticipantId,
-                qos,
-                subscriptionPublication);
+            providerParticipantId, proxyParticipantId, qos, subscriptionPublication);
 
     dispatcher->receive(mutableMessage.getImmutableMessage());
 
@@ -161,48 +183,47 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_singleOutputParameter ) {
 }
 
 /**
-  * Trigger:    The dispatcher receives a Publication from a broadcast with multiple output parameters.
+  * Trigger:    The dispatcher receives a Publication from a broadcast with multiple output
+ * parameters.
   * Expected:   The SubscriptionManager retrieves the correct SubscriptionCallback and the
   *             Interpreter executes it correctly
   */
-TEST_F(BroadcastSubscriptionTest, receive_publication_multipleOutputParameters ) {
+TEST_F(BroadcastSubscriptionTest, receive_publication_multipleOutputParameters)
+{
 
     // Use a semaphore to count and wait on calls to the mockSubscriptionListener
     Semaphore semaphore(0);
-    EXPECT_CALL(*mockSubscriptionListenerTwo, onReceive(A<const types::Localisation::GpsLocation&>(), A<const double&>()))
+    EXPECT_CALL(*mockSubscriptionListenerTwo,
+                onReceive(A<const types::Localisation::GpsLocation&>(), A<const double&>()))
             .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
-    //register the subscription on the consumer side
+    // register the subscription on the consumer side
     std::string subscribeToName = "locationUpdateWithSpeed";
-    auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
-                80, // validity_ms
-                1000, // publication ttl
-                100 // minInterval_ms
-    );
+    auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(80,   // validity_ms
+                                                                     1000, // publication ttl
+                                                                     100   // minInterval_ms
+                                                                     );
 
     BroadcastSubscriptionRequest subscriptionRequest;
-    //construct a reply containing a GpsLocation
+    // construct a reply containing a GpsLocation
     SubscriptionPublication subscriptionPublication;
     subscriptionPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
     subscriptionPublication.setResponse(gpsLocation1, speed1);
 
     auto future = std::make_shared<Future<std::string>>();
-    auto subscriptionCallback= std::make_shared<UnicastSubscriptionCallback<types::Localisation::GpsLocation, double>
-            >(subscriptionRequest.getSubscriptionId(), future, subscriptionManager);
+    auto subscriptionCallback =
+            std::make_shared<UnicastSubscriptionCallback<types::Localisation::GpsLocation, double>>(
+                    subscriptionRequest.getSubscriptionId(), future, subscriptionManager);
 
     // subscriptionRequest is an out param
-    subscriptionManager->registerSubscription(
-                subscribeToName,
-                subscriptionCallback,
-                mockSubscriptionListenerTwo,
-                subscriptionQos,
-                subscriptionRequest);
+    subscriptionManager->registerSubscription(subscribeToName,
+                                              subscriptionCallback,
+                                              mockSubscriptionListenerTwo,
+                                              subscriptionQos,
+                                              subscriptionRequest);
     // incoming publication from the provider
     MutableMessage mutableMessage = messageFactory.createSubscriptionPublication(
-                providerParticipantId,
-                proxyParticipantId,
-                qos,
-                subscriptionPublication);
+            providerParticipantId, proxyParticipantId, qos, subscriptionPublication);
 
     dispatcher->receive(mutableMessage.getImmutableMessage());
 

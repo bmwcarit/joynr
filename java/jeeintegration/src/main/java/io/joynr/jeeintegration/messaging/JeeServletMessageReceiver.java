@@ -36,6 +36,8 @@ import joynr.ImmutableMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 import static io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys.JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY;
 import static java.lang.String.format;
 
@@ -125,6 +127,7 @@ public class JeeServletMessageReceiver implements ServletMessageReceiver {
     }
 
     @Override
+    @SuppressFBWarnings(value = "NP_NONNULL_PARAM_VIOLATION", justification = "HandleNullableDeclWithFindBugsAndJava8")
     public Future<Void> start(MessageArrivedListener messageArrivedListener,
                               ReceiverStatusListener... receiverStatusListeners) {
         if (messageArrivedListener == null) {

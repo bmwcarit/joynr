@@ -33,17 +33,15 @@ using namespace joynr;
 class GeneratorVersionCompatibilityTest : public Test
 {
 public:
-
-    GeneratorVersionCompatibilityTest() :
-        runtime(),
-        testDomain("testDomain")
+    GeneratorVersionCompatibilityTest() : runtime(), testDomain("testDomain")
     {
         runtime = JoynrRuntime::createRuntime(std::make_unique<Settings>());
         discoveryQos.setDiscoveryTimeoutMs(100);
         discoveryQos.setDiscoveryScope(joynr::types::DiscoveryScope::LOCAL_ONLY);
     }
 
-    ~GeneratorVersionCompatibilityTest() override {
+    ~GeneratorVersionCompatibilityTest() override
+    {
         test::util::removeAllCreatedSettingsAndPersistencyFiles();
     }
 
@@ -57,34 +55,34 @@ private:
     DISALLOW_COPY_AND_ASSIGN(GeneratorVersionCompatibilityTest);
 };
 
-TEST_F(GeneratorVersionCompatibilityTest, proxyCreationAgainstPackagedProviderSucceeds) {
+TEST_F(GeneratorVersionCompatibilityTest, proxyCreationAgainstPackagedProviderSucceeds)
+{
     auto testProvider = std::make_shared<tests::v2::DefaultMultipleVersionsInterfaceProvider>();
     joynr::types::ProviderQos providerQos;
     providerQos.setScope(joynr::types::ProviderScope::LOCAL);
-    runtime->registerProvider<tests::v2::MultipleVersionsInterfaceProvider>(testDomain, testProvider, providerQos);
+    runtime->registerProvider<tests::v2::MultipleVersionsInterfaceProvider>(
+            testDomain, testProvider, providerQos);
 
     std::shared_ptr<ProxyBuilder<tests::MultipleVersionsInterfaceProxy>> testProxyBuilder(
-        runtime->createProxyBuilder<tests::MultipleVersionsInterfaceProxy>(testDomain)
-    );
+            runtime->createProxyBuilder<tests::MultipleVersionsInterfaceProxy>(testDomain));
 
-    EXPECT_NO_THROW(testProxyBuilder
-       ->setMessagingQos(messagingQos)
-       ->setDiscoveryQos(discoveryQos)
-       ->build());
+    EXPECT_NO_THROW(testProxyBuilder->setMessagingQos(messagingQos)
+                            ->setDiscoveryQos(discoveryQos)
+                            ->build());
 }
 
-TEST_F(GeneratorVersionCompatibilityTest, proxyCreationAgainstNameProviderSucceeds) {
+TEST_F(GeneratorVersionCompatibilityTest, proxyCreationAgainstNameProviderSucceeds)
+{
     auto testProvider = std::make_shared<tests::DefaultMultipleVersionsInterface2Provider>();
     joynr::types::ProviderQos providerQos;
     providerQos.setScope(joynr::types::ProviderScope::LOCAL);
-    runtime->registerProvider<tests::MultipleVersionsInterface2Provider>(testDomain, testProvider, providerQos);
+    runtime->registerProvider<tests::MultipleVersionsInterface2Provider>(
+            testDomain, testProvider, providerQos);
 
     std::shared_ptr<ProxyBuilder<tests::MultipleVersionsInterfaceProxy>> testProxyBuilder(
-        runtime->createProxyBuilder<tests::MultipleVersionsInterfaceProxy>(testDomain)
-    );
+            runtime->createProxyBuilder<tests::MultipleVersionsInterfaceProxy>(testDomain));
 
-    EXPECT_NO_THROW(testProxyBuilder
-       ->setMessagingQos(messagingQos)
-       ->setDiscoveryQos(discoveryQos)
-       ->build());
+    EXPECT_NO_THROW(testProxyBuilder->setMessagingQos(messagingQos)
+                            ->setDiscoveryQos(discoveryQos)
+                            ->build());
 }

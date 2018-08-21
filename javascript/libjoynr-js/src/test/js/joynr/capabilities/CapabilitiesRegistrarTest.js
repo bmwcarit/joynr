@@ -17,7 +17,6 @@
  * #L%
  */
 require("../../node-unit-test-helper");
-const Promise = require("../../../../main/js/global/Promise");
 const CapabilitiesRegistrar = require("../../../../main/js/joynr/capabilities/CapabilitiesRegistrar");
 const ProviderQos = require("../../../../main/js/generated/joynr/types/ProviderQos");
 const ProviderAttribute = require("../../../../main/js/joynr/provider/ProviderAttribute");

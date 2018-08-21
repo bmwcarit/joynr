@@ -74,7 +74,7 @@ public enum «typeName» {
 		«var ordinal = -1»
 		«FOR enumValue : getEnumElementsAndBaseEnumElements(type)»
 			«{
-				ordinal = if (enumValue.value.enumeratorValue == null)
+				ordinal = if (enumValue.value.enumeratorValue === null)
 							ordinal+1
 						else
 							Integer::valueOf(enumValue.value.enumeratorValue);

@@ -65,7 +65,7 @@ public interface «className» {
 
 	«FOR method: getMethods(francaIntf)»
 		«var enumType = method.errors»
-		«IF enumType != null»
+		«IF enumType !== null»
 			«var enumTypeTemplate = templateFactory.createEnumTypeTemplate(enumType)»
 			«enumType.name = methodToErrorEnumName.get(method)»
 			«enumTypeTemplate.generateEnumCode()»

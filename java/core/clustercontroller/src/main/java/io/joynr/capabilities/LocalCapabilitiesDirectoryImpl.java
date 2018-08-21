@@ -26,9 +26,11 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -36,8 +38,6 @@ import javax.annotation.Nonnull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
@@ -667,13 +667,6 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
             if (discoveryEntries.size() > 0) {
                 try {
-                    Function<? super DiscoveryEntry, String> transfomerFct = new Function<DiscoveryEntry, String>() {
-
-                        @Override
-                        public String apply(DiscoveryEntry input) {
-                            return input != null ? input.getParticipantId() : null;
-                        }
-                    };
                     Callback<Void> callback = new Callback<Void>() {
 
                         @Override
@@ -685,9 +678,11 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                         }
 
                     };
-                    globalCapabilitiesDirectoryClient.remove(callback,
-                                                             Lists.newArrayList(Collections2.transform(discoveryEntries,
-                                                                                                       transfomerFct)));
+                    List<String> participantIds = discoveryEntries.stream()
+                                                                  .filter(Objects::nonNull)
+                                                                  .map(dEntry -> dEntry.getParticipantId())
+                                                                  .collect(Collectors.toList());
+                    globalCapabilitiesDirectoryClient.remove(callback, participantIds);
                 } catch (DiscoveryException e) {
                     logger.debug("error removing discovery entries", e);
                 }

@@ -23,11 +23,9 @@
 const End2EndAbstractTest = require("./End2EndAbstractTest");
 const NoCompatibleProviderFoundException = require("../../../main/js/joynr/exceptions/NoCompatibleProviderFoundException");
 
-const abstractTest = new End2EndAbstractTest(
-    "IncompatibleProviderTest",
-    "TestMultipleVersionsInterfaceProcess",
-    "packageVersion1"
-);
+const abstractTest = new End2EndAbstractTest("IncompatibleProviderTest", "TestMultipleVersionsInterfaceProcess", {
+    versioning: "packageVersion1"
+});
 
 describe("Incompatible provider test", () => {
     it("Proxy version greater than provider version", done => {

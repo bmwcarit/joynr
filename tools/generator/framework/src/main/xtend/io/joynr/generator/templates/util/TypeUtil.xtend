@@ -118,11 +118,11 @@ class TypeUtil {
 	}
 
 	def Object getDatatype(FTypeRef typeRef) {
-		if (typeRef == null){
+		if (typeRef === null){
 			return null
 		}
 
-		if (typeRef.derived!=null){
+		if (typeRef.derived!==null){
 			return getDatatype(typeRef.derived)
 		}
 		return typeRef.predefined
@@ -188,7 +188,7 @@ class TypeUtil {
 	}
 
 	def FBasicTypeId getPrimitive(FType type){
-		if (type == null){
+		if (type === null){
 			return null;
 		}
 		if (type instanceof FArrayType){
@@ -200,7 +200,7 @@ class TypeUtil {
 	}
 
 	def FBasicTypeId getPrimitive(FTypeRef type){
-		if (type.predefined != null && type.predefined!=FBasicTypeId::UNDEFINED){
+		if (type.predefined !== null && type.predefined!=FBasicTypeId::UNDEFINED){
 			return type.predefined
 		}
 		else{
@@ -209,31 +209,31 @@ class TypeUtil {
 	}
 
 	def boolean isEnum(FTypeRef typeRef) {
-		if (typeRef == null){
+		if (typeRef === null){
 			return false;
 		}
-		if (typeRef.derived!=null){
+		if (typeRef.derived!==null){
 			return isEnum(typeRef.derived)
 		}
 		return false
 	}
 
 	def boolean isMap(FTypeRef typeRef) {
-		if (typeRef == null){
+		if (typeRef === null){
 			return false;
 		}
-		if (typeRef.derived!=null){
+		if (typeRef.derived!==null){
 			return isMap(typeRef.derived)
 		}
 		return false
 	}
 
 	def boolean isPrimitive(FTypeRef typeRef){
-		if (typeRef== null){
+		if (typeRef=== null){
 			return false;
 		}
 
-		if (typeRef.predefined!=null && typeRef.predefined!=FBasicTypeId::UNDEFINED){
+		if (typeRef.predefined!==null && typeRef.predefined!=FBasicTypeId::UNDEFINED){
 			return true;
 		}
 		else {
@@ -242,7 +242,7 @@ class TypeUtil {
 	}
 
 	def FCompoundType getCompoundType(FType type){
-		if (type == null){
+		if (type === null){
 			return null;
 		}
 		if (type instanceof FArrayType){
@@ -254,7 +254,7 @@ class TypeUtil {
 	}
 
 	def FCompoundType getCompoundType(FTypeRef type){
-		if (type==null){
+		if (type===null){
 			return null;
 		}
 		else{
@@ -263,7 +263,7 @@ class TypeUtil {
 	}
 
 	def FEnumerationType getEnumType(FTypeRef type){
-		if (type==null){
+		if (type===null){
 			return null;
 		}
 		else{
@@ -272,7 +272,7 @@ class TypeUtil {
 	}
 
 	def FTypeDef getTypeDefType(FTypeRef type){
-		if (type==null){
+		if (type===null){
 			return null;
 		}
 		else{
@@ -281,7 +281,7 @@ class TypeUtil {
 	}
 
 	def FMapType getMapType(FType type){
-		if (type == null){
+		if (type === null){
 			return null;
 		}
 		if (type instanceof FArrayType){
@@ -296,7 +296,7 @@ class TypeUtil {
 	}
 
 	def FMapType getMapType(FTypeRef type){
-		if (type==null){
+		if (type===null){
 			return null;
 		}
 		else{
@@ -305,7 +305,7 @@ class TypeUtil {
 	}
 
 	def FEnumerationType getEnumType(FType type){
-		if (type == null){
+		if (type === null){
 			return null;
 		}
 		if (type instanceof FArrayType){
@@ -320,7 +320,7 @@ class TypeUtil {
 	}
 
 	def FTypeDef getTypeDefType(FType type){
-		if (type == null){
+		if (type === null){
 			return null;
 		}
 		if (type instanceof FArrayType){
@@ -332,7 +332,7 @@ class TypeUtil {
 	}
 
 	def boolean isCompound(FType type) {
-		if (type==null){
+		if (type===null){
 			return false
 		}
 		if (type instanceof FArrayType){
@@ -351,10 +351,10 @@ class TypeUtil {
 	}
 
 	def boolean isCompound(FTypeRef typeRef) {
-		if (typeRef == null){
+		if (typeRef === null){
 			return false;
 		}
-		if (typeRef.derived!=null){
+		if (typeRef.derived!==null){
 			return isCompound(typeRef.derived)
 		}
 		return false
@@ -368,17 +368,17 @@ class TypeUtil {
 	}
 
 	def boolean isTypeDef(FTypeRef typeRef) {
-		if (typeRef == null){
+		if (typeRef === null){
 			return false;
 		}
-		if (typeRef.derived!=null){
+		if (typeRef.derived!==null){
 			return isTypeDef(typeRef.derived)
 		}
 		return false
 	}
 
 	def boolean isMap(FType type) {
-		if (type == null){
+		if (type === null){
 			return false;
 		}
 		if (type instanceof FArrayType){
@@ -394,7 +394,7 @@ class TypeUtil {
 	}
 
 	def boolean isEnum(FType type) {
-		if (type==null){
+		if (type===null){
 			return false
 		}
 		if (type instanceof FArrayType){
@@ -438,9 +438,9 @@ class TypeUtil {
 			result.addAll(compoundType.elements)
 		}
 
-		if (datatypeInternal instanceof FStructType && (datatypeInternal as FStructType).base!=null) {
+		if (datatypeInternal instanceof FStructType && (datatypeInternal as FStructType).base!==null) {
 			return Iterables::concat(getMembersRecursive((datatypeInternal as FStructType).base), result);
-		} else if (datatypeInternal instanceof FUnionType && (datatypeInternal as FUnionType).base!=null) {
+		} else if (datatypeInternal instanceof FUnionType && (datatypeInternal as FUnionType).base!==null) {
 			return Iterables::concat(getMembersRecursive((datatypeInternal as FUnionType).base), result);
 		}
 		else{
@@ -490,7 +490,7 @@ class TypeUtil {
 		return datatype.eContainer instanceof FTypeCollection &&
 			!(datatype.eContainer instanceof FInterface) &&
 			(datatype.eContainer as FTypeCollection).name != "" &&
-			(datatype.eContainer as FTypeCollection).name != null;
+			(datatype.eContainer as FTypeCollection).name !== null;
 	}
 
 	def String getTypeCollectionName(FType datatype) {
@@ -524,23 +524,23 @@ class TypeUtil {
 	}
 
 	def boolean hasExtendsDeclaration(FCompoundType datatype) {
-		if (datatype instanceof FStructType && (datatype as FStructType).base!=null) {
+		if (datatype instanceof FStructType && (datatype as FStructType).base!==null) {
 			return true
-		} else if (datatype instanceof FUnionType && (datatype as FUnionType).base!=null) {
+		} else if (datatype instanceof FUnionType && (datatype as FUnionType).base!==null) {
 			return true
 		}
 		return false
 	}
 
 	def boolean hasExtendsDeclaration(FEnumerationType datatype) {
-		if (datatype.base!=null) {
+		if (datatype.base!==null) {
 			return true
 		}
 		return false
 	}
 
 	def FEnumerationType getExtendedType(FEnumerationType datatype) {
-		if (datatype.base!=null) {
+		if (datatype.base!==null) {
 			return datatype.base
 		}
 		return null

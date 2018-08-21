@@ -52,7 +52,7 @@ public:
               messagingQos(),
               factoryWithTtlUplift(ttlUplift)
     {
-                  messagingQos.setTtl(ttl);
+        messagingQos.setTtl(ttl);
     }
 
     void checkMessageExpiryDate(const MutableMessage& message, const std::int64_t expectedTtl);
@@ -71,22 +71,24 @@ protected:
     MutableMessageFactory factoryWithTtlUplift;
 };
 
-void JoynrMessageFactoryTtlUpliftTest::checkMessageExpiryDate(const MutableMessage& message, const std::int64_t expectedTtl) {
+void JoynrMessageFactoryTtlUpliftTest::checkMessageExpiryDate(const MutableMessage& message,
+                                                              const std::int64_t expectedTtl)
+{
     const std::int64_t tolerance = 50;
     std::int64_t actualTtl = message.getExpiryDate().relativeFromNow().count();
     std::int64_t diff = expectedTtl - actualTtl;
     EXPECT_GE(diff, 0);
-    EXPECT_LE(std::abs(diff), tolerance) << "ttl from expiryDate "
-                                            + std::to_string(actualTtl) + "ms differs "
-                                            + std::to_string(diff) + "ms (more than "
-                                            + std::to_string(tolerance) + "ms) from the expected ttl "
-                                            + std::to_string(expectedTtl);
+    EXPECT_LE(std::abs(diff), tolerance)
+            << "ttl from expiryDate " + std::to_string(actualTtl) + "ms differs " +
+                       std::to_string(diff) + "ms (more than " + std::to_string(tolerance) +
+                       "ms) from the expected ttl " + std::to_string(expectedTtl);
 }
 
 TEST_F(JoynrMessageFactoryTtlUpliftTest, testDefaultTtlUplift)
 {
     Request request;
-    MutableMessage message = messageFactory.createRequest(senderID, receiverID, messagingQos, request, isLocalMessage);
+    MutableMessage message = messageFactory.createRequest(
+            senderID, receiverID, messagingQos, request, isLocalMessage);
 
     checkMessageExpiryDate(message, ttl);
 }
@@ -94,7 +96,8 @@ TEST_F(JoynrMessageFactoryTtlUpliftTest, testDefaultTtlUplift)
 TEST_F(JoynrMessageFactoryTtlUpliftTest, testTtlUplift_Request)
 {
     Request request;
-    MutableMessage message = factoryWithTtlUplift.createRequest(senderID, receiverID, messagingQos, request, isLocalMessage);
+    MutableMessage message = factoryWithTtlUplift.createRequest(
+            senderID, receiverID, messagingQos, request, isLocalMessage);
 
     checkMessageExpiryDate(message, upliftedTtl);
 }
@@ -102,7 +105,8 @@ TEST_F(JoynrMessageFactoryTtlUpliftTest, testTtlUplift_Request)
 TEST_F(JoynrMessageFactoryTtlUpliftTest, testTtlUplift_Reply_noUplift)
 {
     Reply reply;
-    MutableMessage message = factoryWithTtlUplift.createReply(senderID, receiverID, messagingQos, {}, reply);
+    MutableMessage message =
+            factoryWithTtlUplift.createReply(senderID, receiverID, messagingQos, {}, reply);
 
     checkMessageExpiryDate(message, ttl);
 }
@@ -110,7 +114,8 @@ TEST_F(JoynrMessageFactoryTtlUpliftTest, testTtlUplift_Reply_noUplift)
 TEST_F(JoynrMessageFactoryTtlUpliftTest, testTtlUplift_OneWayRequest)
 {
     OneWayRequest oneWayRequest;
-    MutableMessage message = factoryWithTtlUplift.createOneWayRequest(senderID, receiverID, messagingQos, oneWayRequest, isLocalMessage);
+    MutableMessage message = factoryWithTtlUplift.createOneWayRequest(
+            senderID, receiverID, messagingQos, oneWayRequest, isLocalMessage);
 
     checkMessageExpiryDate(message, upliftedTtl);
 }
@@ -118,7 +123,8 @@ TEST_F(JoynrMessageFactoryTtlUpliftTest, testTtlUplift_OneWayRequest)
 TEST_F(JoynrMessageFactoryTtlUpliftTest, testTtlUplift_MulticastPublication)
 {
     MulticastPublication publication;
-    MutableMessage message = factoryWithTtlUplift.createMulticastPublication(senderID, messagingQos, publication);
+    MutableMessage message =
+            factoryWithTtlUplift.createMulticastPublication(senderID, messagingQos, publication);
 
     checkMessageExpiryDate(message, upliftedTtl);
 }
@@ -126,7 +132,8 @@ TEST_F(JoynrMessageFactoryTtlUpliftTest, testTtlUplift_MulticastPublication)
 TEST_F(JoynrMessageFactoryTtlUpliftTest, testTtlUplift_SubscriptionPublication)
 {
     SubscriptionPublication subscriptionPublication;
-    MutableMessage message = factoryWithTtlUplift.createSubscriptionPublication(senderID, receiverID, messagingQos, subscriptionPublication);
+    MutableMessage message = factoryWithTtlUplift.createSubscriptionPublication(
+            senderID, receiverID, messagingQos, subscriptionPublication);
 
     checkMessageExpiryDate(message, upliftedTtl);
 }
@@ -134,7 +141,8 @@ TEST_F(JoynrMessageFactoryTtlUpliftTest, testTtlUplift_SubscriptionPublication)
 TEST_F(JoynrMessageFactoryTtlUpliftTest, testTtlUplift_SubscriptionRequest)
 {
     SubscriptionRequest request;
-    MutableMessage message = factoryWithTtlUplift.createSubscriptionRequest(senderID, receiverID, messagingQos, request, isLocalMessage);
+    MutableMessage message = factoryWithTtlUplift.createSubscriptionRequest(
+            senderID, receiverID, messagingQos, request, isLocalMessage);
 
     checkMessageExpiryDate(message, upliftedTtl);
 }
@@ -142,7 +150,8 @@ TEST_F(JoynrMessageFactoryTtlUpliftTest, testTtlUplift_SubscriptionRequest)
 TEST_F(JoynrMessageFactoryTtlUpliftTest, testTtlUplift_MulticastSubscriptionRequest)
 {
     MulticastSubscriptionRequest request;
-    MutableMessage message = factoryWithTtlUplift.createMulticastSubscriptionRequest(senderID, receiverID, messagingQos, request, isLocalMessage);
+    MutableMessage message = factoryWithTtlUplift.createMulticastSubscriptionRequest(
+            senderID, receiverID, messagingQos, request, isLocalMessage);
 
     checkMessageExpiryDate(message, upliftedTtl);
 }
@@ -150,7 +159,8 @@ TEST_F(JoynrMessageFactoryTtlUpliftTest, testTtlUplift_MulticastSubscriptionRequ
 TEST_F(JoynrMessageFactoryTtlUpliftTest, testTtlUplift_BroadcastSubscriptionRequest)
 {
     BroadcastSubscriptionRequest request;
-    MutableMessage message = factoryWithTtlUplift.createBroadcastSubscriptionRequest(senderID, receiverID, messagingQos, request, isLocalMessage);
+    MutableMessage message = factoryWithTtlUplift.createBroadcastSubscriptionRequest(
+            senderID, receiverID, messagingQos, request, isLocalMessage);
 
     checkMessageExpiryDate(message, upliftedTtl);
 }
@@ -158,7 +168,8 @@ TEST_F(JoynrMessageFactoryTtlUpliftTest, testTtlUplift_BroadcastSubscriptionRequ
 TEST_F(JoynrMessageFactoryTtlUpliftTest, testTtlUplift_SubscriptionReply_noUplift)
 {
     SubscriptionReply reply;
-    MutableMessage message = factoryWithTtlUplift.createSubscriptionReply(senderID, receiverID, messagingQos, reply);
+    MutableMessage message =
+            factoryWithTtlUplift.createSubscriptionReply(senderID, receiverID, messagingQos, reply);
 
     checkMessageExpiryDate(message, ttl);
 }
@@ -166,7 +177,8 @@ TEST_F(JoynrMessageFactoryTtlUpliftTest, testTtlUplift_SubscriptionReply_noUplif
 TEST_F(JoynrMessageFactoryTtlUpliftTest, testTtlUplift_SubscriptionStop)
 {
     SubscriptionStop subscriptionStop;
-    MutableMessage message = factoryWithTtlUplift.createSubscriptionStop(senderID, receiverID, messagingQos, subscriptionStop);
+    MutableMessage message = factoryWithTtlUplift.createSubscriptionStop(
+            senderID, receiverID, messagingQos, subscriptionStop);
 
     checkMessageExpiryDate(message, upliftedTtl);
 }
@@ -182,45 +194,48 @@ TEST_F(JoynrMessageFactoryTtlUpliftTest, testTtlUpliftWithLargeTtl)
 
     ttl = INT64_MAX;
     messagingQos.setTtl(ttl);
-    message = factoryWithTtlUplift.createRequest(senderID, receiverID, messagingQos, request, isLocalMessage);
+    message = factoryWithTtlUplift.createRequest(
+            senderID, receiverID, messagingQos, request, isLocalMessage);
     TimePoint timePoint = message.getExpiryDate();
-    EXPECT_EQ(expectedTimePoint, timePoint) << "expected timepoint: "
-                                               + std::to_string(expectedTimePoint.toMilliseconds())
-                                               + " actual: "
-                                               + std::to_string(timePoint.toMilliseconds());
+    EXPECT_EQ(expectedTimePoint, timePoint)
+            << "expected timepoint: " + std::to_string(expectedTimePoint.toMilliseconds()) +
+                       " actual: " + std::to_string(timePoint.toMilliseconds());
 
     // TODO uncomment failing tests
     // after overflow checks in DispatcherUtils.convertTtlToAbsoluteTime are fixed
 
-//    ttl = DispatcherUtils::getMaxAbsoluteTime().time_since_epoch().count();
-//    messagingQos.setTtl(ttl);
-//    message = factoryWithTtlUplift.createRequest(senderID, receiverID, messagingQos, request);
-//    timePoint = message.getHeaderExpiryDate();
-//    EXPECT_EQ(expectedTimePoint, timePoint);
+    //    ttl = DispatcherUtils::getMaxAbsoluteTime().time_since_epoch().count();
+    //    messagingQos.setTtl(ttl);
+    //    message = factoryWithTtlUplift.createRequest(senderID, receiverID, messagingQos, request);
+    //    timePoint = message.getHeaderExpiryDate();
+    //    EXPECT_EQ(expectedTimePoint, timePoint);
 
-//    ttl = DispatcherUtils::getMaxAbsoluteTime().time_since_epoch().count() - ttlUplift;
-//    messagingQos.setTtl(ttl);
-//    message = factoryWithTtlUplift.createRequest(senderID, receiverID, messagingQos, request);
-//    timePoint = message.getHeaderExpiryDate();
-//    EXPECT_EQ(expectedTimePoint, timePoint);
+    //    ttl = DispatcherUtils::getMaxAbsoluteTime().time_since_epoch().count() - ttlUplift;
+    //    messagingQos.setTtl(ttl);
+    //    message = factoryWithTtlUplift.createRequest(senderID, receiverID, messagingQos, request);
+    //    timePoint = message.getHeaderExpiryDate();
+    //    EXPECT_EQ(expectedTimePoint, timePoint);
 
     auto now = TimePoint::now();
     ttl = (TimePoint::max() - std::chrono::milliseconds(ttlUplift)).relativeFromNow().count();
     messagingQos.setTtl(ttl);
-    message = factoryWithTtlUplift.createRequest(senderID, receiverID, messagingQos, request, isLocalMessage);
-//    timePoint = message.getHeaderExpiryDate();
-//    EXPECT_EQ(expectedTimePoint, timePoint) << "expected timepoint: "
-//                                               + std::to_string(expectedTimePoint.time_since_epoch().count())
-//                                               + " actual: "
-//                                               + std::to_string(timePoint.time_since_epoch().count());
+    message = factoryWithTtlUplift.createRequest(
+            senderID, receiverID, messagingQos, request, isLocalMessage);
+    //    timePoint = message.getHeaderExpiryDate();
+    //    EXPECT_EQ(expectedTimePoint, timePoint) << "expected timepoint: "
+    //                                               +
+    //                                               std::to_string(expectedTimePoint.time_since_epoch().count())
+    //                                               + " actual: "
+    //                                               +
+    //                                               std::to_string(timePoint.time_since_epoch().count());
     checkMessageExpiryDate(message, (expectedTimePoint - now).count());
 
-//    ttl = DispatcherUtils::getMaxAbsoluteTime().time_since_epoch().count()
-//            - ttlUplift
-//            - std::chrono::time_point_cast<std::chrono::milliseconds>(
-//                std::chrono::system_clock::now()).time_since_epoch().count() + 1;
-//    messagingQos.setTtl(ttl);
-//    message = factoryWithTtlUplift.createRequest(senderID, receiverID, messagingQos, request);
-//    timePoint = message.getHeaderExpiryDate();
-//    EXPECT_EQ(expectedTimePoint, timePoint);
+    //    ttl = DispatcherUtils::getMaxAbsoluteTime().time_since_epoch().count()
+    //            - ttlUplift
+    //            - std::chrono::time_point_cast<std::chrono::milliseconds>(
+    //                std::chrono::system_clock::now()).time_since_epoch().count() + 1;
+    //    messagingQos.setTtl(ttl);
+    //    message = factoryWithTtlUplift.createRequest(senderID, receiverID, messagingQos, request);
+    //    timePoint = message.getHeaderExpiryDate();
+    //    EXPECT_EQ(expectedTimePoint, timePoint);
 }

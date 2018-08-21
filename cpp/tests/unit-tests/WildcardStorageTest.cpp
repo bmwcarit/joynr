@@ -218,7 +218,8 @@ TEST(WildcardStorageTest, insertTestWithMultipleEntriesPerKey)
     storage.insert<std::string>(subkey2, entry4);
     storage.insert<std::string>(subkey2, entry5);
 
-    OptionalSet<dac::MasterAccessControlEntry> resultSet = storage.getLongestMatch<dac::MasterAccessControlEntry>(subkey1);
+    OptionalSet<dac::MasterAccessControlEntry> resultSet =
+            storage.getLongestMatch<dac::MasterAccessControlEntry>(subkey1);
     ASSERT_TRUE(resultSet);
     EXPECT_EQ(resultSet->size(), 3); // 2 specific entries + root entry
     EXPECT_TRUE(WildcardStorageTestP::isACEinSet(resultSet, rootEntry));

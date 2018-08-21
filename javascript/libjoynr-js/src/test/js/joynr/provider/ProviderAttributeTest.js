@@ -21,7 +21,6 @@ const ProviderAttribute = require("../../../../main/js/joynr/provider/ProviderAt
 const TestEnum = require("../../../generated/joynr/tests/testTypes/TestEnum");
 const ComplexRadioStation = require("../../../generated/joynr/datatypes/exampleTypes/ComplexRadioStation");
 const Country = require("../../../generated/joynr/datatypes/exampleTypes/Country");
-const Promise = require("../../../../main/js/global/Promise");
 
 describe("libjoynr-js.joynr.provider.ProviderAttribute", () => {
     let i, implementation, isOn, isOnNotifyReadOnly, isOnNotifyWriteOnly;

@@ -61,7 +61,7 @@ public class InterfaceUtil {
 	def getMethods(FInterface fInterface, String methodName){
 		var result = new ArrayList<FMethod>();
 		for (method : fInterface.getMethods()){
-			if (method.joynrName!=null && method.joynrName.equals(methodName)){
+			if (method.joynrName!==null && method.joynrName.equals(methodName)){
 				result.add(method)
 			}
 		}
@@ -121,10 +121,10 @@ public class InterfaceUtil {
 		val typeList = new HashMap<String, Object>()
 		for (method : getMethods(fInterface)) {
 			for (returnParameter : getOutputParameters(method)) {
-				if (returnParameter != null) {
+				if (returnParameter !== null) {
 					val datatype = getDatatype(returnParameter.type)
 					val typename = datatype.joynrName;
-					if (typename != null){
+					if (typename !== null){
 						if (!typeList.containsKey(typename)){
 							typeList.put(datatype.joynrName, datatype);
 						}
@@ -136,10 +136,10 @@ public class InterfaceUtil {
 			}
 
 			for (inputParameter : getInputParameters(method)) {
-				if (inputParameter != null) {
+				if (inputParameter !== null) {
 					val datatype = getDatatype(inputParameter.type)
 					val typename = datatype.joynrName;
-					if (typename != null){
+					if (typename !== null){
 						if (!typeList.containsKey(typename)){
 							typeList.put(datatype.joynrName, datatype);
 						}
@@ -323,7 +323,7 @@ public class InterfaceUtil {
 
 	def boolean hasMethodWithImplicitErrorEnum(FInterface interfaceType){
 		for(method: interfaceType.methods){
-			if (method.errors != null) {
+			if (method.errors !== null) {
 				return true
 			}
 		}
@@ -332,7 +332,7 @@ public class InterfaceUtil {
 
 	def boolean hasMethodWithErrorEnum(FInterface interfaceType) {
 		for (method : interfaceType.methods) {
-			if (method.errorEnum != null) {
+			if (method.errorEnum !== null) {
 				return true;
 			}
 		}

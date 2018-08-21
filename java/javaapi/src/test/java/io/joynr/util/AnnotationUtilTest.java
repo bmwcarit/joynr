@@ -32,6 +32,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Collection;
+import java.util.stream.Collectors;
 
 import joynr.tests.DefaulttestProvider;
 import joynr.tests.test;
@@ -41,9 +42,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.google.common.base.Predicates;
-import com.google.common.collect.Collections2;
-
 @RunWith(MockitoJUnitRunner.class)
 public class AnnotationUtilTest {
 
@@ -51,8 +49,9 @@ public class AnnotationUtilTest {
     public void testgetAnnotationsRecursive() {
         Collection<Annotation> annotations = AnnotationUtil.getAnnotationsRecursive(DefaulttestProvider.class);
 
-        Collection<? extends Annotation> joynrInterfaceAnnotations = Collections2.filter(annotations,
-                                                                                         Predicates.instanceOf(JoynrInterface.class));
+        Collection<? extends Annotation> joynrInterfaceAnnotations = annotations.stream()
+                                                                                .filter(JoynrInterface.class::isInstance)
+                                                                                .collect(Collectors.toList());
         assertThat(joynrInterfaceAnnotations, hasSize(1));
 
         Annotation interfaceNameAnnotation = joynrInterfaceAnnotations.iterator().next();

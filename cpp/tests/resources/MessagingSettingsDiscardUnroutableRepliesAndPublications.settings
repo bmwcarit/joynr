@@ -1,0 +1,2 @@
+[messaging]
+discard-unroutable-replies-and-publications=true

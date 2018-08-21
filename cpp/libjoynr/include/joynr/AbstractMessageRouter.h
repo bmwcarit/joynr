@@ -87,6 +87,7 @@ public:
     virtual void init();
     void saveRoutingTable();
     void loadRoutingTable(std::string fileName);
+    std::uint64_t getNumberOfRoutedMessages() const;
 
     void route(std::shared_ptr<ImmutableMessage> message, std::uint32_t tryCount = 0) final;
     virtual void shutdown();
@@ -201,6 +202,7 @@ private:
     void checkExpiryDate(const ImmutableMessage& message);
     AddressUnorderedSet lookupAddresses(const std::unordered_set<std::string>& participantIds);
     std::atomic<bool> isShuttingDown;
+    std::atomic<std::uint64_t> numberOfRoutedMessages;
 };
 
 /**

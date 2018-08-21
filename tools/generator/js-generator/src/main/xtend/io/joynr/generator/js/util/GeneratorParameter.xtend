@@ -64,11 +64,11 @@ class GeneratorParameter {
 	}
 
 	private def determRequireJsSupport(){
-		parameters != null && parameters.get(requireJSSupportKey) != null && parameters.get(requireJSSupportKey).equalsIgnoreCase("true")
+		parameters !== null && parameters.get(requireJSSupportKey) !== null && parameters.get(requireJSSupportKey).equalsIgnoreCase("true")
 	}
 
 	private def determRequiredModule(){
-		if (parameters == null || parameters.get(requiredModuleKey) == null){
+		if (parameters === null || parameters.get(requiredModuleKey) === null){
 			return CONST_REQUIRED_MODULE_DEFAULT;
 		} else {
 			return parameters.get(requiredModuleKey);
@@ -76,7 +76,7 @@ class GeneratorParameter {
 	}
 
 	private def determDefinePrefix(){
-		if (parameters == null || parameters.get(definePrefixKey) == null){
+		if (parameters === null || parameters.get(definePrefixKey) === null){
 			return CONST_DEFINE_PREFIX_DEFAULT;
 		} else {
 			return parameters.get(definePrefixKey);
@@ -84,7 +84,7 @@ class GeneratorParameter {
 	}
 
 	private def determAnonymuousDefine() {
-		parameters == null || parameters.get(anonymuousDefineKey) == null || !parameters.get(anonymuousDefineKey).equalsIgnoreCase("false")
+		parameters === null || parameters.get(anonymuousDefineKey) === null || !parameters.get(anonymuousDefineKey).equalsIgnoreCase("false")
 	}
 
 	def defineName(FModelElement element){

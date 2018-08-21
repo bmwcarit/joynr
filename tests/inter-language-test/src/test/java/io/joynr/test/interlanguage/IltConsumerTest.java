@@ -57,8 +57,22 @@ import org.junit.rules.TestName;
 
 public abstract class IltConsumerTest {
     private static final Logger LOG = LoggerFactory.getLogger(IltConsumerTest.class);
+
     public static final String INTER_LANGUAGE_PROVIDER_DOMAIN = "inter-language-test.provider.domain";
     private static final String STATIC_PERSISTENCE_FILE = "java-consumer.persistence_file";
+
+    protected static final String TEST_FAILED = " - FAILED";
+    protected static final String TEST_FAILED_CALLBACK_ERROR = TEST_FAILED + " - callback reported error";
+    protected static final String TEST_FAILED_CALLBACK_EXCEPTION = TEST_FAILED + " - callback - caught exception";
+    protected static final String TEST_FAILED_CALLBACK_INVALID_RESULT = TEST_FAILED
+            + " - got invalid result from callback";
+    protected static final String TEST_FAILED_CALLBACK_TIMEOUT = TEST_FAILED + " - callback not received in time";
+    protected static final String TEST_FAILED_EXCEPTION = TEST_FAILED + " - caught unexpected exception: ";
+    protected static final String TEST_FAILED_INVALID_RESULT = TEST_FAILED + " - got invalid result";
+    protected static final String TEST_FAILED_NO_RESULT = TEST_FAILED + " - got no result";
+    protected static final String TEST_WAIT_FOR_CALLBACK = " - about to wait for callback";
+    protected static final String TEST_WAIT_FOR_CALLBACK_DONE = " - wait for callback is over";
+    protected static final String TEST_SUCCEEDED = " - OK";
 
     @Rule
     public TestName name = new TestName();

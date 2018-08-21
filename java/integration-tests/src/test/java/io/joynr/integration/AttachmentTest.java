@@ -18,25 +18,17 @@
  */
 package io.joynr.integration;
 
+import static com.jayway.restassured.RestAssured.given;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static com.jayway.restassured.RestAssured.given;
-import io.joynr.integration.setup.BounceProxyServerSetup;
-import io.joynr.integration.setup.SingleBounceProxy;
-import io.joynr.integration.setup.testrunner.BounceProxyServerContext;
-import io.joynr.integration.setup.testrunner.BounceProxyServerSetups;
-import io.joynr.integration.setup.testrunner.MultipleBounceProxySetupsTestRunner;
-import io.joynr.integration.util.BounceProxyCommunicationMock;
 
 import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Future;
 
 import javax.annotation.Nullable;
-
-import joynr.ImmutableMessage;
-import joynr.test.JoynrTestLoggingRule;
 
 import org.junit.Before;
 import org.junit.Ignore;
@@ -46,9 +38,17 @@ import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Charsets;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.response.Response;
+
+import io.joynr.integration.setup.BounceProxyServerSetup;
+import io.joynr.integration.setup.SingleBounceProxy;
+import io.joynr.integration.setup.testrunner.BounceProxyServerContext;
+import io.joynr.integration.setup.testrunner.BounceProxyServerSetups;
+import io.joynr.integration.setup.testrunner.MultipleBounceProxySetupsTestRunner;
+import io.joynr.integration.util.BounceProxyCommunicationMock;
+import joynr.ImmutableMessage;
+import joynr.test.JoynrTestLoggingRule;
 
 @Ignore("Bounceproxy not supported at the moment")
 @RunWith(MultipleBounceProxySetupsTestRunner.class)
@@ -88,7 +88,7 @@ public class AttachmentTest {
     @Nullable
     private Response sendAttachmentMessage(String channelId) throws Exception {
         long ttl_ms = 1000000;
-        byte[] payload = "attachmentTest".getBytes(Charsets.UTF_8);
+        byte[] payload = "attachmentTest".getBytes(StandardCharsets.UTF_8);
         byte[] serializedMessageWrapper = bpMock.createImmutableMessage(ttl_ms, payload).getSerializedMessage();
 
         String content = "This is a binary content";

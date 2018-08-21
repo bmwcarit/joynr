@@ -53,4 +53,4 @@ function Reply(settings) {
     return settings;
 }
 
-module.exports = Reply;
+exports.create = Reply;

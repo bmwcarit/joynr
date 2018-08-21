@@ -47,52 +47,54 @@ using namespace joynr;
 /**
  * @brief Fixture.
  */
-class ProxyTest : public AbstractSyncAsyncTest {
+class ProxyTest : public AbstractSyncAsyncTest
+{
 public:
-
-    ProxyTest() :
-        joynrMessagingConnectorFactory()
-    {}
-    void SetUp() override {
+    ProxyTest() : joynrMessagingConnectorFactory()
+    {
+    }
+    void SetUp() override
+    {
         AbstractSyncAsyncTest::SetUp();
-        joynrMessagingConnectorFactory = std::make_unique<JoynrMessagingConnectorFactory>(mockMessageSender, nullptr);
+        joynrMessagingConnectorFactory =
+                std::make_unique<JoynrMessagingConnectorFactory>(mockMessageSender, nullptr);
         auto settings = std::make_unique<Settings>();
         runtime = std::make_shared<MockJoynrRuntime>(std::move(settings));
     }
 
-    void TearDown() override {
+    void TearDown() override
+    {
         AbstractSyncAsyncTest::TearDown();
         joynrMessagingConnectorFactory.reset();
     }
 
     // sets the expectations on the call expected on the MessageSender from the connector
-    testing::internal::TypedExpectation<void(
-            const std::string&, // sender participant ID
-            const std::string&, // receiver participant ID
-            const MessagingQos&, // messaging QoS
-            const Request&, // request object to send
-            std::shared_ptr<IReplyCaller>, // reply caller to notify when reply is received
-            bool isLocalMessage
-    )>& setExpectationsForSendRequestCall(std::string methodName) override {
+    testing::internal::TypedExpectation<
+            void(const std::string&,            // sender participant ID
+                 const std::string&,            // receiver participant ID
+                 const MessagingQos&,           // messaging QoS
+                 const Request&,                // request object to send
+                 std::shared_ptr<IReplyCaller>, // reply caller to notify when reply is received
+                 bool isLocalMessage)>&
+    setExpectationsForSendRequestCall(std::string methodName) override
+    {
         return EXPECT_CALL(
-                    *mockMessageSender,
-                    sendRequest(
-                        _, // sender participant ID
+                *mockMessageSender,
+                sendRequest(
+                        _,                         // sender participant ID
                         Eq(providerParticipantId), // receiver participant ID
-                        _, // messaging QoS
+                        _,                         // messaging QoS
                         Property(&Request::getMethodName, Eq(methodName)), // request object to send
-                        Property(&std::shared_ptr<IReplyCaller>::get,NotNull()), // reply caller to notify when reply is received
-                        _ // isLocalFlag
-                    )
-        );
+                        Property(&std::shared_ptr<IReplyCaller>::get,
+                                 NotNull()), // reply caller to notify when reply is received
+                        _                    // isLocalFlag
+                        ));
     }
 
-    std::shared_ptr<tests::Itest> createFixture() override {
+    std::shared_ptr<tests::Itest> createFixture() override
+    {
         std::shared_ptr<tests::testProxy> proxy = std::make_shared<tests::testProxy>(
-                    runtime,
-                    std::move(joynrMessagingConnectorFactory),
-                    "myDomain",
-                    MessagingQos());
+                runtime, std::move(joynrMessagingConnectorFactory), "myDomain", MessagingQos());
         types::DiscoveryEntryWithMetaInfo discoveryEntry;
         discoveryEntry.setParticipantId(providerParticipantId);
         discoveryEntry.setIsLocal(true);
@@ -103,6 +105,7 @@ public:
 protected:
     std::unique_ptr<JoynrMessagingConnectorFactory> joynrMessagingConnectorFactory;
     std::shared_ptr<JoynrRuntimeImpl> runtime;
+
 private:
     DISALLOW_COPY_AND_ASSIGN(ProxyTest);
 };
@@ -110,127 +113,151 @@ private:
 typedef ProxyTest ProxyTestDeathTest;
 
 // need to stub the connector factory for it to always return a Joynr connector
-TEST_F(ProxyTest, async_getAttributeNotCached) {
+TEST_F(ProxyTest, async_getAttributeNotCached)
+{
     testAsync_getAttributeNotCached();
 }
 
-TEST_F(ProxyTest, sync_setAttributeNotCached) {
+TEST_F(ProxyTest, sync_setAttributeNotCached)
+{
     testSync_setAttributeNotCached();
 }
 
-TEST_F(ProxyTest, sync_getAttributeNotCached) {
+TEST_F(ProxyTest, sync_getAttributeNotCached)
+{
     testSync_getAttributeNotCached();
 }
 
-TEST_F(ProxyTest, async_getterCallReturnsProviderRuntimeException) {
+TEST_F(ProxyTest, async_getterCallReturnsProviderRuntimeException)
+{
     testAsync_getterCallReturnsProviderRuntimeException();
 }
 
-TEST_F(ProxyTest, sync_getterCallReturnsProviderRuntimeException) {
+TEST_F(ProxyTest, sync_getterCallReturnsProviderRuntimeException)
+{
     testSync_getterCallReturnsProviderRuntimeException();
 }
 
-TEST_F(ProxyTest, async_getterCallReturnsMethodInvocationException) {
+TEST_F(ProxyTest, async_getterCallReturnsMethodInvocationException)
+{
     testAsync_getterCallReturnsMethodInvocationException();
 }
 
-TEST_F(ProxyTest, sync_getterCallReturnsMethodInvocationException) {
+TEST_F(ProxyTest, sync_getterCallReturnsMethodInvocationException)
+{
     testSync_getterCallReturnsMethodInvocationException();
 }
 
-TEST_F(ProxyTest, async_setterCallReturnsProviderRuntimeException) {
+TEST_F(ProxyTest, async_setterCallReturnsProviderRuntimeException)
+{
     testAsync_setterCallReturnsProviderRuntimeException();
 }
 
-TEST_F(ProxyTest, sync_setterCallReturnsProviderRuntimeException) {
+TEST_F(ProxyTest, sync_setterCallReturnsProviderRuntimeException)
+{
     testSync_setterCallReturnsProviderRuntimeException();
 }
 
-TEST_F(ProxyTest, async_setterCallReturnsMethodInvocationException) {
+TEST_F(ProxyTest, async_setterCallReturnsMethodInvocationException)
+{
     testAsync_setterCallReturnsMethodInvocationException();
 }
 
-TEST_F(ProxyTest, sync_setterCallReturnsMethodInvocationException) {
+TEST_F(ProxyTest, sync_setterCallReturnsMethodInvocationException)
+{
     testSync_setterCallReturnsMethodInvocationException();
 }
 
-TEST_F(ProxyTest, async_methodCallReturnsProviderRuntimeException) {
+TEST_F(ProxyTest, async_methodCallReturnsProviderRuntimeException)
+{
     testAsync_methodCallReturnsProviderRuntimeException();
 }
 
-TEST_F(ProxyTest, sync_methodCallReturnsProviderRuntimeException) {
+TEST_F(ProxyTest, sync_methodCallReturnsProviderRuntimeException)
+{
     testSync_methodCallReturnsProviderRuntimeException();
 }
 
-TEST_F(ProxyTest, async_methodCallReturnsMethodInvocationException) {
+TEST_F(ProxyTest, async_methodCallReturnsMethodInvocationException)
+{
     testAsync_methodCallReturnsMethodInvocationException();
 }
 
-TEST_F(ProxyTest, sync_methodCallReturnsMethodInvocationException) {
+TEST_F(ProxyTest, sync_methodCallReturnsMethodInvocationException)
+{
     testSync_methodCallReturnsMethodInvocationException();
 }
 
-TEST_F(ProxyTest, async_methodCallReturnsErrorEnum) {
+TEST_F(ProxyTest, async_methodCallReturnsErrorEnum)
+{
     testAsync_methodCallReturnsErrorEnum();
 }
 
-TEST_F(ProxyTest, sync_methodCallReturnsErrorEnum) {
+TEST_F(ProxyTest, sync_methodCallReturnsErrorEnum)
+{
     testSync_methodCallReturnsErrorEnum();
 }
 
-TEST_F(ProxyTest, async_methodCallReturnsExtendedErrorEnum) {
+TEST_F(ProxyTest, async_methodCallReturnsExtendedErrorEnum)
+{
     testAsync_methodCallReturnsExtendedErrorEnum();
 }
 
-TEST_F(ProxyTest, sync_methodCallReturnsExtendedErrorEnum) {
+TEST_F(ProxyTest, sync_methodCallReturnsExtendedErrorEnum)
+{
     testSync_methodCallReturnsExtendedErrorEnum();
 }
 
-TEST_F(ProxyTest, async_methodCallReturnsInlineErrorEnum) {
+TEST_F(ProxyTest, async_methodCallReturnsInlineErrorEnum)
+{
     testAsync_methodCallReturnsInlineErrorEnum();
 }
 
-TEST_F(ProxyTest, sync_methodCallReturnsInlineErrorEnum) {
+TEST_F(ProxyTest, sync_methodCallReturnsInlineErrorEnum)
+{
     testSync_methodCallReturnsInlineErrorEnum();
 }
 
-TEST_F(ProxyTest, async_OperationWithNoArguments) {
+TEST_F(ProxyTest, async_OperationWithNoArguments)
+{
     testAsync_OperationWithNoArguments();
 }
 
-TEST_F(ProxyTest, sync_OperationWithNoArguments) {
+TEST_F(ProxyTest, sync_OperationWithNoArguments)
+{
     testSync_OperationWithNoArguments();
 }
 
-TEST_F(ProxyTest, subscribeToAttribute) {
+TEST_F(ProxyTest, subscribeToAttribute)
+{
     testSubscribeToAttribute();
 }
 
-TEST_F(ProxyTest, subscribeToBroadcastWithInvalidPartitionsReturnsError) {
+TEST_F(ProxyTest, subscribeToBroadcastWithInvalidPartitionsReturnsError)
+{
     auto testProxy = std::dynamic_pointer_cast<tests::testProxy>(createFixture());
     auto subscriptionListener = std::make_shared<MockGpsSubscriptionListener>();
     auto subscriptionQos = std::make_shared<MulticastSubscriptionQos>();
 
     EXPECT_CALL(*subscriptionListener, onError(A<const exceptions::JoynrRuntimeException&>()));
 
-    std::shared_ptr<Future<std::string>> subscriptionFuture = testProxy->subscribeToLocationBroadcast(
-            subscriptionListener,
-            subscriptionQos,
-            { "invalid / partition" }
-    );
+    std::shared_ptr<Future<std::string>> subscriptionFuture =
+            testProxy->subscribeToLocationBroadcast(
+                    subscriptionListener, subscriptionQos, {"invalid / partition"});
     std::string subscriptionId;
     EXPECT_THROW(subscriptionFuture->get(subscriptionId), exceptions::JoynrRuntimeException);
 }
 
-
-TEST_F(ProxyTest, versionIsSetCorrectly) {
+TEST_F(ProxyTest, versionIsSetCorrectly)
+{
     std::uint32_t expectedMajorVersion = 47;
     std::uint32_t expectedMinorVersion = 11;
     EXPECT_EQ(expectedMajorVersion, tests::testProxy::MAJOR_VERSION);
     EXPECT_EQ(expectedMinorVersion, tests::testProxy::MINOR_VERSION);
 }
 
-TEST_F(ProxyTest, defaultVersionIsSetCorrectly) {
+TEST_F(ProxyTest, defaultVersionIsSetCorrectly)
+{
     std::uint32_t expectedDefaultMajorVersion = 0;
     std::uint32_t expectedDefaultMinorVersion = 0;
     EXPECT_EQ(expectedDefaultMajorVersion, tests::TestWithoutVersionProxy::MAJOR_VERSION);

@@ -28,14 +28,16 @@
 
 using namespace joynr;
 
-class SystemServicesSettingsTest : public testing::Test {
+class SystemServicesSettingsTest : public testing::Test
+{
 public:
-    SystemServicesSettingsTest() :
-        testSettingsFileName("SystemServicesSettingsTest-testSettings.settings")
+    SystemServicesSettingsTest()
+            : testSettingsFileName("SystemServicesSettingsTest-testSettings.settings")
     {
     }
 
-    virtual void TearDown() {
+    virtual void TearDown()
+    {
         std::remove(testSettingsFileName.c_str());
     }
 
@@ -44,17 +46,22 @@ protected:
     std::string testSettingsFileName;
 };
 
-TEST_F(SystemServicesSettingsTest, intializedWithDefaultSettings) {
+TEST_F(SystemServicesSettingsTest, intializedWithDefaultSettings)
+{
     Settings testSettings(testSettingsFileName);
     SystemServicesSettings systemSettings(testSettings);
 
     EXPECT_TRUE(systemSettings.contains(SystemServicesSettings::SETTING_DOMAIN()));
-    EXPECT_TRUE(systemSettings.contains(SystemServicesSettings::SETTING_CC_ROUTINGPROVIDER_PARTICIPANTID()));
-    EXPECT_TRUE(systemSettings.contains(SystemServicesSettings::SETTING_CC_DISCOVERYPROVIDER_PARTICIPANTID()));
-    EXPECT_TRUE(systemSettings.contains(SystemServicesSettings::SETTING_CC_DISCOVERYPROVIDER_PARTICIPANTID()));
+    EXPECT_TRUE(systemSettings.contains(
+            SystemServicesSettings::SETTING_CC_ROUTINGPROVIDER_PARTICIPANTID()));
+    EXPECT_TRUE(systemSettings.contains(
+            SystemServicesSettings::SETTING_CC_DISCOVERYPROVIDER_PARTICIPANTID()));
+    EXPECT_TRUE(systemSettings.contains(
+            SystemServicesSettings::SETTING_CC_DISCOVERYPROVIDER_PARTICIPANTID()));
 }
 
-TEST_F(SystemServicesSettingsTest, overrideDefaultSettings) {
+TEST_F(SystemServicesSettingsTest, overrideDefaultSettings)
+{
     std::string expectedDomain("overridenDomain");
     Settings testSettings(testSettingsFileName);
     testSettings.set(SystemServicesSettings::SETTING_DOMAIN(), expectedDomain);

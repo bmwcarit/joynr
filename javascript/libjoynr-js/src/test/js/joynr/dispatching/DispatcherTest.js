@@ -37,7 +37,6 @@ const DiscoveryEntryWithMetaInfo = require("../../../../main/js/generated/joynr/
 const Version = require("../../../../main/js/generated/joynr/types/Version");
 const ProviderQos = require("../../../../main/js/generated/joynr/types/ProviderQos");
 const uuid = require("uuid/v4");
-const Promise = require("../../../../main/js/global/Promise");
 const LoggingManager = require("../../../../main/js/joynr/system/LoggingManager");
 
 const providerId = "providerId";
@@ -271,7 +270,7 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", () => {
             payload
         });
         expect(subscriptionManager.handlePublication).toHaveBeenCalled();
-        expect(subscriptionManager.handlePublication).toHaveBeenCalledWith(new SubscriptionPublication(payload));
+        expect(subscriptionManager.handlePublication).toHaveBeenCalledWith(SubscriptionPublication.create(payload));
         done();
     });
 
@@ -285,12 +284,14 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", () => {
             payload
         });
         expect(subscriptionManager.handleMulticastPublication).toHaveBeenCalled();
-        expect(subscriptionManager.handleMulticastPublication).toHaveBeenCalledWith(new MulticastPublication(payload));
+        expect(subscriptionManager.handleMulticastPublication).toHaveBeenCalledWith(
+            MulticastPublication.create(payload)
+        );
         done();
     });
 
     it("forwards request to RequestReply Manager", done => {
-        const request = new Request({
+        const request = Request.create({
             methodName: "methodName"
         });
         const joynrMessage = new JoynrMessage({
@@ -307,7 +308,7 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", () => {
     });
 
     it("forwards one-way request to RequestReply Manager", done => {
-        const oneWayRequest = new OneWayRequest({
+        const oneWayRequest = OneWayRequest.create({
             methodName: "methodName"
         });
         const joynrMessage = new JoynrMessage({
@@ -324,7 +325,7 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", () => {
     });
 
     it("forwards reply to RequestReply Manager", done => {
-        const reply = new Reply({
+        const reply = Reply.create({
             requestReplyId,
             response: []
         });
@@ -452,7 +453,7 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", () => {
         let sentMessage;
         const messagingQos = new MessagingQos();
 
-        const request = new Request({
+        const request = Request.create({
             methodName: "methodName"
         });
         dispatcher.sendRequest({
@@ -508,7 +509,7 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", () => {
         const messagingQos = new MessagingQos();
         messagingQos.compress = true;
 
-        const request = new Request({
+        const request = Request.create({
             methodName: "methodName"
         });
         dispatcher.sendRequest({
@@ -545,7 +546,7 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", () => {
     }
 
     it("sets the correct effort for replies if the effort was set in the corresponding request", async () => {
-        const request = new Request({
+        const request = Request.create({
             methodName: "methodName"
         });
         const joynrMessage = new JoynrMessage({
@@ -579,7 +580,7 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", () => {
     });
 
     it("sets the compressed flag for replies if the request was compressed", done => {
-        const request = new Request({
+        const request = Request.create({
             methodName: "methodName"
         });
         const joynrMessage = new JoynrMessage({
@@ -605,7 +606,7 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", () => {
     });
 
     it("enriches requests with custom headers", done => {
-        const request = new Request({
+        const request = Request.create({
             methodName: "methodName"
         });
         const messagingQos = new MessagingQos();
@@ -625,7 +626,7 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", () => {
     });
 
     it("enriches requests with effort header", done => {
-        const request = new Request({
+        const request = Request.create({
             methodName: "methodName"
         });
         const messagingQos = new MessagingQos();
@@ -643,7 +644,7 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", () => {
     });
 
     it("enriches one way requests with custom headers", done => {
-        const request = new OneWayRequest({
+        const request = OneWayRequest.create({
             methodName: "methodName"
         });
         const messagingQos = new MessagingQos();
@@ -664,7 +665,7 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", () => {
 
     it("enriches replies with custom headers from request", done => {
         let sentReplyMessage;
-        const request = new Request({
+        const request = Request.create({
             methodName: "methodName"
         });
         const messagingQos = new MessagingQos();

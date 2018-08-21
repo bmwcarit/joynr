@@ -51,7 +51,7 @@ public class PropertiesFileParticipantIdStorage implements ParticipantIdStorage 
     private String persistenceFileName;
     private Properties joynrProperties;
     private String discoveryProviderParticipantId;
-    private String routingProviderParticipantId;;
+    private String routingProviderParticipantId;
 
     @Inject
     public PropertiesFileParticipantIdStorage(@Named(MessagingPropertyKeys.JOYNR_PROPERTIES) Properties joynrProperties,
@@ -78,9 +78,9 @@ public class PropertiesFileParticipantIdStorage implements ParticipantIdStorage 
      * java.lang.String)
      */
     @Override
-    public String getProviderParticipantId(String domain, String interfaceName, String defaultValue) {
+    public String getProviderParticipantId(String domain, String interfaceName, int majorVersion, String defaultValue) {
 
-        String token = ParticipantIdKeyUtil.getProviderParticipantIdKey(domain, interfaceName);
+        String token = ParticipantIdKeyUtil.getProviderParticipantIdKey(domain, interfaceName, majorVersion);
 
         String participantId;
 
@@ -126,13 +126,15 @@ public class PropertiesFileParticipantIdStorage implements ParticipantIdStorage 
     }
 
     @Override
-    public String getProviderParticipantId(String domain, String interfaceName) {
+    public String getProviderParticipantId(String domain, String interfaceName, int majorVersion) {
         String defaultParticipantId = null;
-        String providerParticipantIdKey = ParticipantIdKeyUtil.getProviderParticipantIdKey(domain, interfaceName);
+        String providerParticipantIdKey = ParticipantIdKeyUtil.getProviderParticipantIdKey(domain,
+                                                                                           interfaceName,
+                                                                                           majorVersion);
         if (joynrProperties.containsKey(providerParticipantIdKey)) {
             defaultParticipantId = joynrProperties.getProperty(providerParticipantIdKey);
         }
-        return getProviderParticipantId(domain, interfaceName, defaultParticipantId);
+        return getProviderParticipantId(domain, interfaceName, majorVersion, defaultParticipantId);
     }
 
 }

@@ -161,12 +161,12 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         let subscriptionPublication;
 
         if (exception) {
-            subscriptionPublication = new SubscriptionPublication({
+            subscriptionPublication = SubscriptionPublication.create({
                 error: exception,
                 subscriptionId: subscriptionInfo.subscriptionId
             });
         } else {
-            subscriptionPublication = new SubscriptionPublication({
+            subscriptionPublication = SubscriptionPublication.create({
                 response: value,
                 subscriptionId: subscriptionInfo.subscriptionId
             });
@@ -443,7 +443,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
 
     function prepareMulticastPublication(providerId, eventName, partitions, outputParameters) {
         const multicastId = SubscriptionUtil.createMulticastId(providerId, eventName, partitions);
-        const publication = new MulticastPublication({
+        const publication = MulticastPublication.create({
             response: outputParameters,
             multicastId
         });

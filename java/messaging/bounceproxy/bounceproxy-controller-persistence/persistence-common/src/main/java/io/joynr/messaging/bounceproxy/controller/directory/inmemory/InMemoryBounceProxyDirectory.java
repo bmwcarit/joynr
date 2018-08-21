@@ -25,13 +25,12 @@ import io.joynr.messaging.info.BounceProxyInformation;
 import io.joynr.messaging.info.BounceProxyStatusInformation;
 import io.joynr.messaging.system.TimestampProvider;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.Collections2;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -61,20 +60,11 @@ public class InMemoryBounceProxyDirectory implements BounceProxyDirectory {
      */
     @Override
     public List<BounceProxyRecord> getAssignableBounceProxies() {
-
-        Predicate<BounceProxyRecord> statusIsAssignablePredicate = new Predicate<BounceProxyRecord>() {
-
-            @Override
-            public boolean apply(BounceProxyRecord record) {
-                if (record == null)
-                    return false;
-                return record.getStatus().isAssignable();
-            }
-        };
-        Collection<BounceProxyRecord> assignableBounceProxies = Collections2.filter(directory.values(),
-                                                                                    statusIsAssignablePredicate);
-
-        return new LinkedList<BounceProxyRecord>(assignableBounceProxies);
+        return directory.values()
+                        .stream()
+                        .filter(Objects::nonNull)
+                        .filter(r -> r.getStatus().isAssignable())
+                        .collect(Collectors.toList());
     }
 
     @Override

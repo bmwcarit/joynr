@@ -40,7 +40,7 @@
                 },
                 loggers: {
                     root: {
-                        level: "debug",
+                        level: "error",
                         AppenderRef: {
                             ref: "STDOUT"
                         }

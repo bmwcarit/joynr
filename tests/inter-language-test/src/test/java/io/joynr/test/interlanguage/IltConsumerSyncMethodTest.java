@@ -18,6 +18,9 @@
  */
 package io.joynr.test.interlanguage;
 
+import java.lang.reflect.Method;
+import java.util.Objects;
+
 import joynr.exceptions.ApplicationException;
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.interlanguagetest.Enumeration;
@@ -39,6 +42,7 @@ import joynr.interlanguagetest.namedTypeCollection2.ExtendedInterfaceEnumeration
 import joynr.interlanguagetest.namedTypeCollection2.ExtendedStructOfPrimitives;
 import joynr.interlanguagetest.namedTypeCollection2.ExtendedTypeCollectionEnumerationInTypeCollection;
 import joynr.interlanguagetest.namedTypeCollection2.MapStringString;
+import joynr.interlanguagetest.typeDefCollection.ArrayTypeDefStruct;
 
 import org.apache.commons.lang.ArrayUtils;
 
@@ -50,6 +54,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import org.junit.Assert;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public class IltConsumerSyncMethodTest extends IltConsumerTest {
@@ -67,6 +73,19 @@ public class IltConsumerSyncMethodTest extends IltConsumerTest {
         LOG.info("tearDown: Entering");
         generalTearDown();
         LOG.info("tearDown: Leaving");
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T> void callProxyMethodWithParameterAndAssertResult(String methodName, T arg) {
+        try {
+            Method method = testInterfaceProxy.getClass().getMethod(methodName, arg.getClass());
+            T result = (T) method.invoke(testInterfaceProxy, arg);
+
+            assertNotNull(name.getMethodName() + TEST_FAILED_NO_RESULT, result);
+            assertTrue(name.getMethodName() + TEST_FAILED_INVALID_RESULT, Objects.deepEquals(arg, result));
+        } catch (Exception e) {
+            fail(name.getMethodName() + TEST_FAILED_EXCEPTION + e.getMessage());
+        }
     }
 
     /*
@@ -291,6 +310,66 @@ public class IltConsumerSyncMethodTest extends IltConsumerTest {
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
         }
         LOG.info(name.getMethodName() + " - OK");
+    }
+
+    @Test
+    public void callMethodWithInt64TypeDefParameter() {
+        LOG.info(name.getMethodName());
+        Long int64TypeDefArg = 1L;
+        callProxyMethodWithParameterAndAssertResult("methodWithInt64TypeDefParameter", int64TypeDefArg);
+        LOG.info(name.getMethodName() + TEST_SUCCEEDED);
+    }
+
+    @Test
+    public void callMethodWithStringTypeDefParameter() {
+        LOG.info(name.getMethodName());
+        String stringTypeDefArg = "StringTypeDef";
+        callProxyMethodWithParameterAndAssertResult("methodWithStringTypeDefParameter", stringTypeDefArg);
+        LOG.info(name.getMethodName() + TEST_SUCCEEDED);
+    }
+
+    @Test
+    public void callMethodWithStructTypeDefParameter() {
+        LOG.info(name.getMethodName());
+        BaseStruct structTypeDefArg = IltUtil.createBaseStruct();
+        callProxyMethodWithParameterAndAssertResult("methodWithStructTypeDefParameter", structTypeDefArg);
+        LOG.info(name.getMethodName() + TEST_SUCCEEDED);
+    }
+
+    @Test
+    public void callMethodWithMapTypeDefParameter() {
+        LOG.info(name.getMethodName());
+        MapStringString mapTypeDefArg = new MapStringString();
+        mapTypeDefArg.put("keyString1", "valueString1");
+        mapTypeDefArg.put("keyString2", "valueString2");
+        mapTypeDefArg.put("keyString3", "valueString3");
+        callProxyMethodWithParameterAndAssertResult("methodWithMapTypeDefParameter", mapTypeDefArg);
+        LOG.info(name.getMethodName() + TEST_SUCCEEDED);
+    }
+
+    @Test
+    public void callMethodWithEnumTypeDefParameter() {
+        LOG.info(name.getMethodName());
+        Enumeration enumTypeDefArg = Enumeration.ENUM_0_VALUE_1;
+        callProxyMethodWithParameterAndAssertResult("methodWithEnumTypeDefParameter", enumTypeDefArg);
+        LOG.info(name.getMethodName() + TEST_SUCCEEDED);
+    }
+
+    @Test
+    public void callMethodWithByteBufferTypeDefParameter() {
+        LOG.info(name.getMethodName());
+        Byte[] byteBufferTypeDefArg = { -128, 0, 127 };
+        callProxyMethodWithParameterAndAssertResult("methodWithByteBufferTypeDefParameter", byteBufferTypeDefArg);
+        LOG.info(name.getMethodName() + TEST_SUCCEEDED);
+    }
+
+    @Test
+    public void callMethodWithArrayTypeDefParameter() {
+        LOG.info(name.getMethodName());
+        String[] stringArray = IltUtil.createStringArray();
+        ArrayTypeDefStruct arrayTypeDefArg = new ArrayTypeDefStruct(stringArray);
+        callProxyMethodWithParameterAndAssertResult("methodWithArrayTypeDefParameter", arrayTypeDefArg);
+        LOG.info(name.getMethodName() + TEST_SUCCEEDED);
     }
 
     @Test

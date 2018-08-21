@@ -19,11 +19,14 @@
 package io.joynr.dispatching;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Charsets;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -45,8 +48,6 @@ import joynr.SubscriptionPublication;
 import joynr.SubscriptionReply;
 import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class MutableMessageFactory {
     private static final String REQUEST_REPLY_ID_CUSTOM_HEADER = "z4";
@@ -238,6 +239,6 @@ public class MutableMessageFactory {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return serializedPayload.getBytes(Charsets.UTF_8);
+        return serializedPayload.getBytes(StandardCharsets.UTF_8);
     }
 }

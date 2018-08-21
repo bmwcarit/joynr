@@ -16,7 +16,6 @@
  * limitations under the License.
  * #L%
  */
-const Promise = require("../../../global/Promise");
 const JSONSerializer = require("../../util/JSONSerializer");
 const LoggingManager = require("../../system/LoggingManager");
 

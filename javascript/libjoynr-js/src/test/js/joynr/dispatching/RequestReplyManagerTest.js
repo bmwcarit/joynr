@@ -30,8 +30,8 @@ const Version = require("../../../../main/js/generated/joynr/types/Version");
 const DiscoveryEntryWithMetaInfo = require("../../../../main/js/generated/joynr/types/DiscoveryEntryWithMetaInfo");
 const ProviderQos = require("../../../../main/js/generated/joynr/types/ProviderQos");
 const MessagingQos = require("../../../../main/js/joynr/messaging/MessagingQos");
-const Promise = require("../../../../main/js/global/Promise");
 const waitsFor = require("../../../../test/js/global/WaitsFor");
+const testUtil = require("../../../js/testUtil");
 describe("libjoynr-js.joynr.dispatching.RequestReplyManager", () => {
     let dispatcherSpy;
     let requestReplyManager;
@@ -40,7 +40,7 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", () => {
     const toleranceMs = 1500; // at least 1000 since that's the cleanup interval
     const requestReplyId = "requestReplyId";
     const testResponse = ["testResponse"];
-    const reply = new Reply({
+    const reply = Reply.create({
         requestReplyId,
         response: testResponse
     });
@@ -193,7 +193,7 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", () => {
 
         return promiseChain
             .then(() => {
-                const request = new Request({
+                const request = Request.create({
                     methodName: `get${UtilInternal.firstUpper(attributeName)}`,
                     paramDatatypes: [],
                     params: []
@@ -212,7 +212,7 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", () => {
                 );
             })
             .then(() => {
-                const request = new Request({
+                const request = Request.create({
                     methodName: `set${UtilInternal.firstUpper(attributeName)}`,
                     paramDatatypes: [],
                     // untype objects through serialization and deserialization
@@ -253,7 +253,7 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", () => {
 
         return promiseChain
             .then(() => {
-                const request = new Request({
+                const request = Request.create({
                     methodName: "testFunction",
                     paramDatatypes,
                     // untype objects through serialization and deserialization
@@ -365,7 +365,7 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", () => {
         const replyCallerSpy = jasmine.createSpyObj("deferred", ["callback"]);
         return promiseChain
             .then(() => {
-                const reply = new Reply({
+                const reply = Reply.create({
                     requestReplyId,
                     // untype object by serializing and deserializing it
                     response: JSON.parse(JSONSerializer.stringify(params))
@@ -454,7 +454,7 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", () => {
 
         const callbackDispatcher = jasmine.createSpy("callbackDispatcher");
 
-        const request = new Request({
+        const request = Request.create({
             methodName,
             paramDatatypes: [testParamDatatype],
             params: [testParam]
@@ -521,7 +521,7 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", () => {
                 expect(test.callbackDispatcher).toHaveBeenCalled();
                 expect(test.callbackDispatcher).toHaveBeenCalledWith(
                     replySettings,
-                    new Reply({
+                    Reply.create({
                         response: [testParam],
                         requestReplyId: test.request.requestReplyId
                     })
@@ -547,7 +547,7 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", () => {
                 expect(test.callbackDispatcher).toHaveBeenCalled();
                 expect(test.callbackDispatcher).toHaveBeenCalledWith(
                     replySettings,
-                    new Reply({
+                    Reply.create({
                         response: [],
                         requestReplyId: test.request.requestReplyId
                     })
@@ -576,7 +576,7 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", () => {
                 expect(test.callbackDispatcher).toHaveBeenCalled();
                 expect(test.callbackDispatcher).toHaveBeenCalledWith(
                     replySettings,
-                    new Reply({
+                    Reply.create({
                         response: [testParam],
                         requestReplyId: test.request.requestReplyId
                     })
@@ -595,7 +595,7 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", () => {
             }
         };
 
-        const oneWayRequest = new OneWayRequest({
+        const oneWayRequest = OneWayRequest.create({
             methodName: "fireAndForgetMethod",
             paramDatatypes: [testParamDatatype],
             params: [testParam]
@@ -660,7 +660,7 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", () => {
                 expect(test.callbackDispatcher).toHaveBeenCalled();
                 expect(test.callbackDispatcher).toHaveBeenCalledWith(
                     replySettings,
-                    new Reply({
+                    Reply.create({
                         error: new MethodInvocationException({
                             detailMessage: `error handling request: {"paramDatatypes":["String"],"params":["myTestParameter"],"methodName":"testFunction","requestReplyId":"${
                                 test.request.requestReplyId
@@ -687,7 +687,7 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", () => {
                 expect(test.callbackDispatcher).toHaveBeenCalled();
                 expect(test.callbackDispatcher).toHaveBeenCalledWith(
                     replySettings,
-                    new Reply({
+                    Reply.create({
                         error: new MethodInvocationException({
                             detailMessage:
                                 'Could not find an operation "notExistentOperationOrAttribute" in the provider',
@@ -716,7 +716,7 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", () => {
                 expect(test.callbackDispatcher).toHaveBeenCalled();
                 expect(test.callbackDispatcher).toHaveBeenCalledWith(
                     replySettings,
-                    new Reply({
+                    Reply.create({
                         error: new MethodInvocationException({
                             detailMessage:
                                 'Could not find an operation "getNotExistentOperationOrAttribute" or an attribute "notExistentOperationOrAttribute" in the provider',
@@ -745,7 +745,7 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", () => {
                 expect(test.callbackDispatcher).toHaveBeenCalled();
                 expect(test.callbackDispatcher).toHaveBeenCalledWith(
                     replySettings,
-                    new Reply({
+                    Reply.create({
                         error: new MethodInvocationException({
                             detailMessage:
                                 'Could not find an operation "setNotExistentOperationOrAttribute" or an attribute "notExistentOperationOrAttribute" in the provider',
@@ -763,37 +763,40 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", () => {
             .catch(fail);
     });
 
-    it("throws exception when called while shut down", done => {
+    it("throws exception when called while shut down", async () => {
         requestReplyManager.shutdown();
         expect(() => {
             requestReplyManager.removeRequestCaller("providerParticipantId");
         }).toThrow();
-        requestReplyManager.handleRequest(
+
+        const replySettings = {};
+
+        await requestReplyManager.handleRequest(
             "providerParticipantId",
             {
                 requestReplyId
             },
-            reply => {
-                expect(reply instanceof Reply);
+            (settings, reply) => {
+                expect(settings).toBe(replySettings);
+                expect(reply._typeName).toEqual("joynr.Reply");
                 expect(reply.error instanceof MethodInvocationException);
-                expect(() => {
-                    const replyCallerSpy = jasmine.createSpyObj("promise", ["resolve", "reject"]);
-
-                    requestReplyManager.addReplyCaller(requestReplyId, replyCallerSpy);
-                }).toThrow();
-                expect(() => {
-                    requestReplyManager.addRequestCaller("providerParticipantId", {});
-                }).toThrow();
-                expect(() => {
-                    requestReplyManager.sendOneWayRequest({});
-                }).toThrow();
-                requestReplyManager
-                    .sendRequest({}, {})
-                    .then(fail)
-                    .catch(done);
             },
             replySettings
         );
+
+        expect(() => {
+            const replyCallerSpy = jasmine.createSpyObj("promise", ["resolve", "reject"]);
+
+            requestReplyManager.addReplyCaller(requestReplyId, replyCallerSpy);
+        }).toThrow();
+        expect(() => {
+            requestReplyManager.addRequestCaller("providerParticipantId", {});
+        }).toThrow();
+        expect(() => {
+            requestReplyManager.sendOneWayRequest({});
+        }).toThrow();
+        await testUtil.reversePromise(requestReplyManager.sendRequest({}, {}));
+        expect(dispatcherSpy.sendRequest).not.toHaveBeenCalled();
     });
     it("rejects reply callers when shut down", done => {
         const replyCallerSpy = jasmine.createSpyObj("promise", ["callback"]);
@@ -811,14 +814,14 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", () => {
             messagingQos: new MessagingQos({
                 ttl: 1024
             }),
-            request: new OneWayRequest({
+            request: OneWayRequest.create({
                 methodName: "testMethodName"
             })
         };
         const expectedArguments = UtilInternal.extendDeep({}, parameters);
         expectedArguments.messagingQos = new MessagingQos(parameters.messagingQos);
         expectedArguments.toDiscoveryEntry = new DiscoveryEntryWithMetaInfo(parameters.toDiscoveryEntry);
-        expectedArguments.request = new OneWayRequest(parameters.request);
+        expectedArguments.request = OneWayRequest.create(parameters.request);
 
         dispatcherSpy.sendOneWayRequest.and.returnValue(Promise.resolve());
         requestReplyManager.sendOneWayRequest(parameters);

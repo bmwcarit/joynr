@@ -269,7 +269,7 @@ public:
 };
 
 /**
- * @brief Joynr exeption to report errors during discovery.
+ * @brief Joynr exception to report errors during discovery.
  */
 class JOYNR_EXPORT DiscoveryException : public JoynrRuntimeException
 {

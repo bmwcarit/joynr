@@ -17,7 +17,6 @@
  * limitations under the License.
  * #L%
  */
-const Promise = require("../../../global/Promise");
 const WebSocket = require("../../../global/WebSocketNode");
 const Typing = require("../../util/Typing");
 const LongTimer = require("../../util/LongTimer");

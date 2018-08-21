@@ -19,11 +19,11 @@
 package itest.io.joynr.jeeintegration.preprocessor;
 
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Charsets;
 
 import io.joynr.messaging.RawMessagingPreprocessor;
 
@@ -32,7 +32,7 @@ public class TestRawMessagingProcessor extends RawMessagingPreprocessor {
 
     @Override
     public byte[] process(byte[] rawMessage, Map<String, Serializable> context) {
-        logger.info("raw message received: " + new String(rawMessage, Charsets.UTF_8));
+        logger.info("raw message received: " + new String(rawMessage, StandardCharsets.UTF_8));
         return rawMessage;
     }
 }

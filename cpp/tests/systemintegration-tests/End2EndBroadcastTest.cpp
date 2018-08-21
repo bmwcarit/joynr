@@ -42,30 +42,31 @@
 using namespace ::testing;
 using namespace joynr;
 
-namespace joynr {
+namespace joynr
+{
 
-class End2EndBroadcastTest : public End2EndBroadcastTestBase {
+class End2EndBroadcastTest : public End2EndBroadcastTestBase
+{
 public:
-
     End2EndBroadcastTest() : End2EndBroadcastTestBase()
     {
     }
 
 protected:
-
-    void testMulticastWithWildcards(std::shared_ptr<MyTestProvider> testProvider, std::shared_ptr<tests::testProxy> testProxy)
+    void testMulticastWithWildcards(std::shared_ptr<MyTestProvider> testProvider,
+                                    std::shared_ptr<tests::testProxy> testProxy)
     {
         std::shared_ptr<MockGpsSubscriptionListener> mockSubscriptionListener =
                 std::make_shared<MockGpsSubscriptionListener>();
 
-        std::vector<std::pair<std::vector<std::string>, std::vector<std::string>>> partitionsToTest
-        {
-            { {"partition0", "+", "partition2"}, {"partition0", "partition1", "partition2"} },
-            { {"+", "partition1" }, {"partition0", "partition1" } },
-            { {"+", "partition1", "+", "partition3" }, {"partition0", "partition1", "partition2", "partition3" } },
-            { {"+", "*"}, {"partition0", "partition1", "partition2", "partition3" } },
-            { {"+", "partition1" }, {"partition0", "partition1" } },
-            { {"+", "+", "+", "*" }, {"partition0", "partition1", "partition2", "partition3" } },
+        std::vector<std::pair<std::vector<std::string>, std::vector<std::string>>> partitionsToTest{
+                {{"partition0", "+", "partition2"}, {"partition0", "partition1", "partition2"}},
+                {{"+", "partition1"}, {"partition0", "partition1"}},
+                {{"+", "partition1", "+", "partition3"},
+                 {"partition0", "partition1", "partition2", "partition3"}},
+                {{"+", "*"}, {"partition0", "partition1", "partition2", "partition3"}},
+                {{"+", "partition1"}, {"partition0", "partition1"}},
+                {{"+", "+", "+", "*"}, {"partition0", "partition1", "partition2", "partition3"}},
         };
 
         EXPECT_CALL(*mockSubscriptionListener, onReceive(_))
@@ -75,32 +76,25 @@ protected:
         auto subscriptionQos = std::make_shared<MulticastSubscriptionQos>();
         subscriptionQos->setValidityMs(500000);
 
-        for(const auto& partitions : partitionsToTest) {
+        for (const auto& partitions : partitionsToTest) {
             auto subscriptionIdFuture = testProxy->subscribeToLocationUpdateBroadcast(
-                    mockSubscriptionListener,
-                    subscriptionQos,
-                    partitions.first
-            );
+                    mockSubscriptionListener, subscriptionQos, partitions.first);
 
             std::string subscriptionId;
             JOYNR_ASSERT_NO_THROW(subscriptionIdFuture->get(5000, subscriptionId));
 
             testProvider->fireLocationUpdate(gpsLocation2, partitions.second);
             std::stringstream subscriptionPartitions;
-            std::copy(
-                partitions.first.begin(),
-                partitions.first.end(),
-                std::ostream_iterator<std::string>(subscriptionPartitions, " ")
-            );
+            std::copy(partitions.first.begin(),
+                      partitions.first.end(),
+                      std::ostream_iterator<std::string>(subscriptionPartitions, " "));
             std::stringstream firePartitions;
-            std::copy(
-                partitions.second.begin(),
-                partitions.second.end(),
-                std::ostream_iterator<std::string>(firePartitions, " ")
-            );
+            std::copy(partitions.second.begin(),
+                      partitions.second.end(),
+                      std::ostream_iterator<std::string>(firePartitions, " "));
             EXPECT_TRUE(semaphore.waitFor(std::chrono::seconds(5)))
-                << "Partitions used for subscription: " + subscriptionPartitions.str() << std::endl
-                << "Partitions used for fire broadcast" + firePartitions.str();
+                    << "Partitions used for subscription: " + subscriptionPartitions.str()
+                    << std::endl << "Partitions used for fire broadcast" + firePartitions.str();
 
             testProxy->unsubscribeFromLocationUpdateBroadcast(subscriptionId);
         }
@@ -117,28 +111,20 @@ protected:
                 std::make_shared<MockGpsSubscriptionListener>();
 
         // Will not receive any publication
-        EXPECT_CALL(*mockSubscriptionListener1, onReceive(_))
-                .Times(0);
+        EXPECT_CALL(*mockSubscriptionListener1, onReceive(_)).Times(0);
 
         // Shall receive a publication
-        EXPECT_CALL(*mockSubscriptionListener2, onReceive(_))
-                .Times(1)
-                .WillOnce(ReleaseSemaphore(&semaphore));
+        EXPECT_CALL(*mockSubscriptionListener2, onReceive(_)).Times(1).WillOnce(
+                ReleaseSemaphore(&semaphore));
 
         auto subscriptionQos = std::make_shared<MulticastSubscriptionQos>();
         subscriptionQos->setValidityMs(500000);
 
         auto subscriptionIdFuture1 = testProxy1->subscribeToLocationUpdateBroadcast(
-                        mockSubscriptionListener1,
-                        subscriptionQos,
-                        {"partition0", "+", "partition2"}
-                );
+                mockSubscriptionListener1, subscriptionQos, {"partition0", "+", "partition2"});
 
         auto subscriptionIdFuture2 = testProxy2->subscribeToLocationUpdateBroadcast(
-                        mockSubscriptionListener2,
-                        subscriptionQos,
-                        {"partition0", "*"}
-                );
+                mockSubscriptionListener2, subscriptionQos, {"partition0", "*"});
 
         std::string subscriptionId1, subscriptionId2;
 
@@ -159,69 +145,59 @@ private:
 
 } // namespace joynr
 
-TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithEnumOutput) {
+TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithEnumOutput)
+{
     if (usesHttpTransport()) {
         FAIL() << "multicast subscription via HTTP not implemented";
     }
     tests::testTypes::TestEnum::Enum expectedTestEnum = tests::testTypes::TestEnum::TWO;
 
     testOneShotBroadcastSubscription(
-        expectedTestEnum,
-        [this](
-            tests::testProxy* testProxy,
-            std::shared_ptr<ISubscriptionListener<tests::testTypes::TestEnum::Enum>> subscriptionListener,
-            std::shared_ptr<MulticastSubscriptionQos> subscriptionQos,
-            std::string& subscriptionId
-        ) {
-            std::shared_ptr<Future<std::string>> subscriptionIdFuture =
-                    testProxy->subscribeToBroadcastWithEnumOutputBroadcast(
-                        subscriptionListener,
-                        subscriptionQos
-                    );
-            JOYNR_EXPECT_NO_THROW(subscriptionIdFuture->get(subscribeToBroadcastWait, subscriptionId));
-        },
-        [this](
-            tests::testProxy* testProxy,
-            std::string& subscriptionId
-        ) {
-            testProxy->unsubscribeFromBroadcastWithFilteringBroadcast(subscriptionId);
-        },
-        &tests::testProvider::fireBroadcastWithEnumOutput
-    );
+            expectedTestEnum,
+            [this](tests::testProxy* testProxy,
+                   std::shared_ptr<ISubscriptionListener<tests::testTypes::TestEnum::Enum>>
+                           subscriptionListener,
+                   std::shared_ptr<MulticastSubscriptionQos> subscriptionQos,
+                   std::string& subscriptionId) {
+                std::shared_ptr<Future<std::string>> subscriptionIdFuture =
+                        testProxy->subscribeToBroadcastWithEnumOutputBroadcast(
+                                subscriptionListener, subscriptionQos);
+                JOYNR_EXPECT_NO_THROW(
+                        subscriptionIdFuture->get(subscribeToBroadcastWait, subscriptionId));
+            },
+            [this](tests::testProxy* testProxy, std::string& subscriptionId) {
+                testProxy->unsubscribeFromBroadcastWithFilteringBroadcast(subscriptionId);
+            },
+            &tests::testProvider::fireBroadcastWithEnumOutput);
 }
 
-TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithByteBufferParameter) {
+TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithByteBufferParameter)
+{
     if (usesHttpTransport()) {
         FAIL() << "multicast subscription via HTTP not implemented";
     }
-    joynr::ByteBuffer expectedByteBuffer {0,1,2,3,4,5,6,7,8,9,8,7,6,5,4,3,2,1,0};
+    joynr::ByteBuffer expectedByteBuffer{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
 
     testOneShotBroadcastSubscription(
-        expectedByteBuffer,
-        [this](
-            tests::testProxy* testProxy,
-            std::shared_ptr<ISubscriptionListener<joynr::ByteBuffer>> subscriptionListener,
-            std::shared_ptr<MulticastSubscriptionQos> subscriptionQos,
-            std::string& subscriptionId
-        ) {
-            std::shared_ptr<Future<std::string>> subscriptionIdFuture =
-                    testProxy->subscribeToBroadcastWithByteBufferParameterBroadcast(
-                        subscriptionListener,
-                        subscriptionQos
-                    );
-            JOYNR_EXPECT_NO_THROW(subscriptionIdFuture->get(subscribeToBroadcastWait, subscriptionId));
-        },
-        [this](
-            tests::testProxy* testProxy,
-            std::string& subscriptionId
-        ) {
-            testProxy->unsubscribeFromBroadcastWithFilteringBroadcast(subscriptionId);
-        },
-        &tests::testProvider::fireBroadcastWithByteBufferParameter
-    );
+            expectedByteBuffer,
+            [this](tests::testProxy* testProxy,
+                   std::shared_ptr<ISubscriptionListener<joynr::ByteBuffer>> subscriptionListener,
+                   std::shared_ptr<MulticastSubscriptionQos> subscriptionQos,
+                   std::string& subscriptionId) {
+                std::shared_ptr<Future<std::string>> subscriptionIdFuture =
+                        testProxy->subscribeToBroadcastWithByteBufferParameterBroadcast(
+                                subscriptionListener, subscriptionQos);
+                JOYNR_EXPECT_NO_THROW(
+                        subscriptionIdFuture->get(subscribeToBroadcastWait, subscriptionId));
+            },
+            [this](tests::testProxy* testProxy, std::string& subscriptionId) {
+                testProxy->unsubscribeFromBroadcastWithFilteringBroadcast(subscriptionId);
+            },
+            &tests::testProvider::fireBroadcastWithByteBufferParameter);
 }
 
-TEST_P(End2EndBroadcastTest, updateBroadcastSubscription) {
+TEST_P(End2EndBroadcastTest, updateBroadcastSubscription)
+{
     if (usesHttpTransport()) {
         FAIL() << "multicast subscription via HTTP not implemented";
     }
@@ -231,13 +207,11 @@ TEST_P(End2EndBroadcastTest, updateBroadcastSubscription) {
     std::shared_ptr<MockGpsSubscriptionListener> mockSubscriptionListener2 =
             std::make_shared<MockGpsSubscriptionListener>();
 
-    EXPECT_CALL(*mockSubscriptionListener, onReceive(_))
-            .Times(1)
-            .WillOnce(ReleaseSemaphore(&semaphore));
+    EXPECT_CALL(*mockSubscriptionListener, onReceive(_)).Times(1).WillOnce(
+            ReleaseSemaphore(&semaphore));
 
-    EXPECT_CALL(*mockSubscriptionListener2, onReceive(_))
-            .Times(1)
-            .WillOnce(ReleaseSemaphore(&altSemaphore));
+    EXPECT_CALL(*mockSubscriptionListener2, onReceive(_)).Times(1).WillOnce(
+            ReleaseSemaphore(&altSemaphore));
 
     std::shared_ptr<MyTestProvider> testProvider = registerProvider();
 
@@ -247,9 +221,7 @@ TEST_P(End2EndBroadcastTest, updateBroadcastSubscription) {
     subscriptionQos->setValidityMs(500000);
 
     std::shared_ptr<Future<std::string>> future = testProxy->subscribeToLocationUpdateBroadcast(
-        mockSubscriptionListener,
-        subscriptionQos
-    );
+            mockSubscriptionListener, subscriptionQos);
 
     std::string subscriptionId;
     JOYNR_ASSERT_NO_THROW(future->get(5000, subscriptionId));
@@ -262,10 +234,7 @@ TEST_P(End2EndBroadcastTest, updateBroadcastSubscription) {
 
     // update subscription, new listener
     future = testProxy->subscribeToLocationUpdateBroadcast(
-        subscriptionId,
-        mockSubscriptionListener2,
-        subscriptionQos
-    );
+            subscriptionId, mockSubscriptionListener2, subscriptionQos);
     JOYNR_ASSERT_NO_THROW(future->get(5000, subscriptionId));
 
     testProvider->fireLocationUpdate(gpsLocation2);
@@ -275,7 +244,8 @@ TEST_P(End2EndBroadcastTest, updateBroadcastSubscription) {
     JOYNR_ASSERT_NO_THROW(testProxy->unsubscribeFromLocationUpdateBroadcast(subscriptionId));
 }
 
-TEST_P(End2EndBroadcastTest, subscribeToSameBroadcastTwice) {
+TEST_P(End2EndBroadcastTest, subscribeToSameBroadcastTwice)
+{
     if (usesHttpTransport()) {
         FAIL() << "multicast subscription via HTTP not implemented";
     }
@@ -283,13 +253,11 @@ TEST_P(End2EndBroadcastTest, subscribeToSameBroadcastTwice) {
     auto mockSubscriptionListener = std::make_shared<MockGpsSubscriptionListener>();
     auto mockSubscriptionListener2 = std::make_shared<MockGpsSubscriptionListener>();
 
-    EXPECT_CALL(*mockSubscriptionListener, onReceive(_))
-            .Times(1)
-            .WillOnce(ReleaseSemaphore(&semaphore));
+    EXPECT_CALL(*mockSubscriptionListener, onReceive(_)).Times(1).WillOnce(
+            ReleaseSemaphore(&semaphore));
 
-    EXPECT_CALL(*mockSubscriptionListener2, onReceive(_))
-            .Times(1)
-            .WillOnce(ReleaseSemaphore(&altSemaphore));
+    EXPECT_CALL(*mockSubscriptionListener2, onReceive(_)).Times(1).WillOnce(
+            ReleaseSemaphore(&altSemaphore));
 
     std::shared_ptr<MyTestProvider> testProvider = registerProvider();
 
@@ -299,15 +267,11 @@ TEST_P(End2EndBroadcastTest, subscribeToSameBroadcastTwice) {
     subscriptionQos->setValidityMs(500000);
 
     std::shared_ptr<Future<std::string>> future = testProxy->subscribeToLocationUpdateBroadcast(
-        mockSubscriptionListener,
-        subscriptionQos
-    );
+            mockSubscriptionListener, subscriptionQos);
 
     // second subscription
     std::shared_ptr<Future<std::string>> future2 = testProxy->subscribeToLocationUpdateBroadcast(
-        mockSubscriptionListener2,
-        subscriptionQos
-    );
+            mockSubscriptionListener2, subscriptionQos);
 
     std::string subscriptionId1, subscriptionId2;
     JOYNR_ASSERT_NO_THROW(future->get(5000, subscriptionId1));
@@ -323,14 +287,14 @@ TEST_P(End2EndBroadcastTest, subscribeToSameBroadcastTwice) {
     JOYNR_ASSERT_NO_THROW(testProxy->unsubscribeFromLocationUpdateBroadcast(subscriptionId2));
 }
 
-TEST_P(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput) {
+TEST_P(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput)
+{
     if (usesHttpTransport()) {
         FAIL() << "multicast subscription via HTTP not implemented";
     }
 
     std::shared_ptr<MockGpsSubscriptionListener> subscriptionListener(
-                std::make_shared<MockGpsSubscriptionListener>()
-    );
+            std::make_shared<MockGpsSubscriptionListener>());
 
     std::shared_ptr<MyTestProvider> testProvider = registerProvider();
     std::shared_ptr<tests::testProxy> testProxy = buildProxy();
@@ -338,32 +302,30 @@ TEST_P(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput) {
     auto subscriptionQos = std::make_shared<MulticastSubscriptionQos>();
     subscriptionQos->setValidityMs(500000);
 
-    auto future = testProxy->subscribeToLocationUpdateBroadcast(
-                subscriptionListener,
-                subscriptionQos
-    );
+    auto future =
+            testProxy->subscribeToLocationUpdateBroadcast(subscriptionListener, subscriptionQos);
 
     std::string subscriptionId;
     JOYNR_ASSERT_NO_THROW(future->get(5000, subscriptionId));
 
-    EXPECT_CALL(*subscriptionListener, onReceive(Eq(gpsLocation2)))
-            .Times(1)
-            .WillOnce(ReleaseSemaphore(&semaphore));
+    EXPECT_CALL(*subscriptionListener, onReceive(Eq(gpsLocation2))).Times(1).WillOnce(
+            ReleaseSemaphore(&semaphore));
 
     testProvider->fireLocationUpdate(gpsLocation2);
 
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
     testProxy->unsubscribeFromLocationUpdateBroadcast(subscriptionId);
-    
+
     EXPECT_CALL(*subscriptionListener, onReceive(Eq(gpsLocation3))).Times(0);
     testProvider->fireLocationUpdate(gpsLocation3);
 
-    //ensure to wait long enough before ending
+    // ensure to wait long enough before ending
     std::this_thread::sleep_for(std::chrono::seconds(3));
     JOYNR_ASSERT_NO_THROW(testProxy->unsubscribeFromLocationUpdateBroadcast(subscriptionId));
 }
 
-TEST_P(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
+TEST_P(End2EndBroadcastTest, subscribeToBroadcast_OneOutput)
+{
     if (usesHttpTransport()) {
         FAIL() << "multicast subscription via HTTP not implemented";
     }
@@ -378,10 +340,7 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
     subscriptionQos->setValidityMs(500000);
 
     std::shared_ptr<Future<std::string>> subscriptionIdFuture =
-            testProxy->subscribeToLocationUpdateBroadcast(
-                mockListener,
-                subscriptionQos
-            );
+            testProxy->subscribeToLocationUpdateBroadcast(mockListener, subscriptionQos);
     std::string subscriptionId;
     JOYNR_EXPECT_NO_THROW(subscriptionIdFuture->get(subscribeToBroadcastWait, subscriptionId));
 
@@ -397,17 +356,17 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
     // Waiting between broadcast is neccessary because otherwise the publications could be omitted.
     std::this_thread::sleep_for(std::chrono::seconds(3));
 
-    EXPECT_CALL(*mockListener, onReceive(Eq(gpsLocation4)))
-            .Times(1)
-            .WillOnce(ReleaseSemaphore(&semaphore));
+    EXPECT_CALL(*mockListener, onReceive(Eq(gpsLocation4))).Times(1).WillOnce(
+            ReleaseSemaphore(&semaphore));
     testProvider->fireLocationUpdate(gpsLocation4);
 
-    //ensure to wait long enough before ending
+    // ensure to wait long enough before ending
     std::this_thread::sleep_for(std::chrono::seconds(3));
     JOYNR_ASSERT_NO_THROW(testProxy->unsubscribeFromLocationUpdateBroadcast(subscriptionId));
 }
 
-TEST_P(End2EndBroadcastTest, waitForSuccessfulSubscriptionRegistration) {
+TEST_P(End2EndBroadcastTest, waitForSuccessfulSubscriptionRegistration)
+{
     if (usesHttpTransport()) {
         FAIL() << "multicast subscription via HTTP not implemented";
     }
@@ -425,30 +384,22 @@ TEST_P(End2EndBroadcastTest, waitForSuccessfulSubscriptionRegistration) {
             std::make_shared<MockGpsSubscriptionListener>();
 
     EXPECT_CALL(*mockListener, onSubscribed(_))
-            .WillOnce(
-                DoAll(
-                    SaveArg<0>(&subscriptionIdFromListener),
-                    ReleaseSemaphore(&semaphore)
-                )
-            );
+            .WillOnce(DoAll(SaveArg<0>(&subscriptionIdFromListener), ReleaseSemaphore(&semaphore)));
 
     std::shared_ptr<Future<std::string>> subscriptionIdFuture =
-            testProxy->subscribeToLocationUpdateBroadcast(
-                mockListener,
-                subscriptionQos
-            );
+            testProxy->subscribeToLocationUpdateBroadcast(mockListener, subscriptionQos);
 
-    JOYNR_EXPECT_NO_THROW(subscriptionIdFuture->get(
-                              subscribeToBroadcastWait,
-                              subscriptionIdFromFuture)
-                          );
+    JOYNR_EXPECT_NO_THROW(
+            subscriptionIdFuture->get(subscribeToBroadcastWait, subscriptionIdFromFuture));
 
     EXPECT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
     EXPECT_EQ(subscriptionIdFromFuture, subscriptionIdFromListener);
-    JOYNR_ASSERT_NO_THROW(testProxy->unsubscribeFromLocationUpdateBroadcast(subscriptionIdFromFuture));
+    JOYNR_ASSERT_NO_THROW(
+            testProxy->unsubscribeFromLocationUpdateBroadcast(subscriptionIdFromFuture));
 }
 
-TEST_P(End2EndBroadcastTest, waitForSuccessfulSubscriptionUpdate) {
+TEST_P(End2EndBroadcastTest, waitForSuccessfulSubscriptionUpdate)
+{
     if (usesHttpTransport()) {
         FAIL() << "multicast subscription via HTTP not implemented";
     }
@@ -462,8 +413,10 @@ TEST_P(End2EndBroadcastTest, waitForSuccessfulSubscriptionUpdate) {
     std::string initialSubscriptionIdFromFuture;
     std::string updateSubscriptionIdFromFuture;
     EXPECT_CALL(*mockListener, onSubscribed(_))
-            .WillOnce(DoAll(SaveArg<0>(&initialSubscriptionIdFromListener), ReleaseSemaphore(&semaphore)))
-            .WillOnce(DoAll(SaveArg<0>(&updateSubscriptionIdFromListener), ReleaseSemaphore(&semaphore)));
+            .WillOnce(DoAll(
+                    SaveArg<0>(&initialSubscriptionIdFromListener), ReleaseSemaphore(&semaphore)))
+            .WillOnce(DoAll(
+                    SaveArg<0>(&updateSubscriptionIdFromListener), ReleaseSemaphore(&semaphore)));
 
     std::shared_ptr<MyTestProvider> testProvider = registerProvider();
 
@@ -473,23 +426,18 @@ TEST_P(End2EndBroadcastTest, waitForSuccessfulSubscriptionUpdate) {
     subscriptionQos->setValidityMs(500000);
 
     std::shared_ptr<Future<std::string>> subscriptionIdFuture =
-            testProxy->subscribeToLocationUpdateBroadcast(
-                mockListener,
-                subscriptionQos
-            );
+            testProxy->subscribeToLocationUpdateBroadcast(mockListener, subscriptionQos);
     // the sequence of calling the onReceive listener and the future resolve is not guaranteed
-    JOYNR_EXPECT_NO_THROW(subscriptionIdFuture->get(subscribeToBroadcastWait, initialSubscriptionIdFromFuture));
+    JOYNR_EXPECT_NO_THROW(
+            subscriptionIdFuture->get(subscribeToBroadcastWait, initialSubscriptionIdFromFuture));
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(500)));
-    
+
     EXPECT_EQ(initialSubscriptionIdFromListener, initialSubscriptionIdFromFuture);
 
     // update subscription
     subscriptionIdFuture = nullptr;
     subscriptionIdFuture = testProxy->subscribeToLocationUpdateBroadcast(
-                                initialSubscriptionIdFromListener,
-                                mockListener,
-                                subscriptionQos
-                            );
+            initialSubscriptionIdFromListener, mockListener, subscriptionQos);
 
     // the sequence of calling the onReceive listener and the future resolve is not guaranteed
     JOYNR_EXPECT_NO_THROW(subscriptionIdFuture->get(5000, updateSubscriptionIdFromFuture));
@@ -498,10 +446,12 @@ TEST_P(End2EndBroadcastTest, waitForSuccessfulSubscriptionUpdate) {
     EXPECT_EQ(updateSubscriptionIdFromListener, updateSubscriptionIdFromFuture);
     // subscription id from update is the same as the original subscription id
     EXPECT_EQ(initialSubscriptionIdFromListener, updateSubscriptionIdFromListener);
-    JOYNR_ASSERT_NO_THROW(testProxy->unsubscribeFromLocationUpdateBroadcast(initialSubscriptionIdFromListener));
+    JOYNR_ASSERT_NO_THROW(
+            testProxy->unsubscribeFromLocationUpdateBroadcast(initialSubscriptionIdFromListener));
 }
 
-TEST_P(End2EndBroadcastTest, subscribeToBroadcast_EmptyOutput) {
+TEST_P(End2EndBroadcastTest, subscribeToBroadcast_EmptyOutput)
+{
     if (usesHttpTransport()) {
         FAIL() << "multicast subscription via HTTP not implemented";
     }
@@ -510,8 +460,7 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcast_EmptyOutput) {
             std::make_shared<MockSubscriptionListenerZeroTypes>();
 
     // Use a semaphore to count and wait on calls to the mock listener
-    EXPECT_CALL(*mockListener, onReceive())
-            .WillRepeatedly(ReleaseSemaphore(&semaphore));
+    EXPECT_CALL(*mockListener, onReceive()).WillRepeatedly(ReleaseSemaphore(&semaphore));
 
     std::shared_ptr<MyTestProvider> testProvider = registerProvider();
 
@@ -521,13 +470,11 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcast_EmptyOutput) {
     subscriptionQos->setValidityMs(500000);
 
     std::shared_ptr<joynr::Future<std::string>> subscriptionBroadcastResult =
-            testProxy->subscribeToEmptyBroadcastBroadcast(
-                mockListener,
-                subscriptionQos
-            );
+            testProxy->subscribeToEmptyBroadcastBroadcast(mockListener, subscriptionQos);
 
     std::string subscriptionId;
-    JOYNR_EXPECT_NO_THROW(subscriptionBroadcastResult->get(subscribeToBroadcastWait, subscriptionId));
+    JOYNR_EXPECT_NO_THROW(
+            subscriptionBroadcastResult->get(subscribeToBroadcastWait, subscriptionId));
 
     testProvider->fireEmptyBroadcast();
 
@@ -551,7 +498,8 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcast_EmptyOutput) {
     JOYNR_ASSERT_NO_THROW(testProxy->unsubscribeFromEmptyBroadcastBroadcast(subscriptionId));
 }
 
-TEST_P(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
+TEST_P(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput)
+{
     if (usesHttpTransport()) {
         FAIL() << "multicast subscription via HTTP not implemented";
     }
@@ -568,8 +516,8 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
     EXPECT_CALL(*mockListener, onReceive(Eq(gpsLocation4), Eq(300)))
             .WillOnce(ReleaseSemaphore(&semaphore));
 
-    std::shared_ptr<ISubscriptionListener<types::Localisation::GpsLocation, float> > subscriptionListener(
-                    mockListener);
+    std::shared_ptr<ISubscriptionListener<types::Localisation::GpsLocation, float>>
+            subscriptionListener(mockListener);
 
     std::shared_ptr<MyTestProvider> testProvider = registerProvider();
 
@@ -580,24 +528,23 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
 
     std::shared_ptr<joynr::Future<std::string>> subscriptionBroadcastResult =
             testProxy->subscribeToLocationUpdateWithSpeedBroadcast(
-                subscriptionListener,
-                subscriptionQos
-            );
+                    subscriptionListener, subscriptionQos);
     std::string subscriptionId;
-    JOYNR_EXPECT_NO_THROW(subscriptionBroadcastResult->get(subscribeToBroadcastWait, subscriptionId));
+    JOYNR_EXPECT_NO_THROW(
+            subscriptionBroadcastResult->get(subscribeToBroadcastWait, subscriptionId));
 
     // Change the location 3 times
 
     testProvider->fireLocationUpdateWithSpeed(gpsLocation2, 100);
 
-//     Wait for a subscription message to arrive
+    //     Wait for a subscription message to arrive
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
 
     // Waiting between broadcast is neccessary because otherwise the publications could be omitted.
     std::this_thread::sleep_for(std::chrono::seconds(3));
 
     testProvider->fireLocationUpdateWithSpeed(gpsLocation3, 200);
-//     Wait for a subscription message to arrive
+    //     Wait for a subscription message to arrive
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
 
     // Waiting between broadcast is neccessary because otherwise the publications could be omitted.
@@ -607,10 +554,12 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
 
     // Wait for a subscription message to arrive
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
-    JOYNR_ASSERT_NO_THROW(testProxy->unsubscribeFromLocationUpdateWithSpeedBroadcast(subscriptionId));
+    JOYNR_ASSERT_NO_THROW(
+            testProxy->unsubscribeFromLocationUpdateWithSpeedBroadcast(subscriptionId));
 }
 
-TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute) {
+TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute)
+{
     if (usesHttpTransport()) {
         FAIL() << "multicast subscription via HTTP not implemented";
     }
@@ -626,32 +575,32 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute) {
 
     std::int64_t minInterval_ms = 50;
     std::int64_t publicationTtl = 50;
-    auto subscriptionQosAttribute = std::make_shared<OnChangeSubscriptionQos>(
-                500000,   // validity_ms
-                publicationTtl,
-                minInterval_ms);  // minInterval_ms
+    auto subscriptionQosAttribute =
+            std::make_shared<OnChangeSubscriptionQos>(500000, // validity_ms
+                                                      publicationTtl,
+                                                      minInterval_ms); // minInterval_ms
 
     // Initial attribute publication on subscription
-    EXPECT_CALL(*mockListenerAttribute, onReceive(Eq(gpsLocation)))
-            .Times(1);
+    EXPECT_CALL(*mockListenerAttribute, onReceive(Eq(gpsLocation))).Times(1);
 
-    std::shared_ptr<joynr::Future<std::string>> subscriptionAttributeResult = testProxy->subscribeToLocation(
-                mockListenerAttribute,
-                subscriptionQosAttribute);
+    std::shared_ptr<joynr::Future<std::string>> subscriptionAttributeResult =
+            testProxy->subscribeToLocation(mockListenerAttribute, subscriptionQosAttribute);
     std::string subscriptionIdAttribute;
     // Wait until the provider sends back a subscriptionReply, i.e. the subscription is
     // established successful
 
-    JOYNR_EXPECT_NO_THROW(subscriptionAttributeResult->get(subscribeToAttributeWait, subscriptionIdAttribute));
+    JOYNR_EXPECT_NO_THROW(
+            subscriptionAttributeResult->get(subscribeToAttributeWait, subscriptionIdAttribute));
 
     auto subscriptionQosBroadcast = std::make_shared<MulticastSubscriptionQos>(500000);
-    std::shared_ptr<joynr::Future<std::string>> subscriptionBroadcastResult = testProxy->subscribeToLocationBroadcast(
-                mockListenerBroadcast,
-                subscriptionQosBroadcast);
+    std::shared_ptr<joynr::Future<std::string>> subscriptionBroadcastResult =
+            testProxy->subscribeToLocationBroadcast(
+                    mockListenerBroadcast, subscriptionQosBroadcast);
     // Wait until the provider sends back a subscriptionReply, i.e. the subscription is
     // established successful
     std::string subscriptionIdBroadcast;
-    JOYNR_EXPECT_NO_THROW(subscriptionBroadcastResult->get(subscribeToBroadcastWait, subscriptionIdBroadcast));
+    JOYNR_EXPECT_NO_THROW(
+            subscriptionBroadcastResult->get(subscribeToBroadcastWait, subscriptionIdBroadcast));
 
     // Waiting between broadcast is neccessary because otherwise the publications could be omitted.
     std::this_thread::sleep_for(std::chrono::seconds(3));
@@ -673,7 +622,8 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute) {
     JOYNR_ASSERT_NO_THROW(testProxy->unsubscribeFromLocationBroadcast(subscriptionIdBroadcast));
 }
 
-TEST_P(End2EndBroadcastTest, subscribeToAttributeWithoutProvider) {
+TEST_P(End2EndBroadcastTest, subscribeToAttributeWithoutProvider)
+{
     if (usesHttpTransport()) {
         FAIL() << "multicast subscription via HTTP not implemented";
     }
@@ -689,29 +639,30 @@ TEST_P(End2EndBroadcastTest, subscribeToAttributeWithoutProvider) {
 
     std::int64_t minInterval_ms = 50;
     std::int64_t publicationTtl = 50;
-    auto subscriptionQosAttribute = std::make_shared<OnChangeSubscriptionQos>(
-                500000,   // validity_ms
-                publicationTtl,
-                minInterval_ms);  // minInterval_ms
+    auto subscriptionQosAttribute =
+            std::make_shared<OnChangeSubscriptionQos>(500000, // validity_ms
+                                                      publicationTtl,
+                                                      minInterval_ms); // minInterval_ms
 
     // Initial attribute publication on subscription
-    EXPECT_CALL(*mockListenerAttribute, onReceive(Eq(gpsLocation)))
-            .Times(1);
+    EXPECT_CALL(*mockListenerAttribute, onReceive(Eq(gpsLocation))).Times(1);
 
-    std::shared_ptr<joynr::Future<std::string>> subscriptionAttributeResult = testProxy->subscribeToLocation(
-                mockListenerAttribute,
-                subscriptionQosAttribute);
+    std::shared_ptr<joynr::Future<std::string>> subscriptionAttributeResult =
+            testProxy->subscribeToLocation(mockListenerAttribute, subscriptionQosAttribute);
     std::string subscriptionIdAttribute;
-    EXPECT_THROW(subscriptionAttributeResult->get(subscribeToAttributeWait, subscriptionIdAttribute),
-                 joynr::exceptions::JoynrTimeOutException);
+    EXPECT_THROW(
+            subscriptionAttributeResult->get(subscribeToAttributeWait, subscriptionIdAttribute),
+            joynr::exceptions::JoynrTimeOutException);
 
     // Register same provider again
     testProvider = registerProvider();
 
-    JOYNR_EXPECT_NO_THROW(subscriptionAttributeResult->get(subscribeToAttributeWait, subscriptionIdAttribute));
+    JOYNR_EXPECT_NO_THROW(
+            subscriptionAttributeResult->get(subscribeToAttributeWait, subscriptionIdAttribute));
 
     // Expect to get notified if attribute changed
-    EXPECT_CALL(*mockListenerAttribute, onReceive(Eq(gpsLocation2))).WillOnce(ReleaseSemaphore(&semaphore));
+    EXPECT_CALL(*mockListenerAttribute, onReceive(Eq(gpsLocation2)))
+            .WillOnce(ReleaseSemaphore(&semaphore));
     testProvider->locationChanged(gpsLocation2);
 
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(receiveBroadcastWait)));
@@ -719,7 +670,8 @@ TEST_P(End2EndBroadcastTest, subscribeToAttributeWithoutProvider) {
     JOYNR_ASSERT_NO_THROW(testProxy->unsubscribeFromLocation(subscriptionIdAttribute));
 }
 
-TEST_P(End2EndBroadcastTest, subscribeToSameBroadcastWithDifferentPartitions) {
+TEST_P(End2EndBroadcastTest, subscribeToSameBroadcastWithDifferentPartitions)
+{
     if (usesHttpTransport()) {
         FAIL() << "multicast subscription via HTTP not implemented";
     }
@@ -736,13 +688,11 @@ TEST_P(End2EndBroadcastTest, subscribeToSameBroadcastWithDifferentPartitions) {
     // Use a semaphore to count and wait on calls to the mock listener
     // we expect to notifications before updating the subscription
     // on the second call we release the sync semaphore
-    EXPECT_CALL(*mockSubscriptionListener1, onReceive(_))
-            .Times(1)
-            .WillOnce(ReleaseSemaphore(&semaphore));
+    EXPECT_CALL(*mockSubscriptionListener1, onReceive(_)).Times(1).WillOnce(
+            ReleaseSemaphore(&semaphore));
 
-    EXPECT_CALL(*mockSubscriptionListener2, onReceive(_))
-            .Times(1)
-            .WillOnce(ReleaseSemaphore(&altSemaphore));
+    EXPECT_CALL(*mockSubscriptionListener2, onReceive(_)).Times(1).WillOnce(
+            ReleaseSemaphore(&altSemaphore));
 
     std::shared_ptr<MyTestProvider> testProvider = registerProvider();
 
@@ -752,15 +702,9 @@ TEST_P(End2EndBroadcastTest, subscribeToSameBroadcastWithDifferentPartitions) {
     subscriptionQos->setValidityMs(500000);
 
     auto subscriptionIdFuture1 = testProxy->subscribeToLocationUpdateBroadcast(
-                mockSubscriptionListener1,
-                subscriptionQos,
-                partitions1
-    );
+            mockSubscriptionListener1, subscriptionQos, partitions1);
     auto subscriptionIdFuture2 = testProxy->subscribeToLocationUpdateBroadcast(
-                mockSubscriptionListener2,
-                subscriptionQos,
-                partitions2
-    );
+            mockSubscriptionListener2, subscriptionQos, partitions2);
 
     std::string subscriptionId1, subscriptionId2;
     JOYNR_ASSERT_NO_THROW(subscriptionIdFuture1->get(subscribeToBroadcastWait, subscriptionId1));
@@ -791,7 +735,8 @@ TEST_P(End2EndBroadcastTest, subscribeToSameBroadcastWithDifferentPartitions) {
     JOYNR_ASSERT_NO_THROW(testProxy->unsubscribeFromLocationUpdateBroadcast(subscriptionId2));
 }
 
-TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithWildcards) {
+TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithWildcards)
+{
     if (usesHttpTransport()) {
         FAIL() << "multicast subscription via HTTP not implemented";
     }
@@ -802,7 +747,8 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithWildcards) {
     testMulticastWithWildcards(testProvider, testProxy);
 }
 
-TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithWildcards_InProcess) {
+TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithWildcards_InProcess)
+{
     if (usesHttpTransport()) {
         FAIL() << "multicast subscription via HTTP not implemented";
     }
@@ -813,7 +759,8 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithWildcards_InProcess) {
     testMulticastWithWildcards(testProvider, testProxy);
 }
 
-TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithWildcards_TwoProxies) {
+TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithWildcards_TwoProxies)
+{
     if (usesHttpTransport()) {
         FAIL() << "multicast subscription via HTTP not implemented";
     }
@@ -825,7 +772,8 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithWildcards_TwoProxies) {
     testMulticastWithWildcardsAndTwoProxies(testProvider, testProxy1, testProxy2);
 }
 
-TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithWildcards_TwoProxiesInProcess) {
+TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithWildcards_TwoProxiesInProcess)
+{
     if (usesHttpTransport()) {
         FAIL() << "multicast subscription via HTTP not implemented";
     }
@@ -837,17 +785,16 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithWildcards_TwoProxiesInProce
     testMulticastWithWildcardsAndTwoProxies(testProvider, testProxy1, testProxy2);
 }
 
-TEST_P(End2EndBroadcastTest, publishBroadcastWithInvalidPartitions) {
+TEST_P(End2EndBroadcastTest, publishBroadcastWithInvalidPartitions)
+{
     if (usesHttpTransport()) {
         FAIL() << "multicast subscription via HTTP not implemented";
     }
 
     std::shared_ptr<MyTestProvider> testProvider = registerProvider();
 
-    EXPECT_THROW(
-        testProvider->fireLocationUpdate(gpsLocation2, {"partition0", "partition1", "*"}),
-        std::invalid_argument
-    );
+    EXPECT_THROW(testProvider->fireLocationUpdate(gpsLocation2, {"partition0", "partition1", "*"}),
+                 std::invalid_argument);
 }
 
 TEST_P(End2EndBroadcastTest, sendBroadcastMessageOnlyOnceIfMultipleProxiesAreOnSameRuntime)
@@ -871,29 +818,21 @@ TEST_P(End2EndBroadcastTest, sendBroadcastMessageOnlyOnceIfMultipleProxiesAreOnS
     subscriptionQos->setValidityMs(500000);
 
     auto subscriptionIdFuture1 = testProxy1->subscribeToLocationUpdateBroadcast(
-                mockSubscriptionListener1,
-                subscriptionQos,
-                partitions
-    );
+            mockSubscriptionListener1, subscriptionQos, partitions);
 
     auto subscriptionIdFuture2 = testProxy2->subscribeToLocationUpdateBroadcast(
-                mockSubscriptionListener2,
-                subscriptionQos,
-                partitions
-    );
+            mockSubscriptionListener2, subscriptionQos, partitions);
 
     std::string subscriptionId1, subscriptionId2;
     JOYNR_ASSERT_NO_THROW(subscriptionIdFuture1->get(subscribeToBroadcastWait, subscriptionId1));
     JOYNR_ASSERT_NO_THROW(subscriptionIdFuture2->get(subscribeToBroadcastWait, subscriptionId2));
 
     // Each proxy will receive a message exactly one time
-    EXPECT_CALL(*mockSubscriptionListener1, onReceive(_))
-            .Times(1)
-            .WillOnce(ReleaseSemaphore(&semaphore));
+    EXPECT_CALL(*mockSubscriptionListener1, onReceive(_)).Times(1).WillOnce(
+            ReleaseSemaphore(&semaphore));
 
-    EXPECT_CALL(*mockSubscriptionListener2, onReceive(_))
-            .Times(1)
-            .WillOnce(ReleaseSemaphore(&altSemaphore));
+    EXPECT_CALL(*mockSubscriptionListener2, onReceive(_)).Times(1).WillOnce(
+            ReleaseSemaphore(&altSemaphore));
 
     testProvider->fireLocationUpdate(gpsLocation2, partitions);
 
@@ -906,22 +845,14 @@ TEST_P(End2EndBroadcastTest, sendBroadcastMessageOnlyOnceIfMultipleProxiesAreOnS
 
 using namespace std::literals;
 
-INSTANTIATE_TEST_CASE_P(DISABLED_Http,
+INSTANTIATE_TEST_CASE_P(
+        DISABLED_Http,
         End2EndBroadcastTest,
-        testing::Values(
-            std::make_tuple(
-                "test-resources/HttpSystemIntegrationTest1.settings"s,
-                "test-resources/HttpSystemIntegrationTest2.settings"s
-            )
-        )
-);
+        testing::Values(std::make_tuple("test-resources/HttpSystemIntegrationTest1.settings"s,
+                                        "test-resources/HttpSystemIntegrationTest2.settings"s)));
 
-INSTANTIATE_TEST_CASE_P(Mqtt,
+INSTANTIATE_TEST_CASE_P(
+        Mqtt,
         End2EndBroadcastTest,
-        testing::Values(
-            std::make_tuple(
-                "test-resources/MqttSystemIntegrationTest1.settings"s,
-                "test-resources/MqttSystemIntegrationTest2.settings"s
-            )
-        )
-);
+        testing::Values(std::make_tuple("test-resources/MqttSystemIntegrationTest1.settings"s,
+                                        "test-resources/MqttSystemIntegrationTest2.settings"s)));

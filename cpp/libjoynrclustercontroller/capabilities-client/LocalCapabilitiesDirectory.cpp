@@ -185,7 +185,7 @@ void LocalCapabilitiesDirectory::addInternal(
             ](const exceptions::JoynrException& error)
             {
                 JOYNR_LOG_ERROR(logger(),
-                                "Error occured during the execution of capabilitiesProxy->add for "
+                                "Error occurred during the execution of capabilitiesProxy->add for "
                                 "'{}'. Error: {}",
                                 globalDiscoveryEntry.toString(),
                                 error.getMessage());

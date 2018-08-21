@@ -44,26 +44,30 @@ using ::testing::Property;
 using namespace ::testing;
 using namespace joynr;
 
-class MqttMessagingSkeletonTtlUpliftTest : public ::testing::Test {
+class MqttMessagingSkeletonTtlUpliftTest : public ::testing::Test
+{
 public:
-    MqttMessagingSkeletonTtlUpliftTest() :
-        singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
-        mockMessageRouter(std::make_shared<MockMessageRouter>(singleThreadedIOService->getIOService())),
-        senderID("senderId"),
-        receiverID("receiverId"),
-        ttlUpliftMs(10000),
-        isLocalMessage(false),
-        settings(),
-        ccSettings(settings)
+    MqttMessagingSkeletonTtlUpliftTest()
+            : singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
+              mockMessageRouter(
+                      std::make_shared<MockMessageRouter>(singleThreadedIOService->getIOService())),
+              senderID("senderId"),
+              receiverID("receiverId"),
+              ttlUpliftMs(10000),
+              isLocalMessage(false),
+              settings(),
+              ccSettings(settings)
     {
         singleThreadedIOService->start();
     }
 
-    ~MqttMessagingSkeletonTtlUpliftTest() {
+    ~MqttMessagingSkeletonTtlUpliftTest()
+    {
         singleThreadedIOService->stop();
     }
 
-    void SetUp(){
+    void SetUp()
+    {
         joynr::system::RoutingTypes::MqttAddress replyAddress;
         replyAddressSerialized = joynr::serializer::serializeToJson(replyAddress);
     }
@@ -82,78 +86,65 @@ protected:
     ClusterControllerSettings ccSettings;
 };
 
-TEST_F(MqttMessagingSkeletonTtlUpliftTest, testDefaultTtlUplift) {
+TEST_F(MqttMessagingSkeletonTtlUpliftTest, testDefaultTtlUplift)
+{
     std::int64_t ttlMs = 1024;
     MessagingQos qos(ttlMs);
     Request request;
-    MutableMessage mutableMessage = messageFactory.createRequest(
-                senderID,
-                receiverID,
-                qos,
-                request,
-                isLocalMessage);
+    MutableMessage mutableMessage =
+            messageFactory.createRequest(senderID, receiverID, qos, request, isLocalMessage);
     mutableMessage.setReplyTo(replyAddressSerialized);
 
     const TimePoint expectedExpiryDate = mutableMessage.getExpiryDate();
 
-    EXPECT_CALL(*mockMessageRouter, route(
-                    MessageHasExpiryDate(expectedExpiryDate),
-                    _)
-                );
+    EXPECT_CALL(*mockMessageRouter, route(MessageHasExpiryDate(expectedExpiryDate), _));
 
-    MqttMessagingSkeleton mqttMessagingSkeleton(mockMessageRouter, nullptr, ccSettings.getMqttMulticastTopicPrefix());
+    MqttMessagingSkeleton mqttMessagingSkeleton(
+            mockMessageRouter, nullptr, ccSettings.getMqttMulticastTopicPrefix());
     std::unique_ptr<ImmutableMessage> immutableMessage = mutableMessage.getImmutableMessage();
     smrf::ByteVector serializedMessage = immutableMessage->getSerializedMessage();
     mqttMessagingSkeleton.onMessageReceived(std::move(serializedMessage));
 }
 
-TEST_F(MqttMessagingSkeletonTtlUpliftTest, DISABLED_testTtlUplift) {
+TEST_F(MqttMessagingSkeletonTtlUpliftTest, DISABLED_testTtlUplift)
+{
     std::int64_t ttlMs = 1024;
     MessagingQos qos(ttlMs);
     Request request;
-    MutableMessage mutableMessage = messageFactory.createRequest(
-                senderID,
-                receiverID,
-                qos,
-                request,
-                isLocalMessage);
+    MutableMessage mutableMessage =
+            messageFactory.createRequest(senderID, receiverID, qos, request, isLocalMessage);
     mutableMessage.setReplyTo(replyAddressSerialized);
 
-    const TimePoint expectedExpiryDate = mutableMessage.getExpiryDate() + std::chrono::milliseconds(ttlUpliftMs);
+    const TimePoint expectedExpiryDate =
+            mutableMessage.getExpiryDate() + std::chrono::milliseconds(ttlUpliftMs);
 
-    EXPECT_CALL(*mockMessageRouter, route(
-                    MessageHasExpiryDate(expectedExpiryDate),
-                    _)
-                );
+    EXPECT_CALL(*mockMessageRouter, route(MessageHasExpiryDate(expectedExpiryDate), _));
 
-    MqttMessagingSkeleton mqttMessagingSkeleton(mockMessageRouter, nullptr, ccSettings.getMqttMulticastTopicPrefix(), ttlUpliftMs);
+    MqttMessagingSkeleton mqttMessagingSkeleton(
+            mockMessageRouter, nullptr, ccSettings.getMqttMulticastTopicPrefix(), ttlUpliftMs);
     std::unique_ptr<ImmutableMessage> immutableMessage = mutableMessage.getImmutableMessage();
     smrf::ByteVector serializedMessage = immutableMessage->getSerializedMessage();
     mqttMessagingSkeleton.onMessageReceived(std::move(serializedMessage));
 }
 
-TEST_F(MqttMessagingSkeletonTtlUpliftTest, DISABLED_testTtlUpliftWithLargeTtl) {
+TEST_F(MqttMessagingSkeletonTtlUpliftTest, DISABLED_testTtlUpliftWithLargeTtl)
+{
     const TimePoint maxAbsoluteTime = TimePoint::max();
     std::int64_t ttlMs = 1024;
     MessagingQos qos(ttlMs);
     Request request;
-    MutableMessage mutableMessage = messageFactory.createRequest(
-                senderID,
-                receiverID,
-                qos,
-                request,
-                isLocalMessage);
+    MutableMessage mutableMessage =
+            messageFactory.createRequest(senderID, receiverID, qos, request, isLocalMessage);
     mutableMessage.setReplyTo(replyAddressSerialized);
 
     TimePoint expiryDate = maxAbsoluteTime - std::chrono::milliseconds(ttlUpliftMs / 2);
     mutableMessage.setExpiryDate(expiryDate);
     TimePoint expectedExpiryDate = maxAbsoluteTime;
 
-    EXPECT_CALL(*mockMessageRouter,
-                route(MessageHasExpiryDate(expectedExpiryDate),_)
-                );
+    EXPECT_CALL(*mockMessageRouter, route(MessageHasExpiryDate(expectedExpiryDate), _));
 
-    MqttMessagingSkeleton mqttMessagingSkeleton(mockMessageRouter, nullptr, ccSettings.getMqttMulticastTopicPrefix(), ttlUpliftMs);
+    MqttMessagingSkeleton mqttMessagingSkeleton(
+            mockMessageRouter, nullptr, ccSettings.getMqttMulticastTopicPrefix(), ttlUpliftMs);
     {
         std::unique_ptr<ImmutableMessage> immutableMessage = mutableMessage.getImmutableMessage();
         smrf::ByteVector serializedMessage = immutableMessage->getSerializedMessage();
@@ -164,9 +155,7 @@ TEST_F(MqttMessagingSkeletonTtlUpliftTest, DISABLED_testTtlUpliftWithLargeTtl) {
     mutableMessage.setExpiryDate(expiryDate);
     expectedExpiryDate = maxAbsoluteTime;
 
-    EXPECT_CALL(*mockMessageRouter,
-                route(MessageHasExpiryDate(expectedExpiryDate),_)
-                );
+    EXPECT_CALL(*mockMessageRouter, route(MessageHasExpiryDate(expectedExpiryDate), _));
 
     {
         std::unique_ptr<ImmutableMessage> immutableMessage = mutableMessage.getImmutableMessage();
@@ -178,9 +167,7 @@ TEST_F(MqttMessagingSkeletonTtlUpliftTest, DISABLED_testTtlUpliftWithLargeTtl) {
     mutableMessage.setExpiryDate(expiryDate);
     expectedExpiryDate = mutableMessage.getExpiryDate() + std::chrono::milliseconds(ttlUpliftMs);
 
-    EXPECT_CALL(*mockMessageRouter,
-                route(MessageHasExpiryDate(expectedExpiryDate),_)
-                );
+    EXPECT_CALL(*mockMessageRouter, route(MessageHasExpiryDate(expectedExpiryDate), _));
 
     {
         std::unique_ptr<ImmutableMessage> immutableMessage = mutableMessage.getImmutableMessage();

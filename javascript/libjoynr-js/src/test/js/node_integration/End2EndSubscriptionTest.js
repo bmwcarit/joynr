@@ -18,7 +18,6 @@
  * #L%
  */
 
-const Promise = require("../../../main/js/global/Promise");
 const joynr = require("joynr");
 const RadioStation = require("../../generated/joynr/vehicle/radiotypes/RadioStation");
 const Country = require("../../generated/joynr/datatypes/exampleTypes/Country");

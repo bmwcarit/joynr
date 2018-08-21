@@ -33,16 +33,14 @@ using namespace joynr;
 
 class ThreadsafeMapTest : public ::testing::Test
 {
-    public:
+public:
     ThreadsafeMapTest()
-        : map(),
-          testValue(nullptr),
-          secondTestValue(nullptr),
-          firstKey(""),
-          secondKey(""){
+            : map(), testValue(nullptr), secondTestValue(nullptr), firstKey(""), secondKey("")
+    {
     }
 
-    void SetUp(){
+    void SetUp()
+    {
         testValue = std::make_shared<std::string>("testValue");
         secondTestValue = std::make_shared<std::string>("secondTestValue");
         firstKey = std::string("firstKey");
@@ -50,15 +48,15 @@ class ThreadsafeMapTest : public ::testing::Test
     }
 
 protected:
-    ThreadSafeMap<std::string, std::shared_ptr<std::string> > map;
+    ThreadSafeMap<std::string, std::shared_ptr<std::string>> map;
     std::shared_ptr<std::string> testValue;
     std::shared_ptr<std::string> secondTestValue;
     std::string firstKey;
     std::string secondKey;
+
 private:
     DISALLOW_COPY_AND_ASSIGN(ThreadsafeMapTest);
 };
-
 
 TEST_F(ThreadsafeMapTest, insertAndContains)
 {
@@ -78,7 +76,7 @@ TEST_F(ThreadsafeMapTest, containsNot)
 TEST_F(ThreadsafeMapTest, value)
 {
     map.insert(firstKey, testValue);
-    map.insert(secondKey,secondTestValue);
+    map.insert(secondKey, secondTestValue);
     std::shared_ptr<std::string> result1 = map.value(firstKey);
     std::shared_ptr<std::string> result2 = map.value(secondKey);
     ASSERT_EQ(result1, testValue);

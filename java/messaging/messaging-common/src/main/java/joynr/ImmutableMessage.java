@@ -20,6 +20,7 @@ package joynr;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,7 +31,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
-import com.google.common.base.Charsets;
 
 import io.joynr.smrf.EncodingException;
 import io.joynr.smrf.MessageDeserializer;
@@ -180,7 +180,7 @@ public class ImmutableMessage extends Message {
 
         @Override
         public void serialize(byte[] value, JsonGenerator gen, SerializerProvider provider) throws IOException {
-            gen.writeString(new String(value, Charsets.UTF_8));
+            gen.writeString(new String(value, StandardCharsets.UTF_8));
         }
     }
 

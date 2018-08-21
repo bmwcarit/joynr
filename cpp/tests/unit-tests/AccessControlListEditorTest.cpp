@@ -37,7 +37,8 @@
 using namespace joynr;
 using ::testing::Return;
 
-class MockLocalDomainAccessStore : public LocalDomainAccessStore {
+class MockLocalDomainAccessStore : public LocalDomainAccessStore
+{
 public:
     MOCK_METHOD1(updateMasterAccessControlEntry,
                  bool(const infrastructure::DacTypes::MasterAccessControlEntry& updatedMasterAce));
@@ -47,8 +48,9 @@ public:
                       const std::string& interfaceName,
                       const std::string& operation));
 
-    MOCK_METHOD1(updateMediatorAccessControlEntry,
-                 bool(const infrastructure::DacTypes::MasterAccessControlEntry& updatedMediatorAce));
+    MOCK_METHOD1(
+            updateMediatorAccessControlEntry,
+            bool(const infrastructure::DacTypes::MasterAccessControlEntry& updatedMediatorAce));
     MOCK_METHOD4(removeMediatorAccessControlEntry,
                  bool(const std::string& userId,
                       const std::string& domain,
@@ -63,60 +65,65 @@ public:
                       const std::string& interfaceName,
                       const std::string& operation));
 
-    MOCK_METHOD1(updateMasterRegistrationControlEntry,
-                 bool(const infrastructure::DacTypes::MasterRegistrationControlEntry& updatedMasterRce));
+    MOCK_METHOD1(
+            updateMasterRegistrationControlEntry,
+            bool(const infrastructure::DacTypes::MasterRegistrationControlEntry& updatedMasterRce));
     MOCK_METHOD3(removeMasterRegistrationControlEntry,
                  bool(const std::string& uid,
                       const std::string& domain,
                       const std::string& interfaceName));
 
     MOCK_METHOD1(updateMediatorRegistrationControlEntry,
-                 bool(const infrastructure::DacTypes::MasterRegistrationControlEntry& updatedMediatorRce));
+                 bool(const infrastructure::DacTypes::MasterRegistrationControlEntry&
+                              updatedMediatorRce));
     MOCK_METHOD3(removeMediatorRegistrationControlEntry,
                  bool(const std::string& uid,
                       const std::string& domain,
                       const std::string& interfaceName));
 
-    MOCK_METHOD1(updateOwnerRegistrationControlEntry,
-                 bool(const infrastructure::DacTypes::OwnerRegistrationControlEntry& updatedOwnerRce));
+    MOCK_METHOD1(
+            updateOwnerRegistrationControlEntry,
+            bool(const infrastructure::DacTypes::OwnerRegistrationControlEntry& updatedOwnerRce));
     MOCK_METHOD3(removeOwnerRegistrationControlEntry,
                  bool(const std::string& uid,
                       const std::string& domain,
                       const std::string& interfaceName));
 };
 
-class AccessControlListEditorTest : public testing::Test {
+class AccessControlListEditorTest : public testing::Test
+{
 public:
-    AccessControlListEditorTest() :
-        mockLocalDomainAccessStore(std::make_shared<MockLocalDomainAccessStore>()),
-        mockLocalDomainAccessController(std::make_shared<MockLocalDomainAccessController>(mockLocalDomainAccessStore, false)),
-        aclEditor(mockLocalDomainAccessStore, mockLocalDomainAccessController, false),
-        semaphore(0)
+    AccessControlListEditorTest()
+            : mockLocalDomainAccessStore(std::make_shared<MockLocalDomainAccessStore>()),
+              mockLocalDomainAccessController(
+                      std::make_shared<MockLocalDomainAccessController>(mockLocalDomainAccessStore,
+                                                                        false)),
+              aclEditor(mockLocalDomainAccessStore, mockLocalDomainAccessController, false),
+              semaphore(0)
     {
-        onSuccessExpectTrue = [this] (const bool& success) {
+        onSuccessExpectTrue = [this](const bool& success) {
             EXPECT_TRUE(success);
             semaphore.notify();
         };
 
-        onSuccessExpectFalse = [this] (const bool& success) {
+        onSuccessExpectFalse = [this](const bool& success) {
             EXPECT_FALSE(success);
             semaphore.notify();
         };
 
-        onErrorFail = [] (const exceptions::ProviderRuntimeException& error) {
+        onErrorFail = [](const exceptions::ProviderRuntimeException& error) {
             FAIL() << "onFailure called with error " << error.getMessage();
         };
     }
 
 protected:
-    void setExpectationForCallToHasRole(const infrastructure::DacTypes::Role::Enum& role, const bool returnValue) {
+    void setExpectationForCallToHasRole(const infrastructure::DacTypes::Role::Enum& role,
+                                        const bool returnValue)
+    {
         CallContext callContext;
         callContext.setPrincipal(testUidCallContext);
         CallContextStorage::set(std::move(callContext));
-        EXPECT_CALL(*mockLocalDomainAccessController,
-                    hasRole(testUidCallContext,
-                            testDomain,
-                            role))
+        EXPECT_CALL(*mockLocalDomainAccessController, hasRole(testUidCallContext, testDomain, role))
                 .Times(1)
                 .WillOnce(Return(returnValue));
     }
@@ -125,28 +132,30 @@ protected:
     {
         const std::vector<infrastructure::DacTypes::Permission::Enum> permissions;
         const std::vector<infrastructure::DacTypes::TrustLevel::Enum> trustLevels;
-        const joynr::infrastructure::DacTypes::MasterAccessControlEntry masterAce(testUid,
-                                                                                   testDomain,
-                                                                                   testInterfaceName,
-                                                                                   infrastructure::DacTypes::TrustLevel::LOW,
-                                                                                   trustLevels,
-                                                                                   infrastructure::DacTypes::TrustLevel::LOW,
-                                                                                   trustLevels,
-                                                                                   testOperation,
-                                                                                   infrastructure::DacTypes::Permission::NO,
-                                                                                   permissions);
+        const joynr::infrastructure::DacTypes::MasterAccessControlEntry masterAce(
+                testUid,
+                testDomain,
+                testInterfaceName,
+                infrastructure::DacTypes::TrustLevel::LOW,
+                trustLevels,
+                infrastructure::DacTypes::TrustLevel::LOW,
+                trustLevels,
+                testOperation,
+                infrastructure::DacTypes::Permission::NO,
+                permissions);
         return masterAce;
     }
 
     const joynr::infrastructure::DacTypes::OwnerAccessControlEntry createOwnerAce()
     {
-        const joynr::infrastructure::DacTypes::OwnerAccessControlEntry ownerAce(testUid,
-                                                                                   testDomain,
-                                                                                   testInterfaceName,
-                                                                                   infrastructure::DacTypes::TrustLevel::LOW,
-                                                                                   infrastructure::DacTypes::TrustLevel::LOW,
-                                                                                   testOperation,
-                                                                                   infrastructure::DacTypes::Permission::NO);
+        const joynr::infrastructure::DacTypes::OwnerAccessControlEntry ownerAce(
+                testUid,
+                testDomain,
+                testInterfaceName,
+                infrastructure::DacTypes::TrustLevel::LOW,
+                infrastructure::DacTypes::TrustLevel::LOW,
+                testOperation,
+                infrastructure::DacTypes::Permission::NO);
         return ownerAce;
     }
 
@@ -154,26 +163,28 @@ protected:
     {
         const std::vector<infrastructure::DacTypes::Permission::Enum> permissions;
         const std::vector<infrastructure::DacTypes::TrustLevel::Enum> trustLevels;
-        const joynr::infrastructure::DacTypes::MasterRegistrationControlEntry masterRce(testUid,
-                                                                                   testDomain,
-                                                                                   testInterfaceName,
-                                                                                   infrastructure::DacTypes::TrustLevel::LOW,
-                                                                                   trustLevels,
-                                                                                   infrastructure::DacTypes::TrustLevel::LOW,
-                                                                                   trustLevels,
-                                                                                   infrastructure::DacTypes::Permission::NO,
-                                                                                   permissions);
+        const joynr::infrastructure::DacTypes::MasterRegistrationControlEntry masterRce(
+                testUid,
+                testDomain,
+                testInterfaceName,
+                infrastructure::DacTypes::TrustLevel::LOW,
+                trustLevels,
+                infrastructure::DacTypes::TrustLevel::LOW,
+                trustLevels,
+                infrastructure::DacTypes::Permission::NO,
+                permissions);
         return masterRce;
     }
 
     const joynr::infrastructure::DacTypes::OwnerRegistrationControlEntry createOwnerRce()
     {
-        const joynr::infrastructure::DacTypes::OwnerRegistrationControlEntry ownerRce(testUid,
-                                                                                   testDomain,
-                                                                                   testInterfaceName,
-                                                                                   infrastructure::DacTypes::TrustLevel::LOW,
-                                                                                   infrastructure::DacTypes::TrustLevel::LOW,
-                                                                                   infrastructure::DacTypes::Permission::NO);
+        const joynr::infrastructure::DacTypes::OwnerRegistrationControlEntry ownerRce(
+                testUid,
+                testDomain,
+                testInterfaceName,
+                infrastructure::DacTypes::TrustLevel::LOW,
+                infrastructure::DacTypes::TrustLevel::LOW,
+                infrastructure::DacTypes::Permission::NO);
         return ownerRce;
     }
 
@@ -201,12 +212,12 @@ const std::string AccessControlListEditorTest::testOperation = "testOperation";
 
 TEST_F(AccessControlListEditorTest, updateMasterAccessControlEntry)
 {
-    const joynr::infrastructure::DacTypes::MasterAccessControlEntry expectedMasterAce = createMasterAce();
+    const joynr::infrastructure::DacTypes::MasterAccessControlEntry expectedMasterAce =
+            createMasterAce();
 
     setExpectationForCallToHasRole(infrastructure::DacTypes::Role::MASTER, true);
 
-    EXPECT_CALL(*mockLocalDomainAccessStore,
-                updateMasterAccessControlEntry(expectedMasterAce))
+    EXPECT_CALL(*mockLocalDomainAccessStore, updateMasterAccessControlEntry(expectedMasterAce))
             .Times(1)
             .WillOnce(Return(true));
 
@@ -217,12 +228,12 @@ TEST_F(AccessControlListEditorTest, updateMasterAccessControlEntry)
 
 TEST_F(AccessControlListEditorTest, updateMasterAccessControlEntryWithoutPermission)
 {
-    const joynr::infrastructure::DacTypes::MasterAccessControlEntry expectedMasterAce = createMasterAce();
+    const joynr::infrastructure::DacTypes::MasterAccessControlEntry expectedMasterAce =
+            createMasterAce();
 
     setExpectationForCallToHasRole(infrastructure::DacTypes::Role::MASTER, false);
 
-    EXPECT_CALL(*mockLocalDomainAccessStore,
-                updateMasterAccessControlEntry(expectedMasterAce))
+    EXPECT_CALL(*mockLocalDomainAccessStore, updateMasterAccessControlEntry(expectedMasterAce))
             .Times(0);
 
     aclEditor.updateMasterAccessControlEntry(expectedMasterAce, onSuccessExpectFalse, onErrorFail);
@@ -234,15 +245,18 @@ TEST_F(AccessControlListEditorTest, removeMasterAccessControlEntry)
 {
     setExpectationForCallToHasRole(infrastructure::DacTypes::Role::MASTER, true);
 
-    EXPECT_CALL(*mockLocalDomainAccessStore,
-                removeMasterAccessControlEntry(testUid,
-                                               testDomain,
-                                               testInterfaceName,
-                                               testOperation))
+    EXPECT_CALL(
+            *mockLocalDomainAccessStore,
+            removeMasterAccessControlEntry(testUid, testDomain, testInterfaceName, testOperation))
             .Times(1)
             .WillOnce(Return(true));
 
-    aclEditor.removeMasterAccessControlEntry(testUid, testDomain, testInterfaceName, testOperation, onSuccessExpectTrue, onErrorFail);
+    aclEditor.removeMasterAccessControlEntry(testUid,
+                                             testDomain,
+                                             testInterfaceName,
+                                             testOperation,
+                                             onSuccessExpectTrue,
+                                             onErrorFail);
 
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));
 }
@@ -252,44 +266,48 @@ TEST_F(AccessControlListEditorTest, removeMasterAccessControlEntryWithoutPermiss
     setExpectationForCallToHasRole(infrastructure::DacTypes::Role::MASTER, false);
 
     EXPECT_CALL(*mockLocalDomainAccessStore,
-                removeMasterAccessControlEntry(testUid,
-                                               testDomain,
-                                               testInterfaceName,
-                                               testOperation))
-            .Times(0);
+                removeMasterAccessControlEntry(
+                        testUid, testDomain, testInterfaceName, testOperation)).Times(0);
 
-    aclEditor.removeMasterAccessControlEntry(testUid, testDomain, testInterfaceName, testOperation, onSuccessExpectFalse, onErrorFail);
+    aclEditor.removeMasterAccessControlEntry(testUid,
+                                             testDomain,
+                                             testInterfaceName,
+                                             testOperation,
+                                             onSuccessExpectFalse,
+                                             onErrorFail);
 
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));
 }
 
 TEST_F(AccessControlListEditorTest, updateMediatorAccessControlEntry)
 {
-    const joynr::infrastructure::DacTypes::MasterAccessControlEntry expectedMediatorAce = createMasterAce();
+    const joynr::infrastructure::DacTypes::MasterAccessControlEntry expectedMediatorAce =
+            createMasterAce();
 
     setExpectationForCallToHasRole(infrastructure::DacTypes::Role::MASTER, true);
 
-    EXPECT_CALL(*mockLocalDomainAccessStore,
-                updateMediatorAccessControlEntry(expectedMediatorAce))
+    EXPECT_CALL(*mockLocalDomainAccessStore, updateMediatorAccessControlEntry(expectedMediatorAce))
             .Times(1)
             .WillOnce(Return(true));
 
-    aclEditor.updateMediatorAccessControlEntry(expectedMediatorAce, onSuccessExpectTrue, onErrorFail);
+    aclEditor.updateMediatorAccessControlEntry(
+            expectedMediatorAce, onSuccessExpectTrue, onErrorFail);
 
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));
 }
 
 TEST_F(AccessControlListEditorTest, updateMediatorAccessControlEntryWithoutPermission)
 {
-    const joynr::infrastructure::DacTypes::MasterAccessControlEntry expectedMediatorAce = createMasterAce();
+    const joynr::infrastructure::DacTypes::MasterAccessControlEntry expectedMediatorAce =
+            createMasterAce();
 
     setExpectationForCallToHasRole(infrastructure::DacTypes::Role::MASTER, false);
 
-    EXPECT_CALL(*mockLocalDomainAccessStore,
-                updateMediatorAccessControlEntry(expectedMediatorAce))
+    EXPECT_CALL(*mockLocalDomainAccessStore, updateMediatorAccessControlEntry(expectedMediatorAce))
             .Times(0);
 
-    aclEditor.updateMediatorAccessControlEntry(expectedMediatorAce, onSuccessExpectFalse, onErrorFail);
+    aclEditor.updateMediatorAccessControlEntry(
+            expectedMediatorAce, onSuccessExpectFalse, onErrorFail);
 
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));
 }
@@ -298,15 +316,18 @@ TEST_F(AccessControlListEditorTest, removeMediatorAccessControlEntry)
 {
     setExpectationForCallToHasRole(infrastructure::DacTypes::Role::MASTER, true);
 
-    EXPECT_CALL(*mockLocalDomainAccessStore,
-                removeMediatorAccessControlEntry(testUid,
-                                               testDomain,
-                                               testInterfaceName,
-                                               testOperation))
+    EXPECT_CALL(
+            *mockLocalDomainAccessStore,
+            removeMediatorAccessControlEntry(testUid, testDomain, testInterfaceName, testOperation))
             .Times(1)
             .WillOnce(Return(true));
 
-    aclEditor.removeMediatorAccessControlEntry(testUid, testDomain, testInterfaceName, testOperation, onSuccessExpectTrue, onErrorFail);
+    aclEditor.removeMediatorAccessControlEntry(testUid,
+                                               testDomain,
+                                               testInterfaceName,
+                                               testOperation,
+                                               onSuccessExpectTrue,
+                                               onErrorFail);
 
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));
 }
@@ -316,25 +337,27 @@ TEST_F(AccessControlListEditorTest, removeMediatorAccessControlEntryWithoutPermi
     setExpectationForCallToHasRole(infrastructure::DacTypes::Role::MASTER, false);
 
     EXPECT_CALL(*mockLocalDomainAccessStore,
-                removeMediatorAccessControlEntry(testUid,
+                removeMediatorAccessControlEntry(
+                        testUid, testDomain, testInterfaceName, testOperation)).Times(0);
+
+    aclEditor.removeMediatorAccessControlEntry(testUid,
                                                testDomain,
                                                testInterfaceName,
-                                               testOperation))
-            .Times(0);
-
-    aclEditor.removeMediatorAccessControlEntry(testUid, testDomain, testInterfaceName, testOperation, onSuccessExpectFalse, onErrorFail);
+                                               testOperation,
+                                               onSuccessExpectFalse,
+                                               onErrorFail);
 
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));
 }
 
 TEST_F(AccessControlListEditorTest, updateOwnerAccessControlEntry)
 {
-    const joynr::infrastructure::DacTypes::OwnerAccessControlEntry expectedOwnerAce = createOwnerAce();
+    const joynr::infrastructure::DacTypes::OwnerAccessControlEntry expectedOwnerAce =
+            createOwnerAce();
 
     setExpectationForCallToHasRole(infrastructure::DacTypes::Role::OWNER, true);
 
-    EXPECT_CALL(*mockLocalDomainAccessStore,
-                updateOwnerAccessControlEntry(expectedOwnerAce))
+    EXPECT_CALL(*mockLocalDomainAccessStore, updateOwnerAccessControlEntry(expectedOwnerAce))
             .Times(1)
             .WillOnce(Return(true));
 
@@ -345,12 +368,12 @@ TEST_F(AccessControlListEditorTest, updateOwnerAccessControlEntry)
 
 TEST_F(AccessControlListEditorTest, updateOwnerAccessControlEntryWithoutPermission)
 {
-    const joynr::infrastructure::DacTypes::OwnerAccessControlEntry expectedOwnerAce = createOwnerAce();
+    const joynr::infrastructure::DacTypes::OwnerAccessControlEntry expectedOwnerAce =
+            createOwnerAce();
 
     setExpectationForCallToHasRole(infrastructure::DacTypes::Role::OWNER, false);
 
-    EXPECT_CALL(*mockLocalDomainAccessStore,
-                updateOwnerAccessControlEntry(expectedOwnerAce))
+    EXPECT_CALL(*mockLocalDomainAccessStore, updateOwnerAccessControlEntry(expectedOwnerAce))
             .Times(0);
 
     aclEditor.updateOwnerAccessControlEntry(expectedOwnerAce, onSuccessExpectFalse, onErrorFail);
@@ -362,15 +385,18 @@ TEST_F(AccessControlListEditorTest, removeOwnerAccessControlEntry)
 {
     setExpectationForCallToHasRole(infrastructure::DacTypes::Role::OWNER, true);
 
-    EXPECT_CALL(*mockLocalDomainAccessStore,
-                removeOwnerAccessControlEntry(testUid,
-                                               testDomain,
-                                               testInterfaceName,
-                                               testOperation))
+    EXPECT_CALL(
+            *mockLocalDomainAccessStore,
+            removeOwnerAccessControlEntry(testUid, testDomain, testInterfaceName, testOperation))
             .Times(1)
             .WillOnce(Return(true));
 
-    aclEditor.removeOwnerAccessControlEntry(testUid, testDomain, testInterfaceName, testOperation, onSuccessExpectTrue, onErrorFail);
+    aclEditor.removeOwnerAccessControlEntry(testUid,
+                                            testDomain,
+                                            testInterfaceName,
+                                            testOperation,
+                                            onSuccessExpectTrue,
+                                            onErrorFail);
 
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));
 }
@@ -380,44 +406,49 @@ TEST_F(AccessControlListEditorTest, removeOwnerAccessControlEntryWithoutPermissi
     setExpectationForCallToHasRole(infrastructure::DacTypes::Role::OWNER, false);
 
     EXPECT_CALL(*mockLocalDomainAccessStore,
-                removeOwnerAccessControlEntry(testUid,
-                                               testDomain,
-                                               testInterfaceName,
-                                               testOperation))
-            .Times(0);
+                removeOwnerAccessControlEntry(
+                        testUid, testDomain, testInterfaceName, testOperation)).Times(0);
 
-    aclEditor.removeOwnerAccessControlEntry(testUid, testDomain, testInterfaceName, testOperation, onSuccessExpectFalse, onErrorFail);
+    aclEditor.removeOwnerAccessControlEntry(testUid,
+                                            testDomain,
+                                            testInterfaceName,
+                                            testOperation,
+                                            onSuccessExpectFalse,
+                                            onErrorFail);
 
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));
 }
 
 TEST_F(AccessControlListEditorTest, updateMasterRegistrationControlEntry)
 {
-    const joynr::infrastructure::DacTypes::MasterRegistrationControlEntry expectedMasterRce = createMasterRce();
+    const joynr::infrastructure::DacTypes::MasterRegistrationControlEntry expectedMasterRce =
+            createMasterRce();
 
     setExpectationForCallToHasRole(infrastructure::DacTypes::Role::MASTER, true);
 
-    EXPECT_CALL(*mockLocalDomainAccessStore,
-                updateMasterRegistrationControlEntry(expectedMasterRce))
+    EXPECT_CALL(
+            *mockLocalDomainAccessStore, updateMasterRegistrationControlEntry(expectedMasterRce))
             .Times(1)
             .WillOnce(Return(true));
 
-    aclEditor.updateMasterRegistrationControlEntry(expectedMasterRce, onSuccessExpectTrue, onErrorFail);
+    aclEditor.updateMasterRegistrationControlEntry(
+            expectedMasterRce, onSuccessExpectTrue, onErrorFail);
 
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));
 }
 
 TEST_F(AccessControlListEditorTest, updateMasterRegistrationControlEntryWithoutPermission)
 {
-    const joynr::infrastructure::DacTypes::MasterRegistrationControlEntry expectedMasterRce = createMasterRce();
+    const joynr::infrastructure::DacTypes::MasterRegistrationControlEntry expectedMasterRce =
+            createMasterRce();
 
     setExpectationForCallToHasRole(infrastructure::DacTypes::Role::MASTER, false);
 
     EXPECT_CALL(*mockLocalDomainAccessStore,
-                updateMasterRegistrationControlEntry(expectedMasterRce))
-            .Times(0);
+                updateMasterRegistrationControlEntry(expectedMasterRce)).Times(0);
 
-    aclEditor.updateMasterRegistrationControlEntry(expectedMasterRce, onSuccessExpectFalse, onErrorFail);
+    aclEditor.updateMasterRegistrationControlEntry(
+            expectedMasterRce, onSuccessExpectFalse, onErrorFail);
 
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));
 }
@@ -427,13 +458,12 @@ TEST_F(AccessControlListEditorTest, removeMasterRegistrationControlEntry)
     setExpectationForCallToHasRole(infrastructure::DacTypes::Role::MASTER, true);
 
     EXPECT_CALL(*mockLocalDomainAccessStore,
-                removeMasterRegistrationControlEntry(testUid,
-                                               testDomain,
-                                               testInterfaceName))
+                removeMasterRegistrationControlEntry(testUid, testDomain, testInterfaceName))
             .Times(1)
             .WillOnce(Return(true));
 
-    aclEditor.removeMasterRegistrationControlEntry(testUid, testDomain, testInterfaceName, onSuccessExpectTrue, onErrorFail);
+    aclEditor.removeMasterRegistrationControlEntry(
+            testUid, testDomain, testInterfaceName, onSuccessExpectTrue, onErrorFail);
 
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));
 }
@@ -443,19 +473,19 @@ TEST_F(AccessControlListEditorTest, removeMasterRegistrationControlEntryWithoutP
     setExpectationForCallToHasRole(infrastructure::DacTypes::Role::MASTER, false);
 
     EXPECT_CALL(*mockLocalDomainAccessStore,
-                removeMasterRegistrationControlEntry(testUid,
-                                               testDomain,
-                                               testInterfaceName))
+                removeMasterRegistrationControlEntry(testUid, testDomain, testInterfaceName))
             .Times(0);
 
-    aclEditor.removeMasterRegistrationControlEntry(testUid, testDomain, testInterfaceName, onSuccessExpectFalse, onErrorFail);
+    aclEditor.removeMasterRegistrationControlEntry(
+            testUid, testDomain, testInterfaceName, onSuccessExpectFalse, onErrorFail);
 
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));
 }
 
 TEST_F(AccessControlListEditorTest, updateMediatorRegistrationControlEntry)
 {
-    const joynr::infrastructure::DacTypes::MasterRegistrationControlEntry expectedMediatorRce = createMasterRce();
+    const joynr::infrastructure::DacTypes::MasterRegistrationControlEntry expectedMediatorRce =
+            createMasterRce();
 
     setExpectationForCallToHasRole(infrastructure::DacTypes::Role::MASTER, true);
 
@@ -464,22 +494,24 @@ TEST_F(AccessControlListEditorTest, updateMediatorRegistrationControlEntry)
             .Times(1)
             .WillOnce(Return(true));
 
-    aclEditor.updateMediatorRegistrationControlEntry(expectedMediatorRce, onSuccessExpectTrue, onErrorFail);
+    aclEditor.updateMediatorRegistrationControlEntry(
+            expectedMediatorRce, onSuccessExpectTrue, onErrorFail);
 
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));
 }
 
 TEST_F(AccessControlListEditorTest, updateMediatorRegistrationControlEntryWithoutPermission)
 {
-    const joynr::infrastructure::DacTypes::MasterRegistrationControlEntry expectedMediatorRce = createMasterRce();
+    const joynr::infrastructure::DacTypes::MasterRegistrationControlEntry expectedMediatorRce =
+            createMasterRce();
 
     setExpectationForCallToHasRole(infrastructure::DacTypes::Role::MASTER, false);
 
     EXPECT_CALL(*mockLocalDomainAccessStore,
-                updateMediatorRegistrationControlEntry(expectedMediatorRce))
-            .Times(0);
+                updateMediatorRegistrationControlEntry(expectedMediatorRce)).Times(0);
 
-    aclEditor.updateMediatorRegistrationControlEntry(expectedMediatorRce, onSuccessExpectFalse, onErrorFail);
+    aclEditor.updateMediatorRegistrationControlEntry(
+            expectedMediatorRce, onSuccessExpectFalse, onErrorFail);
 
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));
 }
@@ -489,13 +521,12 @@ TEST_F(AccessControlListEditorTest, removeMediatorRegistrationControlEntry)
     setExpectationForCallToHasRole(infrastructure::DacTypes::Role::MASTER, true);
 
     EXPECT_CALL(*mockLocalDomainAccessStore,
-                removeMediatorRegistrationControlEntry(testUid,
-                                               testDomain,
-                                               testInterfaceName))
+                removeMediatorRegistrationControlEntry(testUid, testDomain, testInterfaceName))
             .Times(1)
             .WillOnce(Return(true));
 
-    aclEditor.removeMediatorRegistrationControlEntry(testUid, testDomain, testInterfaceName, onSuccessExpectTrue, onErrorFail);
+    aclEditor.removeMediatorRegistrationControlEntry(
+            testUid, testDomain, testInterfaceName, onSuccessExpectTrue, onErrorFail);
 
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));
 }
@@ -505,43 +536,44 @@ TEST_F(AccessControlListEditorTest, removeMediatorRegistrationControlEntryWithou
     setExpectationForCallToHasRole(infrastructure::DacTypes::Role::MASTER, false);
 
     EXPECT_CALL(*mockLocalDomainAccessStore,
-                removeMediatorRegistrationControlEntry(testUid,
-                                               testDomain,
-                                               testInterfaceName))
+                removeMediatorRegistrationControlEntry(testUid, testDomain, testInterfaceName))
             .Times(0);
 
-    aclEditor.removeMediatorRegistrationControlEntry(testUid, testDomain, testInterfaceName, onSuccessExpectFalse, onErrorFail);
+    aclEditor.removeMediatorRegistrationControlEntry(
+            testUid, testDomain, testInterfaceName, onSuccessExpectFalse, onErrorFail);
 
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));
 }
 
 TEST_F(AccessControlListEditorTest, updateOwnerRegistrationControlEntry)
 {
-    const joynr::infrastructure::DacTypes::OwnerRegistrationControlEntry expectedOwnerRce = createOwnerRce();
+    const joynr::infrastructure::DacTypes::OwnerRegistrationControlEntry expectedOwnerRce =
+            createOwnerRce();
 
     setExpectationForCallToHasRole(infrastructure::DacTypes::Role::OWNER, true);
 
-    EXPECT_CALL(*mockLocalDomainAccessStore,
-                updateOwnerRegistrationControlEntry(expectedOwnerRce))
+    EXPECT_CALL(*mockLocalDomainAccessStore, updateOwnerRegistrationControlEntry(expectedOwnerRce))
             .Times(1)
             .WillOnce(Return(true));
 
-    aclEditor.updateOwnerRegistrationControlEntry(expectedOwnerRce, onSuccessExpectTrue, onErrorFail);
+    aclEditor.updateOwnerRegistrationControlEntry(
+            expectedOwnerRce, onSuccessExpectTrue, onErrorFail);
 
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));
 }
 
 TEST_F(AccessControlListEditorTest, updateOwnerRegistrationControlEntryWithoutPermission)
 {
-    const joynr::infrastructure::DacTypes::OwnerRegistrationControlEntry expectedOwnerRce = createOwnerRce();
+    const joynr::infrastructure::DacTypes::OwnerRegistrationControlEntry expectedOwnerRce =
+            createOwnerRce();
 
     setExpectationForCallToHasRole(infrastructure::DacTypes::Role::OWNER, false);
 
-    EXPECT_CALL(*mockLocalDomainAccessStore,
-                updateOwnerRegistrationControlEntry(expectedOwnerRce))
+    EXPECT_CALL(*mockLocalDomainAccessStore, updateOwnerRegistrationControlEntry(expectedOwnerRce))
             .Times(0);
 
-    aclEditor.updateOwnerRegistrationControlEntry(expectedOwnerRce, onSuccessExpectFalse, onErrorFail);
+    aclEditor.updateOwnerRegistrationControlEntry(
+            expectedOwnerRce, onSuccessExpectFalse, onErrorFail);
 
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));
 }
@@ -551,13 +583,12 @@ TEST_F(AccessControlListEditorTest, removeOwnerRegistrationControlEntry)
     setExpectationForCallToHasRole(infrastructure::DacTypes::Role::OWNER, true);
 
     EXPECT_CALL(*mockLocalDomainAccessStore,
-                removeOwnerRegistrationControlEntry(testUid,
-                                               testDomain,
-                                               testInterfaceName))
+                removeOwnerRegistrationControlEntry(testUid, testDomain, testInterfaceName))
             .Times(1)
             .WillOnce(Return(true));
 
-    aclEditor.removeOwnerRegistrationControlEntry(testUid, testDomain, testInterfaceName, onSuccessExpectTrue, onErrorFail);
+    aclEditor.removeOwnerRegistrationControlEntry(
+            testUid, testDomain, testInterfaceName, onSuccessExpectTrue, onErrorFail);
 
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));
 }
@@ -567,13 +598,11 @@ TEST_F(AccessControlListEditorTest, removeOwnerRegistrationControlEntryWithoutPe
     setExpectationForCallToHasRole(infrastructure::DacTypes::Role::OWNER, false);
 
     EXPECT_CALL(*mockLocalDomainAccessStore,
-                removeOwnerRegistrationControlEntry(testUid,
-                                               testDomain,
-                                               testInterfaceName))
+                removeOwnerRegistrationControlEntry(testUid, testDomain, testInterfaceName))
             .Times(0);
 
-    aclEditor.removeOwnerRegistrationControlEntry(testUid, testDomain, testInterfaceName, onSuccessExpectFalse, onErrorFail);
+    aclEditor.removeOwnerRegistrationControlEntry(
+            testUid, testDomain, testInterfaceName, onSuccessExpectFalse, onErrorFail);
 
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));
 }
-

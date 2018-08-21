@@ -119,7 +119,8 @@ TEST(ClusterControllerSettingsTest, transportNotAvailableQueueLimitBytesIsSet)
 
     ClusterControllerSettings clusterControllerSettings(testSettings);
 
-    EXPECT_EQ(clusterControllerSettings.getTransportNotAvailableQueueLimitBytes(), std::uint64_t(52428800));
+    EXPECT_EQ(clusterControllerSettings.getTransportNotAvailableQueueLimitBytes(),
+              std::uint64_t(52428800));
 }
 
 TEST(ClusterControllerSettingsTest, globalCapabilitiesDirectoryCompressedMessagesEnabledIsSet)
@@ -129,7 +130,8 @@ TEST(ClusterControllerSettingsTest, globalCapabilitiesDirectoryCompressedMessage
 
     ClusterControllerSettings clusterControllerSettings(testSettings);
 
-    EXPECT_EQ(clusterControllerSettings.isGlobalCapabilitiesDirectoryCompressedMessagesEnabled(), true);
+    EXPECT_EQ(clusterControllerSettings.isGlobalCapabilitiesDirectoryCompressedMessagesEnabled(),
+              true);
 }
 
 // check default values
@@ -139,7 +141,8 @@ TEST(ClusterControllerSettingsTest, defaultMessageQueueLimitIsSet)
     Settings settings;
     ClusterControllerSettings clusterControllerSettings(settings);
 
-    EXPECT_EQ(clusterControllerSettings.getMessageQueueLimit(), ClusterControllerSettings::DEFAULT_MESSAGE_QUEUE_LIMIT());
+    EXPECT_EQ(clusterControllerSettings.getMessageQueueLimit(),
+              ClusterControllerSettings::DEFAULT_MESSAGE_QUEUE_LIMIT());
 }
 
 TEST(ClusterControllerSettingsTest, defaultPerParticipantIdMessageQueueLimitIsSet)
@@ -147,7 +150,8 @@ TEST(ClusterControllerSettingsTest, defaultPerParticipantIdMessageQueueLimitIsSe
     Settings settings;
     ClusterControllerSettings clusterControllerSettings(settings);
 
-    EXPECT_EQ(clusterControllerSettings.getPerParticipantIdMessageQueueLimit(), ClusterControllerSettings::DEFAULT_TRANSPORT_NOT_AVAILABLE_QUEUE_LIMIT());
+    EXPECT_EQ(clusterControllerSettings.getPerParticipantIdMessageQueueLimit(),
+              ClusterControllerSettings::DEFAULT_TRANSPORT_NOT_AVAILABLE_QUEUE_LIMIT());
 }
 
 TEST(ClusterControllerSettingsTest, defaultTransportNotAvailableQueueLimitIsSet)
@@ -155,7 +159,8 @@ TEST(ClusterControllerSettingsTest, defaultTransportNotAvailableQueueLimitIsSet)
     Settings settings;
     ClusterControllerSettings clusterControllerSettings(settings);
 
-    EXPECT_EQ(clusterControllerSettings.getTransportNotAvailableQueueLimit(), ClusterControllerSettings::DEFAULT_TRANSPORT_NOT_AVAILABLE_QUEUE_LIMIT());
+    EXPECT_EQ(clusterControllerSettings.getTransportNotAvailableQueueLimit(),
+              ClusterControllerSettings::DEFAULT_TRANSPORT_NOT_AVAILABLE_QUEUE_LIMIT());
 }
 
 TEST(ClusterControllerSettingsTest, defaultMessageQueueLimitBytesIsSet)
@@ -163,7 +168,8 @@ TEST(ClusterControllerSettingsTest, defaultMessageQueueLimitBytesIsSet)
     Settings settings;
     ClusterControllerSettings clusterControllerSettings(settings);
 
-    EXPECT_EQ(clusterControllerSettings.getMessageQueueLimitBytes(), ClusterControllerSettings::DEFAULT_MESSAGE_QUEUE_LIMIT_BYTES());
+    EXPECT_EQ(clusterControllerSettings.getMessageQueueLimitBytes(),
+              ClusterControllerSettings::DEFAULT_MESSAGE_QUEUE_LIMIT_BYTES());
 }
 
 TEST(ClusterControllerSettingsTest, defaultTransportNotAvailableQueueLimitBytesIsSet)
@@ -171,13 +177,17 @@ TEST(ClusterControllerSettingsTest, defaultTransportNotAvailableQueueLimitBytesI
     Settings settings;
     ClusterControllerSettings clusterControllerSettings(settings);
 
-    EXPECT_EQ(clusterControllerSettings.getTransportNotAvailableQueueLimitBytes(), ClusterControllerSettings::DEFAULT_TRANSPORT_NOT_AVAILABLE_QUEUE_LIMIT_BYTES());
+    EXPECT_EQ(clusterControllerSettings.getTransportNotAvailableQueueLimitBytes(),
+              ClusterControllerSettings::DEFAULT_TRANSPORT_NOT_AVAILABLE_QUEUE_LIMIT_BYTES());
 }
 
-TEST(ClusterControllerSettingsTest, defaultGlobalCapabilitiesDirectoryCompressedMessagesEnabledIsSet)
+TEST(ClusterControllerSettingsTest,
+     defaultGlobalCapabilitiesDirectoryCompressedMessagesEnabledIsSet)
 {
     Settings settings;
     ClusterControllerSettings clusterControllerSettings(settings);
 
-    EXPECT_EQ(clusterControllerSettings.isGlobalCapabilitiesDirectoryCompressedMessagesEnabled(), ClusterControllerSettings::DEFAULT_GLOBAL_CAPABILITIES_DIRECTORY_COMPRESSED_MESSAGES_ENABLED());
+    EXPECT_EQ(clusterControllerSettings.isGlobalCapabilitiesDirectoryCompressedMessagesEnabled(),
+              ClusterControllerSettings::
+                      DEFAULT_GLOBAL_CAPABILITIES_DIRECTORY_COMPRESSED_MESSAGES_ENABLED());
 }

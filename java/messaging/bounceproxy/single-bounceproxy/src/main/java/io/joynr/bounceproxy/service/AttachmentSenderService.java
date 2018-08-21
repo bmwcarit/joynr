@@ -18,14 +18,10 @@
  */
 package io.joynr.bounceproxy.service;
 
-import io.joynr.bounceproxy.attachments.AttachmentStorage;
-import io.joynr.messaging.bounceproxy.LongPollingMessagingDelegate;
-import io.joynr.smrf.EncodingException;
-import io.joynr.smrf.UnsuppportedVersionException;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -42,11 +38,14 @@ import javax.ws.rs.core.UriInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import joynr.ImmutableMessage;
-
-import com.google.common.base.Charsets;
 import com.google.inject.Inject;
 import com.sun.jersey.multipart.FormDataParam;
+
+import io.joynr.bounceproxy.attachments.AttachmentStorage;
+import io.joynr.messaging.bounceproxy.LongPollingMessagingDelegate;
+import io.joynr.smrf.EncodingException;
+import io.joynr.smrf.UnsuppportedVersionException;
+import joynr.ImmutableMessage;
 
 @Path("/channels/{ccid: [A-Z,a-z,0-9,_,\\-,\\.]+}/messageWithAttachment")
 public class AttachmentSenderService {
@@ -77,7 +76,7 @@ public class AttachmentSenderService {
                                               @FormDataParam("attachment") InputStream attachment) {
 
         try {
-            byte[] serializedMessageBytes = serializedMessage.getBytes(Charsets.UTF_8);
+            byte[] serializedMessageBytes = serializedMessage.getBytes(StandardCharsets.UTF_8);
             ImmutableMessage message = new ImmutableMessage(serializedMessageBytes);
             log.debug("Message with attachment received! Expiry Date : " + message.getTtlMs());
             int bytesRead = 0;
