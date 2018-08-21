@@ -23,8 +23,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 
-import com.google.common.collect.Iterables;
-
 public class AnnotationUtil {
 
     public static Collection<Annotation> getAnnotationsRecursive(Class<?> clazz) {
@@ -34,11 +32,11 @@ public class AnnotationUtil {
     }
 
     public static <T extends Annotation> T getAnnotation(Class<?> clazz, Class<T> annotationType) {
-        Iterable<T> allAnnotations = Iterables.filter(getAnnotationsRecursive(clazz), annotationType);
-        if (allAnnotations.iterator().hasNext()) {
-            return allAnnotations.iterator().next();
-        }
-        return null;
+        return getAnnotationsRecursive(clazz).stream()
+                                             .filter(annotationType::isInstance)
+                                             .map(annotationType::cast)
+                                             .findFirst()
+                                             .orElse(null);
     }
 
     private static void getAllAnnotations(Class<?> clazz, Collection<Annotation> result) {
