@@ -23,6 +23,7 @@ import io.joynr.messaging.MessageArrivedListener;
 import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.MessagingSettings;
 import io.joynr.messaging.ReceiverStatusListener;
+import io.joynr.runtime.JoynrThreadFactory;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -35,7 +36,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ObjectArrays;
 import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -50,7 +50,7 @@ public class LongPollingMessageReceiver implements MessageReceiver {
     public static final String MESSAGE_RECEIVER_THREADNAME_PREFIX = "MessageReceiverThread";
 
     private static final Logger logger = LoggerFactory.getLogger(LongPollingMessageReceiver.class);
-    ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("joynr.MessageReceiver-%d").build();
+    ThreadFactory namedThreadFactory = new JoynrThreadFactory("joynr.MessageReceiver");
 
     protected final MessagingSettings settings;
     // private final MessageSender messageSender;

@@ -42,7 +42,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import io.joynr.exceptions.JoynrChannelMissingException;
 import io.joynr.exceptions.JoynrCommunicationException;
@@ -52,6 +51,7 @@ import io.joynr.messaging.MessagingSettings;
 import io.joynr.messaging.datatypes.JoynrMessagingError;
 import io.joynr.messaging.datatypes.JoynrMessagingErrorCode;
 import io.joynr.messaging.util.Utilities;
+import io.joynr.runtime.JoynrThreadFactory;
 import io.joynr.smrf.EncodingException;
 import io.joynr.smrf.UnsuppportedVersionException;
 import joynr.ImmutableMessage;
@@ -108,7 +108,7 @@ public class LongPollChannel {
         this.httpConstants = httpConstants;
         this.receiverId = receiverId;
         this.httpRequestFactory = httpRequestFactory;
-        ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("joynr.LongPollChannel-%d").build();
+        ThreadFactory namedThreadFactory = new JoynrThreadFactory("joynr.LongPollChannel");
         messageReceiverExecutor = Executors.newCachedThreadPool(namedThreadFactory);
     }
 

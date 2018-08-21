@@ -51,7 +51,6 @@ import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Sets;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -86,6 +85,7 @@ import io.joynr.messaging.routing.CcMessageRouter;
 import io.joynr.runtime.ClusterControllerRuntimeModule;
 import io.joynr.statusmetrics.MessageWorkerStatus;
 import io.joynr.statusmetrics.StatusReceiver;
+import io.joynr.runtime.JoynrThreadFactory;
 import io.joynr.runtime.ShutdownNotifier;
 import io.joynr.messaging.routing.TestGlobalAddressModule;
 import joynr.ImmutableMessage;
@@ -198,8 +198,7 @@ public class CcMessageRouterTest {
             @Provides
             @Named(MessageRouter.SCHEDULEDTHREADPOOL)
             ScheduledExecutorService provideMessageSchedulerThreadPoolExecutor() {
-                ThreadFactory schedulerNamedThreadFactory = new ThreadFactoryBuilder().setNameFormat("joynr.MessageScheduler-scheduler-%d")
-                                                                                      .build();
+                ThreadFactory schedulerNamedThreadFactory = new JoynrThreadFactory("joynr.MessageScheduler-scheduler");
                 ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(numberOfThreads,
                                                                                         schedulerNamedThreadFactory);
                 scheduler.setKeepAliveTime(100, TimeUnit.SECONDS);

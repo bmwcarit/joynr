@@ -52,7 +52,6 @@ import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -76,6 +75,7 @@ import io.joynr.provider.AbstractSubscriptionPublisher;
 import io.joynr.provider.ProviderCallback;
 import io.joynr.provider.ProviderContainer;
 import io.joynr.proxy.JoynrMessagingConnectorFactory;
+import io.joynr.runtime.JoynrThreadFactory;
 import io.joynr.smrf.EncodingException;
 import io.joynr.smrf.UnsuppportedVersionException;
 import joynr.ImmutableMessage;
@@ -132,7 +132,7 @@ public class DispatcherImplTest {
 
                 requestStaticInjection(RpcUtils.class, Request.class, JoynrMessagingConnectorFactory.class);
 
-                ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("joynr.Cleanup-%d").build();
+                ThreadFactory namedThreadFactory = new JoynrThreadFactory("joynr.Cleanup");
                 ScheduledExecutorService cleanupExecutor = Executors.newSingleThreadScheduledExecutor(namedThreadFactory);
                 bind(ScheduledExecutorService.class).annotatedWith(Names.named(JOYNR_SCHEDULER_CLEANUP))
                                                     .toInstance(cleanupExecutor);

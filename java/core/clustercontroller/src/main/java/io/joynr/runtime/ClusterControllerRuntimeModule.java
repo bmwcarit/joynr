@@ -22,7 +22,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.Singleton;
 import com.google.inject.name.Names;
 
@@ -51,9 +50,7 @@ public abstract class ClusterControllerRuntimeModule extends AbstractRuntimeModu
         bind(MessageSender.class).to(CcMessageSender.class);
         bind(MessageRouter.class).to(CcMessageRouter.class).in(Singleton.class);
 
-        ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("joynr.scheduler.capabilities.freshness-%d")
-                                                                     .setDaemon(true)
-                                                                     .build();
+        ThreadFactory namedThreadFactory = new JoynrThreadFactory("joynr.scheduler.capabilities.freshness", true);
         ScheduledExecutorService capabilitiesFreshnessUpdateExecutor = Executors.newSingleThreadScheduledExecutor(namedThreadFactory);
         bind(ScheduledExecutorService.class).annotatedWith(Names.named(LocalCapabilitiesDirectory.JOYNR_SCHEDULER_CAPABILITIES_FRESHNESS))
                                             .toInstance(capabilitiesFreshnessUpdateExecutor);

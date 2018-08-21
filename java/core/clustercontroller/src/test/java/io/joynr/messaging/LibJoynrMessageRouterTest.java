@@ -39,8 +39,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
-
 import io.joynr.common.ExpiryDate;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.routing.AddressManager;
@@ -49,6 +47,7 @@ import io.joynr.messaging.routing.LibJoynrMessageRouter;
 import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.messaging.routing.MulticastReceiverRegistry;
 import io.joynr.messaging.routing.RoutingTable;
+import io.joynr.runtime.JoynrThreadFactory;
 import io.joynr.runtime.ShutdownNotifier;
 import io.joynr.statusmetrics.StatusReceiver;
 import joynr.ImmutableMessage;
@@ -158,8 +157,7 @@ public class LibJoynrMessageRouterTest {
     }
 
     ScheduledExecutorService provideMessageSchedulerThreadPoolExecutor() {
-        ThreadFactory schedulerNamedThreadFactory = new ThreadFactoryBuilder().setNameFormat("joynr.MessageScheduler-scheduler-%d")
-                                                                              .build();
+        ThreadFactory schedulerNamedThreadFactory = new JoynrThreadFactory("joynr.MessageScheduler-scheduler");
         ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(2, schedulerNamedThreadFactory);
         scheduler.setKeepAliveTime(100, TimeUnit.SECONDS);
         scheduler.allowCoreThreadTimeOut(true);
