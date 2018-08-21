@@ -33,6 +33,7 @@ TESTCASE=""
 USE_MAVEN=ON # Indicates whether java applications shall be started with maven or as standalone apps
 MOSQUITTO_CONF=""
 USE_NPM=ON # Indicates whether npm will be used to launch javascript applications.
+USE_EMBEDDED_CC=OFF # Indicates whether embedded cluster controller variant should be used for C++ apps
 
 ### Constants ###
 DOMAINNAME="performance_test_domain"
@@ -244,7 +245,13 @@ function startCppPerformanceTestProvider {
     PROVIDER_STDERR=$PERFORMANCETESTS_RESULTS_DIR/provider_stderr.txt
 
     cd $PERFORMANCETESTS_BIN_DIR
-    ./performance-provider-app-ws --globalscope on --domain $DOMAINNAME 1>$PROVIDER_STDOUT 2>$PROVIDER_STDERR & PROVIDER_PID=$!
+    if [ "$USE_EMBEDDED_CC" != "ON" ]
+    then
+        PERFORMANCE_PROVIDER_APP=performance-provider-app-ws
+    else
+        PERFORMANCE_PROVIDER_APP=performance-provider-app-cc
+    fi
+    ./$PERFORMANCE_PROVIDER_APP --globalscope on --domain $DOMAINNAME 1>$PROVIDER_STDOUT 2>$PROVIDER_STDERR & PROVIDER_PID=$!
     PROVIDER_CPU_TIME_1=$(getCpuTime $PROVIDER_PID)
 
     # Wait long enough in order to allow the provider to finish the registration procedure
@@ -364,7 +371,12 @@ function performCppConsumerTest {
     else
         CONSUMERARGS+=" -d $DOMAINNAME -s $MODE_PARAM -l $INPUTDATA_STRINGLENGTH \
                        -b $INPUTDATA_BYTEARRAYSIZE"
-        PERFORMCPPBINARY="performance-consumer-app-ws"
+        if [ "$USE_EMBEDDED_CC" != "ON" ]
+        then
+            PERFORMCPPBINARY="performance-consumer-app-ws"
+        else
+            PERFORMCPPBINARY="performance-consumer-app-cc"
+        fi
     fi
 
     TEST_PIDS=()
@@ -526,7 +538,7 @@ function echoUsage {
 -t <JAVA_SYNC|JAVA_ASYNC|JAVA_MULTICONSUMER|JS_CONSUMER|OAP_TO_BACKEND_MOSQ|\
 CPP_SYNC|CPP_ASYNC|CPP_MULTICONSUMER|JEE_PROVIDER|ALL> -y <joynr-bin-dir>\
 -B <backend-services (MQTT|HTTP)>\
-[-c <number-of-consumers> -x <number-of-runs> -m <use maven ON|OFF> -z <mosquitto.conf> -n <use node ON|OFF>]"
+[-c <number-of-consumers> -x <number-of-runs> -m <use maven ON|OFF> -z <mosquitto.conf> -n <use node ON|OFF> -e <use embedded CC ON|OFF>]"
 }
 
 function checkDirExists {
@@ -546,7 +558,7 @@ function checkForJavaTestCase {
     return 0
 }
 
-while getopts "a:c:d:j:k:m:n:p:r:s:t:x:y:z:B:" OPTIONS;
+while getopts "a:c:d:e:j:k:m:n:p:r:s:t:x:y:z:B:" OPTIONS;
 do
     case $OPTIONS in
         a)
@@ -557,6 +569,9 @@ do
             ;;
         d)
             DOMAINNAME=${OPTARG%/}
+            ;;
+        e)
+            USE_EMBEDDED_CC=$OPTARG
             ;;
         j)
             JETTY_PATH=${OPTARG%/}
