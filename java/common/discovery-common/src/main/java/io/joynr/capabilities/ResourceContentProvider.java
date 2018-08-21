@@ -27,8 +27,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
 
-import com.google.common.io.Files;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,7 +78,7 @@ public class ResourceContentProvider {
         logger.trace("Attempting to read {} from file / classpath", provisionedCapabilitiesJsonFilename);
         File file = new File(provisionedCapabilitiesJsonFilename);
         if (file.exists()) {
-            return Files.toString(file, UTF8);
+            return new String(Files.readAllBytes(file.toPath()), "UTF-8");
         } else {
             logger.trace("File {} doesn't exist on filesystem, attempting to read from classpath.",
                          provisionedCapabilitiesJsonFilename);

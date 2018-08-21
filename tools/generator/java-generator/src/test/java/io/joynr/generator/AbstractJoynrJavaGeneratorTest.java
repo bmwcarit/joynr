@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -38,7 +39,6 @@ import org.eclipse.xtext.generator.JavaIoFileSystemAccess;
 import org.franca.core.dsl.FrancaIDLStandaloneSetup;
 import org.junit.Before;
 
-import com.google.common.io.Files;
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
@@ -71,7 +71,7 @@ public abstract class AbstractJoynrJavaGeneratorTest {
 
     @Before
     public void setup() throws Exception {
-        temporaryOutputDirectory = Files.createTempDir();
+        temporaryOutputDirectory = Files.createTempDirectory(null).toFile();
         temporaryOutputDirectory.deleteOnExit();
         InvocationArguments arguments = new InvocationArguments();
         arguments.setGenerationLanguage("java");
