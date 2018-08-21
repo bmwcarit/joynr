@@ -74,3 +74,7 @@ routing-table-grace-period-ms=60000
 # The period in milliseconds after which the runtimes routingTable
 # garbage collector will be periodically called
 routing-table-cleanup-interval-ms=60000
+
+# Defines whether replies and publication messages to participantIds which
+# do not have a RoutingEntry in the RoutingTable can be discarded
+discard-unroutable-replies-and-publications=false

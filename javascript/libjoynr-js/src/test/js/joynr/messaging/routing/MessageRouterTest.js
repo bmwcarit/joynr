@@ -980,22 +980,18 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
             done();
         });
 
-        it("check if routing proxy is called with queued hop additions", done => {
+        it("check if setRoutingProxy calls addNextHop", done => {
             routingProxySpy.addNextHop.and.returnValue(Promise.resolve());
-            const onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
-
-            const isGloballyVisible = true;
-            messageRouter.addNextHop(joynrMessage.to, address, isGloballyVisible).then(onFulfilledSpy);
-            increaseFakeTime(1);
-
             expect(routingProxySpy.addNextHop).not.toHaveBeenCalled();
 
             messageRouter
                 .setRoutingProxy(routingProxySpy)
                 .then(() => {
-                    expect(routingProxySpy.addNextHop).toHaveBeenCalledTimes(2);
-                    expect(routingProxySpy.addNextHop.calls.argsFor(1)[0].participantId).toEqual(joynrMessage.to);
-                    expect(routingProxySpy.addNextHop.calls.argsFor(1)[0].browserAddress).toEqual(incomingAddress);
+                    expect(routingProxySpy.addNextHop).toHaveBeenCalledTimes(1);
+                    expect(routingProxySpy.addNextHop.calls.argsFor(0)[0].participantId).toEqual(
+                        routingProxySpy.proxyParticipantId
+                    );
+                    expect(routingProxySpy.addNextHop.calls.argsFor(0)[0].browserAddress).toEqual(incomingAddress);
                     done();
                 })
                 .catch(done.fail);
@@ -1018,29 +1014,6 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
                     expect(routingProxySpy.resolveNextHop).not.toHaveBeenCalled();
                     done();
                     return null;
-                })
-                .catch(done.fail);
-        });
-
-        it("check if routing proxy is called with multiple queued hop additions", done => {
-            const onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
-
-            const isGloballyVisible = true;
-            messageRouter.addNextHop(joynrMessage.to, address, isGloballyVisible);
-            messageRouter.addNextHop(joynrMessage2.to, address, isGloballyVisible).then(onFulfilledSpy);
-            routingProxySpy.addNextHop.and.returnValue(Promise.resolve());
-            increaseFakeTime(1);
-            expect(routingProxySpy.addNextHop).not.toHaveBeenCalled();
-
-            messageRouter
-                .setRoutingProxy(routingProxySpy)
-                .then(() => {
-                    expect(routingProxySpy.addNextHop).toHaveBeenCalledTimes(3);
-                    expect(routingProxySpy.addNextHop.calls.argsFor(1)[0].participantId).toEqual(joynrMessage.to);
-                    expect(routingProxySpy.addNextHop.calls.argsFor(1)[0].browserAddress).toEqual(incomingAddress);
-                    expect(routingProxySpy.addNextHop.calls.argsFor(2)[0].participantId).toEqual(joynrMessage2.to);
-                    expect(routingProxySpy.addNextHop.calls.argsFor(2)[0].browserAddress).toEqual(incomingAddress);
-                    done();
                 })
                 .catch(done.fail);
         });
@@ -1157,20 +1130,6 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
                     return messageRouter.addNextHop("hopId", {}).then(fail);
                 })
                 .catch(done);
-        });
-
-        it(" reject pending promises when shut down", done => {
-            const isGloballyVisible = true;
-            const addNextHopPromise = messageRouter.addNextHop(joynrMessage.to, address, isGloballyVisible).then(fail);
-            const removeNextHopPromise = messageRouter.removeNextHop(joynrMessage.to).then(fail);
-            increaseFakeTime(1);
-
-            messageRouter.shutdown();
-            addNextHopPromise.catch(() => {
-                return removeNextHopPromise.catch(() => {
-                    done();
-                });
-            });
         });
     }); // describe ChildMessageRouter
 }); // describe MessageRouter

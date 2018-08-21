@@ -89,6 +89,8 @@ TEST_F(MessagingSettingsTest, intializedWithDefaultSettings)
             MessagingSettings::SETTING_ROUTING_TABLE_CLEANUP_INTERVAL_MS()));
     EXPECT_EQ(messagingSettings.getRoutingTableCleanupIntervalMs(),
               MessagingSettings::DEFAULT_ROUTING_TABLE_CLEANUP_INTERVAL_MS());
+    EXPECT_EQ(messagingSettings.getDiscardUnroutableRepliesAndPublications(),
+              MessagingSettings::DEFAULT_DISCARD_UNROUTABLE_REPLIES_AND_PUBLICATIONS());
 }
 
 TEST_F(MessagingSettingsTest, overrideDefaultSettings)
@@ -172,4 +174,23 @@ TEST_F(MessagingSettingsTest, discoveryEntryExpiryIntervalMsStores64BitValue)
 
     constexpr std::int64_t int64Max = std::numeric_limits<std::int64_t>::max();
     EXPECT_EQ(int64Max, messagingSettings.getDiscoveryEntryExpiryIntervalMs());
+}
+
+TEST_F(MessagingSettingsTest, discardUnroutableRepliesAndPublicationsValue)
+{
+    const std::string fileName =
+            "test-resources/MessagingSettingsDiscardUnroutableRepliesAndPublications.settings";
+    Settings testSettings(fileName);
+    EXPECT_TRUE(testSettings.isLoaded());
+    MessagingSettings messagingSettings(testSettings);
+
+    EXPECT_EQ(true, messagingSettings.getDiscardUnroutableRepliesAndPublications());
+
+    bool expectedValue = false;
+    messagingSettings.setDiscardUnroutableRepliesAndPublications(expectedValue);
+    EXPECT_EQ(expectedValue, messagingSettings.getDiscardUnroutableRepliesAndPublications());
+
+    expectedValue = true;
+    messagingSettings.setDiscardUnroutableRepliesAndPublications(expectedValue);
+    EXPECT_EQ(expectedValue, messagingSettings.getDiscardUnroutableRepliesAndPublications());
 }
