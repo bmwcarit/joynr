@@ -39,8 +39,6 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.SetMultimap;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -68,6 +66,7 @@ import io.joynr.pubsub.publication.BroadcastListener;
 import io.joynr.pubsub.publication.MulticastListener;
 import io.joynr.runtime.ShutdownListener;
 import io.joynr.runtime.ShutdownNotifier;
+import io.joynr.util.MultiMap;
 import joynr.BroadcastFilterParameters;
 import joynr.BroadcastSubscriptionRequest;
 import joynr.MulticastPublication;
@@ -84,7 +83,7 @@ public class PublicationManagerImpl
         implements PublicationManager, DirectoryListener<ProviderContainer>, ShutdownListener {
     private static final Logger logger = LoggerFactory.getLogger(PublicationManagerImpl.class);
     // Map ProviderId -> SubscriptionRequest
-    private final SetMultimap<String, PublicationInformation> queuedSubscriptionRequests;
+    private final MultiMap<String, PublicationInformation> queuedSubscriptionRequests;
     // Map SubscriptionId -> SubscriptionRequest
     private final ConcurrentMap<String, PublicationInformation> subscriptionId2PublicationInformation;
     // Map SubscriptionId -> PublicationTimer
@@ -193,7 +192,7 @@ public class PublicationManagerImpl
         this.providerDirectory = providerDirectory;
         this.cleanupScheduler = cleanupScheduler;
         this.subscriptionRequestStorage = subscriptionRequestStorage;
-        this.queuedSubscriptionRequests = HashMultimap.create();
+        this.queuedSubscriptionRequests = new MultiMap<>();
         this.subscriptionId2PublicationInformation = new ConcurrentHashMap<>();
         this.publicationTimers = new ConcurrentHashMap<>();
         this.subscriptionEndFutures = new ConcurrentHashMap<>();
@@ -208,7 +207,7 @@ public class PublicationManagerImpl
 
     private void queueSavedSubscriptionRequests() {
 
-        SetMultimap<String, PersistedSubscriptionRequest> persistedSubscriptionRequests = subscriptionRequestStorage.getSavedSubscriptionRequests();
+        MultiMap<String, PersistedSubscriptionRequest> persistedSubscriptionRequests = subscriptionRequestStorage.getSavedSubscriptionRequests();
         if (persistedSubscriptionRequests == null || persistedSubscriptionRequests.isEmpty()) {
             return;
         }

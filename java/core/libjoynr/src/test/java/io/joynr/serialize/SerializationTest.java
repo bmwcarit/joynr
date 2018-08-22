@@ -33,7 +33,6 @@ import java.util.concurrent.RejectedExecutionException;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.SetMultimap;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -56,6 +55,7 @@ import io.joynr.exceptions.JoynrWaitExpiredException;
 import io.joynr.messaging.JsonMessageSerializerModule;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.pubsub.SubscriptionQos;
+import io.joynr.util.MultiMap;
 import joynr.BroadcastSubscriptionRequest;
 import joynr.MulticastPublication;
 import joynr.OnChangeSubscriptionQos;
@@ -233,7 +233,7 @@ public class SerializationTest {
         new File(persistenceFileName).delete();
         FileSubscriptionRequestStorage fileSubscriptionRequestStorage = new FileSubscriptionRequestStorage(persistenceFileName);
         fileSubscriptionRequestStorage.persistSubscriptionRequest(proxyPid, providerPid, subscriptionRequest);
-        SetMultimap<String, PersistedSubscriptionRequest> savedSubscriptionRequests = fileSubscriptionRequestStorage.getSavedSubscriptionRequests();
+        MultiMap<String, PersistedSubscriptionRequest> savedSubscriptionRequests = fileSubscriptionRequestStorage.getSavedSubscriptionRequests();
         assertEquals(1, savedSubscriptionRequests.get(providerPid).size());
         PersistedSubscriptionRequest persistedSubscriptionRequest = savedSubscriptionRequests.get(providerPid)
                                                                                              .iterator()

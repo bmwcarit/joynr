@@ -28,20 +28,19 @@ import java.io.ObjectOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.SetMultimap;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
 import io.joynr.messaging.ConfigurableMessagingSettings;
+import io.joynr.util.MultiMap;
 import joynr.SubscriptionRequest;
 
 @Singleton
 public class FileSubscriptionRequestStorage implements SubscriptionRequestStorage {
 
     private static final Logger logger = LoggerFactory.getLogger(FileSubscriptionRequestStorage.class);
-    SetMultimap<String, PersistedSubscriptionRequest> persistedSubscriptionRequests = HashMultimap.create();
+    MultiMap<String, PersistedSubscriptionRequest> persistedSubscriptionRequests = new MultiMap<>();
     private String persistenceFileName;
 
     @Inject
@@ -51,7 +50,7 @@ public class FileSubscriptionRequestStorage implements SubscriptionRequestStorag
     }
 
     @Override
-    synchronized public SetMultimap<String, PersistedSubscriptionRequest> getSavedSubscriptionRequests() {
+    synchronized public MultiMap<String, PersistedSubscriptionRequest> getSavedSubscriptionRequests() {
         return persistedSubscriptionRequests;
     }
 
@@ -76,11 +75,11 @@ public class FileSubscriptionRequestStorage implements SubscriptionRequestStorag
         ObjectInputStream inputStream = null;
         try {
             inputStream = new ObjectInputStream(new FileInputStream(persistenceFileName));
-            persistedSubscriptionRequests = (SetMultimap<String, PersistedSubscriptionRequest>) inputStream.readObject();
+            persistedSubscriptionRequests = (MultiMap<String, PersistedSubscriptionRequest>) inputStream.readObject();
         } catch (Exception e) {
             logger.warn("unable to read saved subscription requests: " + e.getMessage());
             deleteCorruptedPersistenceFile();
-            persistedSubscriptionRequests = HashMultimap.create();
+            persistedSubscriptionRequests = new MultiMap<>();
         } finally {
             if (inputStream != null) {
                 try {
