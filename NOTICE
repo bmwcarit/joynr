@@ -25,7 +25,6 @@ This project has dependencies to:
   Aether Transport Wagon under Eclipse Public License, Version 1.0
   Aether Utilities under Eclipse Public License, Version 1.0
   android under Apache License, Version 2.0
-  Animal Sniffer Annotations under MIT license
   ant-launcher under Apache License, Version 2.0
   Antlr 3 Runtime under BSD License
   AntLR Parser Generator under BSD License
@@ -87,7 +86,6 @@ This project has dependencies to:
   Bean Validation API under Apache License, Version 2.0
   Bouncy Castle Provider under Bouncy Castle Licence
   CDI APIs under Apache License, Version 2.0
-  Checker Qual under GNU General Public License, version 2 (GPL2), with the classpath exception or The MIT License
   classworlds under BSD Style License
   clustercontroller-inprocess-runtime under The Apache Software License, Version 2.0
   clustercontroller-standalone under The Apache Software License, Version 2.0
@@ -120,7 +118,6 @@ This project has dependencies to:
   EJB 3.1 API under lgpl
   Embedded GlassFish All-In-One under CDDL + GPLv2 with classpath exception
   Equinox Application Container under Eclipse Public License
-  error-prone annotations under Apache 2.0
   Expression Language under Eclipse Public License
   Expression Language 2.2 API under lgpl
   Extension Registry Support under Eclipse Public License
@@ -246,7 +243,6 @@ This project has dependencies to:
   io.joynr:joynr under The Apache Software License, Version 2.0
   io.joynr:tests under The Apache Software License, Version 2.0
   io.joynr:tools under The Apache Software License, Version 2.0
-  J2ObjC Annotations under The Apache Software License, Version 2.0
   JACC 1.4 API under lgpl
   Jackson under The Apache Software License, Version 2.0
   Jackson module: JAXB-annotations under The Apache Software License, Version 2.0

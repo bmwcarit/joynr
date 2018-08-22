@@ -524,11 +524,6 @@
 				<version>2.1</version>
 			</dependency>
 			<dependency>
-				<groupId>com.google.guava</groupId>
-				<artifactId>guava</artifactId>
-				<version>24.1-android</version>
-			</dependency>
-			<dependency>
 				<groupId>org.glassfish.jersey.core</groupId>
 				<artifactId>jersey-server</artifactId>
 				<version>2.26-b02</version>
