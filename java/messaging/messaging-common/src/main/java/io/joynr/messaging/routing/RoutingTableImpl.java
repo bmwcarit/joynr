@@ -19,13 +19,13 @@
 package io.joynr.messaging.routing;
 
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.Iterator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Maps;
 import com.google.inject.Singleton;
 
 import io.joynr.exceptions.JoynrRuntimeException;
@@ -82,7 +82,7 @@ public class RoutingTableImpl implements RoutingTable {
         private boolean isSticky;
     }
 
-    private ConcurrentMap<String, RoutingEntry> hashMap = Maps.newConcurrentMap();
+    private ConcurrentMap<String, RoutingEntry> hashMap = new ConcurrentHashMap<>();
 
     @Override
     public Address get(String participantId) {

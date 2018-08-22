@@ -20,6 +20,7 @@ package io.joynr.dispatching;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -27,7 +28,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
@@ -133,7 +133,7 @@ public class MutableMessageFactory {
     }
 
     private MutableMessage addRequestReplyIdCustomHeader(MutableMessage msg, String requestReplyId) {
-        Map<String, String> customHeaders = Maps.newHashMap();
+        Map<String, String> customHeaders = new HashMap<>();
         customHeaders.put(REQUEST_REPLY_ID_CUSTOM_HEADER, requestReplyId);
         msg.setCustomHeaders(customHeaders);
         return msg;

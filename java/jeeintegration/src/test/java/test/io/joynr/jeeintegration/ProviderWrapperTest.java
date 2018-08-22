@@ -35,6 +35,7 @@ import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
@@ -54,7 +55,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.google.common.collect.Maps;
 import com.google.inject.Injector;
 
 import io.joynr.dispatcher.rpc.MultiReturnValuesContainer;
@@ -86,7 +86,7 @@ import joynr.types.ProviderQos;
 public class ProviderWrapperTest {
 
     private static final String USERNAME = "messageCreatorId";
-    private static final Map<String, Serializable> expectedMessageContext = Maps.newHashMap();
+    private static final Map<String, Serializable> expectedMessageContext = new HashMap<>();
 
     private static final AnnotationLiteral<io.joynr.jeeintegration.api.SubscriptionPublisher> SUBSCRIPTION_PUBLISHER_ANNOTATION_LITERAL = new AnnotationLiteral<io.joynr.jeeintegration.api.SubscriptionPublisher>() {
         private static final long serialVersionUID = 1L;

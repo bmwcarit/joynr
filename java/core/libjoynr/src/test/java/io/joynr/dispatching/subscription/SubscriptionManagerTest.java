@@ -52,7 +52,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.google.common.collect.Maps;
 
 import io.joynr.dispatcher.rpc.annotation.JoynrMulticast;
 import io.joynr.dispatching.Dispatcher;
@@ -98,9 +97,9 @@ public class SubscriptionManagerTest {
     private ConcurrentMap<Pattern, Set<String>> multicastSubscribersDirectory = spy(new ConcurrentHashMap<Pattern, Set<String>>());
     private ConcurrentMap<String, PubSubState> subscriptionStates = spy(new ConcurrentHashMap<String, PubSubState>());
     private ConcurrentMap<String, MissedPublicationTimer> missedPublicationTimers = spy(new ConcurrentHashMap<String, MissedPublicationTimer>());
-    private ConcurrentMap<String, Class<?>[]> unicastBroadcastTypes = spy(Maps.<String, Class<?>[]> newConcurrentMap());
-    private ConcurrentMap<Pattern, Class<?>[]> multicastBroadcastTypes = spy(Maps.<Pattern, Class<?>[]> newConcurrentMap());
-    private ConcurrentMap<String, Future<String>> subscriptionFutureMap = spy(Maps.<String, Future<String>> newConcurrentMap());
+    private ConcurrentMap<String, Class<?>[]> unicastBroadcastTypes = spy(new ConcurrentHashMap<String, Class<?>[]>());
+    private ConcurrentMap<Pattern, Class<?>[]> multicastBroadcastTypes = spy(new ConcurrentHashMap<Pattern, Class<?>[]>());
+    private ConcurrentMap<String, Future<String>> subscriptionFutureMap = spy(new ConcurrentHashMap<String, Future<String>>());
 
     @Mock
     private PubSubState subscriptionState;

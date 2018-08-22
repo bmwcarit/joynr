@@ -45,8 +45,6 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
-import com.google.common.collect.Maps;
-
 import io.joynr.JoynrVersion;
 import io.joynr.arbitration.ArbitrationCallback;
 import io.joynr.arbitration.Arbitrator;
@@ -165,7 +163,7 @@ public class ProxyBuilderDefaultImplTest {
                         ArbitrationCallback callback = arbitrationCallbackCaptor.getValue();
                         Map<String, Set<Version>> versionsByDomain = new HashMap<>();
                         HashSet<Version> discoveredVersions = new HashSet(Arrays.asList(new Version(100, 100)));
-                        Map<String, NoCompatibleProviderFoundException> exceptionsByDomain = Maps.newHashMap();
+                        Map<String, NoCompatibleProviderFoundException> exceptionsByDomain = new HashMap<>();
                         for (String domain : domains) {
                             versionsByDomain.put(domain, discoveredVersions);
                             exceptionsByDomain.put(domain,

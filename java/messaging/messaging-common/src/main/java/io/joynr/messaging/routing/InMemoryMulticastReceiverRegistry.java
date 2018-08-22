@@ -23,10 +23,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Pattern;
 
-import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import io.joynr.messaging.util.MulticastWildcardRegexFactory;
@@ -40,7 +40,7 @@ public class InMemoryMulticastReceiverRegistry implements MulticastReceiverRegis
 
     private final MulticastWildcardRegexFactory multicastWildcardRegexFactory;
 
-    private ConcurrentMap<Pattern, Set<String>> multicastReceivers = Maps.newConcurrentMap();
+    private ConcurrentMap<Pattern, Set<String>> multicastReceivers = new ConcurrentHashMap<>();
 
     @Inject
     public InMemoryMulticastReceiverRegistry(MulticastWildcardRegexFactory multicastWildcardRegexFactory) {
