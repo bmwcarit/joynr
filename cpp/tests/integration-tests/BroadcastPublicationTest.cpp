@@ -45,28 +45,47 @@ using namespace joynr::tests;
 /**
   * Is an integration test. Tests from Provider -> PublicationManager
   */
-class BroadcastPublicationTest : public ::testing::Test {
+class BroadcastPublicationTest : public ::testing::Test
+{
 public:
-    BroadcastPublicationTest() :
-        singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
-        gpsLocation1(1.1, 2.2, 3.3, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 444),
-        speed1(100),
-        providerParticipantId("providerParticipantId"),
-        proxyParticipantId("proxyParticipantId"),
-        subscriptionId("subscriptionId"),
-        persistencyEnabled(true),
-        mockMessageRouter(std::make_shared<MockMessageRouter>(singleThreadedIOService->getIOService())),
-        messageSender(std::make_shared<MessageSender>(mockMessageRouter, nullptr)),
-        publicationManager(std::make_shared<PublicationManager>(singleThreadedIOService->getIOService(), messageSender, persistencyEnabled)),
-        publicationSender(std::make_shared<MockPublicationSender>()),
-        request(),
-        subscriptionBroadcastListener(std::make_shared<UnicastBroadcastListener>(subscriptionId, publicationManager)),
-        multicastBroadcastListener(std::make_shared<MulticastBroadcastListener>(providerParticipantId, publicationManager)),
-        provider(std::make_shared<MockTestProvider>()),
-        requestCaller(std::make_shared<testRequestCaller>(provider)),
-        filterParameters(),
-        filter1(std::make_shared<MockLocationUpdatedSelectiveFilter>()),
-        filter2(std::make_shared<MockLocationUpdatedSelectiveFilter>())
+    BroadcastPublicationTest()
+            : singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
+              gpsLocation1(1.1,
+                           2.2,
+                           3.3,
+                           types::Localisation::GpsFixEnum::MODE2D,
+                           0.0,
+                           0.0,
+                           0.0,
+                           0.0,
+                           444,
+                           444,
+                           444),
+              speed1(100),
+              providerParticipantId("providerParticipantId"),
+              proxyParticipantId("proxyParticipantId"),
+              subscriptionId("subscriptionId"),
+              persistencyEnabled(true),
+              mockMessageRouter(
+                      std::make_shared<MockMessageRouter>(singleThreadedIOService->getIOService())),
+              messageSender(std::make_shared<MessageSender>(mockMessageRouter, nullptr)),
+              publicationManager(
+                      std::make_shared<PublicationManager>(singleThreadedIOService->getIOService(),
+                                                           messageSender,
+                                                           persistencyEnabled)),
+              publicationSender(std::make_shared<MockPublicationSender>()),
+              request(),
+              subscriptionBroadcastListener(
+                      std::make_shared<UnicastBroadcastListener>(subscriptionId,
+                                                                 publicationManager)),
+              multicastBroadcastListener(
+                      std::make_shared<MulticastBroadcastListener>(providerParticipantId,
+                                                                   publicationManager)),
+              provider(std::make_shared<MockTestProvider>()),
+              requestCaller(std::make_shared<testRequestCaller>(provider)),
+              filterParameters(),
+              filter1(std::make_shared<MockLocationUpdatedSelectiveFilter>()),
+              filter2(std::make_shared<MockLocationUpdatedSelectiveFilter>())
     {
         singleThreadedIOService->start();
     }
@@ -77,38 +96,38 @@ public:
         singleThreadedIOService->stop();
     }
 
-    void SetUp(){
-        //remove stored subscriptions
-        std::remove(LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str());
+    void SetUp()
+    {
+        // remove stored subscriptions
+        std::remove(LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME()
+                            .c_str());
 
         request.setSubscribeToName("locationUpdateSelective");
         request.setSubscriptionId(subscriptionId);
 
-        auto qos = std::make_shared<OnChangeSubscriptionQos>(
-                    1000, // publication ttl
-                    80, // validity_ms
-                    100 // minInterval_ms
-        );
+        auto qos = std::make_shared<OnChangeSubscriptionQos>(1000, // publication ttl
+                                                             80,   // validity_ms
+                                                             100   // minInterval_ms
+                                                             );
         request.setQos(qos);
         request.setFilterParameters(filterParameters);
 
         requestCaller->registerBroadcastListener(
-                    "locationUpdateSelective",
-                    subscriptionBroadcastListener);
+                "locationUpdateSelective", subscriptionBroadcastListener);
 
-        publicationManager->add(
-                    proxyParticipantId,
-                    providerParticipantId,
-                    requestCaller,
-                    request,
-                    publicationSender);
+        publicationManager->add(proxyParticipantId,
+                                providerParticipantId,
+                                requestCaller,
+                                request,
+                                publicationSender);
 
         provider->registerBroadcastListener(multicastBroadcastListener);
         provider->addBroadcastFilter(filter1);
         provider->addBroadcastFilter(filter2);
     }
 
-    void TearDown(){
+    void TearDown()
+    {
         EXPECT_TRUE(Mock::VerifyAndClearExpectations(filter1.get()));
         EXPECT_TRUE(Mock::VerifyAndClearExpectations(filter2.get()));
         messageSender.reset();
@@ -145,7 +164,8 @@ private:
   * Trigger:    A broadcast occurs.
   * Expected:   The registered filter objects are called correctly.
   */
-TEST_F(BroadcastPublicationTest, call_BroadcastFilterOnBroadcastTriggered) {
+TEST_F(BroadcastPublicationTest, call_BroadcastFilterOnBroadcastTriggered)
+{
 
     // It's only guaranteed that all filters are executed when they return true
     // (When not returning true, filter chain execution is interrupted)
@@ -162,38 +182,38 @@ TEST_F(BroadcastPublicationTest, call_BroadcastFilterOnBroadcastTriggered) {
   * Trigger:    A broadcast occurs. The filter chain has a positive result.
   * Expected:   A broadcast publication is triggered
   */
-TEST_F(BroadcastPublicationTest, sendPublication_FilterChainSuccess) {
+TEST_F(BroadcastPublicationTest, sendPublication_FilterChainSuccess)
+{
 
     ON_CALL(*filter1, filter(Eq(gpsLocation1), Eq(filterParameters))).WillByDefault(Return(true));
     ON_CALL(*filter2, filter(Eq(gpsLocation1), Eq(filterParameters))).WillByDefault(Return(true));
 
-    EXPECT_CALL(*publicationSender, sendSubscriptionPublicationMock(
-                    Eq(providerParticipantId),
-                    Eq(proxyParticipantId),
-                    _,
-                    AllOf(
-                        A<const SubscriptionPublication&>(),
-                        Property(&SubscriptionPublication::getSubscriptionId, Eq(subscriptionId)))
-                    ));
+    EXPECT_CALL(*publicationSender,
+                sendSubscriptionPublicationMock(
+                        Eq(providerParticipantId),
+                        Eq(proxyParticipantId),
+                        _,
+                        AllOf(A<const SubscriptionPublication&>(),
+                              Property(&SubscriptionPublication::getSubscriptionId,
+                                       Eq(subscriptionId)))));
 
     provider->fireLocationUpdateSelective(gpsLocation1);
 }
 
-TEST_F(BroadcastPublicationTest, sendPublication_broadcastwithSingleArrayParam) {
+TEST_F(BroadcastPublicationTest, sendPublication_broadcastwithSingleArrayParam)
+{
 
     const std::vector<std::string> singleParam = {"A", "B"};
 
     using ImmutableMessagePtr = std::shared_ptr<ImmutableMessage>;
 
-    const std::string expectedRecipient = providerParticipantId+"/broadcastWithSingleArrayParameter";
-    EXPECT_CALL(*mockMessageRouter, route(
-                     AllOf(
-                         A<ImmutableMessagePtr>(),
-                         MessageHasSender(providerParticipantId),
-                         MessageHasRecipient(expectedRecipient)
-                        ),
-                     _
-                     ));
+    const std::string expectedRecipient =
+            providerParticipantId + "/broadcastWithSingleArrayParameter";
+    EXPECT_CALL(*mockMessageRouter,
+                route(AllOf(A<ImmutableMessagePtr>(),
+                            MessageHasSender(providerParticipantId),
+                            MessageHasRecipient(expectedRecipient)),
+                      _));
 
     provider->fireBroadcastWithSingleArrayParameter(singleParam);
 }
@@ -202,20 +222,20 @@ TEST_F(BroadcastPublicationTest, sendPublication_broadcastwithSingleArrayParam) 
   * Trigger:    A broadcast occurs. The filter chain has a negative result.
   * Expected:   A broadcast publication is triggered
   */
-TEST_F(BroadcastPublicationTest, sendPublication_FilterChainFail) {
+TEST_F(BroadcastPublicationTest, sendPublication_FilterChainFail)
+{
 
     ON_CALL(*filter1, filter(Eq(gpsLocation1), Eq(filterParameters))).WillByDefault(Return(true));
     ON_CALL(*filter2, filter(Eq(gpsLocation1), Eq(filterParameters))).WillByDefault(Return(false));
 
-    EXPECT_CALL(*publicationSender, sendSubscriptionPublicationMock(
-                    Eq(providerParticipantId),
-                    Eq(proxyParticipantId),
-                    _,
-                    AllOf(
-                        A<const SubscriptionPublication&>(),
-                        Property(&SubscriptionPublication::getSubscriptionId, Eq(subscriptionId)))
-                    ))
-            .Times(Exactly(0));
+    EXPECT_CALL(*publicationSender,
+                sendSubscriptionPublicationMock(
+                        Eq(providerParticipantId),
+                        Eq(proxyParticipantId),
+                        _,
+                        AllOf(A<const SubscriptionPublication&>(),
+                              Property(&SubscriptionPublication::getSubscriptionId,
+                                       Eq(subscriptionId))))).Times(Exactly(0));
 
     provider->fireLocationUpdateSelective(gpsLocation1);
 }

@@ -20,6 +20,8 @@ package io.joynr.accesscontrol.global.jee;
 
 import static java.util.stream.Collectors.toSet;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -29,14 +31,14 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 
-import com.google.common.collect.Sets;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.joynr.accesscontrol.global.jee.persistence.DomainRoleEntryEntity;
 import io.joynr.jeeintegration.api.security.JoynrCallingPrincipal;
 import joynr.infrastructure.DacTypes.ChangeType;
 import joynr.infrastructure.DacTypes.DomainRoleEntry;
 import joynr.infrastructure.DacTypes.Role;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Stateless
 public class DomainRoleEntryManager {
@@ -66,7 +68,7 @@ public class DomainRoleEntryManager {
     private DomainRoleEntryEntity mapJoynrTypeToEntity(DomainRoleEntry joynrType) {
         DomainRoleEntryEntity result = new DomainRoleEntryEntity();
         result.setUserId(joynrType.getUid());
-        result.setDomains(Sets.newHashSet(joynrType.getDomains()));
+        result.setDomains(new HashSet(Arrays.asList(joynrType.getDomains())));
         result.setRole(joynrType.getRole());
         return result;
     }
@@ -100,7 +102,7 @@ public class DomainRoleEntryManager {
         boolean created = entity == null;
         if (!created) {
             entity.getDomains().clear();
-            entity.getDomains().addAll(Sets.newHashSet(joynrType.getDomains()));
+            entity.getDomains().addAll(new HashSet(Arrays.asList(joynrType.getDomains())));
         } else {
             entity = mapJoynrTypeToEntity(joynrType);
             entityManager.persist(entity);

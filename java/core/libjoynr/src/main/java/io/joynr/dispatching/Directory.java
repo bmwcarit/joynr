@@ -19,16 +19,15 @@
 package io.joynr.dispatching;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
 import org.slf4j.Logger;
 
-import com.google.common.collect.Sets;
-
 public abstract class Directory<T> {
-    protected Set<DirectoryListener<T>> listeners = Sets.newHashSet();
+    protected Set<DirectoryListener<T>> listeners = new HashSet();
     protected Map<String, T> entryMap = new HashMap<String, T>();
 
     public void addListener(DirectoryListener<T> listener) {

@@ -16,7 +16,6 @@
  * limitations under the License.
  * #L%
  */
-const Promise = require("../../global/Promise");
 const Request = require("./types/Request");
 const Reply = require("./types/Reply");
 const OneWayRequest = require("./types/OneWayRequest");

@@ -270,13 +270,25 @@ void ProxyBuilder<T>::buildAsync(
         bool isGloballyVisible = !discoverEntry.getIsLocal();
         constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
         const bool isSticky = false;
+        const bool allowUpdate = false;
+        auto onSuccessAddNextHop = [onSuccess, proxy]() { onSuccess(std::move(proxy)); };
+        auto onErrorAddNextHop = [onError](
+                const joynr::exceptions::ProviderRuntimeException& providerRuntimeException) {
+            if (onError) {
+                onError(exceptions::DiscoveryException(
+                        "Proxy could not be added to parent router: " +
+                        providerRuntimeException.getMessage()));
+            }
+        };
+
         messageRouter->addNextHop(proxy->getProxyParticipantId(),
                                   dispatcherAddress,
                                   isGloballyVisible,
                                   expiryDateMs,
-                                  isSticky);
-
-        onSuccess(std::move(proxy));
+                                  isSticky,
+                                  allowUpdate,
+                                  onSuccessAddNextHop,
+                                  onErrorAddNextHop);
     };
 
     auto arbitrator = ArbitratorFactory::createArbitrator(

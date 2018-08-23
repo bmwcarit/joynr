@@ -38,9 +38,11 @@
 using namespace ::testing;
 using namespace joynr;
 
-namespace joynr {
+namespace joynr
+{
 
-class End2EndSelectiveBroadcastTest : public End2EndBroadcastTestBase {
+class End2EndSelectiveBroadcastTest : public End2EndBroadcastTestBase
+{
 public:
     End2EndSelectiveBroadcastTest() : End2EndBroadcastTestBase()
     {
@@ -52,121 +54,117 @@ private:
 
 } // namespace joynr
 
-class MockTestBroadcastWithFilteringBroadcastFilter : public joynr::tests::TestBroadcastWithFilteringBroadcastFilter {
+class MockTestBroadcastWithFilteringBroadcastFilter
+        : public joynr::tests::TestBroadcastWithFilteringBroadcastFilter
+{
 public:
-    MOCK_METHOD6(filter, bool(const std::string& stringOut,
-                              const std::vector<std::string> & stringArrayOut,
-                              const std::vector<joynr::tests::testTypes::TestEnum::Enum>& enumerationArrayOut,
-                              const joynr::types::TestTypes::TEverythingStruct& structWithStringArrayOut,
-                              const std::vector<joynr::types::TestTypes::TEverythingStruct> & structWithStringArrayArrayOut,
-                              const joynr::tests::TestBroadcastWithFilteringBroadcastFilterParameters& filterParameters));
+    MOCK_METHOD6(
+            filter,
+            bool(const std::string& stringOut,
+                 const std::vector<std::string>& stringArrayOut,
+                 const std::vector<joynr::tests::testTypes::TestEnum::Enum>& enumerationArrayOut,
+                 const joynr::types::TestTypes::TEverythingStruct& structWithStringArrayOut,
+                 const std::vector<joynr::types::TestTypes::TEverythingStruct>&
+                         structWithStringArrayArrayOut,
+                 const joynr::tests::TestBroadcastWithFilteringBroadcastFilterParameters&
+                         filterParameters));
 };
 
-TEST_P(End2EndSelectiveBroadcastTest, subscribeToBroadcastWithFiltering) {
+TEST_P(End2EndSelectiveBroadcastTest, subscribeToBroadcastWithFiltering)
+{
     std::string stringOut = "expectedString";
-    std::vector<std::string> stringArrayOut {stringOut};
-    std::vector<joynr::tests::testTypes::TestEnum::Enum> enumerationArrayOut = {joynr::tests::testTypes::TestEnum::TWO};
+    std::vector<std::string> stringArrayOut{stringOut};
+    std::vector<joynr::tests::testTypes::TestEnum::Enum> enumerationArrayOut = {
+            joynr::tests::testTypes::TestEnum::TWO};
     joynr::types::TestTypes::TEverythingStruct structWithStringArrayOut;
-    std::vector<joynr::types::TestTypes::TEverythingStruct>  structWithStringArrayArrayOut {structWithStringArrayOut};
+    std::vector<joynr::types::TestTypes::TEverythingStruct> structWithStringArrayArrayOut{
+            structWithStringArrayOut};
 
-    MockSubscriptionListenerFiveTypes<
-            std::string,
-            std::vector<std::string>,
-            std::vector<joynr::tests::testTypes::TestEnum::Enum>,
-            joynr::types::TestTypes::TEverythingStruct,
-            std::vector<joynr::types::TestTypes::TEverythingStruct>
-    >* mockListener = new MockSubscriptionListenerFiveTypes<
-            std::string,
-            std::vector<std::string>,
-            std::vector<joynr::tests::testTypes::TestEnum::Enum>,
-            joynr::types::TestTypes::TEverythingStruct,
-            std::vector<joynr::types::TestTypes::TEverythingStruct>
-    >();
+    MockSubscriptionListenerFiveTypes<std::string,
+                                      std::vector<std::string>,
+                                      std::vector<joynr::tests::testTypes::TestEnum::Enum>,
+                                      joynr::types::TestTypes::TEverythingStruct,
+                                      std::vector<joynr::types::TestTypes::TEverythingStruct>>*
+            mockListener = new MockSubscriptionListenerFiveTypes<
+                    std::string,
+                    std::vector<std::string>,
+                    std::vector<joynr::tests::testTypes::TestEnum::Enum>,
+                    joynr::types::TestTypes::TEverythingStruct,
+                    std::vector<joynr::types::TestTypes::TEverythingStruct>>();
 
     // Use a semaphore to count and wait on calls to the mock listener
-    ON_CALL(*mockListener, onReceive(Eq(stringOut),
-                                     Eq(stringArrayOut),
-                                     Eq(enumerationArrayOut),
-                                     Eq(structWithStringArrayOut),
-                                     Eq(structWithStringArrayArrayOut)))
+    ON_CALL(*mockListener,
+            onReceive(Eq(stringOut),
+                      Eq(stringArrayOut),
+                      Eq(enumerationArrayOut),
+                      Eq(structWithStringArrayOut),
+                      Eq(structWithStringArrayArrayOut)))
             .WillByDefault(ReleaseSemaphore(&semaphore));
 
-    std::shared_ptr<ISubscriptionListener<
-            std::string,
-            std::vector<std::string>,
-            std::vector<joynr::tests::testTypes::TestEnum::Enum>,
-            joynr::types::TestTypes::TEverythingStruct,
-            std::vector<joynr::types::TestTypes::TEverythingStruct>
-    >> subscriptionListener(mockListener);
-
+    std::shared_ptr<ISubscriptionListener<std::string,
+                                          std::vector<std::string>,
+                                          std::vector<joynr::tests::testTypes::TestEnum::Enum>,
+                                          joynr::types::TestTypes::TEverythingStruct,
+                                          std::vector<joynr::types::TestTypes::TEverythingStruct>>>
+            subscriptionListener(mockListener);
 
     auto filter = std::make_shared<MockTestBroadcastWithFilteringBroadcastFilter>();
-    ON_CALL(*filter, filter(Eq(stringOut),
-                            Eq(stringArrayOut),
-                            Eq(enumerationArrayOut),
-                            Eq(structWithStringArrayOut),
-                            Eq(structWithStringArrayArrayOut),
-                            _))
-           .WillByDefault(DoAll(ReleaseSemaphore(&altSemaphore), Return(true)));
+    ON_CALL(*filter,
+            filter(Eq(stringOut),
+                   Eq(stringArrayOut),
+                   Eq(enumerationArrayOut),
+                   Eq(structWithStringArrayOut),
+                   Eq(structWithStringArrayArrayOut),
+                   _)).WillByDefault(DoAll(ReleaseSemaphore(&altSemaphore), Return(true)));
 
     testOneShotBroadcastSubscriptionWithFiltering(
-        subscriptionListener,
-        [this](
-            tests::testProxy* testProxy,
-            std::shared_ptr<joynr::ISubscriptionListener<
-                std::string,
-                std::vector<std::string>,
-                std::vector<joynr::tests::testTypes::TestEnum::Enum>,
-                joynr::types::TestTypes::TEverythingStruct,
-                std::vector<joynr::types::TestTypes::TEverythingStruct>
-            >> subscriptionListener,
-            std::shared_ptr<OnChangeSubscriptionQos> subscriptionQos,
-            std::string& subscriptionId
-        ) {
-            joynr::tests::TestBroadcastWithFilteringBroadcastFilterParameters filterParameters;
-            std::shared_ptr<Future<std::string>> subscriptionIdFuture =
-                    testProxy->subscribeToBroadcastWithFilteringBroadcast(
-                        filterParameters,
-                        subscriptionListener,
-                        subscriptionQos);
-            JOYNR_EXPECT_NO_THROW(subscriptionIdFuture->get(subscribeToBroadcastWait, subscriptionId));
-        },
-        [this](
-            tests::testProxy* testProxy,
-            std::string& subscriptionId
-        ) {
-            testProxy->unsubscribeFromBroadcastWithFilteringBroadcast(subscriptionId);
-        },
-        &tests::testProvider::fireBroadcastWithFiltering,
-        filter,
-        stringOut,
-        stringArrayOut,
-        enumerationArrayOut,
-        structWithStringArrayOut,
-        structWithStringArrayArrayOut
-    );
+            subscriptionListener,
+            [this](tests::testProxy* testProxy,
+                   std::shared_ptr<joynr::ISubscriptionListener<
+                           std::string,
+                           std::vector<std::string>,
+                           std::vector<joynr::tests::testTypes::TestEnum::Enum>,
+                           joynr::types::TestTypes::TEverythingStruct,
+                           std::vector<joynr::types::TestTypes::TEverythingStruct>>>
+                           subscriptionListener,
+                   std::shared_ptr<OnChangeSubscriptionQos> subscriptionQos,
+                   std::string& subscriptionId) {
+                joynr::tests::TestBroadcastWithFilteringBroadcastFilterParameters filterParameters;
+                std::shared_ptr<Future<std::string>> subscriptionIdFuture =
+                        testProxy->subscribeToBroadcastWithFilteringBroadcast(
+                                filterParameters, subscriptionListener, subscriptionQos);
+                JOYNR_EXPECT_NO_THROW(
+                        subscriptionIdFuture->get(subscribeToBroadcastWait, subscriptionId));
+            },
+            [this](tests::testProxy* testProxy, std::string& subscriptionId) {
+                testProxy->unsubscribeFromBroadcastWithFilteringBroadcast(subscriptionId);
+            },
+            &tests::testProvider::fireBroadcastWithFiltering,
+            filter,
+            stringOut,
+            stringArrayOut,
+            enumerationArrayOut,
+            structWithStringArrayOut,
+            structWithStringArrayArrayOut);
 
     // Wait for a subscription message to arrive
     ASSERT_TRUE(altSemaphore.waitFor(std::chrono::seconds(3)));
-
 }
 
-TEST_P(End2EndSelectiveBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess) {
+TEST_P(End2EndSelectiveBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess)
+{
 
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
 
     // Use a semaphore to count and wait on calls to the mock listener
-    EXPECT_CALL(*mockListener, onReceive(Eq(gpsLocation2)))
-            .WillOnce(ReleaseSemaphore(&semaphore));
+    EXPECT_CALL(*mockListener, onReceive(Eq(gpsLocation2))).WillOnce(ReleaseSemaphore(&semaphore));
 
-    EXPECT_CALL(*mockListener, onReceive(Eq(gpsLocation3)))
-            .WillOnce(ReleaseSemaphore(&semaphore));
+    EXPECT_CALL(*mockListener, onReceive(Eq(gpsLocation3))).WillOnce(ReleaseSemaphore(&semaphore));
 
-    EXPECT_CALL(*mockListener, onReceive(Eq(gpsLocation4)))
-            .WillOnce(ReleaseSemaphore(&semaphore));
+    EXPECT_CALL(*mockListener, onReceive(Eq(gpsLocation4))).WillOnce(ReleaseSemaphore(&semaphore));
 
-    std::shared_ptr<ISubscriptionListener<types::Localisation::GpsLocation> > subscriptionListener(
-                    mockListener);
+    std::shared_ptr<ISubscriptionListener<types::Localisation::GpsLocation>> subscriptionListener(
+            mockListener);
 
     ON_CALL(*filter, filter(_, Eq(filterParameters))).WillByDefault(Return(true));
 
@@ -176,18 +174,17 @@ TEST_P(End2EndSelectiveBroadcastTest, subscribeToSelectiveBroadcast_FilterSucces
     std::shared_ptr<tests::testProxy> testProxy = buildProxy();
 
     std::int64_t minInterval_ms = 50;
-    auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
-                500000,   // validity_ms
-                1000, // publication ttl
-                minInterval_ms);  // minInterval_ms
+    auto subscriptionQos =
+            std::make_shared<OnChangeSubscriptionQos>(500000,          // validity_ms
+                                                      1000,            // publication ttl
+                                                      minInterval_ms); // minInterval_ms
 
     std::shared_ptr<joynr::Future<std::string>> subscriptionBroadcastResult =
             testProxy->subscribeToLocationUpdateSelectiveBroadcast(
-                filterParameters,
-                subscriptionListener,
-                subscriptionQos);
+                    filterParameters, subscriptionListener, subscriptionQos);
     std::string subscriptionId;
-    JOYNR_EXPECT_NO_THROW(subscriptionBroadcastResult->get(subscribeToBroadcastWait, subscriptionId));
+    JOYNR_EXPECT_NO_THROW(
+            subscriptionBroadcastResult->get(subscribeToBroadcastWait, subscriptionId));
 
     // Change the location 3 times
 
@@ -213,10 +210,12 @@ TEST_P(End2EndSelectiveBroadcastTest, subscribeToSelectiveBroadcast_FilterSucces
 
     // Wait for a subscription message to arrive
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
-    JOYNR_EXPECT_NO_THROW(testProxy->unsubscribeFromLocationUpdateSelectiveBroadcast(subscriptionId));
+    JOYNR_EXPECT_NO_THROW(
+            testProxy->unsubscribeFromLocationUpdateSelectiveBroadcast(subscriptionId));
 }
 
-TEST_P(End2EndSelectiveBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) {
+TEST_P(End2EndSelectiveBroadcastTest, subscribeToSelectiveBroadcast_FilterFail)
+{
 
     std::shared_ptr<MockGpsSubscriptionListener> mockSubscriptionListener =
             std::make_shared<MockGpsSubscriptionListener>();
@@ -232,18 +231,17 @@ TEST_P(End2EndSelectiveBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) 
     std::shared_ptr<tests::testProxy> testProxy = buildProxy();
 
     std::int64_t minInterval_ms = 50;
-    auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
-                500000,   // validity_ms
-                1000, // publication ttl
-                minInterval_ms);  // minInterval_ms
+    auto subscriptionQos =
+            std::make_shared<OnChangeSubscriptionQos>(500000,          // validity_ms
+                                                      1000,            // publication ttl
+                                                      minInterval_ms); // minInterval_ms
 
     std::shared_ptr<joynr::Future<std::string>> subscriptionBroadcastResult =
             testProxy->subscribeToLocationUpdateSelectiveBroadcast(
-                filterParameters,
-                mockSubscriptionListener,
-                subscriptionQos);
+                    filterParameters, mockSubscriptionListener, subscriptionQos);
     std::string subscriptionId;
-    JOYNR_EXPECT_NO_THROW(subscriptionBroadcastResult->get(subscribeToBroadcastWait, subscriptionId));
+    JOYNR_EXPECT_NO_THROW(
+            subscriptionBroadcastResult->get(subscribeToBroadcastWait, subscriptionId));
 
     // Change the location 3 times
 
@@ -261,29 +259,22 @@ TEST_P(End2EndSelectiveBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) 
 
     testProvider->fireLocationUpdateSelective(gpsLocation4);
 
-    //ensure to wait for the minInterval_ms before ending
+    // ensure to wait for the minInterval_ms before ending
     std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms));
-    JOYNR_EXPECT_NO_THROW(testProxy->unsubscribeFromLocationUpdateSelectiveBroadcast(subscriptionId));
+    JOYNR_EXPECT_NO_THROW(
+            testProxy->unsubscribeFromLocationUpdateSelectiveBroadcast(subscriptionId));
 }
 
 using namespace std::string_literals;
 
-INSTANTIATE_TEST_CASE_P(DISABLED_Http,
+INSTANTIATE_TEST_CASE_P(
+        DISABLED_Http,
         End2EndSelectiveBroadcastTest,
-        testing::Values(
-            std::make_tuple(
-                "test-resources/HttpSystemIntegrationTest1.settings"s,
-                "test-resources/HttpSystemIntegrationTest2.settings"s
-            )
-        )
-);
+        testing::Values(std::make_tuple("test-resources/HttpSystemIntegrationTest1.settings"s,
+                                        "test-resources/HttpSystemIntegrationTest2.settings"s)));
 
-INSTANTIATE_TEST_CASE_P(Mqtt,
+INSTANTIATE_TEST_CASE_P(
+        Mqtt,
         End2EndSelectiveBroadcastTest,
-        testing::Values(
-            std::make_tuple(
-                "test-resources/MqttSystemIntegrationTest1.settings"s,
-                "test-resources/MqttSystemIntegrationTest2.settings"s
-            )
-        )
-);
+        testing::Values(std::make_tuple("test-resources/MqttSystemIntegrationTest1.settings"s,
+                                        "test-resources/MqttSystemIntegrationTest2.settings"s)));

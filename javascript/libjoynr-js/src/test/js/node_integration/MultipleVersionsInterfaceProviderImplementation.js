@@ -16,7 +16,6 @@
  * limitations under the License.
  * #L%
  */
-const Promise = require("../../../main/js/global/Promise");
 
 let uInt8Attribute1, uInt8Attribute2;
 

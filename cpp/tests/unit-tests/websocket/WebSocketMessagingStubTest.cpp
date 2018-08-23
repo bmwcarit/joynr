@@ -81,7 +81,8 @@ public:
         try {
             using std::placeholders::_1;
             using std::placeholders::_2;
-            endpoint.set_message_handler(std::bind(&WebSocketServer::onMessageReceived, this, _1, _2));
+            endpoint.set_message_handler(
+                    std::bind(&WebSocketServer::onMessageReceived, this, _1, _2));
             endpoint.init_asio();
             // listen on random free port
             endpoint.listen(0);
@@ -95,13 +96,11 @@ public:
     }
 
 private:
-
     void onMessageReceived(ConnectionHandle hdl, MessagePtr msg)
     {
         std::ignore = hdl;
         JOYNR_LOG_DEBUG(logger(), "received message of size {}", msg->get_payload().size());
-        if(messageReceivedCallback)
-        {
+        if (messageReceivedCallback) {
             const std::string& messageStr = msg->get_payload();
             smrf::ByteVector rawMessage(messageStr.begin(), messageStr.end());
             messageReceivedCallback(std::move(rawMessage));
@@ -118,37 +117,38 @@ class WebSocketMessagingStubTest : public testing::TestWithParam<std::size_t>
 {
 
 public:
-    WebSocketMessagingStubTest() :
-        settings(),
-        wsSettings(settings),
-        server(),
-        serverAddress(),
-        singleThreadedIOService(std::make_shared<joynr::SingleThreadedIOService>()),
-        webSocket(nullptr)
+    WebSocketMessagingStubTest()
+            : settings(),
+              wsSettings(settings),
+              server(),
+              serverAddress(),
+              singleThreadedIOService(std::make_shared<joynr::SingleThreadedIOService>()),
+              webSocket(nullptr)
     {
         singleThreadedIOService->start();
         server.start();
     }
 
-    ~WebSocketMessagingStubTest() {
+    ~WebSocketMessagingStubTest()
+    {
         webSocket->stop();
         singleThreadedIOService->stop();
     }
 
-    MOCK_METHOD1(onWebSocketConnectionClosed, void (const joynr::system::RoutingTypes::Address&));
+    MOCK_METHOD1(onWebSocketConnectionClosed, void(const joynr::system::RoutingTypes::Address&));
 
     virtual void SetUp()
     {
         serverAddress = joynr::system::RoutingTypes::WebSocketAddress(
-                    joynr::system::RoutingTypes::WebSocketProtocol::WS,
-                    "localhost",
-                    server.getPort(),
-                    ""
-        );
-        JOYNR_LOG_DEBUG(logger(), "server URL: {}",serverAddress.toString());
+                joynr::system::RoutingTypes::WebSocketProtocol::WS,
+                "localhost",
+                server.getPort(),
+                "");
+        JOYNR_LOG_DEBUG(logger(), "server URL: {}", serverAddress.toString());
         joynr::Semaphore connected(0);
-        webSocket = std::make_shared<joynr::WebSocketPpClient<websocketpp::config::asio_client>>(wsSettings, singleThreadedIOService->getIOService());
-        webSocket->registerConnectCallback([&connected](){connected.notify();});
+        webSocket = std::make_shared<joynr::WebSocketPpClient<websocketpp::config::asio_client>>(
+                wsSettings, singleThreadedIOService->getIOService());
+        webSocket->registerConnectCallback([&connected]() { connected.notify(); });
         webSocket->connect(serverAddress);
 
         // wait until connected
@@ -166,13 +166,14 @@ protected:
     std::shared_ptr<joynr::IWebSocketPpClient> webSocket;
 };
 
-TEST_P(WebSocketMessagingStubTest, transmitMessageWithVaryingSize) {
+TEST_P(WebSocketMessagingStubTest, transmitMessageWithVaryingSize)
+{
     JOYNR_LOG_TRACE(logger(), "transmit message");
 
     joynr::Semaphore sem(0);
     smrf::ByteVector receivedMessage;
 
-    auto callback = [&sem, &receivedMessage](smrf::ByteVector&& msg){
+    auto callback = [&sem, &receivedMessage](smrf::ByteVector&& msg) {
         receivedMessage = std::move(msg);
         sem.notify();
     };
@@ -185,11 +186,12 @@ TEST_P(WebSocketMessagingStubTest, transmitMessageWithVaryingSize) {
     const std::size_t payloadSize = GetParam();
     std::string payload(payloadSize, 'x');
     mutableMessage.setPayload(payload);
-    std::shared_ptr<joynr::ImmutableMessage> immutableMessage = mutableMessage.getImmutableMessage();
+    std::shared_ptr<joynr::ImmutableMessage> immutableMessage =
+            mutableMessage.getImmutableMessage();
     smrf::ByteVector expectedMessage = immutableMessage->getSerializedMessage();
 
     auto onFailure = [](const joynr::exceptions::JoynrRuntimeException& e) {
-            FAIL() << "Unexpected call of onFailure function, exception: " + e.getMessage();
+        FAIL() << "Unexpected call of onFailure function, exception: " + e.getMessage();
     };
     messagingStub.transmit(immutableMessage, onFailure);
 
@@ -204,5 +206,4 @@ TEST_P(WebSocketMessagingStubTest, transmitMessageWithVaryingSize) {
 
 INSTANTIATE_TEST_CASE_P(WebsocketTransmitMessagesWithIncreasingSize,
                         WebSocketMessagingStubTest,
-                        ::testing::Values<std::size_t>(256*1024, 512*1024, 1024*1024)
-);
+                        ::testing::Values<std::size_t>(256 * 1024, 512 * 1024, 1024 * 1024));

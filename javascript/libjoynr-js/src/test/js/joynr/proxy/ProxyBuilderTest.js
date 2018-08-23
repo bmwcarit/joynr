@@ -27,7 +27,6 @@ const ArbitrationStrategyCollection = require("../../../../main/js/joynr/types/A
 const DiscoveryScope = require("../../../../main/js/generated/joynr/types/DiscoveryScope");
 const Version = require("../../../../main/js/generated/joynr/types/Version");
 const RadioProxy = require("../../../generated/joynr/vehicle/RadioProxy");
-const Promise = require("../../../../main/js/global/Promise");
 const waitsFor = require("../../../../test/js/global/WaitsFor");
 
 const safetyTimeoutDelta = 100;

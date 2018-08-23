@@ -18,8 +18,7 @@
  */
 package io.joynr.dispatching.subscription;
 
-import com.google.common.collect.SetMultimap;
-
+import io.joynr.util.MultiMap;
 import joynr.SubscriptionRequest;
 
 /**
@@ -31,7 +30,7 @@ public interface SubscriptionRequestStorage {
     /**
      * Maps providerParticipantId to all its active subscriptionRequests
      */
-    SetMultimap<String, PersistedSubscriptionRequest> getSavedSubscriptionRequests();
+    MultiMap<String, PersistedSubscriptionRequest> getSavedSubscriptionRequests();
 
     /**
      * Removes the subscriptionRequest from persistence

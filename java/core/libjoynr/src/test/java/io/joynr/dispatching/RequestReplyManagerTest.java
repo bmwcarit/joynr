@@ -35,6 +35,8 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -51,8 +53,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Sets;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -79,6 +79,7 @@ import io.joynr.provider.ProviderContainer;
 import io.joynr.proxy.DefaultStatelessAsyncIdCalculatorImpl;
 import io.joynr.proxy.JoynrMessagingConnectorFactory;
 import io.joynr.proxy.StatelessAsyncIdCalculator;
+import io.joynr.runtime.JoynrThreadFactory;
 import joynr.MutableMessage;
 import joynr.OneWayRequest;
 import joynr.Reply;
@@ -133,7 +134,7 @@ public class RequestReplyManagerTest {
         testOneWayRecipientParticipantId = "testOneWayRecipientParticipantId";
         testOneWayRecipientDiscoveryEntry = new DiscoveryEntryWithMetaInfo();
         testOneWayRecipientDiscoveryEntry.setParticipantId(testOneWayRecipientParticipantId);
-        testOneWayRecipientDiscoveryEntries = Sets.newHashSet(testOneWayRecipientDiscoveryEntry);
+        testOneWayRecipientDiscoveryEntries = new HashSet(Arrays.asList(testOneWayRecipientDiscoveryEntry));
         testMessageResponderParticipantId = "testMessageResponderParticipantId";
         testMessageResponderDiscoveryEntry = new DiscoveryEntryWithMetaInfo();
         testMessageResponderDiscoveryEntry.setParticipantId(testMessageResponderParticipantId);
@@ -150,7 +151,7 @@ public class RequestReplyManagerTest {
                 bind(RequestReplyManager.class).to(RequestReplyManagerImpl.class);
                 requestStaticInjection(RpcUtils.class, Request.class, JoynrMessagingConnectorFactory.class);
 
-                ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("joynr.Cleanup-%d").build();
+                ThreadFactory namedThreadFactory = new JoynrThreadFactory("joynr.Cleanup");
                 ScheduledExecutorService cleanupExecutor = Executors.newSingleThreadScheduledExecutor(namedThreadFactory);
                 bind(ScheduledExecutorService.class).annotatedWith(Names.named(JOYNR_SCHEDULER_CLEANUP))
                                                     .toInstance(cleanupExecutor);

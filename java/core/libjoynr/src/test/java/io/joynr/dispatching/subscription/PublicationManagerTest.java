@@ -47,7 +47,16 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
-import com.google.common.collect.Lists;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
+
 import io.joynr.dispatching.DispatcherImpl;
 import io.joynr.dispatching.ProviderDirectory;
 import io.joynr.dispatching.RequestCaller;
@@ -74,15 +83,6 @@ import joynr.tests.testLocationUpdateWithSpeedSelectiveBroadcastFilter;
 import joynr.tests.testProvider;
 import joynr.types.Localisation.GpsFixEnum;
 import joynr.types.Localisation.GpsLocation;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.runners.MockitoJUnitRunner;
-import org.mockito.stubbing.Answer;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PublicationManagerTest {
@@ -172,7 +172,7 @@ public class PublicationManagerTest {
         when(requestCallerDirectory.contains(eq(providerId))).thenReturn(true);
 
         publicationManager.addSubscriptionRequest(proxyId, providerId, subscriptionRequest);
-        List<BroadcastFilter> noFilters = Lists.newArrayList();
+        List<BroadcastFilter> noFilters = new ArrayList();
 
         int nrBroadcasts = 100;
         for (int i = 0; i < nrBroadcasts; i++) {
@@ -228,7 +228,7 @@ public class PublicationManagerTest {
         when(providerDirectory.contains(eq(providerId))).thenReturn(true);
 
         publicationManager.addSubscriptionRequest(proxyId, providerId, subscriptionRequest);
-        List<BroadcastFilter> noFilters = Lists.newArrayList();
+        List<BroadcastFilter> noFilters = new ArrayList();
 
         publicationManager.broadcastOccurred(subscriptionId, noFilters, 0);
         int nrIterations = 10;

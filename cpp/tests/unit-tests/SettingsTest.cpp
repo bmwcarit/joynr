@@ -27,13 +27,12 @@
 class SettingsTest : public ::testing::TestWithParam<std::tuple<int, int, bool>>
 {
 public:
-
-    SettingsTest() :
-        settingsPath("settings-test.settings"),
-        fileSystemSyncGracePeriod(500),
-        firstValue(std::get<0>(GetParam())),
-        secondValue(std::get<1>(GetParam())),
-        settingsFileChanged(std::get<2>(GetParam()))
+    SettingsTest()
+            : settingsPath("settings-test.settings"),
+              fileSystemSyncGracePeriod(500),
+              firstValue(std::get<0>(GetParam())),
+              secondValue(std::get<1>(GetParam())),
+              settingsFileChanged(std::get<2>(GetParam()))
     {
     }
 
@@ -67,5 +66,4 @@ TEST_P(SettingsTest, settingsFileUpdate)
 
 INSTANTIATE_TEST_CASE_P(SettingsTest,
                         SettingsTest,
-                        testing::Values(std::make_tuple(0, 0, false),
-                                        std::make_tuple(0, 1, true)));
+                        testing::Values(std::make_tuple(0, 0, false), std::make_tuple(0, 1, true)));

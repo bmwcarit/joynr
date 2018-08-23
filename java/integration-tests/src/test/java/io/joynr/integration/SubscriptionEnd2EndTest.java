@@ -45,7 +45,7 @@ public class SubscriptionEnd2EndTest extends AbstractSubscriptionEnd2EndTest {
     private static Server jettyServer;
     private static Properties originalProperties;
 
-    private List<DummyJoynrApplication> dummyApplications = new ArrayList<>();
+    private List<DummyJoynrApplication> dummyApplications = new ArrayList();
 
     @BeforeClass
     public static void startServer() throws Exception {

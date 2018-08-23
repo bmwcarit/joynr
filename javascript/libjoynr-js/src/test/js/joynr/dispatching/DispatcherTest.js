@@ -37,7 +37,6 @@ const DiscoveryEntryWithMetaInfo = require("../../../../main/js/generated/joynr/
 const Version = require("../../../../main/js/generated/joynr/types/Version");
 const ProviderQos = require("../../../../main/js/generated/joynr/types/ProviderQos");
 const uuid = require("uuid/v4");
-const Promise = require("../../../../main/js/global/Promise");
 const LoggingManager = require("../../../../main/js/joynr/system/LoggingManager");
 
 const providerId = "providerId";

@@ -26,7 +26,8 @@
  * @name CustomerLoggingAppender
  * @constructor
  */
-function CustomerLoggingAppender() {}
+function CustomerLoggingAppender() {
+}
 
 console.debug = console.log;
 

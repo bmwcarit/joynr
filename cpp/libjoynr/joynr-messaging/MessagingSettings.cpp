@@ -127,6 +127,12 @@ const std::string& MessagingSettings::SETTING_MQTT_MAX_MESSAGE_SIZE_BYTES()
     return value;
 }
 
+const std::string& MessagingSettings::SETTING_DISCARD_UNROUTABLE_REPLIES_AND_PUBLICATIONS()
+{
+    static const std::string value("messaging/discard-unroutable-replies-and-publications");
+    return value;
+}
+
 std::chrono::milliseconds MessagingSettings::DEFAULT_MQTT_CONNECTION_TIMEOUT_MS()
 {
     static const std::chrono::milliseconds value(1000);
@@ -386,6 +392,12 @@ std::uint64_t MessagingSettings::DEFAULT_MAXIMUM_TTL_MS()
 {
     // 30 days
     return (30UL * 24UL * 60UL * 60UL * 1000UL);
+}
+
+bool MessagingSettings::DEFAULT_DISCARD_UNROUTABLE_REPLIES_AND_PUBLICATIONS()
+{
+    static const bool value = false;
+    return value;
 }
 
 const std::string& MessagingSettings::SETTING_TTL_UPLIFT_MS()
@@ -701,6 +713,18 @@ void MessagingSettings::setRoutingTableCleanupIntervalMs(std::int64_t routingTab
     settings.set(SETTING_ROUTING_TABLE_CLEANUP_INTERVAL_MS(), routingTableCleanupIntervalMs);
 }
 
+bool MessagingSettings::getDiscardUnroutableRepliesAndPublications() const
+{
+    return settings.get<bool>(SETTING_DISCARD_UNROUTABLE_REPLIES_AND_PUBLICATIONS());
+}
+
+void MessagingSettings::setDiscardUnroutableRepliesAndPublications(
+        const bool& discardUnRoutableRepliesAndPublications)
+{
+    settings.set(SETTING_DISCARD_UNROUTABLE_REPLIES_AND_PUBLICATIONS(),
+                 discardUnRoutableRepliesAndPublications);
+}
+
 bool MessagingSettings::contains(const std::string& key) const
 {
     return settings.contains(key);
@@ -798,6 +822,10 @@ void MessagingSettings::checkSettings()
         settings.set(SETTING_ROUTING_TABLE_CLEANUP_INTERVAL_MS(),
                      DEFAULT_ROUTING_TABLE_CLEANUP_INTERVAL_MS());
     }
+    if (!settings.contains(SETTING_DISCARD_UNROUTABLE_REPLIES_AND_PUBLICATIONS())) {
+        settings.set(SETTING_DISCARD_UNROUTABLE_REPLIES_AND_PUBLICATIONS(),
+                     DEFAULT_DISCARD_UNROUTABLE_REPLIES_AND_PUBLICATIONS());
+    }
 }
 
 void MessagingSettings::printSettings() const
@@ -888,6 +916,11 @@ void MessagingSettings::printSettings() const
                     "SETTING: {} = {})",
                     SETTING_ROUTING_TABLE_CLEANUP_INTERVAL_MS(),
                     settings.get<std::int64_t>(SETTING_ROUTING_TABLE_CLEANUP_INTERVAL_MS()));
+    JOYNR_LOG_DEBUG(
+            logger(),
+            "SETTING: {} = {})",
+            SETTING_DISCARD_UNROUTABLE_REPLIES_AND_PUBLICATIONS(),
+            settings.get<std::string>(SETTING_DISCARD_UNROUTABLE_REPLIES_AND_PUBLICATIONS()));
 }
 
 } // namespace joynr

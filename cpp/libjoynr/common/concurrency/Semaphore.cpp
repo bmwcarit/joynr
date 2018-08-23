@@ -23,7 +23,7 @@
 namespace joynr
 {
 
-Semaphore::Semaphore(std::int8_t initialValue) : mutex(), condition(), counter(initialValue)
+Semaphore::Semaphore(std::size_t initialValue) : mutex(), condition(), counter(initialValue)
 {
 }
 

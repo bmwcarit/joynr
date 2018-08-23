@@ -22,7 +22,6 @@ const testDataOperation = require("../../../../test/js/test/data/Operation");
 const TestEnum = require("../../../generated/joynr/tests/testTypes/TestEnum");
 const UtilInternal = require("../../../../main/js/joynr/util/UtilInternal");
 const TypeRegistrySingleton = require("../../../../main/js/joynr/types/TypeRegistrySingleton");
-const Promise = require("../../../../main/js/global/Promise");
 const ProviderRuntimeException = require("../../../../main/js/joynr/exceptions/ProviderRuntimeException");
 const ApplicationException = require("../../../../main/js/joynr/exceptions/ApplicationException");
 const waitsFor = require("../../../../test/js/global/WaitsFor");

@@ -33,7 +33,8 @@ using namespace joynr;
 
 TEST(ProviderReregistrationControllerTest, queryProviderReregistrationControllerSucceedsOnCCRuntime)
 {
-    auto integrationSettings = std::make_unique<Settings>("test-resources/MqttSystemIntegrationTest1.settings");
+    auto integrationSettings =
+            std::make_unique<Settings>("test-resources/MqttSystemIntegrationTest1.settings");
     joynr::SystemServicesSettings systemServiceSettings(*integrationSettings);
     const std::string domain(systemServiceSettings.getDomain());
 
@@ -44,11 +45,15 @@ TEST(ProviderReregistrationControllerTest, queryProviderReregistrationController
     DiscoveryQos discoveryQos;
     discoveryQos.setDiscoveryTimeoutMs(3000);
 
-    auto providerReregistrationControllerProxyBuilder = runtime->createProxyBuilder<joynr::system::ProviderReregistrationControllerProxy>(domain);
-    auto providerReregistrationControllerProxy = providerReregistrationControllerProxyBuilder->setDiscoveryQos(discoveryQos)->build();
+    auto providerReregistrationControllerProxyBuilder =
+            runtime->createProxyBuilder<joynr::system::ProviderReregistrationControllerProxy>(
+                    domain);
+    auto providerReregistrationControllerProxy =
+            providerReregistrationControllerProxyBuilder->setDiscoveryQos(discoveryQos)->build();
 
     Semaphore finishedSemaphore;
-    providerReregistrationControllerProxy->triggerGlobalProviderReregistrationAsync([&finishedSemaphore]() { finishedSemaphore.notify(); }, nullptr);
+    providerReregistrationControllerProxy->triggerGlobalProviderReregistrationAsync(
+            [&finishedSemaphore]() { finishedSemaphore.notify(); }, nullptr);
     EXPECT_TRUE(finishedSemaphore.waitFor(std::chrono::seconds(10)));
 
     runtime->stop();
@@ -57,26 +62,35 @@ TEST(ProviderReregistrationControllerTest, queryProviderReregistrationController
 
 TEST(ProviderReregistrationControllerTest, queryProviderReregistrationControllerSucceedsOnWsRuntime)
 {
-    auto integrationSettings = std::make_unique<Settings>("test-resources/MqttSystemIntegrationTest1.settings");
+    auto integrationSettings =
+            std::make_unique<Settings>("test-resources/MqttSystemIntegrationTest1.settings");
     joynr::SystemServicesSettings systemServiceSettings(*integrationSettings);
     const std::string domain(systemServiceSettings.getDomain());
 
-    auto ccRuntime = std::make_shared<JoynrClusterControllerRuntime>(std::move(integrationSettings));
+    auto ccRuntime =
+            std::make_shared<JoynrClusterControllerRuntime>(std::move(integrationSettings));
     ccRuntime->init();
     ccRuntime->start();
 
     DiscoveryQos discoveryQos;
     discoveryQos.setDiscoveryTimeoutMs(3000);
 
-    auto wsRuntimeSettings = std::make_unique<Settings>("test-resources/libjoynrSystemIntegration1.settings");
-    auto wsRuntime = std::make_shared<TestLibJoynrWebSocketRuntime>(std::move(wsRuntimeSettings), nullptr);
+    auto wsRuntimeSettings =
+            std::make_unique<Settings>("test-resources/libjoynrSystemIntegration1.settings");
+    auto wsRuntime =
+            std::make_shared<TestLibJoynrWebSocketRuntime>(std::move(wsRuntimeSettings), nullptr);
     ASSERT_TRUE(wsRuntime->connect(std::chrono::seconds(2)));
 
-    auto providerReregistrationControllerProxyBuilder = wsRuntime->createProxyBuilder<joynr::system::ProviderReregistrationControllerProxy>(domain);
-    auto providerReregistrationControllerProxy = providerReregistrationControllerProxyBuilder->setDiscoveryQos(discoveryQos)->build();
+    auto providerReregistrationControllerProxyBuilder =
+            wsRuntime->createProxyBuilder<joynr::system::ProviderReregistrationControllerProxy>(
+                    domain);
+    auto providerReregistrationControllerProxy =
+            providerReregistrationControllerProxyBuilder->setDiscoveryQos(discoveryQos)->build();
 
     Semaphore finishedSemaphore;
-    providerReregistrationControllerProxy->triggerGlobalProviderReregistrationAsync([&finishedSemaphore]() { finishedSemaphore.notify(); }, [](const joynr::exceptions::JoynrRuntimeException&) { FAIL(); });
+    providerReregistrationControllerProxy->triggerGlobalProviderReregistrationAsync(
+            [&finishedSemaphore]() { finishedSemaphore.notify(); },
+            [](const joynr::exceptions::JoynrRuntimeException&) { FAIL(); });
     EXPECT_TRUE(finishedSemaphore.waitFor(std::chrono::seconds(10)));
 
     wsRuntime->shutdown();

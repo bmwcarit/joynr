@@ -39,21 +39,23 @@ using ::testing::Pointee;
 
 using namespace joynr;
 
-class ReplyInterpreterTest : public ::testing::Test {};
+class ReplyInterpreterTest : public ::testing::Test
+{
+};
 
-TEST_F(ReplyInterpreterTest, execute_calls_caller_with_maps) {
+TEST_F(ReplyInterpreterTest, execute_calls_caller_with_maps)
+{
     // Create a mock callback
-    auto callback = std::make_shared<MockCallbackWithJoynrException<joynr::types::TestTypes::TEverythingMap>>();
+    auto callback = std::make_shared<
+            MockCallbackWithJoynrException<joynr::types::TestTypes::TEverythingMap>>();
     types::TestTypes::TEverythingMap responseValue;
     EXPECT_CALL(*callback, onSuccess(Eq(responseValue))).Times(1);
     EXPECT_CALL(*callback, onError(_)).Times(0);
 
     // Create a reply caller
-   auto icaller = std::make_shared<ReplyCaller<types::TestTypes::TEverythingMap>> (
-            [callback](const types::TestTypes::TEverythingMap& map) {
-                callback->onSuccess(map);
-            },
-            [callback](const std::shared_ptr<exceptions::JoynrException>& error){
+    auto icaller = std::make_shared<ReplyCaller<types::TestTypes::TEverythingMap>>(
+            [callback](const types::TestTypes::TEverythingMap& map) { callback->onSuccess(map); },
+            [callback](const std::shared_ptr<exceptions::JoynrException>& error) {
                 callback->onError(error);
             });
 
@@ -65,20 +67,23 @@ TEST_F(ReplyInterpreterTest, execute_calls_caller_with_maps) {
     icaller->execute(std::move(reply));
 }
 
-TEST_F(ReplyInterpreterTest, execute_calls_caller) {
+TEST_F(ReplyInterpreterTest, execute_calls_caller)
+{
     // Create a mock callback
-    auto callback = std::make_shared<MockCallbackWithJoynrException<joynr::types::Localisation::GpsLocation>>();
+    auto callback = std::make_shared<
+            MockCallbackWithJoynrException<joynr::types::Localisation::GpsLocation>>();
     int myAltitude = 13;
-    EXPECT_CALL(*callback, onSuccess(Property(&types::Localisation::GpsLocation::getAltitude, myAltitude)))
-                .Times(1);
+    EXPECT_CALL(*callback,
+                onSuccess(Property(&types::Localisation::GpsLocation::getAltitude, myAltitude)))
+            .Times(1);
     EXPECT_CALL(*callback, onError(_)).Times(0);
 
     // Create a reply caller
-    auto icaller = std::make_shared<ReplyCaller<types::Localisation::GpsLocation>> (
+    auto icaller = std::make_shared<ReplyCaller<types::Localisation::GpsLocation>>(
             [callback](const types::Localisation::GpsLocation& location) {
                 callback->onSuccess(location);
             },
-            [callback](const std::shared_ptr<exceptions::JoynrException>& error){
+            [callback](const std::shared_ptr<exceptions::JoynrException>& error) {
                 callback->onError(error);
             });
 
@@ -92,19 +97,17 @@ TEST_F(ReplyInterpreterTest, execute_calls_caller) {
     icaller->execute(std::move(reply));
 }
 
-TEST_F(ReplyInterpreterTest, execute_calls_caller_void) {
+TEST_F(ReplyInterpreterTest, execute_calls_caller_void)
+{
     // Create a mock callback
     auto callback = std::make_shared<MockCallbackWithJoynrException<void>>();
-    EXPECT_CALL(*callback, onSuccess())
-                .Times(1);
+    EXPECT_CALL(*callback, onSuccess()).Times(1);
     EXPECT_CALL(*callback, onError(_)).Times(0);
 
     // Create a reply caller
-    auto icaller = std::make_shared<ReplyCaller<void>> (
-            [callback]() {
-                callback->onSuccess();
-            },
-            [callback](const std::shared_ptr<exceptions::JoynrException>& error){
+    auto icaller = std::make_shared<ReplyCaller<void>>(
+            [callback]() { callback->onSuccess(); },
+            [callback](const std::shared_ptr<exceptions::JoynrException>& error) {
                 callback->onError(error);
             });
 
@@ -115,56 +118,49 @@ TEST_F(ReplyInterpreterTest, execute_calls_caller_void) {
     icaller->execute(std::move(reply));
 }
 
-TEST_F(ReplyInterpreterTest, execute_calls_caller_with_error) {
+TEST_F(ReplyInterpreterTest, execute_calls_caller_with_error)
+{
     // Create a reply
-    exceptions::ProviderRuntimeException error("ReplyInterpreterTestProviderRuntimeExeption");
+    exceptions::ProviderRuntimeException error("ReplyInterpreterTestProviderRuntimeException");
     Reply reply;
     reply.setError(std::make_shared<exceptions::ProviderRuntimeException>(error));
 
     // Create a mock callback
-    auto callback = std::make_shared<MockCallbackWithJoynrException<joynr::types::Localisation::GpsLocation>>();
-    EXPECT_CALL(*callback, onSuccess(_))
-                .Times(0);
-    EXPECT_CALL(*callback, onError(
-                    Pointee(joynrException(
-                                error.getTypeName(),
-                                error.getMessage()))))
-                .Times(1);
+    auto callback = std::make_shared<
+            MockCallbackWithJoynrException<joynr::types::Localisation::GpsLocation>>();
+    EXPECT_CALL(*callback, onSuccess(_)).Times(0);
+    EXPECT_CALL(*callback,
+                onError(Pointee(joynrException(error.getTypeName(), error.getMessage())))).Times(1);
 
     // Create a reply caller
-    auto icaller = std::make_shared<ReplyCaller<types::Localisation::GpsLocation>> (
+    auto icaller = std::make_shared<ReplyCaller<types::Localisation::GpsLocation>>(
             [callback](const types::Localisation::GpsLocation& location) {
                 callback->onSuccess(location);
             },
-            [callback](const std::shared_ptr<exceptions::JoynrException>& error){
+            [callback](const std::shared_ptr<exceptions::JoynrException>& error) {
                 callback->onError(error);
             });
 
     icaller->execute(std::move(reply));
 }
 
-TEST_F(ReplyInterpreterTest, execute_calls_caller_void_with_error) {
+TEST_F(ReplyInterpreterTest, execute_calls_caller_void_with_error)
+{
     // Create a reply
-    exceptions::ProviderRuntimeException error("ReplyInterpreterTestProviderRuntimeExeption");
+    exceptions::ProviderRuntimeException error("ReplyInterpreterTestProviderRuntimeException");
     Reply reply;
     reply.setError(std::make_shared<exceptions::ProviderRuntimeException>(error));
 
     // Create a mock callback
     auto callback = std::make_shared<MockCallbackWithJoynrException<void>>();
-    EXPECT_CALL(*callback, onSuccess())
-                .Times(0);
-    EXPECT_CALL(*callback, onError(
-                    Pointee(joynrException(
-                                error.getTypeName(),
-                                error.getMessage()))))
-            .Times(1);
+    EXPECT_CALL(*callback, onSuccess()).Times(0);
+    EXPECT_CALL(*callback,
+                onError(Pointee(joynrException(error.getTypeName(), error.getMessage())))).Times(1);
 
     // Create a reply caller
-    auto icaller = std::make_shared<ReplyCaller<void>> (
-            [callback]() {
-                callback->onSuccess();
-            },
-            [callback](const std::shared_ptr<exceptions::JoynrException>& error){
+    auto icaller = std::make_shared<ReplyCaller<void>>(
+            [callback]() { callback->onSuccess(); },
+            [callback](const std::shared_ptr<exceptions::JoynrException>& error) {
                 callback->onError(error);
             });
 
@@ -172,25 +168,23 @@ TEST_F(ReplyInterpreterTest, execute_calls_caller_void_with_error) {
     icaller->execute(std::move(reply));
 }
 
-TEST_F(ReplyInterpreterTest, execute_empty_reply) {
+TEST_F(ReplyInterpreterTest, execute_empty_reply)
+{
     exceptions::JoynrRuntimeException error("Reply object had no response.");
 
     // Create a mock callback
-    auto callback = std::make_shared<MockCallbackWithJoynrException<joynr::types::Localisation::GpsLocation>>();
-    EXPECT_CALL(*callback, onSuccess(_))
-                .Times(0);
-    EXPECT_CALL(*callback, onError(
-                    Pointee(joynrException(
-                                error.getTypeName(),
-                                error.getMessage()))))
-                .Times(1);
+    auto callback = std::make_shared<
+            MockCallbackWithJoynrException<joynr::types::Localisation::GpsLocation>>();
+    EXPECT_CALL(*callback, onSuccess(_)).Times(0);
+    EXPECT_CALL(*callback,
+                onError(Pointee(joynrException(error.getTypeName(), error.getMessage())))).Times(1);
 
     // Create a reply caller
-    auto icaller = std::make_shared<ReplyCaller<types::Localisation::GpsLocation>> (
+    auto icaller = std::make_shared<ReplyCaller<types::Localisation::GpsLocation>>(
             [callback](const types::Localisation::GpsLocation& location) {
                 callback->onSuccess(location);
             },
-            [callback](const std::shared_ptr<exceptions::JoynrException>& error){
+            [callback](const std::shared_ptr<exceptions::JoynrException>& error) {
                 callback->onError(error);
             });
 

@@ -23,7 +23,6 @@ const ChannelAddress = require("../../../../../main/js/generated/joynr/system/Ro
 const InProcessAddress = require("../../../../../main/js/joynr/messaging/inprocess/InProcessAddress");
 const JoynrMessage = require("../../../../../main/js/joynr/messaging/JoynrMessage");
 const TypeRegistry = require("../../../../../main/js/joynr/start/TypeRegistry");
-const Promise = require("../../../../../main/js/global/Promise");
 const Date = require("../../../../../test/js/global/Date");
 const waitsFor = require("../../../../../test/js/global/WaitsFor");
 const UtilInternal = require("../../../../../main/js/joynr/util/UtilInternal");
@@ -214,36 +213,56 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
         increaseFakeTime(1);
     });
 
-    it("queue Message with unknown destinationParticipant", done => {
-        joynrMessage2.expiryDate = Date.now() + 2000;
-
-        const onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
-
-        // avoid unhandled rejection warning by providing catch block
-        messageRouter
-            .route(joynrMessage2)
-            .then(onFulfilledSpy)
-            .catch(() => {
-                return null;
+    it("does not queue Reply and Publication Messages with unknown destinationParticipant", async () => {
+        const msgTypes = [
+            JoynrMessage.JOYNRMESSAGE_TYPE_REPLY,
+            JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REPLY,
+            JoynrMessage.JOYNRMESSAGE_TYPE_PUBLICATION
+        ];
+        for (let i = 0; i < msgTypes.length; i++) {
+            joynrMessage2 = new JoynrMessage({
+                type: msgTypes[i]
             });
-        increaseFakeTime(1);
+            joynrMessage2.expiryDate = Date.now() + 2000;
+            joynrMessage2.to = receiverParticipantId2;
+            joynrMessage2.from = "senderParticipantId";
+            joynrMessage2.payload = "hello2";
 
-        waitsFor(
-            () => {
-                return messageQueueSpy.putMessage.calls.count() > 0;
-            },
-            "messageQueueSpy to be invoked",
-            1000
-        )
-            .then(() => {
-                expect(messageQueueSpy.putMessage).toHaveBeenCalledWith(joynrMessage2);
-                expect(messageQueueSpy.getAndRemoveMessages).not.toHaveBeenCalled();
-                expect(messagingStubFactorySpy.createMessagingStub).not.toHaveBeenCalled();
-                expect(messagingStubSpy.transmit).not.toHaveBeenCalled();
-                done();
-                return null;
-            })
-            .catch(fail);
+            await messageRouter.route(joynrMessage2);
+            expect(messageQueueSpy.putMessage).not.toHaveBeenCalledWith(joynrMessage2);
+            expect(messageQueueSpy.getAndRemoveMessages).not.toHaveBeenCalled();
+            expect(messagingStubFactorySpy.createMessagingStub).not.toHaveBeenCalled();
+            expect(messagingStubSpy.transmit).not.toHaveBeenCalled();
+        }
+    });
+
+    it("queues Messages with unknown destinationParticipant which are not of type Reply or Publication", async () => {
+        const msgTypes = [
+            JoynrMessage.JOYNRMESSAGE_TYPE_ONE_WAY,
+            JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
+            JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REQUEST,
+            JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST,
+            JoynrMessage.JOYNRMESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST,
+            JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_STOP
+        ];
+
+        for (let i = 0; i < msgTypes.length; i++) {
+            joynrMessage2 = new JoynrMessage({
+                type: msgTypes[i]
+            });
+            joynrMessage2.expiryDate = Date.now() + 2000;
+            joynrMessage2.to = receiverParticipantId2;
+            joynrMessage2.from = "senderParticipantId";
+            joynrMessage2.payload = "hello2";
+
+            await messageRouter.route(joynrMessage2);
+            expect(messageQueueSpy.putMessage).toHaveBeenCalledWith(joynrMessage2);
+            expect(messageQueueSpy.getAndRemoveMessages).not.toHaveBeenCalled();
+            expect(messagingStubFactorySpy.createMessagingStub).not.toHaveBeenCalled();
+            expect(messagingStubSpy.transmit).not.toHaveBeenCalled();
+
+            messageQueueSpy.putMessage.calls.reset();
+        }
     });
 
     it("routes previously queued message once respective participant gets registered", done => {
@@ -961,22 +980,18 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
             done();
         });
 
-        it("check if routing proxy is called with queued hop additions", done => {
+        it("check if setRoutingProxy calls addNextHop", done => {
             routingProxySpy.addNextHop.and.returnValue(Promise.resolve());
-            const onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
-
-            const isGloballyVisible = true;
-            messageRouter.addNextHop(joynrMessage.to, address, isGloballyVisible).then(onFulfilledSpy);
-            increaseFakeTime(1);
-
             expect(routingProxySpy.addNextHop).not.toHaveBeenCalled();
 
             messageRouter
                 .setRoutingProxy(routingProxySpy)
                 .then(() => {
-                    expect(routingProxySpy.addNextHop).toHaveBeenCalledTimes(2);
-                    expect(routingProxySpy.addNextHop.calls.argsFor(1)[0].participantId).toEqual(joynrMessage.to);
-                    expect(routingProxySpy.addNextHop.calls.argsFor(1)[0].browserAddress).toEqual(incomingAddress);
+                    expect(routingProxySpy.addNextHop).toHaveBeenCalledTimes(1);
+                    expect(routingProxySpy.addNextHop.calls.argsFor(0)[0].participantId).toEqual(
+                        routingProxySpy.proxyParticipantId
+                    );
+                    expect(routingProxySpy.addNextHop.calls.argsFor(0)[0].browserAddress).toEqual(incomingAddress);
                     done();
                 })
                 .catch(done.fail);
@@ -999,29 +1014,6 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
                     expect(routingProxySpy.resolveNextHop).not.toHaveBeenCalled();
                     done();
                     return null;
-                })
-                .catch(done.fail);
-        });
-
-        it("check if routing proxy is called with multiple queued hop additions", done => {
-            const onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
-
-            const isGloballyVisible = true;
-            messageRouter.addNextHop(joynrMessage.to, address, isGloballyVisible);
-            messageRouter.addNextHop(joynrMessage2.to, address, isGloballyVisible).then(onFulfilledSpy);
-            routingProxySpy.addNextHop.and.returnValue(Promise.resolve());
-            increaseFakeTime(1);
-            expect(routingProxySpy.addNextHop).not.toHaveBeenCalled();
-
-            messageRouter
-                .setRoutingProxy(routingProxySpy)
-                .then(() => {
-                    expect(routingProxySpy.addNextHop).toHaveBeenCalledTimes(3);
-                    expect(routingProxySpy.addNextHop.calls.argsFor(1)[0].participantId).toEqual(joynrMessage.to);
-                    expect(routingProxySpy.addNextHop.calls.argsFor(1)[0].browserAddress).toEqual(incomingAddress);
-                    expect(routingProxySpy.addNextHop.calls.argsFor(2)[0].participantId).toEqual(joynrMessage2.to);
-                    expect(routingProxySpy.addNextHop.calls.argsFor(2)[0].browserAddress).toEqual(incomingAddress);
-                    done();
                 })
                 .catch(done.fail);
         });
@@ -1138,20 +1130,6 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
                     return messageRouter.addNextHop("hopId", {}).then(fail);
                 })
                 .catch(done);
-        });
-
-        it(" reject pending promises when shut down", done => {
-            const isGloballyVisible = true;
-            const addNextHopPromise = messageRouter.addNextHop(joynrMessage.to, address, isGloballyVisible).then(fail);
-            const removeNextHopPromise = messageRouter.removeNextHop(joynrMessage.to).then(fail);
-            increaseFakeTime(1);
-
-            messageRouter.shutdown();
-            addNextHopPromise.catch(() => {
-                return removeNextHopPromise.catch(() => {
-                    done();
-                });
-            });
         });
     }); // describe ChildMessageRouter
 }); // describe MessageRouter

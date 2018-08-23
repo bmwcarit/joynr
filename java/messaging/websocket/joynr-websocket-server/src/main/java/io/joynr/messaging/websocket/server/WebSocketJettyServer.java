@@ -65,7 +65,7 @@ public class WebSocketJettyServer implements JoynrWebSocketEndpoint, WebSocketMe
     private WebSocketAddress address;
     private int maxMessageSize;
     private Map<String, Session> sessionMap = new HashMap<>();
-    private List<CCWebSocketMessagingSkeletonSocket> openSockets = new ArrayList<>();
+    private List<CCWebSocketMessagingSkeletonSocket> openSockets = new ArrayList();
 
     public ObjectMapper objectMapper;
 

@@ -30,9 +30,11 @@
 using namespace ::testing;
 using namespace joynr;
 
-class ImmutableMessageTest : public ::testing::Test {
+class ImmutableMessageTest : public ::testing::Test
+{
 public:
-    ImmutableMessageTest() {
+    ImmutableMessageTest()
+    {
         mutableMessage.setSender("sender");
         mutableMessage.setRecipient("recipient");
         mutableMessage.setExpiryDate(TimePoint::fromRelativeMs(1234567));
@@ -43,7 +45,9 @@ public:
 
 protected:
     MutableMessage mutableMessage;
-    std::unique_ptr<ImmutableMessage> createImmutableMessage(std::unordered_map<std::string, std::string> prefixedCustomHeaders) {
+    std::unique_ptr<ImmutableMessage> createImmutableMessage(
+            std::unordered_map<std::string, std::string> prefixedCustomHeaders)
+    {
         MutableMessage message;
 
         message.setPrefixedCustomHeaders(prefixedCustomHeaders);
@@ -55,8 +59,9 @@ private:
     DISALLOW_COPY_AND_ASSIGN(ImmutableMessageTest);
 };
 
-TEST_F(ImmutableMessageTest, retrieveCustomHeaders_tooShortHeader) {
-    std::unique_ptr<joynr::ImmutableMessage> message = createImmutableMessage({{"c","value"}});
+TEST_F(ImmutableMessageTest, retrieveCustomHeaders_tooShortHeader)
+{
+    std::unique_ptr<joynr::ImmutableMessage> message = createImmutableMessage({{"c", "value"}});
 
     auto prefixedCustomHeaders = message->getPrefixedCustomHeaders();
     auto customHeaders = message->getCustomHeaders();
@@ -65,11 +70,13 @@ TEST_F(ImmutableMessageTest, retrieveCustomHeaders_tooShortHeader) {
     EXPECT_EQ(customHeaders.size(), 0);
 }
 
-TEST_F(ImmutableMessageTest, retrieveCustomHeaders) {
+TEST_F(ImmutableMessageTest, retrieveCustomHeaders)
+{
     const std::string headerKey = "my-header-key";
     const std::string prefixedHeaderKey = joynr::Message::CUSTOM_HEADER_PREFIX() + headerKey;
 
-    std::unique_ptr<joynr::ImmutableMessage> message = createImmutableMessage({{prefixedHeaderKey,"value"}});
+    std::unique_ptr<joynr::ImmutableMessage> message =
+            createImmutableMessage({{prefixedHeaderKey, "value"}});
 
     auto prefixedCustomHeaders = message->getPrefixedCustomHeaders();
     auto customHeaders = message->getCustomHeaders();
@@ -122,7 +129,8 @@ TEST_F(ImmutableMessageTest, TestOwnerSigningCallbackInMutableMessage)
     ON_CALL(*mockKeyChain, getOwnerId()).WillByDefault(Return(signatureWithOwnerIdStr));
     auto immutableMessage = mutableMessage.getImmutableMessage();
     auto signatureByteArrayView = immutableMessage->getSignature();
-    std::string signatureStr(signatureByteArrayView.data(), signatureByteArrayView.data() + signatureByteArrayView.size());
+    std::string signatureStr(signatureByteArrayView.data(),
+                             signatureByteArrayView.data() + signatureByteArrayView.size());
     EXPECT_EQ(signatureWithOwnerIdStr, signatureStr);
 }
 

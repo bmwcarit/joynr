@@ -45,6 +45,10 @@ public class ProviderAnnotations {
         return getAnnotation(provider.getClass(), JoynrVersion.class).major();
     }
 
+    public static int getMajorVersion(Class<?> providerClass) {
+        return getAnnotation(providerClass, JoynrVersion.class).major();
+    }
+
     public static int getMinorVersion(Object provider) {
         return getAnnotation(provider.getClass(), JoynrVersion.class).minor();
     }

@@ -16,7 +16,6 @@
  * limitations under the License.
  * #L%
  */
-const Promise = require("../../global/Promise");
 const Arbitrator = require("../capabilities/arbitration/Arbitrator");
 const ProviderBuilder = require("../provider/ProviderBuilder");
 const ProxyBuilder = require("../proxy/ProxyBuilder");
@@ -473,19 +472,7 @@ function WebSocketLibjoynrRuntime(provisioning) {
             return messageRouter.setRoutingProxy(newRoutingProxy);
         }
 
-        const discoveryProxyPromise = proxyBuilder
-            .build(DiscoveryProxy, {
-                domain: "io.joynr",
-                messagingQos: internalMessagingQos,
-                discoveryQos: new DiscoveryQos({
-                    discoveryScope: DiscoveryScope.LOCAL_ONLY
-                }),
-                staticArbitration: true
-            })
-            .then(buildDiscoveryProxyOnSuccess)
-            .catch(buildDiscoveryProxyOnError);
-
-        const routingProxyPromise = proxyBuilder
+        const internalProxiesPromise = proxyBuilder
             .build(RoutingProxy, {
                 domain: "io.joynr",
                 messagingQos: internalMessagingQos,
@@ -495,7 +482,19 @@ function WebSocketLibjoynrRuntime(provisioning) {
                 staticArbitration: true
             })
             .then(buildRoutingProxyOnSuccess)
-            .catch(buildRoutingProxyOnError);
+            .catch(buildRoutingProxyOnError)
+            .then(() => {
+                return proxyBuilder.build(DiscoveryProxy, {
+                    domain: "io.joynr",
+                    messagingQos: internalMessagingQos,
+                    discoveryQos: new DiscoveryQos({
+                        discoveryScope: DiscoveryScope.LOCAL_ONLY
+                    }),
+                    staticArbitration: true
+                });
+            })
+            .then(buildDiscoveryProxyOnSuccess)
+            .catch(buildDiscoveryProxyOnError);
 
         function startOnSuccess() {
             joynrState = JoynrStates.STARTED;
@@ -513,7 +512,7 @@ function WebSocketLibjoynrRuntime(provisioning) {
         }
 
         // when everything's ready we can trigger the app
-        return Promise.all([discoveryProxyPromise, routingProxyPromise, persistencyPromise])
+        return Promise.all([internalProxiesPromise, persistencyPromise])
             .then(startOnSuccess)
             .catch(startOnFailure);
     };

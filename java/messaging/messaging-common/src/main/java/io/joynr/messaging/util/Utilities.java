@@ -18,18 +18,15 @@
  */
 package io.joynr.messaging.util;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
-
-import com.google.common.collect.Lists;
-
 import io.joynr.smrf.EncodingException;
 import io.joynr.smrf.UnsuppportedVersionException;
-
 import joynr.ImmutableMessage;
 
 public class Utilities {
@@ -55,7 +52,7 @@ public class Utilities {
      * @return List of JSON strings
      */
     public static List<String> splitJson(String combinedJsonString) {
-        List<String> result = Lists.newArrayList();
+        List<String> result = new ArrayList();
 
         int numberOfOpeningBraces = 0;
         boolean isInsideString = false;
@@ -93,7 +90,7 @@ public class Utilities {
 
     public static List<ImmutableMessage> splitSMRF(byte[] combinedSMRFMessages) throws EncodingException,
                                                                                 UnsuppportedVersionException {
-        List<ImmutableMessage> result = Lists.newArrayList();
+        List<ImmutableMessage> result = new ArrayList();
         byte[] remainingData = combinedSMRFMessages;
 
         while (remainingData.length > 0) {

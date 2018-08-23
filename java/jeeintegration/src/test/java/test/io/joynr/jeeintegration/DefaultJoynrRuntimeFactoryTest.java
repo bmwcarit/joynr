@@ -27,6 +27,8 @@ import static org.mockito.Mockito.when;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ScheduledExecutorService;
@@ -36,12 +38,17 @@ import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 
-import com.google.common.collect.Sets;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.mockito.Mockito;
+
 import com.google.inject.Binding;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.TypeLiteral;
 import com.google.inject.name.Names;
+
 import io.joynr.capabilities.ParticipantIdKeyUtil;
 import io.joynr.dispatching.MutableMessageFactory;
 import io.joynr.exceptions.JoynrIllegalStateException;
@@ -53,18 +60,15 @@ import io.joynr.messaging.NoOpRawMessagingPreprocessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.MqttClientIdProvider;
 import io.joynr.messaging.mqtt.statusmetrics.MqttStatusReceiver;
+import io.joynr.provider.ProviderAnnotations;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.statusmetrics.StatusReceiver;
 import joynr.ImmutableMessage;
 import joynr.MutableMessage;
 import joynr.Request;
 import joynr.jeeintegration.servicelocator.MyService;
+import joynr.jeeintegration.servicelocator.MyServiceProvider;
 import joynr.jeeintegration.servicelocator.MyServiceSync;
-
-import org.junit.Rule;
-import org.junit.rules.ExpectedException;
-import org.junit.Test;
-import org.mockito.Mockito;
 
 /**
  * Unit tests for the {@link DefaultJoynrRuntimeFactory}.
@@ -140,7 +144,7 @@ public class DefaultJoynrRuntimeFactoryTest {
         Bean<JoynrMessageProcessor> bean = mock(Bean.class);
         when(bean.create(Mockito.any())).thenReturn(new JoynrMessageProcessorTest());
         when(beanManager.getBeans(Mockito.<Type> eq(JoynrMessageProcessor.class),
-                                  Mockito.<Annotation> any())).thenReturn(Sets.newHashSet(bean));
+                                  Mockito.<Annotation> any())).thenReturn(new HashSet(Arrays.asList(bean)));
 
         final String mqttClientId = "someTestMqttClientId";
         MqttClientIdProvider mqttClientIdProvider = mock(MqttClientIdProvider.class);
@@ -193,14 +197,14 @@ public class DefaultJoynrRuntimeFactoryTest {
     @Test
     public void testClusterableParticipantIdsAdded() throws Exception {
         createFixture();
-        JoynrRuntime joynrRuntime = fixture.create(Sets.newHashSet(MyServiceSync.class));
+        JoynrRuntime joynrRuntime = fixture.create(new HashSet(Arrays.asList(MyServiceSync.class)));
         assertNotNull(joynrRuntime);
         Properties properties = fixture.getInjector()
                                        .getInstance(Key.get(Properties.class,
                                                             Names.named(MessagingPropertyKeys.JOYNR_PROPERTIES)));
         assertNotNull(properties);
-        String key = (ParticipantIdKeyUtil.JOYNR_PARTICIPANT_PREFIX + LOCAL_DOMAIN + "."
-                + MyService.INTERFACE_NAME).toLowerCase().replace("/", ".");
+        String key = (ParticipantIdKeyUtil.JOYNR_PARTICIPANT_PREFIX + LOCAL_DOMAIN + "." + MyService.INTERFACE_NAME
+                + ".v" + ProviderAnnotations.getMajorVersion(MyServiceProvider.class)).toLowerCase().replace("/", ".");
         assertTrue(properties.containsKey(key));
         String value = properties.getProperty(key);
         assertNotNull(value);
@@ -215,7 +219,7 @@ public class DefaultJoynrRuntimeFactoryTest {
         joynrProperties.setProperty(key, "myvalue");
         createFixture(joynrProperties);
 
-        JoynrRuntime joynrRuntime = fixture.create(Sets.newHashSet(MyServiceSync.class));
+        JoynrRuntime joynrRuntime = fixture.create(new HashSet(Arrays.asList(MyServiceSync.class)));
         assertNotNull(joynrRuntime);
         Properties properties = fixture.getInjector()
                                        .getInstance(Key.get(Properties.class,

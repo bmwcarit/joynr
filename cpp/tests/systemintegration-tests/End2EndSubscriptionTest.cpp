@@ -40,9 +40,11 @@
 using namespace ::testing;
 using namespace joynr;
 
-namespace joynr {
+namespace joynr
+{
 
-class End2EndSubscriptionTest : public TestWithParam< std::tuple<std::string, std::string> > {
+class End2EndSubscriptionTest : public TestWithParam<std::tuple<std::string, std::string>>
+{
 public:
     std::shared_ptr<JoynrClusterControllerRuntime> runtime1;
     std::shared_ptr<JoynrClusterControllerRuntime> runtime2;
@@ -56,18 +58,18 @@ public:
     unsigned long subscribeToAttributeWait;
     joynr::types::Localisation::GpsLocation gpsLocation;
 
-    End2EndSubscriptionTest() :
-        runtime1(),
-        runtime2(),
-        settings1(std::make_unique<Settings>(std::get<0>(GetParam()))),
-        settings2(std::make_unique<Settings>(std::get<1>(GetParam()))),
-        baseUuid(util::createUuid()),
-        uuid( "_" + baseUuid.substr(1, baseUuid.length()-2)),
-        domainName("cppEnd2EndSubscriptionTest_Domain" + uuid),
-        semaphore(0),
-        registerProviderWait(1000),
-        subscribeToAttributeWait(2000),
-        providerParticipantId()
+    End2EndSubscriptionTest()
+            : runtime1(),
+              runtime2(),
+              settings1(std::make_unique<Settings>(std::get<0>(GetParam()))),
+              settings2(std::make_unique<Settings>(std::get<1>(GetParam()))),
+              baseUuid(util::createUuid()),
+              uuid("_" + baseUuid.substr(1, baseUuid.length() - 2)),
+              domainName("cppEnd2EndSubscriptionTest_Domain" + uuid),
+              semaphore(0),
+              registerProviderWait(1000),
+              subscribeToAttributeWait(2000),
+              providerParticipantId()
     {
         Settings integration1Settings{"test-resources/libjoynrSystemIntegration1.settings"};
         Settings::merge(integration1Settings, *settings1, false);
@@ -84,7 +86,8 @@ public:
         runtime2->start();
     }
 
-    ~End2EndSubscriptionTest() override {
+    ~End2EndSubscriptionTest() override
+    {
         if (!providerParticipantId.empty()) {
             runtime1->unregisterProvider(providerParticipantId);
         }
@@ -109,15 +112,16 @@ public:
     {
         std::uint64_t delay = 0;
 
-        while (testProvider->attributeListeners.find(attributeName) == testProvider->attributeListeners.cend()
-               && delay <= subscribeToAttributeWait
-        ) {
+        while (testProvider->attributeListeners.find(attributeName) ==
+                       testProvider->attributeListeners.cend() &&
+               delay <= subscribeToAttributeWait) {
             std::this_thread::sleep_for(std::chrono::milliseconds(50));
-            delay+=50;
+            delay += 50;
         }
 
-        EXPECT_FALSE(testProvider->attributeListeners.find(attributeName) == testProvider->attributeListeners.cend() ||
-                    testProvider->attributeListeners.find(attributeName)->second.empty());
+        EXPECT_FALSE(testProvider->attributeListeners.find(attributeName) ==
+                             testProvider->attributeListeners.cend() ||
+                     testProvider->attributeListeners.find(attributeName)->second.empty());
     }
 
 private:
@@ -125,7 +129,8 @@ private:
     DISALLOW_COPY_AND_ASSIGN(End2EndSubscriptionTest);
 
 protected:
-    std::shared_ptr<tests::DefaulttestProvider> registerProvider() {
+    std::shared_ptr<tests::DefaulttestProvider> registerProvider()
+    {
         auto testProvider = std::make_shared<tests::DefaulttestProvider>();
         types::ProviderQos providerQos;
         std::chrono::milliseconds millisSinceEpoch =
@@ -134,17 +139,19 @@ protected:
         providerQos.setPriority(millisSinceEpoch.count());
         providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
         providerQos.setSupportsOnChangeSubscriptions(true);
-        providerParticipantId = runtime1->registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
+        providerParticipantId = runtime1->registerProvider<tests::testProvider>(
+                domainName, testProvider, providerQos);
 
-        //This wait is necessary, because registerProvider is async, and a lookup could occur
+        // This wait is necessary, because registerProvider is async, and a lookup could occur
         // before the register has finished.
         std::this_thread::sleep_for(std::chrono::milliseconds(registerProviderWait));
         return testProvider;
     }
 
-    std::shared_ptr<tests::testProxy> buildProxy() {
-        std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder
-                = runtime2->createProxyBuilder<tests::testProxy>(domainName);
+    std::shared_ptr<tests::testProxy> buildProxy()
+    {
+        std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+                runtime2->createProxyBuilder<tests::testProxy>(domainName);
         DiscoveryQos discoveryQos;
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
         discoveryQos.setDiscoveryTimeoutMs(3000);
@@ -152,10 +159,10 @@ protected:
 
         std::int64_t qosRoundTripTTL = 500;
 
-        std::shared_ptr<tests::testProxy> testProxy = testProxyBuilder
-                ->setMessagingQos(MessagingQos(qosRoundTripTTL))
-                ->setDiscoveryQos(discoveryQos)
-                ->build();
+        std::shared_ptr<tests::testProxy> testProxy =
+                testProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
+                        ->setDiscoveryQos(discoveryQos)
+                        ->build();
         return std::move(testProxy);
     }
 
@@ -164,28 +171,28 @@ protected:
                                           SubscribeTo subscribeTo,
                                           UnsubscribeFrom unsubscribeFrom,
                                           ChangeAttribute setAttribute,
-                                          const std::string& attributeName) {
-        MockSubscriptionListenerOneType<T>* mockListener =
-                new MockSubscriptionListenerOneType<T>();
+                                          const std::string& attributeName)
+    {
+        MockSubscriptionListenerOneType<T>* mockListener = new MockSubscriptionListenerOneType<T>();
 
         // Use a semaphore to count and wait on calls to the mock listener
         ON_CALL(*mockListener, onReceive(Eq(expectedValue)))
                 .WillByDefault(ReleaseSemaphore(&semaphore));
 
-        std::shared_ptr<ISubscriptionListener<T>> subscriptionListener(
-                        mockListener);
+        std::shared_ptr<ISubscriptionListener<T>> subscriptionListener(mockListener);
 
         std::shared_ptr<tests::DefaulttestProvider> testProvider = registerProvider();
 
-        (*testProvider.*setAttribute)(expectedValue, [](){}, [](const joynr::exceptions::ProviderRuntimeException&) {});
+        (*testProvider.*setAttribute)(
+                expectedValue, []() {}, [](const joynr::exceptions::ProviderRuntimeException&) {});
 
         std::shared_ptr<tests::testProxy> testProxy = buildProxy();
 
         std::int64_t minInterval_ms = 50;
-        auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
-                    500000,   // validity_ms
-                    1000,     // publication ttl
-                    minInterval_ms);  // minInterval_ms
+        auto subscriptionQos =
+                std::make_shared<OnChangeSubscriptionQos>(500000,          // validity_ms
+                                                          1000,            // publication ttl
+                                                          minInterval_ms); // minInterval_ms
 
         std::string subscriptionId;
         subscribeTo(testProxy, subscriptionListener, subscriptionQos, subscriptionId);
@@ -199,73 +206,81 @@ protected:
 
 } // namespace joynr
 
-TEST_P(End2EndSubscriptionTest, waitForSuccessfulSubscriptionRegistration) {
+TEST_P(End2EndSubscriptionTest, waitForSuccessfulSubscriptionRegistration)
+{
     auto mockListener = new MockSubscriptionListenerOneType<int32_t>();
 
     // Use a semaphore to wait for calls to the mock listener
     std::string subscriptionIdFromListener;
     std::string subscriptionIdFromFuture;
-    ON_CALL(*mockListener, onSubscribed(_))
-            .WillByDefault(DoAll(SaveArg<0>(&subscriptionIdFromListener), ReleaseSemaphore(&semaphore)));
+    ON_CALL(*mockListener, onSubscribed(_)).WillByDefault(
+            DoAll(SaveArg<0>(&subscriptionIdFromListener), ReleaseSemaphore(&semaphore)));
 
     std::shared_ptr<ISubscriptionListener<int32_t>> subscriptionListener(mockListener);
 
     std::shared_ptr<tests::DefaulttestProvider> testProvider = registerProvider();
 
-    testProvider->setTestAttribute(42, [](){}, [](const joynr::exceptions::ProviderRuntimeException& error) {
-        ADD_FAILURE() << "exception from setTestAttribute: " << error.getMessage(); });
+    testProvider->setTestAttribute(
+            42,
+            []() {},
+            [](const joynr::exceptions::ProviderRuntimeException& error) {
+                ADD_FAILURE() << "exception from setTestAttribute: " << error.getMessage();
+            });
 
     std::shared_ptr<tests::testProxy> testProxy = buildProxy();
 
     std::int64_t minInterval_ms = 50;
-    auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
-                500000,   // validity_ms
-                1000,     // publication ttl
-                minInterval_ms);  // minInterval_ms
-    std::shared_ptr<Future<std::string>> subscriptionIdFuture = testProxy->subscribeToTestAttribute(subscriptionListener, subscriptionQos);
+    auto subscriptionQos =
+            std::make_shared<OnChangeSubscriptionQos>(500000,          // validity_ms
+                                                      1000,            // publication ttl
+                                                      minInterval_ms); // minInterval_ms
+    std::shared_ptr<Future<std::string>> subscriptionIdFuture =
+            testProxy->subscribeToTestAttribute(subscriptionListener, subscriptionQos);
 
     waitForAttributeSubscriptionArrivedAtProvider(testProvider, "testAttribute");
 
     // Wait for a subscription reply message to arrive
-    JOYNR_EXPECT_NO_THROW(
-        subscriptionIdFuture->get(5000, subscriptionIdFromFuture);
-    );
+    JOYNR_EXPECT_NO_THROW(subscriptionIdFuture->get(5000, subscriptionIdFromFuture););
     EXPECT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
     EXPECT_EQ(subscriptionIdFromFuture, subscriptionIdFromListener);
     JOYNR_EXPECT_NO_THROW(testProxy->unsubscribeFromTestAttribute(subscriptionIdFromFuture));
 }
 
-TEST_P(End2EndSubscriptionTest, waitForSuccessfulSubscriptionUpdate) {
+TEST_P(End2EndSubscriptionTest, waitForSuccessfulSubscriptionUpdate)
+{
     auto mockListener = new MockSubscriptionListenerOneType<int32_t>();
 
     // Use a semaphore to wait for calls to the mock listener
     std::string subscriptionIdFromListener;
     std::string subscriptionIdFromFuture;
-    ON_CALL(*mockListener, onSubscribed(_))
-            .WillByDefault(DoAll(SaveArg<0>(&subscriptionIdFromListener), ReleaseSemaphore(&semaphore)));
+    ON_CALL(*mockListener, onSubscribed(_)).WillByDefault(
+            DoAll(SaveArg<0>(&subscriptionIdFromListener), ReleaseSemaphore(&semaphore)));
 
     std::shared_ptr<ISubscriptionListener<int32_t>> subscriptionListener(mockListener);
 
     std::shared_ptr<tests::DefaulttestProvider> testProvider = registerProvider();
 
-    testProvider->setTestAttribute(42, [](){}, [](const joynr::exceptions::ProviderRuntimeException& error) {
-        ADD_FAILURE() << "exception from setTestAttribute: " << error.getMessage(); });
+    testProvider->setTestAttribute(
+            42,
+            []() {},
+            [](const joynr::exceptions::ProviderRuntimeException& error) {
+                ADD_FAILURE() << "exception from setTestAttribute: " << error.getMessage();
+            });
 
     std::shared_ptr<tests::testProxy> testProxy = buildProxy();
 
     std::int64_t minInterval_ms = 50;
-    auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
-                500000,   // validity_ms
-                1000,     // publication ttl
-                minInterval_ms);  // minInterval_ms
-    std::shared_ptr<Future<std::string>> subscriptionIdFuture = testProxy->subscribeToTestAttribute(subscriptionListener, subscriptionQos);
+    auto subscriptionQos =
+            std::make_shared<OnChangeSubscriptionQos>(500000,          // validity_ms
+                                                      1000,            // publication ttl
+                                                      minInterval_ms); // minInterval_ms
+    std::shared_ptr<Future<std::string>> subscriptionIdFuture =
+            testProxy->subscribeToTestAttribute(subscriptionListener, subscriptionQos);
 
     waitForAttributeSubscriptionArrivedAtProvider(testProvider, "testAttribute");
 
     // Wait for a subscription reply message to arrive
-    JOYNR_EXPECT_NO_THROW(
-        subscriptionIdFuture->get(5000, subscriptionIdFromFuture);
-    );
+    JOYNR_EXPECT_NO_THROW(subscriptionIdFuture->get(5000, subscriptionIdFromFuture););
     EXPECT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
     EXPECT_EQ(subscriptionIdFromFuture, subscriptionIdFromListener);
 
@@ -274,12 +289,11 @@ TEST_P(End2EndSubscriptionTest, waitForSuccessfulSubscriptionUpdate) {
     std::string subscriptionId = subscriptionIdFromFuture;
     subscriptionIdFromFuture.clear();
     subscriptionIdFromListener.clear();
-    subscriptionIdFuture = testProxy->subscribeToTestAttribute(subscriptionListener, subscriptionQos, subscriptionId);
+    subscriptionIdFuture = testProxy->subscribeToTestAttribute(
+            subscriptionListener, subscriptionQos, subscriptionId);
 
     // Wait for a subscription reply message to arrive
-    JOYNR_EXPECT_NO_THROW(
-        subscriptionIdFuture->get(5000, subscriptionIdFromFuture);
-    );
+    JOYNR_EXPECT_NO_THROW(subscriptionIdFuture->get(5000, subscriptionIdFromFuture););
     EXPECT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
     EXPECT_EQ(subscriptionIdFromFuture, subscriptionIdFromListener);
     // subscription id from update is the same as the original subscription id
@@ -287,65 +301,62 @@ TEST_P(End2EndSubscriptionTest, waitForSuccessfulSubscriptionUpdate) {
     JOYNR_EXPECT_NO_THROW(testProxy->unsubscribeFromTestAttribute(subscriptionId));
 }
 
-TEST_P(End2EndSubscriptionTest, subscribeToEnumAttribute) {
+TEST_P(End2EndSubscriptionTest, subscribeToEnumAttribute)
+{
     tests::testTypes::TestEnum::Enum expectedTestEnum = tests::testTypes::TestEnum::TWO;
 
-    testOneShotAttributeSubscription(expectedTestEnum,
-                                 [this](std::shared_ptr<tests::testProxy>& testProxy,
-                                    std::shared_ptr<ISubscriptionListener<tests::testTypes::TestEnum::Enum>> subscriptionListener,
-                                    std::shared_ptr<OnChangeSubscriptionQos> subscriptionQos,
-                                    std::string& subscriptionId) {
-                                    std::shared_ptr<Future<std::string>> subscriptionIdFuture =
-                                        testProxy->subscribeToEnumAttribute(subscriptionListener, subscriptionQos);
-                                    JOYNR_EXPECT_NO_THROW(subscriptionIdFuture->get(subscribeToAttributeWait, subscriptionId));
-                                 },
-                                 [](std::shared_ptr<tests::testProxy>& testProxy,
-                                    std::string& subscriptionId) {
-                                     testProxy->unsubscribeFromBroadcastWithFilteringBroadcast(subscriptionId);
-                                 },
-                                 &tests::testProvider::setEnumAttribute,
-                                 "enumAttribute");
+    testOneShotAttributeSubscription(
+            expectedTestEnum,
+            [this](std::shared_ptr<tests::testProxy>& testProxy,
+                   std::shared_ptr<ISubscriptionListener<tests::testTypes::TestEnum::Enum>>
+                           subscriptionListener,
+                   std::shared_ptr<OnChangeSubscriptionQos> subscriptionQos,
+                   std::string& subscriptionId) {
+                std::shared_ptr<Future<std::string>> subscriptionIdFuture =
+                        testProxy->subscribeToEnumAttribute(subscriptionListener, subscriptionQos);
+                JOYNR_EXPECT_NO_THROW(
+                        subscriptionIdFuture->get(subscribeToAttributeWait, subscriptionId));
+            },
+            [](std::shared_ptr<tests::testProxy>& testProxy, std::string& subscriptionId) {
+                testProxy->unsubscribeFromBroadcastWithFilteringBroadcast(subscriptionId);
+            },
+            &tests::testProvider::setEnumAttribute,
+            "enumAttribute");
 }
 
-TEST_P(End2EndSubscriptionTest, subscribeToByteBufferAttribute) {
-    joynr::ByteBuffer expectedByteBuffer {0,1,2,3,4,5,6,7,8,9,8,7,6,5,4,3,2,1,0};
+TEST_P(End2EndSubscriptionTest, subscribeToByteBufferAttribute)
+{
+    joynr::ByteBuffer expectedByteBuffer{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
 
-    testOneShotAttributeSubscription(expectedByteBuffer,
-                                 [this](std::shared_ptr<tests::testProxy>& testProxy,
-                                    std::shared_ptr<ISubscriptionListener<joynr::ByteBuffer>> subscriptionListener,
-                                    std::shared_ptr<OnChangeSubscriptionQos> subscriptionQos,
-                                    std::string& subscriptionId) {
-                                    std::shared_ptr<Future<std::string>> subscriptionIdFuture =
-                                        testProxy->subscribeToByteBufferAttribute(subscriptionListener, subscriptionQos);
-                                    JOYNR_EXPECT_NO_THROW(subscriptionIdFuture->get(subscribeToAttributeWait, subscriptionId));
-                                 },
-                                 [](std::shared_ptr<tests::testProxy>& testProxy,
-                                    std::string& subscriptionId) {
-                                     testProxy->unsubscribeFromBroadcastWithFilteringBroadcast(subscriptionId);
-                                 },
-                                 &tests::testProvider::setByteBufferAttribute,
-                                 "byteBufferAttribute");
-
+    testOneShotAttributeSubscription(
+            expectedByteBuffer,
+            [this](std::shared_ptr<tests::testProxy>& testProxy,
+                   std::shared_ptr<ISubscriptionListener<joynr::ByteBuffer>> subscriptionListener,
+                   std::shared_ptr<OnChangeSubscriptionQos> subscriptionQos,
+                   std::string& subscriptionId) {
+                std::shared_ptr<Future<std::string>> subscriptionIdFuture =
+                        testProxy->subscribeToByteBufferAttribute(
+                                subscriptionListener, subscriptionQos);
+                JOYNR_EXPECT_NO_THROW(
+                        subscriptionIdFuture->get(subscribeToAttributeWait, subscriptionId));
+            },
+            [](std::shared_ptr<tests::testProxy>& testProxy, std::string& subscriptionId) {
+                testProxy->unsubscribeFromBroadcastWithFilteringBroadcast(subscriptionId);
+            },
+            &tests::testProvider::setByteBufferAttribute,
+            "byteBufferAttribute");
 }
 
 using namespace std::string_literals;
 
-INSTANTIATE_TEST_CASE_P(DISABLED_Http,
+INSTANTIATE_TEST_CASE_P(
+        DISABLED_Http,
         End2EndSubscriptionTest,
-        testing::Values(
-            std::make_tuple(
-                "test-resources/HttpSystemIntegrationTest1.settings"s,
-                "test-resources/HttpSystemIntegrationTest2.settings"s
-            )
-        )
-);
+        testing::Values(std::make_tuple("test-resources/HttpSystemIntegrationTest1.settings"s,
+                                        "test-resources/HttpSystemIntegrationTest2.settings"s)));
 
-INSTANTIATE_TEST_CASE_P(Mqtt,
+INSTANTIATE_TEST_CASE_P(
+        Mqtt,
         End2EndSubscriptionTest,
-        testing::Values(
-            std::make_tuple(
-                "test-resources/MqttSystemIntegrationTest1.settings"s,
-                "test-resources/MqttSystemIntegrationTest2.settings"s
-            )
-        )
-);
+        testing::Values(std::make_tuple("test-resources/MqttSystemIntegrationTest1.settings"s,
+                                        "test-resources/MqttSystemIntegrationTest2.settings"s)));

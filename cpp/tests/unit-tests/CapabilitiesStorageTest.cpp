@@ -114,7 +114,8 @@ TYPED_TEST(CapabilitiesStorageTest, insertWithSameParticipantIdOverwritesExistin
 TYPED_TEST(CapabilitiesStorageTest, removeExpiredEntries)
 {
     TypeParam storage;
-    auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+    auto now = std::chrono::duration_cast<std::chrono::milliseconds>(
+                       std::chrono::system_clock::now().time_since_epoch()).count();
 
     joynr::types::DiscoveryEntry entry1(this->version,
                                         this->domain,

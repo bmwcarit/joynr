@@ -34,9 +34,12 @@ using namespace joynr;
 
 static const std::string storageFile("test-participantIdStorageTest.persist");
 
-class ParticipantIdStorageTest : public ::testing::TestWithParam<std::tuple<std::string, std::string> > {
+class ParticipantIdStorageTest
+        : public ::testing::TestWithParam<std::tuple<std::string, std::string>>
+{
 public:
-    ParticipantIdStorageTest() {
+    ParticipantIdStorageTest()
+    {
         std::remove(storageFile.c_str());
 
         auto inputPair = GetParam();
@@ -48,16 +51,17 @@ public:
     std::string interfaceName;
 };
 
-class ParticipantIdStorageAssertTest : public ParticipantIdStorageTest {};
+class ParticipantIdStorageAssertTest : public ParticipantIdStorageTest
+{
+};
 
 // Test that the default participant id is used when no provider exists"
 TEST_P(ParticipantIdStorageTest, defaultProviderParticipantId)
 {
     ParticipantIdStorage store(storageFile);
 
-    std::string participantId = store.getProviderParticipantId(this->domain,
-                                                               this->interfaceName,
-                                                               "defaultParticipantId");
+    std::string participantId = store.getProviderParticipantId(
+            this->domain, this->interfaceName, "defaultParticipantId");
     ASSERT_EQ(std::string("defaultParticipantId"), participantId);
 }
 
@@ -66,15 +70,13 @@ TEST_P(ParticipantIdStorageTest, defaultProviderParticipantId)
 TEST_P(ParticipantIdStorageTest, newProviderParticipantId)
 {
     ParticipantIdStorage store(storageFile);
-    std::string participantId = store.getProviderParticipantId(this->domain,
-                                                               this->interfaceName,
-                                                               std::string());
+    std::string participantId =
+            store.getProviderParticipantId(this->domain, this->interfaceName, std::string());
     // Check that the id is long enough to be a UUID
     ASSERT_TRUE(participantId.size() > 32);
 
     // also check get function without default value
-    participantId = store.getProviderParticipantId(this->domain,
-                                                   this->interfaceName);
+    participantId = store.getProviderParticipantId(this->domain, this->interfaceName);
     // Check that the id is long enough to be a UUID
     ASSERT_TRUE(participantId.size() > 32);
 }
@@ -85,8 +87,7 @@ TEST_P(ParticipantIdStorageTest, persistedProviderParticipantId)
     std::string expectedParticipantId;
     {
         ParticipantIdStorage store(storageFile);
-        expectedParticipantId = store.getProviderParticipantId(this->domain,
-                                                               this->interfaceName);
+        expectedParticipantId = store.getProviderParticipantId(this->domain, this->interfaceName);
         store.setProviderParticipantId(this->domain, this->interfaceName, expectedParticipantId);
     }
 
@@ -94,8 +95,7 @@ TEST_P(ParticipantIdStorageTest, persistedProviderParticipantId)
     ParticipantIdStorage store(storageFile);
 
     // Check that the setting was persisted
-    std::string participantId = store.getProviderParticipantId(this->domain,
-                                                               this->interfaceName);
+    std::string participantId = store.getProviderParticipantId(this->domain, this->interfaceName);
 
     ASSERT_EQ(expectedParticipantId, participantId);
 }
@@ -105,78 +105,76 @@ TEST_P(ParticipantIdStorageTest, settingsAreNotAutomaticallySyncedToFile)
     const std::string participantID = "participantID-should-not-be-saved-to-file";
     {
         ParticipantIdStorage store(storageFile);
-        store.getProviderParticipantId(this->domain,
-                                       this->interfaceName);
+        store.getProviderParticipantId(this->domain, this->interfaceName);
     }
     {
         ParticipantIdStorage store(storageFile);
-        std::string queriedParticipantID = store.getProviderParticipantId(this->domain,
-                                                                          this->interfaceName);
-        //participantID does not exist
+        std::string queriedParticipantID =
+                store.getProviderParticipantId(this->domain, this->interfaceName);
+        // participantID does not exist
         EXPECT_NE(queriedParticipantID, participantID);
     }
 }
 
 std::tuple<std::string, std::string> const stringValues[] = {
-    // domain: tuple[0]
-    // interfaceName: tuple[1]
-    std::make_tuple( "domain", "interfaceName"),
-    std::make_tuple( "dom.ain", "interfa/ceName"),
-    std::make_tuple( "dom/ain", "interfa.ceName"),
-    std::make_tuple( "dömain", "interßäceName"),
-    std::make_tuple( "0123456789012345678912", "0123456789012345678912")
-};
-INSTANTIATE_TEST_CASE_P(
-  checkStrings, ParticipantIdStorageTest, ::testing::ValuesIn(stringValues));
+        // domain: tuple[0]
+        // interfaceName: tuple[1]
+        std::make_tuple("domain", "interfaceName"),
+        std::make_tuple("dom.ain", "interfa/ceName"),
+        std::make_tuple("dom/ain", "interfa.ceName"),
+        std::make_tuple("dömain", "interßäceName"),
+        std::make_tuple("0123456789012345678912", "0123456789012345678912")};
+INSTANTIATE_TEST_CASE_P(checkStrings, ParticipantIdStorageTest, ::testing::ValuesIn(stringValues));
 
-TEST_P(ParticipantIdStorageAssertTest, assertOnGetProviderParticipantId) {
+TEST_P(ParticipantIdStorageAssertTest, assertOnGetProviderParticipantId)
+{
     ParticipantIdStorage store(storageFile);
-    EXPECT_DEATH(store.getProviderParticipantId(this->domain,
-                                                this->interfaceName), "Assertion.*");
+    EXPECT_DEATH(store.getProviderParticipantId(this->domain, this->interfaceName), "Assertion.*");
 }
 
-TEST_P(ParticipantIdStorageAssertTest, assertOnSetProviderParticipantId) {
+TEST_P(ParticipantIdStorageAssertTest, assertOnSetProviderParticipantId)
+{
     ParticipantIdStorage store(storageFile);
-    EXPECT_DEATH(store.setProviderParticipantId(this->domain,
-                                                this->interfaceName,
-                                                "participantID"), "Assertion.*");
+    EXPECT_DEATH(store.setProviderParticipantId(this->domain, this->interfaceName, "participantID"),
+                 "Assertion.*");
 }
 
 std::tuple<std::string, std::string> const failingStrings[] = {
-    // domain: tuple[0]
-    // interfaceName: tuple[1]
-    std::make_tuple( "", ""),
-    std::make_tuple( "", "interfaceName"),
-    std::make_tuple( "domain", "")
-};
-INSTANTIATE_TEST_CASE_P(
-  failingStrings, ParticipantIdStorageAssertTest, ::testing::ValuesIn(failingStrings));
+        // domain: tuple[0]
+        // interfaceName: tuple[1]
+        std::make_tuple("", ""),
+        std::make_tuple("", "interfaceName"),
+        std::make_tuple("domain", "")};
+INSTANTIATE_TEST_CASE_P(failingStrings,
+                        ParticipantIdStorageAssertTest,
+                        ::testing::ValuesIn(failingStrings));
 
-TEST(ParticipantIdStorageTest, writeIniFile) {
+TEST(ParticipantIdStorageTest, writeIniFile)
+{
     std::remove(storageFile.c_str());
     ParticipantIdStorage store(storageFile);
 
     const int entriesToWrite = 100;
-    for (int i=0; i < entriesToWrite; ++i) {
-        store.setProviderParticipantId(joynr::util::createUuid(),
-                                       joynr::util::createUuid(),
-                                       joynr::util::createUuid());
+    for (int i = 0; i < entriesToWrite; ++i) {
+        store.setProviderParticipantId(
+                joynr::util::createUuid(), joynr::util::createUuid(), joynr::util::createUuid());
     }
 
-    std::ifstream fileStream (storageFile.c_str());
-    size_t numberOfEntriesInFile = std::count(std::istreambuf_iterator<char>(fileStream),
-               std::istreambuf_iterator<char>(), '\n');
+    std::ifstream fileStream(storageFile.c_str());
+    size_t numberOfEntriesInFile = std::count(
+            std::istreambuf_iterator<char>(fileStream), std::istreambuf_iterator<char>(), '\n');
 
     EXPECT_EQ(entriesToWrite, numberOfEntriesInFile);
 }
 
-TEST(ParticipantIdStorageTest, deleteCorruptedFile) {
+TEST(ParticipantIdStorageTest, deleteCorruptedFile)
+{
 
     const std::string wrongParticipantID = "WRONG_PARTICIPANT_ID";
     const std::string expectedParticipantId = "EXPECTED_PARTICIPANT_ID";
 
     {
-        std::ofstream file (storageFile, std::ios_base::out | std::ios_base::app);
+        std::ofstream file(storageFile, std::ios_base::out | std::ios_base::app);
         const std::string header = "joynr.participant";
         const std::string domain = ".domain";
         const std::string interface = ".interface";
@@ -190,8 +188,10 @@ TEST(ParticipantIdStorageTest, deleteCorruptedFile) {
         store.setProviderParticipantId("domain", "interface", expectedParticipantId);
 
         const std::string defaultValue = "NOT_EXPECTED_DEFAULT";
-        const std::string result = store.getProviderParticipantId("domain", "interface", defaultValue);
-        // if the INI file would be reused, then getProviderParticipantId would return NOT_EXPECTED_DEFAULT instead of EXPECTED_PARTICIPANT_ID
+        const std::string result =
+                store.getProviderParticipantId("domain", "interface", defaultValue);
+        // if the INI file would be reused, then getProviderParticipantId would return
+        // NOT_EXPECTED_DEFAULT instead of EXPECTED_PARTICIPANT_ID
         EXPECT_NE(result, defaultValue);
         EXPECT_NE(result, wrongParticipantID);
         EXPECT_EQ(result, expectedParticipantId);
@@ -213,26 +213,28 @@ TEST(ParticipantIdStorageTest, deleteCorruptedFile) {
  */
 static const std::string storageFileParallel("ParticipantIdStorageParallelTest.persist");
 
-class ParticipantIdStorageParallelTest : public ::testing::Test {
+class ParticipantIdStorageParallelTest : public ::testing::Test
+{
 public:
-    ParticipantIdStorageParallelTest():
-        store(storageFileParallel),
-        domain("domain"),
-        interfaceName("interfaceName"),
-        participantId("participantId"),
-        canStart(false)
+    ParticipantIdStorageParallelTest()
+            : store(storageFileParallel),
+              domain("domain"),
+              interfaceName("interfaceName"),
+              participantId("participantId"),
+              canStart(false)
     {
         std::remove(storageFileParallel.c_str());
     }
 
-    ~ParticipantIdStorageParallelTest() override {
+    ~ParticipantIdStorageParallelTest() override
+    {
         std::remove(storageFileParallel.c_str());
     }
 
-    void writeOneEntryAndNotify() {
-        store.setProviderParticipantId(joynr::util::createUuid(),
-                                       joynr::util::createUuid(),
-                                       joynr::util::createUuid());
+    void writeOneEntryAndNotify()
+    {
+        store.setProviderParticipantId(
+                joynr::util::createUuid(), joynr::util::createUuid(), joynr::util::createUuid());
 
         // notify threads
         std::cout << "Done writing first entry." << std::endl;
@@ -244,37 +246,42 @@ public:
         cv.notify_all();
     }
 
-    void writeWithNotify(int numberOfWrites) {
+    void writeWithNotify(int numberOfWrites)
+    {
         writeOneEntryAndNotify();
         std::cout << "Start writing..." << std::endl;
         writeToStorage(numberOfWrites);
     }
 
-    void readAfterNotify(int numberOfReads) {
+    void readAfterNotify(int numberOfReads)
+    {
         std::unique_lock<std::mutex> lock(mutex);
-        while(!canStart) {
+        while (!canStart) {
             cv.wait_for(lock, std::chrono::milliseconds(100));
         }
         readFromStorage(numberOfReads);
     }
 
-    void writeAfterNotify(int numberOfWrites) {
+    void writeAfterNotify(int numberOfWrites)
+    {
         std::unique_lock<std::mutex> lock(mutex);
-        while(!canStart) {
+        while (!canStart) {
             cv.wait_for(lock, std::chrono::milliseconds(100));
         }
         writeToStorage(numberOfWrites);
     }
 
 protected:
-    void readFromStorage(int numberOfReads) {
+    void readFromStorage(int numberOfReads)
+    {
         assert(canStart);
         for (int i = 0; i < numberOfReads; ++i) {
             store.getProviderParticipantId(domain, interfaceName);
         }
     }
 
-    void writeToStorage(int numberOfWrites) {
+    void writeToStorage(int numberOfWrites)
+    {
         assert(canStart);
         for (int i = 0; i < numberOfWrites; ++i) {
             store.setProviderParticipantId(joynr::util::createUuid(),
@@ -295,18 +302,20 @@ protected:
 
 // This test simulates 2 applications using libJoynr, one doing 10000 lookups and the
 // other registering 1000 providers
-TEST_F(ParticipantIdStorageParallelTest, checkParallel_RW_AccessOfStorage) {
-    std::thread read (&ParticipantIdStorageParallelTest::readAfterNotify, this, 10000);
-    std::thread write (&ParticipantIdStorageParallelTest::writeWithNotify, this, 1000);
+TEST_F(ParticipantIdStorageParallelTest, checkParallel_RW_AccessOfStorage)
+{
+    std::thread read(&ParticipantIdStorageParallelTest::readAfterNotify, this, 10000);
+    std::thread write(&ParticipantIdStorageParallelTest::writeWithNotify, this, 1000);
 
     read.join();
     write.join();
 }
 
 // This test simulates 2 applications using libJoynr, each doing 10000 lookups
-TEST_F(ParticipantIdStorageParallelTest, checkParallel_R_AccessOfStorage) {
-    std::thread read_1 (&ParticipantIdStorageParallelTest::readAfterNotify, this, 10000);
-    std::thread read_2 (&ParticipantIdStorageParallelTest::readAfterNotify, this, 10000);
+TEST_F(ParticipantIdStorageParallelTest, checkParallel_R_AccessOfStorage)
+{
+    std::thread read_1(&ParticipantIdStorageParallelTest::readAfterNotify, this, 10000);
+    std::thread read_2(&ParticipantIdStorageParallelTest::readAfterNotify, this, 10000);
 
     writeOneEntryAndNotify();
 
@@ -315,9 +324,10 @@ TEST_F(ParticipantIdStorageParallelTest, checkParallel_R_AccessOfStorage) {
 }
 
 // This test simulates 2 applications using libJoynr, each registering 1000 providers
-TEST_F(ParticipantIdStorageParallelTest, checkParallel_W_AccessOfStorage) {
-    std::thread write_1 (&ParticipantIdStorageParallelTest::writeAfterNotify, this, 1000);
-    std::thread write_2 (&ParticipantIdStorageParallelTest::writeAfterNotify, this, 1000);
+TEST_F(ParticipantIdStorageParallelTest, checkParallel_W_AccessOfStorage)
+{
+    std::thread write_1(&ParticipantIdStorageParallelTest::writeAfterNotify, this, 1000);
+    std::thread write_2(&ParticipantIdStorageParallelTest::writeAfterNotify, this, 1000);
 
     writeOneEntryAndNotify();
 
@@ -327,16 +337,19 @@ TEST_F(ParticipantIdStorageParallelTest, checkParallel_W_AccessOfStorage) {
 
 // This test simulates 10 applications using libJoynr, each registering 100 providers and doing
 // 10 lookups in the storage.
-TEST_F(ParticipantIdStorageParallelTest, checkParallel_RW_AccessOfStorage_multipleThreads) {
+TEST_F(ParticipantIdStorageParallelTest, checkParallel_RW_AccessOfStorage_multipleThreads)
+{
     std::vector<std::thread> threads;
     for (int i = 0; i < 10; ++i) {
-      threads.push_back(std::thread(&ParticipantIdStorageParallelTest::readAfterNotify, this, 10));
-      threads.push_back(std::thread(&ParticipantIdStorageParallelTest::writeAfterNotify, this, 100));
+        threads.push_back(
+                std::thread(&ParticipantIdStorageParallelTest::readAfterNotify, this, 10));
+        threads.push_back(
+                std::thread(&ParticipantIdStorageParallelTest::writeAfterNotify, this, 100));
     }
 
     writeOneEntryAndNotify();
 
     for (auto& t : threads) {
-      t.join();
+        t.join();
     }
 }

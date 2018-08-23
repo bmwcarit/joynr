@@ -25,7 +25,8 @@
 
 using namespace joynr;
 
-class OnChangeWithKeepAliveSubscriptionQosTest : public ::testing::Test {
+class OnChangeWithKeepAliveSubscriptionQosTest : public ::testing::Test
+{
 public:
     OnChangeWithKeepAliveSubscriptionQosTest()
     {
@@ -43,19 +44,15 @@ TEST_F(OnChangeWithKeepAliveSubscriptionQosTest, clearAlertAfterInterval)
     EXPECT_EQ(alertAfterIntervalMs, onChangeWithKeepAliveSubscriptionQos.getAlertAfterIntervalMs());
 
     onChangeWithKeepAliveSubscriptionQos.clearAlertAfterInterval();
-    EXPECT_EQ(
-            OnChangeWithKeepAliveSubscriptionQos::NO_ALERT_AFTER_INTERVAL(),
-            onChangeWithKeepAliveSubscriptionQos.getAlertAfterIntervalMs()
-    );
+    EXPECT_EQ(OnChangeWithKeepAliveSubscriptionQos::NO_ALERT_AFTER_INTERVAL(),
+              onChangeWithKeepAliveSubscriptionQos.getAlertAfterIntervalMs());
 }
 
 TEST_F(OnChangeWithKeepAliveSubscriptionQosTest, maxIntervalMsDefaultValueIsSetProperly)
 {
     OnChangeWithKeepAliveSubscriptionQos onChangeWithKeepAliveSubscriptionQos;
-    EXPECT_EQ(
-            OnChangeWithKeepAliveSubscriptionQos::DEFAULT_MAX_INTERVAL_MS(),
-            onChangeWithKeepAliveSubscriptionQos.getMaxIntervalMs()
-    );
+    EXPECT_EQ(OnChangeWithKeepAliveSubscriptionQos::DEFAULT_MAX_INTERVAL_MS(),
+              onChangeWithKeepAliveSubscriptionQos.getMaxIntervalMs());
 }
 
 TEST_F(OnChangeWithKeepAliveSubscriptionQosTest, maxIntervalMsMinimumValueIsSetProperly)
@@ -63,31 +60,26 @@ TEST_F(OnChangeWithKeepAliveSubscriptionQosTest, maxIntervalMsMinimumValueIsSetP
     std::int64_t validityMs = 100000;
     std::int64_t publicationTtlMs = 1000;
     std::int64_t alertAfterIntervalMs = 4000;
-    std::int64_t tooSmallMaxIntervalMs = OnChangeWithKeepAliveSubscriptionQos::MIN_MAX_INTERVAL_MS() - 1;
+    std::int64_t tooSmallMaxIntervalMs =
+            OnChangeWithKeepAliveSubscriptionQos::MIN_MAX_INTERVAL_MS() - 1;
     std::int64_t minIntervalMs = tooSmallMaxIntervalMs - 1;
 
     {
         OnChangeWithKeepAliveSubscriptionQos onChangeWithKeepAliveSubscriptionQos(
-                    validityMs,
-                    publicationTtlMs,
-                    minIntervalMs,
-                    tooSmallMaxIntervalMs,
-                    alertAfterIntervalMs
-        );
+                validityMs,
+                publicationTtlMs,
+                minIntervalMs,
+                tooSmallMaxIntervalMs,
+                alertAfterIntervalMs);
 
-        EXPECT_EQ(
-                OnChangeWithKeepAliveSubscriptionQos::MIN_MAX_INTERVAL_MS(),
-                onChangeWithKeepAliveSubscriptionQos.getMaxIntervalMs()
-        );
+        EXPECT_EQ(OnChangeWithKeepAliveSubscriptionQos::MIN_MAX_INTERVAL_MS(),
+                  onChangeWithKeepAliveSubscriptionQos.getMaxIntervalMs());
     }
     {
         OnChangeWithKeepAliveSubscriptionQos onChangeWithKeepAliveSubscriptionQos;
         onChangeWithKeepAliveSubscriptionQos.setMaxIntervalMs(tooSmallMaxIntervalMs);
 
-        EXPECT_EQ(
-                OnChangeWithKeepAliveSubscriptionQos::MIN_MAX_INTERVAL_MS(),
-                onChangeWithKeepAliveSubscriptionQos.getMaxIntervalMs()
-        );
+        EXPECT_EQ(OnChangeWithKeepAliveSubscriptionQos::MIN_MAX_INTERVAL_MS(),
+                  onChangeWithKeepAliveSubscriptionQos.getMaxIntervalMs());
     }
-
 }

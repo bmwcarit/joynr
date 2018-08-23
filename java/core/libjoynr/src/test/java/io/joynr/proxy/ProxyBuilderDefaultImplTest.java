@@ -19,7 +19,6 @@
 package io.joynr.proxy;
 
 import static org.junit.Assert.assertTrue;
-
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
@@ -27,6 +26,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Field;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -46,9 +46,6 @@ import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
-
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
 import io.joynr.JoynrVersion;
 import io.joynr.arbitration.ArbitrationCallback;
@@ -126,7 +123,7 @@ public class ProxyBuilderDefaultImplTest {
     @Test
     public void testNoCompatibleProviderPassedToOnError() throws Exception {
         final String domain = "domain1";
-        final Set<String> domains = Sets.newHashSet(domain);
+        final Set<String> domains = new HashSet(Arrays.asList(domain));
         setup(domains);
         final ExecutorService executor = Executors.newSingleThreadExecutor();
         doAnswer(new Answer<Void>() {
@@ -138,7 +135,7 @@ public class ProxyBuilderDefaultImplTest {
                         Thread.sleep(10L);
                         verify(arbitrator).setArbitrationListener(arbitrationCallbackCaptor.capture());
                         ArbitrationCallback callback = arbitrationCallbackCaptor.getValue();
-                        Set<Version> discoveredVersions = Sets.newHashSet(new Version(100, 100));
+                        Set<Version> discoveredVersions = new HashSet(Arrays.asList(new Version(100, 100)));
                         callback.onError(new NoCompatibleProviderFoundException(TestInterface.INTERFACE_NAME,
                                                                                 new Version(1, 1),
                                                                                 domain,
@@ -159,7 +156,7 @@ public class ProxyBuilderDefaultImplTest {
 
     @Test
     public void testMultiDomainNoCompatibleProviderFoundSetOnInvocationHandler() throws Exception {
-        final Set<String> domains = Sets.newHashSet("domain-1", "domain-2");
+        final Set<String> domains = new HashSet(Arrays.asList("domain-1", "domain-2"));
         setup(domains);
         final ExecutorService executor = Executors.newSingleThreadExecutor();
         doAnswer(new Answer<Void>() {
@@ -172,8 +169,8 @@ public class ProxyBuilderDefaultImplTest {
                         verify(arbitrator).setArbitrationListener(arbitrationCallbackCaptor.capture());
                         ArbitrationCallback callback = arbitrationCallbackCaptor.getValue();
                         Map<String, Set<Version>> versionsByDomain = new HashMap<>();
-                        HashSet<Version> discoveredVersions = Sets.newHashSet(new Version(100, 100));
-                        Map<String, NoCompatibleProviderFoundException> exceptionsByDomain = Maps.newHashMap();
+                        HashSet<Version> discoveredVersions = new HashSet(Arrays.asList(new Version(100, 100)));
+                        Map<String, NoCompatibleProviderFoundException> exceptionsByDomain = new HashMap<>();
                         for (String domain : domains) {
                             versionsByDomain.put(domain, discoveredVersions);
                             exceptionsByDomain.put(domain,
@@ -199,14 +196,14 @@ public class ProxyBuilderDefaultImplTest {
 
     @Test(expected = JoynrIllegalStateException.class)
     public void cantBuildForMissingStatelessAsyncCallback() throws Exception {
-        setup(Sets.newHashSet("domain"));
+        setup(new HashSet(Arrays.asList("domain")));
         subject.setStatelessAsyncCallbackUseCase("invalid");
         subject.build();
     }
 
     @Test
     public void fetchesStatelessAsyncCallbackIfUseCaseSet() throws Exception {
-        setup(Sets.newHashSet("domain"));
+        setup(new HashSet(Arrays.asList("domain")));
         final String useCase = "useCase";
         StatelessAsyncCallback callbackMock = mock(StatelessAsyncCallback.class);
         when(statelessAsyncCallbackDirectory.get(eq(useCase))).thenReturn(callbackMock);

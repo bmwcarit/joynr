@@ -45,16 +45,17 @@ using namespace ::testing;
 
 using namespace joynr;
 
-class End2EndProxyBuilderRobustnessTest : public Test {
+class End2EndProxyBuilderRobustnessTest : public Test
+{
 public:
-    End2EndProxyBuilderRobustnessTest() :
-        domain("cppEnd2EndProxyBuilderRobustnessTest" + util::createUuid()),
-        discoveryTimeoutMs(5000),
-        retryIntervalMs(500),
-        consumerRuntime(),
-        providerRuntime(),
-        ccRuntime(),
-        discoveryQos()
+    End2EndProxyBuilderRobustnessTest()
+            : domain("cppEnd2EndProxyBuilderRobustnessTest" + util::createUuid()),
+              discoveryTimeoutMs(5000),
+              retryIntervalMs(500),
+              consumerRuntime(),
+              providerRuntime(),
+              ccRuntime(),
+              discoveryQos()
     {
         auto settings = std::make_unique<Settings>();
         consumerRuntime = std::make_shared<TestLibJoynrWebSocketRuntime>(std::move(settings));
@@ -84,7 +85,8 @@ public:
         ASSERT_TRUE(providerRuntime->connect(std::chrono::milliseconds(10000)));
     }
 
-    ~End2EndProxyBuilderRobustnessTest() override {
+    ~End2EndProxyBuilderRobustnessTest() override
+    {
 
         ccRuntime->shutdown();
         consumerRuntime->shutdown();
@@ -114,15 +116,16 @@ private:
     DISALLOW_COPY_AND_ASSIGN(End2EndProxyBuilderRobustnessTest);
 };
 
-void End2EndProxyBuilderRobustnessTest::buildProxyBeforeProviderRegistration(const bool expectSuccess)
+void End2EndProxyBuilderRobustnessTest::buildProxyBeforeProviderRegistration(
+        const bool expectSuccess)
 {
     Semaphore semaphore(0);
     // prepare provider
     auto mockProvider = std::make_shared<MockGpsProvider>();
     types::ProviderQos providerQos;
     std::chrono::milliseconds millisSinceEpoch =
-        std::chrono::duration_cast<std::chrono::milliseconds>(
-                std::chrono::system_clock::now().time_since_epoch());
+            std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::system_clock::now().time_since_epoch());
     providerQos.setPriority(millisSinceEpoch.count());
     providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
 
@@ -130,26 +133,25 @@ void End2EndProxyBuilderRobustnessTest::buildProxyBeforeProviderRegistration(con
     std::shared_ptr<ProxyBuilder<vehicle::GpsProxy>> gpsProxyBuilder =
             consumerRuntime->createProxyBuilder<vehicle::GpsProxy>(domain);
 
-    auto onSuccess = [&semaphore, expectSuccess] (std::shared_ptr<vehicle::GpsProxy> gpsProxy) {
+    auto onSuccess = [&semaphore, expectSuccess](std::shared_ptr<vehicle::GpsProxy> gpsProxy) {
         if (!expectSuccess) {
             ADD_FAILURE() << "proxy building succeeded unexpectedly";
             semaphore.notify();
             return;
         }
         // call proxy method
-        std::shared_ptr<Future<int> >gpsFuture (gpsProxy->calculateAvailableSatellitesAsync());
-        gpsFuture->wait();
-        const int expectedValue = 42; // as defined in MockGpsProvider
-        int actualValue;
-        gpsFuture->get(actualValue);
-        EXPECT_EQ(expectedValue, actualValue);
-
-        semaphore.notify();
+        auto calculateOnSuccess = [&semaphore](int value) {
+            const int expectedValue = 42; // as defined in MockGpsProvider
+            EXPECT_EQ(expectedValue, value);
+            semaphore.notify();
+        };
+        gpsProxy->calculateAvailableSatellitesAsync(calculateOnSuccess);
     };
 
-    auto onError = [&semaphore, expectSuccess] (const exceptions::DiscoveryException& exception) {
+    auto onError = [&semaphore, expectSuccess](const exceptions::DiscoveryException& exception) {
         if (expectSuccess) {
-            ADD_FAILURE() << "proxy building failed unexpectedly, exception: " << exception.getMessage();
+            ADD_FAILURE() << "proxy building failed unexpectedly, exception: "
+                          << exception.getMessage();
         }
         semaphore.notify();
     };
@@ -164,7 +166,8 @@ void End2EndProxyBuilderRobustnessTest::buildProxyBeforeProviderRegistration(con
     std::this_thread::sleep_for(std::chrono::milliseconds(retryIntervalMs / 2));
 
     // register provider
-    std::string participantId = providerRuntime->registerProvider<vehicle::GpsProvider>(domain, mockProvider, providerQos);
+    std::string participantId = providerRuntime->registerProvider<vehicle::GpsProvider>(
+            domain, mockProvider, providerQos);
 
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(qosRoundTripTTL + discoveryTimeoutMs)));
 
@@ -173,7 +176,8 @@ void End2EndProxyBuilderRobustnessTest::buildProxyBeforeProviderRegistration(con
 }
 
 // as soon as the provider gets registered, the lookup returns successful
-TEST_F(End2EndProxyBuilderRobustnessTest, buildProxyBeforeProviderRegistration_LocalThenGlobal_succeedsWithoutRetry)
+TEST_F(End2EndProxyBuilderRobustnessTest,
+       buildProxyBeforeProviderRegistration_LocalThenGlobal_succeedsWithoutRetry)
 {
     const bool expectedSuccess = true;
     // disable retries for provider lookup
@@ -182,7 +186,8 @@ TEST_F(End2EndProxyBuilderRobustnessTest, buildProxyBeforeProviderRegistration_L
     buildProxyBeforeProviderRegistration(expectedSuccess);
 }
 
-TEST_F(End2EndProxyBuilderRobustnessTest, buildProxyBeforeProviderRegistration_LocalThenGlobal_succeedsWithRetry)
+TEST_F(End2EndProxyBuilderRobustnessTest,
+       buildProxyBeforeProviderRegistration_LocalThenGlobal_succeedsWithRetry)
 {
     const bool expectedSuccess = true;
     discoveryQos.setRetryIntervalMs(retryIntervalMs);
@@ -190,7 +195,8 @@ TEST_F(End2EndProxyBuilderRobustnessTest, buildProxyBeforeProviderRegistration_L
     buildProxyBeforeProviderRegistration(expectedSuccess);
 }
 
-TEST_F(End2EndProxyBuilderRobustnessTest, buildProxyBeforeProviderRegistration_LocalAndGlobal_failsWithoutRetry)
+TEST_F(End2EndProxyBuilderRobustnessTest,
+       buildProxyBeforeProviderRegistration_LocalAndGlobal_failsWithoutRetry)
 {
     const bool expectedSuccess = false;
     // disable retries for provider lookup
@@ -200,7 +206,8 @@ TEST_F(End2EndProxyBuilderRobustnessTest, buildProxyBeforeProviderRegistration_L
 }
 
 // no retry until global lookup succeeds or times out
-TEST_F(End2EndProxyBuilderRobustnessTest, buildProxyBeforeProviderRegistration_LocalAndGlobal_failsWithRetry)
+TEST_F(End2EndProxyBuilderRobustnessTest,
+       buildProxyBeforeProviderRegistration_LocalAndGlobal_failsWithRetry)
 {
     const bool expectedSuccess = false;
     discoveryQos.setRetryIntervalMs(retryIntervalMs);
@@ -208,7 +215,8 @@ TEST_F(End2EndProxyBuilderRobustnessTest, buildProxyBeforeProviderRegistration_L
     buildProxyBeforeProviderRegistration(expectedSuccess);
 }
 
-TEST_F(End2EndProxyBuilderRobustnessTest, buildProxyBeforeProviderRegistration_LocalOnly_failsWithoutRetry)
+TEST_F(End2EndProxyBuilderRobustnessTest,
+       buildProxyBeforeProviderRegistration_LocalOnly_failsWithoutRetry)
 {
     const bool expectedSuccess = false;
     // disable retries for provider lookup
@@ -217,7 +225,8 @@ TEST_F(End2EndProxyBuilderRobustnessTest, buildProxyBeforeProviderRegistration_L
     buildProxyBeforeProviderRegistration(expectedSuccess);
 }
 
-TEST_F(End2EndProxyBuilderRobustnessTest, buildProxyBeforeProviderRegistration_LocalOnly_succeedsWithRetry)
+TEST_F(End2EndProxyBuilderRobustnessTest,
+       buildProxyBeforeProviderRegistration_LocalOnly_succeedsWithRetry)
 {
     const bool expectedSuccess = true;
     discoveryQos.setRetryIntervalMs(retryIntervalMs);
@@ -225,7 +234,8 @@ TEST_F(End2EndProxyBuilderRobustnessTest, buildProxyBeforeProviderRegistration_L
     buildProxyBeforeProviderRegistration(expectedSuccess);
 }
 
-TEST_F(End2EndProxyBuilderRobustnessTest, buildProxyBeforeProviderRegistration_GlobalOnly_failsWithoutRetry)
+TEST_F(End2EndProxyBuilderRobustnessTest,
+       buildProxyBeforeProviderRegistration_GlobalOnly_failsWithoutRetry)
 {
     const bool expectedSuccess = false;
     // disable retries for provider lookup
@@ -235,7 +245,8 @@ TEST_F(End2EndProxyBuilderRobustnessTest, buildProxyBeforeProviderRegistration_G
 }
 
 // no retry until global lookup succeeds or times out
-TEST_F(End2EndProxyBuilderRobustnessTest, buildProxyBeforeProviderRegistration_GlobalOnly_failsWithRetry)
+TEST_F(End2EndProxyBuilderRobustnessTest,
+       buildProxyBeforeProviderRegistration_GlobalOnly_failsWithRetry)
 {
     const bool expectedSuccess = false;
     discoveryQos.setRetryIntervalMs(retryIntervalMs);
@@ -243,24 +254,28 @@ TEST_F(End2EndProxyBuilderRobustnessTest, buildProxyBeforeProviderRegistration_G
     buildProxyBeforeProviderRegistration(expectedSuccess);
 }
 
-class End2EndProxyBuild : public End2EndProxyBuilderRobustnessTest {
+class End2EndProxyBuild : public End2EndProxyBuilderRobustnessTest
+{
 protected:
-    void SetUp() override {
+    void SetUp() override
+    {
         End2EndProxyBuilderRobustnessTest::SetUp();
 
         auto mockProvider = std::make_shared<MockGpsProvider>();
         types::ProviderQos providerQos;
         std::chrono::milliseconds millisSinceEpoch =
-            std::chrono::duration_cast<std::chrono::milliseconds>(
-                    std::chrono::system_clock::now().time_since_epoch());
+                std::chrono::duration_cast<std::chrono::milliseconds>(
+                        std::chrono::system_clock::now().time_since_epoch());
         providerQos.setPriority(millisSinceEpoch.count());
         providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
 
-        providerParticipantId = providerRuntime->registerProvider<vehicle::GpsProvider>(domain, mockProvider, providerQos);
+        providerParticipantId = providerRuntime->registerProvider<vehicle::GpsProvider>(
+                domain, mockProvider, providerQos);
         gpsProxyBuilder = consumerRuntime->createProxyBuilder<vehicle::GpsProxy>(domain);
     }
 
-    void TearDown() override {
+    void TearDown() override
+    {
         providerRuntime->unregisterProvider(providerParticipantId);
     }
 
@@ -268,22 +283,24 @@ protected:
     std::shared_ptr<ProxyBuilder<vehicle::GpsProxy>> gpsProxyBuilder;
 };
 
-TEST_F(End2EndProxyBuild, buildProxyWithoutSetMessagingQos) {
+TEST_F(End2EndProxyBuild, buildProxyWithoutSetMessagingQos)
+{
     std::shared_ptr<vehicle::GpsProxy> gpsProxy;
-    JOYNR_EXPECT_NO_THROW(gpsProxy = gpsProxyBuilder->setDiscoveryQos(discoveryQos)
-                                                    ->build());
+    JOYNR_EXPECT_NO_THROW(gpsProxy = gpsProxyBuilder->setDiscoveryQos(discoveryQos)->build());
     ASSERT_TRUE(gpsProxy);
 }
 
-TEST_F(End2EndProxyBuild, buildProxyWithoutSetDiscoveryQos) {
+TEST_F(End2EndProxyBuild, buildProxyWithoutSetDiscoveryQos)
+{
     const std::int64_t qosRoundTripTTL = 10000;
     std::shared_ptr<vehicle::GpsProxy> gpsProxy;
-    JOYNR_EXPECT_NO_THROW(gpsProxy = gpsProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
-                                                    ->build());
+    JOYNR_EXPECT_NO_THROW(
+            gpsProxy = gpsProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))->build());
     ASSERT_TRUE(gpsProxy);
 }
 
-TEST_F(End2EndProxyBuild, buildProxyWithoutSetMessagingQosAndWithoutSetDiscoveryQos) {
+TEST_F(End2EndProxyBuild, buildProxyWithoutSetMessagingQosAndWithoutSetDiscoveryQos)
+{
     std::shared_ptr<vehicle::GpsProxy> gpsProxy;
     JOYNR_EXPECT_NO_THROW(gpsProxy = gpsProxyBuilder->build());
     ASSERT_TRUE(gpsProxy);

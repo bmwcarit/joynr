@@ -21,8 +21,6 @@ package io.joynr.arbitration;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.google.common.collect.Maps;
-
 /**
  * Storage class to pass all settings to an arbitrator defining the strategy and conditions for provider arbitration.
  *
@@ -50,7 +48,7 @@ public class DiscoveryQos {
     private DiscoveryScope discoveryScope;
     private static final DiscoveryScope DEFAULT_DISCOVERYSCOPE = DiscoveryScope.LOCAL_AND_GLOBAL;
 
-    private HashMap<String, String> customParameters = Maps.newHashMap();
+    private HashMap<String, String> customParameters = new HashMap<>();
 
     /**
      * DiscoveryQos object with default values.

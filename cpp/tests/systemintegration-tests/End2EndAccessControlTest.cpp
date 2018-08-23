@@ -38,29 +38,34 @@
 using namespace ::testing;
 using namespace joynr;
 
-class End2EndAccessControlTest : public testing::Test {
+class End2EndAccessControlTest : public testing::Test
+{
 public:
-    End2EndAccessControlTest() :
-        runtimeAcON(),
-        runtimeAcOFF(),
-        testProvider(nullptr),
-        testProxy(nullptr),
-        domain("End2EndAccessControlTest"),
-        providerParticipantId(),
-        semaphore(0),
-        AC_ENTRIES_FILE("CCAccessControl.entries"),
-        MESSAGINGQOS_TTL(1000)
+    End2EndAccessControlTest()
+            : runtimeAcON(),
+              runtimeAcOFF(),
+              testProvider(nullptr),
+              testProxy(nullptr),
+              domain("End2EndAccessControlTest"),
+              providerParticipantId(),
+              semaphore(0),
+              AC_ENTRIES_FILE("CCAccessControl.entries"),
+              MESSAGINGQOS_TTL(1000)
     {
     }
 
-    void init(std::string fileWithACCentries) {
-        // copy access entry file to bin folder for the test so that runtimes will find and load the file
+    void init(std::string fileWithACCentries)
+    {
+        // copy access entry file to bin folder for the test so that runtimes will find and load the
+        // file
         joynr::test::util::copyTestResourceToCurrentDirectory(fileWithACCentries, AC_ENTRIES_FILE);
 
-        auto settings1 = std::make_unique<Settings>("test-resources/CCSettingsWithAccessControlEnabled.settings");
-        auto settings2 = std::make_unique<Settings>("test-resources/CCSettingsWithAccessControlDisabled.settings");
+        auto settings1 = std::make_unique<Settings>(
+                "test-resources/CCSettingsWithAccessControlEnabled.settings");
+        auto settings2 = std::make_unique<Settings>(
+                "test-resources/CCSettingsWithAccessControlDisabled.settings");
 
-        runtimeAcON =  JoynrRuntime::createRuntime(std::move(settings1));
+        runtimeAcON = JoynrRuntime::createRuntime(std::move(settings1));
         runtimeAcOFF = JoynrRuntime::createRuntime(std::move(settings2));
 
         // Create a provider on runtimeAcON
@@ -68,7 +73,8 @@ public:
         providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
 
         testProvider = std::make_shared<MockTestProvider>();
-        providerParticipantId = runtimeAcON->registerProvider<tests::testProvider>(domain, testProvider, providerQos);
+        providerParticipantId = runtimeAcON->registerProvider<tests::testProvider>(
+                domain, testProvider, providerQos);
 
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
@@ -79,11 +85,12 @@ public:
         discoveryQos.setDiscoveryTimeoutMs(1000);
 
         testProxy = testProxyBuilder->setMessagingQos(MessagingQos(MESSAGINGQOS_TTL))
-                                                   ->setDiscoveryQos(discoveryQos)
-                                                   ->build();
+                            ->setDiscoveryQos(discoveryQos)
+                            ->build();
     }
 
-    ~End2EndAccessControlTest() override {
+    ~End2EndAccessControlTest() override
+    {
         runtimeAcON->unregisterProvider(providerParticipantId);
 
         test::util::resetAndWaitUntilDestroyed(runtimeAcON);
@@ -108,13 +115,14 @@ protected:
     const std::int64_t MESSAGINGQOS_TTL;
 };
 
-TEST_F(End2EndAccessControlTest, DISABLED_proxyDoesNotHavePermission) {
+TEST_F(End2EndAccessControlTest, DISABLED_proxyDoesNotHavePermission)
+{
 
     init("AccessControlYesPermission.entries");
 
-    // If AccessControl is active, the proxy cannot call methodWithNoInputParameters (see AC_ENTRIES_FILE file)
-    EXPECT_CALL(*testProvider, methodWithNoInputParametersMock(_,_))
-            .Times(0);
+    // If AccessControl is active, the proxy cannot call methodWithNoInputParameters (see
+    // AC_ENTRIES_FILE file)
+    EXPECT_CALL(*testProvider, methodWithNoInputParametersMock(_, _)).Times(0);
 
     std::int32_t outputParameter = 0;
 
@@ -123,17 +131,16 @@ TEST_F(End2EndAccessControlTest, DISABLED_proxyDoesNotHavePermission) {
                  exceptions::JoynrTimeOutException);
 }
 
-TEST_F(End2EndAccessControlTest, DISABLED_proxyDoesHavePermission) {
+TEST_F(End2EndAccessControlTest, DISABLED_proxyDoesHavePermission)
+{
 
     init("AccessControlNoPermission.entries");
 
-    EXPECT_CALL(*testProvider, methodWithNoInputParametersMock(_,_))
-            .Times(1)
-            .WillOnce(ReleaseSemaphore(&semaphore));
+    EXPECT_CALL(*testProvider, methodWithNoInputParametersMock(_, _)).Times(1).WillOnce(
+            ReleaseSemaphore(&semaphore));
 
     std::int32_t outputParameter = 0;
     testProxy->methodWithNoInputParameters(outputParameter);
 
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(MESSAGINGQOS_TTL)));
 }
-

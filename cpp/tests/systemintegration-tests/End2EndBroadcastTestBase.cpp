@@ -51,9 +51,11 @@ static const std::string messagingPropertiesPersistenceFileName1(
 static const std::string messagingPropertiesPersistenceFileName2(
         "End2EndBroadcastTest-runtime2-joynr.persist");
 
-namespace joynr {
+namespace joynr
+{
 
-class End2EndBroadcastTestBase : public TestWithParam< std::tuple<std::string, std::string> > {
+class End2EndBroadcastTestBase : public TestWithParam<std::tuple<std::string, std::string>>
+{
 public:
     std::shared_ptr<JoynrClusterControllerRuntime> runtime1;
     std::shared_ptr<JoynrClusterControllerRuntime> runtime2;
@@ -72,71 +74,70 @@ public:
     joynr::types::Localisation::GpsLocation gpsLocation3;
     joynr::types::Localisation::GpsLocation gpsLocation4;
 
-    End2EndBroadcastTestBase() :
-        runtime1(),
-        runtime2(),
-        baseUuid(util::createUuid()),
-        uuid( "_" + baseUuid.substr(1, baseUuid.length()-2)),
-        domainName("cppEnd2EndBroadcastTest_Domain" + uuid),
-        semaphore(0),
-        altSemaphore(0),
-        filter(std::make_shared<MockLocationUpdatedSelectiveFilter>()),
-        registerProviderWait(1000),
-        subscribeToAttributeWait(2000),
-        subscribeToBroadcastWait(2000),
-        gpsLocation(types::Localisation::GpsLocation()),
-        gpsLocation2(types::Localisation::GpsLocation(
-                         9.0,
-                         51.0,
-                         508.0,
-                         types::Localisation::GpsFixEnum::MODE2D,
-                         0.0,
-                         0.0,
-                         0.0,
-                         0.0,
-                         444,
-                         444,
-                         2)),
-        gpsLocation3(types::Localisation::GpsLocation(
-                         9.0,
-                         51.0,
-                         508.0,
-                         types::Localisation::GpsFixEnum::MODE2D,
-                         0.0,
-                         0.0,
-                         0.0,
-                         0.0,
-                         444,
-                         444,
-                         3)),
-        gpsLocation4(types::Localisation::GpsLocation(
-                         9.0,
-                         51.0,
-                         508.0,
-                         types::Localisation::GpsFixEnum::MODE2D,
-                         0.0,
-                         0.0,
-                         0.0,
-                         0.0,
-                         444,
-                         444,
-                         4)),
-        providerParticipantId(),
-        integration1Settings("test-resources/libjoynrSystemIntegration1.settings"),
-        integration2Settings("test-resources/libjoynrSystemIntegration2.settings"),
-        httpTransport(false)
+    End2EndBroadcastTestBase()
+            : runtime1(),
+              runtime2(),
+              baseUuid(util::createUuid()),
+              uuid("_" + baseUuid.substr(1, baseUuid.length() - 2)),
+              domainName("cppEnd2EndBroadcastTest_Domain" + uuid),
+              semaphore(0),
+              altSemaphore(0),
+              filter(std::make_shared<MockLocationUpdatedSelectiveFilter>()),
+              registerProviderWait(1000),
+              subscribeToAttributeWait(2000),
+              subscribeToBroadcastWait(2000),
+              gpsLocation(types::Localisation::GpsLocation()),
+              gpsLocation2(types::Localisation::GpsLocation(9.0,
+                                                            51.0,
+                                                            508.0,
+                                                            types::Localisation::GpsFixEnum::MODE2D,
+                                                            0.0,
+                                                            0.0,
+                                                            0.0,
+                                                            0.0,
+                                                            444,
+                                                            444,
+                                                            2)),
+              gpsLocation3(types::Localisation::GpsLocation(9.0,
+                                                            51.0,
+                                                            508.0,
+                                                            types::Localisation::GpsFixEnum::MODE2D,
+                                                            0.0,
+                                                            0.0,
+                                                            0.0,
+                                                            0.0,
+                                                            444,
+                                                            444,
+                                                            3)),
+              gpsLocation4(types::Localisation::GpsLocation(9.0,
+                                                            51.0,
+                                                            508.0,
+                                                            types::Localisation::GpsFixEnum::MODE2D,
+                                                            0.0,
+                                                            0.0,
+                                                            0.0,
+                                                            0.0,
+                                                            444,
+                                                            444,
+                                                            4)),
+              providerParticipantId(),
+              integration1Settings("test-resources/libjoynrSystemIntegration1.settings"),
+              integration2Settings("test-resources/libjoynrSystemIntegration2.settings"),
+              httpTransport(false)
     {
         auto settings1 = std::make_unique<Settings>(std::get<0>(GetParam()));
         auto settings2 = std::make_unique<Settings>(std::get<1>(GetParam()));
         MessagingSettings messagingSettings1(*settings1);
         MessagingSettings messagingSettings2(*settings2);
         messagingSettings1.setMessagingPropertiesPersistenceFilename(
-                    messagingPropertiesPersistenceFileName1);
+                messagingPropertiesPersistenceFileName1);
         messagingSettings2.setMessagingPropertiesPersistenceFilename(
-                    messagingPropertiesPersistenceFileName2);
+                messagingPropertiesPersistenceFileName2);
 
-        std::string brokerProtocol = messagingSettings1.getBrokerUrl().getBrokerChannelsBaseUrl().getProtocol();
-        httpTransport = boost::iequals(brokerProtocol, "http") || boost::iequals(brokerProtocol, "https");
+        std::string brokerProtocol =
+                messagingSettings1.getBrokerUrl().getBrokerChannelsBaseUrl().getProtocol();
+        httpTransport =
+                boost::iequals(brokerProtocol, "http") || boost::iequals(brokerProtocol, "https");
 
         Settings::merge(integration1Settings, *settings1, false);
 
@@ -154,7 +155,8 @@ public:
         runtime2->start();
     }
 
-    ~End2EndBroadcastTestBase() override {
+    ~End2EndBroadcastTestBase() override
+    {
         if (!providerParticipantId.empty()) {
             unregisterProvider();
         }
@@ -177,19 +179,24 @@ private:
     bool httpTransport;
 
 protected:
-    bool usesHttpTransport() {
-       return httpTransport;
+    bool usesHttpTransport()
+    {
+        return httpTransport;
     }
 
-    std::shared_ptr<MyTestProvider> registerProvider() {
+    std::shared_ptr<MyTestProvider> registerProvider()
+    {
         return registerProvider(runtime1);
     }
 
-    void unregisterProvider() {
+    void unregisterProvider()
+    {
         return runtime1->unregisterProvider(providerParticipantId);
     }
 
-    std::shared_ptr<MyTestProvider> registerProvider(std::shared_ptr<JoynrClusterControllerRuntime> runtime) {
+    std::shared_ptr<MyTestProvider> registerProvider(
+            std::shared_ptr<JoynrClusterControllerRuntime> runtime)
+    {
         auto testProvider = std::make_shared<MyTestProvider>();
         types::ProviderQos providerQos;
         std::chrono::milliseconds millisSinceEpoch =
@@ -198,7 +205,8 @@ protected:
         providerQos.setPriority(millisSinceEpoch.count());
         providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
         providerQos.setSupportsOnChangeSubscriptions(true);
-        providerParticipantId = runtime->registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
+        providerParticipantId = runtime->registerProvider<tests::testProvider>(
+                domainName, testProvider, providerQos);
 
         // This wait is necessary, because registerProvider is async, and a lookup could occur
         // before the register has finished.
@@ -207,13 +215,16 @@ protected:
         return testProvider;
     }
 
-    std::shared_ptr<tests::testProxy> buildProxy() {
+    std::shared_ptr<tests::testProxy> buildProxy()
+    {
         return buildProxy(runtime2);
     }
 
-    std::shared_ptr<tests::testProxy> buildProxy(std::shared_ptr<JoynrClusterControllerRuntime> runtime) {
-        std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder
-                = runtime->createProxyBuilder<tests::testProxy>(domainName);
+    std::shared_ptr<tests::testProxy> buildProxy(
+            std::shared_ptr<JoynrClusterControllerRuntime> runtime)
+    {
+        std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+                runtime->createProxyBuilder<tests::testProxy>(domainName);
         DiscoveryQos discoveryQos;
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
         discoveryQos.setDiscoveryTimeoutMs(30000);
@@ -221,10 +232,10 @@ protected:
 
         std::int64_t qosRoundTripTTL = 40000;
 
-        std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
-                                                   ->setMessagingQos(MessagingQos(qosRoundTripTTL))
-                                                   ->setDiscoveryQos(discoveryQos)
-                                                   ->build());
+        std::shared_ptr<tests::testProxy> testProxy(
+                testProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
+                        ->setDiscoveryQos(discoveryQos)
+                        ->build());
 
         return testProxy;
     }
@@ -233,30 +244,29 @@ protected:
     void testOneShotBroadcastSubscription(const T& expectedValue,
                                           SubscribeTo subscribeTo,
                                           UnsubscribeFrom unsubscribeFrom,
-                                          FireBroadcast fireBroadcast) {
+                                          FireBroadcast fireBroadcast)
+    {
         auto mockListener = std::make_shared<MockSubscriptionListenerOneType<T>>();
 
         // Use a semaphore to count and wait on calls to the mock listener
         ON_CALL(*mockListener, onReceive(Eq(expectedValue)))
                 .WillByDefault(ReleaseSemaphore(&semaphore));
 
-        testOneShotBroadcastSubscription(mockListener,
-                                         subscribeTo,
-                                         unsubscribeFrom,
-                                         fireBroadcast,
-                                         expectedValue);
+        testOneShotBroadcastSubscription(
+                mockListener, subscribeTo, unsubscribeFrom, fireBroadcast, expectedValue);
     }
 
     template <typename SubscriptionListener,
               typename FireBroadcast,
               typename SubscribeTo,
               typename UnsubscribeFrom,
-              typename ...T>
+              typename... T>
     void testOneShotBroadcastSubscription(SubscriptionListener subscriptionListener,
                                           SubscribeTo subscribeTo,
                                           UnsubscribeFrom unsubscribeFrom,
                                           FireBroadcast fireBroadcast,
-                                          T... expectedValues) {
+                                          T... expectedValues)
+    {
         std::vector<std::string> partitions({}); // TODO test with real partitions
         std::shared_ptr<MyTestProvider> testProvider = registerProvider();
 
@@ -276,14 +286,16 @@ protected:
     }
 
     template <typename BroadcastFilter>
-    void addFilterToTestProvider(std::shared_ptr<MyTestProvider> testProvider, std::shared_ptr<BroadcastFilter> filter)
+    void addFilterToTestProvider(std::shared_ptr<MyTestProvider> testProvider,
+                                 std::shared_ptr<BroadcastFilter> filter)
     {
         if (filter) {
             testProvider->addBroadcastFilter(filter);
         }
     }
 
-    void addFilterToTestProvider(std::shared_ptr<MyTestProvider> testProvider, std::nullptr_t filter)
+    void addFilterToTestProvider(std::shared_ptr<MyTestProvider> testProvider,
+                                 std::nullptr_t filter)
     {
         std::ignore = testProvider;
         std::ignore = filter;
@@ -294,13 +306,14 @@ protected:
               typename SubscribeTo,
               typename UnsubscribeFrom,
               typename BroadcastFilterPtr,
-              typename ...T>
+              typename... T>
     void testOneShotBroadcastSubscriptionWithFiltering(SubscriptionListener subscriptionListener,
-                                          SubscribeTo subscribeTo,
-                                          UnsubscribeFrom unsubscribeFrom,
-                                          FireBroadcast fireBroadcast,
-                                          BroadcastFilterPtr filter,
-                                          T... expectedValues) {
+                                                       SubscribeTo subscribeTo,
+                                                       UnsubscribeFrom unsubscribeFrom,
+                                                       FireBroadcast fireBroadcast,
+                                                       BroadcastFilterPtr filter,
+                                                       T... expectedValues)
+    {
         std::shared_ptr<MyTestProvider> testProvider = registerProvider();
         addFilterToTestProvider(testProvider, filter);
 
@@ -308,10 +321,10 @@ protected:
 
         std::int64_t minInterval_ms = 50;
         std::string subscriptionId;
-        auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
-                    500000,   // validity_ms
-                    1000,     // publication ttl
-                    minInterval_ms);  // minInterval_ms
+        auto subscriptionQos =
+                std::make_shared<OnChangeSubscriptionQos>(500000,          // validity_ms
+                                                          1000,            // publication ttl
+                                                          minInterval_ms); // minInterval_ms
 
         subscribeTo(testProxy.get(), subscriptionListener, subscriptionQos, subscriptionId);
 

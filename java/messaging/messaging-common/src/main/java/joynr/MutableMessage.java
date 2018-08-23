@@ -18,10 +18,9 @@
  */
 package joynr;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-
-import com.google.common.collect.Maps;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.joynr.smrf.EncodingException;
@@ -45,7 +44,7 @@ public class MutableMessage extends Message {
     private String type;
     private String replyTo;
     private String effort;
-    private Map<String, String> customHeaders = Maps.newHashMap();
+    private Map<String, String> customHeaders = new HashMap<>();
 
     private transient boolean compressed = false;
     private transient boolean statelessAsync;
@@ -70,7 +69,7 @@ public class MutableMessage extends Message {
     }
 
     private Map<String, String> createHeader() {
-        Map<String, String> header = Maps.newHashMap();
+        Map<String, String> header = new HashMap<>();
 
         if (customHeaders != null && !customHeaders.isEmpty()) {
             for (Map.Entry<String, String> entry : customHeaders.entrySet()) {

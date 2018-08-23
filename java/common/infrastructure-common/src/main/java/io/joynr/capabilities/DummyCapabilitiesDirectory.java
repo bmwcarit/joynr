@@ -28,7 +28,6 @@ import javax.annotation.CheckForNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
@@ -44,7 +43,7 @@ import joynr.types.DiscoveryEntryWithMetaInfo;
 public class DummyCapabilitiesDirectory extends AbstractLocalCapabilitiesDirectory {
     private static final Logger logger = LoggerFactory.getLogger(DummyCapabilitiesDirectory.class);
     private static final DummyCapabilitiesDirectory instance = new DummyCapabilitiesDirectory();
-    private ArrayList<DiscoveryEntryWithMetaInfo> registeredCapabilities = Lists.newArrayList();
+    private ArrayList<DiscoveryEntryWithMetaInfo> registeredCapabilities = new ArrayList();
 
     @Inject
     @Named("joynr.messaging.channelId")
@@ -126,7 +125,7 @@ public class DummyCapabilitiesDirectory extends AbstractLocalCapabilitiesDirecto
                        DiscoveryQos discoveryQos,
                        CapabilitiesCallback capabilitiesCallback) {
         logger.info("!!!!!!!!!!!!!!!getCapabilities async");
-        ArrayList<DiscoveryEntryWithMetaInfo> foundCapabilities = Lists.newArrayList();
+        ArrayList<DiscoveryEntryWithMetaInfo> foundCapabilities = new ArrayList();
         for (String domain : domains) {
             for (DiscoveryEntryWithMetaInfo ce : registeredCapabilities) {
                 if (ce.getDomain().equals(domain) && ce.getInterfaceName().equals(interfaceName)) {

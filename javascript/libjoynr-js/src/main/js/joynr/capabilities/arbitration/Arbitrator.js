@@ -16,7 +16,6 @@
  * limitations under the License.
  * #L%
  */
-const Promise = require("../../../global/Promise");
 const DiscoveryQos = require("../../../generated/joynr/types/DiscoveryQos");
 const UtilInternal = require("../../util/UtilInternal");
 const DiscoveryException = require("../../exceptions/DiscoveryException");

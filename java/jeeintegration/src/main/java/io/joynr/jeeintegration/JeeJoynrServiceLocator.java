@@ -24,25 +24,25 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.ejb.Singleton;
 import javax.inject.Inject;
 
-import io.joynr.StatelessAsync;
-import io.joynr.proxy.ProxyBuilder;
-import joynr.exceptions.ApplicationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Sets;
-
 import io.joynr.UsedBy;
+import io.joynr.StatelessAsync;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.jeeintegration.api.ServiceLocator;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.util.AnnotationUtil;
+import io.joynr.proxy.ProxyBuilder;
+import joynr.exceptions.ApplicationException;
 
 /**
  * JEE integration joynr service locator which uses a joynr proxy to provide an implementation for a service interface.
@@ -84,7 +84,7 @@ public class JeeJoynrServiceLocator implements ServiceLocator {
 
     @Override
     public <I> I get(Class<I> serviceInterface, String domain, MessagingQos messagingQos, DiscoveryQos discoveryQos) {
-        return get(serviceInterface, Sets.newHashSet(domain), messagingQos, discoveryQos);
+        return get(serviceInterface, new HashSet<String>(Arrays.asList(domain)), messagingQos, discoveryQos);
     }
 
     @Override
@@ -202,7 +202,7 @@ public class JeeJoynrServiceLocator implements ServiceLocator {
         if (domains == null || domains.length == 0) {
             throw new JoynrRuntimeException("You must provide at least one domain.");
         }
-        Set<String> domainSet = Sets.newHashSet(domains);
+        Set<String> domainSet = new HashSet(Arrays.asList(domains));
         return new JeeJoynrServiceProxyBuilder<>(serviceInterface, domainSet);
     }
 

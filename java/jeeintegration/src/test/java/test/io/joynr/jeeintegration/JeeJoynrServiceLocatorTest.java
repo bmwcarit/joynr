@@ -32,9 +32,18 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 
-import com.google.common.collect.Sets;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.runners.MockitoJUnitRunner;
+
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.exceptions.JoynrRuntimeException;
@@ -51,13 +60,6 @@ import joynr.jeeintegration.servicelocator.MyService;
 import joynr.jeeintegration.servicelocator.MyServiceProxy;
 import joynr.jeeintegration.servicelocator.MyServiceStatelessAsync;
 import joynr.jeeintegration.servicelocator.MyServiceSync;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
 import test.io.joynr.jeeintegration.servicelocator.MyInvalidServiceSync;
 import test.io.joynr.jeeintegration.servicelocator.MyServiceCallbackHandler;
 
@@ -90,7 +92,8 @@ public class JeeJoynrServiceLocatorTest {
         when(proxyBuilder.setDiscoveryQos(Mockito.any())).thenReturn(proxyBuilder);
         when(proxyBuilder.setStatelessAsyncCallbackUseCase(Mockito.anyString())).thenReturn(proxyBuilder);
         when(proxyBuilder.build()).thenReturn(myJoynrProxy);
-        when(joynrRuntime.getProxyBuilder(Sets.newHashSet("local"), MyServiceProxy.class)).thenReturn(proxyBuilder);
+        when(joynrRuntime.getProxyBuilder(new HashSet(Arrays.asList("local")),
+                                          MyServiceProxy.class)).thenReturn(proxyBuilder);
         when(joynrIntegrationBean.getRuntime()).thenReturn(joynrRuntime);
         subject = new JeeJoynrServiceLocator(joynrIntegrationBean);
     }
@@ -150,7 +153,7 @@ public class JeeJoynrServiceLocatorTest {
 
     @Test
     public void testGetMultiDomain() {
-        Set<String> domains = Sets.newHashSet("one", "two", "three");
+        Set<String> domains = new HashSet(Arrays.asList("one", "two", "three"));
         when(joynrRuntime.getProxyBuilder(domains, MyServiceProxy.class)).thenReturn(proxyBuilder);
 
         MyServiceSync result = subject.get(MyServiceSync.class, domains);
@@ -227,7 +230,7 @@ public class JeeJoynrServiceLocatorTest {
 
         assertNotNull(result);
 
-        verify(joynrRuntime).getProxyBuilder(eq(Sets.newHashSet("local")), eq(MyServiceProxy.class));
+        verify(joynrRuntime).getProxyBuilder(eq(new HashSet(Arrays.asList("local"))), eq(MyServiceProxy.class));
         verify(proxyBuilder).setStatelessAsyncCallbackUseCase(eq(MyServiceCallbackHandler.USE_CASE));
         verify(proxyBuilder).build();
 

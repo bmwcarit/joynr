@@ -17,7 +17,6 @@
  * #L%
  */
 
-const Promise = require("../../../main/js/global/Promise");
 const TestEnd2EndDatatypesTestData = require("./TestEnd2EndDatatypesTestData");
 const IntegrationUtils = require("./IntegrationUtils");
 const provisioning = require("../../resources/joynr/provisioning/provisioning_cc");

@@ -28,7 +28,6 @@ const DiscoveryException = require("../../../../../main/js/joynr/exceptions/Disc
 const NoCompatibleProviderFoundException = require("../../../../../main/js/joynr/exceptions/NoCompatibleProviderFoundException");
 const Version = require("../../../../../main/js/generated/joynr/types/Version");
 const UtilInternal = require("../../../../../main/js/joynr/util/UtilInternal");
-const Promise = require("../../../../../main/js/global/Promise");
 const Date = require("../../../../../test/js/global/Date");
 const waitsFor = require("../../../../../test/js/global/WaitsFor");
 let capabilities, fakeTime, staticArbitrationSettings, staticArbitrationSpy, domain;

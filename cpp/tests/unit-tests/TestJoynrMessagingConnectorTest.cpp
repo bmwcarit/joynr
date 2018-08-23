@@ -48,54 +48,57 @@ using namespace joynr;
 /**
  * @brief Fixutre.
  */
-class TestJoynrMessagingConnectorTest : public AbstractSyncAsyncTest {
+class TestJoynrMessagingConnectorTest : public AbstractSyncAsyncTest
+{
 public:
-
-    TestJoynrMessagingConnectorTest():
-        singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
-        mockSubscriptionManager(std::make_shared<MockSubscriptionManager>(singleThreadedIOService->getIOService(), nullptr)),
-        gpsLocation(types::Localisation::GpsLocation(
-                        9.0,
-                        51.0,
-                        508.0,
-                        types::Localisation::GpsFixEnum::MODE2D,
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0,
-                        444,
-                        444,
-                        2)),
-        floatValue(123.45),
-        semaphore(0)
+    TestJoynrMessagingConnectorTest()
+            : singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
+              mockSubscriptionManager(std::make_shared<MockSubscriptionManager>(
+                      singleThreadedIOService->getIOService(),
+                      nullptr)),
+              gpsLocation(types::Localisation::GpsLocation(9.0,
+                                                           51.0,
+                                                           508.0,
+                                                           types::Localisation::GpsFixEnum::MODE2D,
+                                                           0.0,
+                                                           0.0,
+                                                           0.0,
+                                                           0.0,
+                                                           444,
+                                                           444,
+                                                           2)),
+              floatValue(123.45),
+              semaphore(0)
     {
         singleThreadedIOService->start();
     }
 
-    ~TestJoynrMessagingConnectorTest() {
+    ~TestJoynrMessagingConnectorTest()
+    {
         singleThreadedIOService->stop();
     }
 
     // sets the expectations on the call expected on the MessageSender from the connector
-    testing::internal::TypedExpectation<void(
-            const std::string&, // sender participant ID
-            const std::string&, // receiver participant ID
-            const MessagingQos&, // messaging QoS
-            const Request&, // request object to send
-            std::shared_ptr<IReplyCaller>, // reply caller to notify when reply is received
-            bool isLocalMessage
-    )>& setExpectationsForSendRequestCall(std::string methodName) override {
+    testing::internal::TypedExpectation<
+            void(const std::string&,            // sender participant ID
+                 const std::string&,            // receiver participant ID
+                 const MessagingQos&,           // messaging QoS
+                 const Request&,                // request object to send
+                 std::shared_ptr<IReplyCaller>, // reply caller to notify when reply is received
+                 bool isLocalMessage)>&
+    setExpectationsForSendRequestCall(std::string methodName) override
+    {
         return EXPECT_CALL(
-                    *mockMessageSender,
-                    sendRequest(
-                        Eq(proxyParticipantId), // sender participant ID
+                *mockMessageSender,
+                sendRequest(
+                        Eq(proxyParticipantId),    // sender participant ID
                         Eq(providerParticipantId), // receiver participant ID
-                        _, // messaging QoS
+                        _,                         // messaging QoS
                         Property(&Request::getMethodName, Eq(methodName)), // request object to send
-                        Property(&std::shared_ptr<IReplyCaller>::get,NotNull()), // reply caller to notify when reply is received
-                        _ // isLocalMessage flag
-                    )
-        );
+                        Property(&std::shared_ptr<IReplyCaller>::get,
+                                 NotNull()), // reply caller to notify when reply is received
+                        _                    // isLocalMessage flag
+                        ));
     }
 
     std::shared_ptr<SingleThreadedIOService> singleThreadedIOService;
@@ -104,35 +107,38 @@ public:
     float floatValue;
     Semaphore semaphore;
 
-    std::shared_ptr<tests::testJoynrMessagingConnector> createConnector() {
+    std::shared_ptr<tests::testJoynrMessagingConnector> createConnector()
+    {
         types::DiscoveryEntryWithMetaInfo discoveryEntry;
 
         discoveryEntry.setParticipantId(providerParticipantId);
         discoveryEntry.setIsLocal(false);
 
-        return std::make_shared<tests::testJoynrMessagingConnector>(
-                    mockMessageSender,
-                    mockSubscriptionManager,
-                    "myDomain",
-                    proxyParticipantId,
-                    MessagingQos(),
-                    discoveryEntry);
+        return std::make_shared<tests::testJoynrMessagingConnector>(mockMessageSender,
+                                                                    mockSubscriptionManager,
+                                                                    "myDomain",
+                                                                    proxyParticipantId,
+                                                                    MessagingQos(),
+                                                                    discoveryEntry);
     }
 
-    std::shared_ptr<tests::Itest> createFixture() override {
+    std::shared_ptr<tests::Itest> createFixture() override
+    {
         return std::dynamic_pointer_cast<tests::Itest>(createConnector());
     }
 
-    void invokeMulticastSubscriptionCallback(const std::string& subscribeToName,
-                                             const std::string& subscriberParticipantId,
-                                             const std::string& providerParticipantId,
-                                             const std::vector<std::string>& partitions,
-                                             std::shared_ptr<joynr::ISubscriptionCallback> subscriptionCaller,
-                                             std::shared_ptr<ISubscriptionListenerBase> subscriptionListener,
-                                             std::shared_ptr<joynr::SubscriptionQos> qos,
-                                             joynr::MulticastSubscriptionRequest& subscriptionRequest,
-                                             std::function<void()> onSuccess,
-                                             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) {
+    void invokeMulticastSubscriptionCallback(
+            const std::string& subscribeToName,
+            const std::string& subscriberParticipantId,
+            const std::string& providerParticipantId,
+            const std::vector<std::string>& partitions,
+            std::shared_ptr<joynr::ISubscriptionCallback> subscriptionCaller,
+            std::shared_ptr<ISubscriptionListenerBase> subscriptionListener,
+            std::shared_ptr<joynr::SubscriptionQos> qos,
+            joynr::MulticastSubscriptionRequest& subscriptionRequest,
+            std::function<void()> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+    {
         std::ignore = subscribeToName;
         std::ignore = subscriberParticipantId;
         std::ignore = providerParticipantId;
@@ -141,8 +147,10 @@ public:
         std::ignore = onSuccess;
         std::ignore = onError;
         subscriptionRequest.setQos(qos);
-        std::shared_ptr<ISubscriptionListener<joynr::types::Localisation::GpsLocation, float>> typedListener =
-                std::dynamic_pointer_cast<ISubscriptionListener<joynr::types::Localisation::GpsLocation, float>>(subscriptionListener);
+        std::shared_ptr<ISubscriptionListener<joynr::types::Localisation::GpsLocation, float>>
+                typedListener = std::dynamic_pointer_cast<
+                        ISubscriptionListener<joynr::types::Localisation::GpsLocation, float>>(
+                        subscriptionListener);
 
         typedListener->onReceive(gpsLocation, floatValue);
     }
@@ -154,125 +162,146 @@ typedef TestJoynrMessagingConnectorTest TestJoynrMessagingConnectorTestDeathTest
  * Tests
  */
 
-TEST_F(TestJoynrMessagingConnectorTest, async_getAttributeNotCached) {
+TEST_F(TestJoynrMessagingConnectorTest, async_getAttributeNotCached)
+{
     testAsync_getAttributeNotCached();
 }
 
-TEST_F(TestJoynrMessagingConnectorTest, sync_setAttributeNotCached) {
+TEST_F(TestJoynrMessagingConnectorTest, sync_setAttributeNotCached)
+{
     testSync_setAttributeNotCached();
 }
 
-
-TEST_F(TestJoynrMessagingConnectorTest, sync_getAttributeNotCached) {
+TEST_F(TestJoynrMessagingConnectorTest, sync_getAttributeNotCached)
+{
     testSync_getAttributeNotCached();
 }
 
-TEST_F(TestJoynrMessagingConnectorTest, async_getterCallReturnsProviderRuntimeException) {
+TEST_F(TestJoynrMessagingConnectorTest, async_getterCallReturnsProviderRuntimeException)
+{
     testAsync_getterCallReturnsProviderRuntimeException();
 }
 
-TEST_F(TestJoynrMessagingConnectorTest, sync_getterCallReturnsProviderRuntimeException) {
+TEST_F(TestJoynrMessagingConnectorTest, sync_getterCallReturnsProviderRuntimeException)
+{
     testSync_getterCallReturnsProviderRuntimeException();
 }
 
-TEST_F(TestJoynrMessagingConnectorTest, async_getterCallReturnsMethodInvocationException) {
+TEST_F(TestJoynrMessagingConnectorTest, async_getterCallReturnsMethodInvocationException)
+{
     testAsync_getterCallReturnsMethodInvocationException();
 }
 
-TEST_F(TestJoynrMessagingConnectorTest, sync_getterCallReturnsMethodInvocationException) {
+TEST_F(TestJoynrMessagingConnectorTest, sync_getterCallReturnsMethodInvocationException)
+{
     testSync_getterCallReturnsMethodInvocationException();
 }
 
-TEST_F(TestJoynrMessagingConnectorTest, async_setterCallReturnsProviderRuntimeException) {
+TEST_F(TestJoynrMessagingConnectorTest, async_setterCallReturnsProviderRuntimeException)
+{
     testAsync_setterCallReturnsProviderRuntimeException();
 }
 
-TEST_F(TestJoynrMessagingConnectorTest, sync_setterCallReturnsProviderRuntimeException) {
+TEST_F(TestJoynrMessagingConnectorTest, sync_setterCallReturnsProviderRuntimeException)
+{
     testSync_setterCallReturnsProviderRuntimeException();
 }
 
-TEST_F(TestJoynrMessagingConnectorTest, async_setterCallReturnsMethodInvocationException) {
+TEST_F(TestJoynrMessagingConnectorTest, async_setterCallReturnsMethodInvocationException)
+{
     testAsync_setterCallReturnsMethodInvocationException();
 }
 
-TEST_F(TestJoynrMessagingConnectorTest, sync_setterCallReturnsMethodInvocationException) {
+TEST_F(TestJoynrMessagingConnectorTest, sync_setterCallReturnsMethodInvocationException)
+{
     testSync_setterCallReturnsMethodInvocationException();
 }
 
-TEST_F(TestJoynrMessagingConnectorTest, async_methodCallReturnsProviderRuntimeException) {
+TEST_F(TestJoynrMessagingConnectorTest, async_methodCallReturnsProviderRuntimeException)
+{
     testAsync_methodCallReturnsProviderRuntimeException();
 }
 
-TEST_F(TestJoynrMessagingConnectorTest, sync_methodCallReturnsProviderRuntimeException) {
+TEST_F(TestJoynrMessagingConnectorTest, sync_methodCallReturnsProviderRuntimeException)
+{
     testSync_methodCallReturnsProviderRuntimeException();
 }
 
-TEST_F(TestJoynrMessagingConnectorTest, async_methodCallReturnsMethodInvocationException) {
+TEST_F(TestJoynrMessagingConnectorTest, async_methodCallReturnsMethodInvocationException)
+{
     testAsync_methodCallReturnsMethodInvocationException();
 }
 
-TEST_F(TestJoynrMessagingConnectorTest, sync_methodCallReturnsMethodInvocationException) {
+TEST_F(TestJoynrMessagingConnectorTest, sync_methodCallReturnsMethodInvocationException)
+{
     testSync_methodCallReturnsMethodInvocationException();
 }
 
-TEST_F(TestJoynrMessagingConnectorTest, async_methodCallReturnsErrorEnum) {
+TEST_F(TestJoynrMessagingConnectorTest, async_methodCallReturnsErrorEnum)
+{
     testAsync_methodCallReturnsErrorEnum();
 }
 
-TEST_F(TestJoynrMessagingConnectorTest, sync_methodCallReturnsErrorEnum) {
+TEST_F(TestJoynrMessagingConnectorTest, sync_methodCallReturnsErrorEnum)
+{
     testSync_methodCallReturnsErrorEnum();
 }
 
-TEST_F(TestJoynrMessagingConnectorTest, async_methodCallReturnsExtendedErrorEnum) {
+TEST_F(TestJoynrMessagingConnectorTest, async_methodCallReturnsExtendedErrorEnum)
+{
     testAsync_methodCallReturnsExtendedErrorEnum();
 }
 
-TEST_F(TestJoynrMessagingConnectorTest, sync_methodCallReturnsExtendedErrorEnum) {
+TEST_F(TestJoynrMessagingConnectorTest, sync_methodCallReturnsExtendedErrorEnum)
+{
     testSync_methodCallReturnsExtendedErrorEnum();
 }
 
-TEST_F(TestJoynrMessagingConnectorTest, async_methodCallReturnsInlineErrorEnum) {
+TEST_F(TestJoynrMessagingConnectorTest, async_methodCallReturnsInlineErrorEnum)
+{
     testAsync_methodCallReturnsInlineErrorEnum();
 }
 
-TEST_F(TestJoynrMessagingConnectorTest, sync_methodCallReturnsInlineErrorEnum) {
+TEST_F(TestJoynrMessagingConnectorTest, sync_methodCallReturnsInlineErrorEnum)
+{
     testSync_methodCallReturnsInlineErrorEnum();
 }
 
-TEST_F(TestJoynrMessagingConnectorTest, async_OperationWithNoArguments) {
+TEST_F(TestJoynrMessagingConnectorTest, async_OperationWithNoArguments)
+{
     testAsync_OperationWithNoArguments();
 }
 
-TEST_F(TestJoynrMessagingConnectorTest, sync_OperationWithNoArguments) {
+TEST_F(TestJoynrMessagingConnectorTest, sync_OperationWithNoArguments)
+{
     testSync_OperationWithNoArguments();
 }
 
-TEST_F(TestJoynrMessagingConnectorTest, subscribeToAttribute) {
+TEST_F(TestJoynrMessagingConnectorTest, subscribeToAttribute)
+{
     testSubscribeToAttribute();
 }
 
-TEST_F(TestJoynrMessagingConnectorTest, testBroadcastListenerWrapper) {
-    std::shared_ptr<tests::testJoynrMessagingConnector> connector (createConnector());
+TEST_F(TestJoynrMessagingConnectorTest, testBroadcastListenerWrapper)
+{
+    std::shared_ptr<tests::testJoynrMessagingConnector> connector(createConnector());
 
     auto mockListener = std::make_shared<MockGpsFloatSubscriptionListener>();
 
-    EXPECT_CALL(
-        *mockSubscriptionManager,
-        registerSubscription(
-            Eq("locationUpdateWithSpeed"), //subscribeToName
-            _, // subscriberParticipantId
-            _, // providerParticipantId
-            _, // partitions
-            _, // subscriptionCaller
-            _, // subscriptionListener
-            _, // messaging QoS
-            _, // subscriptionRequest
-            _, // onSuccess
-            _ // onError
-        )
-    ).WillOnce(
-            testing::Invoke(this, &TestJoynrMessagingConnectorTest::invokeMulticastSubscriptionCallback)
-    );
+    EXPECT_CALL(*mockSubscriptionManager,
+                registerSubscription(Eq("locationUpdateWithSpeed"), // subscribeToName
+                                     _, // subscriberParticipantId
+                                     _, // providerParticipantId
+                                     _, // partitions
+                                     _, // subscriptionCaller
+                                     _, // subscriptionListener
+                                     _, // messaging QoS
+                                     _, // subscriptionRequest
+                                     _, // onSuccess
+                                     _  // onError
+                                     ))
+            .WillOnce(testing::Invoke(
+                    this, &TestJoynrMessagingConnectorTest::invokeMulticastSubscriptionCallback));
 
     // Use a semaphore to count and wait on calls to the mock listener
     EXPECT_CALL(*mockListener, onReceive(Eq(gpsLocation), Eq(floatValue)))

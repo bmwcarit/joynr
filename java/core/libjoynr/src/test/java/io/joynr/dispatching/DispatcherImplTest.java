@@ -58,7 +58,6 @@ import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -82,6 +81,7 @@ import io.joynr.provider.AbstractSubscriptionPublisher;
 import io.joynr.provider.ProviderCallback;
 import io.joynr.provider.ProviderContainer;
 import io.joynr.proxy.JoynrMessagingConnectorFactory;
+import io.joynr.runtime.JoynrThreadFactory;
 import io.joynr.smrf.EncodingException;
 import io.joynr.smrf.UnsuppportedVersionException;
 import joynr.ImmutableMessage;
@@ -140,7 +140,7 @@ public class DispatcherImplTest {
 
                 requestStaticInjection(RpcUtils.class, Request.class, JoynrMessagingConnectorFactory.class);
 
-                ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("joynr.Cleanup-%d").build();
+                ThreadFactory namedThreadFactory = new JoynrThreadFactory("joynr.Cleanup");
                 ScheduledExecutorService cleanupExecutor = Executors.newSingleThreadScheduledExecutor(namedThreadFactory);
                 bind(ScheduledExecutorService.class).annotatedWith(Names.named(JOYNR_SCHEDULER_CLEANUP))
                                                     .toInstance(cleanupExecutor);
@@ -175,6 +175,7 @@ public class DispatcherImplTest {
                     String requestReplyId = UUID.randomUUID().toString();
                     RequestCaller requestCaller = mock(RequestCaller.class);
                     AbstractSubscriptionPublisher subscriptionPublisher = mock(AbstractSubscriptionPublisher.class);
+                    int majorVersion = 42;
                     /* setBlockInitialisation to true causes the messageReceiver to block
                      * during startup
                      * The MessageReceiver is invoked by the dispatcher once a request caller
@@ -185,6 +186,7 @@ public class DispatcherImplTest {
                     requestCallerDirectory.add(requestReplyId,
                                                new ProviderContainer("interfaceName",
                                                                      DispatcherImplTest.class,
+                                                                     majorVersion,
                                                                      requestCaller,
                                                                      subscriptionPublisher));
                 } finally {

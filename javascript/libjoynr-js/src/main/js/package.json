@@ -1,15 +1,14 @@
 {
   "name": "joynr",
-  "version": "1.5.0-SNAPSHOT",
+  "version": "1.6.0-SNAPSHOT",
   "description": "Web-based communication framework for applications wanting to interact with other applications, no matter whether they're deployed on consumer devices, vehicles, or backend infrastructure",
   "license": "Apache-2.0",
   "homepage": "http://joynr.io",
   "bugs": "https://github.com/bmwcarit/joynr/issues",
   "main": "joynr.js",
   "dependencies": {
-    "bluebird": "3.3.5",
     "mqtt": "2.15.0",
-    "smrf-native": "0.2.2",
+    "smrf": "0.3.0",
     "uuid": "3.2.1",
     "ws": "4.0.0"
   },

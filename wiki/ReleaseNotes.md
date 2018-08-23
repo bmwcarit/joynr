@@ -2,15 +2,22 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
-# joynr 1.5.0-SNAPSHOT
+# joynr 1.5.0
 
 ## API relevant changes
 * **[Java]** Android support has been disabled until further notice.
 * **[Java]** joynr now **requires Java 8** and the plain Java part is no longer compatible with Java 7 (which was previously required for Android).
+* **[Java]** The key format of persisted provider participantIDs changed. It now includes the major
+ version of the Franca interface implemented by the provider.
+ * All providers which do not use a fixed participantID will be registered with a newly generated
+   participantID. Existing proxies have to be rebuilt (the provider has to be discovered again).
+ * Providers with a fixed participantId might have to be updated in order to use the new key format,
+   see [Joynr Java Developer Guide](java.md#register-provider-with-fixed-%28custom%29-participantId)
+   for the recommended way of registering providers with fixed participantID.
 * **[Java]** Several dependencies have been upgraded. Please make sure to
   upgrade any applications / JEE server accordingly to avoid possible
-  version conflicts.  
-  `mvn dependency:tree` from top-level pom.xml reports the following changes:  
+  version conflicts.
+  `mvn dependency:tree` from top-level pom.xml reports the following changes:
  * com.google.code.findbugs:annotations updated from version 2.0.1 to 3.0.1
  * com.google.code.findbugs:jsr305 updated from version 2.0.1 to 3.0.2
  * com.google.errorprone:error_prone_annotations added version 2.1.3
@@ -105,6 +112,9 @@ the versioning scheme [here](JoynrVersioning.md).
  * org.jboss.shrinkwrap:shrinkwrap-impl-base updated from version 1.2.3 to 1.2.6
  * org.jboss.shrinkwrap:shrinkwrap-spi updated from version 1.2.3 to 1.2.6
  * org.reflections:reflections updated from version 0.9.8 to 0.9.10
+* **[Java]** Proxy methods can now be passed an optional `io.joynr.messaging.MessagingQos` parameter.
+  This allows to overwrite the `MessagingQos` which was specified during proxy building
+  for each proxy method call separately.
 
 ## Other changes
 * **[Java,C++,JS]** Introduced Franca 0.13.0, joynr continues to support
@@ -119,6 +129,15 @@ the versioning scheme [here](JoynrVersioning.md).
   method calls have ended with either success or error and broadcasts / attribute subscriptions
   have been terminated since otherwise a potential reply or publication cannot be routed anymore
   once the routing entry has been removed.
+* **[JS]** Replaced the joynr dependency smrf-native with smrf, which is a javascript only implementation
+  of joynr's secure messaging format. This offers the following benefits.
+    * simpler usage of joynr, as no native dependencies are remaining
+    * improved performance for serialization and deserialization of messages.
+    * prepares future browser support. Rewriting of the websocket related browser part still necessary.
+* **[Java]**  Use `/` instead of `:` in shared subscription topic
+* **[C++]** Added setting 'messaging/discard-unroutable-replies-and-publications'.
+  See default-messaging.settings for more details. Do not enable this setting before all local joynr
+  environments have been updated to joynr 1.5.0 or later.
 
 ## Configuration property changes
 None.

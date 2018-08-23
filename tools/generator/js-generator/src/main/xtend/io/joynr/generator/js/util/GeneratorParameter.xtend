@@ -17,12 +17,12 @@ package io.joynr.generator.js.util
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import com.google.common.collect.Sets
 import com.google.inject.Inject
 import com.google.inject.Singleton
 import io.joynr.generator.templates.util.NamingUtil
 import java.util.Map
+import java.util.Arrays
+import java.util.HashSet
 import org.franca.core.franca.FModelElement
 import org.franca.core.franca.FType
 
@@ -60,7 +60,7 @@ class GeneratorParameter {
 	}
 
 	def supportedParameters() {
-		Sets::newHashSet(requireJSSupportKey, requiredModuleKey, anonymuousDefineKey, definePrefixKey)
+		new HashSet(Arrays.asList(requireJSSupportKey, requiredModuleKey, anonymuousDefineKey, definePrefixKey))
 	}
 
 	private def determRequireJsSupport(){

@@ -28,14 +28,15 @@
 
 using namespace joynr;
 
-class WebSocketSettingsTest : public testing::Test {
+class WebSocketSettingsTest : public testing::Test
+{
 public:
-    WebSocketSettingsTest() :
-        testSettingsFileName("WebSocketSettingsTest-nonexistent.settings")
+    WebSocketSettingsTest() : testSettingsFileName("WebSocketSettingsTest-nonexistent.settings")
     {
     }
 
-    virtual void TearDown() {
+    virtual void TearDown()
+    {
         std::remove(testSettingsFileName.c_str());
     }
 
@@ -44,7 +45,8 @@ protected:
     std::string testSettingsFileName;
 };
 
-TEST_F(WebSocketSettingsTest, intializedWithDefaultSettings) {
+TEST_F(WebSocketSettingsTest, intializedWithDefaultSettings)
+{
     Settings testSettings(testSettingsFileName);
     WebSocketSettings wsSettings(testSettings);
 
@@ -52,7 +54,8 @@ TEST_F(WebSocketSettingsTest, intializedWithDefaultSettings) {
     EXPECT_TRUE(wsSettings.contains(WebSocketSettings::SETTING_RECONNECT_SLEEP_TIME_MS()));
 }
 
-TEST_F(WebSocketSettingsTest, overrideDefaultSettings) {
+TEST_F(WebSocketSettingsTest, overrideDefaultSettings)
+{
     std::string expectedMessagingUrl("ws://test-host:42/test-path");
     std::chrono::milliseconds expectedReconnectSleepTimeMs(1024);
     Settings testSettings(testSettingsFileName);
@@ -66,18 +69,16 @@ TEST_F(WebSocketSettingsTest, overrideDefaultSettings) {
     EXPECT_EQ(expectedReconnectSleepTimeMs, reconnectSleepTimeMs);
 }
 
-TEST_F(WebSocketSettingsTest, createsWebSocketAddress) {
+TEST_F(WebSocketSettingsTest, createsWebSocketAddress)
+{
     std::string expectedMessagingUrl("ws://test-host:42/test-path");
     joynr::system::RoutingTypes::WebSocketAddress expectedMessagingAddress(
-                joynr::system::RoutingTypes::WebSocketProtocol::WS,
-                "test-host",
-                42,
-                "/test-path"
-    );
+            joynr::system::RoutingTypes::WebSocketProtocol::WS, "test-host", 42, "/test-path");
     Settings testSettings(testSettingsFileName);
     testSettings.set(WebSocketSettings::SETTING_CC_MESSAGING_URL(), expectedMessagingUrl);
     WebSocketSettings wsSettings(testSettings);
 
-    system::RoutingTypes::WebSocketAddress wsAddress = wsSettings.createClusterControllerMessagingAddress();
+    system::RoutingTypes::WebSocketAddress wsAddress =
+            wsSettings.createClusterControllerMessagingAddress();
     EXPECT_EQ(expectedMessagingAddress, wsAddress);
 }

@@ -20,8 +20,8 @@ package io.joynr.capabilities;
 
 public interface ParticipantIdStorage {
 
-    String getProviderParticipantId(String domain, String interfaceName);
+    String getProviderParticipantId(String domain, String interfaceName, int majorVersion);
 
-    String getProviderParticipantId(String domain, String interfaceName, String defaultValue);
+    String getProviderParticipantId(String domain, String interfaceName, int majorVersion, String defaultValue);
 
 }

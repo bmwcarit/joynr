@@ -49,23 +49,28 @@ using ::testing::Property;
 
 using namespace joynr;
 
-class CapabilitiesRegistrarTest : public ::testing::Test {
+class CapabilitiesRegistrarTest : public ::testing::Test
+{
 public:
-    CapabilitiesRegistrarTest() :
-            mockDispatcher(),
-            dispatcherAddress(),
-            mockParticipantIdStorage(std::make_shared<MockParticipantIdStorage>()),
-            mockDiscovery(std::make_shared<MockDiscovery>()),
-            capabilitiesRegistrar(nullptr),
-            mockProvider(std::make_shared<MockProvider>()),
-            domain("testDomain"),
-            expectedParticipantId("testParticipantId"),
-            enablePersistency(true),
-            singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
-            mockMessageRouter(std::make_shared< MockMessageRouter>(singleThreadedIOService->getIOService())),
-            expectedProviderVersion(mockProvider->MAJOR_VERSION, mockProvider->MINOR_VERSION),
-            mockMessageSender(std::make_shared<MockMessageSender>()),
-            pubManager(std::make_shared<PublicationManager>(singleThreadedIOService->getIOService(), mockMessageSender, enablePersistency))
+    CapabilitiesRegistrarTest()
+            : mockDispatcher(),
+              dispatcherAddress(),
+              mockParticipantIdStorage(std::make_shared<MockParticipantIdStorage>()),
+              mockDiscovery(std::make_shared<MockDiscovery>()),
+              capabilitiesRegistrar(nullptr),
+              mockProvider(std::make_shared<MockProvider>()),
+              domain("testDomain"),
+              expectedParticipantId("testParticipantId"),
+              enablePersistency(true),
+              singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
+              mockMessageRouter(
+                      std::make_shared<MockMessageRouter>(singleThreadedIOService->getIOService())),
+              expectedProviderVersion(mockProvider->MAJOR_VERSION, mockProvider->MINOR_VERSION),
+              mockMessageSender(std::make_shared<MockMessageSender>()),
+              pubManager(
+                      std::make_shared<PublicationManager>(singleThreadedIOService->getIOService(),
+                                                           mockMessageSender,
+                                                           enablePersistency))
     {
         singleThreadedIOService->start();
     }
@@ -79,22 +84,21 @@ public:
         mockMessageSender.reset();
     }
 
-    void SetUp(){
+    void SetUp()
+    {
         std::vector<std::shared_ptr<IDispatcher>> dispatcherList;
         mockDispatcher = std::make_shared<MockDispatcher>();
         dispatcherList.push_back(mockDispatcher);
 
         const std::string globalAddress = "testGlobalAddressString";
-        capabilitiesRegistrar = new CapabilitiesRegistrar(
-                    dispatcherList,
-                    mockDiscovery,
-                    mockParticipantIdStorage,
-                    dispatcherAddress,
-                    mockMessageRouter,
-                    std::numeric_limits<std::int64_t>::max(),
-                    pubManager,
-                    globalAddress
-        );
+        capabilitiesRegistrar = new CapabilitiesRegistrar(dispatcherList,
+                                                          mockDiscovery,
+                                                          mockParticipantIdStorage,
+                                                          dispatcherAddress,
+                                                          mockMessageRouter,
+                                                          std::numeric_limits<std::int64_t>::max(),
+                                                          pubManager,
+                                                          globalAddress);
     }
 
 protected:
@@ -115,40 +119,31 @@ protected:
     std::shared_ptr<PublicationManager> pubManager;
 };
 
-TEST_F(CapabilitiesRegistrarTest, add){
+TEST_F(CapabilitiesRegistrarTest, add)
+{
 
     types::ProviderQos testQos;
     testQos.setPriority(100);
-    EXPECT_CALL(*mockParticipantIdStorage, getProviderParticipantId(
-                    domain,
-                    MockProvider::INTERFACE_NAME()
-    ))
+    EXPECT_CALL(*mockParticipantIdStorage,
+                getProviderParticipantId(domain, MockProvider::INTERFACE_NAME()))
             .Times(1)
             .WillOnce(Return(expectedParticipantId));
-    EXPECT_CALL(*mockDispatcher, addRequestCaller(expectedParticipantId,_))
-            .Times(1);
+    EXPECT_CALL(*mockDispatcher, addRequestCaller(expectedParticipantId, _)).Times(1);
     auto mockFuture = std::make_shared<joynr::Future<void>>();
     mockFuture->onSuccess();
-    EXPECT_CALL(
-                *mockDiscovery,
-                addAsyncMock(
-                    AllOf(
-                        Property(&joynr::types::DiscoveryEntry::getDomain, Eq(domain)),
-                        Property(&joynr::types::DiscoveryEntry::getInterfaceName, Eq(MockProvider::INTERFACE_NAME())),
-                        Property(&joynr::types::DiscoveryEntry::getParticipantId, Eq(expectedParticipantId)),
-                        Property(&joynr::types::DiscoveryEntry::getQos, Eq(testQos)),
-                        Property(&joynr::types::DiscoveryEntry::getProviderVersion, Eq(expectedProviderVersion))
-                    ),
-                    _,
-                    _,
-                    _,
-                    _
-                )
-    ).WillOnce(
-                DoAll(InvokeArgument<2>(),
-                      Return(mockFuture)
-                      )
-                );
+    EXPECT_CALL(*mockDiscovery,
+                addAsyncMock(AllOf(Property(&joynr::types::DiscoveryEntry::getDomain, Eq(domain)),
+                                   Property(&joynr::types::DiscoveryEntry::getInterfaceName,
+                                            Eq(MockProvider::INTERFACE_NAME())),
+                                   Property(&joynr::types::DiscoveryEntry::getParticipantId,
+                                            Eq(expectedParticipantId)),
+                                   Property(&joynr::types::DiscoveryEntry::getQos, Eq(testQos)),
+                                   Property(&joynr::types::DiscoveryEntry::getProviderVersion,
+                                            Eq(expectedProviderVersion))),
+                             _,
+                             _,
+                             _,
+                             _)).WillOnce(DoAll(InvokeArgument<2>(), Return(mockFuture)));
 
     Future<void> future;
     auto onSuccess = [&future]() { future.onSuccess(); };
@@ -156,43 +151,40 @@ TEST_F(CapabilitiesRegistrarTest, add){
         future.onError(std::make_shared<exceptions::JoynrRuntimeException>(exception));
     };
 
-    std::string participantId = capabilitiesRegistrar->addAsync(domain, mockProvider, testQos, onSuccess, onError);
+    std::string participantId =
+            capabilitiesRegistrar->addAsync(domain, mockProvider, testQos, onSuccess, onError);
     future.get();
 
     EXPECT_EQ(expectedParticipantId, participantId);
 }
 
-TEST_F(CapabilitiesRegistrarTest, checkVisibilityOfGlobalAndLocalProviders){
+TEST_F(CapabilitiesRegistrarTest, checkVisibilityOfGlobalAndLocalProviders)
+{
 
     types::ProviderQos testQos;
     testQos.setScope(types::ProviderScope::GLOBAL);
-    EXPECT_CALL(*mockParticipantIdStorage, getProviderParticipantId(
-                    domain,
-                    MockProvider::INTERFACE_NAME()
-    ))
+    EXPECT_CALL(*mockParticipantIdStorage,
+                getProviderParticipantId(domain, MockProvider::INTERFACE_NAME()))
             .Times(2)
             .WillRepeatedly(Return(expectedParticipantId));
 
     auto mockFuture = std::make_shared<joynr::Future<void>>();
     mockFuture->onSuccess();
-    EXPECT_CALL(
-                *mockDiscovery,
-                addAsyncMock(
-                    _,
-                    _,
-                    _,
-                    _,
-                    _
-                )
-    ).Times(2).WillRepeatedly(
-                DoAll(InvokeArgument<2>(),
-                      Return(mockFuture)
-                      )
-                );
+    EXPECT_CALL(*mockDiscovery, addAsyncMock(_, _, _, _, _)).Times(2).WillRepeatedly(
+            DoAll(InvokeArgument<2>(), Return(mockFuture)));
 
-    ON_CALL(*mockMessageRouter, addNextHop(_,_,_,_,_,_,_,_)).WillByDefault(InvokeArgument<6>());
+    ON_CALL(*mockMessageRouter, addNextHop(_, _, _, _, _, _, _, _))
+            .WillByDefault(InvokeArgument<6>());
     bool expectedIsGloballyVisible = true;
-    EXPECT_CALL(*mockMessageRouter, addNextHop(Eq(expectedParticipantId),Eq(dispatcherAddress),Eq(expectedIsGloballyVisible),_,_,_,_,_));
+    EXPECT_CALL(*mockMessageRouter,
+                addNextHop(Eq(expectedParticipantId),
+                           Eq(dispatcherAddress),
+                           Eq(expectedIsGloballyVisible),
+                           _,
+                           _,
+                           _,
+                           _,
+                           _));
 
     Future<void> future;
     auto onSuccess = [&future]() { future.onSuccess(); };
@@ -208,7 +200,15 @@ TEST_F(CapabilitiesRegistrarTest, checkVisibilityOfGlobalAndLocalProviders){
     testQos.setScope(types::ProviderScope::LOCAL);
 
     expectedIsGloballyVisible = false;
-    EXPECT_CALL(*mockMessageRouter, addNextHop(Eq(expectedParticipantId),Eq(dispatcherAddress),Eq(expectedIsGloballyVisible),_,_,_,_,_));
+    EXPECT_CALL(*mockMessageRouter,
+                addNextHop(Eq(expectedParticipantId),
+                           Eq(dispatcherAddress),
+                           Eq(expectedIsGloballyVisible),
+                           _,
+                           _,
+                           _,
+                           _,
+                           _));
 
     Future<void> future1;
     auto onSuccess1 = [&future1]() { future1.onSuccess(); };
@@ -220,29 +220,17 @@ TEST_F(CapabilitiesRegistrarTest, checkVisibilityOfGlobalAndLocalProviders){
     future1.get();
 }
 
-TEST_F(CapabilitiesRegistrarTest, removeWithDomainAndProviderObject){
-    EXPECT_CALL(*mockParticipantIdStorage, getProviderParticipantId(
-                    domain,
-                    MockProvider::INTERFACE_NAME()
-    ))
+TEST_F(CapabilitiesRegistrarTest, removeWithDomainAndProviderObject)
+{
+    EXPECT_CALL(*mockParticipantIdStorage,
+                getProviderParticipantId(domain, MockProvider::INTERFACE_NAME()))
             .Times(1)
             .WillOnce(Return(expectedParticipantId));
-    EXPECT_CALL(*mockDispatcher, removeRequestCaller(expectedParticipantId))
-            .Times(1);
+    EXPECT_CALL(*mockDispatcher, removeRequestCaller(expectedParticipantId)).Times(1);
     auto mockFuture = std::make_shared<joynr::Future<void>>();
     mockFuture->onSuccess();
-    EXPECT_CALL(*mockDiscovery, removeAsyncMock(
-                    expectedParticipantId,
-                    _,
-                    _,
-                    _
-    ))
-            .Times(1)
-            .WillOnce(
-                DoAll(InvokeArgument<1>(),
-                      Return(mockFuture)
-                      )
-                );
+    EXPECT_CALL(*mockDiscovery, removeAsyncMock(expectedParticipantId, _, _, _)).Times(1).WillOnce(
+            DoAll(InvokeArgument<1>(), Return(mockFuture)));
 
     Future<void> future;
     auto onSuccess = [&future]() { future.onSuccess(); };
@@ -250,30 +238,21 @@ TEST_F(CapabilitiesRegistrarTest, removeWithDomainAndProviderObject){
         future.onError(std::make_shared<exceptions::JoynrRuntimeException>(exception));
     };
 
-    std::string participantId = capabilitiesRegistrar->removeAsync(domain, mockProvider, onSuccess, onError);
+    std::string participantId =
+            capabilitiesRegistrar->removeAsync(domain, mockProvider, onSuccess, onError);
     future.get();
 
     EXPECT_EQ(expectedParticipantId, participantId);
 }
 
-TEST_F(CapabilitiesRegistrarTest, removeWithParticipantId){
-    EXPECT_CALL(*mockDispatcher, removeRequestCaller(expectedParticipantId))
-            .Times(1);
+TEST_F(CapabilitiesRegistrarTest, removeWithParticipantId)
+{
+    EXPECT_CALL(*mockDispatcher, removeRequestCaller(expectedParticipantId)).Times(1);
 
     auto mockFuture = std::make_shared<joynr::Future<void>>();
     mockFuture->onSuccess();
-    EXPECT_CALL(*mockDiscovery, removeAsyncMock(
-                    expectedParticipantId,
-                    _,
-                    _,
-                    _
-    ))
-            .Times(1)
-            .WillOnce(
-                DoAll(InvokeArgument<1>(),
-                      Return(mockFuture)
-                      )
-                );
+    EXPECT_CALL(*mockDiscovery, removeAsyncMock(expectedParticipantId, _, _, _)).Times(1).WillOnce(
+            DoAll(InvokeArgument<1>(), Return(mockFuture)));
 
     Future<void> future;
     auto onSuccess = [&future]() { future.onSuccess(); };
@@ -285,48 +264,38 @@ TEST_F(CapabilitiesRegistrarTest, removeWithParticipantId){
     future.get();
 }
 
-TEST_F(CapabilitiesRegistrarTest, registerMultipleDispatchersAndRegisterCapability){
+TEST_F(CapabilitiesRegistrarTest, registerMultipleDispatchersAndRegisterCapability)
+{
     auto mockDispatcher1 = std::make_shared<MockDispatcher>();
     auto mockDispatcher2 = std::make_shared<MockDispatcher>();
     types::ProviderQos testQos;
     testQos.setPriority(100);
 
-    EXPECT_CALL(*mockParticipantIdStorage, getProviderParticipantId(
-                    domain,
-                    MockProvider::INTERFACE_NAME()
-    ))
+    EXPECT_CALL(*mockParticipantIdStorage,
+                getProviderParticipantId(domain, MockProvider::INTERFACE_NAME()))
             .Times(1)
             .WillOnce(Return(expectedParticipantId));
 
     auto mockFuture = std::make_shared<joynr::Future<void>>();
     mockFuture->onSuccess();
 
-    EXPECT_CALL(
-                *mockDiscovery,
-                addAsyncMock(
-                    AllOf(
-                        Property(&joynr::types::DiscoveryEntry::getDomain, Eq(domain)),
-                        Property(&joynr::types::DiscoveryEntry::getInterfaceName, Eq(MockProvider::INTERFACE_NAME())),
-                        Property(&joynr::types::DiscoveryEntry::getParticipantId, Eq(expectedParticipantId)),
-                        Property(&joynr::types::DiscoveryEntry::getQos, Eq(testQos))
-                    ),
-                    _,
-                    _,
-                    _,
-                    _
-                )
-    ).Times(1).WillOnce(
-                DoAll(InvokeArgument<2>(),
-                      Return(mockFuture)
-                      )
-                );
+    EXPECT_CALL(*mockDiscovery,
+                addAsyncMock(AllOf(Property(&joynr::types::DiscoveryEntry::getDomain, Eq(domain)),
+                                   Property(&joynr::types::DiscoveryEntry::getInterfaceName,
+                                            Eq(MockProvider::INTERFACE_NAME())),
+                                   Property(&joynr::types::DiscoveryEntry::getParticipantId,
+                                            Eq(expectedParticipantId)),
+                                   Property(&joynr::types::DiscoveryEntry::getQos, Eq(testQos))),
+                             _,
+                             _,
+                             _,
+                             _))
+            .Times(1)
+            .WillOnce(DoAll(InvokeArgument<2>(), Return(mockFuture)));
 
-    EXPECT_CALL(*mockDispatcher, addRequestCaller(expectedParticipantId,_))
-            .Times(1);
-    EXPECT_CALL(*mockDispatcher1, addRequestCaller(expectedParticipantId,_))
-            .Times(1);
-    EXPECT_CALL(*mockDispatcher2, addRequestCaller(expectedParticipantId,_))
-            .Times(1);
+    EXPECT_CALL(*mockDispatcher, addRequestCaller(expectedParticipantId, _)).Times(1);
+    EXPECT_CALL(*mockDispatcher1, addRequestCaller(expectedParticipantId, _)).Times(1);
+    EXPECT_CALL(*mockDispatcher2, addRequestCaller(expectedParticipantId, _)).Times(1);
 
     capabilitiesRegistrar->addDispatcher(mockDispatcher1);
     capabilitiesRegistrar->addDispatcher(mockDispatcher2);
@@ -337,13 +306,15 @@ TEST_F(CapabilitiesRegistrarTest, registerMultipleDispatchersAndRegisterCapabili
         future.onError(std::make_shared<exceptions::JoynrRuntimeException>(exception));
     };
 
-    std::string participantId = capabilitiesRegistrar->addAsync(domain, mockProvider, testQos, onSuccess, onError);
+    std::string participantId =
+            capabilitiesRegistrar->addAsync(domain, mockProvider, testQos, onSuccess, onError);
     future.get();
 
     EXPECT_EQ(expectedParticipantId, participantId);
 }
 
-TEST_F(CapabilitiesRegistrarTest, removeDispatcher){
+TEST_F(CapabilitiesRegistrarTest, removeDispatcher)
+{
     auto mockDispatcher1 = std::make_shared<MockDispatcher>();
     auto mockDispatcher2 = std::make_shared<MockDispatcher>();
     types::ProviderQos testQos;
@@ -354,42 +325,31 @@ TEST_F(CapabilitiesRegistrarTest, removeDispatcher){
 
     capabilitiesRegistrar->removeDispatcher(mockDispatcher1);
 
-    EXPECT_CALL(*mockParticipantIdStorage, getProviderParticipantId(
-                    domain,
-                    MockProvider::INTERFACE_NAME()
-    ))
+    EXPECT_CALL(*mockParticipantIdStorage,
+                getProviderParticipantId(domain, MockProvider::INTERFACE_NAME()))
             .Times(1)
             .WillOnce(Return(expectedParticipantId));
 
     auto mockFuture = std::make_shared<joynr::Future<void>>();
     mockFuture->onSuccess();
-    EXPECT_CALL(
-                *mockDiscovery,
-                addAsyncMock(
-                    AllOf(
-                        Property(&joynr::types::DiscoveryEntry::getDomain, Eq(domain)),
-                        Property(&joynr::types::DiscoveryEntry::getInterfaceName, Eq(MockProvider::INTERFACE_NAME())),
-                        Property(&joynr::types::DiscoveryEntry::getParticipantId, Eq(expectedParticipantId)),
-                        Property(&joynr::types::DiscoveryEntry::getQos, Eq(testQos))
-                    ),
-                    _,
-                    _,
-                    _,
-                    _
-                )
-    ).Times(1).WillOnce(
-                DoAll(InvokeArgument<2>(),
-                      Return(mockFuture)
-                      )
-                );
+    EXPECT_CALL(*mockDiscovery,
+                addAsyncMock(AllOf(Property(&joynr::types::DiscoveryEntry::getDomain, Eq(domain)),
+                                   Property(&joynr::types::DiscoveryEntry::getInterfaceName,
+                                            Eq(MockProvider::INTERFACE_NAME())),
+                                   Property(&joynr::types::DiscoveryEntry::getParticipantId,
+                                            Eq(expectedParticipantId)),
+                                   Property(&joynr::types::DiscoveryEntry::getQos, Eq(testQos))),
+                             _,
+                             _,
+                             _,
+                             _))
+            .Times(1)
+            .WillOnce(DoAll(InvokeArgument<2>(), Return(mockFuture)));
 
-    EXPECT_CALL(*mockDispatcher, addRequestCaller(expectedParticipantId,_))
-            .Times(1);
-    //mockDispatcher1 should not be used as it was removed
-    EXPECT_CALL(*mockDispatcher1, addRequestCaller(expectedParticipantId,_))
-            .Times(0);
-    EXPECT_CALL(*mockDispatcher2, addRequestCaller(expectedParticipantId,_))
-            .Times(1);
+    EXPECT_CALL(*mockDispatcher, addRequestCaller(expectedParticipantId, _)).Times(1);
+    // mockDispatcher1 should not be used as it was removed
+    EXPECT_CALL(*mockDispatcher1, addRequestCaller(expectedParticipantId, _)).Times(0);
+    EXPECT_CALL(*mockDispatcher2, addRequestCaller(expectedParticipantId, _)).Times(1);
 
     Future<void> future;
     auto onSuccess = [&future]() { future.onSuccess(); };
@@ -397,7 +357,8 @@ TEST_F(CapabilitiesRegistrarTest, removeDispatcher){
         future.onError(std::make_shared<exceptions::JoynrRuntimeException>(exception));
     };
 
-    std::string participantId = capabilitiesRegistrar->addAsync(domain, mockProvider, testQos, onSuccess, onError);
+    std::string participantId =
+            capabilitiesRegistrar->addAsync(domain, mockProvider, testQos, onSuccess, onError);
     future.get();
 
     EXPECT_EQ(expectedParticipantId, participantId);

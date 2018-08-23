@@ -25,18 +25,13 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 
-import com.google.common.collect.Sets;
-import io.joynr.accesscontrol.global.jee.persistence.DomainRoleEntryEntity;
-import io.joynr.jeeintegration.api.security.JoynrCallingPrincipal;
-import io.joynr.jeeintegration.context.JoynrJeeMessageContext;
-import joynr.infrastructure.DacTypes.ChangeType;
-import joynr.infrastructure.DacTypes.DomainRoleEntry;
-import joynr.infrastructure.DacTypes.Role;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.transaction.api.annotation.TransactionMode;
@@ -46,6 +41,13 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.resolver.api.maven.Maven;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import io.joynr.accesscontrol.global.jee.persistence.DomainRoleEntryEntity;
+import io.joynr.jeeintegration.api.security.JoynrCallingPrincipal;
+import io.joynr.jeeintegration.context.JoynrJeeMessageContext;
+import joynr.infrastructure.DacTypes.ChangeType;
+import joynr.infrastructure.DacTypes.DomainRoleEntry;
+import joynr.infrastructure.DacTypes.Role;
 
 @RunWith(Arquillian.class)
 @Transactional(TransactionMode.ROLLBACK)
@@ -81,8 +83,8 @@ public class DomainRoleEntryManagerTest {
     @Test
     public void testFindByUserId() {
         String userId = "user";
-        Set<String> domains1 = Sets.newHashSet("domain.1", "domain.2");
-        Set<String> domains2 = Sets.newHashSet("domain.3", "domain.4", "domain.5");
+        Set<String> domains1 = new HashSet(Arrays.asList("domain.1", "domain.2"));
+        Set<String> domains2 = new HashSet(Arrays.asList("domain.3", "domain.4", "domain.5"));
 
         create(userId, domains1, Role.MASTER);
         create(userId, domains2, Role.OWNER);
@@ -97,9 +99,9 @@ public class DomainRoleEntryManagerTest {
         for (DomainRoleEntry entry : result) {
             assertEquals(userId, entry.getUid());
             if (Role.MASTER.equals(entry.getRole())) {
-                assertEquals(domains1, Sets.newHashSet(entry.getDomains()));
+                assertEquals(domains1, new HashSet(Arrays.asList(entry.getDomains())));
             } else if (Role.OWNER.equals(entry.getRole())) {
-                assertEquals(domains2, Sets.newHashSet(entry.getDomains()));
+                assertEquals(domains2, new HashSet(Arrays.asList(entry.getDomains())));
             } else {
                 fail("Should only have master and owner roles. Got: " + entry.getRole());
             }
@@ -130,7 +132,7 @@ public class DomainRoleEntryManagerTest {
     @Test
     public void testUpdateExistingEntry() {
         String userId = "user";
-        DomainRoleEntryEntity entity = create(userId, Sets.newHashSet("domain1", "domain2"), Role.OWNER);
+        DomainRoleEntryEntity entity = create(userId, new HashSet(Arrays.asList("domain1", "domain2")), Role.OWNER);
 
         flushAndClear();
 
@@ -151,7 +153,7 @@ public class DomainRoleEntryManagerTest {
     @Test
     public void testRemoveExistingEntry() {
         String userId = "user";
-        create(userId, Sets.newHashSet(), Role.OWNER);
+        create(userId, new HashSet(), Role.OWNER);
 
         flushAndClear();
 
@@ -182,11 +184,13 @@ public class DomainRoleEntryManagerTest {
 
     @Test
     public void testCurrentUserHasRoleInDomainOtherDomain() {
-        assertFalse(testCurrentUserHasRoleInDomain(Role.MASTER, Sets.newHashSet("other.domain", "yet another domain")));
+        assertFalse(testCurrentUserHasRoleInDomain(Role.MASTER,
+                                                   new HashSet(Arrays.asList("other.domain", "yet another domain"))));
     }
 
     private boolean testCurrentUserHasRoleInDomain(Role persistedRole) {
-        return testCurrentUserHasRoleInDomain(persistedRole, Sets.newHashSet("domain", "domain1", "domain2"));
+        return testCurrentUserHasRoleInDomain(persistedRole,
+                                              new HashSet(Arrays.asList("domain", "domain1", "domain2")));
     }
 
     private boolean testCurrentUserHasRoleInDomain(Role persistedRole, Set<String> domains) {

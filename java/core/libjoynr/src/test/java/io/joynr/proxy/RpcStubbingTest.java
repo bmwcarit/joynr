@@ -28,6 +28,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 
@@ -42,7 +43,6 @@ import org.mockito.stubbing.Answer;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.google.common.collect.Sets;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -244,7 +244,7 @@ public class RpcStubbingTest {
                                                                                                            subscriptionManager,
                                                                                                            statelessAsyncIdCalculator);
         connector = joynrMessagingConnectorFactory.create(fromParticipantId,
-                                                          Sets.newHashSet(toDiscoveryEntry),
+                                                          new HashSet(Arrays.asList(toDiscoveryEntry)),
                                                           messagingQos,
                                                           null);
 

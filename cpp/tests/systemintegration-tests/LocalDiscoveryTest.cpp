@@ -32,27 +32,26 @@
 using namespace ::testing;
 using namespace joynr;
 
-namespace joynr {
+namespace joynr
+{
 
 class LocalDiscoveryTest : public ::testing::Test
 {
 public:
-
-    LocalDiscoveryTest() :
-        runtime1(),
-        runtime2(),
-        testDomain("testDomain")
+    LocalDiscoveryTest() : runtime1(), runtime2(), testDomain("testDomain")
     {
-        auto settings1 = std::make_unique<Settings>("test-resources/MqttSystemIntegrationTest1.settings");
-        auto settings2 = std::make_unique<Settings>("test-resources/MqttSystemIntegrationTest2.settings");
+        auto settings1 =
+                std::make_unique<Settings>("test-resources/MqttSystemIntegrationTest1.settings");
+        auto settings2 =
+                std::make_unique<Settings>("test-resources/MqttSystemIntegrationTest2.settings");
 
         MessagingSettings messagingSettings1(*settings1);
         MessagingSettings messagingSettings2(*settings2);
 
         messagingSettings1.setMessagingPropertiesPersistenceFilename(
-                    "End2EndBroadcastTest-runtime1-joynr.settings");
+                "End2EndBroadcastTest-runtime1-joynr.settings");
         messagingSettings2.setMessagingPropertiesPersistenceFilename(
-                    "End2EndBroadcastTest-runtime2-joynr.settings");
+                "End2EndBroadcastTest-runtime2-joynr.settings");
 
         Settings integration1Settings{"test-resources/libjoynrSystemIntegration1.settings"};
         Settings::merge(integration1Settings, *settings1, false);
@@ -76,7 +75,8 @@ public:
         messagingQos.setTtl(500);
     }
 
-    ~LocalDiscoveryTest() override {
+    ~LocalDiscoveryTest() override
+    {
 
         runtime1->shutdown();
         test::util::resetAndWaitUntilDestroyed(runtime1);
@@ -88,7 +88,6 @@ public:
     }
 
 protected:
-
     void registerProvider(std::shared_ptr<JoynrClusterControllerRuntime> runtime)
     {
         auto testProvider = std::make_shared<tests::DefaulttestProvider>();
@@ -111,51 +110,49 @@ private:
 class LocalDiscoveryTestTestProxy : public tests::testProxy
 {
 public:
-
     LocalDiscoveryTestTestProxy(
-        std::weak_ptr<joynr::JoynrRuntimeImpl> runtime,
-        std::shared_ptr<joynr::JoynrMessagingConnectorFactory> connectorFactory,
-        const std::string& domain,
-        const joynr::MessagingQos& qosSettings) :
-            joynr::ProxyBase(runtime, connectorFactory, domain, qosSettings),
-            testProxyBase(runtime, connectorFactory, domain, qosSettings),
-            testFireAndForgetProxy(runtime, connectorFactory, domain, qosSettings),
-            testSyncProxy(runtime, connectorFactory, domain, qosSettings),
-            testAsyncProxy(runtime, connectorFactory, domain, qosSettings),
-            testProxy(runtime, connectorFactory, domain, qosSettings)
+            std::weak_ptr<joynr::JoynrRuntimeImpl> runtime,
+            std::shared_ptr<joynr::JoynrMessagingConnectorFactory> connectorFactory,
+            const std::string& domain,
+            const joynr::MessagingQos& qosSettings)
+            : joynr::ProxyBase(runtime, connectorFactory, domain, qosSettings),
+              testProxyBase(runtime, connectorFactory, domain, qosSettings),
+              testFireAndForgetProxy(runtime, connectorFactory, domain, qosSettings),
+              testSyncProxy(runtime, connectorFactory, domain, qosSettings),
+              testAsyncProxy(runtime, connectorFactory, domain, qosSettings),
+              testProxy(runtime, connectorFactory, domain, qosSettings)
     {
-
     }
 
     using tests::testProxy::providerDiscoveryEntry;
 };
 
-TEST_F(LocalDiscoveryTest, testLocalLookup) {
+TEST_F(LocalDiscoveryTest, testLocalLookup)
+{
     registerProvider(runtime1);
 
     std::shared_ptr<ProxyBuilder<LocalDiscoveryTestTestProxy>> testProxyBuilder(
-        runtime1->createProxyBuilder<LocalDiscoveryTestTestProxy>(testDomain)
-    );
+            runtime1->createProxyBuilder<LocalDiscoveryTestTestProxy>(testDomain));
 
-    std::shared_ptr<LocalDiscoveryTestTestProxy> testProxy(testProxyBuilder
-       ->setMessagingQos(messagingQos)
-       ->setDiscoveryQos(discoveryQos)
-       ->build());
+    std::shared_ptr<LocalDiscoveryTestTestProxy> testProxy(
+            testProxyBuilder->setMessagingQos(messagingQos)
+                    ->setDiscoveryQos(discoveryQos)
+                    ->build());
 
     EXPECT_TRUE(testProxy->providerDiscoveryEntry.getIsLocal());
 }
 
-TEST_F(LocalDiscoveryTest, testGloballLookup) {
+TEST_F(LocalDiscoveryTest, testGloballLookup)
+{
     registerProvider(runtime1);
 
     std::shared_ptr<ProxyBuilder<LocalDiscoveryTestTestProxy>> testProxyBuilder(
-        runtime2->createProxyBuilder<LocalDiscoveryTestTestProxy>(testDomain)
-    );
+            runtime2->createProxyBuilder<LocalDiscoveryTestTestProxy>(testDomain));
 
-    std::shared_ptr<LocalDiscoveryTestTestProxy> testProxy(testProxyBuilder
-       ->setMessagingQos(messagingQos)
-       ->setDiscoveryQos(discoveryQos)
-       ->build());
+    std::shared_ptr<LocalDiscoveryTestTestProxy> testProxy(
+            testProxyBuilder->setMessagingQos(messagingQos)
+                    ->setDiscoveryQos(discoveryQos)
+                    ->build());
 
     EXPECT_FALSE(testProxy->providerDiscoveryEntry.getIsLocal());
 }
@@ -165,18 +162,16 @@ TEST_F(LocalDiscoveryTest, testAsyncRegistration)
     auto testProvider = std::make_shared<tests::DefaulttestProvider>();
     joynr::types::ProviderQos providerQos;
     auto onSuccess = []() {};
-    auto onError = [](const exceptions::JoynrRuntimeException&){
-        FAIL();
-    };
+    auto onError = [](const exceptions::JoynrRuntimeException&) { FAIL(); };
 
-    runtime1->registerProviderAsync<tests::testProvider>(testDomain, testProvider, providerQos, onSuccess, onError);
+    runtime1->registerProviderAsync<tests::testProvider>(
+            testDomain, testProvider, providerQos, onSuccess, onError);
 
     std::shared_ptr<ProxyBuilder<LocalDiscoveryTestTestProxy>> testProxyBuilder(
-        runtime2->createProxyBuilder<LocalDiscoveryTestTestProxy>(testDomain)
-    );
+            runtime2->createProxyBuilder<LocalDiscoveryTestTestProxy>(testDomain));
 
-    std::shared_ptr<LocalDiscoveryTestTestProxy> testProxy(testProxyBuilder
-       ->setMessagingQos(messagingQos)
-       ->setDiscoveryQos(discoveryQos)
-       ->build());
+    std::shared_ptr<LocalDiscoveryTestTestProxy> testProxy(
+            testProxyBuilder->setMessagingQos(messagingQos)
+                    ->setDiscoveryQos(discoveryQos)
+                    ->build());
 }

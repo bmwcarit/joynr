@@ -18,7 +18,6 @@
  * #L%
  */
 require("../../node-unit-test-helper");
-const Promise = require("../../../../main/js/global/Promise");
 const UtilInternal = require("../../../../main/js/joynr/util/UtilInternal");
 const Util = require("../../../../main/js/joynr/util/Util");
 const JoynrMessage = require("../../../../main/js/joynr/messaging/JoynrMessage");

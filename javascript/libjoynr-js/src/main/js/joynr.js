@@ -59,8 +59,6 @@ function freeze(joynr, capabilitiesWritable) {
     });
 }
 
-const Promise = require("./global/Promise");
-
 const GenerationUtil = require("./joynr/util/GenerationUtil");
 
 /**

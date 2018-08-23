@@ -49,6 +49,7 @@ public class ProviderContainerFactory {
     private ProviderContainer createInternal(final Object provider) throws JoynrRuntimeException {
         return new ProviderContainer(ProviderAnnotations.getInterfaceName(provider),
                                      ProviderAnnotations.getProvidedInterface(provider),
+                                     ProviderAnnotations.getMajorVersion(provider),
                                      requestCallerFactory.create(provider),
                                      subscriptionPublisherFactory.create(provider));
     }

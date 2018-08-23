@@ -22,7 +22,8 @@
 #include "joynr/BroadcastSubscriptionRequest.h"
 #include "joynr/PeriodicSubscriptionQos.h"
 
-TEST(BroadcastSubscriptionRequestTest, assertsWhenWrongQosTypeIsPassed) {
+TEST(BroadcastSubscriptionRequestTest, assertsWhenWrongQosTypeIsPassed)
+{
     using namespace joynr;
     BroadcastSubscriptionRequest subscriptionRequest;
     auto qos = std::make_shared<PeriodicSubscriptionQos>();

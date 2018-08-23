@@ -27,7 +27,6 @@ const DiscoveryEntry = require("../../../../../main/js/generated/joynr/types/Dis
 const GlobalDiscoveryEntry = require("../../../../../main/js/generated/joynr/types/GlobalDiscoveryEntry");
 const ChannelAddress = require("../../../../../main/js/generated/joynr/system/RoutingTypes/ChannelAddress");
 const Version = require("../../../../../main/js/generated/joynr/types/Version");
-const Promise = require("../../../../../main/js/global/Promise");
 const waitsFor = require("../../../../../test/js/global/WaitsFor");
 const CapabilitiesUtil = require("../../../../../main/js/joynr/util/CapabilitiesUtil");
 

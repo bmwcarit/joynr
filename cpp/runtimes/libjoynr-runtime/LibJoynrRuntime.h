@@ -60,7 +60,10 @@ public:
     void shutdown() override;
 
 protected:
-    void buildInternalProxies(std::shared_ptr<JoynrMessagingConnectorFactory> connectorFactory);
+    void buildInternalProxies(
+            std::shared_ptr<JoynrMessagingConnectorFactory> connectorFactory,
+            std::function<void()> onSuccess,
+            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError);
 
     std::shared_ptr<IMessageRouter> getMessageRouter() final;
 

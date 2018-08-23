@@ -25,8 +25,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -34,6 +34,9 @@ import static org.mockito.Mockito.when;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 import javax.ejb.EJBException;
@@ -45,9 +48,15 @@ import javax.enterprise.inject.spi.InjectionPoint;
 import javax.enterprise.util.AnnotationLiteral;
 import javax.inject.Inject;
 
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.runners.MockitoJUnitRunner;
+
 import com.google.inject.Injector;
+
 import io.joynr.dispatcher.rpc.MultiReturnValuesContainer;
 import io.joynr.dispatcher.rpc.annotation.JoynrMulticast;
 import io.joynr.exceptions.JoynrException;
@@ -69,12 +78,6 @@ import io.joynr.provider.SubscriptionPublisherInjection;
 import joynr.exceptions.ApplicationException;
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.types.ProviderQos;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
 
 /**
  * Unit tests for {@link ProviderWrapper}.
@@ -83,7 +86,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class ProviderWrapperTest {
 
     private static final String USERNAME = "messageCreatorId";
-    private static final Map<String, Serializable> expectedMessageContext = Maps.newHashMap();
+    private static final Map<String, Serializable> expectedMessageContext = new HashMap<>();
 
     private static final AnnotationLiteral<io.joynr.jeeintegration.api.SubscriptionPublisher> SUBSCRIPTION_PUBLISHER_ANNOTATION_LITERAL = new AnnotationLiteral<io.joynr.jeeintegration.api.SubscriptionPublisher>() {
         private static final long serialVersionUID = 1L;
@@ -432,7 +435,7 @@ public class ProviderWrapperTest {
         when(injector.getInstance(eq(JoynrMessageCreator.class))).thenReturn(joynrMessageCreator);
         when(joynrMessageCreator.getMessageCreatorId()).thenReturn(USERNAME);
         Bean<?> joynrCallingPrincipalBean = mock(Bean.class);
-        when(beanManager.getBeans(JoynrCallingPrincipal.class)).thenReturn(Sets.newHashSet(joynrCallingPrincipalBean));
+        when(beanManager.getBeans(JoynrCallingPrincipal.class)).thenReturn(new HashSet(Arrays.asList(joynrCallingPrincipalBean)));
         when(beanManager.getReference(eq(joynrCallingPrincipalBean),
                                       eq(JoynrCallingPrincipal.class),
                                       Mockito.<CreationalContext> any())).thenReturn(joynrCallingPincipal);
@@ -444,23 +447,23 @@ public class ProviderWrapperTest {
         when(injector.getInstance(eq(JoynrMessageMetaInfo.class))).thenReturn(joynrMessageContext);
         when(joynrMessageContext.getMessageContext()).thenReturn(expectedMessageContext);
         Bean<?> joynrMessageContextBean = mock(Bean.class);
-        when(beanManager.getBeans(JoynrJeeMessageMetaInfo.class)).thenReturn(Sets.newHashSet(joynrMessageContextBean));
+        when(beanManager.getBeans(JoynrJeeMessageMetaInfo.class)).thenReturn(new HashSet(Arrays.asList(joynrMessageContextBean)));
         when(beanManager.getReference(eq(joynrMessageContextBean),
                                       eq(JoynrJeeMessageMetaInfo.class),
                                       Mockito.any())).thenReturn(joynrJeeMessageContext);
 
         // Setup mock SubscriptionPublisherProducer instance in mock bean manager
         Bean subscriptionPublisherProducerBean = mock(Bean.class);
-        doReturn(Sets.newHashSet(subscriptionPublisherProducerBean)).when(beanManager)
-                                                                    .getBeans(eq(SubscriptionPublisherProducer.class));
+        doReturn(new HashSet(Arrays.asList(subscriptionPublisherProducerBean))).when(beanManager)
+                                                                               .getBeans(eq(SubscriptionPublisherProducer.class));
         when(beanManager.getReference(eq(subscriptionPublisherProducerBean),
                                       eq(SubscriptionPublisherProducer.class),
                                       any())).thenReturn(subscriptionPublisherProducer);
 
         // Setup mock meta data so that subscription publisher can be injected
         InjectionPoint subscriptionPublisherInjectionPoint = mock(InjectionPoint.class);
-        when(bean.getInjectionPoints()).thenReturn(Sets.newHashSet(subscriptionPublisherInjectionPoint));
-        when(subscriptionPublisherInjectionPoint.getQualifiers()).thenReturn(Sets.newHashSet(SUBSCRIPTION_PUBLISHER_ANNOTATION_LITERAL));
+        when(bean.getInjectionPoints()).thenReturn(new HashSet(Arrays.asList(subscriptionPublisherInjectionPoint)));
+        when(subscriptionPublisherInjectionPoint.getQualifiers()).thenReturn(new HashSet(Arrays.asList(SUBSCRIPTION_PUBLISHER_ANNOTATION_LITERAL)));
         Annotated annotated = mock(Annotated.class);
         when(subscriptionPublisherInjectionPoint.getAnnotated()).thenReturn(annotated);
         when(annotated.getBaseType()).thenReturn(MySubscriptionPublisher.class);

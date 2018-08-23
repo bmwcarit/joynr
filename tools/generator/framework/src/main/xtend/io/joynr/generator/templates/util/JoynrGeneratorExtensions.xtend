@@ -17,7 +17,7 @@ package io.joynr.generator.templates.util
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import com.google.common.collect.Iterators
+
 import com.google.inject.Inject
 import com.google.inject.name.Named
 import io.joynr.generator.templates.BroadcastTemplate
@@ -26,6 +26,7 @@ import io.joynr.generator.templates.EnumTemplate
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.MapTemplate
 import io.joynr.generator.templates.TypeDefTemplate
+import java.util.Arrays
 import java.util.HashSet
 import org.eclipse.emf.ecore.impl.BasicEObjectImpl
 import org.eclipse.xtext.generator.IFileSystemAccess
@@ -117,7 +118,7 @@ class JoynrGeneratorExtensions {
 	}
 
 	def getPackageNames(FModelElement fModelElement, String separator) {
-		Iterators::forArray(fModelElement.packageName.split(separator))
+		Arrays::stream(fModelElement.packageName.split(separator)).iterator()
 	}
 
 	def getPackagePathWithJoynrPrefix(FType datatype, String separator, boolean includeTypeCollection) {

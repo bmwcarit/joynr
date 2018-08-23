@@ -20,7 +20,6 @@
 const ChildProcessUtils = require("./ChildProcessUtils");
 ChildProcessUtils.overrideRequirePaths();
 
-const Promise = require("../../../main/js/global/Promise");
 const joynr = require("joynr");
 
 const provisioning = require("../../resources/joynr/provisioning/provisioning_cc.js");
@@ -58,31 +57,6 @@ function initializeTest(provisioningSuffix, providedDomain) {
         providerDomain = providedDomain;
         provisioning.persistency = "localStorage";
         provisioning.channelId = `End2EndCommTestParticipantId${provisioningSuffix}`;
-        provisioning.logging = {
-            configuration: {
-                appenders: {
-                    appender: [
-                        {
-                            type: "Console",
-                            name: "STDOUT",
-                            PatternLayout: {
-                                pattern: "[%d{HH:mm:ss,SSS}][%c][%p] %m{2}"
-                            }
-                        }
-                    ]
-                },
-                loggers: {
-                    root: {
-                        level: "debug",
-                        AppenderRef: [
-                            {
-                                ref: "STDOUT"
-                            }
-                        ]
-                    }
-                }
-            }
-        };
 
         joynr.selectRuntime("inprocess");
         joynr

@@ -34,9 +34,13 @@ public class JoynrThreadFactory implements ThreadFactory {
         daemon = false;
     }
 
-    public JoynrThreadFactory(String name, boolean daemon) {
+    public JoynrThreadFactory(String name) {
         this();
         this.namePrefix += name + "-";
+    }
+
+    public JoynrThreadFactory(String name, boolean daemon) {
+        this(name);
         this.daemon = daemon;
     }
 

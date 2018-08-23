@@ -22,7 +22,6 @@
 #include "tests/unit-tests/serializer/MockArchive.h" // must be included prior to Serializer.h
 #include "joynr/serializer/Serializer.h"
 
-
 template <typename ExpectedArchive>
 struct DemoType
 {
@@ -42,33 +41,34 @@ struct DemoType
 };
 
 template <typename T>
-class RuntimeArchiveSelectionTestMustSucceed : public ::testing::Test {
+class RuntimeArchiveSelectionTestMustSucceed : public ::testing::Test
+{
 protected:
     template <typename Id, template <typename> class ArchiveTraits, typename Stream, typename Fun>
     void run(Stream& stream, Fun&& getter)
     {
         using Tag = typename Id::Tag;
         using ExpectedArchiveImpl = typename ArchiveTraits<Tag>::template type<Stream>;
-        EXPECT_NO_THROW(
-            auto archive = getter(Id::id(), stream);
-            DemoType<ExpectedArchiveImpl> demo;
-            EXPECT_CALL(demo, expectedCalled()).Times(1);
-            EXPECT_CALL(demo, unexpectedCalled()).Times(0);
-            archive(demo);
-        );
+        EXPECT_NO_THROW(auto archive = getter(Id::id(), stream); DemoType<ExpectedArchiveImpl> demo;
+                        EXPECT_CALL(demo, expectedCalled()).Times(1);
+                        EXPECT_CALL(demo, unexpectedCalled()).Times(0);
+                        archive(demo););
     }
 };
 
 template <typename T>
-class RuntimeArchiveSelectionTestMustFail : public ::testing::Test {
+class RuntimeArchiveSelectionTestMustFail : public ::testing::Test
+{
 };
-
 
 template <typename TagType>
 struct GetId
 {
     using Tag = TagType;
-    static constexpr const char* id() { return joynr::serializer::SerializerTraits<Tag>::id(); }
+    static constexpr const char* id()
+    {
+        return joynr::serializer::SerializerTraits<Tag>::id();
+    }
 };
 
 template <typename TagType>
@@ -77,22 +77,30 @@ struct GetInputData;
 template <>
 struct GetInputData<tag::mock>
 {
-    static constexpr const char* data() { return ""; }
+    static constexpr const char* data()
+    {
+        return "";
+    }
 };
 
 template <>
 struct GetInputData<muesli::tags::json>
 {
-    static constexpr const char* data() { return "{}"; }
+    static constexpr const char* data()
+    {
+        return "{}";
+    }
 };
-
 
 struct NonExistingTag;
 
 template <>
 struct GetId<NonExistingTag>
 {
-    static constexpr const char* id() { return "non-existing-tag"; }
+    static constexpr const char* id()
+    {
+        return "non-existing-tag";
+    }
 };
 
 using SuceedingTags = ::testing::Types<GetId<muesli::tags::json>, GetId<tag::mock>>;
@@ -103,7 +111,8 @@ TYPED_TEST_CASE(RuntimeArchiveSelectionTestMustFail, FailingTags);
 
 TYPED_TEST(RuntimeArchiveSelectionTestMustSucceed, getOutputArchive)
 {
-    auto getter = [](auto&& id, auto&& stream){return joynr::serializer::getOutputArchive(id, stream);};
+    auto getter = [](
+            auto&& id, auto&& stream) { return joynr::serializer::getOutputArchive(id, stream); };
     muesli::StringOStream ostream;
     this->template run<TypeParam, muesli::OutputArchiveTraits>(ostream, getter);
 }
@@ -113,7 +122,8 @@ TYPED_TEST(RuntimeArchiveSelectionTestMustSucceed, getInputArchive)
     using namespace joynr::serializer;
     std::string input = GetInputData<typename TypeParam::Tag>::data();
     muesli::StringIStream istream(input);
-    auto getter = [](auto&& id, auto&& stream){return joynr::serializer::getInputArchive(id, stream);};
+    auto getter =
+            [](auto&& id, auto&& stream) { return joynr::serializer::getInputArchive(id, stream); };
     this->template run<TypeParam, muesli::InputArchiveTraits>(istream, getter);
 }
 

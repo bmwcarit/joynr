@@ -18,24 +18,22 @@
  */
 package io.joynr.accesscontrol.global;
 
-import io.joynr.accesscontrol.DomainAccessControlProvisioning;
-import io.joynr.accesscontrol.DomainAccessControlStoreEhCache;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
+import io.joynr.accesscontrol.DomainAccessControlProvisioning;
+import io.joynr.accesscontrol.DomainAccessControlStoreEhCache;
 import joynr.infrastructure.DacTypes.DomainRoleEntry;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.OwnerAccessControlEntry;
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Element;
-
-import com.google.common.collect.Lists;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
 
 /**
  * Uses EhCache to implement a GlobalDomainAccessStore.
@@ -84,7 +82,7 @@ public class GlobalDomainAccessStoreAdminEhCache extends DomainAccessControlStor
 
     @Override
     public List<DomainRoleEntry> getAllDomainRoleEntries() {
-        List<DomainRoleEntry> result = Lists.newArrayList();
+        List<DomainRoleEntry> result = new ArrayList();
         Cache roleCache = getCache(CacheId.DOMAIN_ROLES);
         Map<Object, Element> roleMap = roleCache.getAll(roleCache.getKeys());
         Iterator<Map.Entry<Object, Element>> iterator = roleMap.entrySet().iterator();

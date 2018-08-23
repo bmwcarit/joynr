@@ -18,16 +18,16 @@
  */
 package io.joynr.arbitration;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
-import joynr.types.DiscoveryEntryWithMetaInfo;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Sets;
+import joynr.types.DiscoveryEntryWithMetaInfo;
 
 public class FixedParticipantArbitrationStrategyFunction extends ArbitrationStrategyFunction {
     private static final Logger logger = LoggerFactory.getLogger(FixedParticipantArbitrationStrategyFunction.class);
@@ -46,6 +46,6 @@ public class FixedParticipantArbitrationStrategyFunction extends ArbitrationStra
         }
         logger.trace("capability with participantId: {}: {}" + participantId, capabilityWithParticipantId);
 
-        return capabilityWithParticipantId == null ? null : Sets.newHashSet(capabilityWithParticipantId);
+        return capabilityWithParticipantId == null ? null : new HashSet(Arrays.asList(capabilityWithParticipantId));
     }
 }

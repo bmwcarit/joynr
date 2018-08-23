@@ -16,7 +16,6 @@
  * limitations under the License.
  * #L%
  */
-const Promise = require("../../global/Promise");
 const Arbitrator = require("../capabilities/arbitration/Arbitrator");
 const ProviderBuilder = require("../provider/ProviderBuilder");
 const ProxyBuilder = require("../proxy/ProxyBuilder");

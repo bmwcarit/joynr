@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -51,7 +52,6 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
-import com.google.common.io.Resources;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
@@ -143,7 +143,7 @@ public class ServersUtil {
                                                                                           Long.MAX_VALUE,
                                                                                           "",
                                                                                           new InProcessAddress());
-        List<DiscoveryEntry> entries = new ArrayList<>();
+        List<DiscoveryEntry> entries = new ArrayList();
         entries.add(discoveryEntry);
         entries.add(accessControlEntry);
         return objectMapper.writeValueAsString(entries);
@@ -163,7 +163,8 @@ public class ServersUtil {
         ContextHandlerCollection contexts = new ContextHandlerCollection();
         contexts.setHandlers(new Handler[]{ createBounceproxyWebApp(), discoveryWebApp(), accessControlWebApp() });
 
-        System.setProperty("log4j.configuration", Resources.getResource("log4j_backend.properties").toString());
+        System.setProperty("log4j.configuration",
+                           Paths.get(ClassLoader.getSystemResource("log4j_backend.properties").toURI()).toString());
 
         Server server = startServer(contexts);
         return server;

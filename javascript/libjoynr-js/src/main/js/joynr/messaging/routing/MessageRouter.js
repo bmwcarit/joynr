@@ -16,7 +16,6 @@
  * limitations under the License.
  * #L%
  */
-const Promise = require("../../../global/Promise");
 const MulticastWildcardRegexFactory = require("../util/MulticastWildcardRegexFactory");
 const DiagnosticTags = require("../../system/DiagnosticTags");
 const LoggingManager = require("../../system/LoggingManager");
@@ -519,10 +518,22 @@ function MessageRouter(settings) {
                     .then(resolveNextHopOnSuccess)
                     .catch(resolveNextHopOnError);
             }
+            if (
+                joynrMessage.type === JoynrMessage.JOYNRMESSAGE_TYPE_REPLY ||
+                joynrMessage.type === JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REPLY ||
+                joynrMessage.type === JoynrMessage.JOYNRMESSAGE_TYPE_PUBLICATION
+            ) {
+                const errorMsg = `Received message for unknown proxy. Dropping the message. ID: ${joynrMessage.msgId}`;
+                const now = Date.now();
+                log.warn(`${errorMsg}, expiryDate: ${joynrMessage.expiryDate}, now: ${now}`);
+                return Promise.resolve();
+            }
+
             log.warn(
                 `No message receiver found for participantId: ${joynrMessage.to}. Queuing message.`,
                 DiagnosticTags.forJoynrMessage(joynrMessage)
             );
+
             // message is queued until the participant is registered
             // TODO remove expired messages from queue
             settings.messageQueue.putMessage(joynrMessage);
@@ -602,15 +613,6 @@ function MessageRouter(settings) {
         if (routingProxy !== undefined) {
             // register remotely
             promise = that.addNextHopToParentRoutingTable(participantId, isGloballyVisible);
-        } else if (parentMessageRouterAddress !== undefined) {
-            const deferred = UtilInternal.createDeferred();
-            queuedAddNextHopCalls.push({
-                participantId,
-                isGloballyVisible,
-                resolve: deferred.resolve,
-                reject: deferred.reject
-            });
-            promise = deferred.promise;
         } else {
             promise = Promise.resolve();
         }

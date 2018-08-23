@@ -30,6 +30,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 
 import io.joynr.StatelessAsync;
@@ -41,7 +43,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.google.common.collect.Sets;
 
 import io.joynr.Async;
 import io.joynr.Sync;
@@ -111,7 +112,7 @@ public class ConnectorTest {
         toParticipantId = "toParticipantId";
         toDiscoveryEntry = new DiscoveryEntryWithMetaInfo();
         toDiscoveryEntry.setParticipantId(toParticipantId);
-        toDiscoveryEntries = Sets.newHashSet(toDiscoveryEntry);
+        toDiscoveryEntries = new HashSet(Arrays.asList(toDiscoveryEntry));
         qosSettings = new MessagingQos();
         proxy = new Object();
     }
@@ -225,9 +226,10 @@ public class ConnectorTest {
                                                                                       SubscriptionQos.class);
             AttributeSubscribeInvocation attributeSubscription = new AttributeSubscribeInvocation(method, args, future);
             connector.executeSubscriptionMethod(attributeSubscription);
-            verify(subscriptionManager, times(1)).registerAttributeSubscription(eq(fromParticipantId),
-                                                                                eq(Sets.newHashSet(toDiscoveryEntry)),
-                                                                                eq(attributeSubscription));
+            verify(subscriptionManager,
+                   times(1)).registerAttributeSubscription(eq(fromParticipantId),
+                                                           eq(new HashSet(Arrays.asList(toDiscoveryEntry))),
+                                                           eq(attributeSubscription));
         } catch (Exception e) {
             // This is what is supposed to happen -> no error handling
             fail("Calling a subscription method with no expiry date throws an exception.");
@@ -248,10 +250,11 @@ public class ConnectorTest {
                                                                                       String.class);
             UnsubscribeInvocation unsubscribeInvocation = new UnsubscribeInvocation(method, args, future);
             connector.executeSubscriptionMethod(unsubscribeInvocation);
-            verify(subscriptionManager, times(1)).unregisterSubscription(eq(fromParticipantId),
-                                                                         eq(Sets.newHashSet(toDiscoveryEntry)),
-                                                                         eq(subscriptionId),
-                                                                         any(MessagingQos.class));
+            verify(subscriptionManager,
+                   times(1)).unregisterSubscription(eq(fromParticipantId),
+                                                    eq(new HashSet(Arrays.asList(toDiscoveryEntry))),
+                                                    eq(subscriptionId),
+                                                    any(MessagingQos.class));
         } catch (Exception e) {
             // This is what is supposed to happen -> no error handling
             fail("Calling a subscription method with no expiry date throws an exception.");

@@ -42,7 +42,7 @@ public abstract class AbstractSubscriptionPublisher implements SubscriptionPubli
     public AbstractSubscriptionPublisher() {
         attributeListeners = new ConcurrentHashMap<String, List<AttributeListener>>();
         broadcastListeners = new ConcurrentHashMap<String, List<BroadcastListener>>();
-        multicastListeners = new ArrayList<>();
+        multicastListeners = new ArrayList();
         broadcastFilters = new ConcurrentHashMap<String, List<BroadcastFilter>>();
     }
 
@@ -108,7 +108,7 @@ public abstract class AbstractSubscriptionPublisher implements SubscriptionPubli
     protected void fireMulticast(String multicastName, String[] partitions, Object... values) {
         List<MulticastListener> listeners;
         synchronized (multicastListeners) {
-            listeners = new ArrayList<>(multicastListeners);
+            listeners = new ArrayList(multicastListeners);
         }
         for (MulticastListener listener : listeners) {
             listener.multicastOccurred(multicastName, partitions, values);

@@ -38,10 +38,6 @@
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
 
-#define EXIT_IF_PARENT_MESSAGE_ROUTER_IS_NOT_SET()                                                 \
-    if (!isParentMessageRouterSet())                                                               \
-        return;
-
 namespace joynr
 {
 
@@ -95,7 +91,10 @@ void LibJoynrMessageRouter::setParentAddress(
     addProvisionedNextHop(parentParticipantId, this->parentAddress, DEFAULT_IS_GLOBALLY_VISIBLE);
 }
 
-void LibJoynrMessageRouter::setParentRouter(std::shared_ptr<system::RoutingProxy> parentRouter)
+void LibJoynrMessageRouter::setParentRouter(
+        std::shared_ptr<system::RoutingProxy> parentRouter,
+        std::function<void(void)> onSuccess,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     assert(parentAddress);
     this->parentRouter = std::move(parentRouter);
@@ -104,7 +103,10 @@ void LibJoynrMessageRouter::setParentRouter(std::shared_ptr<system::RoutingProxy
     // this is necessary because during normal registration, the parent proxy is not yet set
     // because the routing provider is local, therefore isGloballyVisible is false
     const bool isGloballyVisible = false;
-    addNextHopToParent(this->parentRouter->getProxyParticipantId(), isGloballyVisible);
+    addNextHopToParent(this->parentRouter->getProxyParticipantId(),
+                       isGloballyVisible,
+                       std::move(onSuccess),
+                       std::move(onError));
 }
 
 /**
@@ -136,7 +138,10 @@ void LibJoynrMessageRouter::routeInternal(std::shared_ptr<ImmutableMessage> mess
             // and try to resolve destination address via parent message router
             std::unique_lock<std::mutex> parentResolveLock(parentResolveMutex);
             if (runningParentResolves.find(destinationPartId) == runningParentResolves.end()) {
-                EXIT_IF_PARENT_MESSAGE_ROUTER_IS_NOT_SET();
+                if (!isParentMessageRouterSet()) {
+                    // ignore, in case routing is not possible
+                    return;
+                }
 
                 runningParentResolves.insert(destinationPartId);
                 parentResolveLock.unlock();
@@ -229,7 +234,15 @@ void LibJoynrMessageRouter::addNextHopToParent(
         std::function<void(void)> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    EXIT_IF_PARENT_MESSAGE_ROUTER_IS_NOT_SET();
+    if (!isParentMessageRouterSet()) {
+        // this special case happens if we get here while the routing proxy is being built.
+        // consider this case as ok, the addNextHop() will be done at another place after
+        // the proxy has been built.
+        if (onSuccess) {
+            onSuccess();
+        }
+        return;
+    }
 
     std::function<void(const exceptions::JoynrException&)> onErrorWrapper =
             [onError](const exceptions::JoynrException& error) {

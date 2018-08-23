@@ -23,7 +23,6 @@ const Request = require("../../../../main/js/joynr/dispatching/types/Request");
 const OneWayRequest = require("../../../../main/js/joynr/dispatching/types/OneWayRequest");
 const TypeRegistrySingleton = require("../../../../main/js/joynr/types/TypeRegistrySingleton");
 const testDataOperation = require("../../../../test/js/test/data/Operation");
-const Promise = require("../../../../main/js/global/Promise");
 const TestEnum = require("../../../generated/joynr/tests/testTypes/TestEnum");
 const RadioStation = require("../../../generated/joynr/vehicle/radiotypes/RadioStation");
 const waitsFor = require("../../../../test/js/global/WaitsFor");

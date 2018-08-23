@@ -23,8 +23,10 @@
 
 #include <string>
 
-namespace joynr {
-namespace tests {
+namespace joynr
+{
+namespace tests
+{
 
 // Allow the test environment to specify the settings files
 // used by the joynr runtimes in the tests.
@@ -50,8 +52,7 @@ private:
     std::string defaultSystemSettingsFile;
     std::string defaultWebsocketSettingsFile;
 };
-
-}} // namespace joynr::tests
+}
+} // namespace joynr::tests
 
 #endif // TESTCONFIGURATION_H
-

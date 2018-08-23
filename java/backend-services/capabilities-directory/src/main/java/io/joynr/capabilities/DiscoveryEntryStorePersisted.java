@@ -162,7 +162,7 @@ public class DiscoveryEntryStorePersisted implements DiscoveryEntryStore {
     @Override
     public Collection<DiscoveryEntry> lookup(final String[] domains, final String interfaceName, long cacheMaxAge) {
         String query = "from GlobalDiscoveryEntryPersisted where domain=:domain and interfaceName=:interfaceName";
-        List<DiscoveryEntry> result = new ArrayList<>();
+        List<DiscoveryEntry> result = new ArrayList();
         for (String domain : domains) {
             List<DiscoveryEntry> capabilitiesList = entityManager.createQuery(query)
                                                                  .setParameter("domain", domain)

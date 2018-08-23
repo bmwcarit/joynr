@@ -225,9 +225,11 @@ TEST_F(RadixTreeTest, visit)
     std::size_t nodeCount = 0;
     auto fun = [&nodeCount, data = data ](const auto& node, const auto& keyVector)
     {
-        const std::string key = std::accumulate(keyVector.begin(), keyVector.end(), std::string(),  [](std::string& s, const auto& i) {
-                return s+i.get();
-              });
+        const std::string key =
+                std::accumulate(keyVector.begin(),
+                                keyVector.end(),
+                                std::string(),
+                                [](std::string& s, const auto& i) { return s + i.get(); });
         ASSERT_EQ(data.at(key), node.getValue());
         nodeCount++;
     };

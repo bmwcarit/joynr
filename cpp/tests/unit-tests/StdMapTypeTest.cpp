@@ -25,7 +25,8 @@
 
 #include "tests/PrettyPrint.h"
 
-class StdMapTypeTest : public testing::Test {
+class StdMapTypeTest : public testing::Test
+{
 public:
     StdMapTypeTest() = default;
 
@@ -34,7 +35,8 @@ public:
 protected:
 };
 
-TEST_F(StdMapTypeTest, versionIsSetInMapInsideInterface) {
+TEST_F(StdMapTypeTest, versionIsSetInMapInsideInterface)
+{
     std::uint32_t expectedMajorVersion = 47;
     std::uint32_t expectedMinorVersion = 11;
 
@@ -42,7 +44,8 @@ TEST_F(StdMapTypeTest, versionIsSetInMapInsideInterface) {
     EXPECT_EQ(expectedMinorVersion, joynr::tests::MapInsideInterface::MINOR_VERSION);
 }
 
-TEST_F(StdMapTypeTest, defaultVersionIsSetInMapInsideInterfaceWithoutVersion) {
+TEST_F(StdMapTypeTest, defaultVersionIsSetInMapInsideInterfaceWithoutVersion)
+{
     std::uint32_t expectedMajorVersion = 0;
     std::uint32_t expectedMinorVersion = 0;
 
@@ -50,7 +53,8 @@ TEST_F(StdMapTypeTest, defaultVersionIsSetInMapInsideInterfaceWithoutVersion) {
     EXPECT_EQ(expectedMinorVersion, joynr::tests::MapInsideInterfaceWithoutVersion::MINOR_VERSION);
 }
 
-TEST_F(StdMapTypeTest, versionIsSetInMapInsideTypeCollection) {
+TEST_F(StdMapTypeTest, versionIsSetInMapInsideTypeCollection)
+{
     std::uint32_t expectedMajorVersion = 49;
     std::uint32_t expectedMinorVersion = 13;
 
@@ -58,10 +62,15 @@ TEST_F(StdMapTypeTest, versionIsSetInMapInsideTypeCollection) {
     EXPECT_EQ(expectedMinorVersion, joynr::types::TestTypes::TStringKeyMap::MINOR_VERSION);
 }
 
-TEST_F(StdMapTypeTest, defaultVersionIsSetInMapInsideTypeCollectionWithoutVersion) {
+TEST_F(StdMapTypeTest, defaultVersionIsSetInMapInsideTypeCollectionWithoutVersion)
+{
     std::uint32_t expectedMajorVersion = 0;
     std::uint32_t expectedMinorVersion = 0;
 
-    EXPECT_EQ(expectedMajorVersion, joynr::types::TestTypesWithoutVersion::MapInsideTypeCollectionWithoutVersion::MAJOR_VERSION);
-    EXPECT_EQ(expectedMinorVersion, joynr::types::TestTypesWithoutVersion::MapInsideTypeCollectionWithoutVersion::MINOR_VERSION);
+    EXPECT_EQ(expectedMajorVersion,
+              joynr::types::TestTypesWithoutVersion::MapInsideTypeCollectionWithoutVersion::
+                      MAJOR_VERSION);
+    EXPECT_EQ(expectedMinorVersion,
+              joynr::types::TestTypesWithoutVersion::MapInsideTypeCollectionWithoutVersion::
+                      MINOR_VERSION);
 }

@@ -19,9 +19,8 @@
 package io.joynr.messaging;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
-
-import com.google.common.collect.Maps;
 
 import io.joynr.context.JoynrMessageScoped;
 
@@ -33,7 +32,7 @@ import io.joynr.context.JoynrMessageScoped;
 @JoynrMessageScoped
 public class JoynrMessageMetaInfo {
 
-    private Map<String, Serializable> context = Maps.newHashMap();
+    private Map<String, Serializable> context = new HashMap<>();
 
     public Map<String, Serializable> getMessageContext() {
         return context;

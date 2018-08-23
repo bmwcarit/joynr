@@ -17,65 +17,53 @@
  * limitations under the License.
  * #L%
  */
-const JSONSerializer = require("../util/JSONSerializer");
 const JoynrMessage = require("./JoynrMessage");
 const LoggingManager = require("../system/LoggingManager");
 const log = LoggingManager.getLogger("joynr.messaging.MessageSerializer");
 
 const MessageSerializer = {};
 
-function useSmrf() {
-    const smrf = require("../../global/SmrfNode");
+const smrf = require("smrf");
 
-    function serializeSmrfMessage(smrfMsg) {
-        try {
-            return smrf.serialize(smrfMsg);
-        } catch (e) {
-            throw new Error(`ws.marshalJoynrMessage: got exception ${e}`);
-        }
+function serializeSmrfMessage(smrfMsg) {
+    try {
+        return smrf.serialize(smrfMsg);
+    } catch (e) {
+        throw new Error(`ws.marshalJoynrMessage: got exception ${e}`);
     }
-
-    function deserializeSmrfMessage(data) {
-        try {
-            return smrf.deserialize(data);
-        } catch (e) {
-            throw new Error(`ws.marshalJoynrMessage: got exception ${e}`);
-        }
-    }
-
-    MessageSerializer.stringify = function(joynrMessage) {
-        joynrMessage.body = joynrMessage.body || new Buffer(joynrMessage.payload);
-
-        return serializeSmrfMessage(joynrMessage);
-    };
-
-    MessageSerializer.parse = function(data) {
-        if (typeof data !== "object") {
-            log.error("MessageSerializer received unsupported message.");
-        } else {
-            const smrfMsg = deserializeSmrfMessage(data);
-            const expiryDate = smrfMsg.isTtlAbsolute === true ? smrfMsg.ttlMs : smrfMsg.ttlMs + Date.now();
-
-            // smrfMsg has two attributes we need to throw away -> create new Object
-            const messageWithoutRest = {
-                headers: smrfMsg.headers,
-                sender: smrfMsg.sender,
-                recipient: smrfMsg.recipient,
-                ttlMs: expiryDate,
-                payload: smrfMsg.body.toString()
-            };
-            return JoynrMessage.parseMessage(messageWithoutRest);
-        }
-    };
 }
 
-if (global.window !== undefined) {
-    MessageSerializer.stringify = JSONSerializer.stringify;
-    MessageSerializer.parse = function(payload) {
-        return new JoynrMessage(JSON.parse(payload.toString()));
-    };
-} else {
-    useSmrf();
+function deserializeSmrfMessage(data) {
+    try {
+        return smrf.deserialize(data);
+    } catch (e) {
+        throw new Error(`ws.marshalJoynrMessage: got exception ${e}`);
+    }
 }
+
+MessageSerializer.stringify = function(joynrMessage) {
+    joynrMessage.body = joynrMessage.body || new Buffer(joynrMessage.payload);
+
+    return serializeSmrfMessage(joynrMessage);
+};
+
+MessageSerializer.parse = function(data) {
+    if (typeof data !== "object") {
+        log.error("MessageSerializer received unsupported message.");
+    } else {
+        const smrfMsg = deserializeSmrfMessage(data);
+        const expiryDate = smrfMsg.isTtlAbsolute === true ? smrfMsg.ttlMs : smrfMsg.ttlMs + Date.now();
+
+        // smrfMsg has two attributes we need to throw away -> create new Object
+        const messageWithoutRest = {
+            headers: smrfMsg.headers,
+            sender: smrfMsg.sender,
+            recipient: smrfMsg.recipient,
+            ttlMs: expiryDate,
+            payload: smrfMsg.body.toString()
+        };
+        return JoynrMessage.parseMessage(messageWithoutRest);
+    }
+};
 
 module.exports = MessageSerializer;

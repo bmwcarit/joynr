@@ -21,6 +21,8 @@ package io.joynr.integration;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
@@ -31,7 +33,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.google.common.collect.Sets;
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
 
@@ -144,7 +145,7 @@ public class ProxyVersionMismatchTest {
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT_MS)
     public void testNoCompatibleProviderFound() throws Exception {
 
-        createProxy(Sets.newHashSet(domain), true);
+        createProxy(new HashSet(Arrays.asList(domain)), true);
 
         // wait for the proxy created error callback to be called
         assertTrue("Unexpected successful proxy creation or timeout",
@@ -156,7 +157,7 @@ public class ProxyVersionMismatchTest {
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT_MS)
     public void testMultiDomainNoCompatibleProviderFound() throws Exception {
 
-        createProxy(Sets.newHashSet(domain, domain2), true);
+        createProxy(new HashSet(Arrays.asList(domain, domain2)), true);
 
         // wait for the proxy created error callback to be called
         assertTrue("Unexpected successful proxy creation or timeout",
@@ -168,7 +169,7 @@ public class ProxyVersionMismatchTest {
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT_MS)
     public void testProxyIsInvalidatedOnceArbitrationExceptionThrown() throws Exception {
 
-        createProxy(Sets.newHashSet(domain), false);
+        createProxy(new HashSet(Arrays.asList(domain)), false);
 
         checkProxy();
         checkProxy();

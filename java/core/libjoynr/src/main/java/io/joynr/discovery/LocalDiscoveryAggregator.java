@@ -57,7 +57,7 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
 
     private static final long NO_EXPIRY = Long.MAX_VALUE;
     private HashMap<String, DiscoveryEntryWithMetaInfo> provisionedDiscoveryEntries = new HashMap<>();
-    private DiscoveryProxy defaultDiscoveryProxy;
+    private DiscoveryProxy discoveryProxy;
     private ProxyBuilderFactory proxyBuilderFactory;
     private String systemServiceDomain;
 
@@ -128,7 +128,8 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
             // discoveryProxy must not be garbage collected before the callback has been invoked
             // because otherwise the routingEntry might get removed early and the response from
             // CC cannot be routed anymore
-            final DiscoveryProxy discoveryProxy = getDiscoveryProxy(discoveryQos.getDiscoveryTimeout());
+            final DiscoveryProxy discoveryProxy = getDefaultDiscoveryProxy();
+            MessagingQos messagingQos = new MessagingQos(discoveryQos.getDiscoveryTimeout());
             final ArrayList<DiscoveryProxy> keepReferenceArrayList = new ArrayList<DiscoveryProxy>();
             keepReferenceArrayList.add(discoveryProxy);
 
@@ -154,7 +155,7 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
             };
             String[] missingDomainsArray = new String[missingDomains.size()];
             missingDomains.toArray(missingDomainsArray);
-            discoveryProxy.lookup(newCallback, missingDomainsArray, interfaceName, discoveryQos);
+            discoveryProxy.lookup(newCallback, missingDomainsArray, interfaceName, discoveryQos, messagingQos);
         } else {
             resolveDiscoveryEntriesFutureWithEntries(discoveryEntryFuture, discoveryEntries, callback);
         }
@@ -186,24 +187,18 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
     }
 
     private DiscoveryProxy getDefaultDiscoveryProxy() {
-        if (defaultDiscoveryProxy == null) {
+        if (discoveryProxy == null) {
             // extend default ttl by 10 seconds to allow the cluster controller to handle timeout for
             // global discovery requests and send back the response to discoveryProxy.
             // Note that ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_TTL_MS must be
             // larger than the resulting value here.
             MessagingQos internalMessagingQos = new MessagingQos();
             internalMessagingQos.setTtl_ms(internalMessagingQos.getRoundTripTtl_ms() + 10000);
-            defaultDiscoveryProxy = proxyBuilderFactory.get(systemServiceDomain, DiscoveryProxy.class)
-                                                       .setMessagingQos(internalMessagingQos)
-                                                       .build();
+            discoveryProxy = proxyBuilderFactory.get(systemServiceDomain, DiscoveryProxy.class)
+                                                .setMessagingQos(internalMessagingQos)
+                                                .build();
         }
 
-        return defaultDiscoveryProxy;
-    }
-
-    private DiscoveryProxy getDiscoveryProxy(long ttl) {
-        MessagingQos messagingQos = new MessagingQos(ttl);
-
-        return proxyBuilderFactory.get(systemServiceDomain, DiscoveryProxy.class).setMessagingQos(messagingQos).build();
+        return discoveryProxy;
     }
 }

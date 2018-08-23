@@ -21,6 +21,7 @@ package io.joynr.capabilities;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import io.joynr.JoynrVersion;
 import io.joynr.ProvidedBy;
 import io.joynr.provider.JoynrInterface;
 import org.junit.Test;
@@ -28,19 +29,22 @@ import org.junit.Test;
 public class ParticipantIdKeyUtilTest {
 
     @JoynrInterface(name = "interfaceName", provides = SyncInterface.class, provider = AnnotatedInterface.class)
+    @JoynrVersion(major = majorVersion, minor = 0)
     private static interface AnnotatedInterface {
     }
 
     @ProvidedBy(AnnotatedInterface.class)
+    @JoynrVersion(major = majorVersion, minor = 0)
     private static interface SyncInterface {
     }
 
     private String domain = "domain";
     private String interfaceName = "interfaceName";
+    private static final int majorVersion = 42;
 
     @Test
     public void testGenerateKeyFromStrings() {
-        String key = ParticipantIdKeyUtil.getProviderParticipantIdKey(domain, interfaceName);
+        String key = ParticipantIdKeyUtil.getProviderParticipantIdKey(domain, interfaceName, majorVersion);
         assertKeyCorrect(key);
     }
 
@@ -58,6 +62,7 @@ public class ParticipantIdKeyUtilTest {
 
     private void assertKeyCorrect(String key) {
         assertNotNull(key);
-        assertEquals((ParticipantIdKeyUtil.JOYNR_PARTICIPANT_PREFIX + domain + "." + interfaceName).toLowerCase(), key);
+        assertEquals((ParticipantIdKeyUtil.JOYNR_PARTICIPANT_PREFIX + domain + "." + interfaceName + ".v"
+                + majorVersion).toLowerCase(), key);
     }
 }

@@ -36,6 +36,7 @@ DummyKeychainImpl::DummyKeychainImpl(
     this->tlsCertificate = tlsCertificate;
     this->tlsKey = tlsKey;
     this->tlsRootCertificate = tlsRootCertificate;
+    this->ownerId = tlsCertificate->getSubjectDistinguishedName().commonName();
 }
 
 std::shared_ptr<const mococrw::X509Certificate> DummyKeychainImpl::getTlsCertificate() const
@@ -55,7 +56,7 @@ std::shared_ptr<const mococrw::X509Certificate> DummyKeychainImpl::getTlsRootCer
 
 std::string DummyKeychainImpl::getOwnerId() const
 {
-    return tlsCertificate->getSubjectDistinguishedName().commonName();
+    return ownerId;
 }
 
 std::shared_ptr<IKeychain> DummyKeychainImpl::createFromPEMFiles(

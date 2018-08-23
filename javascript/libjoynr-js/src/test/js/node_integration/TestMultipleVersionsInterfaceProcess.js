@@ -23,7 +23,6 @@ const ChildProcessUtils = require("./ChildProcessUtils");
 ChildProcessUtils.overrideRequirePaths();
 
 const joynr = require("joynr");
-const Promise = require("../../../main/js/global/Promise");
 const provisioning = require("../../resources/joynr/provisioning/provisioning_cc.js");
 const MultipleVersionsInterfaceProviderNameVersion1 = require("../../generated/joynr/tests/MultipleVersionsInterface1Provider");
 const MultipleVersionsInterfaceProviderNameVersion2 = require("../../generated/joynr/tests/MultipleVersionsInterface2Provider");

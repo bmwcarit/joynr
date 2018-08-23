@@ -33,13 +33,16 @@ public class ProviderContainer {
     private final SubscriptionPublisherObservable subscriptionPublisher;
     private final String interfaceName;
     private final Class<?> providedInterface;
+    private final int majorVersion;
 
     public ProviderContainer(String interfaceName,
                              Class<?> providedInterface,
+                             int majorVersion,
                              RequestCaller requestCaller,
                              SubscriptionPublisherObservable subscriptionPublisher) {
         this.interfaceName = interfaceName;
         this.providedInterface = providedInterface;
+        this.majorVersion = majorVersion;
         this.requestCaller = requestCaller;
         this.subscriptionPublisher = subscriptionPublisher;
     }
@@ -58,6 +61,10 @@ public class ProviderContainer {
 
     public SubscriptionPublisherObservable getSubscriptionPublisher() {
         return subscriptionPublisher;
+    }
+
+    public int getMajorVersion() {
+        return majorVersion;
     }
 
     /**

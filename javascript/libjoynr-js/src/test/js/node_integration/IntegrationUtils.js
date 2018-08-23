@@ -18,7 +18,6 @@
  * #L%
  */
 
-const Promise = require("../../../main/js/global/Promise");
 const provisioning_root = require("../../resources/joynr/provisioning/provisioning_root");
 const waitsFor = require("../global/WaitsFor");
 const child_process = require("child_process");

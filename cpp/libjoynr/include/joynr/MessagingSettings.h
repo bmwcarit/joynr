@@ -76,6 +76,8 @@ public:
     static const std::string& SETTING_ROUTING_TABLE_GRACE_PERIOD_MS();
     static const std::string& SETTING_ROUTING_TABLE_CLEANUP_INTERVAL_MS();
 
+    static const std::string& SETTING_DISCARD_UNROUTABLE_REPLIES_AND_PUBLICATIONS();
+
     /**
      * @brief SETTING_MAXIMUM_TTL_MS The key used in settings to identifiy the maximum allowed value
      * of the time-to-live joynr message header.
@@ -108,6 +110,7 @@ public:
     static std::int64_t DEFAULT_ROUTING_TABLE_CLEANUP_INTERVAL_MS();
     static std::int64_t DEFAULT_SEND_MESSAGE_MAX_TTL();
     static std::uint64_t DEFAULT_TTL_UPLIFT_MS();
+    static bool DEFAULT_DISCARD_UNROUTABLE_REPLIES_AND_PUBLICATIONS();
 
     /**
      * @brief DEFAULT_MAXIMUM_TTL_MS
@@ -205,6 +208,10 @@ public:
     void setDiscoveryDefaultTimeoutMs(std::int64_t discoveryDefaultTimeoutMs);
     std::int64_t getDiscoveryDefaultRetryIntervalMs() const;
     void setDiscoveryDefaultRetryIntervalMs(std::int64_t discoveryDefaultRetryIntervalMs);
+
+    bool getDiscardUnroutableRepliesAndPublications() const;
+    void setDiscardUnroutableRepliesAndPublications(
+            const bool& discardUnroutableRepliesAndPublications);
 
     bool contains(const std::string& key) const;
 

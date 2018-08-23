@@ -32,7 +32,7 @@ namespace exceptions
 {
 
 /**
- * @brief Joynr exeption to report noncompatible versions.
+ * @brief Joynr exception to report noncompatible versions.
  */
 class JOYNR_EXPORT NoCompatibleProviderFoundException : public DiscoveryException
 {

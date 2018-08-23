@@ -26,7 +26,6 @@ const OnChangeWithKeepAliveSubscriptionQos = require("../../../../../main/js/joy
 const OnChangeSubscriptionQos = require("../../../../../main/js/joynr/proxy/OnChangeSubscriptionQos");
 const SubscriptionQos = require("../../../../../main/js/joynr/proxy/SubscriptionQos");
 const SubscriptionPublication = require("../../../../../main/js/joynr/dispatching/types/SubscriptionPublication");
-const Promise = require("../../../../../main/js/global/Promise");
 const PublicationMissedException = require("../../../../../main/js/joynr/exceptions/PublicationMissedException");
 const SubscriptionException = require("../../../../../main/js/joynr/exceptions/SubscriptionException");
 const LoggingManager = require("../../../../../main/js/joynr/system/LoggingManager");

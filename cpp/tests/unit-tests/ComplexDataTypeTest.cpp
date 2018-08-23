@@ -28,20 +28,11 @@ TEST(ComplexDataTypeTest, hashCodeFunction)
 {
     using namespace joynr::system::RoutingTypes;
 
-    WebSocketAddress address1(WebSocketProtocol::WS,
-                              "host",
-                              4242,
-                              "path");
+    WebSocketAddress address1(WebSocketProtocol::WS, "host", 4242, "path");
 
-    WebSocketAddress address2(WebSocketProtocol::WS,
-                              "host",
-                              4242,
-                              "path");
+    WebSocketAddress address2(WebSocketProtocol::WS, "host", 4242, "path");
 
-    WebSocketAddress address3(WebSocketProtocol::WS,
-                              "host",
-                              4242,
-                              "otherPath");
+    WebSocketAddress address3(WebSocketProtocol::WS, "host", 4242, "otherPath");
     EXPECT_EQ(address1.hashCode(), address2.hashCode());
     EXPECT_NE(address1.hashCode(), address3.hashCode());
 }
@@ -54,20 +45,11 @@ TEST(ComplexDataTypeTest, UnorderedMapUsingComplexTypesAsKey)
     std::string address1Host = "host1";
     std::string address2Host = "host2";
     std::string address3Host = "host3";
-    WebSocketAddress address1(WebSocketProtocol::WS,
-                              address1Host,
-                              4242,
-                              "path");
+    WebSocketAddress address1(WebSocketProtocol::WS, address1Host, 4242, "path");
 
-    WebSocketAddress address2(WebSocketProtocol::WS,
-                              address1Host,
-                              4242,
-                              "path");
+    WebSocketAddress address2(WebSocketProtocol::WS, address1Host, 4242, "path");
 
-    WebSocketAddress address3(WebSocketProtocol::WS,
-                              address3Host,
-                              4242,
-                              "otherPath");
+    WebSocketAddress address3(WebSocketProtocol::WS, address3Host, 4242, "otherPath");
     EXPECT_TRUE(unorderedMapExample.insert({address1, address1Host}).second);
     auto search = unorderedMapExample.find(address1);
 
