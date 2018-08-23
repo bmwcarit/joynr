@@ -32,8 +32,13 @@ import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import java.io.File;
+import java.io.PrintWriter;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Properties;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -83,6 +88,9 @@ import joynr.system.RoutingTypes.MqttAddress;
 public class MqttPahoClientTest {
 
     private static int mqttBrokerPort;
+    private static int mqttSecureBrokerPort;
+    private static final String joynrUser = "joynr";
+    private static final String joynrPassword = "password";
     private static final String KEYSTORE_PASSWORD = "password";
     private static final boolean NON_SECURE_CONNECTION = false;
     private static Process mosquittoProcess;
@@ -96,21 +104,54 @@ public class MqttPahoClientTest {
     private JoynrMqttClient joynrMqttClient;
     private Properties properties;
     private byte[] serializedMessage;
+    private static Path passwordFilePath;
+    private static Path configFilePath;
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
     @BeforeClass
     public static void startBroker() throws Exception {
-        mqttBrokerPort = 1883;
+        mqttBrokerPort = 2883;
+        mqttSecureBrokerPort = 9883;
         String path = System.getProperty("path") != null ? System.getProperty("path") : "";
-        ProcessBuilder processBuilder = new ProcessBuilder(path + "mosquitto", "-p", Integer.toString(mqttBrokerPort));
+        passwordFilePath = Files.createTempFile("mosquitto_passwd_", null);
+        configFilePath = Files.createTempFile("mosquitto_conf_", null);
+
+        // create mosquitto configuration with referenced password file
+        Path cafilePath = Paths.get("/", "data", "ssl-data", "certs", "ca.cert.pem");
+        Path certfilePath = Paths.get("/", "data", "ssl-data", "certs", "server.cert.pem");
+        Path keyfilePath = Paths.get("/", "data", "ssl-data", "private", "server.key.pem");
+        PrintWriter printWriter = new PrintWriter(configFilePath.toFile());
+        printWriter.println("max_queued_messages 0");
+        printWriter.println("persistence false");
+        printWriter.println("listener " + Integer.toString(mqttBrokerPort) + " 127.0.0.1");
+        printWriter.println("password_file " + passwordFilePath.toAbsolutePath().toString());
+        printWriter.println("listener " + Integer.toString(mqttSecureBrokerPort) + " 127.0.0.1");
+        printWriter.println("cafile " + cafilePath.toAbsolutePath().toString());
+        printWriter.println("certfile " + certfilePath.toAbsolutePath().toString());
+        printWriter.println("keyfile " + keyfilePath.toAbsolutePath().toString());
+        printWriter.println("require_certificate true");
+        printWriter.close();
+
+        // create mosquitto password file with an entry for user 'joynr'
+        File file = passwordFilePath.toFile();
+        file.createNewFile();
+        ProcessBuilder processBuilder = new ProcessBuilder(path
+                + "mosquitto_passwd", "-b", passwordFilePath.toAbsolutePath().toString(), joynrUser, joynrPassword);
+        int exitValue = processBuilder.start().waitFor();
+        assertEquals(exitValue, 0);
+
+        // start mosquitto with the above config file
+        processBuilder = new ProcessBuilder(path + "mosquitto", "-c", configFilePath.toAbsolutePath().toString());
         mosquittoProcess = processBuilder.start();
     }
 
     @AfterClass
     public static void stopBroker() throws Exception {
         mosquittoProcess.destroy();
+        Files.deleteIfExists(configFilePath);
+        Files.deleteIfExists(passwordFilePath);
     }
 
     @Before
@@ -173,9 +214,9 @@ public class MqttPahoClientTest {
     private JoynrMqttClient createMqttClientWithoutSubscription(boolean isSecureConnection,
                                                                 final MqttStatusReceiver mqttStatusReceiver) {
         if (isSecureConnection) {
-            properties.put(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "ssl://localhost:8883");
+            properties.put(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "ssl://localhost:" + mqttSecureBrokerPort);
         } else {
-            properties.put(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "tcp://localhost:1883");
+            properties.put(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "tcp://localhost:" + mqttBrokerPort);
         }
         JoynrMqttClient client = createMqttClientInternal(mqttStatusReceiver);
         client.start();
@@ -284,6 +325,7 @@ public class MqttPahoClientTest {
         thrown.expect(JoynrMessageNotSentException.class);
         thrown.expectMessage("MQTT Publish failed: maximum allowed message size of " + maxMessageSize
                 + " bytes exceeded, actual size is " + largeSerializedMessage.length + " bytes");
+
         joynrMqttClient.publishMessage(ownTopic.getTopic(), largeSerializedMessage);
     }
 
@@ -302,6 +344,56 @@ public class MqttPahoClientTest {
     @Test
     public void mqttClientTestWithDisabledMessageSizeCheckWithoutTls() throws Exception {
         final boolean isSecureConnection = false;
+        mqttClientTestWithDisabledMessageSizeCheck(isSecureConnection);
+    }
+
+    private void mqttClientTestWithCredentials(boolean expectException) throws Exception {
+        final boolean isSecureConnection = false;
+        if (expectException) {
+            thrown.expect(JoynrIllegalStateException.class);
+            thrown.expectMessage("Unable to create MqttPahoClient: Not authorized to connect (5)");
+        }
+        mqttClientTestWithDisabledMessageSizeCheck(isSecureConnection);
+    }
+
+    @Test
+    public void mqttClientTestWithWrongUserAndSomePassword() throws Exception {
+        boolean expectException = true;
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_USERNAME, "wronguser");
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_PASSWORD, joynrPassword);
+        mqttClientTestWithCredentials(expectException);
+    }
+
+    @Test
+    public void mqttClientTestWithCorrectUserButWrongPassword() throws Exception {
+        boolean expectException = true;
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_USERNAME, joynrUser);
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_PASSWORD, "wrongpassword");
+        mqttClientTestWithCredentials(expectException);
+    }
+
+    @Test
+    public void mqttClientTestWithCorrectUserAndCorrectPassword() throws Exception {
+        boolean expectException = false;
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_USERNAME, joynrUser);
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_PASSWORD, joynrPassword);
+        mqttClientTestWithCredentials(expectException);
+    }
+
+    @Test
+    public void mqttClientTestWithEmptyUser() throws Exception {
+        final boolean isSecureConnection = false;
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_USERNAME, "");
+        mqttClientTestWithDisabledMessageSizeCheck(isSecureConnection);
+    }
+
+    @Test
+    public void mqttClientTestWithCorrectUserButEmptyPassword() throws Exception {
+        final boolean isSecureConnection = false;
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_USERNAME, joynrUser);
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_PASSWORD, "");
+        thrown.expect(JoynrIllegalStateException.class);
+        thrown.expectMessage("Unable to start MqttPahoClient: MQTT password not configured or empty");
         mqttClientTestWithDisabledMessageSizeCheck(isSecureConnection);
     }
 
@@ -473,7 +565,7 @@ public class MqttPahoClientTest {
 
     @Test
     public void mqttClientTestResubscriptionWithCleanRestartEnabled() throws Exception {
-        properties.put(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "tcp://localhost:1883");
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "tcp://localhost:" + mqttBrokerPort);
         injector = Guice.createInjector(new MqttPahoModule(),
                                         new JoynrPropertiesModule(properties),
                                         new AbstractModule() {
@@ -497,7 +589,7 @@ public class MqttPahoClientTest {
         MqttClientIdProvider mqttClientIdProvider = injector.getInstance(MqttClientIdProvider.class);
 
         String clientId = mqttClientIdProvider.getClientId();
-        String brokerUri = "tcp://localhost:1883";
+        String brokerUri = "tcp://localhost:" + mqttBrokerPort;
         int reconnectSleepMs = 100;
         int keepAliveTimerSec = 60;
         int connectionTimeoutSec = 60;
@@ -507,6 +599,8 @@ public class MqttPahoClientTest {
         boolean cleanSession = true;
         final boolean isReceiver = true;
         final boolean separateConnections = false;
+        String username = null;
+        String password = null;
 
         MqttClient mqttClient = new MqttClient(brokerUri, clientId, new MemoryPersistence(), scheduledExecutorService);
         joynrMqttClient = new MqttPahoClient(mqttClient,
@@ -525,6 +619,8 @@ public class MqttPahoClientTest {
                                              "",
                                              "",
                                              "",
+                                             username,
+                                             password,
                                              mock(MqttStatusReceiver.class));
 
         joynrMqttClient.start();

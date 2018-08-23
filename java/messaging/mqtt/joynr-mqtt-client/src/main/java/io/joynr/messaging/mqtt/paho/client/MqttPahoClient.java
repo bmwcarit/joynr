@@ -70,6 +70,8 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
     private String trustStoreType;
     private String keyStorePWD;
     private String trustStorePWD;
+    private String username;
+    private String password;
     private MqttStatusReceiver mqttStatusReceiver;
     private boolean separateConnections;
     private boolean isSecureConnection;
@@ -96,6 +98,8 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
                           String trustStoreType,
                           String keyStorePWD,
                           String trustStorePWD,
+                          String username,
+                          String password,
                           MqttStatusReceiver mqttStatusReceiver) throws MqttException {
         this.mqttClient = mqttClient;
         this.reconnectSleepMs = reconnectSleepMS;
@@ -112,6 +116,8 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
         this.trustStoreType = trustStoreType;
         this.keyStorePWD = keyStorePWD;
         this.trustStorePWD = trustStorePWD;
+        this.username = username;
+        this.password = password;
         this.mqttStatusReceiver = mqttStatusReceiver;
         this.separateConnections = separateConnections;
 
@@ -142,6 +148,9 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
             } catch (MqttException mqttError) {
                 logger.error("MQTT Connect failed. Error code {}", mqttError.getReasonCode(), mqttError);
                 switch (mqttError.getReasonCode()) {
+                case MqttException.REASON_CODE_NOT_AUTHORIZED:
+                    logger.error("Failed to establish connection, error: " + mqttError);
+                    throw new JoynrIllegalStateException("Unable to create MqttPahoClient: " + mqttError);
                 case MqttException.REASON_CODE_CLIENT_EXCEPTION:
                     if (isSecureConnection) {
                         logger.error("Failed to establish TLS connection, error: " + mqttError);
@@ -194,6 +203,13 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
 
     private MqttConnectOptions getConnectOptions() {
         MqttConnectOptions options = new MqttConnectOptions();
+        if (username != null && !username.isEmpty()) {
+            if (password == null || password.isEmpty()) {
+                throw new JoynrIllegalStateException("MQTT password not configured or empty");
+            }
+            options.setUserName(username);
+            options.setPassword(password.toCharArray());
+        }
         options.setAutomaticReconnect(false);
         options.setConnectionTimeout(connectionTimeoutSec);
         options.setKeepAliveInterval(keepAliveTimerSec);

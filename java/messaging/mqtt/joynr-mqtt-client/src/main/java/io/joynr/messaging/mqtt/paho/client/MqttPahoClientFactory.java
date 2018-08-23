@@ -83,6 +83,14 @@ public class MqttPahoClientFactory implements MqttClientFactory, ShutdownListene
     @Named(MqttModule.PROPERTY_KEY_MQTT_TRUSTSTORE_PWD)
     private String trustStorePWD = "";
 
+    @Inject(optional = true)
+    @Named(MqttModule.PROPERTY_KEY_MQTT_USERNAME)
+    private String username = "";
+
+    @Inject(optional = true)
+    @Named(MqttModule.PROPERTY_KEY_MQTT_PASSWORD)
+    private String password = "";
+
     @Inject
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public MqttPahoClientFactory(@Named(MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
@@ -178,6 +186,8 @@ public class MqttPahoClientFactory implements MqttClientFactory, ShutdownListene
                                             trustStoreType,
                                             keyStorePWD,
                                             trustStorePWD,
+                                            username,
+                                            password,
                                             mqttStatusReceiver);
         } catch (MqttException e) {
             logger.error("Create MqttClient failed", e);
