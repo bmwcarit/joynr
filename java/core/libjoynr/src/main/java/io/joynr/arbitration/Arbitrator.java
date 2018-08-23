@@ -142,7 +142,7 @@ public class Arbitrator {
         this.arbitrationListener = arbitrationListener;
         // listener is now ready to receive arbitration result/status
         arbitrationListenerSemaphore.release();
-        if (arbitrationStatus == ArbitrationStatus.ArbitrationSuccesful) {
+        if (arbitrationStatus == ArbitrationStatus.ArbitrationSuccessful) {
             arbitrationFinished(arbitrationStatus, arbitrationResult);
         }
     }
@@ -314,7 +314,7 @@ public class Arbitrator {
                 logger.trace("Selected capabilities: {}", selectedCapabilities);
                 if (selectedCapabilities != null && !selectedCapabilities.isEmpty()) {
                     arbitrationResult.setDiscoveryEntries(selectedCapabilities);
-                    arbitrationFinished(ArbitrationStatus.ArbitrationSuccesful, arbitrationResult);
+                    arbitrationFinished(ArbitrationStatus.ArbitrationSuccessful, arbitrationResult);
                 } else {
                     arbitrationFailed();
                 }
