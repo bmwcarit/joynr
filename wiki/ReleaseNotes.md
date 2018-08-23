@@ -2,6 +2,18 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.6.0
+
+## API relevant changes
+None.
+
+## Other changes
+None.
+
+## Configuration property changes
+* **[Java]** Introduced `PROPERTY_KEY_MQTT_USERNAME` and `PROPERTY_KEY_MQTT_PASSWORD`.
+  See [Java Configuration Reference](JavaSettings.md) for more details.
+
 # joynr 1.5.0
 
 ## API relevant changes
