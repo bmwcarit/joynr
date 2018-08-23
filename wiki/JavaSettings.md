@@ -449,6 +449,22 @@ The URI of the MQTT broker backend service the cluster controller connects to.
 * **User property**: `joynr.messaging.mqtt.brokeruri`
 * **Default value**:
 
+### `PROPERTY_KEY_MQTT_USERNAME`
+The username the cluster controller uses to authenticate against the MQTT broker backend service.
+
+* **OPTIONAL**
+* **Type**: String
+* **User property**: `joynr.messaging.mqtt.username`
+* **Default value**:
+
+### `PROPERTY_KEY_MQTT_PASSWORD`
+The password the cluster controller uses to authenticate against the MQTT broker backend service.
+
+* **REQUIRED if using the MQTTModule and PROPERTY_KEY_MQTT_USERNAME is configured with a non-empty value**
+* **Type**: String
+* **User property**: `joynr.messaging.mqtt.password`
+* **Default value**:
+
 ### `PROPERTY_KEY_MQTT_KEYSTORE_PATH`
 Sets the path to a jks keystore file with a client certificate and the corresponding
 private key.
