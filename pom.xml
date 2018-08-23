@@ -213,6 +213,10 @@
 				* io.joynr.javascript:libjoynr-js
 			-->
 			<id>carit-copyright</id>
+			<properties>
+				<timestamp>${maven.build.timestamp}</timestamp>
+				<maven.build.timestamp.format>yyyy</maven.build.timestamp.format>
+			</properties>
 			<build>
 				<plugins>
 					<plugin>
@@ -220,12 +224,13 @@
 						<artifactId>license-maven-plugin</artifactId>
 						<configuration>
 							<licenseName>apache_v2</licenseName>
-							<inceptionYear>2011</inceptionYear>
+							<inceptionYear>${timestamp}</inceptionYear>
 							<organizationName>BMW Car IT GmbH</organizationName>
 							<descriptionTemplate>/license/header-template.ftl</descriptionTemplate>
 							<extraExtensions>
 								<fidl>java</fidl>
 							</extraExtensions>
+							<addJavaLicenseAfterPackage>false</addJavaLicenseAfterPackage>
 						</configuration>
 						<executions>
 							<execution>
