@@ -40,8 +40,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.jeeintegration.api.ServiceProvider;
@@ -55,8 +53,6 @@ import joynr.jeeintegration.servicelocator.MyServiceSync;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SubscriptionPublisherInjectionWrapperTest {
-
-    private static final Logger logger = LoggerFactory.getLogger(SubscriptionPublisherInjectionWrapperTest.class);
 
     private static final AnnotationLiteral<SubscriptionPublisher> SUBSCRIPTION_PUBLISHER_ANNOTATION_LITERAL = new AnnotationLiteral<SubscriptionPublisher>() {
     };
