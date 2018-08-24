@@ -27,7 +27,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -120,9 +119,8 @@ public class DiscoveryEntryVersionFilterTest {
         Version incompatibleVersion = new Version(2, 2);
         when(incompatibleEntry.getProviderVersion()).thenReturn(incompatibleVersion);
         when(versionCompatibilityChecker.check(callerVersion, incompatibleVersion)).thenReturn(false);
-        Set<DiscoveryEntryWithMetaInfo> discoveryEntries = new HashSet();
-        Collections.addAll(discoveryEntries, compatibleEntry);
-        Collections.addAll(discoveryEntries, incompatibleEntry);
+        Set<DiscoveryEntryWithMetaInfo> discoveryEntries = new HashSet<>(Arrays.asList(compatibleEntry,
+                                                                                       incompatibleEntry));
 
         Set<DiscoveryEntryWithMetaInfo> result = subject.filter(callerVersion, discoveryEntries, null);
 

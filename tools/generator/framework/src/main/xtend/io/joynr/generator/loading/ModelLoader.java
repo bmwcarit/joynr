@@ -24,8 +24,6 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.log4j.Logger;
 import org.eclipse.emf.common.util.URI;
@@ -51,7 +49,7 @@ public class ModelLoader {
 
                     @Override
                     public Iterable<URI> allUris() {
-                        return Stream.of(uri).collect(Collectors.toList());
+                        return Arrays.asList(uri);
                     }
                 };
             }
@@ -63,7 +61,7 @@ public class ModelLoader {
                     URL resource = getClass().getClassLoader().getResource(modelpath);
                     if (resource != null) {
                         try {
-                            return Stream.of(URI.createURI(resource.toURI().toString())).collect(Collectors.toList());
+                            return Arrays.asList(URI.createURI(resource.toURI().toString()));
                         } catch (URISyntaxException e) {
                             logger.error("An error occurred while attempting to convert a java.net.URI to an emf URI.",
                                          e);

@@ -45,8 +45,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.junit.After;
 import org.junit.Before;
@@ -811,8 +809,7 @@ public class ArbitrationTest {
                                                                                           NO_EXPIRY,
                                                                                           "public-key-2",
                                                                                           true);
-        final Collection<DiscoveryEntryWithMetaInfo> discoveryEntries = Stream.of(discoveryEntry1, discoveryEntry2)
-                                                                              .collect(Collectors.toList());
+        final Collection<DiscoveryEntryWithMetaInfo> discoveryEntries = Arrays.asList(discoveryEntry1, discoveryEntry2);
 
         ArbitrationStrategyFunction arbitrationStrategyFunction = mock(ArbitrationStrategyFunction.class);
         when(arbitrationStrategyFunction.select(Mockito.<Map<String, String>> any(),

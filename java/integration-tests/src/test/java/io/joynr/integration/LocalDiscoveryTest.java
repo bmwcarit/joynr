@@ -34,7 +34,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -449,7 +448,7 @@ public class LocalDiscoveryTest {
             @Override
             public Set<DiscoveryEntryWithMetaInfo> select(Map<String, String> parameters,
                                                           Collection<DiscoveryEntryWithMetaInfo> capabilities) {
-                return capabilities.stream().collect(Collectors.toSet());
+                return new HashSet<DiscoveryEntryWithMetaInfo>(capabilities);
             }
         };
         DiscoveryQos discoveryQos = new DiscoveryQos(30000,
