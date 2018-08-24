@@ -131,6 +131,7 @@ public class ProviderWrapperTest {
         void testThrowsApplicationException() throws ApplicationException;
 
         public class MultiOutResult implements MultiReturnValuesContainer {
+            @Override
             public Object[] getValues() {
                 return new Object[]{ "one", "two" };
             }
@@ -192,6 +193,7 @@ public class ProviderWrapperTest {
             throw new ApplicationException(null);
         }
 
+        @Override
         public MultiOutResult testMultiOutMethod() {
             return new MultiOutResult();
         }

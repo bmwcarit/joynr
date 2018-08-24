@@ -85,6 +85,7 @@ public class SSLEnd2EndTest extends AbstractSSLEnd2EndTest {
 
     }
 
+    @Override
     @After
     public void tearDown() {
         for (DummyJoynrApplication application : dummyApplications) {

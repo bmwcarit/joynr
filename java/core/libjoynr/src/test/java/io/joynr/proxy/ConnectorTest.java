@@ -131,14 +131,17 @@ public class ConnectorTest {
         }
 
         public class TestBroadcastAdapter implements TestBroadcastListener {
+            @Override
             public void onReceive(String testString) {
                 // empty implementation
             }
 
+            @Override
             public void onError(SubscriptionException error) {
                 // empty implementation
             }
 
+            @Override
             public void onSubscribed(String subscriptionId) {
                 // empty implementation
             }
