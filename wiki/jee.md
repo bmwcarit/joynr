@@ -148,8 +148,23 @@ For example for Glassfish/Payara:
 
 Note the `--corepoolsize=100` option. The default will only create one thread, which can lead to
 blocking. 100 threads should be sufficient for quite a few joynr applications.
+
 Depending on your load, you can experiment with different values. Use higher values to enable more
 concurrency when communicating joynr messages.
+
+As a rule of thumb consider
+
+```
+corepoolsize =
+    (
+        joynr.messaging.maximumParallelSends +
+        (joynr.messaging.mqtt.separateconnections == true) ? 5 : 0 +
+        10 +
+        any number of additional threads the application needs internally
+    ) * numberOfJoynrRuntimes per container
+```
+
+Typically there is one joynr runtime per deployed application (WAR file).
 
 ### Generating the interfaces
 
