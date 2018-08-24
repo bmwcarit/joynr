@@ -24,7 +24,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -164,7 +163,10 @@ public class ServersUtil {
         contexts.setHandlers(new Handler[]{ createBounceproxyWebApp(), discoveryWebApp(), accessControlWebApp() });
 
         System.setProperty("log4j.configuration",
-                           Paths.get(ClassLoader.getSystemResource("log4j_backend.properties").toURI()).toString());
+                           Thread.currentThread()
+                                 .getContextClassLoader()
+                                 .getResource("log4j_backend.properties")
+                                 .toString());
 
         Server server = startServer(contexts);
         return server;
