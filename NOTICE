@@ -160,6 +160,11 @@ This project has dependencies to:
   io.joynr.examples:radio-app under The Apache Software License, Version 2.0
   io.joynr.examples:radio-jee under The Apache Software License, Version 2.0
   io.joynr.examples:radio-js under The Apache Software License, Version 2.0
+  io.joynr.examples:stateless-async under The Apache Software License, Version 2.0
+  io.joynr.examples:stateless-async-api under The Apache Software License, Version 2.0
+  io.joynr.examples:stateless-async-car-sim under The Apache Software License, Version 2.0
+  io.joynr.examples:stateless-async-consumer under The Apache Software License, Version 2.0
+  io.joynr.examples:stateless-async-jee-consumer under The Apache Software License, Version 2.0
   io.joynr.java.android:joynr-android under The Apache Software License, Version 2.0
   io.joynr.java.android:joynr-android-runtime under The Apache Software License, Version 2.0
   io.joynr.java.backend-services:capabilities-directory under The Apache Software License, Version 2.0
@@ -364,6 +369,7 @@ This project has dependencies to:
   Plexus Common Utilities under The Apache Software License, Version 2.0
   Plexus Interpolation API under The Apache Software License, Version 2.0
   Plexus Security Dispatcher Component under Apache Public License 2.0
+  PostgreSQL JDBC Driver - JDBC 4.2 under BSD-2-Clause
   radio-jee-backend-services under The Apache Software License, Version 2.0
   Reflections under WTFPL or The New BSD License
   REST Assured under Apache 2.0
@@ -392,6 +398,7 @@ This project has dependencies to:
   SLF4J LOG4J-12 Binding under MIT License
   SOAP with Attachments API for Java 1.3 under lgpl
   sqlite4java under The Apache Software License, Version 2.0
+  stateless-async-backend-services under The Apache Software License, Version 2.0
   StAX API under The Apache Software License, Version 2.0
   TagSoup under Apache License 2.0
   Text under Eclipse Public License

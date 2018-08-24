@@ -17,15 +17,10 @@ under the License.
 
 This project has dependencies to:
   "Java Concurrency in Practice" book annotations under Creative Commons Attribution License
-  android under Apache License, Version 2.0
   AOP alliance under Public Domain
-  Apache Commons CLI under Apache License, Version 2.0
-  Apache Groovy under The Apache Software License, Version 2.0
   Apache HttpClient under Apache License
   Apache HttpCore under Apache License
-  Apache Log4j under The Apache Software License, Version 2.0
   clustercontroller-inprocess-runtime under The Apache Software License, Version 2.0
-  clustercontroller-websocket-runtime under The Apache Software License, Version 2.0
   Commons Codec under The Apache Software License, Version 2.0
   Commons Lang under The Apache Software License, Version 2.0
   ehcache under The Apache Software License, Version 2.0
@@ -37,24 +32,11 @@ This project has dependencies to:
   Google Guice - Extensions - MultiBindings under The Apache Software License, Version 2.0
   Guava: Google Core Libraries for Java under The Apache Software License, Version 2.0
   Hamcrest Core under New BSD License
-  io.joynr.examples.radio-jee:radio-jee-api under The Apache Software License, Version 2.0
-  io.joynr.examples.radio-jee:radio-jee-consumer under The Apache Software License, Version 2.0
-  io.joynr.examples.radio-jee:radio-jee-provider under The Apache Software License, Version 2.0
-  io.joynr.examples:android-location-consumer under The Apache Software License, Version 2.0
-  io.joynr.examples:android-location-provider under The Apache Software License, Version 2.0
-  io.joynr.examples:location-tester under The Apache Software License, Version 2.0
-  io.joynr.examples:radio-app under The Apache Software License, Version 2.0
-  io.joynr.examples:radio-jee under The Apache Software License, Version 2.0
-  io.joynr.examples:radio-js under The Apache Software License, Version 2.0
   io.joynr.examples:stateless-async under The Apache Software License, Version 2.0
   io.joynr.examples:stateless-async-api under The Apache Software License, Version 2.0
   io.joynr.examples:stateless-async-car-sim under The Apache Software License, Version 2.0
   io.joynr.examples:stateless-async-consumer under The Apache Software License, Version 2.0
   io.joynr.examples:stateless-async-jee-consumer under The Apache Software License, Version 2.0
-  io.joynr.java.android:joynr-android under The Apache Software License, Version 2.0
-  io.joynr.java.android:joynr-android-runtime under The Apache Software License, Version 2.0
-  io.joynr.java.backend-services:discovery-directory-jee under The Apache Software License, Version 2.0
-  io.joynr.java.backend-services:domain-access-controller-jee under The Apache Software License, Version 2.0
   io.joynr.java.common:access-control-common under The Apache Software License, Version 2.0
   io.joynr.java.common:discovery-common under The Apache Software License, Version 2.0
   io.joynr.java.common:guice-integration under The Apache Software License, Version 2.0
@@ -62,56 +44,30 @@ This project has dependencies to:
   io.joynr.java.common:status-metrics under The Apache Software License, Version 2.0
   io.joynr.java.core:clustercontroller under The Apache Software License, Version 2.0
   io.joynr.java.core:libjoynr under The Apache Software License, Version 2.0
-  io.joynr.java.messaging.bounceproxy:single-bounceproxy under The Apache Software License, Version 2.0
   io.joynr.java.messaging.mqtt:joynr-mqtt-client under The Apache Software License, Version 2.0
-  io.joynr.java.messaging.websocket:joynr-websocket-client under The Apache Software License, Version 2.0
-  io.joynr.java.messaging.websocket:joynr-websocket-common under The Apache Software License, Version 2.0
-  io.joynr.java.messaging.websocket:joynr-websocket-server under The Apache Software License, Version 2.0
   io.joynr.java.messaging:messaging-common under The Apache Software License, Version 2.0
   io.joynr.java.messaging:servlet-common under The Apache Software License, Version 2.0
   io.joynr.java:javaapi under The Apache Software License, Version 2.0
   io.joynr.java:jeeintegration under The Apache Software License, Version 2.0
-  io.joynr.javascript:libjoynr-js under The Apache Software License, Version 2.0
   io.joynr.mqtt:mqtt-client under Eclipse Public License - Version 1.0
   io.joynr.smrf.java:smrf under The Apache Software License, Version 2.0
   io.joynr.smrf.java:smrf-api under The Apache Software License, Version 2.0
-  io.joynr:examples under The Apache Software License, Version 2.0
   Jackson module: JAXB-annotations under The Apache Software License, Version 2.0
   Jackson-annotations under The Apache Software License, Version 2.0
   Jackson-core under The Apache Software License, Version 2.0
   jackson-databind under The Apache Software License, Version 2.0
   Jackson-JAXRS-base under The Apache Software License, Version 2.0
   Jackson-JAXRS-JSON under The Apache Software License, Version 2.0
-  Java Servlet API under CDDL + GPLv2 with classpath exception
   Java(TM) EE 7 Specification APIs under CDDL + GPLv2 with classpath exception
   JavaBeans Activation Framework (JAF) under Common Development and Distribution License (CDDL) v1.0
   JavaMail API under CDDL/GPLv2+CE
   Javassist under MPL 1.1 or LGPL 2.1 or Apache License 2.0
   javax.inject under The Apache Software License, Version 2.0
-  Jetty :: Http Utility under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
-  Jetty :: IO Utility under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
-  Jetty :: Security under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
-  Jetty :: Server Core under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
-  Jetty :: Servlet Handling under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
-  Jetty :: Utilities under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
-  Jetty :: Websocket :: API under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
-  Jetty :: Websocket :: Client under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
-  Jetty :: Websocket :: Common under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
-  Jetty :: Websocket :: Server under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
-  Jetty :: Websocket :: Servlet Interface under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
-  JLine under The BSD License
   JUnit under Eclipse Public License 1.0
-  libjoynr-websocket-runtime under The Apache Software License, Version 2.0
-  Logback Classic Module under Eclipse Public License - v 1.0 or GNU Lesser General Public License
-  Logback Core Module under Eclipse Public License - v 1.0 or GNU Lesser General Public License
   Logging under The Apache Software License, Version 2.0
-  Mockito under The MIT License
   PostgreSQL JDBC Driver - JDBC 4.2 under BSD-2-Clause
-  radio-jee-backend-services under The Apache Software License, Version 2.0
   Reflections under WTFPL or The New BSD License
-  SLF4J API and Google Android Binding under The MIT License
   SLF4J API Module under MIT License
   SLF4J JDK14 Binding under MIT License
-  SLF4J LOG4J-12 Binding under MIT License
   stateless-async-backend-services under The Apache Software License, Version 2.0
 
