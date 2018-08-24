@@ -592,7 +592,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                 @Override
                 public void onSuccess(@CheckForNull GlobalDiscoveryEntry newGlobalDiscoveryEntry) {
                     if (newGlobalDiscoveryEntry != null) {
-                        registerIncomingEndpoints(new ArrayList(Arrays.asList(newGlobalDiscoveryEntry)));
+                        registerIncomingEndpoints(Arrays.asList(newGlobalDiscoveryEntry));
                         globalDiscoveryEntryCache.add(newGlobalDiscoveryEntry);
                         capabilitiesCallback.processCapabilityReceived(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false,
                                                                                                                            newGlobalDiscoveryEntry));

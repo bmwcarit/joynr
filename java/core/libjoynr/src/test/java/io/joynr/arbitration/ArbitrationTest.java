@@ -727,15 +727,15 @@ public class ArbitrationTest {
     @Test
     public void testIncompatibleVersionsReported() throws InterruptedException {
         Version incompatibleVersion = new Version(100, 100);
-        final Collection<DiscoveryEntryWithMetaInfo> discoveryEntries = new ArrayList(Arrays.asList((new DiscoveryEntryWithMetaInfo(incompatibleVersion,
-                                                                                                                                    domain,
-                                                                                                                                    interfaceName,
-                                                                                                                                    "first-participant",
-                                                                                                                                    new ProviderQos(),
-                                                                                                                                    System.currentTimeMillis(),
-                                                                                                                                    NO_EXPIRY,
-                                                                                                                                    "public-key-1",
-                                                                                                                                    true))));
+        final Collection<DiscoveryEntryWithMetaInfo> discoveryEntries = Arrays.asList((new DiscoveryEntryWithMetaInfo(incompatibleVersion,
+                                                                                                                      domain,
+                                                                                                                      interfaceName,
+                                                                                                                      "first-participant",
+                                                                                                                      new ProviderQos(),
+                                                                                                                      System.currentTimeMillis(),
+                                                                                                                      NO_EXPIRY,
+                                                                                                                      "public-key-1",
+                                                                                                                      true)));
         ArbitrationStrategyFunction arbitrationStrategyFunction = mock(ArbitrationStrategyFunction.class);
         when(arbitrationStrategyFunction.select(Mockito.<Map<String, String>> any(),
                                                 Mockito.<Collection<DiscoveryEntryWithMetaInfo>> any())).thenReturn(new HashSet<DiscoveryEntryWithMetaInfo>());

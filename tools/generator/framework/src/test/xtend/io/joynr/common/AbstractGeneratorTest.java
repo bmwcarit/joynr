@@ -94,7 +94,7 @@ public abstract class AbstractGeneratorTest extends TestCase {
 
                 @Override
                 public Iterable<URI> allUris() {
-                    return new ArrayList(Arrays.asList(uris));
+                    return Arrays.asList(uris);
                 }
             };
         }
