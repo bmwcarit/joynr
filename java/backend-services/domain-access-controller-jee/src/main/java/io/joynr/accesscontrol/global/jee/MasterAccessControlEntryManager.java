@@ -162,11 +162,11 @@ public class MasterAccessControlEntryManager {
             entityManager.persist(entity);
         }
         entity.setDefaultRequiredTrustLevel(updatedMasterAce.getDefaultRequiredTrustLevel());
-        entity.setPossibleRequiredTrustLevels(new HashSet(Arrays.asList(updatedMasterAce.getPossibleRequiredTrustLevels())));
+        entity.setPossibleRequiredTrustLevels(new HashSet<TrustLevel>(Arrays.asList(updatedMasterAce.getPossibleRequiredTrustLevels())));
         entity.setDefaultRequiredControlEntryChangeTrustLevel(updatedMasterAce.getDefaultRequiredControlEntryChangeTrustLevel());
-        entity.setPossibleRequiredControlEntryChangeTrustLevels(new HashSet(Arrays.asList(updatedMasterAce.getPossibleRequiredControlEntryChangeTrustLevels())));
+        entity.setPossibleRequiredControlEntryChangeTrustLevels(new HashSet<TrustLevel>(Arrays.asList(updatedMasterAce.getPossibleRequiredControlEntryChangeTrustLevels())));
         entity.setDefaultConsumerPermission(updatedMasterAce.getDefaultConsumerPermission());
-        entity.setPossibleConsumerPermissions(new HashSet(Arrays.asList(updatedMasterAce.getPossibleConsumerPermissions())));
+        entity.setPossibleConsumerPermissions(new HashSet<Permission>(Arrays.asList(updatedMasterAce.getPossibleConsumerPermissions())));
         return new CreateOrUpdateResult<>(mapEntityToJoynrType(entity), created ? ChangeType.ADD : ChangeType.UPDATE);
     }
 

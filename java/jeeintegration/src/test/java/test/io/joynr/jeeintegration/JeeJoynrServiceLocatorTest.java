@@ -81,7 +81,7 @@ public class JeeJoynrServiceLocatorTest {
         when(proxyBuilder.setMessagingQos(Mockito.any())).thenReturn(proxyBuilder);
         when(proxyBuilder.setDiscoveryQos(Mockito.any())).thenReturn(proxyBuilder);
         when(proxyBuilder.build()).thenReturn(myJoynrProxy);
-        when(joynrRuntime.getProxyBuilder(new HashSet(Arrays.asList("local")),
+        when(joynrRuntime.getProxyBuilder(new HashSet<String>(Arrays.asList("local")),
                                           MyServiceProxy.class)).thenReturn(proxyBuilder);
         when(joynrIntegrationBean.getRuntime()).thenReturn(joynrRuntime);
         subject = new JeeJoynrServiceLocator(joynrIntegrationBean);
@@ -142,7 +142,7 @@ public class JeeJoynrServiceLocatorTest {
 
     @Test
     public void testGetMultiDomain() {
-        Set<String> domains = new HashSet(Arrays.asList("one", "two", "three"));
+        Set<String> domains = new HashSet<>(Arrays.asList("one", "two", "three"));
         when(joynrRuntime.getProxyBuilder(domains, MyServiceProxy.class)).thenReturn(proxyBuilder);
 
         MyServiceSync result = subject.get(MyServiceSync.class, domains);

@@ -23,13 +23,14 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.joynr.pubsub.publication.AttributeListener;
 import io.joynr.pubsub.publication.BroadcastFilter;
 import io.joynr.pubsub.publication.BroadcastFilterImpl;
 import io.joynr.pubsub.publication.BroadcastListener;
 import io.joynr.pubsub.publication.MulticastListener;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public abstract class AbstractSubscriptionPublisher implements SubscriptionPublisherObservable, SubscriptionPublisher {
     private static final Logger LOG = LoggerFactory.getLogger(AbstractSubscriptionPublisher.class);
@@ -40,10 +41,10 @@ public abstract class AbstractSubscriptionPublisher implements SubscriptionPubli
     protected ConcurrentHashMap<String, List<BroadcastFilter>> broadcastFilters;
 
     public AbstractSubscriptionPublisher() {
-        attributeListeners = new ConcurrentHashMap<String, List<AttributeListener>>();
-        broadcastListeners = new ConcurrentHashMap<String, List<BroadcastListener>>();
-        multicastListeners = new ArrayList();
-        broadcastFilters = new ConcurrentHashMap<String, List<BroadcastFilter>>();
+        attributeListeners = new ConcurrentHashMap<>();
+        broadcastListeners = new ConcurrentHashMap<>();
+        multicastListeners = new ArrayList<>();
+        broadcastFilters = new ConcurrentHashMap<>();
     }
 
     /**
@@ -108,7 +109,7 @@ public abstract class AbstractSubscriptionPublisher implements SubscriptionPubli
     protected void fireMulticast(String multicastName, String[] partitions, Object... values) {
         List<MulticastListener> listeners;
         synchronized (multicastListeners) {
-            listeners = new ArrayList(multicastListeners);
+            listeners = new ArrayList<>(multicastListeners);
         }
         for (MulticastListener listener : listeners) {
             listener.multicastOccurred(multicastName, partitions, values);

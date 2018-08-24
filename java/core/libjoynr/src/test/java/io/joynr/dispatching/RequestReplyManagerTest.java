@@ -128,7 +128,7 @@ public class RequestReplyManagerTest {
         testOneWayRecipientParticipantId = "testOneWayRecipientParticipantId";
         testOneWayRecipientDiscoveryEntry = new DiscoveryEntryWithMetaInfo();
         testOneWayRecipientDiscoveryEntry.setParticipantId(testOneWayRecipientParticipantId);
-        testOneWayRecipientDiscoveryEntries = new HashSet(Arrays.asList(testOneWayRecipientDiscoveryEntry));
+        testOneWayRecipientDiscoveryEntries = new HashSet<>(Arrays.asList(testOneWayRecipientDiscoveryEntry));
         testMessageResponderParticipantId = "testMessageResponderParticipantId";
         testMessageResponderDiscoveryEntry = new DiscoveryEntryWithMetaInfo();
         testMessageResponderDiscoveryEntry.setParticipantId(testMessageResponderParticipantId);

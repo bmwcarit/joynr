@@ -411,7 +411,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                   DiscoveryQos discoveryQos,
                                   CapabilitiesCallback capabilitiesCallback,
                                   Set<DiscoveryEntryWithMetaInfo> globalDiscoveryEntries) {
-        Set<String> domainsForGlobalLookup = new HashSet(Arrays.asList(domains));
+        Set<String> domainsForGlobalLookup = new HashSet<>(Arrays.asList(domains));
         for (DiscoveryEntry discoveryEntry : globalDiscoveryEntries) {
             domainsForGlobalLookup.remove(discoveryEntry.getDomain());
         }
@@ -655,7 +655,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         if (unregisterAllRegisteredCapabilities) {
             Set<DiscoveryEntry> allDiscoveryEntries = localDiscoveryEntryStore.getAllDiscoveryEntries();
 
-            List<DiscoveryEntry> discoveryEntries = new ArrayList(allDiscoveryEntries.size());
+            List<DiscoveryEntry> discoveryEntries = new ArrayList<>(allDiscoveryEntries.size());
 
             for (DiscoveryEntry capabilityEntry : allDiscoveryEntries) {
                 if (capabilityEntry.getQos().getScope() == ProviderScope.GLOBAL) {

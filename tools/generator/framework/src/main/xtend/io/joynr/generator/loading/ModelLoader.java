@@ -44,7 +44,7 @@ public class ModelLoader {
             File file = modelFile;
 
             if (file.isDirectory()) {
-                uriProvider = new FolderUriProvider(new HashSet(Arrays.asList("fidl")), file);
+                uriProvider = new FolderUriProvider(new HashSet<String>(Arrays.asList("fidl")), file);
             } else {
                 final URI uri = URI.createFileURI(modelFile.getAbsolutePath());
                 uriProvider = new IUriProvider() {

@@ -96,6 +96,6 @@ public class ExpiredDiscoveryEntryCacheCleanerTest {
         Runnable cleanupTask = runnableArgumentCaptor.getValue();
         cleanupTask.run();
         verify(cache).getAllDiscoveryEntries();
-        verify(cleanupAction).cleanup(new HashSet(Arrays.asList(expiredEntry)));
+        verify(cleanupAction).cleanup(new HashSet<DiscoveryEntry>(Arrays.asList(expiredEntry)));
     }
 }

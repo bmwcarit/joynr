@@ -34,7 +34,7 @@ public class ConsumerRestApplication extends Application {
 
     @Override
     public Set<Class<?>> getClasses() {
-        return new HashSet(Arrays.asList(ConsumerRestEndpoint.class));
+        return new HashSet<Class<?>>(Arrays.asList(ConsumerRestEndpoint.class));
     }
 
 }

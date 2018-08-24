@@ -145,7 +145,7 @@ public class ProxyVersionMismatchTest {
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT_MS)
     public void testNoCompatibleProviderFound() throws Exception {
 
-        createProxy(new HashSet(Arrays.asList(domain)), true);
+        createProxy(new HashSet<String>(Arrays.asList(domain)), true);
 
         // wait for the proxy created error callback to be called
         assertTrue("Unexpected successful proxy creation or timeout",
@@ -157,7 +157,7 @@ public class ProxyVersionMismatchTest {
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT_MS)
     public void testMultiDomainNoCompatibleProviderFound() throws Exception {
 
-        createProxy(new HashSet(Arrays.asList(domain, domain2)), true);
+        createProxy(new HashSet<String>(Arrays.asList(domain, domain2)), true);
 
         // wait for the proxy created error callback to be called
         assertTrue("Unexpected successful proxy creation or timeout",
@@ -169,7 +169,7 @@ public class ProxyVersionMismatchTest {
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT_MS)
     public void testProxyIsInvalidatedOnceArbitrationExceptionThrown() throws Exception {
 
-        createProxy(new HashSet(Arrays.asList(domain)), false);
+        createProxy(new HashSet<String>(Arrays.asList(domain)), false);
 
         checkProxy();
         checkProxy();

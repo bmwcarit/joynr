@@ -172,7 +172,7 @@ public class PublicationManagerTest {
         when(requestCallerDirectory.contains(eq(providerId))).thenReturn(true);
 
         publicationManager.addSubscriptionRequest(proxyId, providerId, subscriptionRequest);
-        List<BroadcastFilter> noFilters = new ArrayList();
+        List<BroadcastFilter> noFilters = new ArrayList<>();
 
         int nrBroadcasts = 100;
         for (int i = 0; i < nrBroadcasts; i++) {
@@ -228,7 +228,7 @@ public class PublicationManagerTest {
         when(providerDirectory.contains(eq(providerId))).thenReturn(true);
 
         publicationManager.addSubscriptionRequest(proxyId, providerId, subscriptionRequest);
-        List<BroadcastFilter> noFilters = new ArrayList();
+        List<BroadcastFilter> noFilters = new ArrayList<>();
 
         publicationManager.broadcastOccurred(subscriptionId, noFilters, 0);
         int nrIterations = 10;

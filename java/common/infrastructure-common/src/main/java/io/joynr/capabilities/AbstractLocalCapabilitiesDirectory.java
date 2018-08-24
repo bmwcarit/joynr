@@ -26,7 +26,7 @@ import joynr.types.DiscoveryEntry;
 
 public abstract class AbstractLocalCapabilitiesDirectory extends DiscoveryAbstractProvider
         implements LocalCapabilitiesDirectory {
-    List<CapabilityListener> capabilityListeners = new ArrayList();
+    List<CapabilityListener> capabilityListeners = new ArrayList<>();
 
     @Override
     public void addCapabilityListener(CapabilityListener listener) {

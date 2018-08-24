@@ -52,7 +52,7 @@ public class ProxyBuilderFactoryImpl implements ProxyBuilderFactory {
 
     @Override
     public <T> ProxyBuilder<T> get(String domain, Class<T> interfaceClass) {
-        return get(new HashSet(Arrays.asList(domain)), interfaceClass);
+        return get(new HashSet<String>(Arrays.asList(domain)), interfaceClass);
     }
 
     @Override

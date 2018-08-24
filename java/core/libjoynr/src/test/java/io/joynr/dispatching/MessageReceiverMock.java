@@ -38,7 +38,7 @@ import joynr.ImmutableMessage;
 @Singleton
 public class MessageReceiverMock implements MessageReceiver {
 
-    private List<ImmutableMessage> receivedMessages = new ArrayList();
+    private List<ImmutableMessage> receivedMessages = new ArrayList<>();
 
     private MessageArrivedListener messageArrivedListener;
     private boolean blockInitialisation = false;

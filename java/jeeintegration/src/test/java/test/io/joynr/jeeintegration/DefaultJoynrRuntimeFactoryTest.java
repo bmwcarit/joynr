@@ -144,7 +144,7 @@ public class DefaultJoynrRuntimeFactoryTest {
         Bean<JoynrMessageProcessor> bean = mock(Bean.class);
         when(bean.create(Mockito.any())).thenReturn(new JoynrMessageProcessorTest());
         when(beanManager.getBeans(Mockito.<Type> eq(JoynrMessageProcessor.class),
-                                  Mockito.<Annotation> any())).thenReturn(new HashSet(Arrays.asList(bean)));
+                                  Mockito.<Annotation> any())).thenReturn(new HashSet<Bean<?>>(Arrays.asList(bean)));
 
         final String mqttClientId = "someTestMqttClientId";
         MqttClientIdProvider mqttClientIdProvider = mock(MqttClientIdProvider.class);
@@ -197,7 +197,7 @@ public class DefaultJoynrRuntimeFactoryTest {
     @Test
     public void testClusterableParticipantIdsAdded() throws Exception {
         createFixture();
-        JoynrRuntime joynrRuntime = fixture.create(new HashSet(Arrays.asList(MyServiceSync.class)));
+        JoynrRuntime joynrRuntime = fixture.create(new HashSet<Class<?>>(Arrays.asList(MyServiceSync.class)));
         assertNotNull(joynrRuntime);
         Properties properties = fixture.getInjector()
                                        .getInstance(Key.get(Properties.class,
@@ -219,7 +219,7 @@ public class DefaultJoynrRuntimeFactoryTest {
         joynrProperties.setProperty(key, "myvalue");
         createFixture(joynrProperties);
 
-        JoynrRuntime joynrRuntime = fixture.create(new HashSet(Arrays.asList(MyServiceSync.class)));
+        JoynrRuntime joynrRuntime = fixture.create(new HashSet<Class<?>>(Arrays.asList(MyServiceSync.class)));
         assertNotNull(joynrRuntime);
         Properties properties = fixture.getInjector()
                                        .getInstance(Key.get(Properties.class,

@@ -25,6 +25,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.HashSet;
 
@@ -93,7 +94,7 @@ public class SubscriptionPublisherInjectionWrapperTest {
     private BeanManager beanManager;
 
     @Mock
-    private Bean subscriptionPublisherProducerBean;
+    private Bean<?> subscriptionPublisherProducerBean;
 
     @Mock
     private SubscriptionPublisherProducer subscriptionPublisherProducer;
@@ -103,13 +104,13 @@ public class SubscriptionPublisherInjectionWrapperTest {
 
     @Before
     public void setup() {
-        when(beanManager.getBeans(eq(SubscriptionPublisherProducer.class))).thenReturn(new HashSet(Arrays.asList(subscriptionPublisherProducerBean)));
+        when(beanManager.getBeans(eq(SubscriptionPublisherProducer.class))).thenReturn(new HashSet<Bean<?>>(Arrays.asList(subscriptionPublisherProducerBean)));
         when(beanManager.getReference(eq(subscriptionPublisherProducerBean),
                                       eq(SubscriptionPublisherProducer.class),
                                       any())).thenReturn(subscriptionPublisherProducer);
         when(myServiceBeanBean.getBeanClass()).thenReturn(MyServiceBean.class);
-        when(myServiceBeanBean.getInjectionPoints()).thenReturn(new HashSet(Arrays.asList(subscriptionPublisherInjectionPoint)));
-        when(subscriptionPublisherInjectionPoint.getQualifiers()).thenReturn(new HashSet(Arrays.asList(SUBSCRIPTION_PUBLISHER_ANNOTATION_LITERAL)));
+        when(myServiceBeanBean.getInjectionPoints()).thenReturn(new HashSet<InjectionPoint>(Arrays.asList(subscriptionPublisherInjectionPoint)));
+        when(subscriptionPublisherInjectionPoint.getQualifiers()).thenReturn(new HashSet<Annotation>(Arrays.asList((Annotation) SUBSCRIPTION_PUBLISHER_ANNOTATION_LITERAL)));
         when(subscriptionPublisherInjectionPoint.getAnnotated()).thenReturn(annotated);
         when(annotated.getBaseType()).thenReturn(MyServiceSubscriptionPublisher.class);
         invocationHandler = SubscriptionPublisherInjectionWrapper.createInvocationHandler(myServiceBeanBean,

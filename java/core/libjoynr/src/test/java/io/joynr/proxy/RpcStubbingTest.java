@@ -241,7 +241,7 @@ public class RpcStubbingTest {
                                                                                                            replyCallerDirectory,
                                                                                                            subscriptionManager);
         connector = joynrMessagingConnectorFactory.create(fromParticipantId,
-                                                          new HashSet(Arrays.asList(toDiscoveryEntry)),
+                                                          new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry)),
                                                           messagingQos);
 
     }

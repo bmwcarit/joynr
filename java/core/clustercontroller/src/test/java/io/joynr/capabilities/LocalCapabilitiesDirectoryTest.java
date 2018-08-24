@@ -210,8 +210,8 @@ public class LocalCapabilitiesDirectoryTest {
                                                                                                       new ChannelAddress(TEST_URL,
                                                                                                                          domainAccessControllerChannelId));
 
-        when(capabilitiesProvisioning.getDiscoveryEntries()).thenReturn(new HashSet(Arrays.asList(globalCapabilitiesDirectoryDiscoveryEntry,
-                                                                                                  domainAccessControllerDiscoveryEntry)));
+        when(capabilitiesProvisioning.getDiscoveryEntries()).thenReturn(new HashSet<DiscoveryEntry>(Arrays.asList(globalCapabilitiesDirectoryDiscoveryEntry,
+                                                                                                                  domainAccessControllerDiscoveryEntry)));
 
         // use default freshnessUpdateIntervalMs: 3600000ms (1h)
         localCapabilitiesDirectory = new LocalCapabilitiesDirectoryImpl(capabilitiesProvisioning,
@@ -912,7 +912,7 @@ public class LocalCapabilitiesDirectoryTest {
         discoveryQos.setDiscoveryScope(DiscoveryScope.GLOBAL_ONLY);
         CapabilitiesCallback capabilitiesCallback = mock(CapabilitiesCallback.class);
 
-        List<DiscoveryEntry> entries = new ArrayList();
+        List<DiscoveryEntry> entries = new ArrayList<>();
         for (String domain : domains) {
             GlobalDiscoveryEntry entry = new GlobalDiscoveryEntry();
             entry.setDomain(domain);

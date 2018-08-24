@@ -68,7 +68,7 @@ public class DomainRoleEntryManager {
     private DomainRoleEntryEntity mapJoynrTypeToEntity(DomainRoleEntry joynrType) {
         DomainRoleEntryEntity result = new DomainRoleEntryEntity();
         result.setUserId(joynrType.getUid());
-        result.setDomains(new HashSet(Arrays.asList(joynrType.getDomains())));
+        result.setDomains(new HashSet<String>(Arrays.asList(joynrType.getDomains())));
         result.setRole(joynrType.getRole());
         return result;
     }
@@ -102,7 +102,7 @@ public class DomainRoleEntryManager {
         boolean created = entity == null;
         if (!created) {
             entity.getDomains().clear();
-            entity.getDomains().addAll(new HashSet(Arrays.asList(joynrType.getDomains())));
+            entity.getDomains().addAll(new HashSet<String>(Arrays.asList(joynrType.getDomains())));
         } else {
             entity = mapJoynrTypeToEntity(joynrType);
             entityManager.persist(entity);

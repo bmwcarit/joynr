@@ -694,7 +694,7 @@ public class ProxyTest {
 
         verify(subscriptionManager,
                times(1)).registerMulticastSubscription(eq(fromParticipantId),
-                                                       eq(new HashSet(Arrays.asList(toDiscoveryEntry))),
+                                                       eq(new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry))),
                                                        subscriptionRequest.capture());
         assertEquals("locationUpdate", subscriptionRequest.getValue().getSubscriptionName());
     }
@@ -719,17 +719,18 @@ public class ProxyTest {
 
         verify(subscriptionManager,
                times(1)).registerBroadcastSubscription(eq(fromParticipantId),
-                                                       eq(new HashSet(Arrays.asList(toDiscoveryEntry))),
+                                                       eq(new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry))),
                                                        subscriptionRequest.capture());
 
         assertEquals("locationUpdateSelective", subscriptionRequest.getValue().getBroadcastName());
 
         // now, let's remove the previous subscriptionRequest
         proxy.unsubscribeFromGuidanceActive(subscriptionId.get(100L));
-        verify(subscriptionManager, times(1)).unregisterSubscription(eq(fromParticipantId),
-                                                                     eq(new HashSet(Arrays.asList(toDiscoveryEntry))),
-                                                                     eq(subscriptionId.get()),
-                                                                     any(MessagingQos.class));
+        verify(subscriptionManager,
+               times(1)).unregisterSubscription(eq(fromParticipantId),
+                                                eq(new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry))),
+                                                eq(subscriptionId.get()),
+                                                any(MessagingQos.class));
     }
 
     @Test
@@ -746,17 +747,18 @@ public class ProxyTest {
 
         verify(subscriptionManager,
                times(1)).registerMulticastSubscription(eq(fromParticipantId),
-                                                       eq(new HashSet(Arrays.asList(toDiscoveryEntry))),
+                                                       eq(new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry))),
                                                        subscriptionRequest.capture());
 
         assertEquals("locationUpdate", subscriptionRequest.getValue().getSubscriptionName());
 
         // now, let's remove the previous subscriptionRequest
         proxy.unsubscribeFromGuidanceActive(subscriptionId.get(100L));
-        verify(subscriptionManager, times(1)).unregisterSubscription(eq(fromParticipantId),
-                                                                     eq(new HashSet(Arrays.asList(toDiscoveryEntry))),
-                                                                     eq(subscriptionId.get()),
-                                                                     any(MessagingQos.class));
+        verify(subscriptionManager,
+               times(1)).unregisterSubscription(eq(fromParticipantId),
+                                                eq(new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry))),
+                                                eq(subscriptionId.get()),
+                                                any(MessagingQos.class));
     }
 
     @Test
@@ -776,7 +778,7 @@ public class ProxyTest {
 
         verify(subscriptionManager,
                times(1)).registerMulticastSubscription(eq(fromParticipantId),
-                                                       eq(new HashSet(Arrays.asList(toDiscoveryEntry))),
+                                                       eq(new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry))),
                                                        subscriptionRequest.capture());
 
         assertEquals("locationUpdate", subscriptionRequest.getValue().getSubscriptionName());
@@ -803,17 +805,18 @@ public class ProxyTest {
 
         verify(subscriptionManager,
                times(1)).registerAttributeSubscription(eq(fromParticipantId),
-                                                       eq(new HashSet(Arrays.asList(toDiscoveryEntry))),
+                                                       eq(new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry))),
                                                        subscriptionRequest.capture());
 
         assertEquals("guidanceActive", subscriptionRequest.getValue().getAttributeName());
         assertEquals(subscriptionId.get(), subscriptionRequest.getValue().getSubscriptionId());
         // now, let's remove the previous subscriptionRequest
         proxy.unsubscribeFromGuidanceActive(subscriptionId.get());
-        verify(subscriptionManager, times(1)).unregisterSubscription(eq(fromParticipantId),
-                                                                     eq(new HashSet(Arrays.asList(toDiscoveryEntry))),
-                                                                     eq(subscriptionId.get()),
-                                                                     any(MessagingQos.class));
+        verify(subscriptionManager,
+               times(1)).unregisterSubscription(eq(fromParticipantId),
+                                                eq(new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry))),
+                                                eq(subscriptionId.get()),
+                                                any(MessagingQos.class));
     }
 
     @Test
@@ -839,7 +842,7 @@ public class ProxyTest {
 
         verify(subscriptionManager,
                times(1)).registerAttributeSubscription(eq(fromParticipantId),
-                                                       eq(new HashSet(Arrays.asList(toDiscoveryEntry))),
+                                                       eq(new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry))),
                                                        subscriptionRequest.capture());
 
         assertEquals("guidanceActive", subscriptionRequest.getValue().getAttributeName());
@@ -853,10 +856,11 @@ public class ProxyTest {
         String subscriptionId = UUID.randomUUID().toString();
         proxy.unsubscribeFromLocationUpdateBroadcast(subscriptionId);
 
-        verify(subscriptionManager, times(1)).unregisterSubscription(eq(fromParticipantId),
-                                                                     eq(new HashSet(Arrays.asList(toDiscoveryEntry))),
-                                                                     eq(subscriptionId),
-                                                                     any(MessagingQos.class));
+        verify(subscriptionManager,
+               times(1)).unregisterSubscription(eq(fromParticipantId),
+                                                eq(new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry))),
+                                                eq(subscriptionId),
+                                                any(MessagingQos.class));
     }
 
     public void createProxyAndCallFireAndForgetMethod(MessagingQos privateMessagingQos) {

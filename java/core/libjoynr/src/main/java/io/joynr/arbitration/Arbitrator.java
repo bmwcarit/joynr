@@ -356,7 +356,7 @@ public class Arbitrator {
                     }
                 }
             } else {
-                discoveryEntriesSet = new HashSet(Arrays.asList(discoveryEntries));
+                discoveryEntriesSet = new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(discoveryEntries));
             }
             discoveryEntriesSet = discoveryEntryVersionFilter.filter(interfaceVersion,
                                                                      discoveryEntriesSet,

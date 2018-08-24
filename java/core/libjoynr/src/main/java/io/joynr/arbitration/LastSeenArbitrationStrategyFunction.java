@@ -53,6 +53,7 @@ public class LastSeenArbitrationStrategyFunction extends ArbitrationStrategyFunc
         }
         logger.trace("capability with lastSeenMs: " + latestSeenDateMs + "\r\n" + latestSeenCapability);
 
-        return latestSeenCapability == null ? null : new HashSet(Arrays.asList(latestSeenCapability));
+        return latestSeenCapability == null ? null
+                : new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(latestSeenCapability));
     }
 }

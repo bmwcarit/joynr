@@ -93,7 +93,7 @@ public class ProxyInvocationHandlerTest {
         proxy = new Object();
         connectorFactory = Mockito.mock(ConnectorFactory.class);
         mockMessageRouter = Mockito.mock(MessageRouter.class);
-        proxyInvocationHandler = new ProxyInvocationHandlerImpl(new HashSet(Arrays.asList(domain)),
+        proxyInvocationHandler = new ProxyInvocationHandlerImpl(new HashSet<String>(Arrays.asList(domain)),
                                                                 interfaceName,
                                                                 proxyParticipantId,
                                                                 discoveryQos,
@@ -140,7 +140,7 @@ public class ProxyInvocationHandlerTest {
         ArbitrationResult arbitrationResult = new ArbitrationResult();
         DiscoveryEntryWithMetaInfo discoveryEntry = new DiscoveryEntryWithMetaInfo();
         discoveryEntry.setParticipantId("participantId");
-        arbitrationResult.setDiscoveryEntries(new HashSet(Arrays.asList(discoveryEntry)));
+        arbitrationResult.setDiscoveryEntries(new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(discoveryEntry)));
         proxyInvocationHandler.createConnector(arbitrationResult);
 
         // if the bug that causes one thread to hang in arbitration exists, one
@@ -162,7 +162,7 @@ public class ProxyInvocationHandlerTest {
         ArbitrationResult arbitrationResult = new ArbitrationResult();
         DiscoveryEntryWithMetaInfo discoveryEntry = new DiscoveryEntryWithMetaInfo();
         discoveryEntry.setParticipantId("participantId");
-        arbitrationResult.setDiscoveryEntries(new HashSet(Arrays.asList(discoveryEntry)));
+        arbitrationResult.setDiscoveryEntries(new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(discoveryEntry)));
         proxyInvocationHandler.createConnector(arbitrationResult);
         proxyInvocationHandler.invokeInternal(proxy, fireAndForgetMethod, args);
 
@@ -216,7 +216,7 @@ public class ProxyInvocationHandlerTest {
         ArbitrationResult arbitrationResult = new ArbitrationResult();
         DiscoveryEntryWithMetaInfo discoveryEntry = new DiscoveryEntryWithMetaInfo();
         discoveryEntry.setParticipantId("participantId");
-        arbitrationResult.setDiscoveryEntries(new HashSet(Arrays.asList(discoveryEntry)));
+        arbitrationResult.setDiscoveryEntries(new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(discoveryEntry)));
         proxyInvocationHandler.createConnector(arbitrationResult);
         proxyInvocationHandler.invokeInternal(proxy, subscribeMethod, args);
 

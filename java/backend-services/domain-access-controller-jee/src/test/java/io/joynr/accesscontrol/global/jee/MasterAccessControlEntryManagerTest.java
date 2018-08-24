@@ -154,7 +154,7 @@ public class MasterAccessControlEntryManagerTest {
         DomainRoleEntryEntity role1 = new DomainRoleEntryEntity();
         role1.setUserId(userId);
         role1.setRole(Role.MASTER);
-        role1.setDomains(new HashSet(Arrays.asList("domain1", "domain4", "domain5")));
+        role1.setDomains(new HashSet<String>(Arrays.asList("domain1", "domain4", "domain5")));
         entityManager.persist(role1);
 
         flushAndClear();
@@ -286,7 +286,7 @@ public class MasterAccessControlEntryManagerTest {
         DomainRoleEntryEntity domainRoleEntryEntity = new DomainRoleEntryEntity();
         domainRoleEntryEntity.setUserId(userId);
         domainRoleEntryEntity.setRole(Role.OWNER);
-        domainRoleEntryEntity.setDomains(new HashSet(Arrays.asList(domain)));
+        domainRoleEntryEntity.setDomains(new HashSet<String>(Arrays.asList(domain)));
         entityManager.persist(domainRoleEntryEntity);
 
         create(userId,
@@ -469,12 +469,12 @@ public class MasterAccessControlEntryManagerTest {
         entity.setDomain(domain);
         entity.setInterfaceName(interfaceName);
         entity.setDefaultRequiredTrustLevel(trustLevel);
-        entity.setPossibleRequiredTrustLevels(new HashSet(Arrays.asList(possibleTrustLevels)));
+        entity.setPossibleRequiredTrustLevels(new HashSet<TrustLevel>(Arrays.asList(possibleTrustLevels)));
         entity.setDefaultRequiredControlEntryChangeTrustLevel(changeTrustLevel);
-        entity.setPossibleRequiredControlEntryChangeTrustLevels(new HashSet(Arrays.asList(possibleChangeTrustLevels)));
+        entity.setPossibleRequiredControlEntryChangeTrustLevels(new HashSet<TrustLevel>(Arrays.asList(possibleChangeTrustLevels)));
         entity.setOperation(operation);
         entity.setDefaultConsumerPermission(permission);
-        entity.setPossibleConsumerPermissions(new HashSet(Arrays.asList(possiblePermissions)));
+        entity.setPossibleConsumerPermissions(new HashSet<Permission>(Arrays.asList(possiblePermissions)));
         entity.setType(type);
         entityManager.persist(entity);
         return entity;

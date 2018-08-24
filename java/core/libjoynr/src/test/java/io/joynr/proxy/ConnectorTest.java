@@ -106,7 +106,7 @@ public class ConnectorTest {
         toParticipantId = "toParticipantId";
         toDiscoveryEntry = new DiscoveryEntryWithMetaInfo();
         toDiscoveryEntry.setParticipantId(toParticipantId);
-        toDiscoveryEntries = new HashSet(Arrays.asList(toDiscoveryEntry));
+        toDiscoveryEntries = new HashSet<>(Arrays.asList(toDiscoveryEntry));
         qosSettings = new MessagingQos();
         proxy = new Object();
     }
@@ -216,7 +216,7 @@ public class ConnectorTest {
             connector.executeSubscriptionMethod(attributeSubscription);
             verify(subscriptionManager,
                    times(1)).registerAttributeSubscription(eq(fromParticipantId),
-                                                           eq(new HashSet(Arrays.asList(toDiscoveryEntry))),
+                                                           eq(new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry))),
                                                            eq(attributeSubscription));
         } catch (Exception e) {
             // This is what is supposed to happen -> no error handling
@@ -240,7 +240,7 @@ public class ConnectorTest {
             connector.executeSubscriptionMethod(unsubscribeInvocation);
             verify(subscriptionManager,
                    times(1)).unregisterSubscription(eq(fromParticipantId),
-                                                    eq(new HashSet(Arrays.asList(toDiscoveryEntry))),
+                                                    eq(new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry))),
                                                     eq(subscriptionId),
                                                     any(MessagingQos.class));
         } catch (Exception e) {

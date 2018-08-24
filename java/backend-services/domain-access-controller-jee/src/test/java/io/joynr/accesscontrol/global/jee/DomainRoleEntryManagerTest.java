@@ -83,8 +83,8 @@ public class DomainRoleEntryManagerTest {
     @Test
     public void testFindByUserId() {
         String userId = "user";
-        Set<String> domains1 = new HashSet(Arrays.asList("domain.1", "domain.2"));
-        Set<String> domains2 = new HashSet(Arrays.asList("domain.3", "domain.4", "domain.5"));
+        Set<String> domains1 = new HashSet<>(Arrays.asList("domain.1", "domain.2"));
+        Set<String> domains2 = new HashSet<>(Arrays.asList("domain.3", "domain.4", "domain.5"));
 
         create(userId, domains1, Role.MASTER);
         create(userId, domains2, Role.OWNER);
@@ -99,9 +99,9 @@ public class DomainRoleEntryManagerTest {
         for (DomainRoleEntry entry : result) {
             assertEquals(userId, entry.getUid());
             if (Role.MASTER.equals(entry.getRole())) {
-                assertEquals(domains1, new HashSet(Arrays.asList(entry.getDomains())));
+                assertEquals(domains1, new HashSet<String>(Arrays.asList(entry.getDomains())));
             } else if (Role.OWNER.equals(entry.getRole())) {
-                assertEquals(domains2, new HashSet(Arrays.asList(entry.getDomains())));
+                assertEquals(domains2, new HashSet<String>(Arrays.asList(entry.getDomains())));
             } else {
                 fail("Should only have master and owner roles. Got: " + entry.getRole());
             }
@@ -132,7 +132,7 @@ public class DomainRoleEntryManagerTest {
     @Test
     public void testUpdateExistingEntry() {
         String userId = "user";
-        DomainRoleEntryEntity entity = create(userId, new HashSet(Arrays.asList("domain1", "domain2")), Role.OWNER);
+        create(userId, new HashSet<String>(Arrays.asList("domain1", "domain2")), Role.OWNER);
 
         flushAndClear();
 
@@ -153,7 +153,7 @@ public class DomainRoleEntryManagerTest {
     @Test
     public void testRemoveExistingEntry() {
         String userId = "user";
-        create(userId, new HashSet(), Role.OWNER);
+        create(userId, new HashSet<String>(), Role.OWNER);
 
         flushAndClear();
 
@@ -185,12 +185,13 @@ public class DomainRoleEntryManagerTest {
     @Test
     public void testCurrentUserHasRoleInDomainOtherDomain() {
         assertFalse(testCurrentUserHasRoleInDomain(Role.MASTER,
-                                                   new HashSet(Arrays.asList("other.domain", "yet another domain"))));
+                                                   new HashSet<String>(Arrays.asList("other.domain",
+                                                                                     "yet another domain"))));
     }
 
     private boolean testCurrentUserHasRoleInDomain(Role persistedRole) {
         return testCurrentUserHasRoleInDomain(persistedRole,
-                                              new HashSet(Arrays.asList("domain", "domain1", "domain2")));
+                                              new HashSet<String>(Arrays.asList("domain", "domain1", "domain2")));
     }
 
     private boolean testCurrentUserHasRoleInDomain(Role persistedRole, Set<String> domains) {

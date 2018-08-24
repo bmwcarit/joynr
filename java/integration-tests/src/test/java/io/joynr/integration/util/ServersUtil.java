@@ -143,7 +143,7 @@ public class ServersUtil {
                                                                                           Long.MAX_VALUE,
                                                                                           "",
                                                                                           new InProcessAddress());
-        List<DiscoveryEntry> entries = new ArrayList();
+        List<DiscoveryEntry> entries = new ArrayList<>();
         entries.add(discoveryEntry);
         entries.add(accessControlEntry);
         return objectMapper.writeValueAsString(entries);

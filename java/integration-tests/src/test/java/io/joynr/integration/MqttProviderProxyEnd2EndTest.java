@@ -18,22 +18,21 @@
  */
 package io.joynr.integration;
 
-import static org.junit.Assert.fail;
 import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.fail;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Semaphore;
 
-import com.google.inject.AbstractModule;
+import org.junit.Test;
+
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
+
 import io.joynr.integration.util.DummyJoynrApplication;
 import io.joynr.messaging.MessagingPropertyKeys;
-import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.MqttModule;
 import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
 import io.joynr.proxy.Future;
@@ -43,7 +42,6 @@ import io.joynr.runtime.JoynrRuntime;
 import joynr.MulticastSubscriptionQos;
 import joynr.tests.testBroadcastInterface;
 import joynr.tests.testProxy;
-import org.junit.Test;
 
 public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTest {
 
@@ -118,7 +116,7 @@ public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTe
                                              .setMessagingQos(messagingQos)
                                              .setDiscoveryQos(discoveryQos)
                                              .build();
-        final List<String> errors = new ArrayList();
+        final List<String> errors = new ArrayList<>();
         testProxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
             @Override
             public void onReceive() {
@@ -149,7 +147,7 @@ public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTe
                                              .setMessagingQos(messagingQos)
                                              .setDiscoveryQos(discoveryQos)
                                              .build();
-        final List<String> errors = new ArrayList();
+        final List<String> errors = new ArrayList<>();
         Future<String> subscriptionIdOfWildCard = testProxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
             @Override
             public void onReceive() {
@@ -187,7 +185,7 @@ public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTe
                                              .setMessagingQos(messagingQos)
                                              .setDiscoveryQos(discoveryQos)
                                              .build();
-        final List<String> errors = new ArrayList();
+        final List<String> errors = new ArrayList<>();
         Future<String> futureOfWildCard = testProxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
             @Override
             public void onReceive() {
@@ -217,7 +215,7 @@ public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTe
                                              .setMessagingQos(messagingQos)
                                              .setDiscoveryQos(discoveryQos)
                                              .build();
-        final List<String> errors = new ArrayList();
+        final List<String> errors = new ArrayList<>();
         Future<String> subscriptionIdOfWildCard = testProxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
             @Override
             public void onReceive() {

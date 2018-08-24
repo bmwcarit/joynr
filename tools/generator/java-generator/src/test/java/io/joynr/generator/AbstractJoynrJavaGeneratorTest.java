@@ -122,7 +122,7 @@ public abstract class AbstractJoynrJavaGeneratorTest {
 
                 @Override
                 public Iterable<URI> allUris() {
-                    return new HashSet(Arrays.asList(resourceUri));
+                    return new HashSet<URI>(Arrays.asList(resourceUri));
                 }
             });
             generator.doGenerate(modelStore.getResources().iterator().next(), outputFileSystem);

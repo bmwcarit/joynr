@@ -316,7 +316,7 @@ public class LocalDiscoveryTest {
         String testDomain = "testDomain";
         String interfaceName = testProxy.INTERFACE_NAME;
         final Collection<DiscoveryEntry> discoveryEntries = new HashSet<>();
-        final List<GlobalDiscoveryEntry> globalDiscoveryEntries = new ArrayList();
+        final List<GlobalDiscoveryEntry> globalDiscoveryEntries = new ArrayList<>();
         DiscoveryEntry discoveryEntry = new DiscoveryEntry(VersionUtil.getVersionFromAnnotation(testProxy.class),
                                                            testDomain,
                                                            interfaceName,
@@ -387,7 +387,7 @@ public class LocalDiscoveryTest {
         String interfaceName = testProxy.INTERFACE_NAME;
         final Collection<DiscoveryEntry> localDiscoveryEntries = new HashSet<>();
         final Collection<DiscoveryEntry> cachedDiscoveryEntries = new HashSet<>();
-        final List<GlobalDiscoveryEntry> remoteDiscoveryEntries = new ArrayList();
+        final List<GlobalDiscoveryEntry> remoteDiscoveryEntries = new ArrayList<>();
         DiscoveryEntry discoveryEntry = new DiscoveryEntry(VersionUtil.getVersionFromAnnotation(testProxy.class),
                                                            testDomain,
                                                            interfaceName,

@@ -116,7 +116,7 @@ public class ProxyBuilderDefaultImplTest {
     @Test
     public void testNoCompatibleProviderPassedToOnError() throws Exception {
         final String domain = "domain1";
-        final Set<String> domains = new HashSet(Arrays.asList(domain));
+        final Set<String> domains = new HashSet<>(Arrays.asList(domain));
         setup(domains);
         final ExecutorService executor = Executors.newSingleThreadExecutor();
         doAnswer(new Answer<Void>() {
@@ -128,7 +128,7 @@ public class ProxyBuilderDefaultImplTest {
                         Thread.sleep(10L);
                         verify(arbitrator).setArbitrationListener(arbitrationCallbackCaptor.capture());
                         ArbitrationCallback callback = arbitrationCallbackCaptor.getValue();
-                        Set<Version> discoveredVersions = new HashSet(Arrays.asList(new Version(100, 100)));
+                        Set<Version> discoveredVersions = new HashSet<>(Arrays.asList(new Version(100, 100)));
                         callback.onError(new NoCompatibleProviderFoundException(TestInterface.INTERFACE_NAME,
                                                                                 new Version(1, 1),
                                                                                 domain,
@@ -149,7 +149,7 @@ public class ProxyBuilderDefaultImplTest {
 
     @Test
     public void testMultiDomainNoCompatibleProviderFoundSetOnInvocationHandler() throws Exception {
-        final Set<String> domains = new HashSet(Arrays.asList("domain-1", "domain-2"));
+        final Set<String> domains = new HashSet<>(Arrays.asList("domain-1", "domain-2"));
         setup(domains);
         final ExecutorService executor = Executors.newSingleThreadExecutor();
         doAnswer(new Answer<Void>() {
@@ -162,7 +162,7 @@ public class ProxyBuilderDefaultImplTest {
                         verify(arbitrator).setArbitrationListener(arbitrationCallbackCaptor.capture());
                         ArbitrationCallback callback = arbitrationCallbackCaptor.getValue();
                         Map<String, Set<Version>> versionsByDomain = new HashMap<>();
-                        HashSet<Version> discoveredVersions = new HashSet(Arrays.asList(new Version(100, 100)));
+                        HashSet<Version> discoveredVersions = new HashSet<>(Arrays.asList(new Version(100, 100)));
                         Map<String, NoCompatibleProviderFoundException> exceptionsByDomain = new HashMap<>();
                         for (String domain : domains) {
                             versionsByDomain.put(domain, discoveredVersions);

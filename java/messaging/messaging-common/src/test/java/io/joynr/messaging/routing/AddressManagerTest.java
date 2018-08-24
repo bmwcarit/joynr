@@ -131,7 +131,7 @@ public class AddressManagerTest {
         when(joynrMessage.getSender()).thenReturn("from");
         String multicastId = "from/to";
         when(joynrMessage.getRecipient()).thenReturn(multicastId);
-        Set<String> participantIds = new HashSet(Arrays.asList("one", "two"));
+        Set<String> participantIds = new HashSet<>(Arrays.asList("one", "two"));
         when(multicastReceiverRegistry.getReceivers(multicastId)).thenReturn(participantIds);
         Address addressOne = mock(Address.class);
         when(routingTable.get("one")).thenReturn(addressOne);
@@ -153,7 +153,7 @@ public class AddressManagerTest {
         when(joynrMessage.getSender()).thenReturn("from");
         String multicastId = "from/to";
         when(joynrMessage.getRecipient()).thenReturn(multicastId);
-        Set<String> particpantIds = new HashSet(Arrays.asList("one"));
+        Set<String> particpantIds = new HashSet<>(Arrays.asList("one"));
         when(multicastReceiverRegistry.getReceivers(multicastId)).thenReturn(particpantIds);
         Address one = mock(Address.class);
         when(routingTable.get("one")).thenReturn(one);
@@ -172,7 +172,7 @@ public class AddressManagerTest {
         when(joynrMessage.getSender()).thenReturn(participantId);
         when(joynrMessage.getRecipient()).thenReturn(multicastId);
         when(routingTable.getIsGloballyVisible(participantId)).thenReturn(true);
-        Set<String> localParticipantIds = new HashSet(Arrays.asList("one"));
+        Set<String> localParticipantIds = new HashSet<>(Arrays.asList("one"));
         when(multicastReceiverRegistry.getReceivers(multicastId)).thenReturn(localParticipantIds);
         Address localAddress = mock(Address.class);
         when(routingTable.get("one")).thenReturn(localAddress);
@@ -196,7 +196,7 @@ public class AddressManagerTest {
         String multicastId = participantId + "/to";
         when(joynrMessage.getRecipient()).thenReturn(multicastId);
         when(routingTable.getIsGloballyVisible(participantId)).thenReturn(false);
-        Set<String> localParticipantIds = new HashSet(Arrays.asList("one"));
+        Set<String> localParticipantIds = new HashSet<>(Arrays.asList("one"));
         when(multicastReceiverRegistry.getReceivers(multicastId)).thenReturn(localParticipantIds);
         Address localAddress = mock(Address.class);
         when(routingTable.get("one")).thenReturn(localAddress);
@@ -220,7 +220,7 @@ public class AddressManagerTest {
         String multicastId = participantId + "/to";
         when(joynrMessage.getRecipient()).thenReturn(multicastId);
         when(routingTable.getIsGloballyVisible(participantId)).thenThrow(new JoynrRuntimeException());
-        Set<String> localParticipantIds = new HashSet(Arrays.asList("one"));
+        Set<String> localParticipantIds = new HashSet<>(Arrays.asList("one"));
         when(multicastReceiverRegistry.getReceivers(multicastId)).thenReturn(localParticipantIds);
         Address localAddress = mock(Address.class);
         when(routingTable.get("one")).thenReturn(localAddress);
@@ -278,7 +278,7 @@ public class AddressManagerTest {
                                       MulticastAddressCalculator... multicastAddressCalculators) {
         subject = new AddressManager(routingTable,
                                      new AddressManager.PrimaryGlobalTransportHolder(primaryGlobalTransport),
-                                     new HashSet(Arrays.asList(multicastAddressCalculators)),
+                                     new HashSet<MulticastAddressCalculator>(Arrays.asList(multicastAddressCalculators)),
                                      multicastReceiverRegistry);
     }
 }

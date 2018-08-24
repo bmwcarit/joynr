@@ -47,6 +47,7 @@ public class KeywordArbitrationStrategyFunction extends ArbitrationStrategyFunct
             }
         }
 
-        return capabilityWithKeyword == null ? null : new HashSet(Arrays.asList(capabilityWithKeyword));
+        return capabilityWithKeyword == null ? null
+                : new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(capabilityWithKeyword));
     }
 }

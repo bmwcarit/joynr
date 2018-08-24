@@ -30,6 +30,7 @@ import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
 
@@ -153,7 +154,7 @@ public class CapabilitiesUtilsTest {
     }
 
     private Collection<DiscoveryEntry> createCollectionOfDiscoveryEntries() {
-        Collection<DiscoveryEntry> discoveryEntries = new ArrayList(2);
+        Collection<DiscoveryEntry> discoveryEntries = new ArrayList<>(2);
         discoveryEntries.add(new DiscoveryEntry(new Version(42, 23),
                                                 "testDomain1",
                                                 "testInterfaceName",
@@ -246,7 +247,7 @@ public class CapabilitiesUtilsTest {
     }
 
     private Collection<DiscoveryEntryWithMetaInfo> createCollectionOfDiscoveryEntriesWithMetaInfo() {
-        Collection<DiscoveryEntryWithMetaInfo> discoveryEntries = new ArrayList(2);
+        Collection<DiscoveryEntryWithMetaInfo> discoveryEntries = new ArrayList<>(2);
         discoveryEntries.add(new DiscoveryEntryWithMetaInfo(new Version(42, 23),
                                                             "testDomain1",
                                                             "testInterfaceName",
