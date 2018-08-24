@@ -111,15 +111,14 @@ public interface «statelessAsyncClassName» extends StatelessAsyncCallback {
 				ReplyContext replyContext
 		) { throw new UnsupportedOperationException("«methodName»Success not implemented for callback instance"); }
 		«ENDIF»
-		«IF method.hasErrorEnum && failedWithErrorMethodsGenerated.add(methodSignature)»
-		@StatelessCallbackCorrelation("«methodSignature.hashCode»")
+		«IF method.hasErrorEnum && failedWithErrorMethodsGenerated.add(method.createMethodSignatureFromErrors)»
 		default void «methodName»Failed(
 			«IF method.errors !== null»
 				«val errorEnumType = packagePath + "." + interfaceName + "." + methodToErrorEnumName.get(method)»
 					«errorEnumType» error,
 			«ELSE»
 				«val errorEnumType = method.errorEnum.buildPackagePath(".", true) + "." + method.errorEnum.joynrName»
-				«errorEnumType» error,
+					«errorEnumType» error,
 			«ENDIF»
 				ReplyContext replyContext
 		) { throw new UnsupportedOperationException("«methodName»Failed with error not implemented for callback instance"); }

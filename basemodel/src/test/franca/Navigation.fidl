@@ -77,7 +77,7 @@ interface Navigation{
 			Trip trip
 		}
 		error {
-		    UNKNOWN_TRIP
+			UNKNOWN_TRIP
 		}
 	}
 
@@ -116,6 +116,27 @@ interface Navigation{
 		out {
 			Trip[] result
 		}
+	}
+
+	method getTrip {
+		in {
+			String tripId
+		}
+		out {
+			Trip result
+		}
+		error GetTripErrors
+	}
+
+	method getTrip {
+		in {
+			String tripIdSearchString
+			Boolean allowWildcards
+		}
+		out {
+			Trip[] result
+		}
+		error GetTripErrors
 	}
 
 	<**

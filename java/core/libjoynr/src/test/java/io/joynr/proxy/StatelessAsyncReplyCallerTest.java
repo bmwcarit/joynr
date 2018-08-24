@@ -19,6 +19,7 @@
 package io.joynr.proxy;
 
 import static io.joynr.proxy.StatelessAsyncIdCalculator.USE_CASE_SEPARATOR;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -32,6 +33,7 @@ import java.util.function.Function;
 import io.joynr.exceptions.JoynrRuntimeException;
 import joynr.exceptions.ApplicationException;
 import joynr.exceptions.ProviderRuntimeException;
+import joynr.types.Localisation.GetTripErrors;
 import joynr.types.Localisation.Trip;
 import org.junit.Before;
 import org.junit.Test;
@@ -86,6 +88,11 @@ public class StatelessAsyncReplyCallerTest {
         public void invalidMethod(ReplyContext replyContext) {
             fail("Should never be called");
         }
+
+        @Override
+        public void getTripFailed(GetTripErrors error, ReplyContext replyContext) {
+            resultHolder.put(replyContext.getMessageId(), true);
+        }
     }
 
     private NavigationCallback callback = new NavigationCallback();
@@ -122,8 +129,9 @@ public class StatelessAsyncReplyCallerTest {
 
     @Test
     public void testOverriddenDeleteTripFailedWithException() throws Exception {
-        Method method = NavigationStatelessAsync.class.getMethod("deleteTrip", Trip.class, MessageIdCallback.class);
-        StatelessCallbackCorrelation statelessCallbackCorrelation = method.getAnnotation(StatelessCallbackCorrelation.class);
+        StatelessCallbackCorrelation statelessCallbackCorrelation = getStatelessCallbackCorrelation("deleteTrip",
+                                                                                                    Trip.class,
+                                                                                                    MessageIdCallback.class);
         testCall(statelessCallbackCorrelation,
                  requestReplyId -> new Reply(requestReplyId, new ProviderRuntimeException("test overloaded methods")),
                  Function.identity());
@@ -145,6 +153,24 @@ public class StatelessAsyncReplyCallerTest {
         reply.setStatelessAsyncCallbackId(STATELESS_CALLBACK_ID);
         reply.setStatelessAsyncCallbackMethodId(INVALID);
         subject.messageCallBack(reply);
+    }
+
+    @Test
+    public void testMethodOverloadWithErrorEnumReferenceAndDifferentOutputParams() throws Exception {
+        StatelessCallbackCorrelation statelessCallbackCorrelation = getStatelessCallbackCorrelation("getTrip",
+                                                                                                    String.class,
+                                                                                                    Boolean.class,
+                                                                                                    MessageIdCallback.class);
+        testCall(statelessCallbackCorrelation,
+                 requestReplyId -> new Reply(requestReplyId,
+                                             new ApplicationException(GetTripErrors.NO_MATCHING_TRIP_FOUND)),
+                 Function.identity());
+        statelessCallbackCorrelation = getStatelessCallbackCorrelation("getTrip",
+                                                                       String.class,
+                                                                       MessageIdCallback.class);
+        testCall(statelessCallbackCorrelation,
+                 requestReplyId -> new Reply(requestReplyId, new ApplicationException(GetTripErrors.UNKNOWN_TRIP)),
+                 Function.identity());
     }
 
     private void testCall(String methodName, Function<String, Reply> replyGenerator) {
@@ -178,6 +204,15 @@ public class StatelessAsyncReplyCallerTest {
                      .orElseThrow(() -> new RuntimeException("Method " + methodName + " not found on "
                              + NavigationStatelessAsync.class.getName()))
                      .getAnnotation(StatelessCallbackCorrelation.class);
+    }
+
+    private StatelessCallbackCorrelation getStatelessCallbackCorrelation(String methodName,
+                                                                         Class<?>... parameterTypes) throws Exception {
+        Method method = NavigationStatelessAsync.class.getMethod(methodName, parameterTypes);
+        StatelessCallbackCorrelation result = method.getAnnotation(StatelessCallbackCorrelation.class);
+        assertNotNull("Method named " + methodName + " with parameters " + Arrays.toString(parameterTypes)
+                + " has not stateless callback correlation annotation.", result);
+        return result;
     }
 
 }

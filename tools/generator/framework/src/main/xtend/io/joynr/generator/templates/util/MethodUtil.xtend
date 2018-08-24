@@ -134,6 +134,21 @@ public class MethodUtil {
 		createParameterSignatureForMethod(method.name, method.outArgs.filterNull);
 	}
 
+	/**
+	 * @param method the method for which the signature shall be created
+	 * @return a method signature that is unique in terms of method name and error types
+	 */
+	def createMethodSignatureFromErrors(FMethod method) {
+		var nameStringBuilder = new StringBuilder(method.name)
+		if (method.errors !== null) {
+			nameStringBuilder.append(getDatatype(method.errors))
+		}
+		if (method.errorEnum !== null) {
+			nameStringBuilder.append(getDatatype(method.errorEnum))
+		}
+		return nameStringBuilder.toString
+	}
+
 	private def createParameterSignatureForMethod(String methodName, Iterable<FArgument> arguments) {
 		val nameStringBuilder = new StringBuilder(methodName);
 		for (FArgument argument : arguments) {
