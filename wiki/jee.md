@@ -420,6 +420,12 @@ proxy / callback pairs.
 
 ##### Example
 
+For a full example project, see
+[examples/stateless-async](../examples/stateless-async/README.md).
+
+The following are some code snippets to exemplify the usage of the stateless async
+API:
+
 	@Stateless
 	@CallbackHandler
 	public class MyServiceCallbackBean implements MyServiceStatelessAsyncCallback {

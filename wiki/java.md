@@ -580,6 +580,11 @@ So that an application can use the same service in multiple use cases, during re
 of the callback and when creating the service proxy, a unique 'use case' name must be
 provided, matching the proxy to the callback.
 
+### Example
+
+For a full example showing how to use the stateless async API, see
+[examples/stateless-async](../examples/stateless-async/README.md).
+
 ### Registering the callback
 
     ...
