@@ -117,6 +117,12 @@ public class RestEndpoint {
                                                                            messageId));
     }
 
+    @GET
+    @Path("/callFireAndForget/{message}")
+    public void triggerCallFireAndForget(@PathParam("message") String message) {
+        vehicleStateClientBean.getService().callFireAndForgetTest(message);
+    }
+
     private KnownConfigurationTO entityToTransport(KnownVehicleConfiguration entity) {
         return new KnownConfigurationTO(entity.getMessageId(),
                                         entity.getVehicleConfigurationId(),

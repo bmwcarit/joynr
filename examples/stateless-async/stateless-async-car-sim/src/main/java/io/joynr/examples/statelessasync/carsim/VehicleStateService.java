@@ -62,6 +62,11 @@ public class VehicleStateService extends DefaultVehicleStateProvider {
         throw new ProviderRuntimeException("Failed with " + addToExceptionMessage);
     }
 
+    @Override
+    public void callFireAndForgetTest(String dataIn) {
+        logger.info("Fire and forget method called with: {}", dataIn);
+    }
+
     public void printCurrentConfigs() {
         logger.info("Configs are currently:\n{}\n\n", vehicleConfigurationMap);
     }

@@ -61,4 +61,10 @@ interface VehicleState {
         }
     }
 
+    method callFireAndForgetTest fireAndForget {
+        in {
+            String dataIn
+        }
+    }
+
 }
