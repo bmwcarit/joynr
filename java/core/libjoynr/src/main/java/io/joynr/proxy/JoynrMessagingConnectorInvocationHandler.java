@@ -80,7 +80,7 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
 
     }
 
-    private class StrippedArguments {
+    private static class StrippedArguments {
         public MessagingQos messagingQos;
         public Object[] params;
         public Class<?>[] paramDatatypes;
