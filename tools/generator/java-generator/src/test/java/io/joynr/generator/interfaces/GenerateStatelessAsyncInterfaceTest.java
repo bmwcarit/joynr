@@ -42,6 +42,8 @@ public class GenerateStatelessAsyncInterfaceTest extends AbstractJoynrJavaGenera
                 testResult.setStatelessAsyncInterfaceFound(true);
                 testResult.setStatelessAsyncAnnotationAdded(fileContent.contains("import io.joynr.StatelessAsync;")
                         && fileContent.contains("@StatelessAsync"));
+                testResult.setExtendsFireAndForgetFound(fileContent.contains(", StatelessAsyncTestFireAndForget")
+                        && !fileContent.contains("callFireAndForget"));
                 testResult.setReadWriteAttributeFound(fileContent.contains("getTestAttribute(")
                         && fileContent.contains("setTestAttribute("));
                 testResult.setReadOnlyAttributeFound(fileContent.contains("getTestReadOnlyAttribute(")
@@ -65,6 +67,7 @@ public class GenerateStatelessAsyncInterfaceTest extends AbstractJoynrJavaGenera
         });
         assertTrue(testResult.isStatelessAsyncInterfaceFound());
         assertTrue(testResult.isStatelessAsyncAnnotationAdded());
+        assertTrue(testResult.isExtendsFireAndForgetFound());
         assertTrue(testResult.isReadWriteAttributeFound());
         assertTrue(testResult.isReadOnlyAttributeFound());
         assertTrue(testResult.isNoOutMethodFound());
@@ -80,6 +83,7 @@ public class GenerateStatelessAsyncInterfaceTest extends AbstractJoynrJavaGenera
     private static class TestResult {
         boolean statelessAsyncInterfaceFound;
         boolean statelessAsyncAnnotationAdded;
+        boolean extendsFireAndForgetFound;
         boolean readWriteAttributeFound;
         boolean readOnlyAttributeFound;
         boolean noOutMethodFound;
@@ -105,6 +109,14 @@ public class GenerateStatelessAsyncInterfaceTest extends AbstractJoynrJavaGenera
 
         public void setStatelessAsyncAnnotationAdded(boolean statelessAsyncAnnotationAdded) {
             this.statelessAsyncAnnotationAdded = statelessAsyncAnnotationAdded;
+        }
+
+        public boolean isExtendsFireAndForgetFound() {
+            return extendsFireAndForgetFound;
+        }
+
+        public void setExtendsFireAndForgetFound(boolean extendsFireAndForgetFound) {
+            this.extendsFireAndForgetFound = extendsFireAndForgetFound;
         }
 
         public boolean isNoOutMethodFound() {

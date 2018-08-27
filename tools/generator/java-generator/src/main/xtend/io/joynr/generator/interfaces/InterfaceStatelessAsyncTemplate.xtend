@@ -60,7 +60,7 @@ import io.joynr.UsedBy;
 «IF jeeExtension»
 @UsedBy(«francaIntf.proxyClassName».class)
 «ENDIF»
-public interface «statelessAsyncClassName» extends «interfaceName» {
+public interface «statelessAsyncClassName» extends «interfaceName»«IF hasFireAndForgetMethods(francaIntf)», «interfaceName»FireAndForget«ENDIF» {
 
 «FOR attribute: getAttributes(francaIntf) SEPARATOR "\n"»
 	«var attributeName = attribute.joynrName»

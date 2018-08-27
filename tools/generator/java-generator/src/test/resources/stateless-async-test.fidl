@@ -109,4 +109,10 @@ interface StatelessAsyncTest {
 			testTypeCollection.TestTypeOutput outData
 		}
 	}
+
+	method callFireAndForget fireAndForget {
+		in {
+			String fireAndForgetInData
+		}
+	}
 }
