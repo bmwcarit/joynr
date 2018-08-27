@@ -151,7 +151,7 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 		val includeSet = new TreeSet<String>()
 		for (datatype : getAllComplexStatelessAsyncTypes(serviceInterface, true, false)) {
 			val include = getIncludeOf(datatype)
-			if (include != null) {
+			if (include !== null) {
 				includeSet.add(include)
 			}
 		}
@@ -162,7 +162,7 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 		val includeSet = new TreeSet<String>()
 		for (datatype : getAllComplexStatelessAsyncTypes(serviceInterface, false, true)) {
 			val include = getIncludeOf(datatype)
-			if (include != null) {
+			if (include !== null) {
 				includeSet.add(include)
 			}
 		}
