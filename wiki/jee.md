@@ -589,7 +589,7 @@ being thrown.
 
 The `prepareForShutdown` method will block until either the joynr runtime has finished processing
 all messages in the queue or a timeout occurs. The timeout can be configured via the
-`PREPARE_FOR_SHUTDOWN_TIMEOUT_PROPERTY` property. See the
+`PROPERTY_PREPARE_FOR_SHUTDOWN_TIMEOUT` property. See the
 [Java Configuration Guide](./JavaSettings.md) for details.
 
 In order to be able to stop receiving messages but still be able to send stateless messages out,

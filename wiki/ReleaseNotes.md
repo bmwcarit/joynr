@@ -5,13 +5,17 @@ the versioning scheme [here](JoynrVersioning.md).
 # joynr 1.6.0
 
 ## API relevant changes
-None.
+* **[Java, JEE]** added `prepareForShutdown` lifecycle step
 
 ## Other changes
 None.
 
 ## Configuration property changes
 * **[Java]** Introduced `PROPERTY_KEY_MQTT_USERNAME` and `PROPERTY_KEY_MQTT_PASSWORD`.
+  See [Java Configuration Reference](JavaSettings.md) for more details.
+* **[Java]** Introduced `PROPERTY_MESSAGE_QUEUE_SHUTDOWN_MAX_TIMEOUT`.
+  See [Java Configuration Reference](JavaSettings.md) for more details.
+* **[Java]** Introduced `PROPERTY_PREPARE_FOR_SHUTDOWN_TIMEOUT`.
   See [Java Configuration Reference](JavaSettings.md) for more details.
 
 # joynr 1.5.0
