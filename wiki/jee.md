@@ -451,7 +451,7 @@ API:
 		}
 
 	}
-	
+
 	@Singleton
 	public class MyServiceBean {
 
