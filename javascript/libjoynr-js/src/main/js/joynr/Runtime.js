@@ -27,12 +27,6 @@ switch (joynr._selectedRuntime) {
     case "inprocess":
         module.exports = require("./Runtime.inprocess");
         break;
-    case "intertab.libjoynr":
-        module.exports = require("./Runtime.intertab.libjoynr");
-        break;
-    case "intertab.clustercontroller":
-        module.exports = require("./Runtime.intertab.clustercontroller");
-        break;
     default:
         module.exports = require("./Runtime.websocket.libjoynr");
         break;

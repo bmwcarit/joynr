@@ -45,8 +45,6 @@ module.exports = function(customMapping) {
                         .exclude("bufferutil")
                         .exclude("utf-8-validate")
                         .exclude("node-persist")
-                        .ignore(path.join(joynrPath, "joynr/start/InterTabClusterControllerRuntime.js"))
-                        .ignore(path.join(joynrPath, "joynr/start/InterTabLibjoynrRuntime.js"))
                         .ignore(path.join(joynrPath, "joynr/start/WebSocketLibjoynrRuntime.js"))
                         .bundle(function(err, buffer) {
                             if (err) {

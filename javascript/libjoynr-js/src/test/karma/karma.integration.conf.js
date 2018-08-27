@@ -118,9 +118,7 @@ module.exports = function(config) {
             configure(bundle) {
                 bundle.on("prebundle", () => {
                     [
-                        "start/InProcessRuntime",
-                        "start/InterTabClusterControllerRuntime",
-                        "start/InterTabLibjoynrRuntime"
+                        "start/InProcessRuntime"
                     ].map(module => {
                         bundle.ignore(`./${module}.js`, { basedir: "../../../src/main/js/" });
                     });
