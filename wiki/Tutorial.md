@@ -560,10 +560,8 @@ docker, you can either copy your build directory to this location or add the fol
 to your library path:
 >* ```<CPP_BUILD_DIRECTORY>/joynr/bin```
 >
->In Linux, this can be achieved by
->```
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:<BUILD_DIRECTORY>/joynr/bin
-```
+>In Linux, this can be achieved by  
+>`export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:<BUILD_DIRECTORY>/joynr/bin`  
 >Afterwards, the C++ radio application can be started as explained.
 
 ## Summary
