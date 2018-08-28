@@ -27,12 +27,14 @@ import javax.inject.Inject;
 import com.google.inject.name.Named;
 
 import io.joynr.messaging.ConfigurableMessagingSettings;
+import io.joynr.runtime.ShutdownNotifier;
 import joynr.system.DiscoveryAsync;
 
 public class ProxyBuilderFactoryImpl implements ProxyBuilderFactory {
 
     private final DiscoveryAsync localDiscoveryAggregator;
     private final ProxyInvocationHandlerFactory proxyInvocationHandlerFactory;
+    private final ShutdownNotifier shutdownNotifier;
     private final long maxMessagingTtl;
     private final long defaultDiscoveryTimeoutMs;
     private final long defaultDiscoveryRetryIntervalMs;
@@ -40,11 +42,13 @@ public class ProxyBuilderFactoryImpl implements ProxyBuilderFactory {
     @Inject
     public ProxyBuilderFactoryImpl(DiscoveryAsync localDiscoveryAggregator,
                                    ProxyInvocationHandlerFactory proxyInvocationHandlerFactory,
+                                   ShutdownNotifier shutdownNotifier,
                                    @Named(ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_TTL_MS) long maxMessagingTtl,
                                    @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DEFAULT_TIMEOUT_MS) long defaultDiscoveryTimeoutMs,
                                    @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_RETRY_INTERVAL_MS) long defaultDiscoveryRetryIntervalMs) {
         this.localDiscoveryAggregator = localDiscoveryAggregator;
         this.proxyInvocationHandlerFactory = proxyInvocationHandlerFactory;
+        this.shutdownNotifier = shutdownNotifier;
         this.maxMessagingTtl = maxMessagingTtl;
         this.defaultDiscoveryTimeoutMs = defaultDiscoveryTimeoutMs;
         this.defaultDiscoveryRetryIntervalMs = defaultDiscoveryRetryIntervalMs;
@@ -61,6 +65,7 @@ public class ProxyBuilderFactoryImpl implements ProxyBuilderFactory {
                                              domains,
                                              interfaceClass,
                                              proxyInvocationHandlerFactory,
+                                             shutdownNotifier,
                                              maxMessagingTtl,
                                              defaultDiscoveryTimeoutMs,
                                              defaultDiscoveryRetryIntervalMs);

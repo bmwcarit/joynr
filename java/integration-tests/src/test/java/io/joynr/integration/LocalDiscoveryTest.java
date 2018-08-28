@@ -105,16 +105,19 @@ class ProxyInvocationHandlerFactoryImpl implements ProxyInvocationHandlerFactory
     private ConnectorFactory connectorFactory;
     private ConnectorFactory connectorFactoryMock;
     private MessageRouter messageRouter;
+    private ShutdownNotifier shutdownNotifier;
 
     @Inject
     public ProxyInvocationHandlerFactoryImpl(ConnectorFactory connectorFactory,
                                              @Named("connectorFactoryMock") JoynrMessagingConnectorFactory connectorFactoryMock,
                                              MessageRouter messageRouter,
-                                             @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) Address dispatcherAddress) {
+                                             @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) Address dispatcherAddress,
+                                             ShutdownNotifier shutdownNotifier) {
         super();
         this.messageRouter = messageRouter;
         this.connectorFactory = connectorFactory;
         this.connectorFactoryMock = new ConnectorFactory(connectorFactoryMock, messageRouter, dispatcherAddress);
+        this.shutdownNotifier = shutdownNotifier;
     }
 
     @Override
@@ -122,7 +125,8 @@ class ProxyInvocationHandlerFactoryImpl implements ProxyInvocationHandlerFactory
                                          String interfaceName,
                                          String proxyParticipantId,
                                          DiscoveryQos discoveryQos,
-                                         MessagingQos messagingQos) {
+                                         MessagingQos messagingQos,
+                                         ShutdownNotifier shutdownNotifier) {
         if (domains.contains("io.joynr.system")) {
             return new ProxyInvocationHandlerImpl(domains,
                                                   interfaceName,
@@ -130,7 +134,8 @@ class ProxyInvocationHandlerFactoryImpl implements ProxyInvocationHandlerFactory
                                                   discoveryQos,
                                                   messagingQos,
                                                   connectorFactory,
-                                                  messageRouter);
+                                                  messageRouter,
+                                                  shutdownNotifier);
         }
         return new ProxyInvocationHandlerImpl(domains,
                                               interfaceName,
@@ -138,7 +143,8 @@ class ProxyInvocationHandlerFactoryImpl implements ProxyInvocationHandlerFactory
                                               discoveryQos,
                                               messagingQos,
                                               connectorFactoryMock,
-                                              messageRouter);
+                                              messageRouter,
+                                              shutdownNotifier);
     }
 
 }

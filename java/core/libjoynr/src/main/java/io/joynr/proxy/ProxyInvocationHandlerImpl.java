@@ -23,6 +23,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -54,6 +55,8 @@ import io.joynr.proxy.invocation.MethodInvocation;
 import io.joynr.proxy.invocation.MulticastSubscribeInvocation;
 import io.joynr.proxy.invocation.SubscriptionInvocation;
 import io.joynr.proxy.invocation.UnsubscribeInvocation;
+import io.joynr.runtime.ShutdownListener;
+import io.joynr.runtime.ShutdownNotifier;
 import joynr.MethodMetaInformation;
 import joynr.exceptions.ApplicationException;
 import org.slf4j.Logger;
@@ -74,17 +77,21 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
     private String interfaceName;
     private MessageRouter messageRouter;
     private Set<String> domains;
+    private final AtomicBoolean preparingForShutdown = new AtomicBoolean();
 
     private static final Logger logger = LoggerFactory.getLogger(ProxyInvocationHandlerImpl.class);
 
     @Inject
+    // CHECKSTYLE:OFF
     public ProxyInvocationHandlerImpl(@Assisted("domains") Set<String> domains,
                                       @Assisted("interfaceName") String interfaceName,
                                       @Assisted("proxyParticipantId") String proxyParticipantId,
                                       @Assisted DiscoveryQos discoveryQos,
                                       @Assisted MessagingQos messagingQos,
                                       ConnectorFactory connectorFactory,
-                                      MessageRouter messageRouter) {
+                                      MessageRouter messageRouter,
+                                      ShutdownNotifier shutdownNotifier) {
+        // CHECKSTYLE:ON
         this.domains = domains;
         this.proxyParticipantId = proxyParticipantId;
         this.interfaceName = interfaceName;
@@ -93,6 +100,17 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
         this.connectorFactory = connectorFactory;
         this.connectorStatus = ConnectorStatus.ConnectorNotAvailabe;
         this.messageRouter = messageRouter;
+        shutdownNotifier.registerForShutdown(new ShutdownListener() {
+            @Override
+            public void prepareForShutdown() {
+                preparingForShutdown.set(true);
+            }
+
+            @Override
+            public void shutdown() {
+                // No-op
+            }
+        });
     }
 
     private static interface ConnectorCaller {
@@ -111,6 +129,9 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
      */
     @CheckForNull
     private Object executeSyncMethod(Method method, Object[] args) throws ApplicationException {
+        if (preparingForShutdown.get()) {
+            throw new JoynrIllegalStateException("Preparing for shutdown. Only stateless methods can be called.");
+        }
         return executeMethodWithCaller(method, args, new ConnectorCaller() {
             @Override
             public Object call(Method method, Object[] args) throws ApplicationException {
@@ -292,6 +313,9 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
 
     @CheckForNull
     private Object executeSubscriptionMethod(Method method, Object[] args) {
+        if (preparingForShutdown.get()) {
+            throw new JoynrIllegalStateException("Preparing for shutdown. Only stateless methods can be called.");
+        }
         Future<String> future = new Future<String>();
         if (method.getName().startsWith("subscribeTo")) {
             if (JoynrSubscriptionInterface.class.isAssignableFrom(method.getDeclaringClass())) {
@@ -391,6 +415,9 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
 
     private <T> Object executeAsyncMethod(Object proxy, Method method, Object[] args) throws IllegalAccessException,
                                                                                       Exception {
+        if (preparingForShutdown.get()) {
+            throw new JoynrIllegalStateException("Preparing for shutdown. Only stateless methods can be called.");
+        }
         @SuppressWarnings("unchecked")
         Future<T> future = (Future<T>) method.getReturnType().getConstructor().newInstance();
 

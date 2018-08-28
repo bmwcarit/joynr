@@ -55,6 +55,7 @@ import io.joynr.exceptions.MultiDomainNoCompatibleProviderFoundException;
 import io.joynr.exceptions.NoCompatibleProviderFoundException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback;
+import io.joynr.runtime.ShutdownNotifier;
 import joynr.types.Version;
 
 /**
@@ -84,6 +85,9 @@ public class ProxyBuilderDefaultImplTest {
     @Mock
     private ProxyInvocationHandler proxyInvocationHandler;
 
+    @Mock
+    private ShutdownNotifier shutdownNotifier;
+
     @Captor
     private ArgumentCaptor<ArbitrationCallback> arbitrationCallbackCaptor;
 
@@ -100,6 +104,7 @@ public class ProxyBuilderDefaultImplTest {
                                                              domains,
                                                              TestInterface.class,
                                                              proxyInvocationHandlerFactory,
+                                                             shutdownNotifier,
                                                              MAX_MESSAGE_TTL,
                                                              DISCOVERY_TIMEOUT_MS,
                                                              RETRY_INTERVAL_MS);
@@ -110,7 +115,8 @@ public class ProxyBuilderDefaultImplTest {
                                                   eq(TestInterface.INTERFACE_NAME),
                                                   Mockito.<String> any(),
                                                   Mockito.<DiscoveryQos> any(),
-                                                  Mockito.<MessagingQos> any())).thenReturn(proxyInvocationHandler);
+                                                  Mockito.<MessagingQos> any(),
+                                                  Mockito.<ShutdownNotifier> any())).thenReturn(proxyInvocationHandler);
     }
 
     @Test

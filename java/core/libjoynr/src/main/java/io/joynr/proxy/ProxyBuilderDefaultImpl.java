@@ -33,6 +33,7 @@ import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.runtime.ShutdownNotifier;
 import io.joynr.util.VersionUtil;
 import joynr.system.DiscoveryAsync;
 import joynr.types.Version;
@@ -51,6 +52,7 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
     private final String interfaceName;
     private Version interfaceVersion;
     private ProxyInvocationHandlerFactory proxyInvocationHandlerFactory;
+    private ShutdownNotifier shutdownNotifier;
 
     private final long maxMessagingTtl;
     private final long defaultDiscoveryTimeoutMs;
@@ -58,17 +60,21 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
 
     private T proxy;
 
+    // CHECKSTYLE:OFF
     ProxyBuilderDefaultImpl(DiscoveryAsync localDiscoveryAggregator,
                             Set<String> domains,
                             Class<T> interfaceClass,
                             ProxyInvocationHandlerFactory proxyInvocationHandlerFactory,
+                            ShutdownNotifier shutdownNotifier,
                             long maxMessagingTtl,
                             long defaultDiscoveryTimeoutMs,
                             long defaultDiscoveryRetryIntervalMs) {
+        // CHECKSTYLE:ON
         this.proxyInvocationHandlerFactory = proxyInvocationHandlerFactory;
         this.maxMessagingTtl = maxMessagingTtl;
         this.defaultDiscoveryTimeoutMs = defaultDiscoveryTimeoutMs;
         this.defaultDiscoveryRetryIntervalMs = defaultDiscoveryRetryIntervalMs;
+        this.shutdownNotifier = shutdownNotifier;
 
         try {
             interfaceName = (String) interfaceClass.getField("INTERFACE_NAME").get(String.class);
@@ -211,7 +217,8 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
                                                                                                    interfaceName,
                                                                                                    proxyParticipantId,
                                                                                                    discoveryQos,
-                                                                                                   messagingQos);
+                                                                                                   messagingQos,
+                                                                                                   shutdownNotifier);
 
         // This order is necessary because the Arbitrator might return early
         // But if the listener is set after the ProxyInvocationHandler the
