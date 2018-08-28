@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -154,24 +155,9 @@ public class CapabilitiesUtilsTest {
     }
 
     private Collection<DiscoveryEntry> createCollectionOfDiscoveryEntries() {
-        Collection<DiscoveryEntry> discoveryEntries = new ArrayList<>(2);
-        discoveryEntries.add(new DiscoveryEntry(new Version(42, 23),
-                                                "testDomain1",
-                                                "testInterfaceName",
-                                                "testParticipantId1",
-                                                new ProviderQos(),
-                                                4711l,
-                                                4712l,
-                                                "testPublicKeyId1"));
-        discoveryEntries.add(new DiscoveryEntry(new Version(42, 23),
-                                                "testDomain2",
-                                                "testInterfaceName",
-                                                "testParticipantId2",
-                                                new ProviderQos(),
-                                                4721l,
-                                                4722l,
-                                                "testPublicKeyId2"));
-        return discoveryEntries;
+        return createCollectionOfDiscoveryEntriesWithMetaInfo().stream()
+                                                               .map(entryWithMetaInfo -> new DiscoveryEntry(entryWithMetaInfo))
+                                                               .collect(Collectors.toList());
     }
 
     private void compareCollectionOfDiscoveryEntriesWithMetaInfo(boolean isLocal,
