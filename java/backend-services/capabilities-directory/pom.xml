@@ -92,6 +92,12 @@
 			<artifactId>javax.interceptor-api</artifactId>
 			<version>1.2</version>
 		</dependency>
+		<dependency>
+			<groupId>io.joynr.java.messaging.mqtt</groupId>
+			<artifactId>joynr-mqtt-client</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
 	</dependencies>
 
 

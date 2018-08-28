@@ -51,8 +51,10 @@ This project has dependencies to:
   io.joynr.java.common:status-metrics under The Apache Software License, Version 2.0
   io.joynr.java.core:clustercontroller under The Apache Software License, Version 2.0
   io.joynr.java.core:libjoynr under The Apache Software License, Version 2.0
+  io.joynr.java.messaging.mqtt:joynr-mqtt-client under The Apache Software License, Version 2.0
   io.joynr.java.messaging:messaging-common under The Apache Software License, Version 2.0
   io.joynr.java:javaapi under The Apache Software License, Version 2.0
+  io.joynr.mqtt:mqtt-client under Eclipse Public License - Version 1.0
   io.joynr.smrf.java:smrf under The Apache Software License, Version 2.0
   io.joynr.smrf.java:smrf-api under The Apache Software License, Version 2.0
   Jackson-annotations under The Apache Software License, Version 2.0
