@@ -146,9 +146,16 @@ public class MqttPahoClientFactory implements MqttClientFactory, ShutdownListene
     }
 
     @Override
+    public synchronized void prepareForShutdown() {
+        if (separateConnections) {
+            receivingMqttClient.shutdown();
+        }
+    }
+
+    @Override
     public synchronized void shutdown() {
         sendingMqttClient.shutdown();
-        if (separateConnections) {
+        if (separateConnections && !receivingMqttClient.isShutdown()) {
             receivingMqttClient.shutdown();
         }
     }

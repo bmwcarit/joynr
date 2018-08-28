@@ -486,4 +486,8 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
     public void setMessageListener(IMqttMessagingSkeleton messaging) {
         this.messagingSkeleton = messaging;
     }
+
+    public boolean isShutdown() {
+        return shutdown.get();
+    }
 }
