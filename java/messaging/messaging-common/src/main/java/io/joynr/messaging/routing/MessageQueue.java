@@ -34,7 +34,7 @@ public class MessageQueue {
 
     private static final Logger logger = LoggerFactory.getLogger(MessageQueue.class);
 
-    public static final String MESSAGE_QUEUE_SHUTDOWN_MAX_TIMEOUT = "io.joynr.messaging.queue.shutdown.timeout";
+    public static final String PROPERTY_MESSAGE_QUEUE_SHUTDOWN_MAX_TIMEOUT = "io.joynr.messaging.queue.shutdown.timeout";
 
     private DelayQueue<DelayableImmutableMessage> delayableImmutableMessages;
     private long shutdownTimeoutMs;
@@ -44,7 +44,7 @@ public class MessageQueue {
      */
     public static class MaxTimeoutHolder {
         @Inject(optional = true)
-        @Named(MESSAGE_QUEUE_SHUTDOWN_MAX_TIMEOUT)
+        @Named(PROPERTY_MESSAGE_QUEUE_SHUTDOWN_MAX_TIMEOUT)
         private Long timeout = 5000L;
 
         public long getTimeout() {
@@ -61,7 +61,7 @@ public class MessageQueue {
 
     /**
      * Call this method to wait for the queue to drain if it still contains any messages. The timeout is set by
-     * the {@link #MESSAGE_QUEUE_SHUTDOWN_MAX_TIMEOUT} property, which defaults to five seconds.
+     * the {@link #PROPERTY_MESSAGE_QUEUE_SHUTDOWN_MAX_TIMEOUT} property, which defaults to five seconds.
      */
     public void waitForQueueToDrain() {
         logger.info("joynr message queue stopping.");
