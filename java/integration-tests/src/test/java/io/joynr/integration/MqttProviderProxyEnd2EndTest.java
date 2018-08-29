@@ -70,12 +70,16 @@ public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTe
         return application.getRuntime();
     }
 
+    private testProxy buildTestProxy() {
+        return consumerRuntime.getProxyBuilder(domain, testProxy.class)
+                              .setMessagingQos(messagingQos)
+                              .setDiscoveryQos(discoveryQos)
+                              .build();
+    }
+
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT * 1000)
     public void testLargeByteArray() throws Exception {
-        testProxy proxy = consumerRuntime.getProxyBuilder(domain, testProxy.class)
-                                         .setMessagingQos(messagingQos)
-                                         .setDiscoveryQos(discoveryQos)
-                                         .build();
+        testProxy proxy = buildTestProxy();
 
         Byte[] largeByteArray = new Byte[1024 * 100];
 
@@ -91,10 +95,8 @@ public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTe
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT * 1000)
     public void testSimpleMulticast() throws Exception {
         final Semaphore semaphore = new Semaphore(0);
-        testProxy proxy = consumerRuntime.getProxyBuilder(domain, testProxy.class)
-                                         .setMessagingQos(messagingQos)
-                                         .setDiscoveryQos(discoveryQos)
-                                         .build();
+        testProxy proxy = buildTestProxy();
+
         proxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
             @Override
             public void onReceive() {
@@ -112,10 +114,8 @@ public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTe
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void testMulticastWithPartitions() throws Exception {
         final Semaphore semaphore = new Semaphore(0);
-        testProxy testProxy = consumerRuntime.getProxyBuilder(domain, testProxy.class)
-                                             .setMessagingQos(messagingQos)
-                                             .setDiscoveryQos(discoveryQos)
-                                             .build();
+        testProxy testProxy = buildTestProxy();
+
         final List<String> errors = new ArrayList<>();
         testProxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
             @Override
@@ -143,10 +143,8 @@ public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTe
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void testMulticastWithPartitionsAndMultiLevelWildcard() throws Exception {
         final Semaphore semaphore = new Semaphore(0);
-        testProxy testProxy = consumerRuntime.getProxyBuilder(domain, testProxy.class)
-                                             .setMessagingQos(messagingQos)
-                                             .setDiscoveryQos(discoveryQos)
-                                             .build();
+        testProxy testProxy = buildTestProxy();
+
         final List<String> errors = new ArrayList<>();
         Future<String> subscriptionIdOfWildCard = testProxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
             @Override
@@ -181,10 +179,7 @@ public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTe
     @Test
     public void testMulticastWithPartitionsAndSingleLevelWildcard() throws Exception {
         final Semaphore semaphore = new Semaphore(0);
-        testProxy testProxy = consumerRuntime.getProxyBuilder(domain, testProxy.class)
-                                             .setMessagingQos(messagingQos)
-                                             .setDiscoveryQos(discoveryQos)
-                                             .build();
+        testProxy testProxy = buildTestProxy();
 
         Future<String> futureOfWildCard = testProxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
             @Override
@@ -209,10 +204,7 @@ public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTe
     @Test
     public void testMulticastWithPartitionsAndSingleLevelWildcardAsLastPartition() throws Exception {
         final Semaphore semaphore = new Semaphore(0);
-        testProxy testProxy = consumerRuntime.getProxyBuilder(domain, testProxy.class)
-                                             .setMessagingQos(messagingQos)
-                                             .setDiscoveryQos(discoveryQos)
-                                             .build();
+        testProxy testProxy = buildTestProxy();
 
         Future<String> subscriptionIdOfWildCard = testProxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
             @Override
