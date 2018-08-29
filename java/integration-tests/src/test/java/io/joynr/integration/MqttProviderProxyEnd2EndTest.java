@@ -185,7 +185,7 @@ public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTe
                                              .setMessagingQos(messagingQos)
                                              .setDiscoveryQos(discoveryQos)
                                              .build();
-        final List<String> errors = new ArrayList<>();
+
         Future<String> futureOfWildCard = testProxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
             @Override
             public void onReceive() {
@@ -202,9 +202,7 @@ public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTe
         provider.fireEmptyBroadcast("one", "two", "three"); // match
         provider.fireEmptyBroadcast("one", "two", "three", "four", "five", "six");
         semaphore.acquire(1);
-        if (errors.size() > 0) {
-            fail("Got errors. " + errors);
-        }
+
         testProxy.unsubscribeFromEmptyBroadcastBroadcast(futureOfWildCard.get());
     }
 
@@ -215,7 +213,7 @@ public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTe
                                              .setMessagingQos(messagingQos)
                                              .setDiscoveryQos(discoveryQos)
                                              .build();
-        final List<String> errors = new ArrayList<>();
+
         Future<String> subscriptionIdOfWildCard = testProxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
             @Override
             public void onReceive() {
@@ -232,9 +230,7 @@ public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTe
         provider.fireEmptyBroadcast("one", "two", "three");
         provider.fireEmptyBroadcast("one", "two", "three", "four", "five", "six");
         semaphore.acquire(1);
-        if (errors.size() > 0) {
-            fail("Got errors. " + errors);
-        }
+
         testProxy.unsubscribeFromEmptyBroadcastBroadcast(subscriptionIdOfWildCard.get());
     }
 }
