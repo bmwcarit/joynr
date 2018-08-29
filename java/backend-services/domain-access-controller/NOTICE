@@ -18,9 +18,13 @@ under the License.
 This project has dependencies to:
   "Java Concurrency in Practice" book annotations under Creative Commons Attribution License
   AOP alliance under Public Domain
+  Apache HttpClient under Apache License
+  Apache HttpCore under Apache License
   Apache Log4j under The Apache Software License, Version 2.0
   Apache Log4j API under The Apache Software License, Version 2.0
   Apache Log4j SLF4J Binding under The Apache Software License, Version 2.0
+  clustercontroller-inprocess-runtime under The Apache Software License, Version 2.0
+  Commons Codec under The Apache Software License, Version 2.0
   Commons Lang under The Apache Software License, Version 2.0
   ehcache under The Apache Software License, Version 2.0
   FindBugs-Annotations under GNU Lesser Public License
@@ -37,9 +41,12 @@ This project has dependencies to:
   io.joynr.java.common:guice-integration under The Apache Software License, Version 2.0
   io.joynr.java.common:infrastructure-common under The Apache Software License, Version 2.0
   io.joynr.java.common:status-metrics under The Apache Software License, Version 2.0
+  io.joynr.java.core:clustercontroller under The Apache Software License, Version 2.0
   io.joynr.java.core:libjoynr under The Apache Software License, Version 2.0
+  io.joynr.java.messaging.mqtt:joynr-mqtt-client under The Apache Software License, Version 2.0
   io.joynr.java.messaging:messaging-common under The Apache Software License, Version 2.0
   io.joynr.java:javaapi under The Apache Software License, Version 2.0
+  io.joynr.mqtt:mqtt-client under Eclipse Public License - Version 1.0
   io.joynr.smrf.java:smrf under The Apache Software License, Version 2.0
   io.joynr.smrf.java:smrf-api under The Apache Software License, Version 2.0
   Jackson-annotations under The Apache Software License, Version 2.0
@@ -48,6 +55,7 @@ This project has dependencies to:
   Javassist under MPL 1.1 or LGPL 2.1 or Apache License 2.0
   javax.inject under The Apache Software License, Version 2.0
   JUnit under Eclipse Public License 1.0
+  Logging under The Apache Software License, Version 2.0
   Reflections under WTFPL or The New BSD License
   SLF4J API Module under MIT License
   SLF4J LOG4J-12 Binding under MIT License
