@@ -34,7 +34,6 @@ import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.InjectionPoint;
 import javax.enterprise.util.AnnotationLiteral;
-import javax.inject.Inject;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -56,17 +55,11 @@ import joynr.jeeintegration.servicelocator.MyServiceSync;
 public class SubscriptionPublisherInjectionWrapperTest {
 
     private static final AnnotationLiteral<SubscriptionPublisher> SUBSCRIPTION_PUBLISHER_ANNOTATION_LITERAL = new AnnotationLiteral<SubscriptionPublisher>() {
+        private static final long serialVersionUID = 1L;
     };
 
     @ServiceProvider(serviceInterface = MyServiceSync.class)
     private class MyServiceBean implements MyServiceSync {
-
-        private MyServiceSubscriptionPublisher myServiceSubscriptionPublisher;
-
-        @Inject
-        public MyServiceBean(@SubscriptionPublisher MyServiceSubscriptionPublisher myServiceSubscriptionPublisher) {
-            this.myServiceSubscriptionPublisher = myServiceSubscriptionPublisher;
-        }
 
         @Override
         public String callMe(String parameterOne) {
@@ -77,9 +70,6 @@ public class SubscriptionPublisherInjectionWrapperTest {
         public void callMeWithException() throws ApplicationException {
         }
     }
-
-    @Mock
-    private MyServiceBean myServiceBean;
 
     @Mock
     private Bean myServiceBeanBean;
@@ -99,7 +89,7 @@ public class SubscriptionPublisherInjectionWrapperTest {
     @Mock
     private SubscriptionPublisherProducer subscriptionPublisherProducer;
 
-    private SubscriptionPublisherInjection subject;
+    private SubscriptionPublisherInjection<MyServiceSubscriptionPublisher> subject;
     private SubscriptionPublisherInjectionWrapper invocationHandler;
 
     @Before
@@ -115,7 +105,7 @@ public class SubscriptionPublisherInjectionWrapperTest {
         when(annotated.getBaseType()).thenReturn(MyServiceSubscriptionPublisher.class);
         invocationHandler = SubscriptionPublisherInjectionWrapper.createInvocationHandler(myServiceBeanBean,
                                                                                           beanManager);
-        subject = (SubscriptionPublisherInjection) invocationHandler.createProxy();
+        subject = (SubscriptionPublisherInjection<MyServiceSubscriptionPublisher>) invocationHandler.createProxy();
         assertNotNull(subject);
     }
 
