@@ -44,18 +44,18 @@ import joynr.tests.testBroadcastInterface;
 import joynr.tests.testProxy;
 
 public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTest {
+    private static final String MQTT_BROKER_URL = "tcp://localhost:1883";
 
     private Properties mqttConfig;
-    private static int mqttBrokerPort = 1883;
 
     @Override
     protected JoynrRuntime getRuntime(Properties joynrConfig, Module... modules) {
         mqttConfig = new Properties();
-        mqttConfig.put(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "tcp://localhost:" + mqttBrokerPort);
+        mqttConfig.put(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, MQTT_BROKER_URL);
         // test is using 2 global address typs, so need to set one of them as primary
         mqttConfig.put(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
-        mqttConfig.put(MessagingPropertyKeys.DISCOVERYDIRECTORYURL, "tcp://localhost:" + mqttBrokerPort);
-        mqttConfig.put(MessagingPropertyKeys.DOMAINACCESSCONTROLLERURL, "tcp://localhost:" + mqttBrokerPort);
+        mqttConfig.put(MessagingPropertyKeys.DISCOVERYDIRECTORYURL, MQTT_BROKER_URL);
+        mqttConfig.put(MessagingPropertyKeys.DOMAINACCESSCONTROLLERURL, MQTT_BROKER_URL);
         mqttConfig.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_MULTICAST, "");
         mqttConfig.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_REPLYTO, "replyto/");
         mqttConfig.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_UNICAST, "");
