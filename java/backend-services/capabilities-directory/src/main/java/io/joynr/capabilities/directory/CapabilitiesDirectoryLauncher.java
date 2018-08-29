@@ -18,6 +18,8 @@
  */
 package io.joynr.capabilities.directory;
 
+import java.io.IOException;
+import java.net.ServerSocket;
 import java.util.Properties;
 
 import com.google.inject.Inject;
@@ -26,17 +28,22 @@ import com.google.inject.persist.jpa.JpaPersistModule;
 import com.google.inject.util.Modules;
 import com.google.inject.Module;
 
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
+import io.joynr.proxy.Future;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrApplication;
 import io.joynr.runtime.JoynrApplicationModule;
 import io.joynr.runtime.JoynrInjectorFactory;
+import joynr.exceptions.ApplicationException;
 import joynr.infrastructure.GlobalCapabilitiesDirectoryAbstractProvider;
 import joynr.types.ProviderQos;
 
 public class CapabilitiesDirectoryLauncher extends AbstractJoynrApplication {
+    private static int shutdownPort = Integer.parseInt(System.getProperty("joynr.capabilitiesdirectorylauncher.shutdownport",
+                                                                          "9999"));
 
     private static CapabilitiesDirectoryImpl capabilitiesDirectory;
     private static JoynrApplication capabilitiesDirectoryLauncher;
@@ -76,10 +83,25 @@ public class CapabilitiesDirectoryLauncher extends AbstractJoynrApplication {
         this.persistService = persistService;
     }
 
+    private static void waitUntilShutdownRequested() {
+        try {
+            ServerSocket serverSocket = new ServerSocket(shutdownPort);
+            serverSocket.accept();
+        } catch (IOException e) {
+            return;
+        }
+        return;
+    }
+
     @Override
     public void run() {
         ProviderQos providerQos = new ProviderQos();
-        runtime.registerProvider(localDomain, capabilitiesDirectoryProvider, providerQos);
+        Future<Void> future = runtime.registerProvider(localDomain, capabilitiesDirectoryProvider, providerQos);
+        try {
+            future.get();
+        } catch (JoynrRuntimeException | ApplicationException | InterruptedException e) {
+            return;
+        }
     }
 
     @Override
@@ -88,7 +110,12 @@ public class CapabilitiesDirectoryLauncher extends AbstractJoynrApplication {
         runtime.shutdown(true);
     }
 
+    // if invoked as standalone program then after initialization wait
+    // until a connection on a shutdownPort gets established, to
+    // allow to initiate shutdown from outside.
     public static void main(String[] args) {
         start(new Properties());
+        waitUntilShutdownRequested();
+        capabilitiesDirectoryLauncher.shutdown();
     }
 }
