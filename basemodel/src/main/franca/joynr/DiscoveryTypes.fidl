@@ -151,4 +151,24 @@ typeCollection {
 		<** @description: Indicates whether a provider is registered at the local cluster controller **>
 		Boolean isLocal
 	}
+
+	<**
+		@description: The type of a change.
+	**>
+	enumeration ChangeType {
+			<**
+					@description: Entry was added. There was no entry with the same
+							key before.
+			**>
+			ADD
+			<**
+					@description: Entry was updated. An entry with the key already
+							existed.
+			**>
+			UPDATE
+			<**
+					@description: Entry was removed.
+			**>
+			REMOVE
+	}
 }
