@@ -36,7 +36,6 @@ const InProcessStub = require("../util/InProcessStub");
 const MessagingQos = require("../messaging/MessagingQos");
 const DiscoveryQos = require("../proxy/DiscoveryQos");
 const TypeRegistrySingleton = require("../types/TypeRegistrySingleton");
-const UtilInternal = require("../util/UtilInternal");
 const uuid = require("uuid/v4");
 const loggingManager = require("../system/LoggingManager");
 const defaultLibjoynrSettings = require("./settings/defaultLibjoynrSettings");
@@ -99,14 +98,13 @@ class JoynrRuntime {
         this._publicationManager = null;
         this._subscriptionManager = null;
         this._dispatcher = null;
-        this._peristency = null;
         this._messagingSkeletons = {};
 
         this._joynrState = JoynrStates.SHUTDOWN;
     }
 
     _initializePersistency(provisioning) {
-        const persistencyProvisioning = UtilInternal.extend(
+        const persistencyProvisioning = Object.assign(
             {},
             defaultLibjoynrSettings.persistencySettings,
             provisioning.persistency
@@ -288,7 +286,7 @@ class JoynrRuntime {
 
         settings = settings || {};
 
-        const shutdownSettings = UtilInternal.extend(
+        const shutdownSettings = Object.assign(
             {},
             defaultLibjoynrSettings.shutdownSettings,
             this._shutdownSettings,
