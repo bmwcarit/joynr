@@ -75,7 +75,7 @@ This project has dependencies to:
   Arquillian Transaction Extension: SPI under Apache License, Version 2.0
   ASM Analysis under BSD
   ASM Commons under BSD
-  ASM Core under BSD License
+  ASM Core under BSD
   ASM Tree under BSD
   ASM Util under BSD
   atmosphere-annotations under CDDL or Apache License 2.0
@@ -315,6 +315,7 @@ This project has dependencies to:
   JSON.simple under The Apache Software License, Version 2.0
   jsoup under The MIT License
   JSR-181 Maintenance Release 1 under CDDL+GPLv2
+  jsr311-api under CDDL License
   JTA 1.1 under The Apache Software License, Version 2.0
   JUnit under Eclipse Public License 1.0
   libjoynr-websocket-runtime under The Apache Software License, Version 2.0
@@ -340,7 +341,7 @@ This project has dependencies to:
   Maven Wagon File Provider under The Apache Software License, Version 2.0
   Maven Wagon HTTP Shared Library under The Apache Software License, Version 2.0
   Maven Wagon Lightweight HTTP Provider under The Apache Software License, Version 2.0
-  MIME streaming extension under Dual license consisting of the CDDL v1.1 and GPL v2
+  MIME streaming extension under CDDL 1.1 or GPL2 w/ CPE
   Mockito under The MIT License
   Neko HTML under The Apache Software License, Version 2.0
   Objenesis under MIT License

@@ -23,7 +23,6 @@ This project has dependencies to:
   Apache HttpCore under Apache License
   Apache Log4j API under The Apache Software License, Version 2.0
   Apache Log4j SLF4J Binding under The Apache Software License, Version 2.0
-  ASM Core under BSD License
   atmosphere-annotations under CDDL or Apache License 2.0
   atmosphere-jersey under CDDL or Apache License 2.0
   atmosphere-runtime under CDDL or Apache License 2.0
@@ -72,6 +71,7 @@ This project has dependencies to:
   Jetty :: XML utilities under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   json-path under Apache 2.0
   JSON.simple under The Apache Software License, Version 2.0
+  jsr311-api under CDDL License
   JUnit under Eclipse Public License 1.0
   Logging under The Apache Software License, Version 2.0
   Mockito under The MIT License

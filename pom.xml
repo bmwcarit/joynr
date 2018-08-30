@@ -411,7 +411,7 @@
 			here, and should not have a version tag in the the pom-files where they
 			are referenced.
 		-->
-		<jersey.version>1.17</jersey.version>
+		<jersey.version>1.19.4</jersey.version>
 		<jackson.version>2.8.8</jackson.version>
 		<guice.version>3.0</guice.version>
 		<jetty.version>9.2.13.v20150730</jetty.version>
@@ -529,9 +529,9 @@
 				<version>2.1</version>
 			</dependency>
 			<dependency>
-				<groupId>org.glassfish.jersey.core</groupId>
+				<groupId>com.sun.jersey</groupId>
 				<artifactId>jersey-server</artifactId>
-				<version>2.26-b02</version>
+				<version>${jersey.version}</version>
 				<scope>compile</scope>
 			</dependency>
 			<dependency>
