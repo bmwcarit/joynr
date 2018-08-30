@@ -5,7 +5,8 @@ the versioning scheme [here](JoynrVersioning.md).
 # joynr 1.6.0
 
 ## API relevant changes
-None.
+* **[Java,JEE]** Added stateless async communication API.
+  See the [Java documentation](java.md) and [JEE documentation](jee.md) for details.
 
 ## Other changes
 None.
