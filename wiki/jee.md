@@ -56,7 +56,16 @@ implement any interfaces) and provide methods annotated with:
 Additionally, the method must be annotated with
 `javax.enterprise.inject.Produces`.
 
-#### Manadatory Properties
+#### Mandatory Properties
+
+* `MessagingpropertyKeys.CHANNELID` - this property should be set to the
+application's unique DNS entry, e.g. `myapp.mycompany.net`. This is important,
+so that all nodes of the cluster are identified by the same channel ID.
+* `MqttModule.PROPERTY_KEY_MQTT_BROKER_URI` - use this to configure the URL for
+connecting to the MQTT broker being used for communication.
+E.g. `tcp://mqtt.mycompany.net:1883`.
+
+#### Conditionally required Properties in case of HTTP based communication
 
 * `MessagingPropertyKeys.PROPERTY_SERVLET_CONTEXT_ROOT` - this property needs
 to be set to the context root of your deployed application, with `/messaging`
@@ -64,12 +73,6 @@ added to the end. E.g.: `/myapp/root/messaging`.
 * `MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH` - this property needs to
 be set to the URL under which the application server you are running on can be
 reached, e.g. `https://myapp.mycompany.net`.
-* `MessagingpropertyKeys.CHANNELID` - this property should be set to the
-application's unique DNS entry, e.g. `myapp.mycompany.net`. This is important,
-so that all nodes of the cluster are identified by the same channel ID.
-* `MqttModule.PROPERTY_KEY_MQTT_BROKER_URI` - use this to configure the URL for
-connecting to the MQTT broker being used for communication.
-E.g. `tcp://mqtt.mycompany.net:1883`.
 
 #### Optional Properties
 
