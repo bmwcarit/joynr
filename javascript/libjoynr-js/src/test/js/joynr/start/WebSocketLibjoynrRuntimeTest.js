@@ -175,12 +175,9 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
         expect(CapabilitiesRegistrar.setDefaultExpiryIntervalMs).toHaveBeenCalledWith(discoveryExpiryIntervalMs);
     });
 
-    it("will initialize SharedWebSocket correctly", done => {
+    it("will initialize SharedWebSocket correctly", async () => {
         runtime = new WebSocketLibjoynrRuntime();
-        runtime
-            .start(provisioning)
-            .then(done)
-            .catch(fail);
+        await runtime.start(provisioning);
 
         expect(SharedWebSocket.prototype.constructor).toHaveBeenCalledWith({
             remoteAddress: jasmine.objectContaining({
@@ -198,12 +195,9 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
         });
     });
 
-    it("will use the default persistency settings", done => {
+    it("will use the default persistency settings", async () => {
         runtime = new WebSocketLibjoynrRuntime();
-        runtime
-            .start(provisioning)
-            .then(done)
-            .catch(fail);
+        await runtime.start(provisioning);
         expect(MessageRouter.prototype.constructor.calls.count()).toEqual(1);
         expect(MessageRouter.prototype.constructor.calls.argsFor(0)[0].persistency).toBeUndefined();
         expect(ParticipantIdStorage.prototype.constructor.calls.count()).toEqual(1);
@@ -212,13 +206,10 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
         expect(PublicationManager.prototype.constructor.calls.argsFor(0)[1]).toEqual(jasmine.any(LocalStorage));
     });
 
-    it("enables MessageRouter Persistency if configured", done => {
+    it("enables MessageRouter Persistency if configured", async () => {
         provisioning.persistency = { routingTable: true };
         runtime = new WebSocketLibjoynrRuntime();
-        runtime
-            .start(provisioning)
-            .then(done)
-            .catch(fail);
+        await runtime.start(provisioning);
         expect(MessageRouter.prototype.constructor.calls.count()).toEqual(1);
         expect(MessageRouter.prototype.constructor.calls.argsFor(0)[0].persistency).toEqual(jasmine.any(LocalStorage));
         expect(MessageRouter.prototype.constructor).toHaveBeenCalledWith(
@@ -226,62 +217,47 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
         );
     });
 
-    it("enables ParticipantIdStorage persistency if configured", done => {
+    it("enables ParticipantIdStorage persistency if configured", async () => {
         provisioning.persistency = { capabilities: true };
         runtime = new WebSocketLibjoynrRuntime();
-        runtime
-            .start(provisioning)
-            .then(done)
-            .catch(fail);
+        await runtime.start(provisioning);
         expect(ParticipantIdStorage.prototype.constructor.calls.count()).toEqual(1);
         expect(ParticipantIdStorage.prototype.constructor.calls.argsFor(0)[0]).toEqual(jasmine.any(LocalStorage));
     });
 
-    it("disables PublicationManager persistency if configured", done => {
+    it("disables PublicationManager persistency if configured", async () => {
         provisioning.persistency = { publications: false };
         runtime = new WebSocketLibjoynrRuntime();
-        runtime
-            .start(provisioning)
-            .then(done)
-            .catch(fail);
+        await runtime.start(provisioning);
         expect(PublicationManager.prototype.constructor.calls.count()).toEqual(1);
         expect(PublicationManager.prototype.constructor.calls.argsFor(0)[1]).toBeUndefined();
     });
 
-    it("will call MessageQueue with the settings from the provisioning", done => {
+    it("will call MessageQueue with the settings from the provisioning", async () => {
         const maxQueueSizeInKBytes = 100;
         provisioning.messaging = { maxQueueSizeInKBytes };
         runtime = new WebSocketLibjoynrRuntime();
-        runtime
-            .start(provisioning)
-            .then(done)
-            .catch(fail);
+        await runtime.start(provisioning);
         expect(MessageQueue.prototype.constructor.calls.count()).toEqual(1);
         expect(MessageQueue.prototype.constructor).toHaveBeenCalledWith({
             maxQueueSizeInKBytes
         });
     });
 
-    it("will call Dispatcher with the settings from the provisioning", done => {
+    it("will call Dispatcher with the settings from the provisioning", async () => {
         const ttlUpLiftMs = 1000;
         provisioning.messaging = { TTL_UPLIFT: ttlUpLiftMs };
         runtime = new WebSocketLibjoynrRuntime();
-        runtime
-            .start(provisioning)
-            .then(done)
-            .catch(fail);
+        await runtime.start(provisioning);
         expect(Dispatcher.prototype.constructor.calls.count()).toEqual(1);
         expect(Dispatcher.prototype.constructor.calls.argsFor(0)[2]).toEqual(ttlUpLiftMs);
     });
 
-    it("will call MessagingQos with the settings from the provisioning", done => {
+    it("will call MessagingQos with the settings from the provisioning", async () => {
         const ttl = 1000;
         provisioning.internalMessagingQos = { ttl };
         runtime = new WebSocketLibjoynrRuntime();
-        runtime
-            .start(provisioning)
-            .then(done)
-            .catch(fail);
+        await runtime.start(provisioning);
         expect(MessagingQos.prototype.constructor).toHaveBeenCalledWith({ ttl });
     });
 
