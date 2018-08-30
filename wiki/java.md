@@ -554,6 +554,89 @@ public void onFailure(<Method>ErrorEnum errorEnum) {
 }
 ```
 
+## Stateless Asynchronous Remote Procedure Calls
+
+In contrast to both the synchronous and asynchronous RPC mechanisms described above, the
+stateless asynchronous replies can be handled by any runtime in a cluster of an application.
+
+In order to accomplish this, the application provides a callback implementation by
+registering it with the joynr runtime similar to the way providers are registered.
+Then, when a request is made for a service for which a callback was registered, the
+reply data is routed to that callback.
+
+In order to be able to logically match the request with the reply, a unique ID is provided
+when sending the request, via the `MessageIdCallback`, which the application can use to
+persist any relevant context information. When the reply arrives, the same ID is provided to
+the callback as part of the `ReplyContext` as the last parameter, and the application can
+then use this to load the context information.  
+__IMPORTANT__: it is not guaranteed that the message has actually left the system
+when the `MessageIdCallback` is called. It is possible that the message gets stuck
+in the lower layers due to, e.g., infrastructure issues. If the application persists
+data for the message IDs returned, it may also want to run periodic clean-up jobs
+to see if there are any stale entries due to messages not being transmitted
+successfully.
+
+So that an application can use the same service in multiple use cases, during registration
+of the callback and when creating the service proxy, a unique 'use case' name must be
+provided, matching the proxy to the callback.
+
+### Example
+
+For a full example showing how to use the stateless async API, see
+[examples/stateless-async](../examples/stateless-async/README.md).
+
+### Registering the callback
+
+    ...
+    public MyStatelessAsyncCallback implements <interface>StatelessAsyncCallback {
+        @Override
+        public String getUseCase() {
+            return <usecase>;
+        }
+
+        // Called for replies to proxy.myMethod(...)
+        @Override
+        public void myMethodSuccess(<service output parameters>, ReplyContext replyContext) {
+            ... handle the reply data ...
+        }
+        @Override
+        public void myMethodFailed(<application error enum>, ReplyContext replyContext) {
+            ... handle business errors ...
+        }
+        @Override
+        public void myMethodFailed(JoynrRuntimeException e, ReplyContext replyContext) {
+            ... handle ProviderRuntimeExceptions and other runtime exceptions ...
+        }
+    }
+    ...
+    public void run() {
+        ...
+        runtime.registerStatelessAsyncCallback(new MyStatelessAsyncCallback());
+        ...
+    }
+    ...
+
+### Building the Proxy
+
+    ...
+    public void run() {
+        ...
+        // callback already registered as above
+        ...
+        ProxyBuilder builder = runtime.getProxyBuilder(<domain>, <interface>Proxy.class);
+        ...
+        builder.setStatelessAsyncCallbackUseCase(<usecase>);
+        <interface>StatelessAsync proxy = builder.build();
+        proxy.myMethod(<input parameters>, messageId -> this::persistMyMethodContext);
+		// ^ Reply handled by the myMethod* callbacks
+        ...
+    }
+    ...
+
+It's essential that for a given piece of business logic the use case of the callback to be
+used matches that passed into the proxy being built. The requests sent from that proxy, will
+then be handled by the callback with the same use case identifier.
+
 ## Quality of Service settings for subscriptions
 
 ### SubscriptionQos

@@ -143,6 +143,8 @@ public class RpcStubbingTest {
     @Mock
     private RequestReplyManager requestReplyManager;
     @Mock
+    private StatelessAsyncIdCalculator statelessAsyncIdCalculator;
+    @Mock
     private TestProvider testMock;
 
     // private String domain;
@@ -237,10 +239,12 @@ public class RpcStubbingTest {
 
         JoynrMessagingConnectorFactory joynrMessagingConnectorFactory = new JoynrMessagingConnectorFactory(requestReplyManager,
                                                                                                            replyCallerDirectory,
-                                                                                                           subscriptionManager);
+                                                                                                           subscriptionManager,
+                                                                                                           statelessAsyncIdCalculator);
         connector = joynrMessagingConnectorFactory.create(fromParticipantId,
                                                           new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry)),
-                                                          messagingQos);
+                                                          messagingQos,
+                                                          null);
 
     }
 

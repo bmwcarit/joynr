@@ -39,33 +39,36 @@ import joynr.types.Version;
 
 public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
     private static final Logger logger = LoggerFactory.getLogger(ProxyBuilderDefaultImpl.class);
-
-    private DiscoveryQos discoveryQos;
+    private final String interfaceName;
+    private final long maxMessagingTtl;
+    private final long defaultDiscoveryTimeoutMs;
+    private final long defaultDiscoveryRetryIntervalMs;
     MessagingQos messagingQos;
+    Class<T> myClass;
+    private DiscoveryQos discoveryQos;
     private Arbitrator arbitrator;
     private DiscoveryAsync localDiscoveryAggregator;
     private Set<String> domains;
     private String proxyParticipantId;
     private boolean buildCalled;
-    Class<T> myClass;
-    private final String interfaceName;
     private Version interfaceVersion;
     private ProxyInvocationHandlerFactory proxyInvocationHandlerFactory;
-
-    private final long maxMessagingTtl;
-    private final long defaultDiscoveryTimeoutMs;
-    private final long defaultDiscoveryRetryIntervalMs;
-
+    private String statelessAsyncCallbackUseCase;
+    private StatelessAsyncCallbackDirectory statelessAsyncCallbackDirectory;
     private T proxy;
 
+    // CHECKSTYLE:OFF
     ProxyBuilderDefaultImpl(DiscoveryAsync localDiscoveryAggregator,
                             Set<String> domains,
                             Class<T> interfaceClass,
                             ProxyInvocationHandlerFactory proxyInvocationHandlerFactory,
+                            StatelessAsyncCallbackDirectory statelessAsyncCallbackDirectory,
                             long maxMessagingTtl,
                             long defaultDiscoveryTimeoutMs,
                             long defaultDiscoveryRetryIntervalMs) {
+        // CHECKSTYLE:ON
         this.proxyInvocationHandlerFactory = proxyInvocationHandlerFactory;
+        this.statelessAsyncCallbackDirectory = statelessAsyncCallbackDirectory;
         this.maxMessagingTtl = maxMessagingTtl;
         this.defaultDiscoveryTimeoutMs = defaultDiscoveryTimeoutMs;
         this.defaultDiscoveryRetryIntervalMs = defaultDiscoveryRetryIntervalMs;
@@ -164,6 +167,18 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
     /*
      * (non-Javadoc)
      *
+     * @see
+     * io.joynr.proxy.ProxyBuilder#setStatelessAsyncCallback(Object)
+     */
+    @Override
+    public ProxyBuilder<T> setStatelessAsyncCallbackUseCase(String statelessAsyncCallbackUseCase) {
+        this.statelessAsyncCallbackUseCase = statelessAsyncCallbackUseCase;
+        return this;
+    }
+
+    /*
+     * (non-Javadoc)
+     *
      * @see io.joynr.proxy.ProxyBuilder#build()
      */
     @Override
@@ -207,11 +222,21 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
         }
         buildCalled = true;
 
+        StatelessAsyncCallback statelessAsyncCallback = null;
+        if (statelessAsyncCallbackUseCase != null) {
+            statelessAsyncCallback = statelessAsyncCallbackDirectory.get(statelessAsyncCallbackUseCase);
+            if (statelessAsyncCallback == null) {
+                throw new JoynrIllegalStateException("No stateless async callback found registered for use case "
+                        + statelessAsyncCallbackUseCase);
+            }
+        }
+
         final ProxyInvocationHandler proxyInvocationHandler = proxyInvocationHandlerFactory.create(domains,
                                                                                                    interfaceName,
                                                                                                    proxyParticipantId,
                                                                                                    discoveryQos,
-                                                                                                   messagingQos);
+                                                                                                   messagingQos,
+                                                                                                   statelessAsyncCallback);
 
         // This order is necessary because the Arbitrator might return early
         // But if the listener is set after the ProxyInvocationHandler the

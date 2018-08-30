@@ -366,6 +366,11 @@ running in vehicles or providers of other JEE applications), inject the
 obtain a reference to a proxy of the business interface, and call the
 relevant methods on it.
 
+The service locator utility offers methods for obtaining service proxies
+for the most common use cases, along with a proxy builder for specifying
+the meta data to use in building the proxy in a fluent API style. See the
+stateless async section below for an example of how the builder is used.
+
 For example, if we wanted to call the `MyService` provider as implemented
 in the above example:
 
@@ -397,6 +402,99 @@ See the [Java Developer Guide](java.md) for details.
 __IMPORTANT__: if you intend to have your logic make multiple calls to the same
 provider, then you should locally cache the proxy instance returned by the
 ServiceLocator, as the operation of creating a proxy is expensive.
+
+#### Stateless Async
+
+If you want to call a service in a stateless fashion, that is any node in a cluster
+can handle the reply, then you need to provide a `@CallbackHandler` bean and
+request the `*StatelessAsync` instead of the `@Sync` interface from the
+`ServiceLocator`.
+
+The methods in the `*StatelessAsync` interface have a `MessageIdCallaback` as the
+last parameter, which is a consumer of a String value. This value is the unique
+ID of the request being sent out, and when the reply arrives, that same ID will
+accompany the result data as part of the `ReplyContext` passed in as last parameter.
+This way, your application can persist or otherwise share context information between
+nodes in a cluster, so that any node can process the replies.  
+__IMPORTANT__: it is not guaranteed that the message has actually left the system
+when the `MessageIdCallback` is called. It is possible that the message gets stuck
+in the lower layers due to, e.g., infrastructure issues. If the application persists
+data for the message IDs returned, it may also want to run periodic clean-up jobs
+to see if there are any stale entries due to messages not being transmitted
+successfully.
+
+The handling of the replies is done be a bean implementing the `*StatelessAsyncCallback`
+interface corresponding to the `*StatelessAsync` interface which is called for
+making the request, and which is additionally annotated with `@CallbackHandler`.  
+These are automatically discovered at startup time, and registered as stateless async
+callback handlers with the joynr runtime.
+
+In order to allow the same service to be called from multiple parts of an application
+in different ways, you must also provide a unique 'use case' name for each of the
+proxy / callback pairs.
+
+##### Example
+
+For a full example project, see
+[examples/stateless-async](../examples/stateless-async/README.md).
+
+The following are some code snippets to exemplify the usage of the stateless async
+API:
+
+	@Stateless
+	@CallbackHandler
+	public class MyServiceCallbackBean implements MyServiceStatelessAsyncCallback {
+
+		private final static String MY_USE_CASE = "get-stuff-done";
+
+		@Inject
+		private MyContextService myContextService;
+
+		@Override
+		public String getUseCase() {
+			return MY_USE_CASE;
+		}
+
+		// This method is called in response to receiving a reply for calls to the provider
+		// method 'myServiceMethod', and the reply context will contain the same message ID
+		// which the request was sent with. This is then used to retrieve some persisted
+		// context, which was created at the time of sending the request - potentially by
+		// a different node in the cluster.
+		@Override
+		public void myServiceMethodSuccess(String someParameter, ReplyContext replyContext) {
+			myContextService.handleReplyFor(replyContext.getMessageId(), someParameter);
+		}
+
+	}
+
+	@Singleton
+	public class MyServiceBean {
+
+		private MyServiceStatelessAsync proxy;
+
+		@Inject
+		private ServiceLocator serviceLocator;
+
+		@Inject
+		private MyContextService myContextService;
+
+		@PostConstruct
+		public void initialise() {
+			proxy = serviceLocator.builder(MyServiceStatelessAsync.class, "my-provider-domain")
+						.withUseCase(MyServiceCallbackBean.MY_USE_CASE)
+						.build();
+		}
+
+		// Called by the application to trigger a call to the provider, persisting some
+		// context information for the given messageId, which can then be retrieved in the
+		// callback handler and used to process the reply.
+		public void trigger() {
+			proxy.myServiceMethod("some input value",
+									messageId -> myContextService.persistContext(messageId)
+			);
+		}
+
+	}
 
 ## Clustering
 

@@ -32,6 +32,7 @@ import io.joynr.dispatching.Dispatcher;
 import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.proxy.ProxyBuilderFactory;
+import io.joynr.proxy.StatelessAsyncCallbackDirectory;
 import joynr.system.RoutingProvider;
 import joynr.system.RoutingTypes.Address;
 import joynr.types.ProviderQos;
@@ -49,6 +50,7 @@ public class ClusterControllerRuntime extends JoynrRuntimeImpl {
                                     MessagingSkeletonFactory messagingSkeletonFactory,
                                     LocalDiscoveryAggregator localDiscoveryAggregator,
                                     RoutingTable routingTable,
+                                    StatelessAsyncCallbackDirectory statelessAsyncCallbackDirectory,
                                     @Named(SystemServicesSettings.PROPERTY_SYSTEM_SERVICES_DOMAIN) String systemServicesDomain,
                                     @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) Address dispatcherAddress,
                                     @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS) Address discoveryProviderAddress,
@@ -61,6 +63,7 @@ public class ClusterControllerRuntime extends JoynrRuntimeImpl {
               messagingSkeletonFactory,
               localDiscoveryAggregator,
               routingTable,
+              statelessAsyncCallbackDirectory,
               systemServicesDomain,
               dispatcherAddress,
               discoveryProviderAddress);

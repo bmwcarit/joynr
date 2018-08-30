@@ -29,6 +29,8 @@ import io.joynr.generator.communicationmodel.MapTypeTemplate;
 import io.joynr.generator.interfaces.InterfaceAsyncTemplate;
 import io.joynr.generator.interfaces.InterfaceBroadcastTemplate;
 import io.joynr.generator.interfaces.InterfaceFireAndForgetTemplate;
+import io.joynr.generator.interfaces.InterfaceStatelessAsyncTemplate;
+import io.joynr.generator.interfaces.InterfaceStatelessAsyncCallbackTemplate;
 import io.joynr.generator.interfaces.InterfaceSubscriptionTemplate;
 import io.joynr.generator.interfaces.InterfaceSyncTemplate;
 import io.joynr.generator.interfaces.InterfacesTemplate;
@@ -47,6 +49,10 @@ public interface JavaTemplateFactory {
     InterfaceAsyncTemplate createInterfaceAsyncTemplate(FInterface francaIntf);
 
     InterfaceFireAndForgetTemplate createInterfaceFireAndForgetTemplate(FInterface francaIntf);
+
+    InterfaceStatelessAsyncTemplate createInterfaceStatelessAsyncTemplate(FInterface francaIntf);
+
+    InterfaceStatelessAsyncCallbackTemplate createInterfaceStatelessAsyncCallbackTemplate(FInterface francaIntf);
 
     InterfaceSubscriptionTemplate createInterfaceSubscriptionTemplate(FInterface francaIntf);
 

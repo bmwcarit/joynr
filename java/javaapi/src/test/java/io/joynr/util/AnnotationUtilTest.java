@@ -22,25 +22,38 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
+
 import io.joynr.JoynrVersion;
+import io.joynr.dispatcher.rpc.annotation.StatelessCallbackCorrelation;
 import io.joynr.provider.JoynrInterface;
 import io.joynr.provider.ProviderAnnotations;
 
 import java.lang.annotation.Annotation;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
+import io.joynr.proxy.ReplyContext;
 import joynr.tests.DefaulttestProvider;
 import joynr.tests.test;
 import joynr.tests.testProvider;
 
+import joynr.tests.testStatelessAsyncCallback;
+import joynr.tests.testTypes.TestEnum;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import javax.inject.Qualifier;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AnnotationUtilTest {
@@ -108,5 +121,62 @@ public class AnnotationUtilTest {
                                                     }
                                                 });
         assertThat(ProviderAnnotations.getInterfaceName(fixture), equalTo("tests/test"));
+    }
+
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.METHOD)
+    @interface DirectAnnotation {
+    }
+
+    class MyTestStatelessAsyncCallback implements testStatelessAsyncCallback {
+        @Override
+        @DirectAnnotation
+        public void getEnumAttributeSuccess(TestEnum enumAttribute, ReplyContext replyContext) {
+            // noop
+        }
+
+        @Override
+        public String getUseCase() {
+            return "attribute test";
+        }
+    }
+
+    @Test
+    public void testGetAnnotationFromMethodRecursively() throws Exception {
+        StatelessCallbackCorrelation result = AnnotationUtil.getAnnotation(getMethodWithAnnotation(),
+                                                                           StatelessCallbackCorrelation.class);
+        assertNotNull(result);
+    }
+
+    @Test
+    public void testGetDirectAnnotationForMethod() throws Exception {
+        DirectAnnotation result = AnnotationUtil.getAnnotation(getMethodWithAnnotation(), DirectAnnotation.class);
+        assertNotNull(result);
+    }
+
+    @Test
+    public void testGetAnnotationForMethodReturnsNullForNonExistentAnnotation() throws Exception {
+        Qualifier result = AnnotationUtil.getAnnotation(getMethodWithAnnotation(), Qualifier.class);
+        assertNull(result);
+    }
+
+    class MyChildClass extends MyTestStatelessAsyncCallback {
+        @Override
+        public void getEnumAttributeSuccess(TestEnum enumAttribute, ReplyContext replyContext) {
+            //noop
+        }
+    }
+
+    @Test
+    public void testGetAnnotationFromSuperclassMethod() throws Exception {
+        Method method = MyChildClass.class.getMethod("getEnumAttributeSuccess", TestEnum.class, ReplyContext.class);
+        DirectAnnotation result = AnnotationUtil.getAnnotation(method, DirectAnnotation.class);
+        assertNotNull(result);
+    }
+
+    private Method getMethodWithAnnotation() throws NoSuchMethodException {
+        return MyTestStatelessAsyncCallback.class.getMethod("getEnumAttributeSuccess",
+                                                            TestEnum.class,
+                                                            ReplyContext.class);
     }
 }

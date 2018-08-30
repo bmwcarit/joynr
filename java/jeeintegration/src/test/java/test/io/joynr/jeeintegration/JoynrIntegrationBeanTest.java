@@ -32,6 +32,7 @@ import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 
 import com.google.inject.Guice;
+import io.joynr.jeeintegration.CallbackHandlerDiscovery;
 import io.joynr.jeeintegration.JoynrIntegrationBean;
 import io.joynr.jeeintegration.JoynrRuntimeFactory;
 import io.joynr.jeeintegration.ServiceProviderDiscovery;
@@ -98,6 +99,9 @@ public class JoynrIntegrationBeanTest {
     @Mock
     private ServiceProviderDiscovery serviceProviderDiscovery;
 
+    @Mock
+    private CallbackHandlerDiscovery callbackHandlerDiscovery;
+
     private JoynrIntegrationBean subject;
 
     @Before
@@ -113,7 +117,10 @@ public class JoynrIntegrationBeanTest {
             }
         }).when(serviceProviderDiscovery).getProviderInterfaceFor(eq(MyServiceSync.class));
 
-        subject = new JoynrIntegrationBean(beanManager, joynrRuntimeFactory, serviceProviderDiscovery);
+        subject = new JoynrIntegrationBean(beanManager,
+                                           joynrRuntimeFactory,
+                                           serviceProviderDiscovery,
+                                           callbackHandlerDiscovery);
     }
 
     @Test

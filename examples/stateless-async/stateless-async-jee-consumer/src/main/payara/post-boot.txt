@@ -1,0 +1,4 @@
+create-managed-scheduled-executor-service --corepoolsize=100 concurrent/joynrMessagingScheduledExecutor
+create-managed-scheduled-executor-service --corepoolsize=100 concurrent/waitForGetResultsExecutor
+create-jdbc-connection-pool --datasourceclassname org.postgresql.ds.PGConnectionPoolDataSource --restype javax.sql.ConnectionPoolDataSource --property user=statelessasync:password=statelessasync:DatabaseName=statelessasync:ServerName=postgresql:port=5432 statelessAsyncPool
+create-jdbc-resource --connectionpoolid statelessAsyncPool jdbc/statelessAsyncDb

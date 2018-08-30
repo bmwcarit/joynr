@@ -20,6 +20,8 @@ package io.joynr.dispatching;
 
 import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -67,13 +69,16 @@ import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.JoynrMessageProcessor;
+import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.sender.MessageSender;
 import io.joynr.provider.AbstractSubscriptionPublisher;
 import io.joynr.provider.ProviderCallback;
 import io.joynr.provider.ProviderContainer;
+import io.joynr.proxy.DefaultStatelessAsyncIdCalculatorImpl;
 import io.joynr.proxy.JoynrMessagingConnectorFactory;
+import io.joynr.proxy.StatelessAsyncIdCalculator;
 import io.joynr.runtime.JoynrThreadFactory;
 import joynr.MutableMessage;
 import joynr.OneWayRequest;
@@ -105,6 +110,7 @@ public class RequestReplyManagerTest {
     private Request request1;
     private Request request2;
     private Request request3;
+    private Request request4;
     private OneWayRequest oneWay1;
 
     private ObjectMapper objectMapper;
@@ -149,6 +155,9 @@ public class RequestReplyManagerTest {
                 ScheduledExecutorService cleanupExecutor = Executors.newSingleThreadScheduledExecutor(namedThreadFactory);
                 bind(ScheduledExecutorService.class).annotatedWith(Names.named(JOYNR_SCHEDULER_CLEANUP))
                                                     .toInstance(cleanupExecutor);
+                bind(StatelessAsyncIdCalculator.class).to(DefaultStatelessAsyncIdCalculatorImpl.class);
+                bind(StatelessAsyncRequestReplyIdManager.class).to(DefaultStatelessAsyncRequestReplyIdManagerImpl.class);
+                bind(String.class).annotatedWith(Names.named(MessagingPropertyKeys.CHANNELID)).toInstance("channelId");
                 Multibinder.newSetBinder(binder(), new TypeLiteral<JoynrMessageProcessor>() {
                 });
             }
@@ -178,6 +187,11 @@ public class RequestReplyManagerTest {
         request1 = new Request(method.getName(), params1, method.getParameterTypes());
         request2 = new Request(method.getName(), params2, method.getParameterTypes());
         request3 = new Request("unknownMethodName", params2, method.getParameterTypes());
+        request4 = new Request(method.getName(),
+                               params1,
+                               method.getParameterTypes(),
+                               "requestReplyId",
+                               "statelessAsyncCallbackMethodId");
 
         Method fireAndForgetMethod = TestOneWayRecipient.class.getMethod("fireAndForgetMethod",
                                                                          new Class[]{ String.class });
@@ -221,6 +235,21 @@ public class RequestReplyManagerTest {
 
         assertEquals(new String(messageCapture.getValue().getPayload(), StandardCharsets.UTF_8),
                      objectMapper.writeValueAsString(request1));
+        assertFalse(messageCapture.getValue().isStatelessAsync());
+    }
+
+    @Test
+    public void statelessAsyncFlagSetCorrectly() throws Exception {
+        requestReplyManager.sendRequest(testSenderParticipantId,
+                                        testMessageResponderDiscoveryEntry,
+                                        request4,
+                                        new MessagingQos(TIME_TO_LIVE));
+
+        ArgumentCaptor<MutableMessage> messageCaptor = ArgumentCaptor.forClass(MutableMessage.class);
+        verify(messageSenderMock).sendMessage(messageCaptor.capture());
+        MutableMessage message = messageCaptor.getValue();
+        assertNotNull(message);
+        assertTrue(message.isStatelessAsync());
     }
 
     private abstract class ReplyCallback extends ProviderCallback<Reply> {

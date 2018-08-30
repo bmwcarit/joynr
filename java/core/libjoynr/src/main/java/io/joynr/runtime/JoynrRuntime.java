@@ -22,6 +22,7 @@ import java.util.Set;
 
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
+import io.joynr.proxy.StatelessAsyncCallback;
 import joynr.types.ProviderQos;
 
 /**
@@ -75,6 +76,20 @@ public interface JoynrRuntime {
      *            The provider instance.
      */
     void unregisterProvider(String domain, Object provider);
+
+    /**
+     * Registers the given stateless async callback instance for use with its
+     * {@link StatelessAsyncCallback#getUseCase() use case}.
+     * When you subsequently make stateless async calls using a proxy where you provide the same use case name when
+     * building the proxy, and the proxy interface matches the callback interface, then this instance will be used for
+     * Reply payloads arriving for it.
+     * It is recommended that you register your stateless async callback at startup time, so that the runtime is
+     * immediately able to process any incoming replies for requests that may have resulted from other nodes in a
+     * cluster.
+     *
+     * @param statelessAsyncCallback the stateless async callback instance to register.
+     */
+    void registerStatelessAsyncCallback(StatelessAsyncCallback statelessAsyncCallback);
 
     /**
      * Returns a proxy builder instance to build a proxy object for one or more

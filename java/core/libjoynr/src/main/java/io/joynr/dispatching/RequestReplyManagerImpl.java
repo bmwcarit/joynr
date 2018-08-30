@@ -65,6 +65,7 @@ import joynr.types.DiscoveryEntryWithMetaInfo;
 public class RequestReplyManagerImpl
         implements RequestReplyManager, DirectoryListener<ProviderContainer>, ShutdownListener {
     private static final Logger logger = LoggerFactory.getLogger(RequestReplyManagerImpl.class);
+    private final StatelessAsyncRequestReplyIdManager statelessAsyncRequestReplyIdManager;
     private boolean running = true;
 
     private List<Thread> outstandingRequestThreads = Collections.synchronizedList(new ArrayList<Thread>());
@@ -83,13 +84,16 @@ public class RequestReplyManagerImpl
     private ScheduledExecutorService cleanupScheduler;
 
     @Inject
+    // CHECKSTYLE:OFF
     public RequestReplyManagerImpl(MutableMessageFactory messageFactory,
                                    ReplyCallerDirectory replyCallerDirectory,
                                    ProviderDirectory providerDirectory,
                                    MessageSender messageSender,
                                    RequestInterpreter requestInterpreter,
                                    @Named(JOYNR_SCHEDULER_CLEANUP) ScheduledExecutorService cleanupScheduler,
-                                   ShutdownNotifier shutdownNotifier) {
+                                   ShutdownNotifier shutdownNotifier,
+                                   StatelessAsyncRequestReplyIdManager statelessAsyncRequestReplyIdManager) {
+        // CHECKSTYLE:ON
         this.messageFactory = messageFactory;
         this.replyCallerDirectory = replyCallerDirectory;
         this.providerDirectory = providerDirectory;
@@ -99,6 +103,7 @@ public class RequestReplyManagerImpl
         this.cleanupSchedulerFuturesMap = new ConcurrentHashMap<>();
         providerDirectory.addListener(this);
         shutdownNotifier.registerForShutdown(this);
+        this.statelessAsyncRequestReplyIdManager = statelessAsyncRequestReplyIdManager;
     }
 
     /*
@@ -121,6 +126,7 @@ public class RequestReplyManagerImpl
                                                               request,
                                                               messagingQos);
         message.setLocalMessage(toDiscoveryEntry.getIsLocal());
+        message.setStatelessAsync(request.getStatelessAsyncCallbackMethodId() != null);
 
         logger.debug("REQUEST call proxy: method: {}, requestReplyId: {}, messageId: {}, proxy participantId: {}, "
                 + "provider participantId: {}, params: {}",
@@ -280,9 +286,12 @@ public class RequestReplyManagerImpl
 
     @Override
     public void handleReply(final Reply reply) {
-        final ReplyCaller callBack = replyCallerDirectory.remove(reply.getRequestReplyId());
+        String callbackId = statelessAsyncRequestReplyIdManager.getCallbackId(reply);
+        boolean stateless = !reply.getRequestReplyId().equals(callbackId);
+        final ReplyCaller callBack = stateless ? replyCallerDirectory.get(callbackId)
+                : replyCallerDirectory.remove(callbackId);
         if (callBack == null) {
-            logger.warn("No reply caller found for id: " + reply.getRequestReplyId());
+            logger.warn("No reply caller found for id: " + callbackId);
             return;
         }
         callBack.messageCallBack(reply);
@@ -290,9 +299,11 @@ public class RequestReplyManagerImpl
 
     @Override
     public void handleError(Request request, Throwable error) {
-        String requestReplyId = request.getRequestReplyId();
-        if (requestReplyId != null) {
-            ReplyCaller replyCaller = replyCallerDirectory.remove(requestReplyId);
+        boolean stateless = request.getStatelessAsyncCallbackMethodId() != null;
+        String callbackId = stateless ? request.getStatelessAsyncCallbackMethodId() : request.getRequestReplyId();
+        if (callbackId != null) {
+            ReplyCaller replyCaller = stateless ? replyCallerDirectory.get(callbackId)
+                    : replyCallerDirectory.remove(callbackId);
             if (replyCaller != null) {
                 replyCaller.error(error);
             }

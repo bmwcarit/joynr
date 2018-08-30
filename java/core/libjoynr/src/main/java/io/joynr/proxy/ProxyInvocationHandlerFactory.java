@@ -30,6 +30,7 @@ public interface ProxyInvocationHandlerFactory {
                                          @Assisted("interfaceName") String interfaceName,
                                          @Assisted("proxyParticipantId") String proxyParticipantId,
                                          DiscoveryQos discoveryQos,
-                                         MessagingQos messagingQos);
+                                         MessagingQos messagingQos,
+                                         StatelessAsyncCallback statelessAsyncCallback);
 
 }

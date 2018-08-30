@@ -160,6 +160,8 @@ public class ProxyTest {
     Dispatcher dispatcher;
     @Mock
     RoutingTable routingTable;
+    @Mock
+    private StatelessAsyncCallbackDirectory statelessAsyncCallbackDirectory;
 
     @Mock
     private LocalDiscoveryAggregator localDiscoveryAggregator;
@@ -262,6 +264,8 @@ public class ProxyTest {
                 bind(SubscriptionManager.class).toInstance(subscriptionManager);
                 bind(MessageRouter.class).toInstance(messageRouter);
                 bind(RoutingTable.class).toInstance(routingTable);
+                bind(StatelessAsyncCallbackDirectory.class).toInstance(statelessAsyncCallbackDirectory);
+                bind(StatelessAsyncIdCalculator.class).toInstance(new DefaultStatelessAsyncIdCalculatorImpl("channel"));
                 install(new FactoryModuleBuilder().implement(ProxyInvocationHandler.class,
                                                              ProxyInvocationHandlerImpl.class)
                                                   .build(ProxyInvocationHandlerFactory.class));
@@ -279,6 +283,7 @@ public class ProxyTest {
 
         proxyBuilderFactory = new ProxyBuilderFactoryImpl(localDiscoveryAggregator,
                                                           injector.getInstance(ProxyInvocationHandlerFactory.class),
+                                                          injector.getInstance(StatelessAsyncCallbackDirectory.class),
                                                           MAX_TTL_MS,
                                                           DISCOVERY_TIMEOUT_MS,
                                                           RETRY_INTERVAL_MS);
