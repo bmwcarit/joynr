@@ -38,9 +38,6 @@ public class MqttOnlyJoynrConfigurationProvider {
     @JoynrProperties
     public Properties joynrProperties() {
         Properties joynrProperties = new Properties();
-        joynrProperties.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_CONTEXT_ROOT,
-                                    "/io.joynr.jeeintegration.providerwar/messaging");
-        joynrProperties.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH, "http://localhost:28585");
         joynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "tcp://localhost:1883");
         return joynrProperties;
     }
