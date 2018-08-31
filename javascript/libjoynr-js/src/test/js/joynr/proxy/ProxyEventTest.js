@@ -313,7 +313,7 @@ describe("libjoynr-js.joynr.proxy.ProxyEvent", () => {
                         filterParameters
                     })
                     .then(fail)
-                    .catch(done);
+                    .catch(() => done());
             })
             .catch(fail);
     });

@@ -267,7 +267,7 @@ describe("libjoynr-js.joynr.UtilInternal.timeoutPromise", () => {
         });
         UtilInternal.timeoutPromise(promise, 100)
             .then(fail)
-            .catch(done);
+            .catch(() => done());
         jasmine.clock().tick(101);
     });
 });
