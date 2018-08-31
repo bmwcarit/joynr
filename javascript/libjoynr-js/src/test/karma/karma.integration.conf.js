@@ -117,18 +117,11 @@ module.exports = function(config) {
             debug: true,
             configure(bundle) {
                 bundle.on("prebundle", () => {
-                    [
-                        "start/InProcessRuntime"
-                    ].map(module => {
+                    ["start/InProcessRuntime"].map(module => {
                         bundle.ignore(`./${module}.js`, { basedir: "../../../src/main/js/" });
                     });
 
-                    bundle
-                        .exclude("smrf-native-cpp.node")
-                        .exclude("wscpp")
-                        .exclude("bufferutil")
-                        .exclude("utf-8-validate")
-                        .exclude("node-persist");
+                    bundle.exclude("bufferutil").exclude("utf-8-validate");
                 });
             }
         }
