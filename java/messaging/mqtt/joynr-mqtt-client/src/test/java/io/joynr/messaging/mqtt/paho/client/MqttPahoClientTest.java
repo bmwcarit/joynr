@@ -602,8 +602,9 @@ public class MqttPahoClientTest {
         String username = null;
         String password = null;
 
-        MqttClient mqttClient = new MqttClient(brokerUri, clientId, new MemoryPersistence(), scheduledExecutorService);
-        joynrMqttClient = new MqttPahoClient(mqttClient,
+        joynrMqttClient = new MqttPahoClient(new MqttAddress(brokerUri, "sometopic"),
+                                             clientId,
+                                             scheduledExecutorService,
                                              reconnectSleepMs,
                                              keepAliveTimerSec,
                                              connectionTimeoutSec,
@@ -628,9 +629,10 @@ public class MqttPahoClientTest {
         joynrMqttClient.subscribe(ownTopic.getTopic());
 
         // manually call disconnect and connectionLost
-        mqttClient.disconnect(500);
-        MqttException exception = new MqttException(MqttException.REASON_CODE_CLIENT_TIMEOUT);
+
         MqttPahoClient mqttPahoClient = (MqttPahoClient) joynrMqttClient;
+        mqttPahoClient.getMqttClient().disconnect(500);
+        MqttException exception = new MqttException(MqttException.REASON_CODE_CLIENT_TIMEOUT);
         mqttPahoClient.connectionLost(exception);
 
         joynrMqttClientPublishAndVerifyReceivedMessage(serializedMessage);

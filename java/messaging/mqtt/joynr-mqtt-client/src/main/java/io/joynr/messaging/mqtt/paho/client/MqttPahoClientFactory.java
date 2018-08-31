@@ -20,9 +20,7 @@ package io.joynr.messaging.mqtt.paho.client;
 
 import java.util.concurrent.ScheduledExecutorService;
 
-import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
-import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -169,15 +167,11 @@ public class MqttPahoClientFactory implements MqttClientFactory, ShutdownListene
 
         MqttPahoClient pahoClient = null;
         try {
-            logger.debug("Create Mqtt Client. Address: {}", ownAddress);
-
             String clientId = clientIdProvider.getClientId() + clientIdSuffix;
-            MqttClient mqttClient = new MqttClient(ownAddress.getBrokerUri(),
-                                                   clientId,
-                                                   new MemoryPersistence(),
-                                                   scheduledExecutorService);
             logger.info("Creating MQTT Paho client using MQTT client ID: {}", clientId);
-            pahoClient = new MqttPahoClient(mqttClient,
+            pahoClient = new MqttPahoClient(ownAddress,
+                                            clientId,
+                                            scheduledExecutorService,
                                             reconnectSleepMs,
                                             keepAliveTimerSec,
                                             connectionTimeoutSec,
