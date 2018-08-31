@@ -36,10 +36,14 @@ public class BroadcastUtil {
 	private extension NamingUtil
 
 	def Iterable<FArgument> getOutputParameters(FBroadcast event) {
-		if (event === null || event.outArgs.size() == 0){
-			return new HashSet<FArgument>
-		}
-		else{
+		if (event === null || event.outArgs.size() == 0) {
+			if (event.isSelective) {
+				throw new IllegalStateException("Selective broadcast without output parameters is not supported. " +
+					"Please edit the definition of the selective broadcast \"" + event.name + "\"")
+			} else {
+				return new HashSet<FArgument>
+			}
+		} else {
 			return event.outArgs.filterNull
 		}
 	}
