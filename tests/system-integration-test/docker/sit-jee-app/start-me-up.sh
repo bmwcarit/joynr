@@ -8,11 +8,11 @@ function wait_for_endpoint {
 	max_retries=60
 	until curl -f -s http://localhost:8080/sit-jee-app/consumer/ping || ((retry_count++ > max_retries))
 	do
-		echo "Consumer ping not started yet ..."
+		echo "JEE Consumer ping not started yet ..."
 		sleep 2
 	done
 	if (( retry_count > max_retries )); then
-		echo "Consumer failed to start in time."
+		echo "SIT RESULT: JEE Consumer failed to start in time."
 		return -1
 	fi
 	return 0
