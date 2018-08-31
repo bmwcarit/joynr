@@ -629,9 +629,9 @@ public class MqttPahoClientTest {
 
         // manually call disconnect and connectionLost
         mqttClient.disconnect(500);
-        MqttException exeption = new MqttException(MqttException.REASON_CODE_CLIENT_TIMEOUT);
+        MqttException exception = new MqttException(MqttException.REASON_CODE_CLIENT_TIMEOUT);
         MqttPahoClient mqttPahoClient = (MqttPahoClient) joynrMqttClient;
-        mqttPahoClient.connectionLost(exeption);
+        mqttPahoClient.connectionLost(exception);
 
         joynrMqttClientPublishAndVerifyReceivedMessage(serializedMessage);
     }
