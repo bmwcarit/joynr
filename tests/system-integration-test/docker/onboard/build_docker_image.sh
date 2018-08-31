@@ -7,6 +7,8 @@
 
 echo "### start build_docker_image.sh for onboard ###"
 
+set -e
+
 BUILDDIR=target
 REPODIR=${HOME}/.m2/repository
 DOCKER_REPOSITORY=

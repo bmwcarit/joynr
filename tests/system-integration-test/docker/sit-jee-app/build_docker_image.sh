@@ -2,6 +2,8 @@
 
 echo "### start build_docker_image.sh for sit-jee-app ###"
 
+set -e
+
 if [ ! -d ../../sit-jee-app/target ] || [ ! -f ../../sit-jee-app/target/sit-jee-app.war ]; then
 	echo "You have to have built the project with 'mvn package' first."
 	exit -1

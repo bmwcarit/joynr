@@ -2,6 +2,8 @@
 
 echo "### start build_docker_image.sh for joynr-backend-jee ###"
 
+set -e
+
 if [ -d target ]; then
 	rm -Rf target
 fi
