@@ -286,6 +286,7 @@ describe("libjoynr-js.joynr.UtilInternal.augmentConfig", () => {
 
     const value1 = "value1";
     const value2 = "value2";
+    const value3 = "value3";
 
     const string1 = "string1";
     const number1 = 4;
@@ -310,5 +311,11 @@ describe("libjoynr-js.joynr.UtilInternal.augmentConfig", () => {
         expect(proxy.key2()).toEqual(number1);
         expect(proxy.keyWithObject.keyWithArrayString[0]()).toEqual(string1);
         expect(proxy.keyWithObject.keyWithArrayObject.key1()).toEqual(value2);
+    });
+
+    it("allows keys to be inserted", () => {
+        proxy.a.b.c.d.e.f = value3;
+        expect(config.a.b.c.d.e.f).toEqual(value3);
+        expect(proxy.a.b.c.d.e.f()).toEqual(value3);
     });
 });

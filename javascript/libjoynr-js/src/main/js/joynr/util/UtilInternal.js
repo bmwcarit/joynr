@@ -314,7 +314,17 @@ UtilInternal.augmentConfig = function(config) {
                 return proxy;
             },
 
-            set() {}
+            set(object, prop, value) {
+                let level = config;
+                for (let i = 0; i < parts.length; i++) {
+                    if (!level.hasOwnProperty([parts[i]])) {
+                        level[parts[i]] = {};
+                    }
+                    level = level[parts[i]];
+                }
+                parts = [];
+                level[prop] = value;
+            }
         }
     );
     return proxy;
