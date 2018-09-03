@@ -31,7 +31,7 @@ import com.google.inject.name.Named;
 
 public class JoynrPropertiesModule extends PropertyLoadingModule {
     public static final String PATTERN_DOESNT_START_WITH_JOYNAPP = "^(?!joynrapp).*$";
-    static final String PATTERN_STARTS_WITH_JOYN = "^(javax)|(joynr)|(JOYNR).*$";
+    static final String PATTERN_STARTS_WITH_JOYN = "^(javax)|(joynr)|(JOYNR)_*$";
 
     public JoynrPropertiesModule(Properties customProperties) {
         Properties defaultMessagingProperties = PropertyLoader.loadProperties(MessagingPropertyKeys.DEFAULT_MESSAGING_PROPERTIES_FILE);

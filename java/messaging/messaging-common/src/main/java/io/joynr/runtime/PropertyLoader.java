@@ -148,7 +148,7 @@ public class PropertyLoader {
         while (keys.hasMoreElements()) {
             String nextKey = (String) keys.nextElement();
             if (Pattern.compile(regex).matcher(nextKey).find()) {
-                properties.put(nextKey, originalProperties.getProperty(nextKey));
+                properties.put(nextKey.replace("_", "."), originalProperties.getProperty(nextKey));
             }
         }
 
