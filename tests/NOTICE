@@ -68,6 +68,7 @@ This project has dependencies to:
   io.joynr.tests.graceful-shutdown-test:graceful-shutdown-test-second-level-provider under The Apache Software License, Version 2.0
   io.joynr.tests.system-integration-test:sit-cpp-app under The Apache Software License, Version 2.0
   io.joynr.tests.system-integration-test:sit-java-app under The Apache Software License, Version 2.0
+  io.joynr.tests.system-integration-test:sit-jee-api under The Apache Software License, Version 2.0
   io.joynr.tests.system-integration-test:sit-jee-app under The Apache Software License, Version 2.0
   io.joynr.tests.system-integration-test:sit-node-app under The Apache Software License, Version 2.0
   io.joynr.tests:graceful-shutdown-test under The Apache Software License, Version 2.0
