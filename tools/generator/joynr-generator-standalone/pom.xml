@@ -55,7 +55,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
-				<version>2.10</version>
 				<configuration>
 					<!-- exclude org.eclipse.xtext.dependencies, as it is packed as
 					     pom and the unpack-dependencies goal is unable to process
