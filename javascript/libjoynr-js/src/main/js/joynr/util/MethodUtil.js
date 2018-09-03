@@ -23,6 +23,10 @@ const UtilInternal = require("./UtilInternal");
  */
 const MethodUtil = {};
 
+function createErrorMessage(objectType, name, type) {
+    return `Signature does not match: type ${objectType} of argument ${name} does not match with expected type ${type}`;
+}
+
 /**
  * @param {Object[]} operationArguments Arguments coming from the proxy or provider
  * @param {Object[]} parameters List of paraemters for the operationArguments
@@ -49,15 +53,27 @@ MethodUtil.transformParameterMapToArray = function transformParameterMapToArray(
             );
         }
         // check if the parameter type matches the type of the argument value
-        // allow dangling _ in variable once
-        const objectType = Array.isArray(argumentValue) ? "Array" : argumentValue._typeName || typeof argumentValue;
-        if (argument.javascriptType !== objectType) {
-            // signature does not match
-            throw new Error(
-                `Signature does not match: type "${objectType}" of argument "${
-                    argument.name
-                }" does not match with expected type "${argument.javascriptType}"`
-            );
+        if (Array.isArray(argumentValue)) {
+            if (!argument.type.endsWith("[]")) {
+                throw new Error(createErrorMessage("Array", argument.name, argument.type));
+            }
+        } else {
+            const objectType = argumentValue._typeName || argumentValue.constructor.name;
+
+            if (objectType === "Number") {
+                if (
+                    argument.type !== "Integer" &&
+                    argument.type !== "Double" &&
+                    argument.type !== "Short" &&
+                    argument.type !== "Long" &&
+                    argument.type !== "Float" &&
+                    argument.type !== "Byte"
+                ) {
+                    throw new Error(createErrorMessage(objectType, argument.name, argument.type));
+                }
+            } else if (argument.type !== objectType) {
+                throw new Error(createErrorMessage(objectType, argument.name, argument.type));
+            }
         }
 
         paramDatatypes.push(argument.type);
