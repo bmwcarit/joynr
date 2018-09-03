@@ -64,8 +64,8 @@ public class MessageQueue {
      * the {@link #PROPERTY_MESSAGE_QUEUE_SHUTDOWN_MAX_TIMEOUT} property, which defaults to five seconds.
      */
     public void waitForQueueToDrain() {
-        logger.info("joynr message queue stopping.");
         int remainingMessages = delayableImmutableMessages.size();
+        logger.info("joynr message queue stopping. Contains {} remaining messages.", remainingMessages);
         if (remainingMessages > 0) {
             long shutdownStart = System.currentTimeMillis();
             while (System.currentTimeMillis() - shutdownStart < shutdownTimeoutMs) {
