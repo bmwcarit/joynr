@@ -279,7 +279,6 @@
 				<dependency>
 					<groupId>org.jboss.arquillian.container</groupId>
 					<artifactId>arquillian-container-test-api</artifactId>
-					<version>1.1.15.Final</version>
 					<scope>test</scope>
 				</dependency>
 				<dependency>

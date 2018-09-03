@@ -112,7 +112,6 @@
 			<!-- use ant to copy the info directory without copying over empty directories -->
 			<plugin>
 				<artifactId>maven-antrun-plugin</artifactId>
-				<version>1.4</version>
 				<executions>
 					<execution>
 						<phase>prepare-package</phase>

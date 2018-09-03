@@ -46,7 +46,6 @@
 			<plugin>
 				<groupId>io.joynr.tools.generator</groupId>
 				<artifactId>joynr-generator-maven-plugin</artifactId>
-				<version>${project.version}</version>
 				<executions>
 					<execution>
 						<id>generate-cpp</id>
@@ -74,7 +73,6 @@
 			<!-- clean up should remove any generated code as well -->
 			<plugin>
 				<artifactId>maven-clean-plugin</artifactId>
-				<version>2.5</version>
 				<configuration>
 					<filesets>
 						<!-- The following part is only required for target language C++ -->
