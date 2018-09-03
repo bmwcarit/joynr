@@ -47,4 +47,11 @@ provisioning.logging = {
         }
     }
 };
+
+
+provisioning.persistency = {
+  routingTable: false, capabilities: false, publications: false
+};
+
+
 module.exports = provisioning;

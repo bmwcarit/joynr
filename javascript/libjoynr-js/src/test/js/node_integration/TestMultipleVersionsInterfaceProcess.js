@@ -20,7 +20,6 @@
  */
 
 const ChildProcessUtils = require("./ChildProcessUtils");
-ChildProcessUtils.overrideRequirePaths();
 
 const joynr = require("joynr");
 const provisioning = require("../../resources/joynr/provisioning/provisioning_cc.js");

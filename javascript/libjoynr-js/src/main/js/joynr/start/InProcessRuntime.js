@@ -99,8 +99,10 @@ class InProcessRuntime extends JoynrRuntime {
         await this._initializePersistency(provisioning);
 
         const channelId =
-            provisioning.channelId || this._persistency.getItem("joynr.channels.channelId.1") || `chjs_${uuid()}`;
-        this._persistency.setItem("joynr.channels.channelId.1", channelId);
+            provisioning.channelId ||
+            (this._persistency && this._persistency.getItem("joynr.channels.channelId.1")) ||
+            `chjs_${uuid()}`;
+        if (this._persistency) this._persistency.setItem("joynr.channels.channelId.1", channelId);
 
         let untypedCapabilities = provisioning.capabilities || [];
         clusterControllerSettings = defaultClusterControllerSettings({

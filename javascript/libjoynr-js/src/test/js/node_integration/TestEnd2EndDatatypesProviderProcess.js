@@ -20,7 +20,6 @@
  */
 
 const ChildProcessUtils = require("./ChildProcessUtils");
-ChildProcessUtils.overrideRequirePaths();
 
 // anything that you load here is served through the jsTestDriverServer, if you add an entry you
 // have to make it available through the jsTestDriverIntegrationTests.conf
