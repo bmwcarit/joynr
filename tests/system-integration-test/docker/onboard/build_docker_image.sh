@@ -5,27 +5,26 @@
 # of DNS handling and HOSTS entries via environment settings.
 # It is thus required that it does not get assigned any value.
 
-echo "### start build_docker_image.sh for onboard ###"
+echo "### start build_docker_image.sh for SIT onboard ###"
 
 set -e
 
-BUILDDIR=target
-REPODIR=${HOME}/.m2/repository
+DOCKER_BUILDDIR=$(pwd)/target
+MAVEN_REPODIR=${HOME}/.m2/repository
+MAVEN_SETTINGS=${HOME}/.m2/settings.xml
+
 DOCKER_REPOSITORY=
-MAVENSETTINGS=${HOME}/.m2/settings.xml
 BASE_DOCKER_IMAGE=joynr-runtime-environment-base:latest
 DOCKER_IMAGE_VERSION=latest
 DOCKER_RUN_ADD_FLAGS=
+
+JOYNR_REPODIR=$(pwd)/../../../..
+SIT_DIR=$(pwd)/../..
+CPP_BUILDDIR=$JOYNR_REPODIR/build
 JOBS=4
 NVM_DIR="/usr/local/nvm"
 NODE_VERSION=8.11.1
 
-# The --no-XYZ-build options can be used to skip building the given artifact
-# inside a Docker container (which can be quite slow depending on your system).
-# If you do so, then you have to make sure that the build results are available
-# by other means - either you have to have built them locally, or you have to
-# have the build results still lying around from previously executing this
-# script without the relevant '--no-XYZ-build' option.
 
 function print_usage {
 	echo "
@@ -35,17 +34,25 @@ Possible options:
 
 --no-cpp-build: skip the clean / build of the joynr CPP framework
 --no-cpp-test-build: skip building the sit-cpp-app
---no-java-test-build: skip building the sit-java-app
---no-node-test-build: skip building the sit-node-app
+--no-java-build: skip building the sit-java-app and the joynr JAVA framework
+--no-node-build: skip building the sit-node-app and the joynr JS framework
 -r, --docker-repository <docker repository>: set the value of the DOCKER_REPOSITORY variable, determining
-    where the cpp base image is pulled from.
+	where the cpp base image is pulled from.
 -v, --docker-image-version <docker image version>: set the value of the DOCKER_IMAGE_VERSION variable, determining
-    where which version of the docker build images (node, cpp) should be used
+	where which version of the docker build images (node, cpp) should be used
 --docker-run-flags <run flags>: add some additional flags required when calling docker (e.g. \"--sig-proxy -e DEV_UID=$(id -u)\")
 --repo-dir <repository directory>: override the default maven repository directory
 --maven-settings <maven settings file>: override the location of the default maven settings file
 -j, --jobs <number of build jobs>: the number of build jobs used for parallel C++ builds.
 -h, --help: print this information
+
+> Note:
+> The --no-XYZ-build options can be used to skip building the given artifact
+> inside a Docker container (which can be quite slow depending on your system).
+> If you do so, then you have to make sure that the build results are available
+> by other means - either you have to have built them locally, or you have to
+> have the build results still lying around from previously executing this
+> script without the relevant '--no-XYZ-build' option.
 "
 }
 
@@ -59,11 +66,11 @@ do
 		--no-cpp-test-build)
 		NO_CPP_TEST_BUILD=true
 		;;
-		--no-java-test-build)
-		NO_JAVA_TEST_BUILD=true
+		--no-java-build)
+		NO_JAVA_BUILD=true
 		;;
-		--no-node-test-build)
-		NO_NODE_TEST_BUILD=true
+		--no-node-build)
+		NO_NODE_BUILD=true
 		;;
 		-r|--docker-repository)
 		DOCKER_REPOSITORY="$2"
@@ -78,11 +85,11 @@ do
 		shift
 		;;
 		--repo-dir)
-		REPODIR="$2"
+		MAVEN_REPODIR="$2"
 		shift
 		;;
 		--maven-settings)
-		MAVENSETTINGS="$2"
+		MAVEN_SETTINGS="$2"
 		shift
 		;;
 		-j|--jobs)
@@ -102,12 +109,12 @@ do
 	shift
 done
 
-CPP_BUILD_DOCKER_IMAGE=joynr-cpp-gcc:${DOCKER_IMAGE_VERSION}
+JAVA_CPP_BUILD_DOCKER_IMAGE=joynr-cpp-gcc:${DOCKER_IMAGE_VERSION}
 JS_BUILD_DOCKER_IMAGE=joynr-ilt-gcc:${DOCKER_IMAGE_VERSION}
 
 function execute_in_docker {
 	if [ -z "$2" ]; then
-		DOCKERIMAGE=${CPP_BUILD_DOCKER_IMAGE}
+		DOCKERIMAGE=${JAVA_CPP_BUILD_DOCKER_IMAGE}
 	else
 		DOCKERIMAGE=$2
 	fi
@@ -116,34 +123,28 @@ function execute_in_docker {
 		-e http_proxy=$http_proxy \
 		-e https_proxy=$https_proxy \
 		-e no_proxy=$no_proxy \
-		-v $(pwd)/../../../..:/data/src:Z \
-		-v $MAVENSETTINGS:/home/joynr/.m2/settings.xml:z \
-		-v $REPODIR:/home/joynr/.m2/repository:Z \
-		-v $(pwd)/../../../../build:/data/build:Z \
+		-v $JOYNR_REPODIR:/data/src:Z \
+		-v $MAVEN_SETTINGS:/home/joynr/.m2/settings.xml:z \
+		-v $MAVEN_REPODIR:/home/joynr/.m2/repository:Z \
+		-v $CPP_BUILDDIR:/data/build:Z \
 		${DOCKER_REPOSITORY}${DOCKERIMAGE} \
 		/bin/sh -c "$1"
 }
 
-#create build dir:
-mkdir -p $(pwd)/../../../../build
-
-if [ $NO_JAVA_TEST_BUILD ]; then
+if [ $NO_JAVA_BUILD ]; then
 	echo "Skipping Java build ..."
 else
 	# Build Java
 	execute_in_docker '"echo \"Generate Java API\" && cd /data/src && mvn clean install -P no-license-and-notice,no-java-formatter,no-checkstyle -DskipTests"'
-	SKIP_MAVEN_BUILD_CPP_PREREQUISITES=true
 fi
+
+# create cpp build dir:
+mkdir -p $CPP_BUILDDIR
 
 if [ $NO_CPP_BUILD ]; then
 	echo "Skipping C++ build ..."
 else
-	# if Java is included, the following section can be skipped since already included above
-	if [ -z $SKIP_MAVEN_BUILD_CPP_PREREQUISITES ]
-	then
-		execute_in_docker '"echo \"Generate joynr C++ API\" && cd /data/src && mvn clean install -P no-license-and-notice,no-java-formatter,no-checkstyle -DskipTests -am\
-		--projects io.joynr:basemodel,io.joynr.tools.generator:dependency-libs,io.joynr.tools.generator:generator-framework,io.joynr.tools.generator:joynr-generator-maven-plugin,io.joynr.tools.generator:cpp-generator,io.joynr.cpp:libjoynr,io.joynr.tools.generator:joynr-generator-standalone"'
-	fi
+	# assume joynr JAVA and joynr-generator-standalone are already built and C++ code has been generated
 
 	execute_in_docker '"echo \"Building and packaging MoCOCrW\" && /data/src/docker/joynr-cpp-base/scripts/build/cpp-build-MoCOCrW-package.sh 2>&1"'
 
@@ -158,45 +159,47 @@ fi
 if [ $NO_CPP_TEST_BUILD ]; then
 	echo "Skipping C++ test build ..."
 else
+	# dummyKeychain is also built here
 	execute_in_docker '"echo \"Building C++ System Integration Tests\" && export JOYNR_INSTALL_DIR=/data/build/joynr && echo \"dir: \$JOYNR_INSTALL_DIR\" && /data/src/docker/joynr-cpp-base/scripts/build/cpp-build-tests.sh system-integration-test --jobs '"${JOBS}"' --clangformatter OFF 2>&1"'
 fi
 
-if [ $NO_NODE_TEST_BUILD ]; then
+if [ $NO_NODE_BUILD ]; then
 	echo "Skipping Node test build ..."
 else
-	execute_in_docker '"echo \"Building sit node app\" && cd /data/src && mvn clean install -P javascript -am --projects io.joynr.javascript:libjoynr-js,io.joynr.tests:test-base,io.joynr.tests.system-integration-test:sit-node-app && cd tests/system-integration-test/sit-node-app && npm install"' $JS_BUILD_DOCKER_IMAGE
+	# only build joynr javascript, test-base and sit-node-app
+	execute_in_docker '"echo \"Building sit node app\" && cd /data/src && mvn clean install -P javascript -am --projects io.joynr.javascript:libjoynr-js,io.joynr.tests:test-base,io.joynr.tests.system-integration-test:sit-node-app && cd tests/system-integration-test/sit-node-app && npm -verbose install"' $JS_BUILD_DOCKER_IMAGE
 fi
 
-if [ -d ${BUILDDIR} ]; then
-	rm -Rf ${BUILDDIR}
+if [ -d ${DOCKER_BUILDDIR} ]; then
+	rm -Rf ${DOCKER_BUILDDIR}
 fi
-mkdir -p ${BUILDDIR}
-
-cp -R -L ../../sit-node-app ${BUILDDIR}
-
-cp -R ../../../../build/tests ${BUILDDIR}
-
-cp -R ../../../../build/dummyKeychain ${BUILDDIR}
-
-cp -R ././../../../../docker/joynr-base/scripts/gen-certificates.sh ${BUILDDIR}
-cp -R ././../../../../docker/joynr-base/openssl.conf ${BUILDDIR}
+mkdir -p ${DOCKER_BUILDDIR}
 
 # create the directory in any case because it is referenced in Dockerfile below
-mkdir ${BUILDDIR}/sit-java-app
-cp ../../sit-java-app/target/sit-java-app-*-jar-with-dependencies.jar ${BUILDDIR}/sit-java-app
+mkdir ${DOCKER_BUILDDIR}/sit-java-app
+cp $SIT_DIR/sit-java-app/target/sit-java-app-*-jar-with-dependencies.jar ${DOCKER_BUILDDIR}/sit-java-app
+
+cp -R -L $SIT_DIR/sit-node-app ${DOCKER_BUILDDIR}
+
+cp -R $CPP_BUILDDIR/tests ${DOCKER_BUILDDIR}
+
+cp -R $CPP_BUILDDIR/dummyKeychain ${DOCKER_BUILDDIR}
 
 # Find a file with a name which matches 'joynr-[version].rpm'
-find  ../../../../build/joynr/package/RPM/x86_64/ -iregex ".*joynr-[0-9].*rpm" -exec cp {} $BUILDDIR/joynr.rpm \;
+find  $CPP_BUILDDIR/joynr/package/RPM/x86_64/ -iregex ".*joynr-[0-9].*rpm" -exec cp {} $DOCKER_BUILDDIR/joynr.rpm \;
 
 # Find a file with a name which matches 'smrf-[version].rpm'
-find  ../../../../build/smrf/package/RPM/x86_64/ -iregex ".*smrf-[0-9].*rpm" -exec cp {} $BUILDDIR/smrf.rpm \;
+find  $CPP_BUILDDIR/smrf/package/RPM/x86_64/ -iregex ".*smrf-[0-9].*rpm" -exec cp {} $DOCKER_BUILDDIR/smrf.rpm \;
 
-cp ../../../../docker/build/MoCOCrW.tar.gz $BUILDDIR/MoCOCrW.tar.gz
+cp $JOYNR_REPODIR/docker/build/MoCOCrW.tar.gz $DOCKER_BUILDDIR/MoCOCrW.tar.gz
+
+cp -R $JOYNR_REPODIR/docker/joynr-base/scripts/gen-certificates.sh ${DOCKER_BUILDDIR}
+cp -R $JOYNR_REPODIR/docker/joynr-base/openssl.conf ${DOCKER_BUILDDIR}
 
 CURRENTDATE=`date`
-cp onboard-cc-messaging.settings ${BUILDDIR}
-cp run-onboard-sit.sh ${BUILDDIR}
-cat > $BUILDDIR/Dockerfile <<-EOF
+cp onboard-cc-messaging.settings ${DOCKER_BUILDDIR}
+cp run-onboard-sit.sh ${DOCKER_BUILDDIR}
+cat > $DOCKER_BUILDDIR/Dockerfile <<-EOF
     FROM ${DOCKER_REPOSITORY}${BASE_DOCKER_IMAGE}
 
     RUN echo "current date: $CURRENTDATE" && curl www.google.de > /dev/null
@@ -287,13 +290,13 @@ cat > $BUILDDIR/Dockerfile <<-EOF
 
     ENTRYPOINT ["sh", "-c", "\"/data/run-onboard-sit.sh\""]
 EOF
-chmod 666 $BUILDDIR/Dockerfile
+chmod 666 $DOCKER_BUILDDIR/Dockerfile
 
 echo "environment:" `env`
-echo "docker build -t sit-apps:latest --build-arg http_proxy=${http_proxy} --build-arg https_proxy=${https_proxy} --build-arg no_proxy=${no_proxy} $BUILDDIR"
-docker build -t sit-apps:latest --build-arg http_proxy=${http_proxy} --build-arg https_proxy=${https_proxy} --build-arg no_proxy=${no_proxy} $BUILDDIR
+echo "docker build -t sit-apps:latest --build-arg http_proxy=${http_proxy} --build-arg https_proxy=${https_proxy} --build-arg no_proxy=${no_proxy} $DOCKER_BUILDDIR"
+docker build -t sit-apps:latest --build-arg http_proxy=${http_proxy} --build-arg https_proxy=${https_proxy} --build-arg no_proxy=${no_proxy} $DOCKER_BUILDDIR
 
 docker images --filter "dangling=true" -q | xargs docker rmi -f 2>/dev/null
-rm -Rf $BUILDDIR
+rm -Rf $DOCKER_BUILDDIR
 
 echo "### end build_docker_image.sh for onboard ###"
