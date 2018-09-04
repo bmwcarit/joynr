@@ -17,15 +17,15 @@
  * #L%
  */
 
-const ChildProcessUtils = require("./ChildProcessUtils");
+const ChildProcessUtils = require("../ChildProcessUtils");
 
 const joynr = require("joynr");
 
-const provisioning = require("../../resources/joynr/provisioning/provisioning_cc.js");
-const RadioProvider = require("../../generated/joynr/vehicle/RadioProvider.js");
-const RadioStation = require("../../generated/joynr/vehicle/radiotypes/RadioStation.js");
-const Country = require("../../generated/joynr/datatypes/exampleTypes/Country.js");
-const ErrorList = require("../../generated/joynr/vehicle/radiotypes/ErrorList.js");
+const provisioning = require("../../../resources/joynr/provisioning/provisioning_cc.js");
+const RadioProvider = require("../../../generated/joynr/vehicle/RadioProvider.js");
+const RadioStation = require("../../../generated/joynr/vehicle/radiotypes/RadioStation.js");
+const Country = require("../../../generated/joynr/datatypes/exampleTypes/Country.js");
+const ErrorList = require("../../../generated/joynr/vehicle/radiotypes/ErrorList.js");
 
 // attribute value for provider
 let isOn = true;

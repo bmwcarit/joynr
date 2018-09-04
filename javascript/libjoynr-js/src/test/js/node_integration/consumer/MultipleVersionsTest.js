@@ -18,17 +18,17 @@
  * limitations under the License.
  * #L%
  */
-let IntegrationUtils = require("./IntegrationUtils");
-let MultipleVersionsInterfaceProviderNameVersion1 = require("../../generated/joynr/tests/MultipleVersionsInterface1Provider");
-let MultipleVersionsInterfaceProviderNameVersion2 = require("../../generated/joynr/tests/MultipleVersionsInterface2Provider");
-let MultipleVersionsInterfaceProviderPackageVersion1 = require("../../generated/joynr/tests/v1/MultipleVersionsInterfaceProvider");
-let MultipleVersionsInterfaceProviderPackageVersion2 = require("../../generated/joynr/tests/v2/MultipleVersionsInterfaceProvider");
-let MultipleVersionsInterfaceProviderUnversioned = require("../../generated/joynr/tests/MultipleVersionsInterfaceProvider");
-let MultipleVersionsInterfaceProxyNameVersion1 = require("../../generated/joynr/tests/MultipleVersionsInterface1Proxy");
-let MultipleVersionsInterfaceProxyNameVersion2 = require("../../generated/joynr/tests/MultipleVersionsInterface2Proxy");
-let MultipleVersionsInterfaceProxyPackageVersion2 = require("../../generated/joynr/tests/v2/MultipleVersionsInterfaceProxy");
-let ProviderImplementation = require("./MultipleVersionsInterfaceProviderImplementation");
-let provisioning = require("../../resources/joynr/provisioning/provisioning_cc.js");
+let IntegrationUtils = require("../IntegrationUtils");
+let MultipleVersionsInterfaceProviderNameVersion1 = require("../../../generated/joynr/tests/MultipleVersionsInterface1Provider");
+let MultipleVersionsInterfaceProviderNameVersion2 = require("../../../generated/joynr/tests/MultipleVersionsInterface2Provider");
+let MultipleVersionsInterfaceProviderPackageVersion1 = require("../../../generated/joynr/tests/v1/MultipleVersionsInterfaceProvider");
+let MultipleVersionsInterfaceProviderPackageVersion2 = require("../../../generated/joynr/tests/v2/MultipleVersionsInterfaceProvider");
+let MultipleVersionsInterfaceProviderUnversioned = require("../../../generated/joynr/tests/MultipleVersionsInterfaceProvider");
+let MultipleVersionsInterfaceProxyNameVersion1 = require("../../../generated/joynr/tests/MultipleVersionsInterface1Proxy");
+let MultipleVersionsInterfaceProxyNameVersion2 = require("../../../generated/joynr/tests/MultipleVersionsInterface2Proxy");
+let MultipleVersionsInterfaceProxyPackageVersion2 = require("../../../generated/joynr/tests/v2/MultipleVersionsInterfaceProxy");
+let ProviderImplementation = require("../provider/MultipleVersionsInterfaceProviderImplementation");
+let provisioning = require("../../../resources/joynr/provisioning/provisioning_cc.js");
 
 const domain = "MultipleVersionsTestDomain";
 let joynr = require("joynr");
@@ -48,15 +48,15 @@ describe("libjoynr-js.integration.MultipleVersionsTest", () => {
         process.removeAllListeners("exit");
 
         // rerequire moduls
-        MultipleVersionsInterfaceProviderNameVersion1 = require("../../generated/joynr/tests/MultipleVersionsInterface1Provider");
-        MultipleVersionsInterfaceProviderNameVersion2 = require("../../generated/joynr/tests/MultipleVersionsInterface2Provider");
-        MultipleVersionsInterfaceProviderPackageVersion1 = require("../../generated/joynr/tests/v1/MultipleVersionsInterfaceProvider");
-        MultipleVersionsInterfaceProviderPackageVersion2 = require("../../generated/joynr/tests/v2/MultipleVersionsInterfaceProvider");
-        MultipleVersionsInterfaceProviderUnversioned = require("../../generated/joynr/tests/MultipleVersionsInterfaceProvider");
-        MultipleVersionsInterfaceProxyNameVersion1 = require("../../generated/joynr/tests/MultipleVersionsInterface1Proxy");
-        MultipleVersionsInterfaceProxyNameVersion2 = require("../../generated/joynr/tests/MultipleVersionsInterface2Proxy");
-        MultipleVersionsInterfaceProxyPackageVersion2 = require("../../generated/joynr/tests/v2/MultipleVersionsInterfaceProxy");
-        joynr = require("joynr");
+        MultipleVersionsInterfaceProviderNameVersion1 = require("../../../generated/joynr/tests/MultipleVersionsInterface1Provider");
+        MultipleVersionsInterfaceProviderNameVersion2 = require("../../../generated/joynr/tests/MultipleVersionsInterface2Provider");
+        MultipleVersionsInterfaceProviderPackageVersion1 = require("../../../generated/joynr/tests/v1/MultipleVersionsInterfaceProvider");
+        MultipleVersionsInterfaceProviderPackageVersion2 = require("../../../generated/joynr/tests/v2/MultipleVersionsInterfaceProvider");
+        MultipleVersionsInterfaceProviderUnversioned = require("../../../generated/joynr/tests/MultipleVersionsInterfaceProvider");
+        MultipleVersionsInterfaceProxyNameVersion1 = require("../../../generated/joynr/tests/MultipleVersionsInterface1Proxy");
+        MultipleVersionsInterfaceProxyNameVersion2 = require("../../../generated/joynr/tests/MultipleVersionsInterface2Proxy");
+        MultipleVersionsInterfaceProxyPackageVersion2 = require("../../../generated/joynr/tests/v2/MultipleVersionsInterfaceProxy");
+        joynr = require("../../../../main/js/joynr");
     });
 
     async function buildProvider(providerType) {

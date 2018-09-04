@@ -17,11 +17,11 @@
  * #L%
  */
 
-const TestEnd2EndDatatypesTestData = require("./TestEnd2EndDatatypesTestData");
-const IntegrationUtils = require("./IntegrationUtils");
-const provisioning = require("../../resources/joynr/provisioning/provisioning_cc");
-const End2EndAbstractTest = require("./End2EndAbstractTest");
-const waitsFor = require("../global/WaitsFor");
+const TestEnd2EndDatatypesTestData = require("../TestEnd2EndDatatypesTestData");
+const IntegrationUtils = require("../IntegrationUtils");
+const provisioning = require("../../../resources/joynr/provisioning/provisioning_cc");
+const End2EndAbstractTest = require("../End2EndAbstractTest");
+const waitsFor = require("../../global/WaitsFor");
 describe("libjoynr-js.integration.end2end.datatypes", () => {
     let datatypesProxy;
     const abstractTest = new End2EndAbstractTest("End2EndDatatypesTest", "TestEnd2EndDatatypesProviderProcess");

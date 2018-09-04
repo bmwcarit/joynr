@@ -19,15 +19,15 @@
  * #L%
  */
 
-const ChildProcessUtils = require("./ChildProcessUtils");
+const ChildProcessUtils = require("../ChildProcessUtils");
 
 // anything that you load here is served through the jsTestDriverServer, if you add an entry you
 // have to make it available through the jsTestDriverIntegrationTests.conf
-const joynr = require("joynr");
-const provisioning = require("../../resources/joynr/provisioning/provisioning_cc.js");
+const joynr = require("../../../../main/js/joynr");
+const provisioning = require("../../../resources/joynr/provisioning/provisioning_cc.js");
 
-const DatatypesProvider = require("../../generated/joynr/datatypes/DatatypesProvider.js");
-const TestEnd2EndDatatypesTestData = require("./TestEnd2EndDatatypesTestData");
+const DatatypesProvider = require("../../../generated/joynr/datatypes/DatatypesProvider.js");
+const TestEnd2EndDatatypesTestData = require("../TestEnd2EndDatatypesTestData");
 
 let providerDomain;
 

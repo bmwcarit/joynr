@@ -21,15 +21,15 @@ console.log("joynr Jasmine 2.x system integration tests");
 
 const Jasmine = require("jasmine");
 const jasmine = new Jasmine();
-jasmine.loadConfigFile(`${__dirname  }/spec/support/jasmine.json`);
+jasmine.loadConfigFile(`${__dirname}/spec/support/jasmine.json`);
 
-const CompatibleProvidersTest = require("../js/node_integration/CompatibleProvidersTest.js");
-const End2EndRPCTest = require("../js/node_integration/End2EndRPCTest.js");
-const End2EndSubscriptionTest = require("../js/node_integration/End2EndSubscriptionTest.js");
-const End2EndDatatypesTest = require("../js/node_integration/End2EndDatatypesTest.js");
-const IncompatibleProviderTest = require("../js/node_integration/IncompatibleProviderTest.js");
-const LocalDiscoveryTest = require("../js/node_integration/LocalDiscoveryTest");
-const MultipleVersionsTest = require("../js/node_integration/MultipleVersionsTest");
+const CompatibleProvidersTest = require("../js/node_integration/consumer/CompatibleProvidersTest.js");
+const End2EndRPCTest = require("../js/node_integration/consumer/End2EndRPCTest.js");
+const End2EndSubscriptionTest = require("../js/node_integration/consumer/End2EndSubscriptionTest.js");
+const End2EndDatatypesTest = require("../js/node_integration/consumer/End2EndDatatypesTest.js");
+const IncompatibleProviderTest = require("../js/node_integration/consumer/IncompatibleProviderTest.js");
+const LocalDiscoveryTest = require("../js/node_integration/consumer/LocalDiscoveryTest");
+const MultipleVersionsTest = require("../js/node_integration/consumer/MultipleVersionsTest");
 
 console.log("all tests modules loaded");
 jasmine.execute();

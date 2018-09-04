@@ -20,7 +20,7 @@
  * #L%
  */
 
-const End2EndAbstractTest = require("./End2EndAbstractTest");
+const End2EndAbstractTest = require("../End2EndAbstractTest");
 
 describe("Compatibility tests for providers created by new generator", () => {
     it("Provider with version in package name and original proxy", done => {

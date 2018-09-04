@@ -17,14 +17,14 @@
  * #L%
  */
 
-let joynr = require("joynr");
-const RadioProxy = require("../../generated/joynr/vehicle/RadioProxy");
-const TestWithVersionProvider = require("../../generated/joynr/tests/TestWithVersionProvider");
-const TestWithVersionProxy = require("../../generated/joynr/tests/TestWithVersionProxy");
-const IntegrationUtils = require("./IntegrationUtils");
-const provisioning = require("../../resources/joynr/provisioning/provisioning_cc");
-const DiscoveryQos = require("../../../../src/main/js/joynr/proxy/DiscoveryQos");
-const JoynrException = require("../../../main/js/joynr/exceptions/JoynrException");
+let joynr = require("../../../../main/js/joynr");
+const RadioProxy = require("../../../generated/joynr/vehicle/RadioProxy");
+const TestWithVersionProvider = require("../../../generated/joynr/tests/TestWithVersionProvider");
+const TestWithVersionProxy = require("../../../generated/joynr/tests/TestWithVersionProxy");
+const IntegrationUtils = require("../IntegrationUtils");
+const provisioning = require("../../../resources/joynr/provisioning/provisioning_cc");
+const DiscoveryQos = require("../../../../main/js/joynr/proxy/DiscoveryQos");
+const JoynrException = require("../../../../main/js/joynr/exceptions/JoynrException");
 
 describe("libjoynr-js.integration.localDiscoveryTest", () => {
     let provisioningSuffix;

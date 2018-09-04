@@ -112,7 +112,7 @@ IntegrationUtils.initializeChildProcess = function(childName, provisioningSuffix
           }
         : {};
 
-    const forked = child_process.fork(path.join(__dirname, `${childName}.js`), [], processConfig);
+    const forked = child_process.fork(path.join(__dirname, "provider", `${childName}.js`), [], processConfig);
     forked.on("message", msg => {
         // Handle messages from child process
         console.log(`received message: ${JSON.stringify(msg)}`);

@@ -19,14 +19,14 @@
  * #L%
  */
 
-const ChildProcessUtils = require("./ChildProcessUtils");
+const ChildProcessUtils = require("../ChildProcessUtils");
 
 const joynr = require("joynr");
-const provisioning = require("../../resources/joynr/provisioning/provisioning_cc.js");
-const MultipleVersionsInterfaceProviderNameVersion1 = require("../../generated/joynr/tests/MultipleVersionsInterface1Provider");
-const MultipleVersionsInterfaceProviderNameVersion2 = require("../../generated/joynr/tests/MultipleVersionsInterface2Provider");
-const MultipleVersionsInterfaceProviderPackageVersion1 = require("../../generated/joynr/tests/v1/MultipleVersionsInterfaceProvider");
-const MultipleVersionsInterfaceProviderPackageVersion2 = require("../../generated/joynr/tests/v2/MultipleVersionsInterfaceProvider");
+const provisioning = require("../../../resources/joynr/provisioning/provisioning_cc.js");
+const MultipleVersionsInterfaceProviderNameVersion1 = require("../../../generated/joynr/tests/MultipleVersionsInterface1Provider");
+const MultipleVersionsInterfaceProviderNameVersion2 = require("../../../generated/joynr/tests/MultipleVersionsInterface2Provider");
+const MultipleVersionsInterfaceProviderPackageVersion1 = require("../../../generated/joynr/tests/v1/MultipleVersionsInterfaceProvider");
+const MultipleVersionsInterfaceProviderPackageVersion2 = require("../../../generated/joynr/tests/v2/MultipleVersionsInterfaceProvider");
 const ProviderImplementation = require("./MultipleVersionsInterfaceProviderImplementation");
 
 let multipleVersionsInterfaceProvider, MultipleVersionsInterfaceProvider, providerDomain;

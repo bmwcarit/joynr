@@ -18,17 +18,17 @@
  */
 
 const joynr = require("joynr");
-const RadioStation = require("../../generated/joynr/vehicle/radiotypes/RadioStation");
-const ErrorList = require("../../generated/joynr/vehicle/radiotypes/ErrorList");
-const Country = require("../../generated/joynr/datatypes/exampleTypes/Country");
-const StringMap = require("../../generated/joynr/datatypes/exampleTypes/StringMap");
-const ComplexStructMap = require("../../generated/joynr/datatypes/exampleTypes/ComplexStructMap");
-const ComplexStruct = require("../../generated/joynr/datatypes/exampleTypes/ComplexStruct");
-const ComplexTestType = require("../../generated/joynr/tests/testTypes/ComplexTestType");
-const IntegrationUtils = require("./IntegrationUtils");
-const End2EndAbstractTest = require("./End2EndAbstractTest");
-const provisioning = require("../../resources/joynr/provisioning/provisioning_cc");
-const waitsFor = require("../global/WaitsFor");
+const RadioStation = require("../../../generated/joynr/vehicle/radiotypes/RadioStation");
+const ErrorList = require("../../../generated/joynr/vehicle/radiotypes/ErrorList");
+const Country = require("../../../generated/joynr/datatypes/exampleTypes/Country");
+const StringMap = require("../../../generated/joynr/datatypes/exampleTypes/StringMap");
+const ComplexStructMap = require("../../../generated/joynr/datatypes/exampleTypes/ComplexStructMap");
+const ComplexStruct = require("../../../generated/joynr/datatypes/exampleTypes/ComplexStruct");
+const ComplexTestType = require("../../../generated/joynr/tests/testTypes/ComplexTestType");
+const IntegrationUtils = require("../IntegrationUtils");
+const End2EndAbstractTest = require("../End2EndAbstractTest");
+const provisioning = require("../../../resources/joynr/provisioning/provisioning_cc");
+const waitsFor = require("../../global/WaitsFor");
 
 describe("libjoynr-js.integration.end2end.rpc", () => {
     let subscriptionQosOnChange;

@@ -19,14 +19,14 @@
  */
 
 const joynr = require("joynr");
-const RadioStation = require("../../generated/joynr/vehicle/radiotypes/RadioStation");
-const Country = require("../../generated/joynr/datatypes/exampleTypes/Country");
-const ComplexTestType = require("../../generated/joynr/tests/testTypes/ComplexTestType");
-const SubscriptionException = require("../../../main/js/joynr/exceptions/SubscriptionException");
-const IntegrationUtils = require("./IntegrationUtils");
-const End2EndAbstractTest = require("./End2EndAbstractTest");
-const provisioning = require("../../resources/joynr/provisioning/provisioning_cc");
-const waitsFor = require("../global/WaitsFor");
+const RadioStation = require("../../../generated/joynr/vehicle/radiotypes/RadioStation");
+const Country = require("../../../generated/joynr/datatypes/exampleTypes/Country");
+const ComplexTestType = require("../../../generated/joynr/tests/testTypes/ComplexTestType");
+const SubscriptionException = require("../../../../main/js/joynr/exceptions/SubscriptionException");
+const IntegrationUtils = require("../IntegrationUtils");
+const End2EndAbstractTest = require("../End2EndAbstractTest");
+const provisioning = require("../../../resources/joynr/provisioning/provisioning_cc");
+const waitsFor = require("../../global/WaitsFor");
 
 describe("libjoynr-js.integration.end2end.subscription", () => {
     const subscriptionLength = 2000;
