@@ -15,7 +15,7 @@ services:
     image: "sit-jee-app:latest"
     container_name: sit-jee-app
 
-  sit-apps:
-    image: "sit-apps:latest"
-    container_name: sit-apps
+  sit-onboard-apps:
+    image: "sit-onboard-apps:latest"
+    container_name: sit-onboard-apps
     tty: true

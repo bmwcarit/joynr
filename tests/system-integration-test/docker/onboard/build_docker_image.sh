@@ -293,8 +293,8 @@ EOF
 chmod 666 $DOCKER_BUILDDIR/Dockerfile
 
 echo "environment:" `env`
-echo "docker build -t sit-apps:latest --build-arg http_proxy=${http_proxy} --build-arg https_proxy=${https_proxy} --build-arg no_proxy=${no_proxy} $DOCKER_BUILDDIR"
-docker build -t sit-apps:latest --build-arg http_proxy=${http_proxy} --build-arg https_proxy=${https_proxy} --build-arg no_proxy=${no_proxy} $DOCKER_BUILDDIR
+echo "docker build -t sit-onboard-apps:latest --build-arg http_proxy=${http_proxy} --build-arg https_proxy=${https_proxy} --build-arg no_proxy=${no_proxy} $DOCKER_BUILDDIR"
+docker build -t sit-onboard-apps:latest --build-arg http_proxy=${http_proxy} --build-arg https_proxy=${https_proxy} --build-arg no_proxy=${no_proxy} $DOCKER_BUILDDIR
 
 docker images --filter "dangling=true" -q | xargs docker rmi -f 2>/dev/null
 rm -Rf $DOCKER_BUILDDIR
