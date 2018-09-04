@@ -20,7 +20,6 @@
  */
 
 const ChildProcessUtils = require("./ChildProcessUtils");
-ChildProcessUtils.overrideRequirePaths();
 
 const joynr = require("joynr");
 const provisioning = require("../../resources/joynr/provisioning/provisioning_cc.js");
@@ -30,11 +29,10 @@ const MultipleVersionsInterfaceProviderPackageVersion1 = require("../../generate
 const MultipleVersionsInterfaceProviderPackageVersion2 = require("../../generated/joynr/tests/v2/MultipleVersionsInterfaceProvider");
 const providerImplementation = require("./MultipleVersionsInterfaceProviderImplementation");
 
-let multipleVersionsInterfaceProvider, MultipleVersionsInterfaceProvider, providerDomain, joynrShutdown;
+let multipleVersionsInterfaceProvider, MultipleVersionsInterfaceProvider, providerDomain;
 
 function initializeTest(provisioningSuffix, providedDomain, settings) {
     providerDomain = providedDomain;
-    joynrShutdown = !settings.noJoynrShutdown;
 
     joynr.selectRuntime("inprocess");
     return joynr.load(provisioning).then(() => {
@@ -81,11 +79,7 @@ function startTest() {
 }
 
 function terminateTest() {
-    return joynr.registration.unregisterProvider(providerDomain, multipleVersionsInterfaceProvider).then(() => {
-        if (joynrShutdown) {
-            joynr.shutdown();
-        }
-    });
+    return joynr.registration.unregisterProvider(providerDomain, multipleVersionsInterfaceProvider);
 }
 
 ChildProcessUtils.registerHandlers(initializeTest, startTest, terminateTest);

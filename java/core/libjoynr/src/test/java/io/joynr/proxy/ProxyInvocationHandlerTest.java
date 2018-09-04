@@ -87,6 +87,9 @@ public class ProxyInvocationHandlerTest {
     private ShutdownNotifier shutdownNotifier;
     private ShutdownListener shutdownListener;
 
+    @Mock
+    private StatelessAsyncIdCalculator statelessAsyncIdCalculator;
+
     private ProxyInvocationHandlerImpl proxyInvocationHandler;
 
     private final ExecutorService threadPool = new ScheduledThreadPoolExecutor(2);
@@ -122,15 +125,16 @@ public class ProxyInvocationHandlerTest {
                 return null;
             }
         }).when(shutdownNotifier).registerForShutdown(any());
-        proxyInvocationHandler = new ProxyInvocationHandlerImpl(new HashSet(Arrays.asList(domain)),
+        proxyInvocationHandler = new ProxyInvocationHandlerImpl(new HashSet<String>(Arrays.asList(domain)),
                                                                 interfaceName,
                                                                 proxyParticipantId,
                                                                 discoveryQos,
                                                                 messagingQos,
+                                                                mock(StatelessAsyncCallback.class),
                                                                 connectorFactory,
                                                                 mockMessageRouter,
-                                                                shutdownNotifier);
-
+                                                                shutdownNotifier,
+                                                                statelessAsyncIdCalculator);
     }
 
     @Test(timeout = 3000)
@@ -170,7 +174,7 @@ public class ProxyInvocationHandlerTest {
         ArbitrationResult arbitrationResult = new ArbitrationResult();
         DiscoveryEntryWithMetaInfo discoveryEntry = new DiscoveryEntryWithMetaInfo();
         discoveryEntry.setParticipantId("participantId");
-        arbitrationResult.setDiscoveryEntries(new HashSet(Arrays.asList(discoveryEntry)));
+        arbitrationResult.setDiscoveryEntries(new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(discoveryEntry)));
         proxyInvocationHandler.createConnector(arbitrationResult);
 
         // if the bug that causes one thread to hang in arbitration exists, one
@@ -185,14 +189,15 @@ public class ProxyInvocationHandlerTest {
         ConnectorInvocationHandler connectorInvocationHandler = mock(ConnectorInvocationHandler.class);
         when(connectorFactory.create(Mockito.anyString(),
                                      Mockito.<ArbitrationResult> any(),
-                                     eq(messagingQos))).thenReturn(connectorInvocationHandler);
+                                     Mockito.eq(messagingQos),
+                                     Mockito.eq(null))).thenReturn(connectorInvocationHandler);
         Method fireAndForgetMethod = TestServiceSync.class.getMethod("callMe", new Class<?>[]{ String.class });
         Object[] args = new Object[]{ "test" };
 
         ArbitrationResult arbitrationResult = new ArbitrationResult();
         DiscoveryEntryWithMetaInfo discoveryEntry = new DiscoveryEntryWithMetaInfo();
         discoveryEntry.setParticipantId("participantId");
-        arbitrationResult.setDiscoveryEntries(new HashSet(Arrays.asList(discoveryEntry)));
+        arbitrationResult.setDiscoveryEntries(new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(discoveryEntry)));
         proxyInvocationHandler.createConnector(arbitrationResult);
         proxyInvocationHandler.invokeInternal(proxy, fireAndForgetMethod, args);
 
@@ -232,7 +237,8 @@ public class ProxyInvocationHandlerTest {
         ConnectorInvocationHandler connectorInvocationHandler = mock(ConnectorInvocationHandler.class);
         when(connectorFactory.create(Mockito.anyString(),
                                      Mockito.<ArbitrationResult> any(),
-                                     eq(messagingQos))).thenReturn(connectorInvocationHandler);
+                                     Mockito.eq(messagingQos),
+                                     Mockito.eq(null))).thenReturn(connectorInvocationHandler);
         MyBroadcastSubscriptionListener broadcastSubscriptionListener = mock(MyBroadcastSubscriptionListener.class);
         SubscriptionQos subscriptionQos = mock(SubscriptionQos.class);
 
@@ -246,7 +252,7 @@ public class ProxyInvocationHandlerTest {
         ArbitrationResult arbitrationResult = new ArbitrationResult();
         DiscoveryEntryWithMetaInfo discoveryEntry = new DiscoveryEntryWithMetaInfo();
         discoveryEntry.setParticipantId("participantId");
-        arbitrationResult.setDiscoveryEntries(new HashSet(Arrays.asList(discoveryEntry)));
+        arbitrationResult.setDiscoveryEntries(new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(discoveryEntry)));
         proxyInvocationHandler.createConnector(arbitrationResult);
         proxyInvocationHandler.invokeInternal(proxy, subscribeMethod, args);
 
@@ -284,7 +290,7 @@ public class ProxyInvocationHandlerTest {
     @Test
     public void testExecuteFireAndForgetAfterPrepareForShutdownAllowed() throws Exception {
         ConnectorInvocationHandler connectorInvocationHandler = mock(ConnectorInvocationHandler.class);
-        when(connectorFactory.create(anyString(), any(), any())).thenReturn(connectorInvocationHandler);
+        when(connectorFactory.create(anyString(), any(), any(), any())).thenReturn(connectorInvocationHandler);
         shutdownListener.prepareForShutdown();
         proxyInvocationHandler.createConnector(mock(ArbitrationResult.class));
         Method method = TestServiceSync.class.getMethod("callMe", String.class);

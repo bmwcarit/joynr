@@ -116,4 +116,23 @@ describe("libjoynr-js.joynr.messaging.webmessaging.SharedWebSocket", () => {
         expect(websocket.send).not.toHaveBeenCalled();
         done();
     });
+
+    it("uses callbacks after sharedWebSocket.send", done => {
+        websocket.readyState = WebSocket.OPEN;
+        sharedWebSocket.enableShutdownMode();
+        sharedWebSocket.send(joynrMessage);
+        expect(websocket.send).toHaveBeenCalledWith(
+            websocket.marshalJoynrMessage(joynrMessage),
+            {
+                binary: true
+            },
+            jasmine.any(Function)
+        );
+
+        websocket.send.calls.reset();
+        websocket.readyState = WebSocket.CLOSING;
+        sharedWebSocket.send(joynrMessage);
+        expect(websocket.send).not.toHaveBeenCalled();
+        done();
+    });
 });

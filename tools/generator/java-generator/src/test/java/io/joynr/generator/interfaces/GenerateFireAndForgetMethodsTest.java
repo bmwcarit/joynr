@@ -46,7 +46,8 @@ public class GenerateFireAndForgetMethodsTest extends AbstractJoynrJavaGenerator
         boolean syncAsyncFound = false;
         boolean providerFound = false;
         for (Map.Entry<String, String> entry : result.entrySet()) {
-            if (entry.getKey().endsWith("Sync") || entry.getKey().endsWith("Async")) {
+            if (entry.getKey().endsWith("Sync")
+                    || entry.getKey().endsWith("Async") && !entry.getKey().endsWith("StatelessAsync")) {
                 assertFalse(entry.getValue().contains("@io.joynr.dispatcher.rpc.annotation.FireAndForget"));
                 assertTrue(entry.getValue().contains(", FireAndForgetTestFireAndForget"));
                 syncAsyncFound = true;

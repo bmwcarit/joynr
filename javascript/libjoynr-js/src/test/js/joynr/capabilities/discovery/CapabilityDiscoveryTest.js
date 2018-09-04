@@ -755,6 +755,6 @@ describe("libjoynr-js.joynr.capabilities.discovery.CapabilityDiscovery", () => {
         capabilityDiscovery
             .lookup([domain, domain], interfaceName, discoveryQos)
             .then(fail)
-            .catch(done);
+            .catch(() => done());
     });
 });

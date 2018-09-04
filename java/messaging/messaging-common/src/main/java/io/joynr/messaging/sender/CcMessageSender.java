@@ -22,23 +22,44 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import io.joynr.messaging.routing.MessageRouter;
-import io.joynr.messaging.routing.TransportReadyListener;
+import io.joynr.runtime.GlobalAddressProvider;
 import io.joynr.runtime.ReplyToAddressProvider;
-import joynr.system.RoutingTypes.Address;
-import joynr.system.RoutingTypes.RoutingTypesUtil;
+
+import static joynr.system.RoutingTypes.RoutingTypesUtil.toAddressString;
 
 @Singleton
 public class CcMessageSender extends AbstractMessageSender {
-    @Inject
-    public CcMessageSender(MessageRouter messageRouter, ReplyToAddressProvider replyToAddressProvider) {
-        super(messageRouter);
+    private String replyToAddress;
+    private String globalAddress;
 
-        replyToAddressProvider.registerGlobalAddressesReadyListener(new TransportReadyListener() {
-            @Override
-            public void transportReady(Address address) {
-                String replyToAddress = RoutingTypesUtil.toAddressString(address);
-                setReplyToAddress(replyToAddress);
+    @Inject
+    public CcMessageSender(MessageRouter messageRouter,
+                           ReplyToAddressProvider replyToAddressProvider,
+                           GlobalAddressProvider globalAddressProvider) {
+        super(messageRouter);
+        replyToAddressProvider.registerGlobalAddressesReadyListener((address) -> addReplyToAddress(toAddressString(address)));
+        globalAddressProvider.registerGlobalAddressesReadyListener((address) -> addGlobalAddress(toAddressString(address)));
+    }
+
+    private void addReplyToAddress(String replyToAddress) {
+        synchronized (this) {
+            this.replyToAddress = replyToAddress;
+        }
+        triggerSetReplyToAddressIfReady();
+    }
+
+    private void addGlobalAddress(String globalAddress) {
+        synchronized (this) {
+            this.globalAddress = globalAddress;
+        }
+        triggerSetReplyToAddressIfReady();
+    }
+
+    private void triggerSetReplyToAddressIfReady() {
+        synchronized (this) {
+            if (replyToAddress != null && globalAddress != null) {
+                setReplyToAddress(replyToAddress, globalAddress);
             }
-        });
+        }
     }
 }

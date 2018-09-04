@@ -17,52 +17,41 @@
  * #L%
  */
 
-(function() {
-    var setupProvisionedData = function(provisioning) {
-        provisioning.brokerUri = "tcp://127.0.0.1:1883";
-        provisioning.bounceProxyBaseUrl = "http://127.0.0.1:8080";
-        provisioning.bounceProxyUrl = provisioning.bounceProxyBaseUrl + "/bounceproxy/";
+const provisioning = require("./provisioning_root");
+provisioning.brokerUri = "tcp://127.0.0.1:1883";
+provisioning.bounceProxyBaseUrl = "http://127.0.0.1:8080";
+provisioning.bounceProxyUrl = `${provisioning.bounceProxyBaseUrl}/bounceproxy/`;
 
-        provisioning.internalMessagingQos = {
-            ttl: provisioning.ttl
-        };
+provisioning.internalMessagingQos = {
+    ttl: provisioning.ttl
+};
 
-        provisioning.logging = {
-            configuration: {
-                name: "test config",
-                appenders: {
-                    Console: {
-                        name: "STDOUT",
-                        PatternLayout: {
-                            pattern: "%m%n"
-                        }
-                    }
-                },
-                loggers: {
-                    root: {
-                        level: "error",
-                        AppenderRef: {
-                            ref: "STDOUT"
-                        }
-                    }
+provisioning.logging = {
+    configuration: {
+        name: "test config",
+        appenders: {
+            Console: {
+                name: "STDOUT",
+                PatternLayout: {
+                    pattern: "%m%n"
                 }
             }
-        };
-        return provisioning;
-    };
-
-    // AMD support
-    if (typeof define === "function" && define.amd) {
-        define("joynr/provisioning/provisioning_cc", ["joynr/provisioning/provisioning_root"], function(provisioning) {
-            return setupProvisionedData(provisioning);
-        });
-    } else if (typeof exports !== "undefined") {
-        var provisioning = require("./provisioning_root");
-        module.exports = setupProvisionedData(provisioning);
-    } else {
-        // expect that joynrprovisioning.common has been loaded before
-        window.joynr = window.joynr || {};
-        window.joynr.provisioning = window.joynr.provisioning || {};
-        setupProvisionedData(window.joynr.provisioning);
+        },
+        loggers: {
+            root: {
+                level: "error",
+                AppenderRef: {
+                    ref: "STDOUT"
+                }
+            }
+        }
     }
-})();
+};
+
+
+provisioning.persistency = {
+  routingTable: false, capabilities: false, publications: false
+};
+
+
+module.exports = provisioning;

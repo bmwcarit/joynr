@@ -410,10 +410,19 @@ If a joynr application is deployed into a servlet on an application server, the 
 used to register provider with the global capabilities and channel URL directories. Hence, this must
 be a public host that is directly addressable from all joynr endpoints.
 
-* **REQUIRED if using the JEE integration**
+* **REQUIRED if using the JEE integration with HTTP based communication**
 * **Type**: String
 * **User property**: `joynr.servlet.hostpath`
 * **Default value**: `http://localhost:8080`
+
+### `PROPERTY_SERVLET_CONTEXT_ROOT`
+If a joynr application is deployed into a servlet on an application server, the servlet context root is
+becoming part of the generated endpoint URLs
+
+* **REQUIRED if using the JEE integration with HTTP based communication**
+* **Type**: String
+* **User property**: `joynr.servlet.context.root`
+* **Default value**: `/defaultContextRoot`
 
 ### `PROPERTY_SERVLET_SHUTDOWN_TIMEOUT`
 During joynr shutdown, providers must be removed from the global capabilities directory.

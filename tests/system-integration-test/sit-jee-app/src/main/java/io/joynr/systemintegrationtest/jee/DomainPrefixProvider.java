@@ -45,7 +45,7 @@ public class DomainPrefixProvider {
         if (valueFromEnvironment == null) {
             domainPrefixes.add(DEFAULT_PREFIX);
         } else {
-            domainPrefixes.addAll(new HashSet(Arrays.asList(valueFromEnvironment.split(","))));
+            domainPrefixes.addAll(new HashSet<String>(Arrays.asList(valueFromEnvironment.split(","))));
         }
         logger.debug("Initialised with domain prefixes: " + domainPrefixes);
     }

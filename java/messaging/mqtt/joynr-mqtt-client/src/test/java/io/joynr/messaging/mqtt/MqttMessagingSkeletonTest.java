@@ -18,7 +18,12 @@
  */
 package io.joynr.messaging.mqtt;
 
-import static io.joynr.messaging.mqtt.MqttMessagingSkeletonTestUtil.*;
+import static io.joynr.messaging.mqtt.MqttMessagingSkeletonTestUtil.createTestMessage;
+import static io.joynr.messaging.mqtt.MqttMessagingSkeletonTestUtil.createTestRequestMessage;
+import static io.joynr.messaging.mqtt.MqttMessagingSkeletonTestUtil.failIfCalledAction;
+import static io.joynr.messaging.mqtt.MqttMessagingSkeletonTestUtil.feedMqttSkeletonWithMessages;
+import static io.joynr.messaging.mqtt.MqttMessagingSkeletonTestUtil.feedMqttSkeletonWithRequests;
+import static io.joynr.messaging.mqtt.MqttMessagingSkeletonTestUtil.getExpectToBeCalledAction;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -177,7 +182,7 @@ public class MqttMessagingSkeletonTest {
                                             mqttClientFactory,
                                             mqttTopicPrefixProvider,
                                             new NoOpRawMessagingPreprocessor(),
-                                            new HashSet(Arrays.asList(processorMock)),
+                                            new HashSet<JoynrMessageProcessor>(Arrays.asList(processorMock)),
                                             mqttStatusReceiver);
 
         ImmutableMessage rqMessage = createTestRequestMessage();

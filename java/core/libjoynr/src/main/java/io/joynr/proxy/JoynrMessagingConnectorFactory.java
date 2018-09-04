@@ -46,6 +46,7 @@ public class JoynrMessagingConnectorFactory {
 
     // use for caching because creation of MethodMetaInformation is expensive
     private static final ConcurrentMap<Method, MethodMetaInformation> metaInformationMap = new ConcurrentHashMap<Method, MethodMetaInformation>();
+    private final StatelessAsyncIdCalculator statelessAsyncIdCalculator;
 
     private RequestReplyManager requestReplyManager;
     private SubscriptionManager subscriptionManager;
@@ -55,10 +56,12 @@ public class JoynrMessagingConnectorFactory {
     @Inject
     public JoynrMessagingConnectorFactory(RequestReplyManager requestReplyManager,
                                           ReplyCallerDirectory replyCallerDirectory,
-                                          SubscriptionManager subscriptionManager) {
+                                          SubscriptionManager subscriptionManager,
+                                          StatelessAsyncIdCalculator statelessAsyncIdCalculator) {
         this.requestReplyManager = requestReplyManager;
         this.replyCallerDirectory = replyCallerDirectory;
         this.subscriptionManager = subscriptionManager;
+        this.statelessAsyncIdCalculator = statelessAsyncIdCalculator;
     }
 
     /**
@@ -67,22 +70,28 @@ public class JoynrMessagingConnectorFactory {
      *
      * @param fromParticipantId
      *            Participant Id of the created stub.
-     * @param toParticipantId
-     *            Participant of the Provider/Receiver.
+     * @param toDiscoveryEntries
+     *            Discovery entries for receivers.
      * @param qosSettings
      *            MessagingQos settings
+     * @param statelessAsyncParticipantId
+     *            the participant ID to use for stateless async requests. Can be null. Only required when building
+     *            stateless async enabled proxies.
      * @return connector to execute remote procedure calls
      */
     public JoynrMessagingConnectorInvocationHandler create(final String fromParticipantId,
                                                            final Set<DiscoveryEntryWithMetaInfo> toDiscoveryEntries,
-                                                           final MessagingQos qosSettings) {
+                                                           final MessagingQos qosSettings,
+                                                           final String statelessAsyncParticipantId) {
 
         return new JoynrMessagingConnectorInvocationHandler(toDiscoveryEntries,
                                                             fromParticipantId,
                                                             qosSettings,
                                                             requestReplyManager,
                                                             replyCallerDirectory,
-                                                            subscriptionManager);
+                                                            subscriptionManager,
+                                                            statelessAsyncIdCalculator,
+                                                            statelessAsyncParticipantId);
     }
 
     public static MethodMetaInformation ensureMethodMetaInformationPresent(Method method) {

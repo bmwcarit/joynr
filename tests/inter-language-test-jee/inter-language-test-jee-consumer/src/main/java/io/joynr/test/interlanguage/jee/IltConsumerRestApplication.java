@@ -30,7 +30,7 @@ public class IltConsumerRestApplication extends Application {
 
     @Override
     public Set<Class<?>> getClasses() {
-        return new HashSet(Arrays.asList(IltConsumerRestEndpoint.class));
+        return new HashSet<Class<?>>(Arrays.asList(IltConsumerRestEndpoint.class));
     }
 
 }

@@ -27,8 +27,8 @@ import java.util.Set;
 import org.slf4j.Logger;
 
 public abstract class Directory<T> {
-    protected Set<DirectoryListener<T>> listeners = new HashSet();
-    protected Map<String, T> entryMap = new HashMap<String, T>();
+    protected Set<DirectoryListener<T>> listeners = new HashSet<>();
+    protected Map<String, T> entryMap = new HashMap<>();
 
     public void addListener(DirectoryListener<T> listener) {
         synchronized (entryMap) {

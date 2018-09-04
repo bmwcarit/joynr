@@ -30,6 +30,8 @@ public class Reply implements JoynrMessageType {
     private Object[] response;
     private JoynrException error;
     private String requestReplyId;
+    private transient String statelessAsyncCallbackId;
+    private transient String statelessAsyncCallbackMethodId;
 
     public Reply() {
     }
@@ -60,11 +62,30 @@ public class Reply implements JoynrMessageType {
         return requestReplyId;
     }
 
+    public String getStatelessAsyncCallbackId() {
+        return statelessAsyncCallbackId;
+    }
+
+    public void setStatelessAsyncCallbackId(String statelessAsyncCallbackId) {
+        this.statelessAsyncCallbackId = statelessAsyncCallbackId;
+    }
+
+    public String getStatelessAsyncCallbackMethodId() {
+        return statelessAsyncCallbackMethodId;
+    }
+
+    public void setStatelessAsyncCallbackMethodId(String statelessAsyncCallbackMethodId) {
+        this.statelessAsyncCallbackMethodId = statelessAsyncCallbackMethodId;
+    }
+
     @Override
     public String toString() {
         return "Reply: " + "requestReplyId: " + requestReplyId
                 + (response == null ? "" : ", response: " + Arrays.toString(response))
-                + (error == null ? "" : ", error: " + error);
+                + (error == null ? "" : ", error: " + error)
+                + (statelessAsyncCallbackId == null ? "" : ", statelessAsyncCallbackId: " + statelessAsyncCallbackId)
+                + (statelessAsyncCallbackMethodId == null ? ""
+                        : ", statelessAsyncCallbackMethodId: " + statelessAsyncCallbackMethodId);
     }
 
     @Override

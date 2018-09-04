@@ -52,7 +52,7 @@ public class Utilities {
      * @return List of JSON strings
      */
     public static List<String> splitJson(String combinedJsonString) {
-        List<String> result = new ArrayList();
+        List<String> result = new ArrayList<>();
 
         int numberOfOpeningBraces = 0;
         boolean isInsideString = false;
@@ -90,7 +90,7 @@ public class Utilities {
 
     public static List<ImmutableMessage> splitSMRF(byte[] combinedSMRFMessages) throws EncodingException,
                                                                                 UnsuppportedVersionException {
-        List<ImmutableMessage> result = new ArrayList();
+        List<ImmutableMessage> result = new ArrayList<>();
         byte[] remainingData = combinedSMRFMessages;
 
         while (remainingData.length > 0) {

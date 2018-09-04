@@ -101,8 +101,7 @@ describe("libjoynr-js.joynr.proxy.ProxyOperation", () => {
                     inputParameter: [
                         {
                             name: "radioStation",
-                            type: "joynr.vehicle.radiotypes.RadioStation",
-                            javascriptType: "joynr.vehicle.radiotypes.RadioStation"
+                            type: "joynr.vehicle.radiotypes.RadioStation"
                         }
                     ]
                 },
@@ -110,8 +109,7 @@ describe("libjoynr-js.joynr.proxy.ProxyOperation", () => {
                     inputParameter: [
                         {
                             name: "radioStation",
-                            type: "String",
-                            javascriptType: "string"
+                            type: "String"
                         }
                     ],
                     outputParameter: []
@@ -259,8 +257,7 @@ describe("libjoynr-js.joynr.proxy.ProxyOperation", () => {
             [
                 {
                     name: "returnEnum",
-                    type: TestEnum.ZERO._typeName,
-                    javascriptType: TestEnum.ZERO._typeName
+                    type: TestEnum.ZERO._typeName
                 }
             ],
             ["ZERO"],
@@ -306,13 +303,11 @@ describe("libjoynr-js.joynr.proxy.ProxyOperation", () => {
             [
                 {
                     name: "returnEnum",
-                    type: TestEnum.ZERO._typeName,
-                    javascriptType: TestEnum.ZERO._typeName
+                    type: TestEnum.ZERO._typeName
                 },
                 {
                     name: "returnString",
-                    type: "String",
-                    javascriptType: "string"
+                    type: "String"
                 }
             ],
             ["ZERO", "stringValue"],
@@ -335,8 +330,7 @@ describe("libjoynr-js.joynr.proxy.ProxyOperation", () => {
                 {
                     name: "returnEnum",
                     // currently, we generate the type of the array element into the signature
-                    type: `${TestEnum.ZERO._typeName}[]`,
-                    javascriptType: "Array"
+                    type: `${TestEnum.ZERO._typeName}[]`
                 }
             ],
             [["ZERO", "ONE"]],

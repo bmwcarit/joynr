@@ -88,13 +88,13 @@ public abstract class AbstractGeneratorTest extends TestCase {
         File file = new File(fileName);
         IUriProvider uriProvider = null;
         if (file.isDirectory()) {
-            uriProvider = new FolderUriProvider(new HashSet(Arrays.asList("fidl")), file);
+            uriProvider = new FolderUriProvider(new HashSet<String>(Arrays.asList("fidl")), file);
         } else {
             uriProvider = new IUriProvider() {
 
                 @Override
                 public Iterable<URI> allUris() {
-                    return new ArrayList(Arrays.asList(uris));
+                    return Arrays.asList(uris);
                 }
             };
         }

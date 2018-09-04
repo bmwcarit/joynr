@@ -151,8 +151,7 @@ class ProxyGenerator extends InterfaceJsTemplate {
 					«FOR param: getInputParameters(operation) SEPARATOR ","»
 						{
 							name : "«param.joynrName»",
-							type : "«param.joynrTypeName»",
-							javascriptType : "«param.javascriptTypeName»"
+							type : "«param.joynrTypeName»"
 						}
 					«ENDFOR»
 					],
@@ -160,8 +159,7 @@ class ProxyGenerator extends InterfaceJsTemplate {
 						«FOR param: getOutputParameters(operation) SEPARATOR ","»
 						{
 							name : "«param.joynrName»",
-							type : "«param.joynrTypeName»",
-							javascriptType : "«param.javascriptTypeName»"
+							type : "«param.joynrTypeName»"
 						}
 						«ENDFOR»
 					],

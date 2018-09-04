@@ -6,6 +6,8 @@ the versioning scheme [here](JoynrVersioning.md).
 
 ## API relevant changes
 * **[Java, JEE]** added `prepareForShutdown` lifecycle step
+* **[Java,JEE]** Added stateless async communication API.
+  See the [Java documentation](java.md) and [JEE documentation](jee.md) for details.
 
 ## Other changes
 None.
@@ -17,6 +19,8 @@ None.
   See [Java Configuration Reference](JavaSettings.md) for more details.
 * **[Java]** Introduced `PROPERTY_PREPARE_FOR_SHUTDOWN_TIMEOUT`.
   See [Java Configuration Reference](JavaSettings.md) for more details.
+* **[JS]** Moved default settings for discoveryQos from `capabilities.discoveryQos` to `discoveryQos`
+    because capabilities was used as an array.
 
 # joynr 1.5.0
 

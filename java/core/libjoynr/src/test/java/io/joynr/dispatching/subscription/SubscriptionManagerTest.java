@@ -194,7 +194,7 @@ public class SubscriptionManagerTest {
                                                                                             qos,
                                                                                             future);
         subscriptionManager.registerAttributeSubscription(fromParticipantId,
-                                                          new HashSet(Arrays.asList(toDiscoveryEntry)),
+                                                          new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry)),
                                                           subscriptionRequest);
         subscriptionId = subscriptionRequest.getSubscriptionId();
 
@@ -208,7 +208,7 @@ public class SubscriptionManagerTest {
                                                              Mockito.any(ScheduledFuture.class));
 
         verify(dispatcher).sendSubscriptionRequest(eq(fromParticipantId),
-                                                   eq(new HashSet(Arrays.asList(toDiscoveryEntry))),
+                                                   eq(new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry))),
                                                    any(SubscriptionRequest.class),
                                                    any(MessagingQos.class));
     }
@@ -223,7 +223,7 @@ public class SubscriptionManagerTest {
                                                                                             onChangeQos,
                                                                                             future);
         subscriptionManager.registerBroadcastSubscription(fromParticipantId,
-                                                          new HashSet(Arrays.asList(toDiscoveryEntry)),
+                                                          new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry)),
                                                           subscriptionRequest);
         subscriptionId = subscriptionRequest.getSubscriptionId();
 
@@ -237,7 +237,7 @@ public class SubscriptionManagerTest {
                                                              Mockito.any(ScheduledFuture.class));
 
         verify(dispatcher).sendSubscriptionRequest(eq(fromParticipantId),
-                                                   eq(new HashSet(Arrays.asList(toDiscoveryEntry))),
+                                                   eq(new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry))),
                                                    any(SubscriptionRequest.class),
                                                    any(MessagingQos.class));
     }
@@ -256,7 +256,7 @@ public class SubscriptionManagerTest {
                                                                                 future);
         subscriptionId = request.getSubscriptionId();
         subscriptionManager.registerAttributeSubscription(fromParticipantId,
-                                                          new HashSet(Arrays.asList(toDiscoveryEntry)),
+                                                          new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry)),
                                                           request);
 
         verify(attributeSubscriptionDirectory).put(Mockito.anyString(), Mockito.eq(attributeSubscriptionCallback));
@@ -268,7 +268,7 @@ public class SubscriptionManagerTest {
         verify(subscriptionEndFutures, never()).put(Mockito.anyString(), Mockito.any(ScheduledFuture.class));
 
         verify(dispatcher).sendSubscriptionRequest(eq(fromParticipantId),
-                                                   eq(new HashSet(Arrays.asList(toDiscoveryEntry))),
+                                                   eq(new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry))),
                                                    any(SubscriptionRequest.class),
                                                    any(MessagingQos.class));
     }
@@ -327,7 +327,7 @@ public class SubscriptionManagerTest {
         DiscoveryEntryWithMetaInfo toDiscoveryEntry = new DiscoveryEntryWithMetaInfo();
         toDiscoveryEntry.setParticipantId(toParticipantId);
         subscriptionManager.registerMulticastSubscription(fromParticipantId,
-                                                          new HashSet(Arrays.asList(toDiscoveryEntry)),
+                                                          new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry)),
                                                           invocation);
 
         verify(multicastSubscribersDirectory).put(any(Pattern.class), anySet());
@@ -337,7 +337,7 @@ public class SubscriptionManagerTest {
         }
 
         verify(dispatcher).sendSubscriptionRequest(eq(fromParticipantId),
-                                                   eq(new HashSet(Arrays.asList(toDiscoveryEntry))),
+                                                   eq(new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry))),
                                                    any(SubscriptionRequest.class),
                                                    any(MessagingQos.class));
     }
@@ -350,17 +350,18 @@ public class SubscriptionManagerTest {
         when(missedPublicationTimers.containsKey(subscriptionId)).thenReturn(true);
         when(missedPublicationTimers.get(subscriptionId)).thenReturn(missedPublicationTimer);
         subscriptionManager.unregisterSubscription(fromParticipantId,
-                                                   new HashSet(Arrays.asList(toDiscoveryEntry)),
+                                                   new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry)),
                                                    subscriptionId,
                                                    qosSettings);
 
         verify(subscriptionStates).get(Mockito.eq(subscriptionId));
         verify(subscriptionState).stop();
 
-        verify(dispatcher, times(1)).sendSubscriptionStop(Mockito.eq(fromParticipantId),
-                                                          eq(new HashSet(Arrays.asList(toDiscoveryEntry))),
-                                                          Mockito.eq(new SubscriptionStop(subscriptionId)),
-                                                          Mockito.any(MessagingQos.class));
+        verify(dispatcher,
+               times(1)).sendSubscriptionStop(Mockito.eq(fromParticipantId),
+                                              eq(new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry))),
+                                              Mockito.eq(new SubscriptionStop(subscriptionId)),
+                                              Mockito.any(MessagingQos.class));
 
     }
 
@@ -447,16 +448,18 @@ public class SubscriptionManagerTest {
     public void testHandleMulticastSubscriptionWithWildcardSubscribers() {
         Pattern subscriberOnePattern = Pattern.compile("one/[^/]+/three");
         String subscriberOneId = "one";
-        multicastSubscribersDirectory.putIfAbsent(subscriberOnePattern, new HashSet(Arrays.asList(subscriberOneId)));
+        multicastSubscribersDirectory.putIfAbsent(subscriberOnePattern,
+                                                  new HashSet<String>(Arrays.asList(subscriberOneId)));
 
         Pattern subscriberTwoPattern = Pattern.compile("one/two/three");
         String subscriberTwoId = "two";
-        multicastSubscribersDirectory.putIfAbsent(subscriberTwoPattern, new HashSet(Arrays.asList(subscriberTwoId)));
+        multicastSubscribersDirectory.putIfAbsent(subscriberTwoPattern,
+                                                  new HashSet<String>(Arrays.asList(subscriberTwoId)));
 
         Pattern subscriberThreePattern = Pattern.compile("four/five/six");
         String subscriberThreeId = "three";
         multicastSubscribersDirectory.putIfAbsent(subscriberThreePattern,
-                                                  new HashSet(Arrays.asList(subscriberThreeId)));
+                                                  new HashSet<String>(Arrays.asList(subscriberThreeId)));
 
         @SuppressWarnings("rawtypes")
         Class[] types = new Class[]{ String.class };

@@ -19,5 +19,5 @@
 package io.joynr.arbitration;
 
 public enum ArbitrationStatus {
-    ArbitrationNotStarted, ArbitrationSuccesful, ArbitrationRunning, ArbitrationCanceledForever
+    ArbitrationNotStarted, ArbitrationSuccessful, ArbitrationRunning, ArbitrationCanceledForever
 }

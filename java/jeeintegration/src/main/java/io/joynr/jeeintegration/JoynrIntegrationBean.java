@@ -61,6 +61,8 @@ public class JoynrIntegrationBean {
 
     private ServiceProviderDiscovery serviceProviderDiscovery;
 
+    private CallbackHandlerDiscovery callbackHandlerDiscovery;
+
     private Set<Object> registeredProviders = new HashSet<>();
 
     private JoynrRuntime joynrRuntime;
@@ -73,10 +75,12 @@ public class JoynrIntegrationBean {
     @Inject
     public JoynrIntegrationBean(BeanManager beanManager,
                                 JoynrRuntimeFactory joynrRuntimeFactory,
-                                ServiceProviderDiscovery serviceProviderDiscovery) {
+                                ServiceProviderDiscovery serviceProviderDiscovery,
+                                CallbackHandlerDiscovery callbackHandlerDiscovery) {
         this.beanManager = beanManager;
         this.joynrRuntimeFactory = joynrRuntimeFactory;
         this.serviceProviderDiscovery = serviceProviderDiscovery;
+        this.callbackHandlerDiscovery = callbackHandlerDiscovery;
     }
 
     @PostConstruct
@@ -85,6 +89,13 @@ public class JoynrIntegrationBean {
         Set<Bean<?>> serviceProviderBeans = serviceProviderDiscovery.findServiceProviderBeans();
         joynrRuntime = joynrRuntimeFactory.create(getServiceProviderInterfaceClasses(serviceProviderBeans));
         registerProviders(serviceProviderBeans, joynrRuntime);
+        registerCallbackHandlers(joynrRuntime);
+    }
+
+    private void registerCallbackHandlers(JoynrRuntime joynrRuntime) {
+        callbackHandlerDiscovery.forEach(callbackBean -> {
+            joynrRuntime.registerStatelessAsyncCallback(callbackBean);
+        });
     }
 
     private void registerProviders(Set<Bean<?>> serviceProviderBeans, JoynrRuntime runtime) {

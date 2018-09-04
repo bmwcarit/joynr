@@ -22,7 +22,7 @@ const MethodUtil = require("../../../../main/js/joynr/util/MethodUtil");
 describe("libjoynr-js.joynr.MethodUtil", () => {
     it("transformParameterMapToArray throws for null values", () => {
         const operationArguments = { bool: null };
-        const parameters = [{ name: "bool", type: "Boolean", javascriptType: "boolean" }];
+        const parameters = [{ name: "bool", type: "Boolean" }];
         expect(() => {
             MethodUtil.transformParameterMapToArray(operationArguments, parameters);
         }).toThrow();
@@ -30,7 +30,7 @@ describe("libjoynr-js.joynr.MethodUtil", () => {
 
     it("transformParameterMapToArray throws for undefined values", () => {
         const operationArguments = { bool: undefined };
-        const parameters = [{ name: "bool", type: "Boolean", javascriptType: "boolean" }];
+        const parameters = [{ name: "bool", type: "Boolean" }];
         expect(() => {
             MethodUtil.transformParameterMapToArray(operationArguments, parameters);
         }).toThrow();
@@ -38,7 +38,7 @@ describe("libjoynr-js.joynr.MethodUtil", () => {
 
     it("transformParameterMapToArray throws if signature does not match number of arguments", () => {
         const operationArguments = {};
-        const parameters = [{ name: "bool", type: "Boolean", javascriptType: "boolean" }];
+        const parameters = [{ name: "bool", type: "Boolean" }];
         expect(() => {
             MethodUtil.transformParameterMapToArray(operationArguments, parameters);
         }).toThrow();
@@ -46,7 +46,7 @@ describe("libjoynr-js.joynr.MethodUtil", () => {
 
     it("transformParameterMapToArray throws if signature does not match arguments (name mismatch)", () => {
         const operationArguments = { int: true };
-        const parameters = [{ name: "bool", type: "Boolean", javascriptType: "boolean" }];
+        const parameters = [{ name: "bool", type: "Boolean" }];
         expect(() => {
             MethodUtil.transformParameterMapToArray(operationArguments, parameters);
         }).toThrow();
@@ -54,7 +54,7 @@ describe("libjoynr-js.joynr.MethodUtil", () => {
 
     it("transformParameterMapToArray throws if signature does not match arguments (type mismatch)", () => {
         const operationArguments = { bool: 2 };
-        const parameters = [{ name: "bool", type: "Boolean", javascriptType: "boolean" }];
+        const parameters = [{ name: "bool", type: "Boolean" }];
         expect(() => {
             MethodUtil.transformParameterMapToArray(operationArguments, parameters);
         }).toThrow();
@@ -63,7 +63,7 @@ describe("libjoynr-js.joynr.MethodUtil", () => {
     it("transformParameterMapToArray can convert map to array", () => {
         const expectedObject = { paramDatatypes: ["Boolean"], params: [true] };
         const operationArguments = { bool: true };
-        const parameters = [{ name: "bool", type: "Boolean", javascriptType: "boolean" }];
+        const parameters = [{ name: "bool", type: "Boolean" }];
         const result = MethodUtil.transformParameterMapToArray(operationArguments, parameters);
         expect(result).toEqual(expectedObject);
     });

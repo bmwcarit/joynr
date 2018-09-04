@@ -18,6 +18,16 @@
  */
 package io.joynr.integration;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+
+import org.eclipse.jetty.server.Server;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
+
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
 
@@ -29,20 +39,11 @@ import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
-import org.eclipse.jetty.server.Server;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
 
 @Ignore("HTTP does not support binary messages (SMRF)")
 public class BroadcastEnd2EndTest extends AbstractBroadcastEnd2EndTest {
 
-    private List<DummyJoynrApplication> dummyApplications = new ArrayList();
+    private List<DummyJoynrApplication> dummyApplications = new ArrayList<>();
 
     private static Server jettyServer;
     private static Properties originalProperties;

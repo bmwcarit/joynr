@@ -25,6 +25,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.HashSet;
 
@@ -33,7 +34,6 @@ import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.InjectionPoint;
 import javax.enterprise.util.AnnotationLiteral;
-import javax.inject.Inject;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -55,17 +55,11 @@ import joynr.jeeintegration.servicelocator.MyServiceSync;
 public class SubscriptionPublisherInjectionWrapperTest {
 
     private static final AnnotationLiteral<SubscriptionPublisher> SUBSCRIPTION_PUBLISHER_ANNOTATION_LITERAL = new AnnotationLiteral<SubscriptionPublisher>() {
+        private static final long serialVersionUID = 1L;
     };
 
     @ServiceProvider(serviceInterface = MyServiceSync.class)
     private class MyServiceBean implements MyServiceSync {
-
-        private MyServiceSubscriptionPublisher myServiceSubscriptionPublisher;
-
-        @Inject
-        public MyServiceBean(@SubscriptionPublisher MyServiceSubscriptionPublisher myServiceSubscriptionPublisher) {
-            this.myServiceSubscriptionPublisher = myServiceSubscriptionPublisher;
-        }
 
         @Override
         public String callMe(String parameterOne) {
@@ -76,9 +70,6 @@ public class SubscriptionPublisherInjectionWrapperTest {
         public void callMeWithException() throws ApplicationException {
         }
     }
-
-    @Mock
-    private MyServiceBean myServiceBean;
 
     @Mock
     private Bean myServiceBeanBean;
@@ -93,28 +84,28 @@ public class SubscriptionPublisherInjectionWrapperTest {
     private BeanManager beanManager;
 
     @Mock
-    private Bean subscriptionPublisherProducerBean;
+    private Bean<?> subscriptionPublisherProducerBean;
 
     @Mock
     private SubscriptionPublisherProducer subscriptionPublisherProducer;
 
-    private SubscriptionPublisherInjection subject;
+    private SubscriptionPublisherInjection<MyServiceSubscriptionPublisher> subject;
     private SubscriptionPublisherInjectionWrapper invocationHandler;
 
     @Before
     public void setup() {
-        when(beanManager.getBeans(eq(SubscriptionPublisherProducer.class))).thenReturn(new HashSet(Arrays.asList(subscriptionPublisherProducerBean)));
+        when(beanManager.getBeans(eq(SubscriptionPublisherProducer.class))).thenReturn(new HashSet<Bean<?>>(Arrays.asList(subscriptionPublisherProducerBean)));
         when(beanManager.getReference(eq(subscriptionPublisherProducerBean),
                                       eq(SubscriptionPublisherProducer.class),
                                       any())).thenReturn(subscriptionPublisherProducer);
         when(myServiceBeanBean.getBeanClass()).thenReturn(MyServiceBean.class);
-        when(myServiceBeanBean.getInjectionPoints()).thenReturn(new HashSet(Arrays.asList(subscriptionPublisherInjectionPoint)));
-        when(subscriptionPublisherInjectionPoint.getQualifiers()).thenReturn(new HashSet(Arrays.asList(SUBSCRIPTION_PUBLISHER_ANNOTATION_LITERAL)));
+        when(myServiceBeanBean.getInjectionPoints()).thenReturn(new HashSet<InjectionPoint>(Arrays.asList(subscriptionPublisherInjectionPoint)));
+        when(subscriptionPublisherInjectionPoint.getQualifiers()).thenReturn(new HashSet<Annotation>(Arrays.asList((Annotation) SUBSCRIPTION_PUBLISHER_ANNOTATION_LITERAL)));
         when(subscriptionPublisherInjectionPoint.getAnnotated()).thenReturn(annotated);
         when(annotated.getBaseType()).thenReturn(MyServiceSubscriptionPublisher.class);
         invocationHandler = SubscriptionPublisherInjectionWrapper.createInvocationHandler(myServiceBeanBean,
                                                                                           beanManager);
-        subject = (SubscriptionPublisherInjection) invocationHandler.createProxy();
+        subject = (SubscriptionPublisherInjection<MyServiceSubscriptionPublisher>) invocationHandler.createProxy();
         assertNotNull(subject);
     }
 

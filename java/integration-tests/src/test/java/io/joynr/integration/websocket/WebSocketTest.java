@@ -176,7 +176,10 @@ public class WebSocketTest {
         int maxMessageSize = 100000;
         long reconnectDelay = 100;
         long websocketIdleTimeout = millis - 100;
-        configure(maxMessageSize, reconnectDelay, websocketIdleTimeout, new HashSet(Arrays.asList(processorMock)));
+        configure(maxMessageSize,
+                  reconnectDelay,
+                  websocketIdleTimeout,
+                  new HashSet<JoynrMessageProcessor>(Arrays.asList(processorMock)));
         sendMessage();
         Thread.sleep(millis);
 

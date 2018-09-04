@@ -105,7 +105,7 @@ public class OwnerRegistrationControlEntryManagerTest {
         DomainRoleEntryEntity domainRoleEntryEntity = new DomainRoleEntryEntity();
         domainRoleEntryEntity.setUserId(userId);
         domainRoleEntryEntity.setRole(Role.OWNER);
-        domainRoleEntryEntity.setDomains(new HashSet(Arrays.asList(domain)));
+        domainRoleEntryEntity.setDomains(new HashSet<String>(Arrays.asList(domain)));
         entityManager.persist(domainRoleEntryEntity);
 
         flushAndClear();
@@ -157,7 +157,7 @@ public class OwnerRegistrationControlEntryManagerTest {
         DomainRoleEntryEntity domainRoleEntryEntity = new DomainRoleEntryEntity();
         domainRoleEntryEntity.setUserId(userId);
         domainRoleEntryEntity.setRole(Role.MASTER);
-        domainRoleEntryEntity.setDomains(new HashSet(Arrays.asList(domain)));
+        domainRoleEntryEntity.setDomains(new HashSet<String>(Arrays.asList(domain)));
         entityManager.persist(domainRoleEntryEntity);
 
         flushAndClear();

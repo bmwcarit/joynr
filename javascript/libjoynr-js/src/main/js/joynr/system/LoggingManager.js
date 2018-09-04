@@ -18,6 +18,7 @@
  */
 const ConsoleAppender = require("./ConsoleAppenderNode");
 const JoynrLogger = require("./JoynrLogger");
+const UtilInternal = require("../util/UtilInternal");
 
 const logLevelChangedCallbacks = [];
 const LoggingManager = {};
@@ -45,31 +46,20 @@ LoggingManager.getLogger = function getLogger(name) {
  *            (i.e. already parsed)
  */
 LoggingManager.configure = function configure(settings) {
-    if (settings.configuration) {
-        if (
-            settings.configuration.loggers &&
-            settings.configuration.loggers.root &&
-            settings.configuration.loggers.root.level
-        ) {
-            const level = settings.configuration.loggers.root.level;
-            JoynrLogger.setLogLevel(level);
-            logLevelChangedCallbacks.forEach(callback => {
-                callback(level);
-            });
-        }
-        if (
-            settings.configuration.appenders &&
-            settings.configuration.appenders.appender &&
-            settings.configuration.appenders.appender[0] &&
-            settings.configuration.appenders.appender[0].PatternLayout &&
-            settings.configuration.appenders.appender[0].PatternLayout.pattern
-        ) {
-            const patternLayout = settings.configuration.appenders.appender[0].PatternLayout.pattern;
-            if (patternLayout !== "%m") {
-                JoynrLogger.setFormatting(patternLayout);
-            }
-        }
+    const settingsProxy = UtilInternal.augmentConfig(settings);
+
+    const level = settingsProxy.configuration.loggers.root.level();
+    if (level) {
+        JoynrLogger.setLogLevel(level);
+        logLevelChangedCallbacks.forEach(callback => {
+            callback(level);
+        });
     }
+    const patternLayout = settingsProxy.configuration.appenders.appender[0].PatternLayout.pattern();
+    if (patternLayout && patternLayout !== "%m") {
+        JoynrLogger.setFormatting(patternLayout);
+    }
+
     if (settings.appenderClasses && Object.keys(settings.appenderClasses).length > 0) {
         const appenderClassKey = Object.keys(settings.appenderClasses)[0];
         JoynrLogger.setOutput(settings.appenderClasses[appenderClassKey].prototype.append);

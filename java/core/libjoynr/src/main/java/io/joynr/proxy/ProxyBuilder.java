@@ -83,6 +83,16 @@ public interface ProxyBuilder<T> {
     public abstract ProxyBuilder<T> setMessagingQos(MessagingQos messagingQos);
 
     /**
+     * If you want to use any {@link io.joynr.StatelessAsync} calls, then you must provide a use case name, which will
+     * be used in constructing the relevant stateless async callback IDs, so that when Reply payloads arrive at a
+     * runtime the latter is able to discern which callback handler instance to route the data to.
+     *
+     * @param useCase the use case for which the proxy is being used, in order to construct stateless async callback IDs mapping to the correct callback handler.
+     * @return the proxy builder instance.
+     */
+    ProxyBuilder<T> setStatelessAsyncCallbackUseCase(String useCase);
+
+    /**
      * Final step to create a proxy object. Make sure all QoS parameters have been set before this method is called. Non
      * blocking.
      *

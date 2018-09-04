@@ -20,7 +20,6 @@ This project has dependencies to:
   AOP alliance under Public Domain
   Apache Log4j API under The Apache Software License, Version 2.0
   Apache Log4j SLF4J Binding under The Apache Software License, Version 2.0
-  ASM Core under BSD License
   Commons Lang under The Apache Software License, Version 2.0
   FindBugs-Annotations under GNU Lesser Public License
   FindBugs-jsr305 under The Apache Software License, Version 2.0
@@ -48,6 +47,7 @@ This project has dependencies to:
   jersey-guice under CDDL 1.1 or GPL2 w/ CPE
   jersey-server under CDDL 1.1 or GPL2 w/ CPE
   jersey-servlet under CDDL 1.1 or GPL2 w/ CPE
+  jsr311-api under CDDL License
   JUnit under Eclipse Public License 1.0
   SLF4J API Module under MIT License
 

@@ -27,8 +27,8 @@ import joynr.ImmutableMessage;
 
 public class TestMessageListener extends WaitTillCondition implements MessageArrivedListener {
 
-    private List<Object> receivedPayloads = new ArrayList();
-    private List<Throwable> thrownErrors = new ArrayList();
+    private List<Object> receivedPayloads = new ArrayList<>();
+    private List<Throwable> thrownErrors = new ArrayList<>();
 
     public TestMessageListener(int numberOfMessagesExpected) {
         super(numberOfMessagesExpected);

@@ -28,7 +28,7 @@ This project has dependencies to:
   Apache Log4j under The Apache Software License, Version 2.0
   ASM Analysis under BSD
   ASM Commons under BSD
-  ASM Core under BSD License
+  ASM Core under BSD
   ASM Tree under BSD
   ASM Util under BSD
   Backport of JSR 166 under Public Domain
@@ -105,6 +105,7 @@ This project has dependencies to:
   Jetty :: Websocket :: Server under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: Websocket :: Servlet Interface under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   JSON (JavaScript Object Notation) under provided without support or warranty
+  jsr311-api under CDDL License
   JUnit under Eclipse Public License 1.0
   libjoynr-websocket-runtime under The Apache Software License, Version 2.0
   Logging under The Apache Software License, Version 2.0

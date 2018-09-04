@@ -171,8 +171,8 @@ public class ProxyErrorsTest {
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void testMultiDomainNoCompatibleProviderFound() throws Exception {
 
-        ProxyBuilder<ProxyErrorsTest.TestProxyWrongVersion> proxyBuilder = runtime.getProxyBuilder(new HashSet(Arrays.asList(domain,
-                                                                                                                             domain2)),
+        ProxyBuilder<ProxyErrorsTest.TestProxyWrongVersion> proxyBuilder = runtime.getProxyBuilder(new HashSet<String>(Arrays.asList(domain,
+                                                                                                                                     domain2)),
                                                                                                    ProxyErrorsTest.TestProxyWrongVersion.class);
         TestProxyWrongVersion proxy = proxyBuilder.setDiscoveryQos(discoveryQos).build(callback);
 

@@ -17,48 +17,32 @@
  * #L%
  */
 
-(function(){
-    var setupProvisionedData = function(provisioning){
-        provisioning.ttl = 10000;
+const provisioning = {};
+provisioning.ttl = 10000;
 
-        provisioning.mqtt = {
-            qosLevel : 0
-        };
-        provisioning.logging = {
-                configuration : {
-                    name : "test config",
-                    appenders : {
-                        Console : {
-                            name : "STDOUT",
-                            PatternLayout : {
-                                pattern : "%m%n"
-                            }
-                        }
-                    },
-                    loggers : {
-                        root : {
-                            level : "debug",
-                            AppenderRef : {
-                                ref : "STDOUT"
-                            }
-                        }
-                    }
+provisioning.mqtt = {
+    qosLevel: 0
+};
+provisioning.logging = {
+    configuration: {
+        name: "test config",
+        appenders: {
+            Console: {
+                name: "STDOUT",
+                PatternLayout: {
+                    pattern: "%m%n"
                 }
-        };
-
-        return provisioning;
-    };
-
-    // AMD support
-    if (typeof define === 'function' && define.amd) {
-        define("joynr/provisioning/provisioning_root", [], function() {
-            return setupProvisionedData({});
-        });
-    } else if (typeof exports !== 'undefined') {
-        module.exports = setupProvisionedData({});
-    } else {
-        window.joynr = window.joynr || {};
-        window.joynr.provisioning = window.joynr.provisioning || {};
-        setupProvisionedData(window.joynr.provisioning);
+            }
+        },
+        loggers: {
+            root: {
+                level: "debug",
+                AppenderRef: {
+                    ref: "STDOUT"
+                }
+            }
+        }
     }
-}());
+};
+
+module.exports = provisioning;

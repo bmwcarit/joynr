@@ -82,7 +82,7 @@ public class GlobalDomainAccessStoreAdminEhCache extends DomainAccessControlStor
 
     @Override
     public List<DomainRoleEntry> getAllDomainRoleEntries() {
-        List<DomainRoleEntry> result = new ArrayList();
+        List<DomainRoleEntry> result = new ArrayList<>();
         Cache roleCache = getCache(CacheId.DOMAIN_ROLES);
         Map<Object, Element> roleMap = roleCache.getAll(roleCache.getKeys());
         Iterator<Map.Entry<Object, Element>> iterator = roleMap.entrySet().iterator();

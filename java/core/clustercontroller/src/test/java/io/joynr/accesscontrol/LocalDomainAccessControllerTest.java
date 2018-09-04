@@ -39,6 +39,8 @@ import io.joynr.proxy.ProxyBuilderFactoryImpl;
 import io.joynr.proxy.ProxyInvocationHandler;
 import io.joynr.proxy.ProxyInvocationHandlerFactory;
 import io.joynr.runtime.ShutdownNotifier;
+import io.joynr.proxy.StatelessAsyncCallback;
+import io.joynr.proxy.StatelessAsyncCallbackDirectory;
 import joynr.MulticastSubscriptionQos;
 import joynr.infrastructure.DacTypes.DomainRoleEntry;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
@@ -78,6 +80,8 @@ public class LocalDomainAccessControllerTest {
     @Mock
     private ProxyInvocationHandlerFactory proxyInvocationHandlerFactoryMock;
     @Mock
+    private StatelessAsyncCallbackDirectory statelessAsyncCallbackDirectoryMock;
+    @Mock
     private ProxyInvocationHandler proxyInvocationHandlerMock;
     @Mock
     private LocalDiscoveryAggregator localDiscoveryAggregator;
@@ -98,7 +102,8 @@ public class LocalDomainAccessControllerTest {
                                                       any(String.class),
                                                       any(DiscoveryQos.class),
                                                       any(MessagingQos.class),
-                                                      any(ShutdownNotifier.class))).thenReturn(proxyInvocationHandlerMock);
+                                                      any(ShutdownNotifier.class),
+                                                      any(StatelessAsyncCallback.class))).thenReturn(proxyInvocationHandlerMock);
         GlobalDiscoveryEntry accessControlDomain = mock(GlobalDiscoveryEntry.class);
         when(accessControlDomain.getDomain()).thenReturn("accessControlDomain");
         localDomainAccessController = new LocalDomainAccessControllerImpl(accessControlDomain,
@@ -106,6 +111,7 @@ public class LocalDomainAccessControllerTest {
                                                                           new ProxyBuilderFactoryImpl(localDiscoveryAggregator,
                                                                                                       proxyInvocationHandlerFactoryMock,
                                                                                                       shutdownNotifier,
+                                                                                                      statelessAsyncCallbackDirectoryMock,
                                                                                                       MAX_TTL,
                                                                                                       DISCOVERY_TIMEOUT_MS,
                                                                                                       RETRY_INTERVAL_MS),

@@ -44,27 +44,30 @@ describe("libjoynr-js.integration.end2end.subscription", () => {
     const expectPublication = abstractTest.expectPublication;
 
     beforeEach(done => {
-        abstractTest.beforeEach().then(settings => {
-            subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({
-                minIntervalMs: 50
-            });
+        abstractTest
+            .beforeEach()
+            .then(settings => {
+                subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({
+                    minIntervalMs: 50
+                });
 
-            subscriptionQosInterval = new joynr.proxy.PeriodicSubscriptionQos({
-                periodMs: 1000
-            });
+                subscriptionQosInterval = new joynr.proxy.PeriodicSubscriptionQos({
+                    periodMs: 1000
+                });
 
-            subscriptionQosMixed = new joynr.proxy.OnChangeWithKeepAliveSubscriptionQos({
-                minIntervalMs: 100,
-                maxIntervalMs: 1000
-            });
+                subscriptionQosMixed = new joynr.proxy.OnChangeWithKeepAliveSubscriptionQos({
+                    minIntervalMs: 100,
+                    maxIntervalMs: 1000
+                });
 
-            subscriptionQosMulticast = new joynr.proxy.MulticastSubscriptionQos({
-                validityMs: 100000
-            });
+                subscriptionQosMulticast = new joynr.proxy.MulticastSubscriptionQos({
+                    validityMs: 100000
+                });
 
-            radioProxy = settings.radioProxy;
-            done();
-        });
+                radioProxy = settings.radioProxy;
+                done();
+            })
+            .catch(fail);
     });
 
     function expectMultiplePublications(spy, expectedPublications, timeout, expectationFct) {

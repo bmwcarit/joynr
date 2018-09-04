@@ -54,7 +54,7 @@ public class InProcessCapabilitiesProvisioning extends DefaultCapabilitiesProvis
     @Override
     public Collection<DiscoveryEntry> getDiscoveryEntries() {
 
-        List<DiscoveryEntry> provisionedList = new ArrayList();
+        List<DiscoveryEntry> provisionedList = new ArrayList<>();
         String defaultPulicKeyId = "";
         ProviderQos providerQos = new ProviderQos();
         providerQos.setScope(ProviderScope.LOCAL);

@@ -267,7 +267,7 @@ describe("libjoynr-js.joynr.UtilInternal.timeoutPromise", () => {
         });
         UtilInternal.timeoutPromise(promise, 100)
             .then(fail)
-            .catch(done);
+            .catch(() => done());
         jasmine.clock().tick(101);
     });
 });
@@ -277,5 +277,45 @@ describe("libjoynr-js.joynr.UtilInternal.createDeferred", () => {
         const deferred = UtilInternal.createDeferred();
         deferred.resolve();
         deferred.promise.then(done).catch(fail);
+    });
+});
+
+describe("libjoynr-js.joynr.UtilInternal.augmentConfig", () => {
+    let config;
+    let proxy;
+
+    const value1 = "value1";
+    const value2 = "value2";
+    const value3 = "value3";
+
+    const string1 = "string1";
+    const number1 = 4;
+
+    beforeEach(() => {
+        config = {
+            key1: "value1",
+            key2: number1,
+            keyWithObject: { key1: value1, keyWithArrayString: [string1], keyWithArrayObject: { key1: value2 } }
+        };
+        proxy = UtilInternal.augmentConfig(config);
+    });
+
+    it("returns undefined if parent keys are not set", () => {
+        expect(proxy.a.b.c.d.e.f.g()).toBe(undefined);
+        expect(proxy.key1.key2.key3()).toBe(undefined);
+        expect(proxy[1][2][3][4][5]()).toBe(undefined);
+    });
+
+    it("correctly fetches keys", () => {
+        expect(proxy.key1()).toEqual(value1);
+        expect(proxy.key2()).toEqual(number1);
+        expect(proxy.keyWithObject.keyWithArrayString[0]()).toEqual(string1);
+        expect(proxy.keyWithObject.keyWithArrayObject.key1()).toEqual(value2);
+    });
+
+    it("allows keys to be inserted", () => {
+        proxy.a.b.c.d.e.f = value3;
+        expect(config.a.b.c.d.e.f).toEqual(value3);
+        expect(proxy.a.b.c.d.e.f()).toEqual(value3);
     });
 });

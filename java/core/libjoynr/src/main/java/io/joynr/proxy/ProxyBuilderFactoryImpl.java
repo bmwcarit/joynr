@@ -35,6 +35,7 @@ public class ProxyBuilderFactoryImpl implements ProxyBuilderFactory {
     private final DiscoveryAsync localDiscoveryAggregator;
     private final ProxyInvocationHandlerFactory proxyInvocationHandlerFactory;
     private final ShutdownNotifier shutdownNotifier;
+    private final StatelessAsyncCallbackDirectory statelessAsyncCallbackDirectory;
     private final long maxMessagingTtl;
     private final long defaultDiscoveryTimeoutMs;
     private final long defaultDiscoveryRetryIntervalMs;
@@ -43,12 +44,14 @@ public class ProxyBuilderFactoryImpl implements ProxyBuilderFactory {
     public ProxyBuilderFactoryImpl(DiscoveryAsync localDiscoveryAggregator,
                                    ProxyInvocationHandlerFactory proxyInvocationHandlerFactory,
                                    ShutdownNotifier shutdownNotifier,
+                                   StatelessAsyncCallbackDirectory statelessAsyncCallbackDirectory,
                                    @Named(ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_TTL_MS) long maxMessagingTtl,
                                    @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DEFAULT_TIMEOUT_MS) long defaultDiscoveryTimeoutMs,
                                    @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_RETRY_INTERVAL_MS) long defaultDiscoveryRetryIntervalMs) {
         this.localDiscoveryAggregator = localDiscoveryAggregator;
         this.proxyInvocationHandlerFactory = proxyInvocationHandlerFactory;
         this.shutdownNotifier = shutdownNotifier;
+        this.statelessAsyncCallbackDirectory = statelessAsyncCallbackDirectory;
         this.maxMessagingTtl = maxMessagingTtl;
         this.defaultDiscoveryTimeoutMs = defaultDiscoveryTimeoutMs;
         this.defaultDiscoveryRetryIntervalMs = defaultDiscoveryRetryIntervalMs;
@@ -56,7 +59,7 @@ public class ProxyBuilderFactoryImpl implements ProxyBuilderFactory {
 
     @Override
     public <T> ProxyBuilder<T> get(String domain, Class<T> interfaceClass) {
-        return get(new HashSet(Arrays.asList(domain)), interfaceClass);
+        return get(new HashSet<String>(Arrays.asList(domain)), interfaceClass);
     }
 
     @Override
@@ -66,6 +69,7 @@ public class ProxyBuilderFactoryImpl implements ProxyBuilderFactory {
                                              interfaceClass,
                                              proxyInvocationHandlerFactory,
                                              shutdownNotifier,
+                                             statelessAsyncCallbackDirectory,
                                              maxMessagingTtl,
                                              defaultDiscoveryTimeoutMs,
                                              defaultDiscoveryRetryIntervalMs);

@@ -143,6 +143,8 @@ public class RpcStubbingTest {
     @Mock
     private RequestReplyManager requestReplyManager;
     @Mock
+    private StatelessAsyncIdCalculator statelessAsyncIdCalculator;
+    @Mock
     private TestProvider testMock;
 
     // private String domain;
@@ -157,8 +159,6 @@ public class RpcStubbingTest {
     private JoynrMessagingConnectorInvocationHandler connector;
 
     @Before
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "NP_NULL_PARAM_DEREF",
-                                                      justification = "NPE in test would fail test")
     public void setUp() throws JoynrCommunicationException, JoynrSendBufferFullException, JsonGenerationException,
                         JsonMappingException, IOException, JoynrMessageNotSentException {
         Deferred<GpsLocation> deferredGpsLocation = new Deferred<GpsLocation>();
@@ -239,10 +239,12 @@ public class RpcStubbingTest {
 
         JoynrMessagingConnectorFactory joynrMessagingConnectorFactory = new JoynrMessagingConnectorFactory(requestReplyManager,
                                                                                                            replyCallerDirectory,
-                                                                                                           subscriptionManager);
+                                                                                                           subscriptionManager,
+                                                                                                           statelessAsyncIdCalculator);
         connector = joynrMessagingConnectorFactory.create(fromParticipantId,
-                                                          new HashSet(Arrays.asList(toDiscoveryEntry)),
-                                                          messagingQos);
+                                                          new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry)),
+                                                          messagingQos,
+                                                          null);
 
     }
 

@@ -33,7 +33,7 @@ import joynr.types.ProviderScope;
 @Embeddable
 public class ProviderQosPersisted extends ProviderQos implements Serializable {
     private static final long serialVersionUID = 1L;
-    private List<CustomParameterPersisted> customParameterList = new ArrayList();
+    private List<CustomParameterPersisted> customParameterList = new ArrayList<>();
 
     public ProviderQosPersisted() {
     }

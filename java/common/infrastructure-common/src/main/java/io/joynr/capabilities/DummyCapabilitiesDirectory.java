@@ -43,7 +43,8 @@ import joynr.types.DiscoveryEntryWithMetaInfo;
 public class DummyCapabilitiesDirectory extends AbstractLocalCapabilitiesDirectory {
     private static final Logger logger = LoggerFactory.getLogger(DummyCapabilitiesDirectory.class);
     private static final DummyCapabilitiesDirectory instance = new DummyCapabilitiesDirectory();
-    private ArrayList<DiscoveryEntryWithMetaInfo> registeredCapabilities = new ArrayList();
+
+    private ArrayList<DiscoveryEntryWithMetaInfo> registeredCapabilities = new ArrayList<>();
 
     @Inject
     @Named("joynr.messaging.channelId")
@@ -125,7 +126,7 @@ public class DummyCapabilitiesDirectory extends AbstractLocalCapabilitiesDirecto
                        DiscoveryQos discoveryQos,
                        CapabilitiesCallback capabilitiesCallback) {
         logger.info("!!!!!!!!!!!!!!!getCapabilities async");
-        ArrayList<DiscoveryEntryWithMetaInfo> foundCapabilities = new ArrayList();
+        ArrayList<DiscoveryEntryWithMetaInfo> foundCapabilities = new ArrayList<>();
         for (String domain : domains) {
             for (DiscoveryEntryWithMetaInfo ce : registeredCapabilities) {
                 if (ce.getDomain().equals(domain) && ce.getInterfaceName().equals(interfaceName)) {

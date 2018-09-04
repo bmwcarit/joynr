@@ -98,7 +98,7 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
         List<GlobalDiscoveryEntryPersisted> queryResult = entityManager.createQuery(queryString,
                                                                                     GlobalDiscoveryEntryPersisted.class)
                                                                        .setParameter("domains",
-                                                                                     new HashSet(Arrays.asList(domains)))
+                                                                                     new HashSet<String>(Arrays.asList(domains)))
                                                                        .setParameter("interfaceName", interfaceName)
                                                                        .getResultList();
         logger.debug("Found discovery entries: {}", queryResult);
@@ -121,7 +121,8 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
         logger.debug("Removing global discovery entries with IDs {}", Arrays.toString(participantIds));
         String queryString = "delete from GlobalDiscoveryEntryPersisted gdep where gdep.participantId in :participantIds";
         int deletedCount = entityManager.createQuery(queryString, GlobalDiscoveryEntryPersisted.class)
-                                        .setParameter("participantIds", new HashSet(Arrays.asList(participantIds)))
+                                        .setParameter("participantIds",
+                                                      new HashSet<String>(Arrays.asList(participantIds)))
                                         .executeUpdate();
         logger.debug("Deleted {} entries (number of IDs passed in {})", deletedCount, participantIds.length);
     }

@@ -27,6 +27,7 @@ import java.util.Set;
 
 import javax.inject.Singleton;
 
+import io.joynr.proxy.StatelessAsyncIdCalculator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,6 +65,7 @@ public class DispatcherImpl implements Dispatcher {
 
     private static final Logger logger = LoggerFactory.getLogger(DispatcherImpl.class);
     private final MutableMessageFactory messageFactory;
+    private final StatelessAsyncIdCalculator statelessAsyncIdCalculator;
     private RequestReplyManager requestReplyManager;
     private SubscriptionManager subscriptionManager;
     private PublicationManager publicationManager;
@@ -82,7 +84,8 @@ public class DispatcherImpl implements Dispatcher {
                           MessageSender messageSender,
                           MutableMessageFactory messageFactory,
                           ObjectMapper objectMapper,
-                          @Named(MessagingPropertyKeys.PROPERTY_MESSAGING_COMPRESS_REPLIES) boolean overrideCompress) {
+                          @Named(MessagingPropertyKeys.PROPERTY_MESSAGING_COMPRESS_REPLIES) boolean overrideCompress,
+                          StatelessAsyncIdCalculator statelessAsyncIdCalculator) {
         this.requestReplyManager = requestReplyManager;
         this.subscriptionManager = subscriptionManager;
         this.publicationManager = publicationManager;
@@ -91,6 +94,7 @@ public class DispatcherImpl implements Dispatcher {
         this.messageFactory = messageFactory;
         this.objectMapper = objectMapper;
         this.overrideCompress = overrideCompress;
+        this.statelessAsyncIdCalculator = statelessAsyncIdCalculator;
     }
 
     // CHECKSTYLE:ON
@@ -236,6 +240,9 @@ public class DispatcherImpl implements Dispatcher {
         try {
             if (Message.VALUE_MESSAGE_TYPE_REPLY.equals(type)) {
                 Reply reply = objectMapper.readValue(payload, Reply.class);
+                if (reply.getRequestReplyId().contains(StatelessAsyncIdCalculator.REQUEST_REPLY_ID_SEPARATOR)) {
+                    addStatelessCallback(message, reply);
+                }
                 logger.trace("Parsed reply from message payload :" + payload);
                 handle(reply);
             } else if (Message.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY.equals(type)) {
@@ -288,6 +295,13 @@ public class DispatcherImpl implements Dispatcher {
                          e.getMessage());
             return;
         }
+    }
+
+    private void addStatelessCallback(ImmutableMessage message, Reply reply) {
+        String methodId = statelessAsyncIdCalculator.extractMethodIdFromRequestReplyId(reply.getRequestReplyId());
+        reply.setStatelessAsyncCallbackMethodId(methodId);
+        String statelessParticipantId = message.getRecipient();
+        reply.setStatelessAsyncCallbackId(statelessAsyncIdCalculator.fromParticipantUuid(statelessParticipantId));
     }
 
     private void handle(final Request request,

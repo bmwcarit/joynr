@@ -76,16 +76,33 @@ interface Navigation{
 			<** @description: the trip to update **>
 			Trip trip
 		}
+		error {
+			UNKNOWN_TRIP
+		}
 	}
 
 	<** @description: Deletes the trip with the specified trip ID. **>
 	method deleteTrip {
 		in {
-			<** @description: the trip to delete. **>
+			<** @description: the ID of the trip to delete. **>
 			String tripId
 		}
 	}
 
+	<** @description: Deletes the specified trip. **>
+	method deleteTrip {
+		in {
+			<** @description: the trip to delete. **>
+			Trip trip
+		}
+		out {
+			<** @description: true if the trip was deleted. **>
+			Boolean success
+		}
+		error {
+			UNKNOWN_TRIP
+		}
+	}
 
 	<**
 		@description: Deletes all trips at the server.
@@ -99,6 +116,27 @@ interface Navigation{
 		out {
 			Trip[] result
 		}
+	}
+
+	method getTrip {
+		in {
+			String tripId
+		}
+		out {
+			Trip result
+		}
+		error GetTripErrors
+	}
+
+	method getTrip {
+		in {
+			String tripIdSearchString
+			Boolean allowWildcards
+		}
+		out {
+			Trip[] result
+		}
+		error GetTripErrors
 	}
 
 	<**

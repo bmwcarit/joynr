@@ -33,26 +33,54 @@ public class Request extends OneWayRequest implements JoynrMessageType {
 
     private static final long serialVersionUID = 1L;
     private String requestReplyId;
+    @SuppressFBWarnings("SE_TRANSIENT_FIELD_NOT_RESTORED")
+    private transient String statelessAsyncCallbackMethodId;
 
     public Request() {
     }
 
     @SuppressFBWarnings("EI_EXPOSE_REP2")
-    public Request(String methodName, Object[] params, String[] paramDatatypes, String requestReplyId) {
+    public Request(String methodName,
+                   Object[] params,
+                   String[] paramDatatypes,
+                   String requestReplyId,
+                   String statelessAsyncCallbackMethodId) {
         super(methodName, params, paramDatatypes);
         if (requestReplyId == null) {
             this.requestReplyId = UUID.randomUUID().toString();
         } else {
             this.requestReplyId = requestReplyId;
         }
+        this.statelessAsyncCallbackMethodId = statelessAsyncCallbackMethodId;
+    }
+
+    @SuppressFBWarnings("EI_EXPOSE_REP2")
+    public Request(String methodName, Object[] params, String[] paramDatatypes, String requestReplyId) {
+        this(methodName, params, paramDatatypes, requestReplyId, null);
     }
 
     public Request(String name, Object[] params, Class<?>[] parameterTypes) {
         this(name, params, ReflectionUtils.toDatatypeNames(parameterTypes), null);
     }
 
+    public Request(String name,
+                   Object[] params,
+                   Class<?>[] parameterTypes,
+                   String requestReplyId,
+                   String statelessAsyncCallbackMethodId) {
+        this(name,
+             params,
+             ReflectionUtils.toDatatypeNames(parameterTypes),
+             requestReplyId,
+             statelessAsyncCallbackMethodId);
+    }
+
     public String getRequestReplyId() {
         return requestReplyId;
+    }
+
+    public String getStatelessAsyncCallbackMethodId() {
+        return statelessAsyncCallbackMethodId;
     }
 
     @Override

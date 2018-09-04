@@ -38,6 +38,9 @@ import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.util.AnnotationLiteral;
 import javax.inject.Inject;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
@@ -46,6 +49,7 @@ import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.Multibinder;
+
 import io.joynr.ProvidedBy;
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioning;
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
@@ -71,8 +75,6 @@ import io.joynr.statusmetrics.StatusReceiver;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.TrustLevel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Default implementation for {@link JoynrRuntimeFactory}, which will use information produced by
@@ -268,6 +270,8 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
         Properties defaultJoynrProperties = new Properties();
         defaultJoynrProperties.setProperty(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, joynrLocalDomain);
         defaultJoynrProperties.setProperty(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, MQTT);
+        defaultJoynrProperties.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_CONTEXT_ROOT, "/defaultContextRoot");
+        defaultJoynrProperties.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH, "http://localhost:8080");
         defaultJoynrProperties.putAll(configuredProperties);
         return defaultJoynrProperties;
     }
@@ -294,7 +298,7 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
     private void provisionAccessControl(Properties properties, String domain, String[] interfaceNames) {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.enableDefaultTypingAsProperty(DefaultTyping.JAVA_LANG_OBJECT, "_typeName");
-        List<MasterAccessControlEntry> allEntries = new ArrayList();
+        List<MasterAccessControlEntry> allEntries = new ArrayList<>();
         for (String interfaceName : interfaceNames) {
             MasterAccessControlEntry newMasterAccessControlEntry = new MasterAccessControlEntry("*",
                                                                                                 domain,

@@ -32,8 +32,7 @@ const testData = [
             inputParameter: [
                 {
                     name: "parameter",
-                    type: "String",
-                    javascriptType: "string"
+                    type: "String"
                 }
             ],
             error: {
@@ -56,8 +55,7 @@ const testData = [
             inputParameter: [
                 {
                     name: "parameter",
-                    type: "joynr.tests.testTypes.TestEnum",
-                    javascriptType: "joynr.tests.testTypes.TestEnum"
+                    type: "joynr.tests.testTypes.TestEnum"
                 }
             ],
             outputParameter: [],
@@ -77,8 +75,7 @@ const testData = [
             inputParameter: [
                 {
                     name: "complex",
-                    type: "joynr.vehicle.radiotypes.RadioStation",
-                    javascriptType: "joynr.vehicle.radiotypes.RadioStation"
+                    type: "joynr.vehicle.radiotypes.RadioStation"
                 }
             ],
             error: {
@@ -102,8 +99,7 @@ const testData = [
             outputParameter: [
                 {
                     name: "bool",
-                    type: "Boolean",
-                    javascriptType: "boolean"
+                    type: "Boolean"
                 }
             ],
             fireAndForget: false
@@ -122,8 +118,7 @@ const testData = [
             outputParameter: [
                 {
                     name: "int",
-                    type: "Integer",
-                    javascriptType: "number"
+                    type: "Integer"
                 }
             ],
             fireAndForget: false
@@ -142,8 +137,7 @@ const testData = [
             outputParameter: [
                 {
                     name: "radioStation",
-                    type: "joynr.vehicle.radiotypes.RadioStation",
-                    javascriptType: "joynr.vehicle.radiotypes.RadioStation"
+                    type: "joynr.vehicle.radiotypes.RadioStation"
                 }
             ],
             fireAndForget: false
@@ -162,13 +156,11 @@ const testData = [
             outputParameter: [
                 {
                     name: "radioStation",
-                    type: "joynr.vehicle.radiotypes.RadioStation",
-                    javascriptType: "joynr.vehicle.radiotypes.RadioStation"
+                    type: "joynr.vehicle.radiotypes.RadioStation"
                 },
                 {
                     name: "secondOutputParameter",
-                    type: "String",
-                    javascriptType: "string"
+                    type: "String"
                 }
             ],
             fireAndForget: false
@@ -187,23 +179,19 @@ const testData = [
             inputParameter: [
                 {
                     name: "bool",
-                    type: "Boolean",
-                    javascriptType: "boolean"
+                    type: "Boolean"
                 },
                 {
                     name: "number",
-                    type: "Integer",
-                    javascriptType: "number"
+                    type: "Integer"
                 },
                 {
                     name: "string",
-                    type: "String",
-                    javascriptType: "string"
+                    type: "String"
                 },
                 {
                     name: "array",
-                    type: "Integer[]",
-                    javascriptType: "Array"
+                    type: "Integer[]"
                 }
             ],
             error: {
@@ -229,8 +217,7 @@ const testData = [
             inputParameter: [
                 {
                     name: "parameter",
-                    type: "String",
-                    javascriptType: "string"
+                    type: "String"
                 }
             ],
             error: {

@@ -33,6 +33,7 @@ public abstract class AbstractMessageSender implements MessageSender {
     private MessageRouter messageRouter;
     private String replyToAddress = null;
     private List<MutableMessage> noReplyToAddressQueue = new ArrayList<MutableMessage>();
+    private String globalAddress;
 
     protected AbstractMessageSender(MessageRouter messageRouter) {
         this.messageRouter = messageRouter;
@@ -46,7 +47,7 @@ public abstract class AbstractMessageSender implements MessageSender {
             noReplyToAddressQueue.add(message);
         } else {
             if (needsReplyToAddress) {
-                message.setReplyTo(replyToAddress);
+                message.setReplyTo(message.isStatelessAsync() ? globalAddress : replyToAddress);
             }
             routeMutableMessage(message);
         }
@@ -63,11 +64,12 @@ public abstract class AbstractMessageSender implements MessageSender {
         return noReplyTo && msgTypeNeedsReplyTo && !message.isLocalMessage();
     }
 
-    protected synchronized void setReplyToAddress(String replyToAddress) {
+    protected synchronized void setReplyToAddress(String replyToAddress, String globalAddress) {
         this.replyToAddress = replyToAddress;
+        this.globalAddress = globalAddress;
 
         for (MutableMessage queuedMessage : noReplyToAddressQueue) {
-            queuedMessage.setReplyTo(replyToAddress);
+            queuedMessage.setReplyTo(queuedMessage.isStatelessAsync() ? globalAddress : replyToAddress);
             routeMutableMessage(queuedMessage);
         }
         noReplyToAddressQueue.clear();

@@ -27,7 +27,7 @@ describe("libjoynr-js.joynr.start.TestInProcessRuntime", () => {
     let runtime;
 
     function startInProcessRuntime() {
-        return runtime.start().catch(outputPromiseError);
+        return runtime.start(provisioning).catch(outputPromiseError);
     }
 
     function shutdownInProcessRuntime() {
@@ -35,7 +35,7 @@ describe("libjoynr-js.joynr.start.TestInProcessRuntime", () => {
     }
 
     beforeEach(done => {
-        runtime = new InProcessRuntime(provisioning);
+        runtime = new InProcessRuntime();
         done();
     });
 
@@ -46,8 +46,8 @@ describe("libjoynr-js.joynr.start.TestInProcessRuntime", () => {
         expect(runtime.logging).toBeDefined();
         expect(runtime.typeRegistry).toBeDefined();
 
-        expect(runtime.registration).toBeUndefined();
-        expect(runtime.proxyBuilder).toBeUndefined();
+        expect(runtime.registration).toBeNull();
+        expect(runtime.proxyBuilder).toBeNull();
 
         startInProcessRuntime()
             .then(() => {
@@ -91,19 +91,11 @@ describe("libjoynr-js.joynr.start.TestInProcessRuntime", () => {
             .catch(fail);
     });
 
-    it("throws when started in state STARTED", done => {
+    it("rejects Promise when started in state STARTED", done => {
         startInProcessRuntime()
-            .then(() => {
-                expect(() => {
-                    runtime.start();
-                }).toThrow();
-                return shutdownInProcessRuntime();
-            })
-            .then(() => {
-                done();
-                return null;
-            })
-            .catch(fail);
+            .then(() => runtime.start(provisioning))
+            .then(fail)
+            .catch(() => done());
     });
 
     it("throws when shutdown in state SHUTDOWN", done => {

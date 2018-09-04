@@ -35,9 +35,6 @@ public class JoynrConfigurationProvider {
     @JoynrProperties
     public Properties joynrProperties() {
         Properties joynrProperties = new Properties();
-        joynrProperties.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_CONTEXT_ROOT,
-                                    "/inter-language-test-jee-consumer/messaging");
-        joynrProperties.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH, "http://localhost:8080");
         joynrProperties.setProperty(MessagingPropertyKeys.CHANNELID, "io.joynr.test.interlanguage.jee.consumer");
         joynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "tcp://localhost:1883");
         joynrProperties.setProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL, "http://localhost:8383/bounceproxy/");

@@ -477,6 +477,6 @@ describe("libjoynr-js.joynr.proxy.ProxyAttribute", () => {
                 }
             })
             .then(fail)
-            .catch(done);
+            .catch(() => done());
     });
 }); /*jslint nomen: false */

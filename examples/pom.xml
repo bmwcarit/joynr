@@ -32,6 +32,7 @@
 		<module>radio-app</module>
 		<module>radio-jee</module>
 		<module>location-tester</module>
+		<module>stateless-async</module>
 	</modules>
 	<profiles>
 		<!-- Only include javascript examples when javascript is available -->

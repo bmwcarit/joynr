@@ -18,18 +18,6 @@
  */
 package io.joynr.integration;
 
-import com.google.inject.Module;
-import io.joynr.integration.util.DummyJoynrApplication;
-import io.joynr.integration.util.SSLSettings;
-import io.joynr.integration.util.ServersUtil;
-import io.joynr.messaging.ConfigurableMessagingSettings;
-import io.joynr.runtime.JoynrInjectorFactory;
-import io.joynr.runtime.JoynrRuntime;
-import org.eclipse.jetty.server.Server;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-
 import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -37,12 +25,26 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.eclipse.jetty.server.Server;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+
+import com.google.inject.Module;
+
+import io.joynr.integration.util.DummyJoynrApplication;
+import io.joynr.integration.util.SSLSettings;
+import io.joynr.integration.util.ServersUtil;
+import io.joynr.messaging.ConfigurableMessagingSettings;
+import io.joynr.runtime.JoynrInjectorFactory;
+import io.joynr.runtime.JoynrRuntime;
+
 public class SSLEnd2EndTest extends AbstractSSLEnd2EndTest {
 
     private static Server jettyServer;
     private static String resourcePath;
 
-    private List<DummyJoynrApplication> dummyApplications = new ArrayList();
+    private List<DummyJoynrApplication> dummyApplications = new ArrayList<>();
 
     @Override
     protected JoynrRuntime getRuntime(Properties joynrConfig, Module... modules) {
@@ -83,6 +85,7 @@ public class SSLEnd2EndTest extends AbstractSSLEnd2EndTest {
 
     }
 
+    @Override
     @After
     public void tearDown() {
         for (DummyJoynrApplication application : dummyApplications) {

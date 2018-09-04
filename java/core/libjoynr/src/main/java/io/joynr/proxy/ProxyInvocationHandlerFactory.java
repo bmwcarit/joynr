@@ -32,6 +32,7 @@ public interface ProxyInvocationHandlerFactory {
                                          @Assisted("proxyParticipantId") String proxyParticipantId,
                                          DiscoveryQos discoveryQos,
                                          MessagingQos messagingQos,
-                                         ShutdownNotifier shutdownNotifier);
+                                         ShutdownNotifier shutdownNotifier,
+                                         StatelessAsyncCallback statelessAsyncCallback);
 
 }

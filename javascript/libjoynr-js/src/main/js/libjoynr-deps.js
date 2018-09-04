@@ -26,7 +26,6 @@
 
 // place the require.js module name of all modules that are part of the external joynr API.
 const libjoynrExports = [
-    "./joynr/Runtime",
     "./joynr/buildSignature",
     "./joynr/messaging/MessagingQos",
     "./joynr/proxy/PeriodicSubscriptionQos",
@@ -58,7 +57,6 @@ const libjoynrExports = [
     "./generated/joynr/system/RoutingTypes/WebSocketClientAddress",
     "./joynr/util/LongTimer"
 ];
-const Runtime = require("./joynr/Runtime");
 const buildSignature = require("./joynr/buildSignature");
 const MessagingQos = require("./joynr/messaging/MessagingQos");
 const PeriodicSubscriptionQos = require("./joynr/proxy/PeriodicSubscriptionQos");

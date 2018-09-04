@@ -30,10 +30,12 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 import io.joynr.Async;
+import io.joynr.StatelessAsync;
 import io.joynr.Sync;
 import io.joynr.arbitration.ArbitrationResult;
 import io.joynr.arbitration.DiscoveryQos;
@@ -53,6 +55,7 @@ import io.joynr.proxy.invocation.BroadcastSubscribeInvocation;
 import io.joynr.proxy.invocation.Invocation;
 import io.joynr.proxy.invocation.MethodInvocation;
 import io.joynr.proxy.invocation.MulticastSubscribeInvocation;
+import io.joynr.proxy.invocation.StatelessAsyncMethodInvocation;
 import io.joynr.proxy.invocation.SubscriptionInvocation;
 import io.joynr.proxy.invocation.UnsubscribeInvocation;
 import io.joynr.runtime.ShutdownListener;
@@ -74,13 +77,16 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
     private ConcurrentLinkedQueue<MethodInvocation<?>> queuedRpcList = new ConcurrentLinkedQueue<MethodInvocation<?>>();
     private ConcurrentLinkedQueue<SubscriptionAction> queuedSubscriptionInvocationList = new ConcurrentLinkedQueue<SubscriptionAction>();
     private ConcurrentLinkedQueue<UnsubscribeInvocation> queuedUnsubscripeInvocationList = new ConcurrentLinkedQueue<UnsubscribeInvocation>();
+    private ConcurrentLinkedQueue<StatelessAsyncMethodInvocation> queuedStatelessAsyncInvocationList = new ConcurrentLinkedQueue<>();
     private String interfaceName;
     private MessageRouter messageRouter;
     private Set<String> domains;
     private final AtomicBoolean preparingForShutdown = new AtomicBoolean();
+    private String statelessAsyncParticipantId;
 
     private static final Logger logger = LoggerFactory.getLogger(ProxyInvocationHandlerImpl.class);
 
+    // CHECKSTYLE:OFF
     @Inject
     // CHECKSTYLE:OFF
     public ProxyInvocationHandlerImpl(@Assisted("domains") Set<String> domains,
@@ -88,9 +94,11 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
                                       @Assisted("proxyParticipantId") String proxyParticipantId,
                                       @Assisted DiscoveryQos discoveryQos,
                                       @Assisted MessagingQos messagingQos,
+                                      @Nullable @Assisted StatelessAsyncCallback statelessAsyncCallback,
                                       ConnectorFactory connectorFactory,
                                       MessageRouter messageRouter,
-                                      ShutdownNotifier shutdownNotifier) {
+                                      ShutdownNotifier shutdownNotifier,
+                                      StatelessAsyncIdCalculator statelessAsyncIdCalculator) {
         // CHECKSTYLE:ON
         this.domains = domains;
         this.proxyParticipantId = proxyParticipantId;
@@ -111,6 +119,10 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
                 // No-op
             }
         });
+        if (statelessAsyncCallback != null) {
+            statelessAsyncParticipantId = statelessAsyncIdCalculator.calculateParticipantId(interfaceName,
+                                                                                            statelessAsyncCallback);
+        }
     }
 
     private static interface ConnectorCaller {
@@ -286,6 +298,20 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
 
     }
 
+    private void sendQueuedStatelessAsyncInvocations() {
+        while (true) {
+            StatelessAsyncMethodInvocation invocation = queuedStatelessAsyncInvocationList.poll();
+            if (invocation == null) {
+                return;
+            }
+            try {
+                connector.executeStatelessAsyncMethod(invocation.getMethod(), invocation.getArgs());
+            } catch (Exception e) {
+                logger.error("Unable to perform stateless async call {}", invocation, e);
+            }
+        }
+    }
+
     /**
      * Sets the connector for this ProxyInvocationHandler after the DiscoveryAgent got notified about a successful
      * arbitration. Should be called from the DiscoveryAgent
@@ -295,7 +321,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
      */
     @Override
     public void createConnector(ArbitrationResult result) {
-        connector = connectorFactory.create(proxyParticipantId, result, qosSettings);
+        connector = connectorFactory.create(proxyParticipantId, result, qosSettings, statelessAsyncParticipantId);
         connectorStatusLock.lock();
         try {
             connectorStatus = ConnectorStatus.ConnectorSuccesful;
@@ -305,6 +331,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
                 sendQueuedInvocations();
                 sendQueuedSubscriptionInvocations();
                 sendQueuedUnsubscribeInvocations();
+                sendQueuedStatelessAsyncInvocations();
             }
         } finally {
             connectorStatusLock.unlock();
@@ -436,6 +463,19 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
         return connector.executeAsyncMethod(proxy, method, args, future);
     }
 
+    private void executeStatelessAsyncMethod(Method method, Object[] args) throws Exception {
+        connectorStatusLock.lock();
+        try {
+            if (!isConnectorReady()) {
+                queuedStatelessAsyncInvocationList.offer(new StatelessAsyncMethodInvocation(method, args));
+                return;
+            }
+        } finally {
+            connectorStatusLock.unlock();
+        }
+        connector.executeStatelessAsyncMethod(method, args);
+    }
+
     private UnsubscribeInvocation unsubscribe(UnsubscribeInvocation unsubscribeInvocation) {
         connectorStatusLock.lock();
         try {
@@ -483,6 +523,9 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
                 return executeSyncMethod(method, args);
             } else if (methodInterfaceClass.getAnnotation(Async.class) != null) {
                 return executeAsyncMethod(proxy, method, args);
+            } else if (methodInterfaceClass.getAnnotation(StatelessAsync.class) != null) {
+                executeStatelessAsyncMethod(method, args);
+                return null;
             } else {
                 throw new JoynrIllegalStateException("Method is not part of sync, async or subscription interface");
             }

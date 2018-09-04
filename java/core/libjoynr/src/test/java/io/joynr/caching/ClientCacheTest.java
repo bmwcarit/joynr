@@ -22,7 +22,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.NoSuchElementException;
 
@@ -44,12 +43,12 @@ public class ClientCacheTest extends GuiceBasedTest {
 
     @Override
     public Iterable<Module> getModules() {
-        return new ArrayList(Arrays.asList(new Module() {
+        return Arrays.asList(new Module() {
             @Override
             public void configure(Binder binder) {
                 binder.bind(ClientCache.class).to(ClientHashMapCache.class);
             }
-        }));
+        });
     }
 
     @Test(expected = NoSuchElementException.class)

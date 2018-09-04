@@ -62,15 +62,22 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
     private final ReplyCallerDirectory replyCallerDirectory;
 
     private final SubscriptionManager subscriptionManager;
+    private final StatelessAsyncIdCalculator statelessAsyncIdCalculator;
+    private final String statelessAsyncParticipantId;
 
+    // CHECKSTYLE:OFF
     JoynrMessagingConnectorInvocationHandler(Set<DiscoveryEntryWithMetaInfo> toDiscoveryEntries,
                                              String fromParticipantId,
                                              MessagingQos qosSettings,
                                              RequestReplyManager requestReplyManager,
                                              ReplyCallerDirectory replyCallerDirectory,
-                                             SubscriptionManager subscriptionManager) {
+                                             SubscriptionManager subscriptionManager,
+                                             StatelessAsyncIdCalculator statelessAsyncIdCalculator,
+                                             String statelessAsyncParticipantId) {
+        // CHECKSTYLE:ON
         this.toDiscoveryEntries = toDiscoveryEntries;
         this.fromParticipantId = fromParticipantId;
+        this.statelessAsyncParticipantId = statelessAsyncParticipantId;
 
         this.qosSettings = qosSettings;
 
@@ -78,6 +85,7 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
         this.replyCallerDirectory = replyCallerDirectory;
         this.subscriptionManager = subscriptionManager;
 
+        this.statelessAsyncIdCalculator = statelessAsyncIdCalculator;
     }
 
     private static class StrippedArguments {
@@ -155,6 +163,47 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
     private void copyArrayWithoutElement(Object[] fromArray, Object[] toArray, int removeIndex) {
         System.arraycopy(fromArray, 0, toArray, 0, removeIndex);
         System.arraycopy(fromArray, removeIndex + 1, toArray, removeIndex, toArray.length - removeIndex);
+    }
+
+    @Override
+    public void executeStatelessAsyncMethod(Method method, Object[] args) {
+        if (method == null) {
+            throw new IllegalArgumentException("Method cannot be null");
+        }
+        if (toDiscoveryEntries.size() > 1) {
+            throw new JoynrIllegalStateException("You can't execute stateless async methods for multiple participants.");
+        }
+        if (toDiscoveryEntries.isEmpty()) {
+            throw new JoynrIllegalStateException("You must have exactly one participant to be able to execute a stateless async method.");
+        }
+
+        MessageIdCallback messageIdCallback = null;
+        int messageIdCallbackIndex = -1;
+        for (int index = 0; index < args.length; index++) {
+            if (args[index] instanceof MessageIdCallback) {
+                messageIdCallback = (MessageIdCallback) args[index];
+                messageIdCallbackIndex = index;
+            }
+        }
+        if (messageIdCallback == null) {
+            throw new JoynrIllegalStateException("Stateless async method calls must have a MessageIdCallback as one of their arguments.");
+        }
+        Object[] paramsWithoutMessageIdCallback = new Object[args.length - 1];
+        copyArrayWithoutElement(args, paramsWithoutMessageIdCallback, messageIdCallbackIndex);
+        Class<?>[] paramDatatypes = method.getParameterTypes();
+        Class<?>[] paramDatatypesWithoutMessageIdCallback = new Class<?>[paramDatatypes.length - 1];
+        copyArrayWithoutElement(paramDatatypes, paramDatatypesWithoutMessageIdCallback, messageIdCallbackIndex);
+
+        Request request = new Request(method.getName(),
+                                      paramsWithoutMessageIdCallback,
+                                      paramDatatypesWithoutMessageIdCallback,
+                                      statelessAsyncIdCalculator.calculateStatelessCallbackRequestReplyId(method),
+                                      statelessAsyncIdCalculator.calculateStatelessCallbackMethodId(method));
+        requestReplyManager.sendRequest(statelessAsyncParticipantId,
+                                        toDiscoveryEntries.iterator().next(),
+                                        request,
+                                        qosSettings);
+        messageIdCallback.accept(request.getRequestReplyId());
     }
 
     @CheckForNull
