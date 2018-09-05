@@ -18,14 +18,15 @@ script in this directory. Alternatively, look inside the script
 to see what it does, and execute any or all of the steps
 manually if you want more control over what's built.
 
-In order to be able to successfully build the Docker Image, you first have
-to have built the joynr project, so that the required WAR files are
-available in the `target` sub-directories of the various projects.
-
 ## Running the scenario
 
 Once you have built all the necessary Docker Images, you
-can start up the scenario by executing the following command:
+can start up the scenario by executing the following script:
+
+`run_sit.sh`
+
+Alternatively, you can also start up the scenario manually by
+executing the following commands:
 
 `docker-compose up -d`
 
