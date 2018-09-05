@@ -107,6 +107,7 @@ class ProxyInvocationHandlerFactoryImpl implements ProxyInvocationHandlerFactory
     private ConnectorFactory connectorFactory;
     private ConnectorFactory connectorFactoryMock;
     private MessageRouter messageRouter;
+    private ShutdownNotifier shutdownNotifier;
     private StatelessAsyncIdCalculator statelessAsyncIdCalculator;
 
     @Inject
@@ -114,11 +115,13 @@ class ProxyInvocationHandlerFactoryImpl implements ProxyInvocationHandlerFactory
                                              @Named("connectorFactoryMock") JoynrMessagingConnectorFactory connectorFactoryMock,
                                              MessageRouter messageRouter,
                                              @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) Address dispatcherAddress,
+                                             ShutdownNotifier shutdownNotifier,
                                              StatelessAsyncIdCalculator statelessAsyncIdCalculator) {
         super();
         this.messageRouter = messageRouter;
         this.connectorFactory = connectorFactory;
         this.connectorFactoryMock = new ConnectorFactory(connectorFactoryMock, messageRouter, dispatcherAddress);
+        this.shutdownNotifier = shutdownNotifier;
         this.statelessAsyncIdCalculator = statelessAsyncIdCalculator;
     }
 
@@ -128,6 +131,7 @@ class ProxyInvocationHandlerFactoryImpl implements ProxyInvocationHandlerFactory
                                          String proxyParticipantId,
                                          DiscoveryQos discoveryQos,
                                          MessagingQos messagingQos,
+                                         ShutdownNotifier shutdownNotifier,
                                          StatelessAsyncCallback statelessAsyncCallback) {
         if (domains.contains("io.joynr.system")) {
             return new ProxyInvocationHandlerImpl(domains,
@@ -138,6 +142,7 @@ class ProxyInvocationHandlerFactoryImpl implements ProxyInvocationHandlerFactory
                                                   statelessAsyncCallback,
                                                   connectorFactory,
                                                   messageRouter,
+                                                  shutdownNotifier,
                                                   statelessAsyncIdCalculator);
         }
         return new ProxyInvocationHandlerImpl(domains,
@@ -148,6 +153,7 @@ class ProxyInvocationHandlerFactoryImpl implements ProxyInvocationHandlerFactory
                                               statelessAsyncCallback,
                                               connectorFactoryMock,
                                               messageRouter,
+                                              shutdownNotifier,
                                               statelessAsyncIdCalculator);
     }
 

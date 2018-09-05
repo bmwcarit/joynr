@@ -445,6 +445,20 @@ If set to true, the joynr message receiver will not switch to long polling for d
 * **User property**: `joynr.servlet.skiplongpollderegistration`
 * **Default value**: `false`
 
+
+## MessageQueue
+
+### `PROPERTY_MESSAGE_QUEUE_SHUTDOWN_MAX_TIMEOUT`
+
+The maximum number of milliseconds to wait for the message queue to
+drain on `prepareForShutdown` before timing out.
+
+* **OPTIONAL**
+* **Type**: int
+* **User property**: `io.joynr.messaging.queue.shutdown.timeout`
+* **Default value**: `5000`
+
+
 ## MqttModule
 
 ### `PROPERTY_KEY_MQTT_BROKER_URI`
@@ -747,6 +761,21 @@ the value of this property.
 * **User property**: `joynr.discovery.provider.defaultexpirytimems`
 * **Unit**: milliseconds
 * **Default value**: `3628800000 (6 weeks)`
+
+
+## ShutdownNotifier
+
+### `PROPERTY_PREPARE_FOR_SHUTDOWN`
+Allows you to specify the number of seconds that `ShutdownNotifier#prepareForShutdown`
+will block before timing out and returning control to the user if the system isn't able
+to prepare for shutdown in time.
+
+* **OPTIONAL**
+* **Type**: int
+* **User property**: `joynr.runtime.prepareforshutdowntimeout`
+* **Unit**: seconds
+* **Default value**: 5
+
 
 ## JEE Integration
 

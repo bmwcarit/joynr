@@ -216,4 +216,10 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
             shutdownNotifier.shutdown();
         }
     }
+
+    @Override
+    public void prepareForShutdown() {
+        logger.info("Preparing for shutdown of runtime");
+        shutdownNotifier.prepareForShutdown();
+    }
 }

@@ -672,6 +672,33 @@ public class MyMessageProcessor implements JoynrMessageProcessor {
 This would add the custom header `my-correlation-id` to the joynr message with a random
 UUID as the value.
 
+
+## Shutting Down
+
+If you want to perform a graceful shutdown of your application and the joynr runtime,
+then inject a reference to the `io.joynr.jeeintegration.api.JoynrShutdownService`
+into one of your beans, and call its `prepareForShutdown` and potentially the
+`shutdown` method thereafter.
+
+Calling `prepareForShutdown` gives the joynr runtime a chance to stop receiving
+incoming requests and work off any messages still in its queue. Thus your application
+logic may still be called from joynr after your call to `prepareForShutdown`. Be
+aware that if your logic requires to make calls via joynr in response to those received messages,
+you will only be able to call non-stateful methods such as fire-and-forget. Calls to stateful
+methods, such as those in the Sync interface, will result in a `JoynrIllegalStateException`
+being thrown.
+
+The `prepareForShutdown` method will block until either the joynr runtime has finished processing
+all messages in the queue or a timeout occurs. The timeout can be configured via the
+`PROPERTY_PREPARE_FOR_SHUTDOWN_TIMEOUT` property. See the
+[Java Configuration Guide](./JavaSettings.md) for details.
+
+In order to be able to stop receiving messages but still be able to send stateless messages out,
+you must use two MQTT connections, which can be activated using the
+`PROPERTY_KEY_MQTT_SEPARATE_CONNECTIONS` property. Again see the
+[Java Configuration Guide](./JavaSettings.md) for details.
+
+
 ## Example Application
 
 Under `examples/radio-jee` you can find an example application which is based on the

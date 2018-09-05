@@ -38,6 +38,7 @@
 		<module>inter-language-test</module>
 		<module>inter-language-test-jee</module>
 		<module>system-integration-test</module>
+		<module>graceful-shutdown-test</module>
 	</modules>
 
 	<build>

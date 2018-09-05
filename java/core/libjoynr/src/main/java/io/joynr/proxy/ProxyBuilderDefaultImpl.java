@@ -33,6 +33,7 @@ import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.runtime.ShutdownNotifier;
 import io.joynr.util.VersionUtil;
 import joynr.system.DiscoveryAsync;
 import joynr.types.Version;
@@ -53,6 +54,8 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
     private boolean buildCalled;
     private Version interfaceVersion;
     private ProxyInvocationHandlerFactory proxyInvocationHandlerFactory;
+    private ShutdownNotifier shutdownNotifier;
+
     private String statelessAsyncCallbackUseCase;
     private StatelessAsyncCallbackDirectory statelessAsyncCallbackDirectory;
     private T proxy;
@@ -62,6 +65,7 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
                             Set<String> domains,
                             Class<T> interfaceClass,
                             ProxyInvocationHandlerFactory proxyInvocationHandlerFactory,
+                            ShutdownNotifier shutdownNotifier,
                             StatelessAsyncCallbackDirectory statelessAsyncCallbackDirectory,
                             long maxMessagingTtl,
                             long defaultDiscoveryTimeoutMs,
@@ -72,6 +76,7 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
         this.maxMessagingTtl = maxMessagingTtl;
         this.defaultDiscoveryTimeoutMs = defaultDiscoveryTimeoutMs;
         this.defaultDiscoveryRetryIntervalMs = defaultDiscoveryRetryIntervalMs;
+        this.shutdownNotifier = shutdownNotifier;
 
         try {
             interfaceName = (String) interfaceClass.getField("INTERFACE_NAME").get(String.class);
@@ -236,6 +241,7 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
                                                                                                    proxyParticipantId,
                                                                                                    discoveryQos,
                                                                                                    messagingQos,
+                                                                                                   shutdownNotifier,
                                                                                                    statelessAsyncCallback);
 
         // This order is necessary because the Arbitrator might return early

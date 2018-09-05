@@ -21,7 +21,11 @@ package io.joynr.proxy;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.CALLS_REAL_METHODS;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -40,19 +44,27 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
 
+import io.joynr.Async;
 import io.joynr.Sync;
 import io.joynr.arbitration.ArbitrationResult;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.dispatcher.rpc.JoynrBroadcastSubscriptionInterface;
 import io.joynr.dispatcher.rpc.annotation.FireAndForget;
 import io.joynr.dispatcher.rpc.annotation.JoynrMulticast;
+import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.provider.DeferredVoid;
+import io.joynr.provider.Promise;
 import io.joynr.proxy.invocation.MulticastSubscribeInvocation;
 import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
+import io.joynr.runtime.ShutdownListener;
+import io.joynr.runtime.ShutdownNotifier;
 import joynr.exceptions.ApplicationException;
 import joynr.types.DiscoveryEntryWithMetaInfo;
 
@@ -72,6 +84,10 @@ public class ProxyInvocationHandlerTest {
     private MessageRouter mockMessageRouter;
 
     @Mock
+    private ShutdownNotifier shutdownNotifier;
+    private ShutdownListener shutdownListener;
+
+    @Mock
     private StatelessAsyncIdCalculator statelessAsyncIdCalculator;
 
     private ProxyInvocationHandlerImpl proxyInvocationHandler;
@@ -89,6 +105,12 @@ public class ProxyInvocationHandlerTest {
 
     @Sync
     private static interface TestServiceSync extends TestServiceFireAndForget {
+        String testSyncMethod(String inputData);
+    }
+
+    @Async
+    private interface TestServiceAsync extends TestServiceFireAndForget {
+        Promise<DeferredVoid> testAsyncMethod(String inputData);
     }
 
     @Before
@@ -96,6 +118,13 @@ public class ProxyInvocationHandlerTest {
         proxy = new Object();
         connectorFactory = Mockito.mock(ConnectorFactory.class);
         mockMessageRouter = Mockito.mock(MessageRouter.class);
+        doAnswer(new Answer() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                shutdownListener = (ShutdownListener) invocation.getArguments()[0];
+                return null;
+            }
+        }).when(shutdownNotifier).registerForShutdown(any());
         proxyInvocationHandler = new ProxyInvocationHandlerImpl(new HashSet<String>(Arrays.asList(domain)),
                                                                 interfaceName,
                                                                 proxyParticipantId,
@@ -104,6 +133,7 @@ public class ProxyInvocationHandlerTest {
                                                                 mock(StatelessAsyncCallback.class),
                                                                 connectorFactory,
                                                                 mockMessageRouter,
+                                                                shutdownNotifier,
                                                                 statelessAsyncIdCalculator);
     }
 
@@ -231,6 +261,41 @@ public class ProxyInvocationHandlerTest {
         MulticastSubscribeInvocation multicastSubscribeInvocation = captor.getValue();
         assertNotNull(multicastSubscribeInvocation);
         assertArrayEquals(new String[]{ "one", "two", "three" }, multicastSubscribeInvocation.getPartitions());
+    }
+
+    @Test(expected = JoynrIllegalStateException.class)
+    public void testExecuteSyncFailsAfterPrepareForShutdown() throws Exception {
+        Method method = TestServiceSync.class.getMethod("testSyncMethod", String.class);
+        testExecutionFailsAfterPrepareForShutdown(method);
+    }
+
+    @Test(expected = JoynrIllegalStateException.class)
+    public void testExecuteAsyncFailsAfterPrepareForShutdown() throws Exception {
+        Method method = TestServiceAsync.class.getMethod("testAsyncMethod", String.class);
+        testExecutionFailsAfterPrepareForShutdown(method);
+    }
+
+    @Test(expected = JoynrIllegalStateException.class)
+    public void testExecuteSubscriptionMethodFailsAfterPrepareForShutdown() throws Exception {
+        Method method = MyBroadcastSubscriptionListener.class.getMethod("onSubscribed", String.class);
+        testExecutionFailsAfterPrepareForShutdown(method);
+    }
+
+    private void testExecutionFailsAfterPrepareForShutdown(Method method) throws Exception {
+        shutdownListener.prepareForShutdown();
+        proxyInvocationHandler.invokeInternal(proxy, method, new Object[]{ "inputData" });
+        fail("Should not get this far.");
+    }
+
+    @Test
+    public void testExecuteFireAndForgetAfterPrepareForShutdownAllowed() throws Exception {
+        ConnectorInvocationHandler connectorInvocationHandler = mock(ConnectorInvocationHandler.class);
+        when(connectorFactory.create(anyString(), any(), any(), any())).thenReturn(connectorInvocationHandler);
+        shutdownListener.prepareForShutdown();
+        proxyInvocationHandler.createConnector(mock(ArbitrationResult.class));
+        Method method = TestServiceSync.class.getMethod("callMe", String.class);
+        proxyInvocationHandler.invokeInternal(proxy, method, new Object[]{ "inputData" });
+        verify(connectorInvocationHandler).executeOneWayMethod(eq(method), any());
     }
 
 }

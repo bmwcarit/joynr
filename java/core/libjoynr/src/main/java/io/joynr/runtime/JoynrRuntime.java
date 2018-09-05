@@ -158,4 +158,13 @@ public interface JoynrRuntime {
      *            </ul>
      */
     void shutdown(boolean clear);
+
+    /**
+     * Let joynr know you are about to shut down and give it a chance to do any clean-up work, such as
+     * draining any remaining messages from the queue and potentially stop receiving incoming messages.
+     *
+     * This call will block until all subsystems have performed their relevant clean-up operations, or
+     * will time out if they couldn't finish on time, after which you can call {@link #shutdown(boolean)}.
+     */
+    void prepareForShutdown();
 }

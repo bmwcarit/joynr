@@ -19,7 +19,6 @@
 package io.joynr.messaging;
 
 import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -36,7 +35,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import io.joynr.common.ExpiryDate;
@@ -44,6 +42,7 @@ import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.routing.AddressManager;
 import io.joynr.messaging.routing.DelayableImmutableMessage;
 import io.joynr.messaging.routing.LibJoynrMessageRouter;
+import io.joynr.messaging.routing.MessageQueue;
 import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.messaging.routing.MulticastReceiverRegistry;
 import io.joynr.messaging.routing.RoutingTable;
@@ -85,7 +84,8 @@ public class LibJoynrMessageRouterTest {
     @Mock
     private ShutdownNotifier shutdownNotifier;
 
-    private DelayQueue<DelayableImmutableMessage> messageQueue = new DelayQueue<>();
+    private DelayQueue<DelayableImmutableMessage> delayQueue = new DelayQueue<>();
+    private MessageQueue messageQueue = new MessageQueue(delayQueue, new MessageQueue.MaxTimeoutHolder());
     private LibJoynrMessageRouter messageRouter;
     private String unknownParticipantId = "unknownParticipantId";
     private Long sendMsgRetryIntervalMs = 10L;

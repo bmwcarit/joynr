@@ -20,6 +20,15 @@ package io.joynr.runtime;
 
 public interface ShutdownListener {
 
+    /**
+     * This method is called just before the system shuts down in order to give components a chance to finish
+     * essential operations before the actual {@link #shutdown()} is performed. Implementations should block until
+     * they're finished, but should also make sure to timeout after a few seconds if they can't finish quickly.
+     */
+    default void prepareForShutdown() {
+        // No-op
+    }
+
     void shutdown();
 
 }

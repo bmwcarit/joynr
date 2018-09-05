@@ -18,12 +18,13 @@
  */
 package io.joynr.proxy;
 
-import io.joynr.arbitration.DiscoveryQos;
-import io.joynr.messaging.MessagingQos;
-
 import java.util.Set;
 
 import com.google.inject.assistedinject.Assisted;
+
+import io.joynr.arbitration.DiscoveryQos;
+import io.joynr.messaging.MessagingQos;
+import io.joynr.runtime.ShutdownNotifier;
 
 public interface ProxyInvocationHandlerFactory {
     public ProxyInvocationHandler create(@Assisted("domains") Set<String> domains,
@@ -31,6 +32,7 @@ public interface ProxyInvocationHandlerFactory {
                                          @Assisted("proxyParticipantId") String proxyParticipantId,
                                          DiscoveryQos discoveryQos,
                                          MessagingQos messagingQos,
+                                         ShutdownNotifier shutdownNotifier,
                                          StatelessAsyncCallback statelessAsyncCallback);
 
 }

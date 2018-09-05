@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.DelayQueue;
 import java.util.concurrent.ScheduledExecutorService;
 
 import com.google.inject.Inject;
@@ -87,7 +86,7 @@ public class LibJoynrMessageRouter extends AbstractMessageRouter {
                                  MessagingSkeletonFactory messagingSkeletonFactory,
                                  AddressManager addressManager,
                                  MulticastReceiverRegistry multicastReceiverRegistry,
-                                 DelayQueue<DelayableImmutableMessage> messageQueue,
+                                 MessageQueue messageQueue,
                                  ShutdownNotifier shutdownNotifier,
                                  StatusReceiver statusReceiver) {
         // CHECKSTYLE:ON

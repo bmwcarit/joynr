@@ -283,6 +283,7 @@ public class ProxyTest {
 
         proxyBuilderFactory = new ProxyBuilderFactoryImpl(localDiscoveryAggregator,
                                                           injector.getInstance(ProxyInvocationHandlerFactory.class),
+                                                          shutdownNotifier,
                                                           injector.getInstance(StatelessAsyncCallbackDirectory.class),
                                                           MAX_TTL_MS,
                                                           DISCOVERY_TIMEOUT_MS,

@@ -45,8 +45,8 @@ public class MqttPahoClientFactory implements MqttClientFactory, ShutdownListene
 
     private static final Logger logger = LoggerFactory.getLogger(MqttPahoClientFactory.class);
     private MqttAddress ownAddress;
-    private JoynrMqttClient mqttClient1 = null; // primary connection
-    private JoynrMqttClient mqttClient2 = null; // secondary connection (sender) in case there are two connections
+    private JoynrMqttClient receivingMqttClient;
+    private JoynrMqttClient sendingMqttClient;
     private int reconnectSleepMs;
     private int keepAliveTimerSec;
     private int connectionTimeoutSec;
@@ -123,39 +123,46 @@ public class MqttPahoClientFactory implements MqttClientFactory, ShutdownListene
 
     @Override
     public synchronized JoynrMqttClient createReceiver() {
-        if (mqttClient1 == null) {
+        if (receivingMqttClient == null) {
             if (separateConnections) {
-                mqttClient1 = createInternal(true, "Sub");
+                receivingMqttClient = createInternal(true, "Sub");
             } else {
                 createCombinedClient();
             }
         }
-        return mqttClient1;
+        return receivingMqttClient;
     }
 
     @Override
     public synchronized JoynrMqttClient createSender() {
-        if (mqttClient2 == null) {
+        if (sendingMqttClient == null) {
             if (separateConnections) {
-                mqttClient2 = createInternal(false, "Pub");
+                sendingMqttClient = createInternal(false, "Pub");
             } else {
                 createCombinedClient();
             }
         }
-        return mqttClient2;
+        return sendingMqttClient;
+    }
+
+    @Override
+    public synchronized void prepareForShutdown() {
+        if (separateConnections) {
+            receivingMqttClient.shutdown();
+        }
     }
 
     @Override
     public synchronized void shutdown() {
-        mqttClient1.shutdown();
-        if (separateConnections) {
-            mqttClient2.shutdown();
+        sendingMqttClient.shutdown();
+        if (separateConnections && !receivingMqttClient.isShutdown()) {
+            receivingMqttClient.shutdown();
         }
     }
 
     private void createCombinedClient() {
-        mqttClient2 = createInternal(true, "");
-        mqttClient1 = mqttClient2;
+        sendingMqttClient = createInternal(true, "");
+        receivingMqttClient = sendingMqttClient;
     }
 
     private JoynrMqttClient createInternal(boolean isReceiver, String clientIdSuffix) {

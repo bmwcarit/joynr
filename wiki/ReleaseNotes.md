@@ -5,6 +5,7 @@ the versioning scheme [here](JoynrVersioning.md).
 # joynr 1.6.0
 
 ## API relevant changes
+* **[Java, JEE]** added `prepareForShutdown` lifecycle step
 * **[Java,JEE]** Added stateless async communication API.
   See the [Java documentation](java.md) and [JEE documentation](jee.md) for details.
 
@@ -13,6 +14,10 @@ None.
 
 ## Configuration property changes
 * **[Java]** Introduced `PROPERTY_KEY_MQTT_USERNAME` and `PROPERTY_KEY_MQTT_PASSWORD`.
+  See [Java Configuration Reference](JavaSettings.md) for more details.
+* **[Java]** Introduced `PROPERTY_MESSAGE_QUEUE_SHUTDOWN_MAX_TIMEOUT`.
+  See [Java Configuration Reference](JavaSettings.md) for more details.
+* **[Java]** Introduced `PROPERTY_PREPARE_FOR_SHUTDOWN_TIMEOUT`.
   See [Java Configuration Reference](JavaSettings.md) for more details.
 * **[JS]** Moved default settings for discoveryQos from `capabilities.discoveryQos` to `discoveryQos`
     because capabilities was used as an array.
