@@ -44,11 +44,6 @@
 		<dependencies>
 
 			<dependency>
-				<groupId>javax</groupId>
-				<artifactId>javaee-api</artifactId>
-				<version>7.0</version>
-			</dependency>
-			<dependency>
 				<groupId>io.joynr.java</groupId>
 				<artifactId>jeeintegration</artifactId>
 				<version>${project.version}</version>
