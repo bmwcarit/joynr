@@ -16,14 +16,16 @@
  * limitations under the License.
  * #L%
  */
-package io.joynr.messaging.routing;
+package io.joynr.messaging.persistence;
 
 import java.util.Set;
 
+import io.joynr.messaging.routing.DelayableImmutableMessage;
+
 /**
  * You can provide an implementation of this interface in order to be given the chance to persist messages being
- * added to the {@link MessageQueue} so that if the joynr runtime quits unexpectedly, the messages in the queue
- * are not lost and can be restored on the next start of the runtime.
+ * added to the {@link io.joynr.messaging.routing.MessageQueue} so that if the joynr runtime quits unexpectedly,
+ * the messages in the queue are not lost and can be restored on the next start of the runtime.
  */
 public interface MessagePersister {
 
@@ -40,8 +42,8 @@ public interface MessagePersister {
 
     /**
      * Fetches all messages from persistence which have not yet been {@link #remove(String,DelayableImmutableMessage)}.
-     * The {@link MessageQueue} will call this during startup to fetch any messages which were persisted but not
-     * consumed during a previous lifetime of the joynr runtime in order to re-add them to the queue.
+     * The {@link io.joynr.messaging.routing.MessageQueue} will call this during startup to fetch any messages which were
+     * persisted but not consumed during a previous lifetime of the joynr runtime in order to re-add them to the queue.
      *
      * @param messageQueueId the ID of the message queue for which to fetch the persisted messages.
      * @return the set of messages which were previously added by the IDed message queue, but were not consumed.

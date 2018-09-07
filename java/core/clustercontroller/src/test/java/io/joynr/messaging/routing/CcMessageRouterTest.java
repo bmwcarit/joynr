@@ -88,6 +88,7 @@ import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.SuccessAction;
 import io.joynr.messaging.channel.ChannelMessagingSkeleton;
 import io.joynr.messaging.channel.ChannelMessagingStubFactory;
+import io.joynr.messaging.persistence.MessagePersister;
 import io.joynr.messaging.util.MulticastWildcardRegexFactory;
 import io.joynr.runtime.ClusterControllerRuntimeModule;
 import io.joynr.runtime.JoynrThreadFactory;
@@ -127,6 +128,8 @@ public class CcMessageRouterTest {
     private StatusReceiver statusReceiver;
     @Mock
     private ShutdownNotifier shutdownNotifier;
+    @Mock
+    private MessagePersister messagePersisterMock;
 
     private MessageRouter messageRouter;
     private MutableMessage joynrMessage;
@@ -163,12 +166,15 @@ public class CcMessageRouterTest {
                                 .toInstance(routingTableGracePeriodMs);
                 bind(Long.class).annotatedWith(Names.named(ConfigurableMessagingSettings.PROPERTY_ROUTING_TABLE_CLEANUP_INTERVAL_MS))
                                 .toInstance(routingTableCleanupIntervalMs);
+                bind(String.class).annotatedWith(Names.named(MessageQueue.MESSAGE_QUEUE_ID))
+                                  .toInstance(UUID.randomUUID().toString());
 
                 bindConstant().annotatedWith(Names.named(ClusterControllerRuntimeModule.PROPERTY_ACCESSCONTROL_ENABLE))
                               .to(false);
 
                 bind(AccessController.class).toInstance(Mockito.mock(AccessController.class));
                 bind(StatusReceiver.class).toInstance(statusReceiver);
+                bind(MessagePersister.class).toInstance(messagePersisterMock);
 
                 MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessagingStub, ? extends Address>> messagingStubFactory;
                 messagingStubFactory = MapBinder.newMapBinder(binder(), new TypeLiteral<Class<? extends Address>>() {

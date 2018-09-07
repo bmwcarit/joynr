@@ -18,6 +18,7 @@
  */
 package io.joynr.messaging;
 
+import io.joynr.messaging.routing.MessageQueue;
 import io.joynr.runtime.PropertyLoader;
 
 import java.io.File;
@@ -41,6 +42,7 @@ public class MessagingPropertiesPersistence {
 
         generateIfAbsent(MessagingPropertyKeys.CHANNELID);
         generateIfAbsent(MessagingPropertyKeys.RECEIVERID);
+        generateIfAbsent(MessageQueue.MESSAGE_QUEUE_ID);
 
         persistProperties();
     }

@@ -18,13 +18,14 @@
  */
 package io.joynr.messaging;
 
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.eq;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.UUID;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -39,6 +40,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import io.joynr.common.ExpiryDate;
 import io.joynr.messaging.inprocess.InProcessAddress;
+import io.joynr.messaging.persistence.MessagePersister;
 import io.joynr.messaging.routing.AddressManager;
 import io.joynr.messaging.routing.DelayableImmutableMessage;
 import io.joynr.messaging.routing.LibJoynrMessageRouter;
@@ -83,9 +85,10 @@ public class LibJoynrMessageRouterTest {
     private ImmutableMessage message;
     @Mock
     private ShutdownNotifier shutdownNotifier;
+    @Mock
+    private MessagePersister messagePersisterMock;
 
-    private DelayQueue<DelayableImmutableMessage> delayQueue = new DelayQueue<>();
-    private MessageQueue messageQueue = new MessageQueue(delayQueue, new MessageQueue.MaxTimeoutHolder());
+    private MessageQueue messageQueue;
     private LibJoynrMessageRouter messageRouter;
     private String unknownParticipantId = "unknownParticipantId";
     private Long sendMsgRetryIntervalMs = 10L;
@@ -108,6 +111,11 @@ public class LibJoynrMessageRouterTest {
         when(messageRouterParent.getReplyToAddress()).thenReturn(globalAddress);
         when(messagingStubFactory.create(any(Address.class))).thenReturn(messagingStub);
         when(parentAddress.getChannelId()).thenReturn("LibJoynrMessageRouterTestChannel");
+
+        messageQueue = new MessageQueue(new DelayQueue<DelayableImmutableMessage>(),
+                                        new MessageQueue.MaxTimeoutHolder(),
+                                        UUID.randomUUID().toString(),
+                                        messagePersisterMock);
 
         messageRouter = new LibJoynrMessageRouter(routingTable,
                                                   incomingAddress,

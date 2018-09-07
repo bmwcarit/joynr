@@ -18,23 +18,34 @@
  */
 package io.joynr.messaging.routing;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.mock;
+import static java.util.stream.Collectors.toSet;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import joynr.ImmutableMessage;
+import io.joynr.messaging.persistence.MessagePersister;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MessageQueueTest {
@@ -45,12 +56,21 @@ public class MessageQueueTest {
     @Mock
     private MessageQueue.MaxTimeoutHolder maxTimeoutHolderMock;
 
+    @Spy
+    private DelayQueue<DelayableImmutableMessage> delayQueue = new DelayQueue<>();
+
+    @Mock
+    private MessagePersister messagePersisterMock;
+
+    private String generatedMessageQueueId;
     private MessageQueue subject;
 
     @Before
     public void setup() {
         when(maxTimeoutHolderMock.getTimeout()).thenReturn(50L);
-        subject = new MessageQueue(new DelayQueue<>(), maxTimeoutHolderMock);
+
+        generatedMessageQueueId = UUID.randomUUID().toString();
+        subject = new MessageQueue(delayQueue, maxTimeoutHolderMock, generatedMessageQueueId, messagePersisterMock);
     }
 
     @Test
@@ -92,7 +112,7 @@ public class MessageQueueTest {
     }
 
     @Test
-    public void testShutdownImmediatelyWithEmptyQueue() throws Exception {
+    public void testShutdownImmediatelyWithEmptyQueue() {
         // Given an empty queue
 
         // When I shutdown the message queue
@@ -105,7 +125,7 @@ public class MessageQueueTest {
     }
 
     @Test
-    public void testShutdownBlocksUntilQueueEmpty() throws Exception {
+    public void testShutdownBlocksUntilQueueEmpty() {
         // Given an item in the queue
         subject.put(mockMessage);
 
@@ -128,19 +148,18 @@ public class MessageQueueTest {
     }
 
     @Test
-    public void testShutdownBlocksMax5SecondsIfQueueNotEmptied() throws Exception {
-        // Given an item in the queue, and a max shutdown of 50
+    public void testShutdownBlocksMaxTimeIfQueueNotEmptied() {
+        // Given an item in the queue, and a max shutdown of 50ms (see setup)
         subject.put(mockMessage);
-        when(maxTimeoutHolderMock.getTimeout()).thenReturn(50L);
 
         // When I stop the queue, but do NOT remove the item
         long beforeStop = System.currentTimeMillis();
         subject.waitForQueueToDrain();
         long timeTaken = System.currentTimeMillis() - beforeStop;
 
-        // Then the operation blocked for max just over 5 sec
-        assertTrue("Expected stop to block for maximum of around 5sec. Actual: " + timeTaken,
-                   timeTaken >= 50 && timeTaken < 60);
+        // Then the operation blocked for max just over 50 millis
+        assertTrue("Expected stop to block for maximum of around 50ms. Actual: " + timeTaken,
+                   timeTaken >= 50 && timeTaken < 70);
     }
 
 }
