@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.function.Supplier;
 
 import javax.annotation.Resource;
 import javax.ejb.Singleton;
@@ -57,6 +58,7 @@ import io.joynr.capabilities.ParticipantIdKeyUtil;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys;
 import io.joynr.jeeintegration.api.JoynrLocalDomain;
+import io.joynr.jeeintegration.api.JoynrMessagePersister;
 import io.joynr.jeeintegration.api.JoynrMqttClientIdProvider;
 import io.joynr.jeeintegration.api.JoynrProperties;
 import io.joynr.jeeintegration.api.JoynrRawMessagingPreprocessor;
@@ -66,6 +68,8 @@ import io.joynr.messaging.NoOpRawMessagingPreprocessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.MqttClientIdProvider;
 import io.joynr.messaging.mqtt.statusmetrics.MqttStatusReceiver;
+import io.joynr.messaging.persistence.MessagePersister;
+import io.joynr.messaging.persistence.NoOpMessagePersister;
 import io.joynr.provider.JoynrInterface;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.CCInProcessRuntimeModule;
@@ -110,6 +114,7 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
 
     private RawMessagingPreprocessor rawMessagePreprocessor;
     private MqttClientIdProvider mqttClientIdProvider;
+    private MessagePersister messagePersister;
 
     /**
      * Constructor in which the JEE runtime injects the managed resources and the JEE joynr integration specific
@@ -123,16 +128,23 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
      * @param joynrProperties  the joynr properties, if present, by {@link #prepareJoynrProperties(Properties)} to prepare the properties with which the injector is created.
      * @param joynrLocalDomain the joynr local domain name to use for the application.
      * @param rawMessagePreprocessor can be optionally provided to intercept incoming messages and inspect or modify them
-     * @param joynrStatusReceiver Is passed to POJO joynr and receives metrics about the status of the joynr instance.
+     * @param mqttClientIdProvider can be optionally provided to generate custom mqtt client id
+     * @param messagePersister can be optionally provided to persist joynr messages and thus increase sudden crash resilience
+     * @param beanManager
+     * @param statusReceiver Is passed to POJO joynr and receives metrics about the status of the joynr instance.
+     * @param mqttStatusReceiver Is passed to POJO joynr and receives metrics about the status of the mqtt connection.
      */
+    // CHECKSTYLE:OFF
     @Inject
     public DefaultJoynrRuntimeFactory(@JoynrProperties Instance<Properties> joynrProperties,
                                       @JoynrLocalDomain Instance<String> joynrLocalDomain,
                                       @JoynrRawMessagingPreprocessor Instance<RawMessagingPreprocessor> rawMessagePreprocessor,
                                       @JoynrMqttClientIdProvider Instance<MqttClientIdProvider> mqttClientIdProvider,
+                                      @JoynrMessagePersister Instance<MessagePersister> messagePersister,
                                       BeanManager beanManager,
                                       StatusReceiver statusReceiver,
                                       MqttStatusReceiver mqttStatusReceiver) {
+        // CHECKSTYLE:ON
         if (joynrLocalDomain.isUnsatisfied()) {
             String message = "No local domain name specified. Please provide a value for the local domain via @JoynrLocalDomain in your configuration EJB.";
             LOG.error(message);
@@ -166,6 +178,18 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
             }
         } else {
             this.mqttClientIdProvider = null;
+        }
+
+        if (!messagePersister.isUnsatisfied()) {
+            if (!messagePersister.isAmbiguous()) {
+                this.messagePersister = messagePersister.get();
+            } else {
+                String message = "Only one MessagePersister may be provided.";
+                LOG.error(message);
+                throw new JoynrIllegalStateException(message);
+            }
+        } else {
+            this.messagePersister = new NoOpMessagePersister();
         }
 
         Properties configuredProperties;
@@ -223,6 +247,7 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
                 @Override
                 protected void configure() {
                     bind(RawMessagingPreprocessor.class).toInstance(rawMessagePreprocessor);
+                    bind(MessagePersister.class).toInstance(messagePersister);
 
                     if (mqttClientIdProvider != null) {
                         bind(MqttClientIdProvider.class).toInstance(mqttClientIdProvider);
@@ -242,25 +267,27 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
     }
 
     private AbstractModule getMessageProcessorsModule() {
-        final Set<Bean<?>> joynrMessageProcessorBeans = beanManager.getBeans(JoynrMessageProcessor.class,
-                                                                             new AnnotationLiteral<Any>() {
-                                                                                 private static final long serialVersionUID = 1L;
-                                                                             });
+        return getModuleForBeansOfType(JoynrMessageProcessor.class, () -> new TypeLiteral<JoynrMessageProcessor>() {
+        });
+    }
+
+    private <T> AbstractModule getModuleForBeansOfType(Class<T> beanType,
+                                                       Supplier<TypeLiteral<T>> typeLiteralSupplier) {
+        final Set<Bean<?>> beans = beanManager.getBeans(beanType, new AnnotationLiteral<Any>() {
+            private static final long serialVersionUID = 1L;
+        });
         return new AbstractModule() {
             @SuppressWarnings("unchecked")
             @Override
             protected void configure() {
 
-                Multibinder<JoynrMessageProcessor> joynrMessageProcessorMultibinder = Multibinder.newSetBinder(binder(),
-                                                                                                               new TypeLiteral<JoynrMessageProcessor>() {
-                                                                                                               });
-                for (Bean<?> bean : joynrMessageProcessorBeans) {
-                    joynrMessageProcessorMultibinder.addBinding()
-                                                    .toInstance((JoynrMessageProcessor) Proxy.newProxyInstance(getClass().getClassLoader(),
-                                                                                                               new Class[]{
-                                                                                                                       JoynrMessageProcessor.class },
-                                                                                                               new BeanCallingProxy<JoynrMessageProcessor>((Bean<JoynrMessageProcessor>) bean,
-                                                                                                                                                           beanManager)));
+                Multibinder<T> beanMultibinder = Multibinder.newSetBinder(binder(), typeLiteralSupplier.get());
+                for (Bean<?> bean : beans) {
+                    beanMultibinder.addBinding()
+                                   .toInstance((T) Proxy.newProxyInstance(getClass().getClassLoader(),
+                                                                          new Class[]{ beanType },
+                                                                          new BeanCallingProxy<T>((Bean<T>) bean,
+                                                                                                  beanManager)));
                 }
             }
         };
@@ -337,5 +364,9 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
 
     public MqttClientIdProvider getMqttClientIdProvider() {
         return mqttClientIdProvider;
+    }
+
+    public MessagePersister getMessagePersister() {
+        return messagePersister;
     }
 }
