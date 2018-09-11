@@ -18,7 +18,6 @@
  */
 package io.joynr.systemintegrationtest.jee;
 
-import java.util.Map;
 import java.util.Properties;
 
 import javax.ejb.Singleton;
@@ -49,13 +48,6 @@ public class JoynrConfigurationProvider {
         joynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "tcp://mqttbroker:1883");
         joynrProperties.setProperty(MessagingPropertyKeys.DISCOVERYDIRECTORYURL, "tcp://mqttbroker:1883");
         joynrProperties.setProperty(MessagingPropertyKeys.DOMAINACCESSCONTROLLERURL, "tcp://mqttbroker:1883");
-
-        for (Map.Entry<String, String> envEntry : System.getenv().entrySet()) {
-            if (envEntry.getKey().toLowerCase().startsWith("joynr") && envEntry.getValue() != null) {
-                String joynrKey = envEntry.getKey().toLowerCase().replaceAll("_", ".");
-                joynrProperties.put(joynrKey, envEntry.getValue());
-            }
-        }
 
         return joynrProperties;
     }
