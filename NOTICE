@@ -158,6 +158,11 @@ This project has dependencies to:
   io.joynr.examples:android-location-consumer under The Apache Software License, Version 2.0
   io.joynr.examples:android-location-provider under The Apache Software License, Version 2.0
   io.joynr.examples:location-tester under The Apache Software License, Version 2.0
+  io.joynr.examples:message-persistence under The Apache Software License, Version 2.0
+  io.joynr.examples:message-persistence-consumer under The Apache Software License, Version 2.0
+  io.joynr.examples:message-persistence-impl under The Apache Software License, Version 2.0
+  io.joynr.examples:message-persistence-java under The Apache Software License, Version 2.0
+  io.joynr.examples:message-persistence-jee under The Apache Software License, Version 2.0
   io.joynr.examples:radio-app under The Apache Software License, Version 2.0
   io.joynr.examples:radio-jee under The Apache Software License, Version 2.0
   io.joynr.examples:radio-js under The Apache Software License, Version 2.0
@@ -356,6 +361,7 @@ This project has dependencies to:
   Maven Wagon File Provider under The Apache Software License, Version 2.0
   Maven Wagon HTTP Shared Library under The Apache Software License, Version 2.0
   Maven Wagon Lightweight HTTP Provider under The Apache Software License, Version 2.0
+  message-persistence-backend-services under The Apache Software License, Version 2.0
   MIME streaming extension under CDDL 1.1 or GPL2 w/ CPE
   Mockito under The MIT License
   Neko HTML under The Apache Software License, Version 2.0

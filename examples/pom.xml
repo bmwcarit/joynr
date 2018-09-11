@@ -33,6 +33,7 @@
 		<module>radio-jee</module>
 		<module>location-tester</module>
 		<module>stateless-async</module>
+		<module>message-persistence</module>
 	</modules>
 	<profiles>
 		<!-- Only include javascript examples when javascript is available -->

@@ -10,6 +10,8 @@ None.
 ## Other changes
 * **[C++]** Enabled registration of multiple providers in a single runtime.
   ParticipantIdStorage now also stores major versions of providers.
+* **[Java, JEE]** Provided an example for the usage of the message persistence feature. Check the
+  `examples/message-persistence/` folder.
 
 ## Configuration property changes
 None.

@@ -721,6 +721,9 @@ For example:
 See the [Java Developer Guide](./java.md#message_persistence) for details on how to implement
 message persister and how it works in the joynr runtime.
 
+See the [examples/message-persistence](../examples/message-persistence/README.md) project for an
+example of how to integrate a message persister implementation into your application.
+
 
 ## Example Application
 

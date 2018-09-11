@@ -1665,3 +1665,8 @@ At startup time, the message persister is asked to provide all messages it has f
 queue (by its ID), and these messages are then added back into the in-memory message queue for
 processing. From there they are processed, and as described above are then, upon successful
 completion, handed to the persister to be removed.
+
+## Example
+
+See the [examples/message-persistence](../examples/message-persistence/README.md) project for an
+example of how to integrate a message persister implementation into your application.
