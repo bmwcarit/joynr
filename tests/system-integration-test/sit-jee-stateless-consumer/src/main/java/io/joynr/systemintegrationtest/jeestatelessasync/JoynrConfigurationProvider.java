@@ -26,10 +26,12 @@ import javax.enterprise.inject.Produces;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.joynr.capabilities.ParticipantIdKeyUtil;
 import io.joynr.jeeintegration.api.JoynrLocalDomain;
 import io.joynr.jeeintegration.api.JoynrProperties;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.mqtt.MqttModule;
+import joynr.test.SitControllerSync;
 
 @Singleton
 public class JoynrConfigurationProvider {
@@ -47,6 +49,9 @@ public class JoynrConfigurationProvider {
                                     "io.joynr.systemintegrationtest.jeestatelessconsumer");
         joynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, MQTT_BROKER_URI);
         joynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS, "true");
+        joynrProperties.setProperty(ParticipantIdKeyUtil.getProviderParticipantIdKey("io.joynr.systemintegrationtest.controller.jee-stateless-consumer",
+                                                                                     SitControllerSync.class),
+                                    "io.joynr.systemintegrationtest.controller.jee-stateless-consumer");
         joynrProperties.setProperty(MessagingPropertyKeys.DISCOVERYDIRECTORYURL, MQTT_BROKER_URI);
         joynrProperties.setProperty(MessagingPropertyKeys.DOMAINACCESSCONTROLLERURL, MQTT_BROKER_URI);
 
