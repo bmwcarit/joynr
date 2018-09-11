@@ -36,6 +36,7 @@
 		<module>sit-jee-app</module>
 		<module>sit-jee-stateless-consumer</module>
 		<module>sit-node-app</module>
+		<module>sit-controller</module>
 	</modules>
 
 	<build>

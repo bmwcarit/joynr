@@ -73,6 +73,7 @@ This project has dependencies to:
   io.joynr.tests.joynr-hivemq-shared-subscriptions.test-apps:sharedsubscriptions-test-monitor-app under The Apache Software License, Version 2.0
   io.joynr.tests.joynr-hivemq-shared-subscriptions.test-apps:sharedsubscriptions-test-ping-service-api under The Apache Software License, Version 2.0
   io.joynr.tests.joynr-hivemq-shared-subscriptions:test-apps under The Apache Software License, Version 2.0
+  io.joynr.tests.system-integration-test:sit-controller under The Apache Software License, Version 2.0
   io.joynr.tests.system-integration-test:sit-cpp-app under The Apache Software License, Version 2.0
   io.joynr.tests.system-integration-test:sit-java-app under The Apache Software License, Version 2.0
   io.joynr.tests.system-integration-test:sit-jee-api under The Apache Software License, Version 2.0
