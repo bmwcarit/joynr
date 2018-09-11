@@ -257,7 +257,15 @@ void LibJoynrRuntime::buildInternalProxies(
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError)
 {
-    const std::uint64_t messagingTtl = 60000;
+    /*
+     * Extend the default ttl by 10 seconds in order to allow the cluster controller to handle
+     * timeout for global discovery requests and send back the response to discoveryProxy.
+     * This assumes that the communication to the cluster-controller is way faster then the one
+     * from the cluster-controller to the backend.
+     * This value should be greater then the TTL set on the cluster-controller side to communicate
+     * with the global capabilities directory (per default Messaging::default_ttl).
+     */
+    const std::uint64_t messagingTtl = joynr::MessagingQos().getTtl() + 10000;
     const MessagingQos joynrInternalMessagingQos(messagingTtl);
     const bool isGloballyVisible = false;
     constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
