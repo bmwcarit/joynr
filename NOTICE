@@ -237,6 +237,7 @@ This project has dependencies to:
   io.joynr.tests.system-integration-test:sit-java-app under The Apache Software License, Version 2.0
   io.joynr.tests.system-integration-test:sit-jee-api under The Apache Software License, Version 2.0
   io.joynr.tests.system-integration-test:sit-jee-app under The Apache Software License, Version 2.0
+  io.joynr.tests.system-integration-test:sit-jee-stateless-consumer under The Apache Software License, Version 2.0
   io.joynr.tests.system-integration-test:sit-node-app under The Apache Software License, Version 2.0
   io.joynr.tests:graceful-shutdown-test under The Apache Software License, Version 2.0
   io.joynr.tests:inter-language-test under The Apache Software License, Version 2.0

@@ -34,6 +34,7 @@
 		<module>sit-java-app</module>
 		<module>sit-jee-api</module>
 		<module>sit-jee-app</module>
+		<module>sit-jee-stateless-consumer</module>
 		<module>sit-node-app</module>
 	</modules>
 
