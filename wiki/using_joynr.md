@@ -156,5 +156,5 @@ See [Infrastructure](infrastructure.md).
 This tutorial guides you through a simple joynr application, explaining essential concepts such as
 communication interfaces, consumers, providers and how they communicate.
 * **[Using selective broadcast to implement a geocast](Broadcast-Tutorial.md):**
-In this tutorial [RadioApp example](Tutorial.md) is extended by a selective broadcast and filter
+In that tutorial the [RadioApp example](Tutorial.md) is extended by a selective broadcast and filter
 logics that implements a [geocast](http://en.wikipedia.org/wiki/Geocast).

@@ -572,5 +572,5 @@ project as a template for your further investigations!
 
 # Further Reading
 * **[Using selective broadcast to implement a geocast](Broadcast-Tutorial.md):**
-In this tutorial RadioApp example is extended by a selective broadcast and filter
+In that tutorial the example from here is extended by a selective broadcast and filter
 logics that implements a [geocast](http://en.wikipedia.org/wiki/Geocast).
