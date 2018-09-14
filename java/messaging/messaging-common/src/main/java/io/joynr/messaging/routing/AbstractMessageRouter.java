@@ -141,7 +141,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
                 routingTable.purge();
 
                 // remove Routing table entries for proxies which have been garbage collected
-                Reference r;
+                Reference<? extends Object> r;
                 synchronized (garbageCollectedProxiesQueue) {
                     r = garbageCollectedProxiesQueue.poll();
                 }
