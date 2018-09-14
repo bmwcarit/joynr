@@ -972,7 +972,7 @@ subscriptionIdFuture = <interface>Proxy.subscribeTo<Broadcast>Broadcast(
 );
 ```
 
-## Subscribing to a broadcast with filter parameters
+## Subscribing to a selective broadcast, i.e. a broadcast with filter parameters
 
 Selective Broadcasts use filter logic implemented by the provider and filter parameters set by the
 consumer to send only those broadcasts from the provider to the consumer that pass the filter. The

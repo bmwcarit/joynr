@@ -40,7 +40,7 @@ broadcast weakSignal {
 ...
 ```
 
-## Selective (Filtered) Broadcast
+## Selective (filtered) Broadcast
 An extension to broadcasts are so called selective or filtered broadcasts. Providers of selective
 broadcasts register additional filter logic that controls whether the broadcast is delivered to a
 consumer. The filter logic on provider side can be configured by the consumer via filter
@@ -90,7 +90,7 @@ broadcast newStationDiscovered selective {
 
 Currently, Franca does not allow the definition of filter parameters; as a result the filter
 parameters are currently defined using Franca structured comments. Note that this approach lacks
-type checking. All parameters are treated as strings.
+type checking. Thus, all parameters are treated as strings on both consumer and provider side.
 
 In the example above, there are three filter parameters defined that belong to two different
 filters. `positionOfInterest` and `radiusOfInterest` are read by the geocast filter.
@@ -104,8 +104,7 @@ extended. The filter method gets the broadcast arguments and filter parameters a
 true if the broadcast should be delivered to this consumer (i.e. the consumer that provided these
 concrete filter parameters).
 
-**Java: [\<RADIO_HOME\>/src/main/java/io/joynr/demo/GeocastBroadcastFilter.java]
-(/examples/radio-app/src/main/java/io/joynr/demo/GeocastBroadcastFilter.java)**
+**Java: [\<RADIO_HOME\>/src/main/java/io/joynr/demo/GeocastBroadcastFilter.java](/examples/radio-app/src/main/java/io/joynr/demo/GeocastBroadcastFilter.java)**
 
 ```java
 ...
@@ -129,8 +128,7 @@ public class GeocastBroadcastFilter extends RadioNewStationDiscoveredBroadcastFi
 }
 ```
 
-**C++: [\<RADIO_HOME\>/src/main/cpp/GeocastBroadcastFilter.h]
-(/examples/radio-app/src/main/cpp/GeocastBroadcastFilter.h)**
+**C++: [\<RADIO_HOME\>/src/main/cpp/GeocastBroadcastFilter.h](/examples/radio-app/src/main/cpp/GeocastBroadcastFilter.h)**
 
 ```c++
 ...
@@ -146,8 +144,7 @@ public:
 };
 ```
 
-**C++: [\<RADIO_HOME\>/src/main/cpp/GeocastBroadcastFilter.cpp]
-(/examples/radio-app/src/main/cpp/GeocastBroadcastFilter.cpp)**
+**C++: [\<RADIO_HOME\>/src/main/cpp/GeocastBroadcastFilter.cpp](/examples/radio-app/src/main/cpp/GeocastBroadcastFilter.cpp)**
 
 ```c++
 ...
@@ -172,8 +169,7 @@ bool GeocastBroadcastFilter::filter(
 
 Filters must be registered with the provider object.
 
-**Java: [\<RADIO_HOME\>/src/main/java/io/joynr/demo/MyRadioProviderApplication.java]
-(/examples/radio-app/src/main/java/io/joynr/demo/MyRadioProviderApplication.java)**
+**Java: [\<RADIO_HOME\>/src/main/java/io/joynr/demo/MyRadioProviderApplication.java](/examples/radio-app/src/main/java/io/joynr/demo/MyRadioProviderApplication.java)**
 
 ```java
 ...
@@ -183,8 +179,7 @@ provider.addBroadcastFilter(new GeocastBroadcastFilter(jsonSerializer));
 ...
 ```
 
-**C++: [\<RADIO_HOME\>/src/main/cpp/MyRadioProviderApplication.cpp]
-(/examples/radio-app/src/main/cpp/MyRadioProviderApplication.cpp)**
+**C++: [\<RADIO_HOME\>/src/main/cpp/MyRadioProviderApplication.cpp](/examples/radio-app/src/main/cpp/MyRadioProviderApplication.cpp)**
 
 ```c++
 ...
@@ -202,14 +197,13 @@ provider->addBroadcastFilter(geocastBroadcastFilter);
 If multiple filters are registered on the same provider and broadcast, all filters are applied in a
 chain and the broadcast is only delivered to the consumer if all filters in the chain return true.
 
-## Subscribing to Broadcasts and Supplying Filter Parameters
+## Subscribing to selective broadcasts
 Consumers that subscribe to a selective broadcast might supply filter parameters to control
 broadcast delivery. It is up to the filter logic developer to define the behavior if not all filter
 parameters are provided. However, it is good practice to do no filtering in this case (i.e.
 returning true).
 
-**Java: [\<RADIO_HOME\>/src/main/java/io/joynr/demo/MyRadioConsumerApplication.java]
-(/examples/radio-app/src/main/java/io/joynr/demo/MyRadioConsumerApplication.java)**
+**Java: [\<RADIO_HOME\>/src/main/java/io/joynr/demo/MyRadioConsumerApplication.java](/examples/radio-app/src/main/java/io/joynr/demo/MyRadioConsumerApplication.java)**
 
 ```java
 ...
@@ -245,8 +239,7 @@ radioProxy.subscribeToNewStationDiscoveredBroadcast(new RadioBroadcastInterface.
 ...
 ```
 
-**C++: [\<RADIO_HOME\>/src/main/cpp/MyRadioConsumerApplication.cpp]
-(/examples/radio-app/src/main/cpp/MyRadioConsumerApplication.cpp)**
+**C++: [\<RADIO_HOME\>/src/main/cpp/MyRadioConsumerApplication.cpp](/examples/radio-app/src/main/cpp/MyRadioConsumerApplication.cpp)**
 ```c++
 ...
 auto newStationDiscoveredBroadcastSubscriptionQos = std::make_shared<OnChangeSubscriptionQos>();
@@ -272,8 +265,7 @@ Providers of a communication interface trigger broadcasts that are defined in th
 interface by calling `fire<Broadcast name>` methods defined in `<Interface name>AbstractProvider`.
 They must supply the broadcast arguments that are delivered to the consumers.
 
-**Java: [\<RADIO_HOME\>/src/main/java/io/joynr/demo/MyRadioProvider.java]
-(/examples/radio-app/src/main/java/io/joynr/demo/MyRadioProvider.java)**
+**Java: [\<RADIO_HOME\>/src/main/java/io/joynr/demo/MyRadioProvider.java](/examples/radio-app/src/main/java/io/joynr/demo/MyRadioProvider.java)**
 
 ```java
 ...
@@ -283,8 +275,7 @@ fireNewStationDiscovered(discoveredStation, geoPosition);
 ...
 ```
 
-**C++: [\<RADIO_HOME\>/src/main/cpp/MyRadioProvider.cpp]
-(/examples/radio-app/src/main/cpp/MyRadioProvider.cpp)**
+**C++: [\<RADIO_HOME\>/src/main/cpp/MyRadioProvider.cpp](/examples/radio-app/src/main/cpp/MyRadioProvider.cpp)**
 
 ```c++
 ...

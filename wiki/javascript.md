@@ -554,7 +554,7 @@ provided as outlined below.
         // - PublicationMissedException if a periodic subscription publication does not arrive in time
     }
 
-    // optional parameter for multicast subscriptions (subscriptions to non selective broadcasts)
+    // optional parameter for multicast subscriptions (subscriptions to non-selective broadcasts)
     partitions: [partitionLevel1,
                  ...
                  partitionLevelN]
@@ -590,7 +590,7 @@ The ```subscribe()``` method can also be used to update an existing subscription
         // - PublicationMissedException if a periodic subscription publication does not arrive in time
     }
 
-    // optional parameter for multicast subscriptions (subscriptions to non selective broadcasts)
+    // optional parameter for multicast subscriptions (subscriptions to non-selective broadcasts)
     partitions: [partitionLevel1,
                  ...
                  partitionLevelN]
@@ -602,12 +602,11 @@ The ```subscribe()``` method can also be used to update an existing subscription
 
 ```
 
-## Subscribing to a broadcast with filter parameters
+## Subscribing to a selective broadcast, i.e. a broadcast with filter parameters
 
 Broadcast subscription with a **filter** informs the application in case a **selective broadcast
 which matches filter criteria** is fired from the provider side. The output values are returned
 via callback.
-
 
 The **subscriptionId** is returned asynchronously after the subscription is successfully registered
 at the provider. It can be used later to update the subscription or to unsubscribe from it.
