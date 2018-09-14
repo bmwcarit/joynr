@@ -587,6 +587,8 @@ subscribers to MQTT topics. That is, only one subscriber receives a message, rat
 subscribers. This feature can be used to load balance incoming messages on MQTT. This feature
 is useful if you want to run a cluster of JEE nodes while using only MQTT for communication
 (an alternative is to use the HTTP bridge configuration).
+Make sure to use the same fixed participant IDs for the providers in all nodes of the cluster. See
+[Joynr Java Developer Guide](java.md#register-provider-with-fixed-%28custom%29-participantId).
 
 * **OPTIONAL**
 * **Type**: Boolean

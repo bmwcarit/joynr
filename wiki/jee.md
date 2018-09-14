@@ -528,6 +528,9 @@ Activate this mode with the
 `MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS`
 property.
 
+Make sure to use the same fixed participant IDs for the providers in all nodes of the cluster. See
+[Joynr Java Developer Guide](java.md#register-provider-with-fixed-%28custom%29-participantId).
+
 ### HTTP Bridge
 
 The HTTP Bridge solution to clustering requires an HTTP load balancer to be
