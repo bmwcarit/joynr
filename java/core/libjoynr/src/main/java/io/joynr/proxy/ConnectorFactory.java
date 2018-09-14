@@ -32,13 +32,9 @@ import javax.inject.Named;
 import io.joynr.runtime.SystemServicesSettings;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Singleton
 public class ConnectorFactory {
-
-    private static final Logger logger = LoggerFactory.getLogger(ConnectorFactory.class);
 
     JoynrMessagingConnectorFactory joynrMessagingConnectorFactory;
 
@@ -81,13 +77,6 @@ public class ConnectorFactory {
             }
         }
         messageRouter.addNextHop(fromParticipantId, libjoynrMessagingAddress, isGloballyVisible);
-        if (statelessAsyncParticipantId != null) {
-            logger.info("Adding route for stateless callback {} / {} / {}",
-                        statelessAsyncParticipantId,
-                        libjoynrMessagingAddress,
-                        isGloballyVisible);
-            messageRouter.addNextHop(statelessAsyncParticipantId, libjoynrMessagingAddress, isGloballyVisible);
-        }
         return joynrMessagingConnectorFactory.create(fromParticipantId,
                                                      arbitrationResult.getDiscoveryEntries(),
                                                      qosSettings,

@@ -21,6 +21,8 @@ package io.joynr.proxy;
 import io.joynr.dispatching.rpc.ReplyCaller;
 import io.joynr.dispatching.rpc.ReplyCallerDirectory;
 import io.joynr.exceptions.JoynrIllegalStateException;
+import io.joynr.messaging.routing.MessageRouter;
+import joynr.system.RoutingTypes.Address;
 import joynr.vehicle.NavigationStatelessAsyncCallback;
 import org.junit.Before;
 import org.junit.Test;
@@ -44,8 +46,11 @@ import static org.mockito.Mockito.when;
 public class StatelessAsyncCallbackDirectoryTest {
 
     private static final String USE_CASE = "test";
-
-    private static final String CALLBACK_ID = "callbackId" + USE_CASE_SEPARATOR + USE_CASE;
+    private static final String INTERFACE_NAME = "interfaceName";
+    private static final String CALLBACK_ID = INTERFACE_NAME + USE_CASE_SEPARATOR + USE_CASE;
+    private static final String CHANNEL_ID = "channelId";
+    private static final String PARTICIPANT_ID = CHANNEL_ID + StatelessAsyncIdCalculator.CHANNEL_SEPARATOR
+            + CALLBACK_ID;
 
     @Mock
     private ReplyCallerDirectory replyCallerDirectoryMock;
@@ -53,12 +58,19 @@ public class StatelessAsyncCallbackDirectoryTest {
     @Mock
     private StatelessAsyncIdCalculator statelessAsyncIdCalculatorMock;
 
+    @Mock
+    private MessageRouter messageRouterMock;
+
+    @Mock
+    private Address dispatcherAddress;
+
     @InjectMocks
     private StatelessAsyncCallbackDirectory subject;
 
     @Before
     public void setup() {
         when(statelessAsyncIdCalculatorMock.calculateStatelessCallbackId(anyString(), any())).thenReturn(CALLBACK_ID);
+        when(statelessAsyncIdCalculatorMock.calculateParticipantId(anyString(), any())).thenReturn(PARTICIPANT_ID);
     }
 
     class MyTestCallback implements NavigationStatelessAsyncCallback {
@@ -73,11 +85,14 @@ public class StatelessAsyncCallbackDirectoryTest {
     @Test
     public void testSuccessfullyRegisterCallback() {
         subject.register(new MyTestCallback());
+
         ArgumentCaptor<ReplyCaller> captor = ArgumentCaptor.forClass(ReplyCaller.class);
         verify(replyCallerDirectoryMock).addReplyCaller(eq(CALLBACK_ID), captor.capture(), any());
         ReplyCaller replyCaller = captor.getValue();
         assertNotNull(replyCaller);
         assertTrue(replyCaller instanceof StatelessAsyncReplyCaller);
+
+        verify(messageRouterMock).addNextHop(eq(PARTICIPANT_ID), eq(dispatcherAddress), eq(false));
     }
 
     @Test(expected = JoynrIllegalStateException.class)

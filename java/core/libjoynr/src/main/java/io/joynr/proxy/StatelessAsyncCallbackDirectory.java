@@ -20,11 +20,17 @@ package io.joynr.proxy;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.google.inject.name.Named;
+
 import io.joynr.UsedBy;
 import io.joynr.common.ExpiryDate;
 import io.joynr.dispatching.rpc.ReplyCallerDirectory;
 import io.joynr.exceptions.JoynrIllegalStateException;
+import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.runtime.SystemServicesSettings;
 import io.joynr.util.AnnotationUtil;
+import joynr.system.RoutingTypes.Address;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,11 +48,18 @@ public class StatelessAsyncCallbackDirectory {
 
     private final StatelessAsyncIdCalculator statelessAsyncIdCalculator;
 
+    private MessageRouter messageRouter;
+    private Address libjoynrMessagingAddress;
+
     @Inject
     public StatelessAsyncCallbackDirectory(ReplyCallerDirectory replyCallerDirectory,
-                                           StatelessAsyncIdCalculator statelessAsyncIdCalculator) {
+                                           StatelessAsyncIdCalculator statelessAsyncIdCalculator,
+                                           MessageRouter messageRouter,
+                                           @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) Address dispatcherAddress) {
         this.replyCallerDirectory = replyCallerDirectory;
         this.statelessAsyncIdCalculator = statelessAsyncIdCalculator;
+        this.messageRouter = messageRouter;
+        this.libjoynrMessagingAddress = dispatcherAddress;
     }
 
     public void register(StatelessAsyncCallback statelessAsyncCallback) {
@@ -60,28 +73,38 @@ public class StatelessAsyncCallbackDirectory {
             logger.error(message);
             throw new JoynrIllegalStateException(message);
         }
-        String callbackId = calculateCallbackId(statelessAsyncCallback);
+        String interfaceName = getInterfaceName(statelessAsyncCallback);
+        String callbackId = statelessAsyncIdCalculator.calculateStatelessCallbackId(interfaceName,
+                                                                                    statelessAsyncCallback);
         replyCallerDirectory.addReplyCaller(callbackId,
                                             new StatelessAsyncReplyCaller(callbackId, statelessAsyncCallback),
                                             ExpiryDate.fromAbsolute(Long.MAX_VALUE));
+        // Trigger calculation of the participant ID, so that the hashed UUID is registered at startup
+        String statelessAsyncParticipantId = statelessAsyncIdCalculator.calculateParticipantId(interfaceName,
+                                                                                               statelessAsyncCallback);
+        // isGloballyVisible is not applicable for stateless async callbacks
+        final boolean isGloballyVisible = false;
+        logger.info("Adding route for stateless callback {} / {} / {}",
+                    statelessAsyncParticipantId,
+                    libjoynrMessagingAddress,
+                    isGloballyVisible);
+        messageRouter.addNextHop(statelessAsyncParticipantId, libjoynrMessagingAddress, isGloballyVisible);
     }
 
     public StatelessAsyncCallback get(String useCase) {
         return directory.get(useCase);
     }
 
-    private String calculateCallbackId(StatelessAsyncCallback statelessAsyncCallback) {
+    private String getInterfaceName(StatelessAsyncCallback statelessAsyncCallback) {
         UsedBy usedBy = AnnotationUtil.getAnnotation(statelessAsyncCallback.getClass(), UsedBy.class);
         if (usedBy == null) {
             throw new JoynrIllegalStateException("No @UsedBy annotation found on " + statelessAsyncCallback.getClass());
         }
         try {
-            String interfaceName = (String) usedBy.value().getField("INTERFACE_NAME").get(null);
-            // Trigger calculation of the participant ID, so that the hashed UUID is registered at startup
-            statelessAsyncIdCalculator.calculateParticipantId(interfaceName, statelessAsyncCallback);
-            return statelessAsyncIdCalculator.calculateStatelessCallbackId(interfaceName, statelessAsyncCallback);
+            return (String) usedBy.value().getField("INTERFACE_NAME").get(null);
         } catch (IllegalAccessException | NoSuchFieldException e) {
             throw new JoynrIllegalStateException("Unable to get interface name from " + usedBy, e);
         }
     }
+
 }
