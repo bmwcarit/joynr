@@ -31,7 +31,6 @@
 #include <boost/multi_index/member.hpp>
 #include <boost/multi_index/ordered_index.hpp>
 
-#include "joynr/ContentWithDecayTime.h"
 #include "joynr/JoynrExport.h"
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
@@ -39,7 +38,6 @@
 
 namespace joynr
 {
-using MessageQueueItem = ContentWithDecayTime<std::shared_ptr<ImmutableMessage>>;
 
 namespace messagequeuetags
 {
