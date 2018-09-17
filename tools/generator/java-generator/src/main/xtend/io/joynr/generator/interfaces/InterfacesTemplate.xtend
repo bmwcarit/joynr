@@ -52,6 +52,7 @@ import java.util.HashSet;
 	import java.util.Map.Entry;
 «ENDIF»
 import io.joynr.subtypes.JoynrType;
+import io.joynr.ProvidesJoynrTypesInfo;
 
 «FOR datatype: getRequiredIncludesFor(francaIntf)»
 	import «datatype»;
@@ -62,6 +63,7 @@ import io.joynr.subtypes.JoynrType;
 //To prevent warnings @SuppressWarnings("unused") is being used.
 //To prevent warnings about an unnecessary SuppressWarnings we have to import something that is not used. (e.g. TreeSet)
 import java.util.TreeSet;
+@ProvidesJoynrTypesInfo(interfaceClass = «interfaceName».class, interfaceName = "«francaIntf.fullyQualifiedName»")
 @SuppressWarnings("unused")
 public interface «className» {
 	public static String INTERFACE_NAME = "«francaIntf.fullyQualifiedName»";
