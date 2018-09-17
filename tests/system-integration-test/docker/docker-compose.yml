@@ -20,3 +20,16 @@ services:
     image: "sit-onboard-apps:latest"
     container_name: sit-onboard-apps
     tty: true
+
+  sit-jee-stateless-consumer-node-1:
+    image: "sit-jee-stateless-consumer:latest"
+    container_name: sit-jee-stateless-consumer-node-1
+
+  sit-jee-stateless-consumer-node-2:
+    image: "sit-jee-stateless-consumer:latest"
+    container_name: sit-jee-stateless-consumer-node-2
+
+  sit-controller:
+    image: "sit-controller:latest"
+    container_name: sit-controller
+
