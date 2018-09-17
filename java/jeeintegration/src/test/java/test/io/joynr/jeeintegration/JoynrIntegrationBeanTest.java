@@ -143,7 +143,7 @@ public class JoynrIntegrationBeanTest {
 
         subject.initialise();
 
-        verify(joynrRuntime).registerProvider(eq(LOCAL_DOMAIN), any(), any());
+        verify(joynrRuntime).registerProvider(eq(LOCAL_DOMAIN), any(), any(), eq(false), any());
     }
 
     @Test
@@ -156,6 +156,6 @@ public class JoynrIntegrationBeanTest {
 
         subject.initialise();
 
-        verify(joynrRuntime).registerProvider(eq(MY_CUSTOM_DOMAIN), any(), any());
+        verify(joynrRuntime).registerProvider(eq(MY_CUSTOM_DOMAIN), any(), any(), eq(false), any());
     }
 }

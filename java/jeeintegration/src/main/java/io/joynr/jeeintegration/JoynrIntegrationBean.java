@@ -38,8 +38,10 @@ import com.google.inject.Injector;
 import io.joynr.jeeintegration.api.ProviderDomain;
 import io.joynr.jeeintegration.api.ProviderQosFactory;
 import io.joynr.jeeintegration.api.ServiceProvider;
+import io.joynr.ProvidesJoynrTypesInfo;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.ShutdownNotifier;
+import io.joynr.util.AnnotationUtil;
 import joynr.types.ProviderQos;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -124,7 +126,15 @@ public class JoynrIntegrationBean {
             if (providerQos == null) {
                 providerQos = new ProviderQos();
             }
-            runtime.registerProvider(getDomainForProvider(beanClass), provider, providerQos);
+
+            ProvidesJoynrTypesInfo providesJoynrTypesInfoAnnotation = AnnotationUtil.getAnnotation(providerService.serviceInterface(),
+                                                                                                   ProvidesJoynrTypesInfo.class);
+
+            runtime.registerProvider(getDomainForProvider(beanClass),
+                                     provider,
+                                     providerQos,
+                                     false,
+                                     providesJoynrTypesInfoAnnotation.interfaceClass());
             registeredProviders.add(provider);
         }
     }
