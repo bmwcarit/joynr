@@ -41,6 +41,15 @@ public class TestRuntime implements JoynrRuntime {
     }
 
     @Override
+    public Future<Void> registerProvider(String domain,
+                                         Object provider,
+                                         ProviderQos providerQos,
+                                         boolean awaitGlobalRegistration,
+                                         final Class<?> interfaceClass) {
+        return null;
+    }
+
+    @Override
     public void unregisterProvider(String domain, Object provider) {
 
     }

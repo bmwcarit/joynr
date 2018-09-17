@@ -22,10 +22,11 @@ import java.util.HashSet;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.lang.reflect.Method;
+import java.lang.reflect.InvocationTargetException;
 
 import io.joynr.proxy.StatelessAsyncCallback;
 import io.joynr.proxy.StatelessAsyncCallbackDirectory;
-import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,10 +44,13 @@ import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.inprocess.InProcessLibjoynrMessagingSkeleton;
 import io.joynr.messaging.routing.AddressOperation;
 import io.joynr.messaging.routing.RoutingTable;
+import io.joynr.provider.JoynrInterface;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.ProxyBuilderFactory;
-import io.joynr.subtypes.JoynrType;
+import io.joynr.ProvidesJoynrTypesInfo;
+import io.joynr.util.AnnotationUtil;
+import io.joynr.UsedBy;
 import joynr.BroadcastSubscriptionRequest;
 import joynr.Reply;
 import joynr.Request;
@@ -95,10 +99,6 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
         this.objectMapper = objectMapper;
         this.statelessAsyncCallbackDirectory = statelessAsyncCallbackDirectory;
 
-        Reflections reflections = new Reflections("joynr");
-        Set<Class<? extends JoynrType>> subClasses = reflections.getSubTypesOf(JoynrType.class);
-        objectMapper.registerSubtypes(subClasses.toArray(new Class<?>[subClasses.size()]));
-
         Class<?>[] messageTypes = new Class[]{ Request.class, Reply.class, SubscriptionRequest.class,
                 SubscriptionStop.class, SubscriptionPublication.class, BroadcastSubscriptionRequest.class };
         objectMapper.registerSubtypes(messageTypes);
@@ -140,6 +140,8 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
         if (interfaceClass == null) {
             throw new IllegalArgumentException("Cannot create ProxyBuilder: interfaceClass may not be NULL");
         }
+
+        registerInterfaceClassTypes(interfaceClass, "Cannot create ProxyBuilder");
         return proxyBuilderFactory.get(domains, interfaceClass);
     }
 
@@ -180,6 +182,43 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
                                          Object provider,
                                          ProviderQos providerQos,
                                          boolean awaitGlobalRegistration) {
+
+        JoynrInterface joynrInterfaceAnnotatation = AnnotationUtil.getAnnotation(provider.getClass(),
+                                                                                 JoynrInterface.class);
+        if (joynrInterfaceAnnotatation == null) {
+            throw new IllegalArgumentException("The provider object must have a JoynrInterface annotation");
+        }
+        Class interfaceClass = joynrInterfaceAnnotatation.provides();
+        return registerProvider(domain, provider, providerQos, awaitGlobalRegistration, interfaceClass);
+    }
+
+    /**
+     * Registers a provider in the joynr framework by JEE
+     *
+     * @param domain
+     *            The domain the provider should be registered for. Has to be identical at the client to be able to find
+     *            the provider.
+     * @param provider
+     *            Instance of the provider implementation (has to extend a generated ...AbstractProvider).
+     * @param providerQos
+     *            the provider's quality of service settings
+     * @param awaitGlobalRegistration
+     *            If true, wait for global registration to complete or timeout, if required.
+     * @param interfaceClass
+     *            The interface class of the provider.
+     * @return Returns a Future which can be used to check the registration status.
+     */
+    @Override
+    public Future<Void> registerProvider(String domain,
+                                         Object provider,
+                                         ProviderQos providerQos,
+                                         boolean awaitGlobalRegistration,
+                                         final Class<?> interfaceClass) {
+        if (interfaceClass == null) {
+            throw new IllegalArgumentException("Cannot registerProvider: interfaceClass may not be NULL");
+        }
+
+        registerInterfaceClassTypes(interfaceClass, "Cannot registerProvider");
         return capabilitiesRegistrar.registerProvider(domain, provider, providerQos, awaitGlobalRegistration);
     }
 
@@ -193,6 +232,15 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
 
     @Override
     public void registerStatelessAsyncCallback(StatelessAsyncCallback statelessAsyncCallback) {
+        final UsedBy usedByAnnotation = AnnotationUtil.getAnnotation(statelessAsyncCallback.getClass(), UsedBy.class);
+        if (usedByAnnotation == null) {
+            throw new IllegalArgumentException("Cannot registerStatelessAsyncCallback: callback has no UsedBy annotation");
+        }
+        final Class<?> stateProxyClass = usedByAnnotation.value();
+        if (stateProxyClass == null) {
+            throw new IllegalArgumentException("Cannot registerStatelessAsyncCallback: stateProxyClass may not be NULL");
+        }
+        registerInterfaceClassTypes(stateProxyClass, "Cannot registerStatelessAsyncCallback");
         statelessAsyncCallbackDirectory.register(statelessAsyncCallback);
     }
 
@@ -221,5 +269,17 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
     public void prepareForShutdown() {
         logger.info("Preparing for shutdown of runtime");
         shutdownNotifier.prepareForShutdown();
+    }
+
+    private synchronized void registerInterfaceClassTypes(final Class<?> interfaceClass, String errorPrefix) {
+        try {
+            ProvidesJoynrTypesInfo providesJoynrTypesInfoAnnotation = AnnotationUtil.getAnnotation(interfaceClass,
+                                                                                                   ProvidesJoynrTypesInfo.class);
+            Method m = providesJoynrTypesInfoAnnotation.interfaceClass().getDeclaredMethod("getDataTypes");
+            Set<Class<?>> subClasses = (Set<Class<?>>) m.invoke(null);
+            objectMapper.registerSubtypes(subClasses.toArray(new Class<?>[subClasses.size()]));
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+            throw new IllegalArgumentException(errorPrefix + ": failed to register interface data types", e);
+        }
     }
 }
