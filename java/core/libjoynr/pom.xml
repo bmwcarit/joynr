@@ -48,11 +48,6 @@
 			<artifactId>discovery-common</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		<!-- used to scan for annotations for subtypes -->
-		<dependency>
-			<groupId>org.reflections</groupId>
-			<artifactId>reflections</artifactId>
-		</dependency>
 		<dependency>
 			<groupId>io.joynr.smrf.java</groupId>
 			<artifactId>smrf</artifactId>
