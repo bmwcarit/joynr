@@ -50,6 +50,8 @@ public:
     static const std::string& SETTING_MQTT_CERTIFICATE_AUTHORITY_CERTIFICATE_FOLDER_PATH();
     static const std::string& SETTING_MQTT_CERTIFICATE_PEM_FILENAME();
     static const std::string& SETTING_MQTT_PRIVATE_KEY_PEM_FILENAME();
+    static const std::string& SETTING_MQTT_USERNAME();
+    static const std::string& SETTING_MQTT_PASSWORD();
     static const std::string& SETTING_MQTT_MULTICAST_TOPIC_PREFIX();
     static const std::string& SETTING_MQTT_UNICAST_TOPIC_PREFIX();
     static const std::string& SETTING_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCE_FILENAME();
@@ -131,6 +133,12 @@ public:
 
     bool isMqttPrivateKeyPemFilenameSet() const;
     std::string getMqttPrivateKeyPemFilename() const;
+
+    bool isMqttUsernameSet() const;
+    std::string getMqttUsername() const;
+
+    bool isMqttPasswordSet() const;
+    std::string getMqttPassword() const;
 
     void setMqttTlsEnabled(bool enabled);
     bool isMqttTlsEnabled() const;

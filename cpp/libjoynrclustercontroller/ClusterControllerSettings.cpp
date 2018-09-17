@@ -135,16 +135,20 @@ void ClusterControllerSettings::checkSettings()
             throw joynr::exceptions::JoynrConfigurationException(message);
         }
 
-        if (!isMqttCertificatePemFilenameSet()) {
-            const std::string message =
-                    "MQTT TLS is enabled but no mqtt certificate PEM filename was provided";
+        if (!isMqttPrivateKeyPemFilenameSet() && !isMqttUsernameSet()) {
+            const std::string message = "MQTT TLS is enabled but neither client certificate nor "
+                                        "username/password are provided";
             JOYNR_LOG_ERROR(logger(), message);
             throw joynr::exceptions::JoynrConfigurationException(message);
         }
 
-        if (!isMqttPrivateKeyPemFilenameSet()) {
-            const std::string message =
-                    "MQTT TLS is enabled but no private key PEM filename was provided";
+        if (isMqttCertificatePemFilenameSet() != isMqttPrivateKeyPemFilenameSet()) {
+            std::string message;
+            if (!isMqttCertificatePemFilenameSet()) {
+                message = "MQTT private key filename is set, but client certificate not";
+            } else {
+                message = "MQTT client certificate filename is set, but private key not";
+            }
             JOYNR_LOG_ERROR(logger(), message);
             throw joynr::exceptions::JoynrConfigurationException(message);
         }
@@ -320,6 +324,18 @@ const std::string& ClusterControllerSettings::SETTING_MQTT_CERTIFICATE_PEM_FILEN
 const std::string& ClusterControllerSettings::SETTING_MQTT_PRIVATE_KEY_PEM_FILENAME()
 {
     static const std::string value("cluster-controller/mqtt-private-key-pem-filename");
+    return value;
+}
+
+const std::string& ClusterControllerSettings::SETTING_MQTT_USERNAME()
+{
+    static const std::string value("cluster-controller/mqtt-username");
+    return value;
+}
+
+const std::string& ClusterControllerSettings::SETTING_MQTT_PASSWORD()
+{
+    static const std::string value("cluster-controller/mqtt-password");
     return value;
 }
 
@@ -578,6 +594,26 @@ bool ClusterControllerSettings::isMqttPrivateKeyPemFilenameSet() const
 std::string ClusterControllerSettings::getMqttPrivateKeyPemFilename() const
 {
     return settings.get<std::string>(SETTING_MQTT_PRIVATE_KEY_PEM_FILENAME());
+}
+
+bool ClusterControllerSettings::isMqttUsernameSet() const
+{
+    return settings.contains(SETTING_MQTT_USERNAME());
+}
+
+std::string ClusterControllerSettings::getMqttUsername() const
+{
+    return settings.get<std::string>(SETTING_MQTT_USERNAME());
+}
+
+bool ClusterControllerSettings::isMqttPasswordSet() const
+{
+    return settings.contains(SETTING_MQTT_PASSWORD());
+}
+
+std::string ClusterControllerSettings::getMqttPassword() const
+{
+    return settings.get<std::string>(SETTING_MQTT_PASSWORD());
 }
 
 void ClusterControllerSettings::setMqttTlsEnabled(bool enabled)
@@ -944,6 +980,18 @@ void ClusterControllerSettings::printSettings() const
                         getMqttPrivateKeyPemFilename());
     } else {
         JOYNR_LOG_DEBUG(logger(), "SETTING: {} = NOT SET", SETTING_MQTT_PRIVATE_KEY_PEM_FILENAME());
+    }
+
+    if (isMqttUsernameSet()) {
+        JOYNR_LOG_DEBUG(logger(), "SETTING: {} = {}", SETTING_MQTT_USERNAME(), getMqttUsername());
+    } else {
+        JOYNR_LOG_DEBUG(logger(), "SETTING: {} = NOT SET", SETTING_MQTT_USERNAME());
+    }
+
+    if (isMqttPasswordSet()) {
+        JOYNR_LOG_DEBUG(logger(), "SETTING: {} IS SET", SETTING_MQTT_PASSWORD());
+    } else {
+        JOYNR_LOG_DEBUG(logger(), "SETTING: {} = NOT SET", SETTING_MQTT_PASSWORD());
     }
 
     JOYNR_LOG_DEBUG(logger(),
