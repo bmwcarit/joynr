@@ -12,14 +12,14 @@ for COPY_WAR in \
 do
 	if [ ! -f $COPY_WAR ]; then
 		echo "Missing $COPY_WAR build artifact. Can't proceed."
-		exit -1
+		exit 1
 	fi
 	cp $COPY_WAR target/
 done
 
 if [ -z "$(docker version 2>/dev/null)" ]; then
 	echo "The docker command seems to be unavailable."
-	exit -1
+	exit 1
 fi
 
 docker build -t joynr-backend:latest .
@@ -27,3 +27,4 @@ docker images --filter "dangling=true" -q | xargs docker rmi -f 2>/dev/null
 rm -Rf target
 
 echo "### end build_docker_image.sh for joynr-backend ###"
+exit 0

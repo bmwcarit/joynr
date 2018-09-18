@@ -103,7 +103,7 @@ do
 		*)
 		echo "Unknown argument: $1"
 		print_usage
-		exit -1
+		exit 1
 		;;
 	esac
 	shift
@@ -300,3 +300,4 @@ docker images --filter "dangling=true" -q | xargs docker rmi -f 2>/dev/null
 rm -Rf $DOCKER_BUILDDIR
 
 echo "### end build_docker_image.sh for onboard ###"
+exit 0
