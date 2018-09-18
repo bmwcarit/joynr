@@ -64,13 +64,10 @@ TEST_F(IltConsumerGetterSetterTest, callSetAttributeUInt8)
 
 TEST_F(IltConsumerGetterSetterTest, callGetAttributeUInt8)
 {
-    uint8_t expectedResult = 127;
-    uint8_t result = 0;
-    JOYNR_ASSERT_NO_THROW({
-        testInterfaceProxy->setAttributeUInt8(expectedResult);
-        testInterfaceProxy->getAttributeUInt8(result);
-    });
-    ASSERT_EQ(result, expectedResult);
+    genericSetGetTestMethod<std::uint8_t>(
+            &joynr::interlanguagetest::TestInterfaceProxy::getAttributeUInt8,
+            &joynr::interlanguagetest::TestInterfaceProxy::setAttributeUInt8,
+            127);
 }
 
 TEST_F(IltConsumerGetterSetterTest, callSetAttributeDouble)
@@ -103,13 +100,10 @@ TEST_F(IltConsumerGetterSetterTest, callSetAttributeStringNoSubscriptions)
 
 TEST_F(IltConsumerGetterSetterTest, callGetAttributeStringNoSubscriptions)
 {
-    std::string result;
-    std::string expectedResult = "Hello world";
-    JOYNR_ASSERT_NO_THROW({
-        testInterfaceProxy->setAttributeStringNoSubscriptions(expectedResult);
-        testInterfaceProxy->getAttributeStringNoSubscriptions(result);
-    });
-    ASSERT_EQ(result, expectedResult);
+    genericSetGetTestMethod<std::string>(
+            &joynr::interlanguagetest::TestInterfaceProxy::getAttributeStringNoSubscriptions,
+            &joynr::interlanguagetest::TestInterfaceProxy::setAttributeStringNoSubscriptions,
+            "Hello world");
 }
 
 TEST_F(IltConsumerGetterSetterTest, callGetAttributeInt8readonlyNoSubscriptions)
@@ -122,11 +116,10 @@ TEST_F(IltConsumerGetterSetterTest, callGetAttributeInt8readonlyNoSubscriptions)
 
 TEST_F(IltConsumerGetterSetterTest, callGetAttributeByteBuffer)
 {
-    joynr::ByteBuffer result;
-    joynr::ByteBuffer expectedResult = {0, 100, 255};
-    JOYNR_ASSERT_NO_THROW(testInterfaceProxy->setAttributeByteBuffer(expectedResult));
-    JOYNR_ASSERT_NO_THROW(testInterfaceProxy->getAttributeByteBuffer(result));
-    ASSERT_EQ(result, expectedResult);
+    genericSetGetTestMethod<joynr::ByteBuffer>(
+            &joynr::interlanguagetest::TestInterfaceProxy::getAttributeByteBuffer,
+            &joynr::interlanguagetest::TestInterfaceProxy::setAttributeByteBuffer,
+            joynr::ByteBuffer{0, 100, 255});
 }
 
 TEST_F(IltConsumerGetterSetterTest, callGetAttributeInt64TypeDef)
@@ -228,14 +221,10 @@ TEST_F(IltConsumerGetterSetterTest, callSetAttributeEnumeration)
 
 TEST_F(IltConsumerGetterSetterTest, callGetAttributeEnumeration)
 {
-    joynr::interlanguagetest::Enumeration::Enum result;
-    joynr::interlanguagetest::Enumeration::Enum enumerationArg =
-            joynr::interlanguagetest::Enumeration::ENUM_0_VALUE_2;
-    JOYNR_ASSERT_NO_THROW({
-        testInterfaceProxy->setAttributeEnumeration(enumerationArg);
-        testInterfaceProxy->getAttributeEnumeration(result);
-    });
-    ASSERT_EQ(result, enumerationArg);
+    genericSetGetTestMethod<joynr::interlanguagetest::Enumeration::Enum>(
+            &joynr::interlanguagetest::TestInterfaceProxy::getAttributeEnumeration,
+            &joynr::interlanguagetest::TestInterfaceProxy::setAttributeEnumeration,
+            joynr::interlanguagetest::Enumeration::ENUM_0_VALUE_2);
 }
 
 TEST_F(IltConsumerGetterSetterTest, callGetAttributeExtendedEnumerationReadonly)
@@ -299,24 +288,30 @@ TEST_F(IltConsumerGetterSetterTest, callSetAttributeMapStringString)
 
 TEST_F(IltConsumerGetterSetterTest, callGetAttributeMapStringString)
 {
-    // the typedef is required since we run into preprocessor issues otherwise
-    typedef std::map<std::string, std::string>::iterator myIterator;
-    joynr::interlanguagetest::namedTypeCollection2::MapStringString result;
-    joynr::interlanguagetest::namedTypeCollection2::MapStringString mapStringStringArg;
-    mapStringStringArg.insert(std::pair<std::string, std::string>("keyString1", "valueString1"));
-    mapStringStringArg.insert(std::pair<std::string, std::string>("keyString2", "valueString2"));
-    mapStringStringArg.insert(std::pair<std::string, std::string>("keyString3", "valueString3"));
-    JOYNR_ASSERT_NO_THROW({
-        testInterfaceProxy->setAttributeMapStringString(mapStringStringArg);
-        testInterfaceProxy->getAttributeMapStringString(result);
-    });
-    myIterator it;
-    for (int i = 1; i <= 3; i++) {
-        it = result.find("keyString" + std::to_string(i));
-        ASSERT_NE(it, result.end());
-        std::string expected = "valueString" + std::to_string(i);
-        ASSERT_EQ(it->second, expected);
-    }
+    using testType = joynr::interlanguagetest::namedTypeCollection2::MapStringString;
+    testType expectedResult;
+    expectedResult.insert(std::pair<std::string, std::string>("keyString1", "valueString1"));
+    expectedResult.insert(std::pair<std::string, std::string>("keyString2", "valueString2"));
+    expectedResult.insert(std::pair<std::string, std::string>("keyString3", "valueString3"));
+
+    genericSetGetTestMethod<testType>(
+            &joynr::interlanguagetest::TestInterfaceProxy::getAttributeMapStringString,
+            &joynr::interlanguagetest::TestInterfaceProxy::setAttributeMapStringString,
+            expectedResult);
+}
+
+TEST_F(IltConsumerGetterSetterTest, callGetAttributeMapTypeDefStringString)
+{
+    using testType = joynr::interlanguagetest::typeDefCollection::TypeDefForMap;
+    testType expectedResult;
+    expectedResult.insert(std::pair<std::string, std::string>("keyString1", "valueString1"));
+    expectedResult.insert(std::pair<std::string, std::string>("keyString2", "valueString2"));
+    expectedResult.insert(std::pair<std::string, std::string>("keyString3", "valueString3"));
+
+    genericSetGetTestMethod<testType>(
+            &joynr::interlanguagetest::TestInterfaceProxy::getAttributeMapTypeDef,
+            &joynr::interlanguagetest::TestInterfaceProxy::setAttributeMapTypeDef,
+            expectedResult);
 }
 
 TEST_F(IltConsumerGetterSetterTest, callSetAttributeWithExceptionFromSetter)

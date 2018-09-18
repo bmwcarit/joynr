@@ -91,11 +91,9 @@ TEST_F(IltConsumerSyncMethodTest, callMethodWithMultiplePrimitiveParameters)
 
 TEST_F(IltConsumerSyncMethodTest, callMethodWithSingleByteBufferParameter)
 {
-    joynr::ByteBuffer byteBufferIn = {0x00, 0x64, 0xFF};
-    joynr::ByteBuffer byteBufferOut;
-    JOYNR_ASSERT_NO_THROW(
-            testInterfaceProxy->methodWithSingleByteBufferParameter(byteBufferOut, byteBufferIn));
-    ASSERT_EQ(byteBufferOut, byteBufferIn);
+    callProxyMethodWithParameterAndAssertResult<joynr::ByteBuffer>(
+            &joynr::interlanguagetest::TestInterfaceProxy::methodWithSingleByteBufferParameter,
+            {0x00, 0x64, 0xFF});
 }
 
 TEST_F(IltConsumerSyncMethodTest, callMethodWithMultipleByteBufferParameters)
@@ -526,6 +524,19 @@ TEST_F(IltConsumerSyncMethodTest, callMethodWithExtendedErrorEnum)
     } catch (...) {
         FAIL() << "callMethodWithExtendedErrorEnum: unknown exception caught";
     }
+}
+
+TEST_F(IltConsumerSyncMethodTest, callMethodWithTypeDefForMapParameter)
+{
+    using testType = joynr::interlanguagetest::typeDefCollection::TypeDefForMap;
+    testType expectedResult;
+    expectedResult.insert(std::pair<std::string, std::string>("keyString1", "valueString1"));
+    expectedResult.insert(std::pair<std::string, std::string>("keyString2", "valueString2"));
+    expectedResult.insert(std::pair<std::string, std::string>("keyString3", "valueString3"));
+
+    callProxyMethodWithParameterAndAssertResult<testType>(
+            &joynr::interlanguagetest::TestInterfaceProxy::methodWithMapTypeDefParameter,
+            expectedResult);
 }
 
 TEST_F(IltConsumerSyncMethodTest, callMethodWithSingleMapParameters)
