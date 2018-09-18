@@ -17,6 +17,7 @@
  * #L%
  */
 
+#include <cstdlib>
 #include <string>
 #include <chrono>
 #include <thread>
@@ -83,7 +84,7 @@ int main(int argc, char* argv[])
 
         if (optionsMap.count("help") > 0) {
             std::cout << optionsDescription << std::endl;
-            return 0;
+            return EXIT_SUCCESS;
         }
 
         boost::program_options::notify(optionsMap);
@@ -133,8 +134,8 @@ int main(int argc, char* argv[])
         runtime->unregisterProvider<tests::performance::EchoProvider>(domainName, provider);
     } catch (std::exception& e) {
         std::cerr << e.what() << std::endl;
-        return -1;
+        return EXIT_FAILURE;
     }
 
-    return 0;
+    return EXIT_SUCCESS;
 }
