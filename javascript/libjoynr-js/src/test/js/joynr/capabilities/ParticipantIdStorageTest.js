@@ -20,6 +20,7 @@
 require("../../node-unit-test-helper");
 const ParticipantIdStorage = require("../../../../main/js/joynr/capabilities/ParticipantIdStorage");
 const MemoryStorage = require("../../../../main/js/global/MemoryStorage");
+const CapabilitiesUtil = require("../../../../main/js/joynr/util/CapabilitiesUtil");
 
 describe("libjoynr-js.joynr.capabilities.ParticipantIdStorage", () => {
     let participantIdStorage, localStorageSpy, uuidSpy;
@@ -29,10 +30,17 @@ describe("libjoynr-js.joynr.capabilities.ParticipantIdStorage", () => {
     const interfaceName = "interface/Name";
     const domain = "domain-1";
     const provider = {
-        interfaceName
+        interfaceName,
+        constructor: {
+            MAJOR_VERSION: 1
+        }
     };
     const storedParticipantId = "storedParticipantId";
-    const key = `joynr.participant.${domain}.${interfaceName}`;
+    const key = CapabilitiesUtil.generateParticipantIdStorageKey(
+        domain,
+        interfaceName,
+        provider.constructor.MAJOR_VERSION
+    );
     generatedParticipantId = uuid;
 
     describe("with mocked LocalStorage", () => {

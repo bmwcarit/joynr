@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-
+const CapabilitiesUtil = require("../util/CapabilitiesUtil");
 /**
  * @constructor
  * @name ParticipantIdStorage
@@ -43,7 +43,11 @@ function ParticipantIdStorage(persistency, uuid) {
  * @returns {String} the retrieved or generated participantId
  */
 ParticipantIdStorage.prototype.getParticipantId = function getParticipantId(domain, provider) {
-    const key = `joynr.participant.${domain}.${provider.interfaceName}`;
+    const key = CapabilitiesUtil.generateParticipantIdStorageKey(
+        domain,
+        provider.interfaceName,
+        provider.constructor.MAJOR_VERSION
+    );
     let participantId = this._persistency.getItem(key);
     if (!participantId) {
         participantId = this._uuid();
