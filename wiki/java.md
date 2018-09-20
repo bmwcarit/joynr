@@ -580,6 +580,16 @@ So that an application can use the same service in multiple use cases, during re
 of the callback and when creating the service proxy, a unique 'use case' name must be
 provided, matching the proxy to the callback.
 
+__IMPORTANT__: due to the stateless nature of this communication pattern, there are some
+cases where the message can't be delivered but will not trigger a callback. Specifically
+if the TTL of the message has expired when it reaches the provider, no error callback
+will be triggered. Equally, if the message gets lost by the infrastructure en route, no
+error callback will be triggered. If required, you must guard against these cases in
+your application code by, e.g. storing a timestamp in the context data you persist for
+a given message ID, and track the success of the request / reply rountrip using the
+callback methods. If the status is then not set within a given timeframe, you can react
+accordingly.
+
 ### Example
 
 For a full example showing how to use the stateless async API, see
