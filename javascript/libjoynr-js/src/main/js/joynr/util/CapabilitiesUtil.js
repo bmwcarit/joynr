@@ -152,4 +152,24 @@ CapabilitiesUtil.convertToDiscoveryEntryWithMetaInfoArray = function convertToDi
     return result;
 };
 
+/**
+ * This method generates a key of the currently used format for storage of
+ * a capability's participantId in the ParticipantIdStorage
+ *
+ * @function
+ * @name CapabilitiesUtil#generateParticipantIdStorageKey
+ *
+ * @param {String}
+ *            domain the domain of the capability that is to be stored
+ * @param {String}
+ *            interfaceName the interface of the capability that is to be stored
+ * @param {String}
+ *            majorVersion the major Version of the capability that is to be stored
+ *
+ * @returns {String} a key to store the participantId with
+ */
+CapabilitiesUtil.generateParticipantIdStorageKey = (domain, interfaceName, majorVersion) => {
+    return `joynr.participant.${domain}.${interfaceName}.v${majorVersion}`;
+};
+
 module.exports = CapabilitiesUtil;
