@@ -60,7 +60,7 @@ void printVersionToStdOut()
 int main(int argc, char* argv[])
 {
 #ifdef JOYNR_ENABLE_DLT_LOGGING
-    // Register app at the dlt-daemon for logging
+    // Register app at the dlt-daemon for logging.
     DLT_REGISTER_APP(JOYNR_STRINGIFY(JOYNR_CLUSTER_CONTROLLER_DLT_APP_ID),
                      JOYNR_STRINGIFY(JOYNR_CLUSTER_CONTROLLER_DLT_DESCRIPTION));
 #endif // JOYNR_ENABLE_DLT_LOGGING
@@ -68,13 +68,13 @@ int main(int argc, char* argv[])
     // init a logger
     joynr::Logger logger("Runtime");
 
-    // Check the usage
+    // Check the usage.
     const std::string programName(argv[0]);
     if (argc == 1) {
         printUsage(logger, programName);
     }
 
-    // Always print Joynr version
+    // Always print Joynr version.
     printVersionToStdOut();
 
     // create the cluster controller runtime
