@@ -64,3 +64,6 @@ keytool -delete -importkeystore -deststorepass $KEYSTORE_PASSWORD -destkeypass $
 
 # list the keystore contents
 keytool -list -keystore clientkeystore.jks -storepass $KEYSTORE_PASSWORD
+
+# always return success (don't break the maven build in case of something went wrong)
+exit 0
