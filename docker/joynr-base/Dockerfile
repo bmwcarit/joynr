@@ -70,6 +70,11 @@ ENV SRC_DIR /data/src
 ENV INSTALL_DIR /data/install
 
 ###################################################
+# set joynr-docker-environment
+###################################################
+ENV JOYNR_DOCKER_ENVIRONMENT true
+
+###################################################
 # copy scripts and set start command
 ###################################################
 COPY scripts /data/scripts

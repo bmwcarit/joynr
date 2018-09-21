@@ -55,29 +55,39 @@
 		</dependency>
 	</dependencies>
 
-	<build>
-		<plugins>
-			<plugin>
-				<artifactId>exec-maven-plugin</artifactId>
-				<groupId>org.codehaus.mojo</groupId>
-				<executions>
-					<execution>
-						<id>generate-java-keystore-truststore</id>
-						<phase>generate-test-resources</phase>
-						<goals>
-							<goal>exec</goal>
-						</goals>
-						<configuration>
-							<executable>${basedir}/scripts/gen-java-keystore-truststore.sh</executable>
-							<arguments>
-								<argument>--destdir</argument>
-								<argument>${basedir}/src/test/resources</argument>
-							</arguments>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
-	</build>
+		<profiles>
+		<profile>
+			<id>joynr-docker-environment</id>
+			<activation>
+				<property>
+					<name>env.JOYNR_DOCKER_ENVIRONMENT</name>
+				</property>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>exec-maven-plugin</artifactId>
+						<groupId>org.codehaus.mojo</groupId>
+						<executions>
+							<execution>
+								<id>generate required sources</id>
+								<phase>generate-test-resources</phase>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+								<configuration>
+									<executable>${basedir}/scripts/gen-java-keystore-truststore.sh</executable>
+									<arguments>
+										<argument>--destdir</argument>
+										<argument>${basedir}/src/test/resources</argument>
+									</arguments>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 
 </project>
