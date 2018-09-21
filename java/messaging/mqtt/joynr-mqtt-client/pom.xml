@@ -60,10 +60,9 @@
 			<plugin>
 				<artifactId>exec-maven-plugin</artifactId>
 				<groupId>org.codehaus.mojo</groupId>
-				<version>1.6.0</version>
 				<executions>
 					<execution>
-						<id>generate required sources</id>
+						<id>generate-java-keystore-truststore</id>
 						<phase>generate-test-resources</phase>
 						<goals>
 							<goal>exec</goal>
