@@ -27,7 +27,7 @@ let MultipleVersionsInterfaceProviderUnversioned = require("../../generated/joyn
 let MultipleVersionsInterfaceProxyNameVersion1 = require("../../generated/joynr/tests/MultipleVersionsInterface1Proxy");
 let MultipleVersionsInterfaceProxyNameVersion2 = require("../../generated/joynr/tests/MultipleVersionsInterface2Proxy");
 let MultipleVersionsInterfaceProxyPackageVersion2 = require("../../generated/joynr/tests/v2/MultipleVersionsInterfaceProxy");
-let providerImplementation = require("./MultipleVersionsInterfaceProviderImplementation");
+let ProviderImplementation = require("./MultipleVersionsInterfaceProviderImplementation");
 let provisioning = require("../../resources/joynr/provisioning/provisioning_cc.js");
 
 const domain = "MultipleVersionsTestDomain";
@@ -66,7 +66,10 @@ describe("libjoynr-js.integration.MultipleVersionsTest", () => {
             scope: joynr.types.ProviderScope.LOCAL,
             supportsOnChangeSubscriptions: false
         });
-        const multipleVersionsInterfaceProvider = joynr.providerBuilder.build(providerType, providerImplementation);
+        const multipleVersionsInterfaceProvider = joynr.providerBuilder.build(
+            providerType,
+            new ProviderImplementation()
+        );
 
         await joynr.registration.registerProvider(domain, multipleVersionsInterfaceProvider, providerQos);
 
@@ -101,7 +104,7 @@ describe("libjoynr-js.integration.MultipleVersionsTest", () => {
      * (They are both registered with the same participant id and thus seen as one.)
      * @Todo: Get this test to pass.
      */
-    xit("2 proxies and 2 providers of different versions in same runtime (name version vs. name version)", async () => {
+    it("2 proxies and 2 providers of different versions in same runtime (name version vs. name version)", async () => {
         // build and register providers
         const [provider1, provider2] = await Promise.all([
             buildProvider(MultipleVersionsInterfaceProviderNameVersion1),
@@ -130,7 +133,7 @@ describe("libjoynr-js.integration.MultipleVersionsTest", () => {
      * (They are both registered with the same participant id and thus seen as one.)
      * @Todo: Get this test to pass.
      */
-    xit("2 proxies and 2 providers of different versions in same runtime (name version vs. package version)", async () => {
+    it("2 proxies and 2 providers of different versions in same runtime (name version vs. package version)", async () => {
         // build and register providers
         const [provider1, provider2] = await Promise.all([
             buildProvider(MultipleVersionsInterfaceProviderPackageVersion1),

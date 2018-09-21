@@ -27,7 +27,7 @@ const MultipleVersionsInterfaceProviderNameVersion1 = require("../../generated/j
 const MultipleVersionsInterfaceProviderNameVersion2 = require("../../generated/joynr/tests/MultipleVersionsInterface2Provider");
 const MultipleVersionsInterfaceProviderPackageVersion1 = require("../../generated/joynr/tests/v1/MultipleVersionsInterfaceProvider");
 const MultipleVersionsInterfaceProviderPackageVersion2 = require("../../generated/joynr/tests/v2/MultipleVersionsInterfaceProvider");
-const providerImplementation = require("./MultipleVersionsInterfaceProviderImplementation");
+const ProviderImplementation = require("./MultipleVersionsInterfaceProviderImplementation");
 
 let multipleVersionsInterfaceProvider, MultipleVersionsInterfaceProvider, providerDomain;
 
@@ -62,7 +62,7 @@ function initializeTest(provisioningSuffix, providedDomain, settings) {
 
         multipleVersionsInterfaceProvider = joynr.providerBuilder.build(
             MultipleVersionsInterfaceProvider,
-            providerImplementation
+            new ProviderImplementation()
         );
 
         return joynr.registration

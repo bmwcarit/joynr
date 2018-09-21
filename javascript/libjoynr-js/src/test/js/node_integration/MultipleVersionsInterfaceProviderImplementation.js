@@ -17,32 +17,37 @@
  * #L%
  */
 
-let uInt8Attribute1, uInt8Attribute2;
+function get(attributeName) {
+    return this[`_${attributeName}`];
+}
 
-const providerImplementation = {
-    uInt8Attribute1: {
-        get: () => {
-            return Promise.resolve(uInt8Attribute1);
+function set(attributeName, value) {
+    this[`_${attributeName}`] = value;
+}
+
+function ProviderImplementation() {
+    this._uInt8Attribute1 = undefined;
+    this._uInt8Attribute2 = undefined;
+    this.uInt8Attribute1 = {
+        get: async () => {
+            return await get.apply(this, ["uInt8Attribute1"]);
         },
-        set: value => {
-            uInt8Attribute1 = value;
-            return Promise.resolve();
+        set: async value => {
+            await set.apply(this, ["uInt8Attribute1", value]);
         }
-    },
-
-    uInt8Attribute2: {
-        get: () => {
-            return Promise.resolve(uInt8Attribute2);
+    };
+    this.uInt8Attribute2 = {
+        get: async () => {
+            return await get.apply(this, ["uInt8Attribute2"]);
         },
-        set: value => {
-            uInt8Attribute2 = value;
-            return Promise.resolve();
+        set: async value => {
+            await set.apply(this, ["uInt8Attribute2", value]);
         }
-    },
+    };
+}
 
-    getTrue: () => {
-        return true;
-    }
+ProviderImplementation.prototype.getTrue = () => {
+    return true;
 };
 
-module.exports = providerImplementation;
+module.exports = ProviderImplementation;
