@@ -55,4 +55,30 @@
 		</dependency>
 	</dependencies>
 
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>exec-maven-plugin</artifactId>
+				<groupId>org.codehaus.mojo</groupId>
+				<version>1.6.0</version>
+				<executions>
+					<execution>
+						<id>generate required sources</id>
+						<phase>generate-test-resources</phase>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<configuration>
+							<executable>${basedir}/scripts/gen-java-keystore-truststore.sh</executable>
+							<arguments>
+								<argument>--destdir</argument>
+								<argument>${basedir}/src/test/resources</argument>
+							</arguments>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
 </project>
