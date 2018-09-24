@@ -51,6 +51,11 @@ public class SitControllerConsumerRestEndpoint {
     private static final String SIT_DOMAIN_PREFIX = "io.joynr.systemintegrationtest";
     private static final String CONTROLLER_DOMAIN_PREFIX = SIT_DOMAIN_PREFIX + ".controller";
 
+    private static final String URL_JEE_STATELESS_ASYNC_CONSUMER_NODE_1 = "http://sit-jee-stateless-consumer-node-1:8080/sit-jee-stateless-consumer/sit-controller/";
+    private static final String URL_JEE_STATELESS_ASYNC_CONSUMER_NODE_2 = "http://sit-jee-stateless-consumer-node-2:8080/sit-jee-stateless-consumer/sit-controller/";
+    private static final String PATH_PING = "ping";
+    private static final int MAX_HTTP_CONNECT_ATTEMPTS = 30;
+
     private ServiceLocator serviceLocator;
 
     @Inject
@@ -62,14 +67,66 @@ public class SitControllerConsumerRestEndpoint {
     @Path("/ping")
     public String ping() {
         logger.info("ping called");
+        try {
+            waitForRestEndpoint("sit-jee-stateless-consumer-node-1",
+                                URL_JEE_STATELESS_ASYNC_CONSUMER_NODE_1 + PATH_PING);
+            waitForRestEndpoint("sit-jee-stateless-consumer-node-2",
+                                URL_JEE_STATELESS_ASYNC_CONSUMER_NODE_2 + PATH_PING);
+        } catch (Exception e) {
+            String errorMsg = "SIT RESULT error: sit-jee-stateless-async-consumer failed to start in time: " + e;
+            logger.error(errorMsg);
+            return errorMsg;
+        }
         return "OK";
+    }
+
+    private void waitForRestEndpoint(String serviceName, String url) throws IOException, InterruptedException {
+        logger.info("waitForRestEndpoint called: " + url);
+        HttpURLConnection conn = null;
+        for (int i = 0; i < MAX_HTTP_CONNECT_ATTEMPTS; i++) {
+            conn = connectViaHttp(url);
+            int responseCode = conn.getResponseCode();
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                break;
+            } else if (i == MAX_HTTP_CONNECT_ATTEMPTS - 1) {
+                conn.disconnect();
+                throw new JoynrIllegalStateException("Unexpected response code from http request: " + url + ": "
+                        + responseCode);
+            }
+            conn.disconnect();
+            logger.info(serviceName + ": ping not started yet ... (response code: " + responseCode + ")");
+            Thread.sleep(2000);
+        }
+
+        BufferedReader response = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+        int responseLength = 0;
+        String line;
+        while ((line = response.readLine()) != null) {
+            responseLength += line.length();
+            logger.info("waitForRestEndpoint " + url + " returned: " + line);
+        }
+
+        response.close();
+        conn.disconnect();
+
+        if (responseLength <= 0) {
+            throw new JoynrIllegalStateException("Unable to read response from http request: " + url
+                    + ": reponse length: " + responseLength);
+        }
+        logger.info("waitForRestEndpoint done: " + url);
+    }
+
+    private HttpURLConnection connectViaHttp(String url) throws IOException {
+        HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
+        conn.setRequestMethod("GET");
+        conn.connect();
+        return conn;
     }
 
     private void getResultViaHttp(String url, StringBuffer result, String resultPrefix) throws IOException {
         logger.info("getResultViaHttp called: " + url);
-        HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
-        conn.setRequestMethod("GET");
-        conn.connect();
+        HttpURLConnection conn = connectViaHttp(url);
+
         int responseCode = conn.getResponseCode();
         if (responseCode != HttpURLConnection.HTTP_OK) {
             conn.disconnect();

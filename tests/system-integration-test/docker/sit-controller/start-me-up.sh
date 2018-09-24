@@ -24,8 +24,6 @@ function call_consumer {
 	# We'll assume it takes AT LEAST 15 sec to start up Payara
 	sleep 15
 	wait_for_endpoint "SIT controller" "http://localhost:8080/sit-controller/ping" && \
-	wait_for_endpoint "sit-jee-stateless-consumer-node-1" "http://sit-jee-stateless-consumer-node-1:8080/sit-jee-stateless-consumer/sit-controller/ping" && \
-	wait_for_endpoint "sit-jee-stateless-consumer-node-2" "http://sit-jee-stateless-consumer-node-2:8080/sit-jee-stateless-consumer/sit-controller/ping" && \
 	printf "\n\n >>>  STARTING SIT CONTROLLER  <<<\n\n" && \
 	SIT_RESULT=$(curl -f -s http://localhost:8080/sit-controller/test)
     EXIT_CODE=$?
