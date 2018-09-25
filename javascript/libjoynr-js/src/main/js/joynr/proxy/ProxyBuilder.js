@@ -171,9 +171,9 @@ function ProxyBuilder(proxyDependencies, dependencies) {
                     return proxy;
                 })
                 .catch(error => {
-                    const errorMsg = `Proxy creation for interface ${proxy.interfaceName}, domain ${
-                        proxy.domain
-                    }, proxyParticipantId ${
+                    const errorMsg = `Proxy creation for domain ${proxy.domain}, interface ${
+                        proxy.interfaceName
+                    }, major version ${proxy.constructor.MAJOR_VERSION}, proxyParticipantId ${
                         proxy.proxyParticipantId
                     } failed. Exception occurred while registering the address to MessageRouter. Error: ${error.stack}`;
                     log.debug(errorMsg);
