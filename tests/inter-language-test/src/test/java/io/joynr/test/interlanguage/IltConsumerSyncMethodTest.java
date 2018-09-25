@@ -280,17 +280,9 @@ public class IltConsumerSyncMethodTest extends IltConsumerTest {
     @Test
     public void callMethodWithSingleByteBufferParameter() {
         LOG.info(name.getMethodName());
-        try {
-            Byte[] byteBufferArg = { -128, 0, 127 };
-
-            Byte[] result = testInterfaceProxy.methodWithSingleByteBufferParameter(byteBufferArg);
-
-            Assert.assertNotNull(name.getMethodName() + " - FAILED - got no result", result);
-            Assert.assertArrayEquals(name.getMethodName() + " - FAILED - got invalid result", byteBufferArg, result);
-        } catch (Exception e) {
-            fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-        }
-        LOG.info(name.getMethodName() + " - OK");
+        Byte[] byteBufferArg = { -128, 0, 127 };
+        callProxyMethodWithParameterAndAssertResult("methodWithSingleByteBufferParameter", byteBufferArg);
+        LOG.info(name.getMethodName() + TEST_SUCCEEDED);
     }
 
     @Test
