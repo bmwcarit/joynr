@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Base64;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -58,15 +59,42 @@ public class SitControllerConsumerRestEndpoint {
 
     private ServiceLocator serviceLocator;
 
+    DiscoveryQos discoveryQos;
+    MessagingQos messagingQos;
+
     @Inject
     public SitControllerConsumerRestEndpoint(ServiceLocator serviceLocator) {
         this.serviceLocator = serviceLocator;
+
+        discoveryQos = new DiscoveryQos();
+        discoveryQos.setDiscoveryTimeoutMs(120000); // 2 Minutes
+        discoveryQos.setRetryIntervalMs(5000); // 2 seconds
+        messagingQos = new MessagingQos(60000); // 60 seconds
+    }
+
+    private void waitForJoynrEndpoint(String domain) {
+        SitControllerSync sitApp = serviceLocator.builder(SitControllerSync.class, domain)
+                                                 .withDicoveryQos(discoveryQos)
+                                                 .withMessagingQos(messagingQos)
+                                                 .build();
+        String result = sitApp.ping();
+        logger.info("waitForJoynrEndpoint " + domain + " returned: " + result);
+        if (!"OK".equals(result)) {
+            throw new JoynrIllegalStateException("Ping returned unexpected result: \"" + result + "\"");
+        }
     }
 
     @GET
     @Path("/ping")
     public String ping() {
         logger.info("ping called");
+        try {
+            waitForJoynrEndpoint(CONTROLLER_DOMAIN_PREFIX + ".jee-app");
+        } catch (Exception e) {
+            String errorMsg = "SIT RESULT error: sit-jee-app failed to start in time: " + e;
+            logger.error(errorMsg);
+            return errorMsg;
+        }
         try {
             waitForRestEndpoint("sit-jee-stateless-consumer-node-1",
                                 URL_JEE_STATELESS_ASYNC_CONSUMER_NODE_1 + PATH_PING);
@@ -159,9 +187,18 @@ public class SitControllerConsumerRestEndpoint {
         logger.info("triggerTests called");
         StringBuffer result = new StringBuffer();
 
-        DiscoveryQos discoveryQos = new DiscoveryQos();
-        discoveryQos.setDiscoveryTimeoutMs(120000); // 2 Minutes
-        MessagingQos messagingQos = new MessagingQos();
+        try {
+            SitControllerSync sitControllerJeeApp = serviceLocator.builder(SitControllerSync.class,
+                                                                           CONTROLLER_DOMAIN_PREFIX + ".jee-app")
+                                                                  .withDicoveryQos(discoveryQos)
+                                                                  .withMessagingQos(messagingQos)
+                                                                  .build();
+            result.append(new String(Base64.getDecoder().decode(sitControllerJeeApp.triggerTests().getBytes())));
+        } catch (Exception e) {
+            String errorMsg = "SIT RESULT error: triggerTests of sit-jee-app failed: " + e;
+            logger.error(errorMsg);
+            result.append("\n").append(errorMsg);
+        }
 
         try {
             SitControllerSync sitControllerJeeStatelessAsync = serviceLocator.builder(SitControllerSync.class,

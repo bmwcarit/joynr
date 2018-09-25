@@ -90,7 +90,7 @@ echo "Wait for JEE Application to be started"
 		max_retries=60
 		while [ $retry_count -le $max_retries ]
 		do
-			curl -f -s http://sit-jee-app:8080/sit-jee-app/consumer/ping
+			curl -f -s http://sit-jee-app:8080/sit-jee-app/sit-controller/ping
 			if [ "$?" = 0 ]
 			then
 				break
