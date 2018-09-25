@@ -54,6 +54,12 @@ public class MessageQueueTest {
     private DelayableImmutableMessage mockMessage;
 
     @Mock
+    private DelayableImmutableMessage mockMessage2;
+
+    @Mock
+    private DelayableImmutableMessage mockMessage3;
+
+    @Mock
     private MessageQueue.MaxTimeoutHolder maxTimeoutHolderMock;
 
     @Spy
@@ -67,15 +73,33 @@ public class MessageQueueTest {
 
     @Before
     public void setup() {
+        generatedMessageQueueId = UUID.randomUUID().toString();
+
+        // configure mocks
         when(maxTimeoutHolderMock.getTimeout()).thenReturn(50L);
 
-        generatedMessageQueueId = UUID.randomUUID().toString();
+        Set<DelayableImmutableMessage> mockedMessages = Stream.of(mockMessage2, mockMessage3).collect(toSet());
+        when(messagePersisterMock.fetchAll(eq(generatedMessageQueueId))).thenReturn(mockedMessages);
+
+        // create test subject
         subject = new MessageQueue(delayQueue, maxTimeoutHolderMock, generatedMessageQueueId, messagePersisterMock);
+        drainQueue();
+    }
+
+    private void drainQueue() {
+        // directly after creation MessageQueue contains
+        // two messages which are fetched from the MessagePersister mock
+        try {
+            subject.poll(1, TimeUnit.SECONDS);
+            subject.poll(1, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            // Ignore
+        }
     }
 
     @Test
     public void testPutAndRetrieveMessage() throws Exception {
-        // Given a message
+        // Given a message and an empty queue
 
         // When I put the message to the queue, and then retrieve it
         subject.put(mockMessage);
@@ -88,7 +112,7 @@ public class MessageQueueTest {
 
     @Test
     public void testPollAndDelayedPut() throws Exception {
-        // Given a message
+        // Given a message and an empty queue
 
         // When I poll for a message for max 1 sec, and I then put a message 5ms after
         Collection<DelayableImmutableMessage> resultContainer = new HashSet<>();
@@ -160,6 +184,35 @@ public class MessageQueueTest {
         // Then the operation blocked for max just over 50 millis
         assertTrue("Expected stop to block for maximum of around 50ms. Actual: " + timeTaken,
                    timeTaken >= 50 && timeTaken < 70);
+    }
+
+    @Test
+    public void testMessagePersisterCalledWhenAddingMessage() {
+        // Given the MessageQueue and a mock message
+
+        // When we add a message to the MessageQueue
+        subject.put(mockMessage);
+
+        // Then the message persister was asked if it wanted to persist
+        verify(messagePersisterMock).persist(eq(generatedMessageQueueId), eq(mockMessage));
+        // ... and the message was also added to the in-memory queue
+        verify(delayQueue).put(eq(mockMessage));
+    }
+
+    @Test
+    public void testMessagesFetchedFromPersistenceAndAddedToQueueOnStartup() {
+        // Given a mocked MessagePersister and a set containing messages which is returned when fetching
+
+        // When the MessageQueue is created (see the setup method)
+
+        // Then the messages were fetched from the MessagePersistence
+        verify(messagePersisterMock).fetchAll(eq(generatedMessageQueueId));
+        // ... and added to the queue
+        ArgumentCaptor<DelayableImmutableMessage> argumentCaptor = ArgumentCaptor.forClass(DelayableImmutableMessage.class);
+        verify(delayQueue, times(2)).put(argumentCaptor.capture());
+        List<DelayableImmutableMessage> passedArguments = argumentCaptor.getAllValues();
+        assertTrue(passedArguments.contains(mockMessage2));
+        assertTrue(passedArguments.contains(mockMessage3));
     }
 
 }
