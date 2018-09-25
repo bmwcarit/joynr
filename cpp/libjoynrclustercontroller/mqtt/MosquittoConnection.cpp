@@ -92,8 +92,7 @@ MosquittoConnection::MosquittoConnection(const MessagingSettings& messagingSetti
         if (rc != MOSQ_ERR_SUCCESS) {
             const std::string errorString(getErrorString(rc));
             mosqpp::lib_cleanup();
-            JOYNR_LOG_FATAL(
-                    logger(), "fatal failure to initialize TLS connection - {}", errorString);
+            JOYNR_LOG_FATAL(logger(), "Failed to configure TLS connection - {}", errorString);
             return;
         }
     } else {
