@@ -202,7 +202,7 @@ public class JeeJoynrServiceLocator implements ServiceLocator {
         if (domains == null || domains.length == 0) {
             throw new JoynrRuntimeException("You must provide at least one domain.");
         }
-        Set<String> domainSet = new HashSet(Arrays.asList(domains));
+        Set<String> domainSet = new HashSet<>(Arrays.asList(domains));
         return new JeeJoynrServiceProxyBuilder<>(serviceInterface, domainSet);
     }
 
