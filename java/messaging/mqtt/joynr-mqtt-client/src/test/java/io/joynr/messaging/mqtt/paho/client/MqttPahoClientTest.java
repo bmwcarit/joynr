@@ -175,6 +175,7 @@ public class MqttPahoClientTest {
         properties.put(LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD, "20");
         properties.put(MqttModule.PROPERTY_MQTT_CLEAN_SESSION, "false");
         properties.put(MqttModule.PROPERTY_KEY_MQTT_MAX_MESSAGE_SIZE_BYTES, "0");
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "tcp://localhost:" + mqttBrokerPort);
         serializedMessage = new byte[10];
     }
 
