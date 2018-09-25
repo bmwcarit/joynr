@@ -197,7 +197,7 @@ public interface ServiceLocator {
          * @param discoveryQos the discovery quality-of-service to use.
          * @return the builder.
          */
-        ServiceProxyBuilder<T> withDicoveryQos(DiscoveryQos discoveryQos);
+        ServiceProxyBuilder<T> withDiscoveryQos(DiscoveryQos discoveryQos);
 
         /**
          * Set the stateless async use case name use to find the relevant {@link CallbackHandler} to use for processing

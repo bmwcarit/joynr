@@ -180,7 +180,7 @@ public class JeeJoynrServiceLocator implements ServiceLocator {
         }
 
         @Override
-        public ServiceProxyBuilder<T> withDicoveryQos(DiscoveryQos discoveryQos) {
+        public ServiceProxyBuilder<T> withDiscoveryQos(DiscoveryQos discoveryQos) {
             this.discoveryQos = discoveryQos;
             return this;
         }

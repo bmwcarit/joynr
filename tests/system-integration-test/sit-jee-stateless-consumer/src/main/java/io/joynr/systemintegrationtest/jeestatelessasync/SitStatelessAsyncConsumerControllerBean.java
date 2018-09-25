@@ -95,7 +95,7 @@ public class SitStatelessAsyncConsumerControllerBean implements SitControllerSyn
             SystemIntegrationTestStatelessAsync proxy = serviceLocator.builder(SystemIntegrationTestStatelessAsync.class,
                                                                                domain)
                                                                       .withUseCase(USE_CASE)
-                                                                      .withDicoveryQos(discoveryQos)
+                                                                      .withDiscoveryQos(discoveryQos)
                                                                       .withMessagingQos(new MessagingQos())
                                                                       .build();
 

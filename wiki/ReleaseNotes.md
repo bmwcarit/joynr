@@ -5,7 +5,8 @@ the versioning scheme [here](JoynrVersioning.md).
 # joynr 1.7.0
 
 ## API relevant changes
-None.
+* **[JEE]** Fixed typo withDicoveryQos (renamed method withDicoveryQos to withDiscoveryQos) in the
+  ServiceProxyBuilder interface of the joynr ServiceLocator.
 
 ## Other changes
 * **[C++]** Enabled registration of multiple providers in a single runtime.

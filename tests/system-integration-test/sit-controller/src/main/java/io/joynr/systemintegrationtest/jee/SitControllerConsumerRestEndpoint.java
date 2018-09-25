@@ -74,7 +74,7 @@ public class SitControllerConsumerRestEndpoint {
 
     private void waitForJoynrEndpoint(String domain) {
         SitControllerSync sitApp = serviceLocator.builder(SitControllerSync.class, domain)
-                                                 .withDicoveryQos(discoveryQos)
+                                                 .withDiscoveryQos(discoveryQos)
                                                  .withMessagingQos(messagingQos)
                                                  .build();
         String result = sitApp.ping();
@@ -190,7 +190,7 @@ public class SitControllerConsumerRestEndpoint {
         try {
             SitControllerSync sitControllerJeeApp = serviceLocator.builder(SitControllerSync.class,
                                                                            CONTROLLER_DOMAIN_PREFIX + ".jee-app")
-                                                                  .withDicoveryQos(discoveryQos)
+                                                                  .withDiscoveryQos(discoveryQos)
                                                                   .withMessagingQos(messagingQos)
                                                                   .build();
             result.append(new String(Base64.getDecoder().decode(sitControllerJeeApp.triggerTests().getBytes())));
@@ -204,7 +204,7 @@ public class SitControllerConsumerRestEndpoint {
             SitControllerSync sitControllerJeeStatelessAsync = serviceLocator.builder(SitControllerSync.class,
                                                                                       CONTROLLER_DOMAIN_PREFIX
                                                                                               + ".jee-stateless-consumer")
-                                                                             .withDicoveryQos(discoveryQos)
+                                                                             .withDiscoveryQos(discoveryQos)
                                                                              .withMessagingQos(messagingQos)
                                                                              .build();
             result.append(sitControllerJeeStatelessAsync.triggerTests());
