@@ -1022,7 +1022,7 @@
 						<forkCount>1</forkCount>
 						<!-- one JVM per test suite -->
 						<reuseForks>false</reuseForks>
-						<argLine>-Xmx1024m -XX:MaxPermSize=256m</argLine>
+						<argLine>-Xmx1024m</argLine>
 						<skipTests>${skipTests}</skipTests>
 					</configuration>
 				</plugin>
