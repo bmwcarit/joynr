@@ -18,6 +18,8 @@
  */
 package io.joynr.systemintegrationtest.jeestatelessasync;
 
+import javax.ejb.ConcurrencyManagement;
+import javax.ejb.ConcurrencyManagementType;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 
@@ -32,10 +34,11 @@ import joynr.test.SystemIntegrationTestStatelessAsyncCallback;
 
 @Stateless
 @CallbackHandler
+@ConcurrencyManagement(ConcurrencyManagementType.BEAN)
 public class SitStatelessAsyncCallback implements SystemIntegrationTestStatelessAsyncCallback {
 
     private static final Logger logger = LoggerFactory.getLogger(SitStatelessAsyncCallback.class);
-    private final String USE_CASE = "sit-jee-stateless-async";
+    static final String USE_CASE = "sit-jee-stateless-async";
     private StatelessResultQueue resultQueue;
 
     @Inject

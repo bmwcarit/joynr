@@ -37,21 +37,23 @@ import joynr.test.SitControllerSync;
 public class JoynrConfigurationProvider {
 
     private static final Logger LOG = LoggerFactory.getLogger(JoynrConfigurationProvider.class);
-    private static final String SIT_JEE_LOCAL_DOMAIN_PREFIX_KEY = "SIT_JEE_LOCAL_DOMAIN_PREFIX";
-    private static final String DEFAULT_SIT_DOMAIN_PREFIX = "io.joynr.systemintegrationtest";
+    static final String SIT_DOMAIN_PREFIX = "io.joynr.systemintegrationtest";
+    private static final String CHANNEL_ID = SIT_DOMAIN_PREFIX + ".jeestatelessconsumer";
+    private static final String CONTROLLER_DOMAIN_PREFIX = SIT_DOMAIN_PREFIX + ".controller";
+    static final String CONTROLLER_DOMAIN = CONTROLLER_DOMAIN_PREFIX + ".jee-stateless-consumer";
+    private static final String CONTROLLER_PARTICIPANT_ID = CONTROLLER_DOMAIN;
     private static final String MQTT_BROKER_URI = "tcp://mqttbroker:1883";
 
     @Produces
     @JoynrProperties
     public Properties joynrProperties() {
         Properties joynrProperties = new Properties();
-        joynrProperties.setProperty(MessagingPropertyKeys.CHANNELID,
-                                    "io.joynr.systemintegrationtest.jeestatelessconsumer");
+        joynrProperties.setProperty(MessagingPropertyKeys.CHANNELID, CHANNEL_ID);
         joynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, MQTT_BROKER_URI);
         joynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS, "true");
-        joynrProperties.setProperty(ParticipantIdKeyUtil.getProviderParticipantIdKey("io.joynr.systemintegrationtest.controller.jee-stateless-consumer",
+        joynrProperties.setProperty(ParticipantIdKeyUtil.getProviderParticipantIdKey(CONTROLLER_DOMAIN,
                                                                                      SitControllerSync.class),
-                                    "io.joynr.systemintegrationtest.controller.jee-stateless-consumer");
+                                    CONTROLLER_PARTICIPANT_ID);
         joynrProperties.setProperty(MessagingPropertyKeys.DISCOVERYDIRECTORYURL, MQTT_BROKER_URI);
         joynrProperties.setProperty(MessagingPropertyKeys.DOMAINACCESSCONTROLLERURL, MQTT_BROKER_URI);
 
@@ -61,15 +63,8 @@ public class JoynrConfigurationProvider {
     @Produces
     @JoynrLocalDomain
     public String joynrLocalDomain() {
-        String localDomainPrefix = System.getenv(SIT_JEE_LOCAL_DOMAIN_PREFIX_KEY);
-        String domainPrefix;
-        if (localDomainPrefix == null) {
-            domainPrefix = DEFAULT_SIT_DOMAIN_PREFIX;
-        } else {
-            domainPrefix = localDomainPrefix;
-        }
-        LOG.debug("Using domain prefix: " + domainPrefix);
-        String domain = domainPrefix + ".jee-stateless-consumer";
+        LOG.debug("Using domain prefix: " + SIT_DOMAIN_PREFIX);
+        String domain = SIT_DOMAIN_PREFIX + ".jee-stateless-consumer";
         LOG.debug("Using domain: " + domain);
         return domain;
     }

@@ -18,6 +18,10 @@
  */
 package io.joynr.systemintegrationtest.jeestatelessasync;
 
+import static io.joynr.systemintegrationtest.jeestatelessasync.JoynrConfigurationProvider.CONTROLLER_DOMAIN;
+import static io.joynr.systemintegrationtest.jeestatelessasync.JoynrConfigurationProvider.SIT_DOMAIN_PREFIX;
+import static io.joynr.systemintegrationtest.jeestatelessasync.SitStatelessAsyncCallback.USE_CASE;
+
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -41,16 +45,11 @@ import joynr.test.SystemIntegrationTestStatelessAsync;
 
 @Stateless
 @ServiceProvider(serviceInterface = SitControllerSync.class)
-@ProviderDomain(value = SitStatelessAsyncConsumerControllerBean.CONTROLLER_DOMAIN)
+@ProviderDomain(value = CONTROLLER_DOMAIN)
 @ConcurrencyManagement(ConcurrencyManagementType.BEAN)
 public class SitStatelessAsyncConsumerControllerBean implements SitControllerSync {
-    private static final String SIT_DOMAIN_PREFIX = "io.joynr.systemintegrationtest";
-    private static final String CONTROLLER_DOMAIN_PREFIX = SIT_DOMAIN_PREFIX + ".controller";
-    protected static final String CONTROLLER_DOMAIN = CONTROLLER_DOMAIN_PREFIX + ".jee-stateless-consumer";
 
     private static final Logger logger = LoggerFactory.getLogger(SitStatelessAsyncConsumerControllerBean.class);
-
-    private static final String USE_CASE = "sit-jee-stateless-async";
 
     private ServiceLocator serviceLocator;
     private StatelessResultQueue resultQueue;
