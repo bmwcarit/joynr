@@ -18,6 +18,9 @@
  */
 package io.joynr.systemintegrationtest.jee;
 
+import static io.joynr.systemintegrationtest.jee.JoynrConfigurationProvider.CONTROLLER_DOMAIN;
+import static io.joynr.systemintegrationtest.jee.JoynrConfigurationProvider.SIT_DOMAIN_PREFIX;
+
 import java.util.Base64;
 
 import javax.ejb.ConcurrencyManagement;
@@ -38,23 +41,17 @@ import joynr.test.SystemIntegrationTestSync;
 
 @Stateless
 @ServiceProvider(serviceInterface = SitControllerSync.class)
-@ProviderDomain(value = ControllerBean.CONTROLLER_DOMAIN)
+@ProviderDomain(value = CONTROLLER_DOMAIN)
 @ConcurrencyManagement(ConcurrencyManagementType.BEAN)
 public class ControllerBean implements SitControllerSync {
-    private static final String SIT_DOMAIN_PREFIX = "io.joynr.systemintegrationtest";
-    private static final String CONTROLLER_DOMAIN_PREFIX = SIT_DOMAIN_PREFIX + ".controller";
-    protected static final String CONTROLLER_DOMAIN = CONTROLLER_DOMAIN_PREFIX + ".jee-app";
 
     private static final Logger logger = LoggerFactory.getLogger(ControllerBean.class);
 
     private ServiceLocator serviceLocator;
 
-    private DomainPrefixProvider domainPrefixProvider;
-
     @Inject
-    public ControllerBean(ServiceLocator serviceLocator, DomainPrefixProvider domainPrefixProvider) {
+    public ControllerBean(ServiceLocator serviceLocator) {
         this.serviceLocator = serviceLocator;
-        this.domainPrefixProvider = domainPrefixProvider;
     }
 
     @Override
@@ -74,10 +71,8 @@ public class ControllerBean implements SitControllerSync {
     public String triggerTests() {
         logger.info("triggerTests called");
         StringBuffer result = new StringBuffer();
-        for (String domainPrefix : domainPrefixProvider.getDomainPrefixes()) {
-            for (String appendValue : new String[]{ ".jee", ".cpp", ".java", ".node" }) {
-                callProducer(domainPrefix + appendValue, result);
-            }
+        for (String appendValue : new String[]{ ".jee", ".cpp", ".java", ".node" }) {
+            callProducer(SIT_DOMAIN_PREFIX + appendValue, result);
         }
         return new String(Base64.getEncoder().encode(result.toString().getBytes()));
     }
