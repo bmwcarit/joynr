@@ -433,66 +433,12 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
         return;
     }
 
-    // variables that are to be changed inside callbacks must be declared global
-    volatile boolean methodWithSingleByteBufferParameterAsyncCallbackResult = false;
-
     @Test
     public void callMethodWithSingleByteBufferParameterAsync() {
         LOG.info(name.getMethodName());
-
-        final Semaphore resultAvailable = new Semaphore(0);
-        try {
-            // setup input parameter
-            final Byte[] byteBufferArg = { -128, 0, 127 };
-
-            Callback<Byte[]> callback = new Callback<Byte[]>() {
-                @Override
-                public void onSuccess(Byte[] byteBufferOut) {
-                    // check result
-                    if (!java.util.Objects.deepEquals(byteBufferOut, byteBufferArg)) {
-                        LOG.info(name.getMethodName() + " - invalid byteBufferOut from callback");
-                        LOG.info(name.getMethodName() + " - FAILED");
-                        methodWithSingleByteBufferParameterAsyncCallbackResult = false;
-                        resultAvailable.release();
-                        return;
-                    }
-                    methodWithSingleByteBufferParameterAsyncCallbackResult = true;
-                    resultAvailable.release();
-                }
-
-                @Override
-                public void onFailure(JoynrRuntimeException error) {
-                    methodWithSingleByteBufferParameterAsyncCallbackResult = false;
-                    if (error instanceof JoynrRuntimeException) {
-                        LOG.info(name.getMethodName() + " - callback - caught exception "
-                                + ((JoynrRuntimeException) error).getMessage());
-                    } else {
-                        LOG.info(name.getMethodName() + " - callback - caught exception");
-                    }
-                    LOG.info(name.getMethodName() + " - FAILED");
-                    resultAvailable.release();
-                }
-            };
-
-            testInterfaceProxy.methodWithSingleByteBufferParameter(callback, byteBufferArg);
-
-            try {
-                // wait for callback
-                LOG.info(name.getMethodName() + " - about to wait for callback");
-                Assert.assertTrue(name.getMethodName() + " - FAILED - callback not received in time",
-                                  resultAvailable.tryAcquire(10, TimeUnit.SECONDS));
-
-                // check result from callback
-                LOG.info(name.getMethodName() + " - wait for callback is over");
-                Assert.assertTrue(name.getMethodName() + " - FAILED - callback reported error",
-                                  methodWithSingleByteBufferParameterAsyncCallbackResult);
-            } catch (InterruptedException | JoynrRuntimeException e) {
-                fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            }
-        } catch (Exception e) {
-            fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-        }
-        LOG.info(name.getMethodName() + " - OK");
+        final Byte[] byteBufferArg = { -128, 0, 127 };
+        callProxyMethodWithParameterAsyncAndAssertResult("methodWithSingleByteBufferParameter", byteBufferArg);
+        LOG.info(name.getMethodName() + TEST_SUCCEEDED);
     }
 
     // variables that are to be changed inside callbacks must be declared global
