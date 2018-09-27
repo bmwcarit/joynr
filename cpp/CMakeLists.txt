@@ -729,7 +729,7 @@ endif(USE_PLATFORM_MOCOCRW)
 include(CheckMOCOCRWImportTargets)
 
 ### Add smrf ############################################################
-set(JOYNR_SMRF_REQUIRED_VERSION 0.2.2)
+set(JOYNR_SMRF_REQUIRED_VERSION 0.3.1)
 if (USE_PLATFORM_SMRF)
     find_package(smrf ${JOYNR_SMRF_REQUIRED_VERSION} REQUIRED CONFIG)
 else(USE_PLATFORM_SMRF)

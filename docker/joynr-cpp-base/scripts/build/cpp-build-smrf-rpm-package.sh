@@ -15,7 +15,7 @@ env
 JOBS=4
 SMRF_BUILD_DIR=/data/build/smrf
 SMRF_SRCS=/tmp/smrf
-SMRF_VERSION=0.2.2
+SMRF_VERSION=0.3.1
 
 # clone smrf
 cd /tmp
