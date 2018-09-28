@@ -10,7 +10,8 @@ the versioning scheme [here](JoynrVersioning.md).
   See the [Java documentation](java.md) and [JEE documentation](jee.md) for details.
 
 ## Other changes
-None.
+* [Java] Guava (Google Core Libraries for Java) dependency has been removed from
+  io.joynr.java.core.libjoynr and io.joynr.java.core.libjoynr-websocket-runtime
 
 ## Configuration property changes
 * **[Java]** Introduced `PROPERTY_KEY_MQTT_USERNAME` and `PROPERTY_KEY_MQTT_PASSWORD`.
