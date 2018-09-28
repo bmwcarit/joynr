@@ -32,6 +32,7 @@ import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.google.inject.multibindings.MapBinder;
 import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Names;
+
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import io.joynr.arbitration.ArbitratorFactory;
 import io.joynr.capabilities.CapabilitiesRegistrar;
@@ -70,6 +71,8 @@ import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.inprocess.InProcessLibjoynrMessagingSkeleton;
 import io.joynr.messaging.inprocess.InProcessMessagingStubFactory;
+import io.joynr.messaging.persistence.MessagePersister;
+import io.joynr.messaging.persistence.NoOpMessagePersister;
 import io.joynr.messaging.routing.GlobalAddressFactory;
 import io.joynr.messaging.routing.InMemoryMulticastReceiverRegistry;
 import io.joynr.messaging.routing.MessageRouter;
@@ -149,6 +152,7 @@ abstract class AbstractRuntimeModule extends AbstractModule {
         bind(StatusReceiver.class).to(DefaultStatusReceiver.class);
         bind(StatelessAsyncIdCalculator.class).to(DefaultStatelessAsyncIdCalculatorImpl.class);
         bind(StatelessAsyncRequestReplyIdManager.class).to(DefaultStatelessAsyncRequestReplyIdManagerImpl.class);
+        bind(MessagePersister.class).to(NoOpMessagePersister.class);
 
         install(new StaticCapabilitiesProvisioningModule());
 

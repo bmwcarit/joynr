@@ -18,23 +18,34 @@
  */
 package io.joynr.messaging.routing;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.mock;
+import static java.util.stream.Collectors.toSet;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import joynr.ImmutableMessage;
+import io.joynr.messaging.persistence.MessagePersister;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MessageQueueTest {
@@ -43,19 +54,52 @@ public class MessageQueueTest {
     private DelayableImmutableMessage mockMessage;
 
     @Mock
+    private DelayableImmutableMessage mockMessage2;
+
+    @Mock
+    private DelayableImmutableMessage mockMessage3;
+
+    @Mock
     private MessageQueue.MaxTimeoutHolder maxTimeoutHolderMock;
 
+    @Spy
+    private DelayQueue<DelayableImmutableMessage> delayQueue = new DelayQueue<>();
+
+    @Mock
+    private MessagePersister messagePersisterMock;
+
+    private String generatedMessageQueueId;
     private MessageQueue subject;
 
     @Before
     public void setup() {
+        generatedMessageQueueId = UUID.randomUUID().toString();
+
+        // configure mocks
         when(maxTimeoutHolderMock.getTimeout()).thenReturn(50L);
-        subject = new MessageQueue(new DelayQueue<>(), maxTimeoutHolderMock);
+
+        Set<DelayableImmutableMessage> mockedMessages = Stream.of(mockMessage2, mockMessage3).collect(toSet());
+        when(messagePersisterMock.fetchAll(eq(generatedMessageQueueId))).thenReturn(mockedMessages);
+
+        // create test subject
+        subject = new MessageQueue(delayQueue, maxTimeoutHolderMock, generatedMessageQueueId, messagePersisterMock);
+        drainQueue();
+    }
+
+    private void drainQueue() {
+        // directly after creation MessageQueue contains
+        // two messages which are fetched from the MessagePersister mock
+        try {
+            subject.poll(1, TimeUnit.SECONDS);
+            subject.poll(1, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            // Ignore
+        }
     }
 
     @Test
     public void testPutAndRetrieveMessage() throws Exception {
-        // Given a message
+        // Given a message and an empty queue
 
         // When I put the message to the queue, and then retrieve it
         subject.put(mockMessage);
@@ -68,7 +112,7 @@ public class MessageQueueTest {
 
     @Test
     public void testPollAndDelayedPut() throws Exception {
-        // Given a message
+        // Given a message and an empty queue
 
         // When I poll for a message for max 1 sec, and I then put a message 5ms after
         Collection<DelayableImmutableMessage> resultContainer = new HashSet<>();
@@ -92,7 +136,7 @@ public class MessageQueueTest {
     }
 
     @Test
-    public void testShutdownImmediatelyWithEmptyQueue() throws Exception {
+    public void testShutdownImmediatelyWithEmptyQueue() {
         // Given an empty queue
 
         // When I shutdown the message queue
@@ -105,7 +149,7 @@ public class MessageQueueTest {
     }
 
     @Test
-    public void testShutdownBlocksUntilQueueEmpty() throws Exception {
+    public void testShutdownBlocksUntilQueueEmpty() {
         // Given an item in the queue
         subject.put(mockMessage);
 
@@ -128,19 +172,47 @@ public class MessageQueueTest {
     }
 
     @Test
-    public void testShutdownBlocksMax5SecondsIfQueueNotEmptied() throws Exception {
-        // Given an item in the queue, and a max shutdown of 50
+    public void testShutdownBlocksMaxTimeIfQueueNotEmptied() {
+        // Given an item in the queue, and a max shutdown of 50ms (see setup)
         subject.put(mockMessage);
-        when(maxTimeoutHolderMock.getTimeout()).thenReturn(50L);
 
         // When I stop the queue, but do NOT remove the item
         long beforeStop = System.currentTimeMillis();
         subject.waitForQueueToDrain();
         long timeTaken = System.currentTimeMillis() - beforeStop;
 
-        // Then the operation blocked for max just over 5 sec
-        assertTrue("Expected stop to block for maximum of around 5sec. Actual: " + timeTaken,
-                   timeTaken >= 50 && timeTaken < 60);
+        // Then the operation blocked for max just over 50 millis
+        assertTrue("Expected stop to block for maximum of around 50ms. Actual: " + timeTaken,
+                   timeTaken >= 50 && timeTaken < 70);
+    }
+
+    @Test
+    public void testMessagePersisterCalledWhenAddingMessage() {
+        // Given the MessageQueue and a mock message
+
+        // When we add a message to the MessageQueue
+        subject.put(mockMessage);
+
+        // Then the message persister was asked if it wanted to persist
+        verify(messagePersisterMock).persist(eq(generatedMessageQueueId), eq(mockMessage));
+        // ... and the message was also added to the in-memory queue
+        verify(delayQueue).put(eq(mockMessage));
+    }
+
+    @Test
+    public void testMessagesFetchedFromPersistenceAndAddedToQueueOnStartup() {
+        // Given a mocked MessagePersister and a set containing messages which is returned when fetching
+
+        // When the MessageQueue is created (see the setup method)
+
+        // Then the messages were fetched from the MessagePersistence
+        verify(messagePersisterMock).fetchAll(eq(generatedMessageQueueId));
+        // ... and added to the queue
+        ArgumentCaptor<DelayableImmutableMessage> argumentCaptor = ArgumentCaptor.forClass(DelayableImmutableMessage.class);
+        verify(delayQueue, times(2)).put(argumentCaptor.capture());
+        List<DelayableImmutableMessage> passedArguments = argumentCaptor.getAllValues();
+        assertTrue(passedArguments.contains(mockMessage2));
+        assertTrue(passedArguments.contains(mockMessage3));
     }
 
 }

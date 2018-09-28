@@ -702,6 +702,26 @@ you must use two MQTT connections, which can be activated using the
 [Java Configuration Guide](./JavaSettings.md) for details.
 
 
+## <a name="message_persistence"></a> Message Persistence
+
+If you need to persist joynr messages in order to reduce the risk of message loss, you can provide a
+producer of @JoynrMessagePersister.
+
+For example:
+
+	@Produces
+	@JoynrMessagePersister
+	MessagePersister getMessagePersister() {
+		return new MessagePersister() {
+			@Override
+			...
+		};
+	}
+
+See the [Java Developer Guide](./java.md#message_persistence) for details on how to implement
+message persister and how it works in the joynr runtime.
+
+
 ## Example Application
 
 Under `examples/radio-jee` you can find an example application which is based on the

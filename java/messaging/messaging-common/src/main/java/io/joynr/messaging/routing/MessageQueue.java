@@ -18,13 +18,17 @@
  */
 package io.joynr.messaging.routing;
 
+import java.util.Set;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.TimeUnit;
 
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
+
+import io.joynr.messaging.persistence.MessagePersister;
 
 /**
  * This class holds the queued messages which are to be processed in the {@link AbstractMessageRouter} and offers
@@ -34,10 +38,13 @@ public class MessageQueue {
 
     private static final Logger logger = LoggerFactory.getLogger(MessageQueue.class);
 
+    public static final String MESSAGE_QUEUE_ID = "io.joynr.messaging.queue.id";
     public static final String PROPERTY_MESSAGE_QUEUE_SHUTDOWN_MAX_TIMEOUT = "io.joynr.messaging.queue.shutdown.timeout";
 
     private DelayQueue<DelayableImmutableMessage> delayableImmutableMessages;
     private long shutdownTimeoutMs;
+    private final String messageQueueId;
+    private final MessagePersister messagePersister;
 
     /**
      * Helper class to enable constructor injection of an optionally configured timeout value.
@@ -54,16 +61,29 @@ public class MessageQueue {
 
     @Inject
     public MessageQueue(DelayQueue<DelayableImmutableMessage> delayableImmutableMessages,
-                        MaxTimeoutHolder maxTimeoutHolder) {
+                        MaxTimeoutHolder maxTimeoutHolder,
+                        @Named(MESSAGE_QUEUE_ID) String messageQueueId,
+                        MessagePersister messagePersister) {
         this.delayableImmutableMessages = delayableImmutableMessages;
         this.shutdownTimeoutMs = maxTimeoutHolder.getTimeout();
+        this.messageQueueId = messageQueueId;
+        this.messagePersister = messagePersister;
+        fetchAndQueuePersistedMessages(delayableImmutableMessages, messageQueueId);
+    }
+
+    private void fetchAndQueuePersistedMessages(DelayQueue<DelayableImmutableMessage> delayableImmutableMessages,
+                                                String messageQueueId) {
+        Set<DelayableImmutableMessage> persistedFromLastRun = messagePersister.fetchAll(messageQueueId);
+        if (persistedFromLastRun != null) {
+            persistedFromLastRun.forEach(delayableImmutableMessages::put);
+        }
     }
 
     /**
      * Call this method to wait for the queue to drain if it still contains any messages. The timeout is set by
      * the {@link #PROPERTY_MESSAGE_QUEUE_SHUTDOWN_MAX_TIMEOUT} property, which defaults to five seconds.
      */
-    public void waitForQueueToDrain() {
+    void waitForQueueToDrain() {
         int remainingMessages = delayableImmutableMessages.size();
         logger.info("joynr message queue stopping. Contains {} remaining messages.", remainingMessages);
         if (remainingMessages > 0) {
@@ -90,15 +110,28 @@ public class MessageQueue {
 
     /**
      * Add the passed in message to the queue of messages to be processed.
+     * Also offer the message for persisting.
      *
      * @param delayableImmutableMessage the message to add.
      */
     public void put(DelayableImmutableMessage delayableImmutableMessage) {
+        if (messagePersister.persist(messageQueueId, delayableImmutableMessage)) {
+            logger.trace("Message {} was persisted for messageQueueId {}",
+                         delayableImmutableMessage.getMessage(),
+                         messageQueueId);
+        } else {
+            logger.trace("Message {} was not persisted for messageQueueId {}",
+                         delayableImmutableMessage.getMessage(),
+                         messageQueueId);
+        }
         delayableImmutableMessages.put(delayableImmutableMessage);
     }
 
     /**
      * Polls the message queue for a period no longer than the timeout specified for a new message.
+     *
+     * If a message is successfully obtained, before returning it, a message persister is called in order to remove
+     * this message from the persistence (in case it was persisted at all).
      *
      * @param timeout the maximum time to wait for a message to become available.
      * @param unit the time unit of measurement for <code>timeout</code>
@@ -106,6 +139,10 @@ public class MessageQueue {
      * @throws InterruptedException if the thread was interrupted while waiting for a message to become available.
      */
     public DelayableImmutableMessage poll(long timeout, TimeUnit unit) throws InterruptedException {
-        return delayableImmutableMessages.poll(timeout, unit);
+        DelayableImmutableMessage message = delayableImmutableMessages.poll(timeout, unit);
+        if (message != null) {
+            messagePersister.remove(messageQueueId, message);
+        }
+        return message;
     }
 }

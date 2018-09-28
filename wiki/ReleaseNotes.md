@@ -8,6 +8,10 @@ the versioning scheme [here](JoynrVersioning.md).
 * **[Java, JEE]** added `prepareForShutdown` lifecycle step
 * **[Java,JEE]** Added stateless async communication API.
   See the [Java documentation](java.md) and [JEE documentation](jee.md) for details.
+* **[Java, JEE]** Added `MessagePersister` interface that can be implemented and allows queued
+  messages to be persisted in order to prevent message loss. JEE applications can inject a
+  MessagePersister implementation. See the [Java documentation](java.md#message_persistence) and
+  [JEE documentation](jee.md#message_persistence) for details.
 
 ## Other changes
 * [Java] Guava (Google Core Libraries for Java) dependency has been removed from
@@ -22,6 +26,8 @@ the versioning scheme [here](JoynrVersioning.md).
   See [Java Configuration Reference](JavaSettings.md) for more details.
 * **[JS]** Moved default settings for discoveryQos from `capabilities.discoveryQos` to `discoveryQos`
     because capabilities was used as an array.
+* **[Java]** Introduced `MESSAGE_QUEUE_ID` property.
+  See [Java Configuration Reference](JavaSettings.md) for more details.
 
 # joynr 1.5.0
 

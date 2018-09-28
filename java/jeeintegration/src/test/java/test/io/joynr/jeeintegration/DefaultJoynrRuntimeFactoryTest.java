@@ -60,6 +60,8 @@ import io.joynr.messaging.NoOpRawMessagingPreprocessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.MqttClientIdProvider;
 import io.joynr.messaging.mqtt.statusmetrics.MqttStatusReceiver;
+import io.joynr.messaging.persistence.MessagePersister;
+import io.joynr.messaging.persistence.NoOpMessagePersister;
 import io.joynr.provider.ProviderAnnotations;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.statusmetrics.StatusReceiver;
@@ -140,6 +142,8 @@ public class DefaultJoynrRuntimeFactoryTest {
                                Instance<String> joynrLocalDomain) throws Exception {
         Instance<RawMessagingPreprocessor> rawMessageProcessor = mock(Instance.class);
         when(rawMessageProcessor.get()).thenReturn(new NoOpRawMessagingPreprocessor());
+        Instance<MessagePersister> messagePersisterInstance = mock(Instance.class);
+        when(messagePersisterInstance.get()).thenReturn(new NoOpMessagePersister());
         BeanManager beanManager = mock(BeanManager.class);
         Bean<JoynrMessageProcessor> bean = mock(Bean.class);
         when(bean.create(Mockito.any())).thenReturn(new JoynrMessageProcessorTest());
@@ -156,6 +160,7 @@ public class DefaultJoynrRuntimeFactoryTest {
                                                  joynrLocalDomain,
                                                  rawMessageProcessor,
                                                  mqttClientIdProviderInstance,
+                                                 messagePersisterInstance,
                                                  beanManager,
                                                  mock(StatusReceiver.class),
                                                  mock(MqttStatusReceiver.class));
