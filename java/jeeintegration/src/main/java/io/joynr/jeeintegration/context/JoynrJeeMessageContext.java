@@ -27,6 +27,7 @@ import javax.enterprise.context.spi.Context;
 import javax.enterprise.context.spi.Contextual;
 import javax.enterprise.context.spi.CreationalContext;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.joynr.jeeintegration.api.JoynrJeeMessageScoped;
 
 /**
@@ -82,9 +83,14 @@ public class JoynrJeeMessageContext implements Context {
         contextualStore.remove();
     }
 
-    public synchronized static JoynrJeeMessageContext getInstance() {
+    @SuppressFBWarnings(value = "DC_DOUBLECHECK", justification = "lazy synchronization")
+    public static JoynrJeeMessageContext getInstance() {
         if (instance == null) {
-            instance = new JoynrJeeMessageContext();
+            synchronized (JoynrJeeMessageContext.class) {
+                if (instance == null) {
+                    instance = new JoynrJeeMessageContext();
+                }
+            }
         }
         return instance;
     }
