@@ -19,7 +19,12 @@
 package io.joynr.jeeintegration;
 
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
+import javax.ejb.ConcurrencyManagement;
+import javax.ejb.ConcurrencyManagementType;
 import javax.ejb.Singleton;
 
 import io.joynr.messaging.mqtt.statusmetrics.MqttStatusReceiver;
@@ -27,46 +32,52 @@ import io.joynr.statusmetrics.MessageWorkerStatus;
 import io.joynr.statusmetrics.StatusReceiver;
 
 @Singleton
+@ConcurrencyManagement(ConcurrencyManagementType.BEAN)
 public class JoynrStatusMetricsAggregator implements JoynrStatusMetrics, MqttStatusReceiver, StatusReceiver {
-    private int numDiscardedMqttRequest = 0;
-    private boolean isConnectedToMqttBroker = false;
-    private long disconnectedFromMqttBrokerSinceTimestamp;
+    private AtomicInteger numDiscardedMqttRequest = new AtomicInteger();
+    private Object connectionStatusChangedLock = new Object();
+    private AtomicBoolean isConnectedToMqttBroker = new AtomicBoolean();
+    private AtomicLong disconnectedFromMqttBrokerSinceTimestamp = new AtomicLong();
     private ConcurrentHashMap<Integer, MessageWorkerStatus> messageWorkersStatus = new ConcurrentHashMap<Integer, MessageWorkerStatus>();
 
     @Override
-    public synchronized void notifyMessageDropped() {
-        numDiscardedMqttRequest++;
+    public void notifyMessageDropped() {
+        numDiscardedMqttRequest.incrementAndGet();
     }
 
     @Override
-    public synchronized void notifyConnectionStatusChanged(ConnectionStatus connectionStatus) {
+    public void notifyConnectionStatusChanged(ConnectionStatus connectionStatus) {
         switch (connectionStatus) {
         case CONNECTED:
-            isConnectedToMqttBroker = true;
-            disconnectedFromMqttBrokerSinceTimestamp = -1;
+            synchronized (connectionStatusChangedLock) {
+                isConnectedToMqttBroker.set(true);
+                disconnectedFromMqttBrokerSinceTimestamp.set(-1);
+            }
             break;
         case NOT_CONNECTED:
-            if (isConnectedToMqttBroker) {
-                isConnectedToMqttBroker = false;
-                disconnectedFromMqttBrokerSinceTimestamp = System.currentTimeMillis();
+            synchronized (connectionStatusChangedLock) {
+                if (isConnectedToMqttBroker.get()) {
+                    isConnectedToMqttBroker.set(false);
+                    disconnectedFromMqttBrokerSinceTimestamp.set(System.currentTimeMillis());
+                }
             }
             break;
         }
     }
 
     @Override
-    public synchronized int getNumDiscardedMqttRequests() {
-        return numDiscardedMqttRequest;
+    public int getNumDiscardedMqttRequests() {
+        return numDiscardedMqttRequest.get();
     }
 
     @Override
-    public synchronized boolean isConnectedToMqttBroker() {
-        return isConnectedToMqttBroker;
+    public boolean isConnectedToMqttBroker() {
+        return isConnectedToMqttBroker.get();
     }
 
     @Override
-    public synchronized long getDisconnectedFromMqttBrokerSinceTimestamp() {
-        return disconnectedFromMqttBrokerSinceTimestamp;
+    public long getDisconnectedFromMqttBrokerSinceTimestamp() {
+        return disconnectedFromMqttBrokerSinceTimestamp.get();
     }
 
     @Override

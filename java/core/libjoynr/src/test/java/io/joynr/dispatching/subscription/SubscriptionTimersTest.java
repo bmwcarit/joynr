@@ -25,6 +25,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -41,7 +43,6 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.google.common.collect.Sets;
 
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.exceptions.JoynrMessageNotSentException;
@@ -126,7 +127,7 @@ public class SubscriptionTimersTest {
                                                                                             qos,
                                                                                             future);
         subscriptionManager.registerAttributeSubscription(fromParticipantId,
-                                                          Sets.newHashSet(toDiscoveryEntry),
+                                                          new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry)),
                                                           subscriptionRequest);
         subscriptionId = subscriptionRequest.getSubscriptionId();
         Thread.sleep(subscriptionLength);
@@ -168,7 +169,7 @@ public class SubscriptionTimersTest {
                                                                                             qos,
                                                                                             future);
         subscriptionManager.registerAttributeSubscription(fromParticipantId,
-                                                          Sets.newHashSet(toDiscoveryEntry),
+                                                          new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry)),
                                                           subscriptionRequest);
         subscriptionId = subscriptionRequest.getSubscriptionId();
 

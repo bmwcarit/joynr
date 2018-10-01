@@ -24,7 +24,6 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 
 import java.util.ArrayList;
@@ -36,6 +35,9 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 
+import io.joynr.proxy.DefaultStatelessAsyncIdCalculatorImpl;
+import io.joynr.proxy.StatelessAsyncCallback;
+import io.joynr.proxy.StatelessAsyncIdCalculator;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -52,7 +54,6 @@ import org.mockito.stubbing.Answer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Sets;
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
@@ -72,9 +73,9 @@ import io.joynr.capabilities.GlobalCapabilitiesDirectoryClient;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.capabilities.LocalCapabilitiesDirectoryImpl;
 import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.messaging.routing.TestGlobalAddressModule;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.messaging.routing.TestGlobalAddressModule;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.ConnectorFactory;
 import io.joynr.proxy.Future;
@@ -106,16 +107,22 @@ class ProxyInvocationHandlerFactoryImpl implements ProxyInvocationHandlerFactory
     private ConnectorFactory connectorFactory;
     private ConnectorFactory connectorFactoryMock;
     private MessageRouter messageRouter;
+    private ShutdownNotifier shutdownNotifier;
+    private StatelessAsyncIdCalculator statelessAsyncIdCalculator;
 
     @Inject
     public ProxyInvocationHandlerFactoryImpl(ConnectorFactory connectorFactory,
                                              @Named("connectorFactoryMock") JoynrMessagingConnectorFactory connectorFactoryMock,
                                              MessageRouter messageRouter,
-                                             @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) Address dispatcherAddress) {
+                                             @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) Address dispatcherAddress,
+                                             ShutdownNotifier shutdownNotifier,
+                                             StatelessAsyncIdCalculator statelessAsyncIdCalculator) {
         super();
         this.messageRouter = messageRouter;
         this.connectorFactory = connectorFactory;
         this.connectorFactoryMock = new ConnectorFactory(connectorFactoryMock, messageRouter, dispatcherAddress);
+        this.shutdownNotifier = shutdownNotifier;
+        this.statelessAsyncIdCalculator = statelessAsyncIdCalculator;
     }
 
     @Override
@@ -123,23 +130,31 @@ class ProxyInvocationHandlerFactoryImpl implements ProxyInvocationHandlerFactory
                                          String interfaceName,
                                          String proxyParticipantId,
                                          DiscoveryQos discoveryQos,
-                                         MessagingQos messagingQos) {
+                                         MessagingQos messagingQos,
+                                         ShutdownNotifier shutdownNotifier,
+                                         StatelessAsyncCallback statelessAsyncCallback) {
         if (domains.contains("io.joynr.system")) {
             return new ProxyInvocationHandlerImpl(domains,
                                                   interfaceName,
                                                   proxyParticipantId,
                                                   discoveryQos,
                                                   messagingQos,
+                                                  statelessAsyncCallback,
                                                   connectorFactory,
-                                                  messageRouter);
+                                                  messageRouter,
+                                                  shutdownNotifier,
+                                                  statelessAsyncIdCalculator);
         }
         return new ProxyInvocationHandlerImpl(domains,
                                               interfaceName,
                                               proxyParticipantId,
                                               discoveryQos,
                                               messagingQos,
+                                              statelessAsyncCallback,
                                               connectorFactoryMock,
-                                              messageRouter);
+                                              messageRouter,
+                                              shutdownNotifier,
+                                              statelessAsyncIdCalculator);
     }
 
 }
@@ -208,6 +223,7 @@ public class LocalDiscoveryTest {
                                                                                           bind(LocalCapabilitiesDirectory.class).toInstance(localCapabilitiesDirectory);
                                                                                           bind(LocalCapabilitiesDirectoryImpl.class).toInstance(localCapabilitiesDirectory);
                                                                                           bind(ProxyInvocationHandlerFactory.class).to(ProxyInvocationHandlerFactoryImpl.class);
+                                                                                          bind(StatelessAsyncIdCalculator.class).to(DefaultStatelessAsyncIdCalculatorImpl.class);
                                                                                       }
                                                                                   });
         Properties joynrProperties = new Properties();
@@ -255,7 +271,8 @@ public class LocalDiscoveryTest {
             future.get(5000);
             verify(joynrMessagingConnectorFactoryMock).create(anyString(),
                                                               discoveryEntryWithMetaInfoArgumentCaptor.capture(),
-                                                              any(MessagingQos.class));
+                                                              any(MessagingQos.class),
+                                                              eq(null));
 
             assertDiscoveryEntryEqualsCaptured(discoveryEntry);
 
@@ -305,7 +322,8 @@ public class LocalDiscoveryTest {
             future.get(5000);
             verify(joynrMessagingConnectorFactoryMock).create(anyString(),
                                                               eq(discoveryEntriesWithMetaInfo),
-                                                              any(MessagingQos.class));
+                                                              any(MessagingQos.class),
+                                                              eq(null));
         } catch (Exception e) {
             Assert.fail("Unexpected exception from ProxyCreatedCallback: " + e);
         }
@@ -369,7 +387,8 @@ public class LocalDiscoveryTest {
 
             verify(joynrMessagingConnectorFactoryMock).create(anyString(),
                                                               discoveryEntryWithMetaInfoArgumentCaptor.capture(),
-                                                              any(MessagingQos.class));
+                                                              any(MessagingQos.class),
+                                                              eq(null));
 
             assertDiscoveryEntryEqualsCaptured(discoveryEntry);
         } catch (Exception e) {
@@ -450,7 +469,7 @@ public class LocalDiscoveryTest {
             @Override
             public Set<DiscoveryEntryWithMetaInfo> select(Map<String, String> parameters,
                                                           Collection<DiscoveryEntryWithMetaInfo> capabilities) {
-                return Sets.newHashSet(capabilities);
+                return new HashSet<DiscoveryEntryWithMetaInfo>(capabilities);
             }
         };
         DiscoveryQos discoveryQos = new DiscoveryQos(30000,
@@ -474,7 +493,8 @@ public class LocalDiscoveryTest {
             future.get(5000);
             verify(joynrMessagingConnectorFactoryMock).create(anyString(),
                                                               eq(discoveryEntriesWithMetaInfo),
-                                                              any(MessagingQos.class));
+                                                              any(MessagingQos.class),
+                                                              eq(null));
         } catch (Exception e) {
             Assert.fail("Unexpected exception from ProxyCreatedCallback: " + e);
         }

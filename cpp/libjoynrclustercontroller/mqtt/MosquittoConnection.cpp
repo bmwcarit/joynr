@@ -55,27 +55,51 @@ MosquittoConnection::MosquittoConnection(const MessagingSettings& messagingSetti
     JOYNR_LOG_INFO(logger(), "Init mosquitto connection using MQTT client ID: {}", clientId);
     mosqpp::lib_init();
 
+    if (ccSettings.isMqttUsernameSet()) {
+        const std::string mqttUsername = ccSettings.getMqttUsername();
+        const char* mqttUsername_cstr = mqttUsername.empty() ? nullptr : mqttUsername.c_str();
+        const std::string mqttPassword = ccSettings.getMqttPassword();
+        const char* mqttPassword_cstr = mqttPassword.empty() ? nullptr : mqttPassword.c_str();
+        int rc = username_pw_set(mqttUsername_cstr, mqttPassword_cstr);
+        if (rc != MOSQ_ERR_SUCCESS) {
+            const std::string errorString(getErrorString(rc));
+            JOYNR_LOG_ERROR(logger(),
+                            "unable to set username/password for MQTT connection - {}",
+                            errorString);
+            return;
+        }
+    }
+
     if (ccSettings.isMqttTlsEnabled()) {
         const std::string mqttCertificateAuthorityPemFilename =
                 ccSettings.getMqttCertificateAuthorityPemFilename();
         const std::string mqttCertificateAuthorityCertificateFolderPath =
                 ccSettings.getMqttCertificateAuthorityCertificateFolderPath();
+        const std::string mqttCertificatePemFilename = ccSettings.getMqttCertificatePemFilename();
+        const std::string mqttPrivateKeyPemFilename = ccSettings.getMqttPrivateKeyPemFilename();
 
-        const char* mqttCertificateAuthorityPemFilename_cstr = nullptr;
-        if (!mqttCertificateAuthorityPemFilename.empty()) {
-            mqttCertificateAuthorityPemFilename_cstr = mqttCertificateAuthorityPemFilename.c_str();
-        }
+        const char* mqttCertificateAuthorityPemFilename_cstr =
+                ccSettings.isMqttCertificateAuthorityPemFilenameSet()
+                        ? mqttCertificateAuthorityPemFilename.c_str()
+                        : nullptr;
 
-        const char* mqttCertificateAuthorityCertificateFolderPath_cstr = nullptr;
-        if (!mqttCertificateAuthorityCertificateFolderPath.empty()) {
-            mqttCertificateAuthorityCertificateFolderPath_cstr =
-                    mqttCertificateAuthorityCertificateFolderPath.c_str();
-        }
+        const char* mqttCertificateAuthorityCertificateFolderPath_cstr =
+                ccSettings.isMqttCertificateAuthorityCertificateFolderPathSet()
+                        ? mqttCertificateAuthorityCertificateFolderPath.c_str()
+                        : nullptr;
+
+        const char* mqttCertificatePemFilename_cstr = ccSettings.isMqttCertificatePemFilenameSet()
+                                                              ? mqttCertificatePemFilename.c_str()
+                                                              : nullptr;
+
+        const char* mqttPrivateKeyPemFilename_cstr = ccSettings.isMqttPrivateKeyPemFilenameSet()
+                                                             ? mqttPrivateKeyPemFilename.c_str()
+                                                             : nullptr;
 
         int rc = tls_set(mqttCertificateAuthorityPemFilename_cstr,
                          mqttCertificateAuthorityCertificateFolderPath_cstr,
-                         ccSettings.getMqttCertificatePemFilename().c_str(),
-                         ccSettings.getMqttPrivateKeyPemFilename().c_str());
+                         mqttCertificatePemFilename_cstr,
+                         mqttPrivateKeyPemFilename_cstr);
 
         if (rc != MOSQ_ERR_SUCCESS) {
             const std::string errorString(getErrorString(rc));
@@ -92,8 +116,7 @@ MosquittoConnection::MosquittoConnection(const MessagingSettings& messagingSetti
         if (rc != MOSQ_ERR_SUCCESS) {
             const std::string errorString(getErrorString(rc));
             mosqpp::lib_cleanup();
-            JOYNR_LOG_FATAL(
-                    logger(), "fatal failure to initialize TLS connection - {}", errorString);
+            JOYNR_LOG_FATAL(logger(), "Failed to configure TLS connection - {}", errorString);
             return;
         }
     } else {

@@ -32,6 +32,7 @@ import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.google.inject.multibindings.MapBinder;
 import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Names;
+
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import io.joynr.arbitration.ArbitratorFactory;
 import io.joynr.capabilities.CapabilitiesRegistrar;
@@ -42,10 +43,12 @@ import io.joynr.capabilities.PropertiesFileParticipantIdStorage;
 import io.joynr.capabilities.StaticCapabilitiesProvisioningModule;
 import io.joynr.context.JoynrMessageScopeModule;
 import io.joynr.discovery.LocalDiscoveryAggregator;
+import io.joynr.dispatching.DefaultStatelessAsyncRequestReplyIdManagerImpl;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.dispatching.DispatcherImpl;
 import io.joynr.dispatching.RequestReplyManager;
 import io.joynr.dispatching.RequestReplyManagerImpl;
+import io.joynr.dispatching.StatelessAsyncRequestReplyIdManager;
 import io.joynr.dispatching.rpc.RpcUtils;
 import io.joynr.dispatching.subscription.FileSubscriptionRequestStorage;
 import io.joynr.dispatching.subscription.PublicationManager;
@@ -68,6 +71,8 @@ import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.inprocess.InProcessLibjoynrMessagingSkeleton;
 import io.joynr.messaging.inprocess.InProcessMessagingStubFactory;
+import io.joynr.messaging.persistence.MessagePersister;
+import io.joynr.messaging.persistence.NoOpMessagePersister;
 import io.joynr.messaging.routing.GlobalAddressFactory;
 import io.joynr.messaging.routing.InMemoryMulticastReceiverRegistry;
 import io.joynr.messaging.routing.MessageRouter;
@@ -76,11 +81,13 @@ import io.joynr.messaging.routing.MulticastAddressCalculator;
 import io.joynr.messaging.routing.MulticastReceiverRegistry;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.messaging.routing.RoutingTableImpl;
+import io.joynr.proxy.DefaultStatelessAsyncIdCalculatorImpl;
 import io.joynr.proxy.ProxyBuilderFactory;
 import io.joynr.proxy.ProxyBuilderFactoryImpl;
 import io.joynr.proxy.ProxyInvocationHandler;
 import io.joynr.proxy.ProxyInvocationHandlerFactory;
 import io.joynr.proxy.ProxyInvocationHandlerImpl;
+import io.joynr.proxy.StatelessAsyncIdCalculator;
 import io.joynr.statusmetrics.DefaultStatusReceiver;
 import io.joynr.statusmetrics.StatusReceiver;
 import joynr.system.DiscoveryAsync;
@@ -143,6 +150,9 @@ abstract class AbstractRuntimeModule extends AbstractModule {
         bind(ScheduledExecutorService.class).annotatedWith(Names.named(MessageRouter.SCHEDULEDTHREADPOOL))
                                             .toProvider(DefaultScheduledExecutorServiceProvider.class);
         bind(StatusReceiver.class).to(DefaultStatusReceiver.class);
+        bind(StatelessAsyncIdCalculator.class).to(DefaultStatelessAsyncIdCalculatorImpl.class);
+        bind(StatelessAsyncRequestReplyIdManager.class).to(DefaultStatelessAsyncRequestReplyIdManagerImpl.class);
+        bind(MessagePersister.class).to(NoOpMessagePersister.class);
 
         install(new StaticCapabilitiesProvisioningModule());
 

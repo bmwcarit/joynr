@@ -32,6 +32,7 @@ class InterfaceProxyTemplate extends InterfaceTemplate {
 		val interfaceName =  francaIntf.joynrName
 		val className = francaIntf.proxyClassName
 		val asyncClassName = interfaceName + "Async"
+		val statelessAsyncClassName = interfaceName + "StatelessAsync"
 		val syncClassName = interfaceName + "Sync"
 		val subscriptionClassName = interfaceName + "SubscriptionInterface"
 		val broadcastClassName = interfaceName + "BroadcastInterface"
@@ -44,7 +45,7 @@ class InterfaceProxyTemplate extends InterfaceTemplate {
 		import io.joynr.JoynrVersion;
 
 		@JoynrVersion(major = «majorVersion», minor = «minorVersion»)
-		public interface «className» extends «asyncClassName», «syncClassName»«IF francaIntf.attributes.size>0», «subscriptionClassName»«ENDIF»«IF francaIntf.broadcasts.size>0», «broadcastClassName»«ENDIF» {
+		public interface «className» extends «asyncClassName», «statelessAsyncClassName», «syncClassName»«IF francaIntf.attributes.size>0», «subscriptionClassName»«ENDIF»«IF francaIntf.broadcasts.size>0», «broadcastClassName»«ENDIF» {
 			public static String INTERFACE_NAME = "«francaIntf.fullyQualifiedName»";
 		}
 		'''

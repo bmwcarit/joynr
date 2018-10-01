@@ -117,6 +117,7 @@ do
 		cd ${CPP_HOME}/bin
 
 		# cpp - run the test against cpp provider
+        echo "run cpp<->cpp joynr system integration test"
 		./jsit-consumer-ws $domainprefix.cpp
 
 		if [ "$?" = "0" ]
@@ -127,6 +128,7 @@ do
 		fi
 
 		# cpp - run the test against java provider
+        echo "run cpp<->java joynr system integration test"
 		./jsit-consumer-ws $domainprefix.java
 
 		if [ "$?" = "0" ]
@@ -137,6 +139,7 @@ do
 		fi
 
 		# cpp - run the test against node provider
+        echo "run cpp<->node joynr system integration test"
 		./jsit-consumer-ws $domainprefix.node
 
 		if [ "$?" = "0" ]
@@ -147,6 +150,7 @@ do
 		fi
 
 		# cpp - run the test against jee provider
+        echo "run cpp<->jee joynr system integration test"
 		./jsit-consumer-ws $domainprefix.jee
 
 		if [ "$?" = "0" ]
@@ -162,6 +166,7 @@ do
 		cd ${JAVA_APP_HOME}
 
 		# java - run the test against cpp provider
+        echo "run java<->cpp joynr system integration test"
 		java -cp *.jar io.joynr.systemintegrationtest.ConsumerApplication $domainprefix.cpp
 
 		if [ "$?" = "0" ]
@@ -172,6 +177,7 @@ do
 		fi
 
 		# java - run the test against java provider
+        echo "run java<->java joynr system integration test"
 		java -cp *.jar io.joynr.systemintegrationtest.ConsumerApplication $domainprefix.java
 
 		if [ "$?" = "0" ]
@@ -182,6 +188,7 @@ do
 		fi
 
 		# java - run the test against node provider
+        echo "run java<->node joynr system integration test"
 		java -cp *.jar io.joynr.systemintegrationtest.ConsumerApplication $domainprefix.node
 
 		if [ "$?" = "0" ]
@@ -192,6 +199,7 @@ do
 		fi
 
 		# java - run the test against jee provider
+        echo "run java<->jee joynr system integration test"
 		java -cp *.jar io.joynr.systemintegrationtest.ConsumerApplication $domainprefix.jee
 
 		if [ "$?" = "0" ]
@@ -207,22 +215,29 @@ do
 		cd ${NODE_APP_HOME}
 
 		# node - run the test against cpp provider
+        echo "run node<->cpp joynr system integration test"
 		npm run-script startconsumer --sit-node-app:domain=$domainprefix.cpp --sit-node-app:cc:host=127.0.0.1 --sit-node-app:cc:port=4242
 
 		# node - run the test against java provider
+        echo "run node<->cpp joynr system integration test"
 		npm run-script startconsumer --sit-node-app:domain=$domainprefix.java --sit-node-app:cc:host=127.0.0.1 --sit-node-app:cc:port=4242
 
 		# node - run the test against node provider
+        echo "run node<->node joynr system integration test"
 		npm run-script startconsumer --sit-node-app:domain=$domainprefix.node
 
 		# node - run the test against node provider
+        echo "run node<->node TLS joynr system integration test"
 		npm run-script startconsumertls --sit-node-app:domain=$domainprefix.nodeTls
 
 		# node - run the test against jee provider
+        echo "run node<->jee joynr system integration test"
 		npm run-script startconsumer --sit-node-app:domain=$domainprefix.jee --sit-node-app:cc:host=127.0.0.1 --sit-node-app:cc:port=4242
 
 	)
 done
+
+echo "Finished Onboard RUN END TO END TEST"
 
 # Clean up
 # disabled, as the provider and the cluster controller must still be available for the jee consumer test

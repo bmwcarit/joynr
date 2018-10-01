@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
 import io.joynr.messaging.RawMessagingPreprocessor;
 
 public class TestRawMessagingProcessor extends RawMessagingPreprocessor {
-    private static final Logger logger = LoggerFactory.getLogger(RawMessagingPreprocessor.class);
+    private static final Logger logger = LoggerFactory.getLogger(TestRawMessagingProcessor.class);
 
     @Override
     public byte[] process(byte[] rawMessage, Map<String, Serializable> context) {

@@ -25,7 +25,6 @@ This project has dependencies to:
   Aether Transport Wagon under Eclipse Public License, Version 1.0
   Aether Utilities under Eclipse Public License, Version 1.0
   android under Apache License, Version 2.0
-  Animal Sniffer Annotations under MIT license
   ant-launcher under Apache License, Version 2.0
   Antlr 3 Runtime under BSD License
   AntLR Parser Generator under BSD License
@@ -76,7 +75,7 @@ This project has dependencies to:
   Arquillian Transaction Extension: SPI under Apache License, Version 2.0
   ASM Analysis under BSD
   ASM Commons under BSD
-  ASM Core under BSD License
+  ASM Core under BSD
   ASM Tree under BSD
   ASM Util under BSD
   atmosphere-annotations under CDDL or Apache License 2.0
@@ -87,7 +86,6 @@ This project has dependencies to:
   Bean Validation API under Apache License, Version 2.0
   Bouncy Castle Provider under Bouncy Castle Licence
   CDI APIs under Apache License, Version 2.0
-  Checker Qual under GNU General Public License, version 2 (GPL2), with the classpath exception or The MIT License
   classworlds under BSD Style License
   clustercontroller-inprocess-runtime under The Apache Software License, Version 2.0
   clustercontroller-standalone under The Apache Software License, Version 2.0
@@ -120,7 +118,6 @@ This project has dependencies to:
   EJB 3.1 API under lgpl
   Embedded GlassFish All-In-One under CDDL + GPLv2 with classpath exception
   Equinox Application Container under Eclipse Public License
-  error-prone annotations under Apache 2.0
   Expression Language under Eclipse Public License
   Expression Language 2.2 API under lgpl
   Extension Registry Support under Eclipse Public License
@@ -133,6 +130,7 @@ This project has dependencies to:
   Google Guice - Extensions - Persist under The Apache Software License, Version 2.0
   Google Guice - Extensions - Servlet under The Apache Software License, Version 2.0
   google-collect under The Apache Software License, Version 2.0
+  graceful-shutdown-test-backend-services under The Apache Software License, Version 2.0
   Groovy under The Apache Software License, Version 2.0
   Gson under The Apache Software License, Version 2.0
   Guava: Google Core Libraries for Java under The Apache Software License, Version 2.0
@@ -163,6 +161,11 @@ This project has dependencies to:
   io.joynr.examples:radio-app under The Apache Software License, Version 2.0
   io.joynr.examples:radio-jee under The Apache Software License, Version 2.0
   io.joynr.examples:radio-js under The Apache Software License, Version 2.0
+  io.joynr.examples:stateless-async under The Apache Software License, Version 2.0
+  io.joynr.examples:stateless-async-api under The Apache Software License, Version 2.0
+  io.joynr.examples:stateless-async-car-sim under The Apache Software License, Version 2.0
+  io.joynr.examples:stateless-async-consumer under The Apache Software License, Version 2.0
+  io.joynr.examples:stateless-async-jee-consumer under The Apache Software License, Version 2.0
   io.joynr.java.android:joynr-android under The Apache Software License, Version 2.0
   io.joynr.java.android:joynr-android-runtime under The Apache Software License, Version 2.0
   io.joynr.java.backend-services:capabilities-directory under The Apache Software License, Version 2.0
@@ -206,8 +209,6 @@ This project has dependencies to:
   io.joynr.java:javaapi under The Apache Software License, Version 2.0
   io.joynr.java:jeeintegration under The Apache Software License, Version 2.0
   io.joynr.java:messaging under The Apache Software License, Version 2.0
-  io.joynr.javascript.inter-tab:inter-tab-comm under The Apache Software License, Version 2.0
-  io.joynr.javascript:inter-tab under The Apache Software License, Version 2.0
   io.joynr.javascript:libjoynr-js under The Apache Software License, Version 2.0
   io.joynr.mqtt:mqtt-client under Eclipse Public License - Version 1.0
   io.joynr.performance.performance-test-jee:performance-test-jee-api under The Apache Software License, Version 2.0
@@ -215,10 +216,16 @@ This project has dependencies to:
   io.joynr.performance:performance-test-jee under The Apache Software License, Version 2.0
   io.joynr.smrf.java:smrf under The Apache Software License, Version 2.0
   io.joynr.smrf.java:smrf-api under The Apache Software License, Version 2.0
+  io.joynr.tests.graceful-shutdown-test:graceful-shutdown-test-api under The Apache Software License, Version 2.0
+  io.joynr.tests.graceful-shutdown-test:graceful-shutdown-test-consumer under The Apache Software License, Version 2.0
+  io.joynr.tests.graceful-shutdown-test:graceful-shutdown-test-provider under The Apache Software License, Version 2.0
+  io.joynr.tests.graceful-shutdown-test:graceful-shutdown-test-second-level-provider under The Apache Software License, Version 2.0
   io.joynr.tests.system-integration-test:sit-cpp-app under The Apache Software License, Version 2.0
   io.joynr.tests.system-integration-test:sit-java-app under The Apache Software License, Version 2.0
+  io.joynr.tests.system-integration-test:sit-jee-api under The Apache Software License, Version 2.0
   io.joynr.tests.system-integration-test:sit-jee-app under The Apache Software License, Version 2.0
   io.joynr.tests.system-integration-test:sit-node-app under The Apache Software License, Version 2.0
+  io.joynr.tests:graceful-shutdown-test under The Apache Software License, Version 2.0
   io.joynr.tests:inter-language-test under The Apache Software License, Version 2.0
   io.joynr.tests:inter-language-test-jee under The Apache Software License, Version 2.0
   io.joynr.tests:performance-test under The Apache Software License, Version 2.0
@@ -246,7 +253,6 @@ This project has dependencies to:
   io.joynr:joynr under The Apache Software License, Version 2.0
   io.joynr:tests under The Apache Software License, Version 2.0
   io.joynr:tools under The Apache Software License, Version 2.0
-  J2ObjC Annotations under The Apache Software License, Version 2.0
   JACC 1.4 API under lgpl
   Jackson under The Apache Software License, Version 2.0
   Jackson module: JAXB-annotations under The Apache Software License, Version 2.0
@@ -267,7 +273,6 @@ This project has dependencies to:
   Java Servlet 3.0 API under lgpl
   Java Servlet API under CDDL + GPLv2 with classpath exception
   Java Transaction API under Common Development and Distribution License or GNU General Public License, Version 2 with the Classpath Exception
-  Java(TM) EE 6 Specification APIs under CDDL + GPLv2 with classpath exception
   Java(TM) EE 7 Specification APIs under CDDL + GPLv2 with classpath exception
   JavaBeans Activation Framework (JAF) under Common Development and Distribution License (CDDL) v1.0
   JavaEE Application Deployment 1.2 API under lgpl
@@ -311,12 +316,12 @@ This project has dependencies to:
   JMS 1.1 under The Apache Software License, Version 2.0
   JMS 1.1 API under lgpl
   JPA 2.0 API under Sun Binary Code License
-  jquery under MIT License
   JSON (JavaScript Object Notation) under provided without support or warranty
   json-path under Apache 2.0
   JSON.simple under The Apache Software License, Version 2.0
   jsoup under The MIT License
   JSR-181 Maintenance Release 1 under CDDL+GPLv2
+  jsr311-api under CDDL License
   JTA 1.1 under The Apache Software License, Version 2.0
   JUnit under Eclipse Public License 1.0
   libjoynr-websocket-runtime under The Apache Software License, Version 2.0
@@ -342,7 +347,7 @@ This project has dependencies to:
   Maven Wagon File Provider under The Apache Software License, Version 2.0
   Maven Wagon HTTP Shared Library under The Apache Software License, Version 2.0
   Maven Wagon Lightweight HTTP Provider under The Apache Software License, Version 2.0
-  MIME streaming extension under Dual license consisting of the CDDL v1.1 and GPL v2
+  MIME streaming extension under CDDL 1.1 or GPL2 w/ CPE
   Mockito under The MIT License
   Neko HTML under The Apache Software License, Version 2.0
   Objenesis under MIT License
@@ -368,6 +373,7 @@ This project has dependencies to:
   Plexus Common Utilities under The Apache Software License, Version 2.0
   Plexus Interpolation API under The Apache Software License, Version 2.0
   Plexus Security Dispatcher Component under Apache Public License 2.0
+  PostgreSQL JDBC Driver - JDBC 4.2 under BSD-2-Clause
   radio-jee-backend-services under The Apache Software License, Version 2.0
   Reflections under WTFPL or The New BSD License
   REST Assured under Apache 2.0
@@ -396,6 +402,7 @@ This project has dependencies to:
   SLF4J LOG4J-12 Binding under MIT License
   SOAP with Attachments API for Java 1.3 under lgpl
   sqlite4java under The Apache Software License, Version 2.0
+  stateless-async-backend-services under The Apache Software License, Version 2.0
   StAX API under The Apache Software License, Version 2.0
   TagSoup under Apache License 2.0
   Text under Eclipse Public License

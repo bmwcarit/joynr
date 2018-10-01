@@ -18,6 +18,7 @@
  */
 package io.joynr.systemintegrationtest.jee;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -26,8 +27,6 @@ import javax.ejb.Singleton;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.Sets;
 
 @Singleton
 public class DomainPrefixProvider {
@@ -46,7 +45,7 @@ public class DomainPrefixProvider {
         if (valueFromEnvironment == null) {
             domainPrefixes.add(DEFAULT_PREFIX);
         } else {
-            domainPrefixes.addAll(Sets.newHashSet(valueFromEnvironment.split(",")));
+            domainPrefixes.addAll(new HashSet<String>(Arrays.asList(valueFromEnvironment.split(","))));
         }
         logger.debug("Initialised with domain prefixes: " + domainPrefixes);
     }

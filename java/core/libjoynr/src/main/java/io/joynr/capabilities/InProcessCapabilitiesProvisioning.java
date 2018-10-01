@@ -18,9 +18,15 @@
  */
 package io.joynr.capabilities;
 
-import com.google.common.collect.Lists;
+import static io.joynr.util.VersionUtil.getVersionFromAnnotation;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+
 import io.joynr.runtime.SystemServicesSettings;
 import joynr.system.Discovery;
 import joynr.system.DiscoveryProvider;
@@ -28,11 +34,6 @@ import joynr.system.RoutingTypes.Address;
 import joynr.types.DiscoveryEntry;
 import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
-
-import static io.joynr.util.VersionUtil.getVersionFromAnnotation;
-
-import java.util.Collection;
-import java.util.List;
 
 public class InProcessCapabilitiesProvisioning extends DefaultCapabilitiesProvisioning {
 
@@ -53,7 +54,7 @@ public class InProcessCapabilitiesProvisioning extends DefaultCapabilitiesProvis
     @Override
     public Collection<DiscoveryEntry> getDiscoveryEntries() {
 
-        List<DiscoveryEntry> provisionedList = Lists.newArrayList();
+        List<DiscoveryEntry> provisionedList = new ArrayList<>();
         String defaultPulicKeyId = "";
         ProviderQos providerQos = new ProviderQos();
         providerQos.setScope(ProviderScope.LOCAL);

@@ -18,6 +18,7 @@
  */
 package io.joynr.runtime;
 
+import io.joynr.proxy.StatelessAsyncCallbackDirectory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,6 +51,7 @@ public class LibjoynrRuntime extends JoynrRuntimeImpl {
                            MessagingSkeletonFactory messagingSkeletonFactory,
                            LocalDiscoveryAggregator localDiscoveryAggregator,
                            RoutingTable routingTable,
+                           StatelessAsyncCallbackDirectory statelessAsyncCallbackDirectory,
                            @Named(SystemServicesSettings.PROPERTY_SYSTEM_SERVICES_DOMAIN) String systemServicesDomain,
                            @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) Address dispatcherAddress,
                            @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS) Address discoveryProviderAddress,
@@ -63,6 +65,7 @@ public class LibjoynrRuntime extends JoynrRuntimeImpl {
               messagingSkeletonFactory,
               localDiscoveryAggregator,
               routingTable,
+              statelessAsyncCallbackDirectory,
               systemServicesDomain,
               dispatcherAddress,
               discoveryProviderAddress);
@@ -78,7 +81,7 @@ public class LibjoynrRuntime extends JoynrRuntimeImpl {
                                               ccMessagingAddress,
                                               parentRoutingProviderParticipantId,
                                               proxyBuilder.getParticipantId());
-                messageSender.setReplyToAddress(routingProxy.getReplyToAddress());
+                messageSender.setReplyToAddress(routingProxy.getReplyToAddress(), routingProxy.getGlobalAddress());
             }
 
             @Override

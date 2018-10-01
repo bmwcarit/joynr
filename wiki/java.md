@@ -554,6 +554,99 @@ public void onFailure(<Method>ErrorEnum errorEnum) {
 }
 ```
 
+## Stateless Asynchronous Remote Procedure Calls
+
+In contrast to both the synchronous and asynchronous RPC mechanisms described above, the
+stateless asynchronous replies can be handled by any runtime in a cluster of an application.
+
+In order to accomplish this, the application provides a callback implementation by
+registering it with the joynr runtime similar to the way providers are registered.
+Then, when a request is made for a service for which a callback was registered, the
+reply data is routed to that callback.
+
+In order to be able to logically match the request with the reply, a unique ID is provided
+when sending the request, via the `MessageIdCallback`, which the application can use to
+persist any relevant context information. When the reply arrives, the same ID is provided to
+the callback as part of the `ReplyContext` as the last parameter, and the application can
+then use this to load the context information.  
+__IMPORTANT__: it is not guaranteed that the message has actually left the system
+when the `MessageIdCallback` is called. It is possible that the message gets stuck
+in the lower layers due to, e.g., infrastructure issues. If the application persists
+data for the message IDs returned, it may also want to run periodic clean-up jobs
+to see if there are any stale entries due to messages not being transmitted
+successfully.
+
+So that an application can use the same service in multiple use cases, during registration
+of the callback and when creating the service proxy, a unique 'use case' name must be
+provided, matching the proxy to the callback.
+
+__IMPORTANT__: due to the stateless nature of this communication pattern, there are some
+cases where the message can't be delivered but will not trigger a callback. Specifically
+if the TTL of the message has expired when it reaches the provider, no error callback
+will be triggered. Equally, if the message gets lost by the infrastructure en route, no
+error callback will be triggered. If required, you must guard against these cases in
+your application code by, e.g. storing a timestamp in the context data you persist for
+a given message ID, and track the success of the request / reply rountrip using the
+callback methods. If the status is then not set within a given timeframe, you can react
+accordingly.
+
+### Example
+
+For a full example showing how to use the stateless async API, see
+[examples/stateless-async](../examples/stateless-async/README.md).
+
+### Registering the callback
+
+    ...
+    public MyStatelessAsyncCallback implements <interface>StatelessAsyncCallback {
+        @Override
+        public String getUseCase() {
+            return <usecase>;
+        }
+
+        // Called for replies to proxy.myMethod(...)
+        @Override
+        public void myMethodSuccess(<service output parameters>, ReplyContext replyContext) {
+            ... handle the reply data ...
+        }
+        @Override
+        public void myMethodFailed(<application error enum>, ReplyContext replyContext) {
+            ... handle business errors ...
+        }
+        @Override
+        public void myMethodFailed(JoynrRuntimeException e, ReplyContext replyContext) {
+            ... handle ProviderRuntimeExceptions and other runtime exceptions ...
+        }
+    }
+    ...
+    public void run() {
+        ...
+        runtime.registerStatelessAsyncCallback(new MyStatelessAsyncCallback());
+        ...
+    }
+    ...
+
+### Building the Proxy
+
+    ...
+    public void run() {
+        ...
+        // callback already registered as above
+        ...
+        ProxyBuilder builder = runtime.getProxyBuilder(<domain>, <interface>Proxy.class);
+        ...
+        builder.setStatelessAsyncCallbackUseCase(<usecase>);
+        <interface>StatelessAsync proxy = builder.build();
+        proxy.myMethod(<input parameters>, messageId -> this::persistMyMethodContext);
+		// ^ Reply handled by the myMethod* callbacks
+        ...
+    }
+    ...
+
+It's essential that for a given piece of business logic the use case of the callback to be
+used matches that passed into the proxy being built. The requests sent from that proxy, will
+then be handled by the callback with the same use case identifier.
+
 ## Quality of Service settings for subscriptions
 
 ### SubscriptionQos
@@ -889,7 +982,7 @@ subscriptionIdFuture = <interface>Proxy.subscribeTo<Broadcast>Broadcast(
 );
 ```
 
-## Subscribing to a broadcast with filter parameters
+## Subscribing to a selective broadcast, i.e. a broadcast with filter parameters
 
 Selective Broadcasts use filter logic implemented by the provider and filter parameters set by the
 consumer to send only those broadcasts from the provider to the consumer that pass the filter. The
@@ -1537,3 +1630,38 @@ inject an implementation of the following interfaces via Guice:
 * ```io.joynr.statusmetrics.StatusReceiver```
 
 See the documentation of each interface for more information.
+
+# <a name="message_persistence"></a> Message Persistence
+
+In order to prevent queued messages being lost if a runtime should unexpectedly quit, e.g. because
+the application crashes or the container it is running in is terminated forcibly, you can provide
+one implementation of `MessagePersister`. This gives the chance to externally persist messages
+before they are passed into the joynr runtime for processing. See the JavaDoc in
+`io.joynr.messaging.persistence.MessagePersister` for details on how to implement this interface.
+
+For each message which is added to the queue, the registered instance of `MessagePersister` will be
+asked to persist the given message. The decision whether the message needs to be persisted or not
+can be made two ways:
+* The implementation of `MessagePersister` decides itself. It can for example only persist messages
+  which have a certain recipient set.
+* The sender of the message has set a previously agreed application-specific custom header
+  (key/value pair) and thus has marked his decision that this message is important and should be
+  persisted. The implementation of `MessagePersister` must respect this and persist messages having
+  the agreed header.
+
+The decision how to persist a given message, e.g. to a file, database etc., should be made the same way.
+
+After the message is persisted from the `MessagePersister` (or decided not to) the message is
+regularly added to the in-memory queue for processing.
+
+Once a message has been processed from joynr, the persister is asked to remove it from persistence.
+There is a small chance that if the runtime crashes hard after the message has been persisted and
+before the message is processed and removed from persistence, that it will be added for processing
+at the next startup of the runtime. You should guard against this in your business code. This is not
+an issue for reply messages, as the reply handling callback will already have been removed, and
+hence the message will simply be discarded.
+
+At startup time, the message persister is asked to provide all messages it has for the given message
+queue (by its ID), and these messages are then added back into the in-memory message queue for
+processing. From there they are processed, and as described above are then, upon successful
+completion, handed to the persister to be removed.

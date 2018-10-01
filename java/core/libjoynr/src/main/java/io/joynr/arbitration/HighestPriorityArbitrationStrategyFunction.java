@@ -18,14 +18,14 @@
  */
 package io.joynr.arbitration;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.Sets;
 
 import joynr.types.DiscoveryEntryWithMetaInfo;
 
@@ -54,6 +54,7 @@ public class HighestPriorityArbitrationStrategyFunction extends ArbitrationStrat
         }
         logger.trace("capability with highest priority: " + highestPriority + "\r\n" + highestPriorityCapability);
 
-        return highestPriorityCapability == null ? null : Sets.newHashSet(highestPriorityCapability);
+        return highestPriorityCapability == null ? null
+                : new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(highestPriorityCapability));
     }
 }

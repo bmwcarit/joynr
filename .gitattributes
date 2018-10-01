@@ -4,7 +4,7 @@
 # script files
 *.bat		text
 *.cmd		text
-*.sh		text
+*.sh		text eol=lf
 
 *.cache text
 

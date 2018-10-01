@@ -21,13 +21,13 @@ package io.joynr.jeeintegration.multicast;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import javax.ejb.Singleton;
 import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.spi.InjectionPoint;
 
-import com.google.common.collect.Maps;
 import io.joynr.provider.SubscriptionPublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,7 +37,7 @@ public class SubscriptionPublisherProducer {
 
     private static final Logger logger = LoggerFactory.getLogger(SubscriptionPublisherProducer.class);
 
-    private ConcurrentMap<Class<?>, SubscriptionPublisher> subscriptionPublishers = Maps.newConcurrentMap();
+    private ConcurrentMap<Class<?>, SubscriptionPublisher> subscriptionPublishers = new ConcurrentHashMap<>();
 
     @Produces
     @io.joynr.jeeintegration.api.SubscriptionPublisher

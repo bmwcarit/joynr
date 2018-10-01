@@ -63,7 +63,7 @@ public class EchoProviderApplication extends AbstractJoynrApplication {
             joynrApplication.shutdown();
         } catch (Exception exception) {
             System.err.println(exception.getMessage());
-            System.exit(-1);
+            System.exit(1);
         }
     }
 

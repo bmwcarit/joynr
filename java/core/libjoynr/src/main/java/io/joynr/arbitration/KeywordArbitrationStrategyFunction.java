@@ -18,11 +18,11 @@
  */
 package io.joynr.arbitration;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
-import com.google.common.collect.Sets;
 
 import joynr.types.CustomParameter;
 import joynr.types.DiscoveryEntryWithMetaInfo;
@@ -47,6 +47,7 @@ public class KeywordArbitrationStrategyFunction extends ArbitrationStrategyFunct
             }
         }
 
-        return capabilityWithKeyword == null ? null : Sets.newHashSet(capabilityWithKeyword);
+        return capabilityWithKeyword == null ? null
+                : new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(capabilityWithKeyword));
     }
 }

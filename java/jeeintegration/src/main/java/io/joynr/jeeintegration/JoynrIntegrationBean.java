@@ -38,8 +38,10 @@ import com.google.inject.Injector;
 import io.joynr.jeeintegration.api.ProviderDomain;
 import io.joynr.jeeintegration.api.ProviderQosFactory;
 import io.joynr.jeeintegration.api.ServiceProvider;
+import io.joynr.ProvidesJoynrTypesInfo;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.ShutdownNotifier;
+import io.joynr.util.AnnotationUtil;
 import joynr.types.ProviderQos;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,6 +63,8 @@ public class JoynrIntegrationBean {
 
     private ServiceProviderDiscovery serviceProviderDiscovery;
 
+    private CallbackHandlerDiscovery callbackHandlerDiscovery;
+
     private Set<Object> registeredProviders = new HashSet<>();
 
     private JoynrRuntime joynrRuntime;
@@ -73,10 +77,12 @@ public class JoynrIntegrationBean {
     @Inject
     public JoynrIntegrationBean(BeanManager beanManager,
                                 JoynrRuntimeFactory joynrRuntimeFactory,
-                                ServiceProviderDiscovery serviceProviderDiscovery) {
+                                ServiceProviderDiscovery serviceProviderDiscovery,
+                                CallbackHandlerDiscovery callbackHandlerDiscovery) {
         this.beanManager = beanManager;
         this.joynrRuntimeFactory = joynrRuntimeFactory;
         this.serviceProviderDiscovery = serviceProviderDiscovery;
+        this.callbackHandlerDiscovery = callbackHandlerDiscovery;
     }
 
     @PostConstruct
@@ -85,6 +91,13 @@ public class JoynrIntegrationBean {
         Set<Bean<?>> serviceProviderBeans = serviceProviderDiscovery.findServiceProviderBeans();
         joynrRuntime = joynrRuntimeFactory.create(getServiceProviderInterfaceClasses(serviceProviderBeans));
         registerProviders(serviceProviderBeans, joynrRuntime);
+        registerCallbackHandlers(joynrRuntime);
+    }
+
+    private void registerCallbackHandlers(JoynrRuntime joynrRuntime) {
+        callbackHandlerDiscovery.forEach(callbackBean -> {
+            joynrRuntime.registerStatelessAsyncCallback(callbackBean);
+        });
     }
 
     private void registerProviders(Set<Bean<?>> serviceProviderBeans, JoynrRuntime runtime) {
@@ -113,7 +126,15 @@ public class JoynrIntegrationBean {
             if (providerQos == null) {
                 providerQos = new ProviderQos();
             }
-            runtime.registerProvider(getDomainForProvider(beanClass), provider, providerQos);
+
+            ProvidesJoynrTypesInfo providesJoynrTypesInfoAnnotation = AnnotationUtil.getAnnotation(providerService.serviceInterface(),
+                                                                                                   ProvidesJoynrTypesInfo.class);
+
+            runtime.registerProvider(getDomainForProvider(beanClass),
+                                     provider,
+                                     providerQos,
+                                     false,
+                                     providesJoynrTypesInfoAnnotation.interfaceClass());
             registeredProviders.add(provider);
         }
     }

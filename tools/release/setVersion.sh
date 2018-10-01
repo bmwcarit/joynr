@@ -73,12 +73,20 @@ tests/system-integration-test/docker/onboard/joynr-without-test.spec
 	mvn versions:commit
 }
 
-echo "prepare git patch"
+if [[ $newVersion != *"SNAPSHOT"* ]]; then
+  echo "It looks like you are about to release a new joynr version: check release notes"
+  releaseNotesOK=$(grep -cE "# joynr $newVersion$" wiki/ReleaseNotes.md)
+  if (($releaseNotesOK = 0)); then
+    echo "ERROR: Release notes do not contain any section for $newVersion. Fix release notes."
+    exit -1
+  fi
+fi
 
+echo "prepare git patch"
 countFoundOldVersions=$(git grep -F ${oldVersion} * | grep -v ReleaseNotes | wc -l)
 if (($countFoundOldVersions > 0)); then
     echo "WARNING: a grep over your workspace emphasised that the oldVersion is still present in some of your resources. Please check manually!"
     git grep -F ${oldVersion} * | grep -v ReleaseNotes
 else
-    git add -A && git commit -m "[Release] set version to $newVersion"
+    git add -u && git commit -m "[Release] set version to $newVersion"
 fi

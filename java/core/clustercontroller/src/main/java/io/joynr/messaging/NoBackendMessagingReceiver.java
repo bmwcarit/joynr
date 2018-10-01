@@ -18,9 +18,9 @@
  */
 package io.joynr.messaging;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
-import com.google.common.util.concurrent.Futures;
 import com.google.inject.Singleton;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
@@ -69,6 +69,6 @@ public class NoBackendMessagingReceiver implements MessageReceiver {
     @SuppressFBWarnings(value = "NP_NONNULL_PARAM_VIOLATION", justification = "Deal with NullableDecl & Java 8")
     public Future<Void> start(MessageArrivedListener messageArrivedListener,
                               ReceiverStatusListener... statusListeners) {
-        return Futures.immediateFuture(null);
+        return CompletableFuture.completedFuture(null);
     }
 }

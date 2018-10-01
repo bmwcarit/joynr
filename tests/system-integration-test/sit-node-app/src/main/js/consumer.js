@@ -36,17 +36,17 @@ function log (message) {
 
 if (process.env.domain === undefined) {
     log("please pass a domain as argument");
-    process.exit(-1);
+    process.exit(1);
 }
 
 if (process.env.cchost === undefined) {
     log("please pass cchost as argument");
-    process.exit(-1);
+    process.exit(1);
 }
 
 if (process.env.ccport === undefined) {
     log("please pass ccport as argument");
-    process.exit(-1);
+    process.exit(1);
 }
 
 

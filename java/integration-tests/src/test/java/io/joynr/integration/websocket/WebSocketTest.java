@@ -18,14 +18,35 @@
  */
 package io.joynr.integration.websocket;
 
+import static org.mockito.AdditionalAnswers.returnsFirstArg;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.argThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentMatcher;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Sets;
 
 import io.joynr.dispatching.MutableMessageFactory;
 import io.joynr.messaging.FailureAction;
@@ -46,28 +67,6 @@ import joynr.system.RoutingTypes.WebSocketAddress;
 import joynr.system.RoutingTypes.WebSocketClientAddress;
 import joynr.system.RoutingTypes.WebSocketProtocol;
 import joynr.test.JoynrTestLoggingRule;
-
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentMatcher;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.runners.MockitoJUnitRunner;
-import org.mockito.stubbing.Answer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.argThat;
-import static org.mockito.AdditionalAnswers.returnsFirstArg;
 
 @RunWith(MockitoJUnitRunner.class)
 public class WebSocketTest {
@@ -177,7 +176,10 @@ public class WebSocketTest {
         int maxMessageSize = 100000;
         long reconnectDelay = 100;
         long websocketIdleTimeout = millis - 100;
-        configure(maxMessageSize, reconnectDelay, websocketIdleTimeout, Sets.newHashSet(processorMock));
+        configure(maxMessageSize,
+                  reconnectDelay,
+                  websocketIdleTimeout,
+                  new HashSet<JoynrMessageProcessor>(Arrays.asList(processorMock)));
         sendMessage();
         Thread.sleep(millis);
 

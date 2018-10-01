@@ -59,6 +59,18 @@ function freeze(joynr, capabilitiesWritable) {
     });
 }
 
+function wrapRuntime(joynr, runtime) {
+    Object.keys(runtime).forEach(key => {
+        if (!key.startsWith("_")) {
+            if (typeof runtime[key] === "function") {
+                joynr[key] = (...args) => runtime[key](...args);
+            } else {
+                joynr[key] = runtime[key];
+            }
+        }
+    });
+}
+
 const GenerationUtil = require("./joynr/util/GenerationUtil");
 
 /**
@@ -77,14 +89,13 @@ const joynr = {
     load: function load(provisioning, capabilitiesWritable) {
         joynr.loaded = true;
         const joynrapi = require("./libjoynr-deps");
-        const runtime = new joynrapi.Runtime(provisioning);
+        const Runtime = require("./joynr/Runtime");
+        const runtime = new Runtime();
         return runtime
-            .start()
+            .start(provisioning)
             .then(() => {
                 populateJoynrApi(joynr, joynrapi);
-                //remove Runtime, as it is not required for the end user
-                delete joynr.Runtime;
-                populateJoynrApi(joynr, runtime);
+                wrapRuntime(joynr, runtime);
                 freeze(joynr, capabilitiesWritable);
 
                 // make sure the runtime is shutdown when process.exit(...)

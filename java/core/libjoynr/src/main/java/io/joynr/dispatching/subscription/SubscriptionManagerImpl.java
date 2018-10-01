@@ -23,22 +23,26 @@ import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingQos;
@@ -60,9 +64,6 @@ import joynr.SubscriptionReply;
 import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
 import joynr.types.DiscoveryEntryWithMetaInfo;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Singleton
 public class SubscriptionManagerImpl implements SubscriptionManager, ShutdownListener {
@@ -93,16 +94,16 @@ public class SubscriptionManagerImpl implements SubscriptionManager, ShutdownLis
                                    ShutdownNotifier shutdownNotifier) {
         this.cleanupScheduler = cleanupScheduler;
         this.dispatcher = dispatcher;
-        this.subscriptionListenerDirectory = Maps.newConcurrentMap();
-        this.broadcastSubscriptionListenerDirectory = Maps.newConcurrentMap();
-        this.multicastSubscribersDirectory = Maps.newConcurrentMap();
-        this.subscriptionStates = Maps.newConcurrentMap();
-        this.missedPublicationTimers = Maps.newConcurrentMap();
-        this.subscriptionEndFutures = Maps.newConcurrentMap();
-        this.subscriptionTypes = Maps.newConcurrentMap();
-        this.unicastBroadcastTypes = Maps.newConcurrentMap();
-        this.multicastBroadcastTypes = Maps.newConcurrentMap();
-        this.subscriptionFutureMap = Maps.newConcurrentMap();
+        this.subscriptionListenerDirectory = new ConcurrentHashMap<>();
+        this.broadcastSubscriptionListenerDirectory = new ConcurrentHashMap<>();
+        this.multicastSubscribersDirectory = new ConcurrentHashMap<>();
+        this.subscriptionStates = new ConcurrentHashMap<>();
+        this.missedPublicationTimers = new ConcurrentHashMap<>();
+        this.subscriptionEndFutures = new ConcurrentHashMap<>();
+        this.subscriptionTypes = new ConcurrentHashMap<>();
+        this.unicastBroadcastTypes = new ConcurrentHashMap<>();
+        this.multicastBroadcastTypes = new ConcurrentHashMap<>();
+        this.subscriptionFutureMap = new ConcurrentHashMap<>();
         this.multicastWildcardRegexFactory = multicastWildcardRegexFactory;
         shutdownNotifier.registerForShutdown(this);
     }
@@ -261,7 +262,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager, ShutdownLis
                                          Pattern multicastIdPattern = multicastWildcardRegexFactory.createIdPattern(multicastId);
                                          if (!multicastSubscribersDirectory.containsKey(multicastIdPattern)) {
                                              multicastSubscribersDirectory.putIfAbsent(multicastIdPattern,
-                                                                                       Sets.<String> newHashSet());
+                                                                                       new HashSet<String>());
                                          }
                                          multicastSubscribersDirectory.get(multicastIdPattern).add(subscriptionId);
                                          multicastBroadcastTypes.putIfAbsent(multicastIdPattern,

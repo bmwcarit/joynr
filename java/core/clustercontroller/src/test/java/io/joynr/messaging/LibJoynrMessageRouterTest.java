@@ -18,14 +18,14 @@
  */
 package io.joynr.messaging;
 
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.eq;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.UUID;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -36,19 +36,19 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
-
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import io.joynr.common.ExpiryDate;
 import io.joynr.messaging.inprocess.InProcessAddress;
+import io.joynr.messaging.persistence.MessagePersister;
 import io.joynr.messaging.routing.AddressManager;
 import io.joynr.messaging.routing.DelayableImmutableMessage;
 import io.joynr.messaging.routing.LibJoynrMessageRouter;
+import io.joynr.messaging.routing.MessageQueue;
 import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.messaging.routing.MulticastReceiverRegistry;
 import io.joynr.messaging.routing.RoutingTable;
+import io.joynr.runtime.JoynrThreadFactory;
 import io.joynr.runtime.ShutdownNotifier;
 import io.joynr.statusmetrics.StatusReceiver;
 import joynr.ImmutableMessage;
@@ -85,8 +85,10 @@ public class LibJoynrMessageRouterTest {
     private ImmutableMessage message;
     @Mock
     private ShutdownNotifier shutdownNotifier;
+    @Mock
+    private MessagePersister messagePersisterMock;
 
-    private DelayQueue<DelayableImmutableMessage> messageQueue = new DelayQueue<>();
+    private MessageQueue messageQueue;
     private LibJoynrMessageRouter messageRouter;
     private String unknownParticipantId = "unknownParticipantId";
     private Long sendMsgRetryIntervalMs = 10L;
@@ -109,6 +111,11 @@ public class LibJoynrMessageRouterTest {
         when(messageRouterParent.getReplyToAddress()).thenReturn(globalAddress);
         when(messagingStubFactory.create(any(Address.class))).thenReturn(messagingStub);
         when(parentAddress.getChannelId()).thenReturn("LibJoynrMessageRouterTestChannel");
+
+        messageQueue = new MessageQueue(new DelayQueue<DelayableImmutableMessage>(),
+                                        new MessageQueue.MaxTimeoutHolder(),
+                                        UUID.randomUUID().toString(),
+                                        messagePersisterMock);
 
         messageRouter = new LibJoynrMessageRouter(routingTable,
                                                   incomingAddress,
@@ -158,8 +165,7 @@ public class LibJoynrMessageRouterTest {
     }
 
     ScheduledExecutorService provideMessageSchedulerThreadPoolExecutor() {
-        ThreadFactory schedulerNamedThreadFactory = new ThreadFactoryBuilder().setNameFormat("joynr.MessageScheduler-scheduler-%d")
-                                                                              .build();
+        ThreadFactory schedulerNamedThreadFactory = new JoynrThreadFactory("joynr.MessageScheduler-scheduler");
         ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(2, schedulerNamedThreadFactory);
         scheduler.setKeepAliveTime(100, TimeUnit.SECONDS);
         scheduler.allowCoreThreadTimeOut(true);

@@ -18,12 +18,12 @@
  */
 package io.joynr.systemintegrationtest.jee;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
-
-import com.google.common.collect.Sets;
 
 /**
  * REST application which controls the REST endpoint used to
@@ -34,7 +34,7 @@ public class ConsumerRestApplication extends Application {
 
     @Override
     public Set<Class<?>> getClasses() {
-        return Sets.newHashSet(ConsumerRestEndpoint.class);
+        return new HashSet<Class<?>>(Arrays.asList(ConsumerRestEndpoint.class));
     }
 
 }

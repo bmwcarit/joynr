@@ -20,6 +20,8 @@ package io.joynr.integration;
 
 import static org.junit.Assert.fail;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.Semaphore;
@@ -34,7 +36,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Sets;
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
 
@@ -170,8 +171,8 @@ public class ProxyErrorsTest {
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void testMultiDomainNoCompatibleProviderFound() throws Exception {
 
-        ProxyBuilder<ProxyErrorsTest.TestProxyWrongVersion> proxyBuilder = runtime.getProxyBuilder(Sets.newHashSet(domain,
-                                                                                                                   domain2),
+        ProxyBuilder<ProxyErrorsTest.TestProxyWrongVersion> proxyBuilder = runtime.getProxyBuilder(new HashSet<String>(Arrays.asList(domain,
+                                                                                                                                     domain2)),
                                                                                                    ProxyErrorsTest.TestProxyWrongVersion.class);
         TestProxyWrongVersion proxy = proxyBuilder.setDiscoveryQos(discoveryQos).build(callback);
 

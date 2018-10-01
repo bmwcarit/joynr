@@ -20,16 +20,12 @@ package io.joynr.messaging.inprocess;
 
 import javax.inject.Inject;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessagingStub;
 import io.joynr.messaging.SuccessAction;
 import joynr.ImmutableMessage;
 
 public class InProcessMessagingStub implements IMessagingStub {
-    private static final Logger LOG = LoggerFactory.getLogger(InProcessMessagingStub.class);
 
     private final InProcessMessagingSkeleton skeleton;
 

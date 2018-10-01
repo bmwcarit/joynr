@@ -22,6 +22,7 @@ import java.util.Set;
 
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
+import io.joynr.proxy.StatelessAsyncCallback;
 import io.joynr.runtime.JoynrRuntime;
 import joynr.types.ProviderQos;
 
@@ -40,13 +41,31 @@ public class TestRuntime implements JoynrRuntime {
     }
 
     @Override
+    public Future<Void> registerProvider(String domain,
+                                         Object provider,
+                                         ProviderQos providerQos,
+                                         boolean awaitGlobalRegistration,
+                                         final Class<?> interfaceClass) {
+        return null;
+    }
+
+    @Override
     public void unregisterProvider(String domain, Object provider) {
+
+    }
+
+    @Override
+    public void registerStatelessAsyncCallback(StatelessAsyncCallback statelessAsyncCallback) {
 
     }
 
     @Override
     public <T> ProxyBuilder<T> getProxyBuilder(String domain, Class<T> interfaceClass) {
         return null;
+    }
+
+    @Override
+    public void prepareForShutdown() {
     }
 
     @Override

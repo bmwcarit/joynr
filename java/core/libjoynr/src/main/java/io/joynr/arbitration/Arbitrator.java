@@ -31,8 +31,6 @@ import java.util.concurrent.Semaphore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Sets;
-
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrShutdownException;
@@ -144,7 +142,7 @@ public class Arbitrator {
         this.arbitrationListener = arbitrationListener;
         // listener is now ready to receive arbitration result/status
         arbitrationListenerSemaphore.release();
-        if (arbitrationStatus == ArbitrationStatus.ArbitrationSuccesful) {
+        if (arbitrationStatus == ArbitrationStatus.ArbitrationSuccessful) {
             arbitrationFinished(arbitrationStatus, arbitrationResult);
         }
     }
@@ -316,7 +314,7 @@ public class Arbitrator {
                 logger.trace("Selected capabilities: {}", selectedCapabilities);
                 if (selectedCapabilities != null && !selectedCapabilities.isEmpty()) {
                     arbitrationResult.setDiscoveryEntries(selectedCapabilities);
-                    arbitrationFinished(ArbitrationStatus.ArbitrationSuccesful, arbitrationResult);
+                    arbitrationFinished(ArbitrationStatus.ArbitrationSuccessful, arbitrationResult);
                 } else {
                     arbitrationFailed();
                 }
@@ -358,7 +356,7 @@ public class Arbitrator {
                     }
                 }
             } else {
-                discoveryEntriesSet = Sets.newHashSet(discoveryEntries);
+                discoveryEntriesSet = new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(discoveryEntries));
             }
             discoveryEntriesSet = discoveryEntryVersionFilter.filter(interfaceVersion,
                                                                      discoveryEntriesSet,

@@ -219,43 +219,6 @@ class JSTypeUtil extends AbstractTypeUtil {
 		"Array.<" + datatype.jsdocTypeName + ">";
 	}
 
-	// Convert a data type declaration into a string giving the typename
-	def String getJavascriptTypeName(FTypedElement element) {
-		if (isArray(element)) {
-			return "Array"
-		}
-		return element.type.javascriptTypeName
-	}
-
-	def String getJavascriptTypeName(FTypeRef datatypeRef) {
-		if (datatypeRef.isTypeDef) {
-			getJavascriptTypeName((datatypeRef.derived as FTypeDef).actualType)
-		} else if (datatypeRef.complex) {
-			getJoynrTypeName(datatypeRef.derived)
-		} else {
-			getJavascriptTypeName(datatypeRef.getPrimitive)
-		}
-	}
-
-	def getJavascriptTypeName(FBasicTypeId datatype) {
-		switch (datatype){
-			case FBasicTypeId::STRING: return "string"
-			case FBasicTypeId::INT8: return "number"
-			case FBasicTypeId::UINT8: return "number"
-			case FBasicTypeId::INT16: return "number"
-			case FBasicTypeId::UINT16: return "number"
-			case FBasicTypeId::INT32: return "number"
-			case FBasicTypeId::UINT32: return "number"
-			case FBasicTypeId::INT64: return "number"
-			case FBasicTypeId::UINT64: return "number"
-			case FBasicTypeId::BOOLEAN: return "boolean"
-			case FBasicTypeId::FLOAT: return "number"
-			case FBasicTypeId::DOUBLE: return "number"
-			case FBasicTypeId::BYTE_BUFFER:return "Array"
-			default: throw new UnsupportedOperationException("Unsupported basic type: " + datatype.joynrName)
-			}
-	}
-
 	def appendJSDocSummaryAndWriteSeeAndDescription(FModelElement element, String prefix) '''
 		«IF element.comment !== null»
 			«FOR comment : element.comment.elements»

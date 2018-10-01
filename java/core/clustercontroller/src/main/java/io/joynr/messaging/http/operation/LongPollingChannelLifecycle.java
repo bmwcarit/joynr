@@ -24,6 +24,7 @@ import io.joynr.messaging.MessageArrivedListener;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingSettings;
 import io.joynr.messaging.ReceiverStatusListener;
+import io.joynr.runtime.JoynrThreadFactory;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -48,7 +49,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -71,7 +71,7 @@ public class LongPollingChannelLifecycle {
     @Inject
     private MessagingSettings settings;
 
-    ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("joynr.LongPoll-%d").build();
+    ThreadFactory namedThreadFactory = new JoynrThreadFactory("joynr.LongPoll");
     private ExecutorService channelMonitorExecutorService = Executors.newFixedThreadPool(1, namedThreadFactory);
     private LongPollChannel longPolling;
     private final ObjectMapper objectMapper;

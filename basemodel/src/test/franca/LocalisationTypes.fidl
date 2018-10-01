@@ -71,4 +71,9 @@ typeCollection Localisation {
 		Int32 x
 		Int32 y
 	}
+
+	enumeration GetTripErrors {
+		UNKNOWN_TRIP,
+		NO_MATCHING_TRIP_FOUND
+	}
 }

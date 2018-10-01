@@ -18,15 +18,15 @@
  */
 package io.joynr.capabilities;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import com.google.common.collect.Lists;
-import joynr.types.DiscoveryEntry;
 import joynr.system.DiscoveryAbstractProvider;
+import joynr.types.DiscoveryEntry;
 
 public abstract class AbstractLocalCapabilitiesDirectory extends DiscoveryAbstractProvider
         implements LocalCapabilitiesDirectory {
-    List<CapabilityListener> capabilityListeners = Lists.newArrayList();
+    List<CapabilityListener> capabilityListeners = new ArrayList<>();
 
     @Override
     public void addCapabilityListener(CapabilityListener listener) {

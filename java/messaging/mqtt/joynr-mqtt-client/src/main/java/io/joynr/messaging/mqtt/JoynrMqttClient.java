@@ -34,4 +34,11 @@ public interface JoynrMqttClient {
 
     public void unsubscribe(String topic);
 
+    /**
+     * Can be used to determine whether {@link #shutdown()} has already been called on this client.
+     *
+     * @return <code>true</code> if {@link #shutdown()} has already been called, otherwise <code>false</code>.
+     */
+    boolean isShutdown();
+
 }

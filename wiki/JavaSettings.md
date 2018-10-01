@@ -410,10 +410,19 @@ If a joynr application is deployed into a servlet on an application server, the 
 used to register provider with the global capabilities and channel URL directories. Hence, this must
 be a public host that is directly addressable from all joynr endpoints.
 
-* **REQUIRED if using the JEE integration**
+* **REQUIRED if using the JEE integration with HTTP based communication**
 * **Type**: String
 * **User property**: `joynr.servlet.hostpath`
 * **Default value**: `http://localhost:8080`
+
+### `PROPERTY_SERVLET_CONTEXT_ROOT`
+If a joynr application is deployed into a servlet on an application server, the servlet context root is
+becoming part of the generated endpoint URLs
+
+* **REQUIRED if using the JEE integration with HTTP based communication**
+* **Type**: String
+* **User property**: `joynr.servlet.context.root`
+* **Default value**: `/defaultContextRoot`
 
 ### `PROPERTY_SERVLET_SHUTDOWN_TIMEOUT`
 During joynr shutdown, providers must be removed from the global capabilities directory.
@@ -436,6 +445,30 @@ If set to true, the joynr message receiver will not switch to long polling for d
 * **User property**: `joynr.servlet.skiplongpollderegistration`
 * **Default value**: `false`
 
+
+## MessageQueue
+
+### `PROPERTY_MESSAGE_QUEUE_SHUTDOWN_MAX_TIMEOUT`
+
+The maximum number of milliseconds to wait for the message queue to
+drain on `prepareForShutdown` before timing out.
+
+* **OPTIONAL**
+* **Type**: int
+* **User property**: `io.joynr.messaging.queue.shutdown.timeout`
+* **Default value**: `5000`
+
+### `MESSAGE_QUEUE_ID`
+
+The unique ID of the MessageQueue instance for the joynr runtime. It is used when calling the
+methods in `MessagePersister` in order to identify which queue is reading or writing the messages.
+
+* **OPTIONAL**
+* **Type**: String
+* **User property**: `io.joynr.messaging.queue.id`
+* **Default value**: A random UUID or a persisted value in the joynr properties
+
+
 ## MqttModule
 
 ### `PROPERTY_KEY_MQTT_BROKER_URI`
@@ -447,6 +480,22 @@ The URI of the MQTT broker backend service the cluster controller connects to.
 * **REQUIRED if using the MQTTModule**
 * **Type**: String
 * **User property**: `joynr.messaging.mqtt.brokeruri`
+* **Default value**:
+
+### `PROPERTY_KEY_MQTT_USERNAME`
+The username the cluster controller uses to authenticate against the MQTT broker backend service.
+
+* **OPTIONAL**
+* **Type**: String
+* **User property**: `joynr.messaging.mqtt.username`
+* **Default value**:
+
+### `PROPERTY_KEY_MQTT_PASSWORD`
+The password the cluster controller uses to authenticate against the MQTT broker backend service.
+
+* **REQUIRED if using the MQTTModule and PROPERTY_KEY_MQTT_USERNAME is configured with a non-empty value**
+* **Type**: String
+* **User property**: `joynr.messaging.mqtt.password`
 * **Default value**:
 
 ### `PROPERTY_KEY_MQTT_KEYSTORE_PATH`
@@ -548,6 +597,8 @@ subscribers to MQTT topics. That is, only one subscriber receives a message, rat
 subscribers. This feature can be used to load balance incoming messages on MQTT. This feature
 is useful if you want to run a cluster of JEE nodes while using only MQTT for communication
 (an alternative is to use the HTTP bridge configuration).
+Make sure to use the same fixed participant IDs for the providers in all nodes of the cluster. See
+[Joynr Java Developer Guide](java.md#register-provider-with-fixed-%28custom%29-participantId).
 
 * **OPTIONAL**
 * **Type**: Boolean
@@ -722,6 +773,21 @@ the value of this property.
 * **User property**: `joynr.discovery.provider.defaultexpirytimems`
 * **Unit**: milliseconds
 * **Default value**: `3628800000 (6 weeks)`
+
+
+## ShutdownNotifier
+
+### `PROPERTY_PREPARE_FOR_SHUTDOWN`
+Allows you to specify the number of seconds that `ShutdownNotifier#prepareForShutdown`
+will block before timing out and returning control to the user if the system isn't able
+to prepare for shutdown in time.
+
+* **OPTIONAL**
+* **Type**: int
+* **User property**: `joynr.runtime.prepareforshutdowntimeout`
+* **Unit**: seconds
+* **Default value**: 5
+
 
 ## JEE Integration
 

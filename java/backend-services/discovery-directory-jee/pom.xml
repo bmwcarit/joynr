@@ -28,20 +28,14 @@
 	<parent>
 		<groupId>io.joynr.java</groupId>
 		<artifactId>backend-services</artifactId>
-		<version>1.5.0</version>
+		<version>1.6.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
-
-	<properties>
-		<maven.compiler.source>1.8</maven.compiler.source>
-		<maven.compiler.target>1.8</maven.compiler.target>
-	</properties>
 
 	<dependencies>
 		<dependency>
 			<groupId>javax</groupId>
 			<artifactId>javaee-api</artifactId>
-			<version>7.0</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
@@ -82,7 +76,6 @@
 		<dependency>
 			<groupId>org.jboss.arquillian.container</groupId>
 			<artifactId>arquillian-container-test-api</artifactId>
-			<version>1.1.15.Final</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -115,7 +108,6 @@
 		<dependency>
 			<groupId>org.jboss.shrinkwrap.resolver</groupId>
 			<artifactId>shrinkwrap-resolver-impl-maven</artifactId>
-			<version>2.2.6</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

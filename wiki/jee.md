@@ -56,7 +56,16 @@ implement any interfaces) and provide methods annotated with:
 Additionally, the method must be annotated with
 `javax.enterprise.inject.Produces`.
 
-#### Manadatory Properties
+#### Mandatory Properties
+
+* `MessagingpropertyKeys.CHANNELID` - this property should be set to the
+application's unique DNS entry, e.g. `myapp.mycompany.net`. This is important,
+so that all nodes of the cluster are identified by the same channel ID.
+* `MqttModule.PROPERTY_KEY_MQTT_BROKER_URI` - use this to configure the URL for
+connecting to the MQTT broker being used for communication.
+E.g. `tcp://mqtt.mycompany.net:1883`.
+
+#### Conditionally required Properties in case of HTTP based communication
 
 * `MessagingPropertyKeys.PROPERTY_SERVLET_CONTEXT_ROOT` - this property needs
 to be set to the context root of your deployed application, with `/messaging`
@@ -64,12 +73,6 @@ added to the end. E.g.: `/myapp/root/messaging`.
 * `MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH` - this property needs to
 be set to the URL under which the application server you are running on can be
 reached, e.g. `https://myapp.mycompany.net`.
-* `MessagingpropertyKeys.CHANNELID` - this property should be set to the
-application's unique DNS entry, e.g. `myapp.mycompany.net`. This is important,
-so that all nodes of the cluster are identified by the same channel ID.
-* `MqttModule.PROPERTY_KEY_MQTT_BROKER_URI` - use this to configure the URL for
-connecting to the MQTT broker being used for communication.
-E.g. `tcp://mqtt.mycompany.net:1883`.
 
 #### Optional Properties
 
@@ -148,8 +151,23 @@ For example for Glassfish/Payara:
 
 Note the `--corepoolsize=100` option. The default will only create one thread, which can lead to
 blocking. 100 threads should be sufficient for quite a few joynr applications.
+
 Depending on your load, you can experiment with different values. Use higher values to enable more
 concurrency when communicating joynr messages.
+
+As a rule of thumb consider
+
+```
+corepoolsize =
+    (
+        joynr.messaging.maximumParallelSends +
+        (joynr.messaging.mqtt.separateconnections == true) ? 5 : 0 +
+        10 +
+        any number of additional threads the application needs internally
+    ) * numberOfJoynrRuntimes per container
+```
+
+Typically there is one joynr runtime per deployed application (WAR file).
 
 ### Generating the interfaces
 
@@ -351,6 +369,11 @@ running in vehicles or providers of other JEE applications), inject the
 obtain a reference to a proxy of the business interface, and call the
 relevant methods on it.
 
+The service locator utility offers methods for obtaining service proxies
+for the most common use cases, along with a proxy builder for specifying
+the meta data to use in building the proxy in a fluent API style. See the
+stateless async section below for an example of how the builder is used.
+
 For example, if we wanted to call the `MyService` provider as implemented
 in the above example:
 
@@ -383,6 +406,99 @@ __IMPORTANT__: if you intend to have your logic make multiple calls to the same
 provider, then you should locally cache the proxy instance returned by the
 ServiceLocator, as the operation of creating a proxy is expensive.
 
+#### Stateless Async
+
+If you want to call a service in a stateless fashion, that is any node in a cluster
+can handle the reply, then you need to provide a `@CallbackHandler` bean and
+request the `*StatelessAsync` instead of the `@Sync` interface from the
+`ServiceLocator`.
+
+The methods in the `*StatelessAsync` interface have a `MessageIdCallaback` as the
+last parameter, which is a consumer of a String value. This value is the unique
+ID of the request being sent out, and when the reply arrives, that same ID will
+accompany the result data as part of the `ReplyContext` passed in as last parameter.
+This way, your application can persist or otherwise share context information between
+nodes in a cluster, so that any node can process the replies.  
+__IMPORTANT__: it is not guaranteed that the message has actually left the system
+when the `MessageIdCallback` is called. It is possible that the message gets stuck
+in the lower layers due to, e.g., infrastructure issues. If the application persists
+data for the message IDs returned, it may also want to run periodic clean-up jobs
+to see if there are any stale entries due to messages not being transmitted
+successfully.
+
+The handling of the replies is done be a bean implementing the `*StatelessAsyncCallback`
+interface corresponding to the `*StatelessAsync` interface which is called for
+making the request, and which is additionally annotated with `@CallbackHandler`.  
+These are automatically discovered at startup time, and registered as stateless async
+callback handlers with the joynr runtime.
+
+In order to allow the same service to be called from multiple parts of an application
+in different ways, you must also provide a unique 'use case' name for each of the
+proxy / callback pairs.
+
+##### Example
+
+For a full example project, see
+[examples/stateless-async](../examples/stateless-async/README.md).
+
+The following are some code snippets to exemplify the usage of the stateless async
+API:
+
+	@Stateless
+	@CallbackHandler
+	public class MyServiceCallbackBean implements MyServiceStatelessAsyncCallback {
+
+		private final static String MY_USE_CASE = "get-stuff-done";
+
+		@Inject
+		private MyContextService myContextService;
+
+		@Override
+		public String getUseCase() {
+			return MY_USE_CASE;
+		}
+
+		// This method is called in response to receiving a reply for calls to the provider
+		// method 'myServiceMethod', and the reply context will contain the same message ID
+		// which the request was sent with. This is then used to retrieve some persisted
+		// context, which was created at the time of sending the request - potentially by
+		// a different node in the cluster.
+		@Override
+		public void myServiceMethodSuccess(String someParameter, ReplyContext replyContext) {
+			myContextService.handleReplyFor(replyContext.getMessageId(), someParameter);
+		}
+
+	}
+
+	@Singleton
+	public class MyServiceBean {
+
+		private MyServiceStatelessAsync proxy;
+
+		@Inject
+		private ServiceLocator serviceLocator;
+
+		@Inject
+		private MyContextService myContextService;
+
+		@PostConstruct
+		public void initialise() {
+			proxy = serviceLocator.builder(MyServiceStatelessAsync.class, "my-provider-domain")
+						.withUseCase(MyServiceCallbackBean.MY_USE_CASE)
+						.build();
+		}
+
+		// Called by the application to trigger a call to the provider, persisting some
+		// context information for the given messageId, which can then be retrieved in the
+		// callback handler and used to process the reply.
+		public void trigger() {
+			proxy.myServiceMethod("some input value",
+									messageId -> myContextService.persistContext(messageId)
+			);
+		}
+
+	}
+
 ## Clustering
 
 The joynr JEE integration currently supports two forms of enabling clustering.
@@ -411,6 +527,9 @@ to the correct node.
 Activate this mode with the
 `MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS`
 property.
+
+Make sure to use the same fixed participant IDs for the providers in all nodes of the cluster. See
+[Joynr Java Developer Guide](java.md#register-provider-with-fixed-%28custom%29-participantId).
 
 ### HTTP Bridge
 
@@ -555,6 +674,53 @@ public class MyMessageProcessor implements JoynrMessageProcessor {
 
 This would add the custom header `my-correlation-id` to the joynr message with a random
 UUID as the value.
+
+
+## Shutting Down
+
+If you want to perform a graceful shutdown of your application and the joynr runtime,
+then inject a reference to the `io.joynr.jeeintegration.api.JoynrShutdownService`
+into one of your beans, and call its `prepareForShutdown` and potentially the
+`shutdown` method thereafter.
+
+Calling `prepareForShutdown` gives the joynr runtime a chance to stop receiving
+incoming requests and work off any messages still in its queue. Thus your application
+logic may still be called from joynr after your call to `prepareForShutdown`. Be
+aware that if your logic requires to make calls via joynr in response to those received messages,
+you will only be able to call non-stateful methods such as fire-and-forget. Calls to stateful
+methods, such as those in the Sync interface, will result in a `JoynrIllegalStateException`
+being thrown.
+
+The `prepareForShutdown` method will block until either the joynr runtime has finished processing
+all messages in the queue or a timeout occurs. The timeout can be configured via the
+`PROPERTY_PREPARE_FOR_SHUTDOWN_TIMEOUT` property. See the
+[Java Configuration Guide](./JavaSettings.md) for details.
+
+In order to be able to stop receiving messages but still be able to send stateless messages out,
+you must use two MQTT connections, which can be activated using the
+`PROPERTY_KEY_MQTT_SEPARATE_CONNECTIONS` property. Again see the
+[Java Configuration Guide](./JavaSettings.md) for details.
+
+
+## <a name="message_persistence"></a> Message Persistence
+
+If you need to persist joynr messages in order to reduce the risk of message loss, you can provide a
+producer of @JoynrMessagePersister.
+
+For example:
+
+	@Produces
+	@JoynrMessagePersister
+	MessagePersister getMessagePersister() {
+		return new MessagePersister() {
+			@Override
+			...
+		};
+	}
+
+See the [Java Developer Guide](./java.md#message_persistence) for details on how to implement
+message persister and how it works in the joynr runtime.
+
 
 ## Example Application
 

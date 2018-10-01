@@ -17,29 +17,4 @@
  * #L%
  */
 
-(function() {
-    var setupProvisionedData = function(provisioning) {
-        return provisioning;
-    };
-
-    // AMD support
-    if (typeof define === 'function' && define.amd) {
-        define("joynr/provisioning/provisioning_libjoynr",
-            [
-                "joynr/provisioning/provisioning_root"
-            ],
-            function(
-                provisioning
-            ){
-            return setupProvisionedData(provisioning);
-        });
-    } else if (typeof exports !== 'undefined') {
-        var provisioning = require('./provisioning_root');
-        module.exports = setupProvisionedData(provisioning);
-    } else {
-        // expect that joynrprovisioning.common has been loaded before
-        window.joynr = window.joynr || {};
-        window.joynr.provisioning = window.joynr.provisioning || {};
-        setupProvisionedData(window.joynr.provisioning);
-    }
-}());
+module.exports = require("provisioning_root");

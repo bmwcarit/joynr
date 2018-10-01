@@ -57,12 +57,14 @@ public class ConnectorFactory {
      * @param fromParticipantId origin participant id
      * @param arbitrationResult result of arbitration
      * @param qosSettings QOS settings
+     * @param statelessAsyncParticipantId
      * @return connector object
      */
     @CheckForNull
     public ConnectorInvocationHandler create(final String fromParticipantId,
                                              final ArbitrationResult arbitrationResult,
-                                             final MessagingQos qosSettings) {
+                                             final MessagingQos qosSettings,
+                                             String statelessAsyncParticipantId) {
         // iterate through  arbitrationResult.getDiscoveryEntries()
         // check if there is at least one Globally visible
         // set isGloballyVisible = true. otherwise = false
@@ -77,7 +79,8 @@ public class ConnectorFactory {
         messageRouter.addNextHop(fromParticipantId, libjoynrMessagingAddress, isGloballyVisible);
         return joynrMessagingConnectorFactory.create(fromParticipantId,
                                                      arbitrationResult.getDiscoveryEntries(),
-                                                     qosSettings);
+                                                     qosSettings,
+                                                     statelessAsyncParticipantId);
 
     }
 }

@@ -28,6 +28,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 
@@ -42,7 +43,6 @@ import org.mockito.stubbing.Answer;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.google.common.collect.Sets;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -143,6 +143,8 @@ public class RpcStubbingTest {
     @Mock
     private RequestReplyManager requestReplyManager;
     @Mock
+    private StatelessAsyncIdCalculator statelessAsyncIdCalculator;
+    @Mock
     private TestProvider testMock;
 
     // private String domain;
@@ -157,8 +159,6 @@ public class RpcStubbingTest {
     private JoynrMessagingConnectorInvocationHandler connector;
 
     @Before
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "NP_NULL_PARAM_DEREF",
-                                                      justification = "NPE in test would fail test")
     public void setUp() throws JoynrCommunicationException, JoynrSendBufferFullException, JsonGenerationException,
                         JsonMappingException, IOException, JoynrMessageNotSentException {
         Deferred<GpsLocation> deferredGpsLocation = new Deferred<GpsLocation>();
@@ -239,10 +239,12 @@ public class RpcStubbingTest {
 
         JoynrMessagingConnectorFactory joynrMessagingConnectorFactory = new JoynrMessagingConnectorFactory(requestReplyManager,
                                                                                                            replyCallerDirectory,
-                                                                                                           subscriptionManager);
+                                                                                                           subscriptionManager,
+                                                                                                           statelessAsyncIdCalculator);
         connector = joynrMessagingConnectorFactory.create(fromParticipantId,
-                                                          Sets.newHashSet(toDiscoveryEntry),
-                                                          messagingQos);
+                                                          new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry)),
+                                                          messagingQos,
+                                                          null);
 
     }
 

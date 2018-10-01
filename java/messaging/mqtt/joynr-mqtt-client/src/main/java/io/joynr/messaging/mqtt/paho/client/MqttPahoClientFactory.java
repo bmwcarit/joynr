@@ -20,9 +20,7 @@ package io.joynr.messaging.mqtt.paho.client;
 
 import java.util.concurrent.ScheduledExecutorService;
 
-import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
-import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,8 +43,8 @@ public class MqttPahoClientFactory implements MqttClientFactory, ShutdownListene
 
     private static final Logger logger = LoggerFactory.getLogger(MqttPahoClientFactory.class);
     private MqttAddress ownAddress;
-    private JoynrMqttClient mqttClient1 = null; // primary connection
-    private JoynrMqttClient mqttClient2 = null; // secondary connection (sender) in case there are two connections
+    private JoynrMqttClient receivingMqttClient;
+    private JoynrMqttClient sendingMqttClient;
     private int reconnectSleepMs;
     private int keepAliveTimerSec;
     private int connectionTimeoutSec;
@@ -83,6 +81,14 @@ public class MqttPahoClientFactory implements MqttClientFactory, ShutdownListene
     @Named(MqttModule.PROPERTY_KEY_MQTT_TRUSTSTORE_PWD)
     private String trustStorePWD = "";
 
+    @Inject(optional = true)
+    @Named(MqttModule.PROPERTY_KEY_MQTT_USERNAME)
+    private String username = "";
+
+    @Inject(optional = true)
+    @Named(MqttModule.PROPERTY_KEY_MQTT_PASSWORD)
+    private String password = "";
+
     @Inject
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public MqttPahoClientFactory(@Named(MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
@@ -115,54 +121,57 @@ public class MqttPahoClientFactory implements MqttClientFactory, ShutdownListene
 
     @Override
     public synchronized JoynrMqttClient createReceiver() {
-        if (mqttClient1 == null) {
+        if (receivingMqttClient == null) {
             if (separateConnections) {
-                mqttClient1 = createInternal(true, "Sub");
+                receivingMqttClient = createInternal(true, "Sub");
             } else {
                 createCombinedClient();
             }
         }
-        return mqttClient1;
+        return receivingMqttClient;
     }
 
     @Override
     public synchronized JoynrMqttClient createSender() {
-        if (mqttClient2 == null) {
+        if (sendingMqttClient == null) {
             if (separateConnections) {
-                mqttClient2 = createInternal(false, "Pub");
+                sendingMqttClient = createInternal(false, "Pub");
             } else {
                 createCombinedClient();
             }
         }
-        return mqttClient2;
+        return sendingMqttClient;
+    }
+
+    @Override
+    public synchronized void prepareForShutdown() {
+        if (separateConnections) {
+            receivingMqttClient.shutdown();
+        }
     }
 
     @Override
     public synchronized void shutdown() {
-        mqttClient1.shutdown();
-        if (separateConnections) {
-            mqttClient2.shutdown();
+        sendingMqttClient.shutdown();
+        if (separateConnections && !receivingMqttClient.isShutdown()) {
+            receivingMqttClient.shutdown();
         }
     }
 
     private void createCombinedClient() {
-        mqttClient2 = createInternal(true, "");
-        mqttClient1 = mqttClient2;
+        sendingMqttClient = createInternal(true, "");
+        receivingMqttClient = sendingMqttClient;
     }
 
     private JoynrMqttClient createInternal(boolean isReceiver, String clientIdSuffix) {
 
         MqttPahoClient pahoClient = null;
         try {
-            logger.debug("Create Mqtt Client. Address: {}", ownAddress);
-
             String clientId = clientIdProvider.getClientId() + clientIdSuffix;
-            MqttClient mqttClient = new MqttClient(ownAddress.getBrokerUri(),
-                                                   clientId,
-                                                   new MemoryPersistence(),
-                                                   scheduledExecutorService);
             logger.info("Creating MQTT Paho client using MQTT client ID: {}", clientId);
-            pahoClient = new MqttPahoClient(mqttClient,
+            pahoClient = new MqttPahoClient(ownAddress,
+                                            clientId,
+                                            scheduledExecutorService,
                                             reconnectSleepMs,
                                             keepAliveTimerSec,
                                             connectionTimeoutSec,
@@ -178,6 +187,8 @@ public class MqttPahoClientFactory implements MqttClientFactory, ShutdownListene
                                             trustStoreType,
                                             keyStorePWD,
                                             trustStorePWD,
+                                            username,
+                                            password,
                                             mqttStatusReceiver);
         } catch (MqttException e) {
             logger.error("Create MqttClient failed", e);

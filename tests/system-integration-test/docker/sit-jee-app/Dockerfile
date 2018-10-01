@@ -3,10 +3,6 @@ FROM payaradocker/payaraserver:4.1.1.161.1
 COPY sit-jee-app.war /sit-jee-app.war
 COPY start-me-up.sh /start-me-up.sh
 
-ENV CHANNELURLDIRECTORYURL https://joynrbackend:8443/discovery/channels/discoverydirectory_channelid/
-ENV BOUNCEPROXYURL https://joynrbackend:8443/bounceproxy/
-ENV CAPABILITIESDIRECTORYURL https://joynrbackend:8443/discovery/channels/discoverydirectory_channelid/
-
 ENV PATH ${PATH}:/opt/payara41/glassfish/bin
 RUN echo 'AS_ADMIN_PASSWORD=glassfish\n\
 EOF\n' \

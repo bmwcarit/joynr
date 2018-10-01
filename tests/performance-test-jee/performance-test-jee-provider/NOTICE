@@ -17,16 +17,13 @@ under the License.
 
 This project has dependencies to:
   "Java Concurrency in Practice" book annotations under Creative Commons Attribution License
-  Animal Sniffer Annotations under MIT license
   AOP alliance under Public Domain
   Apache HttpClient under Apache License
   Apache HttpCore under Apache License
-  Checker Qual under GNU General Public License, version 2 (GPL2), with the classpath exception or The MIT License
   clustercontroller-inprocess-runtime under The Apache Software License, Version 2.0
   Commons Codec under The Apache Software License, Version 2.0
   Commons Lang under The Apache Software License, Version 2.0
   ehcache under The Apache Software License, Version 2.0
-  error-prone annotations under Apache 2.0
   FindBugs-Annotations under GNU Lesser Public License
   FindBugs-jsr305 under The Apache Software License, Version 2.0
   flatbuffers-java under Apache License V2.0
@@ -52,7 +49,6 @@ This project has dependencies to:
   io.joynr.performance.performance-test-jee:performance-test-jee-provider under The Apache Software License, Version 2.0
   io.joynr.smrf.java:smrf under The Apache Software License, Version 2.0
   io.joynr.smrf.java:smrf-api under The Apache Software License, Version 2.0
-  J2ObjC Annotations under The Apache Software License, Version 2.0
   Jackson module: JAXB-annotations under The Apache Software License, Version 2.0
   Jackson-annotations under The Apache Software License, Version 2.0
   Jackson-core under The Apache Software License, Version 2.0
@@ -68,4 +64,5 @@ This project has dependencies to:
   Logging under The Apache Software License, Version 2.0
   Reflections under WTFPL or The New BSD License
   SLF4J API Module under MIT License
+  SLF4J JDK14 Binding under MIT License
 

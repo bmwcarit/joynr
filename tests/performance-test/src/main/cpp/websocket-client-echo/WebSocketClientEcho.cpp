@@ -17,6 +17,7 @@
  * #L%
  */
 #include <boost/program_options.hpp>
+#include <cstdlib>
 #include <chrono>
 #include <functional>
 #include <future>
@@ -133,7 +134,7 @@ int main(int argc, char* argv[])
 
     if (vm.count("help")) {
         std::cout << desc << std::endl;
-        std::exit(0);
+        std::exit(EXIT_SUCCESS);
     }
 
     try {
@@ -167,7 +168,7 @@ int main(int argc, char* argv[])
 
                         if (errorCode) {
                             std::cout << "Failed to close connection";
-                            std::exit(-1);
+                            std::exit(EXIT_FAILURE);
                         }
                     }
                 });
@@ -176,7 +177,7 @@ int main(int argc, char* argv[])
 
         if (errorCode) {
             std::cout << "Failed to create connection: " << errorCode.message() << std::endl;
-            std::exit(-1);
+            std::exit(EXIT_FAILURE1);
         }
 
         client.connect(connection);
@@ -193,5 +194,5 @@ int main(int argc, char* argv[])
         std::cout << e.what() << std::endl;
     }
 
-    return 0;
+    return EXIT_SUCCESS;
 }

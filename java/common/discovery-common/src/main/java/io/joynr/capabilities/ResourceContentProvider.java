@@ -19,7 +19,6 @@
 package io.joynr.capabilities;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -27,8 +26,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
-import com.google.common.io.Files;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,9 +77,9 @@ public class ResourceContentProvider {
 
     private String readFromFileOrClasspath(String provisionedCapabilitiesJsonFilename) throws IOException {
         logger.trace("Attempting to read {} from file / classpath", provisionedCapabilitiesJsonFilename);
-        File file = new File(provisionedCapabilitiesJsonFilename);
-        if (file.exists()) {
-            return Files.toString(file, UTF8);
+        Path filePath = Paths.get(provisionedCapabilitiesJsonFilename);
+        if (Files.exists(filePath)) {
+            return new String(Files.readAllBytes(filePath), "UTF-8");
         } else {
             logger.trace("File {} doesn't exist on filesystem, attempting to read from classpath.",
                          provisionedCapabilitiesJsonFilename);

@@ -1129,7 +1129,7 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
                 .catch(() => {
                     return messageRouter.addNextHop("hopId", {}).then(fail);
                 })
-                .catch(done);
+                .catch(() => done());
         });
     }); // describe ChildMessageRouter
 }); // describe MessageRouter

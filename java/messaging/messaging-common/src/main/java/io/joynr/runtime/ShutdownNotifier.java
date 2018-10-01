@@ -18,9 +18,15 @@
  */
 package io.joynr.runtime;
 
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,8 +34,21 @@ import com.google.inject.Singleton;
 
 @Singleton
 public class ShutdownNotifier {
+
     private static final Logger logger = LoggerFactory.getLogger(ShutdownNotifier.class);
-    List<ShutdownListener> shutdownListeners = new LinkedList<>();
+
+    /**
+     * Timeout in seconds after which the {@link #prepareForShutdown()} will stop waiting for the operation to
+     * complete and return control to the caller. Note that this doesn't guarantee that the processes triggered
+     * by calling {@link #prepareForShutdown()} are also cancelled - they may still be running in the background.
+     */
+    private static final String PROPERTY_PREPARE_FOR_SHUTDOWN_TIMEOUT = "joynr.runtime.prepareforshutdowntimeout";
+
+    private List<ShutdownListener> shutdownListeners = new LinkedList<>();
+
+    @Inject(optional = true)
+    @Named(PROPERTY_PREPARE_FOR_SHUTDOWN_TIMEOUT)
+    private int prepareForShutdownTimeoutSec = 5;
 
     /**
      * register to have the listener's shutdown method called at system shutdown
@@ -44,7 +63,7 @@ public class ShutdownNotifier {
      * register to have the listener's shutdown method called at system shutdown
      * as one of the last listeners. It is a partial ordering and ensures that this
      * listener's shutdown will be called after all listeners registered using
-     * {@link registerForShutdown}.
+     * {@link #registerForShutdown(ShutdownListener)}.
      * NOTE: Listeners who manage some executor service should use this method.
      * @param shutdownListener
      */
@@ -52,14 +71,34 @@ public class ShutdownNotifier {
         shutdownListeners.add(shutdownListener);
     }
 
+    /**
+     * Will call {@link ShutdownListener#prepareForShutdown()} for each {@link #registerForShutdown(ShutdownListener) registered listener}
+     * asynchronously, and waiting a total of five seconds for all to complete or will then timeout without waiting.
+     */
+    public void prepareForShutdown() {
+        Collection<CompletableFuture<Void>> prepareShutdownFutures = shutdownListeners.stream()
+                                                                                      .map(shutdownListener -> CompletableFuture.runAsync(() -> shutdownListener.prepareForShutdown()))
+                                                                                      .collect(Collectors.toList());
+        try {
+            CompletableFuture.allOf(prepareShutdownFutures.toArray(new CompletableFuture[prepareShutdownFutures.size()]))
+                             .get(prepareForShutdownTimeoutSec, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            logger.error("Exception occurred while preparing shutdown.", e);
+        }
+    }
+
+    /**
+     * Calls {@link ShutdownListener#shutdown()} for each {@link #registerForShutdown(ShutdownListener) registered listener}
+     * synchronously in turn.
+     */
     public void shutdown() {
-        for (ShutdownListener shutdownListener : shutdownListeners) {
+        shutdownListeners.forEach(shutdownListener -> {
             logger.trace("shutting down {}", shutdownListener);
             try {
                 shutdownListener.shutdown();
             } catch (Exception e) {
                 logger.error("error shutting down {}: {}", shutdownListener, e.getMessage());
             }
-        }
+        });
     }
 }

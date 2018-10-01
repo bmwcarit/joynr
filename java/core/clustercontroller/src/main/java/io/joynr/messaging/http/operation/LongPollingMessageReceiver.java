@@ -23,19 +23,19 @@ import io.joynr.messaging.MessageArrivedListener;
 import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.MessagingSettings;
 import io.joynr.messaging.ReceiverStatusListener;
+import io.joynr.runtime.JoynrThreadFactory;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Stream;
+import java.util.Arrays;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.ObjectArrays;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.SettableFuture;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -50,7 +50,7 @@ public class LongPollingMessageReceiver implements MessageReceiver {
     public static final String MESSAGE_RECEIVER_THREADNAME_PREFIX = "MessageReceiverThread";
 
     private static final Logger logger = LoggerFactory.getLogger(LongPollingMessageReceiver.class);
-    ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("joynr.MessageReceiver-%d").build();
+    ThreadFactory namedThreadFactory = new JoynrThreadFactory("joynr.MessageReceiver");
 
     protected final MessagingSettings settings;
     // private final MessageSender messageSender;
@@ -82,12 +82,13 @@ public class LongPollingMessageReceiver implements MessageReceiver {
         }
 
         if (isStarted()) {
-            return Futures.immediateFailedFuture(new IllegalStateException("receiver is already started"));
+            CompletableFuture<Void> future = new CompletableFuture();
+            future.completeExceptionally(new IllegalStateException("receiver is already started"));
+            return future;
         }
 
-        final SettableFuture<Void> channelCreatedFuture = SettableFuture.create();
-        ReceiverStatusListener[] statusListeners = ObjectArrays.concat(new ReceiverStatusListener() {
-
+        final CompletableFuture<Void> channelCreatedFuture = new CompletableFuture();
+        ReceiverStatusListener listener = new ReceiverStatusListener() {
             @Override
             @SuppressFBWarnings(value = "NP_NONNULL_PARAM_VIOLATION",
                                 justification = "HandleNullableDeclWithFindBugsAndJava8")
@@ -98,17 +99,20 @@ public class LongPollingMessageReceiver implements MessageReceiver {
                         listener.channelCreated(channelMonitor.getChannelUrl());
                     }
                     // Signal that the channel is now created for anyone blocking on the future
-                    channelCreatedFuture.set(null);
+                    channelCreatedFuture.complete(null);
                 }
             }
 
             @Override
             // Shutdown the receiver if an exception is thrown
             public void receiverException(Throwable e) {
-                channelCreatedFuture.setException(e);
+                channelCreatedFuture.completeExceptionally(e);
                 channelMonitor.shutdown();
             }
-        }, receiverStatusListeners);
+        };
+        ReceiverStatusListener[] statusListeners = Stream.concat(Stream.of(listener),
+                                                                 Arrays.stream(receiverStatusListeners))
+                                                         .toArray(ReceiverStatusListener[]::new);
 
         channelMonitor.startLongPolling(messageListener, statusListeners);
         return channelCreatedFuture;

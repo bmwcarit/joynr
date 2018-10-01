@@ -635,7 +635,7 @@ const std::vector<std::string> partitions {partitionLevel1,
 std::shared_ptr<Future<std::string>> subscriptionIdFuture = proxy->subscribeTo<Broadcast>Broadcast(
     listener,
     qos,
-    // optional parameter for multicast subscriptions (subscriptions to non selective broadcasts)
+    // optional parameter for multicast subscriptions (subscriptions to non-selective broadcasts)
     partitions
 );
 
@@ -664,12 +664,12 @@ std::shared_ptr<Future<std::string>> subscriptionIdFuture = proxy.subscribeTo<Br
     subscriptionId,
     listener,
     qos,
-    // optional parameter for multicast subscriptions (subscriptions to non selective broadcasts)
+    // optional parameter for multicast subscriptions (subscriptions to non-selective broadcasts)
     partitions
 );
 ```
 
-## Subscribing to a broadcast with filter parameters
+## Subscribing to a selective broadcast, i.e. a broadcast with filter parameters
 
 Selective Broadcasts use filter logic implemented by the provider and filter parameters set by the
 consumer to send only those broadcasts from the provider to the consumer that pass the filter. The
@@ -1030,8 +1030,8 @@ The [partition syntax is explained in the multicast concept](../docs/multicast.m
 
 ## Selective (filtered) broadcasts
 In contrast to unfiltered broadcasts, to realize selective (filtered) broadcasts, the filter logic has to be implemented and registered by the provider. If multiple filters are registered on the same provider and broadcast, all filters are applied in a chain and the broadcast is only delivered if all filters in the chain return true.
-### The broadcast filter classes
 
+### The broadcast filter classes
 A broadcast filter class implements a filtering function called ```filter()``` which returns a boolean value indicating whether the broadcast should be delivered. The input parameters of the ```filter()``` method reflect the output values of the broadcast.
 
 ```cpp

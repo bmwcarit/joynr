@@ -18,32 +18,24 @@
  */
 package test.io.joynr.jeeintegration;
 
+import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 
-import com.google.common.collect.Sets;
-import io.joynr.arbitration.DiscoveryQos;
-import io.joynr.exceptions.JoynrCommunicationException;
-import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.exceptions.JoynrTimeoutException;
-import io.joynr.jeeintegration.JeeJoynrServiceLocator;
-import io.joynr.jeeintegration.JoynrIntegrationBean;
-import io.joynr.messaging.MessagingQos;
-import io.joynr.proxy.ProxyBuilder;
-import io.joynr.runtime.JoynrRuntime;
-import joynr.exceptions.ApplicationException;
-import joynr.exceptions.ProviderRuntimeException;
-import joynr.jeeintegration.servicelocator.MyService;
-import joynr.jeeintegration.servicelocator.MyServiceProxy;
-import joynr.jeeintegration.servicelocator.MyServiceSync;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -51,7 +43,27 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import io.joynr.arbitration.DiscoveryQos;
+import io.joynr.exceptions.JoynrCommunicationException;
+import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.exceptions.JoynrTimeoutException;
+import io.joynr.jeeintegration.JeeJoynrServiceLocator;
+import io.joynr.jeeintegration.JoynrIntegrationBean;
+import io.joynr.messaging.MessagingQos;
+import io.joynr.proxy.MessageIdCallback;
+import io.joynr.proxy.ProxyBuilder;
+import io.joynr.runtime.JoynrRuntime;
+import joynr.exceptions.ApplicationException;
+import joynr.exceptions.ProviderRuntimeException;
+import joynr.jeeintegration.servicelocator.MyService;
+import joynr.jeeintegration.servicelocator.MyServiceProxy;
+import joynr.jeeintegration.servicelocator.MyServiceStatelessAsync;
+import joynr.jeeintegration.servicelocator.MyServiceSync;
 import test.io.joynr.jeeintegration.servicelocator.MyInvalidServiceSync;
+import test.io.joynr.jeeintegration.servicelocator.MyServiceCallbackHandler;
+
+import javax.enterprise.inject.spi.Bean;
 
 /**
  * Unit tests for {@link JeeJoynrServiceLocator}.
@@ -78,8 +90,10 @@ public class JeeJoynrServiceLocatorTest {
         when(myJoynrProxy.callMe("one")).thenReturn("two");
         when(proxyBuilder.setMessagingQos(Mockito.any())).thenReturn(proxyBuilder);
         when(proxyBuilder.setDiscoveryQos(Mockito.any())).thenReturn(proxyBuilder);
+        when(proxyBuilder.setStatelessAsyncCallbackUseCase(Mockito.anyString())).thenReturn(proxyBuilder);
         when(proxyBuilder.build()).thenReturn(myJoynrProxy);
-        when(joynrRuntime.getProxyBuilder(Sets.newHashSet("local"), MyServiceProxy.class)).thenReturn(proxyBuilder);
+        when(joynrRuntime.getProxyBuilder(new HashSet<String>(Arrays.asList("local")),
+                                          MyServiceProxy.class)).thenReturn(proxyBuilder);
         when(joynrIntegrationBean.getRuntime()).thenReturn(joynrRuntime);
         subject = new JeeJoynrServiceLocator(joynrIntegrationBean);
     }
@@ -139,7 +153,7 @@ public class JeeJoynrServiceLocatorTest {
 
     @Test
     public void testGetMultiDomain() {
-        Set<String> domains = Sets.newHashSet("one", "two", "three");
+        Set<String> domains = new HashSet<>(Arrays.asList("one", "two", "three"));
         when(joynrRuntime.getProxyBuilder(domains, MyServiceProxy.class)).thenReturn(proxyBuilder);
 
         MyServiceSync result = subject.get(MyServiceSync.class, domains);
@@ -200,6 +214,44 @@ public class JeeJoynrServiceLocatorTest {
     public void testGetNoRuntime() {
         JeeJoynrServiceLocator subject = new JeeJoynrServiceLocator(mock(JoynrIntegrationBean.class));
         subject.get(MyServiceSync.class, "local");
+    }
+
+    @Test
+    public void testGetWithStatelessCallbackHandler() {
+        doAnswer(invocation -> {
+            invocation.getArgumentAt(1, MessageIdCallback.class).accept("messageId");
+            return null;
+        }).when(myJoynrProxy).callMe(eq("one"), any(MessageIdCallback.class));
+        Bean mockBean = mock(Bean.class);
+        when(mockBean.getBeanClass()).thenReturn(MyServiceCallbackHandler.class);
+        MyServiceStatelessAsync result = subject.builder(MyServiceStatelessAsync.class, "local")
+                                                .withUseCase(MyServiceCallbackHandler.USE_CASE)
+                                                .build();
+
+        assertNotNull(result);
+
+        verify(joynrRuntime).getProxyBuilder(eq(new HashSet(Arrays.asList("local"))), eq(MyServiceProxy.class));
+        verify(proxyBuilder).setStatelessAsyncCallbackUseCase(eq(MyServiceCallbackHandler.USE_CASE));
+        verify(proxyBuilder).build();
+
+        Boolean[] resultContainer = new Boolean[]{ Boolean.FALSE };
+        result.callMe("one", messageId -> {
+            assertEquals("messageId", messageId);
+            resultContainer[0] = Boolean.TRUE;
+        });
+        assertTrue(resultContainer[0]);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetWithSyncAndUseCaseFails() {
+        subject.builder(MyServiceSync.class, "local").withUseCase("useCase").build();
+        fail("Should not be able to build a service proxy with a use case and a non @StatelessAsync service interface");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetStatelessAsyncWithoutUseCaseFails() {
+        subject.builder(MyServiceStatelessAsync.class, "local").build();
+        fail("Should not be able to build stateless async proxy without a use case specified.");
     }
 
 }

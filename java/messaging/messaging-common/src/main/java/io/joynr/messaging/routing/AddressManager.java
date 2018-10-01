@@ -134,7 +134,7 @@ public class AddressManager {
             isGloballyVisible = routingTable.getIsGloballyVisible(participantId);
         } catch (JoynrRuntimeException e) {
             // This should never happen
-            logger.error("No routing entry found for Mulicast Provider {}. "
+            logger.error("No routing entry found for Multicast Provider {}. "
                     + "The message will not be published globally.", participantId);
         }
         return isGloballyVisible;

@@ -26,7 +26,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>cpp</artifactId>
-		<version>1.5.0</version>
+		<version>1.6.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -119,14 +119,15 @@
 				<configuration>
 					<filesets>
 						<fileset>
-							<directory>${basedir}</directory>
+							<directory>${basedir}/gen</directory>
 							<includes>
-								<include>gen/communication-model/**</include>
-								<include>gen/in-process/**</include>
-								<include>gen/joynr-messaging/**</include>
-								<include>gen/provider/**</include>
-								<include>gen/proxy/**</include>
-								<include>gen/include/**</include>
+								<include>**</include>
+							</includes>
+						</fileset>
+						<fileset>
+							<directory>${basedir}/gen-with-version</directory>
+							<includes>
+								<include>**</include>
 							</includes>
 						</fileset>
 					</filesets>

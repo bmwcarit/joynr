@@ -19,11 +19,10 @@
 package io.joynr.util;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-
-import com.google.common.collect.Iterables;
 
 public class AnnotationUtil {
 
@@ -34,11 +33,11 @@ public class AnnotationUtil {
     }
 
     public static <T extends Annotation> T getAnnotation(Class<?> clazz, Class<T> annotationType) {
-        Iterable<T> allAnnotations = Iterables.filter(getAnnotationsRecursive(clazz), annotationType);
-        if (allAnnotations.iterator().hasNext()) {
-            return allAnnotations.iterator().next();
-        }
-        return null;
+        return getAnnotationsRecursive(clazz).stream()
+                                             .filter(annotationType::isInstance)
+                                             .map(annotationType::cast)
+                                             .findFirst()
+                                             .orElse(null);
     }
 
     private static void getAllAnnotations(Class<?> clazz, Collection<Annotation> result) {
@@ -51,5 +50,35 @@ public class AnnotationUtil {
         }
 
         getAllAnnotations(clazz.getSuperclass(), result);
+    }
+
+    public static <T extends Annotation> T getAnnotation(Method method, Class<T> annotationType) {
+        T result = method.getAnnotation(annotationType);
+        if (result == null) {
+            Class<?> superclass = method.getDeclaringClass().getSuperclass();
+            if (superclass != null) {
+                try {
+                    Method supermethod = superclass.getDeclaredMethod(method.getName(), method.getParameterTypes());
+                    result = getAnnotation(supermethod, annotationType);
+                } catch (NoSuchMethodException e) {
+                    // Ignore
+                }
+            }
+            if (result == null) {
+                for (Class<?> implementedInterface : method.getDeclaringClass().getInterfaces()) {
+                    try {
+                        Method interfaceMethod = implementedInterface.getMethod(method.getName(),
+                                                                                method.getParameterTypes());
+                        result = getAnnotation(interfaceMethod, annotationType);
+                    } catch (NoSuchMethodException e) {
+                        // Ignore
+                    }
+                    if (result != null) {
+                        break;
+                    }
+                }
+            }
+        }
+        return result;
     }
 }

@@ -54,14 +54,18 @@ public class MethodUtil {
 	}
 
 
-	def getAllRequiredTypes(FMethod method, String methodErrorEnumName, boolean errorTypes) {
+	def getAllRequiredTypes(FMethod method, String methodErrorEnumName, boolean includeInput, boolean includeOutput, boolean errorTypes) {
 		var Object datatype = null
 		var typeList = new HashSet<Object>();
-		for(returnParameter : getOutputParameters(method).filterNull){
-			typeList.addAll(getRequiredTypes(returnParameter.type));
+		if (includeOutput) {
+			for(returnParameter : getOutputParameters(method).filterNull) {
+				typeList.addAll(getRequiredTypes(returnParameter.type));
+			}
 		}
-		for (inputParameter : getInputParameters(method).filterNull) {
-			typeList.addAll(getRequiredTypes(inputParameter.type));
+		if (includeInput) {
+			for(inputParameter : getInputParameters(method).filterNull) {
+				typeList.addAll(getRequiredTypes(inputParameter.type));
+			}
 		}
 		if (errorTypes) {
 			if (method.errors !== null) {
@@ -128,6 +132,21 @@ public class MethodUtil {
 	 */
 	def createMethodSignatureFromOutParameters(FMethod method) {
 		createParameterSignatureForMethod(method.name, method.outArgs.filterNull);
+	}
+
+	/**
+	 * @param method the method for which the signature shall be created
+	 * @return a method signature that is unique in terms of method name and error types
+	 */
+	def createMethodSignatureFromErrors(FMethod method) {
+		var nameStringBuilder = new StringBuilder(method.name)
+		if (method.errors !== null) {
+			nameStringBuilder.append(getDatatype(method.errors))
+		}
+		if (method.errorEnum !== null) {
+			nameStringBuilder.append(getDatatype(method.errorEnum))
+		}
+		return nameStringBuilder.toString
 	}
 
 	private def createParameterSignatureForMethod(String methodName, Iterable<FArgument> arguments) {

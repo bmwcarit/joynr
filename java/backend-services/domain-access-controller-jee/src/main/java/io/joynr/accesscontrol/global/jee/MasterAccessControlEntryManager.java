@@ -21,6 +21,8 @@ package io.joynr.accesscontrol.global.jee;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toSet;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -29,7 +31,6 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 
-import com.google.common.collect.Sets;
 import io.joynr.accesscontrol.global.jee.persistence.ControlEntryType;
 import io.joynr.accesscontrol.global.jee.persistence.MasterAccessControlEntryEntity;
 import io.joynr.exceptions.JoynrIllegalStateException;
@@ -161,11 +162,11 @@ public class MasterAccessControlEntryManager {
             entityManager.persist(entity);
         }
         entity.setDefaultRequiredTrustLevel(updatedMasterAce.getDefaultRequiredTrustLevel());
-        entity.setPossibleRequiredTrustLevels(Sets.newHashSet(updatedMasterAce.getPossibleRequiredTrustLevels()));
+        entity.setPossibleRequiredTrustLevels(new HashSet<TrustLevel>(Arrays.asList(updatedMasterAce.getPossibleRequiredTrustLevels())));
         entity.setDefaultRequiredControlEntryChangeTrustLevel(updatedMasterAce.getDefaultRequiredControlEntryChangeTrustLevel());
-        entity.setPossibleRequiredControlEntryChangeTrustLevels(Sets.newHashSet(updatedMasterAce.getPossibleRequiredControlEntryChangeTrustLevels()));
+        entity.setPossibleRequiredControlEntryChangeTrustLevels(new HashSet<TrustLevel>(Arrays.asList(updatedMasterAce.getPossibleRequiredControlEntryChangeTrustLevels())));
         entity.setDefaultConsumerPermission(updatedMasterAce.getDefaultConsumerPermission());
-        entity.setPossibleConsumerPermissions(Sets.newHashSet(updatedMasterAce.getPossibleConsumerPermissions()));
+        entity.setPossibleConsumerPermissions(new HashSet<Permission>(Arrays.asList(updatedMasterAce.getPossibleConsumerPermissions())));
         return new CreateOrUpdateResult<>(mapEntityToJoynrType(entity), created ? ChangeType.ADD : ChangeType.UPDATE);
     }
 

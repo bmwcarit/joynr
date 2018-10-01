@@ -24,13 +24,18 @@ import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 
+import io.joynr.StatelessAsync;
+import io.joynr.dispatcher.rpc.annotation.StatelessCallbackCorrelation;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -38,7 +43,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.google.common.collect.Sets;
 
 import io.joynr.Async;
 import io.joynr.Sync;
@@ -85,6 +89,8 @@ public class ConnectorTest {
     @Mock
     private RequestReplyManager requestReplyManager;
     @Mock
+    private StatelessAsyncIdCalculator statelessAsyncIdCalculator;
+    @Mock
     private MessageRouter messageRouter;
     @Mock
     private Address libJoynrMessagingAddress;
@@ -92,6 +98,7 @@ public class ConnectorTest {
     private Callback<Void> voidCallback;
 
     private String fromParticipantId;
+    private String statelessAsyncParticipantId;
     private String toParticipantId;
     private DiscoveryEntryWithMetaInfo toDiscoveryEntry;
     private Set<DiscoveryEntryWithMetaInfo> toDiscoveryEntries;
@@ -105,7 +112,7 @@ public class ConnectorTest {
         toParticipantId = "toParticipantId";
         toDiscoveryEntry = new DiscoveryEntryWithMetaInfo();
         toDiscoveryEntry.setParticipantId(toParticipantId);
-        toDiscoveryEntries = Sets.newHashSet(toDiscoveryEntry);
+        toDiscoveryEntries = new HashSet<>(Arrays.asList(toDiscoveryEntry));
         qosSettings = new MessagingQos();
         proxy = new Object();
     }
@@ -130,14 +137,17 @@ public class ConnectorTest {
         }
 
         public class TestBroadcastAdapter implements TestBroadcastListener {
+            @Override
             public void onReceive(String testString) {
                 // empty implementation
             }
 
+            @Override
             public void onError(SubscriptionException error) {
                 // empty implementation
             }
 
+            @Override
             public void onSubscribed(String subscriptionId) {
                 // empty implementation
             }
@@ -172,6 +182,12 @@ public class ConnectorTest {
         void someMethodwithoutAnnotations(Integer a, String b) throws JsonMappingException;
 
         Future<Void> methodWithoutParameters(@JoynrRpcCallback(deserializationType = Void.class) Callback<Void> callback);
+    }
+
+    @StatelessAsync
+    interface TestStatelessAsyncInterface {
+        @StatelessCallbackCorrelation("correlationId")
+        void testMethod(MessageIdCallback messageIdCallback);
     }
 
     @Test
@@ -213,9 +229,10 @@ public class ConnectorTest {
                                                                                       SubscriptionQos.class);
             AttributeSubscribeInvocation attributeSubscription = new AttributeSubscribeInvocation(method, args, future);
             connector.executeSubscriptionMethod(attributeSubscription);
-            verify(subscriptionManager, times(1)).registerAttributeSubscription(eq(fromParticipantId),
-                                                                                eq(Sets.newHashSet(toDiscoveryEntry)),
-                                                                                eq(attributeSubscription));
+            verify(subscriptionManager,
+                   times(1)).registerAttributeSubscription(eq(fromParticipantId),
+                                                           eq(new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry))),
+                                                           eq(attributeSubscription));
         } catch (Exception e) {
             // This is what is supposed to happen -> no error handling
             fail("Calling a subscription method with no expiry date throws an exception.");
@@ -236,10 +253,11 @@ public class ConnectorTest {
                                                                                       String.class);
             UnsubscribeInvocation unsubscribeInvocation = new UnsubscribeInvocation(method, args, future);
             connector.executeSubscriptionMethod(unsubscribeInvocation);
-            verify(subscriptionManager, times(1)).unregisterSubscription(eq(fromParticipantId),
-                                                                         eq(Sets.newHashSet(toDiscoveryEntry)),
-                                                                         eq(subscriptionId),
-                                                                         any(MessagingQos.class));
+            verify(subscriptionManager,
+                   times(1)).unregisterSubscription(eq(fromParticipantId),
+                                                    eq(new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry))),
+                                                    eq(subscriptionId),
+                                                    any(MessagingQos.class));
         } catch (Exception e) {
             // This is what is supposed to happen -> no error handling
             fail("Calling a subscription method with no expiry date throws an exception.");
@@ -422,18 +440,42 @@ public class ConnectorTest {
         }
     }
 
+    @Test
+    public void executeStatelessAsyncCallsRequestReplyManagerCorrectly() throws Exception {
+        statelessAsyncParticipantId = "statelessAsyncParticipantId";
+        ConnectorInvocationHandler connector = createConnector();
+        Method method = TestStatelessAsyncInterface.class.getMethod("testMethod",
+                                                                    new Class[]{ MessageIdCallback.class });
+        StatelessAsyncCallback statelessAsyncCallback = mock(StatelessAsyncCallback.class);
+        when(statelessAsyncCallback.getUseCase()).thenReturn("useCase");
+        MessageIdCallback messageIdCallback = mock(MessageIdCallback.class);
+        when(statelessAsyncIdCalculator.calculateStatelessCallbackRequestReplyId(eq(method))).thenReturn("requestReplyId");
+        when(statelessAsyncIdCalculator.calculateStatelessCallbackMethodId(eq(method))).thenReturn("correlationId");
+        connector.executeStatelessAsyncMethod(method, new Object[]{ messageIdCallback });
+        ArgumentCaptor<Request> captor = ArgumentCaptor.forClass(Request.class);
+        verify(requestReplyManager).sendRequest(eq(statelessAsyncParticipantId),
+                                                eq(toDiscoveryEntry),
+                                                captor.capture(),
+                                                any());
+        Request request = captor.getValue();
+        assertEquals("correlationId", request.getStatelessAsyncCallbackMethodId());
+        assertEquals("requestReplyId", request.getRequestReplyId());
+    }
+
     private ConnectorInvocationHandler createConnector() {
         ArbitrationResult arbitrationResult = new ArbitrationResult();
         arbitrationResult.setDiscoveryEntries(toDiscoveryEntries);
         JoynrMessagingConnectorFactory joynrMessagingConnectorFactory = new JoynrMessagingConnectorFactory(requestReplyManager,
                                                                                                            replyCallerDirectory,
-                                                                                                           subscriptionManager);
+                                                                                                           subscriptionManager,
+                                                                                                           statelessAsyncIdCalculator);
         ConnectorFactory connectorFactory = new ConnectorFactory(joynrMessagingConnectorFactory,
                                                                  messageRouter,
                                                                  libJoynrMessagingAddress);
         ConnectorInvocationHandler connector = connectorFactory.create(fromParticipantId,
                                                                        arbitrationResult,
-                                                                       qosSettings);
+                                                                       qosSettings,
+                                                                       statelessAsyncParticipantId);
         return connector;
     }
 }

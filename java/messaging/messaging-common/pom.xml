@@ -27,7 +27,7 @@
 	<parent>
 		<groupId>io.joynr.java</groupId>
 		<artifactId>messaging</artifactId>
-		<version>1.5.0</version>
+		<version>1.6.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -46,10 +46,6 @@
 			<groupId>io.joynr.java.common</groupId>
 			<artifactId>guice-integration</artifactId>
 			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.google.inject</groupId>

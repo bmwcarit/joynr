@@ -886,6 +886,6 @@ describe("libjoynr-js.joynr.capabilities.arbitration.Arbitrator", () => {
         });
         increaseFakeTime(100);
         arbitrator.shutdown();
-        arbitrationPromise.then(fail).catch(done);
+        arbitrationPromise.then(fail).catch(() => done());
     });
 });

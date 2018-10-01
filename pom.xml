@@ -20,7 +20,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.joynr</groupId>
 	<artifactId>joynr</artifactId>
-	<version>1.5.0</version>
+	<version>1.6.0</version>
 	<packaging>pom</packaging>
 	<name>${project.groupId}:${project.artifactId}</name>
 	<url>http://joynr.io</url>
@@ -213,6 +213,10 @@
 				* io.joynr.javascript:libjoynr-js
 			-->
 			<id>carit-copyright</id>
+			<properties>
+				<timestamp>${maven.build.timestamp}</timestamp>
+				<maven.build.timestamp.format>yyyy</maven.build.timestamp.format>
+			</properties>
 			<build>
 				<plugins>
 					<plugin>
@@ -220,12 +224,13 @@
 						<artifactId>license-maven-plugin</artifactId>
 						<configuration>
 							<licenseName>apache_v2</licenseName>
-							<inceptionYear>2011</inceptionYear>
+							<inceptionYear>${timestamp}</inceptionYear>
 							<organizationName>BMW Car IT GmbH</organizationName>
 							<descriptionTemplate>/license/header-template.ftl</descriptionTemplate>
 							<extraExtensions>
 								<fidl>java</fidl>
 							</extraExtensions>
+							<addJavaLicenseAfterPackage>false</addJavaLicenseAfterPackage>
 						</configuration>
 						<executions>
 							<execution>
@@ -406,7 +411,7 @@
 			here, and should not have a version tag in the the pom-files where they
 			are referenced.
 		-->
-		<jersey.version>1.17</jersey.version>
+		<jersey.version>1.19.4</jersey.version>
 		<jackson.version>2.8.8</jackson.version>
 		<guice.version>3.0</guice.version>
 		<jetty.version>9.2.13.v20150730</jetty.version>
@@ -464,6 +469,11 @@
 				<scope>test</scope>
 			</dependency>
 			<dependency>
+				<groupId>javax</groupId>
+				<artifactId>javaee-api</artifactId>
+				<version>7.0</version>
+			</dependency>
+			<dependency>
 				<groupId>xml-apis</groupId>
 				<artifactId>xml-apis</artifactId>
 				<version>1.4.01</version>
@@ -511,7 +521,7 @@
 			<dependency>
 				<groupId>io.joynr.mqtt</groupId>
 				<artifactId>mqtt-client</artifactId>
-				<version>0.0.4</version>
+				<version>0.0.5</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.inject</groupId>
@@ -524,14 +534,9 @@
 				<version>2.1</version>
 			</dependency>
 			<dependency>
-				<groupId>com.google.guava</groupId>
-				<artifactId>guava</artifactId>
-				<version>24.1-android</version>
-			</dependency>
-			<dependency>
-				<groupId>org.glassfish.jersey.core</groupId>
+				<groupId>com.sun.jersey</groupId>
 				<artifactId>jersey-server</artifactId>
-				<version>2.26-b02</version>
+				<version>${jersey.version}</version>
 				<scope>compile</scope>
 			</dependency>
 			<dependency>
@@ -827,6 +832,18 @@
 				<artifactId>commons-lang</artifactId>
 				<version>2.4</version>
 			</dependency>
+			<dependency>
+				<groupId>org.jboss.arquillian.container</groupId>
+				<artifactId>arquillian-container-test-api</artifactId>
+				<version>1.1.15.Final</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.jboss.shrinkwrap.resolver</groupId>
+				<artifactId>shrinkwrap-resolver-impl-maven</artifactId>
+				<version>2.2.6</version>
+				<scope>test</scope>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
@@ -1017,7 +1034,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-javadoc-plugin</artifactId>
-					<version>2.9.1</version>
+					<version>2.10.3</version>
 					<configuration>
 						<additionalparam>-Xdoclint:none</additionalparam>
 					</configuration>
@@ -1080,7 +1097,7 @@
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>build-helper-maven-plugin</artifactId>
-					<version>1.7</version>
+					<version>1.10</version>
 				</plugin>
 				<plugin>
 					<groupId>org.eclipse.jetty</groupId>
@@ -1326,7 +1343,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-dependency-plugin</artifactId>
-					<version>2.8</version>
+					<version>2.10</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
@@ -1398,7 +1415,7 @@
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>exec-maven-plugin</artifactId>
-					<version>1.3.1</version>
+					<version>1.6.0</version>
 				</plugin>
 			</plugins>
 		</pluginManagement>

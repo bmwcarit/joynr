@@ -17,7 +17,6 @@ package io.joynr.generator
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import com.google.common.collect.Sets
 import com.google.inject.AbstractModule
 import com.google.inject.Inject
 import com.google.inject.Singleton
@@ -29,6 +28,7 @@ import io.joynr.generator.provider.ProviderGenerator
 import io.joynr.generator.proxy.ProxyGenerator
 import io.joynr.generator.util.JavaTemplateFactory
 import io.joynr.generator.util.JoynrJavaGeneratorExtensions
+import java.util.Arrays
 import java.util.HashSet
 import java.util.Map
 import org.eclipse.emf.ecore.resource.Resource
@@ -130,6 +130,6 @@ class JoynrJavaGenerator implements IJoynrGenerator {
 	}
 
 	override supportedParameters() {
-		Sets::newHashSet("jee");
+		new HashSet(Arrays.asList("jee"));
 	}
 }

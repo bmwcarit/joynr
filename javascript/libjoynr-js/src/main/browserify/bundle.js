@@ -36,7 +36,7 @@ return new Promise((resolve, reject) => {
     ws.on("finish", resolve);
     ws.on("error", reject);
 
-    ["start/InProcessRuntime", "start/InterTabClusterControllerRuntime", "start/InterTabLibjoynrRuntime"].map(
+    ["start/InProcessRuntime"].map(
         module => {
             bundler.ignore(`./${module}.js`, { basedir: "../js/joynr" });
         }

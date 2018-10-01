@@ -17,18 +17,15 @@ under the License.
 
 This project has dependencies to:
   "Java Concurrency in Practice" book annotations under Creative Commons Attribution License
-  Animal Sniffer Annotations under MIT license
   AOP alliance under Public Domain
   Apache HttpClient under Apache License
   Apache HttpCore under Apache License
   Apache Log4j under The Apache Software License, Version 2.0
-  Checker Qual under GNU General Public License, version 2 (GPL2), with the classpath exception or The MIT License
   clustercontroller-inprocess-runtime under The Apache Software License, Version 2.0
   clustercontroller-websocket-runtime under The Apache Software License, Version 2.0
   Commons Codec under The Apache Software License, Version 2.0
   Commons Lang under The Apache Software License, Version 2.0
   ehcache under The Apache Software License, Version 2.0
-  error-prone annotations under Apache 2.0
   FindBugs-Annotations under GNU Lesser Public License
   FindBugs-jsr305 under The Apache Software License, Version 2.0
   flatbuffers-java under Apache License V2.0
@@ -55,7 +52,6 @@ This project has dependencies to:
   io.joynr.smrf.java:smrf under The Apache Software License, Version 2.0
   io.joynr.smrf.java:smrf-api under The Apache Software License, Version 2.0
   io.joynr.tests:inter-language-test under The Apache Software License, Version 2.0
-  J2ObjC Annotations under The Apache Software License, Version 2.0
   Jackson-annotations under The Apache Software License, Version 2.0
   Jackson-core under The Apache Software License, Version 2.0
   jackson-databind under The Apache Software License, Version 2.0

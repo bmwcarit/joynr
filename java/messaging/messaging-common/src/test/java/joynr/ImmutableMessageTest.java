@@ -55,8 +55,7 @@ public class ImmutableMessageTest {
         testMessage.setRecipient("test");
         testMessage.setSender("test");
 
-        ImmutableMessage immutableMessage = testMessage.getImmutableMessage();
-        String logMessage = immutableMessage.toLogMessage();
+        String logMessage = testMessage.getImmutableMessage().toLogMessage();
 
         assertThat(logMessage, containsString(payload));
     }

@@ -18,11 +18,11 @@
  */
 package io.joynr.runtime;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.inject.Named;
 
-import com.google.common.collect.Maps;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
@@ -41,7 +41,7 @@ public class TestRuntimeModule extends AbstractModule {
     @Provides
     @Singleton
     Map<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory> provideMessagingStubFactories() {
-        Map<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory> factories = Maps.newHashMap();
+        Map<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory> factories = new HashMap<>();
         return factories;
     }
 

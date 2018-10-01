@@ -18,25 +18,24 @@
  */
 package io.joynr.messaging.routing;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyString;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.lessThan;
+import static org.mockito.Mockito.when;
 
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -49,9 +48,17 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Sets;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -60,8 +67,8 @@ import com.google.inject.Provides;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.MapBinder;
 import com.google.inject.multibindings.Multibinder;
-import com.google.inject.name.Names;
 import com.google.inject.name.Named;
+import com.google.inject.name.Names;
 import com.google.inject.util.Modules;
 
 import io.joynr.accesscontrol.AccessController;
@@ -81,13 +88,13 @@ import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.SuccessAction;
 import io.joynr.messaging.channel.ChannelMessagingSkeleton;
 import io.joynr.messaging.channel.ChannelMessagingStubFactory;
+import io.joynr.messaging.persistence.MessagePersister;
 import io.joynr.messaging.util.MulticastWildcardRegexFactory;
-import io.joynr.messaging.routing.CcMessageRouter;
 import io.joynr.runtime.ClusterControllerRuntimeModule;
+import io.joynr.runtime.JoynrThreadFactory;
+import io.joynr.runtime.ShutdownNotifier;
 import io.joynr.statusmetrics.MessageWorkerStatus;
 import io.joynr.statusmetrics.StatusReceiver;
-import io.joynr.runtime.ShutdownNotifier;
-import io.joynr.messaging.routing.TestGlobalAddressModule;
 import joynr.ImmutableMessage;
 import joynr.Message;
 import joynr.MulticastPublication;
@@ -96,16 +103,6 @@ import joynr.Reply;
 import joynr.Request;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.runners.MockitoJUnitRunner;
-import org.mockito.stubbing.Answer;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CcMessageRouterTest {
@@ -118,7 +115,7 @@ public class CcMessageRouterTest {
     InMemoryMulticastReceiverRegistry multicastReceiverRegistry = new InMemoryMulticastReceiverRegistry(new MulticastWildcardRegexFactory());
     private AddressManager addressManager = spy(new AddressManager(routingTable,
                                                                    new AddressManager.PrimaryGlobalTransportHolder(null),
-                                                                   Sets.<MulticastAddressCalculator> newHashSet(),
+                                                                   new HashSet<MulticastAddressCalculator>(),
                                                                    multicastReceiverRegistry));
 
     @Mock
@@ -131,6 +128,8 @@ public class CcMessageRouterTest {
     private StatusReceiver statusReceiver;
     @Mock
     private ShutdownNotifier shutdownNotifier;
+    @Mock
+    private MessagePersister messagePersisterMock;
 
     private MessageRouter messageRouter;
     private MutableMessage joynrMessage;
@@ -167,12 +166,15 @@ public class CcMessageRouterTest {
                                 .toInstance(routingTableGracePeriodMs);
                 bind(Long.class).annotatedWith(Names.named(ConfigurableMessagingSettings.PROPERTY_ROUTING_TABLE_CLEANUP_INTERVAL_MS))
                                 .toInstance(routingTableCleanupIntervalMs);
+                bind(String.class).annotatedWith(Names.named(MessageQueue.MESSAGE_QUEUE_ID))
+                                  .toInstance(UUID.randomUUID().toString());
 
                 bindConstant().annotatedWith(Names.named(ClusterControllerRuntimeModule.PROPERTY_ACCESSCONTROL_ENABLE))
                               .to(false);
 
                 bind(AccessController.class).toInstance(Mockito.mock(AccessController.class));
                 bind(StatusReceiver.class).toInstance(statusReceiver);
+                bind(MessagePersister.class).toInstance(messagePersisterMock);
 
                 MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessagingStub, ? extends Address>> messagingStubFactory;
                 messagingStubFactory = MapBinder.newMapBinder(binder(), new TypeLiteral<Class<? extends Address>>() {
@@ -198,8 +200,7 @@ public class CcMessageRouterTest {
             @Provides
             @Named(MessageRouter.SCHEDULEDTHREADPOOL)
             ScheduledExecutorService provideMessageSchedulerThreadPoolExecutor() {
-                ThreadFactory schedulerNamedThreadFactory = new ThreadFactoryBuilder().setNameFormat("joynr.MessageScheduler-scheduler-%d")
-                                                                                      .build();
+                ThreadFactory schedulerNamedThreadFactory = new JoynrThreadFactory("joynr.MessageScheduler-scheduler");
                 ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(numberOfThreads,
                                                                                         schedulerNamedThreadFactory);
                 scheduler.setKeepAliveTime(100, TimeUnit.SECONDS);

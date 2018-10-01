@@ -135,21 +135,22 @@ struct LogLevelInitializer
         }
 
         const std::string runtimeLogLevelName(logLevelEnv);
-        const std::map<std::string, spdlog::level::level_enum> logLevels{
-                {"TRACE", spdlog::level::trace},
-                {"DEBUG", spdlog::level::debug},
-                {"INFO", spdlog::level::info},
-                {"WARN", spdlog::level::warn},
-                {"ERROR", spdlog::level::err},
-                {"FATAL", spdlog::level::critical}};
+        const std::array<std::pair<std::string, spdlog::level::level_enum>, 6> array{
+                {std::make_pair("TRACE", spdlog::level::trace),
+                 std::make_pair("DEBUG", spdlog::level::debug),
+                 std::make_pair("INFO", spdlog::level::info),
+                 std::make_pair("WARN", spdlog::level::warn),
+                 std::make_pair("ERROR", spdlog::level::err),
+                 std::make_pair("FATAL", spdlog::level::critical)}};
 
-        auto matchingLogLevel = logLevels.find(runtimeLogLevelName);
-
-        if (matchingLogLevel == logLevels.cend()) {
-            spdlog::set_level(JOYNR_DEFAULT_RUNTIME_LOG_LEVEL);
-        } else {
-            spdlog::set_level(matchingLogLevel->second);
+        for (auto i : array) {
+            if (i.first == runtimeLogLevelName) {
+                spdlog::set_level(i.second);
+                return;
+            }
         }
+
+        spdlog::set_level(JOYNR_DEFAULT_RUNTIME_LOG_LEVEL);
     }
 };
 

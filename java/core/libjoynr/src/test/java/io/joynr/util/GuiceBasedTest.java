@@ -18,9 +18,10 @@
  */
 package io.joynr.util;
 
-import static com.google.common.collect.Iterables.toArray;
 import static com.google.inject.Guice.createInjector;
 import static com.google.inject.util.Modules.combine;
+
+import java.util.stream.StreamSupport;
 
 import org.junit.Before;
 
@@ -44,7 +45,8 @@ public abstract class GuiceBasedTest {
 
     protected Injector getInjector() {
         if (lastType != getClass() || injector == null) {
-            injector = createInjector(combine(toArray(getModules(), Module.class)));
+            injector = createInjector(combine(StreamSupport.stream(getModules().spliterator(), false)
+                                                           .toArray(Module[]::new)));
             lastType = getClass();
         }
         return injector;

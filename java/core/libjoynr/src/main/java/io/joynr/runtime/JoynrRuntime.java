@@ -22,6 +22,7 @@ import java.util.Set;
 
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
+import io.joynr.proxy.StatelessAsyncCallback;
 import joynr.types.ProviderQos;
 
 /**
@@ -67,6 +68,30 @@ public interface JoynrRuntime {
                                   boolean awaitGlobalRegistration);
 
     /**
+     * Registers a provider in the joynr framework (for internal use by JEE integration)
+     *
+     * @param domain
+     *            The domain the provider should be registered for. Has to be identical at the client to be able to find
+     *            the provider.
+     * @param provider
+     *            Instance of the provider implementation. It is assumed that the provided implementations offers
+     *            the following annotations in its (inherited) class definition: {@link io.joynr.provider.JoynrInterface}
+     *            and {@link io.joynr.JoynrVersion}.
+     * @param providerQos
+     *            The providers quality of service settings.
+     * @param awaitGlobalRegistration
+     *            If true, wait for global registration to complete or timeout, if required.
+     * @param interfaceClass
+     *            The interface class of the provider.
+     * @return Returns a Future which can be used to check the registration status.
+     */
+    Future<Void> registerProvider(String domain,
+                                  Object provider,
+                                  ProviderQos providerQos,
+                                  boolean awaitGlobalRegistration,
+                                  final Class<?> interfaceClass);
+
+    /**
      * Unregisters the provider from the joynr framework. It can no longer be used or discovered.
      *
      * @param domain
@@ -75,6 +100,20 @@ public interface JoynrRuntime {
      *            The provider instance.
      */
     void unregisterProvider(String domain, Object provider);
+
+    /**
+     * Registers the given stateless async callback instance for use with its
+     * {@link StatelessAsyncCallback#getUseCase() use case}.
+     * When you subsequently make stateless async calls using a proxy where you provide the same use case name when
+     * building the proxy, and the proxy interface matches the callback interface, then this instance will be used for
+     * Reply payloads arriving for it.
+     * It is recommended that you register your stateless async callback at startup time, so that the runtime is
+     * immediately able to process any incoming replies for requests that may have resulted from other nodes in a
+     * cluster.
+     *
+     * @param statelessAsyncCallback the stateless async callback instance to register.
+     */
+    void registerStatelessAsyncCallback(StatelessAsyncCallback statelessAsyncCallback);
 
     /**
      * Returns a proxy builder instance to build a proxy object for one or more
@@ -143,4 +182,13 @@ public interface JoynrRuntime {
      *            </ul>
      */
     void shutdown(boolean clear);
+
+    /**
+     * Let joynr know you are about to shut down and give it a chance to do any clean-up work, such as
+     * draining any remaining messages from the queue and potentially stop receiving incoming messages.
+     *
+     * This call will block until all subsystems have performed their relevant clean-up operations, or
+     * will time out if they couldn't finish on time, after which you can call {@link #shutdown(boolean)}.
+     */
+    void prepareForShutdown();
 }

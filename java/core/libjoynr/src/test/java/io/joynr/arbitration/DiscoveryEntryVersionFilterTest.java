@@ -26,6 +26,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -36,8 +37,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-
-import com.google.common.collect.Sets;
 
 import joynr.types.DiscoveryEntryWithMetaInfo;
 import joynr.types.Version;
@@ -85,7 +84,7 @@ public class DiscoveryEntryVersionFilterTest {
         DiscoveryEntryWithMetaInfo discoveryEntry = mock(DiscoveryEntryWithMetaInfo.class);
         Version providerVersion = new Version(2, 0);
         when(discoveryEntry.getProviderVersion()).thenReturn(providerVersion);
-        Set<DiscoveryEntryWithMetaInfo> discoveryEntries = Sets.newHashSet(discoveryEntry);
+        Set<DiscoveryEntryWithMetaInfo> discoveryEntries = new HashSet<>(Arrays.asList(discoveryEntry));
 
         Set<DiscoveryEntryWithMetaInfo> result = subject.filter(callerVersion, discoveryEntries, null);
 
@@ -99,7 +98,7 @@ public class DiscoveryEntryVersionFilterTest {
         DiscoveryEntryWithMetaInfo discoveryEntry = mock(DiscoveryEntryWithMetaInfo.class);
         Version providerVersion = new Version(1, 0);
         when(discoveryEntry.getProviderVersion()).thenReturn(providerVersion);
-        Set<DiscoveryEntryWithMetaInfo> discoveryEntries = Sets.newHashSet(discoveryEntry);
+        Set<DiscoveryEntryWithMetaInfo> discoveryEntries = new HashSet<>(Arrays.asList(discoveryEntry));
         when(versionCompatibilityChecker.check(eq(callerVersion), eq(providerVersion))).thenReturn(true);
 
         Set<DiscoveryEntryWithMetaInfo> result = subject.filter(callerVersion, discoveryEntries, null);
@@ -120,7 +119,8 @@ public class DiscoveryEntryVersionFilterTest {
         Version incompatibleVersion = new Version(2, 2);
         when(incompatibleEntry.getProviderVersion()).thenReturn(incompatibleVersion);
         when(versionCompatibilityChecker.check(callerVersion, incompatibleVersion)).thenReturn(false);
-        Set<DiscoveryEntryWithMetaInfo> discoveryEntries = Sets.newHashSet(compatibleEntry, incompatibleEntry);
+        Set<DiscoveryEntryWithMetaInfo> discoveryEntries = new HashSet<>(Arrays.asList(compatibleEntry,
+                                                                                       incompatibleEntry));
 
         Set<DiscoveryEntryWithMetaInfo> result = subject.filter(callerVersion, discoveryEntries, null);
 
@@ -140,7 +140,8 @@ public class DiscoveryEntryVersionFilterTest {
         Version otherProviderVersion = new Version(4, 10);
         when(otherDiscoveryEntry.getProviderVersion()).thenReturn(otherProviderVersion);
         when(otherDiscoveryEntry.getDomain()).thenReturn("domain");
-        Set<DiscoveryEntryWithMetaInfo> discoveryEntries = Sets.newHashSet(discoveryEntry, otherDiscoveryEntry);
+        Set<DiscoveryEntryWithMetaInfo> discoveryEntries = new HashSet<>(Arrays.asList(discoveryEntry,
+                                                                                       otherDiscoveryEntry));
 
         Map<String, Set<Version>> filteredOutVersions = new HashMap<>();
 
@@ -151,7 +152,7 @@ public class DiscoveryEntryVersionFilterTest {
         assertFalse(filteredOutVersions.isEmpty());
         assertTrue(filteredOutVersions.containsKey("domain"));
         Set<Version> versions = filteredOutVersions.get("domain");
-        assertTrue(versions.containsAll(Sets.newHashSet(providerVersion, otherProviderVersion)));
+        assertTrue(versions.containsAll(new HashSet<Version>(Arrays.asList(providerVersion, otherProviderVersion))));
     }
 
     @Test
@@ -166,7 +167,8 @@ public class DiscoveryEntryVersionFilterTest {
         Version otherProviderVersion = new Version(4, 10);
         when(otherDiscoveryEntry.getProviderVersion()).thenReturn(otherProviderVersion);
         when(otherDiscoveryEntry.getDomain()).thenReturn("domain-2");
-        Set<DiscoveryEntryWithMetaInfo> discoveryEntries = Sets.newHashSet(discoveryEntry, otherDiscoveryEntry);
+        Set<DiscoveryEntryWithMetaInfo> discoveryEntries = new HashSet<>(Arrays.asList(discoveryEntry,
+                                                                                       otherDiscoveryEntry));
 
         Map<String, Set<Version>> filteredOutVersions = new HashMap<>();
 
@@ -179,11 +181,11 @@ public class DiscoveryEntryVersionFilterTest {
         assertTrue(filteredOutVersions.containsKey("domain-1"));
         Set<Version> versions = filteredOutVersions.get("domain-1");
         assertNotNull(versions);
-        assertTrue(versions.containsAll(Sets.newHashSet(providerVersion)));
+        assertTrue(versions.containsAll(new HashSet<Version>(Arrays.asList(providerVersion))));
 
         assertTrue(filteredOutVersions.containsKey("domain-2"));
         versions = filteredOutVersions.get("domain-2");
         assertNotNull(versions);
-        assertTrue(versions.containsAll(Sets.newHashSet(otherProviderVersion)));
+        assertTrue(versions.containsAll(new HashSet<Version>(Arrays.asList(otherProviderVersion))));
     }
 }

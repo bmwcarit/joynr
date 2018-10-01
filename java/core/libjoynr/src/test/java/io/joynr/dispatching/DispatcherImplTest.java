@@ -18,8 +18,12 @@
  */
 package io.joynr.dispatching;
 
+import static io.joynr.proxy.StatelessAsyncIdCalculator.CHANNEL_SEPARATOR;
+import static io.joynr.proxy.StatelessAsyncIdCalculator.REQUEST_REPLY_ID_SEPARATOR;
+import static io.joynr.proxy.StatelessAsyncIdCalculator.USE_CASE_SEPARATOR;
 import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.argThat;
@@ -40,6 +44,8 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import io.joynr.proxy.DefaultStatelessAsyncIdCalculatorImpl;
+import io.joynr.proxy.StatelessAsyncIdCalculator;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -52,7 +58,6 @@ import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -76,6 +81,7 @@ import io.joynr.provider.AbstractSubscriptionPublisher;
 import io.joynr.provider.ProviderCallback;
 import io.joynr.provider.ProviderContainer;
 import io.joynr.proxy.JoynrMessagingConnectorFactory;
+import io.joynr.runtime.JoynrThreadFactory;
 import io.joynr.smrf.EncodingException;
 import io.joynr.smrf.UnsuppportedVersionException;
 import joynr.ImmutableMessage;
@@ -101,6 +107,8 @@ public class DispatcherImplTest {
     private MessageRouter messageRouterMock;
     @Mock
     private MessageSender messageSenderMock;
+    @Mock
+    private StatelessAsyncIdCalculator statelessAsyncIdCalculator;
     @Spy
     private MessageReceiverMock messageReceiverMock = new MessageReceiverMock();
 
@@ -132,10 +140,12 @@ public class DispatcherImplTest {
 
                 requestStaticInjection(RpcUtils.class, Request.class, JoynrMessagingConnectorFactory.class);
 
-                ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("joynr.Cleanup-%d").build();
+                ThreadFactory namedThreadFactory = new JoynrThreadFactory("joynr.Cleanup");
                 ScheduledExecutorService cleanupExecutor = Executors.newSingleThreadScheduledExecutor(namedThreadFactory);
                 bind(ScheduledExecutorService.class).annotatedWith(Names.named(JOYNR_SCHEDULER_CLEANUP))
                                                     .toInstance(cleanupExecutor);
+                bind(StatelessAsyncIdCalculator.class).toInstance(statelessAsyncIdCalculator);
+                bind(String.class).annotatedWith(Names.named(MessagingPropertyKeys.CHANNELID)).toInstance("channelid");
             }
 
         });
@@ -221,7 +231,8 @@ public class DispatcherImplTest {
                                      messageSenderMock,
                                      messageFactoryMock,
                                      objectMapperMock,
-                                     compress);
+                                     compress,
+                                     statelessAsyncIdCalculator);
 
         String fromParticipantId = "fromParticipantId";
         MulticastPublication multicastPublication = mock(MulticastPublication.class);
@@ -256,7 +267,8 @@ public class DispatcherImplTest {
                                      messageSenderMock,
                                      messageFactoryMock,
                                      objectMapperMock,
-                                     compress);
+                                     compress,
+                                     statelessAsyncIdCalculator);
 
         fixture.messageArrived(joynrMessage.getImmutableMessage());
 
@@ -300,7 +312,8 @@ public class DispatcherImplTest {
                                          messageSenderMock,
                                          messageFactoryMock,
                                          objectMapperMock,
-                                         compressAllOutgoingReplies);
+                                         compressAllOutgoingReplies,
+                                         statelessAsyncIdCalculator);
 
             fixture.messageArrived(outgoingMessage);
             verify(requestReplyManagerMock).handleRequest(providerCallbackReply.capture(),
@@ -404,6 +417,32 @@ public class DispatcherImplTest {
         verify(messageSenderMock).sendMessage(captor.capture());
         ImmutableMessage immutableMessage = captor.getValue().getImmutableMessage();
         assertEquals(null, immutableMessage.getEffort());
+    }
+
+    @Test
+    public void testStatelessAsyncReplyInformationExtracted() throws Exception {
+        String methodId = "456";
+        String requestReplyId = String.format("123%s%s", REQUEST_REPLY_ID_SEPARATOR, methodId);
+        when(statelessAsyncIdCalculator.extractMethodIdFromRequestReplyId(eq(requestReplyId))).thenReturn(methodId);
+        Reply reply = new Reply(requestReplyId);
+        String statelessAsyncParticipantId = UUID.randomUUID().toString();
+        String statelessAsyncCallbackId = String.format("interface%suseCase", USE_CASE_SEPARATOR);
+        when(statelessAsyncIdCalculator.fromParticipantUuid(eq(statelessAsyncParticipantId))).thenReturn(statelessAsyncCallbackId);
+        MutableMessage mutableMessage = messageFactory.createReply(UUID.randomUUID().toString(),
+                                                                   statelessAsyncParticipantId,
+                                                                   reply,
+                                                                   new MessagingQos(1000L));
+
+        fixture.messageArrived(mutableMessage.getImmutableMessage());
+
+        verify(statelessAsyncIdCalculator).extractMethodIdFromRequestReplyId(eq(requestReplyId));
+        verify(statelessAsyncIdCalculator).fromParticipantUuid(eq(statelessAsyncParticipantId));
+        ArgumentCaptor<Reply> captor = ArgumentCaptor.forClass(Reply.class);
+        verify(requestReplyManagerMock).handleReply(captor.capture());
+        Reply capturedReply = captor.getValue();
+        assertNotNull(capturedReply);
+        assertEquals(methodId, capturedReply.getStatelessAsyncCallbackMethodId());
+        assertEquals(statelessAsyncCallbackId, capturedReply.getStatelessAsyncCallbackId());
     }
 
     private static class MessageIsCompressedMatcher extends ArgumentMatcher<MutableMessage> {

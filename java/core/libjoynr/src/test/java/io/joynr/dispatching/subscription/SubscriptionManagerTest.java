@@ -32,6 +32,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -41,11 +42,17 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.runners.MockitoJUnitRunner;
+
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
+
 import io.joynr.dispatcher.rpc.annotation.JoynrMulticast;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.exceptions.JoynrMessageNotSentException;
@@ -69,12 +76,6 @@ import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
 import joynr.tests.testBroadcastInterface.LocationUpdateBroadcastListener;
 import joynr.types.DiscoveryEntryWithMetaInfo;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SubscriptionManagerTest {
@@ -96,9 +97,9 @@ public class SubscriptionManagerTest {
     private ConcurrentMap<Pattern, Set<String>> multicastSubscribersDirectory = spy(new ConcurrentHashMap<Pattern, Set<String>>());
     private ConcurrentMap<String, PubSubState> subscriptionStates = spy(new ConcurrentHashMap<String, PubSubState>());
     private ConcurrentMap<String, MissedPublicationTimer> missedPublicationTimers = spy(new ConcurrentHashMap<String, MissedPublicationTimer>());
-    private ConcurrentMap<String, Class<?>[]> unicastBroadcastTypes = spy(Maps.<String, Class<?>[]> newConcurrentMap());
-    private ConcurrentMap<Pattern, Class<?>[]> multicastBroadcastTypes = spy(Maps.<Pattern, Class<?>[]> newConcurrentMap());
-    private ConcurrentMap<String, Future<String>> subscriptionFutureMap = spy(Maps.<String, Future<String>> newConcurrentMap());
+    private ConcurrentMap<String, Class<?>[]> unicastBroadcastTypes = spy(new ConcurrentHashMap<String, Class<?>[]>());
+    private ConcurrentMap<Pattern, Class<?>[]> multicastBroadcastTypes = spy(new ConcurrentHashMap<Pattern, Class<?>[]>());
+    private ConcurrentMap<String, Future<String>> subscriptionFutureMap = spy(new ConcurrentHashMap<String, Future<String>>());
 
     @Mock
     private PubSubState subscriptionState;
@@ -193,7 +194,7 @@ public class SubscriptionManagerTest {
                                                                                             qos,
                                                                                             future);
         subscriptionManager.registerAttributeSubscription(fromParticipantId,
-                                                          Sets.newHashSet(toDiscoveryEntry),
+                                                          new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry)),
                                                           subscriptionRequest);
         subscriptionId = subscriptionRequest.getSubscriptionId();
 
@@ -207,7 +208,7 @@ public class SubscriptionManagerTest {
                                                              Mockito.any(ScheduledFuture.class));
 
         verify(dispatcher).sendSubscriptionRequest(eq(fromParticipantId),
-                                                   eq(Sets.newHashSet(toDiscoveryEntry)),
+                                                   eq(new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry))),
                                                    any(SubscriptionRequest.class),
                                                    any(MessagingQos.class));
     }
@@ -222,7 +223,7 @@ public class SubscriptionManagerTest {
                                                                                             onChangeQos,
                                                                                             future);
         subscriptionManager.registerBroadcastSubscription(fromParticipantId,
-                                                          Sets.newHashSet(toDiscoveryEntry),
+                                                          new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry)),
                                                           subscriptionRequest);
         subscriptionId = subscriptionRequest.getSubscriptionId();
 
@@ -236,7 +237,7 @@ public class SubscriptionManagerTest {
                                                              Mockito.any(ScheduledFuture.class));
 
         verify(dispatcher).sendSubscriptionRequest(eq(fromParticipantId),
-                                                   eq(Sets.newHashSet(toDiscoveryEntry)),
+                                                   eq(new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry))),
                                                    any(SubscriptionRequest.class),
                                                    any(MessagingQos.class));
     }
@@ -255,7 +256,7 @@ public class SubscriptionManagerTest {
                                                                                 future);
         subscriptionId = request.getSubscriptionId();
         subscriptionManager.registerAttributeSubscription(fromParticipantId,
-                                                          Sets.newHashSet(toDiscoveryEntry),
+                                                          new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry)),
                                                           request);
 
         verify(attributeSubscriptionDirectory).put(Mockito.anyString(), Mockito.eq(attributeSubscriptionCallback));
@@ -267,7 +268,7 @@ public class SubscriptionManagerTest {
         verify(subscriptionEndFutures, never()).put(Mockito.anyString(), Mockito.any(ScheduledFuture.class));
 
         verify(dispatcher).sendSubscriptionRequest(eq(fromParticipantId),
-                                                   eq(Sets.newHashSet(toDiscoveryEntry)),
+                                                   eq(new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry))),
                                                    any(SubscriptionRequest.class),
                                                    any(MessagingQos.class));
     }
@@ -326,7 +327,7 @@ public class SubscriptionManagerTest {
         DiscoveryEntryWithMetaInfo toDiscoveryEntry = new DiscoveryEntryWithMetaInfo();
         toDiscoveryEntry.setParticipantId(toParticipantId);
         subscriptionManager.registerMulticastSubscription(fromParticipantId,
-                                                          Sets.newHashSet(toDiscoveryEntry),
+                                                          new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry)),
                                                           invocation);
 
         verify(multicastSubscribersDirectory).put(any(Pattern.class), anySet());
@@ -336,7 +337,7 @@ public class SubscriptionManagerTest {
         }
 
         verify(dispatcher).sendSubscriptionRequest(eq(fromParticipantId),
-                                                   eq(Sets.newHashSet(toDiscoveryEntry)),
+                                                   eq(new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry))),
                                                    any(SubscriptionRequest.class),
                                                    any(MessagingQos.class));
     }
@@ -349,17 +350,18 @@ public class SubscriptionManagerTest {
         when(missedPublicationTimers.containsKey(subscriptionId)).thenReturn(true);
         when(missedPublicationTimers.get(subscriptionId)).thenReturn(missedPublicationTimer);
         subscriptionManager.unregisterSubscription(fromParticipantId,
-                                                   Sets.newHashSet(toDiscoveryEntry),
+                                                   new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry)),
                                                    subscriptionId,
                                                    qosSettings);
 
         verify(subscriptionStates).get(Mockito.eq(subscriptionId));
         verify(subscriptionState).stop();
 
-        verify(dispatcher, times(1)).sendSubscriptionStop(Mockito.eq(fromParticipantId),
-                                                          eq(Sets.newHashSet(toDiscoveryEntry)),
-                                                          Mockito.eq(new SubscriptionStop(subscriptionId)),
-                                                          Mockito.any(MessagingQos.class));
+        verify(dispatcher,
+               times(1)).sendSubscriptionStop(Mockito.eq(fromParticipantId),
+                                              eq(new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry))),
+                                              Mockito.eq(new SubscriptionStop(subscriptionId)),
+                                              Mockito.any(MessagingQos.class));
 
     }
 
@@ -446,15 +448,18 @@ public class SubscriptionManagerTest {
     public void testHandleMulticastSubscriptionWithWildcardSubscribers() {
         Pattern subscriberOnePattern = Pattern.compile("one/[^/]+/three");
         String subscriberOneId = "one";
-        multicastSubscribersDirectory.putIfAbsent(subscriberOnePattern, Sets.newHashSet(subscriberOneId));
+        multicastSubscribersDirectory.putIfAbsent(subscriberOnePattern,
+                                                  new HashSet<String>(Arrays.asList(subscriberOneId)));
 
         Pattern subscriberTwoPattern = Pattern.compile("one/two/three");
         String subscriberTwoId = "two";
-        multicastSubscribersDirectory.putIfAbsent(subscriberTwoPattern, Sets.newHashSet(subscriberTwoId));
+        multicastSubscribersDirectory.putIfAbsent(subscriberTwoPattern,
+                                                  new HashSet<String>(Arrays.asList(subscriberTwoId)));
 
         Pattern subscriberThreePattern = Pattern.compile("four/five/six");
         String subscriberThreeId = "three";
-        multicastSubscribersDirectory.putIfAbsent(subscriberThreePattern, Sets.newHashSet(subscriberThreeId));
+        multicastSubscribersDirectory.putIfAbsent(subscriberThreePattern,
+                                                  new HashSet<String>(Arrays.asList(subscriberThreeId)));
 
         @SuppressWarnings("rawtypes")
         Class[] types = new Class[]{ String.class };

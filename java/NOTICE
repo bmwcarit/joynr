@@ -23,7 +23,6 @@ This project has dependencies to:
   Aether SPI under Eclipse Public License, Version 1.0
   Aether Transport Wagon under Eclipse Public License, Version 1.0
   Aether Utilities under Eclipse Public License, Version 1.0
-  Animal Sniffer Annotations under MIT license
   AntLR Parser Generator under BSD License
   AOP alliance under Public Domain
   aopalliance version 1.0 repackaged as a module under CDDL + GPLv2 with classpath exception
@@ -69,14 +68,12 @@ This project has dependencies to:
   Arquillian Transaction Extension: Implementation Base under Apache License, Version 2.0
   Arquillian Transaction Extension: JTA under Apache License, Version 2.0
   Arquillian Transaction Extension: SPI under Apache License, Version 2.0
-  ASM Core under BSD License
   atmosphere-annotations under CDDL or Apache License 2.0
   atmosphere-guice under Apache License 2.0
   atmosphere-jersey under CDDL or Apache License 2.0
   atmosphere-runtime under CDDL or Apache License 2.0
   Bean Validation API under Apache License, Version 2.0
   CDI APIs under Apache License, Version 2.0
-  Checker Qual under GNU General Public License, version 2 (GPL2), with the classpath exception or The MIT License
   clustercontroller-inprocess-runtime under The Apache Software License, Version 2.0
   clustercontroller-standalone under The Apache Software License, Version 2.0
   clustercontroller-websocket-runtime under The Apache Software License, Version 2.0
@@ -94,7 +91,6 @@ This project has dependencies to:
   ehcache under The Apache Software License, Version 2.0
   EJB 3.1 API under lgpl
   Embedded GlassFish All-In-One under CDDL + GPLv2 with classpath exception
-  error-prone annotations under Apache 2.0
   Expression Language 2.2 API under lgpl
   FindBugs-Annotations under GNU Lesser Public License
   FindBugs-jsr305 under The Apache Software License, Version 2.0
@@ -162,7 +158,6 @@ This project has dependencies to:
   io.joynr.smrf.java:smrf under The Apache Software License, Version 2.0
   io.joynr.smrf.java:smrf-api under The Apache Software License, Version 2.0
   io.joynr:java under The Apache Software License, Version 2.0
-  J2ObjC Annotations under The Apache Software License, Version 2.0
   JACC 1.4 API under lgpl
   Jackson under The Apache Software License, Version 2.0
   Jackson module: JAXB-annotations under The Apache Software License, Version 2.0
@@ -181,7 +176,6 @@ This project has dependencies to:
   Java Servlet 3.0 API under lgpl
   Java Servlet API under CDDL + GPLv2 with classpath exception
   Java Transaction API under Common Development and Distribution License or GNU General Public License, Version 2 with the Classpath Exception
-  Java(TM) EE 6 Specification APIs under CDDL + GPLv2 with classpath exception
   Java(TM) EE 7 Specification APIs under CDDL + GPLv2 with classpath exception
   JavaBeans Activation Framework (JAF) under Common Development and Distribution License (CDDL) v1.0
   JavaEE Application Deployment 1.2 API under lgpl
@@ -229,6 +223,7 @@ This project has dependencies to:
   JSON.simple under The Apache Software License, Version 2.0
   jsoup under The MIT License
   JSR-181 Maintenance Release 1 under CDDL+GPLv2
+  jsr311-api under CDDL License
   JTA 1.1 under The Apache Software License, Version 2.0
   JUnit under Eclipse Public License 1.0
   libjoynr-websocket-runtime under The Apache Software License, Version 2.0
@@ -241,7 +236,7 @@ This project has dependencies to:
   Maven Repository Metadata Model under Apache License, Version 2.0
   Maven Settings under Apache License, Version 2.0
   Maven Settings Builder under Apache License, Version 2.0
-  MIME streaming extension under Dual license consisting of the CDDL v1.1 and GPL v2
+  MIME streaming extension under CDDL 1.1 or GPL2 w/ CPE
   Mockito under The MIT License
   Neko HTML under The Apache Software License, Version 2.0
   Objenesis under MIT License

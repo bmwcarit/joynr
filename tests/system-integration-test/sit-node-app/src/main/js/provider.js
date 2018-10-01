@@ -56,6 +56,10 @@ provisioning.ccAddress.host = process.env.cchost;
 provisioning.ccAddress.port = process.env.ccport;
 provisioning.ccAddress.protocol = process.env.ccprotocol;
 
+if (!provisioning.persistency) {
+    provisioning.persistency = {};
+}
+
 if (process.env.tlsCertPath || process.env.tlsKeyPath || process.env.tlsCertPath || process.env.ownerId) {
     provisioning.keychain = {};
 
@@ -69,6 +73,9 @@ if (process.env.tlsCertPath || process.env.tlsKeyPath || process.env.tlsCertPath
         provisioning.keychain.tlsCa = fs.readFileSync(process.env.tlsCaPath, 'utf8');
     }
     provisioning.keychain.ownerId = process.env.ownerId;
+    provisioning.persistency.location = "./localStorageProviderTls";
+} else {
+    provisioning.persistency.location = "./localStorageProvider";
 }
 
 joynr.load(testbase.provisioning_common).then((loadedJoynr) => {

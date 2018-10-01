@@ -26,12 +26,13 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>tests</artifactId>
-		<version>1.5.0</version>
+		<version>1.6.0</version>
 	</parent>
 
 	<modules>
 		<module>sit-cpp-app</module>
 		<module>sit-java-app</module>
+		<module>sit-jee-api</module>
 		<module>sit-jee-app</module>
 		<module>sit-node-app</module>
 	</modules>
@@ -42,5 +43,11 @@
 				<directory>src/main/model</directory>
 			</resource>
 		</resources>
+		<plugins>
+			<plugin>
+				<groupId>net.revelc.code.formatter</groupId>
+				<artifactId>formatter-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
 	</build>
 </project>

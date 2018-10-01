@@ -25,11 +25,22 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.HashSet;
 
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 
-import com.google.common.collect.Sets;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.transaction.api.annotation.TransactionMode;
+import org.jboss.arquillian.transaction.api.annotation.Transactional;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.shrinkwrap.resolver.api.maven.Maven;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import io.joynr.accesscontrol.global.jee.persistence.ControlEntryType;
 import io.joynr.accesscontrol.global.jee.persistence.DomainRoleEntryEntity;
 import io.joynr.accesscontrol.global.jee.persistence.MasterAccessControlEntryEntity;
@@ -40,15 +51,6 @@ import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.Role;
 import joynr.infrastructure.DacTypes.TrustLevel;
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.transaction.api.annotation.TransactionMode;
-import org.jboss.arquillian.transaction.api.annotation.Transactional;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.jboss.shrinkwrap.resolver.api.maven.Maven;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 @RunWith(Arquillian.class)
 @Transactional(TransactionMode.ROLLBACK)
@@ -152,7 +154,7 @@ public class MasterAccessControlEntryManagerTest {
         DomainRoleEntryEntity role1 = new DomainRoleEntryEntity();
         role1.setUserId(userId);
         role1.setRole(Role.MASTER);
-        role1.setDomains(Sets.newHashSet("domain1", "domain4", "domain5"));
+        role1.setDomains(new HashSet<String>(Arrays.asList("domain1", "domain4", "domain5")));
         entityManager.persist(role1);
 
         flushAndClear();
@@ -284,7 +286,7 @@ public class MasterAccessControlEntryManagerTest {
         DomainRoleEntryEntity domainRoleEntryEntity = new DomainRoleEntryEntity();
         domainRoleEntryEntity.setUserId(userId);
         domainRoleEntryEntity.setRole(Role.OWNER);
-        domainRoleEntryEntity.setDomains(Sets.newHashSet(domain));
+        domainRoleEntryEntity.setDomains(new HashSet<String>(Arrays.asList(domain)));
         entityManager.persist(domainRoleEntryEntity);
 
         create(userId,
@@ -467,12 +469,12 @@ public class MasterAccessControlEntryManagerTest {
         entity.setDomain(domain);
         entity.setInterfaceName(interfaceName);
         entity.setDefaultRequiredTrustLevel(trustLevel);
-        entity.setPossibleRequiredTrustLevels(Sets.newHashSet(possibleTrustLevels));
+        entity.setPossibleRequiredTrustLevels(new HashSet<TrustLevel>(Arrays.asList(possibleTrustLevels)));
         entity.setDefaultRequiredControlEntryChangeTrustLevel(changeTrustLevel);
-        entity.setPossibleRequiredControlEntryChangeTrustLevels(Sets.newHashSet(possibleChangeTrustLevels));
+        entity.setPossibleRequiredControlEntryChangeTrustLevels(new HashSet<TrustLevel>(Arrays.asList(possibleChangeTrustLevels)));
         entity.setOperation(operation);
         entity.setDefaultConsumerPermission(permission);
-        entity.setPossibleConsumerPermissions(Sets.newHashSet(possiblePermissions));
+        entity.setPossibleConsumerPermissions(new HashSet<Permission>(Arrays.asList(possiblePermissions)));
         entity.setType(type);
         entityManager.persist(entity);
         return entity;

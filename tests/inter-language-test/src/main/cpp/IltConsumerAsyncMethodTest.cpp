@@ -41,8 +41,6 @@ public:
     static volatile bool methodWithMultipleStructParametersAsyncCallbackResult;
     static volatile bool methodWithSingleArrayParametersAsyncCallbackDone;
     static volatile bool methodWithSingleArrayParametersAsyncCallbackResult;
-    static volatile bool methodWithSingleByteBufferParameterAsyncCallbackDone;
-    static volatile bool methodWithSingleByteBufferParameterAsyncCallbackResult;
     static volatile bool methodWithSinglePrimitiveParametersAsyncCallbackDone;
     static volatile bool methodWithSinglePrimitiveParametersAsyncCallbackResult;
     static volatile bool methodWithExtendedErrorEnumAsyncCallbackDone;
@@ -60,10 +58,6 @@ volatile bool IltConsumerAsyncMethodTest::methodWithMultipleStructParametersAsyn
         false;
 volatile bool IltConsumerAsyncMethodTest::methodWithSingleArrayParametersAsyncCallbackDone = false;
 volatile bool IltConsumerAsyncMethodTest::methodWithSingleArrayParametersAsyncCallbackResult =
-        false;
-volatile bool IltConsumerAsyncMethodTest::methodWithSingleByteBufferParameterAsyncCallbackDone =
-        false;
-volatile bool IltConsumerAsyncMethodTest::methodWithSingleByteBufferParameterAsyncCallbackResult =
         false;
 volatile bool IltConsumerAsyncMethodTest::methodWithSinglePrimitiveParametersAsyncCallbackDone =
         false;
@@ -336,61 +330,9 @@ TEST_F(IltConsumerAsyncMethodTest, callMethodWithSinglePrimitiveParametersAsync)
 
 TEST_F(IltConsumerAsyncMethodTest, callMethodWithSingleByteBufferParameter)
 {
-    // setup input parameter
-    joynr::ByteBuffer arg = {0, 100, 255};
-
-    std::function<void(const joynr::ByteBuffer& result)> onSuccess =
-            [&arg](const joynr::ByteBuffer& result) {
-        // check result
-        if (result != arg) {
-            methodWithSingleByteBufferParameterAsyncCallbackResult = false;
-            methodWithSingleByteBufferParameterAsyncCallbackDone = true;
-            JOYNR_LOG_DEBUG(logger(),
-                            "callMethodWithSingleByteBufferParameterAsync - callback -"
-                            "invalid result");
-            JOYNR_LOG_DEBUG(logger(), "callMethodWithSingleByteBufferParameterAsync - FAILED");
-            return;
-        }
-
-        methodWithSingleByteBufferParameterAsyncCallbackResult = true;
-        methodWithSingleByteBufferParameterAsyncCallbackDone = true;
-        JOYNR_LOG_DEBUG(logger(),
-                        "callMethodWithSingleByteBufferParameterAsync - callback - "
-                        "got correct value");
-    };
-
-    std::function<void(const joynr::exceptions::JoynrException& error)> onError =
-            [](const joynr::exceptions::JoynrException& error) {
-        methodWithSingleByteBufferParameterAsyncCallbackResult = false;
-        methodWithSingleByteBufferParameterAsyncCallbackDone = true;
-        JOYNR_LOG_DEBUG(logger(),
-                        "callMethodWithSingleByteBufferParameterAsync - callback - "
-                        "caught exception");
-        JOYNR_LOG_DEBUG(logger(), error.getTypeName());
-        JOYNR_LOG_DEBUG(logger(), error.getMessage());
-    };
-
-    std::shared_ptr<joynr::Future<joynr::ByteBuffer>> future =
-            testInterfaceProxy->methodWithSingleByteBufferParameterAsync(arg, onSuccess, onError);
-
-    long timeoutInMilliseconds = 8000;
-    JOYNR_ASSERT_NO_THROW(future->wait(timeoutInMilliseconds));
-    ASSERT_TRUE(future->isOk());
-
-    joynr::ByteBuffer result;
-
-    // the following call would throw an exception, in case the request status
-    // is negative, however we have already returned here
-    future->get(result);
-
-    // check results from future
-    ASSERT_EQ(result, arg);
-
-    // check results from callback; expect to be finished within 1 second
-    // should have been called ahead anyway
-    waitForChange(methodWithSingleByteBufferParameterAsyncCallbackDone, 1000);
-    ASSERT_TRUE(methodWithSingleByteBufferParameterAsyncCallbackDone);
-    ASSERT_TRUE(methodWithSingleByteBufferParameterAsyncCallbackResult);
+    callProxyMethodWithParameterAsyncAndAssertResult<joynr::ByteBuffer>(
+            &joynr::interlanguagetest::TestInterfaceProxy::methodWithSingleByteBufferParameterAsync,
+            joynr::ByteBuffer{0x00, 0x64, 0xFF});
 }
 
 TEST_F(IltConsumerAsyncMethodTest, callMethodWithMultipleByteBufferParameters)

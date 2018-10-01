@@ -18,22 +18,21 @@
  */
 package io.joynr.integration;
 
-import static org.junit.Assert.fail;
 import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.fail;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Semaphore;
 
-import com.google.inject.AbstractModule;
+import org.junit.Test;
+
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
+
 import io.joynr.integration.util.DummyJoynrApplication;
 import io.joynr.messaging.MessagingPropertyKeys;
-import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.MqttModule;
 import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
 import io.joynr.proxy.Future;
@@ -43,21 +42,20 @@ import io.joynr.runtime.JoynrRuntime;
 import joynr.MulticastSubscriptionQos;
 import joynr.tests.testBroadcastInterface;
 import joynr.tests.testProxy;
-import org.junit.Test;
 
 public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTest {
+    private static final String MQTT_BROKER_URL = "tcp://localhost:1883";
 
     private Properties mqttConfig;
-    private static int mqttBrokerPort = 1883;
 
     @Override
     protected JoynrRuntime getRuntime(Properties joynrConfig, Module... modules) {
         mqttConfig = new Properties();
-        mqttConfig.put(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "tcp://localhost:" + mqttBrokerPort);
+        mqttConfig.put(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, MQTT_BROKER_URL);
         // test is using 2 global address typs, so need to set one of them as primary
         mqttConfig.put(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
-        mqttConfig.put(MessagingPropertyKeys.DISCOVERYDIRECTORYURL, "tcp://localhost:" + mqttBrokerPort);
-        mqttConfig.put(MessagingPropertyKeys.DOMAINACCESSCONTROLLERURL, "tcp://localhost:" + mqttBrokerPort);
+        mqttConfig.put(MessagingPropertyKeys.DISCOVERYDIRECTORYURL, MQTT_BROKER_URL);
+        mqttConfig.put(MessagingPropertyKeys.DOMAINACCESSCONTROLLERURL, MQTT_BROKER_URL);
         mqttConfig.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_MULTICAST, "");
         mqttConfig.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_REPLYTO, "replyto/");
         mqttConfig.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_UNICAST, "");
@@ -72,12 +70,27 @@ public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTe
         return application.getRuntime();
     }
 
+    private testProxy buildTestProxy() {
+        return consumerRuntime.getProxyBuilder(domain, testProxy.class)
+                              .setMessagingQos(messagingQos)
+                              .setDiscoveryQos(discoveryQos)
+                              .build();
+    }
+
+    private Future<String> subscribeForBroadcastOnTestProxy(testProxy proxy,
+                                                            Runnable onReceiveFunction,
+                                                            String... partitions) {
+        return proxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
+            @Override
+            public void onReceive() {
+                onReceiveFunction.run();
+            }
+        }, new MulticastSubscriptionQos(), partitions);
+    }
+
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT * 1000)
     public void testLargeByteArray() throws Exception {
-        testProxy proxy = consumerRuntime.getProxyBuilder(domain, testProxy.class)
-                                         .setMessagingQos(messagingQos)
-                                         .setDiscoveryQos(discoveryQos)
-                                         .build();
+        testProxy proxy = buildTestProxy();
 
         Byte[] largeByteArray = new Byte[1024 * 100];
 
@@ -93,16 +106,9 @@ public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTe
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT * 1000)
     public void testSimpleMulticast() throws Exception {
         final Semaphore semaphore = new Semaphore(0);
-        testProxy proxy = consumerRuntime.getProxyBuilder(domain, testProxy.class)
-                                         .setMessagingQos(messagingQos)
-                                         .setDiscoveryQos(discoveryQos)
-                                         .build();
-        proxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
-            @Override
-            public void onReceive() {
-                semaphore.release();
-            }
-        }, new MulticastSubscriptionQos());
+        testProxy proxy = buildTestProxy();
+
+        subscribeForBroadcastOnTestProxy(proxy, () -> semaphore.release());
 
         // wait to allow the subscription request to arrive at the provider
         Thread.sleep(500);
@@ -114,23 +120,13 @@ public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTe
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void testMulticastWithPartitions() throws Exception {
         final Semaphore semaphore = new Semaphore(0);
-        testProxy testProxy = consumerRuntime.getProxyBuilder(domain, testProxy.class)
-                                             .setMessagingQos(messagingQos)
-                                             .setDiscoveryQos(discoveryQos)
-                                             .build();
+        testProxy testProxy = buildTestProxy();
+
         final List<String> errors = new ArrayList<>();
-        testProxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
-            @Override
-            public void onReceive() {
-                errors.add("On receive called on listener with no partitions.");
-            }
-        }, new MulticastSubscriptionQos());
-        testProxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
-            @Override
-            public void onReceive() {
-                semaphore.release();
-            }
-        }, new MulticastSubscriptionQos(), "one", "two", "three");
+
+        subscribeForBroadcastOnTestProxy(testProxy,
+                                         () -> errors.add("On receive called on listener with no partitions."));
+        subscribeForBroadcastOnTestProxy(testProxy, () -> semaphore.release(), "one", "two", "three");
 
         // wait to allow the subscription request to arrive at the provider
         Thread.sleep(500);
@@ -145,23 +141,18 @@ public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTe
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void testMulticastWithPartitionsAndMultiLevelWildcard() throws Exception {
         final Semaphore semaphore = new Semaphore(0);
-        testProxy testProxy = consumerRuntime.getProxyBuilder(domain, testProxy.class)
-                                             .setMessagingQos(messagingQos)
-                                             .setDiscoveryQos(discoveryQos)
-                                             .build();
+        testProxy testProxy = buildTestProxy();
+
         final List<String> errors = new ArrayList<>();
-        Future<String> subscriptionIdOfWildCard = testProxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
-            @Override
-            public void onReceive() {
-                semaphore.release();
-            }
-        }, new MulticastSubscriptionQos(), "one", "*");
-        Future<String> subscriptionIdOfOtherTopics = testProxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
-            @Override
-            public void onReceive() {
-                errors.add("Received multicast on partition which wasn't published to: four/five/six");
-            }
-        }, new MulticastSubscriptionQos(), "four", "five", "six");
+        Future<String> subscriptionIdOfWildCard = subscribeForBroadcastOnTestProxy(testProxy,
+                                                                                   () -> semaphore.release(),
+                                                                                   "one",
+                                                                                   "*");
+        Future<String> subscriptionIdOfOtherTopics = subscribeForBroadcastOnTestProxy(testProxy,
+                                                                                      () -> errors.add("Received multicast on partition which wasn't published to: four/five/six"),
+                                                                                      "four",
+                                                                                      "five",
+                                                                                      "six");
 
         // wait to allow the subscription request to arrive at the provider
         Thread.sleep(500);
@@ -183,17 +174,13 @@ public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTe
     @Test
     public void testMulticastWithPartitionsAndSingleLevelWildcard() throws Exception {
         final Semaphore semaphore = new Semaphore(0);
-        testProxy testProxy = consumerRuntime.getProxyBuilder(domain, testProxy.class)
-                                             .setMessagingQos(messagingQos)
-                                             .setDiscoveryQos(discoveryQos)
-                                             .build();
-        final List<String> errors = new ArrayList<>();
-        Future<String> futureOfWildCard = testProxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
-            @Override
-            public void onReceive() {
-                semaphore.release();
-            }
-        }, new MulticastSubscriptionQos(), "one", "+", "three");
+        testProxy testProxy = buildTestProxy();
+
+        Future<String> futureOfWildCard = subscribeForBroadcastOnTestProxy(testProxy,
+                                                                           () -> semaphore.release(),
+                                                                           "one",
+                                                                           "+",
+                                                                           "three");
 
         // wait to allow the subscription request to arrive at the provider
         Thread.sleep(500);
@@ -204,26 +191,19 @@ public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTe
         provider.fireEmptyBroadcast("one", "two", "three"); // match
         provider.fireEmptyBroadcast("one", "two", "three", "four", "five", "six");
         semaphore.acquire(1);
-        if (errors.size() > 0) {
-            fail("Got errors. " + errors);
-        }
+
         testProxy.unsubscribeFromEmptyBroadcastBroadcast(futureOfWildCard.get());
     }
 
     @Test
     public void testMulticastWithPartitionsAndSingleLevelWildcardAsLastPartition() throws Exception {
         final Semaphore semaphore = new Semaphore(0);
-        testProxy testProxy = consumerRuntime.getProxyBuilder(domain, testProxy.class)
-                                             .setMessagingQos(messagingQos)
-                                             .setDiscoveryQos(discoveryQos)
-                                             .build();
-        final List<String> errors = new ArrayList<>();
-        Future<String> subscriptionIdOfWildCard = testProxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
-            @Override
-            public void onReceive() {
-                semaphore.release();
-            }
-        }, new MulticastSubscriptionQos(), "one", "+");
+        testProxy testProxy = buildTestProxy();
+
+        Future<String> subscriptionIdOfWildCard = subscribeForBroadcastOnTestProxy(testProxy,
+                                                                                   () -> semaphore.release(),
+                                                                                   "one",
+                                                                                   "+");
 
         // wait to allow the subscription request to arrive at the provider
         Thread.sleep(500);
@@ -234,9 +214,7 @@ public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTe
         provider.fireEmptyBroadcast("one", "two", "three");
         provider.fireEmptyBroadcast("one", "two", "three", "four", "five", "six");
         semaphore.acquire(1);
-        if (errors.size() > 0) {
-            fail("Got errors. " + errors);
-        }
+
         testProxy.unsubscribeFromEmptyBroadcastBroadcast(subscriptionIdOfWildCard.get());
     }
 }

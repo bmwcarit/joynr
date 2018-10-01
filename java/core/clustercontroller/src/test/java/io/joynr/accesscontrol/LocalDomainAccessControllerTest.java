@@ -38,6 +38,9 @@ import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.ProxyBuilderFactoryImpl;
 import io.joynr.proxy.ProxyInvocationHandler;
 import io.joynr.proxy.ProxyInvocationHandlerFactory;
+import io.joynr.runtime.ShutdownNotifier;
+import io.joynr.proxy.StatelessAsyncCallback;
+import io.joynr.proxy.StatelessAsyncCallbackDirectory;
 import joynr.MulticastSubscriptionQos;
 import joynr.infrastructure.DacTypes.DomainRoleEntry;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
@@ -77,11 +80,15 @@ public class LocalDomainAccessControllerTest {
     @Mock
     private ProxyInvocationHandlerFactory proxyInvocationHandlerFactoryMock;
     @Mock
+    private StatelessAsyncCallbackDirectory statelessAsyncCallbackDirectoryMock;
+    @Mock
     private ProxyInvocationHandler proxyInvocationHandlerMock;
     @Mock
     private LocalDiscoveryAggregator localDiscoveryAggregator;
     @Mock
     private Dispatcher dispatcher;
+    @Mock
+    private ShutdownNotifier shutdownNotifier;
 
     @SuppressWarnings("unchecked")
     @Before
@@ -94,13 +101,17 @@ public class LocalDomainAccessControllerTest {
                                                       any(String.class),
                                                       any(String.class),
                                                       any(DiscoveryQos.class),
-                                                      any(MessagingQos.class))).thenReturn(proxyInvocationHandlerMock);
+                                                      any(MessagingQos.class),
+                                                      any(ShutdownNotifier.class),
+                                                      any(StatelessAsyncCallback.class))).thenReturn(proxyInvocationHandlerMock);
         GlobalDiscoveryEntry accessControlDomain = mock(GlobalDiscoveryEntry.class);
         when(accessControlDomain.getDomain()).thenReturn("accessControlDomain");
         localDomainAccessController = new LocalDomainAccessControllerImpl(accessControlDomain,
                                                                           domainAccessControlStore,
                                                                           new ProxyBuilderFactoryImpl(localDiscoveryAggregator,
                                                                                                       proxyInvocationHandlerFactoryMock,
+                                                                                                      shutdownNotifier,
+                                                                                                      statelessAsyncCallbackDirectoryMock,
                                                                                                       MAX_TTL,
                                                                                                       DISCOVERY_TIMEOUT_MS,
                                                                                                       RETRY_INTERVAL_MS),

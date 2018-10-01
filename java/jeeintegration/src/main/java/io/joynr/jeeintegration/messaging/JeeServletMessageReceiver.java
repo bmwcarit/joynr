@@ -18,10 +18,10 @@
  */
 package io.joynr.jeeintegration.messaging;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.Future;
 
-import com.google.common.util.concurrent.Futures;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -138,7 +138,7 @@ public class JeeServletMessageReceiver implements ServletMessageReceiver {
         if (!registered) {
             registerChannelUrl();
         }
-        return Futures.immediateFuture(null);
+        return CompletableFuture.completedFuture(null);
     }
 
     @Override

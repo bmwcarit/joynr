@@ -18,14 +18,14 @@
  */
 package io.joynr.arbitration;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.Sets;
 
 import joynr.types.DiscoveryEntryWithMetaInfo;
 
@@ -53,6 +53,7 @@ public class LastSeenArbitrationStrategyFunction extends ArbitrationStrategyFunc
         }
         logger.trace("capability with lastSeenMs: " + latestSeenDateMs + "\r\n" + latestSeenCapability);
 
-        return latestSeenCapability == null ? null : Sets.newHashSet(latestSeenCapability);
+        return latestSeenCapability == null ? null
+                : new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(latestSeenCapability));
     }
 }

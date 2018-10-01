@@ -34,7 +34,6 @@ import android.os.AsyncTask;
 import android.os.Messenger;
 import android.util.Log;
 
-import com.google.common.collect.Sets;
 import com.google.inject.Module;
 
 public class JoynrAndroidRuntime implements JoynrRuntime {
@@ -109,7 +108,7 @@ public class JoynrAndroidRuntime implements JoynrRuntime {
 
     @Override
     public <T> ProxyBuilder<T> getProxyBuilder(String domain, Class<T> interfaceClass) {
-        return new AndroidProxyBuilder<T>(runtimeInitTask, Sets.newHashSet(domain), interfaceClass, uiLogger);
+        return new AndroidProxyBuilder<T>(runtimeInitTask, new HashSet(Arrays.asList(domain)), interfaceClass, uiLogger);
     }
 
     public void addLogListener(Messenger clientMessenger) {

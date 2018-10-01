@@ -46,6 +46,7 @@ import io.joynr.jeeintegration.JoynrIntegrationBean;
 import io.joynr.jeeintegration.JoynrStatusMetrics;
 import io.joynr.jeeintegration.JoynrStatusMetricsAggregator;
 import io.joynr.jeeintegration.ServiceProviderDiscovery;
+import io.joynr.jeeintegration.CallbackHandlerDiscovery;
 import io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys;
 import io.joynr.messaging.mqtt.statusmetrics.MqttStatusReceiver;
 import io.joynr.messaging.routing.MessageRouter;
@@ -63,6 +64,7 @@ public class JeeIntegrationBeanTest {
         // @formatter:off
         return ShrinkWrap.create(JavaArchive.class)
                          .addClasses(ServiceProviderDiscovery.class,
+                                     CallbackHandlerDiscovery.class,
                                      DefaultJoynrRuntimeFactory.class,
                                      JeeIntegrationJoynrTestConfigurationProvider.class,
                                      JoynrIntegrationBean.class,

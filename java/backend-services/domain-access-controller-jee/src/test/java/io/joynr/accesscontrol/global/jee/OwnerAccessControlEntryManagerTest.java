@@ -23,20 +23,12 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.HashSet;
 
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 
-import com.google.common.collect.Sets;
-import io.joynr.accesscontrol.global.jee.persistence.DomainRoleEntryEntity;
-import io.joynr.accesscontrol.global.jee.persistence.OwnerAccessControlEntryEntity;
-import io.joynr.jeeintegration.api.security.JoynrCallingPrincipal;
-import io.joynr.jeeintegration.context.JoynrJeeMessageContext;
-import joynr.infrastructure.DacTypes.ChangeType;
-import joynr.infrastructure.DacTypes.OwnerAccessControlEntry;
-import joynr.infrastructure.DacTypes.Permission;
-import joynr.infrastructure.DacTypes.Role;
-import joynr.infrastructure.DacTypes.TrustLevel;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.transaction.api.annotation.TransactionMode;
@@ -46,6 +38,16 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.resolver.api.maven.Maven;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import io.joynr.accesscontrol.global.jee.persistence.DomainRoleEntryEntity;
+import io.joynr.accesscontrol.global.jee.persistence.OwnerAccessControlEntryEntity;
+import io.joynr.jeeintegration.api.security.JoynrCallingPrincipal;
+import io.joynr.jeeintegration.context.JoynrJeeMessageContext;
+import joynr.infrastructure.DacTypes.ChangeType;
+import joynr.infrastructure.DacTypes.OwnerAccessControlEntry;
+import joynr.infrastructure.DacTypes.Permission;
+import joynr.infrastructure.DacTypes.Role;
+import joynr.infrastructure.DacTypes.TrustLevel;
 
 @RunWith(Arquillian.class)
 @Transactional(TransactionMode.ROLLBACK)
@@ -120,7 +122,7 @@ public class OwnerAccessControlEntryManagerTest {
         DomainRoleEntryEntity domainRoleEntryEntity = new DomainRoleEntryEntity();
         domainRoleEntryEntity.setUserId(userId);
         domainRoleEntryEntity.setRole(Role.OWNER);
-        domainRoleEntryEntity.setDomains(Sets.newHashSet(domain));
+        domainRoleEntryEntity.setDomains(new HashSet<String>(Arrays.asList(domain)));
         entityManager.persist(domainRoleEntryEntity);
 
         flushAndClear();
@@ -175,7 +177,7 @@ public class OwnerAccessControlEntryManagerTest {
         DomainRoleEntryEntity domainRoleEntryEntity = new DomainRoleEntryEntity();
         domainRoleEntryEntity.setUserId(userId);
         domainRoleEntryEntity.setRole(Role.MASTER);
-        domainRoleEntryEntity.setDomains(Sets.newHashSet(domain));
+        domainRoleEntryEntity.setDomains(new HashSet<String>(Arrays.asList(domain)));
         entityManager.persist(domainRoleEntryEntity);
 
         flushAndClear();
