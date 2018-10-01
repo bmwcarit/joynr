@@ -28,13 +28,13 @@ import java.util.List;
 import java.util.Set;
 
 import javax.ejb.EJBException;
-import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 
 import com.google.inject.Injector;
 import io.joynr.dispatcher.rpc.MultiReturnValuesContainer;
 import io.joynr.exceptions.JoynrException;
+import io.joynr.jeeintegration.api.ServiceProvider;
 import io.joynr.jeeintegration.api.security.JoynrCallingPrincipal;
 import io.joynr.jeeintegration.context.JoynrJeeMessageContext;
 import io.joynr.jeeintegration.multicast.SubscriptionPublisherInjectionWrapper;
@@ -85,6 +85,7 @@ public class ProviderWrapper implements InvocationHandler {
     private Bean<?> bean;
     private BeanManager beanManager;
     private Injector injector;
+    private Class<?> serviceInterface;
 
     /**
      * Initialises the instance with the service interface which will be exposed and the bean reference it is meant to
@@ -97,6 +98,8 @@ public class ProviderWrapper implements InvocationHandler {
      * @param injector the Guice injector.
      */
     public ProviderWrapper(Bean<?> bean, BeanManager beanManager, Injector injector) {
+        ServiceProvider serviceProvider = bean.getBeanClass().getAnnotation(ServiceProvider.class);
+        serviceInterface = serviceProvider.serviceInterface();
         this.bean = bean;
         this.beanManager = beanManager;
         this.injector = injector;
@@ -258,7 +261,6 @@ public class ProviderWrapper implements InvocationHandler {
         return reference;
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     private Object createDelegateForMethod(Method method, boolean isProviderMethod) {
         if (OBJECT_METHODS.contains(method) || isProviderMethod) {
             return this;
@@ -267,7 +269,7 @@ public class ProviderWrapper implements InvocationHandler {
                 && SubscriptionPublisherInjection.class.isAssignableFrom(method.getDeclaringClass())) {
             return SubscriptionPublisherInjectionWrapper.createInvocationHandler(bean, beanManager).createProxy();
         }
-        return bean.create((CreationalContext) beanManager.createCreationalContext(bean));
+        return beanManager.getReference(bean, serviceInterface, beanManager.createCreationalContext(bean));
     }
 
     private Method getMethodFromInterfaces(Class<?> beanClass,
