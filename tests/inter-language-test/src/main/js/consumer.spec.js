@@ -845,30 +845,6 @@ describe("Consumer test", () => {
             }
         });
 
-        it("callSetAttributeMapStringString", async () => {
-            log("callSetAttributeMapStringString");
-            const value = new MapStringString();
-            for (let i = 1; i <= 3; i++) {
-                value.put(`keyString${i}`, `valueString${i}`);
-            }
-            const args = {
-                value
-            };
-            await testInterfaceProxy.attributeMapStringString.set(args);
-        });
-
-        it("callGetAttributeMapStringString", async () => {
-            log("callGetAttributeMapStringString");
-            const retObj = await testInterfaceProxy.attributeMapStringString.get();
-
-            expect(retObj).toBeDefined();
-            expect(retObj).toBeDefined();
-            log(`result = ${JSON.stringify(retObj)}`);
-            for (let i = 1; i <= 3; i++) {
-                expect(retObj.get(`keyString${i}`)).toEqual(`valueString${i}`);
-            }
-        });
-
         it("callMethodWithSingleMapParameters", async () => {
             log("callMethodWithSingleMapParameters");
             const mapArg = new MapStringString();
@@ -887,35 +863,32 @@ describe("Consumer test", () => {
             log("callMethodWithSingleMapParameters - OK");
         });
 
-        it("callSetAttributeUInt8", async () => {
-            log("callSetAttributeUInt8");
-            const args = {
-                value: 127
-            };
-            await testInterfaceProxy.attributeUInt8.set(args);
-        });
+        async function genericSetGet(testObj, testValue) {
+            log(`genericSetGet called with testValue = ${JSON.stringify(testValue)}`);
+            await testObj.set({ value: testValue });
 
-        it("callGetAttributeUInt8", async () => {
-            log("callGetAttributeUInt8");
-            const retObj = await testInterfaceProxy.attributeUInt8.get();
+            const retObj = await testObj.get();
             expect(retObj).toBeDefined();
-            log(`result = ${JSON.stringify(retObj)}`);
-            expect(retObj).toEqual(127);
+            expect(retObj).toEqual(testValue);
+        }
+
+        it("callSetandGetAttributeMapStringString", async () => {
+            log("callSetandGetAttributeMapStringString");
+            const mapArg = new MapStringString();
+            for (let i = 1; i <= 3; i++) {
+                mapArg.put(`keyString${i}`, `valueString${i}`);
+            }
+            return await genericSetGet(testInterfaceProxy.attributeMapStringString, mapArg);
         });
 
-        it("callSetAttributeDouble", async () => {
-            log("callSetAttributeDouble");
-            const args = {
-                value: 1.1
-            };
-            await testInterfaceProxy.attributeDouble.set(args);
+        it("callSetandGetAttributeUInt8", async () => {
+            log("callSetandGetAttributeUInt8");
+            return await genericSetGet(testInterfaceProxy.attributeUInt8, 127);
         });
 
-        it("callGetAttributeDouble", async () => {
-            log("callGetAttributeDouble");
-            const retObj = await testInterfaceProxy.attributeDouble.get();
-            expect(retObj).toBeDefined();
-            expect(IltUtil.cmpDouble(retObj, 1.1)).toBeTruthy();
+        it("callSetandGetAttributeDouble", async () => {
+            log("callSetandGetAttributeDouble");
+            return await genericSetGet(testInterfaceProxy.attributeDouble, 1.1);
         });
 
         it("callGetAttributeBooleanReadonly", async () => {
@@ -925,19 +898,9 @@ describe("Consumer test", () => {
             expect(retObj).toBeTruthy();
         });
 
-        it("callSetAttributeStringNoSubscriptions", async () => {
-            log("callSetAttributeStringNoSubscriptions");
-            const args = {
-                value: "Hello world"
-            };
-            await testInterfaceProxy.attributeStringNoSubscriptions.set(args);
-        });
-
-        it("callGetAttributeStringNoSubscriptions", async () => {
-            log("callGetAttributeStringNoSubscriptions");
-            const retObj = await testInterfaceProxy.attributeStringNoSubscriptions.get();
-            expect(retObj).toBeDefined();
-            expect(retObj).toEqual("Hello world");
+        it("callSetandGetAttributeStringNoSubscriptions", async () => {
+            log("callSetandGetAttributeStringNoSubscriptions");
+            return await genericSetGet(testInterfaceProxy.attributeStringNoSubscriptions, "Hello world");
         });
 
         it("callGetAttributeInt8readonlyNoSubscriptions", async () => {
@@ -947,44 +910,15 @@ describe("Consumer test", () => {
             expect(retObj).toEqual(-128);
         });
 
-        it("callSetAttributeArrayOfStringImplicit", async () => {
-            log("callSetAttributeArrayOfStringImplicit");
-            const args = {
-                value: IltUtil.createStringArray()
-            };
-            await testInterfaceProxy.attributeArrayOfStringImplicit.set(args);
-        });
-
-        it("callGetAttributeArrayOfStringImplicit", async () => {
-            log("callGetAttributeArrayOfStringImplicit");
-            const retObj = await testInterfaceProxy.attributeArrayOfStringImplicit.get();
-            expect(retObj).toBeDefined();
-            expect(IltUtil.checkStringArray(retObj)).toBeTruthy();
+        it("callSetandGetAttributeArrayOfStringImplicit", async () => {
+            log("callSetandGetAttributeArrayOfStringImplicit");
+            return await genericSetGet(testInterfaceProxy.attributeArrayOfStringImplicit, IltUtil.createStringArray());
         });
 
         it("callSetandGetAttributeByteBuffer", async () => {
-            const byteBufferArg = [-128, 0, 127];
-
-            log("callSetAttributeByteBuffer");
-            const args = {
-                value: byteBufferArg
-            };
-            await testInterfaceProxy.attributeByteBuffer.set(args);
-
-            log("callGetAttributeByteBuffer");
-            const retObj = await testInterfaceProxy.attributeByteBuffer.get();
-            expect(retObj).toBeDefined();
-            expect(IltUtil.cmpByteBuffers(retObj, byteBufferArg)).toBeTruthy();
+            log("callSetandGetAttributeByteBuffer");
+            return await genericSetGet(testInterfaceProxy.attributeByteBuffer, IltUtil.createByteArray());
         });
-
-        async function genericSetGet(testObj, testValue) {
-            log(`genericSetGet called with testValue = ${JSON.stringify(testValue)}`);
-            await testObj.set({ value: testValue });
-
-            const retObj = await testObj.get();
-            expect(retObj).toBeDefined();
-            expect(retObj).toEqual(testValue);
-        }
 
         it("callSetandGetAttributeInt64TypeDef", async () => {
             log("callSetandGetAttributeInt64TypeDef");
@@ -1031,20 +965,9 @@ describe("Consumer test", () => {
             return await genericSetGet(testInterfaceProxy.attributeArrayTypeDef, arrayTypeDefArg);
         });
 
-        it("callSetAttributeEnumeration", async () => {
-            log("callSetAttributeEnumeration");
-            const args = {
-                value: Enumeration.ENUM_0_VALUE_2
-            };
-            await testInterfaceProxy.attributeEnumeration.set(args);
-        });
-
-        it("callGetAttributeEnumeration", async () => {
-            log("callGetAttributeEnumeration");
-            const retObj = await testInterfaceProxy.attributeEnumeration.get();
-
-            expect(retObj).toBeDefined();
-            expect(retObj).toEqual(Enumeration.ENUM_0_VALUE_2);
+        it("callSetandGetAttributeEnumeration", async () => {
+            log("callSetandGetAttributeEnumeration");
+            return await genericSetGet(testInterfaceProxy.attributeEnumeration, Enumeration.ENUM_0_VALUE_2);
         });
 
         it("callGetAttributeExtendedEnumerationReadonly", async () => {
@@ -1057,34 +980,17 @@ describe("Consumer test", () => {
             );
         });
 
-        it("callSetAttributeBaseStruct", async () => {
-            log("callSetAttributeBaseStruct");
-            const args = {
-                value: IltUtil.createBaseStruct()
-            };
-            await testInterfaceProxy.attributeBaseStruct.set(args);
+        it("callSetandGetAttributeBaseStruct", async () => {
+            log("callSetandGetAttributeBaseStruct");
+            return await genericSetGet(testInterfaceProxy.attributeBaseStruct, IltUtil.createBaseStruct());
         });
 
-        it("callGetAttributeBaseStruct", async () => {
-            log("callGetAttributeBaseStruct");
-            const retObj = await testInterfaceProxy.attributeBaseStruct.get();
-            expect(retObj).toBeDefined();
-            expect(IltUtil.checkBaseStruct(retObj)).toBeTruthy();
-        });
-
-        it("callSetAttributeExtendedExtendedBaseStruct", async () => {
-            log("callSetAttributeExtendedExtendedBaseStruct");
-            const args = {
-                value: IltUtil.createExtendedExtendedBaseStruct()
-            };
-            await testInterfaceProxy.attributeExtendedExtendedBaseStruct.set(args);
-        });
-
-        it("callGetAttributeExtendedExtendedBaseStruct", async () => {
-            log("callGetAttributeExtendedExtendedBaseStruct");
-            const retObj = await testInterfaceProxy.attributeExtendedExtendedBaseStruct.get();
-            expect(retObj).toBeDefined();
-            expect(IltUtil.checkExtendedExtendedBaseStruct(retObj)).toBeTruthy();
+        it("callSetandGetAttributeExtendedExtendedBaseStruct", async () => {
+            log("callSetandGetAttributeExtendedExtendedBaseStruct");
+            return await genericSetGet(
+                testInterfaceProxy.attributeExtendedExtendedBaseStruct,
+                IltUtil.createExtendedExtendedBaseStruct()
+            );
         });
 
         it("callSubscribeAttributeEnumeration", async () => {
