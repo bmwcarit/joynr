@@ -178,6 +178,17 @@ describe("Consumer test", () => {
             log("callMethodWithMultipleArrayParameters - OK");
         });
 
+        async function callProxyMethodWithParameter(testMethod, testValue) {
+            log(`callProxyMethodWithParameter called with testValue = ${JSON.stringify(testValue)}`);
+            const retObj = await testMethod(testValue);
+
+            expect(retObj).toBeDefined();
+            expect(Object.values(retObj)[0]).toBeDefined();
+            log(`returned value: ${JSON.stringify(Object.values(retObj)[0])}`);
+            expect(Object.values(retObj)[0]).toEqual(Object.values(testValue)[0]);
+            return retObj;
+        }
+
         it("callMethodWithSingleByteBufferParameter", async () => {
             const byteBufferArg = [-128, 0, 127];
 
@@ -185,11 +196,7 @@ describe("Consumer test", () => {
             const args = {
                 byteBufferIn: byteBufferArg
             };
-            const retObj = await testInterfaceProxy.methodWithSingleByteBufferParameter(args);
-
-            expect(retObj).toBeDefined();
-            expect(retObj.byteBufferOut).toBeDefined();
-            expect(IltUtil.cmpByteBuffers(retObj.byteBufferOut, byteBufferArg)).toBeTruthy();
+            await callProxyMethodWithParameter(testInterfaceProxy.methodWithSingleByteBufferParameter, args);
             log("callMethodWithSingleByteBufferParameter - OK");
         });
 
@@ -209,17 +216,6 @@ describe("Consumer test", () => {
             expect(IltUtil.cmpByteBuffers(retObj.byteBufferOut, byteBufferArg1.concat(byteBufferArg2))).toBeTruthy();
             log("callMethodWithMultipleByteBufferParameters - OK");
         });
-
-        async function callProxyMethodWithParameter(testMethod, testValue) {
-            log(`callProxyMethodWithParameter called with testValue = ${JSON.stringify(testValue)}`);
-            const retObj = await testMethod(testValue);
-
-            expect(retObj).toBeDefined();
-            expect(Object.values(retObj)[0]).toBeDefined();
-            log(`returned value: ${JSON.stringify(Object.values(retObj)[0])}`);
-            expect(Object.values(retObj)[0]).toEqual(Object.values(testValue)[0]);
-            return retObj;
-        }
 
         it("callMethodWithInt64TypeDefParameter", async () => {
             log("callMethodWithInt64TypeDefParameter");
@@ -277,10 +273,6 @@ describe("Consumer test", () => {
 
         it("callMethodWithByteBufferTypeDefParameter", async () => {
             log("callMethodWithByteBufferTypeDefParameter");
-            const value = new MapStringString();
-            for (let i = 1; i <= 3; i++) {
-                value.put(`keyString${i}`, `valueString${i}`);
-            }
             const args = {
                 byteBufferTypeDefIn: IltUtil.createByteArray()
             };
