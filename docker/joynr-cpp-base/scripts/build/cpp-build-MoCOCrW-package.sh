@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # fail on first error
-set -e
+set -e -u
 
 source /data/src/docker/joynr-base/scripts/global.sh
 
@@ -14,16 +14,15 @@ env
 
 JOBS=4
 MOCOCRW_BUILD_DIR=/data/src/docker/build/MoCOCrW
-MOCOCRW_SRCS=/tmp/MoCOCrW
 MOCOCRW_VERSION=master
+MOCOCRW_SRCS=/tmp/MoCOCrW-$MOCOCRW_VERSION
 
-# clone MoCOCrW
+# download MoCOCrW
 log "INSTALL MoCOCrW"
 rm -rf $MOCOCRW_SRCS
-git clone https://github.com/bmwcarit/MoCOCrW.git $MOCOCRW_SRCS
-cd $MOCOCRW_SRCS
+curl https://github.com/bmwcarit/MoCOCrW/archive/$MOCOCRW_VERSION.zip -L -o mococrw.zip
+unzip mococrw.zip -d /tmp
 
-git checkout $MOCOCRW_VERSION
 rm -fr $MOCOCRW_BUILD_DIR
 mkdir -p $MOCOCRW_BUILD_DIR
 cd $MOCOCRW_BUILD_DIR
