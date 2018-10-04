@@ -19,6 +19,7 @@
 package io.joynr.test.interlanguage;
 
 import java.io.StringWriter;
+import java.util.Arrays;
 import java.io.PrintWriter;
 
 import joynr.OnChangeWithKeepAliveSubscriptionQos;
@@ -86,7 +87,7 @@ public class IltConsumerFilteredBroadcastSubscriptionTest extends IltConsumerTes
             String stringOfInterst = "fireBroadcast";
             filterParameters.setStringOfInterest(stringOfInterst);
 
-            String[] stringArrayOfInterest = IltUtil.createStringArray();
+            String[] stringArrayOfInterest = { "Hello", "World" };
             String json;
             try {
                 LOG.info(name.getMethodName() + " - objectMapper is " + objectMapper);
@@ -140,7 +141,8 @@ public class IltConsumerFilteredBroadcastSubscriptionTest extends IltConsumerTes
 
                     LOG.info(name.getMethodName() + " - callback - got broadcast");
 
-                    if (!IltUtil.checkStringArray(stringArrayOut)) {
+                    String[] stringArray = { "Hello", "World" };
+                    if (!Arrays.equals(stringArray, stringArrayOut)) {
                         subscribeBroadcastWithFilteringCallbackResult = false;
                     } else if (enumerationOut != ExtendedTypeCollectionEnumerationInTypeCollection.ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION) {
                         LOG.info(name.getMethodName() + " - callback - invalid content");

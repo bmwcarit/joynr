@@ -50,6 +50,7 @@ import joynr.interlanguagetest.namedTypeCollection2.BaseStruct;
 import joynr.interlanguagetest.namedTypeCollection2.ExtendedBaseStruct;
 import joynr.interlanguagetest.namedTypeCollection2.ExtendedEnumerationWithPartlyDefinedValues;
 import joynr.interlanguagetest.namedTypeCollection2.ExtendedErrorEnumTc;
+import joynr.interlanguagetest.namedTypeCollection2.ExtendedExtendedBaseStruct;
 import joynr.interlanguagetest.namedTypeCollection2.ExtendedExtendedEnumeration;
 import joynr.interlanguagetest.namedTypeCollection2.ExtendedInterfaceEnumerationInTypeCollection;
 import joynr.interlanguagetest.namedTypeCollection2.ExtendedStructOfPrimitives;
@@ -201,9 +202,10 @@ public class IltConsumerSyncMethodTest extends IltConsumerTest {
     public void callMethodWithSingleArrayParameters() {
         LOG.info(name.getMethodName() + "");
         Double[] doubleArrayArg = IltUtil.createDoubleArray();
+        String[] stringArray = { "Hello", "World" };
         callProxyMethodWithParameterAndAssertResult("methodWithSingleArrayParameters",
                                                     doubleArrayArg,
-                                                    (Double[] arg, String[] res) -> IltUtil.checkStringArray(res));
+                                                    (Double[] arg, String[] res) -> Arrays.equals(res, stringArray));
         LOG.info(name.getMethodName() + " - OK");
     }
 
@@ -211,7 +213,7 @@ public class IltConsumerSyncMethodTest extends IltConsumerTest {
     public void callMethodWithMultipleArrayParameters() {
         LOG.info(name.getMethodName() + "");
         try {
-            String[] arg1 = IltUtil.createStringArray();
+            String[] arg1 = { "Hello", "World" };
             Byte[] arg2 = IltUtil.createByteArray();
             ExtendedInterfaceEnumerationInTypeCollection[] arg3 = IltUtil.createExtendedInterfaceEnumerationInTypeCollectionArray();
             StructWithStringArray[] arg4 = IltUtil.createStructWithStringArrayArray();
@@ -341,7 +343,7 @@ public class IltConsumerSyncMethodTest extends IltConsumerTest {
     @Test
     public void callMethodWithArrayTypeDefParameter() {
         LOG.info(name.getMethodName());
-        String[] stringArray = IltUtil.createStringArray();
+        String[] stringArray = { "Hello", "World" };
         ArrayTypeDefStruct arrayTypeDefArg = new ArrayTypeDefStruct(stringArray);
         callProxyMethodWithParameterAndAssertResult("methodWithArrayTypeDefParameter",
                                                     arrayTypeDefArg,
@@ -422,7 +424,8 @@ public class IltConsumerSyncMethodTest extends IltConsumerTest {
                 return;
             }
 
-            if (!IltUtil.checkExtendedExtendedBaseStruct(result.extendedExtendedBaseStructOut)) {
+            ExtendedExtendedBaseStruct extendedExtendedBaseStruct = IltUtil.createExtendedExtendedBaseStruct();
+            if (!result.extendedExtendedBaseStructOut.equals(extendedExtendedBaseStruct)) {
                 fail(name.getMethodName() + " - FAILED - got invalid result - extendedExtendedBaseStructOut");
                 return;
             }
@@ -480,11 +483,14 @@ public class IltConsumerSyncMethodTest extends IltConsumerTest {
                 fail(name.getMethodName() + " - FAILED - got no result");
                 return;
             }
-            if (result.doubleOut != 0d || !IltUtil.checkStringArray(result.stringArrayOut)) {
+            String[] stringArray = { "Hello", "World" };
+            if (result.doubleOut != 0d || (!Arrays.equals(stringArray, result.stringArrayOut))) {
                 fail(name.getMethodName() + " - FAILED - got invalid result - doubleOut");
                 return;
             }
-            if (!IltUtil.checkExtendedBaseStruct(result.extendedBaseStructOut)) {
+
+            ExtendedBaseStruct extendedBaseStruct = IltUtil.createExtendedBaseStruct();
+            if (!result.extendedBaseStructOut.equals(extendedBaseStruct)) {
                 fail(name.getMethodName() + " - FAILED - got invalid result - extendedBaseStructOut");
                 return;
             }
@@ -541,8 +547,11 @@ public class IltConsumerSyncMethodTest extends IltConsumerTest {
                 fail(name.getMethodName() + " - FAILED - got no result");
                 return;
             }
-            if (result.doubleOut != 1.1d || !IltUtil.checkExtendedBaseStruct(result.extendedBaseStructOut)
-                    || !IltUtil.checkStringArray(result.stringArrayOut)) {
+            String[] stringArray = { "Hello", "World" };
+
+            ExtendedBaseStruct extendedBaseStruct = IltUtil.createExtendedBaseStruct();
+            if (result.doubleOut != 1.1d || (!result.extendedBaseStructOut.equals(extendedBaseStruct))
+                    || (!Arrays.equals(stringArray, result.stringArrayOut))) {
                 fail(name.getMethodName() + " - FAILED - got invalid result");
                 return;
             }

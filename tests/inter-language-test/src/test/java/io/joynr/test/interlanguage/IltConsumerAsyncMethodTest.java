@@ -174,7 +174,8 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
                         return;
                     }
 
-                    if (!IltUtil.checkExtendedExtendedBaseStruct(extendedExtendedBaseStructOut)) {
+                    ExtendedExtendedBaseStruct extendedExtendedBaseStruct = IltUtil.createExtendedExtendedBaseStruct();
+                    if (!extendedExtendedBaseStructOut.equals(extendedExtendedBaseStruct)) {
                         methodWithMultipleStructParametersAsyncCallbackResult = false;
                         methodWithMultipleStructParametersAsyncCallbackDone = true;
                         LOG.info(name.getMethodName() + " - callback - invalid extendedExtendedBaseStructOut");
@@ -219,7 +220,8 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
                     return;
                 }
 
-                if (!IltUtil.checkExtendedExtendedBaseStruct(result.extendedExtendedBaseStructOut)) {
+                ExtendedExtendedBaseStruct extendedExtendedBaseStruct = IltUtil.createExtendedExtendedBaseStruct();
+                if (!result.extendedExtendedBaseStructOut.equals(extendedExtendedBaseStruct)) {
                     fail(name.getMethodName() + " - FAILED - got invalid result - extendedExtendedBaseStructOut");
                     return;
                 }
@@ -419,7 +421,7 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
     @Test
     public void callMethodWithArrayTypeDefParameterAsync() {
         LOG.info(name.getMethodName());
-        String[] stringArray = IltUtil.createStringArray();
+        String[] stringArray = { "Hello", "World" };
         final ArrayTypeDefStruct arrayTypeDefArg = new ArrayTypeDefStruct(stringArray);
         callProxyMethodWithParameterAsyncAndAssertResult("methodWithArrayTypeDefParameter",
                                                          arrayTypeDefArg,

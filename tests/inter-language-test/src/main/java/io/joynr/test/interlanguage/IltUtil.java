@@ -47,33 +47,6 @@ public class IltUtil {
         return useRestricted64BitRange;
     }
 
-    // List of Strings
-    public static String[] fillStringArray(String[] stringArray) {
-        stringArray[0] = "Hello";
-        stringArray[1] = "World";
-        if (!checkStringArray(stringArray)) {
-            throw new RuntimeException("Internal error in fillStringArray");
-        }
-        return stringArray;
-    }
-
-    public static String[] createStringArray() {
-        String[] stringArray = new String[2];
-        fillStringArray(stringArray);
-        return stringArray;
-    }
-
-    public static boolean checkStringArray(String[] stringArray) {
-        if (stringArray.length != 2) {
-            return false;
-        }
-
-        if (!stringArray[0].equals("Hello") || !stringArray[1].equals("World")) {
-            return false;
-        }
-        return true;
-    }
-
     // List of Byte
     public static Byte[] fillByteArray(Byte[] byteArray) {
         byteArray[0] = (byte) 1;
@@ -294,7 +267,7 @@ public class IltUtil {
     // TYPE BaseStruct
     public static BaseStruct fillBaseStruct(BaseStruct baseStruct) {
         baseStruct.setBaseStructString("Hiya");
-        if (!checkBaseStruct(baseStruct)) {
+        if (!(baseStruct.getBaseStructString().equals("Hiya"))) {
             throw new RuntimeException("Internal error in fillBaseStruct");
         }
         return baseStruct;
@@ -306,19 +279,13 @@ public class IltUtil {
         return baseStruct;
     }
 
-    public static boolean checkBaseStruct(BaseStruct baseStruct) {
-        if (!baseStruct.getBaseStructString().equals("Hiya")) {
-            return false;
-        }
-        return true;
-    }
-
     // TYPE ExtendedBaseStruct extends BaseStruct
     public static ExtendedBaseStruct fillExtendedBaseStruct(ExtendedBaseStruct extendedBaseStruct) {
         extendedBaseStruct.setEnumElement(Enumeration.ENUM_0_VALUE_3);
         fillBaseStruct(extendedBaseStruct);
-        if (!checkExtendedBaseStruct(extendedBaseStruct)) {
-            throw new RuntimeException("Internal error in fillBaseStruct");
+        if (extendedBaseStruct.getEnumElement() != Enumeration.ENUM_0_VALUE_3
+                || !extendedBaseStruct.getBaseStructString().equals("Hiya")) {
+            throw new RuntimeException("Internal error in fillExtendedBaseStruct");
         }
         return extendedBaseStruct;
     }
@@ -329,25 +296,15 @@ public class IltUtil {
         return extendedBaseStruct;
     }
 
-    public static boolean checkExtendedBaseStruct(ExtendedBaseStruct extendedBaseStruct) {
-        if (extendedBaseStruct.getEnumElement() != Enumeration.ENUM_0_VALUE_3) {
-            LOG.error("invalid parameter extendedBaseStruct.enumElement");
-            return false;
-        }
-        // check inherited parts
-        if (!checkBaseStruct(extendedBaseStruct)) {
-            return false;
-        }
-        return true;
-    }
-
     // TYPE ExtendedBaseStruct extends ExtendedBaseStruct extends BaseStruct
     public static ExtendedExtendedBaseStruct fillExtendedExtendedBaseStruct(ExtendedExtendedBaseStruct extendedExtendedBaseStruct) {
         extendedExtendedBaseStruct.setEnumWithoutDefinedValuesElement(EnumerationWithoutDefinedValues.ENUM_0_VALUE_1);
         // joynr.interlanguagetest.Enumeration
         fillExtendedBaseStruct(extendedExtendedBaseStruct);
-        if (!checkExtendedExtendedBaseStruct(extendedExtendedBaseStruct)) {
-            throw new RuntimeException("Internal error in fillBaseStruct");
+        if (extendedExtendedBaseStruct.getEnumWithoutDefinedValuesElement() != EnumerationWithoutDefinedValues.ENUM_0_VALUE_1
+                || extendedExtendedBaseStruct.getEnumElement() != Enumeration.ENUM_0_VALUE_3
+                || !extendedExtendedBaseStruct.getBaseStructString().equals("Hiya")) {
+            throw new RuntimeException("Internal error in fillExtendedExtendedBaseStruct");
         }
         return extendedExtendedBaseStruct;
     }
@@ -356,17 +313,6 @@ public class IltUtil {
         ExtendedExtendedBaseStruct extendedExtendedBaseStruct = new ExtendedExtendedBaseStruct();
         fillExtendedExtendedBaseStruct(extendedExtendedBaseStruct);
         return extendedExtendedBaseStruct;
-    }
-
-    public static boolean checkExtendedExtendedBaseStruct(ExtendedExtendedBaseStruct extendedExtendedBaseStruct) {
-        if (extendedExtendedBaseStruct.getEnumWithoutDefinedValuesElement() != EnumerationWithoutDefinedValues.ENUM_0_VALUE_1) {
-            return false;
-        }
-        // check inherited parts
-        if (!checkExtendedBaseStruct(extendedExtendedBaseStruct)) {
-            return false;
-        }
-        return true;
     }
 
     // TYPE StructOfPrimitives
@@ -769,7 +715,8 @@ public class IltUtil {
         }
 
         // check inherited parts
-        if (!checkExtendedBaseStruct(extendedStructOfPrimitives.getExtendedStructElement())) {
+        if (extendedStructOfPrimitives.getExtendedStructElement().getEnumElement() != Enumeration.ENUM_0_VALUE_3
+                || (!extendedStructOfPrimitives.getExtendedStructElement().getBaseStructString().equals("Hiya"))) {
             return false;
         }
 
