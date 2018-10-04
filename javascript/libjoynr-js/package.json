@@ -6,6 +6,7 @@
   "homepage": "http://joynr.io",
   "bugs": "https://github.com/bmwcarit/joynr/issues",
   "devDependencies": {
+    "await-semaphore": "0.1.3",
     "browserify": "16.1.0",
     "eslint": "4.15.0",
     "eslint-plugin-promise": "^3.5.0",
