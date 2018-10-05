@@ -291,6 +291,9 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
                     if (!subscribedTopics.contains(topic)) {
                         logger.info("Attempting to subscribe to: {}", topic);
                         synchronized (this) {
+                            if (mqttClient == null) {
+                                throw new MqttException(MqttException.REASON_CODE_CLIENT_NOT_CONNECTED);
+                            }
                             mqttClient.subscribe(topic);
                         }
                         subscribedTopics.add(topic);
@@ -337,6 +340,9 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
             synchronized (subscribedTopics) {
                 if (subscribedTopics.remove(topic)) {
                     synchronized (this) {
+                        if (mqttClient == null) {
+                            throw new MqttException(MqttException.REASON_CODE_CLIENT_NOT_CONNECTED);
+                        }
                         mqttClient.unsubscribe(topic);
                     }
                 }
@@ -385,6 +391,9 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
 
             logger.debug("Publish to: {}", topic);
             synchronized (this) {
+                if (mqttClient == null) {
+                    throw new MqttException(MqttException.REASON_CODE_CLIENT_NOT_CONNECTED);
+                }
                 mqttClient.publish(topic, message);
             }
         } catch (MqttException e) {
