@@ -55,11 +55,6 @@
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
-		<!-- used to scan for annotations for subtypes -->
-		<dependency>
-			<groupId>org.reflections</groupId>
-			<artifactId>reflections</artifactId>
-		</dependency>
 		<!--
 			Due to compatibility reasons of httpclient library provided within the
 			Android platform, we use an Android port httpclient-android. It is
