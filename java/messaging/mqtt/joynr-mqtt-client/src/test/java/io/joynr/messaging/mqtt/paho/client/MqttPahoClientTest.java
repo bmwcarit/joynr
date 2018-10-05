@@ -220,8 +220,32 @@ public class MqttPahoClientTest {
             properties.put(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "tcp://localhost:" + mqttBrokerPort);
         }
         JoynrMqttClient client = createMqttClientInternal(mqttStatusReceiver);
-        client.start();
-        return client;
+
+        final Semaphore startSemaphore = new Semaphore(0);
+
+        Thread thread = new Thread(new Runnable() {
+            public void run() {
+                client.start();
+                startSemaphore.release();
+            }
+        });
+        thread.start();
+        try {
+            boolean started = startSemaphore.tryAcquire(2000, TimeUnit.MILLISECONDS);
+            if (started) {
+                thread.join();
+                return client;
+            }
+        } catch (Exception e) {
+            // ignore
+        }
+        try {
+            client.shutdown();
+            thread.join();
+        } catch (Exception e) {
+            // ignore
+        }
+        throw new JoynrIllegalStateException("failed to start client");
     }
 
     private JoynrMqttClient createMqttClientInternal(final MqttStatusReceiver mqttStatusReceiver) {
@@ -352,7 +376,6 @@ public class MqttPahoClientTest {
         final boolean isSecureConnection = false;
         if (expectException) {
             thrown.expect(JoynrIllegalStateException.class);
-            thrown.expectMessage("Unable to create MqttPahoClient: Not authorized to connect (5)");
         }
         mqttClientTestWithDisabledMessageSizeCheck(isSecureConnection);
     }
@@ -394,7 +417,6 @@ public class MqttPahoClientTest {
         properties.put(MqttModule.PROPERTY_KEY_MQTT_USERNAME, joynrUser);
         properties.put(MqttModule.PROPERTY_KEY_MQTT_PASSWORD, "");
         thrown.expect(JoynrIllegalStateException.class);
-        thrown.expectMessage("Unable to start MqttPahoClient: MQTT password not configured or empty");
         mqttClientTestWithDisabledMessageSizeCheck(isSecureConnection);
     }
 
