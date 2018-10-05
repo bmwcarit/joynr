@@ -27,15 +27,12 @@ import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.net.ssl.SSLHandshakeException;
-
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
-import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 import org.eclipse.paho.client.mqttv3.internal.security.SSLSocketFactoryFactory;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.slf4j.Logger;
@@ -149,6 +146,8 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
     }
 
     @Override
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "SF_SWITCH_FALLTHROUGH",
+                                                      justification = "extra error log for TLS errors")
     public void start() {
         while (!shutdown.get() && clientExistsAndIsNotConnected()) {
             final String unableToCreateClientErrorMessage = "Unable to create MqttClient: ";
@@ -177,11 +176,8 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
                 case MqttException.REASON_CODE_CLIENT_EXCEPTION:
                     if (isSecureConnection) {
                         logger.error("Failed to establish TLS connection, error: ", mqttError);
-                        if (mqttError instanceof MqttSecurityException || (mqttError.getCause() != null
-                                && mqttError.getCause() instanceof SSLHandshakeException)) {
-                            throw new JoynrIllegalStateException("Unable to create TLS MqttPahoClient: " + mqttError);
-                        }
                     }
+                    // fallthrough
                 case MqttException.REASON_CODE_BROKER_UNAVAILABLE:
                 case MqttException.REASON_CODE_CLIENT_DISCONNECTING:
                 case MqttException.REASON_CODE_CLIENT_NOT_CONNECTED:
@@ -510,7 +506,9 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
             MqttClient clientToDisconnect = mqttClient;
             mqttClient = null;
             final boolean forcibly = true;
-            disconnect(clientToDisconnect, forcibly);
+            if (clientToDisconnect != null) {
+                disconnect(clientToDisconnect, forcibly);
+            }
             if (shutdown.get()) {
                 logger.debug("joynr is shutting down. Will not attempt a reconnect.");
                 return;
