@@ -19,18 +19,18 @@
 package io.joynr.examples.statelessasync;
 
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
-
-import com.google.common.collect.Sets;
 
 @ApplicationPath("/")
 public class RestApplication extends Application {
 
     @Override
     public Set<Class<?>> getClasses() {
-        return Sets.newHashSet(RestEndpoint.class);
+        return Stream.of(RestEndpoint.class).collect(Collectors.toSet());
     }
 
 }

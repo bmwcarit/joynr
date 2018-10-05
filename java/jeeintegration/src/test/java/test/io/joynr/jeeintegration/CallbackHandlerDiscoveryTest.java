@@ -19,7 +19,6 @@
 package test.io.joynr.jeeintegration;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -27,14 +26,13 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.ejb.Stateless;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 
-import com.google.common.collect.Sets;
-import io.joynr.jeeintegration.api.CallbackHandler;
-import io.joynr.proxy.StatelessAsyncCallback;
-import joynr.jeeintegration.servicelocator.MyServiceStatelessAsyncCallback;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -42,10 +40,10 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import io.joynr.jeeintegration.CallbackHandlerDiscovery;
+import io.joynr.jeeintegration.api.CallbackHandler;
+import io.joynr.proxy.StatelessAsyncCallback;
+import joynr.jeeintegration.servicelocator.MyServiceStatelessAsyncCallback;
 import test.io.joynr.jeeintegration.servicelocator.MyServiceCallbackHandler;
-
-import java.util.HashSet;
-import java.util.Set;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CallbackHandlerDiscoveryTest {
@@ -73,7 +71,9 @@ public class CallbackHandlerDiscoveryTest {
         when(callbackHandlerBean.getBeanClass()).thenReturn(MyServiceCallbackHandler.class);
         Bean nonCallbackHandlerBean = mock(Bean.class);
         when(nonCallbackHandlerBean.getBeanClass()).thenReturn(MyOtherBean.class);
-        Set<Bean<?>> beans = Sets.newHashSet(callbackHandlerBean, nonCallbackHandlerBean);
+        Set<Bean<?>> beans = new HashSet<>();
+        beans.add(callbackHandlerBean);
+        beans.add(nonCallbackHandlerBean);
         when(beanManager.getBeans(eq(Object.class), any())).thenReturn(beans);
         when(beanManager.getReference(eq(callbackHandlerBean),
                                       eq(MyServiceStatelessAsyncCallback.class),
@@ -106,7 +106,8 @@ public class CallbackHandlerDiscoveryTest {
     public void testStatelessAsyncWithoutUsedByNotDiscovered() {
         Bean callbackHandlerBean = mock(Bean.class);
         when(callbackHandlerBean.getBeanClass()).thenReturn(MyInvalidCallbackHandler.class);
-        Set<Bean<?>> beans = Sets.newHashSet(callbackHandlerBean);
+        Set<Bean<?>> beans = new HashSet<>();
+        beans.add(callbackHandlerBean);
         when(beanManager.getBeans(eq(Object.class), any())).thenReturn(beans);
 
         subject.forEach(statelessAsyncCallback -> fail("Should not be discovered"));
