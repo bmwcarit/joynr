@@ -33,7 +33,6 @@ This project has dependencies to:
   Google Guice - Core Library under The Apache Software License, Version 2.0
   Google Guice - Extensions - AssistedInject under The Apache Software License, Version 2.0
   Google Guice - Extensions - MultiBindings under The Apache Software License, Version 2.0
-  Guava: Google Core Libraries for Java under The Apache Software License, Version 2.0
   Hamcrest Core under New BSD License
   io.joynr.examples:radio-app under The Apache Software License, Version 2.0
   io.joynr.java.backend-services:discovery-directory-jee under The Apache Software License, Version 2.0
@@ -59,7 +58,6 @@ This project has dependencies to:
   Jackson-core under The Apache Software License, Version 2.0
   jackson-databind under The Apache Software License, Version 2.0
   Java Servlet API under CDDL + GPLv2 with classpath exception
-  Javassist under MPL 1.1 or LGPL 2.1 or Apache License 2.0
   javax.inject under The Apache Software License, Version 2.0
   Jetty :: Http Utility under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: IO Utility under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
@@ -76,7 +74,6 @@ This project has dependencies to:
   JUnit under Eclipse Public License 1.0
   libjoynr-websocket-runtime under The Apache Software License, Version 2.0
   Logging under The Apache Software License, Version 2.0
-  Reflections under WTFPL or The New BSD License
   SLF4J API Module under MIT License
   SLF4J LOG4J-12 Binding under MIT License
 
