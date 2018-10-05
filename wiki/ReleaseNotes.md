@@ -2,6 +2,18 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.6.1
+
+## API relevant changes
+None.
+
+## Other changes
+* **[FIDL]** Introduce a new method in GlobalCapabilitiesDirectory which allows applications to get
+  notified about changes in JDS. For more information refer to `GlobalCapabilitiesDirectory.fidl`.
+
+## Configuration property changes
+None.
+
 # joynr 1.6.0
 
 ## API relevant changes
@@ -14,7 +26,7 @@ the versioning scheme [here](JoynrVersioning.md).
   [JEE documentation](jee.md#message_persistence) for details.
 
 ## Other changes
-* [Java] Guava (Google Core Libraries for Java) dependency has been removed from
+* **[Java]** Guava (Google Core Libraries for Java) dependency has been removed from
   io.joynr.java.core.libjoynr and io.joynr.java.core.libjoynr-websocket-runtime
 
 ## Configuration property changes
