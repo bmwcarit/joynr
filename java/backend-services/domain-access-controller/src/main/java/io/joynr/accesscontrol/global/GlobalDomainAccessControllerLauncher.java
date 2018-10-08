@@ -77,6 +77,7 @@ public class GlobalDomainAccessControllerLauncher extends AbstractJoynrApplicati
         try {
             ServerSocket serverSocket = new ServerSocket(shutdownPort);
             serverSocket.accept();
+            serverSocket.close();
         } catch (IOException e) {
             return;
         }
