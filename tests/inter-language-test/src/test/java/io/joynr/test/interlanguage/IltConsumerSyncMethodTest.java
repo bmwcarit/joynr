@@ -299,7 +299,7 @@ public class IltConsumerSyncMethodTest extends IltConsumerTest {
 
             Assert.assertNotNull(name.getMethodName() + " - FAILED - got no result", result);
             Assert.assertArrayEquals(name.getMethodName() + " - FAILED - got invalid result",
-                                     (Byte[]) ArrayUtils.addAll(byteBufferArg1, byteBufferArg2),
+                                     ArrayUtils.addAll(byteBufferArg1, byteBufferArg2),
                                      result);
         } catch (Exception e) {
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
