@@ -139,49 +139,30 @@ public class IltConsumerSyncMethodTest extends IltConsumerTest {
     @Test
     public void callMethodWithSinglePrimitiveParameters() {
         LOG.info(name.getMethodName() + "");
-        try {
-            // short arg = (short)65535;
-            short arg = (short) 32767;
-            String result;
-            result = testInterfaceProxy.methodWithSinglePrimitiveParameters(arg);
-            if (result == null) {
-                fail(name.getMethodName() + " - FAILED - got no result");
-            }
-            if (!result.equals(new Integer(Short.toUnsignedInt(arg)).toString())) {
-                fail(name.getMethodName() + " - FAILED - got invalid result");
-                return;
-            }
-        } catch (Exception e) {
-            fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-        }
+        // short shortArg = (short)65535;
+        short shortArg = (short) 32767;
+        callProxyMethodWithParameterAndAssertResult("methodWithSinglePrimitiveParameters",
+                                                    shortArg,
+                                                    (Short arg,
+                                                     String res) -> res.equals(new Integer(Short.toUnsignedInt(arg)).toString()));
         LOG.info(name.getMethodName() + " - OK");
     }
 
     @Test
     public void callmethodWithSingleMapParameters() {
         LOG.info(name.getMethodName() + "");
-        try {
-            MapStringString mapArg = new MapStringString();
-            mapArg.put("keyString1", "valueString1");
-            mapArg.put("keyString2", "valueString2");
-            mapArg.put("keyString3", "valueString3");
-            MapStringString result;
-            result = testInterfaceProxy.methodWithSingleMapParameters(mapArg);
-            if (result == null) {
-                fail(name.getMethodName() + " - FAILED - got no result");
-                return;
-            }
-            MapStringString expected = new MapStringString();
-            expected.put("valueString1", "keyString1");
-            expected.put("valueString2", "keyString2");
-            expected.put("valueString3", "keyString3");
-            if (!result.equals(expected)) {
-                fail(name.getMethodName() + " - FAILED - got invalid result");
-                return;
-            }
-        } catch (Exception e) {
-            fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-        }
+        MapStringString mapArg = new MapStringString();
+        mapArg.put("keyString1", "valueString1");
+        mapArg.put("keyString2", "valueString2");
+        mapArg.put("keyString3", "valueString3");
+        MapStringString expectedMap = new MapStringString();
+        expectedMap.put("valueString1", "keyString1");
+        expectedMap.put("valueString2", "keyString2");
+        expectedMap.put("valueString3", "keyString3");
+        callProxyMethodWithParameterAndAssertResult("methodWithSingleMapParameters",
+                                                    mapArg,
+                                                    (MapStringString arg,
+                                                     MapStringString res) -> res.equals(expectedMap));
         LOG.info(name.getMethodName() + " - OK");
     }
 
@@ -219,23 +200,10 @@ public class IltConsumerSyncMethodTest extends IltConsumerTest {
     @Test
     public void callMethodWithSingleArrayParameters() {
         LOG.info(name.getMethodName() + "");
-        try {
-            Double[] arg = IltUtil.createDoubleArray();
-            String[] result;
-
-            result = testInterfaceProxy.methodWithSingleArrayParameters(arg);
-            if (result == null) {
-                fail(name.getMethodName() + " - FAILED - got no result");
-                return;
-            }
-            if (!IltUtil.checkStringArray(result)) {
-                fail(name.getMethodName() + " - FAILED - got invalid result");
-                return;
-            }
-        } catch (Exception e) {
-            fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
-        }
+        Double[] doubleArrayArg = IltUtil.createDoubleArray();
+        callProxyMethodWithParameterAndAssertResult("methodWithSingleArrayParameters",
+                                                    doubleArrayArg,
+                                                    (Double[] arg, String[] res) -> IltUtil.checkStringArray(res));
         LOG.info(name.getMethodName() + " - OK");
     }
 
@@ -385,23 +353,11 @@ public class IltConsumerSyncMethodTest extends IltConsumerTest {
     @Test
     public void callMethodWithSingleEnumParameters() {
         LOG.info(name.getMethodName() + "");
-        try {
-            ExtendedEnumerationWithPartlyDefinedValues enumerationArg = ExtendedEnumerationWithPartlyDefinedValues.ENUM_2_VALUE_EXTENSION_FOR_ENUM_WITHOUT_DEFINED_VALUES;
-            ExtendedTypeCollectionEnumerationInTypeCollection result;
-
-            result = testInterfaceProxy.methodWithSingleEnumParameters(enumerationArg);
-            if (result == null) {
-                fail(name.getMethodName() + " - FAILED - got no result");
-                return;
-            }
-            if (result != ExtendedTypeCollectionEnumerationInTypeCollection.ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION) {
-                fail(name.getMethodName() + " - FAILED - got invalid result");
-                return;
-            }
-        } catch (Exception e) {
-            fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
-        }
+        ExtendedEnumerationWithPartlyDefinedValues enumerationArg = ExtendedEnumerationWithPartlyDefinedValues.ENUM_2_VALUE_EXTENSION_FOR_ENUM_WITHOUT_DEFINED_VALUES;
+        callProxyMethodWithParameterAndAssertResult("methodWithSingleEnumParameters",
+                                                    enumerationArg,
+                                                    (ExtendedEnumerationWithPartlyDefinedValues arg,
+                                                     ExtendedTypeCollectionEnumerationInTypeCollection res) -> res == ExtendedTypeCollectionEnumerationInTypeCollection.ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION);
         LOG.info(name.getMethodName() + " - OK");
     }
 
@@ -437,23 +393,11 @@ public class IltConsumerSyncMethodTest extends IltConsumerTest {
     @Test
     public void callMethodWithSingleStructParameters() {
         LOG.info(name.getMethodName() + "");
-        try {
-            ExtendedBaseStruct arg = IltUtil.createExtendedBaseStruct();
-            ExtendedStructOfPrimitives result;
-
-            result = testInterfaceProxy.methodWithSingleStructParameters(arg);
-            if (result == null) {
-                fail(name.getMethodName() + " - FAILED - got no result");
-                return;
-            }
-            if (!IltUtil.checkExtendedStructOfPrimitives(result)) {
-                fail(name.getMethodName() + " - FAILED - got invalid result - extendedStructOfPrimitives");
-                return;
-            }
-        } catch (Exception e) {
-            fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
-        }
+        ExtendedBaseStruct extBaseStructArg = IltUtil.createExtendedBaseStruct();
+        callProxyMethodWithParameterAndAssertResult("methodWithSingleStructParameters",
+                                                    extBaseStructArg,
+                                                    (ExtendedBaseStruct arg,
+                                                     ExtendedStructOfPrimitives res) -> IltUtil.checkExtendedStructOfPrimitives(res));
         LOG.info(name.getMethodName() + " - OK");
     }
 
@@ -513,22 +457,10 @@ public class IltConsumerSyncMethodTest extends IltConsumerTest {
     @Test
     public void callOverloadedMethod_2() {
         LOG.info(name.getMethodName() + "");
-        try {
-            String result;
-            Boolean booleanArg = false;
-            result = testInterfaceProxy.overloadedMethod(booleanArg);
-            if (result == null) {
-                fail(name.getMethodName() + " - FAILED - got no result");
-                return;
-            }
-            if (!result.equals("TestString 2")) {
-                fail(name.getMethodName() + " - FAILED - got invalid result");
-                return;
-            }
-        } catch (Exception e) {
-            fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
-        }
+        Boolean booleanArg = false;
+        callProxyMethodWithParameterAndAssertResult("overloadedMethod",
+                                                    booleanArg,
+                                                    (Boolean arg, String res) -> res.equals("TestString 2"));
         LOG.info(name.getMethodName() + " - OK");
     }
 
@@ -587,22 +519,11 @@ public class IltConsumerSyncMethodTest extends IltConsumerTest {
     @Test
     public void callOverloadedMethodWithSelector_2() {
         LOG.info(name.getMethodName() + "");
-        try {
-            String result;
-            Boolean booleanArg = false;
-            result = testInterfaceProxy.overloadedMethodWithSelector(booleanArg);
-            if (result == null) {
-                fail(name.getMethodName() + " - FAILED - got no result");
-                return;
-            }
-            if (!result.equals("Return value from overloadedMethodWithSelector 2")) {
-                fail(name.getMethodName() + " - FAILED - got invalid result");
-                return;
-            }
-        } catch (Exception e) {
-            fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
-        }
+        Boolean booleanArg = false;
+        callProxyMethodWithParameterAndAssertResult("overloadedMethodWithSelector",
+                                                    booleanArg,
+                                                    (Boolean arg,
+                                                     String res) -> res.equals("Return value from overloadedMethodWithSelector 2"));
         LOG.info(name.getMethodName() + " - OK");
     }
 
