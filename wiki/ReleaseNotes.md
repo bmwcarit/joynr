@@ -10,6 +10,8 @@ None.
 ## Other changes
 * **[FIDL]** Introduce a new method in GlobalCapabilitiesDirectory which allows applications to get
   notified about changes in JDS. For more information refer to `GlobalCapabilitiesDirectory.fidl`.
+* **[Java]** Removed `org.reflections` and `guava` dependencies from joynr runtime code. Both still
+  remain needed in the joynr generator. However, it is not deployed when running joynr applications.
 
 ## Configuration property changes
 None.
