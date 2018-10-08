@@ -25,6 +25,7 @@ import java.util.Properties;
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
@@ -108,6 +109,8 @@ public class GlobalDomainAccessControllerLauncher extends AbstractJoynrApplicati
     }
 
     @Override
+    @SuppressFBWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD",
+                        justification = "static member startOk is read from static method start")
     public void run() {
         try {
             ProviderQos providerQos = new ProviderQos();
