@@ -37,16 +37,17 @@ The generated source code from the Radio model is located in `<RADIO_HOME>/src/m
 
 ## Providers
 
-Have a look into [\<RADIO_HOME\>/src/main/js/radioProvider.js]
-(/examples/radio-node/src/main/js/radioProvider.js) and
-[\<RADIO_HOME\>/src/main/js/MyRadioProvider.js]
-(/examples/radio-node/src/main/js/MyRadioProvider.js)
+Have a look into
+[\<RADIO_HOME\>/src/main/js/radioProvider.js](/examples/radio-node/src/main/js/radioProvider.js)
+and
+[\<RADIO_HOME\>/src/main/js/MyRadioProvider.js](/examples/radio-node/src/main/js/MyRadioProvider.js)
 for provider implementation and registration details.
 
 ## Consumers
 
-Have a look into [\<RADIO_HOME\>/src/main/js/radioConsumer.js]
-(/examples/radio-node/src/main/js/radioConsumer.js) for consumer implementation details.
+Have a look into
+[\<RADIO_HOME\>/src/main/js/radioConsumer.js](/examples/radio-node/src/main/js/radioConsumer.js)
+for consumer implementation details.
 
 ## In Action
 
@@ -109,8 +110,8 @@ Run the consumer in another terminal
 ## Provisioning
 
 The provisioning is partially done in the files
-[\<RADIO_HOME\>/package.json](/examples/radio-node/package.json)
-[\<RADIO_HOME\>/src/main/js/provisioning_common.js](/examples/radio-node/src/main/js/provisioning_common.js)
+[\<RADIO_HOME\>/package.json](/examples/radio-node/package.json) and
+[\<RADIO_HOME\>/src/main/js/provisioning_common.js](/examples/radio-node/src/main/js/provisioning_common.js).
 
 This example uses the WebSocket libjoynr runtime which communicates via WebSocket with a preexisting
 cluster controller.
