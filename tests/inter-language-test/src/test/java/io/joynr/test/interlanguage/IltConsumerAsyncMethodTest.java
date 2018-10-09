@@ -19,9 +19,11 @@
 package io.joynr.test.interlanguage;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiPredicate;
 
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.proxy.Callback;
@@ -83,16 +85,18 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
     // variables that are to be changed inside callbacks must be instance variables
     volatile boolean proxyMethodWithParameterCallbackResult = false;
 
-    private <T> void callProxyMethodWithParameterAsyncAndAssertResult(String methodName, final T arg) {
+    private <T, U> void callProxyMethodWithParameterAsyncAndAssertResult(String methodName,
+                                                                         final T arg,
+                                                                         BiPredicate<T, U> expectedResultCheck) {
         try {
 
             final Semaphore resultAvailable = new Semaphore(0);
 
-            Callback<T> callback = new Callback<T>() {
+            Callback<U> callback = new Callback<U>() {
                 @Override
-                public void onSuccess(T out) {
+                public void onSuccess(U out) {
                     // check result
-                    if (!Objects.deepEquals(out, arg)) {
+                    if (!expectedResultCheck.test(arg, out)) {
                         LOG.info(name.getMethodName() + TEST_FAILED_CALLBACK_INVALID_RESULT);
                         proxyMethodWithParameterCallbackResult = false;
                         resultAvailable.release();
@@ -437,7 +441,9 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
     public void callMethodWithSingleByteBufferParameterAsync() {
         LOG.info(name.getMethodName());
         final Byte[] byteBufferArg = { -128, 0, 127 };
-        callProxyMethodWithParameterAsyncAndAssertResult("methodWithSingleByteBufferParameter", byteBufferArg);
+        callProxyMethodWithParameterAsyncAndAssertResult("methodWithSingleByteBufferParameter",
+                                                         byteBufferArg,
+                                                         (Byte[] arg, Byte[] res) -> Arrays.equals(arg, res));
         LOG.info(name.getMethodName() + TEST_SUCCEEDED);
     }
 
@@ -509,7 +515,9 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
     public void callMethodWithInt64TypeDefParameterAsync() {
         LOG.info(name.getMethodName());
         final Long int64TypeDefArg = 1L;
-        callProxyMethodWithParameterAsyncAndAssertResult("methodWithInt64TypeDefParameter", int64TypeDefArg);
+        callProxyMethodWithParameterAsyncAndAssertResult("methodWithInt64TypeDefParameter",
+                                                         int64TypeDefArg,
+                                                         (Long arg, Long res) -> res.equals(arg));
         LOG.info(name.getMethodName() + TEST_SUCCEEDED);
     }
 
@@ -517,7 +525,9 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
     public void callMethodWithStringTypeDefParameterAsync() {
         LOG.info(name.getMethodName());
         final String stringTypeDefArg = "StringTypeDef";
-        callProxyMethodWithParameterAsyncAndAssertResult("methodWithStringTypeDefParameter", stringTypeDefArg);
+        callProxyMethodWithParameterAsyncAndAssertResult("methodWithStringTypeDefParameter",
+                                                         stringTypeDefArg,
+                                                         (String arg, String res) -> res.equals(arg));
         LOG.info(name.getMethodName() + TEST_SUCCEEDED);
     }
 
@@ -525,7 +535,9 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
     public void callMethodWithStructTypeDefParameterAsync() {
         LOG.info(name.getMethodName());
         final BaseStruct structTypeDefArg = IltUtil.createBaseStruct();
-        callProxyMethodWithParameterAsyncAndAssertResult("methodWithStructTypeDefParameter", structTypeDefArg);
+        callProxyMethodWithParameterAsyncAndAssertResult("methodWithStructTypeDefParameter",
+                                                         structTypeDefArg,
+                                                         (BaseStruct arg, BaseStruct res) -> res.equals(arg));
         LOG.info(name.getMethodName() + TEST_SUCCEEDED);
     }
 
@@ -536,7 +548,9 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
         mapTypeDefArg.put("keyString1", "valueString1");
         mapTypeDefArg.put("keyString2", "valueString2");
         mapTypeDefArg.put("keyString3", "valueString3");
-        callProxyMethodWithParameterAsyncAndAssertResult("methodWithMapTypeDefParameter", mapTypeDefArg);
+        callProxyMethodWithParameterAsyncAndAssertResult("methodWithMapTypeDefParameter",
+                                                         mapTypeDefArg,
+                                                         (MapStringString arg, MapStringString res) -> res.equals(arg));
         LOG.info(name.getMethodName() + TEST_SUCCEEDED);
     }
 
@@ -544,7 +558,9 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
     public void callMethodWithEnumTypeDefParameterAsync() {
         LOG.info(name.getMethodName());
         final Enumeration enumTypeDefArg = Enumeration.ENUM_0_VALUE_1;
-        callProxyMethodWithParameterAsyncAndAssertResult("methodWithEnumTypeDefParameter", enumTypeDefArg);
+        callProxyMethodWithParameterAsyncAndAssertResult("methodWithEnumTypeDefParameter",
+                                                         enumTypeDefArg,
+                                                         (Enumeration arg, Enumeration res) -> res.equals(arg));
         LOG.info(name.getMethodName() + TEST_SUCCEEDED);
     }
 
@@ -552,7 +568,9 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
     public void callMethodWithByteBufferTypeDefParameterAsync() {
         LOG.info(name.getMethodName());
         final Byte[] byteBufferTypeDefArg = { -128, 0, 127 };
-        callProxyMethodWithParameterAsyncAndAssertResult("methodWithByteBufferTypeDefParameter", byteBufferTypeDefArg);
+        callProxyMethodWithParameterAsyncAndAssertResult("methodWithByteBufferTypeDefParameter",
+                                                         byteBufferTypeDefArg,
+                                                         (Byte[] arg, Byte[] res) -> Arrays.equals(arg, res));
         LOG.info(name.getMethodName() + TEST_SUCCEEDED);
     }
 
@@ -561,7 +579,10 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
         LOG.info(name.getMethodName());
         String[] stringArray = IltUtil.createStringArray();
         final ArrayTypeDefStruct arrayTypeDefArg = new ArrayTypeDefStruct(stringArray);
-        callProxyMethodWithParameterAsyncAndAssertResult("methodWithArrayTypeDefParameter", arrayTypeDefArg);
+        callProxyMethodWithParameterAsyncAndAssertResult("methodWithArrayTypeDefParameter",
+                                                         arrayTypeDefArg,
+                                                         (ArrayTypeDefStruct arg,
+                                                          ArrayTypeDefStruct res) -> res.equals(arg));
         LOG.info(name.getMethodName() + TEST_SUCCEEDED);
     }
 
