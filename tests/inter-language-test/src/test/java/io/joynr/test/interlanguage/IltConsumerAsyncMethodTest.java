@@ -254,185 +254,27 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
         LOG.info(name.getMethodName() + " - OK");
     }
 
-    // variables that are to be changed inside callbacks must be declared global
-    volatile boolean methodWithSingleArrayParametersAsyncCallbackDone = false;
-    volatile boolean methodWithSingleArrayParametersAsyncCallbackResult = false;
-
     @Test
     public void callMethodWithSingleArrayParametersAsync() {
         LOG.info(name.getMethodName() + "");
-        try {
-            // setup input parameters
-            Double[] doubleArrayArg = IltUtil.createDoubleArray();
-
-            Callback<String[]> callback = new Callback<String[]>() {
-                @Override
-                public void onSuccess(String[] stringOut) {
-                    // check results
-                    if (!IltUtil.checkStringArray(stringOut)) {
-                        LOG.info(name.getMethodName() + " - invalid stringOut from callback");
-                        LOG.info(name.getMethodName() + " - FAILED");
-                        methodWithSingleArrayParametersAsyncCallbackResult = false;
-                        methodWithSingleArrayParametersAsyncCallbackDone = true;
-                        return;
-                    }
-                    methodWithSingleArrayParametersAsyncCallbackResult = true;
-                    methodWithSingleArrayParametersAsyncCallbackDone = true;
-                }
-
-                @Override
-                public void onFailure(JoynrRuntimeException error) {
-                    methodWithSingleArrayParametersAsyncCallbackResult = false;
-                    methodWithSingleArrayParametersAsyncCallbackDone = true;
-                    if (error instanceof JoynrRuntimeException) {
-                        LOG.info(name.getMethodName() + " - callback - caught exception "
-                                + ((JoynrRuntimeException) error).getMessage());
-                    } else {
-                        LOG.info(name.getMethodName() + " - callback - caught exception");
-                    }
-                    LOG.info(name.getMethodName() + " - FAILED");
-                }
-            };
-
-            Future<String[]> future = testInterfaceProxy.methodWithSingleArrayParameters(callback, doubleArrayArg);
-
-            try {
-                long timeoutInMilliseconds = 8000;
-                LOG.info(name.getMethodName() + " - about to call future.get");
-                String[] result;
-
-                result = future.get(timeoutInMilliseconds);
-                LOG.info(name.getMethodName() + " - returned from future.get");
-
-                // check results from future
-                if (result == null) {
-                    fail(name.getMethodName() + " - FAILED - got no result");
-                    return;
-                }
-                if (!IltUtil.checkStringArray(result)) {
-                    fail(name.getMethodName() + " - FAILED - got invalid result");
-                    return;
-                }
-
-                LOG.info(name.getMethodName() + " - future result checks OK");
-
-                // check results from callback; expect to be finished within 1 second
-                // should have been called ahead anyway
-                if (methodWithSingleArrayParametersAsyncCallbackDone == false) {
-                    LOG.info(name.getMethodName() + " - about to wait for a second for callback");
-                    Thread.sleep(1000);
-                    LOG.info(name.getMethodName() + " - wait for callback is over");
-                } else {
-                    LOG.info(name.getMethodName() + " - callback already done");
-                }
-                if (methodWithSingleArrayParametersAsyncCallbackDone == false) {
-                    fail(name.getMethodName() + " - FAILED - callback NOT done");
-                    return;
-                }
-                if (methodWithSingleArrayParametersAsyncCallbackResult == false) {
-                    fail(name.getMethodName() + " - FAILED - callback reported error");
-                    return;
-                }
-                LOG.info(name.getMethodName() + " - callback has set OK flags");
-            } catch (InterruptedException | JoynrRuntimeException | ApplicationException e) {
-                fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-                return;
-            }
-        } catch (Exception e) {
-            fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
-        }
+        String[] stringArray = { "Hello", "World" };
+        Double[] doubleArrayArg = IltUtil.createDoubleArray();
+        callProxyMethodWithParameterAsyncAndAssertResult("methodWithSingleArrayParameters",
+                                                         doubleArrayArg,
+                                                         (Double[] arg, String[] res) -> Arrays.equals(res,
+                                                                                                       stringArray));
         LOG.info(name.getMethodName() + " - OK");
         return;
     }
 
-    // variables that are to be changed inside callbacks must be declared global
-    volatile boolean methodWithSinglePrimitiveParametersAsyncCallbackDone = false;
-    volatile boolean methodWithSinglePrimitiveParametersAsyncCallbackResult = false;
-
     @Test
     public void callMethodWithSinglePrimitiveParametersAsync() {
         LOG.info(name.getMethodName() + "");
-        try {
-            // setup input parameters
-            // final short arg = (short)65535;
-            final short arg = (short) 32767;
-
-            Callback<String> callback = new Callback<String>() {
-                @Override
-                public void onSuccess(String stringOut) {
-                    // check results
-                    if (!stringOut.equals(String.valueOf(Short.toUnsignedInt(arg)))) {
-                        LOG.info(name.getMethodName() + " - invalid stringOut from callback");
-                        LOG.info(name.getMethodName() + " - FAILED");
-                        methodWithSinglePrimitiveParametersAsyncCallbackResult = false;
-                        methodWithSinglePrimitiveParametersAsyncCallbackDone = true;
-                        return;
-                    }
-                    methodWithSinglePrimitiveParametersAsyncCallbackResult = true;
-                    methodWithSinglePrimitiveParametersAsyncCallbackDone = true;
-                }
-
-                @Override
-                public void onFailure(JoynrRuntimeException error) {
-                    methodWithSinglePrimitiveParametersAsyncCallbackResult = false;
-                    methodWithSinglePrimitiveParametersAsyncCallbackDone = true;
-                    if (error instanceof JoynrRuntimeException) {
-                        LOG.info(name.getMethodName() + " - callback - caught exception "
-                                + ((JoynrRuntimeException) error).getMessage());
-                    } else {
-                        LOG.info(name.getMethodName() + " - callback - caught exception");
-                    }
-                    LOG.info(name.getMethodName() + " - FAILED");
-                }
-            };
-
-            Future<String> future = testInterfaceProxy.methodWithSinglePrimitiveParameters(callback, arg);
-
-            try {
-                long timeoutInMilliseconds = 8000;
-                LOG.info(name.getMethodName() + " - about to call future.get");
-                String result = future.get(timeoutInMilliseconds);
-                LOG.info(name.getMethodName() + " - returned from future.get");
-
-                // check results from future
-                if (result == null) {
-                    fail(name.getMethodName() + " - FAILED - got no result");
-                    return;
-                }
-                if (!result.equals(String.valueOf(Short.toUnsignedInt(arg)))) {
-                    fail(name.getMethodName() + " - FAILED - got invalid result");
-                    return;
-                }
-
-                LOG.info(name.getMethodName() + " - future result checks OK");
-
-                // check results from callback; expect to be finished within 1 second
-                // should have been called ahead anyway
-                if (methodWithSinglePrimitiveParametersAsyncCallbackDone == false) {
-                    LOG.info(name.getMethodName() + " - about to wait for a second for callback");
-                    Thread.sleep(1000);
-                    LOG.info(name.getMethodName() + " - wait for callback is over");
-                } else {
-                    LOG.info(name.getMethodName() + " - callback already done");
-                }
-                if (methodWithSinglePrimitiveParametersAsyncCallbackDone == false) {
-                    fail(name.getMethodName() + " - FAILED - callback NOT done");
-                    return;
-                }
-                if (methodWithSinglePrimitiveParametersAsyncCallbackResult == false) {
-                    fail(name.getMethodName() + " - FAILED - callback reported error");
-                    return;
-                }
-                LOG.info(name.getMethodName() + " - callback has set OK flags");
-            } catch (InterruptedException | JoynrRuntimeException | ApplicationException e) {
-                fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-                return;
-            }
-        } catch (Exception e) {
-            fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
-        }
+        short shortArg = (short) 32767;
+        callProxyMethodWithParameterAsyncAndAssertResult("methodWithSinglePrimitiveParameters",
+                                                         shortArg,
+                                                         (Short arg,
+                                                          String res) -> res.equals(new Integer(Short.toUnsignedInt(arg)).toString()));
         LOG.info(name.getMethodName() + " - OK");
         return;
     }
