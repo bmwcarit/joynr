@@ -16,22 +16,29 @@
  * limitations under the License.
  * #L%
  */
+const RequireUtil = require("./RequireUtil");
 
-const RadioProxy = require("../../generated/joynr/vehicle/RadioProxy");
-const DatatypesProxy = require("../../generated/joynr/datatypes/DatatypesProxy");
-const MultipleVersionsInterfaceProxy = require("../../generated/joynr/tests/MultipleVersionsInterfaceProxy");
-const IntegrationUtils = require("./IntegrationUtils");
-const provisioning = require("../../resources/joynr/provisioning/provisioning_cc");
-const waitsFor = require("../global/WaitsFor");
-let joynr = require("joynr");
+let RadioProxy, DatatypesProxy, MultipleVersionsInterfaceProxy, IntegrationUtils, provisioning, waitsFor, joynr;
+
+const requirePaths = new Map([
+    ["RadioProxy", require.resolve("../../generated/joynr/vehicle/RadioProxy")],
+    ["DatatypesProxy", require.resolve("../../generated/joynr/datatypes/DatatypesProxy")],
+    ["MultipleVersionsInterfaceProxy", require.resolve("../../generated/joynr/tests/MultipleVersionsInterfaceProxy")],
+    ["IntegrationUtils", require.resolve("./IntegrationUtils")],
+    ["provisioning", require.resolve("../../resources/joynr/provisioning/provisioning_cc")],
+    ["waitsFor", require.resolve("../global/WaitsFor")],
+    ["joynr", require.resolve("joynr")]
+]);
 
 function End2EndAbstractTest(provisioningSuffix, providerChildProcessName, processSpecialization) {
     let radioProxy, dataProxy, multipleVersionsInterfaceProxy;
     let childId;
-    let testIdentifier = 0;
+    this.testIdentifier = processSpecialization ? processSpecialization.testIdentifier || 0 : 0;
 
     this.beforeEach = async function() {
-        const provisioningSuffixForTest = `${provisioningSuffix}-${testIdentifier++}`;
+        eval(RequireUtil.safeRequire(requirePaths));
+
+        const provisioningSuffixForTest = `${provisioningSuffix}-${this.testIdentifier}`;
         const domain = provisioningSuffixForTest;
         provisioning.channelId = `abstract-test-base${provisioningSuffixForTest}`;
         const testProvisioning = provisioning;
@@ -352,12 +359,9 @@ function End2EndAbstractTest(provisioningSuffix, providerChildProcessName, proce
                 return IntegrationUtils.shutdownLibjoynr();
             })
             .then(() => {
-                delete require.cache;
                 // remove old joynr exit handler
                 process.removeAllListeners("exit");
-                /*eslint-disable */
-                joynr = require("joynr");
-                /*eslint-enable */
+                RequireUtil.deleteFromCache(requirePaths);
             })
             .catch(e => {
                 throw new Error(`shutdown Child and Libjoynr failed: ${e}`);
