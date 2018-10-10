@@ -16,21 +16,10 @@
  * limitations under the License.
  * #L%
  */
-package io.joynr.examples.statelessasync;
+package io.joynr.discovery.jee;
 
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import joynr.infrastructure.GlobalCapabilitiesDirectorySync;
 
-import javax.ws.rs.ApplicationPath;
-import javax.ws.rs.core.Application;
-
-@ApplicationPath("/")
-public class RestApplication extends Application {
-
-    @Override
-    public Set<Class<?>> getClasses() {
-        return Stream.of(RestEndpoint.class).collect(Collectors.toSet());
-    }
-
+public interface GlobalCapabilitiesDirectoryService extends GlobalCapabilitiesDirectorySync {
+    void fireGlobalDiscoveryEntryChanged();
 }

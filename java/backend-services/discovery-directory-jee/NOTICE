@@ -97,7 +97,6 @@ This project has dependencies to:
   Java(TM) EE 7 Specification APIs under CDDL + GPLv2 with classpath exception
   JavaBeans Activation Framework (JAF) under Common Development and Distribution License (CDDL) v1.0
   JavaMail API under CDDL/GPLv2+CE
-  Javassist under MPL 1.1 or LGPL 2.1 or Apache License 2.0
   javax.inject under The Apache Software License, Version 2.0
   javax.interceptor API under CDDL + GPLv2 with classpath exception
   jsoup under The MIT License
@@ -115,7 +114,6 @@ This project has dependencies to:
   Plexus Common Utilities under The Apache Software License, Version 2.0
   Plexus Interpolation API under The Apache Software License, Version 2.0
   Plexus Security Dispatcher Component under Apache Public License 2.0
-  Reflections under WTFPL or The New BSD License
   ShrinkWrap API under Apache License, Version 2.0
   ShrinkWrap Descriptors API Base under Apache License, Version 2.0
   ShrinkWrap Descriptors SPI under Apache License, Version 2.0

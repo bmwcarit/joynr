@@ -27,7 +27,7 @@
 	<parent>
 		<groupId>io.joynr.tools</groupId>
 		<artifactId>generator</artifactId>
-		<version>1.6.0</version>
+		<version>1.6.1</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -65,6 +65,7 @@
 		<dependency>
 			<groupId>org.reflections</groupId>
 			<artifactId>reflections</artifactId>
+			<version>0.9.10</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>

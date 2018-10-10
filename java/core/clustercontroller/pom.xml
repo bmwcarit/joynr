@@ -26,7 +26,7 @@
 	<parent>
 		<groupId>io.joynr.java</groupId>
 		<artifactId>core</artifactId>
-		<version>1.6.0</version>
+		<version>1.6.1</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -54,11 +54,6 @@
 			<version>${project.version}</version>
 			<type>test-jar</type>
 			<scope>test</scope>
-		</dependency>
-		<!-- used to scan for annotations for subtypes -->
-		<dependency>
-			<groupId>org.reflections</groupId>
-			<artifactId>reflections</artifactId>
 		</dependency>
 		<!--
 			Due to compatibility reasons of httpclient library provided within the

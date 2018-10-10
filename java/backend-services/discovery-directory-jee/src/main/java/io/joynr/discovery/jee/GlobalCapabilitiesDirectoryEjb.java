@@ -35,6 +35,8 @@ import org.slf4j.LoggerFactory;
 import io.joynr.capabilities.CapabilityUtils;
 import io.joynr.capabilities.GlobalDiscoveryEntryPersisted;
 import io.joynr.jeeintegration.api.ServiceProvider;
+import io.joynr.jeeintegration.api.SubscriptionPublisher;
+import joynr.infrastructure.GlobalCapabilitiesDirectorySubscriptionPublisher;
 import joynr.infrastructure.GlobalCapabilitiesDirectorySync;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
@@ -44,15 +46,16 @@ import joynr.types.GlobalDiscoveryEntry;
 @Stateless
 @ServiceProvider(serviceInterface = GlobalCapabilitiesDirectorySync.class)
 @Transactional
-public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirectorySync {
-
+public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirectoryService {
     private static final Logger logger = LoggerFactory.getLogger(GlobalCapabilitiesDirectoryEjb.class);
-
     private EntityManager entityManager;
+    private GlobalCapabilitiesDirectorySubscriptionPublisher gcdSubPublisher;
 
     @Inject
-    public GlobalCapabilitiesDirectoryEjb(EntityManager entityManager) {
+    public GlobalCapabilitiesDirectoryEjb(EntityManager entityManager,
+                                          @SubscriptionPublisher GlobalCapabilitiesDirectorySubscriptionPublisher gcdSubPublisher) {
         this.entityManager = entityManager;
+        this.gcdSubPublisher = gcdSubPublisher;
     }
 
     @Override
@@ -87,6 +90,11 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
         } else {
             entityManager.merge(entity);
         }
+    }
+
+    @Override
+    public void fireGlobalDiscoveryEntryChanged() {
+        throw new UnsupportedOperationException("Not implemented yet");
     }
 
     @Override
