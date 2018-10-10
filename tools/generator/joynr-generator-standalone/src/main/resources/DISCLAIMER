@@ -1,13 +1,11 @@
 The software listed below included in some products is licensed under the "Apache License, Version 2.0". A copy of that license in the English original version with a copyright notice, a disclaimer of warranty, and an exclusion of liability is included in this document "META-INF/licenses/Apache-2.txt" as well as the content of the NOTICE file if applicable.
-- com.google.errorprone:error_prone_annotations:2.1.3
-- com.google.guava:guava:24.1-android
+- com.google.guava:guava:15.0
 - com.google.inject.extensions:guice-assistedinject:3.0
   Notice file: info/guice-assistedinject-3.0-jar/META-INF/NOTICE
   License file: info/guice-assistedinject-3.0-jar/META-INF/LICENSE
 - com.google.inject:guice:3.0
   Notice file: info/guice-3.0-jar/META-INF/NOTICE
   License file: info/guice-3.0-jar/META-INF/LICENSE
-- com.google.j2objc:j2objc-annotations:1.1
 - javax.inject:javax.inject:1
 - log4j:log4j:1.2.17
   Notice file: info/log4j-1.2.17-jar/META-INF/NOTICE
@@ -29,60 +27,60 @@ The software listed below included in some products is licensed under the "Creat
   Source: http://www.jcip.net (no changes made). Copyright and license notice: META-INF/licenses/CC-BY.jcip.txt
 
 The software listed below included in some products is licensed under the “Eclipse Public License, v.1.0”. A copy of that license in the English original version with a copyright notice, a disclaimer of warranty, and an exclusion of liability is included in this document "META-INF/licenses/EPL-1.txt". To obtain a copy of the source code for these components, visit the URLs listed below.
-- org.eclipse.emf:org.eclipse.emf.common:2.12.0
-  About file: info/org.eclipse.emf.common-2.12.0-jar/about.html
-  Sources: https://repo1.maven.org/maven2/org/eclipse/emf/org.eclipse.emf.common/2.12.0/org.eclipse.emf.common-2.12.0-sources.jar
-- org.eclipse.emf:org.eclipse.emf.ecore.xmi:2.12.0
-  About file: info/org.eclipse.emf.ecore.xmi-2.12.0-jar/about.html
-  Sources: https://repo1.maven.org/maven2/org/eclipse/emf/org.eclipse.emf.ecore.xmi/2.12.0/org.eclipse.emf.ecore.xmi-2.12.0-sources.jar
-- org.eclipse.emf:org.eclipse.emf.ecore:2.12.0
-  About file: info/org.eclipse.emf.ecore-2.12.0-jar/about.html
-  Sources: https://repo1.maven.org/maven2/org/eclipse/emf/org.eclipse.emf.ecore/2.12.0/org.eclipse.emf.ecore-2.12.0-sources.jar
+- org.eclipse.emf:org.eclipse.emf.common:2.15.0
+  About file: info/org.eclipse.emf.common-2.15.0-jar/about.html
+  Sources: https://repo1.maven.org/maven2/org/eclipse/emf/org.eclipse.emf.common/2.12.0/org.eclipse.emf.common-2.15.0-sources.jar
+- org.eclipse.emf:org.eclipse.emf.ecore.xmi:2.15.0
+  About file: info/org.eclipse.emf.ecore.xmi-2.15.0-jar/about.html
+  Sources: https://repo1.maven.org/maven2/org/eclipse/emf/org.eclipse.emf.ecore.xmi/2.12.0/org.eclipse.emf.ecore.xmi-2.15.0-sources.jar
+- org.eclipse.emf:org.eclipse.emf.ecore:2.15.0
+  About file: info/org.eclipse.emf.ecore-2.15.0-jar/about.html
+  Sources: https://repo1.maven.org/maven2/org/eclipse/emf/org.eclipse.emf.ecore/2.12.0/org.eclipse.emf.ecore-2.15.0-sources.jar
 - org.eclipse.jdt:org.eclipse.jdt.compiler.apt:1.2.100
   About file: info/org.eclipse.jdt.compiler.apt-1.2.100-jar/about.html
   Sources: http://central.maven.org/maven2/org/eclipse/jdt/org.eclipse.jdt.compiler.apt/1.2.100/org.eclipse.jdt.compiler.apt-1.2.100-sources.jar
 - org.eclipse.jdt:org.eclipse.jdt.core:3.12.2
   About file: info/org.eclipse.jdt.core-3.12.2-jar/about.html
   Sources: http://central.maven.org/maven2/org/eclipse/jdt/org.eclipse.jdt.core/3.12.2/org.eclipse.jdt.core-3.12.2-sources.jar
-- org.eclipse.platform:org.eclipse.core.commands:3.9.100
-  About file: info/org.eclipse.core.commands-3.9.100-jar/about.html
-  Sources: http://central.maven.org/maven2/org/eclipse/platform/org.eclipse.core.commands/3.9.100/org.eclipse.core.commands-3.9.100-sources.jar
-- org.eclipse.platform:org.eclipse.core.contenttype:3.7.0
-  About file: info/org.eclipse.core.contenttype-3.7.0-jar/about.html
+- org.eclipse.platform:org.eclipse.core.commands:3.9.200
+  About file: info/org.eclipse.core.commands-3.9.200-jar/about.html
+  Sources: http://central.maven.org/maven2/org/eclipse/platform/org.eclipse.core.commands/3.9.200/org.eclipse.core.commands-3.9.200-sources.jar
+- org.eclipse.platform:org.eclipse.core.contenttype:3.7.100
+  About file: info/org.eclipse.core.contenttype-3.7.100-jar/about.html
   Sources: https://github.com/eclipse/eclipse.platform.runtime/tree/master/bundles/org.eclipse.core.contenttype
-- org.eclipse.platform:org.eclipse.core.expressions:3.6.100
-  About file: info/org.eclipse.core.expressions-3.6.100-jar/about.html
-  Sources: https://repo1.maven.org/maven2/org/eclipse/platform/org.eclipse.core.expressions/3.6.100/org.eclipse.core.expressions-3.6.100-sources.jar
-- org.eclipse.platform:org.eclipse.core.filesystem:1.7.100
-  About file: info/org.eclipse.core.filesystem-1.7.100-jar/about.html
-  Sources: http://central.maven.org/maven2/org/eclipse/platform/org.eclipse.core.filesystem/1.7.100/org.eclipse.core.filesystem-1.7.100-sources.jar
-- org.eclipse.platform:org.eclipse.core.jobs:3.10.0
-  About file: info/org.eclipse.core.jobs-3.10.0-jar/about.html
+- org.eclipse.platform:org.eclipse.core.expressions:3.6.200
+  About file: info/org.eclipse.core.expressions-3.6.200-jar/about.html
+  Sources: https://repo1.maven.org/maven2/org/eclipse/platform/org.eclipse.core.expressions/3.6.100/org.eclipse.core.expressions-3.6.2s00-sources.jar
+- org.eclipse.platform:org.eclipse.core.filesystem:1.7.200
+  About file: info/org.eclipse.core.filesystem-1.7.200-jar/about.html
+  Sources: http://central.maven.org/maven2/org/eclipse/platform/org.eclipse.core.filesystem/1.7.100/org.eclipse.core.filesystem-1.7.200-sources.jar
+- org.eclipse.platform:org.eclipse.core.jobs:3.10.100
+  About file: info/org.eclipse.core.jobs-3.10.100-jar/about.html
   Sources: https://github.com/eclipse/eclipse.platform.runtime/tree/master/bundles/org.eclipse.core.jobs
-- org.eclipse.platform:org.eclipse.core.resources:3.13.0
-  About file: info/org.eclipse.core.resources-3.13.0-jar/about.html
-  Sources: http://central.maven.org/maven2/org/eclipse/platform/org.eclipse.core.resources/3.13.0/org.eclipse.core.resources-3.13.0-sources.jar
-- org.eclipse.platform:org.eclipse.core.runtime:3.14.0
-  About file: info/org.eclipse.core.runtime-3.14.0-jar/about.html
-  Sources: https://github.com/eclipse/eclipse.platform.runtime/tree/master/bundles/org.eclipse.core.runtime
-- org.eclipse.platform:org.eclipse.equinox.app:1.3.500
-  About file: info/org.eclipse.equinox.app-1.3.500-jar/about.html
-  Sources: https://repo1.maven.org/maven2/org/eclipse/platform/org.eclipse.equinox.app/1.3.500/org.eclipse.equinox.app-1.3.500-sources.jar
-- org.eclipse.platform:org.eclipse.equinox.common:3.10.0
-  About file: info/org.eclipse.equinox.common-3.10.0-jar/about.html
-  Sources: http://central.maven.org/maven2/org/eclipse/platform/org.eclipse.equinox.common/3.10.0/org.eclipse.equinox.common-3.10.0-sources.jar
-- org.eclipse.platform:org.eclipse.equinox.preferences:3.7.100
-  About file: info/org.eclipse.equinox.preferences-3.7.100-jar/about.html
+- org.eclipse.platform:org.eclipse.core.resources:3.13.100
+  About file: info/org.eclipse.core.resources-3.13.100-jar/about.html
+  Sources: http://central.maven.org/maven2/org/eclipse/platform/org.eclipse.core.resources/3.13.100/org.eclipse.core.resources-3.13.100-sources.jar
+- org.eclipse.platform:org.eclipse.core.runtime:3.15.0
+  About file: info/org.eclipse.core.runtime-3.15.0-jar/about.html
+  Sources: https://github.com/eclipse/eclipse.platform.runtime/tree/master/bundles/org.  eclipse.core.runtime
+- org.eclipse.platform:org.eclipse.equinox.app:1.3.600
+  About file: info/org.eclipse.equinox.app-1.3.600-jar/about.html
+  Sources: https://repo1.maven.org/maven2/org/eclipse/platform/org.eclipse.equinox.app/1.3.600/org.eclipse.equinox.app-1.3.600-sources.jar
+- org.eclipse.platform:org.eclipse.equinox.common:3.10.100
+  About file: info/org.eclipse.equinox.common-3.10.100-jar/about.html
+  Sources: http://central.maven.org/maven2/org/eclipse/platform/org.eclipse.equinox.common/3.10.0/org.eclipse.equinox.common-3.10.100-sources.jar
+- org.eclipse.platform:org.eclipse.equinox.preferences:3.7.200
+  About file: info/org.eclipse.equinox.preferences-3.7.200-jar/about.html
   Sources: http://git.eclipse.org/c/equinox/rt.equinox.bundles.git/tree/bundles/org.eclipse.equinox.preferences
-- org.eclipse.platform:org.eclipse.equinox.registry:3.8.0
-  About file: info/org.eclipse.equinox.registry-3.8.0-jar/about.html
-  Sources: http://central.maven.org/maven2/org/eclipse/platform/org.eclipse.equinox.registry/3.8.0/org.eclipse.equinox.registry-3.8.0-sources.jar
-- org.eclipse.platform:org.eclipse.osgi:3.13.0
-  About file: info/org.eclipse.osgi-3.13.0-jar/about.html
-  Sources: http://central.maven.org/maven2/org/eclipse/platform/org.eclipse.osgi/3.13.0/org.eclipse.osgi-3.13.0-sources.jar
-- org.eclipse.platform:org.eclipse.text:3.6.300
-  About file: info/org.eclipse.text-3.6.300-jar/about.html
-  Sources: http://central.maven.org/maven2/org/eclipse/platform/org.eclipse.text/3.6.300/org.eclipse.text-3.6.300-sources.jar
+- org.eclipse.platform:org.eclipse.equinox.registry:3.8.100
+  About file: info/org.eclipse.equinox.registry-3.8.100-jar/about.html
+  Sources: http://central.maven.org/maven2/org/eclipse/platform/org.eclipse.equinox.registry/3.8.0/org.eclipse.equinox.registry-3.8.100-sources.jar
+- org.eclipse.platform:org.eclipse.osgi:3.13.100
+  About file: info/org.eclipse.osgi-3.13.100-jar/about.html
+  Sources: http://central.maven.org/maven2/org/eclipse/platform/org.eclipse.osgi/3.13.100/org.eclipse.osgi-3.13.100-sources.jar
+- org.eclipse.platform:org.eclipse.text:3.7.0
+  About file: info/org.eclipse.text-3.7.0-jar/about.html
+  Sources: http://central.maven.org/maven2/org/eclipse/platform/org.eclipse.text/3.7.0/org.eclipse.text-3.7.0-sources.jar
 - org.eclipse.xtend:org.eclipse.xtend.core:2.11.0
   Sources: http://central.maven.org/maven2/org/eclipse/xtend/org.eclipse.xtend.core/2.11.0/org.eclipse.xtend.core-2.11.0-sources.jar
 - org.eclipse.xtend:org.eclipse.xtend.lib.macro:2.11.0
@@ -113,7 +111,5 @@ Software libraries listed below included in some products are free software that
   Sources: info/annotations-3.0.1-jar
 
 The software listed below included in some products is licensed under the "MIT/X11 license". A copy of that license in the English original version with a copyright notice, a disclaimer of warranty, and an exclusion of liability is included in the documents listed below.
-- org.checkerframework:checker-compat-qual:2.0.0
-- org.codehaus.mojo:animal-sniffer-annotations:1.14
 - org.slf4j:slf4j-api:1.7.25
   License: META-INF/licenses/MIT.slf4j.txt
