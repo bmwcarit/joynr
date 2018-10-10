@@ -213,7 +213,8 @@ public class DefaultJoynrRuntimeFactoryTest {
         assertTrue(properties.containsKey(key));
         String value = properties.getProperty(key);
         assertNotNull(value);
-        assertEquals((LOCAL_DOMAIN + "." + CHANNEL_ID + "." + MyService.INTERFACE_NAME).replace("/", "."), value);
+        assertEquals((LOCAL_DOMAIN + "." + CHANNEL_ID + "." + MyService.INTERFACE_NAME + ".v"
+                + ProviderAnnotations.getMajorVersion(MyServiceProvider.class)).replace("/", "."), value);
     }
 
     @Test

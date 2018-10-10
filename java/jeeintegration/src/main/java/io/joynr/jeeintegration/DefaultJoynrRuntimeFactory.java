@@ -71,6 +71,7 @@ import io.joynr.messaging.mqtt.statusmetrics.MqttStatusReceiver;
 import io.joynr.messaging.persistence.MessagePersister;
 import io.joynr.messaging.persistence.NoOpMessagePersister;
 import io.joynr.provider.JoynrInterface;
+import io.joynr.provider.ProviderAnnotations;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrInjectorFactory;
@@ -315,7 +316,7 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
         try {
             ProvidedBy providedBy = providerInterfaceClass.getAnnotation(ProvidedBy.class);
             JoynrInterface joynrInterface = providedBy.value().getAnnotation(JoynrInterface.class);
-            return joynrInterface.name();
+            return joynrInterface.name() + ".v" + ProviderAnnotations.getMajorVersion(providedBy.value());
         } catch (SecurityException | IllegalArgumentException e) {
             LOG.debug("error getting interface details", e);
             return providerInterfaceClass.getSimpleName();
