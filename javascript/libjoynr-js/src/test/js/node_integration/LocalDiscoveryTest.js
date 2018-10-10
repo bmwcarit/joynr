@@ -16,15 +16,27 @@
  * limitations under the License.
  * #L%
  */
+const RequireUtil = require("./RequireUtil");
 
-let joynr = require("joynr");
-const RadioProxy = require("../../generated/joynr/vehicle/RadioProxy");
-const TestWithVersionProvider = require("../../generated/joynr/tests/TestWithVersionProvider");
-const TestWithVersionProxy = require("../../generated/joynr/tests/TestWithVersionProxy");
-const IntegrationUtils = require("./IntegrationUtils");
-const provisioning = require("../../resources/joynr/provisioning/provisioning_cc");
-const DiscoveryQos = require("../../../../src/main/js/joynr/proxy/DiscoveryQos");
-const JoynrException = require("../../../main/js/joynr/exceptions/JoynrException");
+let joynr,
+    RadioProxy,
+    TestWithVersionProvider,
+    TestWithVersionProxy,
+    IntegrationUtils,
+    provisioning,
+    DiscoveryQos,
+    JoynrException;
+
+const requirePaths = new Map([
+    ["joynr", require.resolve("joynr")],
+    ["RadioProxy", require.resolve("../../generated/joynr/vehicle/RadioProxy")],
+    ["TestWithVersionProvider", require.resolve("../../generated/joynr/tests/TestWithVersionProvider")],
+    ["TestWithVersionProxy", require.resolve("../../generated/joynr/tests/TestWithVersionProxy")],
+    ["IntegrationUtils", require.resolve("./IntegrationUtils")],
+    ["provisioning", require.resolve("../../resources/joynr/provisioning/provisioning_cc")],
+    ["DiscoveryQos", require.resolve("../../../../src/main/js/joynr/proxy/DiscoveryQos")],
+    ["JoynrException", require.resolve("../../../main/js/joynr/exceptions/JoynrException")]
+]);
 
 describe("libjoynr-js.integration.localDiscoveryTest", () => {
     let provisioningSuffix;
@@ -35,6 +47,7 @@ describe("libjoynr-js.integration.localDiscoveryTest", () => {
     afterEach(done => {
         IntegrationUtils.shutdownLibjoynr()
             .then(() => {
+                RequireUtil.deleteFromCache(requirePaths);
                 done();
                 return null;
             })
@@ -44,6 +57,7 @@ describe("libjoynr-js.integration.localDiscoveryTest", () => {
     });
 
     beforeEach(done => {
+        eval(RequireUtil.safeRequire(requirePaths));
         provisioningSuffix = `LocalDiscoveryTest-${Date.now()}`;
         domain = provisioningSuffix;
 
