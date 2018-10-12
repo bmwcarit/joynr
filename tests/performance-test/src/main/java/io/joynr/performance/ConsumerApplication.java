@@ -422,20 +422,7 @@ public class ConsumerApplication extends AbstractJoynrApplication {
     public void shutdown() {
         runtime.shutdown(true);
 
-        // TODO currently there is a bug preventing all threads being stopped: WORKAROUND
-        sleep(3000);
-
         System.exit(0);
-    }
-
-    private boolean sleep(long milliseconds) {
-        try {
-            Thread.sleep(milliseconds);
-        } catch (InterruptedException e) {
-            return false;
-        }
-
-        return true;
     }
 
     private static JoynrApplication createJoynrApplication() throws Exception {
