@@ -66,7 +66,8 @@ public class ConsumerApplication extends AbstractJoynrApplication {
             consumerApp.run();
             consumerApp.shutdown();
         } catch (Exception exception) {
-            invocationParameters.getNumberOfThreads();
+            Log.error("Unexpected exception: " + exception);
+            exception.printStackTrace(Log.getOutput());
             System.exit(1);
         }
     }
