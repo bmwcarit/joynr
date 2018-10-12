@@ -77,6 +77,14 @@ MULTICONSUMER_RUNS=200
 
 SKIPBYTEARRAYSIZETIMESK=false
 
+NUMBER_OF_ITERATIONS=1
+
+CONSTANT_NUMBER_OF_PENDING_REQUESTS=false
+
+PENDING_REQUESTS=500 # Used only with CONSTANT_NUMBER_OF_PENDING_REQUESTS
+
+NUM_THREADS=1 # Used only with CONSTANT_NUMBER_OF_PENDING_REQUESTS
+
 
 ### Constants ###
 
@@ -333,7 +341,7 @@ function startJsPerformanceTestProvider {
     fi
 }
 
-function performJavaConsumerTest {
+function performJavaPerformanceTest {
     MODE_PARAM=$1
     TESTCASE_PARAM=$2
     STDOUT_PARAM=$3
@@ -341,11 +349,22 @@ function performJavaConsumerTest {
     NUM_INSTANCES=$5
     NUM_RUNS=$6
     DISCOVERY_SCOPE=$7
+    NUMBER_OF_ITERATIONS=$8
+    NUM_PENDING=$9
+    NUM_THREADS=${10}
+
+    if [ "$CONSTANT_NUMBER_OF_PENDING_REQUESTS" == "true" ]; then
+       CNR="-cnr -pending $NUM_PENDING -threads $NUM_THREADS"
+    else
+       CNR=""
+    fi
 
     CONSUMERCLASS="io.joynr.performance.ConsumerApplication"
-    CONSUMERARGS="-d $DOMAINNAME -w $JAVA_WARMUPS -r $NUM_RUNS \
-                  -s $MODE_PARAM -t $TESTCASE_PARAM -bs $INPUTDATA_BYTEARRAYSIZE \
-                  -sl $INPUTDATA_STRINGLENGTH -ds $DISCOVERY_SCOPE"
+    CONSUMERARGS="-d $DOMAINNAME -ds $DISCOVERY_SCOPE \
+                  -s $MODE_PARAM -t $TESTCASE_PARAM \
+                  -bs $INPUTDATA_BYTEARRAYSIZE -sl $INPUTDATA_STRINGLENGTH \
+                  -w $JAVA_WARMUPS -r $NUM_RUNS -iterations $NUMBER_OF_ITERATIONS \
+                  $CNR"
 
     cd $PERFORMANCETESTS_SOURCE_DIR
 
@@ -596,6 +615,13 @@ function echoUsage {
     echo "   -c <number-of-consumers> (optional, used for MULTICONSUMER tests, default $MULTICONSUMER_NUMINSTANCES)"
     echo "   -x <number-of-runs> (optional, defaults to $SINGLECONSUMER_RUNS single- / $MULTICONSUMER_RUNS multi-consumer runs)"
     echo "   -k <skip bytearray size times k (true|false)> (optional, defaults to $SKIPBYTEARRAYSIZETIMESK)"
+    echo "   -I <number-of-iterations> (optional, defaults to $NUMBER_OF_ITERATIONS)"
+    echo "      Number of internal reruns of the test (number-of-iterations * number-of-runs)."
+    echo "      Only implemented for test case JAVA_ASYNC SEND_STRING."
+    echo "   -C Use test variant \"Constand Number of pending Requests (CNR)\" (optional, disabled by default)"
+    echo "      Only implemented for test case JAVA_ASYNC SEND_STRING."
+    echo "   -P <number-of-pending-requests-if-cnr-is-enabled> (optional, defaults to $PENDING_REQUESTS)"
+    echo "   -T <number-of-threads-if-cnr-is-enabled> (optional, defaults to $NUM_THREADS)"
 }
 
 function checkDirExists {
@@ -615,7 +641,7 @@ function checkIfBackendServicesAreNeeded {
     return 0
 }
 
-while getopts "p:s:r:y:j:S:B:m:n:z:e:d:a:t:c:x:k:h" OPTIONS;
+while getopts "p:s:r:y:j:S:B:m:n:z:e:d:a:t:c:x:k:I:CP:T:h" OPTIONS;
 do
     case $OPTIONS in
 # paths
@@ -672,6 +698,18 @@ do
             ;;
         k)
             SKIPBYTEARRAYSIZETIMESK=$OPTARG
+            ;;
+        I)
+            NUMBER_OF_ITERATIONS=$OPTARG
+            ;;
+        C)
+            CONSTANT_NUMBER_OF_PENDING_REQUESTS=true
+            ;;
+        P)
+            PENDING_REQUESTS=$OPTARG
+            ;;
+        T)
+            NUM_THREADS=$OPTARG
             ;;
 # usage
         h)
@@ -769,7 +807,8 @@ then
             startJavaPerformanceTestProvider
             for testcase in 'SEND_STRING' 'SEND_STRUCT' 'SEND_BYTEARRAY'; do
                 echo "Testcase: $TESTTYPE::$testcase" | tee -a $REPORTFILE
-                performJavaConsumerTest $mode $testcase $STDOUT $REPORTFILE 1 $SINGLECONSUMER_RUNS "LOCAL_THEN_GLOBAL"
+                NUM_INSTANCES=1
+                performJavaPerformanceTest $mode $testcase $STDOUT $REPORTFILE $NUM_INSTANCES $SINGLECONSUMER_RUNS "LOCAL_THEN_GLOBAL" $NUMBER_OF_ITERATIONS $PENDING_REQUESTS $NUM_THREADS
             done
         fi
     done
@@ -780,7 +819,8 @@ then
             startCppPerformanceTestProvider
             for testcase in 'SEND_STRING' 'SEND_STRUCT' 'SEND_BYTEARRAY'; do
                 echo "Testcase: $TESTTYPE::$testcase" | tee -a $REPORTFILE
-                performJavaConsumerTest $mode $testcase $STDOUT $REPORTFILE 1 $SINGLECONSUMER_RUNS "LOCAL_THEN_GLOBAL"
+                NUM_INSTANCES=1
+                performJavaPerformanceTest $mode $testcase $STDOUT $REPORTFILE $NUM_INSTANCES $SINGLECONSUMER_RUNS "LOCAL_THEN_GLOBAL" $NUMBER_OF_ITERATIONS $PENDING_REQUESTS $NUM_THREADS
             done
         fi
     done
@@ -790,7 +830,8 @@ then
         startCppPerformanceTestProvider
         for testcase in 'SEND_STRING' 'SEND_STRUCT' 'SEND_BYTEARRAY'; do
             echo "Testcase: JAVA $testcase / MULTIPLE CONSUMERS" | tee -a $REPORTFILE
-            performJavaConsumerTest "ASYNC" $testcase $STDOUT $REPORTFILE $MULTICONSUMER_NUMINSTANCES $MULTICONSUMER_RUNS "LOCAL_THEN_GLOBAL"
+            mode="ASYNC"
+            performJavaPerformanceTest $mode $testcase $STDOUT $REPORTFILE $MULTICONSUMER_NUMINSTANCES $MULTICONSUMER_RUNS "LOCAL_THEN_GLOBAL" $NUMBER_OF_ITERATIONS $PENDING_REQUESTS $NUM_THREADS
         done
     fi
 
@@ -869,7 +910,8 @@ then
     for mode in 'ASYNC' 'SYNC'; do
         for testcase in 'SEND_STRING' 'SEND_STRUCT' 'SEND_BYTEARRAY'; do
             echo "Testcase: JEE_PROVIDER $mode $testcase" | tee -a $REPORTFILE
-            performJavaConsumerTest $mode $testcase $STDOUT $REPORTFILE 1 $SINGLECONSUMER_RUNS "GLOBAL_ONLY"
+            NUM_INSTANCES=1
+            performJavaPerformanceTest $mode $testcase $STDOUT $REPORTFILE $NUM_INSTANCES $SINGLECONSUMER_RUNS "GLOBAL_ONLY" $NUMBER_OF_ITERATIONS $PENDING_REQUESTS $NUM_THREADS
         done
     done
 
