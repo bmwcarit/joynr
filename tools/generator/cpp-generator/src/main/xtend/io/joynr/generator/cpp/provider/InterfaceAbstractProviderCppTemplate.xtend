@@ -59,14 +59,10 @@ class InterfaceAbstractProviderCppTemplate extends InterfaceTemplate {
 	«ENDFOR»
 «ENDIF»
 {
-	// Register a request interpreter to interpret requests to this interface
-	joynr::InterfaceRegistrar::instance().registerRequestInterpreter<«interfaceName»RequestInterpreter>(getInterfaceName());
 }
 
 «interfaceName»AbstractProvider::~«interfaceName»AbstractProvider()
 {
-	// Unregister the request interpreter
-	joynr::InterfaceRegistrar::instance().unregisterRequestInterpreter(getInterfaceName());
 }
 
 const std::string& «interfaceName»AbstractProvider::getInterfaceName() const {

@@ -50,14 +50,14 @@ class InterfaceProviderCppTemplate extends InterfaceTemplate {
 «interfaceName»Provider::«interfaceName»Provider()
 {
 	// Register a request interpreter to interpret requests to this interface
-	joynr::InterfaceRegistrar::instance().registerRequestInterpreter<«interfaceName»RequestInterpreter>(INTERFACE_NAME());
+	joynr::InterfaceRegistrar::instance().registerRequestInterpreter<«interfaceName»RequestInterpreter>(INTERFACE_NAME() + std::to_string(MAJOR_VERSION));
 }
 
 «interfaceName»Provider::~«interfaceName»Provider()
 {
 	// Unregister the request interpreter
 	joynr::InterfaceRegistrar::instance().unregisterRequestInterpreter(
-			INTERFACE_NAME()
+			INTERFACE_NAME() + std::to_string(MAJOR_VERSION)
 	);
 }
 

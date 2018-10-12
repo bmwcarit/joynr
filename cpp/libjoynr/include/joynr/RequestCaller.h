@@ -35,8 +35,8 @@ class IJoynrProvider;
 class JOYNR_EXPORT RequestCaller
 {
 public:
-    explicit RequestCaller(const std::string& interfaceName);
-    explicit RequestCaller(std::string&& interfaceName);
+    explicit RequestCaller(const std::string& interfaceName, const types::Version& providerVersion);
+    explicit RequestCaller(std::string&& interfaceName, types::Version&& providerVersion);
 
     virtual ~RequestCaller() = default;
 
@@ -58,7 +58,7 @@ public:
             const std::string& broadcastName,
             std::shared_ptr<UnicastBroadcastListener> broadcastListener);
 
-    virtual types::Version getProviderVersion() = 0;
+    types::Version getProviderVersion();
 
 protected:
     virtual std::shared_ptr<IJoynrProvider> getProvider() = 0;
@@ -66,6 +66,7 @@ protected:
 private:
     DISALLOW_COPY_AND_ASSIGN(RequestCaller);
     std::string interfaceName;
+    types::Version providerVersion;
 };
 
 } // namespace joynr

@@ -38,7 +38,7 @@ ParticipantIdStorage::ParticipantIdStorage(const std::string& filename)
 
 const std::string& ParticipantIdStorage::STORAGE_FORMAT_STRING()
 {
-    static const std::string value("joynr.participant.%1%.%2%");
+    static const std::string value("joynr.participant.%1%.%2%.v%3%");
     return value;
 }
 
@@ -74,6 +74,7 @@ void ParticipantIdStorage::loadEntriesFromFile()
 
 void ParticipantIdStorage::setProviderParticipantId(const std::string& domain,
                                                     const std::string& interfaceName,
+                                                    std::uint32_t majorVersion,
                                                     const std::string& participantId)
 {
     assert(!domain.empty());
@@ -81,7 +82,7 @@ void ParticipantIdStorage::setProviderParticipantId(const std::string& domain,
     assert(!participantId.empty());
 
     bool fileNeedsUpdate = false;
-    std::string providerKey = createProviderKey(domain, interfaceName);
+    std::string providerKey = createProviderKey(domain, interfaceName, majorVersion);
     StorageItem item{providerKey, participantId};
     {
         WriteLocker lockAccessToStorage(storageMutex);
@@ -95,19 +96,21 @@ void ParticipantIdStorage::setProviderParticipantId(const std::string& domain,
 }
 
 std::string ParticipantIdStorage::getProviderParticipantId(const std::string& domain,
-                                                           const std::string& interfaceName)
+                                                           const std::string& interfaceName,
+                                                           std::uint32_t majorVersion)
 {
-    return getProviderParticipantId(domain, interfaceName, "");
+    return getProviderParticipantId(domain, interfaceName, majorVersion, "");
 }
 
 std::string ParticipantIdStorage::getProviderParticipantId(const std::string& domain,
                                                            const std::string& interfaceName,
+                                                           std::uint32_t majorVersion,
                                                            const std::string& defaultValue)
 {
     assert(!domain.empty());
     assert(!interfaceName.empty());
 
-    const std::string providerKey = createProviderKey(domain, interfaceName);
+    const std::string providerKey = createProviderKey(domain, interfaceName, majorVersion);
     MultiIndexContainer::const_iterator value;
 
     std::string participantId;
@@ -169,9 +172,11 @@ void ParticipantIdStorage::writeStoreToFile()
 }
 
 std::string ParticipantIdStorage::createProviderKey(const std::string& domain,
-                                                    const std::string& interfaceName)
+                                                    const std::string& interfaceName,
+                                                    std::uint32_t majorVersion)
 {
-    std::string key = (boost::format(STORAGE_FORMAT_STRING()) % domain % interfaceName).str();
+    std::string key = (boost::format(STORAGE_FORMAT_STRING()) % domain % interfaceName %
+                       std::to_string(majorVersion)).str();
     std::replace(key.begin(), key.end(), '/', '.');
     return key;
 }

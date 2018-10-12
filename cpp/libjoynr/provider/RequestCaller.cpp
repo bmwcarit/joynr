@@ -23,11 +23,14 @@
 namespace joynr
 {
 
-RequestCaller::RequestCaller(const std::string& interfaceName) : interfaceName(interfaceName)
+RequestCaller::RequestCaller(const std::string& interfaceName,
+                             const types::Version& providerVersion)
+        : interfaceName(interfaceName), providerVersion(providerVersion)
 {
 }
 
-RequestCaller::RequestCaller(std::string&& interfaceName) : interfaceName(std::move(interfaceName))
+RequestCaller::RequestCaller(std::string&& interfaceName, types::Version&& providerVersion)
+        : interfaceName(std::move(interfaceName)), providerVersion(std::move(providerVersion))
 {
 }
 
@@ -62,6 +65,11 @@ void RequestCaller::unregisterBroadcastListener(
         std::shared_ptr<UnicastBroadcastListener> broadcastListener)
 {
     getProvider()->unregisterBroadcastListener(broadcastName, std::move(broadcastListener));
+}
+
+types::Version RequestCaller::getProviderVersion()
+{
+    return providerVersion;
 }
 
 } // namespace joynr

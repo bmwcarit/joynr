@@ -63,23 +63,27 @@ public:
      * provider. This is useful for provisioning of provider participant IDs.
      * @param domain the domain of the provider.
      * @param interfaceName the interface name of the provider.
+     * @param majorVersion the major version pf the providerr
      * @param participantId the participantId to set.
      */
     virtual void setProviderParticipantId(const std::string& domain,
                                           const std::string& interfaceName,
+                                          std::uint32_t majorVersion,
                                           const std::string& participantId);
 
     /**
      * Get a provider participant id
      */
     virtual std::string getProviderParticipantId(const std::string& domain,
-                                                 const std::string& interfaceName);
+                                                 const std::string& interfaceName,
+                                                 std::uint32_t majorVersion);
 
     /**
      * Get a provider participant id or use a default
      */
     virtual std::string getProviderParticipantId(const std::string& domain,
                                                  const std::string& interfaceName,
+                                                 std::uint32_t majorVersion,
                                                  const std::string& defaultValue);
 
 private:
@@ -111,7 +115,9 @@ private:
     DISALLOW_COPY_AND_ASSIGN(ParticipantIdStorage);
     ADD_LOGGER(ParticipantIdStorage)
 
-    std::string createProviderKey(const std::string& domain, const std::string& interfaceName);
+    std::string createProviderKey(const std::string& domain,
+                                  const std::string& interfaceName,
+                                  std::uint32_t majorVersion);
     void loadEntriesFromFile();
     void writeStoreToFile();
 

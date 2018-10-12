@@ -159,12 +159,6 @@ public:
 
 	«ENDFOR»
 
-	/**
-	 * @brief Get the version of the provider instance
-	 * @return the version of the provider instance
-	 */
-	joynr::types::Version getProviderVersion() override;
-
 protected:
 	std::shared_ptr<IJoynrProvider> getProvider() override;
 

@@ -53,7 +53,7 @@ class InterfaceRequestCallerCppTemplate extends InterfaceTemplate {
 
 «getNamespaceStarter(francaIntf)»
 «interfaceName»RequestCaller::«interfaceName»RequestCaller(std::shared_ptr<«getPackagePathWithJoynrPrefix(francaIntf, "::")»::«interfaceName»Provider> provider)
-	: joynr::RequestCaller(«interfaceName»Provider::INTERFACE_NAME()),
+	: joynr::RequestCaller(«interfaceName»Provider::INTERFACE_NAME(), joynr::types::Version(provider->MAJOR_VERSION, provider->MINOR_VERSION)),
 	  provider(std::move(provider))
 {
 }
@@ -189,11 +189,6 @@ class InterfaceRequestCallerCppTemplate extends InterfaceTemplate {
 	}
 
 «ENDFOR»
-
-joynr::types::Version «interfaceName»RequestCaller::getProviderVersion()
-{
-	return joynr::types::Version(provider->MAJOR_VERSION, provider->MINOR_VERSION);
-}
 
 std::shared_ptr<IJoynrProvider> «interfaceName»RequestCaller::getProvider()
 {

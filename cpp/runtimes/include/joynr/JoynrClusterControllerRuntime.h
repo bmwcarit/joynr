@@ -177,7 +177,8 @@ private:
         const std::string domain(systemServicesSettings.getDomain());
         const std::string interfaceName(T::INTERFACE_NAME());
 
-        participantIdStorage->setProviderParticipantId(domain, interfaceName, participantId);
+        participantIdStorage->setProviderParticipantId(
+                domain, interfaceName, T::MAJOR_VERSION, participantId);
 
         joynr::types::ProviderQos systemProviderQos;
         systemProviderQos.setCustomParameters(std::vector<joynr::types::CustomParameter>());

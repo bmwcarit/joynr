@@ -148,12 +148,12 @@ TEST_F(MultipleVersionsTest, twoProxiesOfDifferentVersioningTypesVsOneProvider)
 }
 
 TEST_F(MultipleVersionsTest,
-       DISABLED_twoProvidersOfDifferentVersionsAndTwoFittingProxiesInSingleRuntime)
+       twoProvidersOfDifferentVersionsAndTwoFittingProxiesInSingleRuntime)
 {
     buildTwoProvidersAndPerformChecks(false);
 }
 
-TEST_F(MultipleVersionsTest, DISABLED_TwoProvidersWithFittingProxiesInDifferentRuntimes)
+TEST_F(MultipleVersionsTest, twoProvidersWithFittingProxiesInDifferentRuntimes)
 {
     buildTwoProvidersAndPerformChecks(true);
 }
