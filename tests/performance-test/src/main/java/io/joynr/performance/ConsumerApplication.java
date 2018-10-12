@@ -30,6 +30,7 @@ import com.google.inject.util.Modules;
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.AtmosphereMessagingModule;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
@@ -38,7 +39,9 @@ import io.joynr.messaging.websocket.WebsocketModule;
 import io.joynr.performance.ConsumerInvocationParameters.BackendConfig;
 import io.joynr.performance.ConsumerInvocationParameters.COMMUNICATIONMODE;
 import io.joynr.performance.ConsumerInvocationParameters.RuntimeConfig;
+import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
+import io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrApplication;
@@ -46,6 +49,7 @@ import io.joynr.runtime.JoynrApplicationModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.LibjoynrWebSocketRuntimeModule;
 import jline.internal.Log;
+import joynr.exceptions.ApplicationException;
 import joynr.tests.performance.EchoProxy;
 import joynr.tests.performance.Types.ComplexStruct;
 
@@ -55,6 +59,8 @@ public class ConsumerApplication extends AbstractJoynrApplication {
     private static final int ASYNCTEST_RESPONSE_SAMPLEINTERVAL_MS = 10; // 10 milliseconds
 
     private static ConsumerInvocationParameters invocationParameters = null;
+
+    private int exitCode = 0;
 
     public static void main(String[] args) {
 
@@ -104,7 +110,14 @@ public class ConsumerApplication extends AbstractJoynrApplication {
 
     @Override
     public void run() {
-        EchoProxy echoProxy = createEchoProxy();
+        EchoProxy echoProxy;
+        try {
+            echoProxy = createEchoProxy();
+        } catch (Exception e) {
+            Log.error("Proxy creation failed: " + e);
+            exitCode = 1;
+            return;
+        }
 
         if (invocationParameters.getCommunicationMode() == COMMUNICATIONMODE.SYNC) {
             switch (invocationParameters.getTestCase()) {
@@ -119,6 +132,7 @@ public class ConsumerApplication extends AbstractJoynrApplication {
                 break;
             default:
                 Log.error("Unknown test type used");
+                exitCode = 1;
                 break;
             }
         } else if (invocationParameters.getCommunicationMode() == COMMUNICATIONMODE.ASYNC) {
@@ -134,14 +148,16 @@ public class ConsumerApplication extends AbstractJoynrApplication {
                 break;
             default:
                 Log.error("Unknown test type used");
+                exitCode = 1;
                 break;
             }
         } else {
             Log.error("Unknown communication mode used");
+            exitCode = 1;
         }
     }
 
-    private EchoProxy createEchoProxy() {
+    private EchoProxy createEchoProxy() throws InterruptedException, ApplicationException {
         DiscoveryQos discoveryQos = new DiscoveryQos();
 
         discoveryQos.setDiscoveryTimeoutMs(100000);
@@ -152,8 +168,21 @@ public class ConsumerApplication extends AbstractJoynrApplication {
         ProxyBuilder<EchoProxy> proxyBuilder = runtime.getProxyBuilder(invocationParameters.getDomainName(),
                                                                        EchoProxy.class);
 
-        return proxyBuilder.setMessagingQos(new MessagingQos(60000, invocationParameters.getEffort())). // 1 minute
-                           setDiscoveryQos(discoveryQos).build();
+        Future<EchoProxy> echoProxyFuture = new Future<>();
+        proxyBuilder.setMessagingQos(new MessagingQos(60000, invocationParameters.getEffort())). // 1 minute
+                    setDiscoveryQos(discoveryQos).build(new ProxyCreatedCallback<EchoProxy>() {
+
+                        @Override
+                        public void onProxyCreationFinished(EchoProxy result) {
+                            echoProxyFuture.onSuccess(result);
+                        }
+
+                        @Override
+                        public void onProxyCreationError(JoynrRuntimeException error) {
+                            echoProxyFuture.onFailure(error);
+                        }
+                    });
+        return echoProxyFuture.get();
     }
 
     private void performSyncSendStringTest(EchoProxy proxy) {
@@ -423,7 +452,7 @@ public class ConsumerApplication extends AbstractJoynrApplication {
     public void shutdown() {
         runtime.shutdown(true);
 
-        System.exit(0);
+        System.exit(exitCode);
     }
 
     private static JoynrApplication createJoynrApplication() throws Exception {
