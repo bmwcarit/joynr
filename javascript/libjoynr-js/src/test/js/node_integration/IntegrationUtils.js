@@ -184,16 +184,6 @@ IntegrationUtils.shutdownChildProcess = function(childId) {
     return promise;
 };
 
-IntegrationUtils.shutdownLibjoynr = function() {
-    try {
-        return joynr.shutdown().catch(error => {
-            IntegrationUtils.outputPromiseError(error);
-        });
-    } catch (error) {
-        return Promise.resolve();
-    }
-};
-
 IntegrationUtils.waitALittle = function waitALittle(time) {
     const start = Date.now();
 

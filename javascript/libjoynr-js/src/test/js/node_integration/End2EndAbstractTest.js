@@ -42,7 +42,6 @@ function End2EndAbstractTest(provisioningSuffix, providerChildProcessName, proce
         const domain = provisioningSuffixForTest;
         provisioning.channelId = `abstract-test-base${provisioningSuffixForTest}`;
         const testProvisioning = provisioning;
-        joynr.loaded = false;
         joynr.selectRuntime("inprocess");
 
         await joynr.load(testProvisioning);
@@ -355,16 +354,12 @@ function End2EndAbstractTest(provisioningSuffix, providerChildProcessName, proce
 
     this.afterEach = async function() {
         return IntegrationUtils.shutdownChildProcess(childId)
+            .then(joynr.shutdown)
             .then(() => {
-                return IntegrationUtils.shutdownLibjoynr();
-            })
-            .then(() => {
-                // remove old joynr exit handler
-                process.removeAllListeners("exit");
                 RequireUtil.deleteFromCache(requirePaths);
             })
             .catch(e => {
-                throw new Error(`shutdown Child and Libjoynr failed: ${e}`);
+                throw new Error(`shutdown Child/Libjoynr failed: ${e}`);
             });
     };
 }

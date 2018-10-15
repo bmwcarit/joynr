@@ -45,14 +45,15 @@ describe("libjoynr-js.integration.localDiscoveryTest", () => {
     const MyTestWithVersionProvider = function() {};
 
     afterEach(done => {
-        IntegrationUtils.shutdownLibjoynr()
+        joynr
+            .shutdown()
             .then(() => {
                 RequireUtil.deleteFromCache(requirePaths);
                 done();
                 return null;
             })
             .catch(() => {
-                throw new Error("shutdown ChildProcess and Libjoynr failed");
+                throw new Error("shutdown Libjoynr failed");
             });
     });
 
@@ -62,7 +63,6 @@ describe("libjoynr-js.integration.localDiscoveryTest", () => {
         domain = provisioningSuffix;
 
         provisioning.channelId = provisioningSuffix;
-        joynr.loaded = false;
         joynr.selectRuntime("inprocess");
 
         joynr

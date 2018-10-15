@@ -75,8 +75,6 @@ describe("libjoynr-js.integration.MultipleVersionsTest", () => {
     beforeEach(async () => {
         eval(RequireUtil.safeRequire(requirePaths));
 
-        joynr.loaded = false;
-
         joynr.selectRuntime("inprocess");
         await joynr.load(provisioning);
     });
