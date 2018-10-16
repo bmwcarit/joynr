@@ -180,6 +180,25 @@ public:
         onError(fakeDiscoveryException);
     }
 
+    void fakeCapabilitiesClientAddWithError (
+            const joynr::types::GlobalDiscoveryEntry& entry,
+            std::function<void()> onSuccess,
+            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError) {
+        std::ignore = entry;
+        std::ignore = onSuccess;
+        exceptions::DiscoveryException fakeDiscoveryException("fakeDiscoveryException");
+        onError(fakeDiscoveryException);
+    }
+
+    void fakeCapabilitiesClientAddSuccess (
+            const joynr::types::GlobalDiscoveryEntry& entry,
+            std::function<void()> onSuccess,
+            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError) {
+        std::ignore = entry;
+        std::ignore = onError;
+        onSuccess();
+    }
+
     void fakeLookupWithResults(
             const std::vector<std::string>& domains,
             const std::string& interfaceName,
@@ -1893,6 +1912,50 @@ TEST_F(LocalCapabilitiesDirectoryTest, callTouchPeriodically)
             ReleaseSemaphore(&semaphore));
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(250)));
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(250)));
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, addMultipleTimesSameProviderAwaitForGlobal)
+{
+    types::ProviderQos qos;
+    qos.setScope(joynr::types::ProviderScope::GLOBAL);
+    const joynr::types::DiscoveryEntry entry(defaultProviderVersion,
+                                       DOMAIN_1_NAME,
+                                       INTERFACE_1_NAME,
+                                       dummyParticipantId1,
+                                       qos,
+                                       lastSeenDateMs,
+                                       expiryDateMs,
+                                       PUBLIC_KEY_ID);
+
+    // trigger a failure on the first call and a success on the second
+
+    // 1st call
+    joynr::Semaphore semaphore(0);
+    EXPECT_CALL(*capabilitiesClient, add(An<const types::GlobalDiscoveryEntry&>(), _, _))
+            .WillOnce(DoAll(
+                          Invoke(this, &LocalCapabilitiesDirectoryTest::fakeCapabilitiesClientAddWithError),
+                          ReleaseSemaphore(&semaphore)
+                      )); // invoke onError
+    localCapabilitiesDirectory->add(entry, true, defaultOnSuccess, defaultOnError);
+
+    // wait for it...
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::seconds(1)));
+
+    // 2nd call
+    EXPECT_CALL(*capabilitiesClient, add(An<const types::GlobalDiscoveryEntry&>(), _, _))
+            .WillOnce(DoAll(
+                          Invoke(this, &LocalCapabilitiesDirectoryTest::fakeCapabilitiesClientAddSuccess),
+                          ReleaseSemaphore(&semaphore)
+                      )); // invoke onSuccess
+    localCapabilitiesDirectory->add(entry, true, defaultOnSuccess, defaultOnError);
+
+    // wait for it...
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::seconds(1)));
+
+    // do a lookup to make sure the entry still exists
+    EXPECT_CALL(*capabilitiesClient, lookup(_, _, _, _, _)).Times(0);
+    localCapabilitiesDirectory->lookup({DOMAIN_1_NAME}, INTERFACE_1_NAME, callback, discoveryQos);
+    EXPECT_EQ(1, callback->getResults(100).size());
 }
 
 class LocalCapabilitiesDirectoryACMockTest
