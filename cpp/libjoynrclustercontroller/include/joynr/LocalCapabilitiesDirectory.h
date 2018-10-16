@@ -251,7 +251,6 @@ private:
     boost::optional<types::DiscoveryEntry> searchCache(const std::string& participantId,
                                                        std::chrono::milliseconds maxCacheAge,
                                                        bool localEntries);
-    void removeFromGloballyRegisteredCapabilities(const types::DiscoveryEntry& discoveryEntry);
 
     ADD_LOGGER(LocalCapabilitiesDirectory)
     std::shared_ptr<ICapabilitiesClient> capabilitiesClient;
