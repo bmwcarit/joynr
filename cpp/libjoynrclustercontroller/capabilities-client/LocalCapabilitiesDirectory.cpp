@@ -342,6 +342,17 @@ std::vector<types::DiscoveryEntry> LocalCapabilitiesDirectory::getCachedGlobalDi
             globalCapabilities.cbegin(), globalCapabilities.cend());
 }
 
+std::size_t LocalCapabilitiesDirectory::countGlobalCapabilities() const
+{
+    std::size_t counter = 0;
+    for (const auto& capability : locallyRegisteredCapabilities) {
+        if (capability.getQos().getScope() == types::ProviderScope::GLOBAL) {
+            counter++;
+        }
+    }
+    return counter;
+}
+
 bool LocalCapabilitiesDirectory::getLocalAndCachedCapabilities(
         const std::vector<InterfaceAddress>& interfaceAddresses,
         const joynr::types::DiscoveryQos& discoveryQos,
