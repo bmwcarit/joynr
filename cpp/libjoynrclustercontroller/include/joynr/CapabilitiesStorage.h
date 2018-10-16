@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2017 BMW Car IT GmbH
+ * Copyright (C) 2017 - 2018 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -133,12 +133,22 @@ public:
         return container.begin();
     }
 
+    auto begin() const
+    {
+        return container.begin();
+    }
+
     auto cbegin() const
     {
         return container.cbegin();
     }
 
     auto end()
+    {
+        return container.end();
+    }
+
+    auto end() const
     {
         return container.end();
     }
