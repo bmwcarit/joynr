@@ -269,7 +269,6 @@ void LocalCapabilitiesDirectory::remove(const std::string& participantId, bool r
         if (removeGlobally && isGlobal(entry)) {
             JOYNR_LOG_INFO(
                     logger(), "Removing globally registered participantId: {}", participantId);
-            removeFromGloballyRegisteredCapabilities(entry);
             globalCapabilities.removeByParticipantId(participantId);
             capabilitiesClient->remove(participantId);
             JOYNR_LOG_INFO(logger(),
@@ -293,26 +292,6 @@ void LocalCapabilitiesDirectory::remove(const std::string& participantId, bool r
         }
     }
     updatePersistedFile();
-}
-
-void LocalCapabilitiesDirectory::removeFromGloballyRegisteredCapabilities(
-        const types::DiscoveryEntry& discoveryEntry)
-{
-    auto compareFunc = [&discoveryEntry](const types::GlobalDiscoveryEntry& it) {
-        return it.getProviderVersion() == discoveryEntry.getProviderVersion() &&
-               it.getDomain() == discoveryEntry.getDomain() &&
-               it.getInterfaceName() == discoveryEntry.getInterfaceName() &&
-               it.getQos() == discoveryEntry.getQos() &&
-               it.getParticipantId() == discoveryEntry.getParticipantId() &&
-               it.getPublicKeyId() == discoveryEntry.getPublicKeyId();
-    };
-
-    while (registeredGlobalCapabilities.erase(std::remove_if(registeredGlobalCapabilities.begin(),
-                                                             registeredGlobalCapabilities.end(),
-                                                             compareFunc),
-                                              registeredGlobalCapabilities.end()) !=
-           registeredGlobalCapabilities.end()) {
-    }
 }
 
 void LocalCapabilitiesDirectory::triggerGlobalProviderReregistration(
