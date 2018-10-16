@@ -299,6 +299,7 @@ private:
                      std::function<void()> onSuccess,
                      std::function<void(const exceptions::ProviderRuntimeException&)> onError);
     bool hasProviderPermission(const types::DiscoveryEntry& discoveryEntry);
+    std::size_t countGlobalCapabilities() const;
 
     std::vector<types::DiscoveryEntry> optionalToVector(
             boost::optional<types::DiscoveryEntry> optionalEntry);
