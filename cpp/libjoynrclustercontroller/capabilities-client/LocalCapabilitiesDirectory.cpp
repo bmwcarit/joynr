@@ -205,13 +205,14 @@ void LocalCapabilitiesDirectory::addInternal(
         ]()
         {
             if (auto thisSharedPtr = thisWeakPtr.lock()) {
-                std::lock_guard<std::mutex> lock(thisSharedPtr->cacheLock);
-                JOYNR_LOG_INFO(logger(),
-                               "Global capability '{}' added successfully, "
-                               "#registeredGlobalCapabilities {}",
-                               globalDiscoveryEntry.toString(),
-                               thisSharedPtr->countGlobalCapabilities());
-
+                {
+                    std::lock_guard<std::mutex> lock(thisSharedPtr->cacheLock);
+                    JOYNR_LOG_INFO(logger(),
+                                   "Global capability '{}' added successfully, "
+                                   "#registeredGlobalCapabilities {}",
+                                   globalDiscoveryEntry.toString(),
+                                   thisSharedPtr->countGlobalCapabilities());
+                }
                 if (awaitGlobalRegistration) {
                     thisSharedPtr->insertInLocallyRegisteredCapabilitiesCache(globalDiscoveryEntry);
                     thisSharedPtr->insertInGlobalLookupCache(globalDiscoveryEntry);
