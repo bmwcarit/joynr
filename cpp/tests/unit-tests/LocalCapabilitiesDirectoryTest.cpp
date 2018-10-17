@@ -164,7 +164,7 @@ public:
         onSuccess(result);
     }
 
-    void fakeLookupWithError(
+    void fakeCapabilitiesClientLookupWithError (
             const std::vector<std::string>& domains,
             const std::string& interfaceName,
             const std::int64_t messagingTtl,
@@ -1031,7 +1031,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
 
     EXPECT_CALL(*capabilitiesClient, lookup(_, _, _, _, _)).Times(1).WillRepeatedly(
             DoAll(AcquireSemaphore(&semaphore),
-                  Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupWithError)));
+                  Invoke(this, &LocalCapabilitiesDirectoryTest::fakeCapabilitiesClientLookupWithError)));
 
     auto thread = std::thread([&]() {
         localCapabilitiesDirectory->lookup(
@@ -1108,7 +1108,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
     discoveryQos.setDiscoveryScope(joynr::types::DiscoveryScope::LOCAL_AND_GLOBAL);
 
     EXPECT_CALL(*capabilitiesClient, lookup(_, _, _, _, _)).Times(1).WillRepeatedly(
-            Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupWithError));
+            Invoke(this, &LocalCapabilitiesDirectoryTest::fakeCapabilitiesClientLookupWithError));
 
     localCapabilitiesDirectory->lookup(
             {DOMAIN_1_NAME, DOMAIN_2_NAME}, INTERFACE_1_NAME, callback, discoveryQos);
@@ -1173,7 +1173,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
                 add(Matcher<const joynr::types::GlobalDiscoveryEntry&>(_), _, _)).Times(0);
 
     EXPECT_CALL(*capabilitiesClient, lookup(_, _, _, _, _)).Times(1).WillRepeatedly(
-            Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupWithError));
+            Invoke(this, &LocalCapabilitiesDirectoryTest::fakeCapabilitiesClientLookupWithError));
 
     localCapabilitiesDirectory->add(entry, defaultOnSuccess, defaultOnError);
     localCapabilitiesDirectory->lookup(
@@ -1292,7 +1292,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupGlobalOnly_GlobalFailsNoLocalEntrie
     discoveryQos.setDiscoveryScope(joynr::types::DiscoveryScope::GLOBAL_ONLY);
 
     EXPECT_CALL(*capabilitiesClient, lookup(_, _, _, _, _)).Times(1).WillRepeatedly(
-            Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupWithError));
+            Invoke(this, &LocalCapabilitiesDirectoryTest::fakeCapabilitiesClientLookupWithError));
 
     localCapabilitiesDirectory->lookup(
             {DOMAIN_1_NAME, DOMAIN_2_NAME}, INTERFACE_1_NAME, callback, discoveryQos);
@@ -1356,7 +1356,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupGlobalOnly_GlobalFailsLocalEntries_
                 add(Matcher<const joynr::types::GlobalDiscoveryEntry&>(_), _, _)).Times(0);
 
     EXPECT_CALL(*capabilitiesClient, lookup(_, _, _, _, _)).Times(1).WillRepeatedly(
-            Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupWithError));
+            Invoke(this, &LocalCapabilitiesDirectoryTest::fakeCapabilitiesClientLookupWithError));
 
     localCapabilitiesDirectory->add(entry, defaultOnSuccess, defaultOnError);
     localCapabilitiesDirectory->lookup(
