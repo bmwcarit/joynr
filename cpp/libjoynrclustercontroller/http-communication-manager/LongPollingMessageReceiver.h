@@ -30,7 +30,6 @@
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/Semaphore.h"
-#include "joynr/Thread.h"
 
 namespace joynr
 {
@@ -50,7 +49,7 @@ struct LongPollingMessageReceiverSettings
 /**
  * Class that makes long polling requests to the bounce proxy
  */
-class LongPollingMessageReceiver : public Thread
+class LongPollingMessageReceiver
 {
 public:
     LongPollingMessageReceiver(const BrokerUrl& brokerUrl,
@@ -62,8 +61,9 @@ public:
 
     ~LongPollingMessageReceiver();
 
-    void stop() override;
-    void run() override;
+    void start();
+    void stop();
+    void run();
     void interrupt();
     bool isInterrupted();
 
@@ -89,6 +89,8 @@ private:
     /*! On message received callback */
     std::function<void(smrf::ByteVector&&)> onMessageReceived;
     std::unique_ptr<HttpRequest> currentRequest;
+
+    std::unique_ptr<std::thread> thread;
 };
 
 } // namespace joynr
