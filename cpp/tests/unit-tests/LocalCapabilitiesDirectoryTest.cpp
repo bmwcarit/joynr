@@ -2133,7 +2133,7 @@ TEST_P(LocalCapabilitiesDirectoryWithProviderScope,
         EXPECT_CALL(*capabilitiesClient,
                     add(Matcher<const joynr::types::GlobalDiscoveryEntry&>(_), _, _))
                 .Times(numberOfDuplicatedEntriesToAdd)
-                .WillRepeatedly(Invoke(this, &LocalCapabilitiesDirectoryTest::fakeCapabilitiesClientAddWithError)); // invoke onError
+                .WillRepeatedly(Invoke(this, &LocalCapabilitiesDirectoryTest::fakeCapabilitiesClientAddSuccess));
     }
 
     for (int i = 0; i < numberOfDuplicatedEntriesToAdd; ++i) {

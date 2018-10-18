@@ -97,7 +97,9 @@ public:
      * @param removeGlobally if set to true, capability will be removed from global capabilities
      * directory; default is false
      */
-    void remove(const std::string& participantId, bool removeGlobally = true);
+    void remove(const std::string& participantId,
+                bool removeGlobally = true,
+                bool removeFromGlobalLookupCache = true);
 
     /*
      * Returns a list of capabilitiess matching the given domain and interfaceName,

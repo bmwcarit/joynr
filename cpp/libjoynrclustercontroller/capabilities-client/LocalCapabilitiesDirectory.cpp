@@ -163,6 +163,23 @@ void LocalCapabilitiesDirectory::addInternal(
 {
     const bool isGloballyVisible = isGlobal(discoveryEntry);
 
+    if (!isGloballyVisible || !awaitGlobalRegistration) {
+        // register locally
+        insertInLocallyRegisteredCapabilitiesCache(discoveryEntry);
+        if (isGloballyVisible) {
+            insertInGlobalLookupCache(discoveryEntry);
+        }
+        // Inform observers
+        informObserversOnAdd(discoveryEntry);
+
+        updatePersistedFile();
+        {
+            std::lock_guard<std::mutex> lock(pendingLookupsLock);
+            callPendingLookups(InterfaceAddress(
+                    discoveryEntry.getDomain(), discoveryEntry.getInterfaceName()));
+        }
+    }
+
     // register globally
     if (isGloballyVisible) {
         types::GlobalDiscoveryEntry globalDiscoveryEntry = toGlobalDiscoveryEntry(discoveryEntry);
@@ -180,7 +197,17 @@ void LocalCapabilitiesDirectory::addInternal(
                             globalDiscoveryEntry.toString(),
                             error.getMessage());
             if (awaitGlobalRegistration && onError) {
+                // no need to remove entry as in this case the entry was not yet added
                 onError(exceptions::ProviderRuntimeException(error.getMessage()));
+            } else {
+                // remove entry
+                if (auto thisSharedPtr = thisWeakPtr.lock()) {
+                    const bool removeGlobally = false;
+                    const bool removeFromGlobalLookupCache = true;
+                    thisSharedPtr->remove(globalDiscoveryEntry.getParticipantId(),
+                                          removeGlobally,
+                                          removeFromGlobalLookupCache);
+                }
             }
         };
 
@@ -226,22 +253,6 @@ void LocalCapabilitiesDirectory::addInternal(
     }
 
     if (!isGloballyVisible || !awaitGlobalRegistration) {
-        // register locally
-        insertInLocallyRegisteredCapabilitiesCache(discoveryEntry);
-        if (isGloballyVisible) {
-            insertInGlobalLookupCache(discoveryEntry);
-        }
-
-        // Inform observers
-        informObserversOnAdd(discoveryEntry);
-
-        updatePersistedFile();
-        {
-            std::lock_guard<std::mutex> lock(pendingLookupsLock);
-            callPendingLookups(InterfaceAddress(
-                    discoveryEntry.getDomain(), discoveryEntry.getInterfaceName()));
-        }
-
         onSuccess();
     }
 }
@@ -260,7 +271,9 @@ types::GlobalDiscoveryEntry LocalCapabilitiesDirectory::toGlobalDiscoveryEntry(
                                        localAddress);
 }
 
-void LocalCapabilitiesDirectory::remove(const std::string& participantId, bool removeGlobally)
+void LocalCapabilitiesDirectory::remove(const std::string& participantId,
+                                        bool removeGlobally,
+                                        bool removeFromGlobalLookupCache)
 {
     {
         std::lock_guard<std::mutex> lock(cacheLock);
@@ -274,11 +287,15 @@ void LocalCapabilitiesDirectory::remove(const std::string& participantId, bool r
         }
         const types::DiscoveryEntry& entry = *optionalEntry;
 
-        if (removeGlobally && isGlobal(entry)) {
+        if (isGlobal(entry)) {
             JOYNR_LOG_INFO(
                     logger(), "Removing globally registered participantId: {}", participantId);
-            globalLookupCache.removeByParticipantId(participantId);
-            capabilitiesClient->remove(participantId);
+            if (removeFromGlobalLookupCache) {
+                globalLookupCache.removeByParticipantId(participantId);
+            }
+            if (removeGlobally) {
+                capabilitiesClient->remove(participantId);
+            }
             JOYNR_LOG_INFO(logger(),
                            "After removal of participantId {}: #registeredGlobalCapabilities: {}",
                            participantId,
@@ -291,6 +308,14 @@ void LocalCapabilitiesDirectory::remove(const std::string& participantId, bool r
                        locallyRegisteredCapabilities.size());
         locallyRegisteredCapabilities.removeByParticipantId(participantId);
         informObserversOnRemove(entry);
+
+        if (auto messageRouterSharedPtr = messageRouter.lock()) {
+            messageRouterSharedPtr->removeNextHop(participantId);
+        } else {
+            JOYNR_LOG_FATAL(logger(),
+                            "could not removeNextHop for {} because messageRouter is not available",
+                            participantId);
+        }
     }
     updatePersistedFile();
 }
