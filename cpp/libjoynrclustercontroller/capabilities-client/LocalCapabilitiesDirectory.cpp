@@ -681,34 +681,36 @@ void LocalCapabilitiesDirectory::registerReceivedCapabilities(
 {
     for (auto it = capabilityEntries.cbegin(); it != capabilityEntries.cend(); ++it) {
         const std::string& serializedAddress = it->first;
-        const types::DiscoveryEntry& currentEntry = it->second;
         std::shared_ptr<const system::RoutingTypes::Address> address;
-        const bool isGloballyVisible = isGlobal(currentEntry);
         try {
             joynr::serializer::deserializeFromJson(address, serializedAddress);
-            if (auto messageRouterSharedPtr = messageRouter.lock()) {
-                constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
-                const bool isSticky = false;
-                messageRouterSharedPtr->addNextHop(currentEntry.getParticipantId(),
-                                                   address,
-                                                   isGloballyVisible,
-                                                   expiryDateMs,
-                                                   isSticky,
-                                                   true);
-            } else {
-                JOYNR_LOG_FATAL(
-                        logger(),
-                        "could not addNextHop {} to {} because messageRouter is not available",
-                        currentEntry.getParticipantId(),
-                        serializedAddress);
-            }
-            insertInGlobalLookupCache(currentEntry);
         } catch (const std::invalid_argument& e) {
             JOYNR_LOG_FATAL(logger(),
                             "could not deserialize Address from {} - error: {}",
                             serializedAddress,
                             e.what());
+            continue;
         }
+
+        const types::DiscoveryEntry& currentEntry = it->second;
+        const bool isGloballyVisible = isGlobal(currentEntry);
+        if (auto messageRouterSharedPtr = messageRouter.lock()) {
+            constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+            const bool isSticky = false;
+            messageRouterSharedPtr->addNextHop(currentEntry.getParticipantId(),
+                                               address,
+                                               isGloballyVisible,
+                                               expiryDateMs,
+                                               isSticky,
+                                               true);
+        } else {
+            JOYNR_LOG_FATAL(logger(),
+                            "could not addNextHop {} to {} because messageRouter is not available",
+                            currentEntry.getParticipantId(),
+                            serializedAddress);
+            return;
+        }
+        insertInGlobalLookupCache(currentEntry);
     }
 }
 
