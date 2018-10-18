@@ -16,49 +16,70 @@
  * limitations under the License.
  * #L%
  */
+
 #include <cstdint>
 #include <functional>
 #include <string>
 #include <tuple>
 #include <unordered_map>
 
-#include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <gtest/gtest.h>
 
-#include "../../libjoynrclustercontroller/access-control/LocalDomainAccessStore.h"
-#include "../../libjoynrclustercontroller/access-control/LocalDomainAccessController.h"
 #include "../../libjoynrclustercontroller/access-control/AccessController.h"
+#include "../../libjoynrclustercontroller/access-control/LocalDomainAccessController.h"
+#include "../../libjoynrclustercontroller/access-control/LocalDomainAccessStore.h"
 
 #include "joynr/CallContext.h"
 #include "joynr/CallContextStorage.h"
 #include "joynr/CapabilityUtils.h"
-#include "joynr/LocalCapabilitiesDirectory.h"
 #include "joynr/ClusterControllerDirectories.h"
 #include "joynr/ClusterControllerSettings.h"
+#include "joynr/exceptions/JoynrException.h"
+#include "joynr/LibjoynrSettings.h"
+#include "joynr/LocalCapabilitiesDirectory.h"
+#include "joynr/PrivateCopyAssign.h"
+#include "joynr/Semaphore.h"
+#include "joynr/serializer/Serializer.h"
+#include "joynr/Settings.h"
+#include "joynr/SingleThreadedIOService.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
-#include "joynr/exceptions/JoynrException.h"
-#include "joynr/Logger.h"
-#include "joynr/LibjoynrSettings.h"
 #include "joynr/types/Version.h"
-#include "joynr/Semaphore.h"
-#include "joynr/SingleThreadedIOService.h"
-#include "joynr/serializer/Serializer.h"
-#include "joynr/PrivateCopyAssign.h"
-#include "joynr/Settings.h"
 
 #include "tests/JoynrTest.h"
+#include "tests/mock/MockAccessController.h"
 #include "tests/mock/MockCallback.h"
+#include "tests/mock/MockCapabilitiesClient.h"
 #include "tests/mock/MockLocalCapabilitiesDirectoryCallback.h"
 #include "tests/mock/MockMessageRouter.h"
-#include "tests/mock/MockCapabilitiesClient.h"
-#include "tests/mock/MockAccessController.h"
 
-using ::testing::Property;
-using ::testing::WhenDynamicCastTo;
-using ::testing::ElementsAre;
 using namespace ::testing;
 using namespace joynr;
+
+MATCHER_P2(pointerToAddressWithSerializedAddress, addressType, serializedAddress, "")
+{
+    if (arg == nullptr) {
+        return false;
+    }
+    if (addressType == "mqtt") {
+        auto mqttAddress =
+                std::dynamic_pointer_cast<const joynr::system::RoutingTypes::MqttAddress>(arg);
+        if (mqttAddress == nullptr) {
+            return false;
+        }
+        return joynr::serializer::serializeToJson(*mqttAddress) == serializedAddress;
+    } else if (addressType == "http") {
+        auto httpAddress =
+                std::dynamic_pointer_cast<const joynr::system::RoutingTypes::ChannelAddress>(arg);
+        if (httpAddress == nullptr) {
+            return false;
+        }
+        return joynr::serializer::serializeToJson(*httpAddress) == serializedAddress;
+    } else {
+        return false;
+    }
+}
 
 class LocalCapabilitiesDirectoryTest : public ::testing::Test
 {
@@ -100,19 +121,6 @@ public:
                 singleThreadedIOService->getIOService(),
                 clusterControllerId);
         localCapabilitiesDirectory->init();
-    }
-
-    ~LocalCapabilitiesDirectoryTest()
-    {
-        singleThreadedIOService->stop();
-        localCapabilitiesDirectory.reset();
-
-        joynr::test::util::removeFileInCurrentDirectory(".*\\.settings");
-        joynr::test::util::removeFileInCurrentDirectory(".*\\.persist");
-    }
-
-    void SetUp()
-    {
 
         // TODO the participantId should be provided by the provider
         dummyParticipantId1 = util::createUuid();
@@ -134,6 +142,15 @@ public:
                                              10000,
                                              PUBLIC_KEY_ID);
         globalCapEntryMap.insert({EXTERNAL_ADDRESS, globalCapEntry});
+    }
+
+    ~LocalCapabilitiesDirectoryTest() override
+    {
+        singleThreadedIOService->stop();
+        localCapabilitiesDirectory.reset();
+
+        joynr::test::util::removeFileInCurrentDirectory(".*\\.settings");
+        joynr::test::util::removeFileInCurrentDirectory(".*\\.persist");
     }
 
     void fakeLookupZeroResultsForInterfaceAddress(
@@ -302,6 +319,41 @@ public:
     }
 
 protected:
+    void registerReceivedCapabilities(
+            const std::string& addressType,
+            const std::string& serializedAddress)
+    {
+        const std::string participantId = "TEST_participantId";
+        EXPECT_CALL(
+                *mockMessageRouter,
+                addNextHop(participantId,
+                           AllOf(Pointee(A<const joynr::system::RoutingTypes::Address>()),
+                                 pointerToAddressWithSerializedAddress(addressType, serializedAddress)),
+                           _,
+                           _,
+                           _,
+                           _,
+                           _,
+                           _)).Times(1);
+        EXPECT_CALL(*mockMessageRouter,
+                    addNextHop(participantId,
+                               AnyOf(Not(Pointee(A<const joynr::system::RoutingTypes::Address>())),
+                                     Not(pointerToAddressWithSerializedAddress(
+                                             addressType, serializedAddress))),
+                               _,
+                               _,
+                               _,
+                               _,
+                               _,
+                               _)).Times(0);
+
+        std::unordered_multimap<std::string, types::DiscoveryEntry> capabilitiesMap;
+        types::DiscoveryEntry capEntry;
+        capEntry.setParticipantId(participantId);
+        capabilitiesMap.insert({serializedAddress, capEntry});
+        localCapabilitiesDirectory->registerReceivedCapabilities(std::move(capabilitiesMap));
+    }
+
     Settings settings;
     ClusterControllerSettings clusterControllerSettings;
     const int purgeExpiredDiscoveryEntriesIntervalMs;
@@ -334,11 +386,6 @@ protected:
     static const std::int64_t EXPIRYDATE_MS;
     static const std::string PUBLIC_KEY_ID;
     static const int TIMEOUT;
-
-    void registerReceivedCapabilities(const std::string& addressType,
-                                      const std::string& serializedAddress);
-
-    ADD_LOGGER(LocalCapabilitiesDirectoryTest)
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LocalCapabilitiesDirectoryTest);
@@ -1628,66 +1675,6 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerCachedGlobalCapability_lookupGlob
 }
 
 // TODO test remove global capability
-
-MATCHER_P2(pointerToAddressWithSerializedAddress, addressType, serializedAddress, "")
-{
-    if (arg == nullptr) {
-        return false;
-    }
-    if (addressType == "mqtt") {
-        auto mqttAddress =
-                std::dynamic_pointer_cast<const joynr::system::RoutingTypes::MqttAddress>(arg);
-        if (mqttAddress == nullptr) {
-            return false;
-        }
-        return joynr::serializer::serializeToJson(*mqttAddress) == serializedAddress;
-    } else if (addressType == "http") {
-        auto httpAddress =
-                std::dynamic_pointer_cast<const joynr::system::RoutingTypes::ChannelAddress>(arg);
-        if (httpAddress == nullptr) {
-            return false;
-        }
-        return joynr::serializer::serializeToJson(*httpAddress) == serializedAddress;
-    } else {
-        return false;
-    }
-}
-
-void LocalCapabilitiesDirectoryTest::registerReceivedCapabilities(
-        const std::string& addressType,
-        const std::string& serializedAddress)
-{
-    const std::string participantId = "TEST_participantId";
-    EXPECT_CALL(
-            *mockMessageRouter,
-            addNextHop(participantId,
-                       AllOf(Pointee(A<const joynr::system::RoutingTypes::Address>()),
-                             pointerToAddressWithSerializedAddress(addressType, serializedAddress)),
-                       _,
-                       _,
-                       _,
-                       _,
-                       _,
-                       _)).Times(1);
-    EXPECT_CALL(*mockMessageRouter,
-                addNextHop(participantId,
-                           AnyOf(Not(Pointee(A<const joynr::system::RoutingTypes::Address>())),
-                                 Not(pointerToAddressWithSerializedAddress(
-                                         addressType, serializedAddress))),
-                           _,
-                           _,
-                           _,
-                           _,
-                           _,
-                           _)).Times(0);
-
-    std::unordered_multimap<std::string, types::DiscoveryEntry> capabilitiesMap;
-    types::DiscoveryEntry capEntry;
-    capEntry.setParticipantId(participantId);
-    capabilitiesMap.insert({serializedAddress, capEntry});
-    localCapabilitiesDirectory->registerReceivedCapabilities(std::move(capabilitiesMap));
-}
-
 TEST_F(LocalCapabilitiesDirectoryTest, registerReceivedCapabilites_registerMqttAddress)
 {
     const std::string addressType = "mqtt";
