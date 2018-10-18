@@ -190,10 +190,8 @@ void LocalCapabilitiesDirectory::addInternal(
                             "'{}'. Error: {}",
                             globalDiscoveryEntry.toString(),
                             error.getMessage());
-            if (awaitGlobalRegistration) {
-                if (onError) {
-                    onError(exceptions::ProviderRuntimeException(error.getMessage()));
-                }
+            if (awaitGlobalRegistration && onError) {
+                onError(exceptions::ProviderRuntimeException(error.getMessage()));
             }
         };
 
