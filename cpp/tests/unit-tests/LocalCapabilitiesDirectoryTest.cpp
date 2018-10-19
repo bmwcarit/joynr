@@ -2140,16 +2140,13 @@ TEST_P(LocalCapabilitiesDirectoryWithProviderScope,
     providerQos.setScope(GetParam());
 
     const int numberOfDuplicatedEntriesToAdd = 3;
-
-    int exceptionCounter = 0;
     const bool testingGlobalScope = GetParam() == types::ProviderScope::GLOBAL;
     if (testingGlobalScope) {
         // simulate capabilities client cannot connect to global directory
         EXPECT_CALL(*capabilitiesClient,
                     add(Matcher<const joynr::types::GlobalDiscoveryEntry&>(_), _, _))
                 .Times(numberOfDuplicatedEntriesToAdd)
-                .WillRepeatedly(
-                        InvokeWithoutArgs(this, &LocalCapabilitiesDirectoryTest::simulateTimeout));
+                .WillRepeatedly(Invoke(this, &LocalCapabilitiesDirectoryTest::fakeCapabilitiesClientAddWithError)); // invoke onError
     }
 
     for (int i = 0; i < numberOfDuplicatedEntriesToAdd; ++i) {
@@ -2165,22 +2162,12 @@ TEST_P(LocalCapabilitiesDirectoryWithProviderScope,
                                            lastSeenDateMs,
                                            expiryDateMs,
                                            PUBLIC_KEY_ID);
-        try {
             localCapabilitiesDirectory->add(entry, defaultOnSuccess, defaultOnError);
-        } catch (const exceptions::JoynrException& e) {
-            std::ignore = e;
-            exceptionCounter++;
-        }
-    }
-
-    if (testingGlobalScope) {
-        EXPECT_EQ(numberOfDuplicatedEntriesToAdd, exceptionCounter);
     }
 
     localCapabilitiesDirectory->lookup({DOMAIN_1_NAME}, INTERFACE_1_NAME, callback, discoveryQos);
     std::vector<types::DiscoveryEntryWithMetaInfo> capabilities = callback->getResults(100);
 
-    // we do expect only one entry from the lookup
     EXPECT_EQ(1, capabilities.size());
 }
 

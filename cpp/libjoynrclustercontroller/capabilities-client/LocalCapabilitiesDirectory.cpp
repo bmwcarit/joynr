@@ -163,17 +163,6 @@ void LocalCapabilitiesDirectory::addInternal(
 {
     const bool isGloballyVisible = isGlobal(discoveryEntry);
 
-    if (!isGloballyVisible || !awaitGlobalRegistration) {
-        // register locally
-        insertInLocallyRegisteredCapabilitiesCache(discoveryEntry);
-        if (isGloballyVisible) {
-            insertInGlobalLookupCache(discoveryEntry);
-        }
-    }
-
-    // Inform observers
-    informObserversOnAdd(discoveryEntry);
-
     // register globally
     if (isGloballyVisible) {
         types::GlobalDiscoveryEntry globalDiscoveryEntry = toGlobalDiscoveryEntry(discoveryEntry);
@@ -217,6 +206,17 @@ void LocalCapabilitiesDirectory::addInternal(
                     if (onSuccess) {
                         onSuccess();
                     }
+
+                    // Inform observers
+                    thisSharedPtr->informObserversOnAdd(globalDiscoveryEntry);
+
+                    thisSharedPtr->updatePersistedFile();
+                    {
+                        std::lock_guard<std::mutex> lock(thisSharedPtr->pendingLookupsLock);
+                        thisSharedPtr->callPendingLookups(
+                                InterfaceAddress(globalDiscoveryEntry.getDomain(),
+                                                 globalDiscoveryEntry.getInterfaceName()));
+                    }
                 }
             }
         };
@@ -225,14 +225,23 @@ void LocalCapabilitiesDirectory::addInternal(
                 globalDiscoveryEntry, std::move(onSuccessWrapper), std::move(onErrorWrapper));
     }
 
-    updatePersistedFile();
-    {
-        std::lock_guard<std::mutex> lock(pendingLookupsLock);
-        callPendingLookups(
-                InterfaceAddress(discoveryEntry.getDomain(), discoveryEntry.getInterfaceName()));
-    }
-
     if (!isGloballyVisible || !awaitGlobalRegistration) {
+        // register locally
+        insertInLocallyRegisteredCapabilitiesCache(discoveryEntry);
+        if (isGloballyVisible) {
+            insertInGlobalLookupCache(discoveryEntry);
+        }
+
+        // Inform observers
+        informObserversOnAdd(discoveryEntry);
+
+        updatePersistedFile();
+        {
+            std::lock_guard<std::mutex> lock(pendingLookupsLock);
+            callPendingLookups(InterfaceAddress(
+                    discoveryEntry.getDomain(), discoveryEntry.getInterfaceName()));
+        }
+
         onSuccess();
     }
 }
