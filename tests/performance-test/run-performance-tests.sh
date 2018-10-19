@@ -559,7 +559,7 @@ function checkDirExists {
     fi
 }
 
-function checkForJavaTestCase {
+function checkIfBackendServicesAreNeeded {
     case "$1" in
         JAVA_*)
             return 1;;
@@ -676,7 +676,7 @@ fi
 
 if [ "$TESTCASE" != "OAP_TO_BACKEND_MOSQ" ] && [ "$TESTCASE" != "JEE_PROVIDER" ]
 then
-    checkForJavaTestCase $TESTCASE
+    checkIfBackendServicesAreNeeded $TESTCASE
     if [ "$?" -eq 1 ]
     then
         startServices
@@ -766,7 +766,7 @@ then
     stopMeasureCpuUsage $REPORTFILE
     stopAnyProvider
     stopCppClusterController
-    checkForJavaTestCase $TESTCASE
+    checkIfBackendServicesAreNeeded $TESTCASE
     if [ "$?" -eq 1 ]
     then
         stopServices
