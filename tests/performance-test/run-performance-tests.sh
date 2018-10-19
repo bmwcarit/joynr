@@ -40,7 +40,7 @@ DOMAINNAME="performance_test_domain"
 
 # If a test case uses a java consumer, some warmup runs are required in order
 # to force the java runtime to perform all JIT optimizations
-JAVA_WARMUPS=50
+JAVA_WARMUPS=100
 
 # For test cases with a single consumer, this constant stores the number of messages which
 # will be transmitted during the test
