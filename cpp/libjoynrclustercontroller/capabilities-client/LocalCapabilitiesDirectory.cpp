@@ -163,7 +163,7 @@ void LocalCapabilitiesDirectory::addInternal(
 {
     const bool isGloballyVisible = isGlobal(discoveryEntry);
 
-    if (!awaitGlobalRegistration) {
+    if (!isGloballyVisible || !awaitGlobalRegistration) {
         // register locally
         insertInLocallyRegisteredCapabilitiesCache(discoveryEntry);
         if (isGloballyVisible) {
