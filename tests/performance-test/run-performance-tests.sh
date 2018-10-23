@@ -608,19 +608,19 @@ do
     case $OPTIONS in
 # paths
         p)
-            PERFORMANCETESTS_BIN_DIR=${OPTARG%/}
+            PERFORMANCETESTS_BIN_DIR=$(realpath ${OPTARG%/})
             ;;
         s)
-            PERFORMANCETESTS_SOURCE_DIR=${OPTARG%/}
+            PERFORMANCETESTS_SOURCE_DIR=$(realpath ${OPTARG%/})
             ;;
         r)
-            PERFORMANCETESTS_RESULTS_DIR=${OPTARG%/}
+            PERFORMANCETESTS_RESULTS_DIR=$(realpath ${OPTARG%/})
             ;;
         y)
-            JOYNR_BIN_DIR=${OPTARG%/}
+            JOYNR_BIN_DIR=$(realpath ${OPTARG%/})
             ;;
         j)
-            JETTY_PATH=${OPTARG%/}
+            JETTY_PATH=$(realpath ${OPTARG%/})
             ;;
 # general options
         B)
