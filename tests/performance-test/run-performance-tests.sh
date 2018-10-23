@@ -705,11 +705,7 @@ then
     TESTCASES+=('SEND_BYTEARRAY_WITH_SIZE_TIMES_K')
 fi
 
-if [ -z "$BACKEND_SERVICES" ]
-then
-    # use default (MQTT/JEE) Discovery and Access Control
-    BACKEND_SERVICES=MQTT
-elif [ "$BACKEND_SERVICES" != "MQTT" ] && [ "$BACKEND_SERVICES" != "HTTP" ]
+if [ "$BACKEND_SERVICES" != "MQTT" ] && [ "$BACKEND_SERVICES" != "HTTP" ]
 then
     echo 'Invalid value for backend services: $BACKEND_SERVICES.'
     exit 1
