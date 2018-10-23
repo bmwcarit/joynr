@@ -24,35 +24,63 @@
 ####################
 
 # Shell script parameters
-JETTY_PATH=""
-JOYNR_BIN_DIR=""
+
+### paths ##
+
 PERFORMANCETESTS_BIN_DIR=""
+
 PERFORMANCETESTS_SOURCE_DIR=""
+
 PERFORMANCETESTS_RESULTS_DIR=""
-TESTCASE=""
+
+JOYNR_BIN_DIR=""
+
+JETTY_PATH=""
+
+
+### general options ###
+
+# Select backend service protocol
+BACKEND_SERVICES="MQTT"
+
 USE_MAVEN=OFF # Indicates whether java applications shall be started with maven or as standalone apps
-MOSQUITTO_CONF=""
+
 USE_NPM=ON # Indicates whether npm will be used to launch javascript applications.
+
+MOSQUITTO_CONF=""
+
 USE_EMBEDDED_CC=OFF # Indicates whether embedded cluster controller variant should be used for C++ apps
 
-### Constants ###
 DOMAINNAME="performance_test_domain"
 
-# If a test case uses a java consumer, some warmup runs are required in order
-# to force the java runtime to perform all JIT optimizations
-JAVA_WARMUPS=100
+# arguments which are passed to the C++ cluster-controller
+ADDITIONAL_CC_ARGS=""
 
-# For test cases with a single consumer, this constant stores the number of messages which
-# will be transmitted during the test
-SINGLECONSUMER_RUNS=5000
+
+### test parameters ###
+
+TESTCASE=""
 
 # For test cases with several consumers, this constant stores how many consumer instances will
 # be created
 MULTICONSUMER_NUMINSTANCES=5
 
+# For test cases with a single consumer, this constant stores the number of messages which
+# will be transmitted during the test
+SINGLECONSUMER_RUNS=5000
+
 # For test cases with several consumers, this constant stores how many messages a single
 # consumer transmits
 MULTICONSUMER_RUNS=200
+
+SKIPBYTEARRAYSIZETIMESK=false
+
+
+### Constants ###
+
+# If a test case uses a java consumer, some warmup runs are required in order
+# to force the java runtime to perform all JIT optimizations
+JAVA_WARMUPS=100
 
 # If a test case has to transmit a string, the length will be determined by this constant
 INPUTDATA_STRINGLENGTH=100
@@ -61,6 +89,7 @@ INPUTDATA_STRINGLENGTH=100
 INPUTDATA_BYTEARRAYSIZE=100
 
 MQTT_BROKER_URI="tcp://localhost:1883"
+
 
 # Process IDs for processes which must be terminated later
 JETTY_PID=""
@@ -75,13 +104,6 @@ PROVIDER_PID=""
 # name. If this variable is set, PROVIDER_PID will store an empty string.
 PROVIDER_JEE_APP_NAME=""
 
-# arguments which are passed to the C++ cluster-controller
-ADDITIONAL_CC_ARGS=""
-
-SKIPBYTEARRAYSIZETIMESK=false
-
-# Select backend service protocol
-BACKEND_SERVICES="MQTT"
 
 function getCpuTime {
     PID=$1
@@ -534,20 +556,34 @@ function stopServices {
 
 function echoUsage {
     echo "Usage: run-performance-tests.sh <args>"
-    echo "   -p <performance-bin-dir>"
-    echo "   -r <performance-results-dir>"
+    echo "  paths:"
+    echo "   -p <performance-bin-dir> (C++)"
     echo "   -s <performance-source-dir>"
-    echo "   -y <joynr-bin-dir>"
-    echo "   -t <JAVA_SYNC|JAVA_ASYNC|JAVA_MULTICONSUMER|JS_CONSUMER|OAP_TO_BACKEND_MOSQ|"
-    echo "       CPP_SYNC|CPP_ASYNC|CPP_MULTICONSUMER|JEE_PROVIDER|ALL> (type of tests)"
+    echo "   -r <performance-results-dir>"
+    echo "   -y <joynr-bin-dir> (C++ cluster-controller, use release build for performance tests)"
+    echo "   -j <jetty-dir> (only for HTTP backend service with OAP_TO_BACK_MOSQ; deprecated)"
+    echo ""
+    echo "  general options (all optional):"
     echo "   -B <backend-services (MQTT|HTTP)> (optional, default $BACKEND_SERVICES)"
+    echo "   -m <use maven ON|OFF> (optional, default to $USE_MAVEN)"
+    echo "      Indicates whether java applications shall be started with maven or as standalone apps"
+    echo "   -n <use npm ON|OFF> (optional, default $USE_NPM)"
+    echo "      Indicates whether npm will be used to launch javascript applications."
+    echo "   -z <mosquitto.conf> (optional, default std mosquitto config file)"
+    echo "   -e <use embedded CC ON|OFF> (optional, C++, default $USE_EMBEDDED_CC)"
+    echo "      Indicates whether embedded cluster controller variant should be used for C++ apps"
+    echo "   -d <domain-name> (optional, default $DOMAINNAME)"
+    echo "   -a <additional-cc-args> (optional, C++, default $ADDITIONAL_CC_ARGS)"
+    echo "      arguments which are passed to the C++ cluster-controller"
+    echo ""
+    echo "  test parameters:"
+    echo "   -t <JAVA_SYNC|JAVA_ASYNC|JAVA_MULTICONSUMER|"
+    echo "       JS_CONSUMER|OAP_TO_BACKEND_MOSQ|JS_CONSUMER_CPP_PROVIDER|"
+    echo "       CPP_SYNC|CPP_ASYNC|CPP_MULTICONSUMER|CPP_SERIALIZER|CPP_SHORTCIRCUIT|CPP_PROVIDER|CPP_CONSUMER_JS_PROVIDER|"
+    echo "       JEE_PROVIDER|ALL> (type of tests)"
     echo "   -c <number-of-consumers> (optional, used for MULTICONSUMER tests, default $MULTICONSUMER_NUMINSTANCES)"
     echo "   -x <number-of-runs> (optional, defaults to $SINGLECONSUMER_RUNS single- / $MULTICONSUMER_RUNS multi-consumer runs)"
-    echo "   -m <use maven ON|OFF> (optional, default to $USE_MAVEN)"
-    echo "   -z <mosquitto.conf> (optional, default std mosquitto config file)"
-    echo "   -n <use node ON|OFF> (optional, default $USE_NPM)"
-    echo "   -e <use embedded CC ON|OFF> (optional, default $USE_EMBEDDED_CC)"
-    echo "   -j <jetty-dir> (only for HTTP backend service with OAP_TO_BACK_MOSQ; deprecated)"
+    echo "   -k <skip bytearray size times k (true|false)> (optional, defaults to $SKIPBYTEARRAYSIZETIMESK)"
 }
 
 function checkDirExists {
@@ -567,29 +603,28 @@ function checkIfBackendServicesAreNeeded {
     return 0
 }
 
-while getopts "a:c:d:e:hj:k:m:n:p:r:s:t:x:y:z:B:" OPTIONS;
+while getopts "p:s:r:y:j:B:m:n:z:e:d:a:t:c:x:k:h" OPTIONS;
 do
     case $OPTIONS in
-        a)
-            ADDITIONAL_CC_ARGS=$OPTARG
+# paths
+        p)
+            PERFORMANCETESTS_BIN_DIR=${OPTARG%/}
             ;;
-        c)
-            MULTICONSUMER_NUMINSTANCES=$OPTARG
+        s)
+            PERFORMANCETESTS_SOURCE_DIR=${OPTARG%/}
             ;;
-        d)
-            DOMAINNAME=${OPTARG%/}
+        r)
+            PERFORMANCETESTS_RESULTS_DIR=${OPTARG%/}
             ;;
-        e)
-            USE_EMBEDDED_CC=$OPTARG
+        y)
+            JOYNR_BIN_DIR=${OPTARG%/}
             ;;
-        h)
-            echoUsage
-            exit 0;;
         j)
             JETTY_PATH=${OPTARG%/}
             ;;
-        k)
-            SKIPBYTEARRAYSIZETIMESK=$OPTARG
+# general options
+        B)
+            BACKEND_SERVICES=$OPTARG
             ;;
         m)
             USE_MAVEN=$OPTARG
@@ -597,31 +632,36 @@ do
         n)
             USE_NPM=$OPTARG
             ;;
-        p)
-            PERFORMANCETESTS_BIN_DIR=${OPTARG%/}
+        z)
+            MOSQUITTO_CONF=$OPTARG
             ;;
-        r)
-            PERFORMANCETESTS_RESULTS_DIR=${OPTARG%/}
+        e)
+            USE_EMBEDDED_CC=$OPTARG
             ;;
-        s)
-            PERFORMANCETESTS_SOURCE_DIR=${OPTARG%/}
+        d)
+            DOMAINNAME=${OPTARG%/}
             ;;
+        a)
+            ADDITIONAL_CC_ARGS=$OPTARG
+            ;;
+# test paramters
         t)
             TESTCASE=$OPTARG
+            ;;
+        c)
+            MULTICONSUMER_NUMINSTANCES=$OPTARG
             ;;
         x)
             SINGLECONSUMER_RUNS=$OPTARG
             MULTICONSUMER_RUNS=$OPTARG
             ;;
-        y)
-            JOYNR_BIN_DIR=${OPTARG%/}
+        k)
+            SKIPBYTEARRAYSIZETIMESK=$OPTARG
             ;;
-        z)
-            MOSQUITTO_CONF=$OPTARG
-            ;;
-        B)
-            BACKEND_SERVICES=$OPTARG
-            ;;
+# usage
+        h)
+            echoUsage
+            exit 0;;
         \?)
             echoUsage
             exit 1
@@ -632,16 +672,17 @@ done
 if [ "$TESTCASE" != "JAVA_SYNC" ] && [ "$TESTCASE" != "JAVA_ASYNC" ] && \
    [ "$TESTCASE" != "JAVA_MULTICONSUMER" ] && \
    [ "$TESTCASE" != "JS_CONSUMER" ] && [ "$TESTCASE" != "OAP_TO_BACKEND_MOSQ" ] && \
+   [ "$TESTCASE" != "JS_CONSUMER_CPP_PROVIDER" ] && \
    [ "$TESTCASE" != "CPP_SYNC" ] && [ "$TESTCASE" != "CPP_ASYNC" ] && \
    [ "$TESTCASE" != "CPP_MULTICONSUMER" ] && [ "$TESTCASE" != "CPP_SERIALIZER" ] && \
    [ "$TESTCASE" != "CPP_SHORTCIRCUIT" ] && [ "$TESTCASE" != "CPP_PROVIDER" ] && \
-   [ "$TESTCASE" != "JEE_PROVIDER" ] && [ "$TESTCASE" != "JS_CONSUMER_CPP_PROVIDER" ] && \
-   [ "$TESTCASE" != "CPP_CONSUMER_JS_PROVIDER" ]
+   [ "$TESTCASE" != "CPP_CONSUMER_JS_PROVIDER" ] && \
+   [ "$TESTCASE" != "JEE_PROVIDER" ]
 then
     echo "\"$TESTCASE\" is not a valid testcase"
     echo "-t option can be either JAVA_SYNC, JAVA_ASYNC, JAVA_MULTICONSUMER, JS_CONSUMER, \
-OAP_TO_BACKEND_MOSQ, CPP_SYNC, CPP_ASYNC, CPP_MULTICONSUMER, \
-CPP_SERIALIZER, CPP_SHORTCIRCUIT, CPP_PROVIDER, JEE_PROVIDER, JS_CONSUMER_CPP_PROVIDER, CPP_CONSUMER_JS_PROVIDER"
+OAP_TO_BACKEND_MOSQ, JS_CONSUMER_CPP_PROVIDER, CPP_SYNC, CPP_ASYNC, CPP_MULTICONSUMER, \
+CPP_SERIALIZER, CPP_SHORTCIRCUIT, CPP_PROVIDER, CPP_CONSUMER_JS_PROVIDER, JEE_PROVIDER"
     echoUsage
     exit 1
 fi
