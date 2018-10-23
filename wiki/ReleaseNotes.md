@@ -2,6 +2,22 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.6.2
+
+## API relevant changes
+None.
+
+## Other changes
+* **[C++]** Improved handling of global and local capabilities in cluster-controller to better cope
+  with overlapping registrations of the same provider.
+* **[Java]** Update mqtt paho client to 0.0.6
+* **[Java]** Do not discard message on publish if mqttClient is not yet created.
+* **[Java]** Attempt mqtt reconnect also on SSL errors.
+* **[Java]** Improved performance of mqtt client (use StampedLock).
+
+## Configuration property changes
+None.
+
 # joynr 1.6.1
 
 ## API relevant changes
