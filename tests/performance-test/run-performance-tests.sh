@@ -559,7 +559,7 @@ function echoUsage {
     echo "  paths:"
     echo "   -p <performance-bin-dir> (C++)"
     echo "   -s <performance-source-dir>"
-    echo "   -r <performance-results-dir>"
+    echo "   -r <performance-results-dir> (optional, default <performance-source-dir>/perf-results-<current-date>"
     echo "   -y <joynr-bin-dir> (C++ cluster-controller, use release build for performance tests)"
     echo "   -j <jetty-dir> (only for HTTP backend service with OAP_TO_BACK_MOSQ; deprecated)"
     echo ""
@@ -689,8 +689,13 @@ fi
 
 checkDirExists $JOYNR_BIN_DIR
 checkDirExists $PERFORMANCETESTS_BIN_DIR
-checkDirExists $PERFORMANCETESTS_RESULTS_DIR
 checkDirExists $PERFORMANCETESTS_SOURCE_DIR
+if [ -z "$PERFORMANCETESTS_RESULTS_DIR" ]
+then
+    PERFORMANCETESTS_RESULTS_DIR=$PERFORMANCETESTS_SOURCE_DIR/perf-results-$(date "+%Y-%m-%d_%H-%M-%S")
+    mkdir $PERFORMANCETESTS_RESULTS_DIR
+fi
+checkDirExists $PERFORMANCETESTS_RESULTS_DIR
 
 REPORTFILE=$PERFORMANCETESTS_RESULTS_DIR/performancetest-result.txt
 STDOUT=$PERFORMANCETESTS_RESULTS_DIR/consumer-stdout.txt
