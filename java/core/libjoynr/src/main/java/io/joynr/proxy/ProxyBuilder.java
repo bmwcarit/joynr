@@ -47,23 +47,23 @@ public interface ProxyBuilder<T> {
          *
          * @param result result of proxy creation
          */
-        public void onProxyCreationFinished(T result);
+        void onProxyCreationFinished(T result);
 
         /**
          * Called when an error occurred during proxy creation.
          *
          * @param error A JoynrRuntimeException that prevented proxy creation
          */
-        public void onProxyCreationError(JoynrRuntimeException error);
+        void onProxyCreationError(JoynrRuntimeException error);
     }
 
     /**
      * @return The proxies participantId
      */
     // TODO should this really be public ?
-    public abstract String getParticipantId();
+    String getParticipantId();
 
-    public abstract void setParticipantId(String participantId);
+    void setParticipantId(String participantId);
 
     /**
      * Sets arbitration strategy, timeout and strategy specific parameters.
@@ -72,7 +72,7 @@ public interface ProxyBuilder<T> {
      * @return Returns the ProxyBuilder
      * @throws DiscoveryException in case arbitration fails
      */
-    public abstract ProxyBuilder<T> setDiscoveryQos(DiscoveryQos discoveryQos) throws DiscoveryException;
+    ProxyBuilder<T> setDiscoveryQos(DiscoveryQos discoveryQos) throws DiscoveryException;
 
     /**
      * Sets the MessagingQos (e.g. request timeouts) which will be used by the created proxy.
@@ -80,7 +80,7 @@ public interface ProxyBuilder<T> {
      * @param messagingQos messaging quality of service
      * @return Returns the ProxyBuilder
      */
-    public abstract ProxyBuilder<T> setMessagingQos(MessagingQos messagingQos);
+    ProxyBuilder<T> setMessagingQos(MessagingQos messagingQos);
 
     /**
      * If you want to use any {@link io.joynr.StatelessAsync} calls, then you must provide a use case name, which will
@@ -99,7 +99,7 @@ public interface ProxyBuilder<T> {
      * @return Returns a dynamic proxy object, implementing all methods of the interfaces passed in when the
      *         proxyBuilder was created.
      */
-    public abstract T build();
+    T build();
 
     /**
      * Passes a callback to {@link build} that is called when the proxy is finished
@@ -108,6 +108,6 @@ public interface ProxyBuilder<T> {
      * @return Returns a dynamic proxy object, implementing all methods of the interfaces passed in when the
      *         proxyBuilder was created.
      */
-    public abstract T build(ProxyCreatedCallback<T> callback);
+    T build(ProxyCreatedCallback<T> callback);
 
 }
