@@ -417,8 +417,8 @@
 		<jetty.version>9.2.13.v20150730</jetty.version>
 		<tycho.version>0.24.0</tycho.version>
 		<hibernate.version>4.3.8.Final</hibernate.version>
-		<android.platform.version>5.0.1_r2</android.platform.version>
-		<android.platform.level>21</android.platform.level>
+		<android.platform.version>8.0.0_r2</android.platform.version>
+		<android.platform.level>26</android.platform.level>
 		<javassist.version>3.22.0-GA</javassist.version>
 		<skipTests>true</skipTests>
 		<franca.version>0.13.0</franca.version>
