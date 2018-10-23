@@ -444,6 +444,7 @@ public class ConsumerApplication extends AbstractJoynrApplication {
 
     private <type> void printFailureStatistic(int numFailures, int numRuns, int iterations) {
         if (numFailures > 0) {
+            exitCode = 1;
             System.err.format("%d out of %d transmissions failed\n", numFailures, numRuns * iterations);
         }
     }
