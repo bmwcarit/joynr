@@ -18,7 +18,7 @@
  */
 package vehicle
 
-interface SelectiveBroadcastTest  {
+interface BroadcastTest  {
 	<**
 	 @description: Selective broadcast with predefined filter parameters.
 	 @param: genre Restrict on stations of this music genre
@@ -28,19 +28,5 @@ interface SelectiveBroadcastTest  {
 		out {
 			String station
 		}
-	}
-
-	<**
-	 @description: Selective broadcast with empty output parameters.
-	**>
-	broadcast emptyOutput selective {
-		out {
-		}
-	}
-
-	<**
-	 @description: Selective broadcast with no output section.
-	**>
-	broadcast noOutput selective {
 	}
 }
