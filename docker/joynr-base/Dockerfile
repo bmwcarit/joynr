@@ -1,7 +1,38 @@
 FROM fedora:24
 
 # set this date to cause all images to be updated
-ENV REFRESHED_AT 2017-02-13
+ENV REFRESHED_AT 2018-10-25
+
+###################################################
+# create data directories and volumes
+###################################################
+WORKDIR /
+RUN mkdir /data
+
+VOLUME /data/install
+VOLUME /data/src
+VOLUME /data/build
+
+ARG PROXY_HOST_BUILD_ARG=""
+ARG PROXY_PORT_BUILD_ARG=""
+
+ENV PROXY_HOST=$PROXY_HOST_BUILD_ARG
+ENV PROXY_PORT=$PROXY_PORT_BUILD_ARG
+
+ENV BUILD_DIR /data/build
+ENV SRC_DIR /data/src
+ENV INSTALL_DIR /data/install
+ENV CURL_HOME /etc
+
+###################################################
+# copy scripts and set start command
+###################################################
+COPY scripts /data/scripts
+
+###################################################
+# Setup dnf.conf
+###################################################
+RUN /data/scripts/setup-proxy.sh
 
 ###################################################
 # set timezone
@@ -56,25 +87,6 @@ RUN dnf update -y \
     && dnf clean all
 
 ###################################################
-# create data directories and volumes
-###################################################
-WORKDIR /
-RUN mkdir /data
-
-VOLUME /data/install
-VOLUME /data/src
-VOLUME /data/build
-
-ENV BUILD_DIR /data/build
-ENV SRC_DIR /data/src
-ENV INSTALL_DIR /data/install
-
-###################################################
-# copy scripts and set start command
-###################################################
-COPY scripts /data/scripts
-
-###################################################
 # Generate certificates
 ###################################################
 COPY openssl.conf /tmp/openssl.cnf
@@ -125,6 +137,7 @@ RUN chmod +x /tini
 ###################################################
 ENV GOSU_VERSION=1.3
 RUN cd /tmp \
+    && . /etc/profile \
     && curl -o gosu -sSL "https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-amd64" \
     && mv gosu /usr/local/bin/gosu \
     && chmod 755 /usr/local/bin/gosu
