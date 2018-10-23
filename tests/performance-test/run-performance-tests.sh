@@ -534,7 +534,6 @@ function startServices {
 }
 
 function stopServices {
-    stopMosquitto
     echo '# stopping services'
 
     if [ "$BACKEND_SERVICES" = "HTTP" ]
@@ -547,10 +546,7 @@ function stopServices {
     if [ -n "$MOSQUITTO_PID" ]
     then
         echo "Stopping mosquitto with PID $MOSQUITTO_PID"
-        disown $MOSQUITTO_PID
-        killProcessHierarchy $MOSQUITTO_PID
-        wait $MOSQUITTO_PID
-        MOSQUITTO_PID=""
+        stopMosquitto
     fi
 }
 
