@@ -12,28 +12,26 @@ RUN dnf install -y \
     ncurses-devel.i686 \
     && dnf clean all
 
-ENV ANDROID_SDK_FILENAME android-sdk_r24.1.2-linux.tgz
-ENV ANDROID_SDK_URL http://dl.google.com/android/${ANDROID_SDK_FILENAME}
-ENV ANDROID_API_LEVELS android-19,android-21
-ENV ANDROID_BUILD_TOOLS_VERSION 22.0.1
+COPY scripts/build/* /data/scripts/build/
+RUN chmod 777 -R /data/scripts/build/
+
+ENV ANDROID_SDK_FILENAME sdk-tools-linux-4333796.zip
+ENV ANDROID_SDK_URL https://dl.google.com/android/repository/${ANDROID_SDK_FILENAME}
+ENV ANDROID_API_LEVEL android-26
+ENV ANDROID_BUILD_TOOLS_VERSION 26.0.3
 ENV ANDROID_HOME /opt/android-sdk-linux
 ENV PATH ${PATH}:${ANDROID_HOME}/tools:${ANDROID_HOME}/platform-tools
 RUN cd /opt \
+    && mkdir -p ${ANDROID_HOME} \
+    && cd ${ANDROID_HOME} \
     && wget -q ${ANDROID_SDK_URL} \
-    && tar -xzf ${ANDROID_SDK_FILENAME} \
+    && unzip -q ${ANDROID_SDK_FILENAME} \
     && rm ${ANDROID_SDK_FILENAME}
 
 RUN chown -R root:root ${ANDROID_HOME} \
     && chmod -R 755 ${ANDROID_HOME}
-
 # set this date to cause android to be updated
-ENV REFRESHED_ANDROID_AT 2015-05-13
-RUN echo y | android update sdk --no-ui -a --filter ${ANDROID_API_LEVELS}
-RUN echo y | android update sdk --no-ui -a --filter build-tools-${ANDROID_BUILD_TOOLS_VERSION}
-RUN echo y | android update sdk --no-ui -a --filter platform-tools
-RUN echo y | android update sdk --no-ui -a --filter extra-android-m2repository
-
-COPY scripts/build/* /data/scripts/build/
-RUN chmod 777 -R /data/scripts/build/
+ENV REFRESHED_ANDROID_AT 2018-10-23
+RUN /data/scripts/build/setup-android.sh
 
 RUN date -R > /data/timestamp
