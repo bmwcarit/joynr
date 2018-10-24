@@ -588,7 +588,8 @@ function echoUsage {
     echo "      arguments which are passed to the C++ cluster-controller"
     echo ""
     echo "  test parameters:"
-    echo "   -t <JAVA_CONSUMER_CPP_PROVIDER_SYNC|JAVA_CONSUMER_CPP_PROVIDER_ASYNC|JAVA_MULTICONSUMER_CPP_PROVIDER|"
+    echo "   -t <JAVA_SYNC|JAVA_ASYNC|JAVA_CONSUMER_CPP_PROVIDER_SYNC|JAVA_CONSUMER_CPP_PROVIDER_ASYNC|"
+    echo "       JAVA_MULTICONSUMER_CPP_PROVIDER|"
     echo "       JS_CONSUMER|OAP_TO_BACKEND_MOSQ|JS_CONSUMER_CPP_PROVIDER|"
     echo "       CPP_SYNC|CPP_ASYNC|CPP_MULTICONSUMER|CPP_SERIALIZER|CPP_SHORTCIRCUIT|CPP_PROVIDER|CPP_CONSUMER_JS_PROVIDER|"
     echo "       JEE_PROVIDER|ALL> (type of tests)"
@@ -683,7 +684,8 @@ do
     esac
 done
 
-if [ "$TESTTYPE" != "JAVA_CONSUMER_CPP_PROVIDER_SYNC" ] && [ "$TESTTYPE" != "JAVA_CONSUMER_CPP_PROVIDER_ASYNC" ] && \
+if [ "$TESTTYPE" != "JAVA_SYNC" ] && [ "$TESTTYPE" != "JAVA_ASYNC" ] && \
+   [ "$TESTTYPE" != "JAVA_CONSUMER_CPP_PROVIDER_SYNC" ] && [ "$TESTTYPE" != "JAVA_CONSUMER_CPP_PROVIDER_ASYNC" ] && \
    [ "$TESTTYPE" != "JAVA_MULTICONSUMER_CPP_PROVIDER" ] && \
    [ "$TESTTYPE" != "JS_CONSUMER" ] && [ "$TESTTYPE" != "OAP_TO_BACKEND_MOSQ" ] && \
    [ "$TESTTYPE" != "JS_CONSUMER_CPP_PROVIDER" ] && \
@@ -694,8 +696,9 @@ if [ "$TESTTYPE" != "JAVA_CONSUMER_CPP_PROVIDER_SYNC" ] && [ "$TESTTYPE" != "JAV
    [ "$TESTTYPE" != "JEE_PROVIDER" ]
 then
     echo "\"$TESTTYPE\" is not a valid test type"
-    echo "-t option can be either JAVA_CONSUMER_CPP_PROVIDER_SYNC, JAVA_CONSUMER_CPP_PROVIDER_ASYNC, \
-JAVA_MULTICONSUMER_CPP_PROVIDER, JS_CONSUMER, OAP_TO_BACKEND_MOSQ, JS_CONSUMER_CPP_PROVIDER, \
+    echo "-t option can be either JAVA_SYNC, JAVA_ASYNC, JAVA_CONSUMER_CPP_PROVIDER_SYNC, \
+JAVA_CONSUMER_CPP_PROVIDER_ASYNC, JAVA_MULTICONSUMER_CPP_PROVIDER, \
+JS_CONSUMER, OAP_TO_BACKEND_MOSQ, JS_CONSUMER_CPP_PROVIDER, \
 CPP_SYNC, CPP_ASYNC, CPP_MULTICONSUMER, CPP_SERIALIZER, CPP_SHORTCIRCUIT, CPP_PROVIDER, CPP_CONSUMER_JS_PROVIDER, \
 JEE_PROVIDER"
     echoUsage
@@ -759,6 +762,17 @@ then
     startMeasureCpuUsage
 
     echo "### Starting performance tests ###"
+
+    for mode in 'ASYNC' 'SYNC'; do
+        if [ "$TESTTYPE" == "JAVA_$mode" ]
+        then
+            startJavaPerformanceTestProvider
+            for testcase in 'SEND_STRING' 'SEND_STRUCT' 'SEND_BYTEARRAY'; do
+                echo "Testcase: $TESTTYPE::$testcase" | tee -a $REPORTFILE
+                performJavaConsumerTest $mode $testcase $STDOUT $REPORTFILE 1 $SINGLECONSUMER_RUNS "LOCAL_THEN_GLOBAL"
+            done
+        fi
+    done
 
     for mode in 'ASYNC' 'SYNC'; do
         if [ "$TESTTYPE" == "JAVA_CONSUMER_CPP_PROVIDER_$mode" ]
