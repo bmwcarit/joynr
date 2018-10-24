@@ -152,6 +152,7 @@
 						</jvmArguments>
 						<!-- multiDex>true</multiDex-->
 					</dex>
+					<dexArguments>--min-sdk-version=${android.platform.level}</dexArguments>
 					<dexOptimize>false</dexOptimize>
 					<genDirectory>gen</genDirectory>
 					<androidManifestFile>${project.basedir}/AndroidManifest.xml</androidManifestFile>
