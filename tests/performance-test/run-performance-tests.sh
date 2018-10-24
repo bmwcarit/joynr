@@ -61,7 +61,7 @@ ADDITIONAL_CC_ARGS=""
 
 ### test parameters ###
 
-TESTCASE=""
+TESTTYPE=""
 
 # For test cases with several consumers, this constant stores how many consumer instances will
 # be created
@@ -660,7 +660,7 @@ do
             ;;
 # test paramters
         t)
-            TESTCASE=$OPTARG
+            TESTTYPE=$OPTARG
             ;;
         c)
             MULTICONSUMER_NUMINSTANCES=$OPTARG
@@ -683,17 +683,17 @@ do
     esac
 done
 
-if [ "$TESTCASE" != "JAVA_CONSUMER_CPP_PROVIDER_SYNC" ] && [ "$TESTCASE" != "JAVA_CONSUMER_CPP_PROVIDER_ASYNC" ] && \
-   [ "$TESTCASE" != "JAVA_MULTICONSUMER_CPP_PROVIDER" ] && \
-   [ "$TESTCASE" != "JS_CONSUMER" ] && [ "$TESTCASE" != "OAP_TO_BACKEND_MOSQ" ] && \
-   [ "$TESTCASE" != "JS_CONSUMER_CPP_PROVIDER" ] && \
-   [ "$TESTCASE" != "CPP_SYNC" ] && [ "$TESTCASE" != "CPP_ASYNC" ] && \
-   [ "$TESTCASE" != "CPP_MULTICONSUMER" ] && [ "$TESTCASE" != "CPP_SERIALIZER" ] && \
-   [ "$TESTCASE" != "CPP_SHORTCIRCUIT" ] && [ "$TESTCASE" != "CPP_PROVIDER" ] && \
-   [ "$TESTCASE" != "CPP_CONSUMER_JS_PROVIDER" ] && \
-   [ "$TESTCASE" != "JEE_PROVIDER" ]
+if [ "$TESTTYPE" != "JAVA_CONSUMER_CPP_PROVIDER_SYNC" ] && [ "$TESTTYPE" != "JAVA_CONSUMER_CPP_PROVIDER_ASYNC" ] && \
+   [ "$TESTTYPE" != "JAVA_MULTICONSUMER_CPP_PROVIDER" ] && \
+   [ "$TESTTYPE" != "JS_CONSUMER" ] && [ "$TESTTYPE" != "OAP_TO_BACKEND_MOSQ" ] && \
+   [ "$TESTTYPE" != "JS_CONSUMER_CPP_PROVIDER" ] && \
+   [ "$TESTTYPE" != "CPP_SYNC" ] && [ "$TESTTYPE" != "CPP_ASYNC" ] && \
+   [ "$TESTTYPE" != "CPP_MULTICONSUMER" ] && [ "$TESTTYPE" != "CPP_SERIALIZER" ] && \
+   [ "$TESTTYPE" != "CPP_SHORTCIRCUIT" ] && [ "$TESTTYPE" != "CPP_PROVIDER" ] && \
+   [ "$TESTTYPE" != "CPP_CONSUMER_JS_PROVIDER" ] && \
+   [ "$TESTTYPE" != "JEE_PROVIDER" ]
 then
-    echo "\"$TESTCASE\" is not a valid testcase"
+    echo "\"$TESTTYPE\" is not a valid test type"
     echo "-t option can be either JAVA_CONSUMER_CPP_PROVIDER_SYNC, JAVA_CONSUMER_CPP_PROVIDER_ASYNC, \
 JAVA_MULTICONSUMER_CPP_PROVIDER, JS_CONSUMER, OAP_TO_BACKEND_MOSQ, JS_CONSUMER_CPP_PROVIDER, \
 CPP_SYNC, CPP_ASYNC, CPP_MULTICONSUMER, CPP_SERIALIZER, CPP_SHORTCIRCUIT, CPP_PROVIDER, CPP_CONSUMER_JS_PROVIDER, \
@@ -748,9 +748,9 @@ then
 fi
 
 
-if [ "$TESTCASE" != "OAP_TO_BACKEND_MOSQ" ] && [ "$TESTCASE" != "JEE_PROVIDER" ]
+if [ "$TESTTYPE" != "OAP_TO_BACKEND_MOSQ" ] && [ "$TESTTYPE" != "JEE_PROVIDER" ]
 then
-    checkIfBackendServicesAreNeeded $TESTCASE
+    checkIfBackendServicesAreNeeded $TESTTYPE
     if [ "$?" -eq 1 ]
     then
         startServices
@@ -761,17 +761,17 @@ then
     echo "### Starting performance tests ###"
 
     for mode in 'ASYNC' 'SYNC'; do
-        if [ "$TESTCASE" == "JAVA_CONSUMER_CPP_PROVIDER_$mode" ]
+        if [ "$TESTTYPE" == "JAVA_CONSUMER_CPP_PROVIDER_$mode" ]
         then
             startCppPerformanceTestProvider
             for testcase in 'SEND_STRING' 'SEND_STRUCT' 'SEND_BYTEARRAY'; do
-                echo "Testcase: JAVA $testcase" | tee -a $REPORTFILE
+                echo "Testcase: $TESTTYPE::$testcase" | tee -a $REPORTFILE
                 performJavaConsumerTest $mode $testcase $STDOUT $REPORTFILE 1 $SINGLECONSUMER_RUNS "LOCAL_THEN_GLOBAL"
             done
         fi
     done
 
-    if [ "$TESTCASE" == "JAVA_MULTICONSUMER_CPP_PROVIDER" ]
+    if [ "$TESTTYPE" == "JAVA_MULTICONSUMER_CPP_PROVIDER" ]
     then
         startCppPerformanceTestProvider
         for testcase in 'SEND_STRING' 'SEND_STRUCT' 'SEND_BYTEARRAY'; do
@@ -781,23 +781,23 @@ then
     fi
 
     for mode in 'ASYNC' 'SYNC' 'SHORTCIRCUIT'; do
-        if [ "$TESTCASE" == "CPP_$mode" ]
+        if [ "$TESTTYPE" == "CPP_$mode" ]
         then
             startCppPerformanceTestProvider
             for testcase in ${TESTCASES[@]}; do
-                echo "Testcase: $TESTCASE::$testcase" | tee -a $REPORTFILE
+                echo "Testcase: $TESTTYPE::$testcase" | tee -a $REPORTFILE
                 performCppConsumerTest $mode $testcase $STDOUT $REPORTFILE 1 $SINGLECONSUMER_RUNS
             done
         fi
     done
 
-    if [ "$TESTCASE" == "CPP_SERIALIZER" ]
+    if [ "$TESTTYPE" == "CPP_SERIALIZER" ]
     then
         echo "Testcase: CPP_SERIALIZER" | tee -a $REPORTFILE
         performCppSerializerTest $STDOUT $REPORTFILE
     fi
 
-    if [ "$TESTCASE" == "CPP_MULTICONSUMER" ]
+    if [ "$TESTTYPE" == "CPP_MULTICONSUMER" ]
     then
         startCppPerformanceTestProvider
         for testcase in 'SEND_STRING' 'SEND_STRUCT' 'SEND_BYTEARRAY'; do
@@ -806,29 +806,29 @@ then
         done
     fi
 
-    if [ "$TESTCASE" == "JS_CONSUMER" ]
+    if [ "$TESTTYPE" == "JS_CONSUMER" ]
     then
         echo "Testcase: JS_CONSUMER" | tee -a $REPORTFILE
         performJsPerformanceTest $STDOUT $REPORTFILE
     fi
 
-    if [ "$TESTCASE" == "JS_CONSUMER_CPP_PROVIDER" ]
+    if [ "$TESTTYPE" == "JS_CONSUMER_CPP_PROVIDER" ]
     then
         echo "Testcase: JS_CONSUMER_CPP_PROVIDER" | tee -a $REPORTFILE
         startCppPerformanceTestProvider
         performJsPerformanceTest $STDOUT $REPORTFILE
     fi
 
-    if [ "$TESTCASE" == "CPP_CONSUMER_JS_PROVIDER" ]
+    if [ "$TESTTYPE" == "CPP_CONSUMER_JS_PROVIDER" ]
     then
          startJsPerformanceTestProvider
          for testcase in ${TESTCASES[@]}; do
-                echo "Testcase: $TESTCASE::$testcase" | tee -a $REPORTFILE
+                echo "Testcase: $TESTTYPE::$testcase" | tee -a $REPORTFILE
                 performCppConsumerTest "ASYNC" $testcase $STDOUT $REPORTFILE 1 $SINGLECONSUMER_RUNS
          done
     fi
 
-    if [ "$TESTCASE" == "CPP_PROVIDER" ]
+    if [ "$TESTTYPE" == "CPP_PROVIDER" ]
     then
         echo "Testcase: CPP_PROVIDER for domain $DOMAINNAME" | tee -a $REPORTFILE
         startCppPerformanceTestProvider
@@ -840,14 +840,14 @@ then
     stopMeasureCpuUsage $REPORTFILE
     stopAnyProvider
     stopCppClusterController
-    checkIfBackendServicesAreNeeded $TESTCASE
+    checkIfBackendServicesAreNeeded $TESTTYPE
     if [ "$?" -eq 1 ]
     then
         stopServices
     fi
 fi
 
-if [ "$TESTCASE" == "JEE_PROVIDER" ]
+if [ "$TESTTYPE" == "JEE_PROVIDER" ]
 then
     startServices
     startJavaJeePerformanceTestProvider
@@ -863,7 +863,7 @@ then
     stopServices
 fi
 
-if [ "$TESTCASE" == "OAP_TO_BACKEND_MOSQ" ]
+if [ "$TESTTYPE" == "OAP_TO_BACKEND_MOSQ" ]
 then
     checkDirExists $JETTY_PATH
     startServices
