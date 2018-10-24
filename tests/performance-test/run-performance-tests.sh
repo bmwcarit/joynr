@@ -588,7 +588,7 @@ function echoUsage {
     echo "      arguments which are passed to the C++ cluster-controller"
     echo ""
     echo "  test parameters:"
-    echo "   -t <JAVA_SYNC|JAVA_ASYNC|JAVA_MULTICONSUMER|"
+    echo "   -t <JAVA_CONSUMER_CPP_PROVIDER_SYNC|JAVA_CONSUMER_CPP_PROVIDER_ASYNC|JAVA_MULTICONSUMER_CPP_PROVIDER|"
     echo "       JS_CONSUMER|OAP_TO_BACKEND_MOSQ|JS_CONSUMER_CPP_PROVIDER|"
     echo "       CPP_SYNC|CPP_ASYNC|CPP_MULTICONSUMER|CPP_SERIALIZER|CPP_SHORTCIRCUIT|CPP_PROVIDER|CPP_CONSUMER_JS_PROVIDER|"
     echo "       JEE_PROVIDER|ALL> (type of tests)"
@@ -683,8 +683,8 @@ do
     esac
 done
 
-if [ "$TESTCASE" != "JAVA_SYNC" ] && [ "$TESTCASE" != "JAVA_ASYNC" ] && \
-   [ "$TESTCASE" != "JAVA_MULTICONSUMER" ] && \
+if [ "$TESTCASE" != "JAVA_CONSUMER_CPP_PROVIDER_SYNC" ] && [ "$TESTCASE" != "JAVA_CONSUMER_CPP_PROVIDER_ASYNC" ] && \
+   [ "$TESTCASE" != "JAVA_MULTICONSUMER_CPP_PROVIDER" ] && \
    [ "$TESTCASE" != "JS_CONSUMER" ] && [ "$TESTCASE" != "OAP_TO_BACKEND_MOSQ" ] && \
    [ "$TESTCASE" != "JS_CONSUMER_CPP_PROVIDER" ] && \
    [ "$TESTCASE" != "CPP_SYNC" ] && [ "$TESTCASE" != "CPP_ASYNC" ] && \
@@ -694,9 +694,10 @@ if [ "$TESTCASE" != "JAVA_SYNC" ] && [ "$TESTCASE" != "JAVA_ASYNC" ] && \
    [ "$TESTCASE" != "JEE_PROVIDER" ]
 then
     echo "\"$TESTCASE\" is not a valid testcase"
-    echo "-t option can be either JAVA_SYNC, JAVA_ASYNC, JAVA_MULTICONSUMER, JS_CONSUMER, \
-OAP_TO_BACKEND_MOSQ, JS_CONSUMER_CPP_PROVIDER, CPP_SYNC, CPP_ASYNC, CPP_MULTICONSUMER, \
-CPP_SERIALIZER, CPP_SHORTCIRCUIT, CPP_PROVIDER, CPP_CONSUMER_JS_PROVIDER, JEE_PROVIDER"
+    echo "-t option can be either JAVA_CONSUMER_CPP_PROVIDER_SYNC, JAVA_CONSUMER_CPP_PROVIDER_ASYNC, \
+JAVA_MULTICONSUMER_CPP_PROVIDER, JS_CONSUMER, OAP_TO_BACKEND_MOSQ, JS_CONSUMER_CPP_PROVIDER, \
+CPP_SYNC, CPP_ASYNC, CPP_MULTICONSUMER, CPP_SERIALIZER, CPP_SHORTCIRCUIT, CPP_PROVIDER, CPP_CONSUMER_JS_PROVIDER, \
+JEE_PROVIDER"
     echoUsage
     exit 1
 fi
@@ -760,7 +761,7 @@ then
     echo "### Starting performance tests ###"
 
     for mode in 'ASYNC' 'SYNC'; do
-        if [ "$TESTCASE" == "JAVA_$mode" ]
+        if [ "$TESTCASE" == "JAVA_CONSUMER_CPP_PROVIDER_$mode" ]
         then
             startCppPerformanceTestProvider
             for testcase in 'SEND_STRING' 'SEND_STRUCT' 'SEND_BYTEARRAY'; do
@@ -770,7 +771,7 @@ then
         fi
     done
 
-    if [ "$TESTCASE" == "JAVA_MULTICONSUMER" ]
+    if [ "$TESTCASE" == "JAVA_MULTICONSUMER_CPP_PROVIDER" ]
     then
         startCppPerformanceTestProvider
         for testcase in 'SEND_STRING' 'SEND_STRUCT' 'SEND_BYTEARRAY'; do
