@@ -40,6 +40,8 @@ JETTY_PATH=""
 
 ### general options ###
 
+MQTT_SEPARATE_CONNECTIONS=false
+
 # Select backend service protocol
 BACKEND_SERVICES="MQTT"
 
@@ -295,9 +297,10 @@ function startJavaPerformanceTestProvider {
 
     if [ "$USE_MAVEN" != "ON" ]
     then
-        java -jar target/performance-test-provider*.jar $PROVIDERARGS 1>$PROVIDER_STDOUT 2>$PROVIDER_STDERR & PROVIDER_PID=$!
+        java -Djoynr.messaging.mqtt.separateconnections="$MQTT_SEPARATE_CONNECTIONS" -jar target/performance-test-provider*.jar $PROVIDERARGS 1>$PROVIDER_STDOUT 2>$PROVIDER_STDERR & PROVIDER_PID=$!
     else
         mvn exec:java -o -Dexec.mainClass="$PROVIDERCLASS" -Dexec.args="$PROVIDERARGS" \
+            -Djoynr.messaging.mqtt.separateconnections="$MQTT_SEPARATE_CONNECTIONS" \
             1>$PROVIDER_STDOUT 2>$PROVIDER_STDERR & PROVIDER_PID=$!
     fi
     PROVIDER_CPU_TIME_1=$(getCpuTime $PROVIDER_PID)
@@ -353,9 +356,10 @@ function performJavaConsumerTest {
 
         if [ "$USE_MAVEN" != "ON" ]
         then
-            java -jar target/performance-test-consumer*.jar $CONSUMERARGS 1>>$STDOUT_PARAM 2>>$REPORTFILE_PARAM & CUR_PID=$!
+            java -Djoynr.messaging.mqtt.separateconnections="$MQTT_SEPARATE_CONNECTIONS" -jar target/performance-test-consumer*.jar $CONSUMERARGS 1>>$STDOUT_PARAM 2>>$REPORTFILE_PARAM & CUR_PID=$!
         else
             mvn exec:java -o -Dexec.mainClass="$CONSUMERCLASS" \
+            -Djoynr.messaging.mqtt.separateconnections="$MQTT_SEPARATE_CONNECTIONS" \
             -Dexec.args="$CONSUMERARGS" 1>>$STDOUT_PARAM 2>>$REPORTFILE_PARAM & CUR_PID=$!
         fi
 
@@ -499,11 +503,21 @@ function startPayara {
 
     echo "Starting payara"
 
+    OLD_VALUE=$joynr_messaging_mqtt_separateconnections
+    export joynr_messaging_mqtt_separateconnections="$MQTT_SEPARATE_CONNECTIONS"
+
     asadmin start-database
     asadmin start-domain
 
     asadmin deploy --force=true $DISCOVERY_WAR_FILE
     asadmin deploy --force=true $ACCESS_CONTROL_WAR_FILE
+
+    if [ -n "$OLD_VALUE" ]
+    then
+        export joynr_messaging_mqtt_separateconnections=$OLD_VALUE
+    else
+        unset joynr_messaging_mqtt_separateconnections
+    fi
 
     echo "payara started"
 }
@@ -560,6 +574,7 @@ function echoUsage {
     echo "   -j <jetty-dir> (only for HTTP backend service with OAP_TO_BACK_MOSQ; deprecated)"
     echo ""
     echo "  general options (all optional):"
+    echo "   -S <mqtt-separate-connections (true|false)> (optional, defaults to $MQTT_SEPARATE_CONNECTIONS)"
     echo "   -B <backend-services (MQTT|HTTP)> (optional, default $BACKEND_SERVICES)"
     echo "   -m <use maven ON|OFF> (optional, default to $USE_MAVEN)"
     echo "      Indicates whether java applications shall be started with maven or as standalone apps"
@@ -599,7 +614,7 @@ function checkIfBackendServicesAreNeeded {
     return 0
 }
 
-while getopts "p:s:r:y:j:B:m:n:z:e:d:a:t:c:x:k:h" OPTIONS;
+while getopts "p:s:r:y:j:S:B:m:n:z:e:d:a:t:c:x:k:h" OPTIONS;
 do
     case $OPTIONS in
 # paths
@@ -619,6 +634,9 @@ do
             JETTY_PATH=$(realpath ${OPTARG%/})
             ;;
 # general options
+        S)
+            MQTT_SEPARATE_CONNECTIONS=$OPTARG
+            ;;
         B)
             BACKEND_SERVICES=$OPTARG
             ;;
@@ -716,11 +734,18 @@ then
     TESTCASES+=('SEND_BYTEARRAY_WITH_SIZE_TIMES_K')
 fi
 
+if [ "$MQTT_SEPARATE_CONNECTIONS" != "true" ] && [ "$MQTT_SEPARATE_CONNECTIONS" != "false" ]
+then
+    echo "Invalid value for mqtt-separate-connections: $MQTT_SEPARATE_CONNECTIONS"
+    exit 1
+fi
+
 if [ "$BACKEND_SERVICES" != "MQTT" ] && [ "$BACKEND_SERVICES" != "HTTP" ]
 then
     echo 'Invalid value for backend services: $BACKEND_SERVICES.'
     exit 1
 fi
+
 
 if [ "$TESTCASE" != "OAP_TO_BACKEND_MOSQ" ] && [ "$TESTCASE" != "JEE_PROVIDER" ]
 then
