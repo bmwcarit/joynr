@@ -110,9 +110,9 @@ method <Method> {
 
 ### Broadcasts
 
-A Franca broadcast defines an asynchronous event that can be fired by the Provider and be received by the Consumer.
-A consumer can selectively subscribe to desired events, optionally with filter parameters to limit the number of broadcasts it gets.
-Typically broadcasts have optional output parameter(s) to provide details about the event.
+A Franca broadcast defines an asynchronous event that can be fired by the Provider and be received by the Consumer. A consumer can selectively subscribe to desired events, optionally with filter parameters to limit the number of broadcasts it gets. Typically broadcasts have an optional output parameter to provide details about the event.
+
+TODO: Multiple Out Parameters: **Note that joynr is restricted to only one output parameter**; it is however possible to use a struct as wrapper for multiple output parameters.
 
 ```
 broadcast <Broadcast> {
@@ -122,30 +122,23 @@ broadcast <Broadcast> {
 }
 ```
 
-### Selective (filtered) broadcasts
+### Broadcast Filters
 
 If a broadcast supports filtering, the filter parameter must be defined using Franca comments as follows:
 
 ```
 <**
     @description: <description text>
-    @param: <filterParam1> (<filterParamType1>) descriptionParam1
+    @param: <filterParam1> (<filterParamType1>) description
     ...
-    @param: <filterParamN> (<filterParamTypeN>) descriptionParamN
+    @param: <filterParamN> (<filterParamTypeN>) description
 **>
-broadcast <Broadcast> selective {
+broadcast <Broadcast> {
     ...
-    out {
-        ...
-    }
 }
 ```
-Important things to notice for the declaration of selective broadcasts:
-* Each description text can hold multiple lines.
-* The parenthesis in the parameters definition do not mean that the type information is optional, but rather mean
-that it has indeed to be provided inbetween parenthesis, e.g. (Boolean) or (String) etc.
-* The keyword `selective`
-* The ouput section must contain one or many parameters and can not be missing or empty
+
+Each description text can hold multiple lines.
 
 # Example
 
@@ -175,17 +168,6 @@ interface myInterface {
     broadcast myBroadcast {
         out {
             myTypeCollection.myStruct myOutput
-        }
-    }
-
-    <**
-        @param: filterMinValue (Integer) filter parameter
-                that defines the minimal value of interest
-                for the subscriber
-    **>
-    broadcast mySelectiveBroadcast selective {
-        out {
-            Integer myIntValue
         }
     }
 }
