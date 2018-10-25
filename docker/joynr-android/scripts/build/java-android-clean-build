@@ -60,7 +60,7 @@ echo '####################################################'
 cd /data/src
 
 # 1st run; just build without tests to provide WAR files for payara
-mvn clean $GOAL -P no-license-and-notice,no-java-formatter,no-checkstyle \
+mvn clean $GOAL -P no-license-and-notice,no-java-formatter,no-checkstyle,android \
 -DskipTests \
 -Dmaven.test.failure.ignore=true \
 -Denforcer.skip=true -Dmaven.compile.fork=true \
@@ -83,7 +83,7 @@ DOMAIN_ACCESS_CONTROLLER_WAR_FILE=$(find /data/src/java/backend-services/domain-
 # started and WAR files have been deployed
 
 # 2nd run; now including test execution which requires mosquitto / payara
-mvn clean $GOAL -P no-license-and-notice,no-java-formatter,no-checkstyle \
+mvn clean $GOAL -P no-license-and-notice,no-java-formatter,no-checkstyle,android \
 -DskipTests=false \
 -Dmaven.test.failure.ignore=true \
 -Denforcer.skip=true -Dmaven.compile.fork=true \
