@@ -31,6 +31,7 @@ RUN dnf update -y \
 ###################################################
 
 RUN cd /opt \
+    && . /etc/profile \
     && git clone https://github.com/gabime/spdlog.git \
     && cd spdlog \
     && git checkout 799ba2a57bb16b921099bd9ab64a513e4ebe4217 \
@@ -46,6 +47,7 @@ RUN cd /opt \
 ###################################################
 
 RUN cd /opt \
+    && . /etc/profile \
     && git clone https://github.com/zaphoyd/websocketpp.git \
     && cd websocketpp \
     && git checkout 19cad9925f83d15d7487c16f0491f4741ec9f674 \
@@ -61,6 +63,7 @@ RUN cd /opt \
 ###################################################
 
 RUN cd /opt \
+    && . /etc/profile \
     && git clone https://github.com/GENIVI/dlt-daemon \
     && cd dlt-daemon \
     && git checkout v2.15.0 \
@@ -88,6 +91,7 @@ RUN dnf update -y \
 ###################################################
 
 RUN export MoCOCrW_VERSION=master \
+    && . /etc/profile \
     && cd /opt \
     && git clone https://github.com/bmwcarit/MoCOCrW.git \
     && cd MoCOCrW \
@@ -104,6 +108,7 @@ RUN export MoCOCrW_VERSION=master \
 ###################################################
 
 RUN export FLATBUFFERS_VERSION=v1.6.0 \
+        && . /etc/profile \
         && cd /tmp \
         && git clone https://github.com/google/flatbuffers.git \
         && cd flatbuffers \
