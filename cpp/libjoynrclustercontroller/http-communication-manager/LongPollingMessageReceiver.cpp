@@ -23,13 +23,14 @@
 #include <cassert>
 #include <cstdint>
 #include <cstdlib>
+#include <thread>
 
 #include <boost/lexical_cast.hpp>
 
 #include "joynr/Future.h"
 #include "joynr/ImmutableMessage.h"
-#include "joynr/Util.h"
 #include "joynr/TimePoint.h"
+#include "joynr/Util.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "libjoynrclustercontroller/httpnetworking/HttpNetworking.h"
 #include "libjoynrclustercontroller/httpnetworking/HttpResult.h"
@@ -44,8 +45,7 @@ LongPollingMessageReceiver::LongPollingMessageReceiver(
         const LongPollingMessageReceiverSettings& settings,
         std::shared_ptr<Semaphore> channelCreatedSemaphore,
         std::function<void(smrf::ByteVector&&)> onMessageReceived)
-        : Thread("LongPollRecv"),
-          brokerUrl(brokerUrl),
+        : brokerUrl(brokerUrl),
           channelId(channelId),
           receiverId(receiverId),
           settings(settings),
@@ -54,7 +54,8 @@ LongPollingMessageReceiver::LongPollingMessageReceiver(
           interruptedWait(),
           channelCreatedSemaphore(channelCreatedSemaphore),
           onMessageReceived(std::move(onMessageReceived)),
-          currentRequest()
+          currentRequest(),
+          thread(nullptr)
 {
 }
 
@@ -78,10 +79,28 @@ bool LongPollingMessageReceiver::isInterrupted()
     return interrupted;
 }
 
+void LongPollingMessageReceiver::start()
+{
+    if (!thread) {
+        // already started
+        return;
+    }
+
+    thread = std::make_unique<std::thread>(&LongPollingMessageReceiver::run, this);
+    assert(thread != nullptr);
+}
+
 void LongPollingMessageReceiver::stop()
 {
     interrupt();
-    Thread::stop();
+    if (!thread) {
+        return;
+    }
+
+    if (thread->joinable()) {
+        thread->join();
+    }
+    thread.reset();
 }
 
 void LongPollingMessageReceiver::run()

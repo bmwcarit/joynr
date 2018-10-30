@@ -64,6 +64,7 @@ import io.joynr.exceptions.JoynrException;
 import io.joynr.jeeintegration.JoynrJeeMessageMetaInfo;
 import io.joynr.jeeintegration.ProviderWrapper;
 import io.joynr.jeeintegration.api.ProviderQosFactory;
+import io.joynr.jeeintegration.api.ServiceProvider;
 import io.joynr.jeeintegration.api.security.JoynrCallingPrincipal;
 import io.joynr.jeeintegration.context.JoynrJeeMessageContext;
 import io.joynr.jeeintegration.multicast.SubscriptionPublisherProducer;
@@ -153,6 +154,7 @@ public class ProviderWrapperTest {
             extends SubscriptionPublisherInjection<MySubscriptionPublisher> {
     }
 
+    @ServiceProvider(serviceInterface = TestServiceInterface.class)
     public static class TestServiceImpl implements TestServiceInterface {
 
         @Inject
@@ -444,7 +446,7 @@ public class ProviderWrapperTest {
                                       Mockito.<CreationalContext> any())).thenReturn(joynrCallingPincipal);
         Bean<?> bean = mock(Bean.class);
         doReturn(TestServiceImpl.class).when(bean).getBeanClass();
-        doReturn(new TestServiceImpl()).when(bean).create(null);
+        doReturn(new TestServiceImpl()).when(beanManager).getReference(bean, TestServiceInterface.class, null);
 
         JoynrMessageMetaInfo joynrMessageContext = mock(JoynrMessageMetaInfo.class);
         when(injector.getInstance(eq(JoynrMessageMetaInfo.class))).thenReturn(joynrMessageContext);

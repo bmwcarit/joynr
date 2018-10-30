@@ -145,7 +145,6 @@ Important things to notice for the declaration of selective broadcasts:
 * The parenthesis in the parameters definition do not mean that the type information is optional, but rather mean
 that it has indeed to be provided inbetween parenthesis, e.g. (Boolean) or (String) etc.
 * The keyword `selective`
-* The ouput section must contain one or many parameters and can not be missing or empty
 
 # Example
 

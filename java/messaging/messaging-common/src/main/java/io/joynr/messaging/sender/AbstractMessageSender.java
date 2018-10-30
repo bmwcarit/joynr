@@ -21,6 +21,7 @@ package io.joynr.messaging.sender;
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.smrf.EncodingException;
@@ -40,17 +41,22 @@ public abstract class AbstractMessageSender implements MessageSender {
     }
 
     @Override
-    public synchronized void sendMessage(MutableMessage message) {
+    @SuppressFBWarnings(value = "IS2_INCONSISTENT_SYNC", justification = "lazy synchronization")
+    public void sendMessage(MutableMessage message) {
         boolean needsReplyToAddress = needsReplyToAddress(message);
 
-        if (replyToAddress == null && needsReplyToAddress) {
-            noReplyToAddressQueue.add(message);
-        } else {
-            if (needsReplyToAddress) {
-                message.setReplyTo(message.isStatelessAsync() ? globalAddress : replyToAddress);
+        if (needsReplyToAddress && replyToAddress == null) {
+            synchronized (this) {
+                if (replyToAddress == null) {
+                    noReplyToAddressQueue.add(message);
+                    return;
+                }
             }
-            routeMutableMessage(message);
         }
+        if (needsReplyToAddress) {
+            message.setReplyTo(message.isStatelessAsync() ? globalAddress : replyToAddress);
+        }
+        routeMutableMessage(message);
     }
 
     private boolean needsReplyToAddress(MutableMessage message) {

@@ -32,9 +32,9 @@ This project has dependencies to:
   Apache Derby Database Engine and Embedded JDBC Driver under Apache 2
   Apache Geronimo JSR-317 JPA 2.0 Spec API under The Apache Software License, Version 2.0
   Apache Groovy under The Apache Software License, Version 2.0
-  Apache HttpClient under Apache License
-  Apache HttpClient Mime under Apache License
-  Apache HttpCore under Apache License
+  Apache HttpClient under Apache License, Version 2.0
+  Apache HttpClient Mime under Apache License, Version 2.0
+  Apache HttpCore under Apache License, Version 2.0
   Apache Log4j under The Apache Software License, Version 2.0
   Apache Log4j API under The Apache Software License, Version 2.0
   Apache Log4j SLF4J Binding under The Apache Software License, Version 2.0

@@ -27,10 +27,8 @@ import java.net.URL;
 import java.util.ArrayList;
 
 import org.eclipse.emf.ecore.resource.Resource;
-import org.franca.core.franca.FArgument;
 import org.franca.core.franca.FBroadcast;
 import org.franca.core.franca.FModel;
-import org.junit.Before;
 import org.junit.Test;
 
 import com.google.inject.AbstractModule;
@@ -39,12 +37,13 @@ import com.google.inject.name.Names;
 
 public class BroadcastUtilTest {
 
-    private BroadcastUtil broadcastUtil;
-    private FModel model;
+    @Test
+    public void testFilterParameters() throws Exception {
+        URL fixtureURL = BroadcastUtilTest.class.getResource("FilterParameters.fidl");
+        ModelLoader loader = new ModelLoader(fixtureURL.getPath());
+        Resource fixtureResource = loader.getResources().iterator().next();
+        BroadcastUtil broadcastUtil = Guice.createInjector(new AbstractModule() {
 
-    @Before
-    public void setUp() {
-        broadcastUtil = Guice.createInjector(new AbstractModule() {
             @Override
             protected void configure() {
                 bindConstant().annotatedWith(Names.named(NamingUtil.JOYNR_GENERATOR_INTERFACENAMEWITHVERSION))
@@ -52,46 +51,13 @@ public class BroadcastUtilTest {
             }
         }).getInstance(BroadcastUtil.class);
 
-        URL fidlURL = BroadcastUtilTest.class.getResource("SelectiveBroadcastTest.fidl");
-        ModelLoader loader = new ModelLoader(fidlURL.getPath());
-        Resource fidlResource = loader.getResources().iterator().next();
-        model = (FModel) fidlResource.getContents().get(0);
-    }
-
-    @Test
-    public void testFilterParameters() {
+        FModel model = (FModel) fixtureResource.getContents().get(0);
         FBroadcast fixture = model.getInterfaces().get(0).getBroadcasts().get(0);
 
-        assertEquals("fixture", fixture.getName());
         ArrayList<String> result = broadcastUtil.getFilterParameters(fixture);
         assertEquals(result.size(), 2);
         assertTrue(result.contains("genre"));
         assertTrue(result.contains("language"));
     }
 
-    @Test
-    public void testOutputParameters() {
-        FBroadcast fixture = model.getInterfaces().get(0).getBroadcasts().get(0);
-
-        assertEquals("fixture", fixture.getName());
-        Iterable<FArgument> result = broadcastUtil.getOutputParameters(fixture);
-        assertTrue(result.iterator().hasNext());
-        assertEquals("station", result.iterator().next().getName());
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void testEmptyOutputParametersIsNotSupportedForSelectiveBroadcast() {
-        FBroadcast emptyOutput = model.getInterfaces().get(0).getBroadcasts().get(1);
-
-        assertEquals("emptyOutput", emptyOutput.getName());
-        broadcastUtil.getOutputParameters(emptyOutput);
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void testNoOutputParametersIsNotSupportedForSelectiveBroadcast() {
-        FBroadcast noOutput = model.getInterfaces().get(0).getBroadcasts().get(2);
-
-        assertEquals("noOutput", noOutput.getName());
-        broadcastUtil.getOutputParameters(noOutput);
-    }
 }

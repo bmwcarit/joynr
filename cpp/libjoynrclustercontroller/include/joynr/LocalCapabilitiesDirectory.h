@@ -97,7 +97,9 @@ public:
      * @param removeGlobally if set to true, capability will be removed from global capabilities
      * directory; default is false
      */
-    void remove(const std::string& participantId, bool removeGlobally = true);
+    void remove(const std::string& participantId,
+                bool removeGlobally = true,
+                bool removeFromGlobalLookupCache = true);
 
     /*
      * Returns a list of capabilitiess matching the given domain and interfaceName,
@@ -243,15 +245,15 @@ private:
                                 std::vector<types::DiscoveryEntry>&& globalCapabilities,
                                 std::shared_ptr<ILocalCapabilitiesCallback> callback);
 
-    void insertInCache(const types::DiscoveryEntry& entry, bool localCache, bool globalCache);
+    void insertInLocallyRegisteredCapabilitiesCache(const types::DiscoveryEntry& entry);
+    void insertInGlobalLookupCache(const types::DiscoveryEntry& entry);
+
     std::vector<types::DiscoveryEntry> searchCache(
             const std::vector<InterfaceAddress>& interfaceAddress,
             std::chrono::milliseconds maxCacheAge,
             bool localEntries);
     boost::optional<types::DiscoveryEntry> searchCache(const std::string& participantId,
-                                                       std::chrono::milliseconds maxCacheAge,
-                                                       bool localEntries);
-    void removeFromGloballyRegisteredCapabilities(const types::DiscoveryEntry& discoveryEntry);
+                                                       std::chrono::milliseconds maxCacheAge);
 
     ADD_LOGGER(LocalCapabilitiesDirectory)
     std::shared_ptr<ICapabilitiesClient> capabilitiesClient;
@@ -259,10 +261,9 @@ private:
     mutable std::mutex cacheLock;
     std::mutex pendingLookupsLock;
 
-    capabilities::Storage localCapabilities;
-    capabilities::CachingStorage globalCapabilities;
+    capabilities::Storage locallyRegisteredCapabilities;
+    capabilities::CachingStorage globalLookupCache;
 
-    std::vector<types::GlobalDiscoveryEntry> registeredGlobalCapabilities;
     std::weak_ptr<IMessageRouter> messageRouter;
     std::vector<std::shared_ptr<IProviderRegistrationObserver>> observers;
 
@@ -299,6 +300,7 @@ private:
                      std::function<void()> onSuccess,
                      std::function<void(const exceptions::ProviderRuntimeException&)> onError);
     bool hasProviderPermission(const types::DiscoveryEntry& discoveryEntry);
+    std::size_t countGlobalCapabilities() const;
 
     std::vector<types::DiscoveryEntry> optionalToVector(
             boost::optional<types::DiscoveryEntry> optionalEntry);

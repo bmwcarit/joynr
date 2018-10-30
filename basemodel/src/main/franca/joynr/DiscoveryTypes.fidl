@@ -38,12 +38,12 @@ typeCollection {
 
 	<** @description: the scope in which the provider is registered **>
 	enumeration ProviderScope{
-		<** @description: indicates that the provider is for use with the local and global cluster
-			controller
+		<** @description: indicates that the provider should be registered locally and globally.
+			An add will be performed in the global capabilities directory.
 		**>
 		GLOBAL
 		<** @description: indicates that the provider is only for use with the local cluster
-			controller
+			controller.
 		**>
 		LOCAL
 	}
@@ -81,15 +81,20 @@ typeCollection {
 
 	<** @description: Enumeration specifying the discovery scope choices **>
 	enumeration DiscoveryScope	{
-		<** @description: Consider only entries from local cache **>
+		<** @description: Consider only locally registered providers. **>
 		LOCAL_ONLY
-		<** @description: Consider only entries from local cache, in no results are found, query
-			global cache as well
+		<** @description: Consider only locally registered providers, if no results are found,
+			query global cache as well. If no results are found in cache, query global capabilities
+			directory.
 		**>
 		LOCAL_THEN_GLOBAL
-		<** @description: Consider both local and global entries **>
+		<** @description: Consider both locally registered providers and globally ones. If no
+			results are found in cache, query global capabilities directory.
+		**>
 		LOCAL_AND_GLOBAL
-		<** @description: Consider only global entries **>
+		<** @description: Consider only globally registered providers. If no results are found
+			in cache, query global capabilities directory.
+		**>
 		GLOBAL_ONLY
 	}
 
@@ -99,7 +104,7 @@ typeCollection {
 		Int64 cacheMaxAge
 		<** @description: Discovery TTL **>
 		Int64 discoveryTimeout
-		<** @description: The discovery scope **>
+		<** @description: The discovery scope: at which level (GLOBAL/LOCAL) should providers be searched. **>
 		DiscoveryScope discoveryScope
 		<** @description: True, if the provider is required to support the OnChange publication **>
 		Boolean providerMustSupportOnChange

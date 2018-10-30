@@ -18,8 +18,8 @@ under the License.
 This project has dependencies to:
   "Java Concurrency in Practice" book annotations under Creative Commons Attribution License
   AOP alliance under Public Domain
-  Apache HttpClient under Apache License
-  Apache HttpCore under Apache License
+  Apache HttpClient under Apache License, Version 2.0
+  Apache HttpCore under Apache License, Version 2.0
   Apache Log4j under The Apache Software License, Version 2.0
   clustercontroller-inprocess-runtime under The Apache Software License, Version 2.0
   clustercontroller-websocket-runtime under The Apache Software License, Version 2.0

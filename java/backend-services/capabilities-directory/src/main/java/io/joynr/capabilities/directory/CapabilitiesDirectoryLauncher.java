@@ -87,6 +87,7 @@ public class CapabilitiesDirectoryLauncher extends AbstractJoynrApplication {
         try {
             ServerSocket serverSocket = new ServerSocket(shutdownPort);
             serverSocket.accept();
+            serverSocket.close();
         } catch (IOException e) {
             return;
         }
