@@ -1,20 +1,11 @@
-FROM payaradocker/payaraserver:4.1.1.161.1
+FROM openjdk:8-jdk-alpine
 
-COPY target/clustered-app.war /clustered-app.war
+RUN apk add --no-cache curl
+
+COPY src/main/payara/post-boot.txt /post-boot.txt
 COPY start-me-up.sh /start-me-up.sh
+RUN chmod +x /start-me-up.sh
 
-ENV joynr_servlet_hostpath http://localhost:8080
-ENV MQTT_BROKER_URL tcp://mqttbroker:1883
-
-ENV PATH ${PATH}:/opt/payara41/glassfish/bin
-RUN echo 'AS_ADMIN_PASSWORD=glassfish\n\ EOF\n' \ >> /tmp/pwdfile
-RUN asadmin start-domain && \
-	asadmin --user admin --passwordfile=/tmp/pwdfile create-managed-scheduled-executor-service --corepoolsize=30 concurrent/joynrMessagingScheduledExecutor && \
-	asadmin --user admin --passwordfile=/tmp/pwdfile set-log-attributes com.sun.enterprise.server.logging.GFFileHandler.rotationLimitInBytes=20000000 && \
-	asadmin --user admin --passwordfile=/tmp/pwdfile set-log-levels io.joynr.internal=INFO && \
-	asadmin --user admin --passwordfile=/tmp/pwdfile set-log-levels io.joynr.messaging=FINE && \
-	asadmin --user admin --passwordfile=/tmp/pwdfile set-log-levels io.joynr.dispatching=FINE && \
-	asadmin --user admin --passwordfile=/tmp/pwdfile set-log-levels io.joynr.jeeintegration=FINE || \
-	true
+COPY target/sharedsubscriptions-test-clustered-app-*-microbundle.jar /app.jar
 
 ENTRYPOINT ["/start-me-up.sh"]

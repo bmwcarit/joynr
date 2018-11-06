@@ -225,7 +225,7 @@ This project has dependencies to:
   io.joynr.tests.graceful-shutdown-test:graceful-shutdown-test-consumer under The Apache Software License, Version 2.0
   io.joynr.tests.graceful-shutdown-test:graceful-shutdown-test-provider under The Apache Software License, Version 2.0
   io.joynr.tests.graceful-shutdown-test:graceful-shutdown-test-second-level-provider under The Apache Software License, Version 2.0
-  io.joynr.tests.joynr-hivemq-shared-subscriptions.test-apps:backpressure-clustered-provider-large under The Apache Software License, Version 2.0
+  io.joynr.tests.joynr-hivemq-shared-subscriptions.test-apps:backpressure-test-clustered-provider-large under The Apache Software License, Version 2.0
   io.joynr.tests.joynr-hivemq-shared-subscriptions.test-apps:backpressure-test-clustered-provider-small under The Apache Software License, Version 2.0
   io.joynr.tests.joynr-hivemq-shared-subscriptions.test-apps:backpressure-test-monitor-app under The Apache Software License, Version 2.0
   io.joynr.tests.joynr-hivemq-shared-subscriptions.test-apps:sharedsubscriptions-test-clustered-app under The Apache Software License, Version 2.0

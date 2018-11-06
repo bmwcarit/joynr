@@ -1,10 +1,12 @@
 #!/bin/bash
 
-export PATH=$PATH:/opt/payara41/glassfish/bin
-asadmin --interactive=false start-domain --debug --verbose &
-PID=$!
-# Wait grace period to let the server and database start up
-sleep 20
-asadmin --interactive=false --user admin --passwordfile=/tmp/pwdfile deploy /clustered-app.war
-# Prevent script from exiting which would cause the container to terminate immediately
-wait $PID
+echo "Check that joynrbackend is running ..."
+
+while [ -z "$(curl -v http://joynrbackend:8080/health 2>&1 | grep '200 OK')" ]; do
+    echo "Waiting for joynr backend to become available ..."
+    sleep 5
+done
+
+echo "Starting application ..."
+
+java -jar /app.jar --postbootcommandfile /post-boot.txt

@@ -41,7 +41,28 @@
 				<artifactId>maven-war-plugin</artifactId>
 				<configuration>
 					<failOnMissingWebXml>false</failOnMissingWebXml>
-					<warName>monitor-app</warName>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>fish.payara.maven.plugins</groupId>
+				<artifactId>payara-micro-maven-plugin</artifactId>
+				<version>${payaramicro.maven.plugin.version}</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>bundle</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<useUberJar>true</useUberJar>
+					<commandLineOptions>
+						<option>
+							<key>--postbootcommandfile</key>
+							<value>${basedir}/src/main/payara/post-boot.txt</value>
+						</option>
+					</commandLineOptions>
 				</configuration>
 			</plugin>
 

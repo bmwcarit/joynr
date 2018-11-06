@@ -43,4 +43,8 @@
 		<module>backpressure-monitor-app</module>
 	</modules>
 
+	<properties>
+		<payaramicro.maven.plugin.version>1.0.2</payaramicro.maven.plugin.version>
+	</properties>
+
 </project>
