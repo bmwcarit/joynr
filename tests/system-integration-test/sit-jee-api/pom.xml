@@ -89,7 +89,7 @@
 				<configuration>
 					<filesets>
 						<fileset>
-							<directory>src</directory>
+							<directory>src/main/generated</directory>
 							<includes>
 								<include>**</include>
 							</includes>

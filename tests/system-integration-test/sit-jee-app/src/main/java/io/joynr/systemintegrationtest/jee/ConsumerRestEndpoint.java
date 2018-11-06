@@ -18,12 +18,7 @@
  */
 package io.joynr.systemintegrationtest.jee;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-
 import javax.inject.Inject;
-
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -91,17 +86,9 @@ public class ConsumerRestEndpoint {
                   .append(domain)
                   .append("\nException: ")
                   .append(e.toString());
-            addStacktrace(e, result);
+            Util.addStacktraceToResultString(e, result);
         }
         result.append("\n");
     }
 
-    private void addStacktrace(Exception theException, StringBuffer result) {
-        try (StringWriter writer = new StringWriter(); PrintWriter printWriter = new PrintWriter(writer)) {
-            theException.printStackTrace(printWriter);
-            result.append(writer.toString());
-        } catch (IOException e) {
-            logger.error("Unable to add exception stacktrace to result string.", e);
-        }
-    }
 }
