@@ -2,6 +2,18 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.7.0
+
+## API relevant changes
+None.
+
+## Other changes
+* **[C++]** Enabled registration of multiple providers in a single runtime.
+  ParticipantIdStorage now also stores major versions of providers.
+
+## Configuration property changes
+None.
+
 # joynr 1.6.2
 
 ## API relevant changes
