@@ -8,6 +8,10 @@ There are several sub-directories, which contain build scripts
 for creating the images. See their individual README.md's for
 instructions on how to build them.
 
+## Test scenario
+
+![SIT Test Scenario Overview](docs/OverviewSIT.png)
+
 ## Building
 
 The easiest way to build all necessary images is to execute the
