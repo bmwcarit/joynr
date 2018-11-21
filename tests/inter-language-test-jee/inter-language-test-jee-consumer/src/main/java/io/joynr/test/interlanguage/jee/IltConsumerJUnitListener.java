@@ -18,6 +18,10 @@
  */
 package io.joynr.test.interlanguage.jee;
 
+import io.joynr.ilt.testresults.TestResult;
+import io.joynr.ilt.testresults.TestSuiteResult;
+import io.joynr.ilt.testresults.TestCaseResult;
+import io.joynr.ilt.testresults.TestCaseFailure;
 import org.junit.runner.notification.RunListener;
 import org.junit.runner.Description;
 import org.junit.runner.notification.Failure;
@@ -27,10 +31,6 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
-import joynr.testresults.TestResult;
-import joynr.testresults.TestSuiteResult;
-import joynr.testresults.TestCaseResult;
-import joynr.testresults.TestCaseFailure;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

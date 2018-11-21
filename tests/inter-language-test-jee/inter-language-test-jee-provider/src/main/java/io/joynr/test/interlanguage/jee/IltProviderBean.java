@@ -44,7 +44,9 @@ import joynr.interlanguagetest.namedTypeCollection2.ExtendedInterfaceEnumeration
 import joynr.interlanguagetest.namedTypeCollection2.ExtendedStructOfPrimitives;
 import joynr.interlanguagetest.namedTypeCollection2.ExtendedTypeCollectionEnumerationInTypeCollection;
 import joynr.interlanguagetest.namedTypeCollection2.MapStringString;
+import joynr.interlanguagetest.typeDefCollection.ArrayTypeDefStruct;
 
+import org.apache.commons.lang.ArrayUtils;
 import joynr.interlanguagetest.TestInterfaceSync;
 import joynr.interlanguagetest.TestInterfaceSubscriptionPublisher;
 
@@ -64,12 +66,20 @@ public class IltProviderBean
     private String attributeStringNoSubscriptions;
     private Byte attributeInt8readonlyNoSubscriptions;
     private String[] attributeArrayOfStringImplicit;
+    private Byte[] attributeByteBuffer;
     private Enumeration attributeEnumeration;
     private ExtendedEnumerationWithPartlyDefinedValues attributeExtendedEnumerationReadonly;
     private BaseStruct attributeBaseStruct;
     private ExtendedExtendedBaseStruct attributeExtendedExtendedBaseStruct;
     private MapStringString attributeMapStringString;
     private Integer attributeFireAndForget;
+    private Long attributeInt64TypeDef;
+    private String attributeStringTypeDef;
+    private BaseStruct attributeStructTypeDef;
+    private MapStringString attributeMapTypeDef;
+    private Enumeration attributeEnumTypeDef;
+    private Byte[] attributeByteBufferTypeDef;
+    private ArrayTypeDefStruct attributeArrayTypeDef;
 
     @SuppressWarnings("unused")
     private TestInterfaceSubscriptionPublisher testInterfaceSubscriptionPublisher;
@@ -197,6 +207,102 @@ public class IltProviderBean
     @Override
     public void setAttributeWithExceptionFromSetter(Boolean attributeWithExceptionFromSetter) {
         throw new ProviderRuntimeException("Exception from setAttributeWithExceptionFromSetter");
+    }
+
+    @Override
+    public Long getAttributeInt64TypeDef() {
+        return attributeInt64TypeDef;
+    }
+
+    @Override
+    public void setAttributeInt64TypeDef(Long attributeInt64TypeDef) {
+        this.attributeInt64TypeDef = attributeInt64TypeDef;
+        // TODO
+        // attributeInt64TypeDefChanged(attributeInt64TypeDef);
+    }
+
+    @Override
+    public String getAttributeStringTypeDef() {
+        return attributeStringTypeDef;
+    }
+
+    @Override
+    public void setAttributeStringTypeDef(String attributeStringTypeDef) {
+        this.attributeStringTypeDef = attributeStringTypeDef;
+        // TODO
+        // attributeStringTypeDefChanged(attributeStringTypeDef);
+    }
+
+    @Override
+    public BaseStruct getAttributeStructTypeDef() {
+        return attributeStructTypeDef;
+    }
+
+    @Override
+    public void setAttributeStructTypeDef(BaseStruct attributeStructTypeDef) {
+        this.attributeStructTypeDef = attributeStructTypeDef;
+        // TODO
+        // attributeStructTypeDefChanged(attributeStructTypeDef);
+    }
+
+    @Override
+    public MapStringString getAttributeMapTypeDef() {
+        return attributeMapTypeDef;
+    }
+
+    @Override
+    public void setAttributeMapTypeDef(MapStringString attributeMapTypeDef) {
+        this.attributeMapTypeDef = attributeMapTypeDef;
+        // TODO
+        // attributeMapTypeDefChanged(attributeMapTypeDef);
+    }
+
+    @Override
+    public Enumeration getAttributeEnumTypeDef() {
+        return attributeEnumTypeDef;
+    }
+
+    @Override
+    public void setAttributeEnumTypeDef(Enumeration attributeEnumTypeDef) {
+        this.attributeEnumTypeDef = attributeEnumTypeDef;
+        // TODO
+        // attributeEnumTypeDefChanged(attributeEnumTypeDef);
+    }
+
+    @Override
+    public Byte[] getAttributeByteBufferTypeDef() {
+        return attributeByteBufferTypeDef;
+    }
+
+    @Override
+    public Byte[] getAttributeByteBuffer() {
+        return attributeByteBuffer;
+    }
+
+    @Override
+    public void setAttributeByteBufferTypeDef(Byte[] attributeByteBufferTypeDef) {
+        this.attributeByteBufferTypeDef = attributeByteBufferTypeDef;
+        // TODO
+        // attributeByteBufferTypeDefChanged(attributeByteBufferTypeDef);
+    }
+
+    @Override
+    public void setAttributeByteBuffer(Byte[] attributeByteBuffer) {
+        this.attributeByteBuffer = attributeByteBuffer;
+        // TODO
+        // attributeByteBufferChanged(attributeByteBuffer);
+    }
+
+    @Override
+    public ArrayTypeDefStruct getAttributeArrayTypeDef() {
+        return attributeArrayTypeDef;
+    }
+
+    @Override
+    public void setAttributeArrayTypeDef(ArrayTypeDefStruct attributeArrayTypeDef) {
+        this.attributeArrayTypeDef = attributeArrayTypeDef;
+        // TODO
+        // attributeArrayTypeDefChanged(attributeArrayTypeDef);
     }
 
     /*
@@ -349,6 +455,135 @@ public class IltProviderBean
         structWithStringArrayArrayOut[1] = IltUtil.createStructWithStringArray();
 
         return new MethodWithMultipleArrayParametersReturned(uInt64ArrayOut, structWithStringArrayArrayOut);
+    }
+
+    /*
+     *methodWithSingleByteBufferParameter
+     *
+     *Return the same ByteBuffer that was put in as parameter
+     */
+    @Override
+    public Byte[] methodWithSingleByteBufferParameter(Byte[] byteBufferArg) {
+        logger.info("********************************************************");
+        logger.info("* IltProvider.methodWithSingleByteBufferParameter called");
+        logger.info("********************************************************");
+
+        return byteBufferArg;
+    }
+
+    /*
+     *methodWithMultipleByteBufferParameters
+     *
+     *Return the componentwise sum of the two ByteBuffers
+     */
+    @Override
+    public Byte[] methodWithMultipleByteBufferParameters(Byte[] byteBufferArg1, Byte[] byteBufferArg2) {
+        logger.info("***********************************************************");
+        logger.info("* IltProvider.methodWithMultipleByteBufferParameters called");
+        logger.info("***********************************************************");
+
+        //calculate result
+        Byte[] result = (Byte[]) ArrayUtils.addAll(byteBufferArg1, byteBufferArg2);
+
+        return result;
+    }
+
+    /*
+     *methodWithInt64TypeDefParameter
+     *
+     *Return the same TypeDefForInt64 that was put in as parameter
+     */
+    @Override
+    public Long methodWithInt64TypeDefParameter(Long int64TypeDefIn) {
+        logger.info("****************************************************");
+        logger.info("* IltProvider.methodWithInt64TypeDefParameter called");
+        logger.info("****************************************************");
+
+        return int64TypeDefIn;
+    }
+
+    /*
+     *methodWithStringTypeDefParameter
+     *
+     *Return the same TypeDefForString that was put in as parameter
+     */
+    @Override
+    public String methodWithStringTypeDefParameter(String stringTypeDefIn) {
+        logger.info("*****************************************************");
+        logger.info("* IltProvider.methodWithStringTypeDefParameter called");
+        logger.info("*****************************************************");
+
+        return stringTypeDefIn;
+    }
+
+    /*
+     *methodWithStructTypeDefParameter
+     *
+     *Return the same TypeDefForStruct that was put in as parameter
+     */
+    @Override
+    public BaseStruct methodWithStructTypeDefParameter(BaseStruct structTypeDefIn) {
+        logger.info("****************************************************");
+        logger.info("* IltProvider.methodWithInt64TypeDefParameter called");
+        logger.info("****************************************************");
+
+        return structTypeDefIn;
+    }
+
+    /*
+     *methodWithMapTypeDefParameter
+     *
+     *Return the same TypeDefForMap that was put in as parameter
+     */
+    @Override
+    public MapStringString methodWithMapTypeDefParameter(MapStringString mapTypeDefIn) {
+        logger.info("****************************************************");
+        logger.info("* IltProvider.methodWithMapTypeDefParameter called");
+        logger.info("****************************************************");
+
+        return mapTypeDefIn;
+    }
+
+    /*
+     *methodWithEnumTypeDefParameter
+     *
+     *Return the same TypeDefForEnum that was put in as parameter
+     */
+    @Override
+    public Enumeration methodWithEnumTypeDefParameter(Enumeration enumTypeDefIn) {
+        logger.info("***************************************************");
+        logger.info("* IltProvider.methodWithEnumTypeDefParameter called");
+        logger.info("***************************************************");
+
+        return enumTypeDefIn;
+    }
+
+    /*
+     *methodWithByteBufferTypeDefParameter
+     *
+     *Return the same TypeDefForByteBuffer that was put in as parameter
+     */
+    @Override
+    public Byte[] methodWithByteBufferTypeDefParameter(Byte[] byteBufferTypeDefIn) {
+        logger.info("*********************************************************");
+        logger.info("* IltProvider.methodWithByteBufferTypeDefParameter called");
+        logger.info("*********************************************************");
+
+        return byteBufferTypeDefIn;
+    }
+
+    /*
+     *methodWithArrayTypeDefParameter
+     *
+     *Return the same ArrayTypeDefStruct that was put in as parameter
+     */
+    @Override
+    public ArrayTypeDefStruct methodWithArrayTypeDefParameter(ArrayTypeDefStruct arrayTypeDefIn) {
+        logger.info("****************************************************");
+        logger.info("* IltProvider.methodWithArrayTypeDefParameter called");
+        logger.info("****************************************************");
+
+        return arrayTypeDefIn;
     }
 
     /*
@@ -669,21 +904,21 @@ public class IltProviderBean
      * methodToFireBroadcastWithSinglePrimitiveParameter
      */
     @Override
-    public void methodToFireBroadcastWithSinglePrimitiveParameter() {
+    public void methodToFireBroadcastWithSinglePrimitiveParameter(String[] partitions) {
         logger.warn("**********************************************************************");
         logger.warn("* IltProvider.methodToFireBroadcastWithSinglePrimitiveParameter called");
         logger.warn("**********************************************************************");
 
         String stringOut = "boom";
         // TODO
-        //fireBroadcastWithSinglePrimitiveParameter(stringOut);
+        //fireBroadcastWithSinglePrimitiveParameter(stringOut, partitions);
     }
 
     /*
      * methodToFireBroadcastWithMultiplePrimitiveParameters
      */
     @Override
-    public void methodToFireBroadcastWithMultiplePrimitiveParameters() {
+    public void methodToFireBroadcastWithMultiplePrimitiveParameters(String[] partitions) {
         logger.warn("*************************************************************************");
         logger.warn("* IltProvider.methodToFireBroadcastWithMultiplePrimitiveParameters called");
         logger.warn("*************************************************************************");
@@ -691,28 +926,28 @@ public class IltProviderBean
         Double doubleOut = 1.1d;
         String stringOut = "boom";
         // TODO
-        //fireBroadcastWithMultiplePrimitiveParameters(doubleOut, stringOut);
+        //fireBroadcastWithMultiplePrimitiveParameters(doubleOut, stringOut, partitions);
     }
 
     /*
      * methodToFireBroadcastWithSingleArrayParameter
      */
     @Override
-    public void methodToFireBroadcastWithSingleArrayParameter() {
+    public void methodToFireBroadcastWithSingleArrayParameter(String[] partitions) {
         logger.warn("******************************************************************");
         logger.warn("* IltProvider.methodToFireBroadcastWithSingleArrayParameter called");
         logger.warn("******************************************************************");
 
         String[] stringArrayOut = IltUtil.createStringArray();
         // TODO
-        //fireBroadcastWithSingleArrayParameter(stringArrayOut);
+        //fireBroadcastWithSingleArrayParameter(stringArrayOut, partitions);
     }
 
     /*
      * methodToFireBroadcastWithMultipleArrayParameters
      */
     @Override
-    public void methodToFireBroadcastWithMultipleArrayParameters() {
+    public void methodToFireBroadcastWithMultipleArrayParameters(String[] partitions) {
         logger.warn("*********************************************************************");
         logger.warn("* IltProvider.methodToFireBroadcastWithMultipleArrayParameters called");
         logger.warn("*********************************************************************");
@@ -720,28 +955,54 @@ public class IltProviderBean
         Long[] uInt64ArrayOut = IltUtil.createUInt64Array();
         StructWithStringArray[] structWithStringArrayArrayOut = IltUtil.createStructWithStringArrayArray();
         // TODO
-        //fireBroadcastWithMultipleArrayParameters(uInt64ArrayOut, structWithStringArrayArrayOut);
+        //fireBroadcastWithMultipleArrayParameters(uInt64ArrayOut, structWithStringArrayArrayOut, partitions);
+    }
+
+    /*
+     * methodToFireBroadcastWithSingleByteBufferParameter
+     */
+    @Override
+    public void methodToFireBroadcastWithSingleByteBufferParameter(Byte[] byteBufferIn, String[] partitions) {
+        logger.info("***********************************************************************");
+        logger.info("* IltProvider.methodToFireBroadcastWithSingleByteBufferParameter called");
+        logger.info("***********************************************************************");
+        // TODO
+        //fireBroadcastWithSingleByteBufferParameter(byteBufferIn, partitions);
+    }
+
+    /*
+     * methodToFireBroadcastWithMultipleByteBufferParameters
+     */
+    @Override
+    public void methodToFireBroadcastWithMultipleByteBufferParameters(Byte[] byteBufferIn1,
+                                                                      Byte[] byteBufferIn2,
+                                                                      String[] partitions) {
+        logger.info("**************************************************************************");
+        logger.info("* IltProvider.methodToFireBroadcastWithMultipleByteBufferParameters called");
+        logger.info("**************************************************************************");
+        // TODO
+        //fireBroadcastWithMultipleByteBufferParameters(byteBufferIn1, byteBufferIn2, partitions);
     }
 
     /*
      * methodToFireBroadcastWithSingleEnumerationParameter
      */
     @Override
-    public void methodToFireBroadcastWithSingleEnumerationParameter() {
+    public void methodToFireBroadcastWithSingleEnumerationParameter(String[] partitions) {
         logger.warn("************************************************************************");
         logger.warn("* IltProvider.methodToFireBroadcastWithSingleEnumerationParameter called");
         logger.warn("************************************************************************");
 
         ExtendedTypeCollectionEnumerationInTypeCollection enumerationOut = ExtendedTypeCollectionEnumerationInTypeCollection.ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION;
         // TODO
-        //fireBroadcastWithSingleEnumerationParameter(enumerationOut);
+        //fireBroadcastWithSingleEnumerationParameter(enumerationOut, partitions);
     }
 
     /*
      * methodToFireBroadcastWithMultipleEnumerationParameters
      */
     @Override
-    public void methodToFireBroadcastWithMultipleEnumerationParameters() {
+    public void methodToFireBroadcastWithMultipleEnumerationParameters(String[] partitions) {
         logger.warn("***************************************************************************");
         logger.warn("* IltProvider.methodToFireBroadcastWithMultipleEnumerationParameters called");
         logger.warn("***************************************************************************");
@@ -749,28 +1010,28 @@ public class IltProviderBean
         ExtendedEnumerationWithPartlyDefinedValues extendedEnumerationOut = ExtendedEnumerationWithPartlyDefinedValues.ENUM_2_VALUE_EXTENSION_FOR_ENUM_WITHOUT_DEFINED_VALUES;
         Enumeration enumerationOut = Enumeration.ENUM_0_VALUE_1;
         // TODO
-        //fireBroadcastWithMultipleEnumerationParameters(extendedEnumerationOut, enumerationOut);
+        //fireBroadcastWithMultipleEnumerationParameters(extendedEnumerationOut, enumerationOut, partitions);
     }
 
     /*
      * methodToFireBroadcastWithSingleStructParameter
      */
     @Override
-    public void methodToFireBroadcastWithSingleStructParameter() {
+    public void methodToFireBroadcastWithSingleStructParameter(String[] partitions) {
         logger.warn("*******************************************************************");
         logger.warn("* IltProvider.methodToFireBroadcastWithSingleStructParameter called");
         logger.warn("*******************************************************************");
 
         ExtendedStructOfPrimitives extendedStructOfPrimitivesOut = IltUtil.createExtendedStructOfPrimitives();
         // TODO
-        //fireBroadcastWithSingleStructParameter(extendedStructOfPrimitivesOut);
+        //fireBroadcastWithSingleStructParameter(extendedStructOfPrimitivesOut, partitions);
     }
 
     /*
      * methodToFireBroadcastWithMultipleStructParameters
      */
     @Override
-    public void methodToFireBroadcastWithMultipleStructParameters() {
+    public void methodToFireBroadcastWithMultipleStructParameters(String[] partitions) {
         logger.warn("**********************************************************************");
         logger.warn("* IltProvider.methodToFireBroadcastWithMultipleStructParameters called");
         logger.warn("**********************************************************************");
@@ -778,7 +1039,7 @@ public class IltProviderBean
         BaseStructWithoutElements baseStructWithoutElementsOut = IltUtil.createBaseStructWithoutElements();
         ExtendedExtendedBaseStruct extendedExtendedBaseStructOut = IltUtil.createExtendedExtendedBaseStruct();
         // TODO
-        //fireBroadcastWithMultipleStructParameters(baseStructWithoutElementsOut, extendedExtendedBaseStructOut);
+        //fireBroadcastWithMultipleStructParameters(baseStructWithoutElementsOut, extendedExtendedBaseStructOut, partitions);
     }
 
     /*
