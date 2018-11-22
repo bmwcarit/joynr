@@ -29,12 +29,13 @@ import org.apache.maven.plugin.MojoExecutionException;
  * Goal which generates the joynr interfaces and implementations.
  *
  * @goal generate
- * 
+ *
  * @phase process-sources
  */
 public class JoynGeneratorGenerateMojo extends AbstractJoynGeneratorMojo {
+    @Override
     public void execute() throws MojoExecutionException {
-        int executionHashCode = getParameterHashCode();
+        int executionHashCode = createInvocationArguments().getHashCodeForParameterCombination();
         String generationDonePropertyName = "generation.done.id[" + executionHashCode + "]";
         String generationAlreadyDone = project.getProperties().getProperty(generationDonePropertyName);
         if (Boolean.valueOf(generationAlreadyDone)) {

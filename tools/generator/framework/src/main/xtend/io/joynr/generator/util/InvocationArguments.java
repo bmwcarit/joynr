@@ -322,4 +322,22 @@ public class InvocationArguments {
         this.generationId = generationId;
     }
 
+    public int getHashCodeForParameterCombination() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(getModelPath());
+        sb.append(getRootGenerator());
+        sb.append(generationId);
+        sb.append(addVersionTo);
+        sb.append(outputPath);
+        if (parameter != null) {
+            for (Map.Entry<String, String> entry : parameter.entrySet()) {
+                sb.append(entry.getKey());
+                sb.append(entry.getValue());
+            }
+        }
+        sb.append(generate());
+        sb.append(clean());
+        return sb.toString().hashCode();
+    }
+
 }
