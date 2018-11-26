@@ -245,4 +245,16 @@ bool ImmutableMessage::isCustomHeaderKey(const std::string& key) const
     return boost::algorithm::starts_with(key, Message::CUSTOM_HEADER_PREFIX());
 }
 
+std::string ImmutableMessage::getTrackingInfo() const
+{
+    auto requestReplyId = getOptionalHeaderByKey(Message::CUSTOM_HEADER_PREFIX() +
+                                                 Message::CUSTOM_HEADER_REQUEST_REPLY_ID());
+    std::string trackingInfo = "messageId: " + getId() + ", type: " + getType() + ", sender: " +
+                               getSender() + ", recipient: " + getRecipient() +
+                               (requestReplyId ? ", requestReplyId: " + *requestReplyId : "") +
+                               ", expiryDate: " + std::to_string(getExpiryDate().toMilliseconds()) +
+                               ", size: " + std::to_string(getMessageSize());
+    return trackingInfo;
+}
+
 } // namespace joynr
