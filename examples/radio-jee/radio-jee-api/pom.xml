@@ -114,7 +114,7 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<dependencies>
 		<dependency>
 			<groupId>io.joynr.java</groupId>
-			<artifactId>jeeintegration</artifactId>
+			<artifactId>javaapi</artifactId>
 		</dependency>
 	</dependencies>
 
