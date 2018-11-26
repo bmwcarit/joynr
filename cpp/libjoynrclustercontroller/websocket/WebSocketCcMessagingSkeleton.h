@@ -347,21 +347,21 @@ private:
         JOYNR_LOG_DEBUG(logger(), "<<< INCOMING <<< {}", immutableMessage->toLogMessage());
 
         if (!preprocessIncomingMessage(immutableMessage)) {
-            JOYNR_LOG_ERROR(logger(), "Dropping message with ID {}", immutableMessage->getId());
+            JOYNR_LOG_ERROR(logger(), "Dropping message {}", immutableMessage->getTrackingInfo());
             return;
         }
 
         if (!validateIncomingMessage(hdl, immutableMessage)) {
-            JOYNR_LOG_ERROR(logger(), "Dropping message with ID {}", immutableMessage->getId());
+            JOYNR_LOG_ERROR(logger(), "Dropping message {}", immutableMessage->getTrackingInfo());
             return;
         }
 
-        auto onFailure = [messageId = immutableMessage->getId()](
+        auto onFailure = [trackingInfo = immutableMessage->getTrackingInfo()](
                 const exceptions::JoynrRuntimeException& e)
         {
             JOYNR_LOG_ERROR(logger(),
-                            "Incoming Message with ID {} could not be sent! reason: {}",
-                            messageId,
+                            "Incoming Message {} could not be sent! reason: {}",
+                            trackingInfo,
                             e.getMessage());
         };
         transmit(std::move(immutableMessage), std::move(onFailure));
