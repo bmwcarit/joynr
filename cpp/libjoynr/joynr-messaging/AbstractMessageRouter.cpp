@@ -183,11 +183,10 @@ void AbstractMessageRouter::checkExpiryDate(const ImmutableMessage& message)
 {
     const auto now = TimePoint::now();
     if (now > message.getExpiryDate()) {
-        const std::string errorMessage = fmt::format(
-                "Received expired message (now={}, expiryDate={}). Dropping the message (ID: {})",
-                now.toMilliseconds(),
-                message.getExpiryDate().toMilliseconds(),
-                message.getId());
+        const std::string errorMessage =
+                fmt::format("Received expired message (now={}). Dropping the message {}",
+                            now.toMilliseconds(),
+                            message.getTrackingInfo());
         JOYNR_LOG_WARN(logger(), errorMessage);
         throw exceptions::JoynrMessageNotSentException(errorMessage);
     }
@@ -209,7 +208,7 @@ void AbstractMessageRouter::registerGlobalRoutingEntryIfRequired(const Immutable
         boost::optional<std::string> optionalReplyTo = message.getReplyTo();
 
         if (!optionalReplyTo) {
-            std::string errorMessage("message " + message.getId() +
+            std::string errorMessage("message " + message.getTrackingInfo() +
                                      " did not contain replyTo header, discarding");
             JOYNR_LOG_ERROR(logger(), errorMessage);
             throw exceptions::JoynrMessageNotSentException(errorMessage);
@@ -301,8 +300,8 @@ void AbstractMessageRouter::sendMessages(
                     std::chrono::milliseconds(0));
         } catch (const exceptions::JoynrMessageNotSentException& e) {
             JOYNR_LOG_ERROR(logger(),
-                            "Message with Id {} could not be sent. Error: {}",
-                            item->getId(),
+                            "Message {} could not be sent. Error: {}",
+                            item->getTrackingInfo(),
                             e.getMessage());
         }
     }
@@ -322,7 +321,7 @@ void AbstractMessageRouter::scheduleMessage(
                 if (!transportStatus->isAvailable()) {
                     JOYNR_LOG_TRACE(logger(),
                                     "Transport not available. Message queued: {}",
-                                    message->toLogMessage());
+                                    message->getTrackingInfo());
 
                     transportNotAvailableQueue->queueMessage(transportStatus, std::move(message));
                     return;
@@ -341,11 +340,10 @@ void AbstractMessageRouter::scheduleMessage(
                                    delay);
     } else {
         JOYNR_LOG_WARN(logger(),
-                       "Message with id {} could not be sent to participantId {}, {}. Stub "
+                       "Message {} could not be sent to recipient, {}. Stub "
                        "creation failed. => Queueing "
                        "message.",
-                       message->getId(),
-                       message->getRecipient(),
+                       message->getTrackingInfo(),
                        destAddress->toString());
         ReadLocker lock(messageQueueRetryLock);
         // save the message for later delivery
@@ -403,8 +401,8 @@ void AbstractMessageRouter::rescheduleQueuedMessagesForTransport(
             route(nextImmutableMessage);
         } catch (const exceptions::JoynrRuntimeException& e) {
             JOYNR_LOG_DEBUG(logger(),
-                            "could not route queued message '{}' due to '{}'",
-                            nextImmutableMessage->toLogMessage(),
+                            "could not route queued message {} due to '{}'",
+                            nextImmutableMessage->getTrackingInfo(),
                             e.getMessage());
         }
     }
@@ -452,7 +450,7 @@ void AbstractMessageRouter::queueMessage(std::shared_ptr<ImmutableMessage> messa
                                          const ReadLocker& messageQueueRetryReadLock)
 {
     assert(messageQueueRetryReadLock.owns_lock());
-    JOYNR_LOG_TRACE(logger(), "message queued: {}", message->toLogMessage());
+    JOYNR_LOG_TRACE(logger(), "message queued: {}", message->getTrackingInfo());
     std::string recipient = message->getRecipient();
     messageQueue->queueMessage(std::move(recipient), std::move(message));
 }
@@ -597,9 +595,9 @@ void MessageRunnable::run()
                     if (auto messageRouterSharedPtr = thisSharedPtr->messageRouter.lock()) {
                         JOYNR_LOG_TRACE(
                                 logger(),
-                                "Rescheduling message after error: messageId: {}, new delay {}ms, "
+                                "Rescheduling message after error: message {}, new delay {}ms, "
                                 "reason: {}",
-                                thisSharedPtr->message->getId(),
+                                thisSharedPtr->message->getTrackingInfo(),
                                 delay.count(),
                                 e.getMessage());
                         messageRouterSharedPtr->scheduleMessage(thisSharedPtr->message,
@@ -607,16 +605,15 @@ void MessageRunnable::run()
                                                                 thisSharedPtr->tryCount + 1,
                                                                 delay);
                     } else {
-                        JOYNR_LOG_ERROR(
-                                logger(),
-                                "Message with ID {} could not be sent! reason: messageRouter "
-                                "not available",
-                                thisSharedPtr->message->getId());
+                        JOYNR_LOG_ERROR(logger(),
+                                        "Message {} could not be sent! reason: messageRouter "
+                                        "not available",
+                                        thisSharedPtr->message->getTrackingInfo());
                     }
                 } catch (const std::bad_cast&) {
                     JOYNR_LOG_ERROR(logger(),
-                                    "Message with ID {} could not be sent! reason: {}",
-                                    thisSharedPtr->message->getId(),
+                                    "Message {} could not be sent! reason: {}",
+                                    thisSharedPtr->message->getTrackingInfo(),
                                     e.getMessage());
                 }
             } else {
@@ -626,7 +623,7 @@ void MessageRunnable::run()
         };
         messagingStub->transmit(message, onFailure);
     } else {
-        JOYNR_LOG_ERROR(logger(), "Message with ID {}  expired: dropping!", message->getId());
+        JOYNR_LOG_ERROR(logger(), "Message {} expired: dropping!", message->getTrackingInfo());
     }
 }
 
