@@ -24,10 +24,14 @@ services:
   sit-jee-stateless-consumer-node-1:
     image: "sit-jee-stateless-consumer:latest"
     container_name: sit-jee-stateless-consumer-node-1
+    environment:
+      - RECEIVER_ID=stateless-cons-1
 
   sit-jee-stateless-consumer-node-2:
     image: "sit-jee-stateless-consumer:latest"
     container_name: sit-jee-stateless-consumer-node-2
+    environment:
+      - RECEIVER_ID=stateless-cons-2
 
   sit-controller:
     image: "sit-controller:latest"

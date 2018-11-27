@@ -18,11 +18,6 @@
  */
 package io.joynr.systemintegrationtest.jee;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.Base64;
 
 import javax.inject.Inject;
@@ -34,6 +29,8 @@ import javax.ws.rs.core.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.joynr.arbitration.ArbitrationConstants;
+import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.jeeintegration.api.ServiceLocator;
@@ -52,14 +49,13 @@ public class SitControllerConsumerRestEndpoint {
     private static final String SIT_DOMAIN_PREFIX = "io.joynr.systemintegrationtest";
     private static final String CONTROLLER_DOMAIN_PREFIX = SIT_DOMAIN_PREFIX + ".controller";
 
-    private static final String URL_JEE_STATELESS_ASYNC_CONSUMER_NODE_1 = "http://sit-jee-stateless-consumer-node-1:8080/sit-jee-stateless-consumer/sit-controller/";
-    private static final String URL_JEE_STATELESS_ASYNC_CONSUMER_NODE_2 = "http://sit-jee-stateless-consumer-node-2:8080/sit-jee-stateless-consumer/sit-controller/";
-    private static final String PATH_PING = "ping";
-    private static final int MAX_HTTP_CONNECT_ATTEMPTS = 30;
+    private static final String PARTICIPANT_ID_STATELESS_ASYNC_CONSUMER_NODE_1 = "sit-controller.stateless-cons-1";
+    private static final String PARTICIPANT_ID_STATELESS_ASYNC_CONSUMER_NODE_2 = "sit-controller.stateless-cons-2";
 
     private ServiceLocator serviceLocator;
 
     DiscoveryQos discoveryQos;
+    DiscoveryQos statelessAsyncDiscoveryQos;
     MessagingQos messagingQos;
 
     @Inject
@@ -69,15 +65,38 @@ public class SitControllerConsumerRestEndpoint {
         discoveryQos = new DiscoveryQos();
         discoveryQos.setDiscoveryTimeoutMs(120000); // 2 Minutes
         discoveryQos.setRetryIntervalMs(5000); // 2 seconds
-        messagingQos = new MessagingQos(60000); // 60 seconds
+
+        statelessAsyncDiscoveryQos = new DiscoveryQos();
+        statelessAsyncDiscoveryQos.setDiscoveryTimeoutMs(discoveryQos.getDiscoveryTimeoutMs());
+        statelessAsyncDiscoveryQos.setRetryIntervalMs(discoveryQos.getRetryIntervalMs());
+        statelessAsyncDiscoveryQos.setCacheMaxAgeMs(DiscoveryQos.NO_MAX_AGE); // use provisioned DiscoveryEntry
+        statelessAsyncDiscoveryQos.setArbitrationStrategy(ArbitrationStrategy.FixedChannel);
+
+        messagingQos = new MessagingQos(30000); // 30 seconds
     }
 
-    private void waitForJoynrEndpoint(String domain) {
+    private void waitForJoynrEndpoint(String domain, DiscoveryQos discoveryQos) {
+        waitForJoynrEndpoint(domain, discoveryQos, 1);
+    }
+
+    private void waitForJoynrEndpoint(String domain, DiscoveryQos discoveryQos, int tries) {
         SitControllerSync sitApp = serviceLocator.builder(SitControllerSync.class, domain)
                                                  .withDiscoveryQos(discoveryQos)
                                                  .withMessagingQos(messagingQos)
                                                  .build();
-        String result = sitApp.ping();
+        String result = "";
+        while (tries > 0) {
+            tries--;
+            try {
+                result = sitApp.ping();
+            } catch (Exception e) {
+                if (tries <= 0) {
+                    throw e;
+                }
+                logger.debug("Retry ping for domain " + domain + " after error: " + e);
+            }
+
+        }
         logger.info("waitForJoynrEndpoint " + domain + " returned: " + result);
         if (!"OK".equals(result)) {
             throw new JoynrIllegalStateException("Ping returned unexpected result: \"" + result + "\"");
@@ -89,96 +108,27 @@ public class SitControllerConsumerRestEndpoint {
     public String ping() {
         logger.info("ping called");
         try {
-            waitForJoynrEndpoint(CONTROLLER_DOMAIN_PREFIX + ".jee-app");
+            waitForJoynrEndpoint(CONTROLLER_DOMAIN_PREFIX + ".jee-app", discoveryQos);
         } catch (Exception e) {
             String errorMsg = "SIT RESULT error: sit-jee-app failed to start in time: " + e;
             logger.error(errorMsg);
             return errorMsg;
         }
         try {
-            waitForRestEndpoint("sit-jee-stateless-consumer-node-1",
-                                URL_JEE_STATELESS_ASYNC_CONSUMER_NODE_1 + PATH_PING);
-            waitForRestEndpoint("sit-jee-stateless-consumer-node-2",
-                                URL_JEE_STATELESS_ASYNC_CONSUMER_NODE_2 + PATH_PING);
+            // Retry ping 3 times because DiscoveryEntries of the clustered providers are provisioned
+            // (the providers might not yet be ready to handle the request)
+            statelessAsyncDiscoveryQos.addCustomParameter(ArbitrationConstants.FIXEDPARTICIPANT_KEYWORD,
+                                                          PARTICIPANT_ID_STATELESS_ASYNC_CONSUMER_NODE_1);
+            waitForJoynrEndpoint(CONTROLLER_DOMAIN_PREFIX + ".jee-stateless-consumer", statelessAsyncDiscoveryQos, 3);
+            statelessAsyncDiscoveryQos.addCustomParameter(ArbitrationConstants.FIXEDPARTICIPANT_KEYWORD,
+                                                          PARTICIPANT_ID_STATELESS_ASYNC_CONSUMER_NODE_2);
+            waitForJoynrEndpoint(CONTROLLER_DOMAIN_PREFIX + ".jee-stateless-consumer", statelessAsyncDiscoveryQos, 3);
         } catch (Exception e) {
             String errorMsg = "SIT RESULT error: sit-jee-stateless-async-consumer failed to start in time: " + e;
             logger.error(errorMsg);
             return errorMsg;
         }
         return "OK";
-    }
-
-    private void waitForRestEndpoint(String serviceName, String url) throws IOException, InterruptedException {
-        logger.info("waitForRestEndpoint called: " + url);
-        HttpURLConnection conn = null;
-        for (int i = 0; i < MAX_HTTP_CONNECT_ATTEMPTS; i++) {
-            conn = connectViaHttp(url);
-            int responseCode = conn.getResponseCode();
-            if (responseCode == HttpURLConnection.HTTP_OK) {
-                break;
-            } else if (i == MAX_HTTP_CONNECT_ATTEMPTS - 1) {
-                conn.disconnect();
-                throw new JoynrIllegalStateException("Unexpected response code from http request: " + url + ": "
-                        + responseCode);
-            }
-            conn.disconnect();
-            logger.info(serviceName + ": ping not started yet ... (response code: " + responseCode + ")");
-            Thread.sleep(2000);
-        }
-
-        BufferedReader response = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-        int responseLength = 0;
-        String line;
-        while ((line = response.readLine()) != null) {
-            responseLength += line.length();
-            logger.info("waitForRestEndpoint " + url + " returned: " + line);
-        }
-
-        response.close();
-        conn.disconnect();
-
-        if (responseLength <= 0) {
-            throw new JoynrIllegalStateException("Unable to read response from http request: " + url
-                    + ": reponse length: " + responseLength);
-        }
-        logger.info("waitForRestEndpoint done: " + url);
-    }
-
-    private HttpURLConnection connectViaHttp(String url) throws IOException {
-        HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
-        conn.setRequestMethod("GET");
-        conn.connect();
-        return conn;
-    }
-
-    private void getResultViaHttp(String url, StringBuffer result, String resultPrefix) throws IOException {
-        logger.info("getResultViaHttp called: " + url);
-        HttpURLConnection conn = connectViaHttp(url);
-
-        int responseCode = conn.getResponseCode();
-        if (responseCode != HttpURLConnection.HTTP_OK) {
-            conn.disconnect();
-            throw new JoynrIllegalStateException("Unexpected response code from http request: " + url + ": "
-                    + responseCode);
-        }
-
-        BufferedReader response = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-        int responseLengthBefore = result.length();
-        response.lines().forEach(line -> {
-            result.append("\n").append(resultPrefix);
-            if (line != null && line.contains("SIT RESULT")) {
-                result.append(line);
-            } else {
-                result.append("SIT RESULT error: result line does not contain \"SIT RESULT\": " + line);
-            }
-        });
-
-        response.close();
-        conn.disconnect();
-
-        if (responseLengthBefore == result.length()) {
-            throw new JoynrIllegalStateException("Response from http request is empty: : " + url);
-        }
     }
 
     @GET
@@ -201,21 +151,34 @@ public class SitControllerConsumerRestEndpoint {
         }
 
         try {
-            SitControllerSync sitControllerJeeStatelessAsync = serviceLocator.builder(SitControllerSync.class,
-                                                                                      CONTROLLER_DOMAIN_PREFIX
-                                                                                              + ".jee-stateless-consumer")
-                                                                             .withDiscoveryQos(discoveryQos)
-                                                                             .withMessagingQos(messagingQos)
-                                                                             .build();
-            result.append(sitControllerJeeStatelessAsync.triggerTests());
+            statelessAsyncDiscoveryQos.addCustomParameter(ArbitrationConstants.FIXEDPARTICIPANT_KEYWORD,
+                                                          PARTICIPANT_ID_STATELESS_ASYNC_CONSUMER_NODE_1);
+            SitControllerSync sitControllerJeeStatelessAsyncNode1 = serviceLocator.builder(SitControllerSync.class,
+                                                                                           CONTROLLER_DOMAIN_PREFIX
+                                                                                                   + ".jee-stateless-consumer")
+                                                                                  .withDiscoveryQos(statelessAsyncDiscoveryQos)
+                                                                                  .withMessagingQos(messagingQos)
+                                                                                  .build();
 
-            String urlNode1 = "http://sit-jee-stateless-consumer-node-1:8080/sit-jee-stateless-consumer/sit-controller/result";
-            String resultPrefix = "sit-jee-stateless-consumer-node-1: ";
-            getResultViaHttp(urlNode1, result, resultPrefix);
+            statelessAsyncDiscoveryQos.addCustomParameter(ArbitrationConstants.FIXEDPARTICIPANT_KEYWORD,
+                                                          PARTICIPANT_ID_STATELESS_ASYNC_CONSUMER_NODE_2);
+            SitControllerSync sitControllerJeeStatelessAsyncNode2 = serviceLocator.builder(SitControllerSync.class,
+                                                                                           CONTROLLER_DOMAIN_PREFIX
+                                                                                                   + ".jee-stateless-consumer")
+                                                                                  .withDiscoveryQos(statelessAsyncDiscoveryQos)
+                                                                                  .withMessagingQos(messagingQos)
+                                                                                  .build();
 
-            String urlNode2 = "http://sit-jee-stateless-consumer-node-2:8080/sit-jee-stateless-consumer/sit-controller/result";
-            resultPrefix = "sit-jee-stateless-consumer-node-2: ";
-            getResultViaHttp(urlNode2, result, resultPrefix);
+            result.append(sitControllerJeeStatelessAsyncNode1.triggerTests());
+
+            result.append(new String(Base64.getDecoder()
+                                           .decode(sitControllerJeeStatelessAsyncNode1.waitForStatelessResult(60000)
+                                                                                      .getBytes())));
+            result.append("\n");
+            result.append(new String(Base64.getDecoder()
+                                           .decode(sitControllerJeeStatelessAsyncNode2.waitForStatelessResult(60000)
+                                                                                      .getBytes())));
+            result.append("\n");
         } catch (Exception e) {
             String errorMsg = "SIT RESULT error: triggerTests of sit-jee-stateless-consumer failed: " + e;
             logger.error(errorMsg);

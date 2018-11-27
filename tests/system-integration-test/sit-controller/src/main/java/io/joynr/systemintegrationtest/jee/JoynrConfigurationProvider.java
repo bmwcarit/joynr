@@ -26,6 +26,7 @@ import javax.enterprise.inject.Produces;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.joynr.capabilities.StaticCapabilitiesProvisioning;
 import io.joynr.jeeintegration.api.JoynrLocalDomain;
 import io.joynr.jeeintegration.api.JoynrProperties;
 import io.joynr.messaging.MessagingPropertyKeys;
@@ -48,6 +49,9 @@ public class JoynrConfigurationProvider {
         joynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS, "false");
         joynrProperties.setProperty(MessagingPropertyKeys.DISCOVERYDIRECTORYURL, MQTT_BROKER_URI);
         joynrProperties.setProperty(MessagingPropertyKeys.DOMAINACCESSCONTROLLERURL, MQTT_BROKER_URI);
+
+        joynrProperties.setProperty(StaticCapabilitiesProvisioning.PROPERTY_PROVISIONED_CAPABILITIES_FILE,
+                                    "sit_provisioned_capabilities.json");
 
         return joynrProperties;
     }
