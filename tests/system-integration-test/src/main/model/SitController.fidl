@@ -39,7 +39,7 @@ interface SitController {
 				@description: This string usually contains the result of the triggered test case.
 					The only exception is the stateless async test case. In this case, the output
 					string contains only the first part of the result string. The remaining result
-					string has to be collected via the waitForResult method.
+					string has to be collected via the waitForStatelessResult method.
 			**>
 			String output
 		}
@@ -48,7 +48,7 @@ interface SitController {
 	<**
 		@description: Method to get the results of the stateless async consumers.
 	**>
-	method waitForResult {
+	method waitForStatelessResult {
 		in {
 			Int32 timeoutMs
 		}

@@ -61,8 +61,8 @@ public class ControllerBean implements SitControllerSync {
     }
 
     @Override
-    public String waitForResult(Integer timeoutMs) {
-        String errorMsg = "SIT RESULT error: waitForResult NOT IMPLEMENTED";
+    public String waitForStatelessResult(Integer timeoutMs) {
+        String errorMsg = "SIT RESULT error: waitForStatelessResult NOT IMPLEMENTED";
         logger.error(errorMsg);
         return errorMsg;
     }

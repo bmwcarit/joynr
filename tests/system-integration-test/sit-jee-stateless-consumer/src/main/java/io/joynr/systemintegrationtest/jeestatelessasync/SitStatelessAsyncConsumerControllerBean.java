@@ -75,8 +75,8 @@ public class SitStatelessAsyncConsumerControllerBean implements SitControllerSyn
     }
 
     @Override
-    public String waitForResult(Integer timeoutMs) {
-        logger.info("waitForResult called");
+    public String waitForStatelessResult(Integer timeoutMs) {
+        logger.info("waitForStatelessResult called");
         try {
             return resultQueue.getResult(timeoutMs);
         } catch (Exception e) {

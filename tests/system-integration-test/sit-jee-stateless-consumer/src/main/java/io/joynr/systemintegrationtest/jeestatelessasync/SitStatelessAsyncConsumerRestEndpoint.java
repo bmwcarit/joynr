@@ -51,8 +51,8 @@ public class SitStatelessAsyncConsumerRestEndpoint {
 
     @GET
     @Path("/result")
-    public String waitForResult(@DefaultValue("60000") @QueryParam("timeoutMs") int timeoutMs) {
-        return sitControllerProviderBean.waitForResult(timeoutMs);
+    public String waitForStatelessResult(@DefaultValue("60000") @QueryParam("timeoutMs") int timeoutMs) {
+        return sitControllerProviderBean.waitForStatelessResult(timeoutMs);
     }
 
     @GET
