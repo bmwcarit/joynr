@@ -63,7 +63,7 @@ This project has dependencies to:
   io.joynr.smrf.java:smrf-api under The Apache Software License, Version 2.0
   JACC 1.4 API under lgpl
   Jackson under The Apache Software License, Version 2.0
-  Jackson module: JAXB-annotations under The Apache Software License, Version 2.0
+  Jackson module: JAXB Annotations under The Apache Software License, Version 2.0
   Jackson-annotations under The Apache Software License, Version 2.0
   Jackson-core under The Apache Software License, Version 2.0
   jackson-databind under The Apache Software License, Version 2.0

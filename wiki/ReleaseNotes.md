@@ -13,6 +13,7 @@ the versioning scheme [here](JoynrVersioning.md).
   ParticipantIdStorage now also stores major versions of providers.
 * **[Java, JEE]** Provided an example for the usage of the message persistence feature. Check the
   `examples/message-persistence/` folder.
+* **[Java]** Update jackson to version 2.9.7
 
 ## Configuration property changes
 None.

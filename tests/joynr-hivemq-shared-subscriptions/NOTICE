@@ -55,7 +55,7 @@ This project has dependencies to:
   io.joynr.tests.joynr-hivemq-shared-subscriptions.test-apps:sharedsubscriptions-test-ping-service-api under The Apache Software License, Version 2.0
   io.joynr.tests.joynr-hivemq-shared-subscriptions:test-apps under The Apache Software License, Version 2.0
   io.joynr.tests:joynr-hivemq-shared-subscriptions under The Apache Software License, Version 2.0
-  Jackson module: JAXB-annotations under The Apache Software License, Version 2.0
+  Jackson module: JAXB Annotations under The Apache Software License, Version 2.0
   Jackson-annotations under The Apache Software License, Version 2.0
   Jackson-core under The Apache Software License, Version 2.0
   jackson-databind under The Apache Software License, Version 2.0
