@@ -32,6 +32,7 @@ import com.google.inject.util.Modules;
 import io.joynr.examples.messagepersistence.SimpleFileBasedMessagePersister;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.messaging.mqtt.MqttModule;
 import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
 import io.joynr.messaging.persistence.MessagePersister;
 import io.joynr.runtime.CCInProcessRuntimeModule;
@@ -46,7 +47,7 @@ public class Bootstrap {
         logger.info("Starting java provider application ...");
 
         Properties joynrProperties = new Properties();
-        joynrProperties.put("joynr.messaging.mqtt.brokerUri", "tcp://localhost:1883");
+        joynrProperties.put(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "tcp://localhost:1883");
         joynrProperties.put(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
         joynrProperties.setProperty(MessagingPropertyKeys.PERSISTENCE_FILE, "java-application-joynr.properties");
         joynrProperties.setProperty(PROPERTY_JOYNR_DOMAIN_LOCAL, "io.joynr.examples.messagepersistence");

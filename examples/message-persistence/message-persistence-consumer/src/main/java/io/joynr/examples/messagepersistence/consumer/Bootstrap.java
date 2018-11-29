@@ -43,7 +43,7 @@ public class Bootstrap {
         logger.info("Starting consumer ...");
 
         Properties joynrProperties = new Properties();
-        joynrProperties.put("joynr.messaging.mqtt.brokerUri", "tcp://localhost:1883");
+        joynrProperties.put(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "tcp://localhost:1883");
         joynrProperties.setProperty(MessagingPropertyKeys.PERSISTENCE_FILE, "consumer-joynr.properties");
         joynrProperties.setProperty(PROPERTY_JOYNR_DOMAIN_LOCAL, "message_persistence_consumer_local_domain");
         joynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_MAX_MSGS_INFLIGHT, "100");
