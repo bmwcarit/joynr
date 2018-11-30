@@ -287,7 +287,6 @@ void AbstractMessageRouter::sendMessages(
         }
 
         std::shared_ptr<ImmutableMessage> item(messageQueue->getNextMessageFor(destinationPartId));
-
         if (!item) {
             break;
         }
@@ -298,6 +297,7 @@ void AbstractMessageRouter::sendMessages(
                     std::make_shared<MessageRunnable>(
                             item, std::move(messagingStub), address, shared_from_this(), tryCount),
                     std::chrono::milliseconds(0));
+            JOYNR_LOG_INFO(logger(), "Rescheduled message {}", item->getTrackingInfo());
         } catch (const exceptions::JoynrMessageNotSentException& e) {
             JOYNR_LOG_ERROR(logger(),
                             "Message {} could not be sent. Error: {}",
