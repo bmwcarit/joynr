@@ -199,16 +199,12 @@ void LocalCapabilitiesDirectory::addInternal(
             if (awaitGlobalRegistration && onError) {
                 // no need to remove entry as in this case the entry was not yet added
                 onError(exceptions::ProviderRuntimeException(error.getMessage()));
-            } else {
-                // remove entry
-                if (auto thisSharedPtr = thisWeakPtr.lock()) {
-                    const bool removeGlobally = false;
-                    const bool removeFromGlobalLookupCache = true;
-                    thisSharedPtr->remove(globalDiscoveryEntry.getParticipantId(),
-                                          removeGlobally,
-                                          removeFromGlobalLookupCache);
-                }
             }
+            // in case awaitGlobalRegistration == false, the provider discovery
+            // entry will not be deleted, so the provider continues to be available
+            // locally, even if this makes little sense except for testing purposes.
+            // It will never be informed about the failure to be registered globally
+            // since it already got a reply after the local registration succeeded.
         };
 
         std::function<void()> onSuccessWrapper = [
