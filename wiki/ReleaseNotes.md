@@ -2,6 +2,21 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.6.3
+
+## API relevant changes
+None.
+
+## Other changes
+* **[C++]** MQTT connection will not be attempted if MQTT TLS is enabled, but TLS certificates
+  do not exist or are inaccessible or TLS options cannot be set.
+
+## Configuration property changes
+None.
+
+## Other changes
+None.
+
 # joynr 1.6.2
 
 ## API relevant changes
