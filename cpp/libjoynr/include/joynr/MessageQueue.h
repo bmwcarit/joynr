@@ -80,29 +80,27 @@ public:
         MessageQueueItem item;
         item.key = std::move(key);
         item.ttlAbsolute = message->getExpiryDate();
-        std::string recipient = message->getRecipient();
         item.message = std::move(message);
 
         std::lock_guard<std::mutex> lock(queueMutex);
         ensureFreeQueueSlot(item.key);
         if (!ensureFreeQueueBytes(item.message->getMessageSize())) {
             JOYNR_LOG_WARN(logger(),
-                           "queueMessage: messageSize {} exceeds messageQueueLimitBytes {}, "
-                           "discarding message with id {}. recipient {}; queueSize(bytes) = {}, "
+                           "queueMessage: messageSize exceeds messageQueueLimitBytes {}, "
+                           "discarding message {}; queueSize(bytes) = {}, "
                            "#msgs = {}",
-                           item.message->getMessageSize(),
                            messageQueueLimitBytes,
-                           item.message->getId(),
-                           recipient,
+                           item.message->getTrackingInfo(),
                            queueSizeBytes,
                            getQueueLengthUnlocked());
             return;
         }
         queueSizeBytes += item.message->getMessageSize();
+        std::string trackingInfo = item.message->getTrackingInfo();
         queue.insert(std::move(item));
         JOYNR_LOG_TRACE(logger(),
-                        "queueMessage: recipient {}, new queueSize(bytes) = {}, #msgs = {}",
-                        recipient,
+                        "queueMessage: message {}, new queueSize(bytes) = {}, #msgs = {}",
+                        trackingInfo,
                         queueSizeBytes,
                         getQueueLengthUnlocked());
     }
@@ -118,10 +116,9 @@ public:
             queueSizeBytes -= message->getMessageSize();
             queue.erase(queueElement);
             JOYNR_LOG_TRACE(logger(),
-                            "getNextMessageFor: message recipient {}, size {}, new "
+                            "getNextMessageFor: message {}, new "
                             "queueSize(bytes) = {}, #msgs = {}",
-                            message->getRecipient(),
-                            message->getMessageSize(),
+                            message->getTrackingInfo(),
                             queueSizeBytes,
                             getQueueLengthUnlocked());
             return message;
@@ -145,9 +142,8 @@ public:
         for (auto it = ttlIndex.begin(); it != onePastOutdatedMsgIt; ++it) {
             std::size_t msgSize = it->message->getMessageSize();
             JOYNR_LOG_INFO(logger(),
-                           "removeOutdatedMessages: Erasing expired message with id {} of size {}",
-                           it->message->getId(),
-                           msgSize);
+                           "removeOutdatedMessages: Erasing expired message {}",
+                           it->message->getTrackingInfo());
             queueSizeBytes -= msgSize;
             erasedBytes += msgSize;
             numberOfErasedMessages++;
@@ -262,10 +258,9 @@ private:
 
         if (numEntriesForKey >= perKeyMessageQueueLimit) {
             JOYNR_LOG_WARN(logger(),
-                           "Erasing message with id {} of size {} since key based queue limit of "
+                           "Erasing message {} since key based queue limit of "
                            "{} was reached",
-                           range.first->message->getId(),
-                           range.first->message->getMessageSize(),
+                           range.first->message->getTrackingInfo(),
                            perKeyMessageQueueLimit);
             queueSizeBytes -= range.first->message->getMessageSize();
             keyAndTtlIndex.erase(range.first);
@@ -285,10 +280,9 @@ private:
         assert(msgWithLowestTtl != ttlIndex.cend());
 
         JOYNR_LOG_WARN(logger(),
-                       "Erasing message with id {} of size {} since either generic queue limit of "
+                       "Erasing message {} since either generic queue limit of "
                        "{} messages or {} bytes was reached, #msgs = {}, queueSize(bytes) = {}",
-                       msgWithLowestTtl->message->getId(),
-                       msgWithLowestTtl->message->getMessageSize(),
+                       msgWithLowestTtl->message->getTrackingInfo(),
                        messageQueueLimit,
                        messageQueueLimitBytes,
                        queueLength,

@@ -112,6 +112,8 @@ public:
 
     const std::string& getCreator() const;
 
+    std::string getTrackingInfo() const;
+
     template <typename Archive>
     void save(Archive& archive)
     {
