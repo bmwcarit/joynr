@@ -15,7 +15,7 @@ mvn install -N
 )
 
 (
-  # Some maven plugins (e.g. findbugs and checkstyle) depend on build-resources.
+  # Some maven plugins (e.g. spotbugs and checkstyle) depend on build-resources.
   # Plugin dependencies are not resolved from the build reactor. Hence,
   # build resources must be installed first, so they could be resolved from
   # the local Maven repository.
@@ -24,7 +24,7 @@ mvn install -N
 )
 
 mvn install checkstyle:checkstyle \
--P findbugs,no-license-and-notice,no-java-formatter \
+-P spotbugs,no-license-and-notice,no-java-formatter \
 -DskipTests
 
 (

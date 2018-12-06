@@ -462,14 +462,9 @@
 				<version>7.0</version>
 			</dependency>
 			<dependency>
-				<groupId>com.google.code.findbugs</groupId>
-				<artifactId>jsr305</artifactId>
-				<version>3.0.2</version>
-			</dependency>
-			<dependency>
-				<groupId>com.google.code.findbugs</groupId>
-				<artifactId>annotations</artifactId>
-				<version>3.0.1</version>
+				<groupId>com.github.spotbugs</groupId>
+				<artifactId>spotbugs-annotations</artifactId>
+				<version>3.1.8</version>
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.jetty</groupId>
@@ -979,16 +974,16 @@
 					<version>1.4</version>
 				</plugin>
 				<plugin>
-					<groupId>org.codehaus.mojo</groupId>
-					<artifactId>findbugs-maven-plugin</artifactId>
-					<version>3.0.1</version>
+					<groupId>com.github.spotbugs</groupId>
+					<artifactId>spotbugs-maven-plugin</artifactId>
+					<version>3.1.8</version>
 					<configuration>
 						<failOnError>false</failOnError>
 						<threshold>Normal</threshold>
 						<effort>Default</effort>
 						<xmlOutput>true</xmlOutput>
-						<findbugsXmlOutput>true</findbugsXmlOutput>
-						<findbugsXmlWithMessages>true</findbugsXmlWithMessages>
+						<spotbugsXmlOutput>true</spotbugsXmlOutput>
+						<spotbugsXmlWithMessages>true</spotbugsXmlWithMessages>
 						<excludeFilterFile>findbugs/findbugs-exclude.xml</excludeFilterFile>
 					</configuration>
 					<executions>

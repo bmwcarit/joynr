@@ -35,12 +35,6 @@
 			<groupId>io.joynr.tools.generator</groupId>
 			<artifactId>generator-framework</artifactId>
 			<version>${project.version}</version>
-			<exclusions>
-				<exclusion>
-					<artifactId>jsr305</artifactId>
-					<groupId>com.google.code.findbugs</groupId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 	</dependencies>
 
