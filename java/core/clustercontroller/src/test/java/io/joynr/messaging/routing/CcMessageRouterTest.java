@@ -24,6 +24,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeast;
@@ -62,6 +64,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.Key;
 import com.google.inject.Module;
 import com.google.inject.Provides;
 import com.google.inject.TypeLiteral;
@@ -103,6 +106,7 @@ import joynr.Reply;
 import joynr.Request;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
+import joynr.system.RoutingTypes.MqttAddress;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CcMessageRouterTest {
@@ -137,6 +141,7 @@ public class CcMessageRouterTest {
     protected String fromParticipantId = "fromParticipantId";
 
     private Module testModule;
+    private Injector injector;
     private MutableMessageFactory messageFactory;
 
     @Before
@@ -211,7 +216,7 @@ public class CcMessageRouterTest {
 
         testModule = Modules.override(mockModule).with(new TestGlobalAddressModule());
 
-        Injector injector = Guice.createInjector(testModule);
+        injector = Guice.createInjector(testModule);
         messageRouter = injector.getInstance(MessageRouter.class);
 
         ObjectMapper objectMapper = new ObjectMapper();
@@ -805,4 +810,51 @@ public class CcMessageRouterTest {
         assertTrue(semaphore.tryAcquire(100, TimeUnit.MILLISECONDS));
     }
 
+    @Test
+    public void testReplyToAddressOfGlobalRequestIsAddedToRoutingTable() throws Exception {
+        final ObjectMapper objectMapper = injector.getInstance(ObjectMapper.class);
+        final long routingTableGracePeriodMs = injector.getInstance(Key.get(Long.class,
+                                                                            Names.named(ConfigurableMessagingSettings.PROPERTY_ROUTING_TABLE_GRACE_PERIOD_MS)));
+
+        final String brokerUri = "testBrokerUri";
+        final String topic = "testTopic";
+        final MqttAddress replyToAddress = new MqttAddress(brokerUri, topic);
+        final String replyTo = objectMapper.writeValueAsString(replyToAddress);
+
+        joynrMessage.setReplyTo(replyTo);
+        ImmutableMessage immutableMessage = joynrMessage.getImmutableMessage();
+        immutableMessage.setReceivedFromGlobal(true);
+
+        messageRouter.route(immutableMessage);
+
+        verify(routingTable).put(fromParticipantId,
+                                 replyToAddress,
+                                 true,
+                                 joynrMessage.getTtlMs() + routingTableGracePeriodMs,
+                                 false,
+                                 false);
+    }
+
+    @Test
+    public void testReplyToAddressOfLocalRequestIsNotAddedToRoutingTable() throws Exception {
+        final ObjectMapper objectMapper = injector.getInstance(ObjectMapper.class);
+
+        final String brokerUri = "testBrokerUri";
+        final String topic = "testTopic";
+        final MqttAddress replyToAddress = new MqttAddress(brokerUri, topic);
+        final String replyTo = objectMapper.writeValueAsString(replyToAddress);
+
+        joynrMessage.setReplyTo(replyTo);
+        ImmutableMessage immutableMessage = joynrMessage.getImmutableMessage();
+        immutableMessage.setReceivedFromGlobal(false);
+
+        messageRouter.route(immutableMessage);
+
+        verify(routingTable, times(0)).put(eq(fromParticipantId),
+                                           eq(replyToAddress),
+                                           anyBoolean(),
+                                           anyLong(),
+                                           anyBoolean(),
+                                           anyBoolean());
+    }
 }
