@@ -70,13 +70,15 @@ public class MessageQueueTest {
 
     private String generatedMessageQueueId;
     private MessageQueue subject;
+    private long shutdownMaxTimeout;
 
     @Before
     public void setup() {
         generatedMessageQueueId = UUID.randomUUID().toString();
 
         // configure mocks
-        when(maxTimeoutHolderMock.getTimeout()).thenReturn(50L);
+        shutdownMaxTimeout = 50;
+        when(maxTimeoutHolderMock.getTimeout()).thenReturn(shutdownMaxTimeout);
 
         Set<DelayableImmutableMessage> mockedMessages = Stream.of(mockMessage2, mockMessage3).collect(toSet());
         when(messagePersisterMock.fetchAll(eq(generatedMessageQueueId))).thenReturn(mockedMessages);
@@ -127,8 +129,9 @@ public class MessageQueueTest {
             }
         }).start();
         Thread.sleep(5);
+        assertTrue("returned from poll before put", countDownLatch.getCount() > 0);
         subject.put(mockMessage);
-        countDownLatch.await();
+        assertTrue("poll did not return within 1 second", countDownLatch.await(1, TimeUnit.SECONDS));
 
         // Then I was returned the message I put
         assertEquals(1, resultContainer.size());
@@ -181,9 +184,9 @@ public class MessageQueueTest {
         subject.waitForQueueToDrain();
         long timeTaken = System.currentTimeMillis() - beforeStop;
 
-        // Then the operation blocked for max just over 50 millis
-        assertTrue("Expected stop to block for maximum of around 50ms. Actual: " + timeTaken,
-                   timeTaken >= 50 && timeTaken < 70);
+        // Then the operation blocked for max just over shutdownMaxTimeout millis
+        assertTrue("Expected stop to block for maximum of around " + shutdownMaxTimeout + "ms. Actual: " + timeTaken,
+                   timeTaken >= shutdownMaxTimeout && timeTaken < shutdownMaxTimeout + 20);
     }
 
     @Test
@@ -197,6 +200,23 @@ public class MessageQueueTest {
         verify(messagePersisterMock).persist(eq(generatedMessageQueueId), eq(mockMessage));
         // ... and the message was also added to the in-memory queue
         verify(delayQueue).put(eq(mockMessage));
+    }
+
+    @Test
+    public void testPollRemovesMessageFromDelayQueueAndMessagePersister() throws Exception {
+        // Given the MessageQueue and a mock message
+
+        // When we add a message to the MessageQueue
+        subject.put(mockMessage);
+        // and poll
+        final long timeOut = 1;
+        final TimeUnit timeUnit = TimeUnit.SECONDS;
+        subject.poll(timeOut, timeUnit);
+
+        // Then the message is removed from the message persister
+        verify(messagePersisterMock).remove(eq(generatedMessageQueueId), eq(mockMessage));
+        // ... and the in-memory queue is polled once for the message above and twice for the messages in the setup method
+        verify(delayQueue, times(3)).poll(timeOut, timeUnit);
     }
 
     @Test
