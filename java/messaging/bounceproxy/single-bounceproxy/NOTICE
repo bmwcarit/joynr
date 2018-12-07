@@ -33,6 +33,7 @@ This project has dependencies to:
   Common Annotations 1.1 API under lgpl
   Commons Codec under The Apache Software License, Version 2.0
   Commons Lang under The Apache Software License, Version 2.0
+  Commons Logging under The Apache Software License, Version 2.0
   Connector Architecture 1.5 API under lgpl
   Data Mapper for Jackson under The Apache Software License, Version 2.0
   EJB 3.1 API under lgpl
@@ -95,7 +96,6 @@ This project has dependencies to:
   JSR-181 Maintenance Release 1 under CDDL+GPLv2
   jsr311-api under CDDL License
   JUnit under Eclipse Public License 1.0
-  Logging under The Apache Software License, Version 2.0
   MIME streaming extension under CDDL 1.1 or GPL2 w/ CPE
   REST Assured under Apache 2.0
   rest-assured-common under Apache 2.0

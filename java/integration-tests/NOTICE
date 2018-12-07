@@ -18,7 +18,9 @@ under the License.
 This project has dependencies to:
   "Java Concurrency in Practice" book annotations under Creative Commons Attribution License
   AOP alliance under Public Domain
+  Apache Commons Codec under Apache License, Version 2.0
   Apache Commons Lang under Apache License, Version 2.0
+  Apache Commons Logging under The Apache Software License, Version 2.0
   Apache HttpClient under Apache License, Version 2.0
   Apache HttpClient Mime under Apache License, Version 2.0
   Apache HttpCore under Apache License, Version 2.0
@@ -27,7 +29,6 @@ This project has dependencies to:
   Apache Log4j SLF4J Binding under The Apache Software License, Version 2.0
   clustercontroller-inprocess-runtime under The Apache Software License, Version 2.0
   clustercontroller-websocket-runtime under The Apache Software License, Version 2.0
-  Commons Codec under The Apache Software License, Version 2.0
   Commons Collections under The Apache Software License, Version 2.0
   Commons IO under The Apache Software License, Version 2.0
   Commons Lang under The Apache Software License, Version 2.0
@@ -102,7 +103,6 @@ This project has dependencies to:
   jsr311-api under CDDL License
   JUnit under Eclipse Public License 1.0
   libjoynr-websocket-runtime under The Apache Software License, Version 2.0
-  Logging under The Apache Software License, Version 2.0
   Mockito under The MIT License
   Neko HTML under The Apache Software License, Version 2.0
   REST Assured under Apache 2.0

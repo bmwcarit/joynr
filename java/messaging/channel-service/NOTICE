@@ -28,6 +28,7 @@ This project has dependencies to:
   atmosphere-runtime under CDDL or Apache License 2.0
   Commons Codec under The Apache Software License, Version 2.0
   Commons Lang under The Apache Software License, Version 2.0
+  Commons Logging under The Apache Software License, Version 2.0
   Data Mapper for Jackson under The Apache Software License, Version 2.0
   FindBugs-Annotations under GNU Lesser Public License
   FindBugs-jsr305 under The Apache Software License, Version 2.0
@@ -73,7 +74,6 @@ This project has dependencies to:
   JSON.simple under The Apache Software License, Version 2.0
   jsr311-api under CDDL License
   JUnit under Eclipse Public License 1.0
-  Logging under The Apache Software License, Version 2.0
   Mockito under The MIT License
   REST Assured under Apache 2.0
   rest-assured-common under Apache 2.0

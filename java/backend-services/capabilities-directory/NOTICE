@@ -28,6 +28,7 @@ This project has dependencies to:
   clustercontroller-inprocess-runtime under The Apache Software License, Version 2.0
   Commons Codec under The Apache Software License, Version 2.0
   Commons Lang under The Apache Software License, Version 2.0
+  Commons Logging under The Apache Software License, Version 2.0
   Core Hibernate O/RM functionality under GNU Lesser General Public License
   dom4j under BSD License
   ehcache under The Apache Software License, Version 2.0
@@ -67,7 +68,6 @@ This project has dependencies to:
   javax.interceptor API under CDDL + GPLv2 with classpath exception
   JBoss Logging 3 under Apache License, version 2.0
   JUnit under Eclipse Public License 1.0
-  Logging under The Apache Software License, Version 2.0
   SLF4J API Module under MIT License
   SLF4J LOG4J-12 Binding under MIT License
   XML Commons External Components XML APIs under The Apache Software License, Version 2.0 or The SAX License or The W3C License

@@ -21,7 +21,9 @@ This project has dependencies to:
   android under Apache License, Version 2.0
   ant-launcher under Apache License, Version 2.0
   AOP alliance under Public Domain
+  Apache Commons Codec under Apache License, Version 2.0
   Apache Commons Lang under Apache License, Version 2.0
+  Apache Commons Logging under The Apache Software License, Version 2.0
   Apache HttpClient under Apache License, Version 2.0
   Apache HttpClient Mime under Apache License, Version 2.0
   Apache HttpCore under Apache License, Version 2.0
@@ -35,7 +37,6 @@ This project has dependencies to:
   Bouncy Castle Provider under Bouncy Castle Licence
   classworlds under BSD Style License
   clustercontroller-websocket-runtime under The Apache Software License, Version 2.0
-  Commons Codec under The Apache Software License, Version 2.0
   Commons Collections under The Apache Software License, Version 2.0
   Commons IO under The Apache Software License, Version 2.0
   Commons Lang under The Apache Software License, Version 2.0
@@ -106,7 +107,6 @@ This project has dependencies to:
   jsr311-api under CDDL License
   JUnit under Eclipse Public License 1.0
   libjoynr-websocket-runtime under The Apache Software License, Version 2.0
-  Logging under The Apache Software License, Version 2.0
   Maven Ant Tasks under The Apache Software License, Version 2.0
   Maven Artifact under The Apache Software License, Version 2.0
   Maven Artifact Manager under The Apache Software License, Version 2.0

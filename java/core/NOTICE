@@ -30,6 +30,7 @@ This project has dependencies to:
   clustercontroller-websocket-runtime under The Apache Software License, Version 2.0
   Commons Codec under The Apache Software License, Version 2.0
   Commons Lang under The Apache Software License, Version 2.0
+  Commons Logging under The Apache Software License, Version 2.0
   Data Mapper for Jackson under The Apache Software License, Version 2.0
   ehcache under The Apache Software License, Version 2.0
   FindBugs-Annotations under GNU Lesser Public License
@@ -84,7 +85,6 @@ This project has dependencies to:
   JSON.simple under The Apache Software License, Version 2.0
   JUnit under Eclipse Public License 1.0
   libjoynr-websocket-runtime under The Apache Software License, Version 2.0
-  Logging under The Apache Software License, Version 2.0
   Mockito under The MIT License
   Objenesis under MIT License
   REST Assured under Apache 2.0

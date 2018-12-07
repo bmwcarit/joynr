@@ -23,6 +23,7 @@ This project has dependencies to:
   clustercontroller-inprocess-runtime under The Apache Software License, Version 2.0
   Commons Codec under The Apache Software License, Version 2.0
   Commons Lang under The Apache Software License, Version 2.0
+  Commons Logging under The Apache Software License, Version 2.0
   ehcache under The Apache Software License, Version 2.0
   FindBugs-Annotations under GNU Lesser Public License
   FindBugs-jsr305 under The Apache Software License, Version 2.0
@@ -62,7 +63,6 @@ This project has dependencies to:
   JavaMail API under CDDL/GPLv2+CE
   javax.inject under The Apache Software License, Version 2.0
   JUnit under Eclipse Public License 1.0
-  Logging under The Apache Software License, Version 2.0
   PostgreSQL JDBC Driver - JDBC 4.2 under BSD-2-Clause
   SLF4J API Module under MIT License
   SLF4J JDK14 Binding under MIT License

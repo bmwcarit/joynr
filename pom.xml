@@ -489,11 +489,6 @@
 				<version>3.0.1</version>
 			</dependency>
 			<dependency>
-				<groupId>commons-logging</groupId>
-				<artifactId>commons-logging</artifactId>
-				<version>1.0.4</version>
-			</dependency>
-			<dependency>
 				<groupId>org.eclipse.jetty</groupId>
 				<artifactId>jetty-servlet</artifactId>
 				<version>${jetty.version}</version>
@@ -719,11 +714,6 @@
 				<!-- Needs to be the same version that REST Assured depends on -->
 				<version>2.1.2</version>
 				<scope>test</scope>
-			</dependency>
-			<dependency>
-				<groupId>commons-codec</groupId>
-				<artifactId>commons-codec</artifactId>
-				<version>1.4</version>
 			</dependency>
 			<dependency>
 				<groupId>javax.servlet</groupId>
