@@ -105,6 +105,7 @@ This project has dependencies to:
   Core Resource Management under Eclipse Public License
   Core Runtime under Eclipse Public License
   CSS Parser under GNU Lesser General Public License
+  custom-headers-backend-services under The Apache Software License, Version 2.0
   Data Mapper for Jackson under The Apache Software License, Version 2.0
   Default Plexus Container under Apache License, Version 2.0
   dom4j under BSD License
@@ -157,6 +158,10 @@ This project has dependencies to:
   io.joynr.examples.radio-jee:radio-jee-provider under The Apache Software License, Version 2.0
   io.joynr.examples:android-location-consumer under The Apache Software License, Version 2.0
   io.joynr.examples:android-location-provider under The Apache Software License, Version 2.0
+  io.joynr.examples:custom-headers under The Apache Software License, Version 2.0
+  io.joynr.examples:custom-headers-api under The Apache Software License, Version 2.0
+  io.joynr.examples:custom-headers-jee-consumer under The Apache Software License, Version 2.0
+  io.joynr.examples:custom-headers-jee-provider under The Apache Software License, Version 2.0
   io.joynr.examples:location-tester under The Apache Software License, Version 2.0
   io.joynr.examples:message-persistence under The Apache Software License, Version 2.0
   io.joynr.examples:message-persistence-consumer under The Apache Software License, Version 2.0
