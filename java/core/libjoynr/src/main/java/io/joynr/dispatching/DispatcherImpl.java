@@ -19,8 +19,10 @@
 package io.joynr.dispatching;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -253,7 +255,7 @@ public class DispatcherImpl implements Dispatcher {
                 MessagingQosEffort effort = getEffort(message);
                 final Request request = objectMapper.readValue(payload, Request.class);
                 request.setCreatorUserId(message.getCreatorUserId());
-                request.setContext(message.getContext());
+                request.setContext(createMessageContext(message));
                 logger.trace("Parsed request from message payload :" + payload);
                 handle(request,
                        message.getSender(),
@@ -265,7 +267,7 @@ public class DispatcherImpl implements Dispatcher {
             } else if (Message.VALUE_MESSAGE_TYPE_ONE_WAY.equals(type)) {
                 OneWayRequest oneWayRequest = objectMapper.readValue(payload, OneWayRequest.class);
                 oneWayRequest.setCreatorUserId(message.getCreatorUserId());
-                oneWayRequest.setContext(message.getContext());
+                oneWayRequest.setContext(createMessageContext(message));
                 logger.trace("Parsed one way request from message payload :" + payload);
                 handle(oneWayRequest, message.getRecipient(), expiryDate);
             } else if (Message.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST.equals(type)
@@ -295,6 +297,13 @@ public class DispatcherImpl implements Dispatcher {
                          e.getMessage());
             return;
         }
+    }
+
+    private Map<String, Serializable> createMessageContext(ImmutableMessage message) {
+        Map<String, Serializable> result = new HashMap<>();
+        result.putAll(message.getContext());
+        result.putAll(message.getCustomHeaders());
+        return result;
     }
 
     private void addStatelessCallback(ImmutableMessage message, Reply reply) {
