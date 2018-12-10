@@ -63,15 +63,17 @@ public class ConsumerApplication extends AbstractJoynrApplication {
             radioProxy.shuffleStations(new Callback<Void>() {
 
                 @Override
-                public void onFailure(JoynrRuntimeException runtimeException) {
+                public synchronized void onFailure(JoynrRuntimeException runtimeException) {
                     responsesCountDown.countDown();
-                    logger.error("Unexpected error", runtimeException);
+                    logger.error("Unexpected error (" + (NUM_REQUEST - responsesCountDown.getCount()) + "/"
+                            + NUM_REQUEST + ")", runtimeException);
                 }
 
                 @Override
-                public void onSuccess(Void result) {
+                public synchronized void onSuccess(Void result) {
                     responsesCountDown.countDown();
-                    logger.info("Shuffle stations call was successfully executed");
+                    logger.info("Shuffle stations call was successfully executed ("
+                            + (NUM_REQUEST - responsesCountDown.getCount()) + "/" + NUM_REQUEST + ")");
                 }
             });
         }
