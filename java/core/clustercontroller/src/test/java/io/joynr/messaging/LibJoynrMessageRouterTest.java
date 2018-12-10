@@ -87,6 +87,8 @@ public class LibJoynrMessageRouterTest {
     private ShutdownNotifier shutdownNotifier;
     @Mock
     private MessagePersister messagePersisterMock;
+    @Mock
+    RoutingTable routingTableMock;
 
     private MessageQueue messageQueue;
     private LibJoynrMessageRouter messageRouter;
@@ -115,7 +117,9 @@ public class LibJoynrMessageRouterTest {
         messageQueue = new MessageQueue(new DelayQueue<DelayableImmutableMessage>(),
                                         new MessageQueue.MaxTimeoutHolder(),
                                         UUID.randomUUID().toString(),
-                                        messagePersisterMock);
+                                        messagePersisterMock,
+                                        routingTableMock,
+                                        42);
 
         messageRouter = new LibJoynrMessageRouter(routingTable,
                                                   incomingAddress,

@@ -23,6 +23,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.anyBoolean;
+import static org.mockito.Mockito.anyLong;
+import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -42,10 +45,17 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.joynr.messaging.persistence.MessagePersister;
+import joynr.ImmutableMessage;
+import joynr.Message;
+import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.MqttAddress;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MessageQueueTest {
@@ -54,10 +64,16 @@ public class MessageQueueTest {
     private DelayableImmutableMessage mockMessage;
 
     @Mock
-    private DelayableImmutableMessage mockMessage2;
+    private DelayableImmutableMessage mockDelayableMessage2_multicast;
 
     @Mock
-    private DelayableImmutableMessage mockMessage3;
+    private ImmutableMessage mockImmutableMessage2_multicast;
+
+    @Mock
+    private DelayableImmutableMessage mockDelayableMessage3_request;
+
+    @Mock
+    private ImmutableMessage mockImmutableMessage3_request;
 
     @Mock
     private MessageQueue.MaxTimeoutHolder maxTimeoutHolderMock;
@@ -68,23 +84,48 @@ public class MessageQueueTest {
     @Mock
     private MessagePersister messagePersisterMock;
 
+    @Mock
+    RoutingTable routingTableMock;
+
     private String generatedMessageQueueId;
     private MessageQueue subject;
-    private long shutdownMaxTimeout;
+
+    private final long shutdownMaxTimeout = 50;
+    private final long routingTableGracePeriodMs = 42;
+    private final String sender = "fromParticipantId";
+    private final String brokerUri = "testBrokerUri";
+    private final String topic = "testTopic";
+    private final MqttAddress replyToAddress = new MqttAddress(brokerUri, topic);
 
     @Before
-    public void setup() {
+    public void setup() throws Exception {
         generatedMessageQueueId = UUID.randomUUID().toString();
 
         // configure mocks
-        shutdownMaxTimeout = 50;
         when(maxTimeoutHolderMock.getTimeout()).thenReturn(shutdownMaxTimeout);
 
-        Set<DelayableImmutableMessage> mockedMessages = Stream.of(mockMessage2, mockMessage3).collect(toSet());
+        Set<DelayableImmutableMessage> mockedMessages = Stream.of(mockDelayableMessage2_multicast,
+                                                                  mockDelayableMessage3_request)
+                                                              .collect(toSet());
         when(messagePersisterMock.fetchAll(eq(generatedMessageQueueId))).thenReturn(mockedMessages);
 
+        when(mockDelayableMessage2_multicast.getMessage()).thenReturn(mockImmutableMessage2_multicast);
+        when(mockDelayableMessage3_request.getMessage()).thenReturn(mockImmutableMessage3_request);
+
+        when(mockImmutableMessage2_multicast.getType()).thenReturn(Message.VALUE_MESSAGE_TYPE_MULTICAST);
+        when(mockImmutableMessage3_request.getType()).thenReturn(Message.VALUE_MESSAGE_TYPE_REQUEST);
+        ObjectMapper objectMapper = new ObjectMapper();
+        when(mockImmutableMessage3_request.getReplyTo()).thenReturn(objectMapper.writeValueAsString(replyToAddress));
+        when(mockImmutableMessage3_request.getTtlMs()).thenReturn(42l);
+        when(mockImmutableMessage3_request.getSender()).thenReturn(sender);
+
         // create test subject
-        subject = new MessageQueue(delayQueue, maxTimeoutHolderMock, generatedMessageQueueId, messagePersisterMock);
+        subject = new MessageQueue(delayQueue,
+                                   maxTimeoutHolderMock,
+                                   generatedMessageQueueId,
+                                   messagePersisterMock,
+                                   routingTableMock,
+                                   42);
         drainQueue();
     }
 
@@ -220,9 +261,8 @@ public class MessageQueueTest {
     }
 
     @Test
-    public void testMessagesFetchedFromPersistenceAndAddedToQueueOnStartup() {
+    public void testMessagesFetchedFromPersistenceAndAddedToQueueAndRoutingTableOnStartup() throws Exception {
         // Given a mocked MessagePersister and a set containing messages which is returned when fetching
-
         // When the MessageQueue is created (see the setup method)
 
         // Then the messages were fetched from the MessagePersistence
@@ -231,8 +271,23 @@ public class MessageQueueTest {
         ArgumentCaptor<DelayableImmutableMessage> argumentCaptor = ArgumentCaptor.forClass(DelayableImmutableMessage.class);
         verify(delayQueue, times(2)).put(argumentCaptor.capture());
         List<DelayableImmutableMessage> passedArguments = argumentCaptor.getAllValues();
-        assertTrue(passedArguments.contains(mockMessage2));
-        assertTrue(passedArguments.contains(mockMessage3));
+        assertEquals(2, passedArguments.size());
+        assertTrue(passedArguments.contains(mockDelayableMessage2_multicast));
+        assertTrue(passedArguments.contains(mockDelayableMessage3_request));
+
+        // ... and one routing entry is added (replyTo address of mockDelayableMessage3_request)
+        verify(routingTableMock).put(anyString(),
+                                     Mockito.any(Address.class),
+                                     anyBoolean(),
+                                     anyLong(),
+                                     anyBoolean(),
+                                     anyBoolean());
+        verify(routingTableMock).put(sender,
+                                     replyToAddress,
+                                     true,
+                                     mockImmutableMessage3_request.getTtlMs() + routingTableGracePeriodMs,
+                                     false,
+                                     false);
     }
 
 }

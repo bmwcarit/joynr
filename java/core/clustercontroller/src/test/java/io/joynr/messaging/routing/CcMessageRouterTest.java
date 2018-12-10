@@ -156,7 +156,9 @@ public class CcMessageRouterTest {
         messageQueue = spy(new MessageQueue(new DelayQueue<DelayableImmutableMessage>(),
                                             new MessageQueue.MaxTimeoutHolder(),
                                             UUID.randomUUID().toString(),
-                                            messagePersisterMock));
+                                            messagePersisterMock,
+                                            routingTable,
+                                            routingTableGracePeriodMs));
 
         when(middlewareMessagingStubFactoryMock.create(any(ChannelAddress.class))).thenReturn(messagingStubMock);
 
