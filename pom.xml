@@ -707,11 +707,6 @@
 				<version>1.9.5</version>
 			</dependency>
 			<dependency>
-				<groupId>commons-io</groupId>
-				<artifactId>commons-io</artifactId>
-				<version>2.4</version>
-			</dependency>
-			<dependency>
 				<groupId>org.franca</groupId>
 				<artifactId>org.franca.core.dsl</artifactId>
 				<version>${franca.version}</version>
