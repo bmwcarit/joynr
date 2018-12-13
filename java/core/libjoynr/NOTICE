@@ -51,16 +51,7 @@ This project has dependencies to:
   Jackson-annotations under The Apache Software License, Version 2.0
   Jackson-core under The Apache Software License, Version 2.0
   jackson-databind under The Apache Software License, Version 2.0
-  Java Servlet API under CDDL + GPLv2 with classpath exception
   javax.inject under The Apache Software License, Version 2.0
-  Jetty :: Http Utility under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
-  Jetty :: IO Utility under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
-  Jetty :: Security under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
-  Jetty :: Server Core under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
-  Jetty :: Servlet Handling under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
-  Jetty :: Utilities under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
-  Jetty :: Webapp Application Support under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
-  Jetty :: XML utilities under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   json-path under Apache 2.0
   JSON.simple under The Apache Software License, Version 2.0
   JUnit under Eclipse Public License 1.0

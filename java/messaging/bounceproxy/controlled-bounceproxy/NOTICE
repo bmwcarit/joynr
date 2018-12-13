@@ -67,14 +67,7 @@ This project has dependencies to:
   jersey-guice under CDDL 1.1 or GPL2 w/ CPE
   jersey-server under CDDL 1.1 or GPL2 w/ CPE
   jersey-servlet under CDDL 1.1 or GPL2 w/ CPE
-  Jetty :: Http Utility under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
-  Jetty :: IO Utility under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
-  Jetty :: Security under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
-  Jetty :: Server Core under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
-  Jetty :: Servlet Handling under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: Utilities under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
-  Jetty :: Webapp Application Support under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
-  Jetty :: XML utilities under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   json-path under Apache 2.0
   JSON.simple under The Apache Software License, Version 2.0
   jsr311-api under CDDL License
