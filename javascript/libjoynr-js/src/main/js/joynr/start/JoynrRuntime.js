@@ -53,6 +53,7 @@ const log = loggingManager.getLogger("joynr.start.JoynrRuntime");
 class JoynrRuntime {
     constructor() {
         this.shutdown = this.shutdown.bind(this);
+        this.terminateAllSubscriptions = this.terminateAllSubscriptions.bind(this);
 
         /**
          * @name JoynrRuntime#typeRegistry
@@ -268,6 +269,18 @@ class JoynrRuntime {
 
             DiscoveryQos.setDefaultSettings(discoveryQosSettings);
         }
+    }
+
+    /**
+     *  Sends subscriptionStop messages for all active subscriptions.
+     *
+     *  @param timeout {number} optional timeout defaulting to 0 = no timeout
+     *  @returns {Promise}
+     *  - resolved after all SubscriptionStop messages are sent.
+     *  - rejected in case of any issues or timeout occurs.
+     */
+    terminateAllSubscriptions(timeout = 0) {
+        return this._subscriptionManager.terminateSubscriptions(timeout);
     }
 
     /**

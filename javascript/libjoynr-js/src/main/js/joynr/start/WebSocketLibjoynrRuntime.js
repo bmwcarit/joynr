@@ -267,6 +267,19 @@ class WebSocketLibjoynrRuntime extends JoynrRuntime {
     }
 
     /**
+     *  Sends subscriptionStop messages for all active subscriptions.
+     *
+     *  @param timeout {number} optional timeout defaulting to 0 = no timeout
+     *  @returns {Promise}
+     *  - resolved after all SubscriptionStop messages are sent.
+     *  - rejected in case of any issues or timeout occurs.
+     */
+    terminateAllSubscriptions(timeout = 0) {
+        this._sharedWebSocket.enableShutdownMode();
+        return super.terminateSubscriptions(timeout);
+    }
+
+    /**
      * Shuts down libjoynr
      *
      * @name WebSocketLibjoynrRuntime#shutdown

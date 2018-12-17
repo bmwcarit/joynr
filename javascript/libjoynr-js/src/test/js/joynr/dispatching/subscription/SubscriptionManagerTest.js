@@ -996,6 +996,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", () =>
             selective: false
         });
         const clearSubscriptionsTimeoutMs = 1000;
+        const DEFAULT_TTL = 60000;
 
         await subscriptionManager.registerSubscription(subscriptionSettings);
         await subscriptionManager.registerBroadcastSubscription(broadcastSettings);
@@ -1005,10 +1006,10 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", () =>
         expect(dispatcherSpy.sendSubscriptionStop).toHaveBeenCalled();
         expect(dispatcherSpy.sendSubscriptionStop.calls.count()).toEqual(1);
         expect(dispatcherSpy.sendSubscriptionStop.calls.argsFor(0)[0].messagingQos).toEqual(
-            new MessagingQos({ ttl: clearSubscriptionsTimeoutMs })
+            new MessagingQos({ ttl: DEFAULT_TTL })
         );
         expect(dispatcherSpy.sendMulticastSubscriptionStop.calls.argsFor(0)[0].messagingQos).toEqual(
-            new MessagingQos({ ttl: clearSubscriptionsTimeoutMs })
+            new MessagingQos({ ttl: DEFAULT_TTL })
         );
         expect(dispatcherSpy.sendMulticastSubscriptionStop.calls.count()).toEqual(1);
     });
