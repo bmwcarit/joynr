@@ -419,7 +419,6 @@
 		<hibernate.version>4.3.8.Final</hibernate.version>
 		<android.platform.version>8.0.0_r2</android.platform.version>
 		<android.platform.level>26</android.platform.level>
-		<javassist.version>3.22.0-GA</javassist.version>
 		<skipTests>true</skipTests>
 		<franca.version>0.13.0</franca.version>
 		<xtend.version>2.16.0</xtend.version>
@@ -450,17 +449,6 @@
 						<groupId>xerces</groupId>
 					</exclusion>
 				</exclusions>
-			</dependency>
-			<dependency>
-				<groupId>org.javassist</groupId>
-				<artifactId>javassist</artifactId>
-				<version>${javassist.version}</version>
-				<classifier>sources</classifier>
-			</dependency>
-			<dependency>
-				<groupId>org.javassist</groupId>
-				<artifactId>javassist</artifactId>
-				<version>${javassist.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>junit</groupId>
