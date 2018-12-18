@@ -52,6 +52,7 @@ const log = loggingManager.getLogger("joynr.start.JoynrRuntime");
 
 class JoynrRuntime {
     constructor() {
+        // all methods apart from start need to be bound here.
         this.shutdown = this.shutdown.bind(this);
         this.terminateAllSubscriptions = this.terminateAllSubscriptions.bind(this);
 
