@@ -281,11 +281,14 @@ class WebSocketLibjoynrRuntime extends JoynrRuntime {
 
     /**
      * Shuts down libjoynr
+     * @param settings.clearSubscriptionsTimeoutMs {number} time in ms till clearSubscriptionsPromise will be rejected
+     *  if it's not resolved yet
+     * @param settings.clearSubscriptionsEnabled {boolean} clear all subscriptions before shutting down.
+     *  Set this to false in process.exit handler as this is not synchronous.
      *
-     * @name WebSocketLibjoynrRuntime#shutdown
-     * @function
-     * @throws {Error}
-     *             if libjoynr is not in the STARTED state
+     * @returns {Promise}
+     * - resolved after successful shutdown
+     * - rejected in case of any issues
      */
     async shutdown(settings) {
         if (this._sharedWebSocket) {

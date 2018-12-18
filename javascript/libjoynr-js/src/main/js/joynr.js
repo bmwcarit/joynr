@@ -106,7 +106,7 @@ const joynr = {
                 if (typeof process === "object" && typeof process.on === "function") {
                     process.on("exit", () => {
                         try {
-                            joynr.shutdown();
+                            joynr.shutdown({ clearSubscriptionsEnabled: false });
                         } catch (error) {
                             // ignore
                         }

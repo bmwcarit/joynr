@@ -285,13 +285,16 @@ class JoynrRuntime {
 
     /**
      * Shuts down libjoynr
+     * @param settings.clearSubscriptionsTimeoutMs {number} time in ms till clearSubscriptionsPromise will be rejected
+     *  if it's not resolved yet
+     * @param settings.clearSubscriptionsEnabled {boolean} clear all subscriptions before shutting down.
+     *  Set this to false in process.exit handler as this is not synchronous.
      *
-     * @name JoynrRuntime#shutdown
-     * @function
-     * @throws {Error}
-     *             if libjoynr is not in the STARTED state
+     * @returns {Promise}
+     * - resolved after successful shutdown
+     * - rejected in case of any issues
      */
-    shutdown(settings) {
+    async shutdown(settings) {
         if (this._joynrState !== JoynrStates.STARTED && this._joynrState !== JoynrStates.STARTING) {
             throw new Error(`Cannot shutdown libjoynr because it's currently "${this._joynrState}"`);
         }
@@ -307,7 +310,11 @@ class JoynrRuntime {
         );
 
         if (shutdownSettings.clearSubscriptionsEnabled) {
-            this._subscriptionManager.terminateSubscriptions(shutdownSettings.clearSubscriptionsTimeoutMs);
+            await this._subscriptionManager
+                .terminateSubscriptions(shutdownSettings.clearSubscriptionsTimeoutMs)
+                .catch(e => {
+                    log.error(`could not shutdown joynr in time due to ${e}`);
+                });
         }
 
         if (this.registration !== null) {

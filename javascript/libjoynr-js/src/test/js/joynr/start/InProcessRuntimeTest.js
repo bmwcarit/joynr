@@ -98,16 +98,11 @@ describe("libjoynr-js.joynr.start.TestInProcessRuntime", () => {
             .catch(() => done());
     });
 
-    it("throws when shutdown in state SHUTDOWN", done => {
-        startInProcessRuntime()
+    it("throws when shutdown in state SHUTDOWN", () => {
+        return startInProcessRuntime()
             .then(shutdownInProcessRuntime)
             .then(() => {
-                expect(() => {
-                    runtime.shutdown();
-                }).toThrow();
-                done();
-                return null;
-            })
-            .catch(fail);
+                return runtime.shutdown().then(fail, () => {});
+            });
     });
 });
