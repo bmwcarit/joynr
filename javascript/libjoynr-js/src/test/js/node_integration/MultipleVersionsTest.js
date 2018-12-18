@@ -1,3 +1,5 @@
+/*eslint-disable */
+
 /*
  * #%L
  * %%
@@ -16,65 +18,24 @@
  * limitations under the License.
  * #L%
  */
-const RequireUtil = require("./RequireUtil");
-
-let IntegrationUtils;
-let MultipleVersionsInterfaceProviderNameVersion1;
-let MultipleVersionsInterfaceProviderNameVersion2;
-let MultipleVersionsInterfaceProviderPackageVersion1;
-let MultipleVersionsInterfaceProviderPackageVersion2;
-let MultipleVersionsInterfaceProviderUnversioned;
-let MultipleVersionsInterfaceProxyNameVersion1;
-let MultipleVersionsInterfaceProxyNameVersion2;
-let MultipleVersionsInterfaceProxyPackageVersion2;
-let ProviderImplementation;
-let provisioning;
-let joynr;
+let IntegrationUtils = require("./IntegrationUtils");
+let MultipleVersionsInterfaceProviderNameVersion1 = require("../../generated/joynr/tests/MultipleVersionsInterface1Provider");
+let MultipleVersionsInterfaceProviderNameVersion2 = require("../../generated/joynr/tests/MultipleVersionsInterface2Provider");
+let MultipleVersionsInterfaceProviderPackageVersion1 = require("../../generated/joynr/tests/v1/MultipleVersionsInterfaceProvider");
+let MultipleVersionsInterfaceProviderPackageVersion2 = require("../../generated/joynr/tests/v2/MultipleVersionsInterfaceProvider");
+let MultipleVersionsInterfaceProviderUnversioned = require("../../generated/joynr/tests/MultipleVersionsInterfaceProvider");
+let MultipleVersionsInterfaceProxyNameVersion1 = require("../../generated/joynr/tests/MultipleVersionsInterface1Proxy");
+let MultipleVersionsInterfaceProxyNameVersion2 = require("../../generated/joynr/tests/MultipleVersionsInterface2Proxy");
+let MultipleVersionsInterfaceProxyPackageVersion2 = require("../../generated/joynr/tests/v2/MultipleVersionsInterfaceProxy");
+let ProviderImplementation = require("./MultipleVersionsInterfaceProviderImplementation");
+let provisioning = require("../../resources/joynr/provisioning/provisioning_cc.js");
 
 const domain = "MultipleVersionsTestDomain";
-const requirePaths = new Map([
-    ["IntegrationUtils", require.resolve("./IntegrationUtils")],
-    [
-        "MultipleVersionsInterfaceProviderNameVersion1",
-        require.resolve("../../generated/joynr/tests/MultipleVersionsInterface1Provider")
-    ],
-    [
-        "MultipleVersionsInterfaceProviderNameVersion2",
-        require.resolve("../../generated/joynr/tests/MultipleVersionsInterface2Provider")
-    ],
-    [
-        "MultipleVersionsInterfaceProviderPackageVersion1",
-        require.resolve("../../generated/joynr/tests/v1/MultipleVersionsInterfaceProvider")
-    ],
-    [
-        "MultipleVersionsInterfaceProviderPackageVersion2",
-        require.resolve("../../generated/joynr/tests/v2/MultipleVersionsInterfaceProvider")
-    ],
-    [
-        "MultipleVersionsInterfaceProviderUnversioned",
-        require.resolve("../../generated/joynr/tests/MultipleVersionsInterfaceProvider")
-    ],
-    [
-        "MultipleVersionsInterfaceProxyNameVersion1",
-        require.resolve("../../generated/joynr/tests/MultipleVersionsInterface1Proxy")
-    ],
-    [
-        "MultipleVersionsInterfaceProxyNameVersion2",
-        require.resolve("../../generated/joynr/tests/MultipleVersionsInterface2Proxy")
-    ],
-    [
-        "MultipleVersionsInterfaceProxyPackageVersion2",
-        require.resolve("../../generated/joynr/tests/v2/MultipleVersionsInterfaceProxy")
-    ],
-    ["ProviderImplementation", require.resolve("./MultipleVersionsInterfaceProviderImplementation")],
-    ["provisioning", require.resolve("../../resources/joynr/provisioning/provisioning_cc.js")],
-    ["joynr", require.resolve("joynr")]
-]);
+let joynr = require("joynr");
 
 describe("libjoynr-js.integration.MultipleVersionsTest", () => {
     beforeEach(async () => {
-        eval(RequireUtil.safeRequire(requirePaths));
-
+        joynr.loaded = false;
         joynr.selectRuntime("inprocess");
         await joynr.load(provisioning);
     });
@@ -82,7 +43,20 @@ describe("libjoynr-js.integration.MultipleVersionsTest", () => {
     afterEach(async () => {
         await joynr.shutdown();
 
-        RequireUtil.deleteFromCache(requirePaths);
+        delete require.cache;
+        // remove old joynr exit handler
+        process.removeAllListeners("exit");
+
+        // rerequire moduls
+        MultipleVersionsInterfaceProviderNameVersion1 = require("../../generated/joynr/tests/MultipleVersionsInterface1Provider");
+        MultipleVersionsInterfaceProviderNameVersion2 = require("../../generated/joynr/tests/MultipleVersionsInterface2Provider");
+        MultipleVersionsInterfaceProviderPackageVersion1 = require("../../generated/joynr/tests/v1/MultipleVersionsInterfaceProvider");
+        MultipleVersionsInterfaceProviderPackageVersion2 = require("../../generated/joynr/tests/v2/MultipleVersionsInterfaceProvider");
+        MultipleVersionsInterfaceProviderUnversioned = require("../../generated/joynr/tests/MultipleVersionsInterfaceProvider");
+        MultipleVersionsInterfaceProxyNameVersion1 = require("../../generated/joynr/tests/MultipleVersionsInterface1Proxy");
+        MultipleVersionsInterfaceProxyNameVersion2 = require("../../generated/joynr/tests/MultipleVersionsInterface2Proxy");
+        MultipleVersionsInterfaceProxyPackageVersion2 = require("../../generated/joynr/tests/v2/MultipleVersionsInterfaceProxy");
+        joynr = require("joynr");
     });
 
     async function buildProvider(providerType) {
@@ -207,10 +181,12 @@ describe("libjoynr-js.integration.MultipleVersionsTest", () => {
         // register 2 providers in 2 child processes
         const [childId1, childId2] = await Promise.all([
             IntegrationUtils.initializeChildProcess("TestMultipleVersionsInterfaceProcess", "", domain, {
-                versioning: "nameVersion1"
+                versioning: "nameVersion1",
+                noJoynrShutdown: true
             }),
             IntegrationUtils.initializeChildProcess("TestMultipleVersionsInterfaceProcess", "", domain, {
-                versioning: "nameVersion2"
+                versioning: "nameVersion2",
+                noJoynrShutdown: true
             })
         ]);
 
@@ -230,3 +206,4 @@ describe("libjoynr-js.integration.MultipleVersionsTest", () => {
         ]);
     });
 });
+/*eslint-enable */

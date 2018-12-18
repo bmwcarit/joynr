@@ -18,58 +18,32 @@
  * #L%
  */
 
-const RequireUtil = require("./RequireUtil");
-
-let joynr,
-    RadioStation,
-    Country,
-    ComplexTestType,
-    SubscriptionException,
-    IntegrationUtils,
-    End2EndAbstractTest,
-    provisioning,
-    waitsFor;
+const joynr = require("joynr");
+const RadioStation = require("../../generated/joynr/vehicle/radiotypes/RadioStation");
+const Country = require("../../generated/joynr/datatypes/exampleTypes/Country");
+const ComplexTestType = require("../../generated/joynr/tests/testTypes/ComplexTestType");
+const SubscriptionException = require("../../../main/js/joynr/exceptions/SubscriptionException");
+const IntegrationUtils = require("./IntegrationUtils");
+const End2EndAbstractTest = require("./End2EndAbstractTest");
+const provisioning = require("../../resources/joynr/provisioning/provisioning_cc");
+const waitsFor = require("../global/WaitsFor");
 
 describe("libjoynr-js.integration.end2end.subscription", () => {
     const subscriptionLength = 2000;
     const safetyTimeout = 200;
-    const requirePaths = new Map([
-        ["joynr", require.resolve("joynr")],
-        ["RadioStation", require.resolve("../../generated/joynr/vehicle/radiotypes/RadioStation")],
-        ["Country", require.resolve("../../generated/joynr/datatypes/exampleTypes/Country")],
-        ["ComplexTestType", require.resolve("../../generated/joynr/tests/testTypes/ComplexTestType")],
-        ["SubscriptionException", require.resolve("../../../main/js/joynr/exceptions/SubscriptionException")],
-        ["IntegrationUtils", require.resolve("./IntegrationUtils")],
-        ["End2EndAbstractTest", require.resolve("./End2EndAbstractTest")],
-        ["provisioning", require.resolve("../../resources/joynr/provisioning/provisioning_cc")],
-        ["waitsFor", require.resolve("../global/WaitsFor")]
-    ]);
     let subscriptionQosOnChange;
     let subscriptionQosInterval;
     let subscriptionQosMulticast;
     let subscriptionQosMixed;
     let radioProxy;
-    let abstractTest;
-    let setAttribute;
-    let setupSubscriptionAndReturnSpy;
-    let unsubscribeSubscription;
-    let callOperation;
-    let expectPublication;
-
-    let testIdentifier = 0;
+    const abstractTest = new End2EndAbstractTest("End2EndSubscriptionTest", "TestEnd2EndCommProviderProcess");
+    const setAttribute = abstractTest.setAttribute;
+    const setupSubscriptionAndReturnSpy = abstractTest.setupSubscriptionAndReturnSpy;
+    const unsubscribeSubscription = abstractTest.unsubscribeSubscription;
+    const callOperation = abstractTest.callOperation;
+    const expectPublication = abstractTest.expectPublication;
 
     beforeEach(done => {
-        eval(RequireUtil.safeRequire(requirePaths));
-
-        abstractTest = new End2EndAbstractTest("End2EndSubscriptionTest", "TestEnd2EndCommProviderProcess", {
-            testIdentifier: ++testIdentifier
-        });
-        setAttribute = abstractTest.setAttribute;
-        setupSubscriptionAndReturnSpy = abstractTest.setupSubscriptionAndReturnSpy;
-        unsubscribeSubscription = abstractTest.unsubscribeSubscription;
-        callOperation = abstractTest.callOperation;
-        expectPublication = abstractTest.expectPublication;
-
         abstractTest
             .beforeEach()
             .then(settings => {
@@ -1322,8 +1296,5 @@ describe("libjoynr-js.integration.end2end.subscription", () => {
             .catch(fail);
     });
 
-    afterEach(async () => {
-        await abstractTest.afterEach();
-        RequireUtil.deleteFromCache(requirePaths);
-    });
+    afterEach(abstractTest.afterEach);
 });

@@ -16,43 +16,20 @@
  * limitations under the License.
  * #L%
  */
-const Mutex = require("await-semaphore").Mutex;
-const RequireUtil = require("../js/node_integration/RequireUtil.js");
 
 console.log("joynr Jasmine 2.x system integration tests");
 
-const requirePaths = [
-    "../js/node_integration/CompatibleProvidersTest.js",
-    "../js/node_integration/End2EndRPCTest.js",
-    "../js/node_integration/End2EndSubscriptionTest.js",
-    "../js/node_integration/End2EndDatatypesTest.js",
-    "../js/node_integration/IncompatibleProviderTest.js",
-    "../js/node_integration/LocalDiscoveryTest.js",
-    "../js/node_integration/MultipleVersionsTest.js"
-];
+const Jasmine = require("jasmine");
+const jasmine = new Jasmine();
+jasmine.loadConfigFile(`${__dirname  }/spec/support/jasmine.json`);
 
-async function executeTests() {
-    const pathsNum = requirePaths.length;
-    for (let i = 0; i < pathsNum; i++) {
-        const Jasmine = require("jasmine");
-        const jasmine = new Jasmine();
-        jasmine.loadConfigFile(`${__dirname}/spec/support/jasmine.json`);
-        const path = requirePaths[i];
-        require(path);
-        const mutex = new Mutex();
-        const release = await mutex.acquire();
-        //jasmine.onComplete(callback) prevents the process from exiting.
-        //So it should not be used for the last test.
-        if (i !== pathsNum - 1) {
-            jasmine.onComplete(() => {
-                release();
-            });
-        }
-        jasmine.execute();
-        await mutex.acquire();
-        RequireUtil.deleteModuleAndNewChildrenFromCache(require.resolve(path));
-        RequireUtil.deleteModuleAndNewChildrenFromCache(require.resolve("jasmine"));
-    }
-}
+const CompatibleProvidersTest = require("../js/node_integration/CompatibleProvidersTest.js");
+const End2EndRPCTest = require("../js/node_integration/End2EndRPCTest.js");
+const End2EndSubscriptionTest = require("../js/node_integration/End2EndSubscriptionTest.js");
+const End2EndDatatypesTest = require("../js/node_integration/End2EndDatatypesTest.js");
+const IncompatibleProviderTest = require("../js/node_integration/IncompatibleProviderTest.js");
+const LocalDiscoveryTest = require("../js/node_integration/LocalDiscoveryTest");
+const MultipleVersionsTest = require("../js/node_integration/MultipleVersionsTest");
 
-executeTests();
+console.log("all tests modules loaded");
+jasmine.execute();
