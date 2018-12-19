@@ -360,9 +360,7 @@ function RequestReplyManager(dispatcher) {
         if (replyCaller === undefined) {
             log.error(
                 `error handling reply resolve, because replyCaller could not be found: ${JSONSerializer.stringify(
-                    reply,
-                    undefined,
-                    4
+                    reply
                 )}`
             );
             return;
