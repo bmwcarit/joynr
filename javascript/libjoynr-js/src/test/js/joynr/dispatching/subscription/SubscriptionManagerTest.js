@@ -962,6 +962,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", funct
             selective: false
         });
         var clearSubscriptionsTimeoutMs = 1000;
+        var DEFAULT_TTL = 60000;
 
         subscriptionManager
             .registerSubscription(subscriptionSettings)
@@ -972,10 +973,10 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", funct
                 expect(dispatcherSpy.sendSubscriptionStop).toHaveBeenCalled();
                 expect(dispatcherSpy.sendSubscriptionStop.calls.count()).toEqual(1);
                 expect(dispatcherSpy.sendSubscriptionStop.calls.argsFor(0)[0].messagingQos).toEqual(
-                    new MessagingQos({ ttl: clearSubscriptionsTimeoutMs })
+                    new MessagingQos({ ttl: DEFAULT_TTL })
                 );
                 expect(dispatcherSpy.sendMulticastSubscriptionStop.calls.argsFor(0)[0].messagingQos).toEqual(
-                    new MessagingQos({ ttl: clearSubscriptionsTimeoutMs })
+                    new MessagingQos({ ttl: DEFAULT_TTL })
                 );
                 expect(dispatcherSpy.sendMulticastSubscriptionStop.calls.count()).toEqual(1);
                 done();

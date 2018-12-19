@@ -682,24 +682,32 @@ function SubscriptionManager(dispatcher) {
 
     /**
      * This method is meant to be called by the runtime before shutdown is called.
-     * It turns out that there is a necessary shutdown order and Subscriptionmanager can't be shutdown first.
+     * It turns out that there is a necessary shutdown order and SubscriptionManager can't be shutdown first.
      *
-     * @function
-     * @param {number} clearSubscriptionsTimeoutMs
+     * @param {number} timeoutMs timeout in ms after which this operation shall timeout. 0 defaults to no timeout.
+     * @returns {Promise}
+     * - resolves if subscriptionStop message has been sent for each active subscription
+     * - rejects in case of any issues or timeout occurs
      */
-    this.terminateSubscriptions = function(clearSubscriptionsTimeoutMs) {
-        var cleanUpPromises = [];
-        var activeSubscriptionId;
+    this.terminateSubscriptions = function(timeoutMs) {
+        const logPrefix = "SubscriptionManager::terminateSubscriptions";
+        log.info(`${logPrefix} ${timeoutMs}`);
+
+        const cleanUpPromises = [];
+        let activeSubscriptionId;
         for (activeSubscriptionId in subscriptionInfos) {
             if (Object.prototype.hasOwnProperty.call(subscriptionInfos, activeSubscriptionId)) {
-                var promise = this.unregisterSubscription({
+                const promise = this.unregisterSubscription({
                     subscriptionId: activeSubscriptionId,
-                    messagingQos: new MessagingQos({ ttl: clearSubscriptionsTimeoutMs })
+                    messagingQos: new MessagingQos({ ttl: 60000 })
                 });
                 cleanUpPromises.push(promise);
             }
         }
-        return Util.timeoutPromise(Promise.all(cleanUpPromises), clearSubscriptionsTimeoutMs);
+        const cleanUpPromise = Promise.all(cleanUpPromises);
+        log.info(`${logPrefix} terminating a total of ${cleanUpPromises.length} subscriptions`);
+
+        return timeoutMs === 0 ? cleanUpPromise : Util.timeoutPromise(cleanUpPromise, timeoutMs);
     };
 
     /**
