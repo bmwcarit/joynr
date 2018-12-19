@@ -7,6 +7,9 @@ the versioning scheme [here](JoynrVersioning.md).
 ## API relevant changes
 * **[JEE]** Fixed typo withDicoveryQos (renamed method withDicoveryQos to withDiscoveryQos) in the
   ServiceProxyBuilder interface of the joynr ServiceLocator.
+* **[JS]** Fixed design issue, where joynr.shutdown would not wait for clearSubscriptions before
+  shutting down. In the process.exit handler joynr.shutdown now needs to be explicitly called with
+  settings.clearSubscriptionsEnabled=false
 
 ## Other changes
 * **[C++]** Enabled registration of multiple providers in a single runtime.
@@ -16,6 +19,8 @@ the versioning scheme [here](JoynrVersioning.md).
 * **[Java]** Update jackson to version 2.9.7
 * **[C++]** MQTT connection will not be attempted if MQTT TLS is enabled, but TLS certificates
   do not exist or are inaccessible or TLS options cannot be set.
+* **[JS]** Added terminateAllSubscriptions api to joynr.js which can be called to terminate all
+  active subscriptions.
 
 ## Configuration property changes
 None.
