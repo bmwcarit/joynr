@@ -243,5 +243,9 @@ function End2EndAbstractTest(provisioningSuffix, providerChildProcessName, proce
                 throw new Error(`shutdown Child and Libjoynr failed: ${e}`);
             });
     };
+
+    this.terminateAllSubscriptions = async function() {
+        return joynr.terminateAllSubscriptions();
+    };
 }
 module.exports = End2EndAbstractTest;

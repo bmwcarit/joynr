@@ -19,7 +19,6 @@
  */
 
 const provisioning_root = require("../../resources/joynr/provisioning/provisioning_root");
-const waitsFor = require("../global/WaitsFor");
 const child_process = require("child_process");
 const path = require("path");
 
@@ -190,16 +189,9 @@ IntegrationUtils.shutdownLibjoynr = async function() {
 };
 
 IntegrationUtils.waitALittle = function waitALittle(time) {
-    const start = Date.now();
-
-    // wait for childProcess to be shut down
-    return waitsFor(
-        () => {
-            return Date.now() - start > time;
-        },
-        `${time} ms to elapse`,
-        time
-    );
+    return new Promise(resolve => {
+        setTimeout(resolve, time);
+    });
 };
 
 IntegrationUtils.getRandomInt = function getRandomInt(min, max) {

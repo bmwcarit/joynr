@@ -27,6 +27,7 @@ const IntegrationUtils = require("../IntegrationUtils");
 const End2EndAbstractTest = require("../End2EndAbstractTest");
 const provisioning = require("../../../resources/joynr/provisioning/provisioning_cc");
 const waitsFor = require("../../global/WaitsFor");
+const DiagnosticTags = require("joynr/joynr/system/DiagnosticTags");
 
 describe("libjoynr-js.integration.end2end.subscription", () => {
     const subscriptionLength = 2000;
@@ -42,6 +43,7 @@ describe("libjoynr-js.integration.end2end.subscription", () => {
     const unsubscribeSubscription = abstractTest.unsubscribeSubscription;
     const callOperation = abstractTest.callOperation;
     const expectPublication = abstractTest.expectPublication;
+    const terminateAllSubscriptions = abstractTest.terminateAllSubscriptions;
 
     beforeEach(done => {
         abstractTest
@@ -1294,6 +1296,30 @@ describe("libjoynr-js.integration.end2end.subscription", () => {
                 return null;
             })
             .catch(fail);
+    });
+
+    it("unsubscribes all active subscriptions", async () => {
+        let value = 1234543;
+        const toleranceMs = 200;
+        await setAttribute("typeDefForPrimitive", value);
+        const mySpy = await setupSubscriptionAndReturnSpy("typeDefForPrimitive", subscriptionQosOnChange);
+
+        await expectPublication(mySpy, call => {
+            expect(call.args[0]).toEqual(value);
+        });
+
+        await setAttribute("typeDefForPrimitive", ++value);
+        await IntegrationUtils.waitALittle(toleranceMs);
+        expect(mySpy.onReceive).toHaveBeenCalled();
+        mySpy.onReceive.calls.reset();
+
+        spyOn(DiagnosticTags, "forSubscriptionStop");
+        await terminateAllSubscriptions();
+        expect(DiagnosticTags.forSubscriptionStop).toHaveBeenCalled();
+
+        await setAttribute("typeDefForPrimitive", ++value);
+        await IntegrationUtils.waitALittle(toleranceMs);
+        expect(mySpy.onReceive).not.toHaveBeenCalled();
     });
 
     afterEach(abstractTest.afterEach);
