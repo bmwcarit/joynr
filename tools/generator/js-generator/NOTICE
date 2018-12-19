@@ -23,12 +23,24 @@ This project has dependencies to:
   ASM Commons under BSD
   ASM Core under BSD
   ASM Tree under BSD
+  Commands under Eclipse Public License
   Common Eclipse Runtime under Eclipse Public License - v 1.0
   Common Types Runtime Library under Eclipse Public License - v 1.0
+  Core File Systems under Eclipse Public License
+  Core Resource Management under Eclipse Public License
+  Core Runtime under Eclipse Public License
+  Core Variables under Eclipse Public License - v 2.0
+  Debug Core under Eclipse Public License - v 2.0
   dom4j under BSD License
+  Eclipse Content Mechanism under Eclipse Public License
+  Eclipse Jobs Mechanism under Eclipse Public License
+  Eclipse Preferences Mechanism under Eclipse Public License
   Eclipse Xbase Runtime Library under Eclipse Public License - v 1.0
   Eclipse Xtend Macro Library under Eclipse Public License - v 1.0
   Eclipse Xtend Runtime Library under Eclipse Public License - v 1.0
+  Equinox Application Container under Eclipse Public License
+  Expression Language under Eclipse Public License
+  Extension Registry Support under Eclipse Public License
   FindBugs-jsr305 under The Apache Software License, Version 2.0
   Google Guice - Core Library under The Apache Software License, Version 2.0
   Google Guice - Extensions - AssistedInject under The Apache Software License, Version 2.0
@@ -36,8 +48,11 @@ This project has dependencies to:
   Hamcrest Core under New BSD License
   io.joynr.tools.generator:generator-framework under The Apache Software License, Version 2.0
   io.joynr.tools.generator:js-generator under The Apache Software License, Version 2.0
+  Java Development Tools Core under Eclipse Public License
+  Java Development Tools Launching Support under Eclipse Public License - v 2.0
   Javassist under MPL 1.1 or LGPL 2.1
   javax.inject under The Apache Software License, Version 2.0
+  JDI Debug Model under Eclipse Public License - v 2.0
   JUnit under Eclipse Public License 1.0
   org.eclipse.emf.codegen under The Eclipse Public License Version 1.0
   org.eclipse.emf.common under The Eclipse Public License Version 1.0
@@ -46,8 +61,10 @@ This project has dependencies to:
   org.franca.core under Eclipse Public License - v 1.0
   org.franca.core.dsl under Eclipse Public License - v 1.0
   org.franca.deploymodel.dsl under Eclipse Public License - v 1.0
+  OSGi System Bundle under Eclipse Public License
   Reflections under WTFPL
   SLF4J API Module under MIT License
+  Text under Eclipse Public License
   Tycho org.eclipse.jdt.core dependency (Incubation) under Eclipse Public License
   Xbase Runtime Library under Eclipse Public License - v 1.0
   XML Commons External Components XML APIs under The Apache Software License, Version 2.0 or The SAX License or The W3C License
