@@ -30,6 +30,7 @@ var joynr = require("joynr"),
     End2EndAbstractTest = require("./End2EndAbstractTest"),
     provisioning = require("joynr/provisioning/provisioning_cc"),
     waitsFor = require("../global/WaitsFor");
+const DiagnosticTags = require("joynr/system/DiagnosticTags");
 
 describe("libjoynr-js.integration.end2end.subscription", function() {
     var subscriptionLength = 2000;
@@ -45,6 +46,7 @@ describe("libjoynr-js.integration.end2end.subscription", function() {
     var unsubscribeSubscription = abstractTest.unsubscribeSubscription;
     var callOperation = abstractTest.callOperation;
     var expectPublication = abstractTest.expectPublication;
+    var terminateAllSubscriptions = abstractTest.terminateAllSubscriptions;
 
     beforeEach(function(done) {
         abstractTest.beforeEach().then(function(settings) {
@@ -1314,6 +1316,35 @@ describe("libjoynr-js.integration.end2end.subscription", function() {
                 return null;
             })
             .catch(fail);
+    });
+
+    it("unsubscribes all active subscriptions", async done => {
+        try {
+            let value = 1234543;
+            const toleranceMs = 200;
+            await setAttribute("typeDefForPrimitive", value);
+            const mySpy = await setupSubscriptionAndReturnSpy("typeDefForPrimitive", subscriptionQosOnChange);
+
+            await expectPublication(mySpy, call => {
+                expect(call.args[0]).toEqual(value);
+            });
+
+            await setAttribute("typeDefForPrimitive", ++value);
+            await IntegrationUtils.waitALittle(toleranceMs);
+            expect(mySpy.onReceive).toHaveBeenCalled();
+            mySpy.onReceive.calls.reset();
+
+            spyOn(DiagnosticTags, "forSubscriptionStop");
+            await terminateAllSubscriptions();
+            expect(DiagnosticTags.forSubscriptionStop).toHaveBeenCalled();
+
+            await setAttribute("typeDefForPrimitive", ++value);
+            await IntegrationUtils.waitALittle(toleranceMs);
+            expect(mySpy.onReceive).not.toHaveBeenCalled();
+            done();
+        } catch (e) {
+            fail(e);
+        }
     });
 
     afterEach(abstractTest.afterEach);

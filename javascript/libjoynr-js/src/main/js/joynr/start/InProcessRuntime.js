@@ -593,6 +593,18 @@ function InProcessRuntime(provisioning) {
         return Promise.resolve();
     };
 
+    /**
+     *  Sends subscriptionStop messages for all active subscriptions.
+     *
+     *  @param timeout {number} optional timeout defaulting to 0 = no timeout
+     *  @returns {Promise}
+     *  - resolved after all SubscriptionStop messages are sent.
+     *  - rejected in case of any issues or timeout occurs.
+     */
+    this.terminateAllSubscriptions = function(timeout = 0) {
+        return subscriptionManager.terminateSubscriptions(timeout);
+    };
+
     // make every instance immutable
     return Object.freeze(this);
 }

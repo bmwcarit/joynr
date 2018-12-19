@@ -186,17 +186,9 @@ IntegrationUtils.shutdownLibjoynr = function() {
 };
 
 IntegrationUtils.waitALittle = function waitALittle(time) {
-    var start;
-    start = Date.now();
-
-    // wait for childProcess to be shut down
-    return waitsFor(
-        function() {
-            return Date.now() - start > time;
-        },
-        time + " ms to elapse",
-        time
-    );
+    return new Promise(resolve => {
+        setTimeout(resolve, time);
+    });
 };
 
 module.exports = IntegrationUtils;

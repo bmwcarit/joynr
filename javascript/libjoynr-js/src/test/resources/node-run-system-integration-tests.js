@@ -64,8 +64,8 @@ mod.prototype.require = function(md) {
 };
 console.log("require config setup");
 var End2EndRPCTest = require("../test-classes/node_integration/End2EndRPCTest.js");
-var End2EndSubscriptionTest = require("../test-classes/node_integration/End2EndSubscriptionTest.js");
 var End2EndDatatypesTest = require("../test-classes/node_integration/End2EndDatatypesTest.js");
+var End2EndSubscriptionTest = require("../test-classes/node_integration/End2EndSubscriptionTest.js");
 var LocalDiscoveryTest = require("../test-classes/node_integration/LocalDiscoveryTest");
 console.log("all tests modules loaded");
 jasmine.execute();

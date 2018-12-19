@@ -364,5 +364,9 @@ function End2EndAbstractTest(provisioningSuffix, buildDataProxy) {
                 throw new Error("shutdown Child and Libjoynr failed");
             });
     };
+
+    this.terminateAllSubscriptions = async function() {
+        return joynr.terminateAllSubscriptions();
+    };
 }
 module.exports = End2EndAbstractTest;
