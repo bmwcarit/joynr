@@ -22,7 +22,7 @@ var Jasmine = require("jasmine");
 var jasmine = new Jasmine();
 
 jasmine.loadConfigFile(__dirname + "/spec/support/jasmine.json");
-var InProcessRuntimeTest = require("../js/joynr/start/InProcessRuntimeTest.js");
+var InProcessRuntimeTest = require("../js/browser/start/InProcessRuntimeTest.js");
 
 console.log("all tests modules loaded");
 jasmine.execute();
