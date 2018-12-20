@@ -17,174 +17,145 @@
  * #L%
  */
 require("../../node-unit-test-helper");
-const UtilInternal = require("../../../../main/js/joynr/util/UtilInternal");
 
 const provisioning_root = require("../../../resources/joynr/provisioning/provisioning_root"); // logger and mqtt
-provisioning_root.ccAddress = {
-    protocol: "ws",
-    host: "localhost",
-    port: 4242,
-    path: ""
-};
 
-const DiscoveryQos = require("../../../../main/js/joynr/proxy/DiscoveryQos");
-const CapabilitiesRegistrar = require("../../../../main/js/joynr/capabilities/CapabilitiesRegistrar");
-const MessageRouter = require("../../../../main/js/joynr/messaging/routing/MessageRouter");
-const MessageQueue = require("../../../../main/js/joynr/messaging/routing/MessageQueue");
-const Dispatcher = require("../../../../main/js/joynr/dispatching/Dispatcher");
-const ParticipantIdStorage = require("../../../../main/js/joynr/capabilities/ParticipantIdStorage");
-const PublicationManager = require("../../../../main/js/joynr/dispatching/subscription/PublicationManager");
-const LocalStorage = require("../../../../main/js/global/LocalStorageNode");
-const MessagingQos = require("../../../../main/js/joynr/messaging/MessagingQos");
-const WebSocketMessagingSkeleton = require("../../../../main/js/joynr/messaging/websocket/WebSocketMessagingSkeleton");
-const SharedWebSocket = require("../../../../main/js/joynr/messaging/websocket/SharedWebSocket");
-const WebSocketMessagingStubFactory = require("../../../../main/js/joynr/messaging/websocket/WebSocketMessagingStubFactory");
-const JoynrMessage = require("../../../../main/js/joynr/messaging/JoynrMessage");
-const SubscriptionManager = require("../../../../main/js/joynr/dispatching/subscription/SubscriptionManager");
-
-/**
- * this function creates a wrapper class, which calls Class not by its normal constructor but by Class.prototype.constructor
- * that way it's possible to spy on the constructor because we have access to its parent Object.
- * @param Class
- * @param {Function} fixClass
- *      this function is used to create additional spys after the constructor call because the class methods in joynr
- *      are often only created in the constructor.
- * @returns {wrappedClass}
- */
-function wrapClass(Class, fixClass) {
-    const wrappedClass = function() {
-        Class.prototype.constructor.apply(this, arguments);
-        // fixClass is a function which shall be called after the constructor because in some cases functions are declared
-        // in the constructor ...
-        if (fixClass) {
-            fixClass.call(this);
-        }
-    };
-    // only necessary if there is prototpye manipulation
-    wrappedClass.prototype = Object.create(Class.prototype);
-    // makes it so that our type checks work -> because they check for .prototype.constructor.name
-    wrappedClass.prototype.constructor = Class;
-    return wrappedClass;
-}
-
-function fixMessageRouter() {
-    spyOn(this, "setRoutingProxy").and.returnValue(Promise.resolve());
-}
-
-let SharedWebSocketEnableShutdownModeSpy;
-function createSharedWebSocketSpys() {
-    SharedWebSocketEnableShutdownModeSpy = spyOn(this, "enableShutdownMode");
-}
-
-let terminateSubscriptionsSpy;
-function fixSubScriptionManager() {
-    terminateSubscriptionsSpy = spyOn(this, "terminateSubscriptions").and.returnValue(Promise.resolve());
-}
+const proxyquire = require("proxyquire").noCallThru();
 
 const mocks = {};
+const constructors = {};
+const spys = {};
+[
+    ["DiscoveryQos"],
+    ["CapabilitiesRegistrar", ["shutdown"]],
+    ["MessageRouter", ["setRoutingProxy", "addNextHop", "shutdown"]],
+    ["MessageQueue"],
+    [
+        "Dispatcher",
+        [
+            "registerRequestReplyManager",
+            "registerSubscriptionManager",
+            "registerPublicationManager",
+            "registerMessageRouter",
+            "shutdown"
+        ]
+    ],
+    ["ParticipantIdStorage"],
+    ["PublicationManager", ["restore", "shutdown"]],
+    ["LocalStorageNode", ["shutdown", "getItem"]],
+    ["MessagingQos"],
+    ["WebSocketMessagingSkeleton", ["registerListener", "shutdown"]],
+    ["SharedWebSocket", ["enableShutdownMode"]],
+    ["WebSocketMessagingStubFactory"],
+    ["JoynrMessage"],
+    ["LoggingManager", ["configure", "getLogger"]],
+    ["SubscriptionManager", ["shutdown", "terminateSubscriptions"]],
+    ["ProxyBuilder", ["build"]]
+].forEach(([name, keys = []]) => {
+    mocks[name] = keys.length > 0 ? jasmine.createSpyObj(name, keys) : {};
+    spys[name] = jasmine.createSpy();
+    constructors[name] = function(...args) {
+        spys[name](...args);
+        return mocks[name];
+    };
+});
 
-mocks.MessageRouterMock = wrapClass(MessageRouter, fixMessageRouter);
-mocks.SubscriptionManagerMock = wrapClass(SubscriptionManager, fixSubScriptionManager);
-mocks.MessageQueueMock = wrapClass(MessageQueue);
-mocks.DispatcherMock = wrapClass(Dispatcher);
-mocks.ParticipantIdStorageMock = wrapClass(ParticipantIdStorage);
-mocks.PublicationManagerMock = wrapClass(PublicationManager);
-mocks.MessagingQosMock = wrapClass(MessagingQos);
-mocks.WebSocketMessagingSkeletonMock = wrapClass(WebSocketMessagingSkeleton);
-mocks.SharedWebSocketMock = wrapClass(SharedWebSocket, createSharedWebSocketSpys);
-mocks.WebSocketMessagingStubFactoryMock = wrapClass(WebSocketMessagingStubFactory);
+mocks.MessageRouter.setRoutingProxy = jasmine.createSpy().and.returnValue(Promise.resolve());
+mocks.ProxyBuilder.build.and.returnValue(Promise.resolve());
 
-const mod = require("module");
+mocks.SubscriptionManager.terminateSubscriptions.and.returnValue(Promise.resolve());
 
-const savedRequire = mod.prototype.require;
-mod.prototype.require = function(md) {
-    const index = md.lastIndexOf("/") + 1;
-    const mock = `${md.substr(index)}Mock`;
+constructors.CapabilitiesRegistrar.setDefaultExpiryIntervalMs = jasmine.createSpy();
+constructors.DiscoveryQos.setDefaultSettings = jasmine.createSpy();
+constructors.JoynrMessage.setSigningCallback = jasmine.createSpy();
 
-    if (mocks[mock]) {
-        return mocks[mock];
-    }
-    return savedRequire.apply(this, arguments);
+mocks.LocalStorageNode.init = jasmine.createSpy().and.returnValue(Promise.resolve());
+mocks.LoggingManager.getLogger.and.returnValue(
+    jasmine.createSpyObj("logger", ["debug", "info", "error", "warn", "verbose"])
+);
+
+const config = {
+    "../../../../main/js/joynr/proxy/DiscoveryQos": constructors.DiscoveryQos,
+    "../../../../main/js/joynr/capabilities/CapabilitiesRegistrar": constructors.CapabilitiesRegistrar,
+    "../../../../main/js/joynr/messaging/routing/MessageRouter": constructors.MessageRouter,
+    "../../../../main/js/joynr/messaging/routing/MessageQueue": constructors.MessageQueue,
+    "../../../../main/js/joynr/dispatching/Dispatcher": constructors.Dispatcher,
+    "../../../../main/js/joynr/capabilities/ParticipantIdStorage": constructors.ParticipantIdStorage,
+    "../../../../main/js/joynr/dispatching/subscription/PublicationManager": constructors.PublicationManager,
+    "../../../../main/js/global/LocalStorageNode": constructors.LocalStorageNode,
+    "../../../../main/js/joynr/messaging/MessagingQos": constructors.MessagingQos,
+    "../../../../main/js/joynr/messaging/websocket/WebSocketMessagingSkeleton": constructors.WebSocketMessagingSkeleton,
+    "../../../../main/js/joynr/messaging/websocket/SharedWebSocket": constructors.SharedWebSocket,
+    "../../../../main/js/joynr/messaging/websocket/WebSocketMessagingStubFactory":
+        constructors.WebSocketMessagingStubFactory,
+    "../../../../main/js/joynr/messaging/JoynrMessage": constructors.JoynrMessage,
+    "../../../../main/js/joynr/dispatching/subscription/SubscriptionManager": constructors.SubscriptionManager,
+    "../../../../main/js/joynr/system/LoggingManager": mocks.LoggingManager,
+    "../../../../main/js/joynr/proxy/ProxyBuilder": constructors.ProxyBuilder
 };
 
-const WebSocketLibjoynrRuntime = require("../../../../main/js/joynr/start/WebSocketLibjoynrRuntime");
-
-// restore old require for other tests after requireing dependencies
-mod.prototype.require = savedRequire;
+const JoynrRuntime = proxyquire("joynr/joynr/start/JoynrRuntime", config);
+const WebSocketLibjoynrRuntime = proxyquire(
+    "joynr/joynr/start/WebSocketLibjoynrRuntime",
+    Object.assign({}, config, { "../../../../main/js/joynr/start/JoynrRuntime": JoynrRuntime })
+);
 
 describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
-    beforeAll(() => {
-        // Since require Objects are cached we get the same instance as WebSocketLibjoynrRuntime
-        // and can freely manipulate it before the new WebSocketLibjoynrRuntime call.
-        // But after all tests we have to make sure to clear the cache of the required objects.
-        spyOn(DiscoveryQos, "setDefaultSettings").and.callThrough();
-        spyOn(CapabilitiesRegistrar, "setDefaultExpiryIntervalMs").and.callThrough();
-        // unfortunately this does not involve constructors. In order to mock constructors
-        // we have to mock the require call directly.
-
-        spyOn(MessageRouter.prototype, "constructor").and.callThrough();
-        spyOn(MessageQueue.prototype, "constructor").and.callThrough();
-        spyOn(Dispatcher.prototype, "constructor").and.callThrough();
-        spyOn(ParticipantIdStorage.prototype, "constructor").and.callThrough();
-        spyOn(PublicationManager.prototype, "constructor").and.callThrough();
-        spyOn(MessagingQos.prototype, "constructor").and.callThrough();
-        spyOn(WebSocketMessagingSkeleton.prototype, "constructor").and.callThrough();
-        spyOn(SharedWebSocket.prototype, "constructor").and.callThrough();
-        spyOn(WebSocketMessagingStubFactory.prototype, "constructor").and.callThrough();
-    });
-
     let runtime;
     let provisioning;
 
-    beforeEach(done => {
-        MessageRouter.prototype.constructor.calls.reset();
-        MessageQueue.prototype.constructor.calls.reset();
-        Dispatcher.prototype.constructor.calls.reset();
-        ParticipantIdStorage.prototype.constructor.calls.reset();
-        PublicationManager.prototype.constructor.calls.reset();
-        MessagingQos.prototype.constructor.calls.reset();
-        WebSocketMessagingSkeleton.prototype.constructor.calls.reset();
-        SharedWebSocket.prototype.constructor.calls.reset();
-        WebSocketMessagingStubFactory.prototype.constructor.calls.reset();
+    beforeEach(() => {
+        provisioning = Object.assign({}, provisioning_root, {
+            ccAddress: {
+                protocol: "ws",
+                host: "localhost",
+                port: 4242,
+                path: ""
+            }
+        });
 
-        provisioning = UtilInternal.extend({}, provisioning_root);
-        done();
+        // unfortunately jasmine doesn't reset spies between specs per default ...
+        Object.keys(spys).forEach(spy => {
+            spys[spy].calls.reset();
+        });
+        mocks.SubscriptionManager.terminateSubscriptions.calls.reset();
     });
 
     it("won't override settings unnecessarily", async () => {
         runtime = new WebSocketLibjoynrRuntime();
         await runtime.start(provisioning);
         await runtime.shutdown();
-        expect(DiscoveryQos.setDefaultSettings).not.toHaveBeenCalled();
-        expect(CapabilitiesRegistrar.setDefaultExpiryIntervalMs).not.toHaveBeenCalled();
+        expect(constructors.DiscoveryQos.setDefaultSettings).not.toHaveBeenCalled();
+        expect(constructors.CapabilitiesRegistrar.setDefaultExpiryIntervalMs).not.toHaveBeenCalled();
     });
 
     it("will set the default discoveryQos settings correctly", async () => {
         const discoveryRetryDelayMs = 100;
         const discoveryTimeoutMs = 200;
         const discoveryExpiryIntervalMs = 100;
-        const discoveryQos = {
+        provisioning.discoveryQos = {
             discoveryRetryDelayMs,
             discoveryTimeoutMs,
             discoveryExpiryIntervalMs
         };
-        provisioning.discoveryQos = discoveryQos;
         runtime = new WebSocketLibjoynrRuntime();
         await runtime.start(provisioning);
         await runtime.shutdown();
 
-        expect(DiscoveryQos.setDefaultSettings).toHaveBeenCalledWith({
+        expect(constructors.DiscoveryQos.setDefaultSettings).toHaveBeenCalledWith({
             discoveryRetryDelayMs,
             discoveryTimeoutMs
         });
-        expect(CapabilitiesRegistrar.setDefaultExpiryIntervalMs).toHaveBeenCalledWith(discoveryExpiryIntervalMs);
+        expect(constructors.CapabilitiesRegistrar.setDefaultExpiryIntervalMs).toHaveBeenCalledWith(
+            discoveryExpiryIntervalMs
+        );
     });
 
     it("will initialize SharedWebSocket correctly", async () => {
         runtime = new WebSocketLibjoynrRuntime();
         await runtime.start(provisioning);
 
-        expect(SharedWebSocket.prototype.constructor).toHaveBeenCalledWith({
+        expect(spys.SharedWebSocket).toHaveBeenCalledWith({
             remoteAddress: jasmine.objectContaining({
                 _typeName: "joynr.system.RoutingTypes.WebSocketAddress",
                 protocol: provisioning.ccAddress.protocol,
@@ -203,22 +174,22 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
     it("will use the default persistency settings", async () => {
         runtime = new WebSocketLibjoynrRuntime();
         await runtime.start(provisioning);
-        expect(MessageRouter.prototype.constructor.calls.count()).toEqual(1);
-        expect(MessageRouter.prototype.constructor.calls.argsFor(0)[0].persistency).toBeUndefined();
-        expect(ParticipantIdStorage.prototype.constructor.calls.count()).toEqual(1);
-        expect(ParticipantIdStorage.prototype.constructor.calls.argsFor(0)[0]).toEqual(jasmine.any(LocalStorage));
-        expect(PublicationManager.prototype.constructor.calls.count()).toEqual(1);
-        expect(PublicationManager.prototype.constructor.calls.argsFor(0)[1]).toEqual(jasmine.any(LocalStorage));
+        expect(spys.MessageRouter.calls.count()).toEqual(1);
+        expect(spys.MessageRouter.calls.argsFor(0)[0].persistency).toBeUndefined();
+        expect(spys.ParticipantIdStorage.calls.count()).toEqual(1);
+        expect(spys.ParticipantIdStorage.calls.argsFor(0)[0]).toEqual(mocks.LocalStorageNode);
+        expect(spys.PublicationManager.calls.count()).toEqual(1);
+        expect(spys.PublicationManager.calls.argsFor(0)[1]).toEqual(mocks.LocalStorageNode);
     });
 
     it("enables MessageRouter Persistency if configured", async () => {
         provisioning.persistency = { routingTable: true };
         runtime = new WebSocketLibjoynrRuntime();
         await runtime.start(provisioning);
-        expect(MessageRouter.prototype.constructor.calls.count()).toEqual(1);
-        expect(MessageRouter.prototype.constructor.calls.argsFor(0)[0].persistency).toEqual(jasmine.any(LocalStorage));
-        expect(MessageRouter.prototype.constructor).toHaveBeenCalledWith(
-            jasmine.objectContaining({ persistency: jasmine.any(Object) })
+        expect(spys.MessageRouter.calls.count()).toEqual(1);
+        expect(spys.MessageRouter.calls.argsFor(0)[0].persistency).toEqual(mocks.LocalStorageNode);
+        expect(spys.MessageRouter).toHaveBeenCalledWith(
+            jasmine.objectContaining({ persistency: mocks.LocalStorageNode })
         );
     });
 
@@ -226,16 +197,16 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
         provisioning.persistency = { capabilities: true };
         runtime = new WebSocketLibjoynrRuntime();
         await runtime.start(provisioning);
-        expect(ParticipantIdStorage.prototype.constructor.calls.count()).toEqual(1);
-        expect(ParticipantIdStorage.prototype.constructor.calls.argsFor(0)[0]).toEqual(jasmine.any(LocalStorage));
+        expect(spys.ParticipantIdStorage.calls.count()).toEqual(1);
+        expect(spys.ParticipantIdStorage.calls.argsFor(0)[0]).toEqual(mocks.LocalStorageNode);
     });
 
     it("disables PublicationManager persistency if configured", async () => {
         provisioning.persistency = { publications: false };
         runtime = new WebSocketLibjoynrRuntime();
         await runtime.start(provisioning);
-        expect(PublicationManager.prototype.constructor.calls.count()).toEqual(1);
-        expect(PublicationManager.prototype.constructor.calls.argsFor(0)[1]).toBeUndefined();
+        expect(spys.PublicationManager.calls.count()).toEqual(1);
+        expect(spys.PublicationManager.calls.argsFor(0)[1]).toBeUndefined();
     });
 
     it("will call MessageQueue with the settings from the provisioning", async () => {
@@ -243,8 +214,8 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
         provisioning.messaging = { maxQueueSizeInKBytes };
         runtime = new WebSocketLibjoynrRuntime();
         await runtime.start(provisioning);
-        expect(MessageQueue.prototype.constructor.calls.count()).toEqual(1);
-        expect(MessageQueue.prototype.constructor).toHaveBeenCalledWith({
+        expect(spys.MessageQueue.calls.count()).toEqual(1);
+        expect(spys.MessageQueue).toHaveBeenCalledWith({
             maxQueueSizeInKBytes
         });
     });
@@ -254,8 +225,8 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
         provisioning.messaging = { TTL_UPLIFT: ttlUpLiftMs };
         runtime = new WebSocketLibjoynrRuntime();
         await runtime.start(provisioning);
-        expect(Dispatcher.prototype.constructor.calls.count()).toEqual(1);
-        expect(Dispatcher.prototype.constructor.calls.argsFor(0)[2]).toEqual(ttlUpLiftMs);
+        expect(spys.Dispatcher.calls.count()).toEqual(1);
+        expect(spys.Dispatcher.calls.argsFor(0)[2]).toEqual(ttlUpLiftMs);
     });
 
     it("will call MessagingQos with the settings from the provisioning", async () => {
@@ -263,7 +234,7 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
         provisioning.internalMessagingQos = { ttl };
         runtime = new WebSocketLibjoynrRuntime();
         await runtime.start(provisioning);
-        expect(MessagingQos.prototype.constructor).toHaveBeenCalledWith({ ttl });
+        expect(spys.MessagingQos).toHaveBeenCalledWith({ ttl });
     });
 
     it("will set the signingCallback to the joynrMessage.prototype", async () => {
@@ -273,13 +244,10 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
             tlsCa: "tlsCa",
             ownerId: "ownerID"
         };
-        spyOn(JoynrMessage, "setSigningCallback").and.callThrough();
         runtime = new WebSocketLibjoynrRuntime();
         await runtime.start(provisioning);
         await runtime.shutdown();
-        expect(JoynrMessage.setSigningCallback).toHaveBeenCalled();
-        const joynrMessage = new JoynrMessage({ payload: "payload", type: "type" });
-        expect(joynrMessage.signingCallback()).toEqual(Buffer.from(provisioning.keychain.ownerId));
+        expect(constructors.JoynrMessage.setSigningCallback).toHaveBeenCalled();
     });
 
     it("terminates Subscriptions upon shutdown with default timeout", done => {
@@ -288,7 +256,7 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
             .start(provisioning)
             .then(runtime.shutdown)
             .then(() => {
-                expect(terminateSubscriptionsSpy).toHaveBeenCalledWith(1000);
+                expect(mocks.SubscriptionManager.terminateSubscriptions).toHaveBeenCalledWith(1000);
                 done();
             })
             .catch(fail);
@@ -301,10 +269,10 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
         runtime
             .start(provisioning)
             .then(() => {
-                runtime.shutdown();
+                return runtime.shutdown();
             })
             .then(() => {
-                expect(terminateSubscriptionsSpy).not.toHaveBeenCalled();
+                expect(mocks.SubscriptionManager.terminateSubscriptions).not.toHaveBeenCalled();
                 done();
             })
             .catch(fail);
@@ -320,7 +288,7 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
                 runtime.shutdown({ clearSubscriptionsEnabled: false });
             })
             .then(() => {
-                expect(terminateSubscriptionsSpy).not.toHaveBeenCalled();
+                expect(mocks.SubscriptionManager.terminateSubscriptions).not.toHaveBeenCalled();
                 done();
             })
             .catch(fail);
@@ -330,6 +298,6 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
         runtime = new WebSocketLibjoynrRuntime();
         await runtime.start(provisioning);
         await runtime.shutdown();
-        expect(SharedWebSocketEnableShutdownModeSpy).toHaveBeenCalled();
+        expect(mocks.SharedWebSocket.enableShutdownMode).toHaveBeenCalled();
     });
 });

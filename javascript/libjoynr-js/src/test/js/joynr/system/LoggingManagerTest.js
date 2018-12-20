@@ -22,9 +22,9 @@ const JoynrLogger = require("../../../../main/js/joynr/system/JoynrLogger");
 
 describe("libjoynr-js.joynr.util.LoggingManager", () => {
     beforeEach(() => {
-        spyOn(JoynrLogger, "setLogLevel").and.callThrough();
-        spyOn(JoynrLogger, "setFormatting").and.callThrough();
-        spyOn(JoynrLogger, "setOutput").and.callThrough();
+        spyOn(JoynrLogger, "setLogLevel").and.stub();
+        spyOn(JoynrLogger, "setFormatting").and.stub();
+        spyOn(JoynrLogger, "setOutput").and.stub();
     });
 
     function expectNoCalls() {
