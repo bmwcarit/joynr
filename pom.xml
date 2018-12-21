@@ -422,8 +422,8 @@
 		<javassist.version>3.22.0-GA</javassist.version>
 		<skipTests>true</skipTests>
 		<franca.version>0.13.0</franca.version>
-		<xtend.version>2.11.0</xtend.version>
-		<xtext.version>2.11.0</xtext.version>
+		<xtend.version>2.16.0</xtend.version>
+		<xtext.version>2.16.0</xtext.version>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<slf4j.version>1.7.25</slf4j.version>
@@ -1143,9 +1143,9 @@
 					<version>${xtend.version}</version>
 					<dependencies>
 						<dependency>
-							<groupId>org.eclipse.platform</groupId>
-							<artifactId>org.eclipse.equinox.common</artifactId>
-							<version>3.10.0</version>
+							<groupId>com.google.guava</groupId>
+							<artifactId>guava</artifactId>
+							<version>21.0</version>
 						</dependency>
 					</dependencies>
 				</plugin>
