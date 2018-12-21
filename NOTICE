@@ -73,11 +73,15 @@ This project has dependencies to:
   Arquillian Transaction Extension: Implementation Base under Apache License, Version 2.0
   Arquillian Transaction Extension: JTA under Apache License, Version 2.0
   Arquillian Transaction Extension: SPI under Apache License, Version 2.0
+  asm under BSD
   ASM Analysis under BSD
   ASM Commons under BSD
   ASM Core under BSD
   ASM Tree under BSD
   ASM Util under BSD
+  asm-analysis under BSD
+  asm-commons under BSD
+  asm-tree under BSD
   atmosphere-annotations under CDDL or Apache License 2.0
   atmosphere-guice under Apache License 2.0
   atmosphere-jersey under CDDL or Apache License 2.0
@@ -102,14 +106,14 @@ This project has dependencies to:
   Connector Architecture 1.5 API under lgpl
   Core File Systems under Eclipse Public License
   Core Hibernate O/RM functionality under GNU Lesser General Public License
-  Core Resource Management under Eclipse Public License
+  Core Resource Management under Eclipse Public License - v 2.0
   Core Runtime under Eclipse Public License
   CSS Parser under GNU Lesser General Public License
   Data Mapper for Jackson under The Apache Software License, Version 2.0
   Default Plexus Container under Apache License, Version 2.0
   dom4j under BSD License
-  Eclipse Content Mechanism under Eclipse Public License
-  Eclipse Jobs Mechanism under Eclipse Public License
+  Eclipse Content Mechanism under Eclipse Public License - v 2.0
+  Eclipse Jobs Mechanism under Eclipse Public License - v 2.0
   Eclipse Preferences Mechanism under Eclipse Public License
   Eclipse Xbase Runtime Library under Eclipse Public License, Version 1.0
   Eclipse Xtend Active Annotations Library under Eclipse Public License, Version 1.0
@@ -117,10 +121,10 @@ This project has dependencies to:
   ehcache under The Apache Software License, Version 2.0
   EJB 3.1 API under lgpl
   Embedded GlassFish All-In-One under CDDL + GPLv2 with classpath exception
-  Equinox Application Container under Eclipse Public License
+  Equinox Application Container under Eclipse Public License - v 2.0
   Expression Language under Eclipse Public License
   Expression Language 2.2 API under lgpl
-  Extension Registry Support under Eclipse Public License
+  Extension Registry Support under Eclipse Public License - v 2.0
   FindBugs-Annotations under GNU Lesser Public License
   FindBugs-jsr305 under The Apache Software License, Version 2.0
   flatbuffers-java under Apache License V2.0
@@ -268,6 +272,7 @@ This project has dependencies to:
   Java API for XML-Based RPC (JAX-RPC) 1.1 under lgpl
   Java Architecture for XML Binding 2.2 under lgpl
   Java Compiler Apt under Eclipse Public License
+  Java Compiler Tool Support under Eclipse Public License
   Java Development Tools Core under Eclipse Public License
   Java Persistence API, Version 2.1 under Eclipse Public License (EPL), Version 1.0 or Eclipse Distribution License (EDL), Version 1.0
   Java Servlet 3.0 API under lgpl
@@ -405,7 +410,7 @@ This project has dependencies to:
   stateless-async-backend-services under The Apache Software License, Version 2.0
   StAX API under The Apache Software License, Version 2.0
   TagSoup under Apache License 2.0
-  Text under Eclipse Public License
+  Text under Eclipse Public License - v 2.0
   Transaction 1.1 API under lgpl
   vtd-xml under GNU GENERAL PUBLIC LICENSE Version 2, June 1991
   Xalan Java under The Apache Software License, Version 2.0
