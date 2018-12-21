@@ -52,7 +52,7 @@ function equalsCompound(other) {
                     return false;
                 }
                 // check only the first function for equals
-                hasEquals = member[0].equals && typeof member[0].equals === "function";
+                hasEquals = member[0] && member[0].equals && typeof member[0].equals === "function";
                 length = member.length;
 
                 if (hasEquals) {
