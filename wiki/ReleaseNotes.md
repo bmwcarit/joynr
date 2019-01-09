@@ -2,6 +2,17 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.6.4
+
+## API relevant changes
+None.
+
+## Other changes
+* **[Java]** Update Xtend and Xtext to latest version 2.16.0 to fix issue with transitive dependencies in generator.
+
+## Configuration property changes
+None.
+
 # joynr 1.6.3
 
 ## API relevant changes

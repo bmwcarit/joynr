@@ -21,25 +21,26 @@ This project has dependencies to:
   AOP alliance under Public Domain
   Apache Log4j under The Apache Software License, Version 2.0
   Apache XBean :: Reflect under The Apache Software License, Version 2.0
-  ASM Commons under BSD
-  ASM Core under BSD
-  ASM Tree under BSD
+  asm under BSD
+  asm-analysis under BSD
+  asm-commons under BSD
+  asm-tree under BSD
   Backport of JSR 166 under Public Domain
   Commands under Eclipse Public License
   Common Eclipse Runtime under Eclipse Public License
   Common Types Runtime Library under Eclipse Public License, Version 1.0
   Core File Systems under Eclipse Public License
-  Core Resource Management under Eclipse Public License
+  Core Resource Management under Eclipse Public License - v 2.0
   Core Runtime under Eclipse Public License
-  Eclipse Content Mechanism under Eclipse Public License
-  Eclipse Jobs Mechanism under Eclipse Public License
+  Eclipse Content Mechanism under Eclipse Public License - v 2.0
+  Eclipse Jobs Mechanism under Eclipse Public License - v 2.0
   Eclipse Preferences Mechanism under Eclipse Public License
   Eclipse Xbase Runtime Library under Eclipse Public License, Version 1.0
   Eclipse Xtend Active Annotations Library under Eclipse Public License, Version 1.0
   Eclipse Xtend Runtime Library under Eclipse Public License, Version 1.0
-  Equinox Application Container under Eclipse Public License
+  Equinox Application Container under Eclipse Public License - v 2.0
   Expression Language under Eclipse Public License
-  Extension Registry Support under Eclipse Public License
+  Extension Registry Support under Eclipse Public License - v 2.0
   FindBugs-Annotations under GNU Lesser Public License
   FindBugs-jsr305 under The Apache Software License, Version 2.0
   Google Guice - Core Library under The Apache Software License, Version 2.0
@@ -60,6 +61,7 @@ This project has dependencies to:
   io.joynr:basemodel under The Apache Software License, Version 2.0
   io.joynr:tools under The Apache Software License, Version 2.0
   Java Compiler Apt under Eclipse Public License
+  Java Compiler Tool Support under Eclipse Public License
   Java Development Tools Core under Eclipse Public License
   Javassist under MPL 1.1 or LGPL 2.1 or Apache License 2.0
   javax.inject under The Apache Software License, Version 2.0
@@ -90,7 +92,7 @@ This project has dependencies to:
   Plexus Interpolation API under The Apache Software License, Version 2.0
   Reflections under WTFPL or The New BSD License
   SLF4J API Module under MIT License
-  Text under Eclipse Public License
+  Text under Eclipse Public License - v 2.0
   Xbase Runtime Library under Eclipse Public License, Version 1.0
   Xtend Core Library under Eclipse Public License, Version 1.0
   Xtext Runtime Bundle under Eclipse Public License, Version 1.0
