@@ -36,6 +36,7 @@ Settings::Settings() : filename(), propertyTree(), loaded(false)
 Settings::Settings(const std::string& filename) : filename(filename), propertyTree(), loaded(false)
 {
     try {
+        JOYNR_LOG_INFO(logger(), "attempting to read settings file: {}", filename);
         ptree::read_ini(filename, propertyTree);
         loaded = true;
     } catch (const ptree::ini_parser_error& e) {
