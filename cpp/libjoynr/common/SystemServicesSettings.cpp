@@ -137,19 +137,19 @@ void SystemServicesSettings::checkSettings() const
 
 void SystemServicesSettings::printSettings() const
 {
-    JOYNR_LOG_DEBUG(logger(),
-                    "SETTING: {} = {}",
-                    SETTING_DOMAIN(),
-                    settings.get<std::string>(SETTING_DOMAIN()));
-    JOYNR_LOG_DEBUG(logger(),
-                    "SETTING: {} = {}",
-                    SETTING_CC_ROUTINGPROVIDER_PARTICIPANTID(),
-                    settings.get<std::string>(SETTING_CC_ROUTINGPROVIDER_PARTICIPANTID()));
-    JOYNR_LOG_DEBUG(logger(),
-                    "SETTING: {} = {}",
-                    SETTING_CC_DISCOVERYPROVIDER_PARTICIPANTID(),
-                    settings.get<std::string>(SETTING_CC_DISCOVERYPROVIDER_PARTICIPANTID()));
-    JOYNR_LOG_DEBUG(
+    JOYNR_LOG_INFO(logger(),
+                   "SETTING: {} = {}",
+                   SETTING_DOMAIN(),
+                   settings.get<std::string>(SETTING_DOMAIN()));
+    JOYNR_LOG_INFO(logger(),
+                   "SETTING: {} = {}",
+                   SETTING_CC_ROUTINGPROVIDER_PARTICIPANTID(),
+                   settings.get<std::string>(SETTING_CC_ROUTINGPROVIDER_PARTICIPANTID()));
+    JOYNR_LOG_INFO(logger(),
+                   "SETTING: {} = {}",
+                   SETTING_CC_DISCOVERYPROVIDER_PARTICIPANTID(),
+                   settings.get<std::string>(SETTING_CC_DISCOVERYPROVIDER_PARTICIPANTID()));
+    JOYNR_LOG_INFO(
             logger(),
             "SETTING: {} = {}",
             SETTING_CC_MESSAGENOTIFICATIONPROVIDER_PARTICIPANTID(),
