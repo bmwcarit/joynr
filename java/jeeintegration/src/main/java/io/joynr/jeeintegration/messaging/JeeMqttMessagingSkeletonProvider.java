@@ -28,7 +28,7 @@ import static io.joynr.messaging.mqtt.settings.LimitAndBackpressureSettings.PROP
 import static io.joynr.messaging.mqtt.settings.LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_UPPER_THRESHOLD;
 import static io.joynr.messaging.mqtt.settings.LimitAndBackpressureSettings.PROPERTY_MAX_INCOMING_MQTT_REQUESTS;
 
-import java.util.HashSet;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,6 +73,7 @@ public class JeeMqttMessagingSkeletonProvider extends MqttMessagingSkeletonProvi
                                             @Named(CHANNELID) String channelId,
                                             MqttTopicPrefixProvider mqttTopicPrefixProvider,
                                             RawMessagingPreprocessor rawMessagingPreprocessor,
+                                            Set<JoynrMessageProcessor> messageProcessors,
                                             JoynrStatusMetricsAggregator jeeJoynrStatusMetrics) {
         // CHECKSTYLE:ON
         super(enableSharedSubscriptions,
@@ -87,7 +88,7 @@ public class JeeMqttMessagingSkeletonProvider extends MqttMessagingSkeletonProvi
               channelId,
               mqttTopicPrefixProvider,
               rawMessagingPreprocessor,
-              new HashSet<JoynrMessageProcessor>(),
+              messageProcessors,
               jeeJoynrStatusMetrics);
         httpBridgeEnabled = enableHttpBridge;
         logger.debug("Created with httpBridgeEnabled: {} ownAddress: {} channelId: {}",

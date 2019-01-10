@@ -34,6 +34,7 @@
 		<module>location-tester</module>
 		<module>stateless-async</module>
 		<module>message-persistence</module>
+		<module>custom-headers</module>
 	</modules>
 	<profiles>
 		<!-- Only include javascript examples when javascript is available -->

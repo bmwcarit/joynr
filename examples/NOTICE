@@ -29,6 +29,7 @@ This project has dependencies to:
   Commons Codec under The Apache Software License, Version 2.0
   Commons Lang under The Apache Software License, Version 2.0
   Commons Logging under The Apache Software License, Version 2.0
+  custom-headers-backend-services under The Apache Software License, Version 2.0
   ehcache under The Apache Software License, Version 2.0
   FindBugs-Annotations under GNU Lesser Public License
   FindBugs-jsr305 under The Apache Software License, Version 2.0
@@ -42,6 +43,10 @@ This project has dependencies to:
   io.joynr.examples.radio-jee:radio-jee-provider under The Apache Software License, Version 2.0
   io.joynr.examples:android-location-consumer under The Apache Software License, Version 2.0
   io.joynr.examples:android-location-provider under The Apache Software License, Version 2.0
+  io.joynr.examples:custom-headers under The Apache Software License, Version 2.0
+  io.joynr.examples:custom-headers-api under The Apache Software License, Version 2.0
+  io.joynr.examples:custom-headers-jee-consumer under The Apache Software License, Version 2.0
+  io.joynr.examples:custom-headers-jee-provider under The Apache Software License, Version 2.0
   io.joynr.examples:location-tester under The Apache Software License, Version 2.0
   io.joynr.examples:message-persistence under The Apache Software License, Version 2.0
   io.joynr.examples:message-persistence-consumer under The Apache Software License, Version 2.0
