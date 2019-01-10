@@ -23,6 +23,9 @@ the versioning scheme [here](JoynrVersioning.md).
 * **[JS]** Fixed an issue where joynr.shutdown would not wait for clearSubscriptions before shutting
   down.
 
+## Configuration property changes
+None.
+
 # joynr 1.6.4
 
 ## API relevant changes
@@ -44,9 +47,6 @@ None.
   do not exist or are inaccessible or TLS options cannot be set.
 
 ## Configuration property changes
-None.
-
-## Other changes
 None.
 
 # joynr 1.6.2
