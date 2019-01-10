@@ -23,6 +23,7 @@ import java.lang.ref.ReferenceQueue;
 import java.lang.ref.Reference;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TimeZone;
@@ -296,7 +297,10 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
     private void routeInternal(final ImmutableMessage message, final long delayMs, final int retriesCount) {
         logger.trace("Scheduling message {} with delay {} and retries {}",
                      new Object[]{ message, delayMs, retriesCount });
-        DelayableImmutableMessage delayableMessage = new DelayableImmutableMessage(message, delayMs, retriesCount);
+        DelayableImmutableMessage delayableMessage = new DelayableImmutableMessage(message,
+                                                                                   delayMs,
+                                                                                   new HashSet<Address>(),
+                                                                                   retriesCount);
         if (maxRetryCount > -1) {
             if (retriesCount > maxRetryCount) {
                 logger.error("Max-retry-count (" + maxRetryCount + ") reached. Dropping message " + message.getId());

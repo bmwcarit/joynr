@@ -38,6 +38,7 @@ import io.joynr.messaging.persistence.MessagePersister;
 import io.joynr.messaging.routing.DelayableImmutableMessage;
 import io.joynr.smrf.EncodingException;
 import io.joynr.smrf.UnsuppportedVersionException;
+import joynr.system.RoutingTypes.Address;
 import joynr.ImmutableMessage;
 import joynr.Message;
 
@@ -119,6 +120,7 @@ public class SimpleFileBasedMessagePersister implements MessagePersister {
                                                                            .decode(base64SerialisedMessage));
             deserializedMessage = new DelayableImmutableMessage(immutableMessage,
                                                                 Long.parseLong(delayInMsString),
+                                                                new HashSet<Address>(),
                                                                 Integer.parseInt(retriesCountString));
         } catch (IOException | EncodingException | UnsuppportedVersionException e) {
             logger.error("Error reading {}", file);
