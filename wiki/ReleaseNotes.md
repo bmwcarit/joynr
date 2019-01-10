@@ -23,7 +23,30 @@ the versioning scheme [here](JoynrVersioning.md).
 * **[JS]** Fixed an issue where joynr.shutdown would not wait for clearSubscriptions before shutting
   down.
 
+# joynr 1.6.4
+
+## API relevant changes
+None.
+
+## Other changes
+* **[Java]** Update Xtend and Xtext to latest version 2.16.0 to fix issue with transitive dependencies in generator.
+
 ## Configuration property changes
+None.
+
+# joynr 1.6.3
+
+## API relevant changes
+None.
+
+## Other changes
+* **[C++]** MQTT connection will not be attempted if MQTT TLS is enabled, but TLS certificates
+  do not exist or are inaccessible or TLS options cannot be set.
+
+## Configuration property changes
+None.
+
+## Other changes
 None.
 
 # joynr 1.6.2
