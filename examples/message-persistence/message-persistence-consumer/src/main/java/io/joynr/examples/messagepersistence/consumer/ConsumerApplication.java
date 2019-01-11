@@ -19,6 +19,7 @@
 package io.joynr.examples.messagepersistence.consumer;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +38,8 @@ import joynr.vehicle.RadioProxy;
 public class ConsumerApplication extends AbstractJoynrApplication {
     private static final Logger logger = LoggerFactory.getLogger(ConsumerApplication.class);
     private static final int NUM_REQUEST = 100;
+    // 10min in order to have time to stop/restart provider side
+    private static final long TTL_MS = 10 * 60000L;
 
     @Override
     public void run() {
@@ -51,7 +54,7 @@ public class ConsumerApplication extends AbstractJoynrApplication {
         proxyBuilder.setDiscoveryQos(discoveryQos);
 
         MessagingQos messagingQos = new MessagingQos();
-        messagingQos.setTtl_ms(10 * 60000L); //10min in order to have time to stop/restart provider side
+        messagingQos.setTtl_ms(TTL_MS);
         messagingQos.setEffort(MessagingQosEffort.NORMAL);
 
         proxyBuilder.setMessagingQos(messagingQos);
@@ -81,8 +84,15 @@ public class ConsumerApplication extends AbstractJoynrApplication {
         logger.info("{} requests successfully sent to provider", NUM_REQUEST);
 
         try {
-            responsesCountDown.await();
-            logger.info("All {} responses arrived", NUM_REQUEST);
+            if (responsesCountDown.await(TTL_MS, TimeUnit.MILLISECONDS)) {
+                logger.info("All {} responses arrived", NUM_REQUEST);
+            } else {
+                final long remainingResponses = responsesCountDown.getCount();
+                logger.error("{} of {} responses arrived ({} did not arrive in time)",
+                             NUM_REQUEST - remainingResponses,
+                             NUM_REQUEST,
+                             remainingResponses);
+            }
         } catch (InterruptedException e) {
             logger.info("Consumer application interrupted while waiting for all responses", e);
         }
