@@ -401,7 +401,6 @@ public class CcMessageRouterTest {
     public void testRetryWithMaxRetryCount() throws Exception {
         // shutdown general message router to avoid conflict with test case specific message router
         messageRouter.shutdown();
-        Thread.sleep(1000);
 
         final long routingMaxRetryCount = 3;
         MessageRouter messageRouterWithMaxRetryCount = getMessageRouterWithMaxRetryCount(routingMaxRetryCount);
@@ -426,7 +425,6 @@ public class CcMessageRouterTest {
     public void testDelayWithExponentialBackoffLimit() throws Exception {
         // shutdown general message router to avoid conflict with test case specific message router
         messageRouter.shutdown();
-        Thread.sleep(1000);
 
         final long routingDuration = 1000;
         final long sendMsgRetryIntervalMs = 50;
@@ -489,7 +487,6 @@ public class CcMessageRouterTest {
 
         // shutdown general message router to avoid conflict with test case specific message router
         messageRouter.shutdown();
-        Thread.sleep(1000);
 
         final long routingDuration = 1000;
         final long sendMsgRetryIntervalMs = 20;
@@ -624,7 +621,6 @@ public class CcMessageRouterTest {
     public void testMessageProcessedListenerCalledAfterMaxRetry() throws Exception {
         // shutdown general message router to avoid conflict with test case specific message router
         messageRouter.shutdown();
-        Thread.sleep(1000);
 
         final long routingMaxRetryCount = 0;
         MessageRouter messageRouterWithMaxRetryCount = getMessageRouterWithMaxRetryCount(routingMaxRetryCount);

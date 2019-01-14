@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -465,8 +466,14 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
 
     @Override
     public void shutdown() {
+        CountDownLatch countDownLatch = new CountDownLatch(messageWorkers.size());
         for (MessageWorker worker : messageWorkers) {
-            worker.stopWorker();
+            worker.stopWorker(countDownLatch);
+        }
+        try {
+            countDownLatch.await(1500, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            logger.error("Interrupted while waiting for message workers to stop.", e);
         }
     }
 
@@ -491,14 +498,17 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
     class MessageWorker implements Runnable {
         private Logger logger = LoggerFactory.getLogger(MessageWorker.class);
         private int number;
+        private volatile CountDownLatch countDownLatch;
         private volatile boolean stopped;
 
         public MessageWorker(int number) {
             this.number = number;
+            countDownLatch = null;
             stopped = false;
         }
 
-        void stopWorker() {
+        void stopWorker(CountDownLatch countDownLatch) {
+            this.countDownLatch = countDownLatch;
             stopped = true;
         }
 
@@ -562,6 +572,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
                     failureAction.execute(error);
                 }
             }
+            countDownLatch.countDown();
         }
     }
 }
