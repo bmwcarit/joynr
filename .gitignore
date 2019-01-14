@@ -65,7 +65,6 @@ clientkeystore.*
 controlled-bounceproxy/
 examples/radio-js/src/main/resources/lib/
 ilt-results*
-java/backend-services/capabilities-directory/
 java/common/infrastructure-common/testdb/
 javascript/libjoynr-js/userdirectorydb/
 joynr_persistedSubscriptionRequests/
