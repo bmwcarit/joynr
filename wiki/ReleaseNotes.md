@@ -22,6 +22,9 @@ the versioning scheme [here](JoynrVersioning.md).
   do not exist or are inaccessible or TLS options cannot be set.
 * **[JS]** Fixed an issue where joynr.shutdown would not wait for clearSubscriptions before shutting
   down.
+* **[Java]** Eliminated declared but unneeded dependcies in some of the sub-projects. Also avoided
+  defining versions inside the dependencyManagement for transitive dependencies not being directly
+  used in joynr.
 
 ## Configuration property changes
 None.
