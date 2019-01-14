@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # fail on first error
-set -euxo pipefail
+set -exo pipefail
 source /data/src/docker/joynr-base/scripts/global.sh
 
 log "### start cpp-build-tests.sh ###"
