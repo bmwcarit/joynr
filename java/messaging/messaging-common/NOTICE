@@ -18,8 +18,6 @@ under the License.
 This project has dependencies to:
   AOP alliance under Public Domain
   Apache Log4j under The Apache Software License, Version 2.0
-  Apache Log4j API under The Apache Software License, Version 2.0
-  Apache Log4j SLF4J Binding under The Apache Software License, Version 2.0
   Commons Lang under The Apache Software License, Version 2.0
   FindBugs-jsr305 under The Apache Software License, Version 2.0
   FlatBuffers Java API under Apache License V2.0

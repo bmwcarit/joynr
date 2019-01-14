@@ -21,8 +21,7 @@ This project has dependencies to:
   Apache Groovy under The Apache Software License, Version 2.0
   Apache HttpClient under Apache License, Version 2.0
   Apache HttpCore under Apache License, Version 2.0
-  Apache Log4j API under The Apache Software License, Version 2.0
-  Apache Log4j SLF4J Binding under The Apache Software License, Version 2.0
+  Apache Log4j under The Apache Software License, Version 2.0
   Arquillian Config API under Apache License, Version 2.0
   Arquillian Config Implementation Base under Apache License, Version 2.0
   Arquillian Container GlassFish Embedded 3.1 under Public Domain
@@ -105,5 +104,6 @@ This project has dependencies to:
   ShrinkWrap Implementation Base under Apache License, Version 2.0
   ShrinkWrap SPI under Apache License, Version 2.0
   SLF4J API Module under MIT License
+  SLF4J LOG4J-12 Binding under MIT License
   SpotBugs Annotations under GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1
 

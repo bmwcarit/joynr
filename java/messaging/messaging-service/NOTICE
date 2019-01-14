@@ -19,8 +19,7 @@ This project has dependencies to:
   AOP alliance under Public Domain
   Apache HttpClient under Apache License, Version 2.0
   Apache HttpCore under Apache License, Version 2.0
-  Apache Log4j API under The Apache Software License, Version 2.0
-  Apache Log4j SLF4J Binding under The Apache Software License, Version 2.0
+  Apache Log4j under The Apache Software License, Version 2.0
   Commons Codec under The Apache Software License, Version 2.0
   Commons Lang under The Apache Software License, Version 2.0
   Commons Logging under The Apache Software License, Version 2.0
@@ -73,6 +72,7 @@ This project has dependencies to:
   REST Assured under Apache 2.0
   rest-assured-common under Apache 2.0
   SLF4J API Module under MIT License
+  SLF4J LOG4J-12 Binding under MIT License
   SpotBugs Annotations under GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1
   TagSoup under Apache License 2.0
   xml-path under Apache 2.0
