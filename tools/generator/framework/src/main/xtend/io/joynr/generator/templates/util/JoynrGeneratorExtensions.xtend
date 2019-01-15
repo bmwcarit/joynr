@@ -40,6 +40,7 @@ import org.franca.core.franca.FType
 import org.franca.core.franca.FTypeDef
 import org.franca.core.franca.FTypeRef
 import org.franca.core.franca.FTypedElement
+import org.franca.core.franca.FTypeCollection
 
 class JoynrGeneratorExtensions {
 
@@ -70,12 +71,15 @@ class JoynrGeneratorExtensions {
 	}
 
 	def String getVersionSuffix(FModelElement modelElement) {
-		if (packageWithVersion && modelElement instanceof FInterface
-			&& (modelElement as FInterface).version !== null) {
-			return '.v' + (modelElement as FInterface).version.major;
-		} else {
-			return '';
+		if (packageWithVersion) {
+			if (modelElement instanceof FTypeCollection
+				&& (modelElement as FTypeCollection).version !== null) {
+				return '.v' + (modelElement as FTypeCollection).version.major;
+			} else if (modelElement instanceof FType && (modelElement as FType).partOfTypeCollection) {
+				return getVersionSuffix((modelElement as FType).typeCollection);
+			}
 		}
+		return ''
 	}
 
 	def String getPackageNameInternal(FModelElement fModelElement, boolean useOwnName) {
