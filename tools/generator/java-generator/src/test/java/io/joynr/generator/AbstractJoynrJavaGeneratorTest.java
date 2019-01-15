@@ -87,9 +87,9 @@ public abstract class AbstractJoynrJavaGeneratorTest {
                                                                                       .to(false);
                                                                         bindConstant().annotatedWith(Names.named(JoynrGeneratorExtensions.JOYNR_GENERATOR_GENERATE))
                                                                                       .to(true);
-                                                                        bindConstant().annotatedWith(Names.named(JoynrGeneratorExtensions.JOYNR_GENERATOR_PACKAGEWITHVERSION))
+                                                                        bindConstant().annotatedWith(Names.named(NamingUtil.JOYNR_GENERATOR_PACKAGEWITHVERSION))
                                                                                       .to(false);
-                                                                        bindConstant().annotatedWith(Names.named(NamingUtil.JOYNR_GENERATOR_INTERFACENAMEWITHVERSION))
+                                                                        bindConstant().annotatedWith(Names.named(NamingUtil.JOYNR_GENERATOR_NAMEWITHVERSION))
                                                                                       .to(false);
                                                                         bind(IFileSystemAccess.class).to(JavaIoFileSystemAccess.class);
                                                                     }

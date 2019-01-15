@@ -40,13 +40,11 @@ import org.franca.core.franca.FType
 import org.franca.core.franca.FTypeDef
 import org.franca.core.franca.FTypeRef
 import org.franca.core.franca.FTypedElement
-import org.franca.core.franca.FTypeCollection
 
 class JoynrGeneratorExtensions {
 
 	public final static String JOYNR_GENERATOR_GENERATE = "JOYNR_GENERATOR_GENERATE";
 	public final static String JOYNR_GENERATOR_CLEAN = "JOYNR_GENERATOR_CLEAN";
-	public final static String JOYNR_GENERATOR_PACKAGEWITHVERSION = "JOYNR_GENERATOR_PACKAGEWITHVERSION";
 
 	@Inject
 	protected extension NamingUtil;
@@ -62,24 +60,8 @@ class JoynrGeneratorExtensions {
 	@Named(JOYNR_GENERATOR_CLEAN)
 	public boolean clean;
 
-	@Inject
-	@Named(JOYNR_GENERATOR_PACKAGEWITHVERSION)
-	public boolean packageWithVersion;
-
 	def Iterable<FInterface> getInterfaces(FModel model) {
 		return model.interfaces
-	}
-
-	def String getVersionSuffix(FModelElement modelElement) {
-		if (packageWithVersion) {
-			if (modelElement instanceof FTypeCollection
-				&& (modelElement as FTypeCollection).version !== null) {
-				return '.v' + (modelElement as FTypeCollection).version.major;
-			} else if (modelElement instanceof FType && (modelElement as FType).partOfTypeCollection) {
-				return getVersionSuffix((modelElement as FType).typeCollection);
-			}
-		}
-		return ''
 	}
 
 	def String getPackageNameInternal(FModelElement fModelElement, boolean useOwnName) {
@@ -97,7 +79,7 @@ class JoynrGeneratorExtensions {
 						fModelElement.eResource.toString) + " cannot be parsed correctly"
 			throw new IllegalStateException(errorMsg);
 		} else if (fModelElement.eContainer instanceof FModel) {
-			return (fModelElement.eContainer as FModel).joynrName + getVersionSuffix(fModelElement);
+			return (fModelElement.eContainer as FModel).joynrName + if (packageWithVersion) getVersionSuffix(fModelElement) else '';
 		} else if (fModelElement instanceof FMethod) {
 			// include interface name for unnamed error enums (defined or extended inside method definition)
 			val finterface = fModelElement.eContainer as FModelElement

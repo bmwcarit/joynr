@@ -21,7 +21,6 @@ package io.joynr.generator.templates.util;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import io.joynr.generator.loading.ModelLoader;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -35,6 +34,8 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.name.Names;
 
+import io.joynr.generator.loading.ModelLoader;
+
 public class BroadcastUtilTest {
 
     @Test
@@ -46,8 +47,9 @@ public class BroadcastUtilTest {
 
             @Override
             protected void configure() {
-                bindConstant().annotatedWith(Names.named(NamingUtil.JOYNR_GENERATOR_INTERFACENAMEWITHVERSION))
-                              .to(false);
+                bind(Boolean.class).annotatedWith(Names.named(NamingUtil.JOYNR_GENERATOR_PACKAGEWITHVERSION))
+                                   .toInstance(false);
+                bindConstant().annotatedWith(Names.named(NamingUtil.JOYNR_GENERATOR_NAMEWITHVERSION)).to(false);
             }
         }).getInstance(BroadcastUtil.class);
 

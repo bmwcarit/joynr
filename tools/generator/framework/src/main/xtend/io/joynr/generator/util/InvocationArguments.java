@@ -221,7 +221,7 @@ public class InvocationArguments {
         return "package".equalsIgnoreCase(addVersionTo);
     }
 
-    public boolean addVersionToInterfaceName() {
+    public boolean addVersionToName() {
         return "name".equalsIgnoreCase(addVersionTo);
     }
 

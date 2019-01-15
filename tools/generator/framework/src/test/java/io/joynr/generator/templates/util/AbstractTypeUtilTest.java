@@ -22,7 +22,6 @@ package io.joynr.generator.templates.util;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.mockito.Mockito.mock;
-import io.joynr.generator.loading.ModelLoader;
 
 import java.net.URL;
 import java.util.Iterator;
@@ -39,6 +38,8 @@ import org.mockito.invocation.InvocationOnMock;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.name.Names;
+
+import io.joynr.generator.loading.ModelLoader;
 
 public class AbstractTypeUtilTest {
 
@@ -73,8 +74,9 @@ public class AbstractTypeUtilTest {
 
             @Override
             protected void configure() {
-                bindConstant().annotatedWith(Names.named(NamingUtil.JOYNR_GENERATOR_INTERFACENAMEWITHVERSION))
-                              .to(false);
+                bind(Boolean.class).annotatedWith(Names.named(NamingUtil.JOYNR_GENERATOR_PACKAGEWITHVERSION))
+                                   .toInstance(false);
+                bindConstant().annotatedWith(Names.named(NamingUtil.JOYNR_GENERATOR_NAMEWITHVERSION)).to(false);
             }
         }).injectMembers(typeUtil);
 
