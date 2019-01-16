@@ -2,6 +2,17 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.6.5
+
+## API relevant changes
+None.
+
+## Other changes
+* **[Java]** Update jackson to version 2.9.8
+
+## Configuration property changes
+None.
+
 # joynr 1.6.4
 
 ## API relevant changes
