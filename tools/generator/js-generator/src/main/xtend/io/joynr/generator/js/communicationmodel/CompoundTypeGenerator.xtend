@@ -46,7 +46,7 @@ class CompoundTypeGenerator extends CompoundTypeTemplate {
 		«IF type instanceof FStructType»
 			«generateStructType(type)»
 		«ELSEIF type instanceof FUnionType»
-			«generateUnionType(type as FUnionType)»
+			«generateUnionType(type)»
 		«ENDIF»
 	'''
 
