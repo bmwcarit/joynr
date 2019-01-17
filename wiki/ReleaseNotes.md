@@ -17,14 +17,22 @@ the versioning scheme [here](JoynrVersioning.md).
   ParticipantIdStorage now also stores major versions of providers.
 * **[Java, JEE]** Provided an example for the usage of the message persistence feature. Check the
   `examples/message-persistence/` folder.
-* **[Java]** Update jackson to version 2.9.7
-* **[C++]** MQTT connection will not be attempted if MQTT TLS is enabled, but TLS certificates
-  do not exist or are inaccessible or TLS options cannot be set.
 * **[JS]** Fixed an issue where joynr.shutdown would not wait for clearSubscriptions before shutting
   down.
 * **[Java]** Eliminated declared but unneeded dependcies in some of the sub-projects. Also avoided
   defining versions inside the dependencyManagement for transitive dependencies not being directly
   used in joynr.
+
+## Configuration property changes
+  None.
+
+# joynr 1.6.5
+
+## API relevant changes
+None.
+
+## Other changes
+* **[Java]** Update jackson to version 2.9.8
 
 ## Configuration property changes
 None.
