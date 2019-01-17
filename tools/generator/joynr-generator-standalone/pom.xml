@@ -116,12 +116,12 @@
 					<execution>
 						<phase>prepare-package</phase>
 						<configuration>
-							<tasks>
+							<target>
 								<copy todir="${project.build.directory}/classes/info"
 									includeEmptyDirs="false">
 									<fileset dir="${project.build.directory}/info" includes="**/*" />
 								</copy>
-							</tasks>
+							</target>
 						</configuration>
 						<goals>
 							<goal>run</goal>
