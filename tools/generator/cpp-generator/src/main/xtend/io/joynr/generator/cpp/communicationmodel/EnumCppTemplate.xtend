@@ -28,17 +28,13 @@ import org.franca.core.franca.FEnumerationType
 
 class EnumCppTemplate extends EnumTemplate {
 
-	@Inject
-	private extension TemplateBase
+	@Inject extension TemplateBase
 
-	@Inject
-	private extension CppStdTypeUtil
+	@Inject extension CppStdTypeUtil
 
-	@Inject
-	private extension NamingUtil
+	@Inject extension NamingUtil
 
-	@Inject
-	private extension JoynrCppGeneratorExtensions
+	@Inject extension JoynrCppGeneratorExtensions
 
 	@Inject
 	new(@Assisted FEnumerationType type) {

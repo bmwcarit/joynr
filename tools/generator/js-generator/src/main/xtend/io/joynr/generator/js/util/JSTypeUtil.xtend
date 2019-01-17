@@ -42,13 +42,13 @@ import org.franca.core.franca.FArrayType
 
 class JSTypeUtil extends AbstractTypeUtil {
 
-	@Inject private extension JoynrJSGeneratorExtensions
-	@Inject private extension NamingUtil
-	@Inject private extension MethodUtil
+	@Inject extension JoynrJSGeneratorExtensions
+	@Inject extension NamingUtil
+	@Inject extension MethodUtil
 
 	Logger logger = Logger::getLogger("JSTypeUtil")
 
-	private Map<FBasicTypeId,String> primitiveDataTypeDefaultMap;
+	Map<FBasicTypeId,String> primitiveDataTypeDefaultMap;
 
 	new () {
 	val Map<FBasicTypeId,String> primitiveDataTypeDefaultValue = new HashMap<FBasicTypeId, String>();

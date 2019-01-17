@@ -24,7 +24,7 @@ import io.joynr.generator.templates.util.JoynrGeneratorExtensions
 import org.franca.core.franca.FAttribute
 
 class JoynrJSGeneratorExtensions extends JoynrGeneratorExtensions {
-	@Inject private extension AttributeUtil
+	@Inject extension AttributeUtil
 
 	def getAttributeCaps(FAttribute attribute)
 	'''«IF isNotifiable(attribute)»NOTIFY«ENDIF»«IF isReadable(attribute)»READ«ENDIF»«IF isWritable(attribute)»WRITE«ENDIF»'''

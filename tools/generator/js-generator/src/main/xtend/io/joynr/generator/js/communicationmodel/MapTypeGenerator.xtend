@@ -31,8 +31,8 @@ import org.franca.core.franca.FMapType
 class MapTypeGenerator extends MapTemplate {
 
 	@Inject extension JSTypeUtil
-	@Inject private extension NamingUtil
-	@Inject private extension JoynrJSGeneratorExtensions
+	@Inject extension NamingUtil
+	@Inject extension JoynrJSGeneratorExtensions
 
 	@Inject
 	extension GeneratorParameter

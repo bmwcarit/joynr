@@ -40,10 +40,10 @@ import io.joynr.generator.templates.util.SupportedFrancaFeatureChecker
 class JoynrJSGenerator implements IJoynrGenerator {
 
 	// @Inject private FrancaPersistenceManager francaPersistenceManager
-	@Inject private GeneratorParameter parameters
+	@Inject GeneratorParameter parameters
 	@Inject JsTemplateFactory templateFactory
-	@Inject private extension TypesGenerator
-	@Inject private extension ErrorEnumTypesGenerator
+	@Inject extension TypesGenerator
+	@Inject extension ErrorEnumTypesGenerator
 
 	override getLanguageId() {
 		"javascript"

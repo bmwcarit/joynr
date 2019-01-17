@@ -36,10 +36,10 @@ class ProxyGenerator extends InterfaceJsTemplate {
 	@Inject extension JoynrJSGeneratorExtensions
 	@Inject extension JSTypeUtil
 	@Inject extension GeneratorParameter
-	@Inject private extension NamingUtil
-	@Inject private extension MethodUtil
-	@Inject private extension BroadcastUtil
-	@Inject private extension InterfaceUtil
+	@Inject extension NamingUtil
+	@Inject extension MethodUtil
+	@Inject extension BroadcastUtil
+	@Inject extension InterfaceUtil
 
 	def relativePathToBase() {
 		var relativePath = ""

@@ -30,9 +30,9 @@ class InterfaceProxyBaseCppTemplate extends InterfaceTemplate {
 	@Inject	extension JoynrCppGeneratorExtensions
 	@Inject extension TemplateBase
 	@Inject extension InterfaceSubscriptionUtil
-	@Inject private extension NamingUtil
-	@Inject private extension AttributeUtil
-	@Inject private extension InterfaceUtil
+	@Inject extension NamingUtil
+	@Inject extension AttributeUtil
+	@Inject extension InterfaceUtil
 
 	override generate()
 '''

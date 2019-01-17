@@ -27,8 +27,8 @@ import io.joynr.generator.templates.util.InterfaceUtil
 class InterfaceProxyCppTemplate extends InterfaceTemplate {
 	@Inject	extension JoynrCppGeneratorExtensions
 	@Inject extension TemplateBase
-	@Inject private extension NamingUtil
-	@Inject private extension InterfaceUtil
+	@Inject extension NamingUtil
+	@Inject extension InterfaceUtil
 
 	override generate()
 '''

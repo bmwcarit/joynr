@@ -34,7 +34,7 @@ class TypesGenerator {
 
 	@Inject extension JoynrJSGeneratorExtensions
 	@Inject extension TypeUtil
-	@Inject private extension NamingUtil
+	@Inject extension NamingUtil
 	@Inject JsTemplateFactory templateFactory
 
 	def generateTypes(Iterable<FType> types, IFileSystemAccess fsa) {

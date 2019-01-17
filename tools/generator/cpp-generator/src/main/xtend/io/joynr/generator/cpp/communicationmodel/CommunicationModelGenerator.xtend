@@ -31,10 +31,10 @@ import org.franca.core.franca.FModel
 
 class CommunicationModelGenerator {
 
-	@Inject private extension JoynrCppGeneratorExtensions
-	@Inject private extension CppStdTypeUtil
-	@Inject private extension NamingUtil
-	@Inject private extension InterfaceUtil
+	@Inject extension JoynrCppGeneratorExtensions
+	@Inject extension CppStdTypeUtil
+	@Inject extension NamingUtil
+	@Inject extension InterfaceUtil
 
 	@Inject TypeDefHTemplate typeDefH;
 

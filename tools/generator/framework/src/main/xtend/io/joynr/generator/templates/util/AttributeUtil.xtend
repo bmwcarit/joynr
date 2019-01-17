@@ -21,7 +21,7 @@ import com.google.inject.Singleton
 import org.franca.core.franca.FAttribute
 
 @Singleton
-public class AttributeUtil {
+class AttributeUtil {
 
 
 	def isReadable(FAttribute field) {

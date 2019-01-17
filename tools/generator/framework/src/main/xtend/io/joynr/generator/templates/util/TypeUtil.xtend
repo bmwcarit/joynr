@@ -48,7 +48,7 @@ import org.franca.core.franca.FTypeRef
 import org.franca.core.franca.FTypedElement
 import org.franca.core.franca.FUnionType
 
-public class FMapTypeAsLastComparator implements Comparator<Object> {
+class FMapTypeAsLastComparator implements Comparator<Object> {
 	override int compare (Object object1, Object object2)
 	{
 		val object1Type = if (object1 instanceof FMapType) 1 else 0

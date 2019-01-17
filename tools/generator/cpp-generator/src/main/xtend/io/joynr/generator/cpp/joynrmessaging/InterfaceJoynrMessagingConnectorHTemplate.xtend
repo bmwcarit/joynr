@@ -29,13 +29,13 @@ import io.joynr.generator.cpp.util.InterfaceSubscriptionUtil
 
 class InterfaceJoynrMessagingConnectorHTemplate extends InterfaceTemplate{
 
-	@Inject private extension TemplateBase
-	@Inject private extension CppStdTypeUtil
-	@Inject private extension NamingUtil
-	@Inject private extension AttributeUtil
-	@Inject private extension CppInterfaceUtil
-	@Inject private extension JoynrCppGeneratorExtensions
-	@Inject private extension InterfaceSubscriptionUtil
+	@Inject extension TemplateBase
+	@Inject extension CppStdTypeUtil
+	@Inject extension NamingUtil
+	@Inject extension AttributeUtil
+	@Inject extension CppInterfaceUtil
+	@Inject extension JoynrCppGeneratorExtensions
+	@Inject extension InterfaceSubscriptionUtil
 
 	override generate()
 '''

@@ -31,11 +31,9 @@ class CommunicationModelGenerator {
 	@Inject
 	extension JoynrJavaGeneratorExtensions
 
-	@Inject
-	private extension TypeUtil
+	@Inject extension TypeUtil
 
-	@Inject
-	private extension NamingUtil
+	@Inject extension NamingUtil
 
 	@Inject JavaTemplateFactory templateFactory
 

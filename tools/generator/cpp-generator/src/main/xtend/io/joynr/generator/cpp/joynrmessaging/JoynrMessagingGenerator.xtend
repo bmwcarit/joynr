@@ -27,8 +27,8 @@ import io.joynr.generator.cpp.util.CppTemplateFactory
 
 class JoynrMessagingGenerator {
 
-	@Inject private extension JoynrCppGeneratorExtensions
-	@Inject private extension NamingUtil
+	@Inject extension JoynrCppGeneratorExtensions
+	@Inject extension NamingUtil
 	@Inject CppTemplateFactory templateFactory;
 
 	def doGenerate(FModel model,

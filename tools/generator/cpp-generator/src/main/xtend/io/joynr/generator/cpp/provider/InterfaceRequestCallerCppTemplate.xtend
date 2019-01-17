@@ -31,13 +31,13 @@ import org.franca.core.franca.FMethod
 
 class InterfaceRequestCallerCppTemplate extends InterfaceTemplate {
 
-	@Inject private extension TemplateBase
-	@Inject private extension CppStdTypeUtil
-	@Inject private extension JoynrCppGeneratorExtensions
-	@Inject private extension NamingUtil
-	@Inject private extension AttributeUtil
-	@Inject private extension InterfaceUtil
-	@Inject private extension MethodUtil
+	@Inject extension TemplateBase
+	@Inject extension CppStdTypeUtil
+	@Inject extension JoynrCppGeneratorExtensions
+	@Inject extension NamingUtil
+	@Inject extension AttributeUtil
+	@Inject extension InterfaceUtil
+	@Inject extension MethodUtil
 
 	override generate()
 '''

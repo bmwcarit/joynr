@@ -55,7 +55,7 @@ class JoynrCppGenerator implements IJoynrGenerator{
 	@Inject IFileSystemAccess outputHeaderFileSystem;
 
 	public static final String OUTPUT_HEADER_PATH = "outputHeaderPath";
-	private Map<String, String> parameters;
+	Map<String, String> parameters;
 
 	override doGenerate(Resource input, IFileSystemAccess fsa) {
 		doGenerate(input, fsa, getHeaderFileSystemAccess(fsa));

@@ -28,17 +28,13 @@ import com.google.inject.assistedinject.Assisted
 
 class TypeHTemplate extends CompoundTypeTemplate {
 
-	@Inject
-	private extension JoynrCppGeneratorExtensions
+	@Inject extension JoynrCppGeneratorExtensions
 
-	@Inject
-	private extension CppStdTypeUtil
+	@Inject extension CppStdTypeUtil
 
-	@Inject
-	private extension NamingUtil
+	@Inject extension NamingUtil
 
-	@Inject
-	private extension TemplateBase
+	@Inject extension TemplateBase
 
 	@Inject
 	new(@Assisted FCompoundType type) {

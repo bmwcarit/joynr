@@ -34,8 +34,8 @@ class CompoundTypeGenerator extends CompoundTypeTemplate {
 
 	@Inject extension JSTypeUtil
 	@Inject extension GeneratorParameter
-	@Inject private extension NamingUtil
-	@Inject private extension JoynrJSGeneratorExtensions
+	@Inject extension NamingUtil
+	@Inject extension JoynrJSGeneratorExtensions
 
 	@Inject
 	new(@Assisted FCompoundType type) {

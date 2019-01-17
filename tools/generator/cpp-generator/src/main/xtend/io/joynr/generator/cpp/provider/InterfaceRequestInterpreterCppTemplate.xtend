@@ -29,13 +29,13 @@ import io.joynr.generator.templates.util.NamingUtil
 
 class InterfaceRequestInterpreterCppTemplate extends InterfaceTemplate {
 
-	@Inject private extension TemplateBase
-	@Inject private extension CppStdTypeUtil
-	@Inject private extension JoynrCppGeneratorExtensions
-	@Inject private extension NamingUtil
-	@Inject private extension AttributeUtil
-	@Inject private extension MethodUtil
-	@Inject private extension InterfaceUtil
+	@Inject extension TemplateBase
+	@Inject extension CppStdTypeUtil
+	@Inject extension JoynrCppGeneratorExtensions
+	@Inject extension NamingUtil
+	@Inject extension AttributeUtil
+	@Inject extension MethodUtil
+	@Inject extension InterfaceUtil
 
 	override generate()
 '''

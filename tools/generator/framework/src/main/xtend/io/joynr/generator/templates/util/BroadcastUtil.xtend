@@ -27,13 +27,11 @@ import org.franca.core.franca.FBroadcast
 import org.franca.core.franca.FInterface
 
 @Singleton
-public class BroadcastUtil {
+class BroadcastUtil {
 
-	@Inject
-	private extension TypeUtil
+	@Inject extension TypeUtil
 
-	@Inject
-	private extension NamingUtil
+	@Inject extension NamingUtil
 
 	def Iterable<FArgument> getOutputParameters(FBroadcast event) {
 		if (event === null || event.outArgs.size() == 0){

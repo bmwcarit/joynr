@@ -30,15 +30,14 @@ import org.franca.core.franca.FBasicTypeId
 
 class DefaultInterfaceProviderCppTemplate extends InterfaceTemplate{
 
-	@Inject private extension TemplateBase
-	@Inject private extension CppStdTypeUtil
-	@Inject private extension NamingUtil
-	@Inject private extension MethodUtil
-	@Inject private extension InterfaceUtil
-	@Inject private extension AttributeUtil
+	@Inject extension TemplateBase
+	@Inject extension CppStdTypeUtil
+	@Inject extension NamingUtil
+	@Inject extension MethodUtil
+	@Inject extension InterfaceUtil
+	@Inject extension AttributeUtil
 
-	@Inject
-	private extension JoynrCppGeneratorExtensions
+	@Inject extension JoynrCppGeneratorExtensions
 
 	override generate()
 '''

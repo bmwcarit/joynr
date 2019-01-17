@@ -32,26 +32,19 @@ import org.franca.core.franca.FInterface
 
 class InterfaceCppTemplate extends InterfaceTemplate {
 
-	@Inject
-	private extension JoynrCppGeneratorExtensions
+	@Inject extension JoynrCppGeneratorExtensions
 
-	@Inject
-	private extension CppStdTypeUtil
+	@Inject extension CppStdTypeUtil
 
-	@Inject
-	private extension NamingUtil
+	@Inject extension NamingUtil
 
-	@Inject
-	private extension MethodUtil
+	@Inject extension MethodUtil
 
-	@Inject
-	private extension AttributeUtil
+	@Inject extension AttributeUtil
 
-	@Inject
-	private extension BroadcastUtil
+	@Inject extension BroadcastUtil
 
-	@Inject
-	private extension TemplateBase
+	@Inject extension TemplateBase
 
 	override generate() {
 		var selector = TypeSelector::defaultTypeSelector

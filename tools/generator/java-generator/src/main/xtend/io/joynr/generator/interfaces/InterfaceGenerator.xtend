@@ -28,7 +28,7 @@ import org.franca.core.franca.FInterface
 class InterfaceGenerator {
 
 	@Inject
-	extension JoynrJavaGeneratorExtensions	
+	extension JoynrJavaGeneratorExtensions
 	@Inject
 	extension NamingUtil
 	@Inject JavaTemplateFactory templateFactory

@@ -32,14 +32,14 @@ import org.franca.core.franca.FMethod
 
 class InterfaceJoynrMessagingConnectorCppTemplate extends InterfaceTemplate{
 
-	@Inject private extension TemplateBase
-	@Inject private extension CppStdTypeUtil
-	@Inject private extension JoynrCppGeneratorExtensions
-	@Inject private extension NamingUtil
-	@Inject private extension AttributeUtil
-	@Inject private extension MethodUtil
-	@Inject private extension CppInterfaceUtil
-	@Inject private extension InterfaceSubscriptionUtil
+	@Inject extension TemplateBase
+	@Inject extension CppStdTypeUtil
+	@Inject extension JoynrCppGeneratorExtensions
+	@Inject extension NamingUtil
+	@Inject extension AttributeUtil
+	@Inject extension MethodUtil
+	@Inject extension CppInterfaceUtil
+	@Inject extension InterfaceSubscriptionUtil
 
 	def produceParameterSetters(FMethod method)
 '''
