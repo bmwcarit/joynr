@@ -124,8 +124,7 @@ public class MessageQueueTest {
                                    maxTimeoutHolderMock,
                                    generatedMessageQueueId,
                                    messagePersisterMock,
-                                   routingTableMock,
-                                   42);
+                                   routingTableMock);
         drainQueue();
     }
 
@@ -285,7 +284,7 @@ public class MessageQueueTest {
         verify(routingTableMock).put(sender,
                                      replyToAddress,
                                      true,
-                                     mockImmutableMessage3_request.getTtlMs() + routingTableGracePeriodMs,
+                                     mockImmutableMessage3_request.getTtlMs(),
                                      false,
                                      false);
     }

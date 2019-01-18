@@ -21,12 +21,17 @@ package io.joynr.messaging.routing;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+
+import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_ROUTING_TABLE_GRACE_PERIOD_MS;
+
 import java.util.Iterator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 
 import io.joynr.exceptions.JoynrRuntimeException;
 import joynr.system.RoutingTypes.Address;
@@ -83,6 +88,12 @@ public class RoutingTableImpl implements RoutingTable {
     }
 
     private ConcurrentMap<String, RoutingEntry> hashMap = new ConcurrentHashMap<>();
+    private final long routingTableGracePeriodMs;
+
+    @Inject
+    public RoutingTableImpl(@Named(PROPERTY_ROUTING_TABLE_GRACE_PERIOD_MS) long routingTableGracePeriodMs) {
+        this.routingTableGracePeriodMs = routingTableGracePeriodMs;
+    }
 
     @Override
     public Address get(String participantId) {
@@ -124,6 +135,11 @@ public class RoutingTableImpl implements RoutingTable {
                     long expiryDateMs,
                     boolean sticky,
                     boolean allowUpdate) {
+        try {
+            expiryDateMs = Math.addExact(expiryDateMs, routingTableGracePeriodMs);
+        } catch (ArithmeticException e) {
+            expiryDateMs = Long.MAX_VALUE;
+        }
         RoutingEntry routingEntry = new RoutingEntry(address, isGloballyVisible, expiryDateMs, sticky);
         RoutingEntry result = hashMap.putIfAbsent(participantId, routingEntry);
         final boolean routingEntryAlreadyPresent = result != null;

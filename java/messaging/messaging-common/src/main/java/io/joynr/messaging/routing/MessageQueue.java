@@ -18,7 +18,6 @@
  */
 package io.joynr.messaging.routing;
 
-import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_ROUTING_TABLE_GRACE_PERIOD_MS;
 import java.util.Set;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.TimeUnit;
@@ -47,11 +46,10 @@ public class MessageQueue {
     public static final String PROPERTY_MESSAGE_QUEUE_SHUTDOWN_MAX_TIMEOUT = "io.joynr.messaging.queue.shutdown.timeout";
 
     private DelayQueue<DelayableImmutableMessage> delayableImmutableMessages;
-    private long shutdownTimeoutMs;
+    private final long shutdownTimeoutMs;
     private final String messageQueueId;
     private final MessagePersister messagePersister;
     private final RoutingTable routingTable;
-    private final long routingTableGracePeriodMs;
 
     /**
      * Helper class to enable constructor injection of an optionally configured timeout value.
@@ -71,14 +69,12 @@ public class MessageQueue {
                         MaxTimeoutHolder maxTimeoutHolder,
                         @Named(MESSAGE_QUEUE_ID) String messageQueueId,
                         MessagePersister messagePersister,
-                        RoutingTable routingTable,
-                        @Named(PROPERTY_ROUTING_TABLE_GRACE_PERIOD_MS) long routingTableGracePeriodMs) {
+                        RoutingTable routingTable) {
         this.delayableImmutableMessages = delayableImmutableMessages;
         this.shutdownTimeoutMs = maxTimeoutHolder.getTimeout();
         this.messageQueueId = messageQueueId;
         this.messagePersister = messagePersister;
         this.routingTable = routingTable;
-        this.routingTableGracePeriodMs = routingTableGracePeriodMs;
         fetchAndQueuePersistedMessages(delayableImmutableMessages, messageQueueId);
     }
 
@@ -96,17 +92,10 @@ public class MessageQueue {
         String replyTo = message.getReplyTo();
         if (replyTo != null && !replyTo.isEmpty()) {
             Address address = RoutingTypesUtil.fromAddressString(replyTo);
-
-            // If the message was received from global, the sender is globally visible by definition.
+            // Set participant globally visible because the actual visibility is unknown
+            // (the transient flag isReceivedFromGlobal is not persisted)
             final boolean isGloballyVisible = true;
-
-            long expiryDateMs;
-            try {
-                expiryDateMs = Math.addExact(message.getTtlMs(), routingTableGracePeriodMs);
-            } catch (ArithmeticException e) {
-                expiryDateMs = Long.MAX_VALUE;
-            }
-
+            final long expiryDateMs = message.getTtlMs();
             final boolean isSticky = false;
             final boolean allowUpdate = false;
 

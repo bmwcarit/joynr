@@ -67,7 +67,6 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
     protected final RoutingTable routingTable;
     private ScheduledExecutorService scheduler;
     private long sendMsgRetryIntervalMs;
-    private long routingTableGracePeriodMs;
     private long routingTableCleanupIntervalMs;
     @Inject(optional = true)
     @Named(ConfigurableMessagingSettings.PROPERTY_ROUTING_MAX_RETRY_COUNT)
@@ -96,7 +95,6 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
                                  @Named(SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduler,
                                  @Named(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS) long sendMsgRetryIntervalMs,
                                  @Named(ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_PARALLEL_SENDS) int maxParallelSends,
-                                 @Named(ConfigurableMessagingSettings.PROPERTY_ROUTING_TABLE_GRACE_PERIOD_MS) long routingTableGracePeriodMs,
                                  @Named(ConfigurableMessagingSettings.PROPERTY_ROUTING_TABLE_CLEANUP_INTERVAL_MS) long routingTableCleanupIntervalMs,
                                  MessagingStubFactory messagingStubFactory,
                                  MessagingSkeletonFactory messagingSkeletonFactory,
@@ -109,7 +107,6 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
         this.routingTable = routingTable;
         this.scheduler = scheduler;
         this.sendMsgRetryIntervalMs = sendMsgRetryIntervalMs;
-        this.routingTableGracePeriodMs = routingTableGracePeriodMs;
         this.routingTableCleanupIntervalMs = routingTableCleanupIntervalMs;
         this.messagingStubFactory = messagingStubFactory;
         this.messagingSkeletonFactory = messagingSkeletonFactory;
@@ -297,17 +294,9 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
         String replyTo = message.getReplyTo();
         if (replyTo != null && !replyTo.isEmpty()) {
             Address address = RoutingTypesUtil.fromAddressString(replyTo);
-
             // If the message was received from global, the sender is globally visible by definition.
             final boolean isGloballyVisible = true;
-
-            long expiryDateMs;
-            try {
-                expiryDateMs = Math.addExact(message.getTtlMs(), routingTableGracePeriodMs);
-            } catch (ArithmeticException e) {
-                expiryDateMs = Long.MAX_VALUE;
-            }
-
+            final long expiryDateMs = message.getTtlMs();
             final boolean isSticky = false;
             final boolean allowUpdate = false;
 
