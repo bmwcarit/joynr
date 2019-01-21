@@ -497,14 +497,18 @@ class TypeUtil {
 			(datatype.eContainer as FTypeCollection).name !== null;
 	}
 
-	def String getTypeCollectionName(FType datatype) {
+	def FTypeCollection getTypeCollection(FType datatype) {
 		if(!datatype.isPartOfTypeCollection) {
 			throw new IllegalStateException(
 					"Datatype " + datatype.name + " is not part of a type collection."
 					+ " Please call isPartOfTypeCollection before calling this method."
 			);
 		}
-		return (datatype.eContainer as FTypeCollection).joynrName;
+		return (datatype.eContainer as FTypeCollection);
+	}
+
+	def String getTypeCollectionName(FType datatype) {
+		return (datatype.typeCollection).joynrName;
 	}
 
 	/*
