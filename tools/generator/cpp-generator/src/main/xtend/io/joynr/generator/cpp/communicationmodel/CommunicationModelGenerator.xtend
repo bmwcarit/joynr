@@ -56,7 +56,7 @@ class CommunicationModelGenerator {
 		for( type: getCompoundDataTypes(fModel)){
 			var sourcepath = dataTypePath + getPackageSourceDirectory(type) + File::separator
 			var headerpath = headerDataTypePath + getPackagePathWithJoynrPrefix(type, File::separator) + File::separator
-			if (type.isPartOfTypeCollection) {
+			if (type.isPartOfNamedTypeCollection) {
 				headerpath += type.typeCollectionName + File::separator
 				sourcepath += type.typeCollectionName + File::separator
 			}
@@ -79,7 +79,7 @@ class CommunicationModelGenerator {
 		for (type : getEnumDataTypes(fModel)) {
 			var sourcepath = dataTypePath + getPackageSourceDirectory(type) + File::separator
 			var headerpath = headerDataTypePath + getPackagePathWithJoynrPrefix(type, File::separator) + File::separator
-			if (type.isPartOfTypeCollection) {
+			if (type.isPartOfNamedTypeCollection) {
 				headerpath += type.typeCollectionName + File::separator
 				sourcepath += type.typeCollectionName + File::separator
 			}
@@ -97,7 +97,7 @@ class CommunicationModelGenerator {
 		for (type : getMapDataTypes(fModel)) {
 			var sourcepath = dataTypePath + getPackageSourceDirectory(type) + File::separator
 			var headerpath = headerDataTypePath + getPackagePathWithJoynrPrefix(type, File::separator) + File::separator
-			if (type.isPartOfTypeCollection) {
+			if (type.isPartOfNamedTypeCollection) {
 				headerpath += type.typeCollectionName + File::separator
 				sourcepath += type.typeCollectionName + File::separator
 			}
@@ -122,7 +122,7 @@ class CommunicationModelGenerator {
 
 		for (type : getTypeDefDataTypes(fModel)) {
 			var headerpath = headerDataTypePath + getPackagePathWithJoynrPrefix(type, File::separator) + File::separator
-			if (type.isPartOfTypeCollection) {
+			if (type.isPartOfNamedTypeCollection) {
 				headerpath += type.typeCollectionName + File::separator
 			}
 			val headerFilename = headerpath + getGenerationTypeName(type)

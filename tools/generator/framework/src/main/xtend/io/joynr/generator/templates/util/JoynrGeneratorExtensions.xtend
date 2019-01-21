@@ -123,7 +123,7 @@ class JoynrGeneratorExtensions {
 
 	def getPackagePathWithJoynrPrefix(FType datatype, String separator, boolean includeTypeCollection) {
 		var packagePath = getPackagePathWithJoynrPrefix(datatype, separator);
-		if (includeTypeCollection && datatype.isPartOfTypeCollection) {
+		if (includeTypeCollection && datatype.isPartOfNamedTypeCollection) {
 			packagePath += separator + datatype.typeCollectionName;
 		}
 		return packagePath
@@ -319,7 +319,7 @@ class JoynrGeneratorExtensions {
 		} catch (IllegalStateException e) {
 			// if an illegal StateException has been thrown, we tried to get the package for a primitive type, so the packagepath stays empty.
 		}
-		if (includeTypeCollection && datatype.partOfTypeCollection) {
+		if (includeTypeCollection && datatype.partOfNamedTypeCollection) {
 			packagepath += separator + datatype.typeCollectionName;
 		}
 		return packagepath;

@@ -488,7 +488,11 @@ class TypeUtil {
 
 	def boolean isPartOfTypeCollection(FType datatype) {
 		return datatype.eContainer instanceof FTypeCollection &&
-			!(datatype.eContainer instanceof FInterface) &&
+			!(datatype.eContainer instanceof FInterface);
+	}
+
+	def boolean isPartOfNamedTypeCollection(FType datatype) {
+		return datatype.partOfTypeCollection &&
 			(datatype.eContainer as FTypeCollection).name != "" &&
 			(datatype.eContainer as FTypeCollection).name !== null;
 	}
@@ -496,7 +500,7 @@ class TypeUtil {
 	def String getTypeCollectionName(FType datatype) {
 		if(!datatype.isPartOfTypeCollection) {
 			throw new IllegalStateException(
-					"Datatype " + datatype.joynrName + " is not part of a type collection."
+					"Datatype " + datatype.name + " is not part of a type collection."
 					+ " Please call isPartOfTypeCollection before calling this method."
 			);
 		}

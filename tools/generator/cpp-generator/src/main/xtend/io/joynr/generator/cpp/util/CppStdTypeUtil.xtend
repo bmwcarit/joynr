@@ -118,7 +118,7 @@ class CppStdTypeUtil extends CppTypeUtil {
 
 	private def String getIncludeOf(FType dataType, String nameSuffix) {
 		var path = getPackagePathWithJoynrPrefix(dataType, "/")
-		if (dataType.isPartOfTypeCollection) {
+		if (dataType.isPartOfNamedTypeCollection) {
 			path += "/" + dataType.typeCollectionName
 		}
 		return "\"" + path + "/" + dataType.joynrName + nameSuffix + ".h\"";

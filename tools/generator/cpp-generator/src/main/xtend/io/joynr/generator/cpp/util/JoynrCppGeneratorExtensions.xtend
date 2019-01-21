@@ -44,7 +44,7 @@ class JoynrCppGeneratorExtensions extends JoynrGeneratorExtensions {
 
 	def String[] getNamespaces(FType datatype, boolean includeTypeCollection) {
 				var String packagePath = datatype.getPackagePathWithoutJoynrPrefix(".");
-		if (includeTypeCollection && datatype.isPartOfTypeCollection) {
+		if (includeTypeCollection && datatype.isPartOfNamedTypeCollection) {
 			packagePath += "." + datatype.typeCollectionName;
 		}
 		return packagePath.split("\\.");

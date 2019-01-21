@@ -42,7 +42,7 @@ class CommunicationModelGenerator {
 	def doGenerate(FModel fModel, IFileSystemAccess fsa){
 		for( type: getCompoundDataTypes(fModel)){
 			var path = getPackagePathWithJoynrPrefix(type, File::separator) + File::separator
-			if (type.isPartOfTypeCollection) {
+			if (type.isPartOfNamedTypeCollection) {
 				path += type.typeCollectionName + File::separator
 			}
 			var complexTypeTemplate = templateFactory.createComplexTypeTemplate(type)
@@ -55,7 +55,7 @@ class CommunicationModelGenerator {
 
 		for( type: getEnumDataTypes(fModel)){
 			var path = getPackagePathWithJoynrPrefix(type, File::separator) + File::separator
-			if (type.isPartOfTypeCollection) {
+			if (type.isPartOfNamedTypeCollection) {
 				path += type.typeCollectionName + File::separator
 			}
 			var enumTypeTemplate = templateFactory.createEnumTypeTemplate(type)
@@ -68,7 +68,7 @@ class CommunicationModelGenerator {
 
 		for( type: getMapDataTypes(fModel)){
 			var path = getPackagePathWithJoynrPrefix(type, File::separator) + File::separator
-			if (type.isPartOfTypeCollection) {
+			if (type.isPartOfNamedTypeCollection) {
 				path += type.typeCollectionName + File::separator
 			}
 			var mapTypeTemplate = templateFactory.createMapTypeTemplate(type)
