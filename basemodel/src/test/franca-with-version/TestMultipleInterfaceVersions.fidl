@@ -18,29 +18,90 @@
  */
 package tests
 
+<**
+		@description: anonymous typeCollection with major version 1
+**>
+typeCollection {
+	version {
+		major 1
+		minor 0
+	}
+	struct AnonymousVersionedStruct {
+		Boolean flag1
+	}
+}
+
+<**
+		@description: anonymous typeCollection with major version 2
+**>
+typeCollection {
+	version {
+		major 2
+		minor 0
+	}
+	struct AnonymousVersionedStruct {
+		Boolean flag2
+	}
+}
+
+<**
+		@description: named typeCollection with major version 1
+**>
+typeCollection MultipleVersionsTypeCollection {
+	version {
+		major 1
+		minor 0
+	}
+	struct VersionedStruct {
+		Boolean flag1
+	}
+}
+
+<**
+		@description: named typeCollection with major version 2
+**>
+typeCollection MultipleVersionsTypeCollection {
+	version {
+		major 2
+		minor 0
+	}
+	struct VersionedStruct {
+		Boolean flag2
+	}
+}
+
 // this interface is used to build a provider and a proxy trying to use different versions of the same interface
 interface MultipleVersionsInterface {
-        version { major 1 minor 0 }
+		version { major 1 minor 0 }
 
-        method getTrue {
-                out {
-                        Boolean result
-                }
-        }
+		method getTrue {
+				out {
+						Boolean result
+				}
+		}
 
-        attribute UInt8 uInt8Attribute1
+		attribute UInt8 uInt8Attribute1
+
+		struct InterfaceVersionedStruct {
+			Boolean flag
+		}
 }
 
 interface MultipleVersionsInterface {
-        version { major 2 minor 0 }
+		version { major 2 minor 0 }
 
-        method getTrue {
-                out {
-                        Boolean result
-                }
-        }
+		method getTrue {
+				out {
+						Boolean result
+				}
+		}
 
-        attribute UInt8 uInt8Attribute1
+		attribute UInt8 uInt8Attribute1
 
-        attribute UInt8 uInt8Attribute2
+		attribute UInt8 uInt8Attribute2
+
+		struct InterfaceVersionedStruct {
+			Boolean flag1
+			Boolean flag2
+		}
 }
