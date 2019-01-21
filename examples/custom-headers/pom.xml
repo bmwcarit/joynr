@@ -36,7 +36,6 @@
 		<module>custom-headers-api</module>
 		<module>custom-headers-jee-provider</module>
 		<module>custom-headers-jee-consumer</module>
-		<module>custom-headers-backend-services</module>
 	</modules>
 
 	<properties>
