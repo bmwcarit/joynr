@@ -44,6 +44,7 @@ public class MessageQueue {
 
     public static final String MESSAGE_QUEUE_ID = "io.joynr.messaging.queue.id";
     public static final String PROPERTY_MESSAGE_QUEUE_SHUTDOWN_MAX_TIMEOUT = "io.joynr.messaging.queue.shutdown.timeout";
+    private static final long STARTUP_GRACE_PERIOD_MS = 1000;
 
     private DelayQueue<DelayableImmutableMessage> delayableImmutableMessages;
     private final long shutdownTimeoutMs;
@@ -103,12 +104,22 @@ public class MessageQueue {
         }
     }
 
+    private void restoreMessage(DelayableImmutableMessage delayableImmutableMessage) {
+        if (delayableImmutableMessage.getMessage().getType() == Message.VALUE_MESSAGE_TYPE_MULTICAST) {
+            // remove all addresses to trigger new address resolution to get also InProcessAddresses which are not persisted
+            delayableImmutableMessage.getDestinationAddresses().clear();
+        }
+        // give potential recipients some time to register
+        delayableImmutableMessage.setDelay(STARTUP_GRACE_PERIOD_MS);
+        delayableImmutableMessages.put(delayableImmutableMessage);
+    }
+
     private void fetchAndQueuePersistedMessages(DelayQueue<DelayableImmutableMessage> delayableImmutableMessages,
                                                 String messageQueueId) {
         Set<DelayableImmutableMessage> persistedFromLastRun = messagePersister.fetchAll(messageQueueId);
         if (persistedFromLastRun != null) {
             persistedFromLastRun.forEach(this::registerReplyToAddress);
-            persistedFromLastRun.forEach(delayableImmutableMessages::put);
+            persistedFromLastRun.forEach(this::restoreMessage);
         }
     }
 

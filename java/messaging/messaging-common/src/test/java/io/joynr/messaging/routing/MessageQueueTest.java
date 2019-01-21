@@ -70,6 +70,9 @@ public class MessageQueueTest {
     private ImmutableMessage mockImmutableMessage2_multicast;
 
     @Mock
+    private Set<Address> multicastDestinationAddresses;
+
+    @Mock
     private DelayableImmutableMessage mockDelayableMessage3_request;
 
     @Mock
@@ -113,6 +116,7 @@ public class MessageQueueTest {
         when(mockDelayableMessage3_request.getMessage()).thenReturn(mockImmutableMessage3_request);
 
         when(mockImmutableMessage2_multicast.getType()).thenReturn(Message.VALUE_MESSAGE_TYPE_MULTICAST);
+        when(mockDelayableMessage2_multicast.getDestinationAddresses()).thenReturn(multicastDestinationAddresses);
         when(mockImmutableMessage3_request.getType()).thenReturn(Message.VALUE_MESSAGE_TYPE_REQUEST);
         ObjectMapper objectMapper = new ObjectMapper();
         when(mockImmutableMessage3_request.getReplyTo()).thenReturn(objectMapper.writeValueAsString(replyToAddress));
@@ -259,13 +263,17 @@ public class MessageQueueTest {
         verify(delayQueue, times(3)).poll(timeOut, timeUnit);
     }
 
-    @Test
-    public void testMessagesFetchedFromPersistenceAndAddedToQueueAndRoutingTableOnStartup() throws Exception {
+    private void testFetchMessagesFromPersistence() {
         // Given a mocked MessagePersister and a set containing messages which is returned when fetching
         // When the MessageQueue is created (see the setup method)
 
         // Then the messages were fetched from the MessagePersistence
         verify(messagePersisterMock).fetchAll(eq(generatedMessageQueueId));
+    }
+
+    @Test
+    public void testFetchMessagesFromPersistence_AddToQueue() throws Exception {
+        testFetchMessagesFromPersistence();
         // ... and added to the queue
         ArgumentCaptor<DelayableImmutableMessage> argumentCaptor = ArgumentCaptor.forClass(DelayableImmutableMessage.class);
         verify(delayQueue, times(2)).put(argumentCaptor.capture());
@@ -274,7 +282,15 @@ public class MessageQueueTest {
         assertTrue(passedArguments.contains(mockDelayableMessage2_multicast));
         assertTrue(passedArguments.contains(mockDelayableMessage3_request));
 
-        // ... and one routing entry is added (replyTo address of mockDelayableMessage3_request)
+    }
+
+    @Test
+    public void testFetchMessagesFromPersistence_AddReplyToAddressToRoutingTable() throws Exception {
+        testFetchMessagesFromPersistence();
+
+        // ... and one routing entry was added (replyTo address of mockDelayableMessage3_request)
+        verify(mockImmutableMessage2_multicast, times(0)).getReplyTo();
+        verify(mockImmutableMessage3_request).getReplyTo();
         verify(routingTableMock).put(anyString(),
                                      Mockito.any(Address.class),
                                      anyBoolean(),
@@ -287,6 +303,25 @@ public class MessageQueueTest {
                                      mockImmutableMessage3_request.getTtlMs(),
                                      false,
                                      false);
+    }
+
+    @Test
+    public void testFetchMessagesFromPersistence_clearDestinationAddressesOfMulticast() throws Exception {
+        testFetchMessagesFromPersistence();
+
+        verify(mockDelayableMessage2_multicast).getDestinationAddresses();
+        verify(mockDelayableMessage3_request, times(0)).getDestinationAddresses();
+        verify(multicastDestinationAddresses).clear();
+
+    }
+
+    @Test
+    public void testFetchMessagesFromPersistence_setDelay() throws Exception {
+        testFetchMessagesFromPersistence();
+
+        final long startupGracePeriodMs = 1000;
+        verify(mockDelayableMessage2_multicast).setDelay(startupGracePeriodMs);
+        verify(mockDelayableMessage3_request).setDelay(startupGracePeriodMs);
     }
 
 }
