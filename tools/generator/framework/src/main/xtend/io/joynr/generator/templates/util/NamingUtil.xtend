@@ -56,8 +56,12 @@ class NamingUtil {
 			&& (modelElement as FTypeCollection).version !== null) {
 			// This also works for interfaces because FInterface is a subtype of FTypeCollection
 			return (if (packageWithVersion) '.v' else '') + (modelElement as FTypeCollection).version.major;
-		} else if (modelElement instanceof FType && (modelElement as FType).partOfTypeCollection) {
-			return getVersionSuffix((modelElement as FType).typeCollection);
+		} else if (modelElement instanceof FType) {
+			if (modelElement.partOfTypeCollection) {
+				return getVersionSuffix(modelElement.typeCollection);
+			} else if (modelElement.partOfInterface) {
+				return getVersionSuffix(modelElement.interface)
+			}
 		}
 		return ''
 	}

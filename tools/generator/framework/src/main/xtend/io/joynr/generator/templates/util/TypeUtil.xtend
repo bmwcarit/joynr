@@ -507,6 +507,20 @@ class TypeUtil {
 		return (datatype.eContainer as FTypeCollection);
 	}
 
+	def boolean isPartOfInterface(FType datatype) {
+		return datatype.eContainer instanceof FInterface;
+	}
+
+	def FTypeCollection getInterface(FType datatype) {
+		if(!datatype.isPartOfInterface) {
+			throw new IllegalStateException(
+					"Datatype " + datatype.name + " is not part of a interface."
+					+ " Please call isPartOfInterface before calling this method."
+			);
+		}
+		return (datatype.eContainer as FInterface);
+	}
+
 	def String getTypeCollectionName(FType datatype) {
 		return (datatype.typeCollection).joynrName;
 	}
