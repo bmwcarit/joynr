@@ -18,18 +18,17 @@
  */
 package examples.customheaders
 
-
 interface HeaderPing {
-    version { major 0 minor 1 }
+	version { major 0 minor 1 }
 
 	/*
 	 * Calling this method will return the content of the custom header
 	 * value sent as 'header-ping'.
 	 */
-    method ping {
-        out {
-            String headerReturn
-        }
-    }
+	method ping {
+		out {
+			String headerReturn
+		}
+	}
 
 }
