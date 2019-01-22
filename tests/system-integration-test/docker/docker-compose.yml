@@ -36,4 +36,3 @@ services:
   sit-controller:
     image: "sit-controller:latest"
     container_name: sit-controller
-
