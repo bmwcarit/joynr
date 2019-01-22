@@ -41,8 +41,8 @@ public class WebSocketClientMessagingStubFactory
     }
 
     @Override
-    protected WebSocketMessagingStub createInternal(WebSocketClientAddress address) {
+    protected WebSocketMessagingStub createInternal(WebSocketClientAddress clientAddress) {
         JoynrWebSocketEndpoint webSocketServer = webSocketEndpointFactory.create(serverAddress);
-        return new WebSocketMessagingStub(address, webSocketServer);
+        return new WebSocketMessagingStub(clientAddress, webSocketServer);
     }
 }
