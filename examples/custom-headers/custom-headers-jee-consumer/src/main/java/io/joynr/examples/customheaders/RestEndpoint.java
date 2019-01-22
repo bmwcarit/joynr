@@ -41,15 +41,15 @@ public class RestEndpoint {
     private HeaderPingClient headerPingClient;
 
     @GET
-    @Path("/ping")
-    public String ping() {
-        String customHeader = UUID.randomUUID().toString();
-        LOG.info("Calling header ping service with custom header: {}.", customHeader);
+    @Path("/trigger")
+    public String trigger() {
+        String customHeaderValue = CustomHeaderUtils.APP_CUSTOM_HEADER_VALUE_PREFIX + UUID.randomUUID().toString();
+        LOG.info("Calling header ping service with application custom header: {}.", customHeaderValue);
         MessagingQos messagingQos = new MessagingQos();
-        messagingQos.getCustomMessageHeaders().put("custom-header", customHeader);
-        String pong = headerPingClient.get().ping(messagingQos);
-        LOG.info("Result is {}", pong);
-        return pong;
+        messagingQos.getCustomMessageHeaders().put(CustomHeaderUtils.APP_CUSTOM_HEADER_KEY, customHeaderValue);
+        String res = headerPingClient.get().ping(messagingQos);
+        LOG.info("Return result is {}", res);
+        return res;
     }
 
 }

@@ -30,14 +30,12 @@ import joynr.examples.customheaders.HeaderPingSync;
 @ConcurrencyManagement(ConcurrencyManagementType.BEAN)
 public class HeaderPingClient {
 
-    private static final String KEY = "singleton";
-
     @Inject
     private ServiceLocator serviceLocator;
 
     private HeaderPingSync headerPingProxy;
 
-    public synchronized HeaderPingSync get() {
+    public HeaderPingSync get() {
         if (headerPingProxy == null) {
             headerPingProxy = serviceLocator.get(HeaderPingSync.class, "io.joynr.examples.customheaders.jee.provider");
         }

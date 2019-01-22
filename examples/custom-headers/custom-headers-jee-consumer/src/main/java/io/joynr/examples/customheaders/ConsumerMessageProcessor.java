@@ -18,7 +18,6 @@
  */
 package io.joynr.examples.customheaders;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -38,14 +37,17 @@ public class ConsumerMessageProcessor implements JoynrMessageProcessor {
 
     @Override
     public MutableMessage processOutgoing(MutableMessage joynrMessage) {
+        LOG.info("Processing outgoing message {}", joynrMessage);
         Map<String, String> customHeaders = joynrMessage.getCustomHeaders();
-        if (customHeaders == null) {
-            customHeaders = new HashMap<>();
-            joynrMessage.setCustomHeaders(customHeaders);
+
+        if (customHeaders != null && customHeaders.containsKey(CustomHeaderUtils.APP_CUSTOM_HEADER_KEY)) {
+            // For the purpose of the example: Add additional custom header in case there
+            // is already a custom header in the message set by the application via MessagingQos
+            String processorCustomHeaderValue = CustomHeaderUtils.PROCESSOR_CUSTOM_HEADER_VALUE_PREFIX
+                    + UUID.randomUUID().toString();
+            customHeaders.put(CustomHeaderUtils.PROCESSOR_CUSTOM_HEADER_KEY, processorCustomHeaderValue);
+            LOG.info("Set {} to {}", CustomHeaderUtils.PROCESSOR_CUSTOM_HEADER_KEY, processorCustomHeaderValue);
         }
-        String processorCustomHeader = UUID.randomUUID().toString();
-        customHeaders.put("processor-custom-header", processorCustomHeader);
-        LOG.info("Set processor-custom-header to {}", processorCustomHeader);
         return joynrMessage;
     }
 
