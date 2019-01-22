@@ -59,6 +59,7 @@ import joynr.ImmutableMessage;
 import joynr.Message;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.RoutingTypesUtil;
+import joynr.system.RoutingTypes.WebSocketClientAddress;
 
 abstract public class AbstractMessageRouter implements MessageRouter, ShutdownListener {
     private static final Logger logger = LoggerFactory.getLogger(AbstractMessageRouter.class);
@@ -404,6 +405,15 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
                 } else {
                     delayMs = createDelayWithExponentialBackoff(sendMsgRetryIntervalMs,
                                                                 delayableMessage.getRetriesCount());
+                }
+
+                if (Message.VALUE_MESSAGE_TYPE_MULTICAST.equals(delayableMessage.getMessage().getType())
+                        || delayableMessage.getDestinationAddresses()
+                                           .removeIf(address -> address instanceof WebSocketClientAddress)) {
+                    // WebSocketClientAddresses have to be determined again in every retry because they change when a
+                    // client is restarted, e.g. after a crash.
+                    routeInternal(delayableMessage.getMessage(), delayMs, delayableMessage.getRetriesCount() + 1);
+                    return;
                 }
 
                 delayableMessage.setDelay(delayMs);

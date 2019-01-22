@@ -35,6 +35,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
@@ -42,6 +43,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -52,6 +54,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -92,6 +95,8 @@ import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.SuccessAction;
 import io.joynr.messaging.channel.ChannelMessagingSkeleton;
 import io.joynr.messaging.channel.ChannelMessagingStubFactory;
+import io.joynr.messaging.inprocess.InProcessAddress;
+import io.joynr.messaging.inprocess.InProcessMessagingSkeleton;
 import io.joynr.messaging.persistence.MessagePersister;
 import io.joynr.messaging.util.MulticastWildcardRegexFactory;
 import io.joynr.runtime.ClusterControllerRuntimeModule;
@@ -110,6 +115,9 @@ import joynr.SubscriptionReply;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.system.RoutingTypes.MqttAddress;
+import joynr.system.RoutingTypes.WebSocketAddress;
+import joynr.system.RoutingTypes.WebSocketClientAddress;
+import joynr.system.RoutingTypes.WebSocketProtocol;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CcMessageRouterTest {
@@ -130,6 +138,14 @@ public class CcMessageRouterTest {
     private ChannelMessagingStubFactory middlewareMessagingStubFactoryMock;
     @Mock
     private IMessagingStub messagingStubMock;
+    @Mock
+    private AbstractMiddlewareMessagingStubFactory<IMessagingStub, MqttAddress> mqttMessagingStubFactoryMock;
+    @Mock
+    private AbstractMiddlewareMessagingStubFactory<IMessagingStub, WebSocketClientAddress> websocketClientMessagingStubFactoryMock;
+    @Mock
+    private AbstractMiddlewareMessagingStubFactory<IMessagingStub, WebSocketAddress> webSocketMessagingStubFactoryMock;
+    @Mock
+    private AbstractMiddlewareMessagingStubFactory<IMessagingStub, InProcessAddress> inProcessMessagingStubFactoryMock;
     @Mock
     private ChannelMessagingSkeleton messagingSkeletonMock;
     @Mock
@@ -200,6 +216,11 @@ public class CcMessageRouterTest {
                                                               },
                                                               Names.named(MessagingStubFactory.MIDDLEWARE_MESSAGING_STUB_FACTORIES));
                 messagingStubFactory.addBinding(ChannelAddress.class).toInstance(middlewareMessagingStubFactoryMock);
+                messagingStubFactory.addBinding(WebSocketClientAddress.class)
+                                    .toInstance(websocketClientMessagingStubFactoryMock);
+                messagingStubFactory.addBinding(WebSocketAddress.class).toInstance(webSocketMessagingStubFactoryMock);
+                messagingStubFactory.addBinding(MqttAddress.class).toInstance(mqttMessagingStubFactoryMock);
+                messagingStubFactory.addBinding(InProcessAddress.class).toInstance(inProcessMessagingStubFactoryMock);
 
                 MapBinder<Class<? extends Address>, IMessagingSkeleton> messagingSkeletonFactory;
                 messagingSkeletonFactory = MapBinder.newMapBinder(binder(),
@@ -664,6 +685,119 @@ public class CcMessageRouterTest {
         verify(addressManager, atLeast(2)).getAddresses(immutableMessage);
     }
 
+    @Test
+    public void testRepeatedAddressResolutionForWebSocketClient() throws Exception {
+        joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(1000).getValue());
+        joynrMessage.setTtlAbsolute(true);
+        final ImmutableMessage immutableMessage = joynrMessage.getImmutableMessage();
+
+        final WebSocketClientAddress websocketClientAddress = new WebSocketClientAddress();
+        final Set<Address> addressSet = new HashSet<>();
+        addressSet.add(websocketClientAddress);
+        doReturn(addressSet).when(addressManager).getAddresses(immutableMessage);
+
+        when(websocketClientMessagingStubFactoryMock.create(any(WebSocketClientAddress.class))).thenReturn(messagingStubMock);
+        doThrow(new JoynrDelayMessageException(20, "test")).when(messagingStubMock)
+                                                           .transmit(any(ImmutableMessage.class),
+                                                                     any(SuccessAction.class),
+                                                                     any(FailureAction.class));
+
+        messageRouter.route(immutableMessage);
+        Thread.sleep(60);
+
+        verify(addressManager, atLeast(2)).getAddresses(immutableMessage);
+        final ArgumentCaptor<DelayableImmutableMessage> passedDelayableMessage = ArgumentCaptor.forClass(DelayableImmutableMessage.class);
+        verify(messageQueue, atLeast(2)).put(passedDelayableMessage.capture());
+        assertTrue(passedDelayableMessage.getAllValues().size() >= 2);
+        Set<ImmutableMessage> passedImmutableMessages = passedDelayableMessage.getAllValues()
+                                                                              .stream()
+                                                                              .map(DelayableImmutableMessage::getMessage)
+                                                                              .collect(Collectors.toSet());
+        assertTrue(passedImmutableMessages.size() == 1);
+        assertTrue(passedImmutableMessages.contains(immutableMessage));
+    }
+
+    @Test
+    public void testRepeatedAddressResolutionForMulticast() throws Exception {
+        final String multicastId = "multicast/id/test";
+        joynrMessage = messageFactory.createMulticast(fromParticipantId,
+                                                      new MulticastPublication(new ArrayList<>(), multicastId),
+                                                      new MessagingQos());
+        joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(1000).getValue());
+        joynrMessage.setTtlAbsolute(true);
+        ImmutableMessage immutableMessage = joynrMessage.getImmutableMessage();
+
+        final Set<Address> addressSet = new HashSet<>();
+        addressSet.add(channelAddress);
+        doReturn(addressSet).when(addressManager).getAddresses(immutableMessage);
+
+        doThrow(new JoynrDelayMessageException(20, "test42")).when(messagingStubMock)
+                                                             .transmit(any(ImmutableMessage.class),
+                                                                       any(SuccessAction.class),
+                                                                       any(FailureAction.class));
+
+        messageRouter.route(immutableMessage);
+        Thread.sleep(100);
+
+        verify(addressManager, atLeast(2)).getAddresses(immutableMessage);
+        final ArgumentCaptor<DelayableImmutableMessage> passedDelayableMessage = ArgumentCaptor.forClass(DelayableImmutableMessage.class);
+        verify(messageQueue, atLeast(2)).put(passedDelayableMessage.capture());
+        assertTrue(passedDelayableMessage.getAllValues().size() >= 2);
+        Set<ImmutableMessage> passedImmutableMessages = passedDelayableMessage.getAllValues()
+                                                                              .stream()
+                                                                              .map(DelayableImmutableMessage::getMessage)
+                                                                              .collect(Collectors.toSet());
+        assertTrue(passedImmutableMessages.size() == 1);
+        assertTrue(passedImmutableMessages.contains(immutableMessage));
+    }
+
+    private void testOnlyOneAddressResolution(final Address address) throws Exception {
+        reset(messageQueue);
+        final int ttlMs = 60;
+
+        joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(ttlMs).getValue());
+        joynrMessage.setTtlAbsolute(true);
+        final ImmutableMessage immutableMessage = joynrMessage.getImmutableMessage();
+
+        final Set<Address> addressSet = new HashSet<>();
+        addressSet.add(address);
+        doReturn(addressSet).when(addressManager).getAddresses(immutableMessage);
+
+        doThrow(new JoynrDelayMessageException(20, "test")).when(messagingStubMock)
+                                                           .transmit(any(ImmutableMessage.class),
+                                                                     any(SuccessAction.class),
+                                                                     any(FailureAction.class));
+
+        messageRouter.route(immutableMessage);
+        Thread.sleep(ttlMs);
+
+        verify(addressManager).getAddresses(immutableMessage);
+        final ArgumentCaptor<DelayableImmutableMessage> passedDelayableMessage = ArgumentCaptor.forClass(DelayableImmutableMessage.class);
+        verify(messageQueue, atLeast(2)).put(passedDelayableMessage.capture());
+        assertTrue("Size was " + passedDelayableMessage.getAllValues().size(),
+                   passedDelayableMessage.getAllValues().size() >= 2);
+        Set<ImmutableMessage> passedImmutableMessages = passedDelayableMessage.getAllValues()
+                                                                              .stream()
+                                                                              .map(DelayableImmutableMessage::getMessage)
+                                                                              .collect(Collectors.toSet());
+        assertTrue("Size was " + passedImmutableMessages.size(), passedImmutableMessages.size() == 1);
+        assertTrue(passedImmutableMessages.contains(immutableMessage));
+    }
+
+    @Test
+    public void testOnlyOneAddressResolutionForNonWebSocketClient() throws Exception {
+        testOnlyOneAddressResolution(channelAddress);
+
+        when(mqttMessagingStubFactoryMock.create(any(MqttAddress.class))).thenReturn(messagingStubMock);
+        testOnlyOneAddressResolution(new MqttAddress("brokerUri", "topic"));
+
+        when(webSocketMessagingStubFactoryMock.create(any(WebSocketAddress.class))).thenReturn(messagingStubMock);
+        testOnlyOneAddressResolution(new WebSocketAddress(WebSocketProtocol.WS, "host", 42, "path"));
+
+        when(inProcessMessagingStubFactoryMock.create(any(InProcessAddress.class))).thenReturn(messagingStubMock);
+        testOnlyOneAddressResolution(new InProcessAddress(mock(InProcessMessagingSkeleton.class)));
+    }
+
     private void testNotRoutableMessageIsDropped(final MutableMessage mutableMessage) throws Exception {
         final ImmutableMessage immutableMessage = mutableMessage.getImmutableMessage();
 
@@ -763,7 +897,6 @@ public class CcMessageRouterTest {
         when(failingMessage.getTtlMs()).thenReturn(ExpiryDate.fromRelativeTtl(1000L).getValue());
         when(failingMessage.getRecipient()).thenReturn("to");
 
-        when(routingTable.get("to")).thenReturn(channelAddress);
         Set<Address> addressSet = new HashSet<>();
         addressSet.add(channelAddress);
         doReturn(addressSet).when(addressManager).getAddresses(failingMessage);
