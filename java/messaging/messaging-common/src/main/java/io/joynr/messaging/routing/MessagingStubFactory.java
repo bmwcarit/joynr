@@ -33,7 +33,7 @@ import joynr.system.RoutingTypes.Address;
 public class MessagingStubFactory {
 
     public static final String MIDDLEWARE_MESSAGING_STUB_FACTORIES = "MIDDLEWARE_MESSAGING_STUB_FACTORIES";
-    private Map<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessagingStub, ? extends Address>> middlewareMessagingStubFactories;
+    private final Map<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessagingStub, ? extends Address>> middlewareMessagingStubFactories;
 
     @Inject
     public MessagingStubFactory(@Named(MIDDLEWARE_MESSAGING_STUB_FACTORIES) Map<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessagingStub, ? extends Address>> middlewareMessagingStubFactories) {
@@ -51,8 +51,4 @@ public class MessagingStubFactory {
         return messagingStubFactory.create(address);
     }
 
-    public void register(Class<? extends Address> address,
-                         AbstractMiddlewareMessagingStubFactory<? extends IMessagingStub, ? extends Address> middlewareMessagingStubFactory) {
-        middlewareMessagingStubFactories.put(address, middlewareMessagingStubFactory);
-    }
 }
