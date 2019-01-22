@@ -23,14 +23,9 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 @Path("/control")
 @Produces(MediaType.APPLICATION_JSON)
 public class RestEndpoint {
-
-    private static final Logger LOG = LoggerFactory.getLogger(RestEndpoint.class);
 
     @GET
     @Path("/ping")

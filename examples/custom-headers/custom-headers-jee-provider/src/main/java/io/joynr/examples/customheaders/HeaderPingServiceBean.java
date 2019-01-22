@@ -39,8 +39,9 @@ public class HeaderPingServiceBean implements HeaderPingSync {
 
     @Override
     public String ping() {
-        String customHeaderValue = (String) jeeMessageMetaInfo.getMessageContext().get("custom-header");
-        LOG.info("Got custom header {}", customHeaderValue);
+        String customHeaderValue = (String) jeeMessageMetaInfo.getMessageContext().get("application-custom-header");
+        LOG.info("Got application custom header {}", customHeaderValue);
+
         String processorCustomHeaderValue = (String) jeeMessageMetaInfo.getMessageContext()
                                                                        .get("processor-custom-header");
         LOG.info("Got processor custom header {}", processorCustomHeaderValue);
