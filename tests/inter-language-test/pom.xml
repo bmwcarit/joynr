@@ -224,6 +224,12 @@
 							</includes>
 						</fileset>
 						<fileset>
+							<directory>src/main/generated-cpp-proxy-provider-interface-mismatch</directory>
+							<includes>
+								<include>**</include>
+							</includes>
+						</fileset>
+						<fileset>
 							<directory>src/main/generated-javascript</directory>
 							<includes>
 								<include>**</include>
