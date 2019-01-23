@@ -337,7 +337,10 @@ For example:
 		};
 	}
 
-Inject `JoynrJeeMessageMetaInfo` to your EJB in order to retrieve the context for a received message.
+#### Injecting a JoynrJeeMessageMetaInfo
+
+Inject `JoynrJeeMessageMetaInfo` to your EJB in order to retrieve the context (including custom
+headers) for a received message.
 
 The context can be accessed by calling `JoynrJeeMessageMetaInfo.getMessageContext()`:
 
@@ -360,6 +363,8 @@ The context can be accessed by calling `JoynrJeeMessageMetaInfo.getMessageContex
             ...
         }
     }
+
+See also [examples/custom-headers](../examples/custom-headers/README.md).
 
 ### Calling services
 
@@ -648,7 +653,7 @@ Here are some references:
 By providing EJBs (or CDI Beans) which implement the `JoynrMessageProcessor` interface
 you are able to hook into the message creation process. Each filter is called in turn
 after the message has been created and is given the chance to perform any application
-specific customisations, such as adding custom headers, or mutating any existing ones.
+specific customizations, such as adding custom headers, or mutating any existing ones.
 
 Be careful that your processor doesn't perform any changes which render the message
 un-transmittable, such as changing the `to` or the `from` headers! Generally you
@@ -672,8 +677,8 @@ public class MyMessageProcessor implements JoynrMessageProcessor {
 }
 ```
 
-This would add the custom header `my-correlation-id` to the joynr message with a random
-UUID as the value.
+This would add the custom header `my-correlation-id` to every outgoing joynr message with a random
+UUID as the value. See also [examples/custom-headers](../examples/custom-headers/README.md).
 
 
 ## Shutting Down
