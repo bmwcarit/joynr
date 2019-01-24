@@ -22,7 +22,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.util.Properties;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
@@ -30,33 +29,20 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.google.inject.Module;
-import com.google.inject.util.Modules;
-
-import io.joynr.arbitration.DiscoveryQos;
-import io.joynr.arbitration.DiscoveryScope;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.integration.util.DummyJoynrApplication;
-import io.joynr.messaging.MessagingPropertyKeys;
-import io.joynr.messaging.routing.TestGlobalAddressModule;
 import io.joynr.provider.AbstractJoynrProvider;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback;
-import io.joynr.runtime.CCInProcessRuntimeModule;
-import io.joynr.runtime.JoynrInjectorFactory;
-import io.joynr.runtime.JoynrRuntime;
 import joynr.tests.DefaultMultipleVersionsInterface1Provider;
 import joynr.tests.DefaultMultipleVersionsInterface2Provider;
 import joynr.tests.DefaultMultipleVersionsInterfaceProvider;
 import joynr.tests.MultipleVersionsInterface1Proxy;
 import joynr.tests.MultipleVersionsInterface2Proxy;
 import joynr.tests.v2.MultipleVersionsInterfaceProxy;
-import joynr.types.ProviderQos;
-import joynr.types.ProviderScope;
 
-public class MultipleVersionsEnd2EndTest {
+public class MultipleVersionsEnd2EndTest extends AbstractMultipleVersionsEnd2EndTest {
     private static final String DOMAIN = "MultipleVersionsTestDomain";
     private static final String PROXYBUILD_FAILED_MESSAGE = "Building of proxy failed: ";
     private static final String REGISTERING_FAILED_MESSAGE = "Registering of provider failed: ";
@@ -64,36 +50,18 @@ public class MultipleVersionsEnd2EndTest {
 
     private Semaphore proxyBuilt;
 
-    private DiscoveryQos discoveryQos;
-    private ProviderQos providerQos;
-
-    private JoynrRuntime runtime;
-
+    @Override
     @Before
     public void setUp() {
-        discoveryQos = new DiscoveryQos();
-        discoveryQos.setDiscoveryTimeoutMs(5000);
-        discoveryQos.setRetryIntervalMs(100);
-        discoveryQos.setDiscoveryScope(DiscoveryScope.LOCAL_ONLY);
-
-        providerQos = new ProviderQos();
-        providerQos.setScope(ProviderScope.LOCAL);
-
+        super.setUp();
         proxyBuilt = new Semaphore(0);
-
-        Properties joynrConfig = new Properties();
-        joynrConfig.setProperty(MessagingPropertyKeys.CHANNELID, "discoverydirectory_channelid");
-
-        Module runtimeModule = Modules.override(new CCInProcessRuntimeModule()).with(new TestGlobalAddressModule());
-        DummyJoynrApplication application = (DummyJoynrApplication) new JoynrInjectorFactory(joynrConfig,
-                                                                                             runtimeModule).createApplication(DummyJoynrApplication.class);
-
-        runtime = application.getRuntime();
     }
 
     @After
     public void tearDown() {
-        runtime.shutdown(true);
+        if (runtime != null) {
+            runtime.shutdown(true);
+        }
     }
 
     /**

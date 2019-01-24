@@ -23,7 +23,6 @@ import static org.junit.Assert.fail;
 
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Semaphore;
@@ -33,71 +32,36 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.google.inject.Module;
-import com.google.inject.util.Modules;
-
-import io.joynr.arbitration.DiscoveryQos;
-import io.joynr.arbitration.DiscoveryScope;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.MultiDomainNoCompatibleProviderFoundException;
 import io.joynr.exceptions.NoCompatibleProviderFoundException;
-import io.joynr.integration.util.DummyJoynrApplication;
-import io.joynr.messaging.MessagingPropertyKeys;
-import io.joynr.messaging.routing.TestGlobalAddressModule;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback;
-import io.joynr.runtime.CCInProcessRuntimeModule;
-import io.joynr.runtime.JoynrInjectorFactory;
-import io.joynr.runtime.JoynrRuntime;
 import joynr.tests.v1.DefaultMultipleVersionsInterfaceProvider;
-import joynr.types.ProviderQos;
-import joynr.types.ProviderScope;
 
-public class GeneratorVersionMismatchTest {
+public class GeneratorVersionMismatchTest extends AbstractMultipleVersionsEnd2EndTest {
     private static final long CONST_DEFAULT_TEST_TIMEOUT_MS = 3000;
 
     private Semaphore errorCallbackSemaphore;
     private String domain;
     private String domain2;
-    private JoynrRuntime runtime;
-    private DiscoveryQos discoveryQos;
     private joynr.tests.v1.DefaultMultipleVersionsInterfaceProvider provider;
     private ProxyCreatedCallback<joynr.tests.v2.MultipleVersionsInterfaceProxy> callback;
     private joynr.tests.v2.MultipleVersionsInterfaceProxy proxy;
 
-    private JoynrRuntime getRuntime(Properties joynrConfig, Module... modules) {
-        Module runtimeModule = new CCInProcessRuntimeModule();
-        Module modulesWithRuntime = Modules.override(runtimeModule).with(modules);
-        modulesWithRuntime = Modules.override(modulesWithRuntime).with(new TestGlobalAddressModule());
-
-        DummyJoynrApplication application = (DummyJoynrApplication) new JoynrInjectorFactory(joynrConfig,
-                                                                                             modulesWithRuntime).createApplication(DummyJoynrApplication.class);
-
-        return application.getRuntime();
-    }
-
     @Before
     public void setUp() {
+        super.setUp();
+
         // the error callback will make a permit available.
         // The test will wait until a permit is available, or fail.
         errorCallbackSemaphore = new Semaphore(0, true);
         domain = "domain-" + UUID.randomUUID().toString();
         domain2 = "domain2-" + UUID.randomUUID().toString();
-        Properties joynrConfig = new Properties();
-        joynrConfig.setProperty(MessagingPropertyKeys.CHANNELID, "discoverydirectory_channelid");
 
-        // provider and proxy using same runtime to allow local-only communications
-        runtime = getRuntime(joynrConfig);
-        ProviderQos providerQos = new ProviderQos();
-        providerQos.setScope(ProviderScope.LOCAL);
         provider = new DefaultMultipleVersionsInterfaceProvider();
         runtime.registerProvider(domain, provider, providerQos);
         runtime.registerProvider(domain2, provider, providerQos);
-
-        discoveryQos = new DiscoveryQos();
-        discoveryQos.setDiscoveryScope(DiscoveryScope.LOCAL_ONLY);
-        discoveryQos.setDiscoveryTimeoutMs(1000);
-        discoveryQos.setRetryIntervalMs(100);
 
         callback = new ProxyCreatedCallback<joynr.tests.v2.MultipleVersionsInterfaceProxy>() {
 
@@ -118,7 +82,9 @@ public class GeneratorVersionMismatchTest {
 
     @After
     public void tearDown() {
-        runtime.shutdown(true);
+        if (runtime != null) {
+            runtime.shutdown(true);
+        }
     }
 
     private void createProxy(final Set<String> domains, boolean async) {
