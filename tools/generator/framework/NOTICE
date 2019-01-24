@@ -58,7 +58,7 @@ This project has dependencies to:
   org.franca.core under Eclipse Public License - v 1.0
   org.franca.core.dsl under Eclipse Public License - v 1.0
   org.franca.deploymodel.dsl under Eclipse Public License - v 1.0
-  OSGi System Bundle under Eclipse Public License
+  OSGi System Bundle under Eclipse Public License - v 2.0
   Reflections under WTFPL or The New BSD License
   SLF4J API Module under MIT License
   Text under Eclipse Public License - v 2.0
