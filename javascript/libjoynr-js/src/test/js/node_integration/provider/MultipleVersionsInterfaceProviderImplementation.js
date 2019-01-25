@@ -44,6 +44,18 @@ function ProviderImplementation() {
             await set.apply(this, ["uInt8Attribute2", value]);
         }
     };
+    this.getVersionedStruct = () => {
+        // TODO implement
+        return undefined;
+    };
+    this.getAnonymousVersionedStruct = () => {
+        // TODO implement
+        return undefined;
+    };
+    this.getInterfaceVersionedStruct = () => {
+        // TODO implement
+        return undefined;
+    };
 }
 
 ProviderImplementation.prototype.getTrue = () => {
