@@ -133,6 +133,15 @@ describe("libjoynr-js.integration.localDiscoveryTest", () => {
                 expect(radioProxy.providerDiscoveryEntry.isLocal).toBe(false);
                 return unregisterGlobalDiscoveryEntry();
             })
+            .catch(e => {
+                return unregisterGlobalDiscoveryEntry()
+                    .then(() => {
+                        throw e;
+                    })
+                    .catch(e2 => {
+                        throw new Error(`Error1: ${e}\n Error2: ${e2}`);
+                    });
+            })
             .then(() => {
                 done();
                 return null;
@@ -153,6 +162,15 @@ describe("libjoynr-js.integration.localDiscoveryTest", () => {
                 expect(radioProxy.providerDiscoveryEntry.isLocal).toBeDefined();
                 expect(radioProxy.providerDiscoveryEntry.isLocal).toBe(false);
                 return unregisterGlobalDiscoveryEntry();
+            })
+            .catch(e => {
+                return unregisterGlobalDiscoveryEntry()
+                    .then(() => {
+                        throw e;
+                    })
+                    .catch(e2 => {
+                        throw new Error(`Error1: ${e}\n Error2: ${e2}`);
+                    });
             })
             .then(() => {
                 done();

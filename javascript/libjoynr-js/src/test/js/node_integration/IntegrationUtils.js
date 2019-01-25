@@ -92,6 +92,17 @@ IntegrationUtils.createPromise = function createPromise() {
     return map;
 };
 
+function shutdownChildProcessInternal(childId) {
+    if (currentlyRunningChildCC === childId) {
+        currentlyRunningChildCC = undefined;
+    }
+    child[childId].kill();
+    child[childId] = undefined;
+    childReady[childId] = undefined;
+    childStarted[childId] = undefined;
+    childFinished[childId] = undefined;
+}
+
 IntegrationUtils.initializeChildProcess = function(childName, provisioningSuffix, domain, processSpecialization, cc) {
     processId++;
     const newChildId = processId;
@@ -121,6 +132,10 @@ IntegrationUtils.initializeChildProcess = function(childName, provisioningSuffix
             childStarted[newChildId].resolve(msg.argument);
         } else if (msg.type === "finished") {
             childFinished[newChildId].resolve(true);
+        } else if (msg.type === "error") {
+            const childReadyPromise = childReady[newChildId];
+            shutdownChildProcessInternal(newChildId);
+            childReadyPromise.reject(new Error(msg.msg));
         }
     });
     child[newChildId] = forked;
@@ -163,14 +178,7 @@ IntegrationUtils.shutdownChildProcess = function(childId) {
 
         // wait for child to be shut down
         childFinished[childId].promise.then(() => {
-            if (currentlyRunningChildCC === childId) {
-                currentlyRunningChildCC = undefined;
-            }
-            child[childId].kill();
-            child[childId] = undefined;
-            childReady[childId] = undefined;
-            childStarted[childId] = undefined;
-            childFinished[childId] = undefined;
+            shutdownChildProcessInternal(childId);
         });
 
         promise = childFinished[childId].promise;

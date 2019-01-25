@@ -69,6 +69,11 @@ function initializeTest(provisioningSuffix, providedDomain, settings) {
             .registerProvider(providerDomain, multipleVersionsInterfaceProvider, providerQos)
             .then(() => {
                 return joynr;
+            })
+            .catch(e => {
+                return joynr.shutdown().then(() => {
+                    throw e;
+                });
             });
     });
 }

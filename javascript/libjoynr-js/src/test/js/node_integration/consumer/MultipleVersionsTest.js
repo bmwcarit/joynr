@@ -32,6 +32,7 @@ let provisioning = require("../../../resources/joynr/provisioning/provisioning_c
 
 const domain = "MultipleVersionsTestDomain";
 let joynr = require("joynr");
+let afterTest = undefined;
 
 describe("libjoynr-js.integration.MultipleVersionsTest", () => {
     beforeEach(async () => {
@@ -41,6 +42,9 @@ describe("libjoynr-js.integration.MultipleVersionsTest", () => {
     });
 
     afterEach(async () => {
+        if (afterTest) {
+            await afterTest();
+        }
         await joynr.shutdown();
 
         delete require.cache;
@@ -179,16 +183,38 @@ describe("libjoynr-js.integration.MultipleVersionsTest", () => {
 
     it("2 proxies connecting to 2 providers in different ChildProcesses subscribing to the same type (non primitive)", async () => {
         // register 2 providers in 2 child processes
-        const [childId1, childId2] = await Promise.all([
-            IntegrationUtils.initializeChildProcess("TestMultipleVersionsInterfaceProcess", "", domain, {
+        const childId1 = await IntegrationUtils.initializeChildProcess(
+            "TestMultipleVersionsInterfaceProcess",
+            "",
+            domain,
+            {
                 versioning: "nameVersion1",
                 noJoynrShutdown: true
-            }),
-            IntegrationUtils.initializeChildProcess("TestMultipleVersionsInterfaceProcess", "", domain, {
+            }
+        );
+        afterTest = async () => {
+            // unregister providers and kill child processes
+            await IntegrationUtils.shutdownChildProcess(childId1);
+        };
+
+        const childId2 = await IntegrationUtils.initializeChildProcess(
+            "TestMultipleVersionsInterfaceProcess",
+            "",
+            domain,
+            {
                 versioning: "nameVersion2",
                 noJoynrShutdown: true
-            })
-        ]);
+            }
+        );
+        afterTest = async () => {
+            // unregister providers and kill child processes
+            try {
+                await IntegrationUtils.shutdownChildProcess(childId1);
+            } catch (e) {
+                console.log("Failed to shutdown child process 1: " + e);
+            }
+            await IntegrationUtils.shutdownChildProcess(childId2);
+        };
 
         // build fitting proxies
         const [proxy1, proxy2] = await Promise.all([
@@ -198,12 +224,6 @@ describe("libjoynr-js.integration.MultipleVersionsTest", () => {
 
         // set attributes and check if values can be retrieved properly by proxies without mutual interference
         await setUInt8AttributesAndCheck(proxy1, proxy2);
-
-        // unregister providers and kill child processes
-        await Promise.all([
-            IntegrationUtils.shutdownChildProcess(childId2),
-            IntegrationUtils.shutdownChildProcess(childId1)
-        ]);
     });
 });
 /*eslint-enable */
