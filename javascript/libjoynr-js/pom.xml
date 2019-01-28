@@ -265,13 +265,25 @@
 						</configuration>
 					</execution>
 					<execution>
-						<id>generate-common-test-classes-with-package-version</id>
+						<id>generate-common-test-classes-with-package-version1</id>
 						<phase>generate-test-sources</phase>
 						<goals>
 							<goal>generate</goal>
 						</goals>
 						<configuration>
-							<model>TestMultipleInterfaceVersions.fidl</model>
+							<model>TestMultipleInterfaceVersions1.fidl</model>
+							<outputPath>${basedir}/src/test/generated</outputPath>
+						        <addVersionTo>package</addVersionTo>
+						</configuration>
+					</execution>
+					<execution>
+						<id>generate-common-test-classes-with-package-version2</id>
+						<phase>generate-test-sources</phase>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<configuration>
+							<model>TestMultipleInterfaceVersions2.fidl</model>
 							<outputPath>${basedir}/src/test/generated</outputPath>
 						        <addVersionTo>package</addVersionTo>
 						</configuration>
@@ -283,19 +295,31 @@
 							<goal>generate</goal>
 						</goals>
 						<configuration>
-							<model>TestMultipleInterfaceVersions.fidl</model>
+							<model>TestMultipleInterfaceVersions2.fidl</model>
 							<outputPath>${basedir}/src/test/generated</outputPath>
 							<addVersionTo>none</addVersionTo>
 						</configuration>
 					</execution>
 					<execution>
-						<id>generate-common-test-classes-with-name-version</id>
+						<id>generate-common-test-classes-with-name-version1</id>
 						<phase>generate-test-sources</phase>
 						<goals>
 							<goal>generate</goal>
 						</goals>
 						<configuration>
-							<model>TestMultipleInterfaceVersions.fidl</model>
+							<model>TestMultipleInterfaceVersions1.fidl</model>
+							<outputPath>${basedir}/src/test/generated</outputPath>
+							<addVersionTo>name</addVersionTo>
+						</configuration>
+					</execution>
+					<execution>
+						<id>generate-common-test-classes-with-name-version2</id>
+						<phase>generate-test-sources</phase>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<configuration>
+							<model>TestMultipleInterfaceVersions2.fidl</model>
 							<outputPath>${basedir}/src/test/generated</outputPath>
 							<addVersionTo>name</addVersionTo>
 						</configuration>

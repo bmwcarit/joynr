@@ -74,7 +74,7 @@ public class MultipleVersionsTest {
     }
 
     @Test
-    public void testInstantiationOfTypesWithVersionInTypeName_anonymousTypeCollection() {
+    public void testInstantiationOfTypesWithVersionInTypeName() {
         AnonymousVersionedStruct1 structVersion1AnonymousTypeCollection = new AnonymousVersionedStruct1();
         AnonymousVersionedStruct2 structVersion2AnonymousTypeCollection = new AnonymousVersionedStruct2();
         VersionedStruct1 structVersion1NamedTypeCollection = new VersionedStruct1();
@@ -117,12 +117,10 @@ public class MultipleVersionsTest {
         VersionedStruct versionedStructNamedTypeCollection = new VersionedStruct();
         InterfaceVersionedStruct versionedStructInterface = new InterfaceVersionedStruct();
 
-        // Since all versions of the structs are generated (all typeCollections) with the same package and file name,
-        // it is not clear/deterministic, which version is generated as last and actually imported.
-        // Thus, the getter method names are not known and cannot be called in this test case.
-        assertNotNull(unversionedStructAnonymousTypeCollection);
-        assertNotNull(versionedStructNamedTypeCollection);
-        assertNotNull(versionedStructInterface);
+        assertNotNull(unversionedStructAnonymousTypeCollection.getFlag2());
+        assertNotNull(versionedStructNamedTypeCollection.getFlag2());
+        assertNotNull(versionedStructInterface.getFlag1());
+        assertNotNull(versionedStructInterface.getFlag2());
 
         assertNotEquals(unversionedStructAnonymousTypeCollection, versionedStructNamedTypeCollection);
         assertNotEquals(unversionedStructAnonymousTypeCollection, versionedStructInterface);
