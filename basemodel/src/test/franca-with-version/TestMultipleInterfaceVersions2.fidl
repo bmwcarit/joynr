@@ -18,6 +18,8 @@
  */
 package tests
 
+import tests.* from "TestMultipleTypeVersions2.fidl"
+
 // this interface is used to build a provider and a proxy trying to use different versions of the same interface
 interface MultipleVersionsInterface {
 		version { major 2 minor 0 }
@@ -26,6 +28,33 @@ interface MultipleVersionsInterface {
 				out {
 						Boolean result
 				}
+		}
+
+		method getVersionedStruct {
+			in {
+				MultipleVersionsTypeCollection.VersionedStruct input
+			}
+			out {
+				MultipleVersionsTypeCollection.VersionedStruct result
+			}
+		}
+
+		method getAnonymousVersionedStruct {
+			in {
+				AnonymousVersionedStruct input
+			}
+			out {
+				AnonymousVersionedStruct result
+			}
+		}
+
+		method getInterfaceVersionedStruct {
+			in {
+				InterfaceVersionedStruct input
+			}
+			out {
+				InterfaceVersionedStruct result
+			}
 		}
 
 		attribute UInt8 uInt8Attribute1
