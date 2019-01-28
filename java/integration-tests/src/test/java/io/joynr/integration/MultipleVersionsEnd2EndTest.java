@@ -56,7 +56,7 @@ import joynr.tests.v2.MultipleVersionsInterfaceProxy;
 import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
 
-public class MultipleVersionsTest {
+public class MultipleVersionsEnd2EndTest {
     private static final String DOMAIN = "MultipleVersionsTestDomain";
     private static final String PROXYBUILD_FAILED_MESSAGE = "Building of proxy failed: ";
     private static final String REGISTERING_FAILED_MESSAGE = "Registering of provider failed: ";
