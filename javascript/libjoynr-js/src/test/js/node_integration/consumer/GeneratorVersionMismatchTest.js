@@ -23,7 +23,7 @@
 const End2EndAbstractTest = require("../End2EndAbstractTest");
 const NoCompatibleProviderFoundException = require("../../../../main/js/joynr/exceptions/NoCompatibleProviderFoundException");
 
-const abstractTest = new End2EndAbstractTest("IncompatibleProviderTest", "TestMultipleVersionsInterfaceProcess", {
+const abstractTest = new End2EndAbstractTest("GeneratorVersionMismatchTest", "TestMultipleVersionsInterfaceProcess", {
     versioning: "packageVersion1"
 });
 

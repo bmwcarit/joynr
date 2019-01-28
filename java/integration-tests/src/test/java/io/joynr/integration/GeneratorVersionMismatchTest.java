@@ -53,7 +53,7 @@ import joynr.tests.v1.DefaultMultipleVersionsInterfaceProvider;
 import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
 
-public class ProxyVersionMismatchTest {
+public class GeneratorVersionMismatchTest {
     private static final long CONST_DEFAULT_TEST_TIMEOUT_MS = 3000;
 
     private Semaphore errorCallbackSemaphore;

@@ -29,17 +29,17 @@
 using namespace ::testing;
 using namespace joynr;
 
-class IncompatibleProviderTest : public Test
+class GeneratorVersionMismatchTest : public Test
 {
 public:
-    IncompatibleProviderTest() : runtime(), testDomain("testDomain")
+    GeneratorVersionMismatchTest() : runtime(), testDomain("testDomain")
     {
         runtime = JoynrRuntime::createRuntime(std::make_unique<Settings>());
         discoveryQos.setDiscoveryTimeoutMs(100);
         discoveryQos.setDiscoveryScope(joynr::types::DiscoveryScope::LOCAL_ONLY);
     }
 
-    ~IncompatibleProviderTest() override
+    ~GeneratorVersionMismatchTest() override
     {
         test::util::removeAllCreatedSettingsAndPersistencyFiles();
     }
@@ -51,10 +51,10 @@ protected:
     MessagingQos messagingQos;
 
 private:
-    DISALLOW_COPY_AND_ASSIGN(IncompatibleProviderTest);
+    DISALLOW_COPY_AND_ASSIGN(GeneratorVersionMismatchTest);
 };
 
-TEST_F(IncompatibleProviderTest, proxyCreationFails)
+TEST_F(GeneratorVersionMismatchTest, proxyCreationFails)
 {
     auto testProvider = std::make_shared<tests::v1::DefaultMultipleVersionsInterfaceProvider>();
     joynr::types::ProviderQos providerQos;
