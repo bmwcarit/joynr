@@ -18,8 +18,16 @@
  */
 package io.joynr.integration;
 
-import java.util.Properties;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
+import java.util.Properties;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
+
+import org.junit.After;
 import org.junit.Before;
 
 import com.google.inject.Module;
@@ -27,9 +35,17 @@ import com.google.inject.util.Modules;
 
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
+import io.joynr.exceptions.DiscoveryException;
+import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.exceptions.MultiDomainNoCompatibleProviderFoundException;
+import io.joynr.exceptions.NoCompatibleProviderFoundException;
 import io.joynr.integration.util.DummyJoynrApplication;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.routing.TestGlobalAddressModule;
+import io.joynr.provider.AbstractJoynrProvider;
+import io.joynr.proxy.Future;
+import io.joynr.proxy.ProxyBuilder;
+import io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback;
 import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
@@ -38,9 +54,17 @@ import joynr.types.ProviderScope;
 
 public class AbstractMultipleVersionsEnd2EndTest {
 
+    static final long CONST_DEFAULT_TEST_TIMEOUT_MS = 3000;
+    static final String DOMAIN_PREFIX = "MultipleVersionsTestDomain-";
+    private static final String PROXYBUILD_FAILED_MESSAGE = "Building of proxy failed: ";
+    private static final String REGISTERING_FAILED_MESSAGE = "Registering of provider failed: ";
+
     DiscoveryQos discoveryQos;
     ProviderQos providerQos;
     JoynrRuntime runtime;
+    private Semaphore proxyBuiltSemaphore;
+    Semaphore noCompatibleProviderFoundCallbackSemaphore;
+    String domain;
 
     JoynrRuntime getCcRuntime() {
         Properties joynrConfig = new Properties();
@@ -65,6 +89,59 @@ public class AbstractMultipleVersionsEnd2EndTest {
 
         // provider and proxy using same runtime to allow local-only communications
         runtime = getCcRuntime();
+
+        domain = DOMAIN_PREFIX + UUID.randomUUID().toString();
+        proxyBuiltSemaphore = new Semaphore(0);
+        noCompatibleProviderFoundCallbackSemaphore = new Semaphore(0, true);
+    }
+
+    @After
+    public void tearDown() {
+        if (runtime != null) {
+            runtime.shutdown(true);
+        }
+    }
+
+    void registerProvider(AbstractJoynrProvider provider, String domain) {
+        Future<Void> future = runtime.registerProvider(domain, provider, providerQos);
+
+        try {
+            future.get(100);
+        } catch (Exception e) {
+            fail(REGISTERING_FAILED_MESSAGE + e);
+        }
+    }
+
+    <T> T buildProxy(final Class<T> interfaceClass,
+                     final Set<String> domains,
+                     final boolean waitForProxyCreation) throws Exception {
+        ProxyBuilder<T> proxyBuilder = runtime.getProxyBuilder(domains, interfaceClass);
+        T proxy = null;
+        try {
+            proxy = proxyBuilder.setDiscoveryQos(discoveryQos).build(new ProxyCreatedCallback<T>() {
+                @Override
+                public void onProxyCreationFinished(T result) {
+                    proxyBuiltSemaphore.release();
+                }
+
+                @Override
+                public void onProxyCreationError(JoynrRuntimeException error) {
+                    if (error instanceof NoCompatibleProviderFoundException
+                            || error instanceof MultiDomainNoCompatibleProviderFoundException) {
+                        noCompatibleProviderFoundCallbackSemaphore.release();
+                    }
+                }
+            });
+            if (waitForProxyCreation) {
+                assertTrue(proxyBuiltSemaphore.tryAcquire(1, TimeUnit.SECONDS));
+            }
+        } catch (DiscoveryException | InterruptedException e) {
+            if (!waitForProxyCreation) {
+                throw e;
+            }
+            fail(PROXYBUILD_FAILED_MESSAGE + e);
+        }
+        return proxy;
     }
 
 }

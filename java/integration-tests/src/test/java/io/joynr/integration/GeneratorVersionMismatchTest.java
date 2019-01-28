@@ -23,44 +23,27 @@ import static org.junit.Assert.fail;
 
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import io.joynr.exceptions.DiscoveryException;
-import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.MultiDomainNoCompatibleProviderFoundException;
 import io.joynr.exceptions.NoCompatibleProviderFoundException;
-import io.joynr.provider.AbstractJoynrProvider;
-import io.joynr.proxy.Future;
-import io.joynr.proxy.ProxyBuilder;
-import io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback;
 import joynr.tests.v1.DefaultMultipleVersionsInterfaceProvider;
 
 public class GeneratorVersionMismatchTest extends AbstractMultipleVersionsEnd2EndTest {
-    private static final long CONST_DEFAULT_TEST_TIMEOUT_MS = 3000;
-    private static final String DOMAIN_PREFIX = "MultipleVersionsTestDomain-";
-    private static final String PROXYBUILD_FAILED_MESSAGE = "Building of proxy failed: ";
-    private static final String REGISTERING_FAILED_MESSAGE = "Registering of provider failed: ";
 
-    private Semaphore proxyBuiltSemaphore;
-    private Semaphore noCompatibleProviderFoundCallbackSemaphore;
-    private String domain;
     private String domain2;
     private joynr.tests.v1.DefaultMultipleVersionsInterfaceProvider provider;
     private joynr.tests.v2.MultipleVersionsInterfaceProxy proxy;
 
+    @Override
     @Before
     public void setUp() {
         super.setUp();
-        domain = DOMAIN_PREFIX + UUID.randomUUID().toString();
-        proxyBuiltSemaphore = new Semaphore(0);
-        noCompatibleProviderFoundCallbackSemaphore = new Semaphore(0, true);
 
         domain2 = "domain2-" + UUID.randomUUID().toString();
         provider = new DefaultMultipleVersionsInterfaceProvider();
@@ -69,53 +52,13 @@ public class GeneratorVersionMismatchTest extends AbstractMultipleVersionsEnd2En
         registerProvider(provider, domain2);
     }
 
+    @Override
     @After
     public void tearDown() {
         runtime.unregisterProvider(domain, provider);
         runtime.unregisterProvider(domain2, provider);
 
-        if (runtime != null) {
-            runtime.shutdown(true);
-        }
-    }
-    private void registerProvider(AbstractJoynrProvider provider, String domain) {
-        Future<Void> future = runtime.registerProvider(domain, provider, providerQos);
-
-        try {
-            future.get(100);
-        } catch (Exception e) {
-            fail(REGISTERING_FAILED_MESSAGE + e);
-        }
-    }
-
-    private <T> T buildProxy(final Class<T> interfaceClass, final Set<String> domains, final boolean waitForProxyCreation) throws Exception {
-        ProxyBuilder<T> proxyBuilder = runtime.getProxyBuilder(domains, interfaceClass);
-        T proxy = null;
-        try {
-            proxy = proxyBuilder.setDiscoveryQos(discoveryQos).build(new ProxyCreatedCallback<T>() {
-                @Override
-                public void onProxyCreationFinished(T result) {
-                    proxyBuiltSemaphore.release();
-                }
-    
-                @Override
-                public void onProxyCreationError(JoynrRuntimeException error) {
-                    if (error instanceof NoCompatibleProviderFoundException
-                            || error instanceof MultiDomainNoCompatibleProviderFoundException) {
-                        noCompatibleProviderFoundCallbackSemaphore.release();
-                    }
-                }
-            });
-            if (waitForProxyCreation) {
-                assertTrue(proxyBuiltSemaphore.tryAcquire(1, TimeUnit.SECONDS));
-            }
-        } catch (DiscoveryException | InterruptedException e) {
-            if (!waitForProxyCreation) {
-                throw e;
-            }
-            fail(PROXYBUILD_FAILED_MESSAGE + e);
-        }
-        return proxy;
+        super.tearDown();
     }
 
     private void checkProxy() {
@@ -132,7 +75,9 @@ public class GeneratorVersionMismatchTest extends AbstractMultipleVersionsEnd2En
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT_MS)
     public void testNoCompatibleProviderFound() throws Exception {
 
-        proxy = buildProxy(joynr.tests.v2.MultipleVersionsInterfaceProxy.class, new HashSet<String>(Arrays.asList(domain)), false);
+        proxy = buildProxy(joynr.tests.v2.MultipleVersionsInterfaceProxy.class,
+                           new HashSet<String>(Arrays.asList(domain)),
+                           false);
 
         // wait for the proxy created error callback to be called
         assertTrue("Unexpected successful proxy creation or timeout",
@@ -144,7 +89,9 @@ public class GeneratorVersionMismatchTest extends AbstractMultipleVersionsEnd2En
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT_MS)
     public void testMultiDomainNoCompatibleProviderFound() throws Exception {
 
-        proxy = buildProxy(joynr.tests.v2.MultipleVersionsInterfaceProxy.class, new HashSet<String>(Arrays.asList(domain, domain2)), false);
+        proxy = buildProxy(joynr.tests.v2.MultipleVersionsInterfaceProxy.class,
+                           new HashSet<String>(Arrays.asList(domain, domain2)),
+                           false);
 
         // wait for the proxy created error callback to be called
         assertTrue("Unexpected successful proxy creation or timeout",
@@ -156,9 +103,12 @@ public class GeneratorVersionMismatchTest extends AbstractMultipleVersionsEnd2En
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT_MS)
     public void testProxyIsInvalidatedOnceArbitrationExceptionThrown() throws Exception {
 
-        proxy = buildProxy(joynr.tests.v2.MultipleVersionsInterfaceProxy.class, new HashSet<String>(Arrays.asList(domain)), false);
+        proxy = buildProxy(joynr.tests.v2.MultipleVersionsInterfaceProxy.class,
+                           new HashSet<String>(Arrays.asList(domain)),
+                           false);
 
         checkProxy();
         checkProxy();
     }
+
 }
