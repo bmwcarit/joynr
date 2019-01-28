@@ -24,28 +24,58 @@ import java.util.HashSet;
 import org.junit.Test;
 
 import joynr.tests.DefaultMultipleVersionsInterface2Provider;
+import joynr.tests.MultipleVersionsInterface2Proxy;
+import joynr.tests.MultipleVersionsInterfaceProxy;
 import joynr.tests.v2.DefaultMultipleVersionsInterfaceProvider;
 
 public class GeneratorVersionCompatibilityTest extends AbstractMultipleVersionsEnd2EndTest {
 
-    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT_MS)
-    public void nonVersionedProxyCreationAgainstPackageVersionedProviderSucceeds() throws Exception {
+    private void testProxyCreationAgainstPackageVersionedProvider(Class<?> proxyClass) throws Exception {
         joynr.tests.v2.DefaultMultipleVersionsInterfaceProvider provider_packageVersion = new DefaultMultipleVersionsInterfaceProvider();
         registerProvider(provider_packageVersion, domain);
 
-        buildProxy(joynr.tests.MultipleVersionsInterfaceProxy.class, new HashSet<String>(Arrays.asList(domain)), true);
+        buildProxy(proxyClass, new HashSet<String>(Arrays.asList(domain)), true);
 
         runtime.unregisterProvider(domain, provider_packageVersion);
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT_MS)
-    public void nonVersionedProxyCreationAgainstNameVersionedProviderSucceeds() throws Exception {
+    public void nonVersionedProxyCreationAgainstPackageVersionedProviderSucceeds() throws Exception {
+        testProxyCreationAgainstPackageVersionedProvider(MultipleVersionsInterfaceProxy.class);
+    }
+
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT_MS)
+    public void nameVersionedProxyCreationAgainstPackageVersionedProviderSucceeds() throws Exception {
+        testProxyCreationAgainstPackageVersionedProvider(MultipleVersionsInterface2Proxy.class);
+    }
+
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT_MS)
+    public void packageVersionedProxyCreationAgainstPackageVersionedProviderSucceeds() throws Exception {
+        testProxyCreationAgainstPackageVersionedProvider(joynr.tests.v2.MultipleVersionsInterfaceProxy.class);
+    }
+
+    private void testProxyCreationAgainstNameVersionedProvider(Class<?> proxyClass) throws Exception {
         joynr.tests.DefaultMultipleVersionsInterface2Provider provider_nameVersion = new DefaultMultipleVersionsInterface2Provider();
         registerProvider(provider_nameVersion, domain);
 
-        buildProxy(joynr.tests.MultipleVersionsInterfaceProxy.class, new HashSet<String>(Arrays.asList(domain)), true);
+        buildProxy(proxyClass, new HashSet<String>(Arrays.asList(domain)), true);
 
         runtime.unregisterProvider(domain, provider_nameVersion);
+    }
+
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT_MS)
+    public void nonVersionedProxyCreationAgainstNameVersionedProviderSucceeds() throws Exception {
+        testProxyCreationAgainstNameVersionedProvider(MultipleVersionsInterfaceProxy.class);
+    }
+
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT_MS)
+    public void nameVersionedProxyCreationAgainstNameVersionedProviderSucceeds() throws Exception {
+        testProxyCreationAgainstNameVersionedProvider(MultipleVersionsInterface2Proxy.class);
+    }
+
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT_MS)
+    public void packageVersionedProxyCreationAgainstNameVersionedProviderSucceeds() throws Exception {
+        testProxyCreationAgainstNameVersionedProvider(joynr.tests.v2.MultipleVersionsInterfaceProxy.class);
     }
 
 }

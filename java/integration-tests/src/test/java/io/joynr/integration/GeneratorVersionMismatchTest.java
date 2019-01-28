@@ -27,88 +27,241 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import io.joynr.exceptions.MultiDomainNoCompatibleProviderFoundException;
 import io.joynr.exceptions.NoCompatibleProviderFoundException;
-import joynr.tests.v1.DefaultMultipleVersionsInterfaceProvider;
+import joynr.tests.DefaultMultipleVersionsInterface1Provider;
+import joynr.tests.DefaultMultipleVersionsInterfaceProvider;
+import joynr.tests.MultipleVersionsInterface1Proxy;
+import joynr.tests.MultipleVersionsInterface2Proxy;
+import joynr.tests.MultipleVersionsInterfaceProxy;
 
 public class GeneratorVersionMismatchTest extends AbstractMultipleVersionsEnd2EndTest {
 
-    private String domain2;
-    private joynr.tests.v1.DefaultMultipleVersionsInterfaceProvider provider;
-    private joynr.tests.v2.MultipleVersionsInterfaceProxy proxy;
-
-    @Override
-    @Before
-    public void setUp() {
-        super.setUp();
-
-        domain2 = "domain2-" + UUID.randomUUID().toString();
-        provider = new DefaultMultipleVersionsInterfaceProvider();
-
-        registerProvider(provider, domain);
-        registerProvider(provider, domain2);
-    }
+    private joynr.tests.v1.DefaultMultipleVersionsInterfaceProvider packageVersionedProvider;
+    private DefaultMultipleVersionsInterface1Provider nameVersionedProvider;
+    private DefaultMultipleVersionsInterfaceProvider unversionedProvider;
 
     @Override
     @After
     public void tearDown() {
-        runtime.unregisterProvider(domain, provider);
-        runtime.unregisterProvider(domain2, provider);
+        if (packageVersionedProvider != null) {
+            runtime.unregisterProvider(domain, packageVersionedProvider);
+        }
+        if (nameVersionedProvider != null) {
+            runtime.unregisterProvider(domain, nameVersionedProvider);
+        }
+        if (unversionedProvider != null) {
+            runtime.unregisterProvider(domain, unversionedProvider);
+        }
 
         super.tearDown();
     }
 
-    private void checkProxy() {
+    private void checkPackageVersionedProxy() throws Exception {
+        final joynr.tests.v2.MultipleVersionsInterfaceProxy proxy = buildProxy(joynr.tests.v2.MultipleVersionsInterfaceProxy.class,
+                                                                               new HashSet<String>(Arrays.asList(domain)),
+                                                                               false);
+
+        // wait for the proxy created error callback to be called
+        assertTrue("Unexpected successful proxy creation or timeout",
+                   noCompatibleProviderFoundCallbackSemaphore.tryAcquire(DISCOVERY_TIMEOUT_MS * 2,
+                                                                         TimeUnit.MILLISECONDS));
+
         try {
             proxy.getTrue();
             fail("Proxy call didn't cause a discovery exception");
         } catch (NoCompatibleProviderFoundException | MultiDomainNoCompatibleProviderFoundException e) {
             // These exceptions are expected, so no need to fail here.
         } catch (Exception e) {
-            fail("Expected a discovery exception, but got: " + e);
+            fail("Expected a *NoCompatibleProviderFoundException, but got: " + e);
+        }
+    }
+
+    private void checkNameVersionedProxy() throws Exception {
+        final MultipleVersionsInterface2Proxy proxy = buildProxy(MultipleVersionsInterface2Proxy.class,
+                                                                 new HashSet<String>(Arrays.asList(domain)),
+                                                                 false);
+
+        // wait for the proxy created error callback to be called
+        assertTrue("Unexpected successful proxy creation or timeout",
+                   noCompatibleProviderFoundCallbackSemaphore.tryAcquire(DISCOVERY_TIMEOUT_MS * 2,
+                                                                         TimeUnit.MILLISECONDS));
+
+        try {
+            proxy.getTrue();
+            fail("Proxy call didn't cause a discovery exception");
+        } catch (NoCompatibleProviderFoundException | MultiDomainNoCompatibleProviderFoundException e) {
+            // These exceptions are expected, so no need to fail here.
+        } catch (Exception e) {
+            fail("Expected a *NoCompatibleProviderFoundException, but got: " + e);
+        }
+    }
+
+    private void checkUnversionedProxy() throws Exception {
+        final MultipleVersionsInterfaceProxy proxy = buildProxy(MultipleVersionsInterfaceProxy.class,
+                                                                new HashSet<String>(Arrays.asList(domain)),
+                                                                false);
+
+        // wait for the proxy created error callback to be called
+        assertTrue("Unexpected successful proxy creation or timeout",
+                   noCompatibleProviderFoundCallbackSemaphore.tryAcquire(DISCOVERY_TIMEOUT_MS * 2,
+                                                                         TimeUnit.MILLISECONDS));
+
+        try {
+            proxy.getTrue();
+            fail("Proxy call didn't cause a discovery exception");
+        } catch (NoCompatibleProviderFoundException | MultiDomainNoCompatibleProviderFoundException e) {
+            // These exceptions are expected, so no need to fail here.
+        } catch (Exception e) {
+            fail("Expected a *NoCompatibleProviderFoundException, but got: " + e);
+        }
+    }
+
+    private void registerPackageVersionedProvider() throws Exception {
+        registerPackageVersionedProvider(domain);
+    }
+
+    private void registerPackageVersionedProvider(final String domain) throws Exception {
+        packageVersionedProvider = new joynr.tests.v1.DefaultMultipleVersionsInterfaceProvider();
+        registerProvider(packageVersionedProvider, domain);
+    }
+
+    private void registerNameVersionedProvider() throws Exception {
+        nameVersionedProvider = new DefaultMultipleVersionsInterface1Provider();
+        registerProvider(nameVersionedProvider, domain);
+    }
+
+    private void registerUnversionedProvider() throws Exception {
+        unversionedProvider = new DefaultMultipleVersionsInterfaceProvider();
+        registerProvider(unversionedProvider, domain);
+    }
+
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT_MS)
+    public void testNoCompatibleProviderFound_packageVersionedProvider_packageVersionedProxy() throws Exception {
+        registerPackageVersionedProvider();
+        checkPackageVersionedProxy();
+    }
+
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT_MS)
+    public void testNoCompatibleProviderFound_packageVersionedProvider_nameVersionedProxy() throws Exception {
+        registerPackageVersionedProvider();
+        checkNameVersionedProxy();
+    }
+
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT_MS)
+    public void testNoCompatibleProviderFound_packageVersionedProvider_unversionedProxy() throws Exception {
+        registerPackageVersionedProvider();
+        checkUnversionedProxy();
+    }
+
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT_MS)
+    public void testNoCompatibleProviderFound_nameVersionedProvider_packageVersionedProxy() throws Exception {
+        registerNameVersionedProvider();
+        checkPackageVersionedProxy();
+    }
+
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT_MS)
+    public void testNoCompatibleProviderFound_nameVersionedProvider_nameVersionedProxy() throws Exception {
+        registerNameVersionedProvider();
+        checkNameVersionedProxy();
+    }
+
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT_MS)
+    public void testNoCompatibleProviderFound_nameVersionedProvider_unversionedProxy() throws Exception {
+        registerNameVersionedProvider();
+        checkUnversionedProxy();
+    }
+
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT_MS)
+    public void testNoCompatibleProviderFound_unversionedProvider_packageVersionedProxy() throws Exception {
+        registerUnversionedProvider();
+
+        final joynr.tests.v1.MultipleVersionsInterfaceProxy proxy = buildProxy(joynr.tests.v1.MultipleVersionsInterfaceProxy.class,
+                                                                               new HashSet<String>(Arrays.asList(domain)),
+                                                                               false);
+
+        // wait for the proxy created error callback to be called
+        assertTrue("Unexpected successful proxy creation or timeout",
+                   noCompatibleProviderFoundCallbackSemaphore.tryAcquire(DISCOVERY_TIMEOUT_MS * 2,
+                                                                         TimeUnit.MILLISECONDS));
+
+        try {
+            proxy.getTrue();
+            fail("Proxy call didn't cause a discovery exception");
+        } catch (NoCompatibleProviderFoundException | MultiDomainNoCompatibleProviderFoundException e) {
+            // These exceptions are expected, so no need to fail here.
+        } catch (Exception e) {
+            fail("Expected a *NoCompatibleProviderFoundException, but got: " + e);
         }
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT_MS)
-    public void testNoCompatibleProviderFound() throws Exception {
+    public void testNoCompatibleProviderFound_unversionedProvider_nameVersionedProxy() throws Exception {
+        registerUnversionedProvider();
 
-        proxy = buildProxy(joynr.tests.v2.MultipleVersionsInterfaceProxy.class,
-                           new HashSet<String>(Arrays.asList(domain)),
-                           false);
+        final MultipleVersionsInterface1Proxy proxy = buildProxy(MultipleVersionsInterface1Proxy.class,
+                                                                 new HashSet<String>(Arrays.asList(domain)),
+                                                                 false);
 
         // wait for the proxy created error callback to be called
         assertTrue("Unexpected successful proxy creation or timeout",
-                   noCompatibleProviderFoundCallbackSemaphore.tryAcquire(3, TimeUnit.SECONDS));
+                   noCompatibleProviderFoundCallbackSemaphore.tryAcquire(DISCOVERY_TIMEOUT_MS * 2,
+                                                                         TimeUnit.MILLISECONDS));
 
-        checkProxy();
+        try {
+            proxy.getTrue();
+            fail("Proxy call didn't cause a discovery exception");
+        } catch (NoCompatibleProviderFoundException | MultiDomainNoCompatibleProviderFoundException e) {
+            // These exceptions are expected, so no need to fail here.
+        } catch (Exception e) {
+            fail("Expected a *NoCompatibleProviderFoundException, but got: " + e);
+        }
+    }
+
+    private void checkProxy(final joynr.tests.v2.MultipleVersionsInterfaceProxy proxy) {
+        try {
+            proxy.getTrue();
+            fail("Proxy call didn't cause a discovery exception");
+        } catch (NoCompatibleProviderFoundException | MultiDomainNoCompatibleProviderFoundException e) {
+            // These exceptions are expected, so no need to fail here.
+        } catch (Exception e) {
+            fail("Expected a *NoCompatibleProviderFoundException, but got: " + e);
+        }
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT_MS)
     public void testMultiDomainNoCompatibleProviderFound() throws Exception {
+        registerPackageVersionedProvider();
+        final String domain2 = "domain2-" + UUID.randomUUID().toString();
+        registerPackageVersionedProvider(domain2);
 
-        proxy = buildProxy(joynr.tests.v2.MultipleVersionsInterfaceProxy.class,
-                           new HashSet<String>(Arrays.asList(domain, domain2)),
-                           false);
+        final joynr.tests.v2.MultipleVersionsInterfaceProxy proxy = buildProxy(joynr.tests.v2.MultipleVersionsInterfaceProxy.class,
+                                                                               new HashSet<String>(Arrays.asList(domain,
+                                                                                                                 domain2)),
+                                                                               false);
 
         // wait for the proxy created error callback to be called
         assertTrue("Unexpected successful proxy creation or timeout",
-                   noCompatibleProviderFoundCallbackSemaphore.tryAcquire(3, TimeUnit.SECONDS));
+                   noCompatibleProviderFoundCallbackSemaphore.tryAcquire(DISCOVERY_TIMEOUT_MS * 2,
+                                                                         TimeUnit.MILLISECONDS));
 
-        checkProxy();
+        checkProxy(proxy);
+
+        runtime.unregisterProvider(domain2, packageVersionedProvider);
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT_MS)
     public void testProxyIsInvalidatedOnceArbitrationExceptionThrown() throws Exception {
+        registerPackageVersionedProvider();
 
-        proxy = buildProxy(joynr.tests.v2.MultipleVersionsInterfaceProxy.class,
-                           new HashSet<String>(Arrays.asList(domain)),
-                           false);
+        final joynr.tests.v2.MultipleVersionsInterfaceProxy proxy = buildProxy(joynr.tests.v2.MultipleVersionsInterfaceProxy.class,
+                                                                               new HashSet<String>(Arrays.asList(domain)),
+                                                                               false);
 
-        checkProxy();
-        checkProxy();
+        checkProxy(proxy);
+        checkProxy(proxy);
     }
 
 }

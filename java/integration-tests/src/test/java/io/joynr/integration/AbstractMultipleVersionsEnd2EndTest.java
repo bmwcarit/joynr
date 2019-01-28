@@ -54,7 +54,8 @@ import joynr.types.ProviderScope;
 
 public class AbstractMultipleVersionsEnd2EndTest {
 
-    static final long CONST_DEFAULT_TEST_TIMEOUT_MS = 3000;
+    static final long DISCOVERY_TIMEOUT_MS = 1000;
+    static final long CONST_DEFAULT_TEST_TIMEOUT_MS = DISCOVERY_TIMEOUT_MS * 3;
     static final String DOMAIN_PREFIX = "MultipleVersionsTestDomain-";
     private static final String PROXYBUILD_FAILED_MESSAGE = "Building of proxy failed: ";
     private static final String REGISTERING_FAILED_MESSAGE = "Registering of provider failed: ";
@@ -80,7 +81,7 @@ public class AbstractMultipleVersionsEnd2EndTest {
     @Before
     public void setUp() {
         discoveryQos = new DiscoveryQos();
-        discoveryQos.setDiscoveryTimeoutMs(1000);
+        discoveryQos.setDiscoveryTimeoutMs(DISCOVERY_TIMEOUT_MS);
         discoveryQos.setRetryIntervalMs(100);
         discoveryQos.setDiscoveryScope(DiscoveryScope.LOCAL_ONLY);
 

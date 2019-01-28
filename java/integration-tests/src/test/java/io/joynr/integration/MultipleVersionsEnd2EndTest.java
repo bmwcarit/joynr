@@ -32,47 +32,54 @@ import joynr.tests.DefaultMultipleVersionsInterface2Provider;
 import joynr.tests.DefaultMultipleVersionsInterfaceProvider;
 import joynr.tests.MultipleVersionsInterface1Proxy;
 import joynr.tests.MultipleVersionsInterface2Proxy;
-import joynr.tests.v2.MultipleVersionsInterfaceProxy;
+import joynr.tests.MultipleVersionsInterfaceProxy;
 
 public class MultipleVersionsEnd2EndTest extends AbstractMultipleVersionsEnd2EndTest {
 
     private static final String UNREGISTERING_FAILED_MESSAGE = "Unregistering of provider failed: ";
 
     /*
-    * This test tests if 2 proxies of same interface (name versioned and package versioned) can connect to
+    * This test tests if 3 proxies of same interface (name versioned, package versioned, unversioned) can connect to
     * one provider (unversioned) and communicate with this without mutual interference.
     */
     @Test
-    public void twoProxiesOfDifferentVersioningTypesVsUnversionedProvider() throws Exception {
+    public void proxiesOfDifferentVersioningTypesVsUnversionedProvider() throws Exception {
         // register provider
-        DefaultMultipleVersionsInterfaceProvider provider = new DefaultMultipleVersionsInterfaceProvider();
+        DefaultMultipleVersionsInterfaceProvider unversionedProvider = new DefaultMultipleVersionsInterfaceProvider();
 
-        registerProvider(provider, domain);
+        registerProvider(unversionedProvider, domain);
 
         // build fitting proxies
-        MultipleVersionsInterface2Proxy proxy1 = buildProxy(MultipleVersionsInterface2Proxy.class,
-                                                            new HashSet<String>(Arrays.asList(domain)),
-                                                            true);
-        MultipleVersionsInterfaceProxy proxy2 = buildProxy(MultipleVersionsInterfaceProxy.class,
-                                                           new HashSet<String>(Arrays.asList(domain)),
-                                                           true);
+        MultipleVersionsInterface2Proxy nameVersionedProxy = buildProxy(MultipleVersionsInterface2Proxy.class,
+                                                                        new HashSet<String>(Arrays.asList(domain)),
+                                                                        true);
+        joynr.tests.v2.MultipleVersionsInterfaceProxy packageVersionedProxy = buildProxy(joynr.tests.v2.MultipleVersionsInterfaceProxy.class,
+                                                                                         new HashSet<String>(Arrays.asList(domain)),
+                                                                                         true);
+        MultipleVersionsInterfaceProxy unversionedProxy = buildProxy(MultipleVersionsInterfaceProxy.class,
+                                                                     new HashSet<String>(Arrays.asList(domain)),
+                                                                     true);
 
         try {
             //set UInt8Attribute1 and check if it can be retrieved correctly
-            proxy1.setUInt8Attribute1((byte) 100);
-            Byte value1 = proxy1.getUInt8Attribute1();
-            Byte value2 = proxy2.getUInt8Attribute1();
+            nameVersionedProxy.setUInt8Attribute1((byte) 100);
+            Byte value1 = nameVersionedProxy.getUInt8Attribute1();
+            Byte value2 = packageVersionedProxy.getUInt8Attribute1();
+            Byte value3 = unversionedProxy.getUInt8Attribute1();
             assertEquals((byte) value1, 100);
             assertEquals((byte) value2, 100);
+            assertEquals((byte) value3, 100);
 
-            proxy2.setUInt8Attribute1((byte) 50);
-            value1 = proxy1.getUInt8Attribute1();
-            value2 = proxy2.getUInt8Attribute1();
+            packageVersionedProxy.setUInt8Attribute1((byte) 50);
+            value1 = nameVersionedProxy.getUInt8Attribute1();
+            value2 = packageVersionedProxy.getUInt8Attribute1();
+            value3 = unversionedProxy.getUInt8Attribute1();
             assertEquals((byte) value1, 50);
             assertEquals((byte) value2, 50);
+            assertEquals((byte) value3, 50);
 
             // unregister provider
-            runtime.unregisterProvider(domain, provider);
+            runtime.unregisterProvider(domain, unversionedProvider);
         } catch (JoynrRuntimeException e) {
             fail(UNREGISTERING_FAILED_MESSAGE + e);
         }
@@ -87,6 +94,44 @@ public class MultipleVersionsEnd2EndTest extends AbstractMultipleVersionsEnd2End
         // register providers
         DefaultMultipleVersionsInterface1Provider provider1 = new DefaultMultipleVersionsInterface1Provider();
         DefaultMultipleVersionsInterface2Provider provider2 = new DefaultMultipleVersionsInterface2Provider();
+
+        registerProvider(provider1, domain);
+        registerProvider(provider2, domain);
+
+        // build fitting proxies
+        MultipleVersionsInterface1Proxy proxy1 = buildProxy(MultipleVersionsInterface1Proxy.class,
+                                                            new HashSet<String>(Arrays.asList(domain)),
+                                                            true);
+        MultipleVersionsInterface2Proxy proxy2 = buildProxy(MultipleVersionsInterface2Proxy.class,
+                                                            new HashSet<String>(Arrays.asList(domain)),
+                                                            true);
+
+        //set UInt8Attribute1 and check if it can be retrieved correctly
+        proxy1.setUInt8Attribute1((byte) 100);
+        proxy2.setUInt8Attribute1((byte) 50);
+        Byte value1 = proxy1.getUInt8Attribute1();
+        Byte value2 = proxy2.getUInt8Attribute1();
+        assertEquals((byte) value1, 100);
+        assertEquals((byte) value2, 50);
+
+        // unregister providers
+        try {
+            runtime.unregisterProvider(domain, provider1);
+            runtime.unregisterProvider(domain, provider2);
+        } catch (JoynrRuntimeException e) {
+            fail(UNREGISTERING_FAILED_MESSAGE + e);
+        }
+    }
+
+    /*
+     * This test tests if 2 providers of same interface and different versions can be registered in a single runtime
+     * and 2 proxies can communicate with those without mutual interference.
+     */
+    @Test
+    public void twoPackageVersionedProvidersInSingleRuntime() throws Exception {
+        // register providers
+        joynr.tests.v1.DefaultMultipleVersionsInterfaceProvider provider1 = new joynr.tests.v1.DefaultMultipleVersionsInterfaceProvider();
+        joynr.tests.v2.DefaultMultipleVersionsInterfaceProvider provider2 = new joynr.tests.v2.DefaultMultipleVersionsInterfaceProvider();
 
         registerProvider(provider1, domain);
         registerProvider(provider2, domain);
