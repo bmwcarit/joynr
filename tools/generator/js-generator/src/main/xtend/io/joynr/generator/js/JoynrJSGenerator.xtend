@@ -73,6 +73,7 @@ class JoynrJSGenerator implements IJoynrGenerator {
 			providerGenerator.generateProvider(fsa)
 		}
 		fModel.interfaces.forEach [
+			generateTypes(types, fsa)
 			generateErrorEnumTypes(types, fsa)
 		]
 
