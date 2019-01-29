@@ -877,6 +877,25 @@ void CcMessageRouterTest::addressIsAddedToRoutingTable(const std::shared_ptr<con
     ASSERT_TRUE(resolveNextHopDone.waitFor(std::chrono::milliseconds(1000)));
 }
 
+TEST_F(CcMessageRouterTest, setToKnownDoesNotChangeRoutingTable)
+{
+    Semaphore resolveNextHopDone(0);
+    const std::string testParticipantId("testParticipantId");
+
+    auto expectNotResolved = [&resolveNextHopDone](const bool& resolved) {
+        ASSERT_FALSE(resolved);
+        resolveNextHopDone.notify();
+    };
+
+    messageRouter->resolveNextHop(testParticipantId, expectNotResolved, nullptr);
+    ASSERT_TRUE(resolveNextHopDone.waitFor(std::chrono::milliseconds(1000)));
+
+    messageRouter->setToKnown(testParticipantId);
+
+    messageRouter->resolveNextHop(testParticipantId, expectNotResolved, nullptr);
+    ASSERT_TRUE(resolveNextHopDone.waitFor(std::chrono::milliseconds(1000)));
+}
+
 TEST_F(CcMessageRouterTest, globalAddressMustNotReferToOurClusterController)
 {
     auto ownAddress = std::make_shared<const system::RoutingTypes::MqttAddress>("brokerUri", "ownTopic");

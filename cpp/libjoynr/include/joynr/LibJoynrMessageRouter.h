@@ -130,6 +130,8 @@ public:
             std::string parentParticipantId,
             std::shared_ptr<const joynr::system::RoutingTypes::Address> parentAddress);
 
+    void setToKnown(const std::string& participantId) override;
+
     /*
      * Method specific to LibJoynrMessageRouter
      */

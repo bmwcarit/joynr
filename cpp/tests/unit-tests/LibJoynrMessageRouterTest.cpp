@@ -385,6 +385,46 @@ TEST_F(LibJoynrMessageRouterTest, addNextHop_callsAddNextHopInRoutingProxy)
     testAddNextHopCallsRoutingProxyCorrectly(isGloballyVisible, providerAddress2);
 }
 
+TEST_F(LibJoynrMessageRouterTest, setToKnown_addsParentAddress)
+{
+    auto mockRoutingProxy = std::make_unique<MockRoutingProxy>(runtime);
+    MockRoutingProxy* mockRoutingProxyRef = mockRoutingProxy.get();
+    ON_CALL(*mockRoutingProxy, resolveNextHopAsyncMock(_,_,_,_))
+            .WillByDefault(
+                DoAll(
+                    Invoke(this, &LibJoynrMessageRouterTest::removeFromQueue),
+                    InvokeArgument<1>(false),
+                    Return(nullptr)));
+    messageRouter->setParentAddress(std::string("parentParticipantId"), localTransport);
+    messageRouter->setParentRouter(std::move(mockRoutingProxy));
+
+    const std::string providerParticipantId = "providerParticipantId";
+    mutableMessage.setType(joynr::Message::VALUE_MESSAGE_TYPE_REQUEST());
+    mutableMessage.setSender("sender");
+    mutableMessage.setRecipient(providerParticipantId);
+
+    EXPECT_CALL(*mockRoutingProxyRef, resolveNextHopAsyncMock(providerParticipantId,_,_,_));
+    EXPECT_CALL(*messagingStubFactory, create(_)).Times(0);
+
+    messageRouter->route(mutableMessage.getImmutableMessage());
+
+    ASSERT_EQ(0, messageQueue->getQueueLength());
+
+    Mock::VerifyAndClearExpectations(messagingStubFactory.get());
+    Mock::VerifyAndClearExpectations(mockRoutingProxyRef);
+
+    messageRouter->setToKnown(providerParticipantId);
+
+    EXPECT_CALL(*mockRoutingProxyRef, resolveNextHopAsyncMock(Eq(providerParticipantId),_,_,_))
+            .Times(0);
+    auto mockMessagingStub = std::make_shared<MockMessagingStub>();
+    EXPECT_CALL(*messagingStubFactory, create(Eq(localTransport))).WillOnce(Return(mockMessagingStub));
+
+    messageRouter->route(mutableMessage.getImmutableMessage());
+
+    ASSERT_EQ(0, messageQueue->getQueueLength());
+}
+
 TEST_F(LibJoynrMessageRouterTest, checkAllowUpdateTrue)
 {
     const bool allowUpdate = true;

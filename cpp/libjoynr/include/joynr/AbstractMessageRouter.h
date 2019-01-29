@@ -83,6 +83,7 @@ public:
     void addProvisionedNextHop(std::string participantId,
                                std::shared_ptr<const joynr::system::RoutingTypes::Address> address,
                                bool isGloballyVisible);
+    virtual void setToKnown(const std::string& participantId) override;
 
     virtual void init();
     void saveRoutingTable();

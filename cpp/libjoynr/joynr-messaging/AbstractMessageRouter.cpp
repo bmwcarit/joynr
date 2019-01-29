@@ -249,6 +249,13 @@ void AbstractMessageRouter::route(std::shared_ptr<ImmutableMessage> message, std
     routeInternal(std::move(message), tryCount);
 }
 
+// following method may be overridden by subclass
+void AbstractMessageRouter::setToKnown(const std::string& participantId)
+{
+    std::ignore = participantId;
+    JOYNR_LOG_TRACE(logger(), "AbstractMessageRouter::setToKnown");
+}
+
 void AbstractMessageRouter::sendMessages(
         std::shared_ptr<const joynr::system::RoutingTypes::Address> address)
 {

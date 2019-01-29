@@ -109,6 +109,17 @@ void LibJoynrMessageRouter::setParentRouter(
                        std::move(onError));
 }
 
+void LibJoynrMessageRouter::setToKnown(const std::string& participantId)
+{
+    JOYNR_LOG_TRACE(logger(),
+                    "LibJoynrMessageRouter::setToKnown called for participantId {}",
+                    participantId);
+    bool isGloballyVisible = DEFAULT_IS_GLOBALLY_VISIBLE;
+    if (parentAddress) {
+        addProvisionedNextHop(participantId, parentAddress, isGloballyVisible);
+    }
+}
+
 /**
   * Q (RDZ): What happens if the message cannot be forwarded? Exception? Log file entry?
   * Q (RDZ): When are messagingstubs removed? They are stored indefinitely in the factory

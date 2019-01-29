@@ -84,6 +84,8 @@ public:
 
     virtual void sendMessages(
             std::shared_ptr<const joynr::system::RoutingTypes::Address> address) = 0;
+
+    virtual void setToKnown(const std::string& participantId) = 0;
 };
 
 } // namespace joynr

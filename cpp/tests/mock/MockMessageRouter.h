@@ -107,6 +107,7 @@ public:
 
     MOCK_METHOD1(queueMessage, void(std::shared_ptr<joynr::ImmutableMessage> message));
     MOCK_METHOD1(sendMessages, void(std::shared_ptr<const joynr::system::RoutingTypes::Address> address));
+    MOCK_METHOD1(setToKnown, void(const std::string& participantId));
 };
 
 #endif // TESTS_MOCK_MOCKMESSAGEROUTER_H
