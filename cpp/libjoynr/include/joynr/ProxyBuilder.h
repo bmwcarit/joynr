@@ -281,6 +281,7 @@ void ProxyBuilder<T>::buildAsync(
             }
         };
 
+        messageRouter->setToKnown(discoverEntry.getParticipantId());
         messageRouter->addNextHop(proxy->getProxyParticipantId(),
                                   dispatcherAddress,
                                   isGloballyVisible,

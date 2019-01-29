@@ -236,9 +236,8 @@ TEST_P(End2EndSSLTest, localconnection_call_rpc_method_without_message_signature
         // 6 lookup provider
         // 7 addNextHop for proxy
 
-        // 8 resolve next hop for provider
-        // 9 call provider method
-        EXPECT_CALL(*keyChain, getOwnerId()).Times(9).WillRepeatedly(Return(ownerId));
+        // 8 call provider method
+        EXPECT_CALL(*keyChain, getOwnerId()).Times(8).WillRepeatedly(Return(ownerId));
         // call provider method
         EXPECT_CALL(*keyChain, getOwnerId()).Times(1).WillOnce(Return(""));
     }
@@ -259,9 +258,8 @@ TEST_P(End2EndSSLTest, localconnection_call_rpc_method_with_invalid_message_sign
         // 6 lookup provider
         // 7 addNextHop for proxy
 
-        // 8 resolve next hop for provider
-        // 9 call provider method
-        EXPECT_CALL(*keyChain, getOwnerId()).Times(9).WillRepeatedly(Return(ownerId));
+        // 8 call provider method
+        EXPECT_CALL(*keyChain, getOwnerId()).Times(8).WillRepeatedly(Return(ownerId));
         // call provider method
         EXPECT_CALL(*keyChain, getOwnerId()).WillOnce(Return("invalid signature"));
     }
