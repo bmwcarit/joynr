@@ -28,6 +28,7 @@
 #include "joynr/MessagingSettings.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/Semaphore.h"
+#include "joynr/system/RoutingTypes/ChannelAddress.h"
 
 class CapabilitiesClientTest;
 
@@ -55,7 +56,12 @@ public:
     /**
       * Returns the serialized (json) receiver address
       */
-    const std::string& getGlobalClusterControllerAddress() const override;
+    const std::string getSerializedGlobalClusterControllerAddress() const override;
+
+    /**
+      * Returns the receiver address
+      */
+    const system::RoutingTypes::ChannelAddress& getGlobalClusterControllerAddress() const override;
 
     /**
       * Checks the MessageSettings and updates the configuration.
@@ -96,7 +102,7 @@ private:
     // Allows for registering multiple receivers for a single channel.
     std::string receiverId;
 
-    std::string globalClusterControllerAddress;
+    system::RoutingTypes::ChannelAddress globalClusterControllerAddress;
 
     MessagingSettings settings;
     std::unique_ptr<LongPollingMessageReceiver> messageReceiver;

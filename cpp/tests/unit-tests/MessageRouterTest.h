@@ -31,6 +31,7 @@
 #include "joynr/LibJoynrMessageRouter.h"
 
 #include "joynr/Semaphore.h"
+#include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
@@ -78,7 +79,8 @@ public:
               globalTransport(
                       std::make_shared<const joynr::system::RoutingTypes::MqttAddress>(brokerURL,
                                                                                        mqttTopic)),
-              enablePersistency(true)
+              enablePersistency(true),
+              ownAddress(std::make_shared<const system::RoutingTypes::Address>())
     {
         singleThreadedIOService->start();
 
@@ -157,9 +159,15 @@ protected:
                 enablePersistency,
                 std::move(transportStatuses),
                 std::move(messageQueueForMessageRouter),
-                std::move(transportNotAvailableQueue));
+                std::move(transportNotAvailableQueue),
+                *ownAddress);
         ccMessageRouter->init();
         return std::move(ccMessageRouter);
+    }
+
+    void setOwnAddress(std::shared_ptr<const system::RoutingTypes::Address> ownAddress)
+    {
+        this->ownAddress = ownAddress;
     }
 
     std::shared_ptr<SingleThreadedIOService> singleThreadedIOService;
@@ -207,6 +215,9 @@ protected:
         EXPECT_TRUE(semaphore.waitFor(std::chrono::seconds(2)));
     }
     virtual void checkAllowUpdate(bool allowUpdate, bool updateExpected);
+
+private:
+    std::shared_ptr<const system::RoutingTypes::Address> ownAddress;
 };
 
 typedef ::testing::Types<LibJoynrMessageRouter, CcMessageRouter> MessageRouterTypes;

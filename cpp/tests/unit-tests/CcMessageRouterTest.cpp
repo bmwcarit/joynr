@@ -68,6 +68,8 @@ public:
 protected:
     void multicastMsgIsSentToAllMulticastReceivers(const bool isGloballyVisible);
     void routeMessageAndCheckQueue(const std::string& type, bool expectedToBeQueued);
+    void addressIsNotAddedToRoutingTable(const std::shared_ptr<const system::RoutingTypes::Address> address);
+    void addressIsAddedToRoutingTable(const std::shared_ptr<const system::RoutingTypes::Address> address);
     const bool DEFAULT_IS_GLOBALLY_VISIBLE;
 };
 
@@ -741,4 +743,121 @@ TEST_F(CcMessageRouterTest, checkPublicationToNonExistingRecipientIsDiscardedWhe
     messageRouter = createMessageRouter();
     bool msgShouldBeQueued = false;
     routeMessageAndCheckQueue(Message::VALUE_MESSAGE_TYPE_PUBLICATION(), msgShouldBeQueued);
+}
+
+void CcMessageRouterTest::addressIsNotAddedToRoutingTable(const std::shared_ptr<const system::RoutingTypes::Address> address)
+{
+    Semaphore resolveNextHopDone(0);
+    const std::string testParticipantId("testParticipantId");
+    const bool isParticipantGloballyVisible = true;
+
+    auto expectNotResolved = [&resolveNextHopDone, &address](const bool& resolved) {
+        ASSERT_FALSE(resolved) << "address: " + address->toString();
+        resolveNextHopDone.notify();
+    };
+
+    messageRouter->resolveNextHop(testParticipantId, expectNotResolved, nullptr);
+    ASSERT_TRUE(resolveNextHopDone.waitFor(std::chrono::milliseconds(1000)));
+
+    messageRouter->addProvisionedNextHop(
+                testParticipantId,
+                address,
+                isParticipantGloballyVisible);
+
+    messageRouter->resolveNextHop(testParticipantId, expectNotResolved, nullptr);
+    ASSERT_TRUE(resolveNextHopDone.waitFor(std::chrono::milliseconds(1000)));
+}
+
+void CcMessageRouterTest::addressIsAddedToRoutingTable(const std::shared_ptr<const system::RoutingTypes::Address> address)
+{
+    Semaphore resolveNextHopDone(0);
+    const std::string testParticipantId("testParticipantId");
+    const bool isParticipantGloballyVisible = true;
+
+    auto expectNotResolved = [&resolveNextHopDone, &address](const bool& resolved) {
+        ASSERT_FALSE(resolved) << "address: " + address->toString();
+        resolveNextHopDone.notify();
+    };
+
+    auto expectResolved = [&resolveNextHopDone, &address](const bool& resolved) {
+        ASSERT_TRUE(resolved) << "address: " + address->toString();
+        resolveNextHopDone.notify();
+    };
+
+    messageRouter->resolveNextHop(testParticipantId, expectNotResolved, nullptr);
+    ASSERT_TRUE(resolveNextHopDone.waitFor(std::chrono::milliseconds(1000)));
+
+    messageRouter->addProvisionedNextHop(
+                testParticipantId,
+                address,
+                isParticipantGloballyVisible);
+
+    messageRouter->resolveNextHop(testParticipantId, expectResolved, nullptr);
+    ASSERT_TRUE(resolveNextHopDone.waitFor(std::chrono::milliseconds(1000)));
+
+    // cleanup
+    messageRouter->removeNextHop(testParticipantId);
+    messageRouter->resolveNextHop(testParticipantId, expectNotResolved, nullptr);
+    ASSERT_TRUE(resolveNextHopDone.waitFor(std::chrono::milliseconds(1000)));
+}
+
+TEST_F(CcMessageRouterTest, globalAddressMustNotReferToOurClusterController)
+{
+    auto ownAddress = std::make_shared<const system::RoutingTypes::MqttAddress>("brokerUri", "ownTopic");
+    setOwnAddress(ownAddress);
+    messageRouter->shutdown();
+    messageRouter = createMessageRouter();
+
+    addressIsNotAddedToRoutingTable(ownAddress);
+
+    auto newAddress = std::make_shared<system::RoutingTypes::MqttAddress>();
+    newAddress->setTopic(ownAddress->getTopic());
+
+    addressIsNotAddedToRoutingTable(newAddress);
+
+    newAddress->setBrokerUri("otherBroker");
+    addressIsNotAddedToRoutingTable(newAddress);
+
+    newAddress->setBrokerUri(ownAddress->getBrokerUri());
+    addressIsNotAddedToRoutingTable(newAddress);
+}
+
+TEST_F(CcMessageRouterTest, otherAddressesOfOwnAddressTypeAreAddedToRoutingTable)
+{
+    auto ownAddress = std::make_shared<const system::RoutingTypes::MqttAddress>("brokerUri", "ownTopic");
+    setOwnAddress(ownAddress);
+    messageRouter->shutdown();
+    messageRouter = createMessageRouter();
+
+    addressIsNotAddedToRoutingTable(ownAddress);
+
+    auto newAddress = std::make_shared<system::RoutingTypes::MqttAddress>("otherBroker", "otherTopic");
+    addressIsAddedToRoutingTable(newAddress);
+
+    newAddress->setBrokerUri(ownAddress->getBrokerUri());
+    addressIsAddedToRoutingTable(newAddress);
+}
+
+TEST_F(CcMessageRouterTest, otherAddressesTypesAreAddedToRoutingTable)
+{
+    auto ownAddress = std::make_shared<const system::RoutingTypes::MqttAddress>("brokerUri", "ownTopic");
+    setOwnAddress(ownAddress);
+    messageRouter->shutdown();
+    messageRouter = createMessageRouter();
+    addressIsNotAddedToRoutingTable(ownAddress);
+
+    auto channelAddress = std::make_shared<const system::RoutingTypes::ChannelAddress>();
+    addressIsAddedToRoutingTable(channelAddress);
+
+    auto webSocketAddress = std::make_shared<const system::RoutingTypes::WebSocketAddress>();
+    addressIsAddedToRoutingTable(webSocketAddress);
+
+    auto websocketClientAddress = std::make_shared<const system::RoutingTypes::WebSocketClientAddress>();
+    addressIsAddedToRoutingTable(websocketClientAddress);
+
+    auto inprocessAddress = std::make_shared<const InProcessMessagingAddress>();
+    addressIsAddedToRoutingTable(inprocessAddress);
+
+    auto browserAddress = std::make_shared<const system::RoutingTypes::BrowserAddress>();
+    addressIsAddedToRoutingTable(browserAddress);
 }

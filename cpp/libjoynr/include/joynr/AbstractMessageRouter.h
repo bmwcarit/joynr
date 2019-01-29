@@ -141,6 +141,9 @@ protected:
     virtual void routeInternal(std::shared_ptr<ImmutableMessage> message,
                                std::uint32_t tryCount) = 0;
 
+    virtual bool isValidForRoutingTable(
+            std::shared_ptr<const joynr::system::RoutingTypes::Address> address);
+
     void sendMessages(const std::string& destinationPartId,
                       std::shared_ptr<const joynr::system::RoutingTypes::Address> address,
                       const WriteLocker& messageQueueRetryWriteLock);

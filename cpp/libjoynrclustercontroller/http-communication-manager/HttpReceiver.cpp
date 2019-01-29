@@ -21,7 +21,6 @@
 #include "joynr/Future.h"
 #include "joynr/Util.h"
 #include "joynr/serializer/Serializer.h"
-#include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "libjoynrclustercontroller/http-communication-manager/LongPollingMessageReceiver.h"
 #include "libjoynrclustercontroller/httpnetworking/HttpNetworking.h"
 #include "libjoynrclustercontroller/httpnetworking/HttpResult.h"
@@ -45,11 +44,9 @@ HttpReceiver::HttpReceiver(const MessagingSettings& settings,
     updateSettings();
     JOYNR_LOG_DEBUG(logger(), "Init finished.");
 
-    system::RoutingTypes::ChannelAddress receiverChannelAddress(
+    globalClusterControllerAddress = system::RoutingTypes::ChannelAddress(
             settings.getBrokerUrl().getBrokerChannelsBaseUrl().toString() + channelId + "/",
             channelId);
-
-    globalClusterControllerAddress = joynr::serializer::serializeToJson(receiverChannelAddress);
 
     // Remove any existing curl handles
     HttpNetworking::getInstance()->getCurlHandlePool()->reset();
@@ -124,7 +121,12 @@ void HttpReceiver::stopReceiveQueue()
     }
 }
 
-const std::string& HttpReceiver::getGlobalClusterControllerAddress() const
+const std::string HttpReceiver::getSerializedGlobalClusterControllerAddress() const
+{
+    return joynr::serializer::serializeToJson(globalClusterControllerAddress);
+}
+
+const system::RoutingTypes::ChannelAddress& HttpReceiver::getGlobalClusterControllerAddress() const
 {
     return globalClusterControllerAddress;
 }
@@ -134,9 +136,10 @@ bool HttpReceiver::tryToDeleteChannel()
     // If more than one attempt is needed, create a deleteChannelRunnable and move this to
     // messageSender.
     // TODO channelUrl is known only to the LongPollingMessageReceiver!
-    std::string deleteChannelUrl = settings.getBrokerUrl()
-                                           .getDeleteChannelUrl(getGlobalClusterControllerAddress())
-                                           .toString();
+    std::string deleteChannelUrl =
+            settings.getBrokerUrl()
+                    .getDeleteChannelUrl(getSerializedGlobalClusterControllerAddress())
+                    .toString();
     std::shared_ptr<IHttpDeleteBuilder> deleteChannelRequestBuilder(
             HttpNetworking::getInstance()->createHttpDeleteBuilder(deleteChannelUrl));
     std::shared_ptr<HttpRequest> deleteChannelRequest(

@@ -26,6 +26,7 @@
 #include "joynr/ITransportMessageReceiver.h"
 #include "joynr/JoynrClusterControllerExport.h"
 #include "joynr/Logger.h"
+#include "joynr/system/RoutingTypes/MqttAddress.h"
 
 namespace joynr
 {
@@ -44,9 +45,14 @@ public:
     ~MqttReceiver() override = default;
 
     /**
-      * Gets the channel ID of the receive channel for incoming messages.
+      * Gets the serialized address of the receive channel for incoming messages.
       */
-    const std::string& getGlobalClusterControllerAddress() const override;
+    const std::string getSerializedGlobalClusterControllerAddress() const override;
+
+    /**
+      * Gets the address of the receive channel for incoming messages.
+      */
+    const system::RoutingTypes::MqttAddress& getGlobalClusterControllerAddress() const override;
 
     /**
       * Checks the MessageSettings and updates the configuration.
@@ -79,8 +85,7 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(MqttReceiver);
 
-    std::string channelIdForMqttTopic; // currently channelId is used to subscribe
-    std::string globalClusterControllerAddress;
+    system::RoutingTypes::MqttAddress globalClusterControllerAddress;
 
     std::shared_ptr<MosquittoConnection> mosquittoConnection;
 

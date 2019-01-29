@@ -151,6 +151,14 @@ public:
     }
 };
 
+namespace system
+{
+namespace RoutingTypes
+{
+class Address;
+} // namespace RoutingTypes
+} // namespace system
+
 /**
  * @brief Very reduced Runtime which uses DummyDiscovery as the discovery proxy.
  */
@@ -220,6 +228,7 @@ private:
     std::shared_ptr<IKeychain> keyChain;
     std::shared_ptr<DummyRequestCallerDirectory> requestCallerDirectory;
     ClusterControllerSettings clusterControllerSettings;
+    const system::RoutingTypes::Address ownAddress;
 
     const bool enablePersistency;
 };

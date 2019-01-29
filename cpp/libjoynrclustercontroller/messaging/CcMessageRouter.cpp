@@ -127,7 +127,8 @@ CcMessageRouter::CcMessageRouter(
         bool persistRoutingTable,
         std::vector<std::shared_ptr<ITransportStatus>> transportStatuses,
         std::unique_ptr<MessageQueue<std::string>> messageQueue,
-        std::unique_ptr<MessageQueue<std::shared_ptr<ITransportStatus>>> transportNotAvailableQueue)
+        std::unique_ptr<MessageQueue<std::shared_ptr<ITransportStatus>>> transportNotAvailableQueue,
+        const system::RoutingTypes::Address& ownAddress)
         : AbstractMessageRouter(messagingSettings,
                                 std::move(messagingStubFactory),
                                 ioService,
@@ -146,7 +147,8 @@ CcMessageRouter::CcMessageRouter(
           messageNotificationProviderParticipantId(messageNotificationProviderParticipantId),
           clusterControllerSettings(clusterControllerSettings),
           multicastReceiverDirectoryPersistencyEnabled(
-                  clusterControllerSettings.isMulticastReceiverDirectoryPersistencyEnabled())
+                  clusterControllerSettings.isMulticastReceiverDirectoryPersistencyEnabled()),
+          ownGlobalAddress(ownAddress)
 {
     messageNotificationProvider->addBroadcastFilter(
             std::make_shared<MessageQueuedForDeliveryBroadcastFilter>());
@@ -369,6 +371,28 @@ bool CcMessageRouter::publishToGlobal(const ImmutableMessage& message)
         return true;
     }
     return false;
+}
+
+bool CcMessageRouter::isValidForRoutingTable(
+        std::shared_ptr<const joynr::system::RoutingTypes::Address> address)
+{
+    if (typeid(*address) == typeid(system::RoutingTypes::MqttAddress) &&
+        typeid(ownGlobalAddress) == typeid(system::RoutingTypes::MqttAddress)) {
+        const auto mqttAddress =
+                std::dynamic_pointer_cast<const joynr::system::RoutingTypes::MqttAddress>(address);
+        const joynr::system::RoutingTypes::MqttAddress& ownMqttAddress =
+                static_cast<const joynr::system::RoutingTypes::MqttAddress&>(ownGlobalAddress);
+        if (mqttAddress->getTopic() == ownMqttAddress.getTopic()) {
+            // an address with a topic starting with the own topic is theoretically also possible
+            // but very unlikely
+            JOYNR_LOG_TRACE(
+                    logger(),
+                    "MqttAddress will not be used for Routing Table since it refers to ourselves");
+            return false;
+        }
+    }
+    // add check for ChannelAddress here if required
+    return true;
 }
 
 // inherited from joynr::IMessageRouter and joynr::system::RoutingProvider

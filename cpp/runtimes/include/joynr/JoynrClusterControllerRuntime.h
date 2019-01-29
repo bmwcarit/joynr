@@ -70,6 +70,14 @@ class ChannelUrlDirectoryProxy;
 class GlobalDomainAccessControllerProxy;
 } // namespace infrastructure
 
+namespace system
+{
+namespace RoutingTypes
+{
+class Address;
+} // namespace RoutingTypes
+} // namespace system
+
 class JOYNRCLUSTERCONTROLLERRUNTIME_EXPORT JoynrClusterControllerRuntime
         : public JoynrRuntimeImpl,
           public IClusterControllerSignalHandler
@@ -195,7 +203,8 @@ private:
     void startLocalCommunication();
     std::shared_ptr<joynr::infrastructure::GlobalDomainAccessControllerProxy>
     createGlobalDomainAccessControllerProxy();
-    std::string getSerializedGlobalClusterControllerAddress();
+    std::string getSerializedGlobalClusterControllerAddress() const;
+    const system::RoutingTypes::Address& getGlobalClusterControllerAddress() const;
 
     DISALLOW_COPY_AND_ASSIGN(JoynrClusterControllerRuntime);
     std::shared_ptr<MulticastMessagingSkeletonDirectory> multicastMessagingSkeletonDirectory;
@@ -217,6 +226,7 @@ private:
     std::string messageNotificationProviderParticipantId;
     std::string accessControlListEditorProviderParticipantId;
     bool isShuttingDown;
+    const system::RoutingTypes::Address dummyGlobalAddress;
 };
 
 } // namespace joynr

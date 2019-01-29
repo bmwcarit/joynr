@@ -54,7 +54,6 @@ using namespace ::testing;
 using namespace joynr;
 
 using testing::Return;
-using testing::ReturnRef;
 using testing::ByRef;
 using testing::SetArgReferee;
 using testing::AtLeast;
@@ -98,20 +97,16 @@ public:
               mockHttpMessageSender(std::make_shared<MockTransportMessageSender>()),
               mockMqttMessageReceiver(std::make_shared<MockTransportMessageReceiver>()),
               mockMqttMessageSender(std::make_shared<MockTransportMessageSender>()),
-              semaphore(0)
+              semaphore(0),
+              globalMqttTopic("mqtt_JoynrClusterControllerRuntimeTest.topic"),
+              globalMqttBrokerUrl("mqtt_JoynrClusterControllerRuntimeTest.brokerUrl"),
+              globalHttpChannelId("http_JoynrClusterControllerRuntimeTest.ChannelId"),
+              globalHttpEndPointUrl("http_JoynrClusterControllerRuntimeTest.endPointUrl"),
+              mqttGlobalAddress(globalMqttBrokerUrl, globalMqttTopic),
+              httpGlobalAddress(globalHttpEndPointUrl, globalHttpChannelId)
     {
-        std::string httpChannelId("http_JoynrClusterControllerRuntimeTest.ChannelId");
-        std::string httpEndPointUrl("http_JoynrClusterControllerRuntimeTest.endPointUrl");
-        std::string mqttTopic("mqtt_JoynrClusterControllerRuntimeTest.topic");
-        std::string mqttBrokerUrl("mqtt_JoynrClusterControllerRuntimeTest.brokerUrl");
-
-        using system::RoutingTypes::ChannelAddress;
-        using system::RoutingTypes::MqttAddress;
-
-        serializedChannelAddress =
-                joynr::serializer::serializeToJson(ChannelAddress(httpEndPointUrl, httpChannelId));
-        serializedMqttAddress =
-                joynr::serializer::serializeToJson(MqttAddress(mqttBrokerUrl, mqttTopic));
+        serializedChannelAddress = joynr::serializer::serializeToJson(httpGlobalAddress);
+        serializedMqttAddress = joynr::serializer::serializeToJson(mqttGlobalAddress);
     }
 
     ~JoynrClusterControllerRuntimeTest()
@@ -131,9 +126,11 @@ public:
     {
         // runtime can only be created, after MockMessageReceiver has been told to return
         // a channelId for getReceiveChannelId.
-        EXPECT_CALL(*mockHttpMessageReceiver, getGlobalClusterControllerAddress()).Times(0);
+        EXPECT_CALL(*mockHttpMessageReceiver, getSerializedGlobalClusterControllerAddress()).Times(0);
+        EXPECT_CALL(*mockMqttMessageReceiver, getSerializedGlobalClusterControllerAddress())
+                .WillOnce(::testing::Return(serializedMqttAddress));
         EXPECT_CALL(*mockMqttMessageReceiver, getGlobalClusterControllerAddress())
-                .WillOnce(::testing::ReturnRefOfCopy(serializedMqttAddress));
+                .WillOnce(::testing::ReturnRef(mqttGlobalAddress));
 
         runtime = std::make_shared<JoynrClusterControllerRuntime>(
                 std::make_unique<Settings>(settingsFilenameMqtt),
@@ -150,9 +147,11 @@ public:
     {
         // runtime can only be created, after MockMessageReceiver has been told to return
         // a channelId for getReceiveChannelId.
+        EXPECT_CALL(*mockHttpMessageReceiver, getSerializedGlobalClusterControllerAddress())
+                .WillOnce(::testing::Return(serializedChannelAddress));
         EXPECT_CALL(*mockHttpMessageReceiver, getGlobalClusterControllerAddress())
-                .WillOnce(::testing::ReturnRefOfCopy(serializedChannelAddress));
-        EXPECT_CALL(*mockMqttMessageReceiver, getGlobalClusterControllerAddress()).Times(0);
+                .WillOnce(::testing::ReturnRef(httpGlobalAddress));
+        EXPECT_CALL(*mockMqttMessageReceiver, getSerializedGlobalClusterControllerAddress()).Times(0);
 
         runtime = std::make_shared<JoynrClusterControllerRuntime>(
                 std::make_unique<Settings>(settingsFilenameHttp),
@@ -177,15 +176,25 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(JoynrClusterControllerRuntimeTest);
+    const std::string globalMqttTopic;
+    const std::string globalMqttBrokerUrl;
+    const std::string globalHttpChannelId;
+    const std::string globalHttpEndPointUrl;
+
+protected:
+    const system::RoutingTypes::MqttAddress mqttGlobalAddress;
+    const system::RoutingTypes::ChannelAddress httpGlobalAddress;
 };
 
 TEST_F(JoynrClusterControllerRuntimeTest, loadMultipleAclRclFiles)
 {
     // runtime can only be created, after MockMessageReceiver has been told to return
     // a channelId for getReceiveChannelId.
+    EXPECT_CALL(*mockHttpMessageReceiver, getSerializedGlobalClusterControllerAddress())
+            .WillOnce(::testing::Return(serializedChannelAddress));
+    EXPECT_CALL(*mockMqttMessageReceiver, getSerializedGlobalClusterControllerAddress()).Times(0);
     EXPECT_CALL(*mockHttpMessageReceiver, getGlobalClusterControllerAddress())
-            .WillOnce(::testing::ReturnRefOfCopy(serializedChannelAddress));
-    EXPECT_CALL(*mockMqttMessageReceiver, getGlobalClusterControllerAddress()).Times(0);
+            .WillOnce(::testing::ReturnRef(httpGlobalAddress));
 
     runtime = std::make_shared<JoynrClusterControllerRuntime>(
             std::make_unique<Settings>(settingsFilenameMultipleAclRclFiles),
@@ -248,8 +257,10 @@ TEST_F(JoynrClusterControllerRuntimeTest, injectCustomMqttMessagingSkeleton)
     };
     EXPECT_CALL(*mockMqttMessageReceiver, registerReceiveCallback(_))
             .WillOnce(Invoke(registerReceivedCallbackHelper));
+    EXPECT_CALL(*mockMqttMessageReceiver, getSerializedGlobalClusterControllerAddress())
+            .WillOnce(::testing::Return(serializedMqttAddress));
     EXPECT_CALL(*mockMqttMessageReceiver, getGlobalClusterControllerAddress())
-            .WillOnce(::testing::ReturnRefOfCopy(serializedMqttAddress));
+            .WillOnce(::testing::ReturnRef(mqttGlobalAddress));
 
     EXPECT_CALL(*mockMqttMessagingSkeleton, onMessageReceivedMock(msg));
 

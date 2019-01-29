@@ -92,7 +92,8 @@ public:
                     std::vector<std::shared_ptr<ITransportStatus>> transportStatuses,
                     std::unique_ptr<MessageQueue<std::string>> messageQueue,
                     std::unique_ptr<MessageQueue<std::shared_ptr<ITransportStatus>>>
-                            transportNotAvailableQueue);
+                            transportNotAvailableQueue,
+                    const system::RoutingTypes::Address& ownGlobalAddress);
 
     ~CcMessageRouter() override;
 
@@ -197,6 +198,9 @@ public:
     friend class ConsumerPermissionCallback;
 
 private:
+    bool isValidForRoutingTable(
+            std::shared_ptr<const joynr::system::RoutingTypes::Address> address) final;
+
     void reestablishMulticastSubscriptions();
     void registerMulticastReceiver(
             const std::string& multicastId,
@@ -221,6 +225,7 @@ private:
     const std::string messageNotificationProviderParticipantId;
     ClusterControllerSettings& clusterControllerSettings;
     const bool multicastReceiverDirectoryPersistencyEnabled;
+    const system::RoutingTypes::Address& ownGlobalAddress;
 };
 
 } // namespace joynr
