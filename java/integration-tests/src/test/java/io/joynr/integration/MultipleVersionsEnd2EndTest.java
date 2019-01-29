@@ -27,12 +27,18 @@ import java.util.HashSet;
 import org.junit.Test;
 
 import io.joynr.exceptions.JoynrRuntimeException;
+import joynr.tests.AnonymousVersionedStruct;
+import joynr.tests.AnonymousVersionedStruct2;
 import joynr.tests.DefaultMultipleVersionsInterface1Provider;
 import joynr.tests.DefaultMultipleVersionsInterface2Provider;
 import joynr.tests.DefaultMultipleVersionsInterfaceProvider;
+import joynr.tests.InterfaceVersionedStruct;
+import joynr.tests.InterfaceVersionedStruct2;
 import joynr.tests.MultipleVersionsInterface1Proxy;
 import joynr.tests.MultipleVersionsInterface2Proxy;
 import joynr.tests.MultipleVersionsInterfaceProxy;
+import joynr.tests.MultipleVersionsTypeCollection.VersionedStruct;
+import joynr.tests.MultipleVersionsTypeCollection.VersionedStruct2;
 
 public class MultipleVersionsEnd2EndTest extends AbstractMultipleVersionsEnd2EndTest {
 
@@ -161,4 +167,81 @@ public class MultipleVersionsEnd2EndTest extends AbstractMultipleVersionsEnd2End
         }
     }
 
+    private void testPackageVersionedTypes() throws Exception {
+        final joynr.tests.v2.MultipleVersionsInterfaceProxy packageVersionedProxy = buildProxy(joynr.tests.v2.MultipleVersionsInterfaceProxy.class,
+                                                                                               new HashSet<String>(Arrays.asList(domain)),
+                                                                                               true);
+
+        final joynr.tests.v2.AnonymousVersionedStruct input1 = new joynr.tests.v2.AnonymousVersionedStruct(random.nextBoolean());
+        final joynr.tests.v2.AnonymousVersionedStruct output1 = packageVersionedProxy.getAnonymousVersionedStruct(input1);
+        assertEquals(input1.getFlag2(), output1.getFlag2());
+
+        final joynr.tests.v2.MultipleVersionsTypeCollection.VersionedStruct input2 = new joynr.tests.v2.MultipleVersionsTypeCollection.VersionedStruct(random.nextBoolean());
+        final joynr.tests.v2.MultipleVersionsTypeCollection.VersionedStruct output2 = packageVersionedProxy.getVersionedStruct(input2);
+        assertEquals(input2.getFlag2(), output2.getFlag2());
+
+        final joynr.tests.v2.InterfaceVersionedStruct input3 = new joynr.tests.v2.InterfaceVersionedStruct(random.nextBoolean(),
+                                                                                                           random.nextBoolean());
+        final joynr.tests.v2.InterfaceVersionedStruct output3 = packageVersionedProxy.getInterfaceVersionedStruct(input3);
+        assertEquals(input3.getFlag1(), output3.getFlag1());
+        assertEquals(input3.getFlag2(), output3.getFlag2());
+    }
+
+    private void testNameVersionedTypes() throws Exception {
+        final MultipleVersionsInterface2Proxy nameVersionedProxy = buildProxy(MultipleVersionsInterface2Proxy.class,
+                                                                              new HashSet<String>(Arrays.asList(domain)),
+                                                                              true);
+
+        final AnonymousVersionedStruct2 input1 = new AnonymousVersionedStruct2(random.nextBoolean());
+        final AnonymousVersionedStruct2 output1 = nameVersionedProxy.getAnonymousVersionedStruct(input1);
+        assertEquals(input1.getFlag2(), output1.getFlag2());
+
+        final VersionedStruct2 input2 = new VersionedStruct2(random.nextBoolean());
+        final VersionedStruct2 output2 = nameVersionedProxy.getVersionedStruct(input2);
+        assertEquals(input2.getFlag2(), output2.getFlag2());
+
+        final InterfaceVersionedStruct2 input3 = new InterfaceVersionedStruct2(random.nextBoolean(),
+                                                                               random.nextBoolean());
+        final InterfaceVersionedStruct2 output3 = nameVersionedProxy.getInterfaceVersionedStruct(input3);
+        assertEquals(input3.getFlag1(), output3.getFlag1());
+        assertEquals(input3.getFlag2(), output3.getFlag2());
+    }
+
+    private void testUnversionedTypes() throws Exception {
+        final MultipleVersionsInterfaceProxy unversionedProxy = buildProxy(MultipleVersionsInterfaceProxy.class,
+                                                                           new HashSet<String>(Arrays.asList(domain)),
+                                                                           true);
+
+        final AnonymousVersionedStruct input1 = new AnonymousVersionedStruct(random.nextBoolean());
+        final AnonymousVersionedStruct output1 = unversionedProxy.getAnonymousVersionedStruct(input1);
+        assertEquals(input1.getFlag2(), output1.getFlag2());
+
+        final VersionedStruct input2 = new VersionedStruct(random.nextBoolean());
+        final VersionedStruct output2 = unversionedProxy.getVersionedStruct(input2);
+        assertEquals(input2.getFlag2(), output2.getFlag2());
+
+        final InterfaceVersionedStruct input3 = new InterfaceVersionedStruct(random.nextBoolean(),
+                                                                             random.nextBoolean());
+        final InterfaceVersionedStruct output3 = unversionedProxy.getInterfaceVersionedStruct(input3);
+        assertEquals(input3.getFlag1(), output3.getFlag1());
+        assertEquals(input3.getFlag2(), output3.getFlag2());
+    }
+
+    @Test
+    public void packageVersionedProxy_packageVersionedProvider_singleRuntime() throws Exception {
+        registerPackageVersionedProvider();
+        testPackageVersionedTypes();
+    }
+
+    @Test
+    public void nameVersionedProxy_nameVersionedProvider_singleRuntime() throws Exception {
+        registerNameVersionedProvider();
+        testNameVersionedTypes();
+    }
+
+    @Test
+    public void unversionedProxy_unversionedProvider_singleRuntime() throws Exception {
+        registerUnversionedProvider();
+        testUnversionedTypes();
+    }
 }
