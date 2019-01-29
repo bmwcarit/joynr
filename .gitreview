@@ -1,5 +1,0 @@
-[gerrit]
-host=src.bmw-carit.de
-port=4040
-project=joynr/joynr
-defaultbranch=develop
