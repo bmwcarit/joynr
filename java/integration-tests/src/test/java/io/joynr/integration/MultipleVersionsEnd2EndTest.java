@@ -85,7 +85,7 @@ public class MultipleVersionsEnd2EndTest extends AbstractMultipleVersionsEnd2End
             assertEquals((byte) value3, 50);
 
             // unregister provider
-            runtime.unregisterProvider(domain, unversionedProvider);
+            providerRuntime.unregisterProvider(domain, unversionedProvider);
         } catch (JoynrRuntimeException e) {
             fail(UNREGISTERING_FAILED_MESSAGE + e);
         }
@@ -122,8 +122,8 @@ public class MultipleVersionsEnd2EndTest extends AbstractMultipleVersionsEnd2End
 
         // unregister providers
         try {
-            runtime.unregisterProvider(domain, provider1);
-            runtime.unregisterProvider(domain, provider2);
+            providerRuntime.unregisterProvider(domain, provider1);
+            providerRuntime.unregisterProvider(domain, provider2);
         } catch (JoynrRuntimeException e) {
             fail(UNREGISTERING_FAILED_MESSAGE + e);
         }
@@ -160,8 +160,8 @@ public class MultipleVersionsEnd2EndTest extends AbstractMultipleVersionsEnd2End
 
         // unregister providers
         try {
-            runtime.unregisterProvider(domain, provider1);
-            runtime.unregisterProvider(domain, provider2);
+            providerRuntime.unregisterProvider(domain, provider1);
+            providerRuntime.unregisterProvider(domain, provider2);
         } catch (JoynrRuntimeException e) {
             fail(UNREGISTERING_FAILED_MESSAGE + e);
         }

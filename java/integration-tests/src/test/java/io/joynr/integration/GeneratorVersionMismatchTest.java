@@ -53,10 +53,10 @@ public class GeneratorVersionMismatchTest extends AbstractMultipleVersionsEnd2En
     @After
     public void tearDown() {
         if (packageVersionedProviderV1 != null) {
-            runtime.unregisterProvider(domain, packageVersionedProviderV1);
+            providerRuntime.unregisterProvider(domain, packageVersionedProviderV1);
         }
         if (NameVersionedProviderV1 != null) {
-            runtime.unregisterProvider(domain, NameVersionedProviderV1);
+            providerRuntime.unregisterProvider(domain, NameVersionedProviderV1);
         }
 
         super.tearDown();
@@ -247,7 +247,7 @@ public class GeneratorVersionMismatchTest extends AbstractMultipleVersionsEnd2En
 
         checkProxy(proxy);
 
-        runtime.unregisterProvider(domain2, packageVersionedProviderV1);
+        providerRuntime.unregisterProvider(domain2, packageVersionedProviderV1);
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT_MS)

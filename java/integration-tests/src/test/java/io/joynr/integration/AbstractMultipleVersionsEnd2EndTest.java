@@ -42,7 +42,8 @@ import io.joynr.exceptions.MultiDomainNoCompatibleProviderFoundException;
 import io.joynr.exceptions.NoCompatibleProviderFoundException;
 import io.joynr.integration.util.DummyJoynrApplication;
 import io.joynr.messaging.MessagingPropertyKeys;
-import io.joynr.messaging.routing.TestGlobalAddressModule;
+import io.joynr.messaging.mqtt.MqttModule;
+import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
 import io.joynr.provider.AbstractJoynrProvider;
 import io.joynr.provider.Promise;
 import io.joynr.proxy.Future;
@@ -67,13 +68,16 @@ public class AbstractMultipleVersionsEnd2EndTest {
     static final long DISCOVERY_TIMEOUT_MS = 1000;
     static final long CONST_DEFAULT_TEST_TIMEOUT_MS = DISCOVERY_TIMEOUT_MS * 3;
     static final String DOMAIN_PREFIX = "MultipleVersionsTestDomain-";
+    private static final String MQTT_BROKER_URL = "tcp://localhost:1883";
     private static final String PROXYBUILD_FAILED_MESSAGE = "Building of proxy failed: ";
     private static final String REGISTERING_FAILED_MESSAGE = "Registering of provider failed: ";
 
     Random random;
     DiscoveryQos discoveryQos;
     ProviderQos providerQos;
-    JoynrRuntime runtime;
+    JoynrRuntime consumerRuntime;
+    JoynrRuntime providerRuntime;
+    private boolean globalCommunication;
     private Semaphore proxyBuiltSemaphore;
     Semaphore noCompatibleProviderFoundCallbackSemaphore;
     String domain;
@@ -81,15 +85,23 @@ public class AbstractMultipleVersionsEnd2EndTest {
     private joynr.tests.v2.DefaultMultipleVersionsInterfaceProvider packageVersionedProvider;
     private DefaultMultipleVersionsInterfaceProvider unversionedProvider;
 
-    JoynrRuntime getCcRuntime() {
-        Properties joynrConfig = new Properties();
-        joynrConfig.setProperty(MessagingPropertyKeys.CHANNELID, "discoverydirectory_channelid");
-
-        Module runtimeModule = Modules.override(new CCInProcessRuntimeModule()).with(new TestGlobalAddressModule());
-        DummyJoynrApplication application = (DummyJoynrApplication) new JoynrInjectorFactory(joynrConfig,
+    private JoynrRuntime getCcRuntime() {
+        Properties mqttConfig = new Properties();
+        mqttConfig.put(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, MQTT_BROKER_URL);
+        mqttConfig.put(MessagingPropertyKeys.CHANNELID, createUuidString());
+        mqttConfig.put(MessagingPropertyKeys.RECEIVERID, createUuidString());
+        Module runtimeModule = Modules.override(new CCInProcessRuntimeModule()).with(new MqttPahoModule());
+        DummyJoynrApplication application = (DummyJoynrApplication) new JoynrInjectorFactory(mqttConfig,
                                                                                              runtimeModule).createApplication(DummyJoynrApplication.class);
 
         return application.getRuntime();
+    }
+
+    void useGlobalCommunication() {
+        providerRuntime = getCcRuntime();
+        discoveryQos.setDiscoveryScope(DiscoveryScope.GLOBAL_ONLY);
+        providerQos.setScope(ProviderScope.GLOBAL);
+        globalCommunication = true;
     }
 
     @Before
@@ -104,8 +116,10 @@ public class AbstractMultipleVersionsEnd2EndTest {
         providerQos = new ProviderQos();
         providerQos.setScope(ProviderScope.LOCAL);
 
-        // provider and proxy using same runtime to allow local-only communications
-        runtime = getCcRuntime();
+        // provider and proxy using same runtime to allow local-only communications (by default)
+        consumerRuntime = getCcRuntime();
+        providerRuntime = consumerRuntime;
+        globalCommunication = false;
 
         domain = DOMAIN_PREFIX + createUuidString();
         proxyBuiltSemaphore = new Semaphore(0);
@@ -115,27 +129,30 @@ public class AbstractMultipleVersionsEnd2EndTest {
     @After
     public void tearDown() {
         if (nameVersionedProvider != null) {
-            runtime.unregisterProvider(domain, nameVersionedProvider);
+            providerRuntime.unregisterProvider(domain, nameVersionedProvider);
             nameVersionedProvider = null;
         }
         if (packageVersionedProvider != null) {
-            runtime.unregisterProvider(domain, packageVersionedProvider);
+            providerRuntime.unregisterProvider(domain, packageVersionedProvider);
             packageVersionedProvider = null;
         }
         if (unversionedProvider != null) {
-            runtime.unregisterProvider(domain, unversionedProvider);
+            providerRuntime.unregisterProvider(domain, unversionedProvider);
             unversionedProvider = null;
         }
-        if (runtime != null) {
-            runtime.shutdown(true);
+        if (consumerRuntime != null) {
+            consumerRuntime.shutdown(true);
+        }
+        if (globalCommunication && providerRuntime != null) {
+            providerRuntime.shutdown(true);
         }
     }
 
     void registerProvider(AbstractJoynrProvider provider, String domain) {
-        Future<Void> future = runtime.registerProvider(domain, provider, providerQos);
+        Future<Void> future = providerRuntime.registerProvider(domain, provider, providerQos, true);
 
         try {
-            future.get(100);
+            future.get(1000);
         } catch (Exception e) {
             fail(REGISTERING_FAILED_MESSAGE + e);
         }
@@ -144,7 +161,7 @@ public class AbstractMultipleVersionsEnd2EndTest {
     <T> T buildProxy(final Class<T> interfaceClass,
                      final Set<String> domains,
                      final boolean waitForProxyCreation) throws Exception {
-        ProxyBuilder<T> proxyBuilder = runtime.getProxyBuilder(domains, interfaceClass);
+        ProxyBuilder<T> proxyBuilder = consumerRuntime.getProxyBuilder(domains, interfaceClass);
         T proxy = null;
         try {
             proxy = proxyBuilder.setDiscoveryQos(discoveryQos).build(new ProxyCreatedCallback<T>() {
