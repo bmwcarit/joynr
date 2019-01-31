@@ -22,7 +22,12 @@ import static io.joynr.util.JoynrUtil.createUuidString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.lang.reflect.Field;
+
+import org.junit.Before;
 import org.junit.Test;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class RoutingTypesUtilTest {
     String mqttAddressString = "{\"_typeName\":\"joynr.system.RoutingTypes.MqttAddress\",\"brokerUri\":\"tcp://host:1234\",\"topic\":\"topic\"}";
@@ -31,6 +36,13 @@ public class RoutingTypesUtilTest {
     private static final String MESSAGINGENDPOINTURL = "http://server:8080/bounceproxy/";
     static final String TOPIC = "topic";
     static final String CHANNELID = createUuidString();
+
+    @Before
+    public void setUp() throws Exception {
+        Field objectMapperField = RoutingTypesUtil.class.getDeclaredField("objectMapper");
+        objectMapperField.setAccessible(true);
+        objectMapperField.set(RoutingTypesUtil.class, new ObjectMapper());
+    }
 
     @Test
     public void toMqttAddressStringTest() {

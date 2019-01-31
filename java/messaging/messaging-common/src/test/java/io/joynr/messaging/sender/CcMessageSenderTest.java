@@ -21,16 +21,17 @@ package io.joynr.messaging.sender;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.any;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
+import java.lang.reflect.Field;
+
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
@@ -42,6 +43,7 @@ import io.joynr.runtime.ReplyToAddressProvider;
 import joynr.ImmutableMessage;
 import joynr.MutableMessage;
 import joynr.system.RoutingTypes.MqttAddress;
+import joynr.system.RoutingTypes.RoutingTypesUtil;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CcMessageSenderTest extends MessageSenderTestBase {
@@ -49,6 +51,13 @@ public class CcMessageSenderTest extends MessageSenderTestBase {
     private ObjectMapper objectMapper = new ObjectMapper();
     private MqttAddress replyToAddress = new MqttAddress("testBrokerUri", "testTopic");
     private MqttAddress globalAddress = new MqttAddress("testBrokerUri", "globalTopic");
+
+    @Before
+    public void setUp() throws Exception {
+        Field objectMapperField = RoutingTypesUtil.class.getDeclaredField("objectMapper");
+        objectMapperField.setAccessible(true);
+        objectMapperField.set(RoutingTypesUtil.class, objectMapper);
+    }
 
     @Test
     public void testReplyToIsSet() throws Exception {

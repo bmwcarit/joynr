@@ -93,6 +93,7 @@ import io.joynr.statusmetrics.DefaultStatusReceiver;
 import io.joynr.statusmetrics.StatusReceiver;
 import joynr.system.DiscoveryAsync;
 import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.RoutingTypesUtil;
 
 abstract class AbstractRuntimeModule extends AbstractModule {
 
@@ -105,6 +106,7 @@ abstract class AbstractRuntimeModule extends AbstractModule {
     protected void configure() {
         requestStaticInjection(CapabilityUtils.class,
                                RpcUtils.class,
+                               RoutingTypesUtil.class,
                                ArbitratorFactory.class,
                                JoynrDelayMessageException.class,
                                JoynrAppenderManagerFactory.class);

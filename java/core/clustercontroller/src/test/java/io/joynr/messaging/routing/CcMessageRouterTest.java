@@ -45,6 +45,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -91,6 +92,7 @@ import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.IMessagingStub;
 import io.joynr.messaging.JoynrMessageProcessor;
+import io.joynr.messaging.JsonMessageSerializerModule;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.SuccessAction;
@@ -116,6 +118,7 @@ import joynr.SubscriptionReply;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.system.RoutingTypes.MqttAddress;
+import joynr.system.RoutingTypes.RoutingTypesUtil;
 import joynr.system.RoutingTypes.WebSocketAddress;
 import joynr.system.RoutingTypes.WebSocketClientAddress;
 import joynr.system.RoutingTypes.WebSocketProtocol;
@@ -191,6 +194,7 @@ public class CcMessageRouterTest {
 
             @Override
             protected void configure() {
+                requestStaticInjection(RoutingTypesUtil.class);
                 bind(MessageRouter.class).to(CcMessageRouter.class);
                 bind(RoutingTable.class).toInstance(routingTable);
                 bind(AddressManager.class).toInstance(addressManager);
@@ -252,7 +256,8 @@ public class CcMessageRouterTest {
             }
         };
 
-        testModule = Modules.override(mockModule).with(new TestGlobalAddressModule());
+        testModule = Modules.override(new JsonMessageSerializerModule()).with(mockModule,
+                                                                              new TestGlobalAddressModule());
 
         injector = Guice.createInjector(Modules.override(testModule).with(new AbstractModule() {
             @Override
