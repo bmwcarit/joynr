@@ -291,29 +291,38 @@ void AccessController::hasConsumerPermission(
     }
 
     // Get the domain and interface of the message destination
-    std::function<void(const types::DiscoveryEntry&)> lookupSuccessCallback =
-            [message, this, callback](const types::DiscoveryEntry& discoveryEntry) {
-        const std::string& participantId = message->getRecipient();
-        if (discoveryEntry.getParticipantId() != participantId) {
-            JOYNR_LOG_ERROR(
-                    logger(), "Failed to get capabilities for participantId {}", participantId);
-            callback->hasConsumerPermission(false);
-            return;
+    auto lookupSuccessCallback =
+            [ message, thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this()), callback ](
+                    const std::vector<types::DiscoveryEntryWithMetaInfo>& discoveryEntries)
+    {
+
+        if (auto thisSharedPtr = thisWeakPtr.lock()) {
+            assert(discoveryEntries.size() == 1);
+            auto discoveryEntry = discoveryEntries[0];
+
+            const std::string& participantId = message->getRecipient();
+            if (discoveryEntry.getParticipantId() != participantId) {
+                JOYNR_LOG_ERROR(thisSharedPtr->logger(),
+                                "Failed to get capabilities for participantId {}",
+                                participantId);
+                callback->hasConsumerPermission(false);
+                return;
+            }
+
+            std::string domain = discoveryEntry.getDomain();
+            std::string interfaceName = discoveryEntry.getInterfaceName();
+
+            // Create a callback object
+            auto ldacCallback = std::make_shared<LdacConsumerPermissionCallback>(
+                    *thisSharedPtr, message, domain, interfaceName, TrustLevel::HIGH, callback);
+
+            // Try to determine permission without expensive message deserialization
+            // For now TrustLevel::HIGH is assumed.
+
+            const std::string& msgCreatorUid = message->getCreator();
+            thisSharedPtr->localDomainAccessController->getConsumerPermission(
+                    msgCreatorUid, domain, interfaceName, TrustLevel::HIGH, ldacCallback);
         }
-
-        std::string domain = discoveryEntry.getDomain();
-        std::string interfaceName = discoveryEntry.getInterfaceName();
-
-        // Create a callback object
-        auto ldacCallback = std::make_shared<LdacConsumerPermissionCallback>(
-                *this, message, domain, interfaceName, TrustLevel::HIGH, callback);
-
-        // Try to determine permission without expensive message deserialization
-        // For now TrustLevel::HIGH is assumed.
-
-        const std::string& msgCreatorUid = message->getCreator();
-        localDomainAccessController->getConsumerPermission(
-                msgCreatorUid, domain, interfaceName, TrustLevel::HIGH, ldacCallback);
     };
 
     std::function<void(const joynr::exceptions::ProviderRuntimeException&)> lookupErrorCallback =
@@ -321,8 +330,15 @@ void AccessController::hasConsumerPermission(
         std::ignore = exception;
         callback->hasConsumerPermission(false);
     };
-    localCapabilitiesDirectory->lookup(
-            message->getRecipient(), lookupSuccessCallback, lookupErrorCallback);
+
+    // Lookup participantId in the local Capabilities Directory
+    auto localCapabilitiesCallback = std::make_shared<LocalCapabilitiesCallback>(
+            std::move(lookupSuccessCallback), std::move(lookupErrorCallback));
+
+    const bool useGlobalCapabilitiesDirectory = false;
+    localCapabilitiesDirectory->lookup(message->getRecipient(),
+                                       std::move(localCapabilitiesCallback),
+                                       useGlobalCapabilitiesDirectory);
 }
 
 bool AccessController::hasProviderPermission(const std::string& userId,

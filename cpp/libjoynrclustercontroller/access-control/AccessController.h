@@ -37,7 +37,8 @@ class LocalDomainAccessController;
 /**
  * Object that controls access to providers
  */
-class AccessController : public IAccessController
+class AccessController : public IAccessController,
+                         public std::enable_shared_from_this<AccessController>
 {
 public:
     AccessController(std::shared_ptr<LocalCapabilitiesDirectory> localCapabilitiesDirectory,
