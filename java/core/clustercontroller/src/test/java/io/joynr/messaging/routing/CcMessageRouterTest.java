@@ -189,7 +189,6 @@ public class CcMessageRouterTest {
                 bind(RoutingTable.class).toInstance(routingTable);
                 bind(AddressManager.class).toInstance(addressManager);
                 bind(MulticastReceiverRegistry.class).toInstance(multicastReceiverRegistry);
-                bind(MessageQueue.class).toInstance(messageQueue);
                 bind(ShutdownNotifier.class).toInstance(shutdownNotifier);
                 bind(Long.class).annotatedWith(Names.named(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS))
                                 .toInstance(msgRetryIntervalMs);
@@ -249,7 +248,12 @@ public class CcMessageRouterTest {
 
         testModule = Modules.override(mockModule).with(new TestGlobalAddressModule());
 
-        injector = Guice.createInjector(testModule);
+        injector = Guice.createInjector(Modules.override(testModule).with(new AbstractModule() {
+            @Override
+            protected void configure() {
+                bind(MessageQueue.class).toInstance(messageQueue);
+            }
+        }));
         messageRouter = injector.getInstance(MessageRouter.class);
 
         ObjectMapper objectMapper = new ObjectMapper();
@@ -399,9 +403,6 @@ public class CcMessageRouterTest {
 
     @Test
     public void testRetryWithMaxRetryCount() throws Exception {
-        // shutdown general message router to avoid conflict with test case specific message router
-        messageRouter.shutdown();
-
         final long routingMaxRetryCount = 3;
         MessageRouter messageRouterWithMaxRetryCount = getMessageRouterWithMaxRetryCount(routingMaxRetryCount);
 
@@ -423,9 +424,6 @@ public class CcMessageRouterTest {
 
     @Test
     public void testDelayWithExponentialBackoffLimit() throws Exception {
-        // shutdown general message router to avoid conflict with test case specific message router
-        messageRouter.shutdown();
-
         final long routingDuration = 1000;
         final long sendMsgRetryIntervalMs = 50;
         final long maxDelayMs = 70;
@@ -484,10 +482,6 @@ public class CcMessageRouterTest {
         // test idea is that on average more than sendMsgRetryIntervalMs ms are needed.
         // -> at least one run exists that takes longer than sendMsgRetryIntervalMs
         // -> exponential backoff for the retry interval is active
-
-        // shutdown general message router to avoid conflict with test case specific message router
-        messageRouter.shutdown();
-
         final long routingDuration = 1000;
         final long sendMsgRetryIntervalMs = 20;
         final long expectedAverageIntervalMs = 50;
@@ -619,9 +613,6 @@ public class CcMessageRouterTest {
 
     @Test
     public void testMessageProcessedListenerCalledAfterMaxRetry() throws Exception {
-        // shutdown general message router to avoid conflict with test case specific message router
-        messageRouter.shutdown();
-
         final long routingMaxRetryCount = 0;
         MessageRouter messageRouterWithMaxRetryCount = getMessageRouterWithMaxRetryCount(routingMaxRetryCount);
 
