@@ -24,19 +24,11 @@ import org.atmosphere.cpr.PerRequestBroadcastFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import joynr.ImmutableMessage;
 import joynr.MutableMessage;
 
 public class MessageSerializationFilter implements PerRequestBroadcastFilter {
     private static final Logger logger = LoggerFactory.getLogger(MessageSerializationFilter.class);
-    private static final ObjectMapper mapper = new ObjectMapper();
-    {
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
-    }
 
     @Override
     public BroadcastAction filter(AtmosphereResource atmosphereResource, Object originalMessage, Object message) {
