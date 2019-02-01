@@ -22,16 +22,30 @@ have to be provided in the Maven configuration:
             <configuration>
                 <!-- provide the Franca model file(s) -->
                 <model><PATH_TO_MODEL_FILE_OR_DIRECTORY></model>
-                <!-- choose the generation language -->
+                <!-- choose the generation language
+                        (see section "Choosing the generation language"):
+                    either by specifying <generationLanguage>
+                    or <rootGenerator> -->
                 <generationLanguage><GENERATION_LANGUAGE></generationLanguage>
+                <rootGenerator><FULL_NAME_OF_ROOT_GENERATOR></rootGenerator>
                 <!-- specify the output directory -->
                 <outputPath><PATH_TO_OUTPUT_DIRECTORY></outputPath>
                 <!-- optional parameters -->
-                <!-- specify how the major version shall affect the generated interface name and package:
-                       package: interface major versions (if existing) are added as an additional package
-                       name: interface major versions (if existing) are appended to the interface name
-                       none (default): interface versions don't affect the generated interface or package name-->
-                <addVersionTo>name/package/none</addVersionTo>
+                <!-- specify how the major version of Franca interfaces and typecollections shall
+                        affect the generated name and package of interfaces and types:
+                    package: interface/typecollection major versions (if existing) are added as an
+                        additional package segment
+                    name: interface/typecollection major versions (if existing) are appended to the
+                        interface/type name
+                    none (default): interface/typecollection versions do not affect the generated
+                        name and package of interfaces and types
+                    NOTE:
+                        - Consumer and provider applications of one interface have to use the same
+                          versioning scheme to be able to communicate with each other!
+                        - The feature has been fully tested to work in Java, in C++ and JS only the
+                          versioning of interfaces has been tested so far but the versioning of types
+                          is expected to work as well. -->
+                <addVersionTo>name|package|none</addVersionTo>
                 <parameter>
                     <!-- for Jee code generation use generation language "java"
                          and set the following parameter
@@ -52,8 +66,8 @@ have to be provided in the Maven configuration:
         </execution>
     </executions>
     <dependencies>
-        <!-- For Javai/Jee code generation:
-             add the Java/Jee generator dependency -->
+        <!-- For Java/JEE code generation:
+             add the Java/JEE generator dependency -->
         <dependency>
             <groupId>io.joynr.tools.generator</groupId>
             <artifactId>java-generator</artifactId>
@@ -73,14 +87,6 @@ have to be provided in the Maven configuration:
         <dependency>
             <groupId>io.joynr.tools.generator</groupId>
             <artifactId>js-generator</artifactId>
-            <version><JOYNR_VERSION></version>
-        </dependency>
-
-        <!-- For JEE code generation:
-             add the JEE generator dependency -->
-        <dependency>
-            <groupId>io.joynr.tools.generator</groupId>
-            <artifactId>java-generator</artifactId>
             <version><JOYNR_VERSION></version>
         </dependency>
 
@@ -116,7 +122,8 @@ apply plugin: 'io.joynr.tools.generator.joynr-generator-gradle-plugin'
 Note: The Joynr Generator Plugin has to be applied after the *Java* or *Kotlin* plugin,
 as it attaches itself to the corresponding *clean* task.
 
-The following parameters can be configured:
+The following parameters can be configured (see section [Maven configuration](#maven-configuration)
+for details):
 
 * **modelPath**
 * **outputPath**
@@ -152,12 +159,20 @@ gradle clean
 ```
 
 ## Choosing the generation language
-The **&lt;GENERATION_LANGUAGE&gt;** can be either ```java```, ```cpp```, or ```javascript```.
+The value **&lt;GENERATION_LANGUAGE&gt;** of the setting `generationLanguage` can be either
+`java`, `cpp`, or `javascript`.
+
 In each case, the corresponding dependency has to be added to the plugin's dependencies
 section (see above):
-* for ```java```: the artifact **io.joynr.tools.generator: java-generator**
-* for ```cpp```: the artifact **io.joynr.tools.generator: cpp-generator**
-* for ```javascript```: the artifact **io.joynr.tools.generator: js-generator**
+* for **java**: the artifact `io.joynr.tools.generator: java-generator`
+* for **cpp**: the artifact `io.joynr.tools.generator: cpp-generator`
+* for **javascript**: the artifact `io.joynr.tools.generator: js-generator`
+
+Alternatively, the generation language can also be chosen by the setting `rootGenerator`.
+Possible values of **&lt;FULL_NAME_OF_ROOT_GENERATOR&gt;** are
+* for **java**: `io.joynr.generator.JoynrJavaGenerator`,
+* for **cpp**: `io.joynr.generator.cpp.JoynrCppGenerator`,
+* for **javascript**: `io.joynr.generator.js.JoynrJSGenerator`
 
 
 ## Providing the Franca model files
@@ -210,10 +225,19 @@ to *gen*.
       -templatesEncoding <encoding of templates>
       -generationId <name of what is being generated>
       -addVersionTo <name, package, none>
-        package: interface major versions (if existing) are added as an additional package
-        name: interface major versions (if existing) are appended to the interface name
-        none: interface versions don't affect the generated interface or package name
+        package: interface/typecollection major versions (if existing) are added as an additional
+            package segment
+        name: interface/typecollection major versions (if existing) are appended to the
+            interface/type name
+        none: interface/typecollection versions do not affect the generated name and package of
+            interfaces and types
         default: none
+        NOTE:
+            - Consumer and provider applications of one interface have to use the same versioning
+              scheme to be able to communicate with each other!
+            - The feature has been fully tested to work in Java, in C++ and JS only the versioning
+              of interfaces has been tested so far but the versioning of types is expected to work
+              as well.
     Optional, C++ only:
       -outputHeaderPath <path to directory containing header files>
       -includePrefix <prefix to use in include statements>

@@ -20,8 +20,9 @@ the versioning scheme [here](JoynrVersioning.md).
 * **[JS]** Fixed an issue where joynr.shutdown would not wait for clearSubscriptions before shutting
   down.
 * **[Java]** Eliminated declared but unneeded dependcies in some of the sub-projects. Also avoided
-  defining versions inside the dependencyManagement for transitive dependencies not being directly
-  used in joynr.
+* **[Generator, Java]** The flag `addVersionTo` now also appends version information at file system
+  level to generated types. See [Generator Documentation](generator.md) for additional information.
+  The feature has been tested to work in Java, expected to work also in C++ and JS.
 
 ## Configuration property changes
   None.
