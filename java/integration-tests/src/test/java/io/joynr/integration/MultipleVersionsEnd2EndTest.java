@@ -49,7 +49,7 @@ public class MultipleVersionsEnd2EndTest extends AbstractMultipleVersionsEnd2End
     * one provider (unversioned) and communicate with this without mutual interference.
     */
     @Test
-    public void proxiesOfDifferentVersioningTypesVsUnversionedProvider() throws Exception {
+    public void proxiesOfDifferentVersioningTypesVsUnversionedProviderInSingleRuntime() throws Exception {
         // register provider
         DefaultMultipleVersionsInterfaceProvider unversionedProvider = new DefaultMultipleVersionsInterfaceProvider();
 
@@ -234,7 +234,21 @@ public class MultipleVersionsEnd2EndTest extends AbstractMultipleVersionsEnd2End
     }
 
     @Test
+    public void packageVersionedProxy_packageVersionedProvider_separateRuntime() throws Exception {
+        useGlobalCommunication();
+        registerPackageVersionedProvider();
+        testPackageVersionedTypes();
+    }
+
+    @Test
     public void nameVersionedProxy_nameVersionedProvider_singleRuntime() throws Exception {
+        registerNameVersionedProvider();
+        testNameVersionedTypes();
+    }
+
+    @Test
+    public void nameVersionedProxy_nameVersionedProvider_separateRuntime() throws Exception {
+        useGlobalCommunication();
         registerNameVersionedProvider();
         testNameVersionedTypes();
     }
@@ -244,4 +258,12 @@ public class MultipleVersionsEnd2EndTest extends AbstractMultipleVersionsEnd2End
         registerUnversionedProvider();
         testUnversionedTypes();
     }
+
+    @Test
+    public void unversionedProxy_UnversionedProvider_separateRuntime() throws Exception {
+        useGlobalCommunication();
+        registerUnversionedProvider();
+        testUnversionedTypes();
+    }
+
 }

@@ -344,7 +344,21 @@ public class GeneratorVersionMismatchTest extends AbstractMultipleVersionsEnd2En
     }
 
     @Test
+    public void packageVersionedProxy_nameVersionedProvider_separateRuntimes() throws Exception {
+        useGlobalCommunication();
+        registerNameVersionedProvider();
+        testPackageVersionedTypes();
+    }
+
+    @Test
     public void packageVersionedProxy_unversionedProvider_singleRuntime() throws Exception {
+        registerUnversionedProvider();
+        testPackageVersionedTypes();
+    }
+
+    @Test
+    public void packageVersionedProxy_unversionedProvider_separateRuntime() throws Exception {
+        useGlobalCommunication();
         registerUnversionedProvider();
         testPackageVersionedTypes();
     }
@@ -356,7 +370,21 @@ public class GeneratorVersionMismatchTest extends AbstractMultipleVersionsEnd2En
     }
 
     @Test
+    public void nameVersionedProxy_packageVersionedProvider_separateRuntime() throws Exception {
+        useGlobalCommunication();
+        registerPackageVersionedProvider();
+        testNameVersionedTypes();
+    }
+
+    @Test
     public void nameVersionedProxy_unversionedProvider_singleRuntime() throws Exception {
+        registerUnversionedProvider();
+        testNameVersionedTypes();
+    }
+
+    @Test
+    public void nameVersionedProxy_unversionedProvider_separateRuntime() throws Exception {
+        useGlobalCommunication();
         registerUnversionedProvider();
         testNameVersionedTypes();
     }
@@ -368,7 +396,21 @@ public class GeneratorVersionMismatchTest extends AbstractMultipleVersionsEnd2En
     }
 
     @Test
+    public void unversionedProxy_nameVersionedProvider_separateRuntime() throws Exception {
+        useGlobalCommunication();
+        registerNameVersionedProvider();
+        testUnversionedTypes();
+    }
+
+    @Test
     public void unversionedProxy_packageVersionedProvider_singleRuntime() throws Exception {
+        registerPackageVersionedProvider();
+        testUnversionedTypes();
+    }
+
+    @Test
+    public void unversionedProxy_packageVersionedProvider_separateRuntime() throws Exception {
+        useGlobalCommunication();
         registerPackageVersionedProvider();
         testUnversionedTypes();
     }
