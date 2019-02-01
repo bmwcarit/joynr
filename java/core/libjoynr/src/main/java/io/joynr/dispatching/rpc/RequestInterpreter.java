@@ -187,7 +187,7 @@ public class RequestInterpreter {
                 methodSignatureToMethodMap.putIfAbsent(methodSignature, method);
             }
         } catch (NoSuchMethodException e) {
-            logger.error("RequestInterpreter: Received an RPC invocation for a non existing method" + request, e);
+            logger.error("RequestInterpreter: Received an RPC invocation for a non existing method " + request, e);
             JoynrVersion joynrVersion = AnnotationUtil.getAnnotation(requestCaller.getProxy().getClass(),
                                                                      JoynrVersion.class);
             throw new MethodInvocationException(e.toString(), new Version(joynrVersion.major(), joynrVersion.minor()));
