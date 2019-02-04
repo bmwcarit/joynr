@@ -139,11 +139,11 @@ public class RoutingTableImpl implements RoutingTable {
         } catch (ArithmeticException e) {
             expiryDateMs = Long.MAX_VALUE;
         }
-        RoutingEntry routingEntry = new RoutingEntry(address, isGloballyVisible, expiryDateMs, sticky);
+        RoutingEntry newRoutingEntry = new RoutingEntry(address, isGloballyVisible, expiryDateMs, sticky);
 
         synchronized (this) {
-            RoutingEntry result = hashMap.putIfAbsent(participantId, routingEntry);
-            final boolean routingEntryAlreadyPresent = result != null;
+            RoutingEntry oldRoutingEntry = hashMap.putIfAbsent(participantId, newRoutingEntry);
+            final boolean routingEntryAlreadyPresent = oldRoutingEntry != null;
 
             if (!routingEntryAlreadyPresent) {
                 logger.trace("put(participantId={}, address={}, isGloballyVisible={}, expiryDateMs={}, sticky={}) successfully into routing table",
@@ -155,10 +155,10 @@ public class RoutingTableImpl implements RoutingTable {
                 return;
             }
 
-            final boolean routingEntryChanged = !address.equals(result.getAddress())
-                    || result.getIsGloballyVisible() != isGloballyVisible;
+            final boolean addressOrVisibilityOfRoutingEntryChanged = !address.equals(oldRoutingEntry.getAddress())
+                    || oldRoutingEntry.getIsGloballyVisible() != isGloballyVisible;
 
-            if (routingEntryChanged) {
+            if (addressOrVisibilityOfRoutingEntryChanged) {
                 if (allowUpdate) {
                     logger.debug("put(participantId={}, address={}, isGloballyVisible={}, expiryDateMs={}, sticky={}). Replacing previous entry with address={}, isGloballyVisible={}, expiryDateMs={}, sticky={}",
                                  participantId,
@@ -166,12 +166,14 @@ public class RoutingTableImpl implements RoutingTable {
                                  isGloballyVisible,
                                  expiryDateMs,
                                  sticky,
-                                 result.address,
-                                 result.isGloballyVisible,
-                                 result.expiryDateMs,
-                                 result.isSticky);
-                    mergeRoutingEntryAttributes(routingEntry, result.getExpiryDateMs(), result.getIsSticky());
-                    hashMap.put(participantId, routingEntry);
+                                 oldRoutingEntry.address,
+                                 oldRoutingEntry.isGloballyVisible,
+                                 oldRoutingEntry.expiryDateMs,
+                                 oldRoutingEntry.isSticky);
+                    mergeRoutingEntryAttributes(newRoutingEntry,
+                                                oldRoutingEntry.getExpiryDateMs(),
+                                                oldRoutingEntry.getIsSticky());
+                    hashMap.put(participantId, newRoutingEntry);
                 } else {
                     logger.warn("unable to update(participantId={}, address={}, isGloballyVisible={}, expiryDateMs={}, sticky={}) into routing table,"
                             + " since the participant ID is already associated with routing entry address={}, isGloballyVisible={}",
@@ -180,17 +182,18 @@ public class RoutingTableImpl implements RoutingTable {
                                 isGloballyVisible,
                                 expiryDateMs,
                                 sticky,
-                                result.address,
-                                result.isGloballyVisible);
+                                oldRoutingEntry.address,
+                                oldRoutingEntry.isGloballyVisible);
                 }
             } else {
+                // only expiryDate or sticky flag of routing entry changed
                 logger.trace("put(participantId={}, address={}, isGloballyVisible={}, expiryDateMs={}, sticky={}): Entry exists. Updating expiryDate and sticky-flag",
                              participantId,
                              address,
                              isGloballyVisible,
                              expiryDateMs,
                              sticky);
-                mergeRoutingEntryAttributes(result, expiryDateMs, sticky);
+                mergeRoutingEntryAttributes(oldRoutingEntry, expiryDateMs, sticky);
             }
         }
     }
