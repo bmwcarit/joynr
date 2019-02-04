@@ -340,6 +340,9 @@ public class RoutingTableImplTest {
 
         final WebSocketClientAddress websocketClientAddress = new WebSocketClientAddress("webSocketId");
         subject.put(participantId, websocketClientAddress, isGloballyVisible, expiryDateMs, sticky, allowUpdate);
+        assertEquals(websocketClientAddress, subject.get(participantId));
+        // restore old address
+        subject.put(participantId, oldAddress, isGloballyVisible, expiryDateMs, sticky, allowUpdate);
         assertEquals(oldAddress, subject.get(participantId));
 
         final InProcessAddress inProcessAddress = new InProcessAddress();
@@ -373,6 +376,10 @@ public class RoutingTableImplTest {
 
         final WebSocketClientAddress websocketClientAddress = new WebSocketClientAddress("webSocketId");
         subject.put(participantId, websocketClientAddress, isGloballyVisible, expiryDateMs, sticky, allowUpdate);
+        assertEquals(websocketClientAddress, subject.get(participantId));
+        // restore old address
+        subject.remove(participantId);
+        subject.put(participantId, oldAddress, isGloballyVisible, expiryDateMs, sticky, allowUpdate);
         assertEquals(oldAddress, subject.get(participantId));
 
         final InProcessAddress inProcessAddress = new InProcessAddress();
@@ -406,6 +413,10 @@ public class RoutingTableImplTest {
 
         final WebSocketClientAddress websocketClientAddress = new WebSocketClientAddress("webSocketId");
         subject.put(participantId, websocketClientAddress, isGloballyVisible, expiryDateMs, sticky, allowUpdate);
+        assertEquals(websocketClientAddress, subject.get(participantId));
+        // restore old address
+        subject.remove(participantId);
+        subject.put(participantId, oldAddress, isGloballyVisible, expiryDateMs, sticky, allowUpdate);
         assertEquals(oldAddress, subject.get(participantId));
 
         final InProcessAddress inProcessAddress = new InProcessAddress();
@@ -439,6 +450,10 @@ public class RoutingTableImplTest {
 
         final WebSocketClientAddress websocketClientAddress = new WebSocketClientAddress("webSocketId");
         subject.put(participantId, websocketClientAddress, isGloballyVisible, expiryDateMs, sticky, allowUpdate);
+        assertEquals(websocketClientAddress, subject.get(participantId));
+        // restore old address
+        subject.remove(participantId);
+        subject.put(participantId, oldAddress, isGloballyVisible, expiryDateMs, sticky, allowUpdate);
         assertEquals(oldAddress, subject.get(participantId));
 
         final InProcessAddress inProcessAddress = new InProcessAddress();
