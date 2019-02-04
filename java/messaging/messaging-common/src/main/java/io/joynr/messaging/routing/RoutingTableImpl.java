@@ -33,6 +33,7 @@ import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
 import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.messaging.inprocess.InProcessAddress;
 import joynr.system.RoutingTypes.Address;
 
 @Singleton
@@ -127,13 +128,31 @@ public class RoutingTableImpl implements RoutingTable {
         }
     }
 
+    private void updateRoutingEntry(final String participantId,
+                                    final RoutingEntry oldRoutingEntry,
+                                    final RoutingEntry newRoutingEntry) {
+        logger.debug("put(participantId={}, address={}, isGloballyVisible={}, expiryDateMs={}, sticky={}). Replacing "
+                + "previous entry with address={}, isGloballyVisible={}, expiryDateMs={}, sticky={}",
+                     participantId,
+                     newRoutingEntry.address,
+                     newRoutingEntry.isGloballyVisible,
+                     newRoutingEntry.expiryDateMs,
+                     newRoutingEntry.isSticky,
+                     oldRoutingEntry.address,
+                     oldRoutingEntry.isGloballyVisible,
+                     oldRoutingEntry.expiryDateMs,
+                     oldRoutingEntry.isSticky);
+        mergeRoutingEntryAttributes(newRoutingEntry, oldRoutingEntry.getExpiryDateMs(), oldRoutingEntry.getIsSticky());
+        hashMap.put(participantId, newRoutingEntry);
+    }
+
     @Override
-    public void put(String participantId,
-                    Address address,
-                    boolean isGloballyVisible,
+    public void put(final String participantId,
+                    final Address address,
+                    final boolean isGloballyVisible,
                     long expiryDateMs,
-                    boolean sticky,
-                    boolean allowUpdate) {
+                    final boolean sticky,
+                    final boolean allowUpdate) {
         try {
             expiryDateMs = Math.addExact(expiryDateMs, routingTableGracePeriodMs);
         } catch (ArithmeticException e) {
@@ -160,34 +179,27 @@ public class RoutingTableImpl implements RoutingTable {
 
             if (addressOrVisibilityOfRoutingEntryChanged) {
                 if (allowUpdate) {
-                    logger.debug("put(participantId={}, address={}, isGloballyVisible={}, expiryDateMs={}, sticky={}). Replacing previous entry with address={}, isGloballyVisible={}, expiryDateMs={}, sticky={}",
-                                 participantId,
-                                 address,
-                                 isGloballyVisible,
-                                 expiryDateMs,
-                                 sticky,
-                                 oldRoutingEntry.address,
-                                 oldRoutingEntry.isGloballyVisible,
-                                 oldRoutingEntry.expiryDateMs,
-                                 oldRoutingEntry.isSticky);
-                    mergeRoutingEntryAttributes(newRoutingEntry,
-                                                oldRoutingEntry.getExpiryDateMs(),
-                                                oldRoutingEntry.getIsSticky());
-                    hashMap.put(participantId, newRoutingEntry);
+                    updateRoutingEntry(participantId, oldRoutingEntry, newRoutingEntry);
                 } else {
-                    logger.warn("unable to update(participantId={}, address={}, isGloballyVisible={}, expiryDateMs={}, sticky={}) into routing table,"
-                            + " since the participant ID is already associated with routing entry address={}, isGloballyVisible={}",
-                                participantId,
-                                address,
-                                isGloballyVisible,
-                                expiryDateMs,
-                                sticky,
-                                oldRoutingEntry.address,
-                                oldRoutingEntry.isGloballyVisible);
+                    if (address instanceof InProcessAddress) {
+                        updateRoutingEntry(participantId, oldRoutingEntry, newRoutingEntry);
+                    } else {
+                        logger.warn("unable to update(participantId={}, address={}, isGloballyVisible={}, expiryDateMs={}, "
+                                + "sticky={}) into routing table, since the participant ID is already associated with "
+                                + "routing entry address={}, isGloballyVisible={}",
+                                    participantId,
+                                    address,
+                                    isGloballyVisible,
+                                    expiryDateMs,
+                                    sticky,
+                                    oldRoutingEntry.address,
+                                    oldRoutingEntry.isGloballyVisible);
+                    }
                 }
             } else {
                 // only expiryDate or sticky flag of routing entry changed
-                logger.trace("put(participantId={}, address={}, isGloballyVisible={}, expiryDateMs={}, sticky={}): Entry exists. Updating expiryDate and sticky-flag",
+                logger.trace("put(participantId={}, address={}, isGloballyVisible={}, expiryDateMs={}, sticky={}): "
+                        + "Entry exists. Updating expiryDate and sticky-flag",
                              participantId,
                              address,
                              isGloballyVisible,
@@ -198,7 +210,9 @@ public class RoutingTableImpl implements RoutingTable {
         }
     }
 
-    private void mergeRoutingEntryAttributes(RoutingEntry entry, long expiryDateMs, boolean isSticky) {
+    private void mergeRoutingEntryAttributes(final RoutingEntry entry,
+                                             final long expiryDateMs,
+                                             final boolean isSticky) {
         // extend lifetime, if required
         if (entry.getExpiryDateMs() < expiryDateMs) {
             entry.setExpiryDateMs(expiryDateMs);
