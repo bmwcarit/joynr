@@ -22,6 +22,7 @@
 #include <gmock/gmock.h>
 
 #include "joynr/LocalCapabilitiesDirectory.h"
+#include "joynr/ILocalCapabilitiesCallback.h"
 
 class MockLocalCapabilitiesDirectory : public joynr::LocalCapabilitiesDirectory {
 public:
@@ -35,6 +36,13 @@ public:
                 const std::string& participantId,
                 std::function<void(const joynr::types::DiscoveryEntryWithMetaInfo&)> onSuccess,
                 std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError
+            ));
+    MOCK_METHOD3(
+            lookup,
+            void(
+                const std::string& participantId,
+                std::shared_ptr<joynr::ILocalCapabilitiesCallback> callback,
+                bool useGlobalCapabilitiesDirectory
             ));
 };
 
