@@ -24,7 +24,9 @@ import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 
 import io.joynr.messaging.routing.LibJoynrMessageRouter;
+import io.joynr.messaging.routing.LibjoynrRoutingTableAddressValidator;
 import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.messaging.routing.RoutingTableAddressValidator;
 import io.joynr.messaging.sender.LibJoynrMessageSender;
 import io.joynr.messaging.sender.MessageSender;
 import io.joynr.messaging.websocket.WebSocketMessagingSkeleton;
@@ -48,6 +50,7 @@ public class LibjoynrWebSocketRuntimeModule extends AbstractRuntimeModule {
         bind(JoynrRuntime.class).to(LibjoynrRuntime.class).in(Singleton.class);
         bind(MessageRouter.class).to(LibJoynrMessageRouter.class);
         bind(MessageSender.class).to(LibJoynrMessageSender.class);
+        bind(RoutingTableAddressValidator.class).to(LibjoynrRoutingTableAddressValidator.class);
         bind(Boolean.class).annotatedWith(Names.named(WebSocketMessagingSkeleton.WEBSOCKET_IS_MAIN_TRANSPORT))
                            .toInstance(Boolean.TRUE);
 

@@ -93,10 +93,13 @@ public class RoutingTableImpl implements RoutingTable {
 
     private ConcurrentMap<String, RoutingEntry> hashMap = new ConcurrentHashMap<>();
     private final long routingTableGracePeriodMs;
+    private final RoutingTableAddressValidator addressValidator;
 
     @Inject
-    public RoutingTableImpl(@Named(PROPERTY_ROUTING_TABLE_GRACE_PERIOD_MS) long routingTableGracePeriodMs) {
+    public RoutingTableImpl(@Named(PROPERTY_ROUTING_TABLE_GRACE_PERIOD_MS) long routingTableGracePeriodMs,
+                            final RoutingTableAddressValidator addressValidator) {
         this.routingTableGracePeriodMs = routingTableGracePeriodMs;
+        this.addressValidator = addressValidator;
     }
 
     @Override
@@ -157,6 +160,11 @@ public class RoutingTableImpl implements RoutingTable {
                     long expiryDateMs,
                     final boolean sticky,
                     final boolean allowUpdate) {
+        if (!addressValidator.isValidForRoutingTable(address)) {
+            logger.debug("unable to update participantId={} in routing table since the address is not supported within this process.",
+                         participantId);
+            return;
+        }
         try {
             expiryDateMs = Math.addExact(expiryDateMs, routingTableGracePeriodMs);
         } catch (ArithmeticException e) {

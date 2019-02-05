@@ -127,12 +127,11 @@ public class CcMessageRouterTest {
     private final int maximumParallelSends = 1;
     private final long routingTableGracePeriodMs = 30000;
 
-    private RoutingTable routingTable = spy(new RoutingTableImpl(42));
+    @Mock
+    private RoutingTableAddressValidator addressValidatorMock;
+    private RoutingTable routingTable;
     InMemoryMulticastReceiverRegistry multicastReceiverRegistry = new InMemoryMulticastReceiverRegistry(new MulticastWildcardRegexFactory());
-    private AddressManager addressManager = spy(new AddressManager(routingTable,
-                                                                   new AddressManager.PrimaryGlobalTransportHolder(null),
-                                                                   new HashSet<MulticastAddressCalculator>(),
-                                                                   multicastReceiverRegistry));
+    private AddressManager addressManager;
 
     @Mock
     private ChannelMessagingStubFactory middlewareMessagingStubFactoryMock;
@@ -168,11 +167,17 @@ public class CcMessageRouterTest {
 
     @Before
     public void setUp() throws Exception {
+        doReturn(true).when(addressValidatorMock).isValidForRoutingTable(any(Address.class));
+        routingTable = spy(new RoutingTableImpl(42, addressValidatorMock));
         messageQueue = spy(new MessageQueue(new DelayQueue<DelayableImmutableMessage>(),
                                             new MessageQueue.MaxTimeoutHolder(),
                                             createUuidString(),
                                             messagePersisterMock,
                                             routingTable));
+        addressManager = spy(new AddressManager(routingTable,
+                                                new AddressManager.PrimaryGlobalTransportHolder(null),
+                                                new HashSet<MulticastAddressCalculator>(),
+                                                multicastReceiverRegistry));
 
         when(middlewareMessagingStubFactoryMock.create(any(ChannelAddress.class))).thenReturn(messagingStubMock);
 
@@ -969,4 +974,5 @@ public class CcMessageRouterTest {
                                            anyBoolean(),
                                            anyBoolean());
     }
+
 }

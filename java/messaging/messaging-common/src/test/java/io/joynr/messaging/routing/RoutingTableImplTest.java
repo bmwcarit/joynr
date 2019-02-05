@@ -25,10 +25,16 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.inprocess.InProcessAddress;
@@ -45,14 +51,19 @@ import joynr.system.RoutingTypes.WebSocketProtocol;
  * 
  * @author clive.jevons
  */
+@RunWith(MockitoJUnitRunner.class)
 public class RoutingTableImplTest {
 
     private RoutingTableImpl subject;
     private final long routingTableGracePeriod = 42;
 
+    @Mock
+    private RoutingTableAddressValidator addressValidatorMock;
+
     @Before
     public void setup() {
-        subject = new RoutingTableImpl(routingTableGracePeriod);
+        doReturn(true).when(addressValidatorMock).isValidForRoutingTable(any(Address.class));
+        subject = new RoutingTableImpl(routingTableGracePeriod, addressValidatorMock);
     }
 
     @Test
@@ -479,6 +490,45 @@ public class RoutingTableImplTest {
         final InProcessAddress inProcessAddress = new InProcessAddress();
         subject.put(participantId, inProcessAddress, isGloballyVisible, expiryDateMs, sticky, allowUpdate);
         assertEquals(inProcessAddress, subject.get(participantId));
+    }
+
+    @Test
+    public void allAddressTypesAreValidatedBeforePut() {
+        final MqttAddress mqttAddress = new MqttAddress();
+        final ChannelAddress channelAddress = new ChannelAddress();
+        final WebSocketAddress webSocketAddress = new WebSocketAddress();
+        final WebSocketClientAddress webSocketClientAddress = new WebSocketClientAddress();
+        final InProcessAddress inProcessAddress = new InProcessAddress();
+
+        final String participantId = "testParticipantId";
+        final boolean isGloballyVisible = true;
+        final long expiryDateMs = 42l;
+        final boolean sticky = false;
+        final boolean allowUpdate = true;
+
+        subject.put(participantId, mqttAddress, isGloballyVisible, expiryDateMs, sticky, allowUpdate);
+        subject.put(participantId, channelAddress, isGloballyVisible, expiryDateMs, sticky, allowUpdate);
+        subject.put(participantId, webSocketAddress, isGloballyVisible, expiryDateMs, sticky, allowUpdate);
+        subject.put(participantId, webSocketClientAddress, isGloballyVisible, expiryDateMs, sticky, allowUpdate);
+        subject.put(participantId, inProcessAddress, isGloballyVisible, expiryDateMs, sticky, allowUpdate);
+
+        verify(addressValidatorMock).isValidForRoutingTable(mqttAddress);
+        verify(addressValidatorMock).isValidForRoutingTable(channelAddress);
+        verify(addressValidatorMock).isValidForRoutingTable(webSocketAddress);
+        verify(addressValidatorMock).isValidForRoutingTable(webSocketClientAddress);
+        verify(addressValidatorMock).isValidForRoutingTable(inProcessAddress);
+    }
+
+    @Test
+    public void addressIsNotInsertedWhenValidationFails() {
+        doReturn(false).when(addressValidatorMock).isValidForRoutingTable(any(Address.class));
+
+        final MqttAddress mqttAddress = new MqttAddress();
+        final String participantId = "testParticipantId";
+        subject.put(participantId, mqttAddress, true, Long.MAX_VALUE, false, true);
+
+        assertFalse(subject.containsKey(participantId));
+        assertNull(subject.get(participantId));
     }
 
 }
