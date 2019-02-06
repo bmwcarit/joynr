@@ -127,31 +127,46 @@ struct LogLevelInitializer
 {
     LogLevelInitializer()
     {
+        const std::array<std::tuple<std::string, spdlog::level::level_enum, joynr::LogLevel>,
+                         6> stringToSpdLogLevelToJoynrLogLevel{
+                {std::make_tuple("TRACE", spdlog::level::trace, joynr::LogLevel::Trace),
+                 std::make_tuple("DEBUG", spdlog::level::debug, joynr::LogLevel::Debug),
+                 std::make_tuple("INFO", spdlog::level::info, joynr::LogLevel::Info),
+                 std::make_tuple("WARN", spdlog::level::warn, joynr::LogLevel::Warn),
+                 std::make_tuple("ERROR", spdlog::level::err, joynr::LogLevel::Error),
+                 std::make_tuple("FATAL", spdlog::level::critical, joynr::LogLevel::Fatal)}};
+
         const char* logLevelEnv = std::getenv("JOYNR_LOG_LEVEL");
 
         if (logLevelEnv == nullptr) {
             spdlog::set_level(JOYNR_DEFAULT_RUNTIME_LOG_LEVEL);
+            for (auto i : stringToSpdLogLevelToJoynrLogLevel) {
+                if (std::get<1>(i) == JOYNR_DEFAULT_RUNTIME_LOG_LEVEL) {
+                    level = std::get<2>(i);
+                }
+            }
             return;
         }
 
         const std::string runtimeLogLevelName(logLevelEnv);
-        const std::array<std::pair<std::string, spdlog::level::level_enum>, 6> array{
-                {std::make_pair("TRACE", spdlog::level::trace),
-                 std::make_pair("DEBUG", spdlog::level::debug),
-                 std::make_pair("INFO", spdlog::level::info),
-                 std::make_pair("WARN", spdlog::level::warn),
-                 std::make_pair("ERROR", spdlog::level::err),
-                 std::make_pair("FATAL", spdlog::level::critical)}};
 
-        for (auto i : array) {
-            if (i.first == runtimeLogLevelName) {
-                spdlog::set_level(i.second);
+        for (auto i : stringToSpdLogLevelToJoynrLogLevel) {
+            if (std::get<0>(i) == runtimeLogLevelName) {
+                spdlog::set_level(std::get<1>(i));
+                level = std::get<2>(i);
                 return;
             }
         }
 
         spdlog::set_level(JOYNR_DEFAULT_RUNTIME_LOG_LEVEL);
+        for (auto i : stringToSpdLogLevelToJoynrLogLevel) {
+            if (std::get<1>(i) == JOYNR_DEFAULT_RUNTIME_LOG_LEVEL) {
+                level = std::get<2>(i);
+            }
+        }
     }
+
+    joynr::LogLevel level;
 };
 
 struct Logger
@@ -159,6 +174,7 @@ struct Logger
     explicit Logger(const std::string& prefix) : spdlog()
     {
         static LogLevelInitializer logLevelInitializer;
+        level = logLevelInitializer.level;
         std::vector<spdlog::sink_ptr> sinks;
 
 #ifdef JOYNR_ENABLE_STDOUT_LOGGING
@@ -181,7 +197,14 @@ struct Logger
         boost::algorithm::erase_all(prefix, "joynr::");
         return prefix;
     }
+
+    joynr::LogLevel getLogLevel()
+    {
+        return level;
+    }
+
     std::shared_ptr<spdlog::logger> spdlog;
+    joynr::LogLevel level;
 };
 
 } // namespace joynr
