@@ -69,7 +69,12 @@ void HttpMessagingSkeleton::onMessageReceived(smrf::ByteVector&& message)
             auto immutableMessage = std::make_shared<ImmutableMessage>(std::move(splittedMessage));
             remainingSize -= immutableMessage->getMessageSize();
 
-            JOYNR_LOG_DEBUG(logger(), "<<< INCOMING <<< {}", immutableMessage->toLogMessage());
+            if (logger().getLogLevel() == LogLevel::Debug) {
+                JOYNR_LOG_DEBUG(
+                        logger(), "<<< INCOMING <<< {}", immutableMessage->getTrackingInfo());
+            } else {
+                JOYNR_LOG_TRACE(logger(), "<<< INCOMING <<< {}", immutableMessage->toLogMessage());
+            }
 
             auto onFailure = [messageId = immutableMessage->getId()](
                     const exceptions::JoynrRuntimeException& e)

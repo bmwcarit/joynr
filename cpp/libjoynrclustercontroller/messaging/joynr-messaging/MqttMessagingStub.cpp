@@ -35,7 +35,11 @@ void MqttMessagingStub::transmit(
         std::shared_ptr<ImmutableMessage> message,
         const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
 {
-    JOYNR_LOG_DEBUG(logger(), ">>> OUTGOING >>> {}", message->toLogMessage());
+    if (logger().getLogLevel() == LogLevel::Debug) {
+        JOYNR_LOG_DEBUG(logger(), ">>> OUTGOING >>> {}", message->getTrackingInfo());
+    } else {
+        JOYNR_LOG_TRACE(logger(), ">>> OUTGOING >>> {}", message->toLogMessage());
+    }
     messageSender->sendMessage(destinationAddress, std::move(message), onFailure);
 }
 
