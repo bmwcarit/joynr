@@ -78,15 +78,14 @@ request.setParams(
 		JOYNR_LOG_DEBUG(logger(),
 				"«IF method.fireAndForget»ONEWAY«ENDIF»REQUEST call proxy: «
 					IF !method.fireAndForget»requestReplyId: {}, «ENDIF
-					»method: {}, params: «getParamsPlaceholders(method.inputParameters.size)», "
-				"proxy participantId: {}, provider participantId: [{}]",
+					»method: {}, params: «getParamsPlaceholders(method.inputParameters.size)»",
 				«IF !method.fireAndForget»request.getRequestReplyId(),«ENDIF»
-				request.getMethodName(),
-				«FOR inputParam : method.inputParameters»
-					joynr::serializer::serializeToJson(«inputParam.joynrName»),
+				request.getMethodName()
+				«IF method.inputParameters.size > 0»,«ENDIF»
+				«FOR inputParam : method.inputParameters SEPARATOR ','»
+					joynr::serializer::serializeToJson(«inputParam.joynrName»)
 				«ENDFOR»
-				proxyParticipantId,
-				providerParticipantId);
+				);
 	'''
 
 	override generate()
@@ -211,12 +210,9 @@ request.setParams(
 
 			try {
 				JOYNR_LOG_DEBUG(logger(),
-						"REQUEST call proxy: requestReplyId: {}, method: {}, proxy "
-						"participantId: {}, provider participantId: [{}]",
+						"REQUEST call proxy: requestReplyId: {}, method: {}",
 						request.getRequestReplyId(),
-						request.getMethodName(),
-						proxyParticipantId,
-						providerParticipantId);
+						request.getMethodName());
 				auto replyCaller = std::make_shared<joynr::ReplyCaller<«returnType»>>(std::move(onSuccessWrapper), std::move(onErrorWrapper));
 				operationRequest(std::move(replyCaller), std::move(request), std::move(qos));
 			} catch (const std::invalid_argument& exception) {
@@ -284,13 +280,10 @@ request.setParams(
 
 			try {
 				JOYNR_LOG_DEBUG(logger(),
-						"REQUEST call proxy: requestReplyId: {}, method: {}, params: {}, proxy "
-						"participantId: {}, provider participantId: [{}]",
+						"REQUEST call proxy: requestReplyId: {}, method: {}, params: {}",
 						request.getRequestReplyId(),
 						request.getMethodName(),
-						joynr::serializer::serializeToJson(«attributeName»),
-						proxyParticipantId,
-						providerParticipantId);
+						joynr::serializer::serializeToJson(«attributeName»));
 				auto replyCaller = std::make_shared<joynr::ReplyCaller<void>>(std::move(onSuccessWrapper), std::move(onErrorWrapper));
 				operationRequest(std::move(replyCaller), std::move(request), std::move(qos));
 			} catch (const std::invalid_argument& exception) {
@@ -352,13 +345,10 @@ request.setParams(
 						subscriptionRequest);
 			}
 			JOYNR_LOG_DEBUG(logger(),
-					"SUBSCRIPTION call proxy: subscriptionId: {}, attribute: {}, qos: {}, proxy "
-					"participantId: {}, provider participantId: [{}]",
+					"SUBSCRIPTION call proxy: subscriptionId: {}, attribute: {}, qos: {}",
 					subscriptionRequest.getSubscriptionId(),
 					attributeName,
-					joynr::serializer::serializeToJson(*subscriptionQos),
-					proxyParticipantId,
-					providerParticipantId);
+					joynr::serializer::serializeToJson(*subscriptionQos));
 
 			if (auto ptr = messageSender.lock()) {
 				ptr->sendSubscriptionRequest(
@@ -552,13 +542,10 @@ request.setParams(
 			}
 
 			JOYNR_LOG_DEBUG(logger(),
-					"SUBSCRIPTION call proxy: subscriptionId: {}, broadcast: {}, qos: {}, proxy "
-					"participantId: {}, provider participantId: [{}]",
+					"SUBSCRIPTION call proxy: subscriptionId: {}, broadcast: {}, qos: {}",
 					subscriptionRequest.getSubscriptionId(),
 					broadcastName,
-					joynr::serializer::serializeToJson(*subscriptionQos),
-					proxyParticipantId,
-					providerParticipantId);
+					joynr::serializer::serializeToJson(*subscriptionQos));
 			if (auto ptr = messageSender.lock()) {
 				ptr->sendBroadcastSubscriptionRequest(
 						proxyParticipantId,
