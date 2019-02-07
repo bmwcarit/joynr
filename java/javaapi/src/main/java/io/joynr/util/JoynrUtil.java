@@ -35,6 +35,7 @@ import java.net.UnknownHostException;
 import java.util.Enumeration;
 import java.util.Properties;
 import java.util.Random;
+import java.util.UUID;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;
@@ -42,6 +43,7 @@ import java.util.jar.JarInputStream;
 import javax.annotation.CheckForNull;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -328,5 +330,9 @@ public class JoynrUtil {
                 private static final long serialVersionUID = 1L;
             };
         }
+    }
+
+    public static String createUuidString() {
+        return StringUtils.remove(UUID.randomUUID().toString(), '-');
     }
 }
