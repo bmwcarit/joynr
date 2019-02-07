@@ -18,6 +18,7 @@
  */
 package io.joynr.proxy;
 
+import static io.joynr.util.JoynrUtil.createUuidString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -36,7 +37,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.Semaphore;
@@ -309,7 +309,7 @@ public class ProxyTest {
                 Object[] args = invocation.getArguments();
                 AttributeSubscribeInvocation request = (AttributeSubscribeInvocation) args[2];
                 if (request.getSubscriptionId() == null) {
-                    request.setSubscriptionId(UUID.randomUUID().toString());
+                    request.setSubscriptionId(createUuidString());
                 }
                 request.getFuture().resolve(request.getSubscriptionId());
                 return null;
@@ -324,7 +324,7 @@ public class ProxyTest {
                 Object[] args = invocation.getArguments();
                 BroadcastSubscribeInvocation request = (BroadcastSubscribeInvocation) args[2];
                 if (request.getSubscriptionId() == null) {
-                    request.setSubscriptionId(UUID.randomUUID().toString());
+                    request.setSubscriptionId(createUuidString());
 
                 }
                 request.getFuture().resolve(request.getSubscriptionId());
@@ -340,7 +340,7 @@ public class ProxyTest {
                 Object[] args = invocation.getArguments();
                 MulticastSubscribeInvocation request = (MulticastSubscribeInvocation) args[2];
                 if (request.getSubscriptionId() == null) {
-                    request.setSubscriptionId(UUID.randomUUID().toString());
+                    request.setSubscriptionId(createUuidString());
 
                 }
                 request.getFuture().resolve(request.getSubscriptionId());
@@ -773,7 +773,7 @@ public class ProxyTest {
         long expiryDate = System.currentTimeMillis() + 30000;
         MulticastSubscriptionQos subscriptionQos = new MulticastSubscriptionQos().setExpiryDateMs(expiryDate);
 
-        String subscriptionId = UUID.randomUUID().toString();
+        String subscriptionId = createUuidString();
         Future<String> subscriptionId2 = proxy.subscribeToLocationUpdateBroadcast(subscriptionId,
                                                                                   mock(LocationUpdateBroadcastListener.class),
                                                                                   subscriptionQos);
@@ -837,7 +837,7 @@ public class ProxyTest {
 
         abstract class BooleanSubscriptionListener implements AttributeSubscriptionListener<Boolean> {
         }
-        String subscriptionId = UUID.randomUUID().toString();
+        String subscriptionId = createUuidString();
         Future<String> subscriptionId2 = proxy.subscribeToGuidanceActive(subscriptionId,
                                                                          mock(BooleanSubscriptionListener.class),
                                                                          subscriptionQos);
@@ -859,7 +859,7 @@ public class ProxyTest {
     public void createProxyUnSubscribeFromBroadcast() throws Exception {
         NavigationProxy proxy = getNavigationProxy();
 
-        String subscriptionId = UUID.randomUUID().toString();
+        String subscriptionId = createUuidString();
         proxy.unsubscribeFromLocationUpdateBroadcast(subscriptionId);
 
         verify(subscriptionManager,

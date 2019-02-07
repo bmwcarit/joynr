@@ -18,12 +18,12 @@
  */
 package io.joynr.integration;
 
+import static io.joynr.util.JoynrUtil.createUuidString;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
@@ -232,7 +232,7 @@ public class GeneratorVersionMismatchTest extends AbstractMultipleVersionsEnd2En
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT_MS)
     public void testMultiDomainNoCompatibleProviderFound() throws Exception {
         registerPackageVersionedProviderV1();
-        final String domain2 = "domain2-" + UUID.randomUUID().toString();
+        final String domain2 = "domain2-" + createUuidString();
         registerPackageVersionedProviderV1(domain2);
 
         final joynr.tests.v2.MultipleVersionsInterfaceProxy proxy = buildProxy(joynr.tests.v2.MultipleVersionsInterfaceProxy.class,

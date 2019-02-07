@@ -18,6 +18,8 @@
  */
 package io.joynr.messaging.http.operation;
 
+import static io.joynr.util.JoynrUtil.createUuidString;
+
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Singleton;
@@ -32,7 +34,6 @@ import io.joynr.messaging.ReceiverStatusListener;
 
 import java.io.IOException;
 import java.util.Properties;
-import java.util.UUID;
 
 import org.apache.http.HttpException;
 import org.apache.http.HttpRequest;
@@ -63,7 +64,7 @@ public class LongPollingChannelLifecycleTest {
     private static final String CHANNELPATH = BOUNCEPROXYPATH + "channels/";
 
     private String bounceProxyUrl;
-    private String channelId = "LongPollingCallableTest_" + UUID.randomUUID().toString();
+    private String channelId = "LongPollingCallableTest_" + createUuidString();
 
     private String serviceAddress;
 

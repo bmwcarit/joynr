@@ -18,8 +18,10 @@
  */
 package io.joynr.integration;
 
-import io.joynr.provider.ProviderAnnotations;
+import static io.joynr.util.JoynrUtil.createUuidString;
 import static org.junit.Assert.assertEquals;
+
+import io.joynr.provider.ProviderAnnotations;
 import com.google.inject.Module;
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.arbitration.ArbitrationStrategy;
@@ -45,7 +47,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Properties;
-import java.util.UUID;
 
 public abstract class AbstractSSLEnd2EndTest extends JoynrEnd2EndTest {
 
@@ -79,24 +80,22 @@ public abstract class AbstractSSLEnd2EndTest extends JoynrEnd2EndTest {
         provisionPermissiveAccessControlEntry(domain, ProviderAnnotations.getInterfaceName(DefaulttestProvider.class));
 
         // use channelNames = test name
-        String channelIdProvider = "JavaTest-" + methodName + UUID.randomUUID().getLeastSignificantBits()
-                + "-end2endTestProvider";
-        String channelIdConsumer = "JavaTest-" + methodName + UUID.randomUUID().getLeastSignificantBits()
-                + "-end2endConsumer";
+        String channelIdProvider = "JavaTest-" + methodName + createUuidString() + "-end2endTestProvider";
+        String channelIdConsumer = "JavaTest-" + methodName + createUuidString() + "-end2endConsumer";
 
         Properties joynrConfigProvider = PropertyLoader.loadProperties("testMessaging.properties");
         joynrConfigProvider.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL,
-                                "localdomain." + UUID.randomUUID().toString());
+                                "localdomain." + createUuidString());
         joynrConfigProvider.put(MessagingPropertyKeys.CHANNELID, channelIdProvider);
-        joynrConfigProvider.put(MessagingPropertyKeys.RECEIVERID, UUID.randomUUID().toString());
+        joynrConfigProvider.put(MessagingPropertyKeys.RECEIVERID, createUuidString());
 
         providerRuntime = getRuntime(joynrConfigProvider, new StaticDomainAccessControlProvisioningModule());
 
         Properties joynrConfigConsumer = PropertyLoader.loadProperties("testMessaging.properties");
         joynrConfigConsumer.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL,
-                                "localdomain." + UUID.randomUUID().toString());
+                                "localdomain." + createUuidString());
         joynrConfigConsumer.put(MessagingPropertyKeys.CHANNELID, channelIdConsumer);
-        joynrConfigConsumer.put(MessagingPropertyKeys.RECEIVERID, UUID.randomUUID().toString());
+        joynrConfigConsumer.put(MessagingPropertyKeys.RECEIVERID, createUuidString());
 
         consumerRuntime = getRuntime(joynrConfigConsumer);
 

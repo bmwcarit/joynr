@@ -18,6 +18,8 @@
  */
 package io.joynr.examples.statelessasync;
 
+import static io.joynr.util.JoynrUtil.createUuidString;
+
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
 import io.joynr.proxy.ProxyBuilder;
@@ -32,7 +34,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
@@ -65,7 +66,7 @@ public class ConsumerApplication extends AbstractJoynrApplication {
         CountDownLatch countDownLatch = new CountDownLatch(iterations);
         IntStream.range(0, iterations).forEach(counter -> {
             VehicleConfiguration vehicleConfiguration = new VehicleConfiguration();
-            vehicleConfiguration.setId(UUID.randomUUID().toString());
+            vehicleConfiguration.setId(createUuidString());
             vehicleConfiguration.setEntries(new KeyValue[]{ new KeyValue("key-" + counter, "value-" + counter) });
             vehicleStateProxy.addConfiguration(vehicleConfiguration, addConfigurationMessageId -> {
                 logger.info("Message sent with ID: {}", addConfigurationMessageId);

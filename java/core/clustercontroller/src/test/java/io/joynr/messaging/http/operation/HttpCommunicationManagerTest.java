@@ -19,6 +19,7 @@
 package io.joynr.messaging.http.operation;
 
 import static com.jayway.restassured.RestAssured.given;
+import static io.joynr.util.JoynrUtil.createUuidString;
 import static org.hamcrest.Matchers.containsString;
 
 import com.google.inject.AbstractModule;
@@ -38,7 +39,6 @@ import io.joynr.messaging.ReceiverStatusListener;
 import io.joynr.messaging.routing.MessageRouter;
 
 import java.util.Properties;
-import java.util.UUID;
 
 import joynr.Message;
 import joynr.MutableMessage;
@@ -73,7 +73,7 @@ import com.jayway.restassured.specification.RequestSpecification;
 public class HttpCommunicationManagerTest {
 
     LongPollingMessageReceiver longpollingMessageReceiver;
-    private String testChannelId = "HttpCommunicationManagerTest-" + UUID.randomUUID().toString();
+    private String testChannelId = "HttpCommunicationManagerTest-" + createUuidString();
 
     private static Server server;
     private static int port;

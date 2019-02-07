@@ -18,6 +18,7 @@
  */
 package io.joynr.messaging.http;
 
+import static io.joynr.util.JoynrUtil.createUuidString;
 import static org.junit.Assert.assertEquals;
 
 import com.google.inject.Guice;
@@ -34,7 +35,6 @@ import io.joynr.messaging.http.operation.HttpDefaultRequestConfigProvider;
 import io.joynr.messaging.routing.MessageRouter;
 
 import java.util.Properties;
-import java.util.UUID;
 
 import org.apache.http.client.config.RequestConfig;
 import org.junit.Before;
@@ -49,7 +49,7 @@ import com.google.inject.Injector;
 @RunWith(MockitoJUnitRunner.class)
 public class UrlResolverTest {
 
-    private String channelId = "UrlResolverTest_" + UUID.randomUUID().toString();
+    private String channelId = "UrlResolverTest_" + createUuidString();
     @Mock
     private MessageRouter mockMessageRouter;
     private UrlResolver urlResolver;

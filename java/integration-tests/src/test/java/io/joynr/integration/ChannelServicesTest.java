@@ -18,6 +18,7 @@
  */
 package io.joynr.integration;
 
+import static io.joynr.util.JoynrUtil.createUuidString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.lessThan;
@@ -26,7 +27,6 @@ import static org.junit.Assert.assertEquals;
 import java.net.SocketTimeoutException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -58,7 +58,7 @@ public class ChannelServicesTest {
     @BounceProxyServerContext
     public BounceProxyServerSetup configuration;
 
-    private String receiverId = "channelservicestest-" + UUID.randomUUID().toString();
+    private String receiverId = "channelservicestest-" + createUuidString();
 
     private BounceProxyCommunicationMock bpMock;
 
@@ -69,7 +69,7 @@ public class ChannelServicesTest {
 
     @Test
     public void testCreateChannel() throws Exception {
-        String channelId = UUID.randomUUID().toString();
+        String channelId = createUuidString();
         bpMock.createChannel(channelId);
     }
 
@@ -80,7 +80,7 @@ public class ChannelServicesTest {
 
     @Test
     public void testOpenChannelWithEmptyCache() throws Exception {
-        String channelId = UUID.randomUUID().toString();
+        String channelId = createUuidString();
         bpMock.createChannel(channelId);
 
         int timeout_ms = 1000;
@@ -106,11 +106,11 @@ public class ChannelServicesTest {
     public void testOpenChannelWithCachedMessages() throws Exception {
         // removed, was only used to view logfiles of a dependency. Not needed anymore.
         // java.util.logging.Logger.getLogger(ProviderServices.class.getName()).setLevel(Level.ALL);
-        String channelId = UUID.randomUUID().toString();
+        String channelId = createUuidString();
         bpMock.createChannel(channelId);
         // generate a random payload
-        byte[] payload1 = ("payload-" + UUID.randomUUID().toString()).getBytes(StandardCharsets.UTF_8);
-        byte[] payload2 = ("payload-" + UUID.randomUUID().toString()).getBytes(StandardCharsets.UTF_8);
+        byte[] payload1 = ("payload-" + createUuidString()).getBytes(StandardCharsets.UTF_8);
+        byte[] payload2 = ("payload-" + createUuidString()).getBytes(StandardCharsets.UTF_8);
         long messageRelativeTtlMs = 1000000L;
         bpMock.postMessage(channelId, messageRelativeTtlMs, payload1);
         bpMock.postMessage(channelId, messageRelativeTtlMs, payload2);
@@ -136,7 +136,7 @@ public class ChannelServicesTest {
     @Test
     public void testCreateAndDeleteChannel() throws Exception {
         int longpollTimeout_ms = 5000;
-        String channelId = UUID.randomUUID().toString();
+        String channelId = createUuidString();
         bpMock.createChannel(channelId);
 
         // start the long poll on the channel, then delete it.
@@ -147,8 +147,8 @@ public class ChannelServicesTest {
         longPoll.get(100L, TimeUnit.MILLISECONDS);
 
         // generate a random payload
-        byte[] payload1 = ("payload-" + UUID.randomUUID().toString()).getBytes(StandardCharsets.UTF_8);
-        byte[] payload2 = ("payload-" + UUID.randomUUID().toString()).getBytes(StandardCharsets.UTF_8);
+        byte[] payload1 = ("payload-" + createUuidString()).getBytes(StandardCharsets.UTF_8);
+        byte[] payload2 = ("payload-" + createUuidString()).getBytes(StandardCharsets.UTF_8);
         long messageRelativeTtlMs = 1000000L;
         // expect the messages not to be postable since the channel does not exist (get 400 back from server)
         bpMock.postMessage(channelId, messageRelativeTtlMs, payload1, 400);
@@ -179,7 +179,7 @@ public class ChannelServicesTest {
 
     @Test
     public void testOpenNonexistentChannelReturnsNoContent() throws Exception {
-        String channelId = UUID.randomUUID().toString();
+        String channelId = createUuidString();
         int longpollTimeout_ms = 100000;
 
         long timeStart = System.currentTimeMillis();

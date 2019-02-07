@@ -18,11 +18,12 @@
  */
 package io.joynr.capabilities;
 
+import static io.joynr.util.JoynrUtil.createUuidString;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Properties;
-import java.util.UUID;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -103,7 +104,7 @@ public class PropertiesFileParticipantIdStorage implements ParticipantIdStorage 
             participantId = routingProviderParticipantId;
         } else {
 
-            participantId = UUID.randomUUID().toString();
+            participantId = createUuidString();
             persistedParticipantIds.put(token, participantId);
             FileOutputStream fileOutputStream = null;
             try {

@@ -18,13 +18,13 @@
  */
 package io.joynr.integration;
 
+import static io.joynr.util.JoynrUtil.createUuidString;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
@@ -107,7 +107,7 @@ public class AbstractMultipleVersionsEnd2EndTest {
         // provider and proxy using same runtime to allow local-only communications
         runtime = getCcRuntime();
 
-        domain = DOMAIN_PREFIX + UUID.randomUUID().toString();
+        domain = DOMAIN_PREFIX + createUuidString();
         proxyBuiltSemaphore = new Semaphore(0);
         noCompatibleProviderFoundCallbackSemaphore = new Semaphore(0, true);
     }

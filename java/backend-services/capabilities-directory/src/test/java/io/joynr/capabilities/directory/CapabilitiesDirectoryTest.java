@@ -18,10 +18,10 @@
  */
 package io.joynr.capabilities.directory;
 
+import static io.joynr.util.JoynrUtil.createUuidString;
 import static org.junit.Assert.assertArrayEquals;
 
 import java.util.Properties;
-import java.util.UUID;
 
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -73,10 +73,10 @@ public class CapabilitiesDirectoryTest {
     @Before
     public void setUp() throws Exception {
         channelAddresSerialized = new ObjectMapper().writeValueAsString(channelAddres);
-        String participantId1 = "testParticipantId1_" + UUID.randomUUID().toString();
-        String participantId2 = "testParticipantId2_" + UUID.randomUUID().toString();
-        String participantId3 = "testParticipantId3_" + UUID.randomUUID().toString();
-        String participantId4 = "testParticipantId4_" + UUID.randomUUID().toString();
+        String participantId1 = "testParticipantId1_" + createUuidString();
+        String participantId2 = "testParticipantId2_" + createUuidString();
+        String participantId3 = "testParticipantId3_" + createUuidString();
+        String participantId4 = "testParticipantId4_" + createUuidString();
         String publicKeyId = "publicKeyId";
         String publicKeyIdFromAnotherNodeInCluster = "publicKeyIdAnotherNode";
 

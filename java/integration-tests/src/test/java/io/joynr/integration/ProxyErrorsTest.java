@@ -18,12 +18,12 @@
  */
 package io.joynr.integration;
 
+import static io.joynr.util.JoynrUtil.createUuidString;
 import static org.junit.Assert.fail;
 
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Properties;
-import java.util.UUID;
 import java.util.concurrent.Semaphore;
 
 import org.junit.After;
@@ -111,8 +111,8 @@ public class ProxyErrorsTest {
         // the error callback and NoCompatibleProviderFoundException will each increment the permits.
         // The test will wait until 2 permits are available, or fail in the junit test timeout time.
         waitOnExceptionAndErrorCallbackSemaphore = new Semaphore(-1, true);
-        domain = "domain-" + UUID.randomUUID().toString();
-        domain2 = "domain2-" + UUID.randomUUID().toString();
+        domain = "domain-" + createUuidString();
+        domain2 = "domain2-" + createUuidString();
         Properties joynrConfig = new Properties();
         joynrConfig.setProperty(MessagingPropertyKeys.CHANNELID, "discoverydirectory_channelid");
 

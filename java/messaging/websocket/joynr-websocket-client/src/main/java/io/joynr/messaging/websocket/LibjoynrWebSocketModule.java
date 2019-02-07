@@ -18,7 +18,7 @@
  */
 package io.joynr.messaging.websocket;
 
-import java.util.UUID;
+import static io.joynr.util.JoynrUtil.createUuidString;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
@@ -30,7 +30,7 @@ import joynr.system.RoutingTypes.WebSocketClientAddress;
 
 public class LibjoynrWebSocketModule extends AbstractModule {
 
-    String messagingUUID = UUID.randomUUID().toString().replace("-", "");
+    String messagingUUID = createUuidString().replace("-", "");
 
     @Override
     protected void configure() {

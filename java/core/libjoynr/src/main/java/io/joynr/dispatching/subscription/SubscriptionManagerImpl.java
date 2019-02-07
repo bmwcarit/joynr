@@ -19,6 +19,7 @@
 package io.joynr.dispatching.subscription;
 
 import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
+import static io.joynr.util.JoynrUtil.createUuidString;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -28,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledExecutorService;
@@ -287,7 +287,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager, ShutdownLis
                                       SubscriptionInvocation subscriptionInvocation,
                                       RegisterDataAndCreateSubscriptionRequest registerDataAndCreateSubscriptionRequest) {
         if (!subscriptionInvocation.hasSubscriptionId()) {
-            subscriptionInvocation.setSubscriptionId(UUID.randomUUID().toString());
+            subscriptionInvocation.setSubscriptionId(createUuidString());
         }
         String subscriptionId = subscriptionInvocation.getSubscriptionId();
         subscriptionFutureMap.put(subscriptionId, subscriptionInvocation.getFuture());

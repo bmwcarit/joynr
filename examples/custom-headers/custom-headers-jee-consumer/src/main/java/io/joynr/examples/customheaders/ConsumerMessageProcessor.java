@@ -18,8 +18,9 @@
  */
 package io.joynr.examples.customheaders;
 
+import static io.joynr.util.JoynrUtil.createUuidString;
+
 import java.util.Map;
-import java.util.UUID;
 
 import javax.ejb.Stateless;
 
@@ -44,7 +45,7 @@ public class ConsumerMessageProcessor implements JoynrMessageProcessor {
             // For the purpose of the example: Add additional custom header in case there
             // is already a custom header in the message set by the application via MessagingQos
             String processorCustomHeaderValue = CustomHeaderUtils.PROCESSOR_CUSTOM_HEADER_VALUE_PREFIX
-                    + UUID.randomUUID().toString();
+                    + createUuidString();
             customHeaders.put(CustomHeaderUtils.PROCESSOR_CUSTOM_HEADER_KEY, processorCustomHeaderValue);
             LOG.info("Set {} to {}", CustomHeaderUtils.PROCESSOR_CUSTOM_HEADER_KEY, processorCustomHeaderValue);
         }

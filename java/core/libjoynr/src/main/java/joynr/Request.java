@@ -18,8 +18,9 @@
  */
 package joynr;
 
+import static io.joynr.util.JoynrUtil.createUuidString;
+
 import java.util.Arrays;
-import java.util.UUID;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
@@ -47,7 +48,7 @@ public class Request extends OneWayRequest implements JoynrMessageType {
                    String statelessAsyncCallbackMethodId) {
         super(methodName, params, paramDatatypes);
         if (requestReplyId == null) {
-            this.requestReplyId = UUID.randomUUID().toString();
+            this.requestReplyId = createUuidString();
         } else {
             this.requestReplyId = requestReplyId;
         }

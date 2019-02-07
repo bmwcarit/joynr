@@ -18,6 +18,7 @@
  */
 package io.joynr.messaging.routing;
 
+import static io.joynr.util.JoynrUtil.createUuidString;
 import static java.util.stream.Collectors.toSet;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -34,7 +35,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.TimeUnit;
@@ -102,7 +102,7 @@ public class MessageQueueTest {
 
     @Before
     public void setup() throws Exception {
-        generatedMessageQueueId = UUID.randomUUID().toString();
+        generatedMessageQueueId = createUuidString();
 
         // configure mocks
         when(maxTimeoutHolderMock.getTimeout()).thenReturn(shutdownMaxTimeout);

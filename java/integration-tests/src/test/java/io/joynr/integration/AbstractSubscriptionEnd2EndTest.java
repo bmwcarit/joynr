@@ -18,6 +18,7 @@
  */
 package io.joynr.integration;
 
+import static io.joynr.util.JoynrUtil.createUuidString;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
@@ -33,7 +34,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.util.Properties;
-import java.util.UUID;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
@@ -129,12 +129,11 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
     private void setupProviderRuntime(String methodName) throws InterruptedException, ApplicationException {
         Properties factoryPropertiesProvider;
 
-        String channelIdProvider = "JavaTest-" + UUID.randomUUID().getLeastSignificantBits()
-                + "-Provider-SubscriptionEnd2EndTest-" + methodName;
+        String channelIdProvider = "JavaTest-" + createUuidString() + "-Provider-SubscriptionEnd2EndTest-" + methodName;
 
         factoryPropertiesProvider = PropertyLoader.loadProperties("testMessaging.properties");
         factoryPropertiesProvider.put(MessagingPropertyKeys.CHANNELID, channelIdProvider);
-        factoryPropertiesProvider.put(MessagingPropertyKeys.RECEIVERID, UUID.randomUUID().toString());
+        factoryPropertiesProvider.put(MessagingPropertyKeys.RECEIVERID, createUuidString());
         factoryPropertiesProvider.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, domain);
         providerRuntime = getRuntime(factoryPropertiesProvider,
                                      getSubscriptionPublisherFactoryModule(),
@@ -147,14 +146,13 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
 
     private void setupConsumerRuntime(String methodName) throws DiscoveryException, JoynrIllegalStateException,
                                                          InterruptedException {
-        String channelIdConsumer = "JavaTest-" + UUID.randomUUID().getLeastSignificantBits()
-                + "-Consumer-SubscriptionEnd2EndTest-" + methodName;
+        String channelIdConsumer = "JavaTest-" + createUuidString() + "-Consumer-SubscriptionEnd2EndTest-" + methodName;
 
         Properties factoryPropertiesB = PropertyLoader.loadProperties("testMessaging.properties");
         factoryPropertiesB.put(MessagingPropertyKeys.CHANNELID, channelIdConsumer);
-        factoryPropertiesB.put(MessagingPropertyKeys.RECEIVERID, UUID.randomUUID().toString());
+        factoryPropertiesB.put(MessagingPropertyKeys.RECEIVERID, createUuidString());
         factoryPropertiesB.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL,
-                               "ClientDomain-" + methodName + "-" + UUID.randomUUID().toString());
+                               "ClientDomain-" + methodName + "-" + createUuidString());
 
         consumerRuntime = getRuntime(factoryPropertiesB, getSubscriptionPublisherFactoryModule());
 
@@ -662,7 +660,7 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         testProxy proxyToNonexistentDomain = null;
         try {
             ProxyBuilder<testProxy> proxyBuilder;
-            String nonExistentDomain = UUID.randomUUID().toString() + "-domaindoesnotexist-end2end";
+            String nonExistentDomain = createUuidString() + "-domaindoesnotexist-end2end";
             MessagingQos messagingQos = new MessagingQos(20000);
             DiscoveryQos discoveryQos = new DiscoveryQos(50000, ArbitrationStrategy.HighestPriority, Long.MAX_VALUE);
             proxyBuilder = consumerRuntime.getProxyBuilder(nonExistentDomain, testProxy.class);

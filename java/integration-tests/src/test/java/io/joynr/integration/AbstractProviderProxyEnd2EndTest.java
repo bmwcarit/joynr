@@ -18,6 +18,7 @@
  */
 package io.joynr.integration;
 
+import static io.joynr.util.JoynrUtil.createUuidString;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -33,7 +34,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
-import java.util.UUID;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
@@ -202,16 +202,14 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         provisionPermissiveAccessControlEntry(domainAsync, ProviderAnnotations.getInterfaceName(TestProvider.class));
 
         // use channelNames = test name
-        String channelIdProvider = "JavaTest-" + methodName + UUID.randomUUID().getLeastSignificantBits()
-                + "-end2endTestProvider";
-        String channelIdConsumer = "JavaTest-" + methodName + UUID.randomUUID().getLeastSignificantBits()
-                + "-end2endConsumer";
+        String channelIdProvider = "JavaTest-" + methodName + createUuidString() + "-end2endTestProvider";
+        String channelIdConsumer = "JavaTest-" + methodName + createUuidString() + "-end2endConsumer";
 
         Properties joynrConfigProvider = PropertyLoader.loadProperties("testMessaging.properties");
         joynrConfigProvider.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL,
-                                "localdomain." + UUID.randomUUID().toString());
+                                "localdomain." + createUuidString());
         joynrConfigProvider.put(MessagingPropertyKeys.CHANNELID, channelIdProvider);
-        joynrConfigProvider.put(MessagingPropertyKeys.RECEIVERID, UUID.randomUUID().toString());
+        joynrConfigProvider.put(MessagingPropertyKeys.RECEIVERID, createUuidString());
         joynrConfigProvider.put(ConfigurableMessagingSettings.PROPERTY_MAX_MESSAGE_SIZE, MAX_MESSAGE_SIZE);
 
         providerRuntime = getRuntime(joynrConfigProvider,
@@ -224,9 +222,9 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
         Properties joynrConfigConsumer = PropertyLoader.loadProperties("testMessaging.properties");
         joynrConfigConsumer.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL,
-                                "localdomain." + UUID.randomUUID().toString());
+                                "localdomain." + createUuidString());
         joynrConfigConsumer.put(MessagingPropertyKeys.CHANNELID, channelIdConsumer);
-        joynrConfigConsumer.put(MessagingPropertyKeys.RECEIVERID, UUID.randomUUID().toString());
+        joynrConfigConsumer.put(MessagingPropertyKeys.RECEIVERID, createUuidString());
         joynrConfigConsumer.put(ConfigurableMessagingSettings.PROPERTY_MAX_MESSAGE_SIZE, MAX_MESSAGE_SIZE);
 
         consumerRuntime = getRuntime(joynrConfigConsumer, getSubscriptionPublisherFactoryModule());

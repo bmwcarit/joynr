@@ -18,6 +18,13 @@
  */
 package io.joynr.integration;
 
+import static io.joynr.util.JoynrUtil.createUuidString;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.dispatching.subscription.SubscriptionTestsProviderImpl;
@@ -45,13 +52,6 @@ import org.slf4j.LoggerFactory;
 import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.UUID;
-
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 /*
  * This testClass registers one consumer and one provider both on the same runtime. It can be used to test local
@@ -80,7 +80,7 @@ public abstract class AbstractLocalCommunicationTest {
 
         logger.info("setup beginning...");
 
-        String channelId = UUID.randomUUID().toString() + "-end2endA";
+        String channelId = createUuidString() + "-end2endA";
 
         Properties customProperties = new Properties();
         customProperties.put(MessagingPropertyKeys.CHANNELID, channelId);

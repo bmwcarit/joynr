@@ -18,10 +18,9 @@
  */
 package joynr.system.RoutingTypes;
 
+import static io.joynr.util.JoynrUtil.createUuidString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-
-import java.util.UUID;
 
 import org.junit.Test;
 
@@ -31,7 +30,7 @@ public class RoutingTypesUtilTest {
     static final String BROKERURI = "tcp://host:1234";
     private static final String MESSAGINGENDPOINTURL = "http://server:8080/bounceproxy/";
     static final String TOPIC = "topic";
-    static final String CHANNELID = UUID.randomUUID().toString();
+    static final String CHANNELID = createUuidString();
 
     @Test
     public void toMqttAddressStringTest() {

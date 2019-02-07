@@ -18,6 +18,7 @@
  */
 package io.joynr.messaging;
 
+import static io.joynr.util.JoynrUtil.createUuidString;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
@@ -25,7 +26,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.UUID;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -115,7 +115,7 @@ public class LibJoynrMessageRouterTest {
 
         messageQueue = new MessageQueue(new DelayQueue<DelayableImmutableMessage>(),
                                         new MessageQueue.MaxTimeoutHolder(),
-                                        UUID.randomUUID().toString(),
+                                        createUuidString(),
                                         messagePersisterMock,
                                         routingTableMock);
 

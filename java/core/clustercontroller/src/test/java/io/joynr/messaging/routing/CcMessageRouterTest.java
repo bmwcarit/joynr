@@ -18,6 +18,7 @@
  */
 package io.joynr.messaging.routing;
 
+import static io.joynr.util.JoynrUtil.createUuidString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assert.assertEquals;
@@ -47,7 +48,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -122,7 +122,7 @@ import joynr.system.RoutingTypes.WebSocketProtocol;
 @RunWith(MockitoJUnitRunner.class)
 public class CcMessageRouterTest {
 
-    private String channelId = "MessageSchedulerTest_" + UUID.randomUUID().toString();
+    private String channelId = "MessageSchedulerTest_" + createUuidString();
     private final ChannelAddress channelAddress = new ChannelAddress("http://testUrl", channelId);
     private final int maximumParallelSends = 1;
     private final long routingTableGracePeriodMs = 30000;
@@ -170,7 +170,7 @@ public class CcMessageRouterTest {
     public void setUp() throws Exception {
         messageQueue = spy(new MessageQueue(new DelayQueue<DelayableImmutableMessage>(),
                                             new MessageQueue.MaxTimeoutHolder(),
-                                            UUID.randomUUID().toString(),
+                                            createUuidString(),
                                             messagePersisterMock,
                                             routingTable));
 
@@ -199,7 +199,7 @@ public class CcMessageRouterTest {
                 bind(Long.class).annotatedWith(Names.named(ConfigurableMessagingSettings.PROPERTY_ROUTING_TABLE_CLEANUP_INTERVAL_MS))
                                 .toInstance(routingTableCleanupIntervalMs);
                 bind(String.class).annotatedWith(Names.named(MessageQueue.MESSAGE_QUEUE_ID))
-                                  .toInstance(UUID.randomUUID().toString());
+                                  .toInstance(createUuidString());
 
                 bindConstant().annotatedWith(Names.named(ClusterControllerRuntimeModule.PROPERTY_ACCESSCONTROL_ENABLE))
                               .to(false);
