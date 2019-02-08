@@ -74,8 +74,7 @@ public class RoutingTableImplTest {
         String participantId = "participantId";
         final boolean isGloballyVisible = false;
         final long expiryDateMs = Long.MAX_VALUE;
-        final boolean isSticky = false;
-        subject.put(participantId, address, isGloballyVisible, expiryDateMs, isSticky);
+        subject.put(participantId, address, isGloballyVisible, expiryDateMs);
 
         Address result = subject.get(participantId);
 
@@ -94,8 +93,7 @@ public class RoutingTableImplTest {
         String participantId = "participantId";
         final boolean isGloballyVisible = false;
         final long expiryDateMs = Long.MAX_VALUE;
-        final boolean isSticky = false;
-        subject.put(participantId, new Address(), isGloballyVisible, expiryDateMs, isSticky);
+        subject.put(participantId, new Address(), isGloballyVisible, expiryDateMs);
         assertTrue(subject.containsKey(participantId));
     }
 
@@ -105,8 +103,7 @@ public class RoutingTableImplTest {
         String participantId = "participantId";
         final boolean isGloballyVisible = false;
         final long expiryDateMs = 1024;
-        final boolean isSticky = false;
-        subject.put(participantId, address, isGloballyVisible, expiryDateMs, isSticky);
+        subject.put(participantId, address, isGloballyVisible, expiryDateMs);
 
         long result = subject.getExpiryDateMs(participantId);
 
@@ -119,8 +116,7 @@ public class RoutingTableImplTest {
         String participantId = "participantId";
         final boolean isGloballyVisible = false;
         final long expiryDateMs = Long.MAX_VALUE - (routingTableGracePeriod / 2);
-        final boolean isSticky = false;
-        subject.put(participantId, address, isGloballyVisible, expiryDateMs, isSticky);
+        subject.put(participantId, address, isGloballyVisible, expiryDateMs);
 
         long result = subject.getExpiryDateMs(participantId);
 
@@ -135,8 +131,7 @@ public class RoutingTableImplTest {
         Address address1 = new Address();
         final boolean isGloballyVisible1 = false;
         final long expiryDateMs1 = Long.MAX_VALUE;
-        final boolean isSticky1 = false;
-        subject.put(participantId, address1, isGloballyVisible1, expiryDateMs1, isSticky1);
+        subject.put(participantId, address1, isGloballyVisible1, expiryDateMs1);
         assertEquals(isGloballyVisible1, subject.getIsGloballyVisible(participantId));
 
         assertEquals(address1, subject.get(participantId));
@@ -144,9 +139,8 @@ public class RoutingTableImplTest {
         Address address2 = new Address();
         final boolean isGloballyVisible2 = true;
         final long expiryDateMs2 = Long.MAX_VALUE;
-        final boolean isSticky2 = false;
         // insertion shouldn't take place. participantId is already exists in the table and has address1
-        subject.put(participantId, address2, isGloballyVisible2, expiryDateMs2, isSticky2);
+        subject.put(participantId, address2, isGloballyVisible2, expiryDateMs2);
         assertEquals(address1, subject.get(participantId));
         assertEquals(isGloballyVisible1, subject.getIsGloballyVisible(participantId));
 
@@ -164,24 +158,21 @@ public class RoutingTableImplTest {
         Address address = new Address();
         final boolean isGloballyVisible = false;
         final long expiryDateMs = Long.MAX_VALUE;
-        final boolean isSticky = false;
-        subject.put(participantId, address, isGloballyVisible, expiryDateMs, isSticky);
+        subject.put(participantId, address, isGloballyVisible, expiryDateMs);
         assertEquals(false, subject.getIsGloballyVisible(participantId));
 
         String participantId1 = "participantId1";
         Address address1 = new Address();
         final boolean isGloballyVisible1 = false;
         final long expiryDateMs1 = Long.MAX_VALUE;
-        final boolean isSticky1 = false;
-        subject.put(participantId1, address1, isGloballyVisible1, expiryDateMs1, isSticky1);
+        subject.put(participantId1, address1, isGloballyVisible1, expiryDateMs1);
         assertEquals(false, subject.getIsGloballyVisible(participantId1));
 
         String participantId2 = "participantId2";
         Address address2 = new Address();
         final boolean isGloballyVisible2 = true;
         final long expiryDateMs2 = Long.MAX_VALUE;
-        final boolean isSticky2 = false;
-        subject.put(participantId2, address2, isGloballyVisible2, expiryDateMs2, isSticky2);
+        subject.put(participantId2, address2, isGloballyVisible2, expiryDateMs2);
         assertEquals(true, subject.getIsGloballyVisible(participantId2));
     }
 
@@ -192,10 +183,10 @@ public class RoutingTableImplTest {
         String participantId2 = "participantId2";
         final boolean isGloballyVisible = false;
         long expiryDateMs = System.currentTimeMillis() + 1000;
-        boolean isSticky = false;
-        boolean isSticky2 = true;
-        subject.put(participantId, address, isGloballyVisible, expiryDateMs, isSticky);
-        subject.put(participantId2, address, isGloballyVisible, expiryDateMs, isSticky2);
+        boolean isStickyFalse = false;
+        boolean isStickyTrue = true;
+        subject.put(participantId, address, isGloballyVisible, expiryDateMs, isStickyFalse);
+        subject.put(participantId2, address, isGloballyVisible, expiryDateMs, isStickyTrue);
 
         Address result = subject.get(participantId);
 
@@ -225,19 +216,18 @@ public class RoutingTableImplTest {
     public void testUpdateExpiryDateOfExistingRoutingEntry() throws Exception {
         Address address = new Address();
         boolean isGloballyVisible = false;
-        boolean isSticky = false;
         long expiryDateMs1 = 1;
         long expiryDateMs2 = 2;
         String participantId = "participantId";
 
-        subject.put(participantId, address, isGloballyVisible, expiryDateMs1, isSticky);
+        subject.put(participantId, address, isGloballyVisible, expiryDateMs1);
         assertEquals(subject.getExpiryDateMs(participantId), expiryDateMs1 + routingTableGracePeriod);
 
-        subject.put(participantId, address, isGloballyVisible, expiryDateMs2, isSticky);
+        subject.put(participantId, address, isGloballyVisible, expiryDateMs2);
         assertEquals(subject.getExpiryDateMs(participantId), expiryDateMs2 + routingTableGracePeriod);
 
         // Lower expiry dates shall be ignored
-        subject.put(participantId, address, isGloballyVisible, expiryDateMs1, isSticky);
+        subject.put(participantId, address, isGloballyVisible, expiryDateMs1);
         assertEquals(subject.getExpiryDateMs(participantId), expiryDateMs2 + routingTableGracePeriod);
     }
 
@@ -267,30 +257,29 @@ public class RoutingTableImplTest {
         final String participantId = "testParticipantId";
         final boolean isGloballyVisible = true;
         final long expiryDateMs = Long.MAX_VALUE;
-        final boolean sticky = false;
         final InProcessAddress oldAddress = new InProcessAddress(mock(InProcessMessagingSkeleton.class));
 
-        subject.put(participantId, oldAddress, isGloballyVisible, expiryDateMs, sticky);
+        subject.put(participantId, oldAddress, isGloballyVisible, expiryDateMs);
         assertEquals(oldAddress, subject.get(participantId));
 
         final MqttAddress mqttAddress = new MqttAddress("brokerUri", "topic");
-        subject.put(participantId, mqttAddress, isGloballyVisible, expiryDateMs, sticky);
+        subject.put(participantId, mqttAddress, isGloballyVisible, expiryDateMs);
         assertEquals(oldAddress, subject.get(participantId));
 
         final ChannelAddress channelAddress = new ChannelAddress("endpointUrl", "channelId");
-        subject.put(participantId, channelAddress, isGloballyVisible, expiryDateMs, sticky);
+        subject.put(participantId, channelAddress, isGloballyVisible, expiryDateMs);
         assertEquals(oldAddress, subject.get(participantId));
 
         final WebSocketAddress websocketAddress = new WebSocketAddress(WebSocketProtocol.WS, "host", 4242, "path");
-        subject.put(participantId, websocketAddress, isGloballyVisible, expiryDateMs, sticky);
+        subject.put(participantId, websocketAddress, isGloballyVisible, expiryDateMs);
         assertEquals(oldAddress, subject.get(participantId));
 
         final WebSocketClientAddress websocketClientAddress = new WebSocketClientAddress("webSocketId");
-        subject.put(participantId, websocketClientAddress, isGloballyVisible, expiryDateMs, sticky);
+        subject.put(participantId, websocketClientAddress, isGloballyVisible, expiryDateMs);
         assertEquals(oldAddress, subject.get(participantId));
 
         final InProcessAddress inProcessAddress = new InProcessAddress();
-        subject.put(participantId, inProcessAddress, isGloballyVisible, expiryDateMs, sticky);
+        subject.put(participantId, inProcessAddress, isGloballyVisible, expiryDateMs);
         assertEquals(inProcessAddress, subject.get(participantId));
         assertNotEquals(oldAddress, subject.get(participantId));
     }
@@ -300,33 +289,32 @@ public class RoutingTableImplTest {
         final String participantId = "testParticipantId";
         final boolean isGloballyVisible = true;
         final long expiryDateMs = Long.MAX_VALUE;
-        final boolean sticky = false;
         final WebSocketClientAddress oldAddress = new WebSocketClientAddress("testWebSocketId");
 
-        subject.put(participantId, oldAddress, isGloballyVisible, expiryDateMs, sticky);
+        subject.put(participantId, oldAddress, isGloballyVisible, expiryDateMs);
         assertEquals(oldAddress, subject.get(participantId));
 
         final MqttAddress mqttAddress = new MqttAddress("brokerUri", "topic");
-        subject.put(participantId, mqttAddress, isGloballyVisible, expiryDateMs, sticky);
+        subject.put(participantId, mqttAddress, isGloballyVisible, expiryDateMs);
         assertEquals(oldAddress, subject.get(participantId));
 
         final ChannelAddress channelAddress = new ChannelAddress("endpointUrl", "channelId");
-        subject.put(participantId, channelAddress, isGloballyVisible, expiryDateMs, sticky);
+        subject.put(participantId, channelAddress, isGloballyVisible, expiryDateMs);
         assertEquals(oldAddress, subject.get(participantId));
 
         final WebSocketAddress websocketAddress = new WebSocketAddress(WebSocketProtocol.WS, "host", 4242, "path");
-        subject.put(participantId, websocketAddress, isGloballyVisible, expiryDateMs, sticky);
+        subject.put(participantId, websocketAddress, isGloballyVisible, expiryDateMs);
         assertEquals(oldAddress, subject.get(participantId));
 
         final WebSocketClientAddress websocketClientAddress = new WebSocketClientAddress("webSocketId");
-        subject.put(participantId, websocketClientAddress, isGloballyVisible, expiryDateMs, sticky);
+        subject.put(participantId, websocketClientAddress, isGloballyVisible, expiryDateMs);
         assertEquals(websocketClientAddress, subject.get(participantId));
         // restore old address
-        subject.put(participantId, oldAddress, isGloballyVisible, expiryDateMs, sticky);
+        subject.put(participantId, oldAddress, isGloballyVisible, expiryDateMs);
         assertEquals(oldAddress, subject.get(participantId));
 
         final InProcessAddress inProcessAddress = new InProcessAddress();
-        subject.put(participantId, inProcessAddress, isGloballyVisible, expiryDateMs, sticky);
+        subject.put(participantId, inProcessAddress, isGloballyVisible, expiryDateMs);
         assertEquals(inProcessAddress, subject.get(participantId));
     }
 
@@ -335,34 +323,33 @@ public class RoutingTableImplTest {
         final String participantId = "testParticipantId";
         final boolean isGloballyVisible = true;
         final long expiryDateMs = Long.MAX_VALUE;
-        final boolean sticky = false;
         final WebSocketAddress oldAddress = new WebSocketAddress(WebSocketProtocol.WSS, "testHost", 23, "testPath");
 
-        subject.put(participantId, oldAddress, isGloballyVisible, expiryDateMs, sticky);
+        subject.put(participantId, oldAddress, isGloballyVisible, expiryDateMs);
         assertEquals(oldAddress, subject.get(participantId));
 
         final MqttAddress mqttAddress = new MqttAddress("brokerUri", "topic");
-        subject.put(participantId, mqttAddress, isGloballyVisible, expiryDateMs, sticky);
+        subject.put(participantId, mqttAddress, isGloballyVisible, expiryDateMs);
         assertEquals(oldAddress, subject.get(participantId));
 
         final ChannelAddress channelAddress = new ChannelAddress("endpointUrl", "channelId");
-        subject.put(participantId, channelAddress, isGloballyVisible, expiryDateMs, sticky);
+        subject.put(participantId, channelAddress, isGloballyVisible, expiryDateMs);
         assertEquals(oldAddress, subject.get(participantId));
 
         final WebSocketAddress websocketAddress = new WebSocketAddress(WebSocketProtocol.WS, "host", 4242, "path");
-        subject.put(participantId, websocketAddress, isGloballyVisible, expiryDateMs, sticky);
+        subject.put(participantId, websocketAddress, isGloballyVisible, expiryDateMs);
         assertEquals(oldAddress, subject.get(participantId));
 
         final WebSocketClientAddress websocketClientAddress = new WebSocketClientAddress("webSocketId");
-        subject.put(participantId, websocketClientAddress, isGloballyVisible, expiryDateMs, sticky);
+        subject.put(participantId, websocketClientAddress, isGloballyVisible, expiryDateMs);
         assertEquals(websocketClientAddress, subject.get(participantId));
         // restore old address
         subject.remove(participantId);
-        subject.put(participantId, oldAddress, isGloballyVisible, expiryDateMs, sticky);
+        subject.put(participantId, oldAddress, isGloballyVisible, expiryDateMs);
         assertEquals(oldAddress, subject.get(participantId));
 
         final InProcessAddress inProcessAddress = new InProcessAddress();
-        subject.put(participantId, inProcessAddress, isGloballyVisible, expiryDateMs, sticky);
+        subject.put(participantId, inProcessAddress, isGloballyVisible, expiryDateMs);
         assertEquals(inProcessAddress, subject.get(participantId));
     }
 
@@ -371,44 +358,43 @@ public class RoutingTableImplTest {
         final String participantId = "testParticipantId";
         final boolean isGloballyVisible = true;
         final long expiryDateMs = Long.MAX_VALUE;
-        final boolean sticky = false;
         final ChannelAddress oldAddress = new ChannelAddress("testEndpointUrl", "testChannelId");
 
-        subject.put(participantId, oldAddress, isGloballyVisible, expiryDateMs, sticky);
+        subject.put(participantId, oldAddress, isGloballyVisible, expiryDateMs);
         assertEquals(oldAddress, subject.get(participantId));
 
         final MqttAddress mqttAddress = new MqttAddress("brokerUri", "topic");
-        subject.put(participantId, mqttAddress, isGloballyVisible, expiryDateMs, sticky);
+        subject.put(participantId, mqttAddress, isGloballyVisible, expiryDateMs);
         assertEquals(mqttAddress, subject.get(participantId));
         // restore old address
-        subject.put(participantId, oldAddress, isGloballyVisible, expiryDateMs, sticky);
+        subject.put(participantId, oldAddress, isGloballyVisible, expiryDateMs);
         assertEquals(oldAddress, subject.get(participantId));
 
         final ChannelAddress channelAddress = new ChannelAddress("endpointUrl", "channelId");
-        subject.put(participantId, channelAddress, isGloballyVisible, expiryDateMs, sticky);
+        subject.put(participantId, channelAddress, isGloballyVisible, expiryDateMs);
         assertEquals(channelAddress, subject.get(participantId));
         // restore old address
-        subject.put(participantId, oldAddress, isGloballyVisible, expiryDateMs, sticky);
+        subject.put(participantId, oldAddress, isGloballyVisible, expiryDateMs);
         assertEquals(oldAddress, subject.get(participantId));
 
         final WebSocketAddress websocketAddress = new WebSocketAddress(WebSocketProtocol.WS, "host", 4242, "path");
-        subject.put(participantId, websocketAddress, isGloballyVisible, expiryDateMs, sticky);
+        subject.put(participantId, websocketAddress, isGloballyVisible, expiryDateMs);
         assertEquals(websocketAddress, subject.get(participantId));
         // restore old address
         subject.remove(participantId);
-        subject.put(participantId, oldAddress, isGloballyVisible, expiryDateMs, sticky);
+        subject.put(participantId, oldAddress, isGloballyVisible, expiryDateMs);
         assertEquals(oldAddress, subject.get(participantId));
 
         final WebSocketClientAddress websocketClientAddress = new WebSocketClientAddress("webSocketId");
-        subject.put(participantId, websocketClientAddress, isGloballyVisible, expiryDateMs, sticky);
+        subject.put(participantId, websocketClientAddress, isGloballyVisible, expiryDateMs);
         assertEquals(websocketClientAddress, subject.get(participantId));
         // restore old address
         subject.remove(participantId);
-        subject.put(participantId, oldAddress, isGloballyVisible, expiryDateMs, sticky);
+        subject.put(participantId, oldAddress, isGloballyVisible, expiryDateMs);
         assertEquals(oldAddress, subject.get(participantId));
 
         final InProcessAddress inProcessAddress = new InProcessAddress();
-        subject.put(participantId, inProcessAddress, isGloballyVisible, expiryDateMs, sticky);
+        subject.put(participantId, inProcessAddress, isGloballyVisible, expiryDateMs);
         assertEquals(inProcessAddress, subject.get(participantId));
     }
 
@@ -417,44 +403,43 @@ public class RoutingTableImplTest {
         final String participantId = "testParticipantId";
         final boolean isGloballyVisible = true;
         final long expiryDateMs = Long.MAX_VALUE;
-        final boolean sticky = false;
         final MqttAddress oldAddress = new MqttAddress("testBrokerUri", "testTopic");
 
-        subject.put(participantId, oldAddress, isGloballyVisible, expiryDateMs, sticky);
+        subject.put(participantId, oldAddress, isGloballyVisible, expiryDateMs);
         assertEquals(oldAddress, subject.get(participantId));
 
         final MqttAddress mqttAddress = new MqttAddress("brokerUri", "topic");
-        subject.put(participantId, mqttAddress, isGloballyVisible, expiryDateMs, sticky);
+        subject.put(participantId, mqttAddress, isGloballyVisible, expiryDateMs);
         assertEquals(mqttAddress, subject.get(participantId));
         // restore old address
-        subject.put(participantId, oldAddress, isGloballyVisible, expiryDateMs, sticky);
+        subject.put(participantId, oldAddress, isGloballyVisible, expiryDateMs);
         assertEquals(oldAddress, subject.get(participantId));
 
         final ChannelAddress channelAddress = new ChannelAddress("endpointUrl", "channelId");
-        subject.put(participantId, channelAddress, isGloballyVisible, expiryDateMs, sticky);
+        subject.put(participantId, channelAddress, isGloballyVisible, expiryDateMs);
         assertEquals(channelAddress, subject.get(participantId));
         // restore old address
-        subject.put(participantId, oldAddress, isGloballyVisible, expiryDateMs, sticky);
+        subject.put(participantId, oldAddress, isGloballyVisible, expiryDateMs);
         assertEquals(oldAddress, subject.get(participantId));
 
         final WebSocketAddress websocketAddress = new WebSocketAddress(WebSocketProtocol.WS, "host", 4242, "path");
-        subject.put(participantId, websocketAddress, isGloballyVisible, expiryDateMs, sticky);
+        subject.put(participantId, websocketAddress, isGloballyVisible, expiryDateMs);
         assertEquals(websocketAddress, subject.get(participantId));
         // restore old address
         subject.remove(participantId);
-        subject.put(participantId, oldAddress, isGloballyVisible, expiryDateMs, sticky);
+        subject.put(participantId, oldAddress, isGloballyVisible, expiryDateMs);
         assertEquals(oldAddress, subject.get(participantId));
 
         final WebSocketClientAddress websocketClientAddress = new WebSocketClientAddress("webSocketId");
-        subject.put(participantId, websocketClientAddress, isGloballyVisible, expiryDateMs, sticky);
+        subject.put(participantId, websocketClientAddress, isGloballyVisible, expiryDateMs);
         assertEquals(websocketClientAddress, subject.get(participantId));
         // restore old address
         subject.remove(participantId);
-        subject.put(participantId, oldAddress, isGloballyVisible, expiryDateMs, sticky);
+        subject.put(participantId, oldAddress, isGloballyVisible, expiryDateMs);
         assertEquals(oldAddress, subject.get(participantId));
 
         final InProcessAddress inProcessAddress = new InProcessAddress();
-        subject.put(participantId, inProcessAddress, isGloballyVisible, expiryDateMs, sticky);
+        subject.put(participantId, inProcessAddress, isGloballyVisible, expiryDateMs);
         assertEquals(inProcessAddress, subject.get(participantId));
     }
 
@@ -485,13 +470,12 @@ public class RoutingTableImplTest {
         final String participantId = "testParticipantId";
         final boolean isGloballyVisible = true;
         final long expiryDateMs = 42l;
-        final boolean sticky = false;
 
-        subject.put(participantId, mqttAddress, isGloballyVisible, expiryDateMs, sticky);
-        subject.put(participantId, channelAddress, isGloballyVisible, expiryDateMs, sticky);
-        subject.put(participantId, webSocketAddress, isGloballyVisible, expiryDateMs, sticky);
-        subject.put(participantId, webSocketClientAddress, isGloballyVisible, expiryDateMs, sticky);
-        subject.put(participantId, inProcessAddress, isGloballyVisible, expiryDateMs, sticky);
+        subject.put(participantId, mqttAddress, isGloballyVisible, expiryDateMs);
+        subject.put(participantId, channelAddress, isGloballyVisible, expiryDateMs);
+        subject.put(participantId, webSocketAddress, isGloballyVisible, expiryDateMs);
+        subject.put(participantId, webSocketClientAddress, isGloballyVisible, expiryDateMs);
+        subject.put(participantId, inProcessAddress, isGloballyVisible, expiryDateMs);
 
         verify(addressValidatorMock).isValidForRoutingTable(mqttAddress);
         verify(addressValidatorMock).isValidForRoutingTable(channelAddress);
@@ -506,7 +490,7 @@ public class RoutingTableImplTest {
 
         final MqttAddress mqttAddress = new MqttAddress();
         final String participantId = "testParticipantId";
-        subject.put(participantId, mqttAddress, true, Long.MAX_VALUE, false);
+        subject.put(participantId, mqttAddress, true, Long.MAX_VALUE);
 
         assertFalse(subject.containsKey(participantId));
         assertNull(subject.get(participantId));

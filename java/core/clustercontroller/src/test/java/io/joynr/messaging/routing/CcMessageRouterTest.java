@@ -22,6 +22,7 @@ import static io.joynr.util.JoynrUtil.createUuidString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
@@ -324,9 +325,8 @@ public class CcMessageRouterTest {
 
         final boolean isGloballyVisible = false;
         final long expiryDateMs = Long.MAX_VALUE;
-        final boolean isSticky = false;
-        routingTable.put(receiverParticipantId1, receiverAddress1, isGloballyVisible, expiryDateMs, isSticky);
-        routingTable.put(receiverParticipantId2, receiverAddress2, isGloballyVisible, expiryDateMs, isSticky);
+        routingTable.put(receiverParticipantId1, receiverAddress1, isGloballyVisible, expiryDateMs);
+        routingTable.put(receiverParticipantId2, receiverAddress2, isGloballyVisible, expiryDateMs);
 
         joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(100000).getValue());
         joynrMessage.setType(Message.VALUE_MESSAGE_TYPE_MULTICAST);
@@ -955,8 +955,17 @@ public class CcMessageRouterTest {
 
         messageRouter.route(immutableMessage);
 
+        verify(routingTable, times(0)).put(eq(fromParticipantId), eq(replyToAddress), anyBoolean(), anyLong());
         verify(routingTable,
                times(0)).put(eq(fromParticipantId), eq(replyToAddress), anyBoolean(), anyLong(), anyBoolean());
     }
 
+    @Test
+    public void setToKnownDoesNotChangeRoutingTable() {
+        final String participantId = "setToKnownParticipantId";
+        messageRouter.setToKnown(participantId);
+        verify(routingTable,
+               times(0)).put(eq(participantId), any(Address.class), anyBoolean(), anyLong(), anyBoolean());
+        assertFalse(routingTable.containsKey(participantId));
+    }
 }

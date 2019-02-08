@@ -29,11 +29,7 @@ public interface MessageRouter {
 
     public void addNextHop(String participantId, Address address, boolean isGloballyVisible);
 
-    public void addToRoutingTable(String participantId,
-                                  Address address,
-                                  boolean isGloballyVisible,
-                                  long expiryDateMs,
-                                  boolean isSticky);
+    public void addToRoutingTable(String participantId, Address address, boolean isGloballyVisible, long expiryDateMs);
 
     public void shutdown();
 

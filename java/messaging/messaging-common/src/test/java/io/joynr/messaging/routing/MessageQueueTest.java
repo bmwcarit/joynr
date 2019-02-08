@@ -290,8 +290,8 @@ public class MessageQueueTest {
         // ... and one routing entry was added (replyTo address of mockDelayableMessage3_request)
         verify(mockImmutableMessage2_multicast, times(0)).getReplyTo();
         verify(mockImmutableMessage3_request).getReplyTo();
-        verify(routingTableMock).put(anyString(), Mockito.any(Address.class), anyBoolean(), anyLong(), anyBoolean());
-        verify(routingTableMock).put(sender, replyToAddress, true, mockImmutableMessage3_request.getTtlMs(), false);
+        verify(routingTableMock).put(anyString(), Mockito.any(Address.class), anyBoolean(), anyLong());
+        verify(routingTableMock).put(sender, replyToAddress, true, mockImmutableMessage3_request.getTtlMs());
     }
 
     @Test

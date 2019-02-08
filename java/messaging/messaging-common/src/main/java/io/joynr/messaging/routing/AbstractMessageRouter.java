@@ -231,17 +231,12 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
     @Override
     public void addNextHop(String participantId, Address address, boolean isGloballyVisible) {
         final long expiryDateMs = Long.MAX_VALUE;
-        final boolean isSticky = false;
 
-        addToRoutingTable(participantId, address, isGloballyVisible, expiryDateMs, isSticky);
+        addToRoutingTable(participantId, address, isGloballyVisible, expiryDateMs);
     }
 
-    public void addToRoutingTable(String participantId,
-                                  Address address,
-                                  boolean isGloballyVisible,
-                                  long expiryDateMs,
-                                  boolean isSticky) {
-        routingTable.put(participantId, address, isGloballyVisible, expiryDateMs, isSticky);
+    public void addToRoutingTable(String participantId, Address address, boolean isGloballyVisible, long expiryDateMs) {
+        routingTable.put(participantId, address, isGloballyVisible, expiryDateMs);
     }
 
     @Override
@@ -297,9 +292,8 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
             // If the message was received from global, the sender is globally visible by definition.
             final boolean isGloballyVisible = true;
             final long expiryDateMs = message.getTtlMs();
-            final boolean isSticky = false;
 
-            routingTable.put(message.getSender(), address, isGloballyVisible, expiryDateMs, isSticky);
+            routingTable.put(message.getSender(), address, isGloballyVisible, expiryDateMs);
         }
     }
 

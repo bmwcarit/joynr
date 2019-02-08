@@ -106,6 +106,16 @@ public class RoutingTableImpl implements RoutingTable {
     public void put(final String participantId,
                     final Address address,
                     final boolean isGloballyVisible,
+                    long expiryDateMs) {
+        final boolean sticky = false;
+        put(participantId, address, isGloballyVisible, expiryDateMs, sticky);
+
+    }
+
+    @Override
+    public void put(final String participantId,
+                    final Address address,
+                    final boolean isGloballyVisible,
                     long expiryDateMs,
                     final boolean sticky) {
         if (!addressValidator.isValidForRoutingTable(address)) {

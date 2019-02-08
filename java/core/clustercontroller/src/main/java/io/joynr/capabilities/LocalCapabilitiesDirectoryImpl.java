@@ -562,14 +562,9 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             if (ce.getParticipantId() != null && ce.getAddress() != null) {
                 Address address = CapabilityUtils.getAddressFromGlobalDiscoveryEntry(ce);
                 final boolean isGloballyVisible = (ce.getQos().getScope() == ProviderScope.GLOBAL);
-                final boolean isSticky = false;
                 final long expiryDateMs = Long.MAX_VALUE;
 
-                messageRouter.addToRoutingTable(ce.getParticipantId(),
-                                                address,
-                                                isGloballyVisible,
-                                                expiryDateMs,
-                                                isSticky);
+                messageRouter.addToRoutingTable(ce.getParticipantId(), address, isGloballyVisible, expiryDateMs);
             }
         }
     }
