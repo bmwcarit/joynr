@@ -415,6 +415,10 @@ public class RoutingTableImplTest {
 
         final WebSocketAddress websocketAddress = new WebSocketAddress(WebSocketProtocol.WS, "host", 4242, "path");
         subject.put(participantId, websocketAddress, isGloballyVisible, expiryDateMs, sticky, allowUpdate);
+        assertEquals(websocketAddress, subject.get(participantId));
+        // restore old address
+        subject.remove(participantId);
+        subject.put(participantId, oldAddress, isGloballyVisible, expiryDateMs, sticky, allowUpdate);
         assertEquals(oldAddress, subject.get(participantId));
 
         final WebSocketClientAddress websocketClientAddress = new WebSocketClientAddress("webSocketId");
@@ -458,6 +462,10 @@ public class RoutingTableImplTest {
 
         final WebSocketAddress websocketAddress = new WebSocketAddress(WebSocketProtocol.WS, "host", 4242, "path");
         subject.put(participantId, websocketAddress, isGloballyVisible, expiryDateMs, sticky, allowUpdate);
+        assertEquals(websocketAddress, subject.get(participantId));
+        // restore old address
+        subject.remove(participantId);
+        subject.put(participantId, oldAddress, isGloballyVisible, expiryDateMs, sticky, allowUpdate);
         assertEquals(oldAddress, subject.get(participantId));
 
         final WebSocketClientAddress websocketClientAddress = new WebSocketClientAddress("webSocketId");
