@@ -1,0 +1,8 @@
+[messaging]
+broker-url=mqtt://@JOYNR_SERVER_HOST@:@JOYNR_SERVER_MQTT_TLS_PORT@
+
+[cluster-controller]
+mqtt-certificate-authority-pem-filename=/no-exist/certs/ca.cert.pem
+mqtt-certificate-pem-filename=/no-exist/certs/client.cert.pem
+mqtt-private-key-pem-filename=/no-exist/private/client.key.pem
+mqtt-tls-enabled=true

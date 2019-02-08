@@ -86,7 +86,6 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(ProxyInvocationHandlerImpl.class);
 
-    // CHECKSTYLE:OFF
     @Inject
     // CHECKSTYLE:OFF
     public ProxyInvocationHandlerImpl(@Assisted("domains") Set<String> domains,
@@ -170,7 +169,9 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
         try {
             if (waitForConnectorFinished()) {
                 if (connector == null) {
-                    throw new IllegalStateException("connector was null although arbitration finished successfully");
+                    final String errorMsg = "connector was null although arbitration finished successfully";
+                    logger.error("Failed to execute sync method {}: {}", method.getName(), errorMsg);
+                    throw new IllegalStateException(errorMsg);
                 }
                 return connectorCaller.call(method, args);
             }
@@ -181,6 +182,12 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
             throw new JoynrRuntimeException(e);
         }
 
+        logger.error("Failed to execute sync method {}: arbitration and Connector failed: domain: \"{}\" interface: "
+                + "\"{}\" qos: \"{}\": Arbitration could not be finished in time.\"",
+                     method.getName(),
+                     domains,
+                     interfaceName,
+                     discoveryQos);
         if (throwable != null) {
             if (throwable instanceof JoynrRuntimeException) {
                 throw (JoynrRuntimeException) throwable;

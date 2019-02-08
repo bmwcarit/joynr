@@ -27,10 +27,10 @@ import io.joynr.generator.templates.util.NamingUtil
 
 class InterfaceProviderCppTemplate extends InterfaceTemplate {
 
-	@Inject private extension TemplateBase
-	@Inject private extension CppStdTypeUtil
-	@Inject private extension JoynrCppGeneratorExtensions
-	@Inject private extension NamingUtil
+	@Inject extension TemplateBase
+	@Inject extension CppStdTypeUtil
+	@Inject extension JoynrCppGeneratorExtensions
+	@Inject extension NamingUtil
 
 	override generate() {
 		var selector = TypeSelector::defaultTypeSelector
@@ -50,14 +50,14 @@ class InterfaceProviderCppTemplate extends InterfaceTemplate {
 «interfaceName»Provider::«interfaceName»Provider()
 {
 	// Register a request interpreter to interpret requests to this interface
-	joynr::InterfaceRegistrar::instance().registerRequestInterpreter<«interfaceName»RequestInterpreter>(INTERFACE_NAME());
+	joynr::InterfaceRegistrar::instance().registerRequestInterpreter<«interfaceName»RequestInterpreter>(INTERFACE_NAME() + std::to_string(MAJOR_VERSION));
 }
 
 «interfaceName»Provider::~«interfaceName»Provider()
 {
 	// Unregister the request interpreter
 	joynr::InterfaceRegistrar::instance().unregisterRequestInterpreter(
-			INTERFACE_NAME()
+			INTERFACE_NAME() + std::to_string(MAJOR_VERSION)
 	);
 }
 

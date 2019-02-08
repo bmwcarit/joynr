@@ -54,23 +54,18 @@ function MySecondType(a, b, c, d, e) {
 
 MySecondType.getMemberType = function() {};
 
-beforeEach(done => {
-    const datatypePromises = [
-        "joynr.vehicle.radiotypes.RadioStation",
-        "joynr.datatypes.exampleTypes.ComplexRadioStation",
-        "joynr.datatypes.exampleTypes.ComplexStruct",
-        "joynr.datatypes.exampleTypes.Country",
-        "joynr.tests.testTypes.TestEnum"
-    ].map(datatype => {
-        return TypeRegistrySingleton.getInstance().getTypeRegisteredPromise(datatype, 1000);
-    });
-
-    Promise.all(datatypePromises)
-        .then(() => {
-            done();
-            return null;
+beforeEach(() => {
+    return Promise.all(
+        [
+            "joynr.vehicle.radiotypes.RadioStation",
+            "joynr.datatypes.exampleTypes.ComplexRadioStation",
+            "joynr.datatypes.exampleTypes.ComplexStruct",
+            "joynr.datatypes.exampleTypes.Country",
+            "joynr.tests.testTypes.TestEnum"
+        ].map(datatype => {
+            return TypeRegistrySingleton.getInstance().getTypeRegisteredPromise(datatype, 1000);
         })
-        .catch(fail);
+    );
 });
 
 describe("libjoynr-js.joynr.Typing", () => {

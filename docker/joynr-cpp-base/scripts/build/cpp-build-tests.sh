@@ -1,8 +1,7 @@
 #!/bin/bash
 
 # fail on first error
-set -e
-
+set -exo pipefail
 source /data/src/docker/joynr-base/scripts/global.sh
 
 log "### start cpp-build-tests.sh ###"
@@ -66,19 +65,6 @@ while [ "$1" != "" ]; do
     shift
 done
 
-# build dummyKeychain first
-DUMMYKEYCHAIN_SRC_DIR=/data/src/tests/dummyKeychain
-DUMMYKEYCHAIN_BUILD_DIR=/data/build/dummyKeychain
-rm -rf $DUMMYKEYCHAIN_BUILD_DIR
-mkdir $DUMMYKEYCHAIN_BUILD_DIR
-cd $DUMMYKEYCHAIN_BUILD_DIR
-cmake -DCMAKE_PREFIX_PATH=$JOYNR_INSTALL_DIR \
-      -DCMAKE_BUILD_TYPE=$BUILDTYPE \
-      -DCMAKE_INSTALL_PREFIX=/usr \
-      -DENABLE_CLANG_FORMATTER=$CLANGFORMATTER \
-      $DUMMYKEYCHAIN_SRC_DIR
-make -j ${JOBS}
-
 # check which test to build
 MAVEN_PROJECT=
 MAVEN_PREFIX=",io.joynr.tests:"
@@ -107,11 +93,15 @@ else
   exit 1
 fi
 
-log "CPP BUILD TESTS JOBS: $JOBS"
+echo "ADDITIONAL_CMAKE_ARGS: $ADDITIONAL_CMAKE_ARGS"
+echo "CPP BUILD TESTS JOBS: $JOBS"
+echo "MAVEN_PROJECT: $MAVEN_PROJECT"
+echo "RUN_MAVEN: $RUN_MAVEN"
+echo "SRC_FOLDER: $SRC_FOLDER"
+echo "SELECTED_TEST: $SELECTED_TEST"
 
-log "ENVIRONMENT"
+log "ENVIRONMENT:"
 env
-echo "ADDITIONAL_CMAKE_ARGS is $ADDITIONAL_CMAKE_ARGS"
 
 if [ ${RUN_MAVEN} == "ON" ]
 then
@@ -127,10 +117,26 @@ then
     ${MAVEN_PROJECT}
 fi
 
+
+# build dummyKeychain first
+DUMMYKEYCHAIN_SRC_DIR=/data/src/tests/dummyKeychain
+DUMMYKEYCHAIN_BUILD_DIR=/data/build/dummyKeychain
+rm -rf $DUMMYKEYCHAIN_BUILD_DIR
+mkdir $DUMMYKEYCHAIN_BUILD_DIR
+cd $DUMMYKEYCHAIN_BUILD_DIR
+cmake -DCMAKE_PREFIX_PATH=$JOYNR_INSTALL_DIR \
+      -DCMAKE_BUILD_TYPE=$BUILDTYPE \
+      -DCMAKE_INSTALL_PREFIX=/usr \
+      -DENABLE_CLANG_FORMATTER=$CLANGFORMATTER \
+      $ADDITIONAL_CMAKE_ARGS \
+      $DUMMYKEYCHAIN_SRC_DIR
+time make -j ${JOBS}
+
+
+# build selected test(s)
 rm -rf /data/build/tests
 mkdir /data/build/tests
 cd /data/build/tests
-
 cmake -DCMAKE_PREFIX_PATH=$JOYNR_INSTALL_DIR \
       -DENABLE_CLANG_FORMATTER=$CLANGFORMATTER \
       -DJOYNR_SERVER=localhost:8080 \
@@ -138,7 +144,6 @@ cmake -DCMAKE_PREFIX_PATH=$JOYNR_INSTALL_DIR \
       -DCMAKE_INSTALL_PREFIX=/usr \
       $ADDITIONAL_CMAKE_ARGS \
       ${SRC_FOLDER}
-
 time make -j $JOBS
 
 
@@ -154,6 +159,5 @@ fi
 
 END=$(date +%s)
 DIFF=$(( $END - $START ))
-log "Test build time: $DIFF seconds"
-
+log "Overall test build time: $DIFF seconds"
 log "### end cpp-build-tests.sh ###"

@@ -16,12 +16,10 @@ specific language governing permissions and limitations
 under the License.
 
 This project has dependencies to:
-  "Java Concurrency in Practice" book annotations under Creative Commons Attribution License
   AOP alliance under Public Domain
   Commons Lang under The Apache Software License, Version 2.0
-  FindBugs-Annotations under GNU Lesser Public License
   FindBugs-jsr305 under The Apache Software License, Version 2.0
-  flatbuffers-java under Apache License V2.0
+  FlatBuffers Java API under Apache License V2.0
   Google Guice - Core Library under The Apache Software License, Version 2.0
   Google Guice - Extensions - AssistedInject under The Apache Software License, Version 2.0
   Google Guice - Extensions - MultiBindings under The Apache Software License, Version 2.0
@@ -51,4 +49,5 @@ This project has dependencies to:
   libjoynr-websocket-runtime under The Apache Software License, Version 2.0
   SLF4J API and Google Android Binding under The MIT License
   SLF4J API Module under MIT License
+  SpotBugs Annotations under GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1
 

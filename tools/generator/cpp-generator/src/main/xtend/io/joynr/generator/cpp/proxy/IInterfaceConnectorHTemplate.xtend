@@ -28,8 +28,8 @@ import io.joynr.generator.templates.util.NamingUtil
 class IInterfaceConnectorHTemplate extends InterfaceTemplate {
 	@Inject	extension JoynrCppGeneratorExtensions
 	@Inject extension TemplateBase
-	@Inject private CppStdTypeUtil cppStdTypeUtil
-	@Inject private extension NamingUtil
+	@Inject CppStdTypeUtil cppStdTypeUtil
+	@Inject extension NamingUtil
 
 	@Inject extension InterfaceSubscriptionUtil
 	override generate()

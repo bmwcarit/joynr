@@ -20,10 +20,12 @@ package io.joynr.joynrandroidruntime;
 
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
+import io.joynr.proxy.StatelessAsyncCallback;
 import io.joynr.runtime.JoynrRuntime;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -97,6 +99,16 @@ public class JoynrAndroidRuntime implements JoynrRuntime {
     }
 
     @Override
+    public Future<Void> registerProvider(String domain,
+            Object provider,
+            ProviderQos providerQos,
+            boolean awaitGlobalRegistration,
+            final Class<?> interfaceClass) {
+        JoynrRuntime runtime = getJoynrRuntime();
+        return runtime.registerProvider(domain, provider, providerQos, awaitGlobalRegistration, interfaceClass);
+    }
+
+    @Override
     public void unregisterProvider(String domain, Object provider) {
         // this will block until the runtime is created successfully
         // TODO since the caller expects the unregister call to be async, we need to check if
@@ -128,6 +140,18 @@ public class JoynrAndroidRuntime implements JoynrRuntime {
     @Override
     public <T> ProxyBuilder<T> getProxyBuilder(Set<String> domains, Class<T> interfaceClass) {
         return new AndroidProxyBuilder<T>(runtimeInitTask, domains, interfaceClass, uiLogger);
+    }
+
+    @Override
+    public void registerStatelessAsyncCallback(StatelessAsyncCallback statelessAsyncCallback) {
+        JoynrRuntime runtime = getJoynrRuntime();
+        runtime.registerStatelessAsyncCallback(statelessAsyncCallback);
+    }
+
+    @Override
+    public void prepareForShutdown() {
+        JoynrRuntime runtime = getJoynrRuntime();
+        runtime.prepareForShutdown();
     }
 
 }

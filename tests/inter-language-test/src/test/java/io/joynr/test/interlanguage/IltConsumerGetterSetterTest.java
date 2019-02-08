@@ -18,8 +18,18 @@
  */
 package io.joynr.test.interlanguage;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.lang.reflect.Method;
 import java.util.Objects;
+
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.interlanguagetest.Enumeration;
@@ -28,20 +38,6 @@ import joynr.interlanguagetest.namedTypeCollection2.ExtendedEnumerationWithPartl
 import joynr.interlanguagetest.namedTypeCollection2.ExtendedExtendedBaseStruct;
 import joynr.interlanguagetest.namedTypeCollection2.MapStringString;
 import joynr.interlanguagetest.typeDefCollection.ArrayTypeDefStruct;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 public class IltConsumerGetterSetterTest extends IltConsumerTest {
     private static final Logger LOG = LoggerFactory.getLogger(IltConsumerGetterSetterTest.class);
@@ -82,85 +78,19 @@ public class IltConsumerGetterSetterTest extends IltConsumerTest {
      */
 
     @Test
-    public void callGetAttributeUInt8() {
-        LOG.info(name.getMethodName() + "");
-        try {
-            Byte result;
-
-            // must set the value before it can be retrieved again
-            byte byteArg = 127;
-            testInterfaceProxy.setAttributeUInt8(byteArg);
-
-            result = testInterfaceProxy.getAttributeUInt8();
-            if (result == null) {
-                fail(name.getMethodName() + " - FAILED - got no result");
-                return;
-            }
-            if (result != 127) {
-                fail(name.getMethodName() + " - FAILED - got invalid result");
-                return;
-            }
-        } catch (Exception e) {
-            fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
-        }
-
-        LOG.info(name.getMethodName() + " - OK");
+    public void callSetAndGetAttributeUInt8() {
+        LOG.info(name.getMethodName());
+        byte byteArg = 127;
+        genericGetterSetterTestMethod(byteArg, "AttributeUInt8");
+        LOG.info(name.getMethodName() + TEST_SUCCEEDED);
     }
 
     @Test
-    public void callSetAttributeUInt8() {
-        LOG.info(name.getMethodName() + "");
-        try {
-            byte byteArg = 127;
-            testInterfaceProxy.setAttributeUInt8(byteArg);
-        } catch (Exception e) {
-            fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
-        }
-
-        LOG.info(name.getMethodName() + " - OK");
-    }
-
-    @Test
-    public void callGetAttributeDouble() {
-        LOG.info(name.getMethodName() + "");
-        try {
-            Double result;
-
-            // must set the value before it can be retrieved again
-            double doubleArg = 1.1d;
-            testInterfaceProxy.setAttributeDouble(doubleArg);
-
-            result = testInterfaceProxy.getAttributeDouble();
-            if (result == null) {
-                fail(name.getMethodName() + " - FAILED - got no result");
-                return;
-            }
-            if (!IltUtil.cmpDouble(result, 1.1d)) {
-                fail(name.getMethodName() + " - FAILED - got invalid result");
-                return;
-            }
-        } catch (Exception e) {
-            fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
-        }
-
-        LOG.info(name.getMethodName() + " - OK");
-    }
-
-    @Test
-    public void callSetAttributeDouble() {
-        LOG.info(name.getMethodName() + "");
-        try {
-            double doubleArg = 1.1d;
-            testInterfaceProxy.setAttributeDouble(doubleArg);
-        } catch (Exception e) {
-            fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
-        }
-
-        LOG.info(name.getMethodName() + " - OK");
+    public void callSetAndGetAttributeDouble() {
+        LOG.info(name.getMethodName());
+        double doubleArg = 1.1d;
+        genericGetterSetterTestMethod(doubleArg, "AttributeDouble");
+        LOG.info(name.getMethodName() + TEST_SUCCEEDED);
     }
 
     @Test
@@ -190,48 +120,15 @@ public class IltConsumerGetterSetterTest extends IltConsumerTest {
     // be checked since it would create a compiler error
 
     @Test
-    public void callGetAttributeStringNoSubscriptions() {
-        LOG.info(name.getMethodName() + "");
-        try {
-            String result;
-
-            // must set the value before it can be retrieved again
-            String stringArg = "Hello world";
-            testInterfaceProxy.setAttributeStringNoSubscriptions(stringArg);
-
-            result = testInterfaceProxy.getAttributeStringNoSubscriptions();
-            if (result == null) {
-                fail(name.getMethodName() + " - FAILED - got no result");
-                return;
-            }
-            if (!result.equals("Hello world")) {
-                fail(name.getMethodName() + " - FAILED - got invalid result");
-                return;
-            }
-        } catch (Exception e) {
-            fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
-        }
-
-        LOG.info(name.getMethodName() + " - OK");
+    public void callSetAndGetAttributeStringNoSubscriptions() {
+        LOG.info(name.getMethodName());
+        String stringArg = "Hello world";
+        genericGetterSetterTestMethod(stringArg, "AttributeStringNoSubscriptions");
+        LOG.info(name.getMethodName() + TEST_SUCCEEDED);
     }
 
     @Test
-    public void callSetAttributeStringNoSubscriptions() {
-        LOG.info(name.getMethodName() + "");
-        try {
-            String stringArg = "Hello world";
-            testInterfaceProxy.setAttributeStringNoSubscriptions(stringArg);
-        } catch (Exception e) {
-            fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
-        }
-
-        LOG.info(name.getMethodName() + " - OK");
-    }
-
-    @Test
-    public void callGetAttributeInt8readonlyNoSubscriptions() {
+    public void callSetAndGetAttributeInt8readonlyNoSubscriptions() {
         LOG.info(name.getMethodName() + "");
         try {
             Byte result;
@@ -256,66 +153,23 @@ public class IltConsumerGetterSetterTest extends IltConsumerTest {
     // no setter for attributeInt8readonlyNoSubscriptions
 
     @Test
-    public void callGetAttributeArrayOfStringImplicit() {
-        LOG.info(name.getMethodName() + "");
-        try {
-            String[] result;
-
-            // must set the value before it can be retrieved again
-            String[] stringArrayArg = IltUtil.createStringArray();
-            testInterfaceProxy.setAttributeArrayOfStringImplicit(stringArrayArg);
-
-            result = testInterfaceProxy.getAttributeArrayOfStringImplicit();
-            if (result == null) {
-                fail(name.getMethodName() + " - FAILED - got no result");
-                return;
-            }
-            if (!IltUtil.checkStringArray(result)) {
-                fail(name.getMethodName() + " - FAILED - got no result");
-                return;
-            }
-        } catch (Exception e) {
-            fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
-        }
-
-        LOG.info(name.getMethodName() + " - OK");
-    }
-
-    @Test
-    public void callSetAttributeArrayOfStringImplicit() {
-        LOG.info(name.getMethodName() + "");
-        try {
-            String[] stringArrayArg = IltUtil.createStringArray();
-            testInterfaceProxy.setAttributeArrayOfStringImplicit(stringArrayArg);
-        } catch (Exception e) {
-            fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
-        }
-
-        LOG.info(name.getMethodName() + " - OK");
-    }
-
-    @Test
-    public void callGetAndSetAttributeByteBuffer() {
+    public void callSetAndGetAttributeArrayOfStringImplicit() {
         LOG.info(name.getMethodName());
-        try {
-            // must set the value before it can be retrieved again
-            Byte[] byteBufferArg = { -128, 0, 127 };
-            testInterfaceProxy.setAttributeByteBuffer(byteBufferArg);
-
-            Byte[] result = testInterfaceProxy.getAttributeByteBuffer();
-            Assert.assertNotNull(name.getMethodName() + " - FAILED - got no result", result);
-            Assert.assertArrayEquals(name.getMethodName() + " - FAILED - got invalid result", byteBufferArg, result);
-        } catch (Exception e) {
-            fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-        }
-
-        LOG.info(name.getMethodName() + " - OK");
+        String[] stringArrayArg = { "Hello", "World" };
+        genericGetterSetterTestMethod(stringArrayArg, "AttributeArrayOfStringImplicit");
+        LOG.info(name.getMethodName() + TEST_SUCCEEDED);
     }
 
     @Test
-    public void callGetAttributeInt64TypeDef() {
+    public void callSetAndSetAndGetAttributeByteBuffer() {
+        LOG.info(name.getMethodName());
+        Byte[] byteBufferArg = { -128, 0, 127 };
+        genericGetterSetterTestMethod(byteBufferArg, "AttributeByteBuffer");
+        LOG.info(name.getMethodName() + TEST_SUCCEEDED);
+    }
+
+    @Test
+    public void callSetAndGetAttributeInt64TypeDef() {
         LOG.info(name.getMethodName());
         Long int64TypeDefArg = 1L;
         genericGetterSetterTestMethod(int64TypeDefArg, "AttributeInt64TypeDef");
@@ -323,7 +177,7 @@ public class IltConsumerGetterSetterTest extends IltConsumerTest {
     }
 
     @Test
-    public void callGetAttributeStringTypeDef() {
+    public void callSetAndGetAttributeStringTypeDef() {
         LOG.info(name.getMethodName());
         String stringTypeDefArg = "StringTypeDef";
         genericGetterSetterTestMethod(stringTypeDefArg, "AttributeStringTypeDef");
@@ -331,7 +185,7 @@ public class IltConsumerGetterSetterTest extends IltConsumerTest {
     }
 
     @Test
-    public void callGetAttributeStructTypeDef() {
+    public void callSetAndGetAttributeStructTypeDef() {
         LOG.info(name.getMethodName());
         BaseStruct structTypeDefArg = IltUtil.createBaseStruct();
         genericGetterSetterTestMethod(structTypeDefArg, "AttributeStructTypeDef");
@@ -339,7 +193,7 @@ public class IltConsumerGetterSetterTest extends IltConsumerTest {
     }
 
     @Test
-    public void callGetAttributeMapTypeDef() {
+    public void callSetAndGetGetAttributeMapTypeDef() {
         LOG.info(name.getMethodName());
         MapStringString mapTypeDefArg = new MapStringString();
         mapTypeDefArg.put("keyString1", "valueString1");
@@ -350,7 +204,7 @@ public class IltConsumerGetterSetterTest extends IltConsumerTest {
     }
 
     @Test
-    public void callGetAttributeEnumTypeDef() {
+    public void callSetAndGetGetAttributeEnumTypeDef() {
         LOG.info(name.getMethodName());
         Enumeration enumTypeDefArg = Enumeration.ENUM_0_VALUE_1;
         genericGetterSetterTestMethod(enumTypeDefArg, "AttributeEnumTypeDef");
@@ -358,7 +212,7 @@ public class IltConsumerGetterSetterTest extends IltConsumerTest {
     }
 
     @Test
-    public void callGetAttributeByteBufferTypeDef() {
+    public void callSetAndGetGetAttributeByteBufferTypeDef() {
         LOG.info(name.getMethodName());
         Byte[] byteBufferTypeDefArg = { -128, 0, 127 };
         genericGetterSetterTestMethod(byteBufferTypeDefArg, "AttributeByteBufferTypeDef");
@@ -366,53 +220,20 @@ public class IltConsumerGetterSetterTest extends IltConsumerTest {
     }
 
     @Test
-    public void callGetAttributeArrayTypeDef() {
+    public void callSetAndGetGetAttributeArrayTypeDef() {
         LOG.info(name.getMethodName());
-        String[] stringArray = IltUtil.createStringArray();
+        String[] stringArray = { "Hello", "World" };
         ArrayTypeDefStruct arrayTypeDefArg = new ArrayTypeDefStruct(stringArray);
         genericGetterSetterTestMethod(arrayTypeDefArg, "AttributeArrayTypeDef");
         LOG.info(name.getMethodName() + TEST_SUCCEEDED);
     }
 
     @Test
-    public void callGetAttributeEnumeration() {
-        LOG.info(name.getMethodName() + "");
-        try {
-            Enumeration result;
-
-            // must set the value before it can be retrieved again
-            Enumeration enumerationArg = Enumeration.ENUM_0_VALUE_2;
-            testInterfaceProxy.setAttributeEnumeration(enumerationArg);
-
-            result = testInterfaceProxy.getAttributeEnumeration();
-            if (result == null) {
-                fail(name.getMethodName() + " - FAILED - got no result");
-                return;
-            }
-            if (result != Enumeration.ENUM_0_VALUE_2) {
-                fail(name.getMethodName() + " - FAILED - got invalid result");
-                return;
-            }
-        } catch (Exception e) {
-            fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
-        }
-
-        LOG.info(name.getMethodName() + " - OK");
-    }
-
-    @Test
-    public void callSetAttributeEnumeration() {
-        LOG.info(name.getMethodName() + "");
-        try {
-            Enumeration enumerationArg = Enumeration.ENUM_0_VALUE_2;
-            testInterfaceProxy.setAttributeEnumeration(enumerationArg);
-        } catch (Exception e) {
-            fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
-        }
-
-        LOG.info(name.getMethodName() + " - OK");
+    public void callSetAndGetGetAttributeEnumeration() {
+        LOG.info(name.getMethodName());
+        Enumeration enumerationArg = Enumeration.ENUM_0_VALUE_2;
+        genericGetterSetterTestMethod(enumerationArg, "AttributeEnumeration");
+        LOG.info(name.getMethodName() + TEST_SUCCEEDED);
     }
 
     @Test
@@ -442,134 +263,30 @@ public class IltConsumerGetterSetterTest extends IltConsumerTest {
     // no setter for attributeExtendedEnumerationReadonly
 
     @Test
-    public void callGetAttributeBaseStruct() {
-        LOG.info(name.getMethodName() + "");
-        try {
-            BaseStruct result;
-
-            // must set the value before it can be retrieved again
-            BaseStruct baseStructArg = IltUtil.createBaseStruct();
-            testInterfaceProxy.setAttributeBaseStruct(baseStructArg);
-
-            result = testInterfaceProxy.getAttributeBaseStruct();
-            if (result == null) {
-                fail(name.getMethodName() + " - FAILED - got no result");
-                return;
-            }
-            if (!IltUtil.checkBaseStruct(result)) {
-                fail(name.getMethodName() + " - FAILED - got invalid result");
-                return;
-            }
-        } catch (Exception e) {
-            fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
-        }
-
-        LOG.info(name.getMethodName() + " - OK");
+    public void callSetAndGetGetAttributeBaseStruct() {
+        LOG.info(name.getMethodName());
+        BaseStruct baseStructArg = IltUtil.createBaseStruct();
+        genericGetterSetterTestMethod(baseStructArg, "AttributeBaseStruct");
+        LOG.info(name.getMethodName() + TEST_SUCCEEDED);
     }
 
     @Test
-    public void callSetAttributeBaseStruct() {
-        LOG.info(name.getMethodName() + "");
-        try {
-            BaseStruct baseStructArg = IltUtil.createBaseStruct();
-            testInterfaceProxy.setAttributeBaseStruct(baseStructArg);
-        } catch (Exception e) {
-            fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
-        }
-
-        LOG.info(name.getMethodName() + " - OK");
+    public void callSetAndGetAttributeExtendedExtendedBaseStruct() {
+        LOG.info(name.getMethodName());
+        ExtendedExtendedBaseStruct extendedExtendedBaseStructArg = IltUtil.createExtendedExtendedBaseStruct();
+        genericGetterSetterTestMethod(extendedExtendedBaseStructArg, "AttributeExtendedExtendedBaseStruct");
+        LOG.info(name.getMethodName() + TEST_SUCCEEDED);
     }
 
     @Test
-    public void callGetAttributeExtendedExtendedBaseStruct() {
-        LOG.info(name.getMethodName() + "");
-        try {
-            ExtendedExtendedBaseStruct result;
-
-            // must set the value before it can be retrieved again
-            ExtendedExtendedBaseStruct extendedExtendedBaseStructArg = IltUtil.createExtendedExtendedBaseStruct();
-            testInterfaceProxy.setAttributeExtendedExtendedBaseStruct(extendedExtendedBaseStructArg);
-
-            result = testInterfaceProxy.getAttributeExtendedExtendedBaseStruct();
-            if (result == null) {
-                fail(name.getMethodName() + " - FAILED - got no result");
-                return;
-            }
-            if (!IltUtil.checkExtendedExtendedBaseStruct(result)) {
-                fail(name.getMethodName() + " - FAILED - got no result");
-                return;
-            }
-        } catch (Exception e) {
-            fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
-        }
-
-        LOG.info(name.getMethodName() + " - OK");
-    }
-
-    @Test
-    public void callSetAttributeExtendedExtendedBaseStruct() {
-        LOG.info(name.getMethodName() + "");
-        try {
-            ExtendedExtendedBaseStruct extendedExtendedBaseStructArg = IltUtil.createExtendedExtendedBaseStruct();
-            testInterfaceProxy.setAttributeExtendedExtendedBaseStruct(extendedExtendedBaseStructArg);
-        } catch (Exception e) {
-            fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
-        }
-
-        LOG.info(name.getMethodName() + " - OK");
-    }
-
-    @Test
-    public void callSetAttributeMapStringString() {
-        LOG.info(name.getMethodName() + "");
-        try {
-            MapStringString attributeMapStringStringArg = new MapStringString();
-            attributeMapStringStringArg.put("keyString1", "valueString1");
-            attributeMapStringStringArg.put("keyString2", "valueString2");
-            attributeMapStringStringArg.put("keyString3", "valueString3");
-            testInterfaceProxy.setAttributeMapStringString(attributeMapStringStringArg);
-        } catch (Exception e) {
-            fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
-        }
-
-        LOG.info(name.getMethodName() + " - OK");
-    }
-
-    @Test
-    public void callGetAttributeMapStringString() {
-        LOG.info(name.getMethodName() + "");
-        try {
-            // must set the value before it can be retrieved again
-            MapStringString attributeMapStringStringArg = new MapStringString();
-            attributeMapStringStringArg.put("keyString1", "valueString1");
-            attributeMapStringStringArg.put("keyString2", "valueString2");
-            attributeMapStringStringArg.put("keyString3", "valueString3");
-            testInterfaceProxy.setAttributeMapStringString(attributeMapStringStringArg);
-
-            MapStringString result = testInterfaceProxy.getAttributeMapStringString();
-            if (result == null) {
-                fail(name.getMethodName() + " - FAILED - got no result");
-                return;
-            }
-            MapStringString expected = new MapStringString();
-            expected.put("keyString1", "valueString1");
-            expected.put("keyString2", "valueString2");
-            expected.put("keyString3", "valueString3");
-            if (!result.equals(expected)) {
-                fail(name.getMethodName() + " - FAILED - got invalid result");
-                return;
-            }
-        } catch (Exception e) {
-            fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
-        }
-
-        LOG.info(name.getMethodName() + " - OK");
+    public void callSetAndGetAttributeMapStringString() {
+        LOG.info(name.getMethodName());
+        MapStringString attributeMapStringStringArg = new MapStringString();
+        attributeMapStringStringArg.put("keyString1", "valueString1");
+        attributeMapStringStringArg.put("keyString2", "valueString2");
+        attributeMapStringStringArg.put("keyString3", "valueString3");
+        genericGetterSetterTestMethod(attributeMapStringStringArg, "AttributeMapStringString");
+        LOG.info(name.getMethodName() + TEST_SUCCEEDED);
     }
 
     /*

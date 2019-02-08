@@ -1,7 +1,0 @@
-/target
-/.classpath
-/.project
-/.settings
-/gen
-/src/main/generated*
-joynr.properties

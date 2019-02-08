@@ -1,0 +1,25 @@
+version: '3'
+
+services:
+
+  hivemq:
+    image: 'hivemq/hivemq3'
+    container_name: mqttbroker
+    environment:
+      - HIVEMQ_DISABLE_AUTH_PLUGIN=true
+
+  joynrbackend:
+    image: "joynr-backend-jee:latest"
+    container_name: joynrbackend
+
+  jee-provider:
+    image: "custom-headers-jee-provider:latest"
+    container_name: jee-provider
+    ports:
+      - "8080:8080"
+
+  jee-consumer:
+    image: "custom-headers-jee-consumer:latest"
+    container_name: jee-consumer
+    ports:
+      - "8081:8080"

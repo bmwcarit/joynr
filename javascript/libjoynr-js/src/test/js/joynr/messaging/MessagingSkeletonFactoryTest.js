@@ -17,42 +17,40 @@
  * #L%
  */
 
-define([
-    "joynr/messaging/MessagingSkeletonFactory",
-    "joynr/system/RoutingTypes/BrowserAddress",
-    "joynr/system/RoutingTypes/MqttAddress",
-    "joynr/messaging/inprocess/InProcessAddress"
-], (MessagingSkeletonFactory, BrowserAddress, MqttAddress, InProcessAddress) => {
-    describe("libjoynr-js.joynr.messaging.MessagingSkeletonFactory", () => {
-        let messagingSkeletonFactory;
-        let mqttMessagingSkeleton, inProcessMessagingSkeleton;
+const MessagingSkeletonFactory = require("joynr/joynr/messaging/MessagingSkeletonFactory");
+const BrowserAddress = require("joynr/generated/joynr/system/RoutingTypes/BrowserAddress");
+const MqttAddress = require("joynr/generated/joynr/system/RoutingTypes/MqttAddress");
+const InProcessAddress = require("joynr/joynr/messaging/inprocess/InProcessAddress");
 
-        beforeEach(() => {
-            mqttMessagingSkeleton = jasmine.createSpyObj("mqttMessagingSkeleton", ["shutdown"]);
-            inProcessMessagingSkeleton = jasmine.createSpyObj("inProcessMessagingSkeleton", ["shutdown"]);
-            messagingSkeletonFactory = new MessagingSkeletonFactory();
-            const messagingSkeletons = {};
-            messagingSkeletons[InProcessAddress._typeName] = inProcessMessagingSkeleton;
-            messagingSkeletons[MqttAddress._typeName] = mqttMessagingSkeleton;
-            messagingSkeletonFactory.setSkeletons(messagingSkeletons);
-        });
+describe("libjoynr-js.joynr.messaging.MessagingSkeletonFactory", () => {
+    let messagingSkeletonFactory;
+    let mqttMessagingSkeleton, inProcessMessagingSkeleton;
 
-        it("provides expected API", () => {
-            expect(MessagingSkeletonFactory).toBeDefined();
-            expect(messagingSkeletonFactory).toBeDefined();
-            expect(messagingSkeletonFactory instanceof MessagingSkeletonFactory).toBeTruthy();
-            expect(messagingSkeletonFactory.getSkeleton).toBeDefined();
-        });
+    beforeEach(() => {
+        mqttMessagingSkeleton = jasmine.createSpyObj("mqttMessagingSkeleton", ["shutdown"]);
+        inProcessMessagingSkeleton = jasmine.createSpyObj("inProcessMessagingSkeleton", ["shutdown"]);
+        messagingSkeletonFactory = new MessagingSkeletonFactory();
+        const messagingSkeletons = {};
+        messagingSkeletons[InProcessAddress._typeName] = inProcessMessagingSkeleton;
+        messagingSkeletons[MqttAddress._typeName] = mqttMessagingSkeleton;
+        messagingSkeletonFactory.setSkeletons(messagingSkeletons);
+    });
 
-        it("returns the appropriate messaging skeleton depending on object type", () => {
-            expect(messagingSkeletonFactory.getSkeleton(new MqttAddress())).toBe(mqttMessagingSkeleton);
-            expect(messagingSkeletonFactory.getSkeleton(new InProcessAddress())).toBe(inProcessMessagingSkeleton);
-        });
+    it("provides expected API", () => {
+        expect(MessagingSkeletonFactory).toBeDefined();
+        expect(messagingSkeletonFactory).toBeDefined();
+        expect(messagingSkeletonFactory instanceof MessagingSkeletonFactory).toBeTruthy();
+        expect(messagingSkeletonFactory.getSkeleton).toBeDefined();
+    });
 
-        it("throws exception if address type is unknown", () => {
-            expect(() => {
-                messagingSkeletonFactory.getSkeleton(new BrowserAddress());
-            }).toThrow();
-        });
+    it("returns the appropriate messaging skeleton depending on object type", () => {
+        expect(messagingSkeletonFactory.getSkeleton(new MqttAddress())).toBe(mqttMessagingSkeleton);
+        expect(messagingSkeletonFactory.getSkeleton(new InProcessAddress())).toBe(inProcessMessagingSkeleton);
+    });
+
+    it("throws exception if address type is unknown", () => {
+        expect(() => {
+            messagingSkeletonFactory.getSkeleton(new BrowserAddress());
+        }).toThrow();
     });
 });

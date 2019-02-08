@@ -29,14 +29,14 @@ import io.joynr.generator.templates.util.MethodUtil
 import io.joynr.generator.templates.util.NamingUtil
 
 class InterfaceProviderHTemplate extends InterfaceTemplate {
-	@Inject private extension TemplateBase
-	@Inject private extension JoynrCppGeneratorExtensions
-	@Inject private extension CppStdTypeUtil
-	@Inject private extension NamingUtil
-	@Inject private extension AttributeUtil
-	@Inject private extension BroadcastUtil
-	@Inject private extension InterfaceUtil
-	@Inject private extension MethodUtil
+	@Inject extension TemplateBase
+	@Inject extension JoynrCppGeneratorExtensions
+	@Inject extension CppStdTypeUtil
+	@Inject extension NamingUtil
+	@Inject extension AttributeUtil
+	@Inject extension BroadcastUtil
+	@Inject extension InterfaceUtil
+	@Inject extension MethodUtil
 
 	override generate()
 '''

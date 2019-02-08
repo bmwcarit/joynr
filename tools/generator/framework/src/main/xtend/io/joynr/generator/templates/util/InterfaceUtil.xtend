@@ -31,22 +31,17 @@ import org.franca.core.franca.FMapType
 import org.franca.core.franca.FMethod
 
 @Singleton
-public class InterfaceUtil {
+class InterfaceUtil {
 
-	@Inject
-	private extension NamingUtil
+	@Inject extension NamingUtil
 
-	@Inject
-	private extension TypeUtil
+	@Inject extension TypeUtil
 
-	@Inject
-	private extension MethodUtil
+	@Inject extension MethodUtil
 
-	@Inject
-	private extension BroadcastUtil
+	@Inject extension BroadcastUtil
 
-	@Inject
-	private extension AttributeUtil
+	@Inject extension AttributeUtil
 
 	def getMethodNames(FInterface fInterface) {
 		var names = new HashSet<String>();

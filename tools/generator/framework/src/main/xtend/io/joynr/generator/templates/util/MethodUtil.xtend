@@ -26,13 +26,11 @@ import org.franca.core.franca.FMethod
 import org.franca.core.franca.FEnumerationType
 
 @Singleton
-public class MethodUtil {
+ class MethodUtil {
 
-	@Inject
-	private extension TypeUtil;
+	@Inject extension TypeUtil;
 
-	@Inject
-	private extension NamingUtil;
+	@Inject extension NamingUtil;
 
 	def Iterable<FArgument> getOutputParameters(FMethod method) {
 		if (method === null || method.outArgs.size() == 0){

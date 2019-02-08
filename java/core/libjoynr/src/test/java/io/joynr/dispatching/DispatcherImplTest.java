@@ -18,13 +18,15 @@
  */
 package io.joynr.dispatching;
 
-import static io.joynr.proxy.StatelessAsyncIdCalculator.CHANNEL_SEPARATOR;
 import static io.joynr.proxy.StatelessAsyncIdCalculator.REQUEST_REPLY_ID_SEPARATOR;
 import static io.joynr.proxy.StatelessAsyncIdCalculator.USE_CASE_SEPARATOR;
 import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyLong;
+import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
@@ -33,6 +35,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -44,8 +48,6 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import io.joynr.proxy.DefaultStatelessAsyncIdCalculatorImpl;
-import io.joynr.proxy.StatelessAsyncIdCalculator;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -81,6 +83,7 @@ import io.joynr.provider.AbstractSubscriptionPublisher;
 import io.joynr.provider.ProviderCallback;
 import io.joynr.provider.ProviderContainer;
 import io.joynr.proxy.JoynrMessagingConnectorFactory;
+import io.joynr.proxy.StatelessAsyncIdCalculator;
 import io.joynr.runtime.JoynrThreadFactory;
 import io.joynr.smrf.EncodingException;
 import io.joynr.smrf.UnsuppportedVersionException;
@@ -96,6 +99,9 @@ import joynr.SubscriptionRequest;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DispatcherImplTest {
+
+    private static final String TEST_CUSTOM_HEADER_KEY = "testCustHeaderKey";
+    private static final String TEST_CUSTOM_HEADER_VALUE = "testCustHeaderValue";
 
     @Mock
     private RequestReplyManager requestReplyManagerMock;
@@ -218,6 +224,56 @@ public class DispatcherImplTest {
 
         verify(requestReplyManagerMock).handleOneWayRequest(toParticipantId, request, joynrMessage.getTtlMs());
         verify(messageSenderMock, never()).sendMessage(any(MutableMessage.class));
+    }
+
+    @Test
+    public void testCustomHeadersAreSetForOneWayRequest() throws Exception {
+        // Given an incoming message representing a OneWayRequest...
+        OneWayRequest request = new OneWayRequest("method", new Object[0], new Class<?>[0]);
+        String toParticipantId = "toParticipantId";
+        MessagingQos messagingQos = new MessagingQos(1000L);
+        MutableMessage joynrMessage = messageFactory.createOneWayRequest("fromParticipantId",
+                                                                         toParticipantId,
+                                                                         request,
+                                                                         messagingQos);
+        // ...and containing a custom header
+        Map<String, String> customHeaders = new HashMap<>();
+        customHeaders.put(TEST_CUSTOM_HEADER_KEY, TEST_CUSTOM_HEADER_VALUE);
+        joynrMessage.setCustomHeaders(customHeaders);
+
+        // When it is processed by the dispatcher
+        fixture.messageArrived(joynrMessage.getImmutableMessage());
+
+        // The deserialized OneWayRequest forwarded to the RequestReplyManager contains the custom header
+        ArgumentCaptor<OneWayRequest> argument = ArgumentCaptor.forClass(OneWayRequest.class);
+        verify(requestReplyManagerMock).handleOneWayRequest(any(String.class), argument.capture(), anyLong());
+        assertTrue(argument.getValue().getContext().containsKey(TEST_CUSTOM_HEADER_KEY));
+        assertEquals(TEST_CUSTOM_HEADER_VALUE, argument.getValue().getContext().get(TEST_CUSTOM_HEADER_KEY));
+    }
+
+    @Test
+    public void testCustomHeadersAreSetForRequest() throws Exception {
+        // Given an incoming message representing a Request...
+        Request request = new Request("method", new Object[0], new Class<?>[0]);
+        String toParticipantId = "toParticipantId";
+        MessagingQos messagingQos = new MessagingQos(1000L);
+        MutableMessage joynrMessage = messageFactory.createRequest("fromParticipantId",
+                                                                   toParticipantId,
+                                                                   request,
+                                                                   messagingQos);
+        // ...and containing a custom header
+        Map<String, String> customHeaders = new HashMap<>();
+        customHeaders.put(TEST_CUSTOM_HEADER_KEY, TEST_CUSTOM_HEADER_VALUE);
+        joynrMessage.setCustomHeaders(customHeaders);
+
+        // When it is processed by the dispatcher
+        fixture.messageArrived(joynrMessage.getImmutableMessage());
+
+        // The deserialized Request forwarded to the RequestReplyManager contains the custom header
+        ArgumentCaptor<Request> argument = ArgumentCaptor.forClass(Request.class);
+        verify(requestReplyManagerMock).handleRequest(anyObject(), anyString(), argument.capture(), anyLong());
+        assertTrue(argument.getValue().getContext().containsKey(TEST_CUSTOM_HEADER_KEY));
+        assertEquals(TEST_CUSTOM_HEADER_VALUE, argument.getValue().getContext().get(TEST_CUSTOM_HEADER_KEY));
     }
 
     @Test

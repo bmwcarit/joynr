@@ -32,9 +32,9 @@ class InterfaceProxyHTemplate extends InterfaceTemplate {
 	@Inject extension TemplateBase
 	@Inject extension CppStdTypeUtil
 	@Inject extension InterfaceSubscriptionUtil
-	@Inject private extension NamingUtil
-	@Inject private extension AttributeUtil
-	@Inject private extension InterfaceUtil
+	@Inject extension NamingUtil
+	@Inject extension AttributeUtil
+	@Inject extension InterfaceUtil
 
 	override generate()
 '''

@@ -2,6 +2,31 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.7.0
+
+## API relevant changes
+* **[JEE]** Fixed typo withDicoveryQos (renamed method withDicoveryQos to withDiscoveryQos) in the
+  ServiceProxyBuilder interface of the joynr ServiceLocator.
+* **[JS]** Added `terminateAllSubscriptions` method to joynr.js which can be called to terminate all
+  active subscriptions (i.e. for broadcasts, attributes' updates etc.).
+* **[JS]** In the `process.exit` handler joynr.shutdown now needs to be explicitly called with
+  `settings.clearSubscriptionsEnabled=false`.
+
+## Other changes
+* **[C++]** Enabled registration of multiple providers in a single runtime.
+  ParticipantIdStorage now also stores major versions of providers.
+* **[Java, JEE]** Provided an example for the usage of the message persistence feature. Check the
+  `examples/message-persistence/` folder.
+* **[JS]** Fixed an issue where joynr.shutdown would not wait for clearSubscriptions before shutting
+  down.
+* **[Java]** Eliminated declared but unneeded dependcies in some of the sub-projects. Also avoided
+* **[Generator, Java]** The flag `addVersionTo` now also appends version information at file system
+  level to generated types. See [Generator Documentation](generator.md) for additional information.
+  The feature has been tested to work in Java, expected to work also in C++ and JS.
+
+## Configuration property changes
+  None.
+
 # joynr 1.6.5
 
 ## API relevant changes
@@ -34,9 +59,6 @@ None.
   do not exist or are inaccessible or TLS options cannot be set.
 
 ## Configuration property changes
-None.
-
-## Other changes
 None.
 
 # joynr 1.6.2

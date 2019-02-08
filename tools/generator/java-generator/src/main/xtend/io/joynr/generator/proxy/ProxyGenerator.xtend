@@ -29,7 +29,7 @@ class ProxyGenerator {
 
 	@Inject
 	extension JoynrJavaGeneratorExtensions
-	@Inject private extension NamingUtil
+	@Inject extension NamingUtil
 	@Inject JavaTemplateFactory templateFactory
 
 	def doGenerate(FInterface fInterface, IFileSystemAccess fsa){

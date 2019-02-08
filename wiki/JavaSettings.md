@@ -2,14 +2,58 @@
 
 The following describes which settings can be made in Java, either by:
 
-1. properties file
-2. OS environment settings
-3. Java System settings
-4. programmatically
+1. Default settings file (provided by joynr)
+2. Properties file (persisted properties)
+3. Programmatically
+4. OS environment settings
+5. Java System settings
 
+**Defaults:**
 All defaults are set in defaultMessaging.properties and defaultServletMessaging.properties. The
 properties that must be overriden for a normal deployment (assuming you are not just testing on
 localhost) are marked below as REQUIRED.
+
+**Precedence:**
+*Java system settings* take precedence over *OS enviromnent settings* and so on (see order above).
+
+**OS environment settings:**
+Since `.` is not allowed in OS environment settings, every `.` in the property key has to be replaced
+by a `_` when used in OS environment settings. E.g.: `joynr_messaging_mqtt_brokeruri`instead of
+`joynr.messaging.mqtt.brokeruri`.
+
+**Examples**
+
+1. Default settings file:
+Cannot be modified (shipped with joynr).
+
+2. Properties file (persistence file):
+Add property to a joynr persistence file (paths of persistence files can be configured):
+```
+...
+joynr.setting.key=value
+...
+```
+Persistence files are loaded automatically when the joynr runtime is created.
+
+3. Programmatically:
+Add property to the joynrConfig before the joynr runtime is created;
+```
+...
+Properties joynrConfig = new Properties();
+joynrConfig.setProperty(joynr.setting.key, value);
+...
+```
+See also [Java guide](java.md#the-main-method), [JEE guide](jee.md#application-configuration).
+
+4. OS environment settings:
+Add environment variable `joynr_settings_key` with value `value`.
+Every `.` in the property's key has to be replaced by a `_`.
+
+5. Java System settings:
+When running a java standalone application (e.g. example.jar), use `-D` to set system properties:
+```
+java -Djoynr.settings.key=value -jar example.jar
+```
 
 ## ConfigurableMessagingSettings
 

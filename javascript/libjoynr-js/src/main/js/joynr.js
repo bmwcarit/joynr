@@ -59,14 +59,17 @@ function freeze(joynr, capabilitiesWritable) {
     });
 }
 
+/**
+ * copies all non private members and methods to joynr
+ * methods need to be bound with this and can't be on the prototype
+ *
+ * @param joynr
+ * @param runtime
+ */
 function wrapRuntime(joynr, runtime) {
     Object.keys(runtime).forEach(key => {
         if (!key.startsWith("_")) {
-            if (typeof runtime[key] === "function") {
-                joynr[key] = (...args) => runtime[key](...args);
-            } else {
-                joynr[key] = runtime[key];
-            }
+            joynr[key] = runtime[key];
         }
     });
 }
@@ -106,7 +109,7 @@ const joynr = {
                 if (typeof process === "object" && typeof process.on === "function") {
                     process.on("exit", () => {
                         try {
-                            joynr.shutdown();
+                            joynr.shutdown({ clearSubscriptionsEnabled: false });
                         } catch (error) {
                             // ignore
                         }

@@ -34,17 +34,18 @@ import io.joynr.messaging.mqtt.MqttModule;
 @Singleton
 public class JoynrConfigurationProvider {
 
-    private static final String SIT_JEE_LOCAL_DOMAIN_PREFIX_KEY = "SIT_JEE_LOCAL_DOMAIN_PREFIX";
+    static final String SIT_DOMAIN_PREFIX = "io.joynr.systemintegrationtest";
+    private static final String CHANNEL_ID = SIT_DOMAIN_PREFIX + ".jee";
+    private static final String CONTROLLER_DOMAIN_PREFIX = SIT_DOMAIN_PREFIX + ".controller";
+    static final String CONTROLLER_DOMAIN = CONTROLLER_DOMAIN_PREFIX + ".jee-app";
 
     private static final Logger LOG = LoggerFactory.getLogger(JoynrConfigurationProvider.class);
-
-    private static final String DEFAULT_DOMAIN_PREFIX = "io.joynr.systemintegrationtest";
 
     @Produces
     @JoynrProperties
     public Properties joynrProperties() {
         Properties joynrProperties = new Properties();
-        joynrProperties.setProperty(MessagingPropertyKeys.CHANNELID, "io.joynr.systemintegrationtest.jee");
+        joynrProperties.setProperty(MessagingPropertyKeys.CHANNELID, CHANNEL_ID);
         joynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "tcp://mqttbroker:1883");
         joynrProperties.setProperty(MessagingPropertyKeys.DISCOVERYDIRECTORYURL, "tcp://mqttbroker:1883");
         joynrProperties.setProperty(MessagingPropertyKeys.DOMAINACCESSCONTROLLERURL, "tcp://mqttbroker:1883");
@@ -55,13 +56,7 @@ public class JoynrConfigurationProvider {
     @Produces
     @JoynrLocalDomain
     public String joynrLocalDomain() {
-        String localDomainPrefix = System.getenv(SIT_JEE_LOCAL_DOMAIN_PREFIX_KEY);
-        String domainPrefix;
-        if (localDomainPrefix == null) {
-            domainPrefix = DEFAULT_DOMAIN_PREFIX;
-        } else {
-            domainPrefix = localDomainPrefix;
-        }
+        String domainPrefix = SIT_DOMAIN_PREFIX;
         LOG.debug("Using domain prefix: " + domainPrefix);
         return domainPrefix + ".jee";
     }

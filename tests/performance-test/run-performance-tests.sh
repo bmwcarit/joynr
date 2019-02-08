@@ -24,35 +24,73 @@
 ####################
 
 # Shell script parameters
-JETTY_PATH=""
-JOYNR_BIN_DIR=""
+
+### paths ##
+
 PERFORMANCETESTS_BIN_DIR=""
+
 PERFORMANCETESTS_SOURCE_DIR=""
+
 PERFORMANCETESTS_RESULTS_DIR=""
-TESTCASE=""
-USE_MAVEN=ON # Indicates whether java applications shall be started with maven or as standalone apps
-MOSQUITTO_CONF=""
+
+JOYNR_BIN_DIR=""
+
+JETTY_PATH=""
+
+
+### general options ###
+
+MQTT_SEPARATE_CONNECTIONS=false
+
+# Select backend service protocol
+BACKEND_SERVICES="MQTT"
+
+USE_MAVEN=OFF # Indicates whether java applications shall be started with maven or as standalone apps
+
 USE_NPM=ON # Indicates whether npm will be used to launch javascript applications.
+
+MOSQUITTO_CONF=""
+
 USE_EMBEDDED_CC=OFF # Indicates whether embedded cluster controller variant should be used for C++ apps
 
-### Constants ###
 DOMAINNAME="performance_test_domain"
 
-# If a test case uses a java consumer, some warmup runs are required in order
-# to force the java runtime to perform all JIT optimizations
-JAVA_WARMUPS=50
+# arguments which are passed to the C++ cluster-controller
+ADDITIONAL_CC_ARGS=""
 
-# For test cases with a single consumer, this constant stores the number of messages which
-# will be transmitted during the test
-SINGLECONSUMER_RUNS=5000
+
+### test parameters ###
+
+TESTTYPE=""
 
 # For test cases with several consumers, this constant stores how many consumer instances will
 # be created
 MULTICONSUMER_NUMINSTANCES=5
 
+# For test cases with a single consumer, this constant stores the number of messages which
+# will be transmitted during the test
+SINGLECONSUMER_RUNS=5000
+
 # For test cases with several consumers, this constant stores how many messages a single
 # consumer transmits
 MULTICONSUMER_RUNS=200
+
+SKIPBYTEARRAYSIZETIMESK=false
+
+NUMBER_OF_ITERATIONS=1
+
+CONSTANT_NUMBER_OF_PENDING_REQUESTS=false
+
+PENDING_REQUESTS=500 # Used only with CONSTANT_NUMBER_OF_PENDING_REQUESTS
+
+NUM_THREADS=1 # Used only with CONSTANT_NUMBER_OF_PENDING_REQUESTS
+
+
+### Constants ###
+
+# If a test case uses a java consumer, some warmup runs are required in order
+# to force the java runtime to perform all JIT optimizations
+JAVA_WARMUPS=100
 
 # If a test case has to transmit a string, the length will be determined by this constant
 INPUTDATA_STRINGLENGTH=100
@@ -61,6 +99,7 @@ INPUTDATA_STRINGLENGTH=100
 INPUTDATA_BYTEARRAYSIZE=100
 
 MQTT_BROKER_URI="tcp://localhost:1883"
+
 
 # Process IDs for processes which must be terminated later
 JETTY_PID=""
@@ -75,13 +114,6 @@ PROVIDER_PID=""
 # name. If this variable is set, PROVIDER_PID will store an empty string.
 PROVIDER_JEE_APP_NAME=""
 
-# arguments which are passed to the C++ cluster-controller
-ADDITIONAL_CC_ARGS=""
-
-SKIPBYTEARRAYSIZETIMESK=false
-
-# Select backend service protocol
-BACKEND_SERVICES="MQTT"
 
 function getCpuTime {
     PID=$1
@@ -273,9 +305,10 @@ function startJavaPerformanceTestProvider {
 
     if [ "$USE_MAVEN" != "ON" ]
     then
-        java -jar target/performance-test-provider*.jar $PROVIDERARGS 1>$PROVIDER_STDOUT 2>$PROVIDER_STDERR & PROVIDER_PID=$!
+        java -Djoynr.messaging.mqtt.separateconnections="$MQTT_SEPARATE_CONNECTIONS" -jar target/performance-test-provider*.jar $PROVIDERARGS 1>$PROVIDER_STDOUT 2>$PROVIDER_STDERR & PROVIDER_PID=$!
     else
         mvn exec:java -o -Dexec.mainClass="$PROVIDERCLASS" -Dexec.args="$PROVIDERARGS" \
+            -Djoynr.messaging.mqtt.separateconnections="$MQTT_SEPARATE_CONNECTIONS" \
             1>$PROVIDER_STDOUT 2>$PROVIDER_STDERR & PROVIDER_PID=$!
     fi
     PROVIDER_CPU_TIME_1=$(getCpuTime $PROVIDER_PID)
@@ -308,7 +341,7 @@ function startJsPerformanceTestProvider {
     fi
 }
 
-function performJavaConsumerTest {
+function performJavaPerformanceTest {
     MODE_PARAM=$1
     TESTCASE_PARAM=$2
     STDOUT_PARAM=$3
@@ -316,11 +349,22 @@ function performJavaConsumerTest {
     NUM_INSTANCES=$5
     NUM_RUNS=$6
     DISCOVERY_SCOPE=$7
+    NUMBER_OF_ITERATIONS=$8
+    NUM_PENDING=$9
+    NUM_THREADS=${10}
+
+    if [ "$CONSTANT_NUMBER_OF_PENDING_REQUESTS" == "true" ]; then
+       CNR="-cnr -pending $NUM_PENDING -threads $NUM_THREADS"
+    else
+       CNR=""
+    fi
 
     CONSUMERCLASS="io.joynr.performance.ConsumerApplication"
-    CONSUMERARGS="-d $DOMAINNAME -w $JAVA_WARMUPS -r $NUM_RUNS \
-                  -s $MODE_PARAM -t $TESTCASE_PARAM -bs $INPUTDATA_BYTEARRAYSIZE \
-                  -sl $INPUTDATA_STRINGLENGTH -ds $DISCOVERY_SCOPE"
+    CONSUMERARGS="-d $DOMAINNAME -ds $DISCOVERY_SCOPE \
+                  -s $MODE_PARAM -t $TESTCASE_PARAM \
+                  -bs $INPUTDATA_BYTEARRAYSIZE -sl $INPUTDATA_STRINGLENGTH \
+                  -w $JAVA_WARMUPS -r $NUM_RUNS -iterations $NUMBER_OF_ITERATIONS \
+                  $CNR"
 
     cd $PERFORMANCETESTS_SOURCE_DIR
 
@@ -331,9 +375,10 @@ function performJavaConsumerTest {
 
         if [ "$USE_MAVEN" != "ON" ]
         then
-            java -jar target/performance-test-consumer*.jar $CONSUMERARGS 1>>$STDOUT_PARAM 2>>$REPORTFILE_PARAM & CUR_PID=$!
+            java -Djoynr.messaging.mqtt.separateconnections="$MQTT_SEPARATE_CONNECTIONS" -jar target/performance-test-consumer*.jar $CONSUMERARGS 1>>$STDOUT_PARAM 2>>$REPORTFILE_PARAM & CUR_PID=$!
         else
             mvn exec:java -o -Dexec.mainClass="$CONSUMERCLASS" \
+            -Djoynr.messaging.mqtt.separateconnections="$MQTT_SEPARATE_CONNECTIONS" \
             -Dexec.args="$CONSUMERARGS" 1>>$STDOUT_PARAM 2>>$REPORTFILE_PARAM & CUR_PID=$!
         fi
 
@@ -477,11 +522,21 @@ function startPayara {
 
     echo "Starting payara"
 
+    OLD_VALUE=$joynr_messaging_mqtt_separateconnections
+    export joynr_messaging_mqtt_separateconnections="$MQTT_SEPARATE_CONNECTIONS"
+
     asadmin start-database
     asadmin start-domain
 
     asadmin deploy --force=true $DISCOVERY_WAR_FILE
     asadmin deploy --force=true $ACCESS_CONTROL_WAR_FILE
+
+    if [ -n "$OLD_VALUE" ]
+    then
+        export joynr_messaging_mqtt_separateconnections=$OLD_VALUE
+    else
+        unset joynr_messaging_mqtt_separateconnections
+    fi
 
     echo "payara started"
 }
@@ -512,7 +567,6 @@ function startServices {
 }
 
 function stopServices {
-    stopMosquitto
     echo '# stopping services'
 
     if [ "$BACKEND_SERVICES" = "HTTP" ]
@@ -525,29 +579,49 @@ function stopServices {
     if [ -n "$MOSQUITTO_PID" ]
     then
         echo "Stopping mosquitto with PID $MOSQUITTO_PID"
-        disown $MOSQUITTO_PID
-        killProcessHierarchy $MOSQUITTO_PID
-        wait $MOSQUITTO_PID
-        MOSQUITTO_PID=""
+        stopMosquitto
     fi
 }
 
 function echoUsage {
     echo "Usage: run-performance-tests.sh <args>"
-    echo "   -p <performance-bin-dir>"
-    echo "   -r <performance-results-dir>"
+    echo "  paths:"
+    echo "   -p <performance-bin-dir> (C++)"
     echo "   -s <performance-source-dir>"
-    echo "   -y <joynr-bin-dir>"
-    echo "   -t <JAVA_SYNC|JAVA_ASYNC|JAVA_MULTICONSUMER|JS_CONSUMER|OAP_TO_BACKEND_MOSQ|"
-    echo "       CPP_SYNC|CPP_ASYNC|CPP_MULTICONSUMER|JEE_PROVIDER|ALL> (type of tests)"
+    echo "   -r <performance-results-dir> (optional, default <performance-source-dir>/perf-results-<current-date>"
+    echo "   -y <joynr-bin-dir> (C++ cluster-controller, use release build for performance tests)"
+    echo "   -j <jetty-dir> (only for HTTP backend service with OAP_TO_BACK_MOSQ; deprecated)"
+    echo ""
+    echo "  general options (all optional):"
+    echo "   -S <mqtt-separate-connections (true|false)> (optional, defaults to $MQTT_SEPARATE_CONNECTIONS)"
     echo "   -B <backend-services (MQTT|HTTP)> (optional, default $BACKEND_SERVICES)"
+    echo "   -m <use maven ON|OFF> (optional, default to $USE_MAVEN)"
+    echo "      Indicates whether java applications shall be started with maven or as standalone apps"
+    echo "   -n <use npm ON|OFF> (optional, default $USE_NPM)"
+    echo "      Indicates whether npm will be used to launch javascript applications."
+    echo "   -z <mosquitto.conf> (optional, default std mosquitto config file)"
+    echo "   -e <use embedded CC ON|OFF> (optional, C++, default $USE_EMBEDDED_CC)"
+    echo "      Indicates whether embedded cluster controller variant should be used for C++ apps"
+    echo "   -d <domain-name> (optional, default $DOMAINNAME)"
+    echo "   -a <additional-cc-args> (optional, C++, default $ADDITIONAL_CC_ARGS)"
+    echo "      arguments which are passed to the C++ cluster-controller"
+    echo ""
+    echo "  test parameters:"
+    echo "   -t <JAVA_SYNC|JAVA_ASYNC|JAVA_CONSUMER_CPP_PROVIDER_SYNC|JAVA_CONSUMER_CPP_PROVIDER_ASYNC|"
+    echo "       JAVA_MULTICONSUMER_CPP_PROVIDER|"
+    echo "       JS_CONSUMER|OAP_TO_BACKEND_MOSQ|JS_CONSUMER_CPP_PROVIDER|"
+    echo "       CPP_SYNC|CPP_ASYNC|CPP_MULTICONSUMER|CPP_SERIALIZER|CPP_SHORTCIRCUIT|CPP_PROVIDER|CPP_CONSUMER_JS_PROVIDER|"
+    echo "       JEE_PROVIDER|ALL> (type of tests)"
     echo "   -c <number-of-consumers> (optional, used for MULTICONSUMER tests, default $MULTICONSUMER_NUMINSTANCES)"
     echo "   -x <number-of-runs> (optional, defaults to $SINGLECONSUMER_RUNS single- / $MULTICONSUMER_RUNS multi-consumer runs)"
-    echo "   -m <use maven ON|OFF> (optional, default to $USE_MAVEN)"
-    echo "   -z <mosquitto.conf> (optional, default std mosquitto config file)"
-    echo "   -n <use node ON|OFF> (optional, default $USE_NPM)"
-    echo "   -e <use embedded CC ON|OFF> (optional, default $USE_EMBEDDED_CC)"
-    echo "   -j <jetty-dir> (only for HTTP backend service with OAP_TO_BACK_MOSQ; deprecated)"
+    echo "   -k <skip bytearray size times k (true|false)> (optional, defaults to $SKIPBYTEARRAYSIZETIMESK)"
+    echo "   -I <number-of-iterations> (optional, defaults to $NUMBER_OF_ITERATIONS)"
+    echo "      Number of internal reruns of the test (number-of-iterations * number-of-runs)."
+    echo "      Only implemented for test case JAVA_ASYNC SEND_STRING."
+    echo "   -C Use test variant \"Constand Number of pending Requests (CNR)\" (optional, disabled by default)"
+    echo "      Only implemented for test case JAVA_ASYNC SEND_STRING."
+    echo "   -P <number-of-pending-requests-if-cnr-is-enabled> (optional, defaults to $PENDING_REQUESTS)"
+    echo "   -T <number-of-threads-if-cnr-is-enabled> (optional, defaults to $NUM_THREADS)"
 }
 
 function checkDirExists {
@@ -559,7 +633,7 @@ function checkDirExists {
     fi
 }
 
-function checkForJavaTestCase {
+function checkIfBackendServicesAreNeeded {
     case "$1" in
         JAVA_*)
             return 1;;
@@ -567,29 +641,31 @@ function checkForJavaTestCase {
     return 0
 }
 
-while getopts "a:c:d:e:hj:k:m:n:p:r:s:t:x:y:z:B:" OPTIONS;
+while getopts "p:s:r:y:j:S:B:m:n:z:e:d:a:t:c:x:k:I:CP:T:h" OPTIONS;
 do
     case $OPTIONS in
-        a)
-            ADDITIONAL_CC_ARGS=$OPTARG
+# paths
+        p)
+            PERFORMANCETESTS_BIN_DIR=$(realpath ${OPTARG%/})
             ;;
-        c)
-            MULTICONSUMER_NUMINSTANCES=$OPTARG
+        s)
+            PERFORMANCETESTS_SOURCE_DIR=$(realpath ${OPTARG%/})
             ;;
-        d)
-            DOMAINNAME=${OPTARG%/}
+        r)
+            PERFORMANCETESTS_RESULTS_DIR=$(realpath ${OPTARG%/})
             ;;
-        e)
-            USE_EMBEDDED_CC=$OPTARG
+        y)
+            JOYNR_BIN_DIR=$(realpath ${OPTARG%/})
             ;;
-        h)
-            echoUsage
-            exit 0;;
         j)
-            JETTY_PATH=${OPTARG%/}
+            JETTY_PATH=$(realpath ${OPTARG%/})
             ;;
-        k)
-            SKIPBYTEARRAYSIZETIMESK=$OPTARG
+# general options
+        S)
+            MQTT_SEPARATE_CONNECTIONS=$OPTARG
+            ;;
+        B)
+            BACKEND_SERVICES=$OPTARG
             ;;
         m)
             USE_MAVEN=$OPTARG
@@ -597,31 +673,48 @@ do
         n)
             USE_NPM=$OPTARG
             ;;
-        p)
-            PERFORMANCETESTS_BIN_DIR=${OPTARG%/}
+        z)
+            MOSQUITTO_CONF=$OPTARG
             ;;
-        r)
-            PERFORMANCETESTS_RESULTS_DIR=${OPTARG%/}
+        e)
+            USE_EMBEDDED_CC=$OPTARG
             ;;
-        s)
-            PERFORMANCETESTS_SOURCE_DIR=${OPTARG%/}
+        d)
+            DOMAINNAME=${OPTARG%/}
             ;;
+        a)
+            ADDITIONAL_CC_ARGS=$OPTARG
+            ;;
+# test paramters
         t)
-            TESTCASE=$OPTARG
+            TESTTYPE=$OPTARG
+            ;;
+        c)
+            MULTICONSUMER_NUMINSTANCES=$OPTARG
             ;;
         x)
             SINGLECONSUMER_RUNS=$OPTARG
             MULTICONSUMER_RUNS=$OPTARG
             ;;
-        y)
-            JOYNR_BIN_DIR=${OPTARG%/}
+        k)
+            SKIPBYTEARRAYSIZETIMESK=$OPTARG
             ;;
-        z)
-            MOSQUITTO_CONF=$OPTARG
+        I)
+            NUMBER_OF_ITERATIONS=$OPTARG
             ;;
-        B)
-            BACKEND_SERVICES=$OPTARG
+        C)
+            CONSTANT_NUMBER_OF_PENDING_REQUESTS=true
             ;;
+        P)
+            PENDING_REQUESTS=$OPTARG
+            ;;
+        T)
+            NUM_THREADS=$OPTARG
+            ;;
+# usage
+        h)
+            echoUsage
+            exit 0;;
         \?)
             echoUsage
             exit 1
@@ -629,33 +722,52 @@ do
     esac
 done
 
-if [ "$TESTCASE" != "JAVA_SYNC" ] && [ "$TESTCASE" != "JAVA_ASYNC" ] && \
-   [ "$TESTCASE" != "JAVA_MULTICONSUMER" ] && \
-   [ "$TESTCASE" != "JS_CONSUMER" ] && [ "$TESTCASE" != "OAP_TO_BACKEND_MOSQ" ] && \
-   [ "$TESTCASE" != "CPP_SYNC" ] && [ "$TESTCASE" != "CPP_ASYNC" ] && \
-   [ "$TESTCASE" != "CPP_MULTICONSUMER" ] && [ "$TESTCASE" != "CPP_SERIALIZER" ] && \
-   [ "$TESTCASE" != "CPP_SHORTCIRCUIT" ] && [ "$TESTCASE" != "CPP_PROVIDER" ] && \
-   [ "$TESTCASE" != "JEE_PROVIDER" ] && [ "$TESTCASE" != "JS_CONSUMER_CPP_PROVIDER" ] && \
-   [ "$TESTCASE" != "CPP_CONSUMER_JS_PROVIDER" ]
+if [ "$TESTTYPE" != "JAVA_SYNC" ] && [ "$TESTTYPE" != "JAVA_ASYNC" ] && \
+   [ "$TESTTYPE" != "JAVA_CONSUMER_CPP_PROVIDER_SYNC" ] && [ "$TESTTYPE" != "JAVA_CONSUMER_CPP_PROVIDER_ASYNC" ] && \
+   [ "$TESTTYPE" != "JAVA_MULTICONSUMER_CPP_PROVIDER" ] && \
+   [ "$TESTTYPE" != "JS_CONSUMER" ] && [ "$TESTTYPE" != "OAP_TO_BACKEND_MOSQ" ] && \
+   [ "$TESTTYPE" != "JS_CONSUMER_CPP_PROVIDER" ] && \
+   [ "$TESTTYPE" != "CPP_SYNC" ] && [ "$TESTTYPE" != "CPP_ASYNC" ] && \
+   [ "$TESTTYPE" != "CPP_MULTICONSUMER" ] && [ "$TESTTYPE" != "CPP_SERIALIZER" ] && \
+   [ "$TESTTYPE" != "CPP_SHORTCIRCUIT" ] && [ "$TESTTYPE" != "CPP_PROVIDER" ] && \
+   [ "$TESTTYPE" != "CPP_CONSUMER_JS_PROVIDER" ] && \
+   [ "$TESTTYPE" != "JEE_PROVIDER" ]
 then
-    echo "\"$TESTCASE\" is not a valid testcase"
-    echo "-t option can be either JAVA_SYNC, JAVA_ASYNC, JAVA_MULTICONSUMER, JS_CONSUMER, \
-OAP_TO_BACKEND_MOSQ, CPP_SYNC, CPP_ASYNC, CPP_MULTICONSUMER, \
-CPP_SERIALIZER, CPP_SHORTCIRCUIT, CPP_PROVIDER, JEE_PROVIDER, JS_CONSUMER_CPP_PROVIDER, CPP_CONSUMER_JS_PROVIDER"
+    echo "\"$TESTTYPE\" is not a valid test type"
+    echo "-t option can be either JAVA_SYNC, JAVA_ASYNC, JAVA_CONSUMER_CPP_PROVIDER_SYNC, \
+JAVA_CONSUMER_CPP_PROVIDER_ASYNC, JAVA_MULTICONSUMER_CPP_PROVIDER, \
+JS_CONSUMER, OAP_TO_BACKEND_MOSQ, JS_CONSUMER_CPP_PROVIDER, \
+CPP_SYNC, CPP_ASYNC, CPP_MULTICONSUMER, CPP_SERIALIZER, CPP_SHORTCIRCUIT, CPP_PROVIDER, CPP_CONSUMER_JS_PROVIDER, \
+JEE_PROVIDER"
     echoUsage
     exit 1
 fi
 
 checkDirExists $JOYNR_BIN_DIR
 checkDirExists $PERFORMANCETESTS_BIN_DIR
-checkDirExists $PERFORMANCETESTS_RESULTS_DIR
 checkDirExists $PERFORMANCETESTS_SOURCE_DIR
+if [ -z "$PERFORMANCETESTS_RESULTS_DIR" ]
+then
+    PERFORMANCETESTS_RESULTS_DIR=$PERFORMANCETESTS_SOURCE_DIR/perf-results-$(date "+%Y-%m-%d_%H-%M-%S")
+    mkdir $PERFORMANCETESTS_RESULTS_DIR
+fi
+checkDirExists $PERFORMANCETESTS_RESULTS_DIR
 
 REPORTFILE=$PERFORMANCETESTS_RESULTS_DIR/performancetest-result.txt
 STDOUT=$PERFORMANCETESTS_RESULTS_DIR/consumer-stdout.txt
 
 rm -f $STDOUT
 rm -f $REPORTFILE
+
+rm -f $JOYNR_BIN_DIR/BroadcastSubscriptionRequests.persist
+rm -f $JOYNR_BIN_DIR/joynr.settings
+rm -f $JOYNR_BIN_DIR/ParticipantIds.persist
+rm -f $JOYNR_BIN_DIR/SubscriptionRequests.persist
+rm -f $PERFORMANCETESTS_BIN_DIR/performancetest-provider.participantids
+rm -f $PERFORMANCETESTS_SOURCE_DIR/java-consumer.persistence_file
+rm -f $PERFORMANCETESTS_SOURCE_DIR/joynr_participantIds.properties
+rm -f $PERFORMANCETESTS_SOURCE_DIR/joynr.properties
+rm -f $PERFORMANCETESTS_SOURCE_DIR/provider-joynr.properties
 
 TESTCASES=('SEND_STRING' 'SEND_STRUCT' 'SEND_BYTEARRAY')
 
@@ -664,19 +776,22 @@ then
     TESTCASES+=('SEND_BYTEARRAY_WITH_SIZE_TIMES_K')
 fi
 
-if [ -z "$BACKEND_SERVICES" ]
+if [ "$MQTT_SEPARATE_CONNECTIONS" != "true" ] && [ "$MQTT_SEPARATE_CONNECTIONS" != "false" ]
 then
-    # use default (MQTT/JEE) Discovery and Access Control
-    BACKEND_SERVICES=MQTT
-elif [ "$BACKEND_SERVICES" != "MQTT" ] && [ "$BACKEND_SERVICES" != "HTTP" ]
+    echo "Invalid value for mqtt-separate-connections: $MQTT_SEPARATE_CONNECTIONS"
+    exit 1
+fi
+
+if [ "$BACKEND_SERVICES" != "MQTT" ] && [ "$BACKEND_SERVICES" != "HTTP" ]
 then
     echo 'Invalid value for backend services: $BACKEND_SERVICES.'
     exit 1
 fi
 
-if [ "$TESTCASE" != "OAP_TO_BACKEND_MOSQ" ] && [ "$TESTCASE" != "JEE_PROVIDER" ]
+
+if [ "$TESTTYPE" != "OAP_TO_BACKEND_MOSQ" ] && [ "$TESTTYPE" != "JEE_PROVIDER" ]
 then
-    checkForJavaTestCase $TESTCASE
+    checkIfBackendServicesAreNeeded $TESTTYPE
     if [ "$?" -eq 1 ]
     then
         startServices
@@ -687,43 +802,57 @@ then
     echo "### Starting performance tests ###"
 
     for mode in 'ASYNC' 'SYNC'; do
-        if [ "$TESTCASE" == "JAVA_$mode" ]
+        if [ "$TESTTYPE" == "JAVA_$mode" ]
         then
-            startCppPerformanceTestProvider
+            startJavaPerformanceTestProvider
             for testcase in 'SEND_STRING' 'SEND_STRUCT' 'SEND_BYTEARRAY'; do
-                echo "Testcase: JAVA $testcase" | tee -a $REPORTFILE
-                performJavaConsumerTest $mode $testcase $STDOUT $REPORTFILE 1 $SINGLECONSUMER_RUNS "LOCAL_THEN_GLOBAL"
+                echo "Testcase: $TESTTYPE::$testcase" | tee -a $REPORTFILE
+                NUM_INSTANCES=1
+                performJavaPerformanceTest $mode $testcase $STDOUT $REPORTFILE $NUM_INSTANCES $SINGLECONSUMER_RUNS "LOCAL_THEN_GLOBAL" $NUMBER_OF_ITERATIONS $PENDING_REQUESTS $NUM_THREADS
             done
         fi
     done
 
-    if [ "$TESTCASE" == "JAVA_MULTICONSUMER" ]
+    for mode in 'ASYNC' 'SYNC'; do
+        if [ "$TESTTYPE" == "JAVA_CONSUMER_CPP_PROVIDER_$mode" ]
+        then
+            startCppPerformanceTestProvider
+            for testcase in 'SEND_STRING' 'SEND_STRUCT' 'SEND_BYTEARRAY'; do
+                echo "Testcase: $TESTTYPE::$testcase" | tee -a $REPORTFILE
+                NUM_INSTANCES=1
+                performJavaPerformanceTest $mode $testcase $STDOUT $REPORTFILE $NUM_INSTANCES $SINGLECONSUMER_RUNS "LOCAL_THEN_GLOBAL" $NUMBER_OF_ITERATIONS $PENDING_REQUESTS $NUM_THREADS
+            done
+        fi
+    done
+
+    if [ "$TESTTYPE" == "JAVA_MULTICONSUMER_CPP_PROVIDER" ]
     then
         startCppPerformanceTestProvider
         for testcase in 'SEND_STRING' 'SEND_STRUCT' 'SEND_BYTEARRAY'; do
             echo "Testcase: JAVA $testcase / MULTIPLE CONSUMERS" | tee -a $REPORTFILE
-            performJavaConsumerTest "ASYNC" $testcase $STDOUT $REPORTFILE $MULTICONSUMER_NUMINSTANCES $MULTICONSUMER_RUNS "LOCAL_THEN_GLOBAL"
+            mode="ASYNC"
+            performJavaPerformanceTest $mode $testcase $STDOUT $REPORTFILE $MULTICONSUMER_NUMINSTANCES $MULTICONSUMER_RUNS "LOCAL_THEN_GLOBAL" $NUMBER_OF_ITERATIONS $PENDING_REQUESTS $NUM_THREADS
         done
     fi
 
     for mode in 'ASYNC' 'SYNC' 'SHORTCIRCUIT'; do
-        if [ "$TESTCASE" == "CPP_$mode" ]
+        if [ "$TESTTYPE" == "CPP_$mode" ]
         then
             startCppPerformanceTestProvider
             for testcase in ${TESTCASES[@]}; do
-                echo "Testcase: $TESTCASE::$testcase" | tee -a $REPORTFILE
+                echo "Testcase: $TESTTYPE::$testcase" | tee -a $REPORTFILE
                 performCppConsumerTest $mode $testcase $STDOUT $REPORTFILE 1 $SINGLECONSUMER_RUNS
             done
         fi
     done
 
-    if [ "$TESTCASE" == "CPP_SERIALIZER" ]
+    if [ "$TESTTYPE" == "CPP_SERIALIZER" ]
     then
         echo "Testcase: CPP_SERIALIZER" | tee -a $REPORTFILE
         performCppSerializerTest $STDOUT $REPORTFILE
     fi
 
-    if [ "$TESTCASE" == "CPP_MULTICONSUMER" ]
+    if [ "$TESTTYPE" == "CPP_MULTICONSUMER" ]
     then
         startCppPerformanceTestProvider
         for testcase in 'SEND_STRING' 'SEND_STRUCT' 'SEND_BYTEARRAY'; do
@@ -732,29 +861,29 @@ then
         done
     fi
 
-    if [ "$TESTCASE" == "JS_CONSUMER" ]
+    if [ "$TESTTYPE" == "JS_CONSUMER" ]
     then
         echo "Testcase: JS_CONSUMER" | tee -a $REPORTFILE
         performJsPerformanceTest $STDOUT $REPORTFILE
     fi
 
-    if [ "$TESTCASE" == "JS_CONSUMER_CPP_PROVIDER" ]
+    if [ "$TESTTYPE" == "JS_CONSUMER_CPP_PROVIDER" ]
     then
         echo "Testcase: JS_CONSUMER_CPP_PROVIDER" | tee -a $REPORTFILE
         startCppPerformanceTestProvider
         performJsPerformanceTest $STDOUT $REPORTFILE
     fi
 
-    if [ "$TESTCASE" == "CPP_CONSUMER_JS_PROVIDER" ]
+    if [ "$TESTTYPE" == "CPP_CONSUMER_JS_PROVIDER" ]
     then
          startJsPerformanceTestProvider
          for testcase in ${TESTCASES[@]}; do
-                echo "Testcase: $TESTCASE::$testcase" | tee -a $REPORTFILE
+                echo "Testcase: $TESTTYPE::$testcase" | tee -a $REPORTFILE
                 performCppConsumerTest "ASYNC" $testcase $STDOUT $REPORTFILE 1 $SINGLECONSUMER_RUNS
          done
     fi
 
-    if [ "$TESTCASE" == "CPP_PROVIDER" ]
+    if [ "$TESTTYPE" == "CPP_PROVIDER" ]
     then
         echo "Testcase: CPP_PROVIDER for domain $DOMAINNAME" | tee -a $REPORTFILE
         startCppPerformanceTestProvider
@@ -766,14 +895,14 @@ then
     stopMeasureCpuUsage $REPORTFILE
     stopAnyProvider
     stopCppClusterController
-    checkForJavaTestCase $TESTCASE
+    checkIfBackendServicesAreNeeded $TESTTYPE
     if [ "$?" -eq 1 ]
     then
         stopServices
     fi
 fi
 
-if [ "$TESTCASE" == "JEE_PROVIDER" ]
+if [ "$TESTTYPE" == "JEE_PROVIDER" ]
 then
     startServices
     startJavaJeePerformanceTestProvider
@@ -781,7 +910,8 @@ then
     for mode in 'ASYNC' 'SYNC'; do
         for testcase in 'SEND_STRING' 'SEND_STRUCT' 'SEND_BYTEARRAY'; do
             echo "Testcase: JEE_PROVIDER $mode $testcase" | tee -a $REPORTFILE
-            performJavaConsumerTest $mode $testcase $STDOUT $REPORTFILE 1 $SINGLECONSUMER_RUNS "GLOBAL_ONLY"
+            NUM_INSTANCES=1
+            performJavaPerformanceTest $mode $testcase $STDOUT $REPORTFILE $NUM_INSTANCES $SINGLECONSUMER_RUNS "GLOBAL_ONLY" $NUMBER_OF_ITERATIONS $PENDING_REQUESTS $NUM_THREADS
         done
     done
 
@@ -789,7 +919,7 @@ then
     stopServices
 fi
 
-if [ "$TESTCASE" == "OAP_TO_BACKEND_MOSQ" ]
+if [ "$TESTTYPE" == "OAP_TO_BACKEND_MOSQ" ]
 then
     checkDirExists $JETTY_PATH
     startServices

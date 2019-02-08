@@ -152,7 +152,9 @@ CapabilitiesRegistrar.prototype.registerProvider = async function registerProvid
 
     if (missingImplementations.length > 0) {
         throw new Error(
-            `provider: ${domain}/${provider.interfaceName} is missing: ${missingImplementations.toString()}`
+            `provider: ${domain}/${provider.interfaceName}.v${
+                provider.constructor.MAJOR_VERSION
+            } is missing: ${missingImplementations.toString()}`
         );
     }
 
@@ -213,7 +215,7 @@ CapabilitiesRegistrar.prototype.registerProvider = async function registerProvid
     log.info(
         `Provider registered: participantId: ${participantId}, domain: ${domain}, interfaceName: ${
             provider.interfaceName
-        }`
+        }, majorVersion: ${provider.constructor.MAJOR_VERSION}`
     );
     return participantId;
 };
@@ -251,7 +253,7 @@ CapabilitiesRegistrar.prototype.unregisterProvider = async function unregisterPr
     log.info(
         `Provider unregistered: participantId: ${participantId}, domain: ${domain}, interfaceName: ${
             provider.interfaceName
-        }`
+        }, majorVersion: ${provider.constructor.MAJOR_VERSION}`
     );
 };
 

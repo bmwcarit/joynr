@@ -90,7 +90,7 @@ echo "Wait for JEE Application to be started"
 		max_retries=60
 		while [ $retry_count -le $max_retries ]
 		do
-			curl -f -s http://sit-jee-app:8080/sit-jee-app/consumer/ping
+			curl -f -s http://sit-jee-app:8080/sit-jee-app/sit-controller/ping
 			if [ "$?" = 0 ]
 			then
 				break
@@ -102,7 +102,7 @@ echo "Wait for JEE Application to be started"
 
 		if [ $retry_count -gt $max_retries ]
 		then
-			echo "JEE application failed to start in time."
+			echo "SIT RESULT error: JEE application failed to start in time."
 			exit 1
 		fi
 		return 0
@@ -124,7 +124,7 @@ do
 		then
 			echo "cpp<->cpp joynr system integration test succeeded"
 		else
-			echo "ERROR joynr cpp system integration test against cpp provider failed with error code $?"
+			echo "SIT RESULT ERROR joynr cpp system integration test against cpp provider failed with error code $?"
 		fi
 
 		# cpp - run the test against java provider
@@ -135,7 +135,7 @@ do
 		then
 			echo "cpp<->java joynr system integration test succeeded"
 		else
-			echo "ERROR joynr cpp system integration test against java provider failed with error code $?"
+			echo "SIT RESULT ERROR joynr cpp system integration test against java provider failed with error code $?"
 		fi
 
 		# cpp - run the test against node provider
@@ -146,7 +146,7 @@ do
 		then
 			echo "cpp<->node joynr system integration test succeeded"
 		else
-			echo "ERROR joynr cpp system integration test against node provider failed with error code $?"
+			echo "SIT RESULT ERROR joynr cpp system integration test against node provider failed with error code $?"
 		fi
 
 		# cpp - run the test against jee provider
@@ -157,7 +157,7 @@ do
 		then
 			echo "cpp<->jee joynr system integration test succeeded"
 		else
-			echo "ERROR joynr cpp system integration test against jee provider failed with error code $?"
+			echo "SIT RESULT ERROR joynr cpp system integration test against jee provider failed with error code $?"
 		fi
 	)
 
@@ -173,7 +173,7 @@ do
 		then
 			echo "java<->cpp joynr system integration test succeeded"
 		else
-			echo "ERROR joynr java system integration test against cpp provider failed with error code $?"
+			echo "SIT RESULT ERROR joynr java system integration test against cpp provider failed with error code $?"
 		fi
 
 		# java - run the test against java provider
@@ -184,7 +184,7 @@ do
 		then
 			echo "java<->java joynr system integration test succeeded"
 		else
-			echo "ERROR joynr java system integration test against java provider failed with error code $?"
+			echo "SIT RESULT ERROR joynr java system integration test against java provider failed with error code $?"
 		fi
 
 		# java - run the test against node provider
@@ -195,7 +195,7 @@ do
 		then
 			echo "java<->node joynr system integration test succeeded"
 		else
-			echo "ERROR joynr java system integration test against node provider failed with error code $?"
+			echo "SIT RESULT ERROR joynr java system integration test against node provider failed with error code $?"
 		fi
 
 		# java - run the test against jee provider
@@ -206,7 +206,7 @@ do
 		then
 			echo "java<->jee joynr system integration test succeeded"
 		else
-			echo "ERROR joynr java system integration test against jee provider failed with error code $?"
+			echo "SIT RESULT ERROR joynr java system integration test against jee provider failed with error code $?"
 		fi
 	)
 

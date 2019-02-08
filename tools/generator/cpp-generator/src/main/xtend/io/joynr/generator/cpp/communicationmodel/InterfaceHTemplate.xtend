@@ -30,14 +30,14 @@ import io.joynr.generator.templates.util.NamingUtil
 
 class InterfaceHTemplate extends InterfaceTemplate{
 
-	@Inject private extension TemplateBase
+	@Inject extension TemplateBase
 
-	@Inject private extension CppInterfaceUtil
-	@Inject private extension AttributeUtil
-	@Inject private extension NamingUtil
-	@Inject private extension CppStdTypeUtil
+	@Inject extension CppInterfaceUtil
+	@Inject extension AttributeUtil
+	@Inject extension NamingUtil
+	@Inject extension CppStdTypeUtil
 
-	@Inject private extension JoynrCppGeneratorExtensions
+	@Inject extension JoynrCppGeneratorExtensions
 
 	override generate() {
 		var selector = TypeSelector::defaultTypeSelector

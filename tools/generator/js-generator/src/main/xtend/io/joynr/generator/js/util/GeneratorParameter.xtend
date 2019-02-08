@@ -30,21 +30,21 @@ import org.franca.core.franca.FType
 class GeneratorParameter {
 
 	@Inject extension JoynrJSGeneratorExtensions
-	@Inject private extension NamingUtil
+	@Inject extension NamingUtil
 
-	private Map<String, String> parameters;
+	Map<String, String> parameters;
 
-	private static final String requireJSSupportKey = "requireJSSupport";
+	static final String requireJSSupportKey = "requireJSSupport";
 
-	private static final String requiredModuleKey = "requiredModule";
+	static final String requiredModuleKey = "requiredModule";
 
-	private static final String anonymuousDefineKey = "anonymuousDefine";
+	static final String anonymuousDefineKey = "anonymuousDefine";
 
-	private static final String definePrefixKey = "definePrefix";
+	static final String definePrefixKey = "definePrefix";
 
-	private static final String CONST_REQUIRED_MODULE_DEFAULT = "libjoynr";
+	static final String CONST_REQUIRED_MODULE_DEFAULT = "libjoynr";
 
-	private static final String CONST_DEFINE_PREFIX_DEFAULT = "";
+	static final String CONST_DEFINE_PREFIX_DEFAULT = "";
 
 	public boolean requireJSSupport = false;
 	public String requiredModule;

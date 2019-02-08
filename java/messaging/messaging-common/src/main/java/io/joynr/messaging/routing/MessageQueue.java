@@ -29,6 +29,10 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
 import io.joynr.messaging.persistence.MessagePersister;
+import joynr.ImmutableMessage;
+import joynr.Message;
+import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.RoutingTypesUtil;
 
 /**
  * This class holds the queued messages which are to be processed in the {@link AbstractMessageRouter} and offers
@@ -40,11 +44,13 @@ public class MessageQueue {
 
     public static final String MESSAGE_QUEUE_ID = "io.joynr.messaging.queue.id";
     public static final String PROPERTY_MESSAGE_QUEUE_SHUTDOWN_MAX_TIMEOUT = "io.joynr.messaging.queue.shutdown.timeout";
+    private static final long STARTUP_GRACE_PERIOD_MS = 1000;
 
     private DelayQueue<DelayableImmutableMessage> delayableImmutableMessages;
-    private long shutdownTimeoutMs;
+    private final long shutdownTimeoutMs;
     private final String messageQueueId;
     private final MessagePersister messagePersister;
+    private final RoutingTable routingTable;
 
     /**
      * Helper class to enable constructor injection of an optionally configured timeout value.
@@ -63,19 +69,57 @@ public class MessageQueue {
     public MessageQueue(DelayQueue<DelayableImmutableMessage> delayableImmutableMessages,
                         MaxTimeoutHolder maxTimeoutHolder,
                         @Named(MESSAGE_QUEUE_ID) String messageQueueId,
-                        MessagePersister messagePersister) {
+                        MessagePersister messagePersister,
+                        RoutingTable routingTable) {
         this.delayableImmutableMessages = delayableImmutableMessages;
         this.shutdownTimeoutMs = maxTimeoutHolder.getTimeout();
         this.messageQueueId = messageQueueId;
         this.messagePersister = messagePersister;
+        this.routingTable = routingTable;
         fetchAndQueuePersistedMessages(delayableImmutableMessages, messageQueueId);
+    }
+
+    private void registerReplyToAddress(DelayableImmutableMessage delayableImmutableMessage) {
+        ImmutableMessage message = delayableImmutableMessage.getMessage();
+        String messageType = message.getType();
+
+        if (!messageType.equals(Message.VALUE_MESSAGE_TYPE_REQUEST)
+                && !messageType.equals(Message.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST)
+                && !messageType.equals(Message.VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST)
+                && !messageType.equals(Message.VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST)) {
+            return;
+        }
+
+        String replyTo = message.getReplyTo();
+        if (replyTo != null && !replyTo.isEmpty()) {
+            Address address = RoutingTypesUtil.fromAddressString(replyTo);
+            // Set participant globally visible because the actual visibility is unknown
+            // (the transient flag isReceivedFromGlobal is not persisted)
+            final boolean isGloballyVisible = true;
+            final long expiryDateMs = message.getTtlMs();
+            final boolean isSticky = false;
+            final boolean allowUpdate = false;
+
+            routingTable.put(message.getSender(), address, isGloballyVisible, expiryDateMs, isSticky, allowUpdate);
+        }
+    }
+
+    private void restoreMessage(DelayableImmutableMessage delayableImmutableMessage) {
+        if (delayableImmutableMessage.getMessage().getType() == Message.VALUE_MESSAGE_TYPE_MULTICAST) {
+            // remove all addresses to trigger new address resolution to get also InProcessAddresses which are not persisted
+            delayableImmutableMessage.getDestinationAddresses().clear();
+        }
+        // give potential recipients some time to register
+        delayableImmutableMessage.setDelay(STARTUP_GRACE_PERIOD_MS);
+        delayableImmutableMessages.put(delayableImmutableMessage);
     }
 
     private void fetchAndQueuePersistedMessages(DelayQueue<DelayableImmutableMessage> delayableImmutableMessages,
                                                 String messageQueueId) {
         Set<DelayableImmutableMessage> persistedFromLastRun = messagePersister.fetchAll(messageQueueId);
         if (persistedFromLastRun != null) {
-            persistedFromLastRun.forEach(delayableImmutableMessages::put);
+            persistedFromLastRun.forEach(this::registerReplyToAddress);
+            persistedFromLastRun.forEach(this::restoreMessage);
         }
     }
 

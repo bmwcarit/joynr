@@ -25,6 +25,13 @@ ChildProcessUtils.postReady = function() {
     });
 };
 
+ChildProcessUtils.postError = errorMsg => {
+    process.send({
+        type: "error",
+        msg: errorMsg
+    });
+};
+
 ChildProcessUtils.postStarted = function(argument) {
     const object = {
         type: "started"
@@ -43,16 +50,23 @@ ChildProcessUtils.postFinished = function() {
 
 ChildProcessUtils.registerHandlers = function(initializeTest, startTest, terminateTest) {
     let runtime;
-    const handler = function(msg) {
+    const handler = async function(msg) {
         console.log(JSON.stringify(msg));
         if (msg.type === "initialize") {
             if (!initializeTest) {
                 throw new Error("cannot initialize test, child does not define an initializeTest method");
             }
-            initializeTest(msg.provisioningSuffix, msg.domain, msg.processSpecialization).then(providedRuntime => {
+            try {
+                const providedRuntime = await initializeTest(
+                    msg.provisioningSuffix,
+                    msg.domain,
+                    msg.processSpecialization
+                );
                 runtime = providedRuntime;
                 ChildProcessUtils.postReady();
-            });
+            } catch (e) {
+                ChildProcessUtils.postError(`failed to initialize child process: ${e}`);
+            }
         } else if (msg.type === "start") {
             if (!startTest) {
                 throw new Error("cannot start test, child does not define a startTest method");

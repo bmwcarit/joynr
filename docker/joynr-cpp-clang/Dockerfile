@@ -7,7 +7,8 @@ FROM joynr-cpp-base:latest
 WORKDIR /opt
 
 # Use the same boost version which is provided by the fedora-24 repository
-RUN curl -L  http://sourceforge.net/projects/boost/files/boost/1.60.0/boost_1_60_0.tar.gz > boost.tar.gz \
+RUN . /etc/profile \
+    && curl -L  http://sourceforge.net/projects/boost/files/boost/1.60.0/boost_1_60_0.tar.gz > boost.tar.gz \
     && mkdir -p /opt/boost \
     && tar -zxf boost.tar.gz -C /opt/boost --strip-components=1 \
     && rm boost.tar.gz \
@@ -21,6 +22,7 @@ RUN curl -L  http://sourceforge.net/projects/boost/files/boost/1.60.0/boost_1_60
 ###################################################
 
 RUN cd /opt \
+    && . /etc/profile \
     && git clone https://github.com/miloyip/rapidjson.git rapidjson \
     && cd rapidjson \
     && git checkout v1.1.0 \
@@ -39,6 +41,7 @@ RUN cd /opt \
 ###################################################
 
 RUN cd /opt \
+    && . /etc/profile \
     && git clone https://github.com/bmwcarit/muesli.git \
     && cd muesli \
     && git checkout 1.0.1 \
@@ -54,6 +57,7 @@ RUN cd /opt \
 ###################################################
 
 RUN cd /opt \
+    && . /etc/profile \
     && git clone https://github.com/google/googletest.git \
     && cd googletest \
     && git checkout ddb8012e \
@@ -68,7 +72,8 @@ RUN cd /opt \
 # install smrf
 ###################################################
 
-RUN export SMRF_VERSION=0.2.2 \
+RUN export SMRF_VERSION=0.3.1 \
+    && . /etc/profile \
     && cd /opt \
     && git clone https://github.com/bmwcarit/smrf.git \
     && cd smrf \

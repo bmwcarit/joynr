@@ -28,7 +28,6 @@ import java.util.Set;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.xtext.generator.IFileSystemAccess;
 
-import com.google.inject.AbstractModule;
 import com.google.inject.Module;
 
 public class TestJoynrGenerator implements IJoynrGenerator {

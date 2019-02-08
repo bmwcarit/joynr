@@ -26,9 +26,11 @@ _sed 's/set(JOYNR_PATCH_VERSION .*)/set(JOYNR_PATCH_VERSION '${version[2]}')/g' 
 
 _sed 's/find_package(Joynr .*/find_package(Joynr '${newVersionWithoutSuffix}' REQUIRED)/g' \
 examples/radio-app/CMakeLists.txt \
+tests/dummyKeychain/CMakeLists.txt \
 tests/inter-language-test/CMakeLists.txt \
 tests/performance-test/CMakeLists.txt \
 tests/robustness-test/CMakeLists.txt \
+tests/robustness-test-env/CMakeLists.txt \
 tests/system-integration-test/sit-cpp-app/CMakeLists.txt
 
 mvn versions:set -P android,javascript -DnewVersion=$2

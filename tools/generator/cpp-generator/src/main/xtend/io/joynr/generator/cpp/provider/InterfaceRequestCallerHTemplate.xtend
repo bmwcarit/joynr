@@ -28,12 +28,12 @@ import io.joynr.generator.templates.util.NamingUtil
 
 class InterfaceRequestCallerHTemplate extends InterfaceTemplate {
 
-	@Inject private extension TemplateBase
-	@Inject private extension CppStdTypeUtil
-	@Inject private extension JoynrCppGeneratorExtensions
-	@Inject private extension NamingUtil
-	@Inject private extension AttributeUtil
-	@Inject private extension MethodUtil
+	@Inject extension TemplateBase
+	@Inject extension CppStdTypeUtil
+	@Inject extension JoynrCppGeneratorExtensions
+	@Inject extension NamingUtil
+	@Inject extension AttributeUtil
+	@Inject extension MethodUtil
 
 	override generate()
 '''
@@ -158,12 +158,6 @@ public:
 		);
 
 	«ENDFOR»
-
-	/**
-	 * @brief Get the version of the provider instance
-	 * @return the version of the provider instance
-	 */
-	joynr::types::Version getProviderVersion() override;
 
 protected:
 	std::shared_ptr<IJoynrProvider> getProvider() override;

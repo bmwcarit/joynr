@@ -25,7 +25,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>java</artifactId>
-		<version>1.6.5</version>
+		<version>1.7.0</version>
 	</parent>
 
 	<dependencies>
@@ -266,9 +266,6 @@
 						<goals>
 							<goal>test</goal>
 						</goals>
-						<configuration>
-							<argLine>-XX:MaxPermSize=256m</argLine>
-						</configuration>
 					</execution>
 				</executions>
 			</plugin>

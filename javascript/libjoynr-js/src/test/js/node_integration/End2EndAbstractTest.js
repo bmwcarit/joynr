@@ -22,8 +22,8 @@ const DatatypesProxy = require("../../generated/joynr/datatypes/DatatypesProxy")
 const MultipleVersionsInterfaceProxy = require("../../generated/joynr/tests/MultipleVersionsInterfaceProxy");
 const IntegrationUtils = require("./IntegrationUtils");
 const provisioning = require("../../resources/joynr/provisioning/provisioning_cc");
-const waitsFor = require("../global/WaitsFor");
 let joynr = require("joynr");
+const testUtil = require("../../js/testUtil");
 
 function End2EndAbstractTest(provisioningSuffix, providerChildProcessName, processSpecialization) {
     let radioProxy, dataProxy, multipleVersionsInterfaceProxy;
@@ -167,130 +167,26 @@ function End2EndAbstractTest(provisioningSuffix, providerChildProcessName, proce
         });
     };
 
-    this.getAttribute = function(attributeName, expectedValue) {
-        const onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
-
-        return waitsFor(
-            () => {
-                return radioProxy !== undefined;
-            },
-            "radioProxy is defined",
-            provisioning.ttl
-        )
-            .then(() => {
-                radioProxy[attributeName]
-                    .get()
-                    .then(value => {
-                        expect(value).toEqual(expectedValue);
-                        onFulfilledSpy(value);
-                    })
-                    .catch(error => {
-                        return IntegrationUtils.outputPromiseError(
-                            new Error(`End2EndAbstractTest.getAttribute. Error while getting: ${error.message}`)
-                        );
-                    });
-
-                return waitsFor(
-                    () => {
-                        return onFulfilledSpy.calls.count() > 0;
-                    },
-                    `attribute ${attributeName} is received`,
-                    provisioning.ttl
-                );
-            })
-            .then(() => {
-                expect(onFulfilledSpy).toHaveBeenCalled();
-            });
+    this.getAttribute = async function(attributeName, expectedValue) {
+        const value = await radioProxy[attributeName].get();
+        expect(value).toEqual(expectedValue);
     };
 
-    this.getFailingAttribute = function(attributeName) {
-        const onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
-        const catchSpy = jasmine.createSpy("catchSpy");
-
-        return waitsFor(
-            () => {
-                return radioProxy !== undefined;
-            },
-            "radioProxy is defined",
-            provisioning.ttl
-        )
-            .then(() => {
-                radioProxy[attributeName]
-                    .get()
-                    .then(value => {
-                        onFulfilledSpy(value);
-                    })
-                    .catch(exception => {
-                        catchSpy(exception);
-                    });
-
-                return waitsFor(
-                    () => {
-                        return catchSpy.calls.count() > 0;
-                    },
-                    `getter for attribute ${attributeName} returns exception`,
-                    provisioning.ttl
-                );
-            })
-            .then(() => {
-                expect(catchSpy).toHaveBeenCalled();
-                expect(catchSpy.calls.argsFor(0)[0]._typeName).toBeDefined();
-                expect(catchSpy.calls.argsFor(0)[0]._typeName).toEqual("joynr.exceptions.ProviderRuntimeException");
-            });
+    this.getFailingAttribute = async function(attributeName) {
+        const exception = await testUtil.reversePromise(radioProxy[attributeName].get());
+        expect(exception._typeName).toBeDefined();
+        expect(exception._typeName).toEqual("joynr.exceptions.ProviderRuntimeException");
     };
 
-    this.setAttribute = function(attributeName, value) {
-        const onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
-
-        radioProxy[attributeName]
-            .set({
-                value
-            })
-            .then(onFulfilledSpy)
-            .catch(error => {
-                return IntegrationUtils.outputPromiseError(
-                    new Error(`End2EndAbstractTest.setAttribute. Error while setting: ${error.message}`)
-                );
-            });
-
-        return waitsFor(
-            () => {
-                return onFulfilledSpy.calls.count() > 0;
-            },
-            "attribute is set",
-            provisioning.ttl
-        ).then(() => {
-            expect(onFulfilledSpy).toHaveBeenCalled();
-        });
+    this.setAttribute = async function(attributeName, value) {
+        await radioProxy[attributeName].set({ value });
     };
 
-    this.callOperation = function(operationName, opArgs, expectation) {
-        const onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
-
-        radioProxy[operationName](opArgs)
-            .then(onFulfilledSpy)
-            .catch(error => {
-                return IntegrationUtils.outputPromiseError(
-                    new Error(`End2EndAbstractTest.callOperation. Error while calling operation: ${error.message}`)
-                );
-            });
-
-        return waitsFor(
-            () => {
-                return onFulfilledSpy.calls.count() > 0;
-            },
-            "operation call to finish",
-            provisioning.ttl
-        ).then(() => {
-            expect(onFulfilledSpy).toHaveBeenCalled();
-            if (expectation !== undefined) {
-                if (typeof expectation === "function") {
-                    expectation(onFulfilledSpy);
-                } else {
-                    expect(onFulfilledSpy).toHaveBeenCalledWith(expectation);
-                }
-            }
-        });
+    this.callOperation = async function(operationName, opArgs, expectation) {
+        const result = await radioProxy[operationName](opArgs);
+        if (expectation !== undefined) {
+            expect(result).toEqual(expectation);
+        }
     };
 
     this.unsubscribeSubscription = function(subscribingEntity, subscriptionId) {
@@ -302,7 +198,7 @@ function End2EndAbstractTest(provisioningSuffix, providerChildProcessName, proce
     this.setupSubscriptionAndReturnSpy = function(subscribingEntity, subscriptionQos, partitions) {
         const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onReceive", "onError"]);
 
-        radioProxy[subscribingEntity]
+        return radioProxy[subscribingEntity]
             .subscribe({
                 subscriptionQos,
                 partitions,
@@ -310,33 +206,17 @@ function End2EndAbstractTest(provisioningSuffix, providerChildProcessName, proce
                 onError: spy.onError
             })
             .then(spy.onFulfilled)
-            .catch(error => {
-                return IntegrationUtils.outputPromiseError(
-                    new Error(
-                        `End2EndAbstractTest.setupSubscriptionAndReturnSpy. Error while subscribing: ${error.message}`
-                    )
-                );
-            });
-
-        return waitsFor(
-            () => {
-                return spy.onFulfilled.calls.count() > 0;
-            },
-            "subscription to be registered",
-            provisioning.ttl
-        ).then(() => {
-            return Promise.resolve(spy);
-        });
+            .then(() => spy);
     };
 
     this.expectPublication = function(spy, expectationFct) {
-        return waitsFor(
-            () => {
-                return spy.onReceive.calls.count() > 0 || spy.onError.calls.count() > 0;
-            },
-            "first publication to occur",
-            500 + provisioning.ttl
-        ).then(() => {
+        const deferred = IntegrationUtils.createPromise();
+        spy.onReceive.and.callFake(deferred.resolve);
+        spy.onError.and.callFake(deferred.reject);
+        if (spy.onReceive.calls.any()) deferred.resolve();
+        if (spy.onError.calls.any()) deferred.reject();
+
+        return deferred.promise.then(() => {
             expect(spy.onReceive).toHaveBeenCalled();
             expect(spy.onError).not.toHaveBeenCalled();
             if (expectationFct) {
@@ -362,6 +242,10 @@ function End2EndAbstractTest(provisioningSuffix, providerChildProcessName, proce
             .catch(e => {
                 throw new Error(`shutdown Child and Libjoynr failed: ${e}`);
             });
+    };
+
+    this.terminateAllSubscriptions = async function() {
+        return joynr.terminateAllSubscriptions();
     };
 }
 module.exports = End2EndAbstractTest;

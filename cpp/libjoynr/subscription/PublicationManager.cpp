@@ -960,7 +960,9 @@ void PublicationManager::pollSubscription(const std::string& subscriptionId)
         std::shared_ptr<RequestCaller> requestCaller = publication->requestCaller;
         const std::string& interfaceName = requestCaller->getInterfaceName();
         std::shared_ptr<IRequestInterpreter> requestInterpreter =
-                InterfaceRegistrar::instance().getRequestInterpreter(interfaceName);
+                InterfaceRegistrar::instance().getRequestInterpreter(
+                        interfaceName +
+                        std::to_string(requestCaller->getProviderVersion().getMajorVersion()));
         if (!requestInterpreter) {
             JOYNR_LOG_ERROR(
                     logger(),

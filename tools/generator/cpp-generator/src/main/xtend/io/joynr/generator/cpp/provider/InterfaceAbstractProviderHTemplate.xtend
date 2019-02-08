@@ -26,11 +26,11 @@ import io.joynr.generator.templates.util.AttributeUtil
 import io.joynr.generator.templates.util.NamingUtil
 
 class InterfaceAbstractProviderHTemplate extends InterfaceTemplate {
-	@Inject private extension TemplateBase
-	@Inject private extension JoynrCppGeneratorExtensions
-	@Inject private extension CppStdTypeUtil
-	@Inject private extension NamingUtil
-	@Inject private extension AttributeUtil
+	@Inject extension TemplateBase
+	@Inject extension JoynrCppGeneratorExtensions
+	@Inject extension CppStdTypeUtil
+	@Inject extension NamingUtil
+	@Inject extension AttributeUtil
 
 	override generate()
 '''

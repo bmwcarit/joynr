@@ -18,90 +18,38 @@
  */
 package io.joynr.systemintegrationtest.jee;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-
 import javax.inject.Inject;
-
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import io.joynr.arbitration.DiscoveryQos;
-import io.joynr.jeeintegration.api.ServiceLocator;
-import io.joynr.messaging.MessagingQos;
-import joynr.test.SystemIntegrationTestSync;
+import joynr.test.SitControllerSync;
 
 /**
  * Exposes a REST endpoint with which the consumer side joynr system integration tests can be triggered.
  */
-@Path("/consumer")
+@Path("/sit-controller")
 @Produces(MediaType.APPLICATION_JSON)
 public class ConsumerRestEndpoint {
 
-    private static final Logger logger = LoggerFactory.getLogger(ConsumerRestEndpoint.class);
-
-    private ServiceLocator serviceLocator;
-
-    private DomainPrefixProvider domainPrefixProvider;
+    private SitControllerSync sitControllerProviderBean;
 
     @Inject
-    public ConsumerRestEndpoint(ServiceLocator serviceLocator, DomainPrefixProvider domainPrefixProvider) {
-        this.serviceLocator = serviceLocator;
-        this.domainPrefixProvider = domainPrefixProvider;
+    public ConsumerRestEndpoint(SitControllerSync sitControllerProviderBean) {
+        this.sitControllerProviderBean = sitControllerProviderBean;
     }
 
     @GET
     @Path("/ping")
     public String ping() {
-        return "OK";
+        return sitControllerProviderBean.ping();
     }
 
     @GET
+    @Path("/test")
     public String triggerTests() {
-        StringBuffer result = new StringBuffer();
-        for (String domainPrefix : domainPrefixProvider.getDomainPrefixes()) {
-            for (String appendValue : new String[]{ ".jee", ".cpp", ".java", ".node" }) {
-                callProducer(domainPrefix + appendValue, result);
-            }
-        }
-        return result.toString();
+        return sitControllerProviderBean.triggerTests();
     }
 
-    private void callProducer(String domain, StringBuffer result) {
-        try {
-            DiscoveryQos discoveryQos = new DiscoveryQos();
-            discoveryQos.setDiscoveryTimeoutMs(120000); // 2 Minutes
-            SystemIntegrationTestSync proxy = serviceLocator.get(SystemIntegrationTestSync.class,
-                                                                 domain,
-                                                                 new MessagingQos(),
-                                                                 discoveryQos);
-            Integer additionResult = proxy.add(1, 1);
-            if (additionResult != 2) {
-                throw new IllegalArgumentException("1 + 1 should be 2, got: " + additionResult);
-            }
-            result.append("SIT RESULT success: JEE consumer -> ").append(domain);
-        } catch (Exception e) {
-            result.append("SIT RESULT error: JEE consumer -> ")
-                  .append(domain)
-                  .append("\nException: ")
-                  .append(e.toString());
-            addStacktrace(e, result);
-        }
-        result.append("\n");
-    }
-
-    private void addStacktrace(Exception theException, StringBuffer result) {
-        try (StringWriter writer = new StringWriter(); PrintWriter printWriter = new PrintWriter(writer)) {
-            theException.printStackTrace(printWriter);
-            result.append(writer.toString());
-        } catch (IOException e) {
-            logger.error("Unable to add exception stacktrace to result string.", e);
-        }
-    }
 }

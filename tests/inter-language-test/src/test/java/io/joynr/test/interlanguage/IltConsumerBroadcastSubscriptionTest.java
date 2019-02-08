@@ -280,7 +280,8 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
                 public void onReceive(String[] stringArrayOut) {
                     //
                     LOG.info(name.getMethodName() + " - callback - got broadcast");
-                    if (!IltUtil.checkStringArray(stringArrayOut)) {
+                    String[] stringArray = { "Hello", "World" };
+                    if (!Arrays.equals(stringArray, stringArrayOut)) {
                         LOG.info(name.getMethodName() + " - callback - invalid content");
                         subscribeBroadcastWithSingleArrayParameterCallbackResult = false;
                     } else {
@@ -850,8 +851,9 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
                 public void onReceive(BaseStructWithoutElements baseStructWithoutElementsOut,
                                       ExtendedExtendedBaseStruct extendedExtendedBaseStructOut) {
                     LOG.info(name.getMethodName() + " - callback - got broadcast");
+                    ExtendedExtendedBaseStruct extendedExtendedBaseStruct = IltUtil.createExtendedExtendedBaseStruct();
                     if (!IltUtil.checkBaseStructWithoutElements(baseStructWithoutElementsOut)
-                            || !IltUtil.checkExtendedExtendedBaseStruct(extendedExtendedBaseStructOut)) {
+                            || !extendedExtendedBaseStructOut.equals(extendedExtendedBaseStruct)) {
                         LOG.info(name.getMethodName() + " - callback - invalid content");
                         subscribeBroadcastWithMultipleStructParametersCallbackResult = false;
                     } else {

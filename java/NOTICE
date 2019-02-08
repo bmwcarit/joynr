@@ -16,7 +16,6 @@ specific language governing permissions and limitations
 under the License.
 
 This project has dependencies to:
-  "Java Concurrency in Practice" book annotations under Creative Commons Attribution License
   Aether API under Eclipse Public License, Version 1.0
   Aether Connector Basic under Eclipse Public License, Version 1.0
   Aether Implementation under Eclipse Public License, Version 1.0
@@ -27,17 +26,16 @@ This project has dependencies to:
   AOP alliance under Public Domain
   aopalliance version 1.0 repackaged as a module under CDDL + GPLv2 with classpath exception
   Apache Commons CLI under Apache License, Version 2.0
+  Apache Commons Codec under Apache License, Version 2.0
   Apache Commons Collections under Apache License, Version 2.0
   Apache Commons Lang under Apache License, Version 2.0
+  Apache Commons Logging under The Apache Software License, Version 2.0
   Apache Derby Database Engine and Embedded JDBC Driver under Apache 2
   Apache Geronimo JSR-317 JPA 2.0 Spec API under The Apache Software License, Version 2.0
   Apache Groovy under The Apache Software License, Version 2.0
   Apache HttpClient under Apache License, Version 2.0
-  Apache HttpClient Mime under Apache License, Version 2.0
   Apache HttpCore under Apache License, Version 2.0
   Apache Log4j under The Apache Software License, Version 2.0
-  Apache Log4j API under The Apache Software License, Version 2.0
-  Apache Log4j SLF4J Binding under The Apache Software License, Version 2.0
   Apache Maven Wagon :: API under The Apache Software License, Version 2.0
   Apache Maven Wagon :: Providers :: File Provider under The Apache Software License, Version 2.0
   Apache Maven Wagon :: Providers :: HTTP Shared Library under The Apache Software License, Version 2.0
@@ -82,6 +80,7 @@ This project has dependencies to:
   Commons Collections under The Apache Software License, Version 2.0
   Commons IO under The Apache Software License, Version 2.0
   Commons Lang under The Apache Software License, Version 2.0
+  Commons Logging under The Apache Software License, Version 2.0
   Commons Pool under The Apache Software License, Version 2.0
   Connector Architecture 1.5 API under lgpl
   Core Hibernate O/RM functionality under GNU Lesser General Public License
@@ -92,9 +91,8 @@ This project has dependencies to:
   EJB 3.1 API under lgpl
   Embedded GlassFish All-In-One under CDDL + GPLv2 with classpath exception
   Expression Language 2.2 API under lgpl
-  FindBugs-Annotations under GNU Lesser Public License
   FindBugs-jsr305 under The Apache Software License, Version 2.0
-  flatbuffers-java under Apache License V2.0
+  FlatBuffers Java API under Apache License V2.0
   Google Guice - Core Library under The Apache Software License, Version 2.0
   Google Guice - Extensions - AssistedInject under The Apache Software License, Version 2.0
   Google Guice - Extensions - MultiBindings under The Apache Software License, Version 2.0
@@ -111,6 +109,7 @@ This project has dependencies to:
   HK2 Implementation Utilities under CDDL + GPLv2 with classpath exception
   HtmlUnit under Apache License, Version 2.0
   HtmlUnit Core JS under Mozilla Public License version 2.0
+  HttpMime under Apache License
   INFOMAS ASL :: Annotation Detector under The Apache Software License, Version 2.0
   Interceptors 1.1 API under lgpl
   io.joynr.java.backend-services:capabilities-directory under The Apache Software License, Version 2.0
@@ -229,7 +228,6 @@ This project has dependencies to:
   libjoynr-websocket-runtime under The Apache Software License, Version 2.0
   Logback Classic Module under Eclipse Public License - v 1.0 or GNU Lesser General Public License
   Logback Core Module under Eclipse Public License - v 1.0 or GNU Lesser General Public License
-  Logging under The Apache Software License, Version 2.0
   Maven Aether Provider under Apache License, Version 2.0
   Maven Model under Apache License, Version 2.0
   Maven Model Builder under Apache License, Version 2.0
@@ -271,6 +269,7 @@ This project has dependencies to:
   SLF4J JDK14 Binding under MIT License
   SLF4J LOG4J-12 Binding under MIT License
   SOAP with Attachments API for Java 1.3 under lgpl
+  SpotBugs Annotations under GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1
   StAX API under The Apache Software License, Version 2.0
   TagSoup under Apache License 2.0
   Transaction 1.1 API under lgpl

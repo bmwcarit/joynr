@@ -87,13 +87,14 @@ public class LibJoynrMessageRouterTest {
     private ShutdownNotifier shutdownNotifier;
     @Mock
     private MessagePersister messagePersisterMock;
+    @Mock
+    RoutingTable routingTableMock;
 
     private MessageQueue messageQueue;
     private LibJoynrMessageRouter messageRouter;
     private String unknownParticipantId = "unknownParticipantId";
     private Long sendMsgRetryIntervalMs = 10L;
     private int maxParallelSends = 10;
-    private long routingTableGracePeriodMs = 60000L;
     private long routingTableCleanupIntervalMs = 60000L;
 
     private String globalAddress = "global-address";
@@ -115,14 +116,14 @@ public class LibJoynrMessageRouterTest {
         messageQueue = new MessageQueue(new DelayQueue<DelayableImmutableMessage>(),
                                         new MessageQueue.MaxTimeoutHolder(),
                                         UUID.randomUUID().toString(),
-                                        messagePersisterMock);
+                                        messagePersisterMock,
+                                        routingTableMock);
 
         messageRouter = new LibJoynrMessageRouter(routingTable,
                                                   incomingAddress,
                                                   provideMessageSchedulerThreadPoolExecutor(),
                                                   sendMsgRetryIntervalMs,
                                                   maxParallelSends,
-                                                  routingTableGracePeriodMs,
                                                   routingTableCleanupIntervalMs,
                                                   messagingStubFactory,
                                                   messagingSkeletonFactory,

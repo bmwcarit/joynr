@@ -16,7 +16,6 @@ specific language governing permissions and limitations
 under the License.
 
 This project has dependencies to:
-  "Java Concurrency in Practice" book annotations under Creative Commons Attribution License
   Antlr 3 Runtime under BSD License
   AOP alliance under Public Domain
   Apache Log4j under The Apache Software License, Version 2.0
@@ -40,7 +39,6 @@ This project has dependencies to:
   Expression Language under Eclipse Public License
   Extension Registry Support under Eclipse Public License - v 2.0
   FindBugs-Annotations under GNU Lesser Public License
-  FindBugs-jsr305 under The Apache Software License, Version 2.0
   Google Guice - Core Library under The Apache Software License, Version 2.0
   Google Guice - Extensions - AssistedInject under The Apache Software License, Version 2.0
   Guava: Google Core Libraries for Java under The Apache Software License, Version 2.0
@@ -60,7 +58,7 @@ This project has dependencies to:
   org.franca.core under Eclipse Public License - v 1.0
   org.franca.core.dsl under Eclipse Public License - v 1.0
   org.franca.deploymodel.dsl under Eclipse Public License - v 1.0
-  OSGi System Bundle under Eclipse Public License
+  OSGi System Bundle under Eclipse Public License - v 2.0
   Reflections under WTFPL or The New BSD License
   SLF4J API Module under MIT License
   Text under Eclipse Public License - v 2.0

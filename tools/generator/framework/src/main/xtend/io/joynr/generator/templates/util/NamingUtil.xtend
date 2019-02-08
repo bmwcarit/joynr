@@ -17,6 +17,8 @@ package io.joynr.generator.templates.util
  * limitations under the License.
  */
 
+import com.google.inject.Inject
+import com.google.inject.name.Named
 import javax.inject.Singleton
 import org.franca.core.franca.FArgument
 import org.franca.core.franca.FAttribute
@@ -29,25 +31,39 @@ import org.franca.core.franca.FMethod
 import org.franca.core.franca.FModel
 import org.franca.core.franca.FModelElement
 import org.franca.core.franca.FType
+import org.franca.core.franca.FTypeCollection
 import org.franca.core.franca.FTypeRef
 import org.franca.core.franca.FTypedElement
-import javax.inject.Inject
-import javax.inject.Named
 
 @Singleton
 class NamingUtil {
 
-	public static final String JOYNR_GENERATOR_INTERFACENAMEWITHVERSION  = "JOYNR_GENERATOR_INTERFACENAMEWITHVERSION";
+	public final static String JOYNR_GENERATOR_NAMEWITHVERSION  = "JOYNR_GENERATOR_NAMEWITHVERSION";
+	public final static String JOYNR_GENERATOR_PACKAGEWITHVERSION = "JOYNR_GENERATOR_PACKAGEWITHVERSION";
+
+	@Inject extension TypeUtil;
 
 	@Inject
-	@Named(JOYNR_GENERATOR_INTERFACENAMEWITHVERSION)
-	public boolean interfaceNameWithVersion;
+	@Named(JOYNR_GENERATOR_NAMEWITHVERSION)
+	public boolean nameWithVersion;
 
-	def versionSuffix(FInterface iFace) {
-		if (iFace.version !== null && interfaceNameWithVersion)
-			iFace.version.major
-		else
-			''
+	@Inject
+	@Named(JOYNR_GENERATOR_PACKAGEWITHVERSION)
+	public boolean packageWithVersion;
+
+	def String getVersionSuffix(FModelElement modelElement) {
+		if (modelElement instanceof FTypeCollection
+			&& (modelElement as FTypeCollection).version !== null) {
+			// This also works for interfaces because FInterface is a subtype of FTypeCollection
+			return (if (packageWithVersion) '.v' else '') + (modelElement as FTypeCollection).version.major;
+		} else if (modelElement instanceof FType) {
+			if (modelElement.partOfTypeCollection) {
+				return getVersionSuffix(modelElement.typeCollection);
+			} else if (modelElement.partOfInterface) {
+				return getVersionSuffix(modelElement.interface)
+			}
+		}
+		return ''
 	}
 
 	def joynrName(FTypedElement element){
@@ -71,7 +87,7 @@ class NamingUtil {
 	}
 
 	def joynrName(FType type){
-		type.name
+		type.name + if (nameWithVersion) type.versionSuffix else ''
 	}
 
 	def joynrName(FField member) {
@@ -79,7 +95,7 @@ class NamingUtil {
 	}
 
 	def joynrName(FInterface iFace){
-		iFace.name + iFace.versionSuffix
+		iFace.name + if (nameWithVersion) iFace.versionSuffix else ''
 	}
 
 	def joynrName(FMethod method) {

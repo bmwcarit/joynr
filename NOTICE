@@ -16,7 +16,6 @@ specific language governing permissions and limitations
 under the License.
 
 This project has dependencies to:
-  "Java Concurrency in Practice" book annotations under Creative Commons Attribution License
   Accessibility Test Framework under Apache License, Version 2.0
   Aether API under Eclipse Public License, Version 1.0
   Aether Connector Basic under Eclipse Public License, Version 1.0
@@ -31,8 +30,10 @@ This project has dependencies to:
   AOP alliance under Public Domain
   aopalliance version 1.0 repackaged as a module under CDDL + GPLv2 with classpath exception
   Apache Commons CLI under Apache License, Version 2.0
+  Apache Commons Codec under Apache License, Version 2.0
   Apache Commons Collections under Apache License, Version 2.0
   Apache Commons Lang under Apache License, Version 2.0
+  Apache Commons Logging under The Apache Software License, Version 2.0
   Apache Derby Database Engine and Embedded JDBC Driver under Apache 2
   Apache Geronimo JSR-317 JPA 2.0 Spec API under The Apache Software License, Version 2.0
   Apache Groovy under The Apache Software License, Version 2.0
@@ -40,14 +41,11 @@ This project has dependencies to:
   Apache HttpClient Mime under Apache License, Version 2.0
   Apache HttpCore under Apache License, Version 2.0
   Apache Log4j under The Apache Software License, Version 2.0
-  Apache Log4j API under The Apache Software License, Version 2.0
-  Apache Log4j SLF4J Binding under The Apache Software License, Version 2.0
   Apache Maven Wagon :: API under The Apache Software License, Version 2.0
   Apache Maven Wagon :: Providers :: File Provider under The Apache Software License, Version 2.0
   Apache Maven Wagon :: Providers :: HTTP Shared Library under The Apache Software License, Version 2.0
   Apache Maven Wagon :: Providers :: Lightweight HTTP Provider under The Apache Software License, Version 2.0
   Apache XBean :: ASM 5 shaded (repackaged) under Apache License, Version 2.0
-  Apache XBean :: Reflect under The Apache Software License, Version 2.0
   Arquillian Config API under Apache License, Version 2.0
   Arquillian Config Implementation Base under Apache License, Version 2.0
   Arquillian Container GlassFish Embedded 3.1 under Public Domain
@@ -102,6 +100,7 @@ This project has dependencies to:
   Commons Collections under The Apache Software License, Version 2.0
   Commons IO under The Apache Software License, Version 2.0
   Commons Lang under The Apache Software License, Version 2.0
+  Commons Logging under The Apache Software License, Version 2.0
   Commons Pool under The Apache Software License, Version 2.0
   Connector Architecture 1.5 API under lgpl
   Core File Systems under Eclipse Public License
@@ -127,13 +126,12 @@ This project has dependencies to:
   Extension Registry Support under Eclipse Public License - v 2.0
   FindBugs-Annotations under GNU Lesser Public License
   FindBugs-jsr305 under The Apache Software License, Version 2.0
-  flatbuffers-java under Apache License V2.0
+  FlatBuffers Java API under Apache License V2.0
   Google Guice - Core Library under The Apache Software License, Version 2.0
   Google Guice - Extensions - AssistedInject under The Apache Software License, Version 2.0
   Google Guice - Extensions - MultiBindings under The Apache Software License, Version 2.0
   Google Guice - Extensions - Persist under The Apache Software License, Version 2.0
   Google Guice - Extensions - Servlet under The Apache Software License, Version 2.0
-  google-collect under The Apache Software License, Version 2.0
   graceful-shutdown-test-backend-services under The Apache Software License, Version 2.0
   Groovy under The Apache Software License, Version 2.0
   Gson under The Apache Software License, Version 2.0
@@ -146,6 +144,7 @@ This project has dependencies to:
   HK2 Implementation Utilities under CDDL + GPLv2 with classpath exception
   HtmlUnit under Apache License, Version 2.0
   HtmlUnit Core JS under Mozilla Public License version 2.0
+  HttpMime under Apache License
   ICU4J under ICU License
   INFOMAS ASL :: Annotation Detector under The Apache Software License, Version 2.0
   inter-language-test-jee-api under The Apache Software License, Version 2.0
@@ -161,7 +160,16 @@ This project has dependencies to:
   io.joynr.examples.radio-jee:radio-jee-provider under The Apache Software License, Version 2.0
   io.joynr.examples:android-location-consumer under The Apache Software License, Version 2.0
   io.joynr.examples:android-location-provider under The Apache Software License, Version 2.0
+  io.joynr.examples:custom-headers under The Apache Software License, Version 2.0
+  io.joynr.examples:custom-headers-api under The Apache Software License, Version 2.0
+  io.joynr.examples:custom-headers-jee-consumer under The Apache Software License, Version 2.0
+  io.joynr.examples:custom-headers-jee-provider under The Apache Software License, Version 2.0
   io.joynr.examples:location-tester under The Apache Software License, Version 2.0
+  io.joynr.examples:message-persistence under The Apache Software License, Version 2.0
+  io.joynr.examples:message-persistence-consumer under The Apache Software License, Version 2.0
+  io.joynr.examples:message-persistence-impl under The Apache Software License, Version 2.0
+  io.joynr.examples:message-persistence-java under The Apache Software License, Version 2.0
+  io.joynr.examples:message-persistence-jee under The Apache Software License, Version 2.0
   io.joynr.examples:radio-app under The Apache Software License, Version 2.0
   io.joynr.examples:radio-jee under The Apache Software License, Version 2.0
   io.joynr.examples:radio-js under The Apache Software License, Version 2.0
@@ -224,14 +232,25 @@ This project has dependencies to:
   io.joynr.tests.graceful-shutdown-test:graceful-shutdown-test-consumer under The Apache Software License, Version 2.0
   io.joynr.tests.graceful-shutdown-test:graceful-shutdown-test-provider under The Apache Software License, Version 2.0
   io.joynr.tests.graceful-shutdown-test:graceful-shutdown-test-second-level-provider under The Apache Software License, Version 2.0
+  io.joynr.tests.joynr-hivemq-shared-subscriptions.test-apps:backpressure-test-clustered-provider-large under The Apache Software License, Version 2.0
+  io.joynr.tests.joynr-hivemq-shared-subscriptions.test-apps:backpressure-test-clustered-provider-small under The Apache Software License, Version 2.0
+  io.joynr.tests.joynr-hivemq-shared-subscriptions.test-apps:backpressure-test-monitor-app under The Apache Software License, Version 2.0
+  io.joynr.tests.joynr-hivemq-shared-subscriptions.test-apps:sharedsubscriptions-test-clustered-app under The Apache Software License, Version 2.0
+  io.joynr.tests.joynr-hivemq-shared-subscriptions.test-apps:sharedsubscriptions-test-clustered-app-base under The Apache Software License, Version 2.0
+  io.joynr.tests.joynr-hivemq-shared-subscriptions.test-apps:sharedsubscriptions-test-monitor-app under The Apache Software License, Version 2.0
+  io.joynr.tests.joynr-hivemq-shared-subscriptions.test-apps:sharedsubscriptions-test-ping-service-api under The Apache Software License, Version 2.0
+  io.joynr.tests.joynr-hivemq-shared-subscriptions:test-apps under The Apache Software License, Version 2.0
+  io.joynr.tests.system-integration-test:sit-controller under The Apache Software License, Version 2.0
   io.joynr.tests.system-integration-test:sit-cpp-app under The Apache Software License, Version 2.0
   io.joynr.tests.system-integration-test:sit-java-app under The Apache Software License, Version 2.0
   io.joynr.tests.system-integration-test:sit-jee-api under The Apache Software License, Version 2.0
   io.joynr.tests.system-integration-test:sit-jee-app under The Apache Software License, Version 2.0
+  io.joynr.tests.system-integration-test:sit-jee-stateless-consumer under The Apache Software License, Version 2.0
   io.joynr.tests.system-integration-test:sit-node-app under The Apache Software License, Version 2.0
   io.joynr.tests:graceful-shutdown-test under The Apache Software License, Version 2.0
   io.joynr.tests:inter-language-test under The Apache Software License, Version 2.0
   io.joynr.tests:inter-language-test-jee under The Apache Software License, Version 2.0
+  io.joynr.tests:joynr-hivemq-shared-subscriptions under The Apache Software License, Version 2.0
   io.joynr.tests:performance-test under The Apache Software License, Version 2.0
   io.joynr.tests:robustness-test under The Apache Software License, Version 2.0
   io.joynr.tests:robustness-test-base under The Apache Software License, Version 2.0
@@ -332,7 +351,6 @@ This project has dependencies to:
   libjoynr-websocket-runtime under The Apache Software License, Version 2.0
   Logback Classic Module under Eclipse Public License - v 1.0 or GNU Lesser General Public License
   Logback Core Module under Eclipse Public License - v 1.0 or GNU Lesser General Public License
-  Logging under The Apache Software License, Version 2.0
   Maven Aether Provider under Apache License, Version 2.0
   Maven Ant Tasks under The Apache Software License, Version 2.0
   Maven Artifact under The Apache Software License, Version 2.0
@@ -352,6 +370,7 @@ This project has dependencies to:
   Maven Wagon File Provider under The Apache Software License, Version 2.0
   Maven Wagon HTTP Shared Library under The Apache Software License, Version 2.0
   Maven Wagon Lightweight HTTP Provider under The Apache Software License, Version 2.0
+  message-persistence-backend-services under The Apache Software License, Version 2.0
   MIME streaming extension under CDDL 1.1 or GPL2 w/ CPE
   Mockito under The MIT License
   Neko HTML under The Apache Software License, Version 2.0
@@ -369,12 +388,10 @@ This project has dependencies to:
   org.franca.core.dsl under Eclipse Public License - v 1.0
   org.franca.deploymodel.dsl under Eclipse Public License - v 1.0
   OSGi resource locator bundle - used by various API providers that rely on META-INF/services mechanism to locate providers. under CDDL + GPLv2 with classpath exception
-  OSGi System Bundle under Eclipse Public License
+  OSGi System Bundle under Eclipse Public License - v 2.0
   Payara Embedded-All under CDDL + GPLv2 with classpath exception
   Plexus :: Component Annotations under The Apache Software License, Version 2.0
-  Plexus :: Default Container under The Apache Software License, Version 2.0
   Plexus Cipher: encryption/decryption Component under Apache Public License 2.0
-  Plexus Classworlds under The Apache Software License, Version 2.0
   Plexus Common Utilities under The Apache Software License, Version 2.0
   Plexus Interpolation API under The Apache Software License, Version 2.0
   Plexus Security Dispatcher Component under Apache Public License 2.0
@@ -406,6 +423,7 @@ This project has dependencies to:
   SLF4J JDK14 Binding under MIT License
   SLF4J LOG4J-12 Binding under MIT License
   SOAP with Attachments API for Java 1.3 under lgpl
+  SpotBugs Annotations under GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1
   sqlite4java under The Apache Software License, Version 2.0
   stateless-async-backend-services under The Apache Software License, Version 2.0
   StAX API under The Apache Software License, Version 2.0

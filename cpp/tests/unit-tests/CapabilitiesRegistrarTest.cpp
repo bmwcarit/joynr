@@ -125,7 +125,7 @@ TEST_F(CapabilitiesRegistrarTest, add)
     types::ProviderQos testQos;
     testQos.setPriority(100);
     EXPECT_CALL(*mockParticipantIdStorage,
-                getProviderParticipantId(domain, MockProvider::INTERFACE_NAME()))
+                getProviderParticipantId(domain, MockProvider::INTERFACE_NAME(), MockProvider::MAJOR_VERSION))
             .Times(1)
             .WillOnce(Return(expectedParticipantId));
     EXPECT_CALL(*mockDispatcher, addRequestCaller(expectedParticipantId, _)).Times(1);
@@ -164,7 +164,7 @@ TEST_F(CapabilitiesRegistrarTest, checkVisibilityOfGlobalAndLocalProviders)
     types::ProviderQos testQos;
     testQos.setScope(types::ProviderScope::GLOBAL);
     EXPECT_CALL(*mockParticipantIdStorage,
-                getProviderParticipantId(domain, MockProvider::INTERFACE_NAME()))
+                getProviderParticipantId(domain, MockProvider::INTERFACE_NAME(), MockProvider::MAJOR_VERSION))
             .Times(2)
             .WillRepeatedly(Return(expectedParticipantId));
 
@@ -223,7 +223,7 @@ TEST_F(CapabilitiesRegistrarTest, checkVisibilityOfGlobalAndLocalProviders)
 TEST_F(CapabilitiesRegistrarTest, removeWithDomainAndProviderObject)
 {
     EXPECT_CALL(*mockParticipantIdStorage,
-                getProviderParticipantId(domain, MockProvider::INTERFACE_NAME()))
+                getProviderParticipantId(domain, MockProvider::INTERFACE_NAME(), MockProvider::MAJOR_VERSION))
             .Times(1)
             .WillOnce(Return(expectedParticipantId));
     EXPECT_CALL(*mockDispatcher, removeRequestCaller(expectedParticipantId)).Times(1);
@@ -272,7 +272,7 @@ TEST_F(CapabilitiesRegistrarTest, registerMultipleDispatchersAndRegisterCapabili
     testQos.setPriority(100);
 
     EXPECT_CALL(*mockParticipantIdStorage,
-                getProviderParticipantId(domain, MockProvider::INTERFACE_NAME()))
+                getProviderParticipantId(domain, MockProvider::INTERFACE_NAME(), MockProvider::MAJOR_VERSION))
             .Times(1)
             .WillOnce(Return(expectedParticipantId));
 
@@ -326,7 +326,7 @@ TEST_F(CapabilitiesRegistrarTest, removeDispatcher)
     capabilitiesRegistrar->removeDispatcher(mockDispatcher1);
 
     EXPECT_CALL(*mockParticipantIdStorage,
-                getProviderParticipantId(domain, MockProvider::INTERFACE_NAME()))
+                getProviderParticipantId(domain, MockProvider::INTERFACE_NAME(), MockProvider::MAJOR_VERSION))
             .Times(1)
             .WillOnce(Return(expectedParticipantId));
 

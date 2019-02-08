@@ -36,6 +36,7 @@ Settings::Settings() : filename(), propertyTree(), loaded(false)
 Settings::Settings(const std::string& filename) : filename(filename), propertyTree(), loaded(false)
 {
     try {
+        JOYNR_LOG_INFO(logger(), "attempting to read settings file: {}", filename);
         ptree::read_ini(filename, propertyTree);
         loaded = true;
     } catch (const ptree::ini_parser_error& e) {
@@ -70,9 +71,9 @@ bool Settings::sync()
             ptree::write_ini(filename, propertyTree);
             return true;
         } else {
-            JOYNR_LOG_DEBUG(logger(),
-                            "Settings file \"{}\" not updated because its content did not change",
-                            filename);
+            JOYNR_LOG_INFO(logger(),
+                           "Settings file \"{}\" not updated because its content did not change",
+                           filename);
         }
     } catch (const ptree::ini_parser_error& e) {
         JOYNR_LOG_ERROR(logger(),

@@ -27,11 +27,9 @@ import io.joynr.generator.cpp.util.CppTemplateFactory
 
 class DefaultInterfaceProviderGenerator {
 
-	@Inject
-	private extension JoynrCppGeneratorExtensions
+	@Inject extension JoynrCppGeneratorExtensions
 
-	@Inject
-	private extension NamingUtil
+	@Inject extension NamingUtil
 
 	@Inject CppTemplateFactory templateFactory;
 

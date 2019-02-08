@@ -6,6 +6,7 @@ ENV PKG_CONFIG_PATH /usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
 # install clang 3.5 for formatting
 ###################################################
 RUN cd /tmp/ \
+    && . /etc/profile \
     && wget http://llvm.org/releases/3.5.0/clang+llvm-3.5.0-x86_64-fedora20.tar.xz \
     && tar -xf clang+llvm-3.5.0-x86_64-fedora20.tar.xz \
     clang+llvm-3.5.0-x86_64-fedora20/bin/clang-format \
@@ -26,6 +27,7 @@ RUN dnf update -y \
 ###################################################
 
 RUN cd /opt \
+    && . /etc/profile \
     && git clone https://github.com/zserge/jsmn.git \
     && cd jsmn \
     && git checkout 572ace5 \
@@ -40,6 +42,7 @@ RUN cd /opt \
 ###################################################
 
 RUN cd /opt \
+    && . /etc/profile \
     && git clone https://github.com/gabime/spdlog.git \
     && cd spdlog \
     && git checkout 799ba2a57bb16b921099bd9ab64a513e4ebe4217 \
@@ -55,6 +58,7 @@ RUN cd /opt \
 ###################################################
 
 RUN cd /opt \
+    && . /etc/profile \
     && git clone https://github.com/zaphoyd/websocketpp.git \
     && cd websocketpp \
     && git checkout 378437aecdcb1dfe62096ffd5d944bf1f640ccc3 \
@@ -69,6 +73,7 @@ RUN cd /opt \
 # install gcovr for code coverage reports
 ###################################################
 RUN dnf update -y \
+    && . /etc/profile \
     && dnf install -y \
     python-pip \
     && dnf clean all \
@@ -96,6 +101,7 @@ RUN dnf update -y \
 ###################################################
 
 RUN cd /opt \
+    && . /etc/profile \
     && git clone https://github.com/google/googletest.git \
     && cd googletest \
     && git checkout ddb8012e \
@@ -110,6 +116,7 @@ RUN cd /opt \
 # install psmisc tools (includes pstree)
 ###################################################
 RUN dnf update -y \
+    && . /etc/profile \
     && dnf install -y \
     psmisc \
     && dnf clean all
@@ -122,6 +129,7 @@ RUN chmod -R a+rw /opt \
 ###################################################
 
 RUN export FLATBUFFERS_VERSION=v1.6.0 \
+        && . /etc/profile \
         && cd /tmp \
         && git clone https://github.com/google/flatbuffers.git \
         && cd flatbuffers \
@@ -136,7 +144,8 @@ RUN export FLATBUFFERS_VERSION=v1.6.0 \
 # install smrf
 ###################################################
 
-RUN export SMRF_VERSION=0.2.2 \
+RUN export SMRF_VERSION=0.3.1 \
+    && . /etc/profile \
     && cd /opt \
     && git clone https://github.com/bmwcarit/smrf.git \
     && cd smrf \
@@ -153,6 +162,7 @@ RUN export SMRF_VERSION=0.2.2 \
 ###################################################
 
 RUN export MoCOCrW_VERSION=master \
+    && . /etc/profile \
     && cd /opt \
     && git clone https://github.com/bmwcarit/MoCOCrW.git \
     && cd MoCOCrW \
@@ -169,6 +179,7 @@ RUN export MoCOCrW_VERSION=master \
 ###################################################
 
 RUN export VALGRIND_VERSION=3.13.0 \
+        && . /etc/profile \
         && cd /tmp \
         && wget https://sourceware.org/pub/valgrind/valgrind-$VALGRIND_VERSION.tar.bz2 \
         && tar xf valgrind-$VALGRIND_VERSION.tar.bz2 \

@@ -2,7 +2,7 @@
 
 echo "### start build_docker_image.sh for joynr-backend-jee ###"
 
-set -e
+set -e -x
 
 if [ -d target ]; then
 	rm -Rf target
@@ -29,8 +29,7 @@ if [ -z "$(docker version 2>/dev/null)" ]; then
 fi
 
 docker build -t joynr-backend-jee:latest .
-docker images --filter "dangling=true" -q | xargs docker rmi -f 2>/dev/null
-rm -Rf target
+docker image prune
+rm -rf target
 
 echo "### end build_docker_image.sh for joynr-backend-jee ###"
-exit 0

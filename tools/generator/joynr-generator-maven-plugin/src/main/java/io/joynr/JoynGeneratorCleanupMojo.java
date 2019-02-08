@@ -33,8 +33,9 @@ import org.apache.maven.plugin.MojoExecutionException;
  * @phase clean
  */
 public class JoynGeneratorCleanupMojo extends AbstractJoynGeneratorMojo {
+    @Override
     public void execute() throws MojoExecutionException {
-        int executionHashCode = getParameterHashCode();
+        int executionHashCode = createInvocationArguments().getHashCodeForParameterCombination();
         String generationDonePropertyName = "generation.done.id[" + executionHashCode + "]";
         String generationAlreadyDone = project.getProperties().getProperty(generationDonePropertyName);
         if (Boolean.valueOf(generationAlreadyDone)) {

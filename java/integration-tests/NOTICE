@@ -16,27 +16,23 @@ specific language governing permissions and limitations
 under the License.
 
 This project has dependencies to:
-  "Java Concurrency in Practice" book annotations under Creative Commons Attribution License
   AOP alliance under Public Domain
+  Apache Commons Codec under Apache License, Version 2.0
   Apache Commons Lang under Apache License, Version 2.0
+  Apache Commons Logging under The Apache Software License, Version 2.0
   Apache HttpClient under Apache License, Version 2.0
-  Apache HttpClient Mime under Apache License, Version 2.0
   Apache HttpCore under Apache License, Version 2.0
   Apache Log4j under The Apache Software License, Version 2.0
-  Apache Log4j API under The Apache Software License, Version 2.0
-  Apache Log4j SLF4J Binding under The Apache Software License, Version 2.0
   clustercontroller-inprocess-runtime under The Apache Software License, Version 2.0
   clustercontroller-websocket-runtime under The Apache Software License, Version 2.0
-  Commons Codec under The Apache Software License, Version 2.0
   Commons Collections under The Apache Software License, Version 2.0
   Commons IO under The Apache Software License, Version 2.0
   Commons Lang under The Apache Software License, Version 2.0
   CSS Parser under GNU Lesser General Public License
   Data Mapper for Jackson under The Apache Software License, Version 2.0
   ehcache under The Apache Software License, Version 2.0
-  FindBugs-Annotations under GNU Lesser Public License
   FindBugs-jsr305 under The Apache Software License, Version 2.0
-  flatbuffers-java under Apache License V2.0
+  FlatBuffers Java API under Apache License V2.0
   Google Guice - Core Library under The Apache Software License, Version 2.0
   Google Guice - Extensions - AssistedInject under The Apache Software License, Version 2.0
   Google Guice - Extensions - MultiBindings under The Apache Software License, Version 2.0
@@ -47,6 +43,7 @@ This project has dependencies to:
   Hamcrest library under New BSD License
   HtmlUnit under Apache License, Version 2.0
   HtmlUnit Core JS under Mozilla Public License version 2.0
+  HttpMime under Apache License
   io.joynr.java.common:access-control-common under The Apache Software License, Version 2.0
   io.joynr.java.common:discovery-common under The Apache Software License, Version 2.0
   io.joynr.java.common:guice-integration under The Apache Software License, Version 2.0
@@ -102,7 +99,6 @@ This project has dependencies to:
   jsr311-api under CDDL License
   JUnit under Eclipse Public License 1.0
   libjoynr-websocket-runtime under The Apache Software License, Version 2.0
-  Logging under The Apache Software License, Version 2.0
   Mockito under The MIT License
   Neko HTML under The Apache Software License, Version 2.0
   REST Assured under Apache 2.0
@@ -110,6 +106,7 @@ This project has dependencies to:
   Simple API for CSS under The W3C Software License
   SLF4J API Module under MIT License
   SLF4J LOG4J-12 Binding under MIT License
+  SpotBugs Annotations under GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1
   TagSoup under Apache License 2.0
   Xalan Java under The Apache Software License, Version 2.0
   Xalan Java Serializer under The Apache Software License, Version 2.0

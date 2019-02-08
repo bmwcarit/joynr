@@ -10,7 +10,7 @@
      "interfaceName":"notReachableInterface/UsedInTestOnly_1",
      "participantId":"notReachableInterface_Heisenberg",
      "qos":{
-        "_typeName":"joynr.types.HeisenbergInterface",
+        "_typeName":"joynr.types.ProviderQos",
         "customParameters":[],
         "priority":1,
         "scope":"GLOBAL",
@@ -32,7 +32,7 @@
      "interfaceName":"notReachableInterface/UsedInTestOnly_1",
      "participantId":"notReachableInterface_Schroedinger",
      "qos":{
-        "_typeName":"joynr.types.SchroedingerInterface",
+        "_typeName":"joynr.types.ProviderQos",
         "customParameters":[],
         "priority":1,
         "scope":"GLOBAL",

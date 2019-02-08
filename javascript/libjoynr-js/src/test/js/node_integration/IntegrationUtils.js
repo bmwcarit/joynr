@@ -19,7 +19,6 @@
  */
 
 const provisioning_root = require("../../resources/joynr/provisioning/provisioning_root");
-const waitsFor = require("../global/WaitsFor");
 const child_process = require("child_process");
 const path = require("path");
 
@@ -93,6 +92,17 @@ IntegrationUtils.createPromise = function createPromise() {
     return map;
 };
 
+function shutdownChildProcessInternal(childId) {
+    if (currentlyRunningChildCC === childId) {
+        currentlyRunningChildCC = undefined;
+    }
+    child[childId].kill();
+    child[childId] = undefined;
+    childReady[childId] = undefined;
+    childStarted[childId] = undefined;
+    childFinished[childId] = undefined;
+}
+
 IntegrationUtils.initializeChildProcess = function(childName, provisioningSuffix, domain, processSpecialization, cc) {
     processId++;
     const newChildId = processId;
@@ -112,7 +122,7 @@ IntegrationUtils.initializeChildProcess = function(childName, provisioningSuffix
           }
         : {};
 
-    const forked = child_process.fork(path.join(__dirname, `${childName}.js`), [], processConfig);
+    const forked = child_process.fork(path.join(__dirname, "provider", `${childName}.js`), [], processConfig);
     forked.on("message", msg => {
         // Handle messages from child process
         console.log(`received message: ${JSON.stringify(msg)}`);
@@ -122,6 +132,10 @@ IntegrationUtils.initializeChildProcess = function(childName, provisioningSuffix
             childStarted[newChildId].resolve(msg.argument);
         } else if (msg.type === "finished") {
             childFinished[newChildId].resolve(true);
+        } else if (msg.type === "error") {
+            const childReadyPromise = childReady[newChildId];
+            shutdownChildProcessInternal(newChildId);
+            childReadyPromise.reject(new Error(msg.msg));
         }
     });
     child[newChildId] = forked;
@@ -164,14 +178,7 @@ IntegrationUtils.shutdownChildProcess = function(childId) {
 
         // wait for child to be shut down
         childFinished[childId].promise.then(() => {
-            if (currentlyRunningChildCC === childId) {
-                currentlyRunningChildCC = undefined;
-            }
-            child[childId].kill();
-            child[childId] = undefined;
-            childReady[childId] = undefined;
-            childStarted[childId] = undefined;
-            childFinished[childId] = undefined;
+            shutdownChildProcessInternal(childId);
         });
 
         promise = childFinished[childId].promise;
@@ -184,27 +191,15 @@ IntegrationUtils.shutdownChildProcess = function(childId) {
     return promise;
 };
 
-IntegrationUtils.shutdownLibjoynr = function() {
-    try {
-        return joynr.shutdown().catch(error => {
-            IntegrationUtils.outputPromiseError(error);
-        });
-    } catch (error) {
-        return Promise.resolve();
-    }
+IntegrationUtils.shutdownLibjoynr = async function() {
+    await joynr.terminateAllSubscriptions();
+    return joynr.shutdown();
 };
 
 IntegrationUtils.waitALittle = function waitALittle(time) {
-    const start = Date.now();
-
-    // wait for childProcess to be shut down
-    return waitsFor(
-        () => {
-            return Date.now() - start > time;
-        },
-        `${time} ms to elapse`,
-        time
-    );
+    return new Promise(resolve => {
+        setTimeout(resolve, time);
+    });
 };
 
 IntegrationUtils.getRandomInt = function getRandomInt(min, max) {

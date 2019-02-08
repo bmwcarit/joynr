@@ -26,7 +26,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>android</artifactId>
-		<version>1.6.5</version>
+		<version>1.7.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -153,9 +153,6 @@
 						<goals>
 							<goal>test</goal>
 						</goals>
-						<configuration>
-							<argLine>-XX:MaxPermSize=256m</argLine>
-						</configuration>
 					</execution>
 				</executions>
 				<dependencies>

@@ -23,6 +23,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.anyBoolean;
+import static org.mockito.Mockito.anyLong;
+import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -42,10 +45,17 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.joynr.messaging.persistence.MessagePersister;
+import joynr.ImmutableMessage;
+import joynr.Message;
+import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.MqttAddress;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MessageQueueTest {
@@ -54,10 +64,19 @@ public class MessageQueueTest {
     private DelayableImmutableMessage mockMessage;
 
     @Mock
-    private DelayableImmutableMessage mockMessage2;
+    private DelayableImmutableMessage mockDelayableMessage2_multicast;
 
     @Mock
-    private DelayableImmutableMessage mockMessage3;
+    private ImmutableMessage mockImmutableMessage2_multicast;
+
+    @Mock
+    private Set<Address> multicastDestinationAddresses;
+
+    @Mock
+    private DelayableImmutableMessage mockDelayableMessage3_request;
+
+    @Mock
+    private ImmutableMessage mockImmutableMessage3_request;
 
     @Mock
     private MessageQueue.MaxTimeoutHolder maxTimeoutHolderMock;
@@ -68,21 +87,48 @@ public class MessageQueueTest {
     @Mock
     private MessagePersister messagePersisterMock;
 
+    @Mock
+    RoutingTable routingTableMock;
+
     private String generatedMessageQueueId;
     private MessageQueue subject;
 
+    private final long shutdownMaxTimeout = 50;
+    private final long routingTableGracePeriodMs = 42;
+    private final String sender = "fromParticipantId";
+    private final String brokerUri = "testBrokerUri";
+    private final String topic = "testTopic";
+    private final MqttAddress replyToAddress = new MqttAddress(brokerUri, topic);
+
     @Before
-    public void setup() {
+    public void setup() throws Exception {
         generatedMessageQueueId = UUID.randomUUID().toString();
 
         // configure mocks
-        when(maxTimeoutHolderMock.getTimeout()).thenReturn(50L);
+        when(maxTimeoutHolderMock.getTimeout()).thenReturn(shutdownMaxTimeout);
 
-        Set<DelayableImmutableMessage> mockedMessages = Stream.of(mockMessage2, mockMessage3).collect(toSet());
+        Set<DelayableImmutableMessage> mockedMessages = Stream.of(mockDelayableMessage2_multicast,
+                                                                  mockDelayableMessage3_request)
+                                                              .collect(toSet());
         when(messagePersisterMock.fetchAll(eq(generatedMessageQueueId))).thenReturn(mockedMessages);
 
+        when(mockDelayableMessage2_multicast.getMessage()).thenReturn(mockImmutableMessage2_multicast);
+        when(mockDelayableMessage3_request.getMessage()).thenReturn(mockImmutableMessage3_request);
+
+        when(mockImmutableMessage2_multicast.getType()).thenReturn(Message.VALUE_MESSAGE_TYPE_MULTICAST);
+        when(mockDelayableMessage2_multicast.getDestinationAddresses()).thenReturn(multicastDestinationAddresses);
+        when(mockImmutableMessage3_request.getType()).thenReturn(Message.VALUE_MESSAGE_TYPE_REQUEST);
+        ObjectMapper objectMapper = new ObjectMapper();
+        when(mockImmutableMessage3_request.getReplyTo()).thenReturn(objectMapper.writeValueAsString(replyToAddress));
+        when(mockImmutableMessage3_request.getTtlMs()).thenReturn(42l);
+        when(mockImmutableMessage3_request.getSender()).thenReturn(sender);
+
         // create test subject
-        subject = new MessageQueue(delayQueue, maxTimeoutHolderMock, generatedMessageQueueId, messagePersisterMock);
+        subject = new MessageQueue(delayQueue,
+                                   maxTimeoutHolderMock,
+                                   generatedMessageQueueId,
+                                   messagePersisterMock,
+                                   routingTableMock);
         drainQueue();
     }
 
@@ -127,8 +173,9 @@ public class MessageQueueTest {
             }
         }).start();
         Thread.sleep(5);
+        assertTrue("returned from poll before put", countDownLatch.getCount() > 0);
         subject.put(mockMessage);
-        countDownLatch.await();
+        assertTrue("poll did not return within 1 second", countDownLatch.await(1, TimeUnit.SECONDS));
 
         // Then I was returned the message I put
         assertEquals(1, resultContainer.size());
@@ -181,9 +228,9 @@ public class MessageQueueTest {
         subject.waitForQueueToDrain();
         long timeTaken = System.currentTimeMillis() - beforeStop;
 
-        // Then the operation blocked for max just over 50 millis
-        assertTrue("Expected stop to block for maximum of around 50ms. Actual: " + timeTaken,
-                   timeTaken >= 50 && timeTaken < 70);
+        // Then the operation blocked for max just over shutdownMaxTimeout millis
+        assertTrue("Expected stop to block for maximum of around " + shutdownMaxTimeout + "ms. Actual: " + timeTaken,
+                   timeTaken >= shutdownMaxTimeout && timeTaken < shutdownMaxTimeout + 20);
     }
 
     @Test
@@ -200,19 +247,81 @@ public class MessageQueueTest {
     }
 
     @Test
-    public void testMessagesFetchedFromPersistenceAndAddedToQueueOnStartup() {
-        // Given a mocked MessagePersister and a set containing messages which is returned when fetching
+    public void testPollRemovesMessageFromDelayQueueAndMessagePersister() throws Exception {
+        // Given the MessageQueue and a mock message
 
+        // When we add a message to the MessageQueue
+        subject.put(mockMessage);
+        // and poll
+        final long timeOut = 1;
+        final TimeUnit timeUnit = TimeUnit.SECONDS;
+        subject.poll(timeOut, timeUnit);
+
+        // Then the message is removed from the message persister
+        verify(messagePersisterMock).remove(eq(generatedMessageQueueId), eq(mockMessage));
+        // ... and the in-memory queue is polled once for the message above and twice for the messages in the setup method
+        verify(delayQueue, times(3)).poll(timeOut, timeUnit);
+    }
+
+    private void testFetchMessagesFromPersistence() {
+        // Given a mocked MessagePersister and a set containing messages which is returned when fetching
         // When the MessageQueue is created (see the setup method)
 
         // Then the messages were fetched from the MessagePersistence
         verify(messagePersisterMock).fetchAll(eq(generatedMessageQueueId));
+    }
+
+    @Test
+    public void testFetchMessagesFromPersistence_AddToQueue() throws Exception {
+        testFetchMessagesFromPersistence();
         // ... and added to the queue
         ArgumentCaptor<DelayableImmutableMessage> argumentCaptor = ArgumentCaptor.forClass(DelayableImmutableMessage.class);
         verify(delayQueue, times(2)).put(argumentCaptor.capture());
         List<DelayableImmutableMessage> passedArguments = argumentCaptor.getAllValues();
-        assertTrue(passedArguments.contains(mockMessage2));
-        assertTrue(passedArguments.contains(mockMessage3));
+        assertEquals(2, passedArguments.size());
+        assertTrue(passedArguments.contains(mockDelayableMessage2_multicast));
+        assertTrue(passedArguments.contains(mockDelayableMessage3_request));
+
+    }
+
+    @Test
+    public void testFetchMessagesFromPersistence_AddReplyToAddressToRoutingTable() throws Exception {
+        testFetchMessagesFromPersistence();
+
+        // ... and one routing entry was added (replyTo address of mockDelayableMessage3_request)
+        verify(mockImmutableMessage2_multicast, times(0)).getReplyTo();
+        verify(mockImmutableMessage3_request).getReplyTo();
+        verify(routingTableMock).put(anyString(),
+                                     Mockito.any(Address.class),
+                                     anyBoolean(),
+                                     anyLong(),
+                                     anyBoolean(),
+                                     anyBoolean());
+        verify(routingTableMock).put(sender,
+                                     replyToAddress,
+                                     true,
+                                     mockImmutableMessage3_request.getTtlMs(),
+                                     false,
+                                     false);
+    }
+
+    @Test
+    public void testFetchMessagesFromPersistence_clearDestinationAddressesOfMulticast() throws Exception {
+        testFetchMessagesFromPersistence();
+
+        verify(mockDelayableMessage2_multicast).getDestinationAddresses();
+        verify(mockDelayableMessage3_request, times(0)).getDestinationAddresses();
+        verify(multicastDestinationAddresses).clear();
+
+    }
+
+    @Test
+    public void testFetchMessagesFromPersistence_setDelay() throws Exception {
+        testFetchMessagesFromPersistence();
+
+        final long startupGracePeriodMs = 1000;
+        verify(mockDelayableMessage2_multicast).setDelay(startupGracePeriodMs);
+        verify(mockDelayableMessage3_request).setDelay(startupGracePeriodMs);
     }
 
 }

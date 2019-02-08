@@ -19,9 +19,11 @@
 package io.joynr.test.interlanguage;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiPredicate;
 
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.proxy.Callback;
@@ -83,16 +85,18 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
     // variables that are to be changed inside callbacks must be instance variables
     volatile boolean proxyMethodWithParameterCallbackResult = false;
 
-    private <T> void callProxyMethodWithParameterAsyncAndAssertResult(String methodName, final T arg) {
+    private <T, U> void callProxyMethodWithParameterAsyncAndAssertResult(String methodName,
+                                                                         final T arg,
+                                                                         BiPredicate<T, U> expectedResultCheck) {
         try {
 
             final Semaphore resultAvailable = new Semaphore(0);
 
-            Callback<T> callback = new Callback<T>() {
+            Callback<U> callback = new Callback<U>() {
                 @Override
-                public void onSuccess(T out) {
+                public void onSuccess(U out) {
                     // check result
-                    if (!Objects.deepEquals(out, arg)) {
+                    if (!expectedResultCheck.test(arg, out)) {
                         LOG.info(name.getMethodName() + TEST_FAILED_CALLBACK_INVALID_RESULT);
                         proxyMethodWithParameterCallbackResult = false;
                         resultAvailable.release();
@@ -170,7 +174,8 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
                         return;
                     }
 
-                    if (!IltUtil.checkExtendedExtendedBaseStruct(extendedExtendedBaseStructOut)) {
+                    ExtendedExtendedBaseStruct extendedExtendedBaseStruct = IltUtil.createExtendedExtendedBaseStruct();
+                    if (!extendedExtendedBaseStructOut.equals(extendedExtendedBaseStruct)) {
                         methodWithMultipleStructParametersAsyncCallbackResult = false;
                         methodWithMultipleStructParametersAsyncCallbackDone = true;
                         LOG.info(name.getMethodName() + " - callback - invalid extendedExtendedBaseStructOut");
@@ -215,7 +220,8 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
                     return;
                 }
 
-                if (!IltUtil.checkExtendedExtendedBaseStruct(result.extendedExtendedBaseStructOut)) {
+                ExtendedExtendedBaseStruct extendedExtendedBaseStruct = IltUtil.createExtendedExtendedBaseStruct();
+                if (!result.extendedExtendedBaseStructOut.equals(extendedExtendedBaseStruct)) {
                     fail(name.getMethodName() + " - FAILED - got invalid result - extendedExtendedBaseStructOut");
                     return;
                 }
@@ -250,249 +256,39 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
         LOG.info(name.getMethodName() + " - OK");
     }
 
-    // variables that are to be changed inside callbacks must be declared global
-    volatile boolean methodWithSingleArrayParametersAsyncCallbackDone = false;
-    volatile boolean methodWithSingleArrayParametersAsyncCallbackResult = false;
-
     @Test
     public void callMethodWithSingleArrayParametersAsync() {
         LOG.info(name.getMethodName() + "");
-        try {
-            // setup input parameters
-            Double[] doubleArrayArg = IltUtil.createDoubleArray();
-
-            Callback<String[]> callback = new Callback<String[]>() {
-                @Override
-                public void onSuccess(String[] stringOut) {
-                    // check results
-                    if (!IltUtil.checkStringArray(stringOut)) {
-                        LOG.info(name.getMethodName() + " - invalid stringOut from callback");
-                        LOG.info(name.getMethodName() + " - FAILED");
-                        methodWithSingleArrayParametersAsyncCallbackResult = false;
-                        methodWithSingleArrayParametersAsyncCallbackDone = true;
-                        return;
-                    }
-                    methodWithSingleArrayParametersAsyncCallbackResult = true;
-                    methodWithSingleArrayParametersAsyncCallbackDone = true;
-                }
-
-                @Override
-                public void onFailure(JoynrRuntimeException error) {
-                    methodWithSingleArrayParametersAsyncCallbackResult = false;
-                    methodWithSingleArrayParametersAsyncCallbackDone = true;
-                    if (error instanceof JoynrRuntimeException) {
-                        LOG.info(name.getMethodName() + " - callback - caught exception "
-                                + ((JoynrRuntimeException) error).getMessage());
-                    } else {
-                        LOG.info(name.getMethodName() + " - callback - caught exception");
-                    }
-                    LOG.info(name.getMethodName() + " - FAILED");
-                }
-            };
-
-            Future<String[]> future = testInterfaceProxy.methodWithSingleArrayParameters(callback, doubleArrayArg);
-
-            try {
-                long timeoutInMilliseconds = 8000;
-                LOG.info(name.getMethodName() + " - about to call future.get");
-                String[] result;
-
-                result = future.get(timeoutInMilliseconds);
-                LOG.info(name.getMethodName() + " - returned from future.get");
-
-                // check results from future
-                if (result == null) {
-                    fail(name.getMethodName() + " - FAILED - got no result");
-                    return;
-                }
-                if (!IltUtil.checkStringArray(result)) {
-                    fail(name.getMethodName() + " - FAILED - got invalid result");
-                    return;
-                }
-
-                LOG.info(name.getMethodName() + " - future result checks OK");
-
-                // check results from callback; expect to be finished within 1 second
-                // should have been called ahead anyway
-                if (methodWithSingleArrayParametersAsyncCallbackDone == false) {
-                    LOG.info(name.getMethodName() + " - about to wait for a second for callback");
-                    Thread.sleep(1000);
-                    LOG.info(name.getMethodName() + " - wait for callback is over");
-                } else {
-                    LOG.info(name.getMethodName() + " - callback already done");
-                }
-                if (methodWithSingleArrayParametersAsyncCallbackDone == false) {
-                    fail(name.getMethodName() + " - FAILED - callback NOT done");
-                    return;
-                }
-                if (methodWithSingleArrayParametersAsyncCallbackResult == false) {
-                    fail(name.getMethodName() + " - FAILED - callback reported error");
-                    return;
-                }
-                LOG.info(name.getMethodName() + " - callback has set OK flags");
-            } catch (InterruptedException | JoynrRuntimeException | ApplicationException e) {
-                fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-                return;
-            }
-        } catch (Exception e) {
-            fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
-        }
+        String[] stringArray = { "Hello", "World" };
+        Double[] doubleArrayArg = IltUtil.createDoubleArray();
+        callProxyMethodWithParameterAsyncAndAssertResult("methodWithSingleArrayParameters",
+                                                         doubleArrayArg,
+                                                         (Double[] arg, String[] res) -> Arrays.equals(res,
+                                                                                                       stringArray));
         LOG.info(name.getMethodName() + " - OK");
         return;
     }
-
-    // variables that are to be changed inside callbacks must be declared global
-    volatile boolean methodWithSinglePrimitiveParametersAsyncCallbackDone = false;
-    volatile boolean methodWithSinglePrimitiveParametersAsyncCallbackResult = false;
 
     @Test
     public void callMethodWithSinglePrimitiveParametersAsync() {
         LOG.info(name.getMethodName() + "");
-        try {
-            // setup input parameters
-            // final short arg = (short)65535;
-            final short arg = (short) 32767;
-
-            Callback<String> callback = new Callback<String>() {
-                @Override
-                public void onSuccess(String stringOut) {
-                    // check results
-                    if (!stringOut.equals(String.valueOf(Short.toUnsignedInt(arg)))) {
-                        LOG.info(name.getMethodName() + " - invalid stringOut from callback");
-                        LOG.info(name.getMethodName() + " - FAILED");
-                        methodWithSinglePrimitiveParametersAsyncCallbackResult = false;
-                        methodWithSinglePrimitiveParametersAsyncCallbackDone = true;
-                        return;
-                    }
-                    methodWithSinglePrimitiveParametersAsyncCallbackResult = true;
-                    methodWithSinglePrimitiveParametersAsyncCallbackDone = true;
-                }
-
-                @Override
-                public void onFailure(JoynrRuntimeException error) {
-                    methodWithSinglePrimitiveParametersAsyncCallbackResult = false;
-                    methodWithSinglePrimitiveParametersAsyncCallbackDone = true;
-                    if (error instanceof JoynrRuntimeException) {
-                        LOG.info(name.getMethodName() + " - callback - caught exception "
-                                + ((JoynrRuntimeException) error).getMessage());
-                    } else {
-                        LOG.info(name.getMethodName() + " - callback - caught exception");
-                    }
-                    LOG.info(name.getMethodName() + " - FAILED");
-                }
-            };
-
-            Future<String> future = testInterfaceProxy.methodWithSinglePrimitiveParameters(callback, arg);
-
-            try {
-                long timeoutInMilliseconds = 8000;
-                LOG.info(name.getMethodName() + " - about to call future.get");
-                String result = future.get(timeoutInMilliseconds);
-                LOG.info(name.getMethodName() + " - returned from future.get");
-
-                // check results from future
-                if (result == null) {
-                    fail(name.getMethodName() + " - FAILED - got no result");
-                    return;
-                }
-                if (!result.equals(String.valueOf(Short.toUnsignedInt(arg)))) {
-                    fail(name.getMethodName() + " - FAILED - got invalid result");
-                    return;
-                }
-
-                LOG.info(name.getMethodName() + " - future result checks OK");
-
-                // check results from callback; expect to be finished within 1 second
-                // should have been called ahead anyway
-                if (methodWithSinglePrimitiveParametersAsyncCallbackDone == false) {
-                    LOG.info(name.getMethodName() + " - about to wait for a second for callback");
-                    Thread.sleep(1000);
-                    LOG.info(name.getMethodName() + " - wait for callback is over");
-                } else {
-                    LOG.info(name.getMethodName() + " - callback already done");
-                }
-                if (methodWithSinglePrimitiveParametersAsyncCallbackDone == false) {
-                    fail(name.getMethodName() + " - FAILED - callback NOT done");
-                    return;
-                }
-                if (methodWithSinglePrimitiveParametersAsyncCallbackResult == false) {
-                    fail(name.getMethodName() + " - FAILED - callback reported error");
-                    return;
-                }
-                LOG.info(name.getMethodName() + " - callback has set OK flags");
-            } catch (InterruptedException | JoynrRuntimeException | ApplicationException e) {
-                fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-                return;
-            }
-        } catch (Exception e) {
-            fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
-        }
+        short shortArg = (short) 32767;
+        callProxyMethodWithParameterAsyncAndAssertResult("methodWithSinglePrimitiveParameters",
+                                                         shortArg,
+                                                         (Short arg,
+                                                          String res) -> res.equals(new Integer(Short.toUnsignedInt(arg)).toString()));
         LOG.info(name.getMethodName() + " - OK");
         return;
     }
 
-    // variables that are to be changed inside callbacks must be declared global
-    volatile boolean methodWithSingleByteBufferParameterAsyncCallbackResult = false;
-
     @Test
     public void callMethodWithSingleByteBufferParameterAsync() {
         LOG.info(name.getMethodName());
-
-        final Semaphore resultAvailable = new Semaphore(0);
-        try {
-            // setup input parameter
-            final Byte[] byteBufferArg = { -128, 0, 127 };
-
-            Callback<Byte[]> callback = new Callback<Byte[]>() {
-                @Override
-                public void onSuccess(Byte[] byteBufferOut) {
-                    // check result
-                    if (!java.util.Objects.deepEquals(byteBufferOut, byteBufferArg)) {
-                        LOG.info(name.getMethodName() + " - invalid byteBufferOut from callback");
-                        LOG.info(name.getMethodName() + " - FAILED");
-                        methodWithSingleByteBufferParameterAsyncCallbackResult = false;
-                        resultAvailable.release();
-                        return;
-                    }
-                    methodWithSingleByteBufferParameterAsyncCallbackResult = true;
-                    resultAvailable.release();
-                }
-
-                @Override
-                public void onFailure(JoynrRuntimeException error) {
-                    methodWithSingleByteBufferParameterAsyncCallbackResult = false;
-                    if (error instanceof JoynrRuntimeException) {
-                        LOG.info(name.getMethodName() + " - callback - caught exception "
-                                + ((JoynrRuntimeException) error).getMessage());
-                    } else {
-                        LOG.info(name.getMethodName() + " - callback - caught exception");
-                    }
-                    LOG.info(name.getMethodName() + " - FAILED");
-                    resultAvailable.release();
-                }
-            };
-
-            testInterfaceProxy.methodWithSingleByteBufferParameter(callback, byteBufferArg);
-
-            try {
-                // wait for callback
-                LOG.info(name.getMethodName() + " - about to wait for callback");
-                Assert.assertTrue(name.getMethodName() + " - FAILED - callback not received in time",
-                                  resultAvailable.tryAcquire(10, TimeUnit.SECONDS));
-
-                // check result from callback
-                LOG.info(name.getMethodName() + " - wait for callback is over");
-                Assert.assertTrue(name.getMethodName() + " - FAILED - callback reported error",
-                                  methodWithSingleByteBufferParameterAsyncCallbackResult);
-            } catch (InterruptedException | JoynrRuntimeException e) {
-                fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            }
-        } catch (Exception e) {
-            fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-        }
-        LOG.info(name.getMethodName() + " - OK");
+        final Byte[] byteBufferArg = { -128, 0, 127 };
+        callProxyMethodWithParameterAsyncAndAssertResult("methodWithSingleByteBufferParameter",
+                                                         byteBufferArg,
+                                                         (Byte[] arg, Byte[] res) -> Arrays.equals(arg, res));
+        LOG.info(name.getMethodName() + TEST_SUCCEEDED);
     }
 
     // variables that are to be changed inside callbacks must be declared global
@@ -563,7 +359,9 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
     public void callMethodWithInt64TypeDefParameterAsync() {
         LOG.info(name.getMethodName());
         final Long int64TypeDefArg = 1L;
-        callProxyMethodWithParameterAsyncAndAssertResult("methodWithInt64TypeDefParameter", int64TypeDefArg);
+        callProxyMethodWithParameterAsyncAndAssertResult("methodWithInt64TypeDefParameter",
+                                                         int64TypeDefArg,
+                                                         (Long arg, Long res) -> res.equals(arg));
         LOG.info(name.getMethodName() + TEST_SUCCEEDED);
     }
 
@@ -571,7 +369,9 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
     public void callMethodWithStringTypeDefParameterAsync() {
         LOG.info(name.getMethodName());
         final String stringTypeDefArg = "StringTypeDef";
-        callProxyMethodWithParameterAsyncAndAssertResult("methodWithStringTypeDefParameter", stringTypeDefArg);
+        callProxyMethodWithParameterAsyncAndAssertResult("methodWithStringTypeDefParameter",
+                                                         stringTypeDefArg,
+                                                         (String arg, String res) -> res.equals(arg));
         LOG.info(name.getMethodName() + TEST_SUCCEEDED);
     }
 
@@ -579,7 +379,9 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
     public void callMethodWithStructTypeDefParameterAsync() {
         LOG.info(name.getMethodName());
         final BaseStruct structTypeDefArg = IltUtil.createBaseStruct();
-        callProxyMethodWithParameterAsyncAndAssertResult("methodWithStructTypeDefParameter", structTypeDefArg);
+        callProxyMethodWithParameterAsyncAndAssertResult("methodWithStructTypeDefParameter",
+                                                         structTypeDefArg,
+                                                         (BaseStruct arg, BaseStruct res) -> res.equals(arg));
         LOG.info(name.getMethodName() + TEST_SUCCEEDED);
     }
 
@@ -590,7 +392,9 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
         mapTypeDefArg.put("keyString1", "valueString1");
         mapTypeDefArg.put("keyString2", "valueString2");
         mapTypeDefArg.put("keyString3", "valueString3");
-        callProxyMethodWithParameterAsyncAndAssertResult("methodWithMapTypeDefParameter", mapTypeDefArg);
+        callProxyMethodWithParameterAsyncAndAssertResult("methodWithMapTypeDefParameter",
+                                                         mapTypeDefArg,
+                                                         (MapStringString arg, MapStringString res) -> res.equals(arg));
         LOG.info(name.getMethodName() + TEST_SUCCEEDED);
     }
 
@@ -598,7 +402,9 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
     public void callMethodWithEnumTypeDefParameterAsync() {
         LOG.info(name.getMethodName());
         final Enumeration enumTypeDefArg = Enumeration.ENUM_0_VALUE_1;
-        callProxyMethodWithParameterAsyncAndAssertResult("methodWithEnumTypeDefParameter", enumTypeDefArg);
+        callProxyMethodWithParameterAsyncAndAssertResult("methodWithEnumTypeDefParameter",
+                                                         enumTypeDefArg,
+                                                         (Enumeration arg, Enumeration res) -> res.equals(arg));
         LOG.info(name.getMethodName() + TEST_SUCCEEDED);
     }
 
@@ -606,16 +412,21 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
     public void callMethodWithByteBufferTypeDefParameterAsync() {
         LOG.info(name.getMethodName());
         final Byte[] byteBufferTypeDefArg = { -128, 0, 127 };
-        callProxyMethodWithParameterAsyncAndAssertResult("methodWithByteBufferTypeDefParameter", byteBufferTypeDefArg);
+        callProxyMethodWithParameterAsyncAndAssertResult("methodWithByteBufferTypeDefParameter",
+                                                         byteBufferTypeDefArg,
+                                                         (Byte[] arg, Byte[] res) -> Arrays.equals(arg, res));
         LOG.info(name.getMethodName() + TEST_SUCCEEDED);
     }
 
     @Test
     public void callMethodWithArrayTypeDefParameterAsync() {
         LOG.info(name.getMethodName());
-        String[] stringArray = IltUtil.createStringArray();
+        String[] stringArray = { "Hello", "World" };
         final ArrayTypeDefStruct arrayTypeDefArg = new ArrayTypeDefStruct(stringArray);
-        callProxyMethodWithParameterAsyncAndAssertResult("methodWithArrayTypeDefParameter", arrayTypeDefArg);
+        callProxyMethodWithParameterAsyncAndAssertResult("methodWithArrayTypeDefParameter",
+                                                         arrayTypeDefArg,
+                                                         (ArrayTypeDefStruct arg,
+                                                          ArrayTypeDefStruct res) -> res.equals(arg));
         LOG.info(name.getMethodName() + TEST_SUCCEEDED);
     }
 

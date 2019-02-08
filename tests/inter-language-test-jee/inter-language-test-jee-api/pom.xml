@@ -23,7 +23,7 @@
 	<parent>
 		<groupId>io.joynr.tests</groupId>
 		<artifactId>inter-language-test-jee</artifactId>
-		<version>1.6.5</version>
+		<version>1.7.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -43,7 +43,7 @@
 							<goal>generate</goal>
 						</goals>
 						<configuration>
-							<model>${basedir}/src/main/model</model>
+							<model>${basedir}/../../inter-language-test/src/main/model</model>
 							<generationLanguage>java</generationLanguage>
 							<outputPath>${basedir}/src/main/generated</outputPath>
 							<parameter>

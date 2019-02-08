@@ -25,7 +25,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 import io.joynr.jeeintegration.api.ServiceLocator;
-import joynr.testresults.TestResult;
+import io.joynr.ilt.testresults.TestResult;
 import org.junit.runner.JUnitCore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

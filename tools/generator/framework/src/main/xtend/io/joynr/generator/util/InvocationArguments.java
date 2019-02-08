@@ -112,10 +112,13 @@ public class InvocationArguments {
         usageString.append("       -templatesEncoding <encoding of templates>\n");
         usageString.append("       -generationId <name of what is being generated>\n");
         usageString.append("       " + dumpVersionDefinition() + "\n");
-        usageString.append("         package: interface major versions (if existing) are added as an additional package \"v<version>\"\n");
-        usageString.append("         name: interface major versions (if existing) are appended to the interface name\n");
-        usageString.append("         none: interface versions don't affect the generated interface or package name\n");
+        usageString.append("         package: interface/typecollection major versions (if existing) are added as an additional package \"v<version>\"\n");
+        usageString.append("         name: interface/typecollection major versions (if existing) are appended to the interface/type name\n");
+        usageString.append("         none: interface/typecollection versions do not affect the generated name and package of interfaces and types\n");
         usageString.append("         default: none\n");
+        usageString.append("         Note:\n");
+        usageString.append("           - Consumer and provider applications of one interface have to use the same versioning scheme to be able to communicate with each other.\n");
+        usageString.append("           - The feature has been fully tested to work in Java, in C++ and JS only the versioning of interfaces has been tested so far but the versioning of types is expected to work as well.\n");
         usageString.append("      Optional, C++ only: \n");
         usageString.append("       -outputHeaderPath <path to directory containing header files>\n");
         usageString.append("       -includePrefix <prefix to use in include statements>\n");
@@ -221,7 +224,7 @@ public class InvocationArguments {
         return "package".equalsIgnoreCase(addVersionTo);
     }
 
-    public boolean addVersionToInterfaceName() {
+    public boolean addVersionToName() {
         return "name".equalsIgnoreCase(addVersionTo);
     }
 
@@ -320,6 +323,24 @@ public class InvocationArguments {
 
     public void setGenerationId(String generationId) {
         this.generationId = generationId;
+    }
+
+    public int getHashCodeForParameterCombination() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(getModelPath());
+        sb.append(getRootGenerator());
+        sb.append(generationId);
+        sb.append(addVersionTo);
+        sb.append(outputPath);
+        if (parameter != null) {
+            for (Map.Entry<String, String> entry : parameter.entrySet()) {
+                sb.append(entry.getKey());
+                sb.append(entry.getValue());
+            }
+        }
+        sb.append(generate());
+        sb.append(clean());
+        return sb.toString().hashCode();
     }
 
 }

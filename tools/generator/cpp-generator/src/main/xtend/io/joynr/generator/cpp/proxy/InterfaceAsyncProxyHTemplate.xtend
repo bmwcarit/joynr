@@ -31,7 +31,7 @@ class InterfaceAsyncProxyHTemplate extends InterfaceTemplate {
 	@Inject extension CppStdTypeUtil
 
 	@Inject extension CppInterfaceUtil
-	@Inject private extension NamingUtil
+	@Inject extension NamingUtil
 
 	override generate()
 '''

@@ -4,13 +4,19 @@ set -e
 
 function usage
 {
-    echo "usage: joynr-docker build | push | pull | remove [--repository mydockerrepo.org --version versionnumber --additionaltags|-a <comma-separated list of tags>]"
+    echo "usage: joynr-docker build | push | pull | remove"
+    echo "       [--repository mydockerrepo.org]"
+    echo "       [--version versionnumber]"
+    echo "       [--additionaltags|-a <comma-separated list of tags>]"
+    echo "       [--proxy_host <hostname> --proxy_port <portnumber>]"
 }
 
 repository=
 version=latest
 command=$1
 additionaltags=latest
+proxy_host=
+proxy_port=
 shift
 echo "after command: $1"
 
@@ -32,6 +38,12 @@ echo "PARAM is: $1"
                                 ;;
         -a | --additionaltags )  shift
                                 additionaltags=$1
+                                ;;
+        -H | --proxy_host )     shift
+                                proxy_host=$1
+                                ;;
+        -P | --proxy_port )     shift
+                                proxy_port=$1
                                 ;;
         * )                     usage
                                 exit 1
@@ -56,7 +68,18 @@ function build
 {
     for image in "${listOfImages[@]}"
     do
-        docker build -t ${repository}${image}:${version} ${image}/
+        proxy_arg=""
+        if [ -n "$proxy_host" ]
+        then
+            if [ -z "$proxy_port" ]
+            then
+                echo "proxy_port not defined."
+                usage
+                exit 1
+            fi
+            proxy_arg="--build-arg PROXY_HOST_BUILD_ARG=$proxy_host --build-arg PROXY_PORT_BUILD_ARG=$proxy_port"
+        fi
+        docker build $proxy_arg -t ${repository}${image}:${version} ${image}/
         echo "building image: ${repository}${image}:${version}"
         IFS=',' read -ra tags <<< "$additionaltags"    #Convert string to array
 

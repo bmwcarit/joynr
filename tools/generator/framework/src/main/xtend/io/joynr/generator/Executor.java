@@ -19,10 +19,6 @@
 package io.joynr.generator;
 
 import static io.joynr.generator.util.FileSystemAccessUtil.createFileSystemAccess;
-import io.joynr.generator.loading.ModelLoader;
-import io.joynr.generator.templates.util.JoynrGeneratorExtensions;
-import io.joynr.generator.templates.util.NamingUtil;
-import io.joynr.generator.util.InvocationArguments;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -37,6 +33,11 @@ import org.franca.core.dsl.FrancaIDLStandaloneSetup;
 import com.google.inject.AbstractModule;
 import com.google.inject.Injector;
 import com.google.inject.name.Names;
+
+import io.joynr.generator.loading.ModelLoader;
+import io.joynr.generator.templates.util.JoynrGeneratorExtensions;
+import io.joynr.generator.templates.util.NamingUtil;
+import io.joynr.generator.util.InvocationArguments;
 
 public class Executor {
 
@@ -70,10 +71,10 @@ public class Executor {
                                    .toInstance(arguments.generate());
                 bind(Boolean.class).annotatedWith(Names.named(JoynrGeneratorExtensions.JOYNR_GENERATOR_CLEAN))
                                    .toInstance(arguments.clean());
-                bind(Boolean.class).annotatedWith(Names.named(JoynrGeneratorExtensions.JOYNR_GENERATOR_PACKAGEWITHVERSION))
+                bind(Boolean.class).annotatedWith(Names.named(NamingUtil.JOYNR_GENERATOR_PACKAGEWITHVERSION))
                                    .toInstance(arguments.addVersionToPackage());
-                bind(Boolean.class).annotatedWith(Names.named(NamingUtil.JOYNR_GENERATOR_INTERFACENAMEWITHVERSION))
-                                   .toInstance(arguments.addVersionToInterfaceName());
+                bind(Boolean.class).annotatedWith(Names.named(NamingUtil.JOYNR_GENERATOR_NAMEWITHVERSION))
+                                   .toInstance(arguments.addVersionToName());
             }
         });
         this.outputFileSystem = injector.getInstance(IFileSystemAccess.class);

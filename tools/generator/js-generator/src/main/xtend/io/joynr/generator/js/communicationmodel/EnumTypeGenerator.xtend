@@ -31,8 +31,8 @@ import com.google.inject.assistedinject.Assisted
 class EnumTypeGenerator extends EnumTemplate {
 
 	@Inject extension JSTypeUtil
-	@Inject private extension NamingUtil
-	@Inject private extension JoynrJSGeneratorExtensions
+	@Inject extension NamingUtil
+	@Inject extension JoynrJSGeneratorExtensions
 
 	@Inject
 	extension GeneratorParameter

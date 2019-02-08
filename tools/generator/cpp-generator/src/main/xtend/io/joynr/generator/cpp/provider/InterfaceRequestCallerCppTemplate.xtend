@@ -31,13 +31,13 @@ import org.franca.core.franca.FMethod
 
 class InterfaceRequestCallerCppTemplate extends InterfaceTemplate {
 
-	@Inject private extension TemplateBase
-	@Inject private extension CppStdTypeUtil
-	@Inject private extension JoynrCppGeneratorExtensions
-	@Inject private extension NamingUtil
-	@Inject private extension AttributeUtil
-	@Inject private extension InterfaceUtil
-	@Inject private extension MethodUtil
+	@Inject extension TemplateBase
+	@Inject extension CppStdTypeUtil
+	@Inject extension JoynrCppGeneratorExtensions
+	@Inject extension NamingUtil
+	@Inject extension AttributeUtil
+	@Inject extension InterfaceUtil
+	@Inject extension MethodUtil
 
 	override generate()
 '''
@@ -53,7 +53,7 @@ class InterfaceRequestCallerCppTemplate extends InterfaceTemplate {
 
 «getNamespaceStarter(francaIntf)»
 «interfaceName»RequestCaller::«interfaceName»RequestCaller(std::shared_ptr<«getPackagePathWithJoynrPrefix(francaIntf, "::")»::«interfaceName»Provider> provider)
-	: joynr::RequestCaller(«interfaceName»Provider::INTERFACE_NAME()),
+	: joynr::RequestCaller(«interfaceName»Provider::INTERFACE_NAME(), joynr::types::Version(provider->MAJOR_VERSION, provider->MINOR_VERSION)),
 	  provider(std::move(provider))
 {
 }
@@ -189,11 +189,6 @@ class InterfaceRequestCallerCppTemplate extends InterfaceTemplate {
 	}
 
 «ENDFOR»
-
-joynr::types::Version «interfaceName»RequestCaller::getProviderVersion()
-{
-	return joynr::types::Version(provider->MAJOR_VERSION, provider->MINOR_VERSION);
-}
 
 std::shared_ptr<IJoynrProvider> «interfaceName»RequestCaller::getProvider()
 {

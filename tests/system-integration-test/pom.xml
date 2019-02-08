@@ -26,7 +26,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>tests</artifactId>
-		<version>1.6.5</version>
+		<version>1.7.0</version>
 	</parent>
 
 	<modules>
@@ -34,7 +34,9 @@
 		<module>sit-java-app</module>
 		<module>sit-jee-api</module>
 		<module>sit-jee-app</module>
+		<module>sit-jee-stateless-consumer</module>
 		<module>sit-node-app</module>
+		<module>sit-controller</module>
 	</modules>
 
 	<build>

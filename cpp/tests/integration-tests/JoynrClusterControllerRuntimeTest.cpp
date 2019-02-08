@@ -65,6 +65,7 @@ public:
     std::string settingsFilenameMqtt;
     std::string settingsFilenameHttp;
     std::string settingsFilenameMultipleAclRclFiles;
+    std::string settingsFilenameMqttTlsOnNoCertificates;
     std::shared_ptr<JoynrClusterControllerRuntime> runtime;
     joynr::types::Localisation::GpsLocation gpsLocation;
     std::shared_ptr<MockTransportMessageReceiver> mockHttpMessageReceiver;
@@ -212,6 +213,18 @@ TEST_F(JoynrClusterControllerRuntimeTest, instantiateRuntimeHttp)
     ASSERT_TRUE(runtime != nullptr);
 }
 
+TEST_F(JoynrClusterControllerRuntimeTest, mqttTlsOnButNoCertificates)
+{
+    runtime = std::make_shared<JoynrClusterControllerRuntime>(
+                std::make_unique<Settings>(settingsFilenameMqttTlsOnNoCertificates));
+
+    ASSERT_TRUE(runtime != nullptr);
+
+    runtime->init();
+
+    runtime->startExternalCommunication();
+    runtime->stopExternalCommunication();
+}
 TEST_F(JoynrClusterControllerRuntimeTest, injectCustomMqttMessagingSkeleton)
 {
     auto mockMqttMessagingSkeleton = std::make_shared<MockMqttMessagingSkeleton>();

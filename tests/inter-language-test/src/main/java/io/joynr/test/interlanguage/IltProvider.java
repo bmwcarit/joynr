@@ -22,6 +22,7 @@ import io.joynr.provider.Deferred;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -489,7 +490,7 @@ public class IltProvider extends TestInterfaceAbstractProvider {
         }
 
         // prepare output parameter
-        String[] stringArrayOut = IltUtil.createStringArray();
+        String[] stringArrayOut = { "Hello", "World" };
         deferred.resolve(stringArrayOut);
         return new Promise<MethodWithSingleArrayParametersDeferred>(deferred);
     }
@@ -511,7 +512,8 @@ public class IltProvider extends TestInterfaceAbstractProvider {
         logger.warn("******************************************************");
         MethodWithMultipleArrayParametersDeferred deferred = new MethodWithMultipleArrayParametersDeferred();
 
-        if (!IltUtil.checkStringArray(stringArrayArg)) {
+        String[] stringArray = { "Hello", "World" };
+        if (!Arrays.equals(stringArray, stringArrayArg)) {
             deferred.reject(new ProviderRuntimeException("methodWithMultipleArrayParameters: invalid stringArrayArg"));
             return new Promise<MethodWithMultipleArrayParametersDeferred>(deferred);
         }
@@ -760,7 +762,8 @@ public class IltProvider extends TestInterfaceAbstractProvider {
         logger.warn("*****************************************************");
         MethodWithSingleStructParametersDeferred deferred = new MethodWithSingleStructParametersDeferred();
 
-        if (!IltUtil.checkExtendedBaseStruct(extendedBaseStructArg)) {
+        ExtendedBaseStruct extendedBaseStruct = IltUtil.createExtendedBaseStruct();
+        if (!extendedBaseStruct.equals(extendedBaseStructArg)) {
             logger.error("methodWithSingleStructParameters: invalid parameter extendedBaseStructArg");
             deferred.reject(new ProviderRuntimeException("methodWithSingleStructParameters: invalid parameter extendedBaseStructArg"));
             return new Promise<MethodWithSingleStructParametersDeferred>(deferred);
@@ -789,7 +792,7 @@ public class IltProvider extends TestInterfaceAbstractProvider {
             return new Promise<MethodWithMultipleStructParametersDeferred>(deferred);
         }
 
-        if (!IltUtil.checkBaseStruct(baseStructArg)) {
+        if (!baseStructArg.getBaseStructString().equals("Hiya")) {
             deferred.reject(new ProviderRuntimeException("methodWithMultipleStructParameters: invalid parameter baseStructArg"));
             return new Promise<MethodWithMultipleStructParametersDeferred>(deferred);
         }
@@ -862,7 +865,7 @@ public class IltProvider extends TestInterfaceAbstractProvider {
         }
 
         // check baseStructArg
-        if (!IltUtil.checkBaseStruct(baseStructArg)) {
+        if (!baseStructArg.getBaseStructString().equals("Hiya")) {
             logger.warn("overloadedMethod_3: invalid argument baseStructArg");
             deferred.reject(new ProviderRuntimeException("overloadedMethod_3: invalid parameter baseStructArg"));
             return new Promise<OverloadedMethod2Deferred>(deferred);
@@ -870,7 +873,7 @@ public class IltProvider extends TestInterfaceAbstractProvider {
 
         // setup output parameter
         Double doubleOut = 0d;
-        String[] stringArrayOut = IltUtil.createStringArray();
+        String[] stringArrayOut = { "Hello", "World" };
         ExtendedBaseStruct extendedBaseStructOut = IltUtil.createExtendedBaseStruct();
 
         deferred.resolve(doubleOut, stringArrayOut, extendedBaseStructOut);
@@ -938,7 +941,7 @@ public class IltProvider extends TestInterfaceAbstractProvider {
             return new Promise<OverloadedMethodWithSelector2Deferred>(deferred);
         }
 
-        if (!IltUtil.checkBaseStruct(baseStructArg)) {
+        if (!baseStructArg.getBaseStructString().equals("Hiya")) {
             deferred.reject(new ProviderRuntimeException("overloadedMethodWithSelector: failed to compare baseStructArg"));
             return new Promise<OverloadedMethodWithSelector2Deferred>(deferred);
         }
@@ -951,7 +954,7 @@ public class IltProvider extends TestInterfaceAbstractProvider {
         /* prepare output */
         Double doubleOut = 1.1d;
 
-        String[] stringArrayOut = IltUtil.createStringArray();
+        String[] stringArrayOut = { "Hello", "World" };
         ExtendedBaseStruct extendedBaseStructOut = IltUtil.createExtendedBaseStruct();
 
         deferred.resolve(doubleOut, stringArrayOut, extendedBaseStructOut);
@@ -1100,7 +1103,7 @@ public class IltProvider extends TestInterfaceAbstractProvider {
         logger.warn("* IltProvider.methodToFireBroadcastWithSingleArrayParameter called");
         logger.warn("******************************************************************");
         DeferredVoid deferred = new DeferredVoid();
-        String[] stringArrayOut = IltUtil.createStringArray();
+        String[] stringArrayOut = { "Hello", "World" };
         fireBroadcastWithSingleArrayParameter(stringArrayOut, partitions);
         deferred.resolve();
         return new Promise<DeferredVoid>(deferred);
@@ -1229,7 +1232,7 @@ public class IltProvider extends TestInterfaceAbstractProvider {
 
         // take the stringArg as input for the filtering
         String stringOut = stringArg;
-        String[] stringArrayOut = IltUtil.createStringArray();
+        String[] stringArrayOut = { "Hello", "World" };
         ExtendedTypeCollectionEnumerationInTypeCollection enumerationOut = ExtendedTypeCollectionEnumerationInTypeCollection.ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION;
         StructWithStringArray structWithStringArrayOut = IltUtil.createStructWithStringArray();
         StructWithStringArray[] structWithStringArrayArrayOut = IltUtil.createStructWithStringArrayArray();

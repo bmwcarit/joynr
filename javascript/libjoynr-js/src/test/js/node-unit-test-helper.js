@@ -39,7 +39,11 @@ mod.prototype.require = function(md) {
     return req.call(this, md);
 };
 
-setTimeout(() => {
-    console.log("all tests modules loaded");
-    jasmine.execute();
-}, 0);
+if (!module.parent.filename.includes("node-run-unit-tests")) {
+    setTimeout(() => {
+        console.log("all tests modules loaded");
+        jasmine.execute();
+    }, 0);
+}
+
+module.exports = jasmine;

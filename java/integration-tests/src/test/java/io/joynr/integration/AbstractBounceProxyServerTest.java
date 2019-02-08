@@ -33,6 +33,7 @@ import io.joynr.messaging.serialize.JoynrListSerializer;
 import io.joynr.messaging.serialize.JoynrUntypedObjectDeserializer;
 import io.joynr.messaging.util.Utilities;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -43,7 +44,6 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import joynr.ImmutableMessage;
 import joynr.test.JoynrTestLoggingRule;
 
-import org.apache.commons.io.Charsets;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -137,11 +137,13 @@ public abstract class AbstractBounceProxyServerTest {
             long startTime_ms = System.currentTimeMillis();
             ScheduledFuture<Response> longPollConsumer = bpMock.longPollInOwnThread(channelId, 30000);
 
-            byte[] postPayload = (payload + index++ + "-" + UUID.randomUUID().toString()).getBytes(Charsets.UTF_8);
+            byte[] postPayload = (payload + index++ + "-"
+                    + UUID.randomUUID().toString()).getBytes(StandardCharsets.UTF_8);
             expectedPayloads.add(postPayload);
             ScheduledFuture<Response> postMessage = bpMock.postMessageInOwnThread(channelId, 5000, postPayload);
 
-            byte[] postPayload2 = (payload + index++ + "-" + UUID.randomUUID().toString()).getBytes(Charsets.UTF_8);
+            byte[] postPayload2 = (payload + index++ + "-"
+                    + UUID.randomUUID().toString()).getBytes(StandardCharsets.UTF_8);
             expectedPayloads.add(postPayload2);
             ScheduledFuture<Response> postMessage2 = bpMock.postMessageInOwnThread(channelId, 5000, postPayload2);
 
@@ -203,7 +205,7 @@ public abstract class AbstractBounceProxyServerTest {
 
             ScheduledFuture<Response> longPollConsumer = bpMock.longPollInOwnThread(channelId, 30000);
 
-            byte[] postPayload = (payload + i + "-" + UUID.randomUUID().toString()).getBytes(Charsets.UTF_8);
+            byte[] postPayload = (payload + i + "-" + UUID.randomUUID().toString()).getBytes(StandardCharsets.UTF_8);
             expectedPayloads.add(postPayload);
             ScheduledFuture<Response> postMessage = bpMock.postMessageInOwnThread(channelId, 5000, postPayload);
 
@@ -245,7 +247,7 @@ public abstract class AbstractBounceProxyServerTest {
         for (String channel : channels) {
             bpMock.postMessageInOwnThread(channel,
                                           10000,
-                                          ("payload-" + UUID.randomUUID().toString()).getBytes(Charsets.UTF_8));
+                                          ("payload-" + UUID.randomUUID().toString()).getBytes(StandardCharsets.UTF_8));
             Thread.sleep(50);
 
         }
@@ -261,7 +263,8 @@ public abstract class AbstractBounceProxyServerTest {
     @Test
     public void testPostMessageToNonExistingChannel() throws Exception {
 
-        byte[] serializedMessage = bpMock.createImmutableMessage(100000l, "some-payload".getBytes(Charsets.UTF_8))
+        byte[] serializedMessage = bpMock.createImmutableMessage(100000l,
+                                                                 "some-payload".getBytes(StandardCharsets.UTF_8))
                                          .getSerializedMessage();
         /* @formatter:off */
         Response postMessageResponse = bpMock.onrequest()

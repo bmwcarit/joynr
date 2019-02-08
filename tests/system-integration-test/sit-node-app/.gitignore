@@ -1,9 +1,0 @@
-target
-.project
-.classpath
-.settings
-localStorageProvider
-localStorageProviderTls
-src/main/generated-sources
-node_modules
-npm-debug.log

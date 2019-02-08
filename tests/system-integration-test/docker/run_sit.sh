@@ -8,7 +8,7 @@ echo "starting the orchestra"
 docker-compose up -d
 if [ $? -ne 0 ]
 then
-  echo "failed to start containers"
+  echo "ERROR: failed to start containers"
   exit 1
 fi
 
@@ -32,7 +32,7 @@ cat sit-result.log
 results=`cat sit-result.log | wc -l`
 if [ $results -eq 0 ]
 then
-  echo "no result found"
+  echo "ERROR: no result found"
   exit 1
 fi
 failing=`cat sit-result.log | grep -v success | wc -l`
@@ -42,9 +42,10 @@ echo         failing: $failing
 
 rm sit-apps.log
 rm sit-result.log
-if [ $results -ne 17 ]
+EXPECTED_RESULTS=19
+if [ $results -ne $EXPECTED_RESULTS ]
 then
-  echo "results missing"
+  echo "ERROR: unexpected number of results: $results, expected $EXPECTED_RESULTS"
   exit 1
 fi
 

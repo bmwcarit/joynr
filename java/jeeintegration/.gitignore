@@ -1,9 +1,0 @@
-.gradle
-build
-/bin/
-/target/
-.classpath
-.project
-.settings
-/src/test/generated
-joynr.properties

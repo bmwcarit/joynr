@@ -17,19 +17,9 @@
  * #L%
  */
 
-console.log("joynr Jasmine 2.x system integration tests");
+const Jasmine = require("jasmine");
+const jasmine = new Jasmine();
+console.log(`joynr Jasmine ${jasmine.jasmine.version} system integration tests`);
 
-var Jasmine = require("jasmine");
-var jasmine = new Jasmine();
-jasmine.loadConfigFile(__dirname + "/spec/support/jasmine.json");
-
-var CompatibleProvidersTest = require("../js/node_integration/CompatibleProvidersTest.js");
-var End2EndRPCTest = require("../js/node_integration/End2EndRPCTest.js");
-var End2EndSubscriptionTest = require("../js/node_integration/End2EndSubscriptionTest.js");
-var End2EndDatatypesTest = require("../js/node_integration/End2EndDatatypesTest.js");
-var IncompatibleProviderTest = require("../js/node_integration/IncompatibleProviderTest.js");
-var LocalDiscoveryTest = require("../js/node_integration/LocalDiscoveryTest");
-var MultipleVersionsTest = require("../js/node_integration/MultipleVersionsTest");
-
-console.log("all tests modules loaded");
-jasmine.execute();
+jasmine.loadConfigFile(`${__dirname}/spec/support/jasmine.json`);
+jasmine.execute(["../js/node_integration/consumer/*.js"]);

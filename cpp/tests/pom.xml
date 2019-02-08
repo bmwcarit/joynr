@@ -26,7 +26,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>cpp</artifactId>
-		<version>1.6.5</version>
+		<version>1.7.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -82,7 +82,7 @@
 							<goal>generate</goal>
 						</goals>
 						<configuration>
-							<model>${basedir}/../../basemodel/src/test/franca-with-version</model>
+							<model>${basedir}/../../basemodel/src/test/franca-with-version/TestMultipleInterfaceVersions2.fidl</model>
 							<outputPath>${basedir}/gen-with-version</outputPath>
 							<addVersionTo>none</addVersionTo>
 						</configuration>

@@ -16,7 +16,6 @@ specific language governing permissions and limitations
 under the License.
 
 This project has dependencies to:
-  "Java Concurrency in Practice" book annotations under Creative Commons Attribution License
   AOP alliance under Public Domain
   Apache HttpClient under Apache License, Version 2.0
   Apache HttpCore under Apache License, Version 2.0
@@ -25,10 +24,10 @@ This project has dependencies to:
   clustercontroller-websocket-runtime under The Apache Software License, Version 2.0
   Commons Codec under The Apache Software License, Version 2.0
   Commons Lang under The Apache Software License, Version 2.0
+  Commons Logging under The Apache Software License, Version 2.0
   ehcache under The Apache Software License, Version 2.0
-  FindBugs-Annotations under GNU Lesser Public License
   FindBugs-jsr305 under The Apache Software License, Version 2.0
-  flatbuffers-java under Apache License V2.0
+  FlatBuffers Java API under Apache License V2.0
   Google Guice - Core Library under The Apache Software License, Version 2.0
   Google Guice - Extensions - AssistedInject under The Apache Software License, Version 2.0
   Google Guice - Extensions - MultiBindings under The Apache Software License, Version 2.0
@@ -70,8 +69,8 @@ This project has dependencies to:
   JLine under The BSD License
   JUnit under Eclipse Public License 1.0
   libjoynr-websocket-runtime under The Apache Software License, Version 2.0
-  Logging under The Apache Software License, Version 2.0
   Mockito under The MIT License
   SLF4J API Module under MIT License
   SLF4J LOG4J-12 Binding under MIT License
+  SpotBugs Annotations under GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1
 

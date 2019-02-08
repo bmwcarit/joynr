@@ -29,9 +29,9 @@ import io.joynr.generator.templates.util.InterfaceUtil
 class ProxyGenerator {
 
 	@Inject extension JoynrCppGeneratorExtensions
-	@Inject private extension NamingUtil
+	@Inject extension NamingUtil
 	@Inject CppTemplateFactory templateFactory;
-	@Inject private extension InterfaceUtil
+	@Inject extension InterfaceUtil
 
 	def doGenerate(FModel model,
 		IFileSystemAccess sourceFileSystem,

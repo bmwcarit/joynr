@@ -48,7 +48,7 @@ import org.franca.core.franca.FTypeRef
 import org.franca.core.franca.FTypedElement
 import org.franca.core.franca.FUnionType
 
-public class FMapTypeAsLastComparator implements Comparator<Object> {
+class FMapTypeAsLastComparator implements Comparator<Object> {
 	override int compare (Object object1, Object object2)
 	{
 		val object1Type = if (object1 instanceof FMapType) 1 else 0
@@ -488,19 +488,41 @@ class TypeUtil {
 
 	def boolean isPartOfTypeCollection(FType datatype) {
 		return datatype.eContainer instanceof FTypeCollection &&
-			!(datatype.eContainer instanceof FInterface) &&
+			!(datatype.eContainer instanceof FInterface);
+	}
+
+	def boolean isPartOfNamedTypeCollection(FType datatype) {
+		return datatype.partOfTypeCollection &&
 			(datatype.eContainer as FTypeCollection).name != "" &&
 			(datatype.eContainer as FTypeCollection).name !== null;
 	}
 
-	def String getTypeCollectionName(FType datatype) {
+	def FTypeCollection getTypeCollection(FType datatype) {
 		if(!datatype.isPartOfTypeCollection) {
 			throw new IllegalStateException(
-					"Datatype " + datatype.joynrName + " is not part of a type collection."
+					"Datatype " + datatype.name + " is not part of a type collection."
 					+ " Please call isPartOfTypeCollection before calling this method."
 			);
 		}
-		return (datatype.eContainer as FTypeCollection).joynrName;
+		return (datatype.eContainer as FTypeCollection);
+	}
+
+	def boolean isPartOfInterface(FType datatype) {
+		return datatype.eContainer instanceof FInterface;
+	}
+
+	def FTypeCollection getInterface(FType datatype) {
+		if(!datatype.isPartOfInterface) {
+			throw new IllegalStateException(
+					"Datatype " + datatype.name + " is not part of a interface."
+					+ " Please call isPartOfInterface before calling this method."
+			);
+		}
+		return (datatype.eContainer as FInterface);
+	}
+
+	def String getTypeCollectionName(FType datatype) {
+		return (datatype.typeCollection).joynrName;
 	}
 
 	/*

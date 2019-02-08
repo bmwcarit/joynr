@@ -170,7 +170,11 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", () => {
             .then(fail)
             .catch(e => {
                 expect(e).toEqual(
-                    new Error(`provider: ${domain}/${provider.interfaceName} is missing: Operation:addFavoriteStation`)
+                    new Error(
+                        `provider: ${domain}/${provider.interfaceName}.v${
+                            provider.constructor.MAJOR_VERSION
+                        } is missing: Operation:addFavoriteStation`
+                    )
                 );
                 done();
             });

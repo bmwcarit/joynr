@@ -39,10 +39,11 @@ import joynr.system.RoutingTypes.Address;
 public class RoutingTableImplTest {
 
     private RoutingTableImpl subject;
+    private final long routingTableGracePeriod = 42;
 
     @Before
     public void setup() {
-        subject = new RoutingTableImpl();
+        subject = new RoutingTableImpl(routingTableGracePeriod);
     }
 
     @Test
@@ -76,6 +77,36 @@ public class RoutingTableImplTest {
         final boolean allowUpdate = false;
         subject.put(participantId, new Address(), isGloballyVisible, expiryDateMs, isSticky, allowUpdate);
         assertTrue(subject.containsKey(participantId));
+    }
+
+    @Test
+    public void testPutAddsRoutingTableGracePeriod() {
+        Address address = new Address();
+        String participantId = "participantId";
+        final boolean isGloballyVisible = false;
+        final long expiryDateMs = 1024;
+        final boolean isSticky = false;
+        final boolean allowUpdate = false;
+        subject.put(participantId, address, isGloballyVisible, expiryDateMs, isSticky, allowUpdate);
+
+        long result = subject.getExpiryDateMs(participantId);
+
+        assertEquals(expiryDateMs + routingTableGracePeriod, result);
+    }
+
+    @Test
+    public void testPutAddsRoutingTableGracePeriodWithOverflow() {
+        Address address = new Address();
+        String participantId = "participantId";
+        final boolean isGloballyVisible = false;
+        final long expiryDateMs = Long.MAX_VALUE - (routingTableGracePeriod / 2);
+        final boolean isSticky = false;
+        final boolean allowUpdate = false;
+        subject.put(participantId, address, isGloballyVisible, expiryDateMs, isSticky, allowUpdate);
+
+        long result = subject.getExpiryDateMs(participantId);
+
+        assertEquals(Long.MAX_VALUE, result);
     }
 
     @Test
@@ -145,7 +176,7 @@ public class RoutingTableImplTest {
         String participantId2 = "participantId2";
         final boolean isGloballyVisible = false;
         final boolean allowUpdate = false;
-        long expiryDateMs = System.currentTimeMillis() + 3000;
+        long expiryDateMs = System.currentTimeMillis() + 1000;
         boolean isSticky = false;
         boolean isSticky2 = true;
         subject.put(participantId, address, isGloballyVisible, expiryDateMs, isSticky, allowUpdate);
@@ -164,8 +195,8 @@ public class RoutingTableImplTest {
         assertEquals(address, result);
         assertEquals(isGloballyVisible, subject.getIsGloballyVisible(participantId));
 
-        // entry should be purgable after 3000 msec
-        Thread.sleep(3001);
+        // entry should be purgable after 1000 msec
+        Thread.sleep(1001 + routingTableGracePeriod);
         subject.purge();
         result = subject.get(participantId);
         assertNull(result);
@@ -186,14 +217,14 @@ public class RoutingTableImplTest {
         final boolean allowUpdate = false;
 
         subject.put(participantId, address, isGloballyVisible, expiryDateMs1, isSticky, allowUpdate);
-        assertEquals(subject.getExpiryDateMs(participantId), expiryDateMs1);
+        assertEquals(subject.getExpiryDateMs(participantId), expiryDateMs1 + routingTableGracePeriod);
 
         subject.put(participantId, address, isGloballyVisible, expiryDateMs2, isSticky, allowUpdate);
-        assertEquals(subject.getExpiryDateMs(participantId), expiryDateMs2);
+        assertEquals(subject.getExpiryDateMs(participantId), expiryDateMs2 + routingTableGracePeriod);
 
         // Lower expiry dates shall be ignored
         subject.put(participantId, address, isGloballyVisible, expiryDateMs1, isSticky, allowUpdate);
-        assertEquals(subject.getExpiryDateMs(participantId), expiryDateMs2);
+        assertEquals(subject.getExpiryDateMs(participantId), expiryDateMs2 + routingTableGracePeriod);
     }
 
     @Test

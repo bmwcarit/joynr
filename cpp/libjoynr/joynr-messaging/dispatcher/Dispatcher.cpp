@@ -181,8 +181,8 @@ void Dispatcher::handleRequestReceived(std::shared_ptr<ImmutableMessage> message
 
     // Get the request interpreter that has been registered with this interface name
     std::shared_ptr<IRequestInterpreter> requestInterpreter =
-            InterfaceRegistrar::instance().getRequestInterpreter(interfaceName);
-
+            InterfaceRegistrar::instance().getRequestInterpreter(
+                    interfaceName + std::to_string(caller->getProviderVersion().getMajorVersion()));
     if (!requestInterpreter) {
         JOYNR_LOG_ERROR(logger(), "requestInterpreter not found for interface {}", interfaceName);
         return;
@@ -303,7 +303,8 @@ void Dispatcher::handleOneWayRequestReceived(std::shared_ptr<ImmutableMessage> m
 
     // Get the request interpreter that has been registered with this interface name
     std::shared_ptr<IRequestInterpreter> requestInterpreter =
-            InterfaceRegistrar::instance().getRequestInterpreter(interfaceName);
+            InterfaceRegistrar::instance().getRequestInterpreter(
+                    interfaceName + std::to_string(caller->getProviderVersion().getMajorVersion()));
 
     if (!requestInterpreter) {
         JOYNR_LOG_ERROR(logger(),

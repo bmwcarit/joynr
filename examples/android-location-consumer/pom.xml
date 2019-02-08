@@ -27,7 +27,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>examples</artifactId>
-		<version>1.6.5</version>
+		<version>1.7.0</version>
 	</parent>
 
 	<dependencies>
@@ -152,6 +152,7 @@
 						</jvmArguments>
 						<!-- multiDex>true</multiDex-->
 					</dex>
+					<dexArguments>--min-sdk-version=${android.platform.level}</dexArguments>
 					<dexOptimize>false</dexOptimize>
 					<genDirectory>gen</genDirectory>
 					<androidManifestFile>${project.basedir}/AndroidManifest.xml</androidManifestFile>

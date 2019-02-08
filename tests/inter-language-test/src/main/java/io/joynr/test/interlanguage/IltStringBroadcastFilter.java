@@ -19,6 +19,7 @@
 package io.joynr.test.interlanguage;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import joynr.interlanguagetest.TestInterfaceBroadcastInterface;
 import joynr.interlanguagetest.TestInterfaceBroadcastWithFilteringBroadcastFilter;
@@ -46,9 +47,10 @@ public class IltStringBroadcastFilter extends TestInterfaceBroadcastWithFilterin
                           StructWithStringArray[] structWithStringArrayArrayOut,
                           TestInterfaceBroadcastInterface.BroadcastWithFilteringBroadcastFilterParameters filterParameters) {
         LOG.info("IltStringBroadcastFilter: invoked");
+        String[] stringArray = { "Hello", "World" };
 
         // check output parameter contents
-        if (!IltUtil.checkStringArray(stringArrayOut)) {
+        if (!Arrays.equals(stringArray, stringArrayOut)) {
             LOG.info("IltStringBroadcastFilter: invalid stringArrayOut value");
             LOG.info("IltStringBroadcastFilter: FAILED");
             return false;
@@ -85,7 +87,7 @@ public class IltStringBroadcastFilter extends TestInterfaceBroadcastWithFilterin
             LOG.info("IltStringBroadcastFilter: FAILED");
             return false;
         }
-        if (!IltUtil.checkStringArray(stringArrayOfInterest)) {
+        if (!Arrays.equals(stringArray, stringArrayOfInterest)) {
             LOG.info("IltStringBroadcastFilter: invalid stringArrayOfInterest filter parameter value");
             LOG.info("IltStringBroadcastFilter: FAILED");
             return false;

@@ -45,8 +45,8 @@ public class AsyncResponseCounterCallback<type> extends Callback<type> {
     @Override
     public void onFailure(JoynrRuntimeException runtimeException) {
         responseCounter.incrementAndGet();
-        responseCounterSemaphore.release();
         failureCounter.incrementAndGet();
+        responseCounterSemaphore.release();
     }
 
     @Override

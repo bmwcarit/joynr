@@ -3,7 +3,8 @@ FROM joynr-cpp-base:latest
 ###################################################
 # install gcovr for code coverage reports
 ###################################################
-RUN dnf update -y \
+RUN . /etc/profile \
+    && dnf update -y \
     && dnf install -y \
     python-pip \
     && dnf clean all \
@@ -22,6 +23,7 @@ RUN dnf update -y \
 ###################################################
 
 RUN cd /opt \
+    && . /etc/profile \
     && git clone https://github.com/miloyip/rapidjson.git rapidjson \
     && cd rapidjson \
     && git checkout v1.1.0 \
@@ -40,6 +42,7 @@ RUN cd /opt \
 ###################################################
 
 RUN cd /opt \
+    && . /etc/profile \
     && git clone https://github.com/bmwcarit/muesli.git \
     && cd muesli \
     && git checkout 1.0.1 \
@@ -55,6 +58,7 @@ RUN cd /opt \
 ###################################################
 
 RUN cd /opt \
+    && . /etc/profile \
     && git clone https://github.com/google/googletest.git \
     && cd googletest \
     && git checkout ddb8012e \
@@ -69,7 +73,8 @@ RUN cd /opt \
 # install smrf
 ###################################################
 
-RUN export SMRF_VERSION=0.2.2 \
+RUN export SMRF_VERSION=0.3.1 \
+    && . /etc/profile \
     && cd /opt \
     && git clone https://github.com/bmwcarit/smrf.git \
     && cd smrf \

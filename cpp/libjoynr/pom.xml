@@ -26,7 +26,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>cpp</artifactId>
-		<version>1.6.5</version>
+		<version>1.7.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -69,11 +69,13 @@
 						<fileset>
 							<directory>${basedir}</directory>
 							<includes>
-								<include>communication-model/generated/**</include>
-								<include>in-process/generated/**</include>
+								<include>communication-model/**</include>
 								<include>joynr-messaging/generated/**</include>
 								<include>provider/generated/**</include>
 								<include>proxy/generated/**</include>
+								<include>include/joynr/infrastructure/**</include>
+								<include>include/joynr/system/**</include>
+								<include>include/joynr/types/**</include>
 							</includes>
 						</fileset>
 					</filesets>

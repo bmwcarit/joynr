@@ -71,8 +71,8 @@ public:
             bool awaitGlobalRegistration = false) noexcept
     {
         const std::string interfaceName = T::INTERFACE_NAME();
-        const std::string participantId =
-                participantIdStorage->getProviderParticipantId(domain, interfaceName);
+        const std::string participantId = participantIdStorage->getProviderParticipantId(
+                domain, interfaceName, T::MAJOR_VERSION);
         std::shared_ptr<RequestCaller> caller = RequestCallerFactory::create<T>(provider);
         provider->registerBroadcastListener(
                 std::make_shared<MulticastBroadcastListener>(participantId, publicationManager));
@@ -83,7 +83,7 @@ public:
         const std::int64_t lastSeenDateMs = now;
         const std::int64_t defaultExpiryDateMs = now + defaultExpiryIntervalMs;
         const std::string defaultPublicKeyId("");
-        joynr::types::Version providerVersion(provider->MAJOR_VERSION, provider->MINOR_VERSION);
+        joynr::types::Version providerVersion(T::MAJOR_VERSION, T::MINOR_VERSION);
         joynr::types::DiscoveryEntry entry(providerVersion,
                                            domain,
                                            interfaceName,
@@ -97,6 +97,7 @@ public:
         auto onSuccessWrapper = [
             domain,
             interfaceName,
+            majorVersion = T::MAJOR_VERSION,
             dispatcherList = this->dispatcherList,
             caller,
             participantIdStorage = util::as_weak_ptr(participantIdStorage),
@@ -114,7 +115,7 @@ public:
                 // Sync persistency to disk now that registration is done.
                 if (auto participantIdStoragePtr = participantIdStorage.lock()) {
                     participantIdStoragePtr->setProviderParticipantId(
-                            domain, interfaceName, participantId);
+                            domain, interfaceName, majorVersion, participantId);
                 }
             }
 
@@ -189,8 +190,8 @@ public:
     {
         std::string interfaceName = T::INTERFACE_NAME();
         // Get the provider participant Id - the persisted provider Id has priority
-        std::string participantId =
-                participantIdStorage->getProviderParticipantId(domain, interfaceName);
+        std::string participantId = participantIdStorage->getProviderParticipantId(
+                domain, interfaceName, T::MAJOR_VERSION);
         removeAsync(participantId,
                     [participantId, domain, interfaceName, onSuccess]() {
                         JOYNR_LOG_INFO(logger(),

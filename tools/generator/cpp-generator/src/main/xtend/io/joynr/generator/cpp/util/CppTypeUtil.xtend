@@ -40,16 +40,12 @@ import org.franca.core.franca.FTypedElement
 import io.joynr.generator.templates.util.InterfaceUtil.TypeSelector
 
 abstract class CppTypeUtil extends AbstractTypeUtil {
-	@Inject
-	private extension InterfaceUtil
-	@Inject
-	private extension MethodUtil
-	@Inject
-	private extension BroadcastUtil
-	@Inject
-	protected extension JoynrCppGeneratorExtensions
+	@Inject extension InterfaceUtil
+	@Inject extension MethodUtil
+	@Inject extension BroadcastUtil
+	@Inject protected extension JoynrCppGeneratorExtensions
 
-	private Map<FBasicTypeId,String> primitiveDataTypeDefaultMap;
+	Map<FBasicTypeId, String> primitiveDataTypeDefaultMap;
 
 	new () {
 /*

@@ -6,15 +6,15 @@ services:
     image: 'peez/hivemq'
     container_name: mqttbroker
     environment:
-    - HIVEMQ_DISABLE_AUTH_PLUGIN=true
+      - HIVEMQ_DISABLE_AUTH_PLUGIN=true
 
   joynrbackend:
     image: "graceful-shutdown-test-backend-services:latest"
     container_name: joynrbackend
     environment:
-    - joynr_messaging_mqtt_brokeruri=tcp://mqttbroker:1883
-    - joynr_messaging_domainaccesscontrollerurl=tcp://mqttbroker:1883
-    - joynr_messaging_discoverydirectoryurl=tcp://mqttbroker:1883
+      - joynr_messaging_mqtt_brokeruri=tcp://mqttbroker:1883
+      - joynr_messaging_domainaccesscontrollerurl=tcp://mqttbroker:1883
+      - joynr_messaging_discoverydirectoryurl=tcp://mqttbroker:1883
 
   secondlevel:
     image: "graceful-shutdown-test-second-level-provider:latest"
@@ -27,4 +27,3 @@ services:
   consumer:
     image: "graceful-shutdown-test-consumer:latest"
     container_name: consumer
-

@@ -18,6 +18,8 @@
  */
 package io.joynr.android.test;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 

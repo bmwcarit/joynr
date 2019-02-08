@@ -28,7 +28,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>examples</artifactId>
-		<version>1.6.5</version>
+		<version>1.7.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -42,6 +42,12 @@
 	<dependencyManagement>
 
 		<dependencies>
+
+			<dependency>
+				<groupId>io.joynr.java</groupId>
+				<artifactId>javaapi</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 
 			<dependency>
 				<groupId>io.joynr.java</groupId>

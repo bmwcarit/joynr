@@ -20,7 +20,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.joynr</groupId>
 	<artifactId>joynr</artifactId>
-	<version>1.6.5</version>
+	<version>1.7.0</version>
 	<packaging>pom</packaging>
 	<name>${project.groupId}:${project.artifactId}</name>
 	<url>http://joynr.io</url>
@@ -404,7 +404,7 @@
 		<timestamp>${maven.build.timestamp}</timestamp>
 		<maven.build.timestamp.format>yyyyMMdd-HHmmss</maven.build.timestamp.format>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<licenseConfigurationVersion>1.0.13</licenseConfigurationVersion>
+		<licenseConfigurationVersion>1.0.14</licenseConfigurationVersion>
 		<!--
 			Those versions should not be used outside of the superpom. All dependencies
 			that need those version numbers should be defined in the dependencyManagement
@@ -417,9 +417,8 @@
 		<jetty.version>9.2.13.v20150730</jetty.version>
 		<tycho.version>0.24.0</tycho.version>
 		<hibernate.version>4.3.8.Final</hibernate.version>
-		<android.platform.version>5.0.1_r2</android.platform.version>
-		<android.platform.level>21</android.platform.level>
-		<javassist.version>3.22.0-GA</javassist.version>
+		<android.platform.version>8.0.0_r2</android.platform.version>
+		<android.platform.level>26</android.platform.level>
 		<skipTests>true</skipTests>
 		<franca.version>0.13.0</franca.version>
 		<xtend.version>2.16.0</xtend.version>
@@ -427,7 +426,7 @@
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<slf4j.version>1.7.25</slf4j.version>
-		<smrf.version>0.2.2</smrf.version>
+		<smrf.version>0.3.1</smrf.version>
 	</properties>
 
 	<!--
@@ -452,17 +451,6 @@
 				</exclusions>
 			</dependency>
 			<dependency>
-				<groupId>org.javassist</groupId>
-				<artifactId>javassist</artifactId>
-				<version>${javassist.version}</version>
-				<classifier>sources</classifier>
-			</dependency>
-			<dependency>
-				<groupId>org.javassist</groupId>
-				<artifactId>javassist</artifactId>
-				<version>${javassist.version}</version>
-			</dependency>
-			<dependency>
 				<groupId>junit</groupId>
 				<artifactId>junit</artifactId>
 				<version>4.12</version>
@@ -474,24 +462,9 @@
 				<version>7.0</version>
 			</dependency>
 			<dependency>
-				<groupId>xml-apis</groupId>
-				<artifactId>xml-apis</artifactId>
-				<version>1.4.01</version>
-			</dependency>
-			<dependency>
-				<groupId>com.google.code.findbugs</groupId>
-				<artifactId>jsr305</artifactId>
-				<version>3.0.2</version>
-			</dependency>
-			<dependency>
-				<groupId>com.google.code.findbugs</groupId>
-				<artifactId>annotations</artifactId>
-				<version>3.0.1</version>
-			</dependency>
-			<dependency>
-				<groupId>commons-logging</groupId>
-				<artifactId>commons-logging</artifactId>
-				<version>1.0.4</version>
+				<groupId>com.github.spotbugs</groupId>
+				<artifactId>spotbugs-annotations</artifactId>
+				<version>3.1.8</version>
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.jetty</groupId>
@@ -527,11 +500,6 @@
 				<groupId>com.google.inject</groupId>
 				<artifactId>guice</artifactId>
 				<version>${guice.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.google.code.gson</groupId>
-				<artifactId>gson</artifactId>
-				<version>2.1</version>
 			</dependency>
 			<dependency>
 				<groupId>com.sun.jersey</groupId>
@@ -611,11 +579,6 @@
 				<version>${slf4j.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>log4j</groupId>
-				<artifactId>log4j</artifactId>
-				<version>1.2.17</version>
-			</dependency>
-			<dependency>
 				<groupId>org.slf4j</groupId>
 				<artifactId>slf4j-jdk14</artifactId>
 				<version>${slf4j.version}</version>
@@ -648,30 +611,11 @@
 				<version>4.3.6</version>
 			</dependency>
 			<dependency>
-				<groupId>org.apache.httpcomponents</groupId>
-				<artifactId>httpmime</artifactId>
-				<version>4.3.6</version>
-			</dependency>
-			<dependency>
 				<groupId>org.jboss.shrinkwrap.resolver</groupId>
 				<artifactId>shrinkwrap-resolver-bom</artifactId>
 				<version>3.1.3</version>
 				<scope>test</scope>
 				<type>pom</type>
-			</dependency>
-			<dependency>
-				<groupId>org.jboss.arquillian</groupId>
-				<artifactId>arquillian-bom</artifactId>
-				<version>1.1.15.Final</version>
-				<scope>import</scope>
-				<type>pom</type>
-			</dependency>
-			<dependency>
-				<groupId>org.jboss.arquillian.extension</groupId>
-				<artifactId>arquillian-transaction-bom</artifactId>
-				<version>1.0.5</version>
-				<type>pom</type>
-				<scope>import</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.jboss.arquillian.extension</groupId>
@@ -726,11 +670,6 @@
 				<scope>test</scope>
 			</dependency>
 			<dependency>
-				<groupId>commons-codec</groupId>
-				<artifactId>commons-codec</artifactId>
-				<version>1.4</version>
-			</dependency>
-			<dependency>
 				<groupId>javax.servlet</groupId>
 				<artifactId>javax.servlet-api</artifactId>
 				<version>3.1.0</version>
@@ -739,11 +678,6 @@
 				<groupId>org.mockito</groupId>
 				<artifactId>mockito-core</artifactId>
 				<version>1.9.5</version>
-			</dependency>
-			<dependency>
-				<groupId>commons-io</groupId>
-				<artifactId>commons-io</artifactId>
-				<version>2.4</version>
 			</dependency>
 			<dependency>
 				<groupId>org.franca</groupId>
@@ -838,6 +772,66 @@
 				<artifactId>shrinkwrap-resolver-impl-maven</artifactId>
 				<version>2.2.6</version>
 				<scope>test</scope>
+			</dependency>
+
+			<!--
+				hardcode transitive dependencies defined via ranges to
+				avoid conflicts in later builds
+			-->
+			<dependency>
+				<groupId>org.eclipse.platform</groupId>
+				<artifactId>org.eclipse.core.commands</artifactId>
+				<version>3.9.200</version>
+			</dependency>
+			<dependency>
+				<groupId>org.eclipse.platform</groupId>
+				<artifactId>org.eclipse.core.contenttype</artifactId>
+				<version>3.7.200</version>
+			</dependency>
+			<dependency>
+				<groupId>org.eclipse.platform</groupId>
+				<artifactId>org.eclipse.core.expressions</artifactId>
+				<version>3.6.200</version>
+			</dependency>
+			<dependency>
+				<groupId>org.eclipse.platform</groupId>
+				<artifactId>org.eclipse.core.filesystem</artifactId>
+				<version>1.7.200</version>
+			</dependency>
+			<dependency>
+				<groupId>org.eclipse.platform</groupId>
+				<artifactId>org.eclipse.core.jobs</artifactId>
+				<version>3.10.200</version>
+			</dependency>
+			<dependency>
+				<groupId>org.eclipse.platform</groupId>
+				<artifactId>org.eclipse.core.resources</artifactId>
+				<version>3.13.200</version>
+			</dependency>
+			<dependency>
+				<groupId>org.eclipse.platform</groupId>
+				<artifactId>org.eclipse.equinox.app</artifactId>
+				<version>1.4.0</version>
+			</dependency>
+			<dependency>
+				<groupId>org.eclipse.platform</groupId>
+				<artifactId>org.eclipse.equinox.preferences</artifactId>
+				<version>3.7.200</version>
+			</dependency>
+			<dependency>
+				<groupId>org.eclipse.platform</groupId>
+				<artifactId>org.eclipse.equinox.registry</artifactId>
+				<version>3.8.200</version>
+			</dependency>
+			<dependency>
+				<groupId>org.eclipse.platform</groupId>
+				<artifactId>org.eclipse.osgi</artifactId>
+				<version>3.13.200</version>
+			</dependency>
+			<dependency>
+				<groupId>org.eclipse.platform</groupId>
+				<artifactId>org.eclipse.text</artifactId>
+				<version>3.8.0</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -1017,7 +1011,7 @@
 						<forkCount>1</forkCount>
 						<!-- one JVM per test suite -->
 						<reuseForks>false</reuseForks>
-						<argLine>-Xmx1024m -XX:MaxPermSize=256m</argLine>
+						<argLine>-Xmx1024m</argLine>
 						<skipTests>${skipTests}</skipTests>
 					</configuration>
 				</plugin>
@@ -1045,16 +1039,16 @@
 					<version>1.4</version>
 				</plugin>
 				<plugin>
-					<groupId>org.codehaus.mojo</groupId>
-					<artifactId>findbugs-maven-plugin</artifactId>
-					<version>3.0.1</version>
+					<groupId>com.github.spotbugs</groupId>
+					<artifactId>spotbugs-maven-plugin</artifactId>
+					<version>3.1.8</version>
 					<configuration>
 						<failOnError>false</failOnError>
 						<threshold>Normal</threshold>
 						<effort>Default</effort>
 						<xmlOutput>true</xmlOutput>
-						<findbugsXmlOutput>true</findbugsXmlOutput>
-						<findbugsXmlWithMessages>true</findbugsXmlWithMessages>
+						<spotbugsXmlOutput>true</spotbugsXmlOutput>
+						<spotbugsXmlWithMessages>true</spotbugsXmlWithMessages>
 						<excludeFilterFile>findbugs/findbugs-exclude.xml</excludeFilterFile>
 					</configuration>
 					<executions>
@@ -1076,7 +1070,7 @@
 				<plugin>
 					<groupId>com.simpligility.maven.plugins</groupId>
 					<artifactId>android-maven-plugin</artifactId>
-					<version>4.3.0</version>
+					<version>4.5.0</version>
 				</plugin>
 				<plugin>
 					<groupId>org.eclipse.tycho</groupId>

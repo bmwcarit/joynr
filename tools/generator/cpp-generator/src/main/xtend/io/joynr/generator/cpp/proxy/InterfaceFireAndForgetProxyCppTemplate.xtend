@@ -31,9 +31,9 @@ class InterfaceFireAndForgetProxyCppTemplate extends InterfaceTemplate {
 	@Inject	extension JoynrCppGeneratorExtensions
 	@Inject extension TemplateBase
 	@Inject extension CppStdTypeUtil
-	@Inject private extension NamingUtil
-	@Inject private extension MethodUtil
-	@Inject private extension CppInterfaceUtil
+	@Inject extension NamingUtil
+	@Inject extension MethodUtil
+	@Inject extension CppInterfaceUtil
 
 	override generate()
 '''

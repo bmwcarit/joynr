@@ -45,7 +45,6 @@ class JoynrGeneratorExtensions {
 
 	public final static String JOYNR_GENERATOR_GENERATE = "JOYNR_GENERATOR_GENERATE";
 	public final static String JOYNR_GENERATOR_CLEAN = "JOYNR_GENERATOR_CLEAN";
-	public final static String JOYNR_GENERATOR_PACKAGEWITHVERSION = "JOYNR_GENERATOR_PACKAGEWITHVERSION";
 
 	@Inject
 	protected extension NamingUtil;
@@ -61,21 +60,8 @@ class JoynrGeneratorExtensions {
 	@Named(JOYNR_GENERATOR_CLEAN)
 	public boolean clean;
 
-	@Inject
-	@Named(JOYNR_GENERATOR_PACKAGEWITHVERSION)
-	public boolean packageWithVersion;
-
 	def Iterable<FInterface> getInterfaces(FModel model) {
 		return model.interfaces
-	}
-
-	def String getVersionSuffix(FModelElement modelElement) {
-		if (packageWithVersion && modelElement instanceof FInterface
-			&& (modelElement as FInterface).version !== null) {
-			return '.v' + (modelElement as FInterface).version.major;
-		} else {
-			return '';
-		}
 	}
 
 	def String getPackageNameInternal(FModelElement fModelElement, boolean useOwnName) {
@@ -93,7 +79,7 @@ class JoynrGeneratorExtensions {
 						fModelElement.eResource.toString) + " cannot be parsed correctly"
 			throw new IllegalStateException(errorMsg);
 		} else if (fModelElement.eContainer instanceof FModel) {
-			return (fModelElement.eContainer as FModel).joynrName + getVersionSuffix(fModelElement);
+			return (fModelElement.eContainer as FModel).joynrName + if (packageWithVersion) getVersionSuffix(fModelElement) else '';
 		} else if (fModelElement instanceof FMethod) {
 			// include interface name for unnamed error enums (defined or extended inside method definition)
 			val finterface = fModelElement.eContainer as FModelElement
@@ -123,7 +109,7 @@ class JoynrGeneratorExtensions {
 
 	def getPackagePathWithJoynrPrefix(FType datatype, String separator, boolean includeTypeCollection) {
 		var packagePath = getPackagePathWithJoynrPrefix(datatype, separator);
-		if (includeTypeCollection && datatype.isPartOfTypeCollection) {
+		if (includeTypeCollection && datatype.isPartOfNamedTypeCollection) {
 			packagePath += separator + datatype.typeCollectionName;
 		}
 		return packagePath
@@ -319,7 +305,7 @@ class JoynrGeneratorExtensions {
 		} catch (IllegalStateException e) {
 			// if an illegal StateException has been thrown, we tried to get the package for a primitive type, so the packagepath stays empty.
 		}
-		if (includeTypeCollection && datatype.partOfTypeCollection) {
+		if (includeTypeCollection && datatype.partOfNamedTypeCollection) {
 			packagepath += separator + datatype.typeCollectionName;
 		}
 		return packagepath;

@@ -27,7 +27,7 @@
 	<parent>
 		<groupId>io.joynr.tools</groupId>
 		<artifactId>generator</artifactId>
-		<version>1.6.5</version>
+		<version>1.7.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -116,12 +116,12 @@
 					<execution>
 						<phase>prepare-package</phase>
 						<configuration>
-							<tasks>
+							<target>
 								<copy todir="${project.build.directory}/classes/info"
 									includeEmptyDirs="false">
 									<fileset dir="${project.build.directory}/info" includes="**/*" />
 								</copy>
-							</tasks>
+							</target>
 						</configuration>
 						<goals>
 							<goal>run</goal>
@@ -256,17 +256,6 @@
 			<groupId>io.joynr.tools.generator</groupId>
 			<artifactId>generator-framework</artifactId>
 			<version>${project.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>com.google.code.findbugs</groupId>
-					<artifactId>jsr305</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>org.javassist</groupId>
-			<artifactId>javassist</artifactId>
-			<classifier>sources</classifier>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>

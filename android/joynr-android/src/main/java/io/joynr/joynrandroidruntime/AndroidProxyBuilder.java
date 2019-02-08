@@ -45,6 +45,7 @@ public class AndroidProxyBuilder<T> extends AsyncTask<Object, String, T> impleme
     private String participantId = null;
     private ProxyBuilder<T> builder = null;
     private InitRuntimeTask runtimeInitTask;
+    private String statelessAsyncCallbackUseCase;
 
     public AndroidProxyBuilder(InitRuntimeTask runtimeInitTask,
                                Set<String> domains,
@@ -122,6 +123,12 @@ public class AndroidProxyBuilder<T> extends AsyncTask<Object, String, T> impleme
     @Override
     public ProxyBuilder<T> setMessagingQos(MessagingQos messagingQos) {
         this.messagingQos = messagingQos;
+        return this;
+    }
+
+    @Override
+    public ProxyBuilder<T> setStatelessAsyncCallbackUseCase(String useCase) {
+        this.statelessAsyncCallbackUseCase = statelessAsyncCallbackUseCase;
         return this;
     }
 

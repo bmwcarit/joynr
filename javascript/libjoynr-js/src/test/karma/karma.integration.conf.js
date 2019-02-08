@@ -55,7 +55,7 @@ module.exports = function(config) {
             { pattern: "main/js/joynr/**/*.js", included: false },
             { pattern: "test/js/test/**/*.js", included: false },
             { pattern: "test/js/joynr/provisioning/*.js", included: false },
-            { pattern: "test/js/joynr/start/InProcessRuntimeTest.js", included: true }
+            { pattern: "test/js/browser/start/InProcessRuntimeTest.js", included: true }
             //{pattern: 'test-classes/integration/HttpMessagingTest.js', included: false},
         ],
 
@@ -65,7 +65,7 @@ module.exports = function(config) {
         // preprocess matching files before serving them to the browser
         // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
         preprocessors: {
-            "test/js/joynr/start/InProcessRuntimeTest.js": ["browserify"]
+            "test/js/browser/start/InProcessRuntimeTest.js": ["browserify"]
         },
 
         // test results reporter to use

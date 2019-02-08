@@ -21,7 +21,7 @@ then
 	exit 1
 fi
 
-mvn -q dependency:get -Dartifact=android:android:5.0.1_r2
+mvn -q dependency:get -Dartifact=android:android:8.0.0_r2
 
 if [ $? -eq 0 ]
 then
@@ -37,9 +37,9 @@ fi
 	git clone --depth 1 https://github.com/simpligility/maven-android-sdk-deployer
 )
 (
-	log "INSTALL LOLLIPOP SDK TO MAVEN REPOSITORY"
+	log "INSTALL OREO SDK TO MAVEN REPOSITORY"
 	cd maven-android-sdk-deployer
-	mvn clean install -q --projects com.simpligility.android.sdk-deployer:android-21,com.simpligility.android.sdk-deployer:android-m2repository --also-make
+	mvn install -P 8.0
 )
 (
 	log "CLEANUP"

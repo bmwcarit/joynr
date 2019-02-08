@@ -514,7 +514,7 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
             } catch (ApplicationException exception) {
                 String errorName = exception.getError().name();
                 LOG.info(PRINT_BORDER
-                        + "METHOD: addFavoriteStation failed with the following unexpected ApplicationExcecption: "
+                        + "METHOD: addFavoriteStation failed with the following unexpected ApplicationException: "
                         + errorName);
             } catch (ProviderRuntimeException exception) {
                 String errorName = exception.getMessage();

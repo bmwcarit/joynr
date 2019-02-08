@@ -93,27 +93,9 @@ public abstract class AbstractJoynGeneratorMojo extends AbstractMojo {
      */
     protected String skip;
 
-    protected int getParameterHashCode() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(model);
-        sb.append(rootGenerator);
-        sb.append(generationLanguage);
-        sb.append(generationId);
-        sb.append(addVersionTo);
-        sb.append(outputPath);
-        sb.append(getSupportedGoal());
-        if (parameter != null) {
-            for (Map.Entry<String, String> entry : parameter.entrySet()) {
-                sb.append(entry.getKey());
-                sb.append(entry.getValue());
-            }
-        }
-        sb.append(skip);
-        return sb.toString().hashCode();
-    }
-
     public void execute() throws MojoExecutionException {
-        int executionHashCode = getParameterHashCode();
+        InvocationArguments arguments = createInvocationArguments();
+        int executionHashCode = arguments.getHashCodeForParameterCombination();
         String generationDonePropertyName = "generation.done.id[" + executionHashCode + "]";
 
         getLog().info("----------------------------------------------------------------------");
@@ -138,8 +120,6 @@ public abstract class AbstractJoynGeneratorMojo extends AbstractMojo {
         getLog().info("----------------------------------------------------------------------");
 
         try {
-            InvocationArguments arguments = createInvocationArguments();
-
             GeneratorTask task = new GeneratorTask(arguments);
             invokeGenerator(task);
             project.getProperties().put(generationDonePropertyName, "true");

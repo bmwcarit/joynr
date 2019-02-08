@@ -18,10 +18,10 @@ import org.franca.core.franca.FTypedElement
 
 class JavaTypeUtil extends AbstractTypeUtil {
 
-	@Inject private extension MethodUtil
-	@Inject private extension BroadcastUtil
+	@Inject extension MethodUtil
+	@Inject extension BroadcastUtil
 
-	private Map<FBasicTypeId,String> primitiveDataTypeDefaultMap;
+	Map<FBasicTypeId, String> primitiveDataTypeDefaultMap;
 
 	new () {
 	val Map<FBasicTypeId,String> primitiveDataTypeDefaultValue = new HashMap<FBasicTypeId, String>();

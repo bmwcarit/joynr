@@ -48,8 +48,6 @@ function(JoynrGenerator)
     set(JAVA_OPTS
         -XX:InitialHeapSize=512m
         -XX:MaxHeapSize=1g
-        -XX:PermSize=256m
-        -XX:MaxPermSize=512m
     )
     set(joynrGeneratorCmd "${JAVA_OPTS}" "-jar" "${JoynrGenerator_JAR}")
 

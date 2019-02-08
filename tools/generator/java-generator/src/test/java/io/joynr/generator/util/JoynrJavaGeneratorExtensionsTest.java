@@ -59,9 +59,9 @@ public class JoynrJavaGeneratorExtensionsTest {
                                    .toInstance(true);
                 bind(Boolean.class).annotatedWith(Names.named(JoynrGeneratorExtensions.JOYNR_GENERATOR_CLEAN))
                                    .toInstance(false);
-                bind(Boolean.class).annotatedWith(Names.named(JoynrGeneratorExtensions.JOYNR_GENERATOR_PACKAGEWITHVERSION))
+                bind(Boolean.class).annotatedWith(Names.named(NamingUtil.JOYNR_GENERATOR_PACKAGEWITHVERSION))
                                    .toInstance(false);
-                bind(Boolean.class).annotatedWith(Names.named(NamingUtil.JOYNR_GENERATOR_INTERFACENAMEWITHVERSION))
+                bind(Boolean.class).annotatedWith(Names.named(NamingUtil.JOYNR_GENERATOR_NAMEWITHVERSION))
                                    .toInstance(false);
             }
         });

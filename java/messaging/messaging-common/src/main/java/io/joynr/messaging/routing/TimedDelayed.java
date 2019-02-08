@@ -34,7 +34,7 @@ public class TimedDelayed implements Delayed {
     }
 
     public TimedDelayed(long delayForMs) {
-        this.delayUntilDate = System.currentTimeMillis() + delayForMs;
+        setDelay(delayForMs);
         this.sequenceNumber = sequencer.getAndIncrement();
     }
 
@@ -62,6 +62,10 @@ public class TimedDelayed implements Delayed {
     public long getDelay(TimeUnit unit) {
         long diff = delayUntilDate - System.currentTimeMillis();
         return unit.convert(diff, TimeUnit.MILLISECONDS);
+    }
+
+    void setDelay(long delayForMs) {
+        this.delayUntilDate = System.currentTimeMillis() + delayForMs;
     }
 
     @Override

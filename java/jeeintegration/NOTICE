@@ -16,14 +16,12 @@ specific language governing permissions and limitations
 under the License.
 
 This project has dependencies to:
-  "Java Concurrency in Practice" book annotations under Creative Commons Attribution License
   AOP alliance under Public Domain
   aopalliance version 1.0 repackaged as a module under CDDL + GPLv2 with classpath exception
   Apache Groovy under The Apache Software License, Version 2.0
   Apache HttpClient under Apache License, Version 2.0
   Apache HttpCore under Apache License, Version 2.0
-  Apache Log4j API under The Apache Software License, Version 2.0
-  Apache Log4j SLF4J Binding under The Apache Software License, Version 2.0
+  Apache Log4j under The Apache Software License, Version 2.0
   Arquillian Config API under Apache License, Version 2.0
   Arquillian Config Implementation Base under Apache License, Version 2.0
   Arquillian Container GlassFish Embedded 3.1 under Public Domain
@@ -49,16 +47,15 @@ This project has dependencies to:
   clustercontroller-inprocess-runtime under The Apache Software License, Version 2.0
   Commons Codec under The Apache Software License, Version 2.0
   Commons Lang under The Apache Software License, Version 2.0
+  Commons Logging under The Apache Software License, Version 2.0
   ehcache under The Apache Software License, Version 2.0
   Embedded GlassFish All-In-One under CDDL + GPLv2 with classpath exception
-  FindBugs-Annotations under GNU Lesser Public License
   FindBugs-jsr305 under The Apache Software License, Version 2.0
-  flatbuffers-java under Apache License V2.0
+  FlatBuffers Java API under Apache License V2.0
   Google Guice - Core Library under The Apache Software License, Version 2.0
   Google Guice - Extensions - AssistedInject under The Apache Software License, Version 2.0
   Google Guice - Extensions - MultiBindings under The Apache Software License, Version 2.0
   Hamcrest Core under New BSD License
-  Hamcrest library under New BSD License
   HK2 API module under CDDL + GPLv2 with classpath exception
   HK2 Implementation Utilities under CDDL + GPLv2 with classpath exception
   io.joynr.java.common:access-control-common under The Apache Software License, Version 2.0
@@ -98,7 +95,6 @@ This project has dependencies to:
   JUnit under Eclipse Public License 1.0
   Logback Classic Module under Eclipse Public License - v 1.0 or GNU Lesser General Public License
   Logback Core Module under Eclipse Public License - v 1.0 or GNU Lesser General Public License
-  Logging under The Apache Software License, Version 2.0
   Mockito under The MIT License
   OSGi resource locator bundle - used by various API providers that rely on META-INF/services mechanism to locate providers. under CDDL + GPLv2 with classpath exception
   ServiceLocator Default Implementation under CDDL + GPLv2 with classpath exception
@@ -108,4 +104,6 @@ This project has dependencies to:
   ShrinkWrap Implementation Base under Apache License, Version 2.0
   ShrinkWrap SPI under Apache License, Version 2.0
   SLF4J API Module under MIT License
+  SLF4J LOG4J-12 Binding under MIT License
+  SpotBugs Annotations under GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1
 

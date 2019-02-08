@@ -1,8 +1,0 @@
-target
-.classpath
-.project
-.settings
-.checkstyle
-gen
-bin
-src/main/generated*

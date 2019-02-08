@@ -20,7 +20,7 @@
 	<parent>
 		<artifactId>core</artifactId>
 		<groupId>io.joynr.java</groupId>
-		<version>1.6.5</version>
+		<version>1.7.0</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 
@@ -56,8 +56,8 @@
 	<build>
 		<plugins>
 			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>findbugs-maven-plugin</artifactId>
+				<groupId>com.github.spotbugs</groupId>
+				<artifactId>spotbugs-maven-plugin</artifactId>
 				<configuration>
 					<skip>true</skip>
 				</configuration>
