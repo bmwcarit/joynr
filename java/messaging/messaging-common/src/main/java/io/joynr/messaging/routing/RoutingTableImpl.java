@@ -107,8 +107,7 @@ public class RoutingTableImpl implements RoutingTable {
                     final Address address,
                     final boolean isGloballyVisible,
                     long expiryDateMs,
-                    final boolean sticky,
-                    final boolean allowUpdate) {
+                    final boolean sticky) {
         if (!addressValidator.isValidForRoutingTable(address)) {
             logger.debug("unable to update participantId={} in routing table since the address is not supported within this process.",
                          participantId);
@@ -126,7 +125,8 @@ public class RoutingTableImpl implements RoutingTable {
             final boolean routingEntryAlreadyPresent = oldRoutingEntry != null;
 
             if (!routingEntryAlreadyPresent) {
-                logger.trace("put(participantId={}, address={}, isGloballyVisible={}, expiryDateMs={}, sticky={}) successfully into routing table",
+                logger.trace("put(participantId={}, address={}, isGloballyVisible={}, expiryDateMs={}, sticky={}) "
+                        + "successfully into routing table",
                              participantId,
                              address,
                              isGloballyVisible,
@@ -139,33 +139,30 @@ public class RoutingTableImpl implements RoutingTable {
                     || oldRoutingEntry.getIsGloballyVisible() != isGloballyVisible;
 
             if (addressOrVisibilityOfRoutingEntryChanged) {
-                if (allowUpdate) {
+                if (oldRoutingEntry.isSticky) {
+                    logger.error("unable to update(participantId={}, address={}, isGloballyVisible={}, expiryDateMs={},"
+                            + " sticky={}) into routing table, since the participant ID is already associated with "
+                            + "STICKY routing entry address={}, isGloballyVisible={}",
+                                 participantId,
+                                 address,
+                                 isGloballyVisible,
+                                 expiryDateMs,
+                                 sticky,
+                                 oldRoutingEntry.address,
+                                 oldRoutingEntry.isGloballyVisible);
+                } else if (addressValidator.allowUpdate(oldRoutingEntry, newRoutingEntry)) {
                     updateRoutingEntry(participantId, oldRoutingEntry, newRoutingEntry);
                 } else {
-                    if (oldRoutingEntry.isSticky) {
-                        logger.error("unable to update(participantId={}, address={}, isGloballyVisible={}, expiryDateMs={}, sticky={}) into routing table,"
-                                + " since the participant ID is already associated with STICKY routing entry address={}, isGloballyVisible={}",
-                                     participantId,
-                                     address,
-                                     isGloballyVisible,
-                                     expiryDateMs,
-                                     sticky,
-                                     oldRoutingEntry.address,
-                                     oldRoutingEntry.isGloballyVisible);
-                    } else if (addressValidator.allowUpdate(oldRoutingEntry, newRoutingEntry)) {
-                        updateRoutingEntry(participantId, oldRoutingEntry, newRoutingEntry);
-                    } else {
-                        logger.warn("unable to update(participantId={}, address={}, isGloballyVisible={}, expiryDateMs={}, "
-                                + "sticky={}) into routing table, since the participant ID is already associated with "
-                                + "routing entry address={}, isGloballyVisible={}",
-                                    participantId,
-                                    address,
-                                    isGloballyVisible,
-                                    expiryDateMs,
-                                    sticky,
-                                    oldRoutingEntry.address,
-                                    oldRoutingEntry.isGloballyVisible);
-                    }
+                    logger.warn("unable to update(participantId={}, address={}, isGloballyVisible={}, expiryDateMs={}, "
+                            + "sticky={}) into routing table, since the participant ID is already associated with "
+                            + "routing entry address={}, isGloballyVisible={}",
+                                participantId,
+                                address,
+                                isGloballyVisible,
+                                expiryDateMs,
+                                sticky,
+                                oldRoutingEntry.address,
+                                oldRoutingEntry.isGloballyVisible);
                 }
             } else {
                 // only expiryDate or sticky flag of routing entry changed

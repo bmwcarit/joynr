@@ -564,14 +564,12 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                 final boolean isGloballyVisible = (ce.getQos().getScope() == ProviderScope.GLOBAL);
                 final boolean isSticky = false;
                 final long expiryDateMs = Long.MAX_VALUE;
-                final boolean allowUpdate = true; // Always trust the discovery directory.
 
                 messageRouter.addToRoutingTable(ce.getParticipantId(),
                                                 address,
                                                 isGloballyVisible,
                                                 expiryDateMs,
-                                                isSticky,
-                                                allowUpdate);
+                                                isSticky);
             }
         }
     }

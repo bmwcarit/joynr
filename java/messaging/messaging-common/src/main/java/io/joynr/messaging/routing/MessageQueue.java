@@ -98,9 +98,8 @@ public class MessageQueue {
             final boolean isGloballyVisible = true;
             final long expiryDateMs = message.getTtlMs();
             final boolean isSticky = false;
-            final boolean allowUpdate = false;
 
-            routingTable.put(message.getSender(), address, isGloballyVisible, expiryDateMs, isSticky, allowUpdate);
+            routingTable.put(message.getSender(), address, isGloballyVisible, expiryDateMs, isSticky);
         }
     }
 

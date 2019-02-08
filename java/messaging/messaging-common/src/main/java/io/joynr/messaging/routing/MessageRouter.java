@@ -33,8 +33,7 @@ public interface MessageRouter {
                                   Address address,
                                   boolean isGloballyVisible,
                                   long expiryDateMs,
-                                  boolean isSticky,
-                                  boolean allowUpdate);
+                                  boolean isSticky);
 
     public void shutdown();
 

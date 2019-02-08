@@ -25,21 +25,15 @@ public interface RoutingTable {
 
     /**
      * Adds a new routing entry. If a routing entry for the provided participantId already exists, only the expiryDate and the sticky-flag
-     * are updated unless allowUpdate is set to true.
+     * are updated unless the update is allowed (See RoutingTableAddressValidator).
      *
      * @param participantId participant id for which a routing entry shall be created
      * @param address Address which shall be associated with the participant id
      * @param isGloballyVisible States whether the endpoint is globally visible or not
      * @param expiryDateMs Expiry date of the routing entry in milliseconds
      * @param isSticky If set to true, the routing entry never expires
-     * @param allowUpdate If set to false, the address won't be changed if a routing entry for the provided participantId already exists.
      */
-    void put(String participantId,
-             Address address,
-             boolean isGloballyVisible,
-             long expiryDateMs,
-             boolean isSticky,
-             boolean allowUpdate);
+    void put(String participantId, Address address, boolean isGloballyVisible, long expiryDateMs, boolean isSticky);
 
     boolean containsKey(String participantId);
 

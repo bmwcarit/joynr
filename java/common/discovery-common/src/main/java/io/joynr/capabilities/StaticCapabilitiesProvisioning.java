@@ -91,13 +91,11 @@ public class StaticCapabilitiesProvisioning implements CapabilitiesProvisioning 
                 boolean isGloballyVisible = (globalDiscoveryEntry.getQos().getScope() == ProviderScope.GLOBAL);
                 final long expiryDateMs = Long.MAX_VALUE;
                 final boolean isSticky = true;
-                final boolean allowUpdate = false;
                 routingTable.put(globalDiscoveryEntry.getParticipantId(),
                                  CapabilityUtils.getAddressFromGlobalDiscoveryEntry(globalDiscoveryEntry),
                                  isGloballyVisible,
                                  expiryDateMs,
-                                 isSticky,
-                                 allowUpdate);
+                                 isSticky);
             }
         }
     }

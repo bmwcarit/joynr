@@ -149,13 +149,11 @@ public class LibJoynrMessageRouterTest {
         final boolean isGloballyVisible = true;
         final long expiryDateMs = Long.MAX_VALUE;
         final boolean isSticky = false;
-        final boolean allowUpdate = false;
         verify(routingTable).put(eq(unknownParticipantId),
                                  eq(parentAddress),
                                  eq(isGloballyVisible),
                                  eq(expiryDateMs),
-                                 eq(isSticky),
-                                 eq(allowUpdate));
+                                 eq(isSticky));
     }
 
     @Test

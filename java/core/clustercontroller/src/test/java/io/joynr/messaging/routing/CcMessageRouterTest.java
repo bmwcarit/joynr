@@ -267,8 +267,7 @@ public class CcMessageRouterTest {
         final boolean isGloballyVisible = true; // toParticipantId is globally visible
         final long expiryDateMs = Long.MAX_VALUE;
         final boolean isSticky = true;
-        final boolean allowUpdate = false;
-        routingTable.put(toParticipantId, channelAddress, isGloballyVisible, expiryDateMs, isSticky, allowUpdate);
+        routingTable.put(toParticipantId, channelAddress, isGloballyVisible, expiryDateMs, isSticky);
 
         Request request = new Request("noMethod", new Object[]{}, new String[]{}, "requestReplyId");
 
@@ -326,19 +325,8 @@ public class CcMessageRouterTest {
         final boolean isGloballyVisible = false;
         final long expiryDateMs = Long.MAX_VALUE;
         final boolean isSticky = false;
-        final boolean allowUpdate = false;
-        routingTable.put(receiverParticipantId1,
-                         receiverAddress1,
-                         isGloballyVisible,
-                         expiryDateMs,
-                         isSticky,
-                         allowUpdate);
-        routingTable.put(receiverParticipantId2,
-                         receiverAddress2,
-                         isGloballyVisible,
-                         expiryDateMs,
-                         isSticky,
-                         allowUpdate);
+        routingTable.put(receiverParticipantId1, receiverAddress1, isGloballyVisible, expiryDateMs, isSticky);
+        routingTable.put(receiverParticipantId2, receiverAddress2, isGloballyVisible, expiryDateMs, isSticky);
 
         joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(100000).getValue());
         joynrMessage.setType(Message.VALUE_MESSAGE_TYPE_MULTICAST);
@@ -949,7 +937,7 @@ public class CcMessageRouterTest {
 
         messageRouter.route(immutableMessage);
 
-        verify(routingTable).put(fromParticipantId, replyToAddress, true, joynrMessage.getTtlMs(), false, false);
+        verify(routingTable).put(fromParticipantId, replyToAddress, true, joynrMessage.getTtlMs(), false);
     }
 
     @Test
@@ -967,12 +955,8 @@ public class CcMessageRouterTest {
 
         messageRouter.route(immutableMessage);
 
-        verify(routingTable, times(0)).put(eq(fromParticipantId),
-                                           eq(replyToAddress),
-                                           anyBoolean(),
-                                           anyLong(),
-                                           anyBoolean(),
-                                           anyBoolean());
+        verify(routingTable,
+               times(0)).put(eq(fromParticipantId), eq(replyToAddress), anyBoolean(), anyLong(), anyBoolean());
     }
 
 }
