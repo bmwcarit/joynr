@@ -274,7 +274,7 @@ void PublicationManager::handleAttributeSubscriptionRequest(
 
     saveAttributeSubscriptionRequestsMap();
 
-    JOYNR_LOG_TRACE(logger(), "added subscription: {}", requestInfo->toString());
+    JOYNR_LOG_DEBUG(logger(), "added subscription: {}", requestInfo->toString());
 
     {
         std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
@@ -424,7 +424,7 @@ void PublicationManager::handleBroadcastSubscriptionRequest(
 
     // Make note of the publication
     publications.insert(subscriptionId, publication);
-    JOYNR_LOG_TRACE(logger(), "added subscription: {}", requestInfo->toString());
+    JOYNR_LOG_DEBUG(logger(), "added subscription: {}", requestInfo->toString());
 
     saveBroadcastSubscriptionRequestsMap();
 
@@ -734,7 +734,7 @@ void PublicationManager::loadSavedSubscriptionRequestsMap(
 void PublicationManager::removeAttributePublication(const std::string& subscriptionId,
                                                     const bool updatePersistenceFile)
 {
-    JOYNR_LOG_TRACE(logger(), "removePublication: {}", subscriptionId);
+    JOYNR_LOG_DEBUG(logger(), "removePublication: {}", subscriptionId);
 
     std::unique_lock<std::mutex> publicationsLock(publicationsMutex);
     std::shared_ptr<Publication> publication = publications.take(subscriptionId);
@@ -756,7 +756,7 @@ void PublicationManager::removeAttributePublication(const std::string& subscript
 void PublicationManager::removeBroadcastPublication(const std::string& subscriptionId,
                                                     const bool updatePersistenceFile)
 {
-    JOYNR_LOG_TRACE(logger(), "removeBroadcast: {}", subscriptionId);
+    JOYNR_LOG_DEBUG(logger(), "removeBroadcast: {}", subscriptionId);
 
     std::unique_lock<std::mutex> publicationsLock(publicationsMutex);
     std::shared_ptr<Publication> publication = publications.take(subscriptionId);
