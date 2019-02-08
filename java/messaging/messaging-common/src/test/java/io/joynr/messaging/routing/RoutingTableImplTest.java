@@ -460,6 +460,21 @@ public class RoutingTableImplTest {
     }
 
     @Test
+    public void stickyEntriesCannotBeRemoved() {
+        final String participantId = "testParticipantId";
+        final boolean isGloballyVisible = true;
+        final long expiryDateMs = Long.MAX_VALUE;
+        final boolean sticky = true;
+        final MqttAddress oldAddress = new MqttAddress("testBrokerUri", "testTopic");
+
+        subject.put(participantId, oldAddress, isGloballyVisible, expiryDateMs, sticky);
+        assertEquals(oldAddress, subject.get(participantId));
+
+        subject.remove(participantId);
+        assertEquals(oldAddress, subject.get(participantId));
+    }
+
+    @Test
     public void allAddressTypesAreValidatedBeforePut() {
         final MqttAddress mqttAddress = new MqttAddress();
         final ChannelAddress channelAddress = new ChannelAddress();

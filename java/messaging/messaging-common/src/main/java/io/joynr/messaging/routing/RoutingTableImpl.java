@@ -253,14 +253,25 @@ public class RoutingTableImpl implements RoutingTable {
     public void remove(String participantId) {
         RoutingEntry routingEntry = hashMap.get(participantId);
         if (routingEntry != null) {
-            logger.trace("removing(participantId={}, address={}, isGloballyVisible={}, expiryDateMs={}, sticky={}) from routing table",
-                         participantId,
-                         routingEntry.getAddress(),
-                         routingEntry.getIsGloballyVisible(),
-                         routingEntry.getExpiryDateMs(),
-                         routingEntry.getIsSticky());
+            if (routingEntry.isSticky) {
+                logger.warn("Cannot remove sticky routing entry (participantId={}, address={}, isGloballyVisible={}, "
+                        + "expiryDateMs={}, sticky={}) from routing table",
+                            participantId,
+                            routingEntry.getAddress(),
+                            routingEntry.getIsGloballyVisible(),
+                            routingEntry.getExpiryDateMs(),
+                            routingEntry.getIsSticky());
+            } else {
+                logger.trace("removing(participantId={}, address={}, isGloballyVisible={}, expiryDateMs={}, sticky={}) "
+                        + "from routing table",
+                             participantId,
+                             routingEntry.getAddress(),
+                             routingEntry.getIsGloballyVisible(),
+                             routingEntry.getExpiryDateMs(),
+                             routingEntry.getIsSticky());
+                hashMap.remove(participantId);
+            }
         }
-        hashMap.remove(participantId);
     }
 
     @Override

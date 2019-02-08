@@ -72,7 +72,7 @@ An address may be of type
 2. Each participantId has only one RoutingEntry at a time
 3. Each RoutingEntry contains exactly one address
 4. If no Routing Entry for a participantId exists, it is always allowed to create one
-5. Sticky Routing Entries (provisioned routing entries) cannot be replaced
+5. Sticky Routing Entries (provisioned routing entries) cannot be replaced or removed
 6. If a Routing Entry for a participantId exists, it can be replaced only if (see also
    [section Precedence of address types](#precedence-of-address-types))
    1. the existing entry and the new entry contain the same address **OR**
