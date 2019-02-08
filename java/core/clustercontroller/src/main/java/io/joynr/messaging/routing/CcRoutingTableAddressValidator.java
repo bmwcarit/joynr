@@ -30,7 +30,7 @@ import io.joynr.runtime.GlobalAddressProvider;
 import io.joynr.runtime.ReplyToAddressProvider;
 import joynr.system.RoutingTypes.Address;
 
-public class CcRoutingTableAddressValidator implements RoutingTableAddressValidator {
+public class CcRoutingTableAddressValidator extends AbstractRoutingTableAddressValidator {
 
     private Set<Address> ownAddresses;
     private final ReentrantReadWriteLock ownAddressesLock;

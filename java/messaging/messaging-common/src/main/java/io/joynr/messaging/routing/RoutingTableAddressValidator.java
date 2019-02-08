@@ -24,4 +24,5 @@ public interface RoutingTableAddressValidator {
 
     boolean isValidForRoutingTable(final Address address);
 
+    boolean allowUpdate(final RoutingEntry oldEntry, final RoutingEntry newEntry);
 }

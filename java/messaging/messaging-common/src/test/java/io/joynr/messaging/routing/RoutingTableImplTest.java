@@ -28,6 +28,7 @@ import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
 import org.junit.Before;
@@ -62,6 +63,7 @@ public class RoutingTableImplTest {
 
     @Before
     public void setup() {
+        addressValidatorMock = spy(AbstractRoutingTableAddressValidator.class);
         doReturn(true).when(addressValidatorMock).isValidForRoutingTable(any(Address.class));
         subject = new RoutingTableImpl(routingTableGracePeriod, addressValidatorMock);
     }

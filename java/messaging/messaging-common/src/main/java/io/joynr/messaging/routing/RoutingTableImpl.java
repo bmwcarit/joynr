@@ -33,63 +33,12 @@ import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
 import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.messaging.inprocess.InProcessAddress;
 import joynr.system.RoutingTypes.Address;
-import joynr.system.RoutingTypes.ChannelAddress;
-import joynr.system.RoutingTypes.MqttAddress;
-import joynr.system.RoutingTypes.WebSocketAddress;
-import joynr.system.RoutingTypes.WebSocketClientAddress;
 
 @Singleton
 public class RoutingTableImpl implements RoutingTable {
 
     private static final Logger logger = LoggerFactory.getLogger(RoutingTableImpl.class);
-
-    private static class RoutingEntry {
-        RoutingEntry(Address address, boolean isGloballyVisible, long expiryDateMs, boolean isSticky) {
-            setAddress(address);
-            setIsGloballyVisible(isGloballyVisible);
-            this.expiryDateMs = expiryDateMs;
-            this.isSticky = isSticky;
-        }
-
-        public Address getAddress() {
-            return address;
-        }
-
-        public boolean getIsGloballyVisible() {
-            return isGloballyVisible;
-        }
-
-        public long getExpiryDateMs() {
-            return expiryDateMs;
-        }
-
-        public boolean getIsSticky() {
-            return isSticky;
-        }
-
-        public void setAddress(Address address) {
-            this.address = address;
-        }
-
-        public void setIsGloballyVisible(boolean isGloballyVisible) {
-            this.isGloballyVisible = isGloballyVisible;
-        }
-
-        public void setExpiryDateMs(long expiryDateMs) {
-            this.expiryDateMs = expiryDateMs;
-        }
-
-        public void setIsSticky(boolean isSticky) {
-            this.isSticky = isSticky;
-        }
-
-        private Address address;
-        private boolean isGloballyVisible;
-        private long expiryDateMs;
-        private boolean isSticky;
-    }
 
     private ConcurrentMap<String, RoutingEntry> hashMap = new ConcurrentHashMap<>();
     private final long routingTableGracePeriodMs;
@@ -196,25 +145,14 @@ public class RoutingTableImpl implements RoutingTable {
                     if (oldRoutingEntry.isSticky) {
                         logger.error("unable to update(participantId={}, address={}, isGloballyVisible={}, expiryDateMs={}, sticky={}) into routing table,"
                                 + " since the participant ID is already associated with STICKY routing entry address={}, isGloballyVisible={}",
-                                    participantId,
-                                    address,
-                                    isGloballyVisible,
-                                    expiryDateMs,
-                                    sticky,
-                                    oldRoutingEntry.address,
-                                    oldRoutingEntry.isGloballyVisible);
-                    } else if (address instanceof InProcessAddress) {
-                        updateRoutingEntry(participantId, oldRoutingEntry, newRoutingEntry);
-                    } else if (address instanceof WebSocketClientAddress
-                            && !(oldRoutingEntry.getAddress() instanceof InProcessAddress)) {
-                        updateRoutingEntry(participantId, oldRoutingEntry, newRoutingEntry);
-                    } else if ((address instanceof MqttAddress || address instanceof ChannelAddress)
-                            && (oldRoutingEntry.getAddress() instanceof MqttAddress
-                                    || oldRoutingEntry.getAddress() instanceof ChannelAddress)) {
-                        updateRoutingEntry(participantId, oldRoutingEntry, newRoutingEntry);
-                    } else if (address instanceof WebSocketAddress
-                            && (oldRoutingEntry.getAddress() instanceof MqttAddress
-                                    || oldRoutingEntry.getAddress() instanceof ChannelAddress)) {
+                                     participantId,
+                                     address,
+                                     isGloballyVisible,
+                                     expiryDateMs,
+                                     sticky,
+                                     oldRoutingEntry.address,
+                                     oldRoutingEntry.isGloballyVisible);
+                    } else if (addressValidator.allowUpdate(oldRoutingEntry, newRoutingEntry)) {
                         updateRoutingEntry(participantId, oldRoutingEntry, newRoutingEntry);
                     } else {
                         logger.warn("unable to update(participantId={}, address={}, isGloballyVisible={}, expiryDateMs={}, "

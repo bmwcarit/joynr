@@ -22,7 +22,7 @@ import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.system.RoutingTypes.MqttAddress;
 
-public class LibjoynrRoutingTableAddressValidator implements RoutingTableAddressValidator {
+public class LibjoynrRoutingTableAddressValidator extends AbstractRoutingTableAddressValidator {
 
     @Override
     public boolean isValidForRoutingTable(final Address address) {
