@@ -35,6 +35,8 @@ import com.google.inject.name.Named;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.ChannelAddress;
+import joynr.system.RoutingTypes.MqttAddress;
 import joynr.system.RoutingTypes.WebSocketClientAddress;
 
 @Singleton
@@ -186,6 +188,10 @@ public class RoutingTableImpl implements RoutingTable {
                         updateRoutingEntry(participantId, oldRoutingEntry, newRoutingEntry);
                     } else if (address instanceof WebSocketClientAddress
                             && !(oldRoutingEntry.getAddress() instanceof InProcessAddress)) {
+                        updateRoutingEntry(participantId, oldRoutingEntry, newRoutingEntry);
+                    } else if ((address instanceof MqttAddress || address instanceof ChannelAddress)
+                            && (oldRoutingEntry.getAddress() instanceof MqttAddress
+                                    || oldRoutingEntry.getAddress() instanceof ChannelAddress)) {
                         updateRoutingEntry(participantId, oldRoutingEntry, newRoutingEntry);
                     } else {
                         logger.warn("unable to update(participantId={}, address={}, isGloballyVisible={}, expiryDateMs={}, "

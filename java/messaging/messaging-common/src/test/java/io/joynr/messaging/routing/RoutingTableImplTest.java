@@ -401,10 +401,16 @@ public class RoutingTableImplTest {
 
         final MqttAddress mqttAddress = new MqttAddress("brokerUri", "topic");
         subject.put(participantId, mqttAddress, isGloballyVisible, expiryDateMs, sticky, allowUpdate);
+        assertEquals(mqttAddress, subject.get(participantId));
+        // restore old address
+        subject.put(participantId, oldAddress, isGloballyVisible, expiryDateMs, sticky, allowUpdate);
         assertEquals(oldAddress, subject.get(participantId));
 
         final ChannelAddress channelAddress = new ChannelAddress("endpointUrl", "channelId");
         subject.put(participantId, channelAddress, isGloballyVisible, expiryDateMs, sticky, allowUpdate);
+        assertEquals(channelAddress, subject.get(participantId));
+        // restore old address
+        subject.put(participantId, oldAddress, isGloballyVisible, expiryDateMs, sticky, allowUpdate);
         assertEquals(oldAddress, subject.get(participantId));
 
         final WebSocketAddress websocketAddress = new WebSocketAddress(WebSocketProtocol.WS, "host", 4242, "path");
@@ -438,10 +444,16 @@ public class RoutingTableImplTest {
 
         final MqttAddress mqttAddress = new MqttAddress("brokerUri", "topic");
         subject.put(participantId, mqttAddress, isGloballyVisible, expiryDateMs, sticky, allowUpdate);
+        assertEquals(mqttAddress, subject.get(participantId));
+        // restore old address
+        subject.put(participantId, oldAddress, isGloballyVisible, expiryDateMs, sticky, allowUpdate);
         assertEquals(oldAddress, subject.get(participantId));
 
         final ChannelAddress channelAddress = new ChannelAddress("endpointUrl", "channelId");
         subject.put(participantId, channelAddress, isGloballyVisible, expiryDateMs, sticky, allowUpdate);
+        assertEquals(channelAddress, subject.get(participantId));
+        // restore old address
+        subject.put(participantId, oldAddress, isGloballyVisible, expiryDateMs, sticky, allowUpdate);
         assertEquals(oldAddress, subject.get(participantId));
 
         final WebSocketAddress websocketAddress = new WebSocketAddress(WebSocketProtocol.WS, "host", 4242, "path");
