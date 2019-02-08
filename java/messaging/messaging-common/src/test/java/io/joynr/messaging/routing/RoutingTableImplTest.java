@@ -296,7 +296,7 @@ public class RoutingTableImplTest {
         final String participantId = "testParticipantId";
         final boolean isGloballyVisible = true;
         final long expiryDateMs = Long.MAX_VALUE;
-        final boolean sticky = true;
+        final boolean sticky = false;
         final boolean allowUpdate = false;
         final InProcessAddress oldAddress = new InProcessAddress(mock(InProcessMessagingSkeleton.class));
 
@@ -330,7 +330,7 @@ public class RoutingTableImplTest {
         final String participantId = "testParticipantId";
         final boolean isGloballyVisible = true;
         final long expiryDateMs = Long.MAX_VALUE;
-        final boolean sticky = true;
+        final boolean sticky = false;
         final boolean allowUpdate = false;
         final WebSocketClientAddress oldAddress = new WebSocketClientAddress("testWebSocketId");
 
@@ -366,7 +366,7 @@ public class RoutingTableImplTest {
         final String participantId = "testParticipantId";
         final boolean isGloballyVisible = true;
         final long expiryDateMs = Long.MAX_VALUE;
-        final boolean sticky = true;
+        final boolean sticky = false;
         final boolean allowUpdate = false;
         final WebSocketAddress oldAddress = new WebSocketAddress(WebSocketProtocol.WSS, "testHost", 23, "testPath");
 
@@ -403,7 +403,7 @@ public class RoutingTableImplTest {
         final String participantId = "testParticipantId";
         final boolean isGloballyVisible = true;
         final long expiryDateMs = Long.MAX_VALUE;
-        final boolean sticky = true;
+        final boolean sticky = false;
         final boolean allowUpdate = false;
         final ChannelAddress oldAddress = new ChannelAddress("testEndpointUrl", "testChannelId");
 
@@ -450,7 +450,7 @@ public class RoutingTableImplTest {
         final String participantId = "testParticipantId";
         final boolean isGloballyVisible = true;
         final long expiryDateMs = Long.MAX_VALUE;
-        final boolean sticky = true;
+        final boolean sticky = false;
         final boolean allowUpdate = false;
         final MqttAddress oldAddress = new MqttAddress("testBrokerUri", "testTopic");
 
@@ -490,6 +490,23 @@ public class RoutingTableImplTest {
         final InProcessAddress inProcessAddress = new InProcessAddress();
         subject.put(participantId, inProcessAddress, isGloballyVisible, expiryDateMs, sticky, allowUpdate);
         assertEquals(inProcessAddress, subject.get(participantId));
+    }
+
+    @Test
+    public void stickyEntriesAreNotReplaced() {
+        final String participantId = "testParticipantId";
+        final boolean isGloballyVisible = true;
+        final long expiryDateMs = Long.MAX_VALUE;
+        final boolean sticky = true;
+        final boolean allowUpdate = false;
+        final MqttAddress oldAddress = new MqttAddress("testBrokerUri", "testTopic");
+
+        subject.put(participantId, oldAddress, isGloballyVisible, expiryDateMs, sticky, allowUpdate);
+        assertEquals(oldAddress, subject.get(participantId));
+
+        final InProcessAddress inProcessAddress = new InProcessAddress();
+        subject.put(participantId, inProcessAddress, isGloballyVisible, expiryDateMs, sticky, allowUpdate);
+        assertEquals(oldAddress, subject.get(participantId));
     }
 
     @Test

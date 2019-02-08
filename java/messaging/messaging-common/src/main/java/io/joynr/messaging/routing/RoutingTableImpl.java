@@ -193,7 +193,17 @@ public class RoutingTableImpl implements RoutingTable {
                 if (allowUpdate) {
                     updateRoutingEntry(participantId, oldRoutingEntry, newRoutingEntry);
                 } else {
-                    if (address instanceof InProcessAddress) {
+                    if (oldRoutingEntry.isSticky) {
+                        logger.error("unable to update(participantId={}, address={}, isGloballyVisible={}, expiryDateMs={}, sticky={}) into routing table,"
+                                + " since the participant ID is already associated with STICKY routing entry address={}, isGloballyVisible={}",
+                                    participantId,
+                                    address,
+                                    isGloballyVisible,
+                                    expiryDateMs,
+                                    sticky,
+                                    oldRoutingEntry.address,
+                                    oldRoutingEntry.isGloballyVisible);
+                    } else if (address instanceof InProcessAddress) {
                         updateRoutingEntry(participantId, oldRoutingEntry, newRoutingEntry);
                     } else if (address instanceof WebSocketClientAddress
                             && !(oldRoutingEntry.getAddress() instanceof InProcessAddress)) {
