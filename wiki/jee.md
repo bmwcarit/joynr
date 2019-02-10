@@ -7,9 +7,9 @@ The features supported are:
 * Expose session beans as joynr providers via the `@ServiceProvider` annotation
 * Inject a `ServiceLocator` in order to obtain consumer proxies for calling
 other services
-* Internally uses EE container managed thread pools
-* Provides mqtt based cluster-aware communication abilities
-* Uses the EE container's JAX RS to receive joynr messages via HTTP(s)
+* Internally use EE container managed thread pools
+* Provide mqtt based cluster-aware communication abilities
+* Use the EE container's JAX RS to receive joynr messages via HTTP(s)
 * Provide joynr configuration via an EJB
 
 There is also an example application based on the Radio App example. See the end of this
@@ -451,7 +451,7 @@ can handle the reply, then you need to provide a `@CallbackHandler` bean and
 request the `*StatelessAsync` instead of the `*Sync` interface from the
 `ServiceLocator`.
 
-The methods in the `*StatelessAsync` interface have a `MessageIdCallaback` as the
+The methods in the `*StatelessAsync` interface have a `MessageIdCallback` as the
 last parameter, which is a consumer of a String value. This value is the unique
 ID of the request being sent out, and when the reply arrives, that same ID will
 accompany the result data as part of the `ReplyContext` passed in as last parameter.
