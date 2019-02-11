@@ -142,9 +142,9 @@ protected:
     virtual void routeInternal(std::shared_ptr<ImmutableMessage> message,
                                std::uint32_t tryCount) = 0;
 
-    void sendMessages(const std::string& destinationPartId,
-                      std::shared_ptr<const joynr::system::RoutingTypes::Address> address,
-                      const WriteLocker& messageQueueRetryWriteLock);
+    virtual void sendMessages(const std::string& destinationPartId,
+                              std::shared_ptr<const joynr::system::RoutingTypes::Address> address,
+                              const WriteLocker& messageQueueRetryWriteLock) = 0;
 
     void sendMessages(std::shared_ptr<const joynr::system::RoutingTypes::Address> address) final;
 

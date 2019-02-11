@@ -226,6 +226,25 @@ void LibJoynrMessageRouter::routeInternal(std::shared_ptr<ImmutableMessage> mess
     }
 }
 
+void LibJoynrMessageRouter::sendMessages(
+        const std::string& destinationPartId,
+        std::shared_ptr<const joynr::system::RoutingTypes::Address> address,
+        const WriteLocker& messageQueueRetryWriteLock)
+{
+    assert(messageQueueRetryWriteLock.owns_lock());
+    JOYNR_LOG_TRACE(logger(),
+                    "sendMessages: sending messages for destinationPartId {} and {}",
+                    destinationPartId,
+                    address->toString());
+    while (true) {
+        std::shared_ptr<ImmutableMessage> item(messageQueue->getNextMessageFor(destinationPartId));
+        if (!item) {
+            break;
+        }
+        scheduleMessage(item, address);
+    }
+}
+
 bool LibJoynrMessageRouter::publishToGlobal(const ImmutableMessage& message)
 {
     std::ignore = message;

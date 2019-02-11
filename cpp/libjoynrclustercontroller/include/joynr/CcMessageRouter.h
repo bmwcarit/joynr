@@ -211,6 +211,14 @@ private:
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onError);
 
+    void sendMessages(const std::string& destinationPartId,
+                      std::shared_ptr<const joynr::system::RoutingTypes::Address> address,
+                      const WriteLocker& messageQueueRetryWriteLock) final;
+
+    void accessControlAndScheduleMsg(
+            std::shared_ptr<ImmutableMessage> message,
+            std::shared_ptr<const system::RoutingTypes::Address> destAddress,
+            std::uint32_t tryCount = 0);
     void queueMessage(std::shared_ptr<ImmutableMessage> message,
                       const ReadLocker& messageQueueRetryReadLock) final;
 

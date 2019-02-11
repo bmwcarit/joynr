@@ -261,6 +261,57 @@ TYPED_TEST(MessageRouterTest, routedMessageQueuedIfTransportIsNotAvailable)
     availabilityChangedCallback(true);
 
     EXPECT_TRUE(semaphore.waitFor(std::chrono::seconds(2)));
+    EXPECT_EQ(0, this->transportNotAvailableQueueRef->getQueueLength());
+}
+
+TYPED_TEST(MessageRouterTest, queuedMsgsAreQueuedInTransportNotAvailableQueueWhenTransportIsUnavailable) {
+    const std::string providerParticipantId("providerParticipantId");
+    auto dispatcher = std::make_shared<MockDispatcher>();
+    auto skeleton = std::make_shared<MockInProcessMessagingSkeleton>(dispatcher);
+    auto providerAddress = std::make_shared<const InProcessMessagingAddress>(skeleton);
+    auto address =
+            std::dynamic_pointer_cast<const joynr::system::RoutingTypes::Address>(providerAddress);
+
+    // setup the message
+    auto mutableMessage = std::make_shared<MutableMessage>();
+    mutableMessage->setType(joynr::Message::VALUE_MESSAGE_TYPE_REQUEST());
+    mutableMessage->setSender("sender");
+    mutableMessage->setRecipient(providerParticipantId);
+    const TimePoint nowTime = TimePoint::now();
+    const std::int64_t expiryDate = std::numeric_limits<std::int64_t>::max();
+    mutableMessage->setExpiryDate(nowTime + std::chrono::milliseconds(16000));
+
+    // setup Transport
+    auto mockTransportStatus = std::make_shared<MockTransportStatus>();
+    std::vector<std::shared_ptr<ITransportStatus>> transportStatuses;
+    transportStatuses.emplace_back(mockTransportStatus);
+
+    // create a new MessageRouter
+    this->messageRouter->shutdown();
+    this->messageRouter = this->createMessageRouter({transportStatuses});
+
+    // Mock Transport to be unavailable
+    ON_CALL(*mockTransportStatus, isReponsibleFor(address)).WillByDefault(Return(true));
+    ON_CALL(*mockTransportStatus, isAvailable()).WillByDefault(Return(false));
+
+    // Route the message while address is unavailable. It should be queued in the messageQueue
+    std::shared_ptr<ImmutableMessage> immutableMessage = mutableMessage->getImmutableMessage();
+    this->messageRouter->route(immutableMessage);
+    EXPECT_EQ(1, this->messageQueue->getQueueLength());
+    EXPECT_EQ(0, this->transportNotAvailableQueueRef->getQueueLength());
+
+    // When the address becomes available, the message should be moved to the transportNotAvailableQueue
+    const bool isSticky = false;
+    const bool isGloballyVisible = true;
+    this->messageRouter->addNextHop(
+            providerParticipantId, providerAddress, isGloballyVisible,
+            std::move(expiryDate), isSticky);
+
+    EXPECT_EQ(1, this->transportNotAvailableQueueRef->getQueueLength());
+    EXPECT_EQ(0, this->messageQueue->getQueueLength());
+    auto queuedMessage =
+            this->transportNotAvailableQueueRef->getNextMessageFor(mockTransportStatus);
+    EXPECT_EQ(queuedMessage, immutableMessage);
 }
 
 TYPED_TEST(MessageRouterTest, restoreRoutingTable)

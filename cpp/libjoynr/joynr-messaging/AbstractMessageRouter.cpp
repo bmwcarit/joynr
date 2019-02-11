@@ -274,47 +274,6 @@ void AbstractMessageRouter::sendMessages(
     }
 }
 
-void AbstractMessageRouter::sendMessages(
-        const std::string& destinationPartId,
-        std::shared_ptr<const joynr::system::RoutingTypes::Address> address,
-        const WriteLocker& messageQueueRetryWriteLock)
-{
-    assert(messageQueueRetryWriteLock.owns_lock());
-    JOYNR_LOG_TRACE(logger(),
-                    "sendMessages: sending messages for destinationPartId {} and {}",
-                    destinationPartId,
-                    address->toString());
-    while (true) {
-        // We have to check all the time whether the messaging stub is still available because
-        // it will be deleted if a disconnect occurs (this may happen while this method
-        // is being executed).
-        auto messagingStub = messagingStubFactory->create(address);
-
-        if (messagingStub == nullptr) {
-            break;
-        }
-
-        std::shared_ptr<ImmutableMessage> item(messageQueue->getNextMessageFor(destinationPartId));
-        if (!item) {
-            break;
-        }
-
-        try {
-            const std::uint32_t tryCount = 0;
-            messageScheduler->schedule(
-                    std::make_shared<MessageRunnable>(
-                            item, std::move(messagingStub), address, shared_from_this(), tryCount),
-                    std::chrono::milliseconds(0));
-            JOYNR_LOG_INFO(logger(), "Rescheduled message {}", item->getTrackingInfo());
-        } catch (const exceptions::JoynrMessageNotSentException& e) {
-            JOYNR_LOG_ERROR(logger(),
-                            "Message {} could not be sent. Error: {}",
-                            item->getTrackingInfo(),
-                            e.getMessage());
-        }
-    }
-}
-
 void AbstractMessageRouter::scheduleMessage(
         std::shared_ptr<ImmutableMessage> message,
         std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress,

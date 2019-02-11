@@ -284,6 +284,46 @@ void CcMessageRouter::reestablishMulticastSubscriptions()
     }
 }
 
+void CcMessageRouter::sendMessages(
+        const std::string& destinationPartId,
+        std::shared_ptr<const joynr::system::RoutingTypes::Address> address,
+        const WriteLocker& messageQueueRetryWriteLock)
+{
+    assert(messageQueueRetryWriteLock.owns_lock());
+    JOYNR_LOG_TRACE(logger(),
+                    "sendMessages: sending messages for destinationPartId {} and {}",
+                    destinationPartId,
+                    address->toString());
+    while (true) {
+        std::shared_ptr<ImmutableMessage> item(messageQueue->getNextMessageFor(destinationPartId));
+        if (!item) {
+            break;
+        }
+
+        accessControlAndScheduleMsg(item, address);
+    }
+}
+
+void CcMessageRouter::doAccessControlCheck(
+        std::shared_ptr<ImmutableMessage> message,
+        std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress,
+        std::uint32_t tryCount)
+{
+    if (auto gotAccessController = accessController.lock()) {
+        // Access control checks are asynchronous, callback will send message
+        // if access is granted
+        auto callback = std::make_shared<ConsumerPermissionCallback>(
+                std::dynamic_pointer_cast<CcMessageRouter>(shared_from_this()),
+                message,
+                destAddress,
+                clusterControllerSettings.aclAudit());
+        gotAccessController->hasConsumerPermission(message, callback);
+    } else {
+        // If this point is reached, the message can be sent without delay
+        scheduleMessage(message, destAddress, tryCount);
+    }
+}
+
 /**
   * Q (RDZ): What happens if the message cannot be forwarded? Exception? Log file entry?
   * Q (RDZ): When are messagingstubs removed? They are stored indefinitely in the factory
@@ -344,20 +384,7 @@ void CcMessageRouter::routeInternal(std::shared_ptr<ImmutableMessage> message,
     }
 
     for (std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress : destAddresses) {
-        if (auto gotAccessController = accessController.lock()) {
-            // Access control checks are asynchronous, callback will send message
-            // if access is granted
-            auto callback = std::make_shared<ConsumerPermissionCallback>(
-                    std::dynamic_pointer_cast<CcMessageRouter>(shared_from_this()),
-                    message,
-                    destAddress,
-                    clusterControllerSettings.aclAudit());
-            gotAccessController->hasConsumerPermission(message, callback);
-            continue;
-        }
-
-        // If this point is reached, the message can be sent without delay
-        scheduleMessage(message, destAddress, tryCount);
+        accessControlAndScheduleMsg(message, destAddress, tryCount);
     }
 }
 
