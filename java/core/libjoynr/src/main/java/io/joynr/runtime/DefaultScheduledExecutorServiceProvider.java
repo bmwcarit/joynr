@@ -46,6 +46,22 @@ public class DefaultScheduledExecutorServiceProvider implements Provider<Schedul
     public DefaultScheduledExecutorServiceProvider(@Named(ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_PARALLEL_SENDS) int maximumParallelSends,
                                                    ShutdownNotifier shutdownNotifier) {
         ThreadFactory schedulerNamedThreadFactory = new JoynrThreadFactory("ScheduledExecutorService", true);
+
+        /*
+         * Number of required threads (numbers in parentheses mean: no dedicated thread is required here):
+         *
+         * MessageRouter: #maximumParallelSends (default: 20) messageWorkers
+         *                (1) routingTableCleanup
+         * ArbitratorFactory: 1 arbitratorRunnable
+         * MessagingSkeletonFactory: 1 per skeleton (transport), only required during startup, can be executed one after the other
+         * HttpBridgeEndpointRegistryClient: N/A (JEE only): uses scheduledExecutorServcie of the application server
+         * MqttPahoClientFactory: 4 per Mqtt connection?
+         * ExpiredDiscoveryEntryCacheCleaner: (1) cleanupAction
+         * RequestReplyManagerImpl: (1) cleanupScheduler for queued requests
+         * PublicationManagerImpl: (1) cleanupScheduler for subscriptions
+         * SubscriptionManagerImpl: (1) cleanupScheduler for subscriptions
+         * ReplyCallerDirectory: (1) cleanupScheduler for ReplyCallers
+        */
         scheduler = new ScheduledThreadPoolExecutor(maximumParallelSends + MAX_SKELETON_THREADS + MQTT_THREADS,
                                                     schedulerNamedThreadFactory);
         scheduler.setKeepAliveTime(100, TimeUnit.SECONDS);

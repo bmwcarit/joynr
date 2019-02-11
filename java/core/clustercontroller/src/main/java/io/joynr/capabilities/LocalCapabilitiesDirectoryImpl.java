@@ -644,7 +644,6 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
     @Override
     public void shutdown(boolean unregisterAllRegisteredCapabilities) {
-        freshnessUpdateScheduler.shutdownNow();
         if (unregisterAllRegisteredCapabilities) {
             Set<DiscoveryEntry> allDiscoveryEntries = localDiscoveryEntryStore.getAllDiscoveryEntries();
 
