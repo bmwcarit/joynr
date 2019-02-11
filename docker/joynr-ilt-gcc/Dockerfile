@@ -161,7 +161,7 @@ RUN export SMRF_VERSION=0.3.2 \
 # install MoCOCrW
 ###################################################
 
-RUN export MoCOCrW_VERSION=master \
+RUN export MoCOCrW_VERSION=openssl1.1 \
     && . /etc/profile \
     && cd /opt \
     && git clone https://github.com/bmwcarit/MoCOCrW.git \

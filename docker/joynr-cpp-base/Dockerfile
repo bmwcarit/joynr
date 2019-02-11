@@ -90,7 +90,7 @@ RUN dnf update -y \
 # install MoCOCrW
 ###################################################
 
-RUN export MoCOCrW_VERSION=master \
+RUN export MoCOCrW_VERSION=openssl1.1 \
     && . /etc/profile \
     && cd /opt \
     && git clone https://github.com/bmwcarit/MoCOCrW.git \
