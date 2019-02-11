@@ -30,6 +30,8 @@ import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
+import java.util.Base64;
 import java.util.Enumeration;
 import java.util.Properties;
 import java.util.Random;
@@ -41,7 +43,6 @@ import java.util.jar.JarInputStream;
 import javax.annotation.CheckForNull;
 
 import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,6 +50,7 @@ import io.joynr.exceptions.JoynrRuntimeException;
 
 public class JoynrUtil {
     private static final Logger logger = LoggerFactory.getLogger(JoynrUtil.class);
+    private static final Base64.Encoder base64Encoder = Base64.getUrlEncoder().withoutPadding();
 
     public enum OS {
         LINUX, WIN32, TEST, UNDEFINED
@@ -333,6 +335,10 @@ public class JoynrUtil {
     }
 
     public static String createUuidString() {
-        return StringUtils.remove(UUID.randomUUID().toString(), '-');
+        UUID uuid = UUID.randomUUID();
+        ByteBuffer uuidBytes = ByteBuffer.wrap(new byte[16]);
+        uuidBytes.putLong(uuid.getMostSignificantBits());
+        uuidBytes.putLong(uuid.getLeastSignificantBits());
+        return base64Encoder.encodeToString(uuidBytes.array());
     }
 }
