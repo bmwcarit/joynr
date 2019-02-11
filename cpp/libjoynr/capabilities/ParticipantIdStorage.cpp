@@ -113,7 +113,6 @@ std::string ParticipantIdStorage::getProviderParticipantId(const std::string& do
     const std::string providerKey = createProviderKey(domain, interfaceName, majorVersion);
     MultiIndexContainer::const_iterator value;
 
-    std::string participantId;
     {
         ReadLocker lockAccessToStorage(storageMutex);
         value = storage.template get<participantIdStorageTags::read>().find(providerKey);
