@@ -68,12 +68,6 @@
 			<artifactId>slf4j-log4j12</artifactId>
 		</dependency>
 
-		<!-- Console I/O framework used in the performance Java code -->
-		<dependency>
-			<groupId>jline</groupId>
-			<artifactId>jline</artifactId>
-		</dependency>
-
 		<!--
 			The following dependencies allow to run a jetty server that
 			contains the minimum backend

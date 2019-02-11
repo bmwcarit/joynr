@@ -79,13 +79,6 @@
 			<version>1.6.6</version>
 		</dependency>
 
-		<!-- Console I/O framework used in the demo app -->
-		<dependency>
-			<groupId>jline</groupId>
-			<artifactId>jline</artifactId>
-			<version>2.12</version>
-		</dependency>
-
 		<!-- Command line parsing used in the demo app -->
 		<dependency>
 			<groupId>commons-cli</groupId>

@@ -18,7 +18,7 @@
  */
 package io.joynr.runtime;
 
-import java.io.IOException;
+import java.io.Console;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Properties;
@@ -43,7 +43,6 @@ import io.joynr.messaging.AtmosphereMessagingModule;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
 import io.joynr.messaging.websocket.WebsocketModule;
-import jline.console.ConsoleReader;
 import joynr.types.DiscoveryEntry;
 
 public class ClusterController {
@@ -161,27 +160,22 @@ public class ClusterController {
         LOG.info("adding shutdown hook");
         Runtime.getRuntime().addShutdownHook(shutdownHook);
 
-        if (System.console() != null) {
-            ConsoleReader console;
-            try {
-                console = new ConsoleReader();
-                String command = "";
-                while (!command.equals("q")) {
-                    command = console.readLine();
+        Console console = System.console();
+        if (console != null) {
+            String command = "";
+            while (!command.equals("q")) {
+                command = console.readLine();
 
-                    if (command.equals("caps")) {
-                        Set<DiscoveryEntry> allLocalDiscoveryEntries = capabilitiesDirectory.listLocalCapabilities();
-                        StringBuffer discoveryEntriesAsText = new StringBuffer();
-                        for (DiscoveryEntry capability : allLocalDiscoveryEntries) {
-                            discoveryEntriesAsText.append(capability.toString()).append('\n');
-                        }
-                        LOG.info(discoveryEntriesAsText.toString());
-                    } else {
-                        LOG.info("\n\nUSAGE press\n" + " q\tto quit\n caps\tto list registered providers\n");
+                if (command.equals("caps")) {
+                    Set<DiscoveryEntry> allLocalDiscoveryEntries = capabilitiesDirectory.listLocalCapabilities();
+                    StringBuffer discoveryEntriesAsText = new StringBuffer();
+                    for (DiscoveryEntry capability : allLocalDiscoveryEntries) {
+                        discoveryEntriesAsText.append(capability.toString()).append('\n');
                     }
+                    LOG.info(discoveryEntriesAsText.toString());
+                } else {
+                    LOG.info("\n\nUSAGE press\n" + " q\tto quit\n caps\tto list registered providers\n");
                 }
-            } catch (IOException e) {
-                LOG.error("error reading input from console", e);
             }
         } else {
             LOG.info("\n\nNon-interactive mode detected.\n"

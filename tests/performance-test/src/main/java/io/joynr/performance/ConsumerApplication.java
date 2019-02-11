@@ -25,6 +25,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
 
@@ -41,21 +44,20 @@ import io.joynr.performance.ConsumerInvocationParameters.BackendConfig;
 import io.joynr.performance.ConsumerInvocationParameters.COMMUNICATIONMODE;
 import io.joynr.performance.ConsumerInvocationParameters.RuntimeConfig;
 import io.joynr.proxy.Future;
-import io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback;
 import io.joynr.proxy.ProxyBuilder;
+import io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrApplication;
 import io.joynr.runtime.JoynrApplicationModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.LibjoynrWebSocketRuntimeModule;
-import jline.internal.Log;
 import joynr.exceptions.ApplicationException;
 import joynr.tests.performance.EchoProxy;
 import joynr.tests.performance.Types.ComplexStruct;
 
 public class ConsumerApplication extends AbstractJoynrApplication {
-
+    private static final Logger LOG = LoggerFactory.getLogger(ConsumerApplication.class);
     private static final String STATIC_PERSISTENCE_FILE = "java-consumer.persistence_file";
     private static final int ASYNCTEST_RESPONSE_SAMPLEINTERVAL_MS = 10; // 10 milliseconds
 
@@ -73,8 +75,7 @@ public class ConsumerApplication extends AbstractJoynrApplication {
             consumerApp.run();
             consumerApp.shutdown();
         } catch (Exception exception) {
-            Log.error("Unexpected exception: " + exception);
-            exception.printStackTrace(Log.getOutput());
+            LOG.error("Unexpected exception: ", exception);
             System.exit(1);
         }
     }
@@ -115,7 +116,7 @@ public class ConsumerApplication extends AbstractJoynrApplication {
         try {
             echoProxy = createEchoProxy();
         } catch (Exception e) {
-            Log.error("Proxy creation failed: " + e);
+            LOG.error("Proxy creation failed: ", e);
             exitCode = 1;
             return;
         }
@@ -132,7 +133,7 @@ public class ConsumerApplication extends AbstractJoynrApplication {
                 performSyncSendByteArrayTest(echoProxy);
                 break;
             default:
-                Log.error("Unknown test type used");
+                LOG.error("Unknown test type used");
                 exitCode = 1;
                 break;
             }
@@ -148,12 +149,12 @@ public class ConsumerApplication extends AbstractJoynrApplication {
                 performAsyncSendByteArrayTest(echoProxy);
                 break;
             default:
-                Log.error("Unknown test type used");
+                LOG.error("Unknown test type used");
                 exitCode = 1;
                 break;
             }
         } else {
-            Log.error("Unknown communication mode used");
+            LOG.error("Unknown communication mode used");
             exitCode = 1;
         }
     }
@@ -292,7 +293,7 @@ public class ConsumerApplication extends AbstractJoynrApplication {
             proxy.echoString(responseCallback, inputString);
         }
 
-        responseCallback.waitForNumberOfResponses((int) runs, ASYNCTEST_RESPONSE_SAMPLEINTERVAL_MS);
+        responseCallback.waitForNumberOfResponses(runs, ASYNCTEST_RESPONSE_SAMPLEINTERVAL_MS);
 
         responseCallback.release(numThreads);
         executorService.shutdown();
@@ -434,9 +435,8 @@ public class ConsumerApplication extends AbstractJoynrApplication {
         long timeDeltaMilliseconds = endTime - startTime;
         System.err.format("Test case took %d ms. %.2f Msgs/s transmitted\n startTime: %d, endTime: %d, runs: %d, iterations: %d \n",
                           timeDeltaMilliseconds,
-                          ((double) (invocationParameters.getNumberOfRuns()
-                                  * invocationParameters.getNumberOfIterations()))
-                                  / (((double) timeDeltaMilliseconds) / 1000.0d),
+                          (invocationParameters.getNumberOfRuns() * invocationParameters.getNumberOfIterations())
+                                  / ((timeDeltaMilliseconds) / 1000.0d),
                           startTime,
                           endTime,
                           invocationParameters.getNumberOfRuns(),

@@ -76,7 +76,6 @@ This project has dependencies to:
   Jetty :: Websocket :: Server under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: Websocket :: Servlet Interface under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: XML utilities under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
-  JLine under The BSD License
   json-path under Apache 2.0
   JSON.simple under The Apache Software License, Version 2.0
   JUnit under Eclipse Public License 1.0

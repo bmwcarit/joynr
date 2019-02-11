@@ -38,11 +38,6 @@
 			<artifactId>joynr-mqtt-client</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		<!-- Console I/O framework used in the demo app -->
-		<dependency>
-			<groupId>jline</groupId>
-			<artifactId>jline</artifactId>
-		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>

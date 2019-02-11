@@ -18,19 +18,18 @@
  */
 package io.joynr.examples.android_example;
 
-import java.io.IOException;
+import java.io.Console;
 import java.util.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
-
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioning;
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.exceptions.JoynrRuntimeException;
@@ -44,7 +43,6 @@ import io.joynr.runtime.JoynrApplication;
 import io.joynr.runtime.JoynrApplicationModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.LibjoynrWebSocketRuntimeModule;
-import jline.console.ConsoleReader;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.TrustLevel;
@@ -161,13 +159,14 @@ public class MyGpsProviderApplication extends AbstractJoynrApplication {
         providerQos.setPriority(System.currentTimeMillis());
         runtime.registerProvider(localDomain, provider, providerQos);
 
-        ConsoleReader console;
-        try {
-            console = new ConsoleReader();
-            int key;
-            while ((key = console.readCharacter()) != 'q') {
+        Console console = System.console();
+        if (console != null) {
+            String key = "";
+            while (!key.equals("q")) {
+                key = console.readLine();
+
                 switch (key) {
-                case 'l':
+                case "l":
                     provider.notifyLocationUpdate();
                     break;
                 default:
@@ -175,8 +174,8 @@ public class MyGpsProviderApplication extends AbstractJoynrApplication {
                     break;
                 }
             }
-        } catch (IOException e) {
-            LOG.error("error reading input from console", e);
+        } else {
+            LOG.info("\n\nNon-interactive mode detected.\n");
         }
     }
 

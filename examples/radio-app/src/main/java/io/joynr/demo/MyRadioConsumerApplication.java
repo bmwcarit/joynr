@@ -18,7 +18,7 @@
  */
 package io.joynr.demo;
 
-import java.io.IOException;
+import java.io.Console;
 import java.util.Properties;
 
 import org.apache.commons.cli.CommandLine;
@@ -39,7 +39,6 @@ import com.google.inject.name.Named;
 import com.google.inject.util.Modules;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
-
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
@@ -61,7 +60,6 @@ import io.joynr.runtime.JoynrApplication;
 import io.joynr.runtime.JoynrApplicationModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.LibjoynrWebSocketRuntimeModule;
-import jline.console.ConsoleReader;
 import joynr.MulticastSubscriptionQos;
 import joynr.OnChangeSubscriptionQos;
 import joynr.OnChangeWithKeepAliveSubscriptionQos;
@@ -70,9 +68,9 @@ import joynr.exceptions.ProviderRuntimeException;
 import joynr.vehicle.Country;
 import joynr.vehicle.GeoPosition;
 import joynr.vehicle.Radio.AddFavoriteStationErrorEnum;
+import joynr.vehicle.RadioBroadcastInterface;
 import joynr.vehicle.RadioBroadcastInterface.NewStationDiscoveredBroadcastFilterParameters;
 import joynr.vehicle.RadioBroadcastInterface.WeakSignalBroadcastAdapter;
-import joynr.vehicle.RadioBroadcastInterface;
 import joynr.vehicle.RadioProxy;
 import joynr.vehicle.RadioStation;
 import joynr.vehicle.RadioSync.GetLocationOfCurrentStationReturned;
@@ -569,17 +567,18 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
                         + e.getClass().getSimpleName() + "!");
             }
 
-            ConsoleReader console;
-            try {
-                console = new ConsoleReader();
-                int key;
-                while ((key = console.readCharacter()) != 'q') {
+            Console console = System.console();
+            if (console != null) {
+                String key = "";
+                while (!key.equals("q")) {
+                    key = console.readLine();
+
                     switch (key) {
-                    case 's':
+                    case "s":
                         radioProxy.shuffleStations();
                         LOG.info("called shuffleStations");
                         break;
-                    case 'm':
+                    case "m":
                         GetLocationOfCurrentStationReturned locationOfCurrentStation = radioProxy.getLocationOfCurrentStation();
                         LOG.info("called getLocationOfCurrentStation. country: " + locationOfCurrentStation.country
                                 + ", location: " + locationOfCurrentStation.location);
@@ -589,8 +588,8 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
                         break;
                     }
                 }
-            } catch (IOException e) {
-                LOG.error("error reading input from console", e);
+            } else {
+                LOG.info("\n\nNon-interactive mode detected.\n");
             }
 
         } catch (DiscoveryException e) {

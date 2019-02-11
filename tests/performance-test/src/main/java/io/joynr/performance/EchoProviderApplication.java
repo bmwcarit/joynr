@@ -21,8 +21,11 @@ package io.joynr.performance;
 
 import java.util.Properties;
 
-import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
 
@@ -38,7 +41,6 @@ import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrApplication;
 import io.joynr.runtime.JoynrApplicationModule;
 import io.joynr.runtime.JoynrInjectorFactory;
-import jline.internal.Log;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.TrustLevel;
@@ -46,7 +48,7 @@ import joynr.tests.performance.EchoProvider;
 import joynr.types.ProviderQos;
 
 public class EchoProviderApplication extends AbstractJoynrApplication {
-
+    private static final Logger LOG = LoggerFactory.getLogger(EchoProviderApplication.class);
     private static final String STATIC_PERSISTENCE_FILE = "provider-joynr.properties";
     private static EchoProviderInvocationParameters invocationParams = null;
 
@@ -94,7 +96,7 @@ public class EchoProviderApplication extends AbstractJoynrApplication {
             try {
                 runtime.unregisterProvider(localDomain, provider);
             } catch (JoynrRuntimeException exception) {
-                Log.error("Failed to unregister provider", exception);
+                LOG.error("Failed to unregister provider", exception);
             }
         }
 
