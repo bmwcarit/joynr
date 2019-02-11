@@ -65,16 +65,6 @@ public interface RoutingTable {
      */
     boolean getIsSticky(String participantId);
 
-    /**
-     * Sets the isSticky attribute of the Routing Entry for the participantId.
-     * If true, the routing entry will not be get purged from routing table
-     * by the cleanup thread.
-     * @param participantId
-     * @param isSticky
-     * @throws JoynrRuntimeException if no entry exists for the given participantId
-     */
-    void setIsSticky(String participantId, boolean isSticky);
-
     void remove(String participantId);
 
     /**
