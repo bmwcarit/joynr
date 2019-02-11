@@ -964,6 +964,7 @@ public class CcMessageRouterTest {
     public void setToKnownDoesNotChangeRoutingTable() {
         final String participantId = "setToKnownParticipantId";
         messageRouter.setToKnown(participantId);
+        verify(routingTable, times(0)).put(eq(participantId), any(Address.class), anyBoolean(), anyLong());
         verify(routingTable,
                times(0)).put(eq(participantId), any(Address.class), anyBoolean(), anyLong(), anyBoolean());
         assertFalse(routingTable.containsKey(participantId));

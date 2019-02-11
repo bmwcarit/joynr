@@ -76,6 +76,11 @@ public class CcMessageRouter extends AbstractMessageRouter {
     }
 
     @Override
+    public void setToKnown(final String participantId) {
+        logger.trace("setToKnown called");
+    }
+
+    @Override
     public void route(final ImmutableMessage message) {
         if (enableAccessControl) {
             accessController.hasConsumerPermission(message, new HasConsumerPermissionCallback() {

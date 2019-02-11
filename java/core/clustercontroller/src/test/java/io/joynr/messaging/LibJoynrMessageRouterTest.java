@@ -223,4 +223,11 @@ public class LibJoynrMessageRouterTest {
                                                             eq(subscriberParticipantId),
                                                             eq(providerParticipantId));
     }
+
+    @Test
+    public void setToKnownAddsCcAddressToRoutingTable() {
+        final String participantId = "setToKnownParticipantId";
+        messageRouter.setToKnown(participantId);
+        verify(routingTable).put(participantId, parentAddress, false, Long.MAX_VALUE);
+    }
 }

@@ -123,6 +123,18 @@ public class LibJoynrMessageRouter extends AbstractMessageRouter {
     }
 
     @Override
+    public void setToKnown(final String participantId) {
+        logger.trace("setToKnown called for participantId {}", participantId);
+        if (parentRouterMessagingAddress == null) {
+            logger.debug("setToKnown called before parentRouterAddress is available");
+            return;
+        }
+        // isGloballyVisible has no influence in libjoynr runtime
+        final boolean isGloballyVisible = false;
+        super.addNextHop(participantId, parentRouterMessagingAddress, isGloballyVisible);
+    }
+
+    @Override
     public void addNextHop(final String participantId, final Address address, final boolean isGloballyVisible) {
         super.addNextHop(participantId, address, isGloballyVisible);
         synchronized (this) {
@@ -209,8 +221,8 @@ public class LibJoynrMessageRouter extends AbstractMessageRouter {
                                 Address parentRouterMessagingAddress,
                                 String parentRoutingProviderParticipantId,
                                 String routingProxyParticipantId) {
-        this.parentRouter = parentRouter;
         this.parentRouterMessagingAddress = parentRouterMessagingAddress;
+        this.parentRouter = parentRouter;
 
         // because the routing provider is local, therefore isGloballyVisible is false
         final boolean isGloballyVisible = false;

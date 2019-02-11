@@ -27,6 +27,8 @@ public interface MessageRouter {
 
     public void route(ImmutableMessage message);
 
+    public void setToKnown(final String participantId);
+
     public void addNextHop(String participantId, Address address, boolean isGloballyVisible);
 
     public void addToRoutingTable(String participantId, Address address, boolean isGloballyVisible, long expiryDateMs);
