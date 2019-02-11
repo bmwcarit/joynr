@@ -74,14 +74,13 @@ public class ConnectorFactory {
         for (DiscoveryEntryWithMetaInfo entry : entries) {
             if (entry.getQos().getScope() == ProviderScope.GLOBAL) {
                 isGloballyVisible = true;
-                break;
             }
+            messageRouter.setToKnown(entry.getParticipantId());
         }
         messageRouter.addNextHop(fromParticipantId, libjoynrMessagingAddress, isGloballyVisible);
         return joynrMessagingConnectorFactory.create(fromParticipantId,
                                                      arbitrationResult.getDiscoveryEntries(),
                                                      qosSettings,
                                                      statelessAsyncParticipantId);
-
     }
 }
