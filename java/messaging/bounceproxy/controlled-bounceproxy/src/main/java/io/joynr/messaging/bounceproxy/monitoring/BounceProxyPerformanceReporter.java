@@ -19,10 +19,6 @@
  */
 package io.joynr.messaging.bounceproxy.monitoring;
 
-import io.joynr.exceptions.JoynrHttpException;
-import io.joynr.messaging.bounceproxy.BounceProxyControllerUrl;
-import io.joynr.messaging.bounceproxy.BounceProxyPropertyKeys;
-
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.Map;
@@ -42,6 +38,10 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+
+import io.joynr.exceptions.JoynrHttpException;
+import io.joynr.messaging.bounceproxy.BounceProxyControllerUrl;
+import io.joynr.messaging.bounceproxy.BounceProxyPropertyKeys;
 
 /**
  * Reporter for performance measures of the bounce proxy instance.

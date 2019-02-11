@@ -18,8 +18,6 @@
  */
 package io.joynr.runtime;
 
-import io.joynr.guice.LowerCaseProperties;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -33,6 +31,8 @@ import javax.annotation.CheckForNull;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.joynr.guice.LowerCaseProperties;
 
 /**
  * Loads properties using this class's classloader

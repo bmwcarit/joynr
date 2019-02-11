@@ -18,7 +18,6 @@
  */
 package io.joynr.generator.util;
 
-import io.joynr.generator.IJoynrGenerator;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
@@ -26,6 +25,8 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.reflections.Reflections;
+
+import io.joynr.generator.IJoynrGenerator;
 
 public class InvocationArguments {
     private static Logger logger = Logger.getLogger(InvocationArguments.class);

@@ -19,11 +19,6 @@
  */
 package io.joynr.messaging.bounceproxy.controller;
 
-import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.messaging.bounceproxy.controller.exception.JoynrProtocolException;
-import io.joynr.messaging.info.ControlledBounceProxyInformation;
-import io.joynr.messaging.service.ChannelServiceConstants;
-
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
@@ -37,6 +32,11 @@ import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+
+import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.messaging.bounceproxy.controller.exception.JoynrProtocolException;
+import io.joynr.messaging.info.ControlledBounceProxyInformation;
+import io.joynr.messaging.service.ChannelServiceConstants;
 
 /**
  * Facade for a remote bounce proxy. This component encapsulates communication

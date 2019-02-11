@@ -18,16 +18,17 @@
  */
 package io.joynr.runtime;
 
+import javax.inject.Named;
+
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
+
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.websocket.WebSocketClientMessagingStubFactory;
 import io.joynr.messaging.websocket.WebSocketMessagingSkeleton;
 import io.joynr.messaging.websocket.server.WebSocketJettyServerModule;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.WebSocketClientAddress;
-
-import javax.inject.Named;
 
 /**
  *

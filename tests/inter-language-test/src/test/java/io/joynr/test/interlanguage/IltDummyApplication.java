@@ -18,13 +18,13 @@
  */
 package io.joynr.test.interlanguage;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.inject.Inject;
+
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.AcceptsMessageReceiver;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.MessageReceiverType;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.inject.Inject;
 
 @AcceptsMessageReceiver(MessageReceiverType.ANY)
 public class IltDummyApplication extends AbstractJoynrApplication {

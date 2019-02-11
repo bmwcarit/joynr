@@ -18,6 +18,9 @@
  */
 package io.joynr.integration;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -46,29 +49,26 @@ import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.mqtt.MqttModule;
 import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
+import io.joynr.provider.Promise;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback;
-import io.joynr.provider.Promise;
 import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.ClusterControllerRuntimeModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
 import joynr.ImmutableMessage;
-import joynr.infrastructure.GlobalDomainAccessControlListEditorProxy;
-import joynr.infrastructure.GlobalDomainRoleControllerProxy;
 import joynr.infrastructure.DacTypes.DomainRoleEntry;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.OwnerAccessControlEntry;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.Role;
+import joynr.infrastructure.GlobalDomainAccessControlListEditorProxy;
+import joynr.infrastructure.GlobalDomainRoleControllerProxy;
 import joynr.test.JoynrTestLoggingRule;
 import joynr.tests.DefaulttestProvider;
 import joynr.tests.testProxy;
 import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 public class AccessControllerEnd2EndTest {
     private static final Logger logger = LoggerFactory.getLogger(AccessControllerEnd2EndTest.class);

@@ -34,14 +34,14 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.joynr.UsedBy;
 import io.joynr.StatelessAsync;
+import io.joynr.UsedBy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.jeeintegration.api.ServiceLocator;
 import io.joynr.messaging.MessagingQos;
-import io.joynr.util.AnnotationUtil;
 import io.joynr.proxy.ProxyBuilder;
+import io.joynr.util.AnnotationUtil;
 import joynr.exceptions.ApplicationException;
 
 /**

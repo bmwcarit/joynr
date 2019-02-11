@@ -18,21 +18,20 @@
  */
 package io.joynr.test.interlanguage;
 
-import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.proxy.Future;
-import io.joynr.pubsub.subscription.AttributeSubscriptionAdapter;
-
-import joynr.OnChangeWithKeepAliveSubscriptionQos;
-import joynr.exceptions.ProviderRuntimeException;
-import joynr.interlanguagetest.Enumeration;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static org.junit.Assert.fail;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.fail;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.proxy.Future;
+import io.joynr.pubsub.subscription.AttributeSubscriptionAdapter;
+import joynr.OnChangeWithKeepAliveSubscriptionQos;
+import joynr.exceptions.ProviderRuntimeException;
+import joynr.interlanguagetest.Enumeration;
 
 public class IltConsumerAttributeSubscriptionTest extends IltConsumerTest {
     private static final Logger LOG = LoggerFactory.getLogger(IltConsumerAttributeSubscriptionTest.class);

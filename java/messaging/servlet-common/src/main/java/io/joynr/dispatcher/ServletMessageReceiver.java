@@ -18,8 +18,8 @@
  */
 package io.joynr.dispatcher;
 
-import joynr.ImmutableMessage;
 import io.joynr.messaging.MessageReceiver;
+import joynr.ImmutableMessage;
 
 public interface ServletMessageReceiver extends MessageReceiver {
 

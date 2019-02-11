@@ -24,16 +24,17 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import joynr.infrastructure.DacTypes.ChangeType;
-import joynr.infrastructure.DacTypes.DomainRoleEntry;
-import joynr.infrastructure.DacTypes.Role;
-import joynr.infrastructure.GlobalDomainRoleControllerSubscriptionPublisher;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import joynr.infrastructure.DacTypes.ChangeType;
+import joynr.infrastructure.DacTypes.DomainRoleEntry;
+import joynr.infrastructure.DacTypes.Role;
+import joynr.infrastructure.GlobalDomainRoleControllerSubscriptionPublisher;
 
 @RunWith(MockitoJUnitRunner.class)
 public class GlobalDomainRoleControllerBeanTest {

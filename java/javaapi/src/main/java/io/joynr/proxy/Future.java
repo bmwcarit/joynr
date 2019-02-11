@@ -18,17 +18,16 @@
  */
 package io.joynr.proxy;
 
-import io.joynr.dispatcher.rpc.RequestStatus;
-import io.joynr.dispatcher.rpc.RequestStatusCode;
-import io.joynr.exceptions.JoynrException;
-import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.exceptions.JoynrWaitExpiredException;
-
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import io.joynr.dispatcher.rpc.RequestStatus;
+import io.joynr.dispatcher.rpc.RequestStatusCode;
+import io.joynr.exceptions.JoynrException;
+import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.exceptions.JoynrWaitExpiredException;
 import joynr.exceptions.ApplicationException;
 
 public class Future<T> {

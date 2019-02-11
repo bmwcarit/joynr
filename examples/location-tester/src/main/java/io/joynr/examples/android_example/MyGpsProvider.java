@@ -18,14 +18,14 @@
  */
 package io.joynr.examples.android_example;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.joynr.provider.Deferred;
 import io.joynr.provider.Promise;
 import joynr.types.Localisation.GpsFixEnum;
 import joynr.types.Localisation.GpsLocation;
 import joynr.vehicle.DefaultGpsProvider;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class MyGpsProvider extends DefaultGpsProvider {
     private static final String PRINT_BORDER = "\n####################\n";

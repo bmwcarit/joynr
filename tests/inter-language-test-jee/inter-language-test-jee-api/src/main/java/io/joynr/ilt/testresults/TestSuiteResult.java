@@ -20,11 +20,12 @@ package io.joynr.ilt.testresults;
 
 import java.io.Serializable;
 
-import io.joynr.subtypes.JoynrType;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import io.joynr.subtypes.JoynrType;
 
 // NOTE: serialVersionUID is not defined since we don't support Franca versions right now.
 //       The compiler will generate a serialVersionUID based on the class and its members

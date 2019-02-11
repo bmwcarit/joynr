@@ -18,16 +18,21 @@
  */
 package io.joynr.capabilities.directory;
 
+import java.util.Arrays;
+import java.util.Collection;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.capabilities.CapabilityUtils;
 import io.joynr.capabilities.DiscoveryEntryStore;
 import io.joynr.capabilities.GlobalDiscoveryEntryPersisted;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
-
-import java.util.Arrays;
-import java.util.Collection;
-
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.infrastructure.GlobalCapabilitiesDirectoryAbstractProvider;
 import joynr.system.RoutingTypes.Address;
@@ -35,12 +40,6 @@ import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.system.RoutingTypes.MqttAddress;
 import joynr.types.DiscoveryEntry;
 import joynr.types.GlobalDiscoveryEntry;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
 
 /**
  * The capabilities directory implementation for server-side capabilities querying.

@@ -24,9 +24,6 @@ import java.util.Properties;
 import javax.servlet.Filter;
 import javax.servlet.annotation.WebFilter;
 
-import io.joynr.runtime.PropertyLoader;
-import io.joynr.servlet.DefaultServletWrapper;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,6 +33,9 @@ import com.sun.jersey.core.spi.scanning.PackageNamesScanner;
 import com.sun.jersey.guice.JerseyServletModule;
 import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
 import com.sun.jersey.spi.scanning.AnnotationScannerListener;
+
+import io.joynr.runtime.PropertyLoader;
+import io.joynr.servlet.DefaultServletWrapper;
 
 /**
  * Common base class for all joynr servlet modules.

@@ -18,13 +18,13 @@
  */
 package io.joynr.integration.setup;
 
-import io.joynr.integration.ControlledBounceProxyServerTest;
-import io.joynr.integration.util.ServersUtil;
-
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.joynr.integration.ControlledBounceProxyServerTest;
+import io.joynr.integration.util.ServersUtil;
 
 /**
  * Setup for a bounce proxy cluster of two bounce proxy instances and a bounce

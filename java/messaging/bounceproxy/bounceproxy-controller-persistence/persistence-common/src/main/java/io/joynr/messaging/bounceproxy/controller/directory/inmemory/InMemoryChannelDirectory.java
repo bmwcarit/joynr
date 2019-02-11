@@ -18,14 +18,14 @@
  */
 package io.joynr.messaging.bounceproxy.controller.directory.inmemory;
 
-import io.joynr.messaging.bounceproxy.controller.directory.ChannelDirectory;
-import io.joynr.messaging.info.Channel;
-
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
 import com.google.inject.Singleton;
+
+import io.joynr.messaging.bounceproxy.controller.directory.ChannelDirectory;
+import io.joynr.messaging.info.Channel;
 
 /**
  * @author christina.strobel

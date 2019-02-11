@@ -18,20 +18,21 @@
  */
 package io.joynr.proxy;
 
-import io.joynr.arbitration.ArbitrationResult;
-import io.joynr.messaging.MessagingQos;
-import io.joynr.messaging.routing.MessageRouter;
-import joynr.system.RoutingTypes.Address;
-import joynr.types.DiscoveryEntryWithMetaInfo;
-import joynr.types.ProviderScope;
-
 import java.util.Set;
 
 import javax.annotation.CheckForNull;
 import javax.inject.Named;
-import io.joynr.runtime.SystemServicesSettings;
+
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+
+import io.joynr.arbitration.ArbitrationResult;
+import io.joynr.messaging.MessagingQos;
+import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.runtime.SystemServicesSettings;
+import joynr.system.RoutingTypes.Address;
+import joynr.types.DiscoveryEntryWithMetaInfo;
+import joynr.types.ProviderScope;
 
 @Singleton
 public class ConnectorFactory {

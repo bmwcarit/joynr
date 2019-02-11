@@ -22,10 +22,12 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.Properties;
 
+import com.google.inject.Inject;
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
@@ -34,14 +36,11 @@ import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrApplication;
 import io.joynr.runtime.JoynrApplicationModule;
 import io.joynr.runtime.JoynrInjectorFactory;
-
 import joynr.exceptions.ApplicationException;
+import joynr.infrastructure.GlobalDomainAccessControlListEditorAbstractProvider;
 import joynr.infrastructure.GlobalDomainAccessControllerAbstractProvider;
 import joynr.infrastructure.GlobalDomainRoleControllerAbstractProvider;
-import joynr.infrastructure.GlobalDomainAccessControlListEditorAbstractProvider;
 import joynr.types.ProviderQos;
-
-import com.google.inject.Inject;
 
 public class GlobalDomainAccessControllerLauncher extends AbstractJoynrApplication {
     private static final String APP_ID = "GlobalDomainAccessControllerLauncher";

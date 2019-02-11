@@ -18,12 +18,12 @@
  */
 package io.joynr.dispatching;
 
-import io.joynr.common.ExpiryDate;
-
 import java.text.MessageFormat;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.joynr.common.ExpiryDate;
 
 public class ContentWithExpiryDate<T> {
     private static final Logger logger = LoggerFactory.getLogger(ContentWithExpiryDate.class);

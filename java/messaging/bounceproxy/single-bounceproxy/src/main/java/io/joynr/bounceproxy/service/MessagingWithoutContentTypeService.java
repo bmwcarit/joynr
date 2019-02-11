@@ -18,10 +18,6 @@
  */
 package io.joynr.bounceproxy.service;
 
-import io.joynr.messaging.bounceproxy.LongPollingMessagingDelegate;
-import io.joynr.smrf.EncodingException;
-import io.joynr.smrf.UnsuppportedVersionException;
-
 import java.io.IOException;
 import java.net.URI;
 
@@ -37,12 +33,15 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
-import joynr.ImmutableMessage;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
+
+import io.joynr.messaging.bounceproxy.LongPollingMessagingDelegate;
+import io.joynr.smrf.EncodingException;
+import io.joynr.smrf.UnsuppportedVersionException;
+import joynr.ImmutableMessage;
 
 @Path("/channels/{ccid: [A-Z,a-z,0-9,_,\\-,\\.]+}/messageWithoutContentType")
 /**

@@ -21,6 +21,7 @@ package io.joynr.jeeintegration;
 import java.util.Set;
 
 import com.google.inject.Injector;
+
 import io.joynr.runtime.JoynrRuntime;
 
 /**

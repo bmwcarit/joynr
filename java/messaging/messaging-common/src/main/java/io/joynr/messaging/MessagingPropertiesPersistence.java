@@ -20,9 +20,6 @@ package io.joynr.messaging;
 
 import static io.joynr.util.JoynrUtil.createUuidString;
 
-import io.joynr.messaging.routing.MessageQueue;
-import io.joynr.runtime.PropertyLoader;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -30,6 +27,9 @@ import java.util.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.joynr.messaging.routing.MessageQueue;
+import io.joynr.runtime.PropertyLoader;
 
 public class MessagingPropertiesPersistence {
     private static final Logger LOG = LoggerFactory.getLogger(MessagingPropertiesPersistence.class);

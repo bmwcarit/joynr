@@ -18,10 +18,10 @@
  */
 package test.io.joynr.jeeintegration.servicelocator;
 
+import javax.ejb.Stateless;
+
 import io.joynr.jeeintegration.api.CallbackHandler;
 import joynr.jeeintegration.servicelocator.MyServiceStatelessAsyncCallback;
-
-import javax.ejb.Stateless;
 
 @Stateless
 @CallbackHandler

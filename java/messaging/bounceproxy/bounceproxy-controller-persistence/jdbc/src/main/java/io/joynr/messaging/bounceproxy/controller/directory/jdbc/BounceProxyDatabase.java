@@ -19,16 +19,6 @@
  */
 package io.joynr.messaging.bounceproxy.controller.directory.jdbc;
 
-import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyDirectory;
-import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyRecord;
-import io.joynr.messaging.bounceproxy.controller.directory.jdbc.entities.BounceProxyEntity;
-import io.joynr.messaging.bounceproxy.controller.directory.jdbc.entities.ChannelEntity;
-import io.joynr.messaging.info.BounceProxyInformation;
-import io.joynr.messaging.info.BounceProxyStatus;
-import io.joynr.messaging.info.BounceProxyStatusInformation;
-import io.joynr.messaging.info.ControlledBounceProxyInformation;
-import io.joynr.messaging.system.TimestampProvider;
-
 import java.util.LinkedList;
 import java.util.List;
 
@@ -41,6 +31,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
+
+import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyDirectory;
+import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyRecord;
+import io.joynr.messaging.bounceproxy.controller.directory.jdbc.entities.BounceProxyEntity;
+import io.joynr.messaging.bounceproxy.controller.directory.jdbc.entities.ChannelEntity;
+import io.joynr.messaging.info.BounceProxyInformation;
+import io.joynr.messaging.info.BounceProxyStatus;
+import io.joynr.messaging.info.BounceProxyStatusInformation;
+import io.joynr.messaging.info.ControlledBounceProxyInformation;
+import io.joynr.messaging.system.TimestampProvider;
 
 /**
  * Access layer that stores and retrieves bounce proxies to and from a

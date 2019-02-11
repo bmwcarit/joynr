@@ -20,8 +20,6 @@ package io.joynr.integration;
 
 import static io.joynr.util.JoynrUtil.createUuidString;
 
-import io.joynr.messaging.util.Utilities;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -44,6 +42,8 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.joynr.messaging.util.Utilities;
 
 /**
  * Bounce proxy test for an already running bounce proxy server, that prints out

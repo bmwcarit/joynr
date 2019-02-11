@@ -20,10 +20,6 @@
 package io.joynr.messaging.bounceproxy.controller;
 
 import static org.mockito.Matchers.any;
-import io.joynr.guice.PropertyLoadingModule;
-import io.joynr.messaging.bounceproxy.IsCreateChannelHttpRequest;
-import io.joynr.messaging.bounceproxy.controller.exception.JoynrProtocolException;
-import io.joynr.messaging.info.ControlledBounceProxyInformation;
 
 import java.io.IOException;
 import java.net.URI;
@@ -52,6 +48,11 @@ import org.mockito.stubbing.Answer;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+
+import io.joynr.guice.PropertyLoadingModule;
+import io.joynr.messaging.bounceproxy.IsCreateChannelHttpRequest;
+import io.joynr.messaging.bounceproxy.controller.exception.JoynrProtocolException;
+import io.joynr.messaging.info.ControlledBounceProxyInformation;
 
 @RunWith(MockitoJUnitRunner.class)
 public class RemoteBounceProxyFacadeTest {

@@ -18,12 +18,14 @@
  */
 package io.joynr.dispatching;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.inject.Inject;
+
 import io.joynr.proxy.StatelessAsyncIdCalculator;
 import joynr.Reply;
 import joynr.Request;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class DefaultStatelessAsyncRequestReplyIdManagerImpl implements StatelessAsyncRequestReplyIdManager {
 

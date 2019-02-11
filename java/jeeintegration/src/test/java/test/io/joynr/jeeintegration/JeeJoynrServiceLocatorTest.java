@@ -36,6 +36,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.enterprise.inject.spi.Bean;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -60,10 +62,9 @@ import joynr.jeeintegration.servicelocator.MyService;
 import joynr.jeeintegration.servicelocator.MyServiceProxy;
 import joynr.jeeintegration.servicelocator.MyServiceStatelessAsync;
 import joynr.jeeintegration.servicelocator.MyServiceSync;
+
 import test.io.joynr.jeeintegration.servicelocator.MyInvalidServiceSync;
 import test.io.joynr.jeeintegration.servicelocator.MyServiceCallbackHandler;
-
-import javax.enterprise.inject.spi.Bean;
 
 /**
  * Unit tests for {@link JeeJoynrServiceLocator}.

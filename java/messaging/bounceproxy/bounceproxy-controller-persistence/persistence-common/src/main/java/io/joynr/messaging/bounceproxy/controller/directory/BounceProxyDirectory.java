@@ -18,11 +18,11 @@
  */
 package io.joynr.messaging.bounceproxy.controller.directory;
 
-import io.joynr.messaging.info.ControlledBounceProxyInformation;
+import java.util.List;
+
 import io.joynr.messaging.info.BounceProxyInformation;
 import io.joynr.messaging.info.BounceProxyStatusInformation;
-
-import java.util.List;
+import io.joynr.messaging.info.ControlledBounceProxyInformation;
 
 /**
  * The directory stores all bounce proxy instances that are registered with the

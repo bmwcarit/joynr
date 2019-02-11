@@ -18,12 +18,13 @@
  */
 package io.joynr.accesscontrol.global;
 
-import io.joynr.accesscontrol.DomainAccessControlStore;
-import io.joynr.provider.Promise;
-
 import java.util.Arrays;
 
-import joynr.infrastructure.GlobalDomainAccessControlListEditorAbstractProvider;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
+import io.joynr.accesscontrol.DomainAccessControlStore;
+import io.joynr.provider.Promise;
 import joynr.infrastructure.DacTypes.ChangeType;
 import joynr.infrastructure.DacTypes.DomainRoleEntry;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
@@ -31,9 +32,7 @@ import joynr.infrastructure.DacTypes.MasterRegistrationControlEntry;
 import joynr.infrastructure.DacTypes.OwnerAccessControlEntry;
 import joynr.infrastructure.DacTypes.OwnerRegistrationControlEntry;
 import joynr.infrastructure.DacTypes.Role;
-
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
+import joynr.infrastructure.GlobalDomainAccessControlListEditorAbstractProvider;
 
 /**
  * Manages the Access Control Lists for all providers.

@@ -25,6 +25,20 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
+import java.util.Properties;
+import java.util.Timer;
+import java.util.TimerTask;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.dispatching.subscription.SubscriptionTestsProviderImpl;
@@ -38,20 +52,6 @@ import joynr.PeriodicSubscriptionQos;
 import joynr.test.JoynrTestLoggingRule;
 import joynr.tests.testProxy;
 import joynr.types.ProviderQos;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.Properties;
-import java.util.Timer;
-import java.util.TimerTask;
 
 /*
  * This testClass registers one consumer and one provider both on the same runtime. It can be used to test local

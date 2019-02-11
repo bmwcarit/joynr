@@ -18,6 +18,13 @@
  */
 package io.joynr.bounceproxy.runtime;
 
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Properties;
+
+import com.google.inject.Module;
+import com.google.inject.util.Modules;
+
 import io.joynr.bounceproxy.SingleBounceProxyModule;
 import io.joynr.bounceproxy.service.AttachmentReceiverService;
 import io.joynr.bounceproxy.service.AttachmentSenderService;
@@ -31,13 +38,6 @@ import io.joynr.messaging.bounceproxy.modules.AbstractBounceProxyJerseyModule;
 import io.joynr.messaging.bounceproxy.modules.AtmosphereModule;
 import io.joynr.messaging.bounceproxy.modules.DefaultBounceProxyModule;
 import io.joynr.runtime.PropertyLoader;
-
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Properties;
-
-import com.google.inject.Module;
-import com.google.inject.util.Modules;
 
 /**
  * Servlet configuration for single bounceproxy servlet.

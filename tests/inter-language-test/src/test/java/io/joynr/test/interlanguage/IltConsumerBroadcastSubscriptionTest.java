@@ -18,9 +18,25 @@
  */
 package io.joynr.test.interlanguage;
 
+import static org.junit.Assert.fail;
+
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized.Parameters;
+import org.junit.runners.Parameterized;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.joynr.exceptions.SubscriptionException;
+import io.joynr.proxy.Future;
 import joynr.MulticastSubscriptionQos;
 import joynr.interlanguagetest.Enumeration;
 import joynr.interlanguagetest.TestInterfaceBroadcastInterface.BroadcastWithMultipleArrayParametersBroadcastAdapter;
@@ -39,25 +55,6 @@ import joynr.interlanguagetest.namedTypeCollection2.ExtendedEnumerationWithPartl
 import joynr.interlanguagetest.namedTypeCollection2.ExtendedExtendedBaseStruct;
 import joynr.interlanguagetest.namedTypeCollection2.ExtendedStructOfPrimitives;
 import joynr.interlanguagetest.namedTypeCollection2.ExtendedTypeCollectionEnumerationInTypeCollection;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import io.joynr.exceptions.SubscriptionException;
-import io.joynr.proxy.Future;
-
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
-
-import org.junit.Assert;
-import static org.junit.Assert.fail;
-
-import java.util.Arrays;
-import java.util.List;
 
 @RunWith(Parameterized.class)
 public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {

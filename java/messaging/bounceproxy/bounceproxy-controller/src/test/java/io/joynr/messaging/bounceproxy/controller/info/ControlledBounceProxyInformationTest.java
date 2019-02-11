@@ -19,12 +19,12 @@
  */
 package io.joynr.messaging.bounceproxy.controller.info;
 
-import io.joynr.messaging.info.ControlledBounceProxyInformation;
-
 import java.net.URI;
 
 import org.junit.Assert;
 import org.junit.Test;
+
+import io.joynr.messaging.info.ControlledBounceProxyInformation;
 
 public class ControlledBounceProxyInformationTest {
 

@@ -30,9 +30,10 @@ import javax.enterprise.inject.spi.Extension;
 import javax.enterprise.inject.spi.InjectionPoint;
 import javax.enterprise.inject.spi.ProcessInjectionPoint;
 
-import io.joynr.provider.SubscriptionPublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.joynr.provider.SubscriptionPublisher;
 
 public class SubscriptionPublisherCdiExtension implements Extension {
 

@@ -30,16 +30,16 @@ import org.junit.Test;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Module;
-import com.google.inject.multibindings.Multibinder;
 import com.google.inject.TypeLiteral;
+import com.google.inject.multibindings.Multibinder;
 import com.google.inject.util.Modules;
 
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
-import io.joynr.messaging.routing.TestGlobalAddressModule;
 import io.joynr.integration.util.DummyJoynrApplication;
 import io.joynr.messaging.routing.GlobalAddressFactory;
+import io.joynr.messaging.routing.TestGlobalAddressModule;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrInjectorFactory;

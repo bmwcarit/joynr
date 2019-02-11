@@ -18,14 +18,14 @@
  */
 package io.joynr.messaging.bounceproxy.info;
 
-import io.joynr.messaging.bounceproxy.BounceProxyPropertyKeys;
-import io.joynr.messaging.info.BounceProxyInformation;
-
 import java.net.URI;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.name.Named;
+
+import io.joynr.messaging.bounceproxy.BounceProxyPropertyKeys;
+import io.joynr.messaging.info.BounceProxyInformation;
 
 /**
  * Provider to construct bounce proxy information from properties.

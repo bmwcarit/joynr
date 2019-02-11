@@ -18,14 +18,13 @@
  */
 package io.joynr.dispatching.subscription;
 
-import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
-
 import java.util.TimerTask;
-
-import joynr.exceptions.PublicationMissedException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
+import joynr.exceptions.PublicationMissedException;
 
 public class MissedPublicationTimer extends PubSubTimerBase {
 

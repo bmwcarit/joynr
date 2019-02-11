@@ -18,21 +18,21 @@
  */
 package io.joynr.accesscontrol.global.jee;
 
-import io.joynr.accesscontrol.global.jee.persistence.ControlEntryType;
-import io.joynr.jeeintegration.api.ServiceProvider;
-import joynr.infrastructure.DacTypes.ChangeType;
-import joynr.infrastructure.DacTypes.OwnerAccessControlEntry;
-import joynr.infrastructure.DacTypes.OwnerRegistrationControlEntry;
-import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
-import joynr.infrastructure.DacTypes.MasterRegistrationControlEntry;
-import joynr.infrastructure.GlobalDomainAccessControlListEditorSync;
+import static io.joynr.accesscontrol.global.jee.persistence.ControlEntryType.MASTER;
+import static io.joynr.accesscontrol.global.jee.persistence.ControlEntryType.MEDIATOR;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
-import static io.joynr.accesscontrol.global.jee.persistence.ControlEntryType.MASTER;
-import static io.joynr.accesscontrol.global.jee.persistence.ControlEntryType.MEDIATOR;
+import io.joynr.accesscontrol.global.jee.persistence.ControlEntryType;
+import io.joynr.jeeintegration.api.ServiceProvider;
+import joynr.infrastructure.DacTypes.ChangeType;
+import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
+import joynr.infrastructure.DacTypes.MasterRegistrationControlEntry;
+import joynr.infrastructure.DacTypes.OwnerAccessControlEntry;
+import joynr.infrastructure.DacTypes.OwnerRegistrationControlEntry;
+import joynr.infrastructure.GlobalDomainAccessControlListEditorSync;
 
 @Stateless
 @ServiceProvider(serviceInterface = GlobalDomainAccessControlListEditorSync.class)

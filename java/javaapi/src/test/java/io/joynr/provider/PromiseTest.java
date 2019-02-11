@@ -18,14 +18,14 @@
  */
 package io.joynr.provider;
 
-import io.joynr.exceptions.JoynrRuntimeException;
-import joynr.tests.testProvider;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import io.joynr.exceptions.JoynrRuntimeException;
+import joynr.tests.testProvider;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PromiseTest {

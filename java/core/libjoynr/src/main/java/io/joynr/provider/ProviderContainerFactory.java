@@ -18,13 +18,13 @@
  */
 package io.joynr.provider;
 
-import io.joynr.dispatching.RequestCallerFactory;
-import io.joynr.exceptions.JoynrRuntimeException;
-
 import java.util.HashMap;
 import java.util.Map;
 
 import com.google.inject.Inject;
+
+import io.joynr.dispatching.RequestCallerFactory;
+import io.joynr.exceptions.JoynrRuntimeException;
 
 public class ProviderContainerFactory {
     private final Map<Object, ProviderContainer> providerContainers;

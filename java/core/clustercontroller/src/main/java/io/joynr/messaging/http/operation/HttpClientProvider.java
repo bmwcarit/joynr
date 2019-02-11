@@ -18,9 +18,6 @@
  */
 package io.joynr.messaging.http.operation;
 
-import io.joynr.messaging.MessagingPropertyKeys;
-import io.joynr.messaging.MessagingSettings;
-
 import java.util.Properties;
 
 import org.apache.http.auth.AuthScope;
@@ -34,6 +31,9 @@ import org.apache.http.impl.client.HttpClients;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.name.Named;
+
+import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.messaging.MessagingSettings;
 
 /**
  * Factory class to build an AsyncHttpClient. If the MessagingSettings contain a proxyserver address the proxy is used

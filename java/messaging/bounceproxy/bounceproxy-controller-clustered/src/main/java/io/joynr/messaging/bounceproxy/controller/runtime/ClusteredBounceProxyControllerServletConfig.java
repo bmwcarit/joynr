@@ -21,11 +21,11 @@ package io.joynr.messaging.bounceproxy.controller.runtime;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.google.inject.AbstractModule;
+
 import io.joynr.guice.PropertyLoadingModule;
 import io.joynr.messaging.bounceproxy.controller.directory.ehcache.EhcacheModule;
 import io.joynr.runtime.PropertyLoader;
-
-import com.google.inject.AbstractModule;
 
 /**
  * Servlet configuration for a clustered bounceproxy controller servlet, i.e.

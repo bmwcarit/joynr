@@ -20,18 +20,6 @@ package io.joynr.messaging.http.operation;
 
 import static io.joynr.util.JoynrUtil.createUuidString;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.Guice;
-import com.google.inject.Singleton;
-import io.joynr.capabilities.DummyDiscoveryModule;
-import io.joynr.common.JoynrPropertiesModule;
-import io.joynr.messaging.ConfigurableMessagingSettings;
-import io.joynr.messaging.MessageArrivedListener;
-import io.joynr.messaging.JsonMessageSerializerModule;
-import io.joynr.messaging.MessagingPropertyKeys;
-import io.joynr.messaging.MessagingSettings;
-import io.joynr.messaging.ReceiverStatusListener;
-
 import java.io.IOException;
 import java.util.Properties;
 
@@ -53,7 +41,19 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.Singleton;
+
+import io.joynr.capabilities.DummyDiscoveryModule;
+import io.joynr.common.JoynrPropertiesModule;
+import io.joynr.messaging.ConfigurableMessagingSettings;
+import io.joynr.messaging.JsonMessageSerializerModule;
+import io.joynr.messaging.MessageArrivedListener;
+import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.messaging.MessagingSettings;
+import io.joynr.messaging.ReceiverStatusListener;
 
 @RunWith(MockitoJUnitRunner.class)
 public class LongPollingChannelLifecycleTest {

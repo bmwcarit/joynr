@@ -24,9 +24,8 @@ import java.net.UnknownHostException;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 
-import io.joynr.sharedsubscription.test.clusteredapp.base.CallStatistics;
 import io.joynr.jeeintegration.api.ServiceProvider;
-
+import io.joynr.sharedsubscription.test.clusteredapp.base.CallStatistics;
 import joynr.io.joynr.sharedsubscriptions.test.PingServiceSync;
 
 /**

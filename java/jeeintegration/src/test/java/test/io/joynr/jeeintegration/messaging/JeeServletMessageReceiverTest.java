@@ -18,11 +18,14 @@
  */
 package test.io.joynr.jeeintegration.messaging;
 
-import io.joynr.common.ExpiryDate;
-import io.joynr.jeeintegration.httpbridge.HttpBridgeRegistryClient;
-import io.joynr.jeeintegration.messaging.JeeServletMessageReceiver;
-import io.joynr.messaging.MessageArrivedListener;
-import joynr.ImmutableMessage;
+import static java.lang.Boolean.TRUE;
+import static org.junit.Assert.*;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.*;
+
+import java.util.concurrent.CompletionStage;
+import java.util.function.Consumer;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,13 +35,11 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
-import java.util.concurrent.CompletionStage;
-import java.util.function.Consumer;
-
-import static java.lang.Boolean.TRUE;
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.*;
+import io.joynr.common.ExpiryDate;
+import io.joynr.jeeintegration.httpbridge.HttpBridgeRegistryClient;
+import io.joynr.jeeintegration.messaging.JeeServletMessageReceiver;
+import io.joynr.messaging.MessageArrivedListener;
+import joynr.ImmutableMessage;
 
 /**
  * Unit tests for the {@link JeeServletMessageReceiver}.

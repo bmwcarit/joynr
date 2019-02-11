@@ -30,14 +30,6 @@ import java.lang.reflect.Field;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.joynr.capabilities.CapabilityUtils;
-import io.joynr.capabilities.GlobalDiscoveryEntryPersisted;
-import joynr.infrastructure.GlobalCapabilitiesDirectorySync;
-import joynr.system.RoutingTypes.MqttAddress;
-import joynr.types.GlobalDiscoveryEntry;
-import joynr.types.ProviderQos;
-import joynr.types.Version;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.transaction.api.annotation.TransactionMode;
@@ -48,6 +40,16 @@ import org.jboss.shrinkwrap.resolver.api.maven.Maven;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import io.joynr.capabilities.CapabilityUtils;
+import io.joynr.capabilities.GlobalDiscoveryEntryPersisted;
+import joynr.infrastructure.GlobalCapabilitiesDirectorySync;
+import joynr.system.RoutingTypes.MqttAddress;
+import joynr.types.GlobalDiscoveryEntry;
+import joynr.types.ProviderQos;
+import joynr.types.Version;
 
 @RunWith(Arquillian.class)
 @Transactional(TransactionMode.ROLLBACK)

@@ -18,14 +18,14 @@
  */
 package io.joynr.bounceproxy;
 
+import com.google.inject.AbstractModule;
+
 import io.joynr.bounceproxy.attachments.AttachmentStorage;
 import io.joynr.bounceproxy.attachments.InMemoryAttachmentStorage;
 import io.joynr.bounceproxy.info.SingleBounceProxyInformationProvider;
 import io.joynr.bounceproxy.service.MessagingServiceImpl;
 import io.joynr.messaging.info.BounceProxyInformation;
 import io.joynr.messaging.service.MessagingService;
-
-import com.google.inject.AbstractModule;
 
 public class SingleBounceProxyModule extends AbstractModule {
 

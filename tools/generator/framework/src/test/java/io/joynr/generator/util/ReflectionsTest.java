@@ -21,8 +21,6 @@ package io.joynr.generator.util;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import io.joynr.generator.IJoynrGenerator;
-import io.outofscope.OutOfScopeJoynGenerator;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -33,6 +31,9 @@ import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.junit.Test;
 import org.reflections.Reflections;
+
+import io.joynr.generator.IJoynrGenerator;
+import io.outofscope.OutOfScopeJoynGenerator;
 
 public class ReflectionsTest {
 

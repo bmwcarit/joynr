@@ -18,9 +18,9 @@
  */
 package io.joynr.caching;
 
-import io.joynr.qos.QualityOfService;
-
 import java.util.NoSuchElementException;
+
+import io.joynr.qos.QualityOfService;
 
 /**
  * This cache is on a per provider basis.

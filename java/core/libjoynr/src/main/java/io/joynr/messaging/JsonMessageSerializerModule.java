@@ -18,21 +18,12 @@
  */
 package io.joynr.messaging;
 
-import io.joynr.messaging.serialize.JoynrArraySerializer;
-import io.joynr.messaging.serialize.JoynrEnumSerializer;
-import io.joynr.messaging.serialize.JoynrListSerializer;
-import io.joynr.messaging.serialize.JoynrUntypedObjectDeserializer;
-import io.joynr.messaging.serialize.OneWayRequestDeserializer;
-import io.joynr.messaging.serialize.RequestDeserializer;
-import joynr.OneWayRequest;
-import joynr.Request;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
 import com.fasterxml.jackson.databind.jsontype.TypeResolverBuilder;
@@ -41,6 +32,15 @@ import com.fasterxml.jackson.databind.type.SimpleType;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
+
+import io.joynr.messaging.serialize.JoynrArraySerializer;
+import io.joynr.messaging.serialize.JoynrEnumSerializer;
+import io.joynr.messaging.serialize.JoynrListSerializer;
+import io.joynr.messaging.serialize.JoynrUntypedObjectDeserializer;
+import io.joynr.messaging.serialize.OneWayRequestDeserializer;
+import io.joynr.messaging.serialize.RequestDeserializer;
+import joynr.OneWayRequest;
+import joynr.Request;
 
 public class JsonMessageSerializerModule extends AbstractModule {
 

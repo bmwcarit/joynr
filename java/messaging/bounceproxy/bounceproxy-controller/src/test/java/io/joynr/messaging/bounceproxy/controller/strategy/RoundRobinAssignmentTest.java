@@ -19,12 +19,6 @@
  */
 package io.joynr.messaging.bounceproxy.controller.strategy;
 
-import io.joynr.exceptions.JoynrChannelNotAssignableException;
-import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyDirectory;
-import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyRecord;
-import io.joynr.messaging.info.BounceProxyInformation;
-import io.joynr.messaging.info.ControlledBounceProxyInformation;
-
 import java.util.LinkedList;
 
 import org.junit.Assert;
@@ -38,6 +32,12 @@ import org.mockito.runners.MockitoJUnitRunner;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+
+import io.joynr.exceptions.JoynrChannelNotAssignableException;
+import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyDirectory;
+import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyRecord;
+import io.joynr.messaging.info.BounceProxyInformation;
+import io.joynr.messaging.info.ControlledBounceProxyInformation;
 
 @RunWith(MockitoJUnitRunner.class)
 public class RoundRobinAssignmentTest {

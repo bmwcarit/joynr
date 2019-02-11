@@ -23,8 +23,8 @@ import static io.joynr.generator.util.FileSystemAccessUtil.createFileSystemAcces
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.Resource.Diagnostic;
+import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.xtext.generator.IFileSystemAccess;
 import org.eclipse.xtext.generator.IGenerator;
 import org.eclipse.xtext.generator.JavaIoFileSystemAccess;

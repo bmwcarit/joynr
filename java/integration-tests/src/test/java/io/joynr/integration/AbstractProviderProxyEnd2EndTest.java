@@ -37,7 +37,20 @@ import java.util.Random;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TestName;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.inject.Module;
+
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
@@ -76,8 +89,8 @@ import joynr.tests.testBroadcastInterface.LocationUpdateWithSpeedBroadcastAdapte
 import joynr.tests.testProxy;
 import joynr.tests.testSync.MethodWithMultipleOutputParametersReturned;
 import joynr.tests.testTypes.AnotherDerivedStruct;
-import joynr.tests.testTypes.ComplexTestType;
 import joynr.tests.testTypes.ComplexTestType2;
+import joynr.tests.testTypes.ComplexTestType;
 import joynr.tests.testTypes.DerivedStruct;
 import joynr.tests.testTypes.ErrorEnumBase;
 import joynr.tests.testTypes.TestEnum;
@@ -87,17 +100,6 @@ import joynr.types.Localisation.GpsLocation;
 import joynr.types.Localisation.Trip;
 import joynr.types.ProviderQos;
 import joynr.types.TestTypes.TStringKeyMap;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest {
     private static final String MAX_MESSAGE_SIZE = "4000000";

@@ -18,8 +18,8 @@
  */
 package io.joynr.test.interlanguage.jee;
 
-import io.joynr.jeeintegration.api.ServiceLocator;
 import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.jeeintegration.api.ServiceLocator;
 
 public class IltConsumerHelper {
     private static ThreadLocal<ServiceLocator> serviceLocatorThreadLocal = new ThreadLocal<>();

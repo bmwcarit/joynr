@@ -33,11 +33,11 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import io.joynr.jeeintegration.CallbackHandlerDiscovery;
 import io.joynr.jeeintegration.DefaultJoynrRuntimeFactory;
 import io.joynr.jeeintegration.JoynrIntegrationBean;
 import io.joynr.jeeintegration.JoynrStatusMetricsAggregator;
 import io.joynr.jeeintegration.ServiceProviderDiscovery;
-import io.joynr.jeeintegration.CallbackHandlerDiscovery;
 import io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys;
 
 /**

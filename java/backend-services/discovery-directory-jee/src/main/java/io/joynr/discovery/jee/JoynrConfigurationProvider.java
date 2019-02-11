@@ -26,6 +26,9 @@ import java.util.Properties;
 import javax.ejb.Singleton;
 import javax.enterprise.inject.Produces;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.joynr.capabilities.ParticipantIdKeyUtil;
 import io.joynr.jeeintegration.api.JoynrLocalDomain;
 import io.joynr.jeeintegration.api.JoynrProperties;
@@ -33,8 +36,6 @@ import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.mqtt.MqttModule;
 import io.joynr.runtime.PropertyLoader;
 import joynr.infrastructure.GlobalCapabilitiesDirectoryProvider;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This is the singleton bean which will provide the configuration values at runtime for the

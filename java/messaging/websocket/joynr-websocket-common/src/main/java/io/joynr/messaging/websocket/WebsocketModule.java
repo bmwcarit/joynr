@@ -18,12 +18,12 @@
  */
 package io.joynr.messaging.websocket;
 
+import javax.inject.Named;
+
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import joynr.system.RoutingTypes.WebSocketAddress;
 import joynr.system.RoutingTypes.WebSocketProtocol;
-
-import javax.inject.Named;
 
 public class WebsocketModule extends AbstractModule {
 

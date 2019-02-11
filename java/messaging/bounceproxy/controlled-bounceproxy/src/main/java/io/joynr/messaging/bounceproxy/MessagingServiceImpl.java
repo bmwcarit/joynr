@@ -19,9 +19,9 @@
  */
 package io.joynr.messaging.bounceproxy;
 
-import io.joynr.messaging.bounceproxy.service.AbstractMessagingService;
-
 import com.google.inject.Inject;
+
+import io.joynr.messaging.bounceproxy.service.AbstractMessagingService;
 
 /**
  * Implementation of messaging service for controlled bounce proxies.

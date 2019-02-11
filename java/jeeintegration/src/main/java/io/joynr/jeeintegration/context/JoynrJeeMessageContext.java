@@ -28,6 +28,7 @@ import javax.enterprise.context.spi.Contextual;
 import javax.enterprise.context.spi.CreationalContext;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 import io.joynr.jeeintegration.api.JoynrJeeMessageScoped;
 
 /**

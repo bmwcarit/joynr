@@ -18,6 +18,12 @@
  */
 package io.joynr.proxy;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -30,12 +36,6 @@ import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.runtime.SystemServicesSettings;
 import io.joynr.util.AnnotationUtil;
 import joynr.system.RoutingTypes.Address;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Singleton
 public class StatelessAsyncCallbackDirectory {

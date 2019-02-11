@@ -23,10 +23,6 @@ import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGIN
 import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_DESERIALIZATIONFAILED;
 import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_EXPIRYDATEEXPIRED;
 import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_EXPIRYDATENOTSET;
-import io.joynr.communications.exceptions.JoynrHttpException;
-import io.joynr.messaging.system.TimestampProvider;
-import io.joynr.smrf.EncodingException;
-import io.joynr.smrf.UnsuppportedVersionException;
 
 import java.net.URI;
 
@@ -39,16 +35,20 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-
-import joynr.ImmutableMessage;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
+
+import io.joynr.communications.exceptions.JoynrHttpException;
+import io.joynr.messaging.system.TimestampProvider;
+import io.joynr.smrf.EncodingException;
+import io.joynr.smrf.UnsuppportedVersionException;
+import joynr.ImmutableMessage;
 
 @Path("/channels/{ccid: [A-Z,a-z,0-9,_,\\-,\\.]+}/message")
 /**

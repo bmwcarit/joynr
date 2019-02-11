@@ -20,9 +20,6 @@
 package io.joynr.messaging.service;
 
 import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_CHANNELNOTSET;
-import io.joynr.communications.exceptions.JoynrHttpException;
-import io.joynr.messaging.info.Channel;
-import io.joynr.messaging.info.ChannelStatus;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.HeaderParam;
@@ -32,10 +29,14 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.Response;
 
 import com.google.inject.Inject;
+
+import io.joynr.communications.exceptions.JoynrHttpException;
+import io.joynr.messaging.info.Channel;
+import io.joynr.messaging.info.ChannelStatus;
 
 /**
  * Channel service extension for scenarios in which a channel error is reported

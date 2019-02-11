@@ -18,8 +18,6 @@
  */
 package io.joynr.bounceproxy.service;
 
-import io.joynr.bounceproxy.attachments.AttachmentStorage;
-
 import java.io.UnsupportedEncodingException;
 
 import javax.ws.rs.GET;
@@ -27,13 +25,15 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.Response;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
+
+import io.joynr.bounceproxy.attachments.AttachmentStorage;
 
 @Path("/channels/{ccid: [A-Z,a-z,0-9,_,\\-,\\.]+}/attachment")
 public class AttachmentReceiverService {

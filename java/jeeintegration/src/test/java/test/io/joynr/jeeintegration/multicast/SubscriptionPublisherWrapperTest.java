@@ -22,14 +22,15 @@ import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.verify;
 
-import io.joynr.exceptions.JoynrIllegalStateException;
-import io.joynr.jeeintegration.multicast.SubscriptionPublisherWrapper;
-import joynr.jeeintegration.servicelocator.MyServiceSubscriptionPublisher;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import io.joynr.exceptions.JoynrIllegalStateException;
+import io.joynr.jeeintegration.multicast.SubscriptionPublisherWrapper;
+import joynr.jeeintegration.servicelocator.MyServiceSubscriptionPublisher;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SubscriptionPublisherWrapperTest {

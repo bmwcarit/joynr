@@ -20,9 +20,6 @@
 package io.joynr.messaging.service;
 
 import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_CHANNELNOTSET;
-import io.joynr.communications.exceptions.JoynrHttpException;
-import io.joynr.messaging.info.Channel;
-import io.joynr.messaging.info.ChannelInformation;
 
 import java.net.URI;
 import java.util.List;
@@ -41,8 +38,8 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.Response;
 
 import org.atmosphere.annotation.Suspend;
 import org.atmosphere.jersey.Broadcastable;
@@ -50,6 +47,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
+
+import io.joynr.communications.exceptions.JoynrHttpException;
+import io.joynr.messaging.info.Channel;
+import io.joynr.messaging.info.ChannelInformation;
 
 @Path("/channels")
 /**

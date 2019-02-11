@@ -18,13 +18,13 @@
  */
 package io.joynr.util;
 
-import io.joynr.messaging.util.Utilities;
-
 import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import io.joynr.messaging.util.Utilities;
 
 /**
  * Test for the Utilities.splitJson() function.

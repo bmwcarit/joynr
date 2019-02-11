@@ -18,8 +18,6 @@
  */
 package io.joynr.examples.android_example;
 
-import io.joynr.messaging.websocket.WebsocketModule;
-
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Properties;
@@ -32,6 +30,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
+
+import io.joynr.messaging.websocket.WebsocketModule;
 
 public class JoynrAndroidExampleActivity extends Activity {
     private static final Logger logger = LoggerFactory.getLogger(JoynrAndroidExampleActivity.class);

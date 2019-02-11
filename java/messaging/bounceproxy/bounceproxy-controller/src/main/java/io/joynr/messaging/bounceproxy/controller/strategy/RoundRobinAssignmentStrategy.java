@@ -19,16 +19,16 @@
  */
 package io.joynr.messaging.bounceproxy.controller.strategy;
 
-import io.joynr.exceptions.JoynrChannelNotAssignableException;
-import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyDirectory;
-import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyRecord;
-import io.joynr.messaging.info.ControlledBounceProxyInformation;
-
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
 import com.google.inject.Inject;
+
+import io.joynr.exceptions.JoynrChannelNotAssignableException;
+import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyDirectory;
+import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyRecord;
+import io.joynr.messaging.info.ControlledBounceProxyInformation;
 
 /**
  * Assignment strategy to simply assign the channels round-robin.

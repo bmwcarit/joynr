@@ -26,13 +26,6 @@ import java.io.File;
 
 import javax.inject.Inject;
 
-import io.joynr.jeeintegration.multicast.SubscriptionPublisherCdiExtension;
-import io.joynr.jeeintegration.multicast.SubscriptionPublisherInjectionWrapper;
-import io.joynr.jeeintegration.multicast.SubscriptionPublisherProducer;
-import io.joynr.jeeintegration.multicast.SubscriptionPublisherWrapper;
-import io.joynr.pubsub.publication.BroadcastFilterImpl;
-import joynr.jeeintegration.servicelocator.MyServiceSubscriptionPublisher;
-import joynr.jeeintegration.servicelocator.MyServiceSync;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
@@ -42,6 +35,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.joynr.jeeintegration.multicast.SubscriptionPublisherCdiExtension;
+import io.joynr.jeeintegration.multicast.SubscriptionPublisherInjectionWrapper;
+import io.joynr.jeeintegration.multicast.SubscriptionPublisherProducer;
+import io.joynr.jeeintegration.multicast.SubscriptionPublisherWrapper;
+import io.joynr.pubsub.publication.BroadcastFilterImpl;
+import joynr.jeeintegration.servicelocator.MyServiceSubscriptionPublisher;
+import joynr.jeeintegration.servicelocator.MyServiceSync;
 
 @RunWith(Arquillian.class)
 public class SubscriptionPublisherInjectionTest {

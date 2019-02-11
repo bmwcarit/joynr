@@ -19,12 +19,6 @@
  */
 package io.joynr.messaging.service;
 
-import io.joynr.communications.exceptions.JoynrHttpException;
-import io.joynr.messaging.datatypes.JoynrBounceProxyControlErrorCode;
-import io.joynr.messaging.info.BounceProxyStatus;
-import io.joynr.messaging.info.BounceProxyStatusInformation;
-import io.joynr.messaging.info.PerformanceMeasures;
-
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
@@ -39,10 +33,16 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.Response;
 
 import com.google.inject.Inject;
+
+import io.joynr.communications.exceptions.JoynrHttpException;
+import io.joynr.messaging.datatypes.JoynrBounceProxyControlErrorCode;
+import io.joynr.messaging.info.BounceProxyStatus;
+import io.joynr.messaging.info.BounceProxyStatusInformation;
+import io.joynr.messaging.info.PerformanceMeasures;
 
 /**
  * RESTful web service to control bounce proxy instances.

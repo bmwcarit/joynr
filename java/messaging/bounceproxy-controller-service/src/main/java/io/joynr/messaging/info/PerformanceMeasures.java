@@ -21,8 +21,8 @@ package io.joynr.messaging.info;
 
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Map;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 

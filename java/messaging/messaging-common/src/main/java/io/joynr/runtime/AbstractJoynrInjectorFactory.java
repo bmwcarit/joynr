@@ -18,10 +18,6 @@
  */
 package io.joynr.runtime;
 
-import io.joynr.guice.IApplication;
-import io.joynr.guice.InjectorFactory;
-import io.joynr.messaging.MessagingPropertyKeys;
-
 import java.util.Properties;
 
 import org.slf4j.Logger;
@@ -31,6 +27,10 @@ import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.Module;
 import com.google.inject.name.Names;
+
+import io.joynr.guice.IApplication;
+import io.joynr.guice.InjectorFactory;
+import io.joynr.messaging.MessagingPropertyKeys;
 
 /**
  * This class is used as abstract joynr injector factory. Client code uses sub classes of this to instantiate joynr

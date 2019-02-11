@@ -18,10 +18,6 @@
  */
 package io.joynr.integration.setup;
 
-import io.joynr.integration.ControlledBounceProxyServerTest;
-import io.joynr.integration.util.ServersUtil;
-import io.joynr.servlet.ServletUtil;
-
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -33,6 +29,10 @@ import org.eclipse.jetty.webapp.WebAppContext;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.joynr.integration.ControlledBounceProxyServerTest;
+import io.joynr.integration.util.ServersUtil;
+import io.joynr.servlet.ServletUtil;
 
 /**
  * Starts a certain number of server instances that contain a bounceproxy and a

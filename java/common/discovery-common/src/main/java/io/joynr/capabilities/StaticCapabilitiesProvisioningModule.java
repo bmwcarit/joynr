@@ -18,12 +18,12 @@
  */
 package io.joynr.capabilities;
 
+import static io.joynr.messaging.MessagingPropertyKeys.CAPABILITIES_DIRECTORY_DISCOVERY_ENTRY;
+import static io.joynr.messaging.MessagingPropertyKeys.DOMAIN_ACCESS_CONTROLLER_DISCOVERY_ENTRY;
+
 import com.google.inject.AbstractModule;
 import com.google.inject.name.Names;
 import joynr.types.GlobalDiscoveryEntry;
-
-import static io.joynr.messaging.MessagingPropertyKeys.CAPABILITIES_DIRECTORY_DISCOVERY_ENTRY;
-import static io.joynr.messaging.MessagingPropertyKeys.DOMAIN_ACCESS_CONTROLLER_DISCOVERY_ENTRY;
 
 public class StaticCapabilitiesProvisioningModule extends AbstractModule {
 

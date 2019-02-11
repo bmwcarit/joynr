@@ -32,8 +32,12 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
+
 import io.joynr.Async;
 import io.joynr.StatelessAsync;
 import io.joynr.Sync;
@@ -62,8 +66,6 @@ import io.joynr.runtime.ShutdownListener;
 import io.joynr.runtime.ShutdownNotifier;
 import joynr.MethodMetaInformation;
 import joynr.exceptions.ApplicationException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
     private ConnectorFactory connectorFactory;

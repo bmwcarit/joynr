@@ -29,6 +29,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+
 import io.joynr.messaging.websocket.WebsocketModule;
 
 public class LocationProviderActivity extends Activity {

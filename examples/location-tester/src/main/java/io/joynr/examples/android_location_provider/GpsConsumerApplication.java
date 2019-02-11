@@ -18,6 +18,19 @@
  */
 package io.joynr.examples.android_location_provider;
 
+import java.util.Properties;
+import java.util.Scanner;
+import java.util.regex.Pattern;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
+import com.google.inject.util.Modules;
+
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.exceptions.JoynrRuntimeException;
@@ -32,24 +45,10 @@ import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrApplication;
 import io.joynr.runtime.JoynrApplicationModule;
 import io.joynr.runtime.JoynrInjectorFactory;
-
-import java.util.Properties;
-import java.util.Scanner;
-import java.util.regex.Pattern;
-
 import joynr.OnChangeWithKeepAliveSubscriptionQos;
 import joynr.exceptions.ApplicationException;
 import joynr.types.Localisation.GpsLocation;
 import joynr.vehicle.GpsProxy;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
-import com.google.inject.util.Modules;
-
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
 public class GpsConsumerApplication extends AbstractJoynrApplication {
     private static final String PRINT_BORDER = "\n####################\n";

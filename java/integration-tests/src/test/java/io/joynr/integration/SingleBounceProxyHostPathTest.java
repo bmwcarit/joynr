@@ -18,9 +18,6 @@
  */
 package io.joynr.integration;
 
-import io.joynr.integration.util.ServersUtil;
-import io.joynr.messaging.MessagingPropertyKeys;
-
 import org.eclipse.jetty.server.Server;
 import org.junit.After;
 import org.junit.Assert;
@@ -29,6 +26,9 @@ import org.junit.Test;
 
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.response.Response;
+
+import io.joynr.integration.util.ServersUtil;
+import io.joynr.messaging.MessagingPropertyKeys;
 
 public class SingleBounceProxyHostPathTest {
 

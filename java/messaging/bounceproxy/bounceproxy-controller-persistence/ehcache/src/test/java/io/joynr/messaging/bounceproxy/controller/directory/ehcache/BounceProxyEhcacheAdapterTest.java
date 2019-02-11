@@ -18,22 +18,16 @@
  */
 package io.joynr.messaging.bounceproxy.controller.directory.ehcache;
 
+import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertNotNull;
-import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyRecord;
-import io.joynr.messaging.info.BounceProxyStatus;
-import io.joynr.messaging.info.BounceProxyStatusInformation;
-import io.joynr.messaging.info.ControlledBounceProxyInformation;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import java.net.URI;
 import java.util.List;
-
-import net.sf.ehcache.CacheManager;
-import static org.hamcrest.CoreMatchers.allOf;
-import static org.hamcrest.Matchers.lessThanOrEqualTo;
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 
 import org.junit.After;
 import org.junit.Before;
@@ -43,6 +37,12 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.name.Names;
+
+import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyRecord;
+import io.joynr.messaging.info.BounceProxyStatus;
+import io.joynr.messaging.info.BounceProxyStatusInformation;
+import io.joynr.messaging.info.ControlledBounceProxyInformation;
+import net.sf.ehcache.CacheManager;
 
 public class BounceProxyEhcacheAdapterTest {
 

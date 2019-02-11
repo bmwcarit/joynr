@@ -18,12 +18,12 @@
  */
 package io.joynr.integration.setup.testrunner;
 
-import io.joynr.integration.setup.BounceProxyServerSetup;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+
+import io.joynr.integration.setup.BounceProxyServerSetup;
 
 /**
  * Defines for which {@link BounceProxyServerSetup}s the annotated test class

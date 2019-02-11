@@ -26,8 +26,6 @@ import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
-import io.joynr.integration.setup.BounceProxyServerSetup;
-import io.joynr.integration.setup.testrunner.BounceProxyServerContext;
 
 import java.io.InputStream;
 import java.util.List;
@@ -39,6 +37,9 @@ import org.junit.Test;
 
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.jayway.restassured.RestAssured;
+
+import io.joynr.integration.setup.BounceProxyServerSetup;
+import io.joynr.integration.setup.testrunner.BounceProxyServerContext;
 
 //@RunWith(MultipleBounceProxySetupsTestRunner.class)
 // NOTE: for some reason the order of these classes in the array matters.

@@ -24,10 +24,9 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import joynr.test.SystemIntegrationTestSync;
-
 import io.joynr.jeeintegration.api.ServiceProvider;
 import io.joynr.jeeintegration.api.security.JoynrCallingPrincipal;
+import joynr.test.SystemIntegrationTestSync;
 
 @Stateless
 @ServiceProvider(serviceInterface = SystemIntegrationTestSync.class)

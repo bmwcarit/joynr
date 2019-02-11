@@ -19,12 +19,10 @@
 
 package io.joynr.performance;
 
-import io.joynr.provider.ProviderAnnotations;
-
 import java.util.Properties;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
 
@@ -34,17 +32,18 @@ import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
 import io.joynr.performance.EchoProviderInvocationParameters.BackendConfig;
+import io.joynr.provider.ProviderAnnotations;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrApplication;
 import io.joynr.runtime.JoynrApplicationModule;
+import io.joynr.runtime.JoynrInjectorFactory;
+import jline.internal.Log;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.TrustLevel;
 import joynr.tests.performance.EchoProvider;
 import joynr.types.ProviderQos;
-import io.joynr.runtime.JoynrInjectorFactory;
-import jline.internal.Log;
 
 public class EchoProviderApplication extends AbstractJoynrApplication {
 

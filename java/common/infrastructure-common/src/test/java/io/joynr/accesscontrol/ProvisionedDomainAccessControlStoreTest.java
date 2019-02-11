@@ -19,17 +19,8 @@
 package io.joynr.accesscontrol;
 
 import static org.junit.Assert.assertEquals;
-import io.joynr.common.JoynrPropertiesModule;
 
 import java.util.Properties;
-
-import joynr.infrastructure.DacTypes.DomainRoleEntry;
-import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
-import joynr.infrastructure.DacTypes.Permission;
-import joynr.infrastructure.DacTypes.Role;
-import joynr.infrastructure.DacTypes.TrustLevel;
-import net.sf.ehcache.CacheManager;
-import net.sf.ehcache.config.Configuration;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -39,6 +30,16 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Provides;
+
+import io.joynr.common.JoynrPropertiesModule;
+import joynr.infrastructure.DacTypes.DomainRoleEntry;
+import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
+import joynr.infrastructure.DacTypes.Permission;
+import joynr.infrastructure.DacTypes.Role;
+import joynr.infrastructure.DacTypes.TrustLevel;
+
+import net.sf.ehcache.CacheManager;
+import net.sf.ehcache.config.Configuration;
 
 public class ProvisionedDomainAccessControlStoreTest {
 

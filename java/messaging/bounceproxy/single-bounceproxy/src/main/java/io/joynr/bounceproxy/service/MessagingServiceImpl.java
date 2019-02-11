@@ -18,10 +18,10 @@
  */
 package io.joynr.bounceproxy.service;
 
+import com.google.inject.Inject;
+
 import io.joynr.messaging.bounceproxy.LongPollingMessagingDelegate;
 import io.joynr.messaging.bounceproxy.service.AbstractMessagingService;
-
-import com.google.inject.Inject;
 
 /**
  * Messaging service implementation for single bounceproxy which is responsible

@@ -20,6 +20,16 @@ package io.joynr.examples.statelessasync;
 
 import static io.joynr.util.JoynrUtil.createUuidString;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.function.BiConsumer;
+import java.util.stream.IntStream;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
 import io.joynr.proxy.ProxyBuilder;
@@ -29,15 +39,6 @@ import joynr.examples.statelessasync.VehicleConfiguration;
 import joynr.examples.statelessasync.VehicleState;
 import joynr.examples.statelessasync.VehicleStateProxy;
 import joynr.examples.statelessasync.VehicleStateStatelessAsync;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.function.BiConsumer;
-import java.util.stream.IntStream;
 
 public class ConsumerApplication extends AbstractJoynrApplication {
 

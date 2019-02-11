@@ -21,13 +21,13 @@ package io.joynr.messaging.bounceproxy.controller.directory.jdbc.entities;
 
 import java.net.URI;
 
-import io.joynr.messaging.info.Channel;
-
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
+import io.joynr.messaging.info.Channel;
 
 /**
  * Reflects a {@link Channel} in a relational database.

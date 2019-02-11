@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 import io.joynr.smrf.EncodingException;
 import io.joynr.smrf.MessageSerializer;
 import io.joynr.smrf.MessageSerializerImpl;

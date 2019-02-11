@@ -18,11 +18,11 @@
  */
 package io.joynr.performance;
 
+import io.joynr.provider.Deferred;
+import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
 import joynr.tests.performance.EchoAbstractProvider;
 import joynr.tests.performance.Types.ComplexStruct;
-import io.joynr.provider.Deferred;
-import io.joynr.provider.DeferredVoid;
 
 public class EchoProviderImpl extends EchoAbstractProvider {
 

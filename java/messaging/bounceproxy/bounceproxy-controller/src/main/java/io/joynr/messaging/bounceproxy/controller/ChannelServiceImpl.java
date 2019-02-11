@@ -19,16 +19,6 @@
  */
 package io.joynr.messaging.bounceproxy.controller;
 
-import io.joynr.exceptions.JoynrCommunicationException;
-import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyDirectory;
-import io.joynr.messaging.bounceproxy.controller.directory.ChannelDirectory;
-import io.joynr.messaging.bounceproxy.controller.strategy.ChannelAssignmentStrategy;
-import io.joynr.messaging.info.Channel;
-import io.joynr.messaging.info.ChannelInformation;
-import io.joynr.messaging.info.ControlledBounceProxyInformation;
-import io.joynr.messaging.service.ChannelService;
-
 import java.net.URI;
 import java.util.LinkedList;
 import java.util.List;
@@ -38,6 +28,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
+
+import io.joynr.exceptions.JoynrCommunicationException;
+import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyDirectory;
+import io.joynr.messaging.bounceproxy.controller.directory.ChannelDirectory;
+import io.joynr.messaging.bounceproxy.controller.strategy.ChannelAssignmentStrategy;
+import io.joynr.messaging.info.Channel;
+import io.joynr.messaging.info.ChannelInformation;
+import io.joynr.messaging.info.ControlledBounceProxyInformation;
+import io.joynr.messaging.service.ChannelService;
 
 /**
  * Implementation of channel service for the bounce proxy controller.

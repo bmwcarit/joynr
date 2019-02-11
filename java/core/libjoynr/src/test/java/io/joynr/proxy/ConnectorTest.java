@@ -34,8 +34,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import io.joynr.StatelessAsync;
-import io.joynr.dispatcher.rpc.annotation.StatelessCallbackCorrelation;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -45,6 +43,7 @@ import org.mockito.MockitoAnnotations;
 import com.fasterxml.jackson.databind.JsonMappingException;
 
 import io.joynr.Async;
+import io.joynr.StatelessAsync;
 import io.joynr.Sync;
 import io.joynr.arbitration.ArbitrationResult;
 import io.joynr.dispatcher.rpc.annotation.FireAndForget;
@@ -52,6 +51,7 @@ import io.joynr.dispatcher.rpc.annotation.JoynrMulticast;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcBroadcast;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcCallback;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcSubscription;
+import io.joynr.dispatcher.rpc.annotation.StatelessCallbackCorrelation;
 import io.joynr.dispatching.RequestReplyManager;
 import io.joynr.dispatching.rpc.ReplyCallerDirectory;
 import io.joynr.dispatching.rpc.SynchronizedReplyCaller;

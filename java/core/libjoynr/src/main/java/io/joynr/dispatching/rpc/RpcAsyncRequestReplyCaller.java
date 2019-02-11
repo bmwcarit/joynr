@@ -18,22 +18,21 @@
  */
 package io.joynr.dispatching.rpc;
 
+import java.lang.reflect.Method;
+
+import javax.annotation.CheckForNull;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ICallback;
 import io.joynr.proxy.ICallbackWithModeledError;
-
-import java.lang.reflect.Method;
-
-import javax.annotation.CheckForNull;
-
 import joynr.MethodMetaInformation;
 import joynr.Reply;
 import joynr.exceptions.ApplicationException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class RpcAsyncRequestReplyCaller<T> implements ReplyCaller {
 

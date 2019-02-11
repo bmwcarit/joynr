@@ -19,13 +19,6 @@
  */
 package io.joynr.messaging.bounceproxy;
 
-import io.joynr.messaging.bounceproxy.info.BounceProxyInformationProvider;
-import io.joynr.messaging.bounceproxy.monitoring.BounceProxyLifecycleMonitor;
-import io.joynr.messaging.bounceproxy.monitoring.BounceProxyPerformanceMonitor;
-import io.joynr.messaging.bounceproxy.monitoring.MonitoringServiceClient;
-import io.joynr.messaging.info.BounceProxyInformation;
-import io.joynr.messaging.service.MessagingService;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -38,6 +31,13 @@ import org.apache.http.impl.client.HttpClients;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
+
+import io.joynr.messaging.bounceproxy.info.BounceProxyInformationProvider;
+import io.joynr.messaging.bounceproxy.monitoring.BounceProxyLifecycleMonitor;
+import io.joynr.messaging.bounceproxy.monitoring.BounceProxyPerformanceMonitor;
+import io.joynr.messaging.bounceproxy.monitoring.MonitoringServiceClient;
+import io.joynr.messaging.info.BounceProxyInformation;
+import io.joynr.messaging.service.MessagingService;
 
 public class ControlledBounceProxyModule extends AbstractModule {
 

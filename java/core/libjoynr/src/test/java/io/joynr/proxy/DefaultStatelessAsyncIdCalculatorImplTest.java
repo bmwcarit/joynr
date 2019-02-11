@@ -31,11 +31,11 @@ import static org.mockito.Mockito.when;
 import java.lang.reflect.Method;
 import java.util.UUID;
 
-import io.joynr.exceptions.JoynrIllegalStateException;
 import org.junit.Before;
 import org.junit.Test;
 
 import io.joynr.dispatcher.rpc.annotation.StatelessCallbackCorrelation;
+import io.joynr.exceptions.JoynrIllegalStateException;
 
 public class DefaultStatelessAsyncIdCalculatorImplTest {
 

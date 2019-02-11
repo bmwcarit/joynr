@@ -18,8 +18,6 @@
  */
 package io.joynr.util;
 
-import io.joynr.exceptions.JoynrRuntimeException;
-
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -46,6 +44,8 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.joynr.exceptions.JoynrRuntimeException;
 
 public class JoynrUtil {
     private static final Logger logger = LoggerFactory.getLogger(JoynrUtil.class);

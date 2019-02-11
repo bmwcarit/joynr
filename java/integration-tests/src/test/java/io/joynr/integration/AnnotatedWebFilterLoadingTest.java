@@ -42,7 +42,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.jayway.restassured.RestAssured;
-
 import joynr.test.JoynrTestLoggingRule;
 
 public class AnnotatedWebFilterLoadingTest {

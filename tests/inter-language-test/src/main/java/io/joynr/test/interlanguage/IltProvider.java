@@ -18,15 +18,18 @@
  */
 package io.joynr.test.interlanguage;
 
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Map.Entry;
+import java.util.Map;
+
+import org.apache.commons.lang.ArrayUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.joynr.provider.Deferred;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
-
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
-
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.interlanguagetest.Enumeration;
 import joynr.interlanguagetest.TestInterface.MethodWithAnonymousErrorEnumErrorEnum;
@@ -45,11 +48,6 @@ import joynr.interlanguagetest.namedTypeCollection2.ExtendedStructOfPrimitives;
 import joynr.interlanguagetest.namedTypeCollection2.ExtendedTypeCollectionEnumerationInTypeCollection;
 import joynr.interlanguagetest.namedTypeCollection2.MapStringString;
 import joynr.interlanguagetest.typeDefCollection.ArrayTypeDefStruct;
-
-import org.apache.commons.lang.ArrayUtils;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class IltProvider extends TestInterfaceAbstractProvider {
     protected Byte attributeUInt8;

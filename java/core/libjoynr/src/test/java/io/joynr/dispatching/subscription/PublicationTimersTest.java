@@ -19,7 +19,6 @@
 package io.joynr.dispatching.subscription;
 
 import static org.hamcrest.Matchers.contains;
-
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
@@ -27,17 +26,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
-import io.joynr.dispatching.Dispatcher;
-import io.joynr.dispatching.ProviderDirectory;
-import io.joynr.dispatching.RequestCaller;
-import io.joynr.dispatching.RequestCallerFactory;
-import io.joynr.exceptions.JoynrMessageNotSentException;
-import io.joynr.exceptions.JoynrSendBufferFullException;
-import io.joynr.messaging.MessagingQos;
-import io.joynr.provider.Deferred;
-import io.joynr.provider.Promise;
-import io.joynr.provider.ProviderContainer;
-import io.joynr.runtime.ShutdownNotifier;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -57,7 +45,18 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 
+import io.joynr.dispatching.Dispatcher;
+import io.joynr.dispatching.ProviderDirectory;
+import io.joynr.dispatching.RequestCaller;
+import io.joynr.dispatching.RequestCallerFactory;
+import io.joynr.exceptions.JoynrMessageNotSentException;
+import io.joynr.exceptions.JoynrSendBufferFullException;
+import io.joynr.messaging.MessagingQos;
 import io.joynr.provider.AbstractSubscriptionPublisher;
+import io.joynr.provider.Deferred;
+import io.joynr.provider.Promise;
+import io.joynr.provider.ProviderContainer;
+import io.joynr.runtime.ShutdownNotifier;
 import joynr.PeriodicSubscriptionQos;
 import joynr.SubscriptionPublication;
 import joynr.SubscriptionReply;

@@ -20,8 +20,9 @@ package io.joynr.dispatching.subscription;
 
 import static org.junit.Assert.assertEquals;
 
-import io.joynr.exceptions.JoynrIllegalStateException;
 import org.junit.Test;
+
+import io.joynr.exceptions.JoynrIllegalStateException;
 
 public class MulticastIdUtilTest {
 

@@ -18,6 +18,9 @@
  */
 package io.joynr.test.interlanguage;
 
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Objects;
@@ -25,11 +28,21 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiPredicate;
 
+import org.apache.commons.lang.ArrayUtils;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.CallbackWithModeledError;
 import io.joynr.proxy.Future;
-
 import joynr.exceptions.ApplicationException;
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.interlanguagetest.Enumeration;
@@ -43,22 +56,6 @@ import joynr.interlanguagetest.namedTypeCollection2.ExtendedExtendedBaseStruct;
 import joynr.interlanguagetest.namedTypeCollection2.ExtendedStructOfPrimitives;
 import joynr.interlanguagetest.namedTypeCollection2.MapStringString;
 import joynr.interlanguagetest.typeDefCollection.ArrayTypeDefStruct;
-
-import org.apache.commons.lang.ArrayUtils;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
 public class IltConsumerAsyncMethodTest extends IltConsumerTest {
     private static final Logger LOG = LoggerFactory.getLogger(IltConsumerAsyncMethodTest.class);

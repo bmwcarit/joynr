@@ -18,35 +18,33 @@
  */
 package io.joynr.runtime;
 
-import io.joynr.capabilities.LocalCapabilitiesDirectory;
-import io.joynr.messaging.AtmosphereMessagingModule;
-import io.joynr.messaging.ConfigurableMessagingSettings;
-import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
-import io.joynr.messaging.websocket.WebsocketModule;
-
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Properties;
 import java.util.Set;
 
-import jline.console.ConsoleReader;
-import joynr.types.DiscoveryEntry;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.Options;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
+
+import io.joynr.capabilities.LocalCapabilitiesDirectory;
+import io.joynr.messaging.AtmosphereMessagingModule;
+import io.joynr.messaging.ConfigurableMessagingSettings;
+import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
+import io.joynr.messaging.websocket.WebsocketModule;
+import jline.console.ConsoleReader;
+import joynr.types.DiscoveryEntry;
 
 public class ClusterController {
     private static final Logger LOG = LoggerFactory.getLogger(ClusterController.class);

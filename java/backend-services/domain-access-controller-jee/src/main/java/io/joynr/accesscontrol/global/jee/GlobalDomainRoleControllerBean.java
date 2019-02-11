@@ -18,11 +18,12 @@
  */
 package io.joynr.accesscontrol.global.jee;
 
+import static io.joynr.dispatching.subscription.MulticastIdUtil.sanitizeForPartition;
+
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
-import static io.joynr.dispatching.subscription.MulticastIdUtil.sanitizeForPartition;
 import io.joynr.jeeintegration.api.ServiceProvider;
 import io.joynr.jeeintegration.api.SubscriptionPublisher;
 import joynr.infrastructure.DacTypes.ChangeType;

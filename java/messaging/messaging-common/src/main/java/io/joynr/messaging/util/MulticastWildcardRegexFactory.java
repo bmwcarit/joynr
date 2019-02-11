@@ -20,9 +20,10 @@ package io.joynr.messaging.util;
 
 import java.util.regex.Pattern;
 
-import io.joynr.exceptions.JoynrIllegalStateException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.joynr.exceptions.JoynrIllegalStateException;
 
 public class MulticastWildcardRegexFactory {
 

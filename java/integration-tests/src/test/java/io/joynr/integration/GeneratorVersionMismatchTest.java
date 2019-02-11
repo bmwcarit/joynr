@@ -33,16 +33,16 @@ import org.junit.Test;
 import io.joynr.exceptions.MultiDomainNoCompatibleProviderFoundException;
 import io.joynr.exceptions.NoCompatibleProviderFoundException;
 import joynr.exceptions.MethodInvocationException;
-import joynr.tests.AnonymousVersionedStruct;
 import joynr.tests.AnonymousVersionedStruct2;
+import joynr.tests.AnonymousVersionedStruct;
 import joynr.tests.DefaultMultipleVersionsInterface1Provider;
-import joynr.tests.InterfaceVersionedStruct;
 import joynr.tests.InterfaceVersionedStruct2;
+import joynr.tests.InterfaceVersionedStruct;
 import joynr.tests.MultipleVersionsInterface1Proxy;
 import joynr.tests.MultipleVersionsInterface2Proxy;
 import joynr.tests.MultipleVersionsInterfaceProxy;
-import joynr.tests.MultipleVersionsTypeCollection.VersionedStruct;
 import joynr.tests.MultipleVersionsTypeCollection.VersionedStruct2;
+import joynr.tests.MultipleVersionsTypeCollection.VersionedStruct;
 
 public class GeneratorVersionMismatchTest extends AbstractMultipleVersionsEnd2EndTest {
 

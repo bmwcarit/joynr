@@ -18,12 +18,12 @@
  */
 package io.joynr.examples.android_example;
 
-import android.app.Application;
+import java.util.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Properties;
+import android.app.Application;
 
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;

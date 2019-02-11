@@ -18,6 +18,13 @@
  */
 package io.joynr.messaging.bounceproxy.controller.runtime;
 
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Properties;
+
+import com.google.inject.AbstractModule;
+import com.google.inject.Module;
+
 import io.joynr.guice.PropertyLoadingModule;
 import io.joynr.guice.servlet.AbstractGuiceServletConfig;
 import io.joynr.guice.servlet.AbstractJoynrServletModule;
@@ -25,13 +32,6 @@ import io.joynr.messaging.bounceproxy.controller.BounceProxyControllerModule;
 import io.joynr.messaging.service.ChannelServiceRestAdapter;
 import io.joynr.messaging.service.MonitoringServiceRestAdapter;
 import io.joynr.runtime.PropertyLoader;
-
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Properties;
-
-import com.google.inject.AbstractModule;
-import com.google.inject.Module;
 
 /**
  * Servlet configuration for bounceproxy controller servlet.

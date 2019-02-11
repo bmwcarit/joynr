@@ -18,13 +18,21 @@
  */
 package io.joynr.jeeintegration.messaging;
 
+import static io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys.JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY;
+import static java.lang.String.format;
+
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.Future;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import io.joynr.dispatcher.ServletMessageReceiver;
 import io.joynr.jeeintegration.httpbridge.HttpBridgeRegistryClient;
@@ -32,14 +40,6 @@ import io.joynr.messaging.MessageArrivedListener;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.ReceiverStatusListener;
 import joynr.ImmutableMessage;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
-import static io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys.JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY;
-import static java.lang.String.format;
 
 /**
  * Implementation of a servlet message receiver which is used to register / unregister the channel and also pass on

@@ -22,26 +22,7 @@ import static com.jayway.restassured.RestAssured.given;
 import static io.joynr.util.JoynrUtil.createUuidString;
 import static org.hamcrest.Matchers.containsString;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.Guice;
-import com.google.inject.Singleton;
-import com.google.inject.TypeLiteral;
-import com.google.inject.multibindings.Multibinder;
-
-import io.joynr.common.ExpiryDate;
-import io.joynr.common.JoynrPropertiesModule;
-import io.joynr.dispatching.Dispatcher;
-import io.joynr.messaging.AtmosphereMessagingModule;
-import io.joynr.messaging.JoynrMessageProcessor;
-import io.joynr.messaging.MessagingPropertyKeys;
-import io.joynr.messaging.MessagingTestModule;
-import io.joynr.messaging.ReceiverStatusListener;
-import io.joynr.messaging.routing.MessageRouter;
-
 import java.util.Properties;
-
-import joynr.Message;
-import joynr.MutableMessage;
 
 import org.apache.http.client.config.RequestConfig;
 import org.eclipse.jetty.server.Server;
@@ -57,12 +38,29 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.Singleton;
+import com.google.inject.TypeLiteral;
+import com.google.inject.multibindings.Multibinder;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.config.HttpClientConfig;
 import com.jayway.restassured.config.RestAssuredConfig;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.specification.RequestSpecification;
+
+import io.joynr.common.ExpiryDate;
+import io.joynr.common.JoynrPropertiesModule;
+import io.joynr.dispatching.Dispatcher;
+import io.joynr.messaging.AtmosphereMessagingModule;
+import io.joynr.messaging.JoynrMessageProcessor;
+import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.messaging.MessagingTestModule;
+import io.joynr.messaging.ReceiverStatusListener;
+import io.joynr.messaging.routing.MessageRouter;
+import joynr.Message;
+import joynr.MutableMessage;
 
 /**
  * HttpCommunicationManager tested by sending a request to the local host and checking the received message.

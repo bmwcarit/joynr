@@ -22,14 +22,15 @@ import static org.junit.Assert.assertFalse;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import io.joynr.dispatching.RequestCallerFactory;
-import joynr.tests.DefaulttestProvider;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import io.joynr.dispatching.RequestCallerFactory;
+import joynr.tests.DefaulttestProvider;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ProviderContainerFactoryTest {

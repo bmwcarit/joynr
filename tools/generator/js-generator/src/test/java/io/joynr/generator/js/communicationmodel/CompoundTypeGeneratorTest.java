@@ -18,10 +18,6 @@
  */
 package io.joynr.generator.js.communicationmodel;
 
-import io.joynr.generator.js.util.JsTemplateFactory;
-import io.joynr.generator.templates.util.JoynrGeneratorExtensions;
-import io.joynr.generator.templates.util.NamingUtil;
-
 import org.franca.core.franca.FField;
 import org.franca.core.franca.FModel;
 import org.franca.core.franca.FStructType;
@@ -34,6 +30,10 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.google.inject.name.Names;
+
+import io.joynr.generator.js.util.JsTemplateFactory;
+import io.joynr.generator.templates.util.JoynrGeneratorExtensions;
+import io.joynr.generator.templates.util.NamingUtil;
 
 public class CompoundTypeGeneratorTest {
 

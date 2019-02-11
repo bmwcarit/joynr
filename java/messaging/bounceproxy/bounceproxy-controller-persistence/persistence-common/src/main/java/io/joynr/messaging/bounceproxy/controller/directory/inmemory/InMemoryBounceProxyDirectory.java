@@ -18,13 +18,6 @@
  */
 package io.joynr.messaging.bounceproxy.controller.directory.inmemory;
 
-import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyDirectory;
-import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyRecord;
-import io.joynr.messaging.info.ControlledBounceProxyInformation;
-import io.joynr.messaging.info.BounceProxyInformation;
-import io.joynr.messaging.info.BounceProxyStatusInformation;
-import io.joynr.messaging.system.TimestampProvider;
-
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -33,6 +26,13 @@ import java.util.stream.Collectors;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+
+import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyDirectory;
+import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyRecord;
+import io.joynr.messaging.info.BounceProxyInformation;
+import io.joynr.messaging.info.BounceProxyStatusInformation;
+import io.joynr.messaging.info.ControlledBounceProxyInformation;
+import io.joynr.messaging.system.TimestampProvider;
 
 /**
  * Directory which stores all registered bounce proxies in memory.

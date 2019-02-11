@@ -18,11 +18,16 @@
  */
 package io.joynr.jeeintegration.httpbridge;
 
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
-import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys;
-import io.joynr.messaging.routing.MessageRouter;
+import static java.lang.String.format;
+
+import java.io.IOException;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
+import javax.ws.rs.core.MediaType;
+
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -31,14 +36,12 @@ import org.apache.http.entity.StringEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.core.MediaType;
-import java.io.IOException;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
 
-import static java.lang.String.format;
+import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys;
+import io.joynr.messaging.routing.MessageRouter;
 
 /**
  * A {@link HttpBridgeRegistryClient} implementation which communicates with an Endpoint Registration service in

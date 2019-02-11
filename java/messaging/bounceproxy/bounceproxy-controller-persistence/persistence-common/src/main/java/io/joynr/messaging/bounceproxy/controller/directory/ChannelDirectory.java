@@ -18,11 +18,11 @@
  */
 package io.joynr.messaging.bounceproxy.controller.directory;
 
-import io.joynr.messaging.info.Channel;
-
 import java.util.List;
 
 import javax.annotation.CheckForNull;
+
+import io.joynr.messaging.info.Channel;
 
 /**
  * Interface for a directory or database, respectively, that stores channel URLs for each channel ID.

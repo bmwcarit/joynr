@@ -18,11 +18,6 @@
  */
 package io.joynr.joynrandroidruntime;
 
-import io.joynr.proxy.Future;
-import io.joynr.proxy.ProxyBuilder;
-import io.joynr.proxy.StatelessAsyncCallback;
-import io.joynr.runtime.JoynrRuntime;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -30,13 +25,18 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
-import joynr.types.ProviderQos;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Messenger;
 import android.util.Log;
 
 import com.google.inject.Module;
+
+import io.joynr.proxy.Future;
+import io.joynr.proxy.ProxyBuilder;
+import io.joynr.proxy.StatelessAsyncCallback;
+import io.joynr.runtime.JoynrRuntime;
+import joynr.types.ProviderQos;
 
 public class JoynrAndroidRuntime implements JoynrRuntime {
 

@@ -18,33 +18,15 @@
  */
 package io.joynr.test.interlanguage;
 
-import java.io.InputStream;
 import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
-import io.joynr.arbitration.ArbitrationStrategy;
-import io.joynr.arbitration.DiscoveryQos;
-import io.joynr.exceptions.DiscoveryException;
-import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.messaging.AtmosphereMessagingModule;
-import io.joynr.messaging.MessagingPropertyKeys;
-import io.joynr.messaging.MessagingQos;
-import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
-import io.joynr.messaging.websocket.WebsocketModule;
-import io.joynr.proxy.ProxyBuilder;
-import io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback;
-import io.joynr.runtime.CCInProcessRuntimeModule;
-import io.joynr.runtime.JoynrInjectorFactory;
-import io.joynr.runtime.LibjoynrWebSocketRuntimeModule;
-import io.joynr.runtime.JoynrRuntime;
-import io.joynr.exceptions.JoynrIllegalStateException;
-import io.joynr.runtime.AbstractJoynrApplication;
 
-import java.io.IOException;
-import java.util.Properties;
-
-import joynr.interlanguagetest.TestInterfaceProxy;
-
+import org.junit.Rule;
+import org.junit.rules.TestName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,8 +34,24 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
 
-import org.junit.Rule;
-import org.junit.rules.TestName;
+import io.joynr.arbitration.ArbitrationStrategy;
+import io.joynr.arbitration.DiscoveryQos;
+import io.joynr.exceptions.DiscoveryException;
+import io.joynr.exceptions.JoynrIllegalStateException;
+import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.messaging.AtmosphereMessagingModule;
+import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.messaging.MessagingQos;
+import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
+import io.joynr.messaging.websocket.WebsocketModule;
+import io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback;
+import io.joynr.proxy.ProxyBuilder;
+import io.joynr.runtime.AbstractJoynrApplication;
+import io.joynr.runtime.CCInProcessRuntimeModule;
+import io.joynr.runtime.JoynrInjectorFactory;
+import io.joynr.runtime.JoynrRuntime;
+import io.joynr.runtime.LibjoynrWebSocketRuntimeModule;
+import joynr.interlanguagetest.TestInterfaceProxy;
 
 public abstract class IltConsumerTest {
     private static final Logger LOG = LoggerFactory.getLogger(IltConsumerTest.class);

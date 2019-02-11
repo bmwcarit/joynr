@@ -19,9 +19,6 @@
  */
 package io.joynr.messaging.bounceproxy.monitoring;
 
-import io.joynr.guice.PropertyLoadingModule;
-import io.joynr.messaging.bounceproxy.BounceProxyPropertyKeys;
-
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -37,6 +34,9 @@ import org.junit.Test;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+
+import io.joynr.guice.PropertyLoadingModule;
+import io.joynr.messaging.bounceproxy.BounceProxyPropertyKeys;
 
 public class BounceProxyStartupReporterTest {
 

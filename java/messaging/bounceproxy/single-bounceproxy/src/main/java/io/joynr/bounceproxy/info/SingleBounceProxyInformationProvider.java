@@ -18,9 +18,6 @@
  */
 package io.joynr.bounceproxy.info;
 
-import io.joynr.messaging.MessagingPropertyKeys;
-import io.joynr.messaging.info.BounceProxyInformation;
-
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -32,6 +29,9 @@ import org.slf4j.LoggerFactory;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.name.Named;
+
+import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.messaging.info.BounceProxyInformation;
 
 /**
  * Builds a {@link BounceProxyInformation} object from either a hostpath set as

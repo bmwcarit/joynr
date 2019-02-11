@@ -18,12 +18,12 @@
  */
 package io.joynr.generator;
 
-import io.joynr.generator.util.InvocationArguments;
-
 import java.util.Set;
 
 import org.apache.maven.plugin.logging.Log;
 import org.eclipse.xtext.generator.IGenerator;
+
+import io.joynr.generator.util.InvocationArguments;
 
 public class GeneratorTask {
 

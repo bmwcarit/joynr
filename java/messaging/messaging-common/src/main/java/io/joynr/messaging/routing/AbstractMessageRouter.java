@@ -18,9 +18,9 @@
  */
 package io.joynr.messaging.routing;
 
-import java.lang.ref.WeakReference;
-import java.lang.ref.ReferenceQueue;
 import java.lang.ref.Reference;
+import java.lang.ref.ReferenceQueue;
+import java.lang.ref.WeakReference;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;

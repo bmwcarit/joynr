@@ -46,8 +46,8 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import io.joynr.jeeintegration.httpbridge.HttpBridgeEndpointRegistryClient;
 import io.joynr.jeeintegration.httpbridge.HttpBridgeEndpointRegistryClient.EndpointRegistryUriHolder;
+import io.joynr.jeeintegration.httpbridge.HttpBridgeEndpointRegistryClient;
 
 /**
  * Unit tests for the {@link HttpBridgeEndpointRegistryClient}.

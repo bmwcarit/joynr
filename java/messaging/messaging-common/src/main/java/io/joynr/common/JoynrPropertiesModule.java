@@ -18,16 +18,16 @@
  */
 package io.joynr.common;
 
-import io.joynr.guice.PropertyLoadingModule;
-import io.joynr.messaging.MessagingPropertiesPersistence;
-import io.joynr.messaging.MessagingPropertyKeys;
-import io.joynr.runtime.PropertyLoader;
-
 import java.io.File;
 import java.util.Properties;
 
 import com.google.inject.Provides;
 import com.google.inject.name.Named;
+
+import io.joynr.guice.PropertyLoadingModule;
+import io.joynr.messaging.MessagingPropertiesPersistence;
+import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.runtime.PropertyLoader;
 
 public class JoynrPropertiesModule extends PropertyLoadingModule {
     public static final String PATTERN_DOESNT_START_WITH_JOYNAPP = "^(?!joynrapp).*$";

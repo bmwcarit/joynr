@@ -21,21 +21,8 @@ package io.joynr.integration;
 import static io.joynr.util.JoynrUtil.createUuidString;
 import static org.junit.Assert.assertEquals;
 
-import io.joynr.provider.ProviderAnnotations;
-import com.google.inject.Module;
-import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
-import io.joynr.arbitration.ArbitrationStrategy;
-import io.joynr.arbitration.DiscoveryQos;
-import io.joynr.messaging.MessagingPropertyKeys;
-import io.joynr.messaging.MessagingQos;
-import io.joynr.proxy.ProxyBuilder;
-import io.joynr.runtime.AbstractJoynrApplication;
-import io.joynr.runtime.JoynrRuntime;
-import io.joynr.runtime.PropertyLoader;
-import joynr.test.JoynrTestLoggingRule;
-import joynr.tests.DefaulttestProvider;
-import joynr.tests.testProxy;
-import joynr.types.ProviderQos;
+import java.util.Properties;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -46,7 +33,22 @@ import org.mockito.MockitoAnnotations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Properties;
+import com.google.inject.Module;
+
+import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
+import io.joynr.arbitration.ArbitrationStrategy;
+import io.joynr.arbitration.DiscoveryQos;
+import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.messaging.MessagingQos;
+import io.joynr.provider.ProviderAnnotations;
+import io.joynr.proxy.ProxyBuilder;
+import io.joynr.runtime.AbstractJoynrApplication;
+import io.joynr.runtime.JoynrRuntime;
+import io.joynr.runtime.PropertyLoader;
+import joynr.test.JoynrTestLoggingRule;
+import joynr.tests.DefaulttestProvider;
+import joynr.tests.testProxy;
+import joynr.types.ProviderQos;
 
 public abstract class AbstractSSLEnd2EndTest extends JoynrEnd2EndTest {
 

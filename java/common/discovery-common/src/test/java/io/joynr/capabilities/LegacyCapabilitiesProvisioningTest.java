@@ -23,14 +23,15 @@ import static org.junit.Assert.assertTrue;
 
 import java.lang.reflect.Field;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import joynr.infrastructure.GlobalCapabilitiesDirectory;
-import joynr.system.RoutingTypes.Address;
-import joynr.system.RoutingTypes.MqttAddress;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import joynr.infrastructure.GlobalCapabilitiesDirectory;
+import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.MqttAddress;
 
 @RunWith(MockitoJUnitRunner.class)
 public class LegacyCapabilitiesProvisioningTest {

@@ -27,18 +27,18 @@ import java.util.HashSet;
 import org.junit.Test;
 
 import io.joynr.exceptions.JoynrRuntimeException;
-import joynr.tests.AnonymousVersionedStruct;
 import joynr.tests.AnonymousVersionedStruct2;
+import joynr.tests.AnonymousVersionedStruct;
 import joynr.tests.DefaultMultipleVersionsInterface1Provider;
 import joynr.tests.DefaultMultipleVersionsInterface2Provider;
 import joynr.tests.DefaultMultipleVersionsInterfaceProvider;
-import joynr.tests.InterfaceVersionedStruct;
 import joynr.tests.InterfaceVersionedStruct2;
+import joynr.tests.InterfaceVersionedStruct;
 import joynr.tests.MultipleVersionsInterface1Proxy;
 import joynr.tests.MultipleVersionsInterface2Proxy;
 import joynr.tests.MultipleVersionsInterfaceProxy;
-import joynr.tests.MultipleVersionsTypeCollection.VersionedStruct;
 import joynr.tests.MultipleVersionsTypeCollection.VersionedStruct2;
+import joynr.tests.MultipleVersionsTypeCollection.VersionedStruct;
 
 public class MultipleVersionsEnd2EndTest extends AbstractMultipleVersionsEnd2EndTest {
 

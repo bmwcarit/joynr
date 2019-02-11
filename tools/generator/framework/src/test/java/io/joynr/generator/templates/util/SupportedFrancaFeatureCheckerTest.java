@@ -18,6 +18,9 @@
  */
 package io.joynr.generator.templates.util;
 
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.net.URL;
 
 import org.eclipse.emf.ecore.resource.Resource;
@@ -25,9 +28,6 @@ import org.franca.core.franca.FModel;
 import org.junit.Test;
 
 import io.joynr.generator.loading.ModelLoader;
-
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 public class SupportedFrancaFeatureCheckerTest {
 

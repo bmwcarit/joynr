@@ -18,10 +18,10 @@
  */
 package io.joynr.jeeintegration;
 
-import io.joynr.jeeintegration.api.JoynrShutdownService;
-
 import javax.ejb.Singleton;
 import javax.inject.Inject;
+
+import io.joynr.jeeintegration.api.JoynrShutdownService;
 
 @Singleton
 public class JoynrShutdownServiceBean implements JoynrShutdownService {

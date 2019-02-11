@@ -18,8 +18,6 @@
  */
 package io.joynr.messaging.bounceproxy.modules;
 
-import io.joynr.messaging.bounceproxy.BounceProxyBroadcaster;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,6 +26,8 @@ import org.atmosphere.cache.UUIDBroadcasterCache;
 import com.google.inject.AbstractModule;
 import com.google.inject.TypeLiteral;
 import com.google.inject.name.Names;
+
+import io.joynr.messaging.bounceproxy.BounceProxyBroadcaster;
 
 /**
  * Module to inject Atmosphere framework related configuration parameters.

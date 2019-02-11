@@ -18,11 +18,11 @@
  */
 package io.joynr.database;
 
-import io.joynr.database.derby.JoynrDerbyDatabase;
-
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.name.Named;
+
+import io.joynr.database.derby.JoynrDerbyDatabase;
 
 public class JoynrEmbeddedDatabaseTestModule extends AbstractModule {
 

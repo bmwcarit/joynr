@@ -18,11 +18,11 @@
  */
 package io.joynr.test;
 
-import io.joynr.messaging.MessagingPropertyKeys;
-import io.joynr.runtime.AbstractJoynrApplication;
-
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+
+import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.runtime.AbstractJoynrApplication;
 
 public class TestJoynrApplication extends AbstractJoynrApplication {
     public static final String PROPERTY_TEST_CONFIG_ENTRY = "joynrapp.test.config.entry";

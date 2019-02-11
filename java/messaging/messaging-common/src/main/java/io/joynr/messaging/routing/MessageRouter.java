@@ -20,7 +20,6 @@
 package io.joynr.messaging.routing;
 
 import joynr.ImmutableMessage;
-
 import joynr.system.RoutingTypes.Address;
 
 public interface MessageRouter {

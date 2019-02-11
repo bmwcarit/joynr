@@ -18,14 +18,14 @@
  */
 package io.joynr.examples.statelessasync;
 
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.BiConsumer;
+
 import io.joynr.proxy.ReplyContext;
 import joynr.examples.statelessasync.VehicleConfiguration;
 import joynr.examples.statelessasync.VehicleState;
 import joynr.examples.statelessasync.VehicleStateStatelessAsyncCallback;
-
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.BiConsumer;
 
 public class VehicleStateCallback implements VehicleStateStatelessAsyncCallback {
 

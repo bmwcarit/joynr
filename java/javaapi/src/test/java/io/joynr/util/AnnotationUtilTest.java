@@ -26,11 +26,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
-import io.joynr.JoynrVersion;
-import io.joynr.dispatcher.rpc.annotation.StatelessCallbackCorrelation;
-import io.joynr.provider.JoynrInterface;
-import io.joynr.provider.ProviderAnnotations;
-
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -42,18 +37,22 @@ import java.lang.reflect.Proxy;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
-import io.joynr.proxy.ReplyContext;
-import joynr.tests.DefaulttestProvider;
-import joynr.tests.test;
-import joynr.tests.testProvider;
+import javax.inject.Qualifier;
 
-import joynr.tests.testStatelessAsyncCallback;
-import joynr.tests.testTypes.TestEnum;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import javax.inject.Qualifier;
+import io.joynr.JoynrVersion;
+import io.joynr.dispatcher.rpc.annotation.StatelessCallbackCorrelation;
+import io.joynr.provider.JoynrInterface;
+import io.joynr.provider.ProviderAnnotations;
+import io.joynr.proxy.ReplyContext;
+import joynr.tests.DefaulttestProvider;
+import joynr.tests.test;
+import joynr.tests.testProvider;
+import joynr.tests.testStatelessAsyncCallback;
+import joynr.tests.testTypes.TestEnum;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AnnotationUtilTest {

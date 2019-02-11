@@ -27,11 +27,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Pattern;
 
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-import io.joynr.messaging.util.MulticastWildcardRegexFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
+import io.joynr.messaging.util.MulticastWildcardRegexFactory;
 
 @Singleton
 public class InMemoryMulticastReceiverRegistry implements MulticastReceiverRegistry {

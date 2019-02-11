@@ -19,10 +19,6 @@
  */
 package io.joynr.messaging.bounceproxy.runtime;
 
-import io.joynr.communications.exceptions.JoynrHttpException;
-import io.joynr.messaging.bounceproxy.monitoring.BounceProxyLifecycleMonitor;
-import io.joynr.messaging.datatypes.JoynrBounceProxyControlErrorCode;
-
 import java.io.IOException;
 
 import javax.servlet.Filter;
@@ -35,6 +31,10 @@ import javax.ws.rs.core.Response.Status;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+
+import io.joynr.communications.exceptions.JoynrHttpException;
+import io.joynr.messaging.bounceproxy.monitoring.BounceProxyLifecycleMonitor;
+import io.joynr.messaging.datatypes.JoynrBounceProxyControlErrorCode;
 
 /**
  * Servlet filter that only lets requests pass if the bounce proxy was

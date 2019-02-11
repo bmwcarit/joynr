@@ -23,10 +23,10 @@ import java.net.ServerSocket;
 import java.util.Properties;
 
 import com.google.inject.Inject;
+import com.google.inject.Module;
 import com.google.inject.persist.PersistService;
 import com.google.inject.persist.jpa.JpaPersistModule;
 import com.google.inject.util.Modules;
-import com.google.inject.Module;
 
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingPropertyKeys;

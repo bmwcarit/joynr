@@ -18,13 +18,13 @@
  */
 package io.joynr.messaging.bounceproxy.modules;
 
+import org.atmosphere.guice.GuiceManagedAtmosphereServlet;
+
 import io.joynr.guice.servlet.AbstractJoynrServletModule;
 import io.joynr.messaging.bounceproxy.filter.CharacterEncodingFilter;
 import io.joynr.messaging.bounceproxy.filter.CorsFilter;
 import io.joynr.messaging.service.ChannelServiceRestAdapter;
 import io.joynr.messaging.service.MessagingServiceRestAdapter;
-
-import org.atmosphere.guice.GuiceManagedAtmosphereServlet;
 
 /**
  * Common Jersey module for bounce proxies to define servlet bindings. <br>

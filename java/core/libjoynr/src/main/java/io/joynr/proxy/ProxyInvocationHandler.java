@@ -18,15 +18,15 @@
  */
 package io.joynr.proxy;
 
-import io.joynr.arbitration.ArbitrationResult;
-import io.joynr.exceptions.JoynrRuntimeException;
-import joynr.exceptions.ApplicationException;
-
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.joynr.arbitration.ArbitrationResult;
+import io.joynr.exceptions.JoynrRuntimeException;
+import joynr.exceptions.ApplicationException;
 
 public abstract class ProxyInvocationHandler implements InvocationHandler {
     private static final Logger logger = LoggerFactory.getLogger(ProxyInvocationHandler.class);

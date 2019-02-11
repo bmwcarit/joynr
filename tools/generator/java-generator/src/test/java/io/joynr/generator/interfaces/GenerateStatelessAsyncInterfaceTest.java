@@ -18,14 +18,15 @@
  */
 package io.joynr.generator.interfaces;
 
-import io.joynr.generator.AbstractJoynrJavaGeneratorTest;
+import static org.junit.Assert.assertTrue;
+
+import java.util.Map;
+
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Map;
-
-import static org.junit.Assert.assertTrue;
+import io.joynr.generator.AbstractJoynrJavaGeneratorTest;
 
 public class GenerateStatelessAsyncInterfaceTest extends AbstractJoynrJavaGeneratorTest {
 

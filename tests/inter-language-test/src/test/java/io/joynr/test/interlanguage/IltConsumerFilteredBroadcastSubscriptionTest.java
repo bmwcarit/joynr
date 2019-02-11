@@ -18,29 +18,29 @@
  */
 package io.joynr.test.interlanguage;
 
+import static org.junit.Assert.fail;
+
+import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Arrays;
-import java.io.PrintWriter;
 
-import joynr.OnChangeWithKeepAliveSubscriptionQos;
-import joynr.interlanguagetest.TestInterfaceBroadcastInterface.BroadcastWithFilteringBroadcastAdapter;
-import joynr.interlanguagetest.TestInterfaceBroadcastInterface.BroadcastWithFilteringBroadcastFilterParameters;
-import joynr.interlanguagetest.namedTypeCollection1.StructWithStringArray;
-import joynr.interlanguagetest.namedTypeCollection2.ExtendedTypeCollectionEnumerationInTypeCollection;
-
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import static org.junit.Assert.fail;
-
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+
 import io.joynr.exceptions.SubscriptionException;
 import io.joynr.proxy.Future;
+import joynr.OnChangeWithKeepAliveSubscriptionQos;
+import joynr.interlanguagetest.TestInterfaceBroadcastInterface.BroadcastWithFilteringBroadcastAdapter;
+import joynr.interlanguagetest.TestInterfaceBroadcastInterface.BroadcastWithFilteringBroadcastFilterParameters;
+import joynr.interlanguagetest.namedTypeCollection1.StructWithStringArray;
+import joynr.interlanguagetest.namedTypeCollection2.ExtendedTypeCollectionEnumerationInTypeCollection;
 
 public class IltConsumerFilteredBroadcastSubscriptionTest extends IltConsumerTest {
     private static final Logger LOG = LoggerFactory.getLogger(IltConsumerFilteredBroadcastSubscriptionTest.class);

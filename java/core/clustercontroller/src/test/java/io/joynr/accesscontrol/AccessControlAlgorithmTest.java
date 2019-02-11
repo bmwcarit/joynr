@@ -18,14 +18,14 @@
  */
 package io.joynr.accesscontrol;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.OwnerAccessControlEntry;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.TrustLevel;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 
 // Test the access control Algorithm
 public class AccessControlAlgorithmTest {

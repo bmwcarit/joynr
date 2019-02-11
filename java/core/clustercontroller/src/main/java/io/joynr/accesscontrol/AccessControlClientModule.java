@@ -18,12 +18,12 @@
  */
 package io.joynr.accesscontrol;
 
-import net.sf.ehcache.CacheManager;
-import net.sf.ehcache.config.Configuration;
-
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
+
+import net.sf.ehcache.CacheManager;
+import net.sf.ehcache.config.Configuration;
 
 public class AccessControlClientModule extends AbstractModule {
     @Override

@@ -18,13 +18,13 @@
  */
 package io.joynr.dispatching.subscription;
 
-import io.joynr.pubsub.SubscriptionQos;
-
 import java.util.Timer;
 import java.util.TimerTask;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.joynr.pubsub.SubscriptionQos;
 
 public abstract class PubSubTimerBase {
     protected long expiryDate;

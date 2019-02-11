@@ -18,7 +18,6 @@
  */
 package io.joynr.runtime;
 
-import io.joynr.proxy.StatelessAsyncCallbackDirectory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,9 +32,10 @@ import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.routing.LibJoynrMessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.messaging.sender.LibJoynrMessageSender;
+import io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.ProxyBuilderFactory;
-import io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback;
+import io.joynr.proxy.StatelessAsyncCallbackDirectory;
 import joynr.system.RoutingProxy;
 import joynr.system.RoutingTypes.Address;
 

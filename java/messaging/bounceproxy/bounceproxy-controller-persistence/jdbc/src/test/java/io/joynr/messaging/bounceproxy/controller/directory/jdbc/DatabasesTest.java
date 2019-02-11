@@ -19,13 +19,6 @@
  */
 package io.joynr.messaging.bounceproxy.controller.directory.jdbc;
 
-import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyRecord;
-import io.joynr.messaging.info.BounceProxyStatus;
-import io.joynr.messaging.info.BounceProxyStatusInformation;
-import io.joynr.messaging.info.Channel;
-import io.joynr.messaging.info.ControlledBounceProxyInformation;
-import io.joynr.messaging.system.TimestampProvider;
-
 import java.net.URI;
 import java.util.List;
 
@@ -49,6 +42,13 @@ import org.mockito.runners.MockitoJUnitRunner;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+
+import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyRecord;
+import io.joynr.messaging.info.BounceProxyStatus;
+import io.joynr.messaging.info.BounceProxyStatusInformation;
+import io.joynr.messaging.info.Channel;
+import io.joynr.messaging.info.ControlledBounceProxyInformation;
+import io.joynr.messaging.system.TimestampProvider;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DatabasesTest {

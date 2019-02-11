@@ -19,9 +19,9 @@
  */
 package io.joynr.messaging.bounceproxy.controller.util;
 
-import io.joynr.messaging.info.ControlledBounceProxyInformation;
-
 import java.net.URI;
+
+import io.joynr.messaging.info.ControlledBounceProxyInformation;
 
 /**
  * Utility class for tweaking of channel URLs.

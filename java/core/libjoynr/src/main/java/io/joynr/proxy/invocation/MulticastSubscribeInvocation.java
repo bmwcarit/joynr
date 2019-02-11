@@ -23,6 +23,7 @@ import static io.joynr.proxy.invocation.InvocationReflectionsUtils.extractOutPar
 import java.lang.reflect.Method;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+
 import io.joynr.dispatcher.rpc.annotation.JoynrMulticast;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.proxy.Future;

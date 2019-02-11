@@ -18,15 +18,15 @@
  */
 package io.joynr.messaging.bounceproxy.controller.directory;
 
-import io.joynr.messaging.info.ControlledBounceProxyInformation;
-import io.joynr.messaging.info.BounceProxyStatus;
-import io.joynr.messaging.info.BounceProxyStatusInformation;
-import io.joynr.messaging.info.PerformanceMeasures;
-
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+
+import io.joynr.messaging.info.BounceProxyStatus;
+import io.joynr.messaging.info.BounceProxyStatusInformation;
+import io.joynr.messaging.info.ControlledBounceProxyInformation;
+import io.joynr.messaging.info.PerformanceMeasures;
 
 /**
  * Database record for a bounce proxy instance.<br>

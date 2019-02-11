@@ -19,15 +19,15 @@
  */
 package io.joynr.messaging.bounceproxy.controller.directory.jdbc.entities;
 
-import io.joynr.messaging.info.BounceProxyInformation;
-import io.joynr.messaging.info.ControlledBounceProxyInformation;
-
 import java.net.URI;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
+import io.joynr.messaging.info.BounceProxyInformation;
+import io.joynr.messaging.info.ControlledBounceProxyInformation;
 
 /**
  * Reflects a {@link BounceProxyInformation} in a relational database.

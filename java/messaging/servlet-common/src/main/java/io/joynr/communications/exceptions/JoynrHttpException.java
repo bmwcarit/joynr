@@ -18,13 +18,13 @@
  */
 package io.joynr.communications.exceptions;
 
-import io.joynr.messaging.datatypes.JoynrErrorCode;
-import io.joynr.messaging.datatypes.JoynrMessagingError;
-
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.Response;
+
+import io.joynr.messaging.datatypes.JoynrErrorCode;
+import io.joynr.messaging.datatypes.JoynrMessagingError;
 
 /**
  * This runtime exception can be thrown by servlets to indicate a specific error

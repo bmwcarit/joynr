@@ -18,17 +18,19 @@
  */
 package io.joynr.android.robolectric;
 
-import com.google.inject.Module;
-import io.joynr.android.test.TestActivity;
-import io.joynr.integration.AbstractSSLEnd2EndTest;
-import io.joynr.runtime.JoynrRuntime;
+import java.util.Properties;
+
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
-import java.util.Properties;
+import com.google.inject.Module;
+
+import io.joynr.android.test.TestActivity;
+import io.joynr.integration.AbstractSSLEnd2EndTest;
+import io.joynr.runtime.JoynrRuntime;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = "./src/test/AndroidManifest.xml")

@@ -18,10 +18,6 @@
  */
 package io.joynr.demo;
 
-import io.joynr.provider.Deferred;
-import io.joynr.provider.DeferredVoid;
-import io.joynr.provider.Promise;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -30,6 +26,12 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.joynr.provider.Deferred;
+import io.joynr.provider.DeferredVoid;
+import io.joynr.provider.Promise;
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.vehicle.Country;
 import joynr.vehicle.GeoPosition;
@@ -37,9 +39,6 @@ import joynr.vehicle.Radio.AddFavoriteStationErrorEnum;
 import joynr.vehicle.RadioAbstractProvider;
 import joynr.vehicle.RadioProvider;
 import joynr.vehicle.RadioStation;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class MyRadioProvider extends RadioAbstractProvider {
     public static final String MISSING_NAME = "MISSING_NAME";

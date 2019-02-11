@@ -21,6 +21,7 @@ package io.joynr.proxy.invocation;
 import java.lang.reflect.Method;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcSubscription;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.proxy.Future;

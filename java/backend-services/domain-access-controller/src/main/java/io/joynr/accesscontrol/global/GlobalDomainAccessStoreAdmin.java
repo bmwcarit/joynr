@@ -18,10 +18,9 @@
  */
 package io.joynr.accesscontrol.global;
 
-import io.joynr.accesscontrol.DomainAccessControlStore;
-
 import java.util.List;
 
+import io.joynr.accesscontrol.DomainAccessControlStore;
 import joynr.infrastructure.DacTypes.DomainRoleEntry;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.OwnerAccessControlEntry;

@@ -30,16 +30,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-import io.joynr.exceptions.JoynrRuntimeException;
-import joynr.exceptions.ApplicationException;
-import joynr.exceptions.ProviderRuntimeException;
-import joynr.types.Localisation.GetTripErrors;
-import joynr.types.Localisation.Trip;
 import org.junit.Before;
 import org.junit.Test;
 
 import io.joynr.dispatcher.rpc.annotation.StatelessCallbackCorrelation;
+import io.joynr.exceptions.JoynrRuntimeException;
 import joynr.Reply;
+import joynr.exceptions.ApplicationException;
+import joynr.exceptions.ProviderRuntimeException;
+import joynr.types.Localisation.GetTripErrors;
+import joynr.types.Localisation.Trip;
 import joynr.vehicle.Navigation;
 import joynr.vehicle.NavigationStatelessAsync;
 import joynr.vehicle.NavigationStatelessAsyncCallback;

@@ -27,6 +27,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
+
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
@@ -40,8 +41,8 @@ import io.joynr.performance.ConsumerInvocationParameters.BackendConfig;
 import io.joynr.performance.ConsumerInvocationParameters.COMMUNICATIONMODE;
 import io.joynr.performance.ConsumerInvocationParameters.RuntimeConfig;
 import io.joynr.proxy.Future;
-import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback;
+import io.joynr.proxy.ProxyBuilder;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrApplication;

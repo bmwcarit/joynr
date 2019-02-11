@@ -28,9 +28,10 @@ import javax.ejb.Singleton;
 import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.spi.InjectionPoint;
 
-import io.joynr.provider.SubscriptionPublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.joynr.provider.SubscriptionPublisher;
 
 @Singleton
 public class SubscriptionPublisherProducer {

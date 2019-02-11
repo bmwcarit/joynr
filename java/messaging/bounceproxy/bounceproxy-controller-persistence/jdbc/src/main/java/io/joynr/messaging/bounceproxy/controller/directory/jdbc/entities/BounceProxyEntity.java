@@ -19,9 +19,6 @@
  */
 package io.joynr.messaging.bounceproxy.controller.directory.jdbc.entities;
 
-import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyRecord;
-import io.joynr.messaging.info.BounceProxyStatus;
-
 import java.util.HashSet;
 import java.util.Set;
 
@@ -30,6 +27,9 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
+
+import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyRecord;
+import io.joynr.messaging.info.BounceProxyStatus;
 
 /**
  * Reflects a {@link BounceProxyRecord} in a relational database.

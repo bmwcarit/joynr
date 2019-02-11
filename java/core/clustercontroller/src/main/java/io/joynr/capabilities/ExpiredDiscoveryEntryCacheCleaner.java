@@ -24,13 +24,15 @@ import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+
 import io.joynr.runtime.JoynrInjectionConstants;
 import joynr.types.DiscoveryEntry;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Use this class to periodically check a {@link DiscoveryEntryStore} for expired entries and clean them out by calling

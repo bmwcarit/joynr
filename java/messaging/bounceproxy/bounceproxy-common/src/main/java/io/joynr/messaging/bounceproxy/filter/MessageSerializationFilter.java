@@ -18,10 +18,6 @@
  */
 package io.joynr.messaging.bounceproxy.filter;
 
-import joynr.ImmutableMessage;
-
-import joynr.MutableMessage;
-
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.BroadcastFilter.BroadcastAction.ACTION;
 import org.atmosphere.cpr.PerRequestBroadcastFilter;
@@ -31,6 +27,8 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import joynr.ImmutableMessage;
+import joynr.MutableMessage;
 
 public class MessageSerializationFilter implements PerRequestBroadcastFilter {
     private static final Logger logger = LoggerFactory.getLogger(MessageSerializationFilter.class);
