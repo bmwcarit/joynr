@@ -24,6 +24,7 @@
 #include <string>
 #include <unordered_set>
 
+#include <boost/asio/io_service.hpp>
 #include <boost/system/error_code.hpp>
 #include <boost/multi_index_container.hpp>
 #include <boost/multi_index/member.hpp>
@@ -36,14 +37,6 @@
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/system/RoutingTypes/Address.h"
-
-namespace boost
-{
-namespace asio
-{
-class io_service;
-} // namespace asio
-} // namespace boost
 
 namespace joynr
 {

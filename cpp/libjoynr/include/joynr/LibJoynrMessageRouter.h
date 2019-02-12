@@ -26,20 +26,14 @@
 #include <string>
 #include <unordered_set>
 
+#include <boost/asio/io_service.hpp>
+
 #include "joynr/AbstractMessageRouter.h"
 #include "joynr/JoynrExport.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/PrivateCopyAssign.h"
 
 #include "joynr/Logger.h"
-
-namespace boost
-{
-namespace asio
-{
-class io_service;
-} // namespace asio
-} // namespace boost
 
 namespace joynr
 {

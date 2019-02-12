@@ -26,6 +26,7 @@
 #include <string>
 #include <vector>
 
+#include <boost/asio/io_service.hpp>
 #include <boost/optional.hpp>
 
 #include "joynr/BroadcastFilterParameters.h"
@@ -42,14 +43,6 @@
 #include "joynr/SubscriptionReply.h"
 #include "joynr/SubscriptionRequestInformation.h"
 #include "joynr/ThreadSafeMap.h"
-
-namespace boost
-{
-namespace asio
-{
-class io_service;
-} // namespace asio
-} // namespace boost
 
 namespace joynr
 {

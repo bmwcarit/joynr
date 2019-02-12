@@ -23,12 +23,10 @@
 #include <functional>
 #include <memory>
 
+#include <boost/asio/io_service.hpp>
+
 namespace boost
 {
-namespace asio
-{
-class io_service;
-} // namespace asio
 namespace system
 {
 class error_code;

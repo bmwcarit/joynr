@@ -27,6 +27,8 @@
 #include <string>
 #include <unordered_set>
 
+#include <boost/asio/io_service.hpp>
+
 #include "joynr/IMessageRouter.h"
 #include "joynr/JoynrExport.h"
 #include "joynr/Logger.h"
@@ -43,10 +45,6 @@
 
 namespace boost
 {
-namespace asio
-{
-class io_service;
-} // namespace asio
 namespace system
 {
 class error_code;

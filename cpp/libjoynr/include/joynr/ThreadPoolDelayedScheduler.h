@@ -23,17 +23,11 @@
 #include <cstdint>
 #include <string>
 
+#include <boost/asio/io_service.hpp>
+
 #include "joynr/DelayedScheduler.h"
 #include "joynr/JoynrExport.h"
 #include "joynr/PrivateCopyAssign.h"
-
-namespace boost
-{
-namespace asio
-{
-class io_service;
-} // namespace asio
-} // namespace boost
 
 namespace joynr
 {

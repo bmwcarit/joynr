@@ -27,6 +27,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include <boost/asio/io_service.hpp>
 #include <boost/asio/steady_timer.hpp>
 
 #include "joynr/CapabilitiesStorage.h"
@@ -44,14 +45,6 @@
 #include "joynr/types/DiscoveryQos.h"
 #include "joynr/types/GlobalDiscoveryEntry.h"
 #include "libjoynrclustercontroller/capabilities-client/ICapabilitiesClient.h"
-
-namespace boost
-{
-namespace asio
-{
-class io_service;
-} // namespace asio
-} // namespace boost
 
 namespace joynr
 {

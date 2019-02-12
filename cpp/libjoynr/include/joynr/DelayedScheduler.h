@@ -26,19 +26,13 @@
 #include <thread>
 #include <unordered_map>
 
+#include <boost/asio/io_service.hpp>
+
 #include "joynr/DelayedRunnable.h"
 #include "joynr/JoynrExport.h"
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/Runnable.h"
-
-namespace boost
-{
-namespace asio
-{
-class io_service;
-} // namespace asio
-} // namespace boost
 
 namespace joynr
 {
