@@ -56,6 +56,7 @@ RUN dnf update -y \
     git \
     glibc.i686 \
     icecream \
+    iputils \
     libcurl \
     libcurl-devel \
     libstdc++.i686 \
@@ -65,11 +66,13 @@ RUN dnf update -y \
     libX11-devel \
     libXi-devel \
     libXrender-devel \
+    net-tools \
     openssl \
     openssl-devel \
     patch \
     perl-version \
     python \
+    strace \
     tar \
     unzip \
     wget \
