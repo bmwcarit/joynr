@@ -41,16 +41,16 @@ public class LibjoynrRoutingTableAddressValidatorTest {
     }
 
     @Test
-    public void allNonGlobalAddressTypesAreValid() {
+    public void inProcessAndWebSocketAddressTypesAreValid() {
         assertTrue(validator.isValidForRoutingTable(new InProcessAddress()));
-        assertTrue(validator.isValidForRoutingTable(new WebSocketClientAddress()));
         assertTrue(validator.isValidForRoutingTable(new WebSocketAddress()));
-        assertTrue(validator.isValidForRoutingTable(new BrowserAddress()));
     }
 
     @Test
-    public void GlobalAddressTypesAreNotValid() {
+    public void otherAddressTypesAreNotValid() {
         assertFalse(validator.isValidForRoutingTable(new MqttAddress()));
         assertFalse(validator.isValidForRoutingTable(new ChannelAddress()));
+        assertFalse(validator.isValidForRoutingTable(new BrowserAddress()));
+        assertFalse(validator.isValidForRoutingTable(new WebSocketClientAddress()));
     }
 }

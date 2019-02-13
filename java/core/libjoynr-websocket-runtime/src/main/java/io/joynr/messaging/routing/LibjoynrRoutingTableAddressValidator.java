@@ -18,14 +18,14 @@
  */
 package io.joynr.messaging.routing;
 
+import io.joynr.messaging.inprocess.InProcessAddress;
 import joynr.system.RoutingTypes.Address;
-import joynr.system.RoutingTypes.ChannelAddress;
-import joynr.system.RoutingTypes.MqttAddress;
+import joynr.system.RoutingTypes.WebSocketAddress;
 
 public class LibjoynrRoutingTableAddressValidator extends AbstractRoutingTableAddressValidator {
 
     @Override
     public boolean isValidForRoutingTable(final Address address) {
-        return !(address instanceof MqttAddress || address instanceof ChannelAddress);
+        return address instanceof WebSocketAddress || address instanceof InProcessAddress;
     }
 }
