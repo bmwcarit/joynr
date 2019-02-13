@@ -72,12 +72,12 @@ TEST_P(ParticipantIdStorageTest, newProviderParticipantId)
     std::string participantId =
             store.getProviderParticipantId(this->domain, this->interfaceName, this->majorVersion, std::string());
     // Check that the id is long enough to be a UUID
-    ASSERT_TRUE(participantId.size() > 32);
+    ASSERT_TRUE(participantId.size() > 21);
 
     // also check get function without default value
     participantId = store.getProviderParticipantId(this->domain, this->interfaceName, this->majorVersion);
     // Check that the id is long enough to be a UUID
-    ASSERT_TRUE(participantId.size() > 32);
+    ASSERT_TRUE(participantId.size() > 21);
 }
 
 // Test that a persisted participant id is used

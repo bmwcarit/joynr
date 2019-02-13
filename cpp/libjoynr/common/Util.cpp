@@ -31,6 +31,9 @@
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <boost/archive/iterators/base64_from_binary.hpp>
+#include <boost/archive/iterators/transform_width.hpp>
+#include <boost/archive/iterators/ostream_iterator.hpp>
 
 #include "joynr/Logger.h"
 
@@ -105,6 +108,37 @@ std::string attributeGetterFromName(const std::string& attributeName)
     return result;
 }
 
+template <class CharType>
+struct base64url_from_6_bit
+{
+    typedef CharType result_type;
+    CharType operator()(CharType t) const
+    {
+        static const char* lookup_table = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                                          "abcdefghijklmnopqrstuvwxyz"
+                                          "0123456789"
+                                          "-_";
+        return lookup_table[static_cast<size_t>(t)];
+    }
+};
+
+template <class Base, class CharType = typename boost::iterator_value<Base>::type>
+class base64url_from_binary
+        : public boost::transform_iterator<joynr::util::base64url_from_6_bit<CharType>, Base>
+{
+    friend class boost::iterator_core_access;
+    typedef boost::transform_iterator<typename joynr::util::base64url_from_6_bit<CharType>, Base>
+            super_t;
+
+public:
+    // make composible buy using templated constructor
+    template <class T>
+    base64url_from_binary(T start)
+            : super_t(Base(static_cast<T>(start)), base64url_from_6_bit<CharType>())
+    {
+    }
+};
+
 std::string createUuid()
 {
     // instantiation of random generator is expensive,
@@ -112,8 +146,23 @@ std::string createUuid()
     static boost::uuids::random_generator uuidGenerator;
     // uuid generator is not threadsafe
     static std::mutex uuidMutex;
-    std::lock_guard<std::mutex> uuidLock(uuidMutex);
-    return boost::uuids::to_string(uuidGenerator());
+    std::unique_lock<std::mutex> uuidLock(uuidMutex);
+    auto uuid = uuidGenerator();
+    uuidLock.unlock();
+
+    typedef base64url_from_binary<                      // convert binary values to base64
+                                                        // characters
+            boost::archive::iterators::transform_width< // retrieve 6 bit integers from a sequence
+                                                        // of 8 bit bytes
+                    const char*,
+                    6,
+                    8>> base64_text; // compose all the above operations in to a new iterator
+
+    std::stringstream result;
+    std::copy(base64_text(uuid.begin()),
+              base64_text(uuid.end()),
+              boost::archive::iterators::ostream_iterator<char>(result));
+    return result.str();
 }
 
 std::string createMulticastId(const std::string& providerParticipantId,
