@@ -29,6 +29,7 @@ import com.google.inject.Inject;
 import io.joynr.runtime.GlobalAddressProvider;
 import io.joynr.runtime.ReplyToAddressProvider;
 import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.WebSocketAddress;
 
 public class CcRoutingTableAddressValidator extends AbstractRoutingTableAddressValidator {
 
@@ -72,7 +73,8 @@ public class CcRoutingTableAddressValidator extends AbstractRoutingTableAddressV
     public boolean isValidForRoutingTable(final Address address) {
         ownAddressReadLock.lock();
         try {
-            return !ownAddresses.stream().anyMatch(ownAddress -> ownAddress.equals(address));
+            return !(address instanceof WebSocketAddress)
+                    && !ownAddresses.stream().anyMatch(ownAddress -> ownAddress.equals(address));
         } finally {
             ownAddressReadLock.unlock();
         }

@@ -97,11 +97,7 @@ public class CcRoutingTableAddressValidatorTest {
         assertFalse(validator.isValidForRoutingTable(testReplyToAddress));
     }
 
-    @Test
-    public void otherAddressesOfOwnAddressTypeAreValid() {
-        globalAddressReadyListener.getValue().transportReady(globalAddress);
-        assertFalse(validator.isValidForRoutingTable(globalAddress));
-
+    private void otherAddressesOfOwnAddressTypeAreValid() {
         Address otherMqttAddress = new MqttAddress(brokerUri, "otherTopic");
         assertTrue(validator.isValidForRoutingTable(otherMqttAddress));
 
@@ -113,14 +109,32 @@ public class CcRoutingTableAddressValidatorTest {
     }
 
     @Test
+    public void otherAddressesOfGlobalAddressTypeAreValid() {
+        globalAddressReadyListener.getValue().transportReady(globalAddress);
+        assertFalse(validator.isValidForRoutingTable(globalAddress));
+
+        otherAddressesOfOwnAddressTypeAreValid();
+    }
+
+    @Test
+    public void otherAddressesOfReplyToAddressTypeAreValid() {
+        replyToAddressReadyListener.getValue().transportReady(replyToAddress);
+        assertFalse(validator.isValidForRoutingTable(replyToAddress));
+
+        otherAddressesOfOwnAddressTypeAreValid();
+    }
+
+    @Test
+    public void webSocketAddressTypeIsNotValid() {
+        assertFalse(validator.isValidForRoutingTable(new WebSocketAddress()));
+    }
+
+    @Test
     public void otherAddressTypesAreValid() {
         globalAddressReadyListener.getValue().transportReady(globalAddress);
         assertFalse(validator.isValidForRoutingTable(globalAddress));
 
         Address otherAddress = new ChannelAddress();
-        assertTrue(validator.isValidForRoutingTable(otherAddress));
-
-        otherAddress = new WebSocketAddress();
         assertTrue(validator.isValidForRoutingTable(otherAddress));
 
         otherAddress = new WebSocketClientAddress();
