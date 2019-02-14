@@ -20,12 +20,39 @@ package io.joynr.messaging.routing;
 
 import io.joynr.messaging.inprocess.InProcessAddress;
 import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.ChannelAddress;
+import joynr.system.RoutingTypes.MqttAddress;
 import joynr.system.RoutingTypes.WebSocketAddress;
+import joynr.system.RoutingTypes.WebSocketClientAddress;
 
-public class LibjoynrRoutingTableAddressValidator extends AbstractRoutingTableAddressValidator {
+public class LibjoynrRoutingTableAddressValidator implements RoutingTableAddressValidator {
 
     @Override
     public boolean isValidForRoutingTable(final Address address) {
         return address instanceof WebSocketAddress || address instanceof InProcessAddress;
     }
+
+    @Override
+    public boolean allowUpdate(final RoutingEntry oldEntry, final RoutingEntry newEntry) {
+        // precedence: InProcessAddress > WebSocketAddress > WebSocketClientAddress > MqttAddress/ChannelAddress
+        if (newEntry.address instanceof InProcessAddress) {
+            return true;
+        } else if (!(oldEntry.getAddress() instanceof InProcessAddress)) {
+            if (newEntry.address instanceof WebSocketAddress) {
+                return true;
+            } else if (!(oldEntry.getAddress() instanceof WebSocketAddress)) {
+                // old address is WebSocketClientAddress or MqttAddress/ChannelAddress
+                if (newEntry.getAddress() instanceof WebSocketClientAddress) {
+                    return true;
+                } else if (!(oldEntry.getAddress() instanceof WebSocketClientAddress)) {
+                    // old address is MqttAddress or ChannelAddress
+                    if (newEntry.address instanceof MqttAddress || newEntry.address instanceof ChannelAddress) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
 }

@@ -26,12 +26,16 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import com.google.inject.Inject;
 
+import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.runtime.GlobalAddressProvider;
 import io.joynr.runtime.ReplyToAddressProvider;
 import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.ChannelAddress;
+import joynr.system.RoutingTypes.MqttAddress;
 import joynr.system.RoutingTypes.WebSocketAddress;
+import joynr.system.RoutingTypes.WebSocketClientAddress;
 
-public class CcRoutingTableAddressValidator extends AbstractRoutingTableAddressValidator {
+public class CcRoutingTableAddressValidator implements RoutingTableAddressValidator {
 
     private Set<Address> ownAddresses;
     private final ReentrantReadWriteLock ownAddressesLock;
@@ -78,6 +82,29 @@ public class CcRoutingTableAddressValidator extends AbstractRoutingTableAddressV
         } finally {
             ownAddressReadLock.unlock();
         }
+    }
+
+    @Override
+    public boolean allowUpdate(final RoutingEntry oldEntry, final RoutingEntry newEntry) {
+        // precedence: InProcessAddress > WebSocketClientAddress > MqttAddress/ChannelAddress > WebSocketAddress
+        if (newEntry.address instanceof InProcessAddress) {
+            return true;
+        } else if (!(oldEntry.getAddress() instanceof InProcessAddress)) {
+            if (newEntry.address instanceof WebSocketClientAddress) {
+                return true;
+            } else if (!(oldEntry.getAddress() instanceof WebSocketClientAddress)) {
+                // old address is MqttAddress/ChannelAddress or WebSocketAddress
+                if (newEntry.address instanceof MqttAddress || newEntry.address instanceof ChannelAddress) {
+                    return true;
+                } else if (oldEntry.getAddress() instanceof WebSocketAddress) {
+                    // old address is WebSocketAddress
+                    if (newEntry.getAddress() instanceof WebSocketAddress) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
 }

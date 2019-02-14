@@ -20,15 +20,13 @@ package io.joynr.messaging.routing;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import org.junit.Before;
@@ -39,13 +37,11 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.inprocess.InProcessAddress;
-import io.joynr.messaging.inprocess.InProcessMessagingSkeleton;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.system.RoutingTypes.MqttAddress;
 import joynr.system.RoutingTypes.WebSocketAddress;
 import joynr.system.RoutingTypes.WebSocketClientAddress;
-import joynr.system.RoutingTypes.WebSocketProtocol;
 
 /**
  * Unit tests for the {@link RoutingTableImpl}.
@@ -63,7 +59,6 @@ public class RoutingTableImplTest {
 
     @Before
     public void setup() {
-        addressValidatorMock = spy(AbstractRoutingTableAddressValidator.class);
         doReturn(true).when(addressValidatorMock).isValidForRoutingTable(any(Address.class));
         subject = new RoutingTableImpl(routingTableGracePeriod, addressValidatorMock);
     }
@@ -252,198 +247,6 @@ public class RoutingTableImplTest {
     }
 
     @Test
-    public void replaceInProcessAddress() {
-        // inProcessAddressCanOnlyBeReplacedWithInProcessAddress
-        final String participantId = "testParticipantId";
-        final boolean isGloballyVisible = true;
-        final long expiryDateMs = Long.MAX_VALUE;
-        final InProcessAddress oldAddress = new InProcessAddress(mock(InProcessMessagingSkeleton.class));
-
-        subject.put(participantId, oldAddress, isGloballyVisible, expiryDateMs);
-        assertEquals(oldAddress, subject.get(participantId));
-
-        final MqttAddress mqttAddress = new MqttAddress("brokerUri", "topic");
-        subject.put(participantId, mqttAddress, isGloballyVisible, expiryDateMs);
-        assertEquals(oldAddress, subject.get(participantId));
-
-        final ChannelAddress channelAddress = new ChannelAddress("endpointUrl", "channelId");
-        subject.put(participantId, channelAddress, isGloballyVisible, expiryDateMs);
-        assertEquals(oldAddress, subject.get(participantId));
-
-        final WebSocketAddress websocketAddress = new WebSocketAddress(WebSocketProtocol.WS, "host", 4242, "path");
-        subject.put(participantId, websocketAddress, isGloballyVisible, expiryDateMs);
-        assertEquals(oldAddress, subject.get(participantId));
-
-        final WebSocketClientAddress websocketClientAddress = new WebSocketClientAddress("webSocketId");
-        subject.put(participantId, websocketClientAddress, isGloballyVisible, expiryDateMs);
-        assertEquals(oldAddress, subject.get(participantId));
-
-        final InProcessAddress inProcessAddress = new InProcessAddress();
-        subject.put(participantId, inProcessAddress, isGloballyVisible, expiryDateMs);
-        assertEquals(inProcessAddress, subject.get(participantId));
-        assertNotEquals(oldAddress, subject.get(participantId));
-    }
-
-    @Test
-    public void replaceWebSocketClientAddress() {
-        final String participantId = "testParticipantId";
-        final boolean isGloballyVisible = true;
-        final long expiryDateMs = Long.MAX_VALUE;
-        final WebSocketClientAddress oldAddress = new WebSocketClientAddress("testWebSocketId");
-
-        subject.put(participantId, oldAddress, isGloballyVisible, expiryDateMs);
-        assertEquals(oldAddress, subject.get(participantId));
-
-        final MqttAddress mqttAddress = new MqttAddress("brokerUri", "topic");
-        subject.put(participantId, mqttAddress, isGloballyVisible, expiryDateMs);
-        assertEquals(oldAddress, subject.get(participantId));
-
-        final ChannelAddress channelAddress = new ChannelAddress("endpointUrl", "channelId");
-        subject.put(participantId, channelAddress, isGloballyVisible, expiryDateMs);
-        assertEquals(oldAddress, subject.get(participantId));
-
-        final WebSocketAddress websocketAddress = new WebSocketAddress(WebSocketProtocol.WS, "host", 4242, "path");
-        subject.put(participantId, websocketAddress, isGloballyVisible, expiryDateMs);
-        assertEquals(oldAddress, subject.get(participantId));
-
-        final WebSocketClientAddress websocketClientAddress = new WebSocketClientAddress("webSocketId");
-        subject.put(participantId, websocketClientAddress, isGloballyVisible, expiryDateMs);
-        assertEquals(websocketClientAddress, subject.get(participantId));
-        // restore old address
-        subject.put(participantId, oldAddress, isGloballyVisible, expiryDateMs);
-        assertEquals(oldAddress, subject.get(participantId));
-
-        final InProcessAddress inProcessAddress = new InProcessAddress();
-        subject.put(participantId, inProcessAddress, isGloballyVisible, expiryDateMs);
-        assertEquals(inProcessAddress, subject.get(participantId));
-    }
-
-    @Test
-    public void replaceWebSocketAddress() {
-        final String participantId = "testParticipantId";
-        final boolean isGloballyVisible = true;
-        final long expiryDateMs = Long.MAX_VALUE;
-        final WebSocketAddress oldAddress = new WebSocketAddress(WebSocketProtocol.WSS, "testHost", 23, "testPath");
-
-        subject.put(participantId, oldAddress, isGloballyVisible, expiryDateMs);
-        assertEquals(oldAddress, subject.get(participantId));
-
-        final MqttAddress mqttAddress = new MqttAddress("brokerUri", "topic");
-        subject.put(participantId, mqttAddress, isGloballyVisible, expiryDateMs);
-        assertEquals(oldAddress, subject.get(participantId));
-
-        final ChannelAddress channelAddress = new ChannelAddress("endpointUrl", "channelId");
-        subject.put(participantId, channelAddress, isGloballyVisible, expiryDateMs);
-        assertEquals(oldAddress, subject.get(participantId));
-
-        final WebSocketAddress websocketAddress = new WebSocketAddress(WebSocketProtocol.WS, "host", 4242, "path");
-        subject.put(participantId, websocketAddress, isGloballyVisible, expiryDateMs);
-        assertEquals(oldAddress, subject.get(participantId));
-
-        final WebSocketClientAddress websocketClientAddress = new WebSocketClientAddress("webSocketId");
-        subject.put(participantId, websocketClientAddress, isGloballyVisible, expiryDateMs);
-        assertEquals(websocketClientAddress, subject.get(participantId));
-        // restore old address
-        subject.remove(participantId);
-        subject.put(participantId, oldAddress, isGloballyVisible, expiryDateMs);
-        assertEquals(oldAddress, subject.get(participantId));
-
-        final InProcessAddress inProcessAddress = new InProcessAddress();
-        subject.put(participantId, inProcessAddress, isGloballyVisible, expiryDateMs);
-        assertEquals(inProcessAddress, subject.get(participantId));
-    }
-
-    @Test
-    public void replaceChannelAddress() {
-        final String participantId = "testParticipantId";
-        final boolean isGloballyVisible = true;
-        final long expiryDateMs = Long.MAX_VALUE;
-        final ChannelAddress oldAddress = new ChannelAddress("testEndpointUrl", "testChannelId");
-
-        subject.put(participantId, oldAddress, isGloballyVisible, expiryDateMs);
-        assertEquals(oldAddress, subject.get(participantId));
-
-        final MqttAddress mqttAddress = new MqttAddress("brokerUri", "topic");
-        subject.put(participantId, mqttAddress, isGloballyVisible, expiryDateMs);
-        assertEquals(mqttAddress, subject.get(participantId));
-        // restore old address
-        subject.put(participantId, oldAddress, isGloballyVisible, expiryDateMs);
-        assertEquals(oldAddress, subject.get(participantId));
-
-        final ChannelAddress channelAddress = new ChannelAddress("endpointUrl", "channelId");
-        subject.put(participantId, channelAddress, isGloballyVisible, expiryDateMs);
-        assertEquals(channelAddress, subject.get(participantId));
-        // restore old address
-        subject.put(participantId, oldAddress, isGloballyVisible, expiryDateMs);
-        assertEquals(oldAddress, subject.get(participantId));
-
-        final WebSocketAddress websocketAddress = new WebSocketAddress(WebSocketProtocol.WS, "host", 4242, "path");
-        subject.put(participantId, websocketAddress, isGloballyVisible, expiryDateMs);
-        assertEquals(websocketAddress, subject.get(participantId));
-        // restore old address
-        subject.remove(participantId);
-        subject.put(participantId, oldAddress, isGloballyVisible, expiryDateMs);
-        assertEquals(oldAddress, subject.get(participantId));
-
-        final WebSocketClientAddress websocketClientAddress = new WebSocketClientAddress("webSocketId");
-        subject.put(participantId, websocketClientAddress, isGloballyVisible, expiryDateMs);
-        assertEquals(websocketClientAddress, subject.get(participantId));
-        // restore old address
-        subject.remove(participantId);
-        subject.put(participantId, oldAddress, isGloballyVisible, expiryDateMs);
-        assertEquals(oldAddress, subject.get(participantId));
-
-        final InProcessAddress inProcessAddress = new InProcessAddress();
-        subject.put(participantId, inProcessAddress, isGloballyVisible, expiryDateMs);
-        assertEquals(inProcessAddress, subject.get(participantId));
-    }
-
-    @Test
-    public void replaceMqttAddress() {
-        final String participantId = "testParticipantId";
-        final boolean isGloballyVisible = true;
-        final long expiryDateMs = Long.MAX_VALUE;
-        final MqttAddress oldAddress = new MqttAddress("testBrokerUri", "testTopic");
-
-        subject.put(participantId, oldAddress, isGloballyVisible, expiryDateMs);
-        assertEquals(oldAddress, subject.get(participantId));
-
-        final MqttAddress mqttAddress = new MqttAddress("brokerUri", "topic");
-        subject.put(participantId, mqttAddress, isGloballyVisible, expiryDateMs);
-        assertEquals(mqttAddress, subject.get(participantId));
-        // restore old address
-        subject.put(participantId, oldAddress, isGloballyVisible, expiryDateMs);
-        assertEquals(oldAddress, subject.get(participantId));
-
-        final ChannelAddress channelAddress = new ChannelAddress("endpointUrl", "channelId");
-        subject.put(participantId, channelAddress, isGloballyVisible, expiryDateMs);
-        assertEquals(channelAddress, subject.get(participantId));
-        // restore old address
-        subject.put(participantId, oldAddress, isGloballyVisible, expiryDateMs);
-        assertEquals(oldAddress, subject.get(participantId));
-
-        final WebSocketAddress websocketAddress = new WebSocketAddress(WebSocketProtocol.WS, "host", 4242, "path");
-        subject.put(participantId, websocketAddress, isGloballyVisible, expiryDateMs);
-        assertEquals(websocketAddress, subject.get(participantId));
-        // restore old address
-        subject.remove(participantId);
-        subject.put(participantId, oldAddress, isGloballyVisible, expiryDateMs);
-        assertEquals(oldAddress, subject.get(participantId));
-
-        final WebSocketClientAddress websocketClientAddress = new WebSocketClientAddress("webSocketId");
-        subject.put(participantId, websocketClientAddress, isGloballyVisible, expiryDateMs);
-        assertEquals(websocketClientAddress, subject.get(participantId));
-        // restore old address
-        subject.remove(participantId);
-        subject.put(participantId, oldAddress, isGloballyVisible, expiryDateMs);
-        assertEquals(oldAddress, subject.get(participantId));
-
-        final InProcessAddress inProcessAddress = new InProcessAddress();
-        subject.put(participantId, inProcessAddress, isGloballyVisible, expiryDateMs);
-        assertEquals(inProcessAddress, subject.get(participantId));
-    }
-
-    @Test
     public void stickyEntriesAreNotReplaced() {
         final String participantId = "testParticipantId";
         final boolean isGloballyVisible = true;
@@ -507,6 +310,7 @@ public class RoutingTableImplTest {
         final String participantId = "testParticipantId";
         subject.put(participantId, mqttAddress, true, Long.MAX_VALUE);
 
+        verify(addressValidatorMock, times(0)).allowUpdate(any(RoutingEntry.class), any(RoutingEntry.class));
         assertFalse(subject.containsKey(participantId));
         assertNull(subject.get(participantId));
     }
