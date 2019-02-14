@@ -21,6 +21,9 @@
 
 #include <mococrw/x509.h>
 #include <mococrw/key.h>
+#include <mococrw/distinguished_name.h>
+#include <mococrw/openssl_lib.h>
+#include <mococrw/openssl_wrap.h>
 
 #include "joynr/IKeychain.h"
 
@@ -69,11 +72,23 @@ std::shared_ptr<WebSocketPpClientTLS::SSLContext> WebSocketPpClientTLS::createSS
         sslContext->add_certificate_authority(certificateAuthorityCertificatePemBuffer);
         sslContext->use_private_key(privateKeyPemBuffer, WebSocketPpClientTLS::SSLContext::pem);
         sslContext->use_certificate(certificatePemBuffer, WebSocketPpClientTLS::SSLContext::pem);
+
+        using VerifyContext = websocketpp::lib::asio::ssl::verify_context;
+        auto clientCertCheck = [](bool preverified, VerifyContext& ctx) {
+            JOYNR_LOG_TRACE(logger(), "clientCertCheck: preverified = {}", preverified);
+            std::string errStr(mococrw::openssl::lib::OpenSSLLib::SSL_X509_verify_cert_error_string(
+                    mococrw::openssl::lib::OpenSSLLib::SSL_X509_STORE_CTX_get_error(
+                            ctx.native_handle())));
+            JOYNR_LOG_TRACE(logger(), "clientCertCheck: errStr = {}", errStr);
+            return preverified;
+        };
+        sslContext->set_verify_callback(std::move(clientCertCheck));
     } catch (boost::system::system_error& e) {
         JOYNR_LOG_FATAL(logger(), "Failed to initialize TLS session {}", e.what());
         return nullptr;
     }
 
+#ifndef JOYNR_WS_TLS_DISABLE_UNENCRYPTED_TRAFFIC
     if (!useEncryptedTls) {
         int opensslResult = SSL_CTX_set_cipher_list(sslContext->native_handle(), "eNULL");
         if (opensslResult == 0) {
@@ -82,6 +97,7 @@ std::shared_ptr<WebSocketPpClientTLS::SSLContext> WebSocketPpClientTLS::createSS
             return nullptr;
         }
     }
+#endif
 
     return sslContext;
 }

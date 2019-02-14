@@ -511,6 +511,11 @@ if(JOYNR_ENABLE_DLT_LOGGING)
     add_definitions(-DJOYNR_ENABLE_DLT_LOGGING)
 endif(JOYNR_ENABLE_DLT_LOGGING)
 
+if(EXISTS "/etc/fedora-release")
+    message(STATUS "Fedora release detected, eNULL cipher not available - disabling.")
+    add_definitions(-DJOYNR_WS_TLS_DISABLE_UNENCRYPTED_TRAFFIC)
+endif()
+
 ######## DEFAULT COMPILER FLAGS #############
 
 include(SetCppStandard)

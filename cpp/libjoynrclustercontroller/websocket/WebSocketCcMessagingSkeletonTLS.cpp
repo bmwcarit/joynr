@@ -154,9 +154,16 @@ std::shared_ptr<WebSocketCcMessagingSkeletonTLS::SSLContext> WebSocketCcMessagin
             hdl = std::move(hdl)
         ](bool preverified, VerifyContext& ctx)
         {
+            JOYNR_LOG_TRACE(logger(), "getCNFromCertificate: preverified = {}", preverified);
             if (auto thisSharedPtr = thisWeakPtr.lock()) {
                 // getting cert out of the verification context
                 X509* cert = X509_STORE_CTX_get_current_cert(ctx.native_handle());
+
+                std::string errStr(
+                        mococrw::openssl::lib::OpenSSLLib::SSL_X509_verify_cert_error_string(
+                                mococrw::openssl::lib::OpenSSLLib::SSL_X509_STORE_CTX_get_error(
+                                        ctx.native_handle())));
+                JOYNR_LOG_TRACE(logger(), "getCNFromCertificate: errStr = {}", errStr);
 
                 // extracting ownerId out of cert
                 X509_NAME* certSubName = mococrw::openssl::_X509_get_subject_name(cert);
@@ -193,6 +200,7 @@ std::shared_ptr<WebSocketCcMessagingSkeletonTLS::SSLContext> WebSocketCcMessagin
         return nullptr;
     }
 
+#ifndef JOYNR_WS_TLS_DISABLE_UNENCRYPTED_TRAFFIC
     if (!useEncryptedTls) {
         int opensslResult = SSL_CTX_set_cipher_list(sslContext->native_handle(), "eNULL");
         if (opensslResult == 0) {
@@ -201,6 +209,7 @@ std::shared_ptr<WebSocketCcMessagingSkeletonTLS::SSLContext> WebSocketCcMessagin
             return nullptr;
         }
     }
+#endif
 
     return sslContext;
 }
