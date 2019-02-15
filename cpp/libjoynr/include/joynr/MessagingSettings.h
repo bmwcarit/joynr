@@ -154,8 +154,8 @@ public:
     void setDeleteChannelRetryInterval(const int& retryInterval);
     std::int64_t getDiscoveryEntryExpiryIntervalMs() const;
     void setDiscoveryEntryExpiryIntervalMs(std::int64_t expiryIntervalMs);
-    int getSendMsgRetryInterval() const;
-    void setSendMsgRetryInterval(const int& retryInterval);
+    std::uint32_t getSendMsgRetryInterval() const;
+    void setSendMsgRetryInterval(const std::uint32_t& retryInterval);
     int getLongPollRetryInterval() const;
     void setLongPollRetryInterval(const int& retryInterval);
     std::string getLocalProxyHost() const;
