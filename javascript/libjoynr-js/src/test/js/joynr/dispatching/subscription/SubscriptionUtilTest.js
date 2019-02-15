@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,7 +23,7 @@ const SubscriptionRequest = require("../../../../../main/js/joynr/dispatching/ty
 const PeriodicSubscriptionQos = require("../../../../../main/js/joynr/proxy/PeriodicSubscriptionQos");
 const OnChangeSubscriptionQos = require("../../../../../main/js/joynr/proxy/OnChangeSubscriptionQos");
 const OnChangeWithKeepAliveSubscriptionQos = require("../../../../../main/js/joynr/proxy/OnChangeWithKeepAliveSubscriptionQos");
-const uuid = require("uuid/v4");
+const nanoid = require("nanoid");
 
 describe("libjoynr-js.joynr.dispatching.subscription.types.SubscriptionUtil", () => {
     let proxyId;
@@ -62,7 +62,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.types.SubscriptionUtil", ()
             proxy,
             provider,
             new SubscriptionRequest({
-                subscriptionId: `subscriptionId${uuid()}`,
+                subscriptionId: `subscriptionId${nanoid()}`,
                 subscribedToName: testAttributeName,
                 qos: qosSettings
             })
@@ -87,8 +87,8 @@ describe("libjoynr-js.joynr.dispatching.subscription.types.SubscriptionUtil", ()
      * Called before each test.
      */
     beforeEach(() => {
-        proxyId = `proxy${uuid()}`;
-        providerId = `provider${uuid()}`;
+        proxyId = `proxy${nanoid()}`;
+        providerId = `provider${nanoid()}`;
         testAttributeName = "testAttribute";
     });
 

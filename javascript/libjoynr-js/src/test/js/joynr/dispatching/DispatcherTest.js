@@ -7,9 +7,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -36,7 +36,7 @@ const TypeRegistrySingleton = require("../../../../main/js/joynr/types/TypeRegis
 const DiscoveryEntryWithMetaInfo = require("../../../../main/js/generated/joynr/types/DiscoveryEntryWithMetaInfo");
 const Version = require("../../../../main/js/generated/joynr/types/Version");
 const ProviderQos = require("../../../../main/js/generated/joynr/types/ProviderQos");
-const uuid = require("uuid/v4");
+const nanoid = require("nanoid");
 const LoggingManager = require("../../../../main/js/joynr/system/LoggingManager");
 
 const providerId = "providerId";
@@ -51,8 +51,8 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", () => {
         messageRouter,
         clusterControllerMessagingStub,
         securityManager;
-    const subscriptionId = `mySubscriptionId-${uuid()}`;
-    const multicastId = `multicastId-${uuid()}`;
+    const subscriptionId = `mySubscriptionId-${nanoid()}`;
+    const multicastId = `multicastId-${nanoid()}`;
     const requestReplyId = "requestReplyId";
     let loggerSpy;
 

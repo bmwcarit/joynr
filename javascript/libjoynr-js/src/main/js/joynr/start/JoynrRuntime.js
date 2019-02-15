@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -36,7 +36,7 @@ const InProcessStub = require("../util/InProcessStub");
 const MessagingQos = require("../messaging/MessagingQos");
 const DiscoveryQos = require("../proxy/DiscoveryQos");
 const TypeRegistrySingleton = require("../types/TypeRegistrySingleton");
-const uuid = require("uuid/v4");
+const nanoid = require("nanoid");
 const loggingManager = require("../system/LoggingManager");
 const defaultLibjoynrSettings = require("./settings/defaultLibjoynrSettings");
 const LocalStorage = require("../../global/LocalStorageNode");
@@ -179,7 +179,7 @@ class JoynrRuntime {
         this._dispatcher.registerPublicationManager(this._publicationManager);
         this._dispatcher.registerMessageRouter(this._messageRouter);
 
-        this.participantIdStorage = new ParticipantIdStorage(this._persistencyConfig.capabilities, uuid);
+        this.participantIdStorage = new ParticipantIdStorage(this._persistencyConfig.capabilities, nanoid);
         this._discovery = new InProcessStub();
 
         this.registration = Object.freeze(

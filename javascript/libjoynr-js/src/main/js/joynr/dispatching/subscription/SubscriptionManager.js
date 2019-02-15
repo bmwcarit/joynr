@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -28,7 +28,7 @@ const SubscriptionListener = require("./SubscriptionListener");
 const SubscriptionUtil = require("./util/SubscriptionUtil");
 const LongTimer = require("../../util/LongTimer");
 const LoggingManager = require("../../system/LoggingManager");
-const uuid = require("uuid/v4");
+const nanoid = require("nanoid");
 const UtilInternal = require("../../util/UtilInternal");
 const Typing = require("../../util/Typing");
 const PublicationMissedException = require("../../exceptions/PublicationMissedException");
@@ -240,7 +240,7 @@ function SubscriptionManager(dispatcher) {
             cb(new Error("SubscriptionManager is already shut down"));
             return;
         }
-        const subscriptionId = settings.subscriptionId || uuid();
+        const subscriptionId = settings.subscriptionId || nanoid();
         // log.debug("Registering Subscription Id " + subscriptionId);
 
         if (settings.attributeName === undefined) {
@@ -367,7 +367,7 @@ function SubscriptionManager(dispatcher) {
         let request;
         if (parameters.selective) {
             request = new BroadcastSubscriptionRequest({
-                subscriptionId: parameters.subscriptionId || uuid(),
+                subscriptionId: parameters.subscriptionId || nanoid(),
                 subscribedToName: parameters.broadcastName,
                 qos: parameters.subscriptionQos,
                 filterParameters: parameters.filterParameters
@@ -379,7 +379,7 @@ function SubscriptionManager(dispatcher) {
                     parameters.broadcastName,
                     parameters.partitions
                 ),
-                subscriptionId: parameters.subscriptionId || uuid(),
+                subscriptionId: parameters.subscriptionId || nanoid(),
                 subscribedToName: parameters.broadcastName,
                 qos: parameters.subscriptionQos
             });
