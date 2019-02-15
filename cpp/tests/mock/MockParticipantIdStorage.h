@@ -25,7 +25,7 @@
 
 class MockParticipantIdStorage : public joynr::ParticipantIdStorage {
 public:
-    MockParticipantIdStorage() : ParticipantIdStorage(std::string("mock filename")) {
+    MockParticipantIdStorage() : ParticipantIdStorage(std::string("mock_filename")) {
 
     }
     MOCK_METHOD3(getProviderParticipantId, std::string(const std::string& domain, const std::string& interfaceName, std::uint32_t majorVersion));
