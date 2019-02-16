@@ -681,8 +681,8 @@ relevant getters of your class.
 Here are some references:
 
 * [Moxy in general](https://blogs.oracle.com/theaquarium/entry/moxy_is_the_new_default)
-* [Jersey configuration reference](https://jersey.java.net/documentation/latest/appendix-properties.html)
-* [Jersey deployment reference](https://jersey.java.net/documentation/latest/deployment.html)
+* [Jersey configuration reference](https://jersey.github.io/documentation/latest/appendix-properties.html)
+* [Jersey deployment reference](https://jersey.github.io/documentation/latest/deployment.html)
 * [Payara blog re. JEE Microservices](http://blog.payara.fish/building-restful-java-ee-microservices-with-payara-embedded)
 
 ## Message Processors
