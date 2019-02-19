@@ -376,6 +376,12 @@ bool CcMessageRouter::publishToGlobal(const ImmutableMessage& message)
 bool CcMessageRouter::isValidForRoutingTable(
         std::shared_ptr<const joynr::system::RoutingTypes::Address> address)
 {
+    if (typeid(*address) == typeid(system::RoutingTypes::WebSocketAddress)) {
+        JOYNR_LOG_ERROR(logger(),
+                        "WebSocketAddress will not be used for CC Routing Table: {}",
+                        address->toString());
+        return false;
+    }
     if (typeid(*address) == typeid(system::RoutingTypes::MqttAddress) &&
         typeid(ownGlobalAddress) == typeid(system::RoutingTypes::MqttAddress)) {
         const auto mqttAddress =

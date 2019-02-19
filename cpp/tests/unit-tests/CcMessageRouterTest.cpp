@@ -37,6 +37,8 @@
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/WebSocketMulticastAddressCalculator.h"
 #include "joynr/access-control/IAccessController.h"
+#include "joynr/system/RoutingTypes/Address.h"
+#include "joynr/system/RoutingTypes/BrowserAddress.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
@@ -838,6 +840,12 @@ TEST_F(CcMessageRouterTest, otherAddressesOfOwnAddressTypeAreAddedToRoutingTable
     addressIsAddedToRoutingTable(newAddress);
 }
 
+TEST_F(CcMessageRouterTest, webSocketAddressIsNotAddedToRoutingTable)
+{
+    auto webSocketAddress = std::make_shared<const system::RoutingTypes::WebSocketAddress>();
+    addressIsNotAddedToRoutingTable(webSocketAddress);
+}
+
 TEST_F(CcMessageRouterTest, otherAddressesTypesAreAddedToRoutingTable)
 {
     auto ownAddress = std::make_shared<const system::RoutingTypes::MqttAddress>("brokerUri", "ownTopic");
@@ -848,9 +856,6 @@ TEST_F(CcMessageRouterTest, otherAddressesTypesAreAddedToRoutingTable)
 
     auto channelAddress = std::make_shared<const system::RoutingTypes::ChannelAddress>();
     addressIsAddedToRoutingTable(channelAddress);
-
-    auto webSocketAddress = std::make_shared<const system::RoutingTypes::WebSocketAddress>();
-    addressIsAddedToRoutingTable(webSocketAddress);
 
     auto websocketClientAddress = std::make_shared<const system::RoutingTypes::WebSocketClientAddress>();
     addressIsAddedToRoutingTable(websocketClientAddress);

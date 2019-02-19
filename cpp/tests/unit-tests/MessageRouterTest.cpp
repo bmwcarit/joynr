@@ -25,12 +25,10 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "joynr/Semaphore.h"
 #include "joynr/InProcessMessagingAddress.h"
+#include "joynr/Semaphore.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
-#include "joynr/system/RoutingTypes/WebSocketAddress.h"
-#include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
 #include "joynr/MessagingStubFactory.h"
 #include "joynr/MessageQueue.h"
 #include "joynr/MqttMulticastAddressCalculator.h"
@@ -41,6 +39,8 @@
 #include "joynr/Util.h"
 #include "joynr/IPlatformSecurityManager.h"
 
+#include "tests/mock/MockDispatcher.h"
+#include "tests/mock/MockInProcessMessagingSkeleton.h"
 #include "tests/mock/MockTransportStatus.h"
 
 using ::testing::InvokeArgument;
@@ -99,6 +99,16 @@ MATCHER_P2(addressWithChannelId, addressType, channelId, "")
         } else {
             return false;
         }
+    } else {
+        return false;
+    }
+}
+
+MATCHER_P(addressWithSkeleton, skeleton, "")
+{
+    auto inProcessAddress = std::dynamic_pointer_cast<const InProcessMessagingAddress>(arg);
+    if (inProcessAddress) {
+        return inProcessAddress->getSkeleton().get() == skeleton.get();
     } else {
         return false;
     }
@@ -273,34 +283,36 @@ template <class T>
 void MessageRouterTest<T>::checkAllowUpdate(bool allowUpdate, bool updateExpected)
 {
     const std::string destinationParticipantId = "TEST_routeMessageToMqttAddress";
-    const std::string oldDestinationChannelId = "TEST_routeMessageToMqttAddress_old_channelId";
-    const std::string newDestinationChannelId = "TEST_routeMessageToMqttAddress_new_channelId";
-    const std::string brokerUri = "brokerUri";
-    auto oldAddress = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>(
-            brokerUri, oldDestinationChannelId);
-    auto newAddress = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>(
-            brokerUri, newDestinationChannelId);
-    const bool isGloballyVisible = true;
+    auto dispatcher = std::make_shared<MockDispatcher>();
+    auto oldSkeleton = std::make_shared<MockInProcessMessagingSkeleton>(dispatcher);
+    auto oldAddress = std::make_shared<const InProcessMessagingAddress>(oldSkeleton);
+    const bool oldIsGloballyVisible = false;
+    auto newSkeleton = std::make_shared<MockInProcessMessagingSkeleton>(dispatcher);
+    auto newAddress = std::make_shared<const InProcessMessagingAddress>(newSkeleton);
+    const bool newIsGloballyVisible = true;
+
     constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
     const bool isSticky = false;
 
+    ASSERT_EQ(*oldAddress, *newAddress);
+
     this->messageRouter->addNextHop(destinationParticipantId,
                                     oldAddress,
-                                    isGloballyVisible,
+                                    oldIsGloballyVisible,
                                     expiryDateMs,
                                     isSticky,
                                     allowUpdate);
     this->messageRouter->addNextHop(destinationParticipantId,
                                     newAddress,
-                                    isGloballyVisible,
+                                    newIsGloballyVisible,
                                     expiryDateMs,
                                     isSticky,
                                     allowUpdate);
     this->mutableMessage.setRecipient(destinationParticipantId);
 
-    auto expectedAddress = updateExpected ? newDestinationChannelId : oldDestinationChannelId;
+    auto expectedSkeleton = updateExpected ? newSkeleton : oldSkeleton;
     EXPECT_CALL(*(this->messagingStubFactory),
-                create(addressWithChannelId("mqtt", expectedAddress))).Times(1);
+                create(addressWithSkeleton(expectedSkeleton))).Times(1);
 
     this->routeMessageToAddress();
 }
