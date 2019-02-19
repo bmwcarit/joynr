@@ -142,7 +142,7 @@ protected:
                                std::uint32_t tryCount) = 0;
 
     virtual bool isValidForRoutingTable(
-            std::shared_ptr<const joynr::system::RoutingTypes::Address> address);
+            std::shared_ptr<const joynr::system::RoutingTypes::Address> address) = 0;
 
     void sendMessages(const std::string& destinationPartId,
                       std::shared_ptr<const joynr::system::RoutingTypes::Address> address,

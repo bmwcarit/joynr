@@ -75,6 +75,80 @@ protected:
     const bool DEFAULT_IS_GLOBALLY_VISIBLE;
 };
 
+MATCHER_P2(addressWithChannelId, addressType, channelId, "")
+{
+    if (addressType == std::string("mqtt")) {
+        auto mqttAddress = std::dynamic_pointer_cast<const system::RoutingTypes::MqttAddress>(arg);
+        if (mqttAddress) {
+            return mqttAddress->getTopic() == channelId;
+        } else {
+            return false;
+        }
+    } else if (addressType == std::string("http")) {
+        auto httpAddress =
+                std::dynamic_pointer_cast<const system::RoutingTypes::ChannelAddress>(arg);
+        if (httpAddress) {
+            return httpAddress->getChannelId() == channelId;
+        } else {
+            return false;
+        }
+    } else {
+        return false;
+    }
+}
+
+TEST_F(CcMessageRouterTest, routeMessageToHttpAddress)
+{
+    const std::string destinationParticipantId = "TEST_routeMessageToHttpAddress";
+    const std::string destinationChannelId = "TEST_routeMessageToHttpAddress_channelId";
+    const std::string messageEndPointUrl = "TEST_messageEndPointUrl";
+    auto address = std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>(
+            messageEndPointUrl, destinationChannelId);
+    const bool isGloballyVisible = true;
+    constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+    const bool isSticky = false;
+    const bool allowUpdate = false;
+
+    this->messageRouter->addNextHop(destinationParticipantId,
+                                    address,
+                                    isGloballyVisible,
+                                    expiryDateMs,
+                                    isSticky,
+                                    allowUpdate);
+    this->mutableMessage.setRecipient(destinationParticipantId);
+
+    EXPECT_CALL(*(this->messagingStubFactory),
+                create(addressWithChannelId("http", destinationChannelId))).Times(1);
+
+    this->routeMessageToAddress();
+}
+
+TEST_F(CcMessageRouterTest, routeMessageToMqttAddress)
+{
+    const std::string destinationParticipantId = "TEST_routeMessageToMqttAddress";
+    const std::string destinationChannelId = "TEST_routeMessageToMqttAddress_channelId";
+    const std::string brokerUri = "brokerUri";
+    auto address = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>(
+            brokerUri, destinationChannelId);
+    const bool isGloballyVisible = true;
+    constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+    const bool isSticky = false;
+    const bool allowUpdate = false;
+
+    this->messageRouter->addNextHop(destinationParticipantId,
+                                    address,
+                                    isGloballyVisible,
+                                    expiryDateMs,
+                                    isSticky,
+                                    allowUpdate);
+    this->mutableMessage.setRecipient(destinationParticipantId);
+
+    EXPECT_CALL(*(this->messagingStubFactory),
+                create(addressWithChannelId("mqtt", destinationChannelId))).Times(1);
+
+    this->routeMessageToAddress();
+}
+
 TEST_F(CcMessageRouterTest, removeMulticastReceiver_failsIfProviderAddressNotAvailable)
 {
     const std::string multicastId("multicastId");

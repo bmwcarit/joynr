@@ -159,6 +159,8 @@ private:
                             std::function<void(void)> onSuccess = nullptr,
                             std::function<void(const joynr::exceptions::ProviderRuntimeException&)>
                                     onError = nullptr);
+    bool isValidForRoutingTable(
+            std::shared_ptr<const joynr::system::RoutingTypes::Address> address) final;
 
     std::shared_ptr<joynr::system::RoutingProxy> parentRouter;
     std::shared_ptr<const joynr::system::RoutingTypes::Address> parentAddress;

@@ -249,15 +249,6 @@ void AbstractMessageRouter::route(std::shared_ptr<ImmutableMessage> message, std
     routeInternal(std::move(message), tryCount);
 }
 
-// following method may be overridden by subclass
-bool AbstractMessageRouter::isValidForRoutingTable(
-        std::shared_ptr<const joynr::system::RoutingTypes::Address> address)
-{
-    std::ignore = address;
-    JOYNR_LOG_TRACE(logger(), "AbstractMessageRouter::isValidForRoutingTable");
-    return true;
-}
-
 void AbstractMessageRouter::sendMessages(
         std::shared_ptr<const joynr::system::RoutingTypes::Address> address)
 {

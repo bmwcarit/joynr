@@ -18,8 +18,8 @@
  */
 #include "tests/unit-tests/MessageRouterTest.h"
 
-#include <cstdint>
 #include <chrono>
+#include <cstdint>
 #include <memory>
 
 #include <gtest/gtest.h>
@@ -29,6 +29,7 @@
 #include "joynr/Semaphore.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
+#include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/MessagingStubFactory.h"
 #include "joynr/MessageQueue.h"
 #include "joynr/MqttMulticastAddressCalculator.h"
@@ -43,14 +44,16 @@
 #include "tests/mock/MockInProcessMessagingSkeleton.h"
 #include "tests/mock/MockTransportStatus.h"
 
+using ::testing::_;
+using ::testing::A;
+using ::testing::Action;
+using ::testing::DoAll;
+using ::testing::Eq;
 using ::testing::InvokeArgument;
 using ::testing::Pointee;
 using ::testing::Return;
-using ::testing::Truly;
 using ::testing::SaveArg;
-using ::testing::A;
-using ::testing::_;
-using ::testing::Eq;
+using ::testing::Truly;
 
 using namespace joynr;
 
@@ -82,28 +85,6 @@ TYPED_TEST(MessageRouterTest, multicastMessageWillNotBeQueued)
     EXPECT_EQ(this->messageQueue->getQueueLength(), 0);
 }
 
-MATCHER_P2(addressWithChannelId, addressType, channelId, "")
-{
-    if (addressType == std::string("mqtt")) {
-        auto mqttAddress = std::dynamic_pointer_cast<const system::RoutingTypes::MqttAddress>(arg);
-        if (mqttAddress) {
-            return mqttAddress->getTopic() == channelId;
-        } else {
-            return false;
-        }
-    } else if (addressType == std::string("http")) {
-        auto httpAddress =
-                std::dynamic_pointer_cast<const system::RoutingTypes::ChannelAddress>(arg);
-        if (httpAddress) {
-            return httpAddress->getChannelId() == channelId;
-        } else {
-            return false;
-        }
-    } else {
-        return false;
-    }
-}
-
 MATCHER_P(addressWithSkeleton, skeleton, "")
 {
     auto inProcessAddress = std::dynamic_pointer_cast<const InProcessMessagingAddress>(arg);
@@ -117,10 +98,10 @@ MATCHER_P(addressWithSkeleton, skeleton, "")
 TYPED_TEST(MessageRouterTest, doNotAddMessageToQueue)
 {
     joynr::Semaphore semaphore(0);
-    const std::string testHttp = "TEST_HTTP";
-    const std::string testMqtt = "TEST_MQTT";
-    const std::string brokerUri = "brokerUri";
+    const std::string unknownParticipantId = "unknownParticipantId";
+    const std::string knownParticipantId = "knownParticipantId";
 
+    this->mutableMessage.setRecipient(unknownParticipantId);
     std::shared_ptr<ImmutableMessage> immutableMessage1 =
             this->mutableMessage.getImmutableMessage();
     this->messageRouter->route(immutableMessage1);
@@ -131,19 +112,21 @@ TYPED_TEST(MessageRouterTest, doNotAddMessageToQueue)
     auto mockMessagingStub = std::make_shared<MockMessagingStub>();
 
     // add destination address -> message should be routed
-    auto httpAddress = std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>(
-            brokerUri, testHttp);
+    auto dispatcher = std::make_shared<MockDispatcher>();
+    auto skeleton = std::make_shared<MockInProcessMessagingSkeleton>(dispatcher);
+    auto inProcessAddress = std::make_shared<const InProcessMessagingAddress>(skeleton);
     const bool isGloballyVisible = true;
     constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
     const bool isSticky = false;
     const bool allowUpdate = false;
     this->messageRouter->addNextHop(
-            testHttp, httpAddress, isGloballyVisible, expiryDateMs, isSticky, allowUpdate);
+            knownParticipantId, inProcessAddress, isGloballyVisible, expiryDateMs, isSticky, allowUpdate);
+
     // the message now has a known destination and should be directly routed
-    this->mutableMessage.setRecipient(testHttp);
+    this->mutableMessage.setRecipient(knownParticipantId);
     std::shared_ptr<ImmutableMessage> immutableMessage2 =
             this->mutableMessage.getImmutableMessage();
-    EXPECT_CALL(*(this->messagingStubFactory), create(addressWithChannelId("http", testHttp)))
+    EXPECT_CALL(*(this->messagingStubFactory), create(addressWithSkeleton(skeleton)))
             .Times(1)
             .WillOnce(Return(mockMessagingStub));
     ON_CALL(*mockMessagingStub,
@@ -152,27 +135,6 @@ TYPED_TEST(MessageRouterTest, doNotAddMessageToQueue)
                              void(const joynr::exceptions::JoynrRuntimeException&)>&>()))
             .WillByDefault(ReleaseSemaphore(&semaphore));
     this->messageRouter->route(immutableMessage2);
-    EXPECT_EQ(this->messageQueue->getQueueLength(), 1);
-    EXPECT_TRUE(semaphore.waitFor(std::chrono::seconds(2)));
-    EXPECT_CALL(*(this->messagingStubFactory), create(_)).WillRepeatedly(Return(mockMessagingStub));
-
-    // add destination address -> message should be routed
-    auto mqttAddress =
-            std::make_shared<const joynr::system::RoutingTypes::MqttAddress>(brokerUri, testMqtt);
-    this->messageRouter->addNextHop(
-            testMqtt, mqttAddress, isGloballyVisible, expiryDateMs, isSticky, allowUpdate);
-    // the message now has a known destination and should be directly routed
-    this->mutableMessage.setRecipient(testMqtt);
-    std::shared_ptr<ImmutableMessage> immutableMessage3 =
-            this->mutableMessage.getImmutableMessage();
-    EXPECT_CALL(*(this->messagingStubFactory), create(addressWithChannelId("mqtt", testMqtt)))
-            .WillRepeatedly(Return(mockMessagingStub));
-    ON_CALL(*mockMessagingStub,
-            transmit(immutableMessage3,
-                     A<const std::function<
-                             void(const joynr::exceptions::JoynrRuntimeException&)>&>()))
-            .WillByDefault(ReleaseSemaphore(&semaphore));
-    this->messageRouter->route(immutableMessage3);
     EXPECT_EQ(this->messageQueue->getQueueLength(), 1);
     EXPECT_TRUE(semaphore.waitFor(std::chrono::seconds(2)));
 }
@@ -227,20 +189,20 @@ TYPED_TEST(MessageRouterTest, outdatedMessagesAreRemoved)
     EXPECT_EQ(this->messageQueue->getQueueLength(), 0);
 }
 
-TYPED_TEST(MessageRouterTest, routeMessageToHttpAddress)
+TYPED_TEST(MessageRouterTest, routeMessageToInProcessAddress)
 {
-    const std::string destinationParticipantId = "TEST_routeMessageToHttpAddress";
-    const std::string destinationChannelId = "TEST_routeMessageToHttpAddress_channelId";
-    const std::string messageEndPointUrl = "TEST_messageEndPointUrl";
-    auto address = std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>(
-            messageEndPointUrl, destinationChannelId);
+    const std::string destinationParticipantId = "TEST_routeMessageToInProcessAddress";
+    auto dispatcher = std::make_shared<MockDispatcher>();
+    auto skeleton = std::make_shared<MockInProcessMessagingSkeleton>(dispatcher);
+    auto inProcessAddress = std::make_shared<const InProcessMessagingAddress>(skeleton);
+
     const bool isGloballyVisible = true;
     constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
     const bool isSticky = false;
     const bool allowUpdate = false;
 
     this->messageRouter->addNextHop(destinationParticipantId,
-                                    address,
+                                    inProcessAddress,
                                     isGloballyVisible,
                                     expiryDateMs,
                                     isSticky,
@@ -248,33 +210,7 @@ TYPED_TEST(MessageRouterTest, routeMessageToHttpAddress)
     this->mutableMessage.setRecipient(destinationParticipantId);
 
     EXPECT_CALL(*(this->messagingStubFactory),
-                create(addressWithChannelId("http", destinationChannelId))).Times(1);
-
-    this->routeMessageToAddress();
-}
-
-TYPED_TEST(MessageRouterTest, routeMessageToMqttAddress)
-{
-    const std::string destinationParticipantId = "TEST_routeMessageToMqttAddress";
-    const std::string destinationChannelId = "TEST_routeMessageToMqttAddress_channelId";
-    const std::string brokerUri = "brokerUri";
-    auto address = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>(
-            brokerUri, destinationChannelId);
-    const bool isGloballyVisible = true;
-    constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
-    const bool isSticky = false;
-    const bool allowUpdate = false;
-
-    this->messageRouter->addNextHop(destinationParticipantId,
-                                    address,
-                                    isGloballyVisible,
-                                    expiryDateMs,
-                                    isSticky,
-                                    allowUpdate);
-    this->mutableMessage.setRecipient(destinationParticipantId);
-
-    EXPECT_CALL(*(this->messagingStubFactory),
-                create(addressWithChannelId("mqtt", destinationChannelId))).Times(1);
+                create(addressWithSkeleton(skeleton))).Times(1);
 
     this->routeMessageToAddress();
 }
@@ -333,13 +269,14 @@ TYPED_TEST(MessageRouterTest, routedMessageQueuedIfTransportIsNotAvailable)
     constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
     const bool isSticky = false;
     const bool allowUpdate = false;
-    auto mqttAddress =
-            std::make_shared<const joynr::system::RoutingTypes::MqttAddress>("brokerUri", "topic");
+    auto dispatcher = std::make_shared<MockDispatcher>();
+    auto skeleton = std::make_shared<MockInProcessMessagingSkeleton>(dispatcher);
+    auto inProcessAddress = std::make_shared<const InProcessMessagingAddress>(skeleton);
     auto address =
-            std::dynamic_pointer_cast<const joynr::system::RoutingTypes::Address>(mqttAddress);
+            std::dynamic_pointer_cast<const joynr::system::RoutingTypes::Address>(inProcessAddress);
 
     this->messageRouter->addNextHop(
-            to, mqttAddress, isGloballyVisible, expiryDateMs, isSticky, allowUpdate);
+            to, inProcessAddress, isGloballyVisible, expiryDateMs, isSticky, allowUpdate);
     this->mutableMessage.setRecipient(to);
 
     ON_CALL(*mockTransportStatus, isReponsibleFor(address)).WillByDefault(Return(true));
@@ -360,7 +297,7 @@ TYPED_TEST(MessageRouterTest, routedMessageQueuedIfTransportIsNotAvailable)
     auto mockMessagingStub = std::make_shared<MockMessagingStub>();
     ON_CALL(*mockMessagingStub, transmit(immutableMessage, _))
             .WillByDefault(ReleaseSemaphore(&semaphore));
-    EXPECT_CALL(*(this->messagingStubFactory), create(address)).Times(1).WillOnce(
+    EXPECT_CALL(*(this->messagingStubFactory), create(addressWithSkeleton(skeleton))).Times(1).WillOnce(
             Return(mockMessagingStub));
 
     availabilityChangedCallback(true);
@@ -370,6 +307,8 @@ TYPED_TEST(MessageRouterTest, routedMessageQueuedIfTransportIsNotAvailable)
 
 TYPED_TEST(MessageRouterTest, restoreRoutingTable)
 {
+    Semaphore semaphore(0);
+    bool isLibJoynr = false;
     const std::string participantId = "myParticipantId";
     const std::string routingTablePersistenceFilename = "test-RoutingTable.persist";
     std::remove(routingTablePersistenceFilename.c_str());
@@ -377,12 +316,23 @@ TYPED_TEST(MessageRouterTest, restoreRoutingTable)
     // Load and set RoutingTable persistence filename
     this->messageRouter->loadRoutingTable(routingTablePersistenceFilename);
 
-    auto address = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>();
+    auto webSocketAddress = std::make_shared<const joynr::system::RoutingTypes::WebSocketAddress>();
+    auto mqttAddress = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>();
+    if (typeid(*this->messageRouter) == typeid(LibJoynrMessageRouter)) {
+        isLibJoynr = true;
+    }
     const bool isGloballyVisible = true;
-    this->messageRouter->addProvisionedNextHop(
-            participantId,
-            address,
-            isGloballyVisible); // Saves routingTable to the persistence file.
+    if (isLibJoynr) {
+        this->messageRouter->addProvisionedNextHop(
+                participantId,
+                webSocketAddress,
+                isGloballyVisible); // Saves routingTable to the persistence file.
+    } else {
+        this->messageRouter->addProvisionedNextHop(
+                participantId,
+                mqttAddress,
+                isGloballyVisible); // Saves routingTable to the persistence file.
+    }
 
     // create a new MessageRouter
     this->messageRouter->shutdown();
@@ -390,14 +340,24 @@ TYPED_TEST(MessageRouterTest, restoreRoutingTable)
     this->messageRouter->loadRoutingTable(routingTablePersistenceFilename);
 
     this->mutableMessage.setRecipient(participantId);
-    EXPECT_CALL(*(this->messagingStubFactory), create(Pointee(Eq(*address)))).Times(1);
+    std::shared_ptr<IMessagingStub> mockMessagingStub = std::make_shared<MockMessagingStub>();
+    if (isLibJoynr) {
+        EXPECT_CALL(*(this->messagingStubFactory), create(Pointee(Eq(*webSocketAddress))))
+                .WillOnce(DoAll(ReleaseSemaphore(&semaphore), Return(mockMessagingStub)));
+    } else {
+        EXPECT_CALL(*(this->messagingStubFactory), create(Pointee(Eq(*mqttAddress))))
+                .WillOnce(DoAll(ReleaseSemaphore(&semaphore), Return(mockMessagingStub)));
+    }
     this->messageRouter->route(this->mutableMessage.getImmutableMessage());
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(500)));
 }
 
 TYPED_TEST(MessageRouterTest, cleanupExpiredMessagesFromTransportNotAvailableQueue)
 {
     auto mockTransportStatus = std::make_shared<MockTransportStatus>();
-    auto providerAddress = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>();
+    auto dispatcher = std::make_shared<MockDispatcher>();
+    auto skeleton = std::make_shared<MockInProcessMessagingSkeleton>(dispatcher);
+    auto providerAddress = std::make_shared<const InProcessMessagingAddress>(skeleton);
     auto address =
             std::dynamic_pointer_cast<const joynr::system::RoutingTypes::Address>(providerAddress);
     const std::string providerParticipantId("providerParticipantId");

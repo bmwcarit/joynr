@@ -300,6 +300,20 @@ void LibJoynrMessageRouter::addNextHopToParent(
     }
 }
 
+bool LibJoynrMessageRouter::isValidForRoutingTable(
+        std::shared_ptr<const joynr::system::RoutingTypes::Address> address)
+{
+    if (typeid(*address) == typeid(system::RoutingTypes::WebSocketAddress) ||
+        typeid(*address) == typeid(InProcessMessagingAddress)) {
+        return true;
+    }
+    JOYNR_LOG_ERROR(logger(),
+                    "An address which is neither of type WebSocketAddress nor "
+                    "InProcessMessagingAddress will not be used for libjoynr Routing Table: {}",
+                    address->toString());
+    return false;
+}
+
 void LibJoynrMessageRouter::addNextHop(
         const std::string& participantId,
         const std::shared_ptr<const joynr::system::RoutingTypes::Address>& address,
