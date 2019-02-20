@@ -10,6 +10,9 @@ None.
 ## Other changes
 * **[Java]** Introduced overridden toString() methods in classes
   io.joynr.arbitration.DiscoveryQos and io.joynr.messaging.MessagingQos
+* **[Build]** Dockerfiles with included scripts for building joynr have been updated to use
+  Fedora 27 with openssl 1.1.0, MoCOCrW branch openssl1.1, flatbuffers 1.10.0, smrf 0.3.2
+  and websocketpp 0.8.1.
 
 ## Configuration property changes
 None.
