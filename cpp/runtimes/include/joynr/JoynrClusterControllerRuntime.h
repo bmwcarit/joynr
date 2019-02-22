@@ -33,6 +33,7 @@
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/Semaphore.h"
+#include "joynr/types/CustomParameter.h"
 #include "joynr/WebSocketSettings.h"
 
 class JoynrClusterControllerRuntimeTest;
@@ -189,7 +190,10 @@ private:
                 domain, interfaceName, T::MAJOR_VERSION, participantId);
 
         joynr::types::ProviderQos systemProviderQos;
-        systemProviderQos.setCustomParameters(std::vector<joynr::types::CustomParameter>());
+        std::vector<joynr::types::CustomParameter> customParameters;
+        customParameters.push_back(joynr::types::CustomParameter(
+                std::string("___CC.InternalProvider___"), std::string("true")));
+        systemProviderQos.setCustomParameters(customParameters);
         systemProviderQos.setPriority(1);
         systemProviderQos.setScope(joynr::types::ProviderScope::LOCAL);
         systemProviderQos.setSupportsOnChangeSubscriptions(false);

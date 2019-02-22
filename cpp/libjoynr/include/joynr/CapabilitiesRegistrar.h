@@ -84,13 +84,20 @@ public:
         const std::int64_t defaultExpiryDateMs = now + defaultExpiryIntervalMs;
         const std::string defaultPublicKeyId("");
         joynr::types::Version providerVersion(T::MAJOR_VERSION, T::MINOR_VERSION);
+        auto customParameters = providerQos.getCustomParameters();
+        bool isInternalProvider =
+                (customParameters.size() == 1 &&
+                 customParameters.front().getName() == "___CC.InternalProvider___");
+        const std::int64_t discoveryEntryExpiryDateMs =
+                (isInternalProvider ? std::numeric_limits<std::int64_t>::max()
+                                    : defaultExpiryDateMs);
         joynr::types::DiscoveryEntry entry(providerVersion,
                                            domain,
                                            interfaceName,
                                            participantId,
                                            providerQos,
                                            lastSeenDateMs,
-                                           defaultExpiryDateMs,
+                                           discoveryEntryExpiryDateMs,
                                            defaultPublicKeyId);
         bool isGloballyVisible = providerQos.getScope() == types::ProviderScope::GLOBAL;
 
@@ -108,7 +115,8 @@ public:
             awaitGlobalRegistration,
             onSuccess = std::move(onSuccess),
             onError,
-            persist
+            persist,
+            isInternalProvider
         ]()
         {
             if (persist) {
@@ -132,20 +140,40 @@ public:
             };
 
             if (auto discoveryProxyPtr = discoveryProxy.lock()) {
-
-                discoveryProxyPtr->addAsync(entry,
-                                            awaitGlobalRegistration,
-                                            [domain, interfaceName, participantId, onSuccess]() {
-                                                JOYNR_LOG_INFO(logger(),
-                                                               "Registered Provider: "
-                                                               "participantId: {}, domain: {}, "
-                                                               "interfaceName: {}",
-                                                               participantId,
-                                                               domain,
-                                                               interfaceName);
-                                                onSuccess();
-                                            },
-                                            std::move(onErrorWrapper));
+                if (isInternalProvider) {
+                    MessagingQos messagingQos =
+                            MessagingQos(std::numeric_limits<std::int64_t>::max());
+                    discoveryProxyPtr->addAsync(
+                            entry,
+                            awaitGlobalRegistration,
+                            [domain, interfaceName, participantId, onSuccess]() {
+                                JOYNR_LOG_INFO(logger(),
+                                               "Registered internal Provider: "
+                                               "participantId: {}, domain: {}, "
+                                               "interfaceName: {}",
+                                               participantId,
+                                               domain,
+                                               interfaceName);
+                                onSuccess();
+                            },
+                            std::move(onErrorWrapper),
+                            messagingQos);
+                } else {
+                    discoveryProxyPtr->addAsync(
+                            entry,
+                            awaitGlobalRegistration,
+                            [domain, interfaceName, participantId, onSuccess]() {
+                                JOYNR_LOG_INFO(logger(),
+                                               "Registered Provider: "
+                                               "participantId: {}, domain: {}, "
+                                               "interfaceName: {}",
+                                               participantId,
+                                               domain,
+                                               interfaceName);
+                                onSuccess();
+                            },
+                            std::move(onErrorWrapper));
+                }
             } else {
                 const joynr::exceptions::JoynrRuntimeException error(
                         "runtime and required discovery proxy have been already destroyed");
