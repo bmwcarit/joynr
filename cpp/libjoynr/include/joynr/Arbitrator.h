@@ -127,7 +127,7 @@ private:
     std::atomic<bool> arbitrationRunning;
     std::atomic<bool> keepArbitrationRunning;
     std::thread arbitrationThread;
-    std::chrono::system_clock::time_point startTimePoint;
+    std::chrono::steady_clock::time_point startTimePoint;
     ADD_LOGGER(Arbitrator)
 };
 

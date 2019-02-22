@@ -81,7 +81,7 @@ void Arbitrator::startArbitration(
         return;
     }
 
-    startTimePoint = std::chrono::system_clock::now();
+    startTimePoint = std::chrono::steady_clock::now();
     JOYNR_LOG_INFO(logger(),
                    "Arbitration started for domain = {} and interface = {}.",
                    domains.at(0),
@@ -361,7 +361,7 @@ void Arbitrator::receiveCapabilitiesLookupResults(
 
 std::int64_t Arbitrator::getDurationMs() const
 {
-    auto now = std::chrono::system_clock::now();
+    auto now = std::chrono::steady_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - startTimePoint);
 
     return duration.count();
