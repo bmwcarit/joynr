@@ -519,17 +519,19 @@ void AbstractMessageRouter::addToRoutingTable(
     }
     {
         WriteLocker lock(routingTableLock);
-        auto routingEntry = routingTable.lookupRoutingEntryByParticipantId(participantId);
-        if (routingEntry) {
 
-            if ((*(routingEntry->address) != *address) ||
-                (routingEntry->isGloballyVisible != isGloballyVisible)) {
+        auto oldRoutingEntry = routingTable.lookupRoutingEntryByParticipantId(participantId);
+        if (oldRoutingEntry) {
+            const bool addressOrVisibilityOfRoutingEntryChanged =
+                    (*(oldRoutingEntry->address) != *address) ||
+                    (oldRoutingEntry->isGloballyVisible != isGloballyVisible);
+            if (addressOrVisibilityOfRoutingEntryChanged) {
                 if (!allowUpdate) {
                     JOYNR_LOG_WARN(logger(),
                                    "unable to update participantId={} in routing table, since "
                                    "the participantId is already associated with routing entry {}",
                                    participantId,
-                                   routingEntry->toString());
+                                   oldRoutingEntry->toString());
                     return;
                 }
                 JOYNR_LOG_DEBUG(logger(),
@@ -537,20 +539,19 @@ void AbstractMessageRouter::addToRoutingTable(
                                 "the globalDiscovery although the participantId is already "
                                 "associated with routing entry {}",
                                 participantId,
-                                routingEntry->toString());
+                                oldRoutingEntry->toString());
             }
             // keep longest lifetime
-            if (routingEntry->expiryDateMs > expiryDateMs) {
-                expiryDateMs = routingEntry->expiryDateMs;
+            if (oldRoutingEntry->expiryDateMs > expiryDateMs) {
+                expiryDateMs = oldRoutingEntry->expiryDateMs;
             }
-            if (routingEntry->isSticky) {
+            if (oldRoutingEntry->isSticky) {
                 isSticky = true;
             }
-            // manual removal of old entry is not required here since
-            // routingTable.add() automatically calls replace
-            // in case insert fails
         }
 
+        // manual removal of old entry is not required here since routingTable.add() automatically
+        // calls replace in case insert fails
         routingTable.add(
                 std::move(participantId), isGloballyVisible, address, expiryDateMs, isSticky);
     }
