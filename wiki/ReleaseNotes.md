@@ -14,6 +14,8 @@ None.
   Fedora 27 with openssl 1.1.0, MoCOCrW branch openssl1.1, flatbuffers 1.10.0, smrf 0.3.3
   and websocketpp 0.8.1.
 * **[C++, Java, JS]** Updated smrf version to 0.3.3
+* **[C++]** The JOYNR_DEFAULT_RUNTIME_LOG_LEVEL for Release builds has been changed to
+  "DEBUG" to support message tracking.
 
 ## Configuration property changes
 None.
