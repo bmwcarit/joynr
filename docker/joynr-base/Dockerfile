@@ -1,7 +1,7 @@
 FROM fedora:24
 
 # set this date to cause all images to be updated
-ENV REFRESHED_AT 2018-10-25
+ENV REFRESHED_AT 2019-02-25
 
 ###################################################
 # create data directories and volumes
@@ -69,6 +69,7 @@ RUN dnf update -y \
     openssl-devel \
     patch \
     perl-version \
+    python \
     tar \
     unzip \
     wget \
