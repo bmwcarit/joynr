@@ -29,6 +29,17 @@ mvn install checkstyle:checkstyle \
 -P spotbugs,no-license-and-notice,no-java-formatter,android \
 -DskipTests
 
+set +e
+./docker/joynr-java/scripts/build/report_spotbugs.py
+SPOTBUGS_EXITCODE=$?
+./docker/joynr-java/scripts/build/report_checkstyle.py
+CHECKSTYLE_EXITCODE=$?
+if [ $SPOTBUGS_EXITCODE -ne 0 -o $CHECKSTYLE_EXITCODE -ne 0 ]
+then
+  exit 1
+fi
+set -e
+
 (
   mvn javadoc:jar -P android
 )
