@@ -80,6 +80,7 @@ public:
                       std::make_shared<const joynr::system::RoutingTypes::MqttAddress>(brokerURL,
                                                                                        mqttTopic)),
               enablePersistency(true),
+              sendMsgRetryInterval(1000),
               ownAddress(std::make_shared<const system::RoutingTypes::Address>())
     {
         singleThreadedIOService->start();
@@ -138,6 +139,7 @@ protected:
         ccSettings.setMulticastReceiverDirectoryPersistencyEnabled(true);
 
         messagingSettings.setRoutingTableCleanupIntervalMs(5000);
+        messagingSettings.setSendMsgRetryInterval(sendMsgRetryInterval);
         auto messageQueueForMessageRouter = std::make_unique<MessageQueue<std::string>>();
         messageQueue = messageQueueForMessageRouter.get();
 
@@ -192,6 +194,7 @@ protected:
     std::shared_ptr<const joynr::system::RoutingTypes::MqttAddress> globalTransport;
 
     const bool enablePersistency;
+    const std::uint32_t sendMsgRetryInterval;
 
     void routeMessageToAddress()
     {

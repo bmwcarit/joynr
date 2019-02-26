@@ -53,6 +53,7 @@
 #include "tests/mock/MockMessagingMulticastSubscriber.h"
 
 using ::testing::_;
+using ::testing::DoAll;
 using ::testing::Eq;
 using ::testing::Invoke;
 using ::testing::Mock;
@@ -326,6 +327,13 @@ void invokeConsumerPermissionCallbackWithPermissionYes(
         std::shared_ptr<IAccessController::IHasConsumerPermissionCallback> callback)
 {
     callback->hasConsumerPermission(IAccessController::Enum::YES);
+}
+
+void invokeConsumerPermissionCallbackWithPermissionRetry(
+        std::shared_ptr<ImmutableMessage> message,
+        std::shared_ptr<IAccessController::IHasConsumerPermissionCallback> callback)
+{
+    callback->hasConsumerPermission(IAccessController::Enum::RETRY);
 }
 
 TEST_F(CcMessageRouterTest,
@@ -753,7 +761,7 @@ void CcMessageRouterTest::routeMessageAndCheckQueue(const std::string& msgType,
     EXPECT_EQ(this->messageRouter->getNumberOfRoutedMessages(), 1);
 }
 
-void CcMessageRouterTest::accessControllerIsCalledForQueuedMsgs()
+TEST_F(CcMessageRouterTest, accessControllerIsCalledForQueuedMsgs)
 {
     const std::string providerParticipantId("providerParticipantId");
     auto providerAddress =
@@ -765,7 +773,6 @@ void CcMessageRouterTest::accessControllerIsCalledForQueuedMsgs()
     mutableMessage->setSender("sender");
     mutableMessage->setRecipient(providerParticipantId);
     const TimePoint nowTime = TimePoint::now();
-    const std::int64_t expiryDate = std::numeric_limits<std::int64_t>::max();
     mutableMessage->setExpiryDate(nowTime + std::chrono::milliseconds(16000));
 
     auto mockAccessController = std::make_shared<MockAccessController>();
@@ -782,12 +789,13 @@ void CcMessageRouterTest::accessControllerIsCalledForQueuedMsgs()
     EXPECT_CALL(*mockAccessController, hasConsumerPermission(Eq(immutableMessage), _));
 
     const bool isSticky = false;
+    const std::int64_t expiryDate = std::numeric_limits<std::int64_t>::max();
     messageRouter->addNextHop(
             providerParticipantId, providerAddress, DEFAULT_IS_GLOBALLY_VISIBLE,
             expiryDate, isSticky);
 }
 
-void CcMessageRouterTest::testAccessControlRetryWithDelay()
+TEST_F(CcMessageRouterTest, testAccessControlRetryWithDelay)
 {
     Semaphore semaphore(0);
     auto mockMessagingStub = std::make_shared<MockMessagingStub>();
@@ -812,7 +820,7 @@ void CcMessageRouterTest::testAccessControlRetryWithDelay()
     std::shared_ptr<ImmutableMessage> immutableMessage = mutableMessage->getImmutableMessage();
 
     EXPECT_CALL(*mockAccessController, hasConsumerPermission(immutableMessage, _))
-            .WillOnce(Invoke(invokeConsumerPermissionWithRetryCallback));
+            .WillOnce(Invoke(invokeConsumerPermissionCallbackWithPermissionRetry));
 
     this->messageRouter->route(immutableMessage);
     Mock::VerifyAndClearExpectations(mockAccessController.get());
@@ -823,7 +831,7 @@ void CcMessageRouterTest::testAccessControlRetryWithDelay()
     Mock::VerifyAndClearExpectations(mockAccessController.get());
 
     EXPECT_CALL(*mockAccessController, hasConsumerPermission(immutableMessage, _))
-            .WillOnce(DoAll(ReleaseSemaphore(&semaphore),Invoke(invokeConsumerPermissionWithRetryCallback)));
+            .WillOnce(DoAll(ReleaseSemaphore(&semaphore),Invoke(invokeConsumerPermissionCallbackWithPermissionRetry)));
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(sendMsgRetryInterval)));
     Mock::VerifyAndClearExpectations(mockAccessController.get());
 
@@ -832,7 +840,7 @@ void CcMessageRouterTest::testAccessControlRetryWithDelay()
     std::this_thread::sleep_for(std::chrono::milliseconds(2 * sendMsgRetryInterval - 200));
     Mock::VerifyAndClearExpectations(mockAccessController.get());
     EXPECT_CALL(*mockAccessController, hasConsumerPermission(immutableMessage, _))
-            .WillOnce(DoAll(ReleaseSemaphore(&semaphore), Invoke(invokeConsumerPermissionWithRetryCallback)));
+            .WillOnce(DoAll(ReleaseSemaphore(&semaphore), Invoke(invokeConsumerPermissionCallbackWithPermissionRetry)));
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(sendMsgRetryInterval)));
     Mock::VerifyAndClearExpectations(mockAccessController.get());
 
@@ -849,16 +857,6 @@ void CcMessageRouterTest::testAccessControlRetryWithDelay()
     // wait for 2 invocations: accessController.hasConsumerPermission and stub.transmit
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(sendMsgRetryInterval)));
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(std::chrono::seconds(1))));
-}
-
-TEST_F(CcMessageRouterTest, accessControllerIsCalledForQueuedMsgs)
-{
-    accessControllerIsCalledForQueuedMsgs();
-}
-
-TEST_F(CcMessageRouterTest, testAccessControlRetryWithDelay)
-{
-    testAccessControlRetryWithDelay();
 }
 
 TEST_F(CcMessageRouterTest, checkReplyToNonExistingProxyIsNotDiscardedWhenDisabled)
