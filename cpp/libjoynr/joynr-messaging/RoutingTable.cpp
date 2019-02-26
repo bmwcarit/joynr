@@ -77,8 +77,9 @@ void RoutingTable::add(const std::string& participantId,
     if (!result.second) {
         multiIndexContainer.replace(result.first, routingEntry);
         JOYNR_LOG_INFO(logger(),
-                       "Replaced routing entry: {}, #entries: {}",
+                       "Replaced routing entry: new: {}, old: {}, #entries: {}",
                        routingEntry.toString(),
+                       result.first->toString(),
                        multiIndexContainer.size());
     } else {
         JOYNR_LOG_INFO(logger(),

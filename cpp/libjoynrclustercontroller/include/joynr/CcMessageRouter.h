@@ -199,6 +199,8 @@ public:
 private:
     bool isValidForRoutingTable(
             std::shared_ptr<const joynr::system::RoutingTypes::Address> address) final;
+    bool allowRoutingEntryUpdate(const routingtable::RoutingEntry& oldEntry,
+                                 const system::RoutingTypes::Address& newAddress) final;
 
     void reestablishMulticastSubscriptions();
     void registerMulticastReceiver(

@@ -519,19 +519,27 @@ void AbstractMessageRouter::addToRoutingTable(
     }
     {
         WriteLocker lock(routingTableLock);
-
         auto oldRoutingEntry = routingTable.lookupRoutingEntryByParticipantId(participantId);
         if (oldRoutingEntry) {
             const bool addressOrVisibilityOfRoutingEntryChanged =
                     (!oldRoutingEntry->address->equals(*address, joynr::util::MAX_ULPS)) ||
                     (oldRoutingEntry->isGloballyVisible != isGloballyVisible);
             if (addressOrVisibilityOfRoutingEntryChanged) {
-                JOYNR_LOG_DEBUG(logger(),
-                                "updating participantId={} in routing table, because we trust "
-                                "the globalDiscovery although the participantId is already "
-                                "associated with routing entry {}",
-                                participantId,
-                                oldRoutingEntry->toString());
+                if (!allowRoutingEntryUpdate(*oldRoutingEntry, *address)) {
+                    JOYNR_LOG_WARN(logger(),
+                                   "unable to update participantId={} in routing table, since "
+                                   "the participantId is already associated with routing entry {}.",
+                                   participantId,
+                                   oldRoutingEntry->toString());
+                    return;
+                }
+                JOYNR_LOG_TRACE(
+                        logger(), "updating participantId={} in routing table", participantId);
+            } else {
+                JOYNR_LOG_TRACE(
+                        logger(),
+                        "Updating expiryDate and sticky-flag of participantId={} in routing table.",
+                        participantId);
             }
             // keep longest lifetime
             if (oldRoutingEntry->expiryDateMs > expiryDateMs) {
@@ -541,7 +549,6 @@ void AbstractMessageRouter::addToRoutingTable(
                 isSticky = true;
             }
         }
-
         // manual removal of old entry is not required here since routingTable.add() automatically
         // calls replace in case insert fails
         routingTable.add(

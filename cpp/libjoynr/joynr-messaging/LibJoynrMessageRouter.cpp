@@ -325,6 +325,34 @@ bool LibJoynrMessageRouter::isValidForRoutingTable(
     return false;
 }
 
+bool LibJoynrMessageRouter::allowRoutingEntryUpdate(const routingtable::RoutingEntry& oldEntry,
+                                                    const system::RoutingTypes::Address& newAddress)
+{
+    // precedence: InProcessAddress > WebSocketAddress > WebSocketClientAddress >
+    // MqttAddress/ChannelAddress
+    if (typeid(newAddress) == typeid(InProcessMessagingAddress)) {
+        return true;
+    }
+    if (typeid(*oldEntry.address) != typeid(InProcessMessagingAddress)) {
+        if (typeid(newAddress) == typeid(system::RoutingTypes::WebSocketAddress)) {
+            return true;
+        } else if (typeid(*oldEntry.address) != typeid(system::RoutingTypes::WebSocketAddress)) {
+            // old address is WebSocketClientAddress or MqttAddress/ChannelAddress
+            if (typeid(newAddress) == typeid(system::RoutingTypes::WebSocketClientAddress)) {
+                return true;
+            } else if (typeid(*oldEntry.address) !=
+                       typeid(system::RoutingTypes::WebSocketClientAddress)) {
+                // old address is MqttAddress or ChannelAddress
+                if (typeid(newAddress) == typeid(system::RoutingTypes::MqttAddress) ||
+                    typeid(newAddress) == typeid(system::RoutingTypes::ChannelAddress)) {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
 void LibJoynrMessageRouter::addNextHop(
         const std::string& participantId,
         const std::shared_ptr<const joynr::system::RoutingTypes::Address>& address,

@@ -29,12 +29,14 @@
 #include "joynr/ImmutableMessage.h"
 #include "joynr/InProcessMessagingAddress.h"
 #include "joynr/IPlatformSecurityManager.h"
+#include "joynr/Logger.h"
 #include "joynr/MessageQueue.h"
 #include "joynr/MessagingStubFactory.h"
 #include "joynr/MqttMulticastAddressCalculator.h"
 #include "joynr/MulticastMessagingSkeletonDirectory.h"
 #include "joynr/Semaphore.h"
 #include "joynr/SingleThreadedIOService.h"
+#include "joynr/Util.h"
 #include "joynr/WebSocketMulticastAddressCalculator.h"
 #include "joynr/access-control/IAccessController.h"
 #include "joynr/system/RoutingTypes/Address.h"
@@ -53,6 +55,7 @@
 using ::testing::_;
 using ::testing::Eq;
 using ::testing::Invoke;
+using ::testing::Mock;
 using ::testing::Pointee;
 using ::testing::Property;
 using ::testing::Return;
@@ -70,9 +73,16 @@ public:
 protected:
     void multicastMsgIsSentToAllMulticastReceivers(const bool isGloballyVisible);
     void routeMessageAndCheckQueue(const std::string& type, bool expectedToBeQueued);
+    void addNewRoutingEntry(const std::string& testParticipantId,
+                           std::shared_ptr<const system::RoutingTypes::Address> address);
     void addressIsNotAddedToRoutingTable(const std::shared_ptr<const system::RoutingTypes::Address> address);
     void addressIsAddedToRoutingTable(const std::shared_ptr<const system::RoutingTypes::Address> address);
+    void testRoutingEntryUpdate(const std::string& participantId,
+                                std::shared_ptr<const system::RoutingTypes::Address> newAddress,
+                                std::shared_ptr<const system::RoutingTypes::Address> expectedAddress);
     const bool DEFAULT_IS_GLOBALLY_VISIBLE;
+
+    ADD_LOGGER(CcMessageRouterTest)
 };
 
 MATCHER_P2(addressWithChannelId, addressType, channelId, "")
@@ -804,6 +814,57 @@ TEST_F(CcMessageRouterTest, checkPublicationToNonExistingRecipientIsDiscardedWhe
     routeMessageAndCheckQueue(Message::VALUE_MESSAGE_TYPE_PUBLICATION(), msgShouldBeQueued);
 }
 
+TEST_F(CcMessageRouterTest, setToKnownDoesNotChangeRoutingTable)
+{
+    Semaphore resolveNextHopDone(0);
+    const std::string testParticipantId("testParticipantId");
+
+    auto expectNotResolved = [&resolveNextHopDone](const bool& resolved) {
+        ASSERT_FALSE(resolved);
+        resolveNextHopDone.notify();
+    };
+
+    messageRouter->resolveNextHop(testParticipantId, expectNotResolved, nullptr);
+    ASSERT_TRUE(resolveNextHopDone.waitFor(std::chrono::milliseconds(1000)));
+
+    messageRouter->setToKnown(testParticipantId);
+
+    messageRouter->resolveNextHop(testParticipantId, expectNotResolved, nullptr);
+    ASSERT_TRUE(resolveNextHopDone.waitFor(std::chrono::milliseconds(1000)));
+}
+
+void CcMessageRouterTest::addNewRoutingEntry(const std::string& testParticipantId,
+        std::shared_ptr<const system::RoutingTypes::Address> address)
+{
+    Semaphore resolveNextHopDone(0);
+
+    auto expectResolved = [&resolveNextHopDone, &address](const bool& resolved) {
+        ASSERT_TRUE(resolved) << "address: " + address->toString();
+        resolveNextHopDone.notify();
+    };
+
+    auto expectNotResolved = [&resolveNextHopDone, &address](const bool& resolved) {
+        ASSERT_FALSE(resolved) << "address: " + address->toString();
+        resolveNextHopDone.notify();
+    };
+
+    messageRouter->resolveNextHop(testParticipantId, expectNotResolved, nullptr);
+    ASSERT_TRUE(resolveNextHopDone.waitFor(std::chrono::milliseconds(1000)));
+
+    const bool isParticipantGloballyVisible = true;
+    constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+    const bool isSticky = false;
+    messageRouter->addNextHop(
+                testParticipantId,
+                address,
+                isParticipantGloballyVisible,
+                expiryDateMs,
+                isSticky);
+
+    messageRouter->resolveNextHop(testParticipantId, expectResolved, nullptr);
+    ASSERT_TRUE(resolveNextHopDone.waitFor(std::chrono::milliseconds(1000)));
+}
+
 void CcMessageRouterTest::addressIsNotAddedToRoutingTable(const std::shared_ptr<const system::RoutingTypes::Address> address)
 {
     Semaphore resolveNextHopDone(0);
@@ -831,28 +892,13 @@ void CcMessageRouterTest::addressIsAddedToRoutingTable(const std::shared_ptr<con
 {
     Semaphore resolveNextHopDone(0);
     const std::string testParticipantId("testParticipantId");
-    const bool isParticipantGloballyVisible = true;
 
     auto expectNotResolved = [&resolveNextHopDone, &address](const bool& resolved) {
         ASSERT_FALSE(resolved) << "address: " + address->toString();
         resolveNextHopDone.notify();
     };
 
-    auto expectResolved = [&resolveNextHopDone, &address](const bool& resolved) {
-        ASSERT_TRUE(resolved) << "address: " + address->toString();
-        resolveNextHopDone.notify();
-    };
-
-    messageRouter->resolveNextHop(testParticipantId, expectNotResolved, nullptr);
-    ASSERT_TRUE(resolveNextHopDone.waitFor(std::chrono::milliseconds(1000)));
-
-    messageRouter->addProvisionedNextHop(
-                testParticipantId,
-                address,
-                isParticipantGloballyVisible);
-
-    messageRouter->resolveNextHop(testParticipantId, expectResolved, nullptr);
-    ASSERT_TRUE(resolveNextHopDone.waitFor(std::chrono::milliseconds(1000)));
+    addNewRoutingEntry(testParticipantId, address);
 
     // cleanup
     messageRouter->removeNextHop(testParticipantId);
@@ -860,27 +906,9 @@ void CcMessageRouterTest::addressIsAddedToRoutingTable(const std::shared_ptr<con
     ASSERT_TRUE(resolveNextHopDone.waitFor(std::chrono::milliseconds(1000)));
 }
 
-TEST_F(CcMessageRouterTest, setToKnownDoesNotChangeRoutingTable)
+TEST_F(CcMessageRouterTest, addressValidation_globalAddressMustNotReferToOurClusterController)
 {
-    Semaphore resolveNextHopDone(0);
-    const std::string testParticipantId("testParticipantId");
-
-    auto expectNotResolved = [&resolveNextHopDone](const bool& resolved) {
-        ASSERT_FALSE(resolved);
-        resolveNextHopDone.notify();
-    };
-
-    messageRouter->resolveNextHop(testParticipantId, expectNotResolved, nullptr);
-    ASSERT_TRUE(resolveNextHopDone.waitFor(std::chrono::milliseconds(1000)));
-
-    messageRouter->setToKnown(testParticipantId);
-
-    messageRouter->resolveNextHop(testParticipantId, expectNotResolved, nullptr);
-    ASSERT_TRUE(resolveNextHopDone.waitFor(std::chrono::milliseconds(1000)));
-}
-
-TEST_F(CcMessageRouterTest, globalAddressMustNotReferToOurClusterController)
-{
+    // see also addressValidation_otherAddressesOfOwnAddressTypeAreAddedToRoutingTable
     auto ownAddress = std::make_shared<const system::RoutingTypes::MqttAddress>("brokerUri", "ownTopic");
     setOwnAddress(ownAddress);
     messageRouter->shutdown();
@@ -900,8 +928,9 @@ TEST_F(CcMessageRouterTest, globalAddressMustNotReferToOurClusterController)
     addressIsNotAddedToRoutingTable(newAddress);
 }
 
-TEST_F(CcMessageRouterTest, otherAddressesOfOwnAddressTypeAreAddedToRoutingTable)
+TEST_F(CcMessageRouterTest, addressValidation_otherAddressesOfOwnAddressTypeAreAddedToRoutingTable)
 {
+    // see also addressValidation_globalAddressMustNotReferToOurClusterController
     auto ownAddress = std::make_shared<const system::RoutingTypes::MqttAddress>("brokerUri", "ownTopic");
     setOwnAddress(ownAddress);
     messageRouter->shutdown();
@@ -916,14 +945,16 @@ TEST_F(CcMessageRouterTest, otherAddressesOfOwnAddressTypeAreAddedToRoutingTable
     addressIsAddedToRoutingTable(newAddress);
 }
 
-TEST_F(CcMessageRouterTest, webSocketAddressIsNotAddedToRoutingTable)
+TEST_F(CcMessageRouterTest, addressValidation_webSocketAddressIsNotAddedToRoutingTable)
 {
+    // see also otherAddressesTypesAreAddedToRoutingTable
     auto webSocketAddress = std::make_shared<const system::RoutingTypes::WebSocketAddress>();
     addressIsNotAddedToRoutingTable(webSocketAddress);
 }
 
-TEST_F(CcMessageRouterTest, otherAddressesTypesAreAddedToRoutingTable)
+TEST_F(CcMessageRouterTest, addressValidation_otherAddressesTypesAreAddedToRoutingTable)
 {
+    // see also webSocketAddressIsNotAddedToRoutingTable
     auto ownAddress = std::make_shared<const system::RoutingTypes::MqttAddress>("brokerUri", "ownTopic");
     setOwnAddress(ownAddress);
     messageRouter->shutdown();
@@ -941,4 +972,232 @@ TEST_F(CcMessageRouterTest, otherAddressesTypesAreAddedToRoutingTable)
 
     auto browserAddress = std::make_shared<const system::RoutingTypes::BrowserAddress>();
     addressIsAddedToRoutingTable(browserAddress);
+}
+
+void CcMessageRouterTest::testRoutingEntryUpdate(const std::string& participantId,
+        std::shared_ptr<const system::RoutingTypes::Address> newAddress,
+        std::shared_ptr<const system::RoutingTypes::Address> expectedAddress)
+{
+    Semaphore semaphore(0);
+    const TimePoint now = TimePoint::now();
+    mutableMessage.setExpiryDate(now + std::chrono::milliseconds(1024));
+    mutableMessage.setType(joynr::Message::VALUE_MESSAGE_TYPE_REQUEST());
+    mutableMessage.setRecipient(participantId);
+    std::shared_ptr<ImmutableMessage> immutableMessage = mutableMessage.getImmutableMessage();
+
+    const bool isParticipantGloballyVisible = true;
+    constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+    const bool isSticky = false;
+    messageRouter->addNextHop(
+                participantId,
+                newAddress,
+                isParticipantGloballyVisible,
+                expiryDateMs,
+                isSticky);
+
+    auto mockMessagingStub = std::make_shared<MockMessagingStub>();
+    EXPECT_CALL(*messagingStubFactory, create(expectedAddress))
+            .WillOnce(Return(mockMessagingStub));
+    EXPECT_CALL(*mockMessagingStub, transmit(Eq(immutableMessage),_))
+            .WillOnce(ReleaseSemaphore(&semaphore));
+
+    messageRouter->route(immutableMessage);
+
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));
+    Mock::VerifyAndClearExpectations(messagingStubFactory.get());
+    Mock::VerifyAndClearExpectations(mockMessagingStub.get());
+}
+
+TEST_F(CcMessageRouterTest, addressValidation_allowUpdateOfInProcessAddress)
+{
+    // inProcessAddress can only be replaced with InProcessAddress
+    // precedence: InProcessAddress > WebSocketClientAddress > MqttAddress/ChannelAddress > WebSocketAddress
+    const std::string testParticipantId = "allowInProcessUpdateParticipantId";
+    auto dispatcher = std::make_shared<MockDispatcher>();
+    auto skeleton = std::make_shared<MockInProcessMessagingSkeleton>(dispatcher);
+    auto oldAddress = std::make_shared<const InProcessMessagingAddress>(skeleton);
+
+    addNewRoutingEntry(testParticipantId, oldAddress);
+
+    auto webSocketAddress = std::make_shared<const system::RoutingTypes::WebSocketAddress>();
+    testRoutingEntryUpdate(testParticipantId, webSocketAddress, oldAddress);
+
+    auto mqttAddress = std::make_shared<const system::RoutingTypes::MqttAddress>();
+    testRoutingEntryUpdate(testParticipantId, mqttAddress, oldAddress);
+
+    auto channelAddress = std::make_shared<const system::RoutingTypes::ChannelAddress>();
+    testRoutingEntryUpdate(testParticipantId, channelAddress, oldAddress);
+
+    auto webSocketClientAddress = std::make_shared<const system::RoutingTypes::WebSocketClientAddress>();
+    testRoutingEntryUpdate(testParticipantId, webSocketClientAddress, oldAddress);
+
+    auto inProcessAddress = std::make_shared<const InProcessMessagingAddress>();
+    testRoutingEntryUpdate(testParticipantId, inProcessAddress, inProcessAddress);
+
+    // cleanup
+    messageRouter->removeNextHop(testParticipantId);
+}
+
+TEST_F(CcMessageRouterTest, addressValidation_allowUpdateOfWebSocketClientAddress)
+{
+    // precedence: InProcessAddress > WebSocketClientAddress > MqttAddress/ChannelAddress > WebSocketAddress
+    const std::string testParticipantId = "allowWebSocketClientUpdateParticipantId";
+    auto oldAddress = std::make_shared<const system::RoutingTypes::WebSocketClientAddress>(
+                "testWebSocketId");
+
+    addNewRoutingEntry(testParticipantId, oldAddress);
+
+    auto webSocketAddress = std::make_shared<const system::RoutingTypes::WebSocketAddress>(
+                system::RoutingTypes::WebSocketProtocol::WS, "host", 4242, "path");
+    testRoutingEntryUpdate(testParticipantId, webSocketAddress, oldAddress);
+
+    auto mqttAddress = std::make_shared<const system::RoutingTypes::MqttAddress>(
+                "brokerUri", "topic");
+    testRoutingEntryUpdate(testParticipantId, mqttAddress, oldAddress);
+
+    auto channelAddress = std::make_shared<const system::RoutingTypes::ChannelAddress>(
+                "endpointUrl", "channelId");
+    testRoutingEntryUpdate(testParticipantId, channelAddress, oldAddress);
+
+    auto webSocketClientAddress = std::make_shared<const system::RoutingTypes::WebSocketClientAddress>(
+                "webSocketId");
+    testRoutingEntryUpdate(testParticipantId, webSocketClientAddress, webSocketClientAddress);
+    // restore oldAddress
+    messageRouter->removeNextHop(testParticipantId);
+    addNewRoutingEntry(testParticipantId, oldAddress);
+
+    auto inProcessAddress = std::make_shared<const InProcessMessagingAddress>();
+    testRoutingEntryUpdate(testParticipantId, inProcessAddress, inProcessAddress);
+
+    // cleanup
+    messageRouter->removeNextHop(testParticipantId);
+}
+
+TEST_F(CcMessageRouterTest, addressValidation_allowUpdateOfChannelAddress)
+{
+    // precedence: InProcessAddress > WebSocketClientAddress > MqttAddress/ChannelAddress > WebSocketAddress
+    const std::string testParticipantId = "allowChannelUpdateParticipantId";
+    auto oldAddress = std::make_shared<const system::RoutingTypes::ChannelAddress>(
+                "testEndpointUrl", "testChannelId");
+
+    addNewRoutingEntry(testParticipantId, oldAddress);
+
+    auto webSocketAddress = std::make_shared<const system::RoutingTypes::WebSocketAddress>(
+                system::RoutingTypes::WebSocketProtocol::WS, "host", 4242, "path");
+    testRoutingEntryUpdate(testParticipantId, webSocketAddress, oldAddress);
+
+    auto mqttAddress = std::make_shared<const system::RoutingTypes::MqttAddress>(
+                "brokerUri", "topic");
+    testRoutingEntryUpdate(testParticipantId, mqttAddress, mqttAddress);
+    // restore oldAddress
+    messageRouter->removeNextHop(testParticipantId);
+    addNewRoutingEntry(testParticipantId, oldAddress);
+
+    auto channelAddress = std::make_shared<const system::RoutingTypes::ChannelAddress>(
+                "endpointUrl", "channelId");
+    testRoutingEntryUpdate(testParticipantId, channelAddress, channelAddress);
+    // restore oldAddress
+    messageRouter->removeNextHop(testParticipantId);
+    addNewRoutingEntry(testParticipantId, oldAddress);
+
+    auto webSocketClientAddress = std::make_shared<const system::RoutingTypes::WebSocketClientAddress>(
+                "webSocketId");
+    testRoutingEntryUpdate(testParticipantId, webSocketClientAddress, webSocketClientAddress);
+    // restore oldAddress
+    messageRouter->removeNextHop(testParticipantId);
+    addNewRoutingEntry(testParticipantId, oldAddress);
+
+    auto inProcessAddress = std::make_shared<const InProcessMessagingAddress>();
+    testRoutingEntryUpdate(testParticipantId, inProcessAddress, inProcessAddress);
+
+    // cleanup
+    messageRouter->removeNextHop(testParticipantId);
+}
+
+TEST_F(CcMessageRouterTest, addressValidation_allowUpdateOfMqttAddress)
+{
+    // precedence: InProcessAddress > WebSocketClientAddress > MqttAddress/ChannelAddress > WebSocketAddress
+    const std::string testParticipantId = "allowMqttUpdateParticipantId";
+    auto oldAddress = std::make_shared<const system::RoutingTypes::MqttAddress>(
+                "testbrokerUri", "testTopic");
+
+    addNewRoutingEntry(testParticipantId, oldAddress);
+
+    auto webSocketAddress = std::make_shared<const system::RoutingTypes::WebSocketAddress>(
+                system::RoutingTypes::WebSocketProtocol::WS, "host", 4242, "path");
+    testRoutingEntryUpdate(testParticipantId, webSocketAddress, oldAddress);
+
+    auto mqttAddress = std::make_shared<const system::RoutingTypes::MqttAddress>(
+                "brokerUri", "topic");
+    testRoutingEntryUpdate(testParticipantId, mqttAddress, mqttAddress);
+    // restore oldAddress
+    messageRouter->removeNextHop(testParticipantId);
+    addNewRoutingEntry(testParticipantId, oldAddress);
+
+    auto channelAddress = std::make_shared<const system::RoutingTypes::ChannelAddress>(
+                "endpointUrl", "channelId");
+    testRoutingEntryUpdate(testParticipantId, channelAddress, channelAddress);
+    // restore oldAddress
+    messageRouter->removeNextHop(testParticipantId);
+    addNewRoutingEntry(testParticipantId, oldAddress);
+
+    auto webSocketClientAddress = std::make_shared<const system::RoutingTypes::WebSocketClientAddress>(
+                "webSocketId");
+    testRoutingEntryUpdate(testParticipantId, webSocketClientAddress, webSocketClientAddress);
+    // restore oldAddress
+    messageRouter->removeNextHop(testParticipantId);
+    addNewRoutingEntry(testParticipantId, oldAddress);
+
+    auto inProcessAddress = std::make_shared<const InProcessMessagingAddress>();
+    testRoutingEntryUpdate(testParticipantId, inProcessAddress, inProcessAddress);
+
+    // cleanup
+    messageRouter->removeNextHop(testParticipantId);
+}
+
+TEST_F(CcMessageRouterTest, DISABLED_addressValidation_allowUpdateOfWebSocketAddress)
+{
+    // Disabled: WebSocketAddress is not allowed in CcMessageRouter
+    // Precedence cannot be tested without refactoring MessageRouter and RoutingTable, e.g. like in Java
+
+    // precedence: InProcessAddress > WebSocketClientAddress > MqttAddress/ChannelAddress > WebSocketAddress
+    const std::string testParticipantId = "allowWebSocketUpdateParticipantId";
+    auto oldAddress = std::make_shared<const system::RoutingTypes::WebSocketAddress>(
+                system::RoutingTypes::WebSocketProtocol::WSS, "testHost", 23, "testPath");
+
+    addNewRoutingEntry(testParticipantId, oldAddress);
+
+    auto webSocketAddress = std::make_shared<const system::RoutingTypes::WebSocketAddress>(
+                system::RoutingTypes::WebSocketProtocol::WS, "host", 4242, "path");
+    testRoutingEntryUpdate(testParticipantId, webSocketAddress, webSocketAddress);
+    // restore oldAddress
+    messageRouter->removeNextHop(testParticipantId);
+    addNewRoutingEntry(testParticipantId, oldAddress);
+
+    auto mqttAddress = std::make_shared<const system::RoutingTypes::MqttAddress>(
+                "brokerUri", "topic");
+    testRoutingEntryUpdate(testParticipantId, mqttAddress, mqttAddress);
+    // restore oldAddress
+    messageRouter->removeNextHop(testParticipantId);
+    addNewRoutingEntry(testParticipantId, oldAddress);
+
+    auto channelAddress = std::make_shared<const system::RoutingTypes::ChannelAddress>(
+                "endpointUrl", "channelId");
+    testRoutingEntryUpdate(testParticipantId, channelAddress, channelAddress);
+    // restore oldAddress
+    messageRouter->removeNextHop(testParticipantId);
+    addNewRoutingEntry(testParticipantId, oldAddress);
+
+    auto webSocketClientAddress = std::make_shared<const system::RoutingTypes::WebSocketClientAddress>(
+                "webSocketId");
+    testRoutingEntryUpdate(testParticipantId, webSocketClientAddress, webSocketClientAddress);
+    // restore oldAddress
+    messageRouter->removeNextHop(testParticipantId);
+    addNewRoutingEntry(testParticipantId, oldAddress);
+
+    auto inProcessAddress = std::make_shared<const InProcessMessagingAddress>();
+    testRoutingEntryUpdate(testParticipantId, inProcessAddress, inProcessAddress);
+
+    // cleanup
+    messageRouter->removeNextHop(testParticipantId);
 }

@@ -142,14 +142,17 @@ protected:
     virtual void routeInternal(std::shared_ptr<ImmutableMessage> message,
                                std::uint32_t tryCount) = 0;
 
-    virtual bool isValidForRoutingTable(
-            std::shared_ptr<const joynr::system::RoutingTypes::Address> address) = 0;
-
     void sendMessages(const std::string& destinationPartId,
                       std::shared_ptr<const joynr::system::RoutingTypes::Address> address,
                       const WriteLocker& messageQueueRetryWriteLock);
 
     void sendMessages(std::shared_ptr<const joynr::system::RoutingTypes::Address> address) final;
+
+    virtual bool isValidForRoutingTable(
+            std::shared_ptr<const joynr::system::RoutingTypes::Address> address) = 0;
+
+    virtual bool allowRoutingEntryUpdate(const routingtable::RoutingEntry& oldEntry,
+                                         const system::RoutingTypes::Address& newAddress) = 0;
 
     void addToRoutingTable(std::string participantId,
                            bool isGloballyVisible,

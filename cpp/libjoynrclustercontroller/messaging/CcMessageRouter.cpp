@@ -401,6 +401,35 @@ bool CcMessageRouter::isValidForRoutingTable(
     return true;
 }
 
+bool CcMessageRouter::allowRoutingEntryUpdate(const routingtable::RoutingEntry& oldEntry,
+                                              const system::RoutingTypes::Address& newAddress)
+{
+    // precedence: InProcessAddress > WebSocketClientAddress > MqttAddress/ChannelAddress >
+    // WebSocketAddress
+    if (typeid(newAddress) == typeid(InProcessMessagingAddress)) {
+        return true;
+    }
+    if (typeid(*oldEntry.address) != typeid(InProcessMessagingAddress)) {
+        if (typeid(newAddress) == typeid(system::RoutingTypes::WebSocketClientAddress)) {
+            return true;
+        } else if (typeid(*oldEntry.address) !=
+                   typeid(system::RoutingTypes::WebSocketClientAddress)) {
+            // old address is MqttAddress/ChannelAddress or WebSocketAddress
+            if (typeid(newAddress) == typeid(system::RoutingTypes::MqttAddress) ||
+                typeid(newAddress) == typeid(system::RoutingTypes::ChannelAddress)) {
+                return true;
+            } else if (typeid(*oldEntry.address) ==
+                       typeid(system::RoutingTypes::WebSocketAddress)) {
+                // old address is WebSocketAddress
+                if (typeid(newAddress) == typeid(system::RoutingTypes::WebSocketAddress)) {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
 // inherited from joynr::IMessageRouter and joynr::system::RoutingProvider
 void CcMessageRouter::removeNextHop(
         const std::string& participantId,

@@ -162,6 +162,8 @@ private:
                                     onError = nullptr);
     bool isValidForRoutingTable(
             std::shared_ptr<const joynr::system::RoutingTypes::Address> address) final;
+    bool allowRoutingEntryUpdate(const routingtable::RoutingEntry& oldEntry,
+                                 const system::RoutingTypes::Address& newAddress) final;
 
     std::shared_ptr<joynr::system::RoutingProxy> parentRouter;
     std::shared_ptr<const joynr::system::RoutingTypes::Address> parentAddress;
