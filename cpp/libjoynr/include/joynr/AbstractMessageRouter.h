@@ -185,6 +185,9 @@ protected:
      */
     virtual bool canMessageBeTransmitted(std::shared_ptr<ImmutableMessage> message) const = 0;
 
+    std::chrono::milliseconds createDelayWithExponentialBackoff(
+            std::uint32_t sendMsgRetryIntervalMs,
+            std::uint32_t tryCount) const;
     RoutingTable routingTable;
     ReadWriteLock routingTableLock;
     MulticastReceiverDirectory multicastReceiverDirectory;
@@ -218,6 +221,7 @@ private:
     AddressUnorderedSet lookupAddresses(const std::unordered_set<std::string>& participantIds);
     std::atomic<bool> isShuttingDown;
     std::atomic<std::uint64_t> numberOfRoutedMessages;
+    const std::uint64_t maxAclRetryIntervalMs;
 };
 
 /**

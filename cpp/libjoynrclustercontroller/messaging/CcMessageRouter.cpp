@@ -20,7 +20,6 @@
 #include "joynr/CcMessageRouter.h"
 
 #include <cassert>
-#include <chrono>
 #include <functional>
 #include <typeinfo>
 
@@ -62,7 +61,8 @@ public:
             std::weak_ptr<CcMessageRouter> owningMessageRouter,
             std::shared_ptr<ImmutableMessage> message,
             std::shared_ptr<const joynr::system::RoutingTypes::Address> destination,
-            bool aclAudit);
+            bool aclAudit,
+            std::uint32_t tryCount);
 
     void hasConsumerPermission(IAccessController::Enum hasPermission);
 
@@ -72,6 +72,7 @@ public:
 
 private:
     const bool aclAudit;
+    std::uint32_t tryCount;
     ADD_LOGGER(ConsumerPermissionCallback)
 };
 
@@ -316,7 +317,8 @@ void CcMessageRouter::doAccessControlCheckOrScheduleMessage(
                 std::dynamic_pointer_cast<CcMessageRouter>(shared_from_this()),
                 message,
                 destAddress,
-                clusterControllerSettings.aclAudit());
+                clusterControllerSettings.aclAudit(),
+                tryCount);
         gotAccessController->hasConsumerPermission(message, callback);
     } else {
         // If this point is reached, the message can be sent without delay
@@ -798,11 +800,13 @@ ConsumerPermissionCallback::ConsumerPermissionCallback(
         std::weak_ptr<CcMessageRouter> owningMessageRouter,
         std::shared_ptr<ImmutableMessage> message,
         std::shared_ptr<const joynr::system::RoutingTypes::Address> destination,
-        bool aclAudit)
+        bool aclAudit,
+        std::uint32_t tryCount)
         : owningMessageRouter(owningMessageRouter),
           message(message),
           destination(destination),
-          aclAudit(aclAudit)
+          aclAudit(aclAudit),
+          tryCount(tryCount)
 {
 }
 
@@ -837,7 +841,13 @@ void ConsumerPermissionCallback::hasConsumerPermission(IAccessController::Enum h
                             "rescheduled.",
                             message->getId());
             owningMessageRouterSharedPtr->scheduleMessage(
-                    message, destination, 0, std::chrono::milliseconds(1000));
+                    message,
+                    destination,
+                    tryCount + 1,
+                    owningMessageRouterSharedPtr->createDelayWithExponentialBackoff(
+                            owningMessageRouterSharedPtr->messagingSettings
+                                    .getSendMsgRetryInterval(),
+                            tryCount));
         } else {
             JOYNR_LOG_ERROR(logger(),
                             "Message with Id {} could not be sent because messageRouter is not "

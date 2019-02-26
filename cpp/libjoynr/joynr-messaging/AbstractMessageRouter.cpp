@@ -19,7 +19,11 @@
 #include "joynr/AbstractMessageRouter.h"
 
 #include <cassert>
+#include <cerrno>
+#include <cfenv>
+#include <cmath>
 #include <functional>
+#include <limits>
 #include <sstream>
 
 #include <boost/asio/io_service.hpp>
@@ -80,7 +84,10 @@ AbstractMessageRouter::AbstractMessageRouter(
           routingTableCleanerTimer(ioService),
           transportStatuses(std::move(transportStatuses)),
           isShuttingDown(false),
-          numberOfRoutedMessages(0)
+          numberOfRoutedMessages(0),
+          maxAclRetryIntervalMs(
+                  60 * 60 *
+                  1000) // Max retry value is empirical and should practically fit many use-case
 {
 }
 
@@ -542,6 +549,32 @@ void AbstractMessageRouter::addToRoutingTable(
 std::uint64_t AbstractMessageRouter::getNumberOfRoutedMessages() const
 {
     return numberOfRoutedMessages;
+}
+
+std::chrono::milliseconds AbstractMessageRouter::createDelayWithExponentialBackoff(
+        std::uint32_t sendMsgRetryIntervalMs,
+        std::uint32_t tryCount) const
+{
+    JOYNR_LOG_TRACE(logger(),
+                    "Number of tries to reach the provider during the permitted delay: {} ",
+                    tryCount);
+    errno = 0;
+    std::feclearexcept(FE_ALL_EXCEPT);
+    std::uint64_t retryInterval = std::llround(std::pow(2, tryCount) * sendMsgRetryIntervalMs);
+    const bool overflowOccur = (errno != 0 || std::fetestexcept(FE_INVALID | FE_DIVBYZERO |
+                                                                FE_OVERFLOW | FE_UNDERFLOW));
+
+    if (overflowOccur || (retryInterval > maxAclRetryIntervalMs)) {
+        retryInterval = maxAclRetryIntervalMs;
+        JOYNR_LOG_TRACE(logger(),
+                        "Set exponential backoff delay in ms to {} since the maxAclRetryIntervalMs "
+                        "is {}",
+                        retryInterval,
+                        maxAclRetryIntervalMs);
+    }
+    JOYNR_LOG_TRACE(
+            logger(), "New exponential backoff delay of the message in ms: {}", retryInterval);
+    return std::chrono::milliseconds(retryInterval);
 }
 
 /**
