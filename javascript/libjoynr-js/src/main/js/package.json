@@ -9,7 +9,7 @@
   "dependencies": {
     "nanoid": "2.0.1",
     "mqtt": "2.15.0",
-    "smrf": "0.3.0",
+    "smrf": "0.3.2",
     "ws": "4.0.0"
   },
   "devDependencies": {
