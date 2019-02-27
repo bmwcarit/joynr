@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -31,10 +31,11 @@ import types.* from "DiscoveryTypes.fidl"
 **>
 interface GlobalCapabilitiesDirectory{
 
-	version {major 0 minor 1}
+	version {major 0 minor 2}
 
 	<**
-		@description: Registers several providers with the backend.
+		@description: Registers several providers with the backend. The providers are registered with the same GBID
+		as the Global Capabilities Directory instance which received this call.
 	**>
 	method add {
 		in {
@@ -47,7 +48,8 @@ interface GlobalCapabilitiesDirectory{
 		}
 	}
 
-	<** @description: Registers a single provider with the backend. **>
+	<** @description: Registers a single provider with the backend. The providers are registered with the same GBID
+        as the Global Capabilities Directory instance which received this call. **>
 	method add {
 		in {
 			<**
@@ -59,9 +61,30 @@ interface GlobalCapabilitiesDirectory{
 		}
 	}
 
+	<** @description: Registers a single provider in the defined global Backends **>
+	method add {
+		in {
+			<**
+				@description: Information about the provider which shall be registered with
+				the backend. The reference to the GBIDs in the address field of the Global Discovery Entry is not
+				taken into account.
+				@see: GlobalDiscoveryEntry
+			**>
+			GlobalDiscoveryEntry globalDiscoveryEntry
+
+			<**
+				@description: Global Backend IDs for which the provider is registered.
+			**>
+			String[] gbids
+		}
+	}
+
+
+
 	<**
 		@description: Looks up a list of providers for a domain and an interface name. The domain
-		and interface name correspond to the attributes stored in GlobalDiscoveryEntry.
+		and interface name correspond to the attributes stored in GlobalDiscoveryEntry. The providers returned are
+		registered to the same GBID as the Global Capabilities Directory instance which received this call.
 		@see: GlobalDiscoveryEntry
 	**>
 	method lookup {
@@ -81,7 +104,8 @@ interface GlobalCapabilitiesDirectory{
 	}
 
 	<**
-		@description: Looks up a provider for a given participant Id.
+		@description: Looks up a provider for a given participant Id. The providers returned are
+        registered to the same GBID as the Global Capabilities Directory instance which received this call.
 	**>
 	method lookup {
 		in {
@@ -93,6 +117,62 @@ interface GlobalCapabilitiesDirectory{
 			GlobalDiscoveryEntry result
 		}
 	}
+
+		<**
+    		@description: Looks up a provider for a given participant Id. In case a single provider identified by the
+    		provided participantId is registered in multiple Backends, only one GlobalDiscoveryEntry of that provider
+    		in a single backend will be returned.
+    	**>
+    	method lookup {
+    		in {
+    			<** @description: The participant Id which identifies the requested provider. **>
+    			String participantId
+
+    			<**
+    				@description: Global Backend IDs for which providers should be returned. Only Providers from
+    				the provided Global Backends will be returned
+    			**>
+    			String[] gbids
+    		}
+    		out{
+    			<** @description: Information about the found provider. **>
+    			GlobalDiscoveryEntry result
+    		}
+    	}
+
+
+    <**
+        @description: Looks up a list of providers for a domain and an interface name. The domain
+        and interface name correspond to the attributes stored in GlobalDiscoveryEntry. Only one provider per
+        participantId is returned. In case a single provider is registered in multiple Backends, only one
+        GlobalDiscoveryEntry of that provider in a single backend will be returned.
+        @see: GlobalDiscoveryEntry
+	**>
+	method lookup {
+		in {
+			<** @description: Domain names for which providers shall be returned. **>
+			String[] domains
+			<** @description: The name of the requested provider interface. **>
+			String interfaceName
+
+			<**
+				@description: Global Backend IDs for which providers should be returned. Only Providers from
+				the provided Global Backends will be returned
+			**>
+			String [] gbids
+
+		}
+
+		out {
+			<** @description: Information about all providers which were found for the given
+			domain and interface name.
+			**>
+			GlobalDiscoveryEntry[] result
+		}
+	}
+
+
+
 	<**
 		@description: Unregisters providers from the backend.
 	**>
