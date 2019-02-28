@@ -5,6 +5,5 @@
   "description": "Test utilities used by several joynr JavaScript test projects",
   "main": "testbase.js",
   "private": true,
-  "dependencies": {
-  }
+  "dependencies": {}
 }
