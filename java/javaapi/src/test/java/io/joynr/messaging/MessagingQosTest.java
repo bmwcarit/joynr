@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -85,5 +85,22 @@ public class MessagingQosTest {
         boolean compress = true;
         messagingQos.setCompress(compress);
         assertEquals(compress, messagingQos.getCompress());
+    }
+
+    @Test
+    public void testToString() {
+        MessagingQos messagingQos = new MessagingQos(0L);
+        boolean compress = true;
+        messagingQos.setCompress(compress);
+        boolean encrypt = true;
+        messagingQos.setEncrypt(encrypt);
+        messagingQos.setTtl_ms(1000L);
+        messagingQos.setEffort(MessagingQosEffort.BEST_EFFORT);
+        messagingQos.putCustomMessageHeader("key1", "value1");
+        messagingQos.putCustomMessageHeader("key2", "value2");
+        String expectedToStringResult = "MessagingQos [compress=true, customHeaders="
+                + messagingQos.getCustomMessageHeaders().toString() + ", "
+                + "effort=BEST_EFFORT, encrypt=true, ttl_ms=1000]";
+        assertEquals(expectedToStringResult, messagingQos.toString());
     }
 }
