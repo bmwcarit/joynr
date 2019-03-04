@@ -148,7 +148,7 @@ public class DiscoveryQos {
                         long cacheMaxAge,
                         DiscoveryScope discoveryScope) {
         if (arbitrationStrategy.equals(ArbitrationStrategy.Custom)) {
-            throw new IllegalStateException("A Custom strategy can only be set by passing an arbitration strategy function to the DisocveryQos constructor");
+            throw new IllegalStateException("A Custom strategy can only be set by passing an arbitration strategy function to the DiscoveryQos constructor");
         }
 
         this.cacheMaxAgeMs = cacheMaxAge;
@@ -190,7 +190,7 @@ public class DiscoveryQos {
      */
     public void setArbitrationStrategy(ArbitrationStrategy arbitrationStrategy) {
         if (arbitrationStrategy.equals(ArbitrationStrategy.Custom)) {
-            throw new IllegalStateException("A Custom strategy can only be set by passing an arbitration strategy function to the DisocveryQos constructor");
+            throw new IllegalStateException("A Custom strategy can only be set by passing an arbitration strategy function to the DiscoveryQos constructor");
         }
         this.arbitrationStrategy = arbitrationStrategy;
     }
