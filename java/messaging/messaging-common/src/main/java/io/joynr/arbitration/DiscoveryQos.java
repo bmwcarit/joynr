@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -346,5 +346,19 @@ public class DiscoveryQos {
 
     public Map<String, String> getCustomParameters() {
         return customParameters;
+    }
+
+    /**
+      * Stringifies the class excluding arbitrationStrategyFunction
+      *
+      * @return stringified class content excluding arbitrationStrategyFunction
+      */
+    @Override
+    public String toString() {
+        return "DiscoveryQos [" + "arbitrationStrategy=" + this.arbitrationStrategy + ", " + "cacheMaxAgeMs="
+                + this.cacheMaxAgeMs + ", " + "customParameters=" + this.customParameters.toString() + ", "
+                + "discoveryScope=" + this.discoveryScope + ", " + "discoveryTimeoutMs=" + this.discoveryTimeoutMs
+                + ", " + "providerMustSupportOnChange=" + this.providerMustSupportOnChange + ", " + "retryIntervalMs="
+                + this.retryIntervalMs + "]";
     }
 }
