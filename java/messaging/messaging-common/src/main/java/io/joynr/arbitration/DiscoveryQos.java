@@ -28,27 +28,23 @@ import java.util.Map;
 
 public class DiscoveryQos {
     public static final DiscoveryQos NO_FILTER;
+    public static final long NO_MAX_AGE = Long.MAX_VALUE;
     public static final long NO_VALUE = -1L;
 
-    private long discoveryTimeoutMs;
+    private static final ArbitrationStrategy DEFAULT_ARBITRATIONSTRATEGY = ArbitrationStrategy.LastSeen;
+    private static final long DEFAULT_CACHEMAXAGE = 0L;
+    private static final DiscoveryScope DEFAULT_DISCOVERYSCOPE = DiscoveryScope.LOCAL_AND_GLOBAL;
+    private static final boolean DEFAULT_PROVIDERMUSTSUPPORTONCHANGE = false;
+
+    long cacheMaxAgeMs;
 
     private ArbitrationStrategy arbitrationStrategy;
     private ArbitrationStrategyFunction arbitrationStrategyFunction;
-    private static final ArbitrationStrategy DEFAULT_ARBITRATIONSTRATEGY = ArbitrationStrategy.LastSeen;
-
-    long cacheMaxAgeMs;
-    private static final long DEFAULT_CACHEMAXAGE = 0L;
-    public static final long NO_MAX_AGE = Long.MAX_VALUE;
-
-    private boolean providerMustSupportOnChange;
-    private static final boolean DEFAULT_PROVIDERMUSTSUPPORTONCHANGE = false;
-
-    private long retryIntervalMs;
-
-    private DiscoveryScope discoveryScope;
-    private static final DiscoveryScope DEFAULT_DISCOVERYSCOPE = DiscoveryScope.LOCAL_AND_GLOBAL;
-
     private HashMap<String, String> customParameters = new HashMap<>();
+    private DiscoveryScope discoveryScope;
+    private long discoveryTimeoutMs;
+    private boolean providerMustSupportOnChange;
+    private long retryIntervalMs;
 
     /**
      * DiscoveryQos object with default values.
