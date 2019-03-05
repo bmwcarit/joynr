@@ -31,6 +31,8 @@ import org.slf4j.LoggerFactory;
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
 
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
@@ -65,6 +67,7 @@ public class ConsumerApplication extends AbstractJoynrApplication {
 
     private int exitCode = 0;
 
+    @SuppressWarnings("DM_EXIT")
     public static void main(String[] args) {
 
         try {
@@ -205,7 +208,7 @@ public class ConsumerApplication extends AbstractJoynrApplication {
         }
     }
 
-    private class EchoRunnable implements Runnable {
+    private static class EchoRunnable implements Runnable {
         private EchoProxy proxy;
         private AtomicLong sentRequests;
         private final int runs;
@@ -252,7 +255,7 @@ public class ConsumerApplication extends AbstractJoynrApplication {
         if (invocationParameters.constantNumberOfPendingRequests()) {
             int pendingRequests = invocationParameters.getNumberOfPendingRequests();
             int numThreads = invocationParameters.getNumberOfThreads();
-            System.err.format("CNR runs: %d, pending: %d, threads: %d \n", runs, pendingRequests, numThreads);
+            System.err.format("CNR runs: %d, pending: %d, threads: %d%n", runs, pendingRequests, numThreads);
 
             startTime = System.currentTimeMillis();
             for (int i = 0; i < iterations; i++) {
@@ -419,7 +422,7 @@ public class ConsumerApplication extends AbstractJoynrApplication {
     private Byte[] createInputByteArray(int size, byte value) {
         Byte[] result = new Byte[size];
 
-        Arrays.fill(result, new Byte(value));
+        Arrays.fill(result, Byte.valueOf(value));
 
         return result;
     }
@@ -433,7 +436,7 @@ public class ConsumerApplication extends AbstractJoynrApplication {
 
     private void printTestResult(long endTime, long startTime) {
         long timeDeltaMilliseconds = endTime - startTime;
-        System.err.format("Test case took %d ms. %.2f Msgs/s transmitted\n startTime: %d, endTime: %d, runs: %d, iterations: %d \n",
+        System.err.format("Test case took %d ms. %.2f Msgs/s transmitted%n startTime: %d, endTime: %d, runs: %d, iterations: %d%n",
                           timeDeltaMilliseconds,
                           (invocationParameters.getNumberOfRuns() * invocationParameters.getNumberOfIterations())
                                   / ((timeDeltaMilliseconds) / 1000.0d),
@@ -446,10 +449,11 @@ public class ConsumerApplication extends AbstractJoynrApplication {
     private <type> void printFailureStatistic(int numFailures, int numRuns, int iterations) {
         if (numFailures > 0) {
             exitCode = 1;
-            System.err.format("%d out of %d transmissions failed\n", numFailures, numRuns * iterations);
+            System.err.format("%d out of %d transmissions failed%n", numFailures, numRuns * iterations);
         }
     }
 
+    @SuppressWarnings("DM_EXIT")
     @Override
     public void shutdown() {
         runtime.shutdown(true);
