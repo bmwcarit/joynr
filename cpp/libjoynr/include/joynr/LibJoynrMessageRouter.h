@@ -175,6 +175,8 @@ private:
     std::unordered_set<std::string> runningParentResolves;
     mutable std::mutex parentResolveMutex;
 
+    bool canMessageBeTransmitted(std::shared_ptr<ImmutableMessage> message) const final;
+
     void removeRunningParentResolvers(const std::string& destinationPartId);
 
     std::mutex parentClusterControllerReplyToAddressMutex;

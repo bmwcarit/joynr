@@ -160,6 +160,11 @@ protected:
                            const std::int64_t expiryDateMs,
                            const bool isSticky);
 
+    virtual void doAccessControlCheckOrScheduleMessage(
+            std::shared_ptr<ImmutableMessage> message,
+            std::shared_ptr<const system::RoutingTypes::Address> destAddress,
+            std::uint32_t tryCount = 0);
+
     void scheduleMessage(std::shared_ptr<ImmutableMessage> message,
                          std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress,
                          std::uint32_t tryCount = 0,
@@ -175,6 +180,10 @@ protected:
 
     virtual void queueMessage(std::shared_ptr<ImmutableMessage> message,
                               const ReadLocker& messageQueueRetryReadLock);
+    /*
+     * return always true in libjoynr and result accessControlChecked for the CCMessageRouter
+     */
+    virtual bool canMessageBeTransmitted(std::shared_ptr<ImmutableMessage> message) const = 0;
 
     RoutingTable routingTable;
     ReadWriteLock routingTableLock;

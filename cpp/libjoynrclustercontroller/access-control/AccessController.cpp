@@ -68,8 +68,6 @@ private:
     std::string interfaceName;
     TrustLevel::Enum trustlevel;
     std::shared_ptr<IAccessController::IHasConsumerPermissionCallback> callback;
-
-    bool convertToBool(Permission::Enum permission);
 };
 
 AccessController::LdacConsumerPermissionCallback::LdacConsumerPermissionCallback(
@@ -90,9 +88,14 @@ AccessController::LdacConsumerPermissionCallback::LdacConsumerPermissionCallback
 
 void AccessController::LdacConsumerPermissionCallback::permission(Permission::Enum permission)
 {
-    bool hasPermission = convertToBool(permission);
+    assert(permission != Permission::ASK && "Permission.ASK user dialog not yet implemented.");
+    // hasPermission set to NO if permission is NO or ASK
+    IAccessController::Enum hasPermission = IAccessController::Enum::NO;
+    if (permission == Permission::Enum::YES) {
+        hasPermission = IAccessController::Enum::YES;
+    }
 
-    if (!hasPermission) {
+    if (hasPermission == IAccessController::Enum::NO) {
         JOYNR_LOG_ERROR(owningAccessController.logger(),
                         "Message {} to domain {}, interface {} from creator {} failed ACL check",
                         message->getId(),
@@ -161,7 +164,7 @@ void AccessController::LdacConsumerPermissionCallback::operationNeeded()
 
     if (operation.empty()) {
         JOYNR_LOG_ERROR(owningAccessController.logger(), "Could not deserialize request");
-        callback->hasConsumerPermission(false);
+        callback->hasConsumerPermission(IAccessController::Enum::NO);
         return;
     }
 
@@ -169,10 +172,12 @@ void AccessController::LdacConsumerPermissionCallback::operationNeeded()
     Permission::Enum permission =
             owningAccessController.localDomainAccessController->getConsumerPermission(
                     message->getCreator(), domain, interfaceName, operation, trustlevel);
+    assert(permission != Permission::ASK && "Permission.ASK user dialog not yet implemented.");
 
-    bool hasPermission = convertToBool(permission);
-
-    if (!hasPermission) {
+    IAccessController::Enum hasPermission = IAccessController::Enum::NO;
+    if (permission == Permission::Enum::YES) {
+        hasPermission = IAccessController::Enum::YES;
+    } else {
         JOYNR_LOG_ERROR(owningAccessController.logger(),
                         "Message {} to domain {}, interface/operation {}/{} from creator {} failed "
                         "ACL check",
@@ -184,21 +189,6 @@ void AccessController::LdacConsumerPermissionCallback::operationNeeded()
     }
 
     callback->hasConsumerPermission(hasPermission);
-}
-
-bool AccessController::LdacConsumerPermissionCallback::convertToBool(Permission::Enum permission)
-{
-    switch (permission) {
-    case Permission::YES:
-        return true;
-    case Permission::ASK:
-        assert(false && "Permission.ASK user dialog not yet implemented.");
-        return false;
-    case Permission::NO:
-        return false;
-    default:
-        return false;
-    }
 }
 
 //--------- AccessController ---------------------------------------------------
@@ -286,7 +276,7 @@ void AccessController::hasConsumerPermission(
         std::shared_ptr<IAccessController::IHasConsumerPermissionCallback> callback)
 {
     if (!needsHasConsumerPermissionCheck(*message)) {
-        callback->hasConsumerPermission(true);
+        callback->hasConsumerPermission(IAccessController::Enum::YES);
         return;
     }
 
@@ -305,7 +295,7 @@ void AccessController::hasConsumerPermission(
                 JOYNR_LOG_ERROR(thisSharedPtr->logger(),
                                 "Failed to get capabilities for participantId {}",
                                 participantId);
-                callback->hasConsumerPermission(false);
+                callback->hasConsumerPermission(IAccessController::Enum::NO);
                 return;
             }
 
@@ -328,7 +318,7 @@ void AccessController::hasConsumerPermission(
     std::function<void(const joynr::exceptions::ProviderRuntimeException&)> lookupErrorCallback =
             [callback](const joynr::exceptions::ProviderRuntimeException& exception) {
         std::ignore = exception;
-        callback->hasConsumerPermission(false);
+        callback->hasConsumerPermission(IAccessController::Enum::RETRY);
     };
 
     // Lookup participantId in the local Capabilities Directory

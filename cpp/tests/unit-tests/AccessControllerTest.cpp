@@ -52,7 +52,7 @@ class MockConsumerPermissionCallback
         : public joynr::IAccessController::IHasConsumerPermissionCallback
 {
 public:
-    MOCK_METHOD1(hasConsumerPermission, void(bool hasPermission));
+    MOCK_METHOD1(hasConsumerPermission, void(IAccessController::Enum hasPermission));
 };
 
 template <typename... Ts>
@@ -190,7 +190,7 @@ public:
                 .WillOnce(Invoke(this, &AccessControllerTest::invokeOnSuccessCallbackFct));
     }
 
-    void testPermission(Permission::Enum testPermission, bool expectedPermission)
+    void testPermission(Permission::Enum testPermission, IAccessController::Enum expectedPermission)
     {
         prepareConsumerTest();
         std::shared_ptr<ImmutableMessage> immutableMessage = mutableMessage.getImmutableMessage();
@@ -262,7 +262,7 @@ TEST_F(AccessControllerTest, accessWithInterfaceLevelAccessControl)
             .Times(1)
             .WillOnce(Invoke(&makeCallback, &ConsumerPermissionCallbackMaker::consumerPermission));
 
-    EXPECT_CALL(*accessControllerCallback, hasConsumerPermission(true)).Times(1);
+    EXPECT_CALL(*accessControllerCallback, hasConsumerPermission(IAccessController::Enum::YES)).Times(1);
 
     accessController->hasConsumerPermission(
             getImmutableMessage(),
@@ -288,7 +288,7 @@ TEST_F(AccessControllerTest, accessWithOperationLevelAccessControl)
                     DUMMY_USERID, TEST_DOMAIN, TEST_INTERFACE, TEST_OPERATION, TrustLevel::HIGH))
             .WillOnce(Return(permissionYes));
 
-    EXPECT_CALL(*accessControllerCallback, hasConsumerPermission(true)).Times(1);
+    EXPECT_CALL(*accessControllerCallback, hasConsumerPermission(IAccessController::Enum::YES)).Times(1);
 
     accessController->hasConsumerPermission(
             getImmutableMessage(),
@@ -306,7 +306,7 @@ TEST_F(AccessControllerTest, accessWithOperationLevelAccessControlAndFaultyMessa
             .Times(1)
             .WillOnce(Invoke(&makeCallback, &ConsumerPermissionCallbackMaker::operationNeeded));
 
-    EXPECT_CALL(*accessControllerCallback, hasConsumerPermission(false)).Times(1);
+    EXPECT_CALL(*accessControllerCallback, hasConsumerPermission(IAccessController::Enum::NO)).Times(1);
 
     std::string payload("invalid serialization of Request object");
     mutableMessage.setPayload(payload);
@@ -392,7 +392,7 @@ TYPED_TEST_CASE(AccessControllerSubscriptionTest, SubscriptionTypes);
 TYPED_TEST(AccessControllerSubscriptionTest, hasNoConsumerPermission)
 {
     const Permission::Enum permissionNo = Permission::NO;
-    const bool expectedPermissionFalse = false;
+    const IAccessController::Enum expectedPermissionFalse = IAccessController::Enum::NO;
 
     this->createMutableMessage();
 
@@ -404,7 +404,7 @@ TYPED_TEST(AccessControllerSubscriptionTest, hasNoConsumerPermission)
 TYPED_TEST(AccessControllerSubscriptionTest, hasConsumerPermission)
 {
     const Permission::Enum permissionNo = Permission::YES;
-    const bool expectedPermissionFalse = true;
+    const IAccessController::Enum expectedPermissionFalse = IAccessController::Enum::YES;
 
     this->createMutableMessage();
 

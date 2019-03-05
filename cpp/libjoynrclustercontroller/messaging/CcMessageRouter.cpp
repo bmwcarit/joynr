@@ -20,6 +20,7 @@
 #include "joynr/CcMessageRouter.h"
 
 #include <cassert>
+#include <chrono>
 #include <functional>
 #include <typeinfo>
 
@@ -63,7 +64,7 @@ public:
             std::shared_ptr<const joynr::system::RoutingTypes::Address> destination,
             bool aclAudit);
 
-    void hasConsumerPermission(bool hasPermission) override;
+    void hasConsumerPermission(IAccessController::Enum hasPermission);
 
     std::weak_ptr<CcMessageRouter> owningMessageRouter;
     std::shared_ptr<ImmutableMessage> message;
@@ -299,12 +300,11 @@ void CcMessageRouter::sendMessages(
         if (!item) {
             break;
         }
-
-        accessControlAndScheduleMsg(item, address);
+        doAccessControlCheckOrScheduleMessage(item, address);
     }
 }
 
-void CcMessageRouter::doAccessControlCheck(
+void CcMessageRouter::doAccessControlCheckOrScheduleMessage(
         std::shared_ptr<ImmutableMessage> message,
         std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress,
         std::uint32_t tryCount)
@@ -384,7 +384,7 @@ void CcMessageRouter::routeInternal(std::shared_ptr<ImmutableMessage> message,
     }
 
     for (std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress : destAddresses) {
-        accessControlAndScheduleMsg(message, destAddress, tryCount);
+        doAccessControlCheckOrScheduleMessage(message, destAddress, tryCount);
     }
 }
 
@@ -782,6 +782,14 @@ void CcMessageRouter::queueMessage(std::shared_ptr<ImmutableMessage> message,
     messageQueue->queueMessage(std::move(recipient), std::move(message));
 }
 
+bool CcMessageRouter::canMessageBeTransmitted(std::shared_ptr<ImmutableMessage> message) const
+{
+    if (auto gotAccessController = accessController.lock()) {
+        return message->isAccessControlChecked();
+    }
+    return true;
+}
+
 /**
  * IMPLEMENTATION of ConsumerPermissionCallback class
  */
@@ -798,36 +806,48 @@ ConsumerPermissionCallback::ConsumerPermissionCallback(
 {
 }
 
-void ConsumerPermissionCallback::hasConsumerPermission(bool hasPermission)
+void ConsumerPermissionCallback::hasConsumerPermission(IAccessController::Enum hasPermission)
 {
     if (aclAudit) {
-        if (!hasPermission) {
+        if (hasPermission == IAccessController::Enum::NO) {
             JOYNR_LOG_ERROR(logger(),
                             "ACL AUDIT: message with id '{}' is not allowed by ACL",
                             message->getId());
-            hasPermission = true;
-        } else {
+            hasPermission = IAccessController::Enum::YES;
+        } else if (hasPermission == IAccessController::Enum::YES) {
             JOYNR_LOG_TRACE(logger(),
-                            "ACL AUDIT: message with id '{}' is allowed by ACL",
+                            "ACL AUDIT: message with id '{}' is allowed by ACL, ",
                             message->getId());
         }
     }
-    if (hasPermission) {
-        try {
-            if (auto owningMessageRouterSharedPtr = owningMessageRouter.lock()) {
-                owningMessageRouterSharedPtr->scheduleMessage(message, destination);
-            } else {
-                JOYNR_LOG_ERROR(logger(),
-                                "Message with Id {} could not be sent because messageRouter is not "
-                                "available",
-                                message->getId());
-            }
-        } catch (const exceptions::JoynrMessageNotSentException& e) {
+    if (hasPermission == IAccessController::Enum::YES) {
+        message->setAccessControlChecked();
+        if (auto owningMessageRouterSharedPtr = owningMessageRouter.lock()) {
+            owningMessageRouterSharedPtr->scheduleMessage(message, destination);
+        } else {
             JOYNR_LOG_ERROR(logger(),
-                            "Message with Id {} could not be sent. Error: {}",
-                            message->getId(),
-                            e.getMessage());
+                            "Message with Id {} could not be sent because messageRouter is not "
+                            "available",
+                            message->getId());
         }
+    } else if (hasPermission == IAccessController::Enum::RETRY) {
+        if (auto owningMessageRouterSharedPtr = owningMessageRouter.lock()) {
+            JOYNR_LOG_TRACE(logger(),
+                            "ACL RETRY: check cannot be performed, message with id '{}' will be "
+                            "rescheduled.",
+                            message->getId());
+            owningMessageRouterSharedPtr->scheduleMessage(
+                    message, destination, 0, std::chrono::milliseconds(1000));
+        } else {
+            JOYNR_LOG_ERROR(logger(),
+                            "Message with Id {} could not be sent because messageRouter is not "
+                            "available",
+                            message->getId());
+        }
+    } else {
+        JOYNR_LOG_TRACE(logger(),
+                        "ACL NO Permission: message with id '{}' will be dropped.",
+                        message->getId());
     }
 }
 

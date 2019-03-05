@@ -379,6 +379,13 @@ bool LibJoynrMessageRouter::allowRoutingEntryUpdate(const routingtable::RoutingE
     return false;
 }
 
+bool LibJoynrMessageRouter::canMessageBeTransmitted(std::shared_ptr<ImmutableMessage> message) const
+{
+    // No need for ACL check in LibJoynrMessageRouter
+    std::ignore = message;
+    return true;
+}
+
 void LibJoynrMessageRouter::addNextHop(
         const std::string& participantId,
         const std::shared_ptr<const joynr::system::RoutingTypes::Address>& address,

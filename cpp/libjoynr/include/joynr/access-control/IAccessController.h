@@ -38,6 +38,10 @@ class JOYNR_EXPORT IAccessController
 {
 public:
     /**
+     * Enum to be used as an argument in hasConsumerPermission callback for three cases
+     */
+    enum class Enum { YES = 0, NO = 1, RETRY = 2 };
+    /**
      * Callback interface for hasConsumerPermission
      *
      * Calls to hasConsumerPermission are asynchronous and a callback object must
@@ -51,7 +55,7 @@ public:
         /**
          * Called with the result of hasConsumerPermission
          */
-        virtual void hasConsumerPermission(bool hasPermission) = 0;
+        virtual void hasConsumerPermission(IAccessController::Enum hasPermission) = 0;
     };
 
     virtual ~IAccessController() = default;

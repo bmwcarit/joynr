@@ -131,6 +131,9 @@ public:
                 MUESLI_NVP(payload));
     }
 
+    bool isAccessControlChecked() const;
+    void setAccessControlChecked();
+
 private:
     boost::optional<std::string> getOptionalHeaderByKey(const std::string& key) const;
 
@@ -146,6 +149,7 @@ private:
     // receivedFromGlobal is a transient attribute which will not be serialized.
     // It is only used locally for routing decisions.
     bool receivedFromGlobal;
+    bool accessControlChecked;
 
     std::string creator;
     RequiredHeaders requiredHeaders;

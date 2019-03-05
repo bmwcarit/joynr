@@ -215,12 +215,14 @@ private:
                       std::shared_ptr<const joynr::system::RoutingTypes::Address> address,
                       const WriteLocker& messageQueueRetryWriteLock) final;
 
-    void accessControlAndScheduleMsg(
+    void doAccessControlCheckOrScheduleMessage(
             std::shared_ptr<ImmutableMessage> message,
             std::shared_ptr<const system::RoutingTypes::Address> destAddress,
-            std::uint32_t tryCount = 0);
+            std::uint32_t tryCount = 0) final;
     void queueMessage(std::shared_ptr<ImmutableMessage> message,
                       const ReadLocker& messageQueueRetryReadLock) final;
+
+    bool canMessageBeTransmitted(std::shared_ptr<ImmutableMessage> message) const;
 
     DISALLOW_COPY_AND_ASSIGN(CcMessageRouter);
     ADD_LOGGER(CcMessageRouter)

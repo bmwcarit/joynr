@@ -33,6 +33,7 @@ ImmutableMessage::ImmutableMessage(smrf::ByteVector&& serializedMessage, bool ve
           bodyView(),
           decompressedBody(),
           receivedFromGlobal(false),
+          accessControlChecked(false),
           creator(),
           requiredHeaders()
 {
@@ -46,6 +47,7 @@ ImmutableMessage::ImmutableMessage(const smrf::ByteVector& serializedMessage, bo
           bodyView(),
           decompressedBody(),
           receivedFromGlobal(false),
+          accessControlChecked(false),
           creator(),
           requiredHeaders()
 {
@@ -243,6 +245,16 @@ void ImmutableMessage::init()
 bool ImmutableMessage::isCustomHeaderKey(const std::string& key) const
 {
     return boost::algorithm::starts_with(key, Message::CUSTOM_HEADER_PREFIX());
+}
+
+bool ImmutableMessage::isAccessControlChecked() const
+{
+    return accessControlChecked;
+}
+
+void ImmutableMessage::setAccessControlChecked()
+{
+    accessControlChecked = true;
 }
 
 std::string ImmutableMessage::getTrackingInfo() const

@@ -273,6 +273,16 @@ void AbstractMessageRouter::sendMessages(
         }
     }
 }
+void AbstractMessageRouter::doAccessControlCheckOrScheduleMessage(
+        std::shared_ptr<ImmutableMessage> message,
+        std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress,
+        std::uint32_t tryCount)
+{
+    std::ignore = message;
+    std::ignore = destAddress;
+    std::ignore = tryCount;
+    // no implementation needed when this method is called by LibjoynrMessageRouter
+}
 
 void AbstractMessageRouter::scheduleMessage(
         std::shared_ptr<ImmutableMessage> message,
@@ -602,7 +612,23 @@ void MessageRunnable::run()
                                 "Message could not be sent! reason: MessageRunnable not available");
             }
         };
-        messagingStub->transmit(message, onFailure);
+
+        auto messageRouterSharedPtr = messageRouter.lock();
+        if (!messageRouterSharedPtr) {
+            JOYNR_LOG_ERROR(logger(),
+                            "Message {} could not be sent! reason: messageRouter "
+                            "not available",
+                            message->getTrackingInfo());
+            return;
+        }
+
+        if (messageRouterSharedPtr->canMessageBeTransmitted(message)) {
+            messagingStub->transmit(message, onFailure);
+        } else {
+            messageRouterSharedPtr->doAccessControlCheckOrScheduleMessage(
+                    message, destAddress, tryCount);
+        }
+
     } else {
         JOYNR_LOG_ERROR(logger(), "Message {} expired: dropping!", message->getTrackingInfo());
     }
