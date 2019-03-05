@@ -51,6 +51,8 @@ import joynr.interlanguagetest.namedTypeCollection2.ExtendedTypeCollectionEnumer
 import joynr.interlanguagetest.namedTypeCollection2.MapStringString;
 import joynr.interlanguagetest.typeDefCollection.ArrayTypeDefStruct;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 /**
  * Sample implementation of the {@link TestInterfaceSyncSync} interface.
  */
@@ -98,6 +100,7 @@ public class IltProviderBean
     @Override
     public void setAttributeUInt8(Byte attributeUInt8) {
         this.attributeUInt8 = attributeUInt8;
+
         // TODO
         //attributeUInt8Changed(attributeUInt8);
     }
@@ -110,6 +113,7 @@ public class IltProviderBean
     @Override
     public void setAttributeDouble(Double attributeDouble) {
         this.attributeDouble = attributeDouble;
+
         // TODO
         //attributeDoubleChanged(attributeDouble);
     }
@@ -137,14 +141,17 @@ public class IltProviderBean
         return attributeInt8readonlyNoSubscriptions;
     }
 
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "joynr object not used for storing internal state")
     @Override
     public String[] getAttributeArrayOfStringImplicit() {
         return attributeArrayOfStringImplicit;
     }
 
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "joynr object not used for storing internal state")
     @Override
     public void setAttributeArrayOfStringImplicit(String[] attributeArrayOfStringImplicit) {
         this.attributeArrayOfStringImplicit = attributeArrayOfStringImplicit;
+
         // TODO
         //attributeArrayOfStringImplicitChanged(attributeArrayOfStringImplicit);
     }
@@ -157,6 +164,7 @@ public class IltProviderBean
     @Override
     public void setAttributeEnumeration(Enumeration attributeEnumeration) {
         this.attributeEnumeration = attributeEnumeration;
+
         // TODO
         //attributeEnumerationChanged(attributeEnumeration);
     }
@@ -176,6 +184,7 @@ public class IltProviderBean
     @Override
     public void setAttributeBaseStruct(BaseStruct attributeBaseStruct) {
         this.attributeBaseStruct = attributeBaseStruct;
+
         // TODO
         //attributeBaseStructChanged(attributeBaseStruct);
     }
@@ -188,6 +197,7 @@ public class IltProviderBean
     @Override
     public void setAttributeExtendedExtendedBaseStruct(ExtendedExtendedBaseStruct attributeExtendedExtendedBaseStruct) {
         this.attributeExtendedExtendedBaseStruct = attributeExtendedExtendedBaseStruct;
+
         // TODO
         //attributeExtendedExtendedBaseStructChanged(attributeExtendedExtendedBaseStruct);
     }
@@ -215,6 +225,7 @@ public class IltProviderBean
     @Override
     public void setAttributeInt64TypeDef(Long attributeInt64TypeDef) {
         this.attributeInt64TypeDef = attributeInt64TypeDef;
+
         // TODO
         // attributeInt64TypeDefChanged(attributeInt64TypeDef);
     }
@@ -227,6 +238,7 @@ public class IltProviderBean
     @Override
     public void setAttributeStringTypeDef(String attributeStringTypeDef) {
         this.attributeStringTypeDef = attributeStringTypeDef;
+
         // TODO
         // attributeStringTypeDefChanged(attributeStringTypeDef);
     }
@@ -239,6 +251,7 @@ public class IltProviderBean
     @Override
     public void setAttributeStructTypeDef(BaseStruct attributeStructTypeDef) {
         this.attributeStructTypeDef = attributeStructTypeDef;
+
         // TODO
         // attributeStructTypeDefChanged(attributeStructTypeDef);
     }
@@ -251,6 +264,7 @@ public class IltProviderBean
     @Override
     public void setAttributeMapTypeDef(MapStringString attributeMapTypeDef) {
         this.attributeMapTypeDef = attributeMapTypeDef;
+
         // TODO
         // attributeMapTypeDefChanged(attributeMapTypeDef);
     }
@@ -263,30 +277,37 @@ public class IltProviderBean
     @Override
     public void setAttributeEnumTypeDef(Enumeration attributeEnumTypeDef) {
         this.attributeEnumTypeDef = attributeEnumTypeDef;
+
         // TODO
         // attributeEnumTypeDefChanged(attributeEnumTypeDef);
     }
 
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "joynr object not used for storing internal state")
     @Override
     public Byte[] getAttributeByteBufferTypeDef() {
         return attributeByteBufferTypeDef;
     }
 
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "joynr object not used for storing internal state")
     @Override
     public Byte[] getAttributeByteBuffer() {
         return attributeByteBuffer;
     }
 
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "joynr object not used for storing internal state")
     @Override
     public void setAttributeByteBufferTypeDef(Byte[] attributeByteBufferTypeDef) {
         this.attributeByteBufferTypeDef = attributeByteBufferTypeDef;
+
         // TODO
         // attributeByteBufferTypeDefChanged(attributeByteBufferTypeDef);
     }
 
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "joynr object not used for storing internal state")
     @Override
     public void setAttributeByteBuffer(Byte[] attributeByteBuffer) {
         this.attributeByteBuffer = attributeByteBuffer;
+
         // TODO
         // attributeByteBufferChanged(attributeByteBuffer);
     }
@@ -299,6 +320,7 @@ public class IltProviderBean
     @Override
     public void setAttributeArrayTypeDef(ArrayTypeDefStruct attributeArrayTypeDef) {
         this.attributeArrayTypeDef = attributeArrayTypeDef;
+
         // TODO
         // attributeArrayTypeDefChanged(attributeArrayTypeDef);
     }
@@ -364,7 +386,7 @@ public class IltProviderBean
         }
 
         // send back the input converted to a string
-        return new Integer(Short.toUnsignedInt(uInt16Arg)).toString();
+        return Integer.toString(Short.toUnsignedInt(uInt16Arg));
     }
 
     /*
@@ -907,8 +929,8 @@ public class IltProviderBean
         logger.warn("* IltProvider.methodToFireBroadcastWithSinglePrimitiveParameter called");
         logger.warn("**********************************************************************");
 
-        String stringOut = "boom";
         // TODO
+        //String stringOut = "boom";
         //fireBroadcastWithSinglePrimitiveParameter(stringOut, partitions);
     }
 
@@ -921,9 +943,9 @@ public class IltProviderBean
         logger.warn("* IltProvider.methodToFireBroadcastWithMultiplePrimitiveParameters called");
         logger.warn("*************************************************************************");
 
-        Double doubleOut = 1.1d;
-        String stringOut = "boom";
         // TODO
+        //Double doubleOut = 1.1d;
+        //String stringOut = "boom";
         //fireBroadcastWithMultiplePrimitiveParameters(doubleOut, stringOut, partitions);
     }
 
@@ -936,8 +958,8 @@ public class IltProviderBean
         logger.warn("* IltProvider.methodToFireBroadcastWithSingleArrayParameter called");
         logger.warn("******************************************************************");
 
-        String[] stringArrayOut = IltUtil.createStringArray();
         // TODO
+        //String[] stringArrayOut = IltUtil.createStringArray();
         //fireBroadcastWithSingleArrayParameter(stringArrayOut, partitions);
     }
 
@@ -950,9 +972,9 @@ public class IltProviderBean
         logger.warn("* IltProvider.methodToFireBroadcastWithMultipleArrayParameters called");
         logger.warn("*********************************************************************");
 
-        Long[] uInt64ArrayOut = IltUtil.createUInt64Array();
-        StructWithStringArray[] structWithStringArrayArrayOut = IltUtil.createStructWithStringArrayArray();
         // TODO
+        //Long[] uInt64ArrayOut = IltUtil.createUInt64Array();
+        //StructWithStringArray[] structWithStringArrayArrayOut = IltUtil.createStructWithStringArrayArray();
         //fireBroadcastWithMultipleArrayParameters(uInt64ArrayOut, structWithStringArrayArrayOut, partitions);
     }
 
@@ -964,6 +986,7 @@ public class IltProviderBean
         logger.info("***********************************************************************");
         logger.info("* IltProvider.methodToFireBroadcastWithSingleByteBufferParameter called");
         logger.info("***********************************************************************");
+
         // TODO
         //fireBroadcastWithSingleByteBufferParameter(byteBufferIn, partitions);
     }
@@ -978,6 +1001,7 @@ public class IltProviderBean
         logger.info("**************************************************************************");
         logger.info("* IltProvider.methodToFireBroadcastWithMultipleByteBufferParameters called");
         logger.info("**************************************************************************");
+
         // TODO
         //fireBroadcastWithMultipleByteBufferParameters(byteBufferIn1, byteBufferIn2, partitions);
     }
@@ -991,8 +1015,8 @@ public class IltProviderBean
         logger.warn("* IltProvider.methodToFireBroadcastWithSingleEnumerationParameter called");
         logger.warn("************************************************************************");
 
-        ExtendedTypeCollectionEnumerationInTypeCollection enumerationOut = ExtendedTypeCollectionEnumerationInTypeCollection.ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION;
         // TODO
+        //ExtendedTypeCollectionEnumerationInTypeCollection enumerationOut = ExtendedTypeCollectionEnumerationInTypeCollection.ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION;
         //fireBroadcastWithSingleEnumerationParameter(enumerationOut, partitions);
     }
 
@@ -1005,9 +1029,9 @@ public class IltProviderBean
         logger.warn("* IltProvider.methodToFireBroadcastWithMultipleEnumerationParameters called");
         logger.warn("***************************************************************************");
 
-        ExtendedEnumerationWithPartlyDefinedValues extendedEnumerationOut = ExtendedEnumerationWithPartlyDefinedValues.ENUM_2_VALUE_EXTENSION_FOR_ENUM_WITHOUT_DEFINED_VALUES;
-        Enumeration enumerationOut = Enumeration.ENUM_0_VALUE_1;
         // TODO
+        //ExtendedEnumerationWithPartlyDefinedValues extendedEnumerationOut = ExtendedEnumerationWithPartlyDefinedValues.ENUM_2_VALUE_EXTENSION_FOR_ENUM_WITHOUT_DEFINED_VALUES;
+        //Enumeration enumerationOut = Enumeration.ENUM_0_VALUE_1;
         //fireBroadcastWithMultipleEnumerationParameters(extendedEnumerationOut, enumerationOut, partitions);
     }
 
@@ -1020,8 +1044,8 @@ public class IltProviderBean
         logger.warn("* IltProvider.methodToFireBroadcastWithSingleStructParameter called");
         logger.warn("*******************************************************************");
 
-        ExtendedStructOfPrimitives extendedStructOfPrimitivesOut = IltUtil.createExtendedStructOfPrimitives();
         // TODO
+        //ExtendedStructOfPrimitives extendedStructOfPrimitivesOut = IltUtil.createExtendedStructOfPrimitives();
         //fireBroadcastWithSingleStructParameter(extendedStructOfPrimitivesOut, partitions);
     }
 
@@ -1034,9 +1058,9 @@ public class IltProviderBean
         logger.warn("* IltProvider.methodToFireBroadcastWithMultipleStructParameters called");
         logger.warn("**********************************************************************");
 
-        BaseStructWithoutElements baseStructWithoutElementsOut = IltUtil.createBaseStructWithoutElements();
-        ExtendedExtendedBaseStruct extendedExtendedBaseStructOut = IltUtil.createExtendedExtendedBaseStruct();
         // TODO
+        //BaseStructWithoutElements baseStructWithoutElementsOut = IltUtil.createBaseStructWithoutElements();
+        //ExtendedExtendedBaseStruct extendedExtendedBaseStructOut = IltUtil.createExtendedExtendedBaseStruct();
         //fireBroadcastWithMultipleStructParameters(baseStructWithoutElementsOut, extendedExtendedBaseStructOut, partitions);
     }
 
@@ -1049,14 +1073,13 @@ public class IltProviderBean
         logger.warn("* IltProvider.methodToFireBroadcastWithFiltering called");
         logger.warn("*******************************************************");
 
-        // take the stringArg as input for the filtering
-        String stringOut = stringArg;
-        String[] stringArrayOut = IltUtil.createStringArray();
-        ExtendedTypeCollectionEnumerationInTypeCollection enumerationOut = ExtendedTypeCollectionEnumerationInTypeCollection.ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION;
-        StructWithStringArray structWithStringArrayOut = IltUtil.createStructWithStringArray();
-        StructWithStringArray[] structWithStringArrayArrayOut = IltUtil.createStructWithStringArrayArray();
-
         // TODO
+        // take the stringArg as input for the filtering
+        //String stringOut = stringArg;
+        //String[] stringArrayOut = IltUtil.createStringArray();
+        //ExtendedTypeCollectionEnumerationInTypeCollection enumerationOut = ExtendedTypeCollectionEnumerationInTypeCollection.ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION;
+        //StructWithStringArray structWithStringArrayOut = IltUtil.createStructWithStringArray();
+        //StructWithStringArray[] structWithStringArrayArrayOut = IltUtil.createStructWithStringArrayArray();
         //fireBroadcastWithFiltering(stringOut,
         //                           stringArrayOut,
         //                           enumerationOut,
@@ -1072,6 +1095,7 @@ public class IltProviderBean
     @Override
     public void setAttributeMapStringString(MapStringString attributeMapStringString) {
         this.attributeMapStringString = attributeMapStringString;
+
         // TODO
         //attributeMapStringStringChanged(attributeMapStringString);
     }
@@ -1098,6 +1122,7 @@ public class IltProviderBean
     @Override
     public void setAttributeFireAndForget(Integer attributeFireAndForget) {
         this.attributeFireAndForget = attributeFireAndForget;
+
         // TODO
         //attributeFireAndForgetChanged(attributeFireAndForget);
     }

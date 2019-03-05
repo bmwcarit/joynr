@@ -27,6 +27,8 @@ import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 import io.joynr.provider.Deferred;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
@@ -148,6 +150,7 @@ public class IltProvider extends TestInterfaceAbstractProvider {
         return new Promise<Deferred<String[]>>(deferred);
     }
 
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "joynr object not used for storing internal state")
     @Override
     public Promise<DeferredVoid> setAttributeArrayOfStringImplicit(String[] attributeArrayOfStringImplicit) {
         DeferredVoid deferred = new DeferredVoid();
@@ -164,6 +167,7 @@ public class IltProvider extends TestInterfaceAbstractProvider {
         return new Promise<Deferred<Byte[]>>(deferred);
     }
 
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "joynr object not used for storing internal state")
     @Override
     public Promise<DeferredVoid> setAttributeByteBuffer(Byte[] attributeByteBuffer) {
         DeferredVoid deferred = new DeferredVoid();
@@ -338,6 +342,7 @@ public class IltProvider extends TestInterfaceAbstractProvider {
         return new Promise<Deferred<Byte[]>>(deferred);
     }
 
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "joynr object not used for storing internal state")
     @Override
     public Promise<DeferredVoid> setAttributeByteBufferTypeDef(Byte[] attributeByteBufferTypeDef) {
         DeferredVoid deferred = new DeferredVoid();
@@ -435,7 +440,7 @@ public class IltProvider extends TestInterfaceAbstractProvider {
         }
 
         // send back the input converted to a string
-        deferred.resolve(new Integer(Short.toUnsignedInt(uInt16Arg)).toString());
+        deferred.resolve(Integer.toString(Short.toUnsignedInt(uInt16Arg)));
         return new Promise<MethodWithSinglePrimitiveParametersDeferred>(deferred);
     }
 

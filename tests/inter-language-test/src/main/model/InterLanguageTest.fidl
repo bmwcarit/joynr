@@ -854,7 +854,7 @@ interface TestInterface {
 		ENUM_I1_VALUE_EXTENSION_FOR_INTERFACE = 11000001
 	}
 
-	enumeration errorEnumInterface {
+	enumeration ErrorEnumInterface {
 		ERROR_I_1
 		ERROR_I_2
 		ERROR_I_3

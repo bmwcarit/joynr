@@ -129,7 +129,7 @@ public class IltConsumerSyncMethodTest extends IltConsumerTest {
         callProxyMethodWithParameterAndAssertResult("methodWithSinglePrimitiveParameters",
                                                     shortArg,
                                                     (Short arg,
-                                                     String res) -> res.equals(new Integer(Short.toUnsignedInt(arg)).toString()));
+                                                     String res) -> res.equals(Integer.toString(Short.toUnsignedInt(arg))));
         LOG.info(name.getMethodName() + " - OK");
     }
 
@@ -534,7 +534,7 @@ public class IltConsumerSyncMethodTest extends IltConsumerTest {
             String[] stringArray = { "Hello", "World" };
 
             ExtendedBaseStruct extendedBaseStruct = IltUtil.createExtendedBaseStruct();
-            if (result.doubleOut != 1.1d || (!result.extendedBaseStructOut.equals(extendedBaseStruct))
+            if (!IltUtil.cmpDouble(result.doubleOut, 1.1d) || (!result.extendedBaseStructOut.equals(extendedBaseStruct))
                     || (!Arrays.equals(stringArray, result.stringArrayOut))) {
                 fail(name.getMethodName() + " - FAILED - got invalid result");
                 return;
